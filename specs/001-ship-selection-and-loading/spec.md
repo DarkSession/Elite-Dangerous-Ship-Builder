@@ -13,6 +13,7 @@
 ### Session 2026-08-12
 
 - Q: Should the shareable link carry a compressed copy of the full SLEF document, or a minimal description of the build that SLEF is rebuilt from when the link is opened? → A: A minimal build model — encode only non-derivable state and rebuild the SLEF via the library on load.
+- Q: Should the compression and encoding codec be built inside `@elite-dangerous-almanac/core`, or as application code in the ship builder? → A: In the ship builder — the link format is owned by this application, not the library.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -167,6 +168,16 @@ empty local storage, and confirm the build loads identically.
   an equivalent SLEF document — from the minimal model via the package. The
   reconstructed build MUST be equivalent to the source build in every field the
   application models.
+- **FR-007c**: The link codec — the minimal build model's serialisation, its
+  compression and its URL-safe encoding — is owned by this application, not by
+  `@elite-dangerous-almanac/core`. It MUST live in a self-contained,
+  framework-agnostic module with no dependency on the UI.
+- **FR-007d**: The codec MUST identify hulls, modules, blueprints and
+  experimental effects by the package's own identities (`symbol` and `fdname`)
+  and the game's slot keys. It MUST NOT introduce a private catalogue,
+  re-derive any value the package computes, or embed a copy of game data;
+  compact identifier tables built from the package's catalogues at build time
+  are permitted, provided they are generated rather than hand-maintained.
 - **FR-008**: A build carried in a URL MUST take effect for that visit without
   being written to local storage until the Commander explicitly saves it.
 - **FR-009**: The application MUST validate all imported data — from local
@@ -247,8 +258,13 @@ empty local storage, and confirm the build loads identically.
 - The link payload is a minimal build model rather than a SLEF document, so link
   fidelity is bounded by what the application models — the same bound that
   already applies to saved builds and to SLEF round-trips (feature 004).
-- Accepting build links produced by other community tools is out of scope for
-  this feature.
+- The link format is this application's own, so other community tools cannot
+  read a build link, and accepting links produced by other tools is out of scope
+  for this feature. SLEF (feature 004) remains the interoperability path.
+- Owning the codec here is not a workaround under constitution principle II: the
+  package has no link format to defer to. The prohibition still applies in full
+  to anything the package does provide — the codec composes the package's data,
+  it never re-derives or corrects it.
 - Importing a SLEF payload or a journal `Loadout` event pasted by the Commander
   is a natural companion to this feature but is specified alongside export in
   feature 004.
