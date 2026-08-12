@@ -16,6 +16,7 @@
 - Q: Should the compression and encoding codec be built inside `@elite-dangerous-almanac/core`, or as application code in the ship builder? → A: In the ship builder — the link format is owned by this application, not the library.
 - Q: Should the encoded build ride in the URL's query string or in its fragment? → A: The fragment (`#…`), so the payload is never transmitted to any server. This supersedes "import via URL query" in the Input above.
 - Q: What is the length target a build link must meet? → A: ≤500 characters for a fully engineered large ship (typical mid-size build well under 300), with under 100 characters as a stretch goal worth pursuing.
+- Q: When the link format or the bundled catalogue changes, must links shared earlier still open? → A: Yes, permanently — the payload carries a format version, the decoder retains every published version's tables, and it refuses rather than guesses when it cannot decode faithfully.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -98,8 +99,9 @@ empty local storage, and confirm the build loads identically.
 **Acceptance Scenarios**:
 
 1. **Given** an active build, **When** the Commander asks for a shareable link,
-   **Then** the application produces a URL that encodes the entire build in the
-   URL itself, and copying it requires no server round-trip.
+   **Then** the application produces a URL whose fragment encodes the entire
+   build, copying it requires no server round-trip, and the link is at most 500
+   characters even for a fully engineered large ship.
 2. **Given** a URL that carries a build, **When** it is opened in any browser,
    **Then** that build is loaded as the active build without needing anything
    from local storage.
@@ -110,6 +112,13 @@ empty local storage, and confirm the build loads identically.
    unknown hulls or modules, **When** it is opened, **Then** the application
    reports that the link could not be read, says what was wrong, and leaves the
    Commander able to continue with ship selection or a saved build.
+5. **Given** a link produced by an earlier release, under an earlier catalogue,
+   **When** it is opened by the current release, **Then** it produces exactly
+   the build it described when it was shared.
+6. **Given** a link that cannot be decoded faithfully — unknown format version,
+   identifier absent from the version it pins — **When** it is opened, **Then**
+   the application refuses it and explains why, rather than opening a build that
+   differs from the one the link describes.
 
 ---
 
@@ -121,6 +130,15 @@ empty local storage, and confirm the build loads identically.
   current catalogue version (a data update removed or renamed it): the
   application reports which entries could not be resolved instead of dropping
   them silently, and does not lose the rest of the build.
+- A link produced years ago, before several catalogue updates: it opens exactly
+  as it did the day it was shared, because it is decoded against the tables its
+  declared format version pins — not against today's catalogue.
+- A link whose declared format version is newer than the running application
+  understands (a Commander on a stale cached build): it is refused with a
+  message saying the link is newer than this version, not decoded on a guess.
+- A module removed from the catalogue that an old link still references: the
+  link is refused or the slot reported as unresolved, never quietly swapped for
+  a different module that now occupies that index.
 - A build URL exceeds what a browser or chat client will carry: the Commander is
   warned that the link may be truncated in transit, and is offered the SLEF
   export (feature 004) as the alternative.
@@ -183,6 +201,12 @@ empty local storage, and confirm the build loads identically.
   compression and its URL-safe encoding — is owned by this application, not by
   `@elite-dangerous-almanac/core`. It MUST live in a self-contained,
   framework-agnostic module with no dependency on the UI.
+- **FR-007d**: The codec MUST identify hulls, modules, blueprints and
+  experimental effects by the package's own identities (`symbol` and `fdname`)
+  and the game's slot keys. It MUST NOT introduce a private catalogue,
+  re-derive any value the package computes, or embed a copy of game data;
+  compact identifier tables built from the package's catalogues at build time
+  are permitted, provided they are generated rather than hand-maintained.
 - **FR-007e**: The encoded build MUST be carried in the URL **fragment**, never
   in the query string or the path, so that the payload is never transmitted to
   the host, a CDN or any intermediary. The application MUST NOT copy the payload
@@ -200,12 +224,24 @@ empty local storage, and confirm the build loads identically.
   minimum an empty hull, a typical mid-size build and a fully engineered large
   ship — MUST be asserted by tests, so that a change which lengthens links
   fails the build rather than passing unnoticed.
-- **FR-007d**: The codec MUST identify hulls, modules, blueprints and
-  experimental effects by the package's own identities (`symbol` and `fdname`)
-  and the game's slot keys. It MUST NOT introduce a private catalogue,
-  re-derive any value the package computes, or embed a copy of game data;
-  compact identifier tables built from the package's catalogues at build time
-  are permitted, provided they are generated rather than hand-maintained.
+- **FR-007i**: Every build link MUST carry a format version identifying the
+  encoding and the identifier tables used to produce it. Any identifier table
+  derived from a catalogue MUST be pinned to that version rather than to
+  whichever catalogue happens to be bundled at decode time.
+- **FR-007j**: A build link MUST keep opening correctly, forever, in every later
+  release of the application. The decoder MUST retain the tables and rules for
+  every format version ever published, and MUST decode a link using the version
+  the link declares — never the current one.
+- **FR-007k**: When a link cannot be decoded faithfully — an unknown format
+  version, a missing table, an identifier absent from the pinned catalogue — the
+  application MUST refuse it and say so. It MUST NOT fall back to a different
+  version, guess an identifier, or produce a build that differs from the one the
+  link describes. Decoding to the wrong ship is a defect of the highest order;
+  refusing to decode is the correct outcome.
+- **FR-007l**: A regression corpus of previously published links — at least one
+  per published format version, stored as literal strings — MUST be decoded by
+  tests on every build, asserting each still produces its expected build. A
+  format change that breaks an existing link MUST fail the build.
 - **FR-008**: A build carried in a URL MUST take effect for that visit without
   being written to local storage until the Commander explicitly saves it.
 - **FR-009**: The application MUST validate all imported data — from local
@@ -215,7 +251,8 @@ empty local storage, and confirm the build loads identically.
   the application usable.
 - **FR-011**: Persisted and URL-encoded builds MUST carry a format version so
   that data written by a different application version is detected rather than
-  misread.
+  misread. For build links this obligation is permanent and one-directional:
+  see FR-007i to FR-007l.
 - **FR-012**: Replacing or discarding an active build with unsaved changes MUST
   require explicit confirmation.
 - **FR-013**: When storage is unavailable, the application MUST remain fully
@@ -285,6 +322,10 @@ empty local storage, and confirm the build loads identically.
   catalogue, with the longest link in the corpus reported.
 - **SC-008**: Encoding and decoding a build link each complete within 50 ms for
   the largest build in the corpus, so sharing feels instant on a phone.
+- **SC-009**: Every link in the published-link regression corpus — one or more
+  per format version ever released — decodes to its expected build on every
+  build of the application. Zero links are ever retired, and zero decode to a
+  build other than the one they describe.
 
 ## Assumptions
 
@@ -295,6 +336,14 @@ empty local storage, and confirm the build loads identically.
 - The link payload is a minimal build model rather than a SLEF document, so link
   fidelity is bounded by what the application models — the same bound that
   already applies to saved builds and to SLEF round-trips (feature 004).
+- Build links are treated as permanent public artefacts: once a link has been
+  shared it lives in chat history and forum posts indefinitely, so the format is
+  append-only. Retiring a format version is not an option available to a later
+  release, and every format change carries the cost of keeping its predecessors
+  decodable.
+- Identifier tables pinned to a format version are generated from the package's
+  catalogues and committed, so an old version's tables survive a catalogue
+  update. They are build artefacts, not hand-maintained game data (FR-007d).
 - The link format is this application's own, so other community tools cannot
   read a build link, and accepting links produced by other tools is out of scope
   for this feature. SLEF (feature 004) remains the interoperability path.
