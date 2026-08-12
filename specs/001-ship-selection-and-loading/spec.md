@@ -8,6 +8,12 @@
 
 **Input**: User description: "Users should be able to select a ship or open an existing ship (either from browser local storage, or import via URL query). This is a pure client side only application."
 
+## Clarifications
+
+### Session 2026-08-12
+
+- Q: Should the shareable link carry a compressed copy of the full SLEF document, or a minimal description of the build that SLEF is rebuilt from when the link is opened? → A: A minimal build model — encode only non-derivable state and rebuild the SLEF via the library on load.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Start a new build from a ship (Priority: P1)
@@ -150,6 +156,17 @@ empty local storage, and confirm the build loads identically.
   name and ident.
 - **FR-007**: The application MUST be able to encode the active build into a URL
   and MUST load a build from such a URL on startup.
+- **FR-007a**: A build link MUST encode a **minimal build model** — only the
+  state that cannot be derived from the catalogue: hull symbol, the module
+  symbol fitted in each occupied slot, engineering (blueprint `fdname`, grade,
+  quality, experimental effect `fdname`), each module's enabled state and power
+  priority, the ship's name and ident, and any recorded source purchase price.
+  Fields that `@elite-dangerous-almanac/core` can recompute from those inputs
+  (module names, mass, power draw, costs, metrics) MUST NOT appear in the link.
+- **FR-007b**: Opening a build link MUST reconstruct the build — and, on demand,
+  an equivalent SLEF document — from the minimal model via the package. The
+  reconstructed build MUST be equivalent to the source build in every field the
+  application models.
 - **FR-008**: A build carried in a URL MUST take effect for that visit without
   being written to local storage until the Commander explicitly saves it.
 - **FR-009**: The application MUST validate all imported data — from local
@@ -192,8 +209,13 @@ empty local storage, and confirm the build loads identically.
   and exported.
 - **Saved build**: A build stored in browser local storage under a
   Commander-chosen name, with a last-modified timestamp.
-- **Build link**: A URL that carries a complete build in its query, requiring no
-  server to resolve.
+- **Build link**: A URL that carries a complete build, requiring no server to
+  resolve. Its payload is the compressed, URL-safe encoding of the minimal build
+  model — never a full SLEF document.
+- **Minimal build model**: The non-derivable state of a build — hull, per-slot
+  module symbols, engineering, enabled state and power priority, ship name and
+  ident, recorded source purchase price. Everything else about the build is
+  recomputed from the catalogue on load.
 
 ## Success Criteria _(mandatory)_
 
@@ -222,8 +244,11 @@ empty local storage, and confirm the build loads identically.
   normal (non-private) settings.
 - Storage is per-browser and per-origin; builds do not follow a Commander
   between devices, and the application does not pretend otherwise.
-- The URL import format is the application's own encoding of a build; accepting
-  links produced by other community tools is out of scope for this feature.
+- The link payload is a minimal build model rather than a SLEF document, so link
+  fidelity is bounded by what the application models — the same bound that
+  already applies to saved builds and to SLEF round-trips (feature 004).
+- Accepting build links produced by other community tools is out of scope for
+  this feature.
 - Importing a SLEF payload or a journal `Loadout` event pasted by the Commander
   is a natural companion to this feature but is specified alongside export in
   feature 004.
