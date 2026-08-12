@@ -15,6 +15,7 @@
 - Q: Should the shareable link carry a compressed copy of the full SLEF document, or a minimal description of the build that SLEF is rebuilt from when the link is opened? → A: A minimal build model — encode only non-derivable state and rebuild the SLEF via the library on load.
 - Q: Should the compression and encoding codec be built inside `@elite-dangerous-almanac/core`, or as application code in the ship builder? → A: In the ship builder — the link format is owned by this application, not the library.
 - Q: Should the encoded build ride in the URL's query string or in its fragment? → A: The fragment (`#…`), so the payload is never transmitted to any server. This supersedes "import via URL query" in the Input above.
+- Q: What is the length target a build link must meet? → A: ≤500 characters for a fully engineered large ship (typical mid-size build well under 300), with under 100 characters as a stretch goal worth pursuing.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -123,6 +124,9 @@ empty local storage, and confirm the build loads identically.
 - A build URL exceeds what a browser or chat client will carry: the Commander is
   warned that the link may be truncated in transit, and is offered the SLEF
   export (feature 004) as the alternative.
+- A build whose encoded link would exceed the 500-character requirement: this is
+  a defect in the codec, not an accepted outcome — the reference corpus is
+  expected to catch it before release.
 - Local storage contains data written by a newer version of the application:
   the application refuses to misread it rather than partially loading it.
 - Two tabs edit builds concurrently: a save in one tab must not silently discard
@@ -186,6 +190,16 @@ empty local storage, and confirm the build loads identically.
 - **FR-007f**: Reading a build from the fragment and updating the fragment as
   the build changes MUST NOT add browser history entries per keystroke or per
   module change; the Commander's Back button MUST remain useful.
+- **FR-007g**: A complete build link — the whole URL, not just its payload —
+  MUST be at most **500 characters** for a fully engineered large ship with
+  every slot filled, and a typical mid-size build SHOULD come in well under 300. Shorter is better: under 100 characters is a stretch goal, and
+  techniques that approach it (catalogue index tables, bit-packing, shared
+  dictionaries) are encouraged where they do not compromise FR-007d, the
+  compatibility rules or losslessness.
+- **FR-007h**: The encoded length of a fixed corpus of reference builds — at
+  minimum an empty hull, a typical mid-size build and a fully engineered large
+  ship — MUST be asserted by tests, so that a change which lengthens links
+  fails the build rather than passing unnoticed.
 - **FR-007d**: The codec MUST identify hulls, modules, blueprints and
   experimental effects by the package's own identities (`symbol` and `fdname`)
   and the game's slot keys. It MUST NOT introduce a private catalogue,
@@ -265,6 +279,12 @@ empty local storage, and confirm the build loads identically.
   build link all succeed on desktop, tablet and mobile viewports — the same
   end-to-end suite passes on all three, with no horizontal page scrolling at any
   of them.
+- **SC-007**: A build link for a fully engineered large ship with every slot
+  filled is at most 500 characters end to end, and a typical mid-size build is
+  under 300 — measured across a reference corpus covering every hull in the
+  catalogue, with the longest link in the corpus reported.
+- **SC-008**: Encoding and decoding a build link each complete within 50 ms for
+  the largest build in the corpus, so sharing feels instant on a phone.
 
 ## Assumptions
 
