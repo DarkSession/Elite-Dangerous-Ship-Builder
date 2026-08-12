@@ -14,6 +14,7 @@
 
 - Q: Should the shareable link carry a compressed copy of the full SLEF document, or a minimal description of the build that SLEF is rebuilt from when the link is opened? → A: A minimal build model — encode only non-derivable state and rebuild the SLEF via the library on load.
 - Q: Should the compression and encoding codec be built inside `@elite-dangerous-almanac/core`, or as application code in the ship builder? → A: In the ship builder — the link format is owned by this application, not the library.
+- Q: Should the encoded build ride in the URL's query string or in its fragment? → A: The fragment (`#…`), so the payload is never transmitted to any server. This supersedes "import via URL query" in the Input above.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -132,6 +133,12 @@ empty local storage, and confirm the build loads identically.
 - A mobile browser opening a long build link: the link is honoured up to
   whatever the browser delivered, and a truncated link is reported as such
   rather than partially applied.
+- A chat client that strips or mangles the fragment when linkifying a URL: the
+  Commander is told the link arrived without a payload rather than being shown
+  an empty build, and is offered SLEF export (feature 004) as the alternative.
+- A build payload arriving in the query string instead of the fragment: it is
+  not honoured, because producing such a link would have leaked the build to
+  the host. The Commander is told why.
 - A saved-build list long enough to exceed a phone screen: it stays scrollable
   and searchable, and destructive actions (delete) stay hard to trigger by
   accident on touch.
@@ -172,6 +179,13 @@ empty local storage, and confirm the build loads identically.
   compression and its URL-safe encoding — is owned by this application, not by
   `@elite-dangerous-almanac/core`. It MUST live in a self-contained,
   framework-agnostic module with no dependency on the UI.
+- **FR-007e**: The encoded build MUST be carried in the URL **fragment**, never
+  in the query string or the path, so that the payload is never transmitted to
+  the host, a CDN or any intermediary. The application MUST NOT copy the payload
+  into the query string, and MUST NOT include it in any outbound request.
+- **FR-007f**: Reading a build from the fragment and updating the fragment as
+  the build changes MUST NOT add browser history entries per keystroke or per
+  module change; the Commander's Back button MUST remain useful.
 - **FR-007d**: The codec MUST identify hulls, modules, blueprints and
   experimental effects by the package's own identities (`symbol` and `fdname`)
   and the game's slot keys. It MUST NOT introduce a private catalogue,
@@ -220,9 +234,9 @@ empty local storage, and confirm the build loads identically.
   and exported.
 - **Saved build**: A build stored in browser local storage under a
   Commander-chosen name, with a last-modified timestamp.
-- **Build link**: A URL that carries a complete build, requiring no server to
-  resolve. Its payload is the compressed, URL-safe encoding of the minimal build
-  model — never a full SLEF document.
+- **Build link**: A URL whose **fragment** carries a complete build, requiring
+  no server to resolve. Its payload is the compressed, URL-safe encoding of the
+  minimal build model — never a full SLEF document, and never sent to a server.
 - **Minimal build model**: The non-derivable state of a build — hull, per-slot
   module symbols, engineering, enabled state and power priority, ship name and
   ident, recorded source purchase price. Everything else about the build is
@@ -238,7 +252,10 @@ empty local storage, and confirm the build loads identically.
   different browser is byte-for-byte equivalent in every modelled field —
   100% round-trip fidelity across saved builds and build links.
 - **SC-003**: The application loads and operates with the network disabled after
-  first load, and no build data leaves the browser under any interaction.
+  first load, and no build data leaves the browser under any interaction. No
+  outbound request — document, asset or otherwise — ever carries a build
+  payload, verified by inspecting every request made while producing and opening
+  a build link.
 - **SC-004**: Every malformed-input case (corrupt storage entry, truncated link,
   unknown symbol, version mismatch) produces a specific, actionable message —
   zero silent data loss and zero unhandled failures.
