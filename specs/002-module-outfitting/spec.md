@@ -161,6 +161,13 @@ reload.
   from a superseded state.
 - Undoing a change: a Commander who removes or replaces a module by mistake can
   reverse it without rebuilding by hand.
+- A hull with dozens of slots viewed on a phone: every slot stays reachable and
+  the Commander does not lose their place in the list after making a change.
+- A module picker listing hundreds of candidates on a small screen: it stays
+  searchable and scrollable, and comparison attributes remain readable.
+- The catalogue reports something the game does not do (a module offered that
+  cannot really be fitted, an engineering option that does not exist): the
+  discrepancy is raised against the library, not corrected in this application.
 
 ## Requirements _(mandatory)_
 
@@ -208,6 +215,32 @@ reload.
   within a session.
 - **FR-017**: Modules that cannot be resolved against the catalogue MUST be
   reported in place, not silently treated as an empty slot.
+- **FR-018**: Where the package's data or behaviour is wrong or missing, the
+  problem MUST be raised against `@elite-dangerous-almanac/core` and fixed
+  there. This application MUST NOT correct, clamp or special-case a library
+  result locally.
+
+### Device Requirements
+
+- **FR-019**: Viewing slots, fitting, removing and engineering modules MUST be
+  fully usable on desktop, tablet and mobile, in both portrait and landscape.
+- **FR-020**: The slot list, module picker and engineering controls MUST be
+  operable by touch, with targets large enough to hit reliably on a phone.
+  Nothing essential — including module attributes and engineering detail — may
+  be reachable only by hover.
+- **FR-021**: On narrow viewports the slot list and module picker MUST remain
+  navigable without horizontal page scrolling; wide content scrolls within its
+  own container.
+- **FR-022**: Grade and quality controls MUST be adjustable by touch as
+  precisely as by pointer or keyboard.
+
+### Testing Requirements
+
+- **FR-023**: Fittability, engineering application and clearing, replacement
+  semantics, power priority handling and undo/redo MUST be unit-tested against
+  the domain layer without rendering components.
+- **FR-024**: Each user story's primary journey MUST have a Playwright
+  end-to-end test that runs against desktop, tablet and mobile viewports.
 
 ### Key Entities
 
@@ -241,6 +274,11 @@ reload.
 - **SC-005**: A Commander can build a well-known reference loadout end to end
   and the resulting build matches the reference in every fitted module and
   engineering entry.
+- **SC-006**: Fitting, removing and engineering a module all succeed on desktop,
+  tablet and mobile viewports — the same end-to-end suite passes on all three,
+  with no horizontal page scrolling at any of them.
+- **SC-007**: Outfitting a large ship on a phone requires no more interactions
+  per change than on desktop.
 
 ## Assumptions
 
@@ -253,5 +291,7 @@ reload.
   provides them; a full materials-planning feature is out of scope here.
 - Ship-launched fighters, crew, cosmetic liveries and ship kits are out of scope
   for this feature.
-- Interaction and visual design of the slot list, module picker and engineering
-  panel are deferred to the UI workstream.
+- Responsiveness, touch support and accessibility are behavioural requirements
+  in scope now; only visual styling is deferred.
+- Visual design of the slot list, module picker and engineering panel is
+  deferred to the UI workstream.

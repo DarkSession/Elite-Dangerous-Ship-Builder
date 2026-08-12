@@ -24,6 +24,7 @@
     "vscode": {
       "extensions": [
         "angular.ng-template",
+        "ms-playwright.playwright",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "ms-python.python",
@@ -37,5 +38,5 @@
   "forwardPorts": [4200],
 
   "remoteUser": "node",
-  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile"
+  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium"
 }

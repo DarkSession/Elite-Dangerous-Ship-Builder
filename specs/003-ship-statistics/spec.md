@@ -135,6 +135,10 @@ dependent figures recompute consistently.
   presented as a distinct value rather than mixed into it.
 - Statistics requested while a build is mid-edit across several rapid changes:
   the displayed set is always internally consistent, never a mix of old and new.
+- A statistic that disagrees with what the game shows: this is a library defect,
+  raised upstream and fixed there — never patched in the presentation layer.
+- The full statistics set on a phone: it stays legible at increased text sizes,
+  and no figure is truncated to the point of ambiguity.
 
 ## Requirements _(mandatory)_
 
@@ -172,6 +176,28 @@ dependent figures recompute consistently.
   see dependent statistics recompute.
 - **FR-014**: The change in each statistic relative to its previous value MUST
   be discernible after a build change.
+- **FR-015**: A statistic that disagrees with the game MUST be raised against
+  `@elite-dangerous-almanac/core` and corrected there. This application MUST NOT
+  adjust, clamp or re-derive a figure the package computed.
+
+### Device Requirements
+
+- **FR-016**: The full set of statistics MUST be available on desktop, tablet
+  and mobile. No statistic may be desktop-only.
+- **FR-017**: On narrow viewports, statistics MUST remain readable without
+  horizontal page scrolling; wide tables scroll within their own container.
+- **FR-018**: Statistics MUST be reachable while outfitting on a phone, so a
+  Commander can judge a change without losing the module they are working on.
+- **FR-019**: Detail behind a statistic (per-module power draw, per-weapon
+  figures, diagnostic reasons) MUST be reachable by touch, not by hover alone.
+
+### Testing Requirements
+
+- **FR-020**: Every statistic's presentation MUST be unit-tested against known
+  builds, including the unavailable, incomplete and invalid cases and the
+  fraction-to-percentage conversion.
+- **FR-021**: Each user story's primary journey MUST have a Playwright
+  end-to-end test that runs against desktop, tablet and mobile viewports.
 
 ### Key Entities
 
@@ -202,6 +228,9 @@ dependent figures recompute consistently.
   which modules would shut down, without leaving the statistics view.
 - **SC-005**: Every statistic carries its unit and, where applicable, its load
   assumption — no unlabelled numbers.
+- **SC-006**: Every statistic is readable and every diagnostic reachable on
+  desktop, tablet and mobile viewports — the same end-to-end suite passes on all
+  three, with no horizontal page scrolling at any of them.
 
 ## Assumptions
 
@@ -211,6 +240,8 @@ dependent figures recompute consistently.
   of scope here; this feature covers the active build.
 - Time-to-kill modelling, thermal simulation and detailed manoeuvrability
   figures are out of scope unless the package provides them.
+- Responsiveness, touch support and accessibility are behavioural requirements
+  in scope now; only visual styling is deferred.
 - Which statistics are prominent and how they are grouped visually is deferred
   to the UI workstream; this spec fixes what must be available and how it must
   be qualified.

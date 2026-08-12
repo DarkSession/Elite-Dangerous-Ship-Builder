@@ -91,6 +91,11 @@ payload.
   selection and still downloadable.
 - Exporting immediately after an edit: the payload reflects the edit, never a
   stale build.
+- A payload other community tools accept but the package rejects: the
+  discrepancy is raised against the library and fixed there; this application
+  does not sanitise the payload to make it parse.
+- Import on a phone with no file picker access: pasting the payload is
+  sufficient on its own, and the paste target is usable at that viewport.
 
 ## Requirements _(mandatory)_
 
@@ -128,6 +133,29 @@ payload.
   be transmitted anywhere.
 - **FR-014**: Import errors MUST identify the problem and, for multi-entry
   payloads, the entry index at which it occurred.
+- **FR-015**: A SLEF defect — a payload the package rejects that other tools
+  accept, or a field it drops — MUST be raised against
+  `@elite-dangerous-almanac/core` and fixed there. This application MUST NOT
+  pre-process, repair or post-process payloads to compensate.
+
+### Device Requirements
+
+- **FR-016**: Export and import MUST be fully usable on desktop, tablet and
+  mobile, in both portrait and landscape.
+- **FR-017**: Import MUST accept a payload by paste and by file upload on touch
+  devices, and export MUST offer copy, download and the platform share
+  affordance where available.
+- **FR-018**: The payload and any import diagnostics MUST remain readable on a
+  phone without horizontal page scrolling; the payload itself scrolls within its
+  own container.
+
+### Testing Requirements
+
+- **FR-019**: Export, import and round-trip fidelity MUST be unit-tested against
+  a corpus of reference payloads, including every malformed-input case in this
+  spec.
+- **FR-020**: Each user story's primary journey MUST have a Playwright
+  end-to-end test that runs against desktop, tablet and mobile viewports.
 
 ### Key Entities
 
@@ -155,6 +183,9 @@ payload.
   zero unhandled failures.
 - **SC-005**: Export and import of a fully outfitted large ship complete within
   500 ms.
+- **SC-006**: Export and import both succeed on desktop, tablet and mobile
+  viewports — the same end-to-end suite passes on all three, with no horizontal
+  page scrolling at any of them.
 
 ## Assumptions
 
@@ -169,5 +200,7 @@ payload.
   Commander pastes or uploads the payload.
 - Exporting to other tools' proprietary formats or link schemes is out of scope
   for this feature.
+- Responsiveness, touch support and accessibility are behavioural requirements
+  in scope now; only visual styling is deferred.
 - Presentation of the export and import surfaces is deferred to the UI
   workstream.

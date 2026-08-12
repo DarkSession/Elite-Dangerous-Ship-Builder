@@ -10,7 +10,11 @@ uploaded. See [`.specify/memory/constitution.md`](./.specify/memory/constitution
 for the principles this project is held to.
 
 Game data and build calculations come from
-[`@elite-dangerous-almanac/core`](https://github.com/DarkSession/Elite-Dangerous-Almanac).
+[`@elite-dangerous-almanac/core`](https://github.com/DarkSession/Elite-Dangerous-Almanac),
+which is the single source of truth: defects and gaps there are fixed in the
+library, never worked around here.
+
+Desktop, tablet and mobile are all first-class targets.
 
 ## Status
 
@@ -35,16 +39,44 @@ pnpm start        # dev server on http://localhost:4200/
 
 ## Scripts
 
-| Command              | What it does                            |
-| -------------------- | --------------------------------------- |
-| `pnpm start`         | Run the dev server with hot reload      |
-| `pnpm run build`     | Production build into `dist/`           |
-| `pnpm test`          | Run the unit tests                      |
-| `pnpm run typecheck` | Type-check the project without emitting |
-| `pnpm run format`    | Format the repository with Prettier     |
-| `pnpm run check`     | Format check, typecheck, build and test |
+| Command              | What it does                                                 |
+| -------------------- | ------------------------------------------------------------ |
+| `pnpm start`         | Run the dev server with hot reload                           |
+| `pnpm run build`     | Production build into `dist/`                                |
+| `pnpm test`          | Run the unit tests with coverage                             |
+| `pnpm run e2e`       | Run the Playwright suite (desktop, tablet, mobile)           |
+| `pnpm run e2e:ui`    | Run Playwright in interactive UI mode                        |
+| `pnpm run typecheck` | Type-check the project without emitting                      |
+| `pnpm run format`    | Format the repository with Prettier                          |
+| `pnpm run check`     | Format check, typecheck, build, unit tests and the E2E suite |
 
 Run `pnpm run check` before proposing a change.
+
+## Testing
+
+Unit tests live beside their source in `src/` and run on Vitest through the
+Angular unit-test builder. Coverage is enforced at **80%** for statements,
+branches, functions and lines; the thresholds are configured in
+[`angular.json`](./angular.json) and a build below them fails.
+
+End-to-end tests live in [`e2e/`](./e2e) and run on
+[Playwright](https://playwright.dev/) as part of `pnpm run check`. Every feature
+is exercised at three viewports — desktop, tablet and mobile — configured as
+separate projects in [`playwright.config.ts`](./playwright.config.ts).
+
+Playwright needs browsers installed once:
+
+```bash
+pnpm exec playwright install --with-deps chromium
+```
+
+The dev container does this for you. If your environment already ships a
+Chromium whose build does not match the one Playwright pins, point at it instead
+of editing the config:
+
+```bash
+E2E_CHROMIUM_PATH=/path/to/chromium pnpm run e2e
+```
 
 ## Specifications
 
@@ -62,8 +94,10 @@ Codex CLI (`.agents/skills`).
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
 
-UI design is deliberately deferred: the specs describe behaviour and the
-information each screen must convey, not its visual design.
+UI styling is deliberately deferred: the specs describe behaviour and the
+information each screen must convey, not its visual design. Responsiveness,
+touch support and accessibility are behavioural requirements and are specified
+now.
 
 ### Working on a spec
 

@@ -24,7 +24,7 @@ Consequences that follow from this and MUST be honoured:
 - No telemetry, analytics or third-party network beacons. Any future outbound
   request needs an amendment to this constitution.
 
-### II. The Almanac Is the Source of Truth
+### II. The Almanac Is the Source of Truth (NON-NEGOTIABLE)
 
 Elite Dangerous game data and derived calculations come from
 `@elite-dangerous-almanac/core`. Ship hulls, slots, modules, blueprints,
@@ -36,12 +36,30 @@ SLEF parsing/serialisation MUST be taken from that package.
 - Domain identities are the package's identities: `symbol` for hulls and
   modules, `fdname` for blueprints, experimental effects and decorative
   modifications, and the game's own slot keys (never positional indices).
-- If a needed datum or calculation is missing from the package, the gap is
-  raised upstream. A local workaround MUST be isolated, documented as
-  temporary, and reference the upstream issue.
 - Import the package's leaf subpaths (e.g.
   `@elite-dangerous-almanac/core/ships/ships`) rather than pulling in
   catalogues a screen does not need.
+
+**Defects and gaps in the library are fixed in the library.** When the package
+returns a wrong value, is missing a datum or calculation, or has an awkward API,
+the ship builder does not paper over it:
+
+- The problem MUST be called out and raised against
+  [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac),
+  with a minimal reproduction.
+- The fix MUST land in the library, and the ship builder MUST then consume the
+  released version. Correcting, patching, clamping, re-deriving or
+  special-casing a library result inside this application is prohibited —
+  including "just this once" adjustments buried in a component or a formatter.
+- A blocked feature waits on the upstream fix. Shipping a workaround to save
+  time is not an available trade: it forks the source of truth, and every
+  consumer of the library keeps the bug.
+- The only sanctioned local code is presentation of what the library returns
+  (formatting, ordering, labelling) — never a different value from the one it
+  computed.
+- If a workaround is ever unavoidable, it requires an explicit amendment to this
+  constitution naming the upstream issue and the removal condition. It is a
+  constitutional exception, not an implementation detail.
 
 ### III. Domain Logic Outside the UI
 
@@ -68,7 +86,49 @@ A build is round-trippable and never silently wrong.
 - Malformed or hostile input (a tampered URL, a pasted SLEF file) MUST fail
   visibly and safely, leaving any existing build intact.
 
-### V. Specification Before Implementation
+### V. Works on Desktop, Tablet and Mobile (NON-NEGOTIABLE)
+
+Commanders plan builds at a desk, on the sofa with a tablet, and on a phone
+while reading Discord. All three are first-class targets; none is a degraded
+fallback.
+
+- Every feature MUST be fully usable on desktop, tablet and mobile. A capability
+  that exists on one form factor and not another is incomplete, not "desktop
+  first".
+- Layouts MUST be responsive and fluid rather than pinned to fixed widths. The
+  page MUST NOT scroll horizontally at any supported viewport; wide content
+  (statistics tables, module lists) scrolls within its own container.
+- All interactions MUST work by touch as well as by pointer and keyboard.
+  Interactive targets MUST be large enough to hit reliably on a phone, and
+  nothing essential may depend on hover.
+- Portrait and landscape orientations MUST both work on tablet and mobile.
+- The application MUST remain accessible: keyboard-operable, screen-reader
+  navigable, and legible at increased text sizes on every form factor.
+- End-to-end tests MUST cover desktop, tablet and mobile viewports (see
+  principle VI). A feature is not done until it passes on all three.
+
+### VI. Tested Before It Ships (NON-NEGOTIABLE)
+
+Correctness is enforced by the build, not by inspection.
+
+- Unit test coverage MUST be at least **80%** — statements, branches, functions
+  and lines. The threshold is enforced by the test runner, and a build that
+  falls below it fails. Lowering the threshold to make a build pass is
+  prohibited.
+- Coverage is a floor, not a goal. Domain logic — build state, engineering,
+  persistence, import and export — is expected to sit well above it, and
+  coverage MUST NOT be manufactured with tests that assert nothing.
+- End-to-end tests are written with **Playwright** and MUST run as part of the
+  build. Every user story's primary journey MUST have an end-to-end test, run
+  against desktop, tablet and mobile viewports.
+- `pnpm run check` — format, typecheck, build, unit tests with coverage, and the
+  Playwright suite — MUST pass before a change is proposed for merge, and MUST
+  pass in CI.
+- A bug fix starts with a failing test that reproduces the bug.
+- Tests MUST NOT be skipped, quarantined or deleted to get a build green. A
+  genuinely flaky test is a defect to fix, not to mute.
+
+### VII. Specification Before Implementation
 
 Work follows the Spec Kit flow: specify → clarify (when needed) → plan → tasks
 → implement. A feature's spec.md describes user-visible behaviour and
@@ -88,10 +148,13 @@ requirements without prescribing implementation.
 - **Package manager**: pnpm. `pnpm-lock.yaml` is committed, and installs in CI
   use `--frozen-lockfile`.
 - **Runtime**: Node.js per `.nvmrc` / `package.json#engines` for tooling; modern
-  evergreen browsers for the app itself. The dev container in `.devcontainer/`
-  is the reference environment.
+  evergreen browsers for the app itself, on desktop, tablet and mobile. The dev
+  container in `.devcontainer/` is the reference environment.
 - **Data dependency**: `@elite-dangerous-almanac/core`, which is ESM-only and
   side-effect free.
+- **Testing**: Vitest via the Angular unit-test builder, with coverage
+  thresholds configured in `angular.json`; Playwright for end-to-end, with
+  desktop, tablet and mobile projects configured in `playwright.config.ts`.
 - **Build output**: static assets only. No server-side rendering, no runtime
   environment configuration baked into the bundle.
 
@@ -99,14 +162,18 @@ requirements without prescribing implementation.
 
 - Feature specs live in `specs/<NNN>-<short-name>/`. The constitution governs
   them all.
-- `pnpm run check` (format, typecheck, build, test) MUST pass before a change is
-  proposed for merge.
-- Tests accompany domain logic. A bug fix starts with a test that reproduces the
-  bug.
+- `pnpm run check` — format check, typecheck, build, unit tests with coverage,
+  and the Playwright suite — MUST pass before a change is proposed for merge.
+- Tests accompany domain logic, and each user story's primary journey gets an
+  end-to-end test across the three form factors.
 - UI design is deliberately deferred: the specs describe behaviour and the
   information a screen must convey, not its visual design. Visual design is a
   separate, later workstream and MUST NOT be treated as a blocker for domain
-  work.
+  work. Responsiveness, touch support and accessibility (principle V) are
+  behavioural requirements, not design choices, and are in scope from the start.
+- A defect traced to `@elite-dangerous-almanac/core` is raised and fixed
+  upstream (principle II). The ship builder tracks the released fix; it does not
+  route around it.
 
 ## Governance
 
@@ -122,4 +189,14 @@ review of any spec the change invalidates.
 Every review MUST verify compliance with these principles. Added complexity has
 to justify itself against them; when it cannot, the simpler option wins.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-12
+**Version**: 1.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-12
+
+### Amendment history
+
+- **1.1.0** — Added principle V (works on desktop, tablet and mobile) and
+  principle VI (tested before it ships: ≥80% unit coverage, Playwright
+  end-to-end in the build); specification-before-implementation renumbered to
+  VII. Hardened principle II: library defects are fixed in
+  `@elite-dangerous-almanac/core`, and workarounds in this application are
+  prohibited rather than merely discouraged.
+- **1.0.0** — Initial ratification.

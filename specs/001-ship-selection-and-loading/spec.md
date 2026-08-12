@@ -122,6 +122,12 @@ empty local storage, and confirm the build loads identically.
   underneath them.
 - Private browsing or a browser configured to block storage: ship selection and
   URL import still work; only saving is unavailable, and it says so up front.
+- A mobile browser opening a long build link: the link is honoured up to
+  whatever the browser delivered, and a truncated link is reported as such
+  rather than partially applied.
+- A saved-build list long enough to exceed a phone screen: it stays scrollable
+  and searchable, and destructive actions (delete) stay hard to trigger by
+  accident on touch.
 
 ## Requirements _(mandatory)_
 
@@ -160,6 +166,23 @@ empty local storage, and confirm the build loads identically.
   functional for building, sharing and exporting, and MUST state that saving is
   unavailable.
 
+### Device Requirements
+
+- **FR-014**: Ship selection, the saved-build list and URL import MUST be fully
+  usable on desktop, tablet and mobile, in both portrait and landscape.
+- **FR-015**: The ship list MUST remain browsable and searchable on a phone
+  viewport without horizontal page scrolling, and selection MUST work by touch.
+- **FR-016**: Sharing a build link MUST work on touch devices, including the
+  platform share affordance where available, with a manually selectable fallback
+  when clipboard access is denied.
+
+### Testing Requirements
+
+- **FR-017**: Build encoding and decoding, storage persistence and their failure
+  paths MUST be unit-tested, including every malformed-input case in this spec.
+- **FR-018**: Each user story's primary journey MUST have a Playwright
+  end-to-end test that runs against desktop, tablet and mobile viewports.
+
 ### Key Entities
 
 - **Ship (hull)**: A selectable Elite Dangerous ship from the Almanac catalogue,
@@ -188,6 +211,10 @@ empty local storage, and confirm the build loads identically.
   zero silent data loss and zero unhandled failures.
 - **SC-005**: Opening a saved build restores the interactive application within
   1 second on a mid-range machine.
+- **SC-006**: Selecting a ship, saving a build, reopening it and importing a
+  build link all succeed on desktop, tablet and mobile viewports — the same
+  end-to-end suite passes on all three, with no horizontal page scrolling at any
+  of them.
 
 ## Assumptions
 
@@ -203,6 +230,8 @@ empty local storage, and confirm the build loads identically.
 - The ship catalogue is the version bundled with the deployed
   `@elite-dangerous-almanac/core`; catalogue currency is a release concern, not
   a runtime lookup.
+- Responsiveness, touch support and accessibility are behavioural requirements
+  in scope now; only visual styling is deferred.
 - Visual design of the ship picker and build manager is deferred to the UI
   workstream; this spec constrains behaviour and the information shown, not
   layout.
