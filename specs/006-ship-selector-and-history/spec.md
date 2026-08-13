@@ -109,9 +109,17 @@ want from a preview rather than reading down a list.
 confuse. It is P2 because the comparison in story 1 is what makes the decision; the preview
 makes finding the candidate quicker.
 
+**Blocked on upstream delivery**: the illustrations exist in the Almanac repository but are
+not yet published in a form this application can consume, and FR-015a forbids copying them
+here in the meantime. Until that release lands, the selector ships without previews: FR-012
+already requires every hull to remain fully listed, comparable and selectable without one,
+so stories 1, 2 and 4 deliver in full and this story completes when the assets become
+available.
+
 **Independent Test**: Open the selector and confirm each hull carries a preview that
 identifies it, that the preview is legible at every supported viewport, and that a hull
-without one is handled without breaking the list.
+without one is handled without breaking the list. Until the illustrations are published,
+only the last of those is testable.
 
 **Acceptance Scenarios**:
 
