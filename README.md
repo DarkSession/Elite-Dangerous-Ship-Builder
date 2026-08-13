@@ -91,6 +91,7 @@ Codex CLI (`.agents/skills`).
 | [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                                                                          |
 | [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                                 |
 | [005](./specs/005-advanced-ship-statistics/spec.md)   | Advanced ship statistics (power states, defence and offence detail, mobility, heat, costs and materials) |
+| [006](./specs/006-ship-selector-and-history/spec.md)  | Ship selector (comparison, search, preview) and builder undo/redo                                        |
 
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
