@@ -4,20 +4,16 @@
     "dockerfile": "Dockerfile"
   },
 
-  "runArgs": ["--privileged"],
-
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.12",
-      "installTools": true
-    },
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
 
-  // Persist Claude Code auth/config from the host into the container
+  // Persist host tool state, but override Codex config for this container only
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/node/.claude,type=bind",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/node/.claude.json,type=bind"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/node/.claude.json,type=bind",
+    "source=elite-dangerous-ship-builder-codex,target=/home/node/.codex,type=volume",
+    "source=${localWorkspaceFolder}/.devcontainer/codex-config.toml,target=/home/node/.codex/config.toml,type=bind,readonly"
   ],
 
   "customizations": {
@@ -35,7 +31,15 @@
     }
   },
 
-  "forwardPorts": [4200],
+  "forwardPorts": [1455, 4200],
+
+  "portsAttributes": {
+    "1455": {
+      "label": "Codex login callback",
+      "onAutoForward": "silent",
+      "requireLocalPort": true
+    }
+  },
 
   "remoteUser": "node",
   "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium"

@@ -1,0 +1,4 @@
+# The dev container is already the security boundary, so Codex does not need
+# an additional Bubblewrap sandbox inside it.
+sandbox_mode = "danger-full-access"
+approval_policy = "on-request"
