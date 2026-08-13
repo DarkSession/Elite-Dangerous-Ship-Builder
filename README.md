@@ -95,10 +95,12 @@ Codex CLI (`.agents/skills`).
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
 
-UI styling is deliberately deferred: the specs describe behaviour and the
-information each screen must convey, not its visual design. Responsiveness,
-touch support and accessibility are behavioural requirements and are specified
-now.
+Specs are scoped to a capability and name no screen: they describe behaviour and
+the information each screen must convey. Screens are defined during planning, in
+`specs/<NNN>-<short-name>/design/`, and mapped to the requirements they satisfy.
+Every screen composes the one design system; responsiveness, touch support,
+accessibility and translatability are behavioural requirements, not styling
+choices.
 
 ### Working on a spec
 

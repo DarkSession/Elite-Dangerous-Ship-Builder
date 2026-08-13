@@ -105,7 +105,7 @@ fallback.
 - The application MUST remain accessible: keyboard-operable, screen-reader
   navigable, and legible at increased text sizes on every form factor.
 - End-to-end tests MUST cover desktop, tablet and mobile viewports (see
-  principle VII). A feature is not done until it passes on all three.
+  principle VIII). A feature is not done until it passes on all three.
 
 ### VI. Speaks the Commander's Language (NON-NEGOTIABLE)
 
@@ -146,7 +146,38 @@ effect and material names, and the package's own diagnostic messages, are text
   provides, and the application says so rather than presenting an untranslated
   name as a translation.
 
-### VII. Tested Before It Ships (NON-NEGOTIABLE)
+### VII. One Design System (NON-NEGOTIABLE)
+
+Every screen a Commander sees is composed from one design system. Visual design
+is defined in this repository, alongside the behaviour it presents — not
+improvised screen by screen, and not deferred until the domain is finished.
+
+- There is exactly **one** design system. A screen composes it; a screen MUST NOT
+  invent a visual language of its own.
+- Design tokens — colour, type scale, spacing, radius, elevation, motion — are
+  defined once and are the only source of visual values. No component and no
+  screen may hard-code a colour, size, spacing or duration.
+- Theming is a matter of tokens. Changing a theme MUST NOT require editing a
+  component.
+- Components are presentation only. They render the state they are handed and
+  dispatch intent; they MUST NOT reach into domain services or hold build state
+  (principle III).
+- Every component ships with a preview of the states it must handle — default,
+  populated, empty, loading, error, disabled — at desktop, tablet and mobile
+  widths (principle V).
+- Accessibility belongs to the component, not to the screen that uses it.
+  Contrast, focus order, keyboard operation, touch target size and semantic
+  labelling are part of a component's definition (principle V).
+- Every string a component renders resolves through the localisation layer, and
+  every component survives text expansion (principle VI).
+- The library is versioned in this repository, and this repository is the source
+  of truth for any external design tool it synchronises with. A visual change
+  lands here; a design tool is a working surface and a preview, never the record.
+- A screen that needs something the system does not have MUST extend the system
+  rather than work around it locally. Extending it is ordinary work; a one-off
+  style inside a screen is the drift this principle exists to prevent.
+
+### VIII. Tested Before It Ships (NON-NEGOTIABLE)
 
 Correctness is enforced by the build, not by inspection.
 
@@ -167,7 +198,7 @@ Correctness is enforced by the build, not by inspection.
 - Tests MUST NOT be skipped, quarantined or deleted to get a build green. A
   genuinely flaky test is a defect to fix, not to mute.
 
-### VIII. Specification Before Implementation
+### IX. Specification Before Implementation
 
 Work follows the Spec Kit flow: specify → clarify (when needed) → plan → tasks
 → implement. A feature's spec.md describes user-visible behaviour and
@@ -194,6 +225,10 @@ requirements without prescribing implementation.
 - **Testing**: Vitest via the Angular unit-test builder, with coverage
   thresholds configured in `angular.json`; Playwright for end-to-end, with
   desktop, tablet and mobile projects configured in `playwright.config.ts`.
+- **Design system**: one component library under `src/app/ui/`, with design
+  tokens defined in the global stylesheet layer. It is versioned in this
+  repository, and this repository is the source of truth for any external design
+  tool it synchronises with (principle VII).
 - **Build output**: static assets only. No server-side rendering, no runtime
   environment configuration baked into the bundle.
 
@@ -205,12 +240,23 @@ requirements without prescribing implementation.
   and the Playwright suite — MUST pass before a change is proposed for merge.
 - Tests accompany domain logic, and each user story's primary journey gets an
   end-to-end test across the three form factors.
-- UI design is deliberately deferred: the specs describe behaviour and the
-  information a screen must convey, not its visual design. Visual design is a
-  separate, later workstream and MUST NOT be treated as a blocker for domain
-  work. Responsiveness, touch support and accessibility (principle V) and
-  translatability (principle VI) are behavioural requirements, not design
-  choices, and are in scope from the start.
+- **Functionality is specified per capability, never per screen.** A feature
+  spec describes what a Commander can do and the information a screen must
+  convey. It names no screen and pins no component. One capability appears on
+  several screens and one screen serves several capabilities, so binding a
+  requirement to a screen would invalidate the spec every time the layout
+  changed. Behaviour is the durable half; screens are not.
+- **Screens are defined at plan time**, in `specs/<NNN>-<short-name>/design/`,
+  alongside the plan's other design artefacts. A screen definition records what
+  the screen composes from the design system, the states it must handle, and the
+  requirements it satisfies — so that every requirement lands on a screen and
+  every screen justifies itself against a requirement.
+- The screen inventory and its requirement mapping MUST exist before a feature's
+  tasks are broken down. Finished visuals may follow: domain work waits on the
+  mapping, never on the pixels.
+- Responsiveness, touch support and accessibility (principle V), translatability
+  (principle VI) and composition from the design system (principle VII) are
+  behavioural requirements, not design choices, and are in scope from the start.
 - A defect traced to `@elite-dangerous-almanac/core` is raised and fixed
   upstream (principle II). The ship builder tracks the released fix; it does not
   route around it.
@@ -229,10 +275,24 @@ review of any spec the change invalidates.
 Every review MUST verify compliance with these principles. Added complexity has
 to justify itself against them; when it cannot, the simpler option wins.
 
-**Version**: 1.2.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-13
+**Version**: 1.3.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-13
 
 ### Amendment history
 
+- **1.3.0** — Added principle VII (one design system) and ended the deferral of
+  visual design. Tokens are the only source of visual values, components are
+  presentation-only and carry their own accessibility and state previews, and
+  this repository is the source of truth for any design tool it synchronises
+  with. Tested-before-it-ships renumbered to VIII and
+  specification-before-implementation to IX.
+
+  The Development Workflow now states what was previously only implied: a
+  feature spec is scoped to a capability and names no screen, while screens are
+  defined at plan time in `specs/<NNN>-<short-name>/design/` and mapped to the
+  requirements they satisfy. Accepted specs 001 to 005 already follow this — none
+  names a screen — so none is invalidated. What changes is that their screens
+  are now defined during planning rather than postponed to a later workstream,
+  and that the screen inventory and its requirement mapping gate task breakdown.
 - **1.2.0** — Added principle VI (speaks the Commander's language): every string
   the application owns is translatable and locale-formatted, translations ship
   as static assets, and game text stays the library's to translate under
