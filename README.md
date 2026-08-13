@@ -84,20 +84,24 @@ This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) for
 spec-driven development, configured for both Claude Code (`.claude/skills`) and
 Codex CLI (`.agents/skills`).
 
-| Spec                                                  | Feature                                                      |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (local storage, URL import) |
-| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering                            |
-| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                              |
-| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                     |
+| Spec                                                  | Feature                                                                                                  |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (local storage, URL import)                                             |
+| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering                                                                        |
+| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                                                                          |
+| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                                 |
+| [005](./specs/005-advanced-ship-statistics/spec.md)   | Advanced ship statistics (power states, defence and offence detail, mobility, heat, costs and materials) |
+| [006](./specs/006-ship-selector-and-history/spec.md)  | Ship selector (comparison, search, preview) and builder undo/redo                                        |
 
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
 
-UI styling is deliberately deferred: the specs describe behaviour and the
-information each screen must convey, not its visual design. Responsiveness,
-touch support and accessibility are behavioural requirements and are specified
-now.
+Specs are scoped to a capability and name no screen: they describe behaviour and
+the information each screen must convey. Screens are defined during planning, in
+`specs/<NNN>-<short-name>/design/`, and mapped to the requirements they satisfy.
+Every screen composes the one design system; responsiveness, touch support,
+accessibility and translatability are behavioural requirements, not styling
+choices.
 
 ### Working on a spec
 

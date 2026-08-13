@@ -27,6 +27,13 @@ planning ship loadouts.
 - **Desktop, tablet and mobile are all first-class.** Every feature must be
   fully usable on all three, by touch as well as pointer and keyboard, in
   portrait and landscape, with no horizontal page scrolling.
+- **Nothing ships untranslatable.** Every string the application owns goes
+  through the localisation layer — never hard-coded in a component, template or
+  formatter — and numbers, credits and dates are formatted for the active
+  locale. Translations are static assets. Game text (ship, module, blueprint,
+  effect and material names, and the package's diagnostics) belongs to
+  `@elite-dangerous-almanac/core`: ask for a locale there, never keep a private
+  translation of game data here.
 - **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
   branches, functions, lines) — enforced in `angular.json`; never lower the
   threshold to get green. Playwright end-to-end tests run as part of
@@ -40,6 +47,12 @@ planning ship loadouts.
   an estimate.
 - **Domain logic lives outside components** — in framework-agnostic services and
   signal-based stores that are testable without rendering.
+- **One design system.** Screens compose the component library in `src/app/ui/`;
+  they never invent their own visual language. Design tokens are the only source
+  of colour, type, spacing, radius, elevation and motion — nothing hard-codes a
+  visual value. A screen that needs something the system lacks extends the
+  system. This repository is the source of truth for any design tool it syncs
+  with.
 
 ## Working in this repo
 
@@ -52,10 +65,12 @@ planning ship loadouts.
   `e2e/`. New user journeys need both.
 - If the preinstalled Chromium does not match the version Playwright pins, set
   `E2E_CHROMIUM_PATH` to its executable rather than editing the config.
-- UI _styling_ is deferred to a later workstream. Specs constrain behaviour and
-  the information a screen must convey, not its visual design — do not treat
-  visual design as a blocker for domain work. Responsiveness, touch support and
-  accessibility are behavioural requirements and are in scope now.
+- **Specs are scoped to a capability and name no screen.** They constrain
+  behaviour and the information a screen must convey. Screens are defined at
+  plan time in `specs/<NNN>-<short-name>/design/`, recording what each screen
+  composes, the states it handles, and the requirements it satisfies. The
+  inventory and its requirement mapping come before task breakdown; finished
+  visuals may follow.
 
 ## Commit Identity — no personal data in git metadata
 
