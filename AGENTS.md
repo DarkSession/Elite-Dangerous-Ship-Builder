@@ -27,6 +27,13 @@ planning ship loadouts.
 - **Desktop, tablet and mobile are all first-class.** Every feature must be
   fully usable on all three, by touch as well as pointer and keyboard, in
   portrait and landscape, with no horizontal page scrolling.
+- **Nothing ships untranslatable.** Every string the application owns goes
+  through the localisation layer — never hard-coded in a component, template or
+  formatter — and numbers, credits and dates are formatted for the active
+  locale. Translations are static assets. Game text (ship, module, blueprint,
+  effect and material names, and the package's diagnostics) belongs to
+  `@elite-dangerous-almanac/core`: ask for a locale there, never keep a private
+  translation of game data here.
 - **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
   branches, functions, lines) — enforced in `angular.json`; never lower the
   threshold to get green. Playwright end-to-end tests run as part of
