@@ -1,7 +1,7 @@
 # Dev container image for the Elite Dangerous Ship Builder.
 # Extends the standard TypeScript + Node base with Bubblewrap, which
 # Claude Code uses to sandbox command execution.
-FROM mcr.microsoft.com/devcontainers/typescript-node:1-24-bookworm
+FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm
 
 # Install Bubblewrap (bwrap) for sandboxed command execution.
 RUN apt-get update \
@@ -19,4 +19,5 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 	&& sudo apt install gh -y
 
 # pnpm is the package manager for this repository.
-RUN su node -c "corepack enable && corepack prepare pnpm@latest --activate"
+RUN corepack enable \
+	&& su node -c "corepack prepare pnpm@10.33.0 --activate"

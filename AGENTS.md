@@ -57,6 +57,26 @@ planning ship loadouts.
   visual design as a blocker for domain work. Responsiveness, touch support and
   accessibility are behavioural requirements and are in scope now.
 
+## Commit Identity — no personal data in git metadata
+
+**Commit as whoever git is already configured as. Never set an identity yourself.** The environment configures `user.name` / `user.email` (and, where signing is enabled, the signing key) before you start. Do not pass `-c user.name=…` / `-c user.email=…` to `git commit`, do not `git config` a different one, and do not use `--reset-author` to change _who_ a commit is by. An agent that substitutes its own choice produces commits GitHub marks **Unverified**, because the identity no longer matches the key that signed them.
+
+**An identity you did not get from git config is a personal detail, and commit metadata publishes it.** A maintainer's address may be in front of you — in the conversation, an issue, a profile, an earlier commit's author field — and none of that is permission to write it into this repository's history. The author and committer fields of a public repository are world-readable and permanent in a way ordinary files are not:
+
+> A wrong address cannot be taken back by force-pushing over it. Rewriting the branch removes the _reference_; the old commit object survives on the remote, stays fetchable by its SHA, and the force-push event in a pull request timeline links to it by SHA. Only GitHub Support can purge unreachable objects. **Getting it right the first time is the only fix that works.**
+
+Before pushing, confirm the whole branch carries one identity, the configured one:
+
+```bash
+git log --format='%an <%ae> | %cn <%ce>' origin/<default-branch>..HEAD | sort -u
+```
+
+The same rule covers everything else you author. Commit messages, PR titles and bodies, code comments, data files, fixtures and documentation entries carry **no personal data** — no email addresses, no real names, no handles, no machine or account names, and nothing identifying a private individual.
+
+## Pull requests
+
+**Before opening any PR, have a subagent re-review the complete change.** Address every actionable finding, then ask a subagent to review the updated change again. Repeat this review-and-fix cycle until the subagent reports no actionable findings; only then may the PR be opened.
+
 ## Spec-driven development
 
 This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit),
