@@ -123,7 +123,10 @@ without one is handled without breaking the list.
 3. **Given** the selector is used on a phone, **When** previews are shown, **Then** they
    remain legible and do not push the characteristics off the screen or force horizontal
    page scrolling.
-4. **Given** a Commander using a screen reader, **When** they reach a preview, **Then** the
+4. **Given** illustrations are shown anywhere in the application, **When** the Commander
+   looks for their provenance, **Then** Frontier Developments' media-usage notice is
+   reachable, as the terms the artwork travels under require.
+5. **Given** a Commander using a screen reader, **When** they reach a preview, **Then** the
    hull is identified in text; no information is carried by the preview alone.
 
 ---
@@ -177,6 +180,13 @@ confirm the Commander is told before it happens.
   and previews never delay the list becoming usable.
 - A preview asset that fails to load: the entry degrades to its text characteristics
   without a broken placeholder and without shifting the layout of the rows around it.
+- A hull added to the catalogue before its illustration exists: the hull is listed,
+  comparable and selectable without one, and the missing illustration is raised against the
+  library rather than filled with a stand-in drawn here.
+- The Commander scrolling the catalogue faster than illustrations arrive: the list stays
+  responsive and the rows do not reflow as each illustration lands.
+- The application used offline after first load: previews already delivered remain
+  available, and any not yet delivered are absent rather than rendering as failures.
 - Undoing past the point where a build was saved: permitted — the saved build is untouched,
   and the active build simply differs from it until saved again.
 - Undo after a build link was produced: the link already shared continues to describe the
@@ -236,10 +246,23 @@ confirm the Commander is told before it happens.
 - **FR-014**: Previews MUST be served as static assets bundled with the application. No
   preview may be fetched from a third party at runtime, in keeping with the client-side-only
   principle.
-- **FR-015**: [NEEDS CLARIFICATION: what a preview is — Frontier's ship artwork bundled as
-  image assets, an original schematic or silhouette owned by this project, or a
-  non-pictorial summary card of the hull's mounts and figures. The three differ materially
-  in production effort, asset licensing and what the design system must provide.]
+- **FR-015**: The preview for a hull MUST be the Almanac's own ship illustration for that
+  hull, identified by the hull's `symbol`. The application MUST NOT redraw a hull,
+  substitute artwork from elsewhere, or keep its own record of which illustration belongs to
+  which hull — the symbol is the link, as it is for every other identity.
+- **FR-015a**: Illustrations MUST reach this application as a published artefact of
+  `@elite-dangerous-almanac/core`. Copying the library's asset directory into this
+  repository is prohibited: a vendored copy is a parallel record of library-owned material
+  and drifts from it exactly as a private catalogue would.
+- **FR-015b**: The application MUST reproduce Frontier Developments' media-usage notice, as
+  the library's attribution terms require of any project that redistributes the imagery, and
+  MUST keep it discoverable from wherever illustrations are shown.
+- **FR-015c**: Illustrations MUST NOT delay the catalogue becoming usable. The Commander
+  MUST be able to search, sort, filter and select while previews are still arriving, and the
+  application MUST remain usable offline after first load with previews included.
+- **FR-015d**: Preparing an illustration for delivery — compressing it, producing smaller
+  variants, stripping editor metadata — is presentation and is permitted. Altering what the
+  illustration depicts is not.
 
 #### Undo and redo
 
@@ -341,10 +364,21 @@ there; none may be supplied from a record kept in this application.
    stock configuration, which cannot be satisfied today. It also means no figure that
    depends on fitted modules — jump range above all — can be quoted for a hull in the
    selector, which is why FR-010 confines the selector to hull characteristics.
-3. **Hull imagery** — the package carries no image, render or silhouette for any ship. If
-   FR-015 resolves toward a pictorial preview, the assets are this application's to hold as
-   presentation, not game data; if it resolves toward a data-driven preview, the mount and
-   characteristic data it would draw on already exists.
+3. **Delivery of the ship illustrations** — the artwork exists and is complete. The Almanac
+   repository holds one coloured three-quarter vector illustration for every one of the 48
+   hulls, at `assets/ships/<symbol>/illustration.svg`, keyed by the same `symbol` this
+   application already uses. What is missing is a way to consume it: the published npm
+   package excludes it, and the library's own `assets/README.md` records that these are
+   shared repository assets "not bundled into the TypeScript package". The library is asked
+   to publish them — as part of the existing package or a companion one — and this
+   application consumes the release. Copying the directory here is prohibited by FR-015a.
+
+   Two properties of the set shape planning and are recorded here so they are not
+   discovered late. The raw set is roughly **56 MB** across 48 files, the largest single
+   illustration approaching 500 KB, which no client-side-only application can ship
+   wholesale to a phone; delivery therefore needs optimised variants, which FR-015d permits
+   and FR-015c constrains. And the imagery is Frontier Developments' property under their
+   media-usage terms, carrying a notice this application must reproduce (FR-015b).
 
 The characteristics FR-001 and FR-002 require — mass, speed, boost, base armour, base
 shield strength, crew, costs and the full mount layout — are all available today.
@@ -363,6 +397,9 @@ shield strength, crew, costs and the full mount layout — are all available tod
   the list stays responsive while a Commander explores.
 - **SC-004**: For every hull and characteristic the catalogue does not carry, the selector
   shows the absence — zero fabricated zeroes across the whole catalogue.
+- **SC-004a**: The catalogue is searchable, sortable and selectable before any illustration
+  has arrived, and every hull carries its own illustration once delivery completes — 48 of
+  48 hulls, with zero hulls showing another hull's artwork.
 - **SC-005**: A sequence of at least twenty consecutive build changes can be undone to the
   starting state and redone to the end state, with the build matching at every intermediate
   step — 100% fidelity, verified across every undoable change type.
@@ -395,8 +432,15 @@ shield strength, crew, costs and the full mount layout — are all available tod
   that reaching it is discernible, without fixing the number.
 - Undo and redo operate on build state. Navigation, filter and sort state, and viewing
   conditions are deliberately excluded, so that undo means one thing.
-- Previews are static assets under the client-side-only principle. Whether they are
-  pictorial and where they come from is the open question in FR-015.
+- Previews are the Almanac's ship illustrations, consumed from the library rather than held
+  here. They are static assets under the client-side-only principle: bundled at build time,
+  never fetched from a third party at runtime.
+- The illustration set covers every hull in the catalogue today, so a hull without a preview
+  is treated as a temporary gap to be raised upstream rather than an expected state — while
+  FR-012 still requires the selector to work when one is missing.
+- How illustrations are optimised and delivered is a plan-time decision constrained by
+  FR-015c and FR-015d, not a spec-time one. What this specification fixes is that the
+  catalogue never waits on them and that their content is never altered.
 - Responsiveness, touch support, accessibility and translatability are behavioural
   requirements in scope now.
 - Which characteristics are prominent, how the comparison is laid out, and how undo and redo
