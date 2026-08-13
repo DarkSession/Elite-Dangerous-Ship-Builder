@@ -84,12 +84,13 @@ This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) for
 spec-driven development, configured for both Claude Code (`.claude/skills`) and
 Codex CLI (`.agents/skills`).
 
-| Spec                                                  | Feature                                                      |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (local storage, URL import) |
-| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering                            |
-| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                              |
-| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                     |
+| Spec                                                  | Feature                                                                                                  |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (local storage, URL import)                                             |
+| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering                                                                        |
+| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                                                                          |
+| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                                 |
+| [005](./specs/005-advanced-ship-statistics/spec.md)   | Advanced ship statistics (power states, defence and offence detail, mobility, heat, costs and materials) |
 
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
