@@ -8,12 +8,11 @@
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
 
-  // Persist host tool state, but override Codex config for this container only
+  // Persist Claude state from the host. Codex state remains container-local;
+  // its writable defaults are seeded by the Dockerfile.
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/node/.claude,type=bind",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/node/.claude.json,type=bind",
-    "source=elite-dangerous-ship-builder-codex,target=/home/node/.codex,type=volume",
-    "source=${localWorkspaceFolder}/.devcontainer/codex-config.toml,target=/home/node/.codex/config.toml,type=bind,readonly"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/node/.claude.json,type=bind"
   ],
 
   "customizations": {

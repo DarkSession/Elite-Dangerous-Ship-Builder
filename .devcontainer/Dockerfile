@@ -21,3 +21,8 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 # pnpm is the package manager for this repository.
 RUN corepack enable \
 	&& su node -c "corepack prepare pnpm@10.33.0 --activate"
+
+# Codex needs its state directory to be writable by the remote user. Seed only
+# the container-specific defaults; Codex manages the rest of this directory.
+RUN install -d -m 700 -o node -g node /home/node/.codex
+COPY --chown=node:node --chmod=600 codex-config.toml /home/node/.codex/config.toml
