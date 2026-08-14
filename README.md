@@ -84,14 +84,23 @@ This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) for
 spec-driven development, configured for both Claude Code (`.claude/skills`) and
 Codex CLI (`.agents/skills`).
 
-| Spec                                                  | Feature                                                                                                  |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (local storage, URL import)                                             |
-| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering                                                                        |
-| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics                                                                                          |
-| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                                 |
-| [005](./specs/005-advanced-ship-statistics/spec.md)   | Advanced ship statistics (power states, defence and offence detail, mobility, heat, costs and materials) |
-| [006](./specs/006-ship-selector-and-history/spec.md)  | Ship selector (comparison, search, preview) and builder undo/redo                                        |
+| Spec                                                  | Feature                                                                                        |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (search, sort, filters, previews, local storage, build links) |
+| [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering, with undo, redo and the edit history                        |
+| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics — the contract every build figure obeys, and the headline set                  |
+| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                       |
+| [005](./specs/005-power-and-heat/spec.md)             | Power budget in both hardpoint states, the distributor, and heat                               |
+| [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
+| [007](./specs/007-offence-profile/spec.md)            | Damage by type, per-weapon detail, output at range and capacitor endurance                     |
+| [008](./specs/008-mobility-and-jump/spec.md)          | Speed, handling, mass and its curves, jump range and range by load                             |
+| [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
+| [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — mount map, navigation and shot convergence                |
+
+Specs 005 to 009 are the areas of the statistics family. Each is independently
+deliverable and inherits spec 003, which fixes what every figure about a build
+must obey: where it comes from, how it is qualified, what happens when it is
+unavailable, and the viewing conditions it is computed under.
 
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).
