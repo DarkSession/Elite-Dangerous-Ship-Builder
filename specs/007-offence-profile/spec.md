@@ -8,7 +8,10 @@
 
 **Input**: User description: "We want to show damage detail, split by type." Extended after a design
 review on 2026-08-14 with the two figures a Commander needs to judge a loadout in a fight: output at
-the range they engage at, and how long the weapons capacitor sustains it.
+the range they engage at, and how long the weapons capacitor sustains it. Extended again on
+2026-08-14 with shot convergence (user story 4, FR-016a to FR-016e), reassigned here from
+[feature 010](../010-hull-anatomy/spec.md) during that feature's clarification: where a build's fire
+arrives is a property of what it fires, while where each mount sits stays with feature 010.
 
 ## Scope
 
@@ -17,16 +20,20 @@ damage it puts out, of which types, what it sustains rather than bursts, what ea
 its own, how that output falls away with range, and how long the weapons capacitor keeps it up.
 
 It is one area of the statistics family. [Feature 003](../003-ship-statistics/spec.md) is the
-contract every figure here obeys — provenance, units, the honesty rules for unavailable figures, the
-recompute obligation, and the viewing conditions. Everything it states applies here without being
-restated, and nothing here relaxes it.
+contract every figure here obeys — the requirement that a build be active at all (its FR-000),
+provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
+viewing conditions. Everything it states applies here without being restated, and nothing here
+relaxes it. Nothing in this area is offered before a hull is chosen.
 
 The distributor's capacities and recharge rates belong to
 [feature 005](../005-power-and-heat/spec.md), as does the heat that firing produces; this feature
 composes them into what a Commander can actually sustain. The hull hardness a weapon's piercing is
-measured against belongs to [feature 006](../006-defence-profile/spec.md). Where the build's fire
-physically converges — a question about where the mounts sit rather than what they fire — belongs to
-[feature 010](../010-hull-anatomy/spec.md).
+measured against belongs to [feature 006](../006-defence-profile/spec.md).
+
+Where the build's fire physically converges belongs here, as a property of what the build fires.
+Where each mount physically sits belongs to [feature 010](../010-hull-anatomy/spec.md), which owns
+the positions and publishes them; this feature consumes them and states nothing about how a mount is
+drawn or located.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -127,6 +134,38 @@ indefinitely is identified as such rather than given a duration.
 
 ---
 
+### User Story 4 - Read where the build's fire converges (Priority: P2)
+
+A Commander with mounts spread across a large hull wants to know how far apart their shots arrive at
+the range they engage at, because a wide spread is what makes a fixed loadout miss.
+
+**Why this priority**: Convergence is the one offence property that is a consequence of where the
+mounts sit rather than what they fire, and it is invisible in every list-based view. It is P2 because
+it refines a loadout rather than deciding it, and because it depends on an upstream capability that
+has not landed.
+
+**Independent Test**: Load a build with hardpoints on opposite extremes of the hull and confirm the
+convergence figures are reported for a chosen target range, each stating the range they assume, or
+reported as unavailable where the package cannot supply mount geometry in real units.
+
+**Acceptance Scenarios**:
+
+1. **Given** a build with weapons fitted, **When** the Commander views convergence at a chosen target
+   range, **Then** the spread of the arriving shots is reported, together with the mount that sits
+   furthest from the axis, and every figure states the range it assumes.
+2. **Given** the convergence figures, **When** the Commander changes the target range, **Then** the
+   figures recompute for the new range and continue to state it.
+3. **Given** a build with gimballed and fixed mounts, **When** the Commander views convergence,
+   **Then** the two are distinguished, because a gimballed mount converges on the target and a fixed
+   one does not.
+4. **Given** an empty hardpoint or a disabled weapon, **When** convergence is computed, **Then** it
+   contributes nothing and is identified as excluded rather than silently omitted.
+5. **Given** the package does not supply mount geometry in real units, **When** the Commander views
+   convergence, **Then** the figures are reported as unavailable with that reason, and no figure is
+   measured off a schematic.
+
+---
+
 ### Edge Cases
 
 - Guardian and anti-xeno weapons whose damage falls outside the four standard types: the anti-xeno
@@ -151,6 +190,9 @@ indefinitely is identified as such rather than given a duration.
   the magazine and reload behind it rather than presenting an average with no explanation.
 - The per-weapon table on a phone: it stays legible and scrolls within its own container rather than
   forcing the page sideways.
+- Convergence requested on a build with a single weapon: the spread is reported as zero with that
+  reason, distinct from a build whose spread could not be computed.
+- Convergence requested on a build with no weapons: reported as absent rather than as a zero spread.
 
 ## Requirements _(mandatory)_
 
@@ -211,6 +253,24 @@ indefinitely is identified as such rather than given a duration.
 - **FR-016**: A build with no distributor fitted MUST have its endurance reported as unavailable
   with that reason, rather than computed against a zero capacitor.
 
+#### Shot convergence
+
+- **FR-016a**: The application MUST display, for the weapons of the active build at a chosen target
+  range, the spread of the arriving shots and the mount that sits furthest from the axis, each figure
+  stating the range it assumes.
+- **FR-016b**: The Commander MUST be able to change the target range, and every convergence figure
+  MUST recompute for it.
+- **FR-016c**: Gimballed and fixed mounts MUST be distinguished in the convergence figures, because
+  they converge differently.
+- **FR-016d**: An empty hardpoint, a disabled weapon or a mount carrying no weapon MUST be excluded
+  from convergence and identified as excluded rather than silently omitted.
+- **FR-016e**: Convergence figures MUST be computed by `@elite-dangerous-almanac/core` from mount
+  geometry it publishes in real units. The application MUST NOT measure a schematic, assume a scale,
+  convert drawing units into metres, or otherwise derive a physical dimension from the artwork
+  feature 010 draws. Where the package does not supply the geometry in real units, every convergence
+  figure MUST be reported as unavailable with that reason, and the capability waits on the upstream
+  release.
+
 ### Device Requirements
 
 - **FR-017**: The per-weapon table, the damage-type split and the output-by-range figures MUST be
@@ -230,6 +290,9 @@ indefinitely is identified as such rather than given a duration.
   applied is one the package reported.
 - **FR-021**: Capacitor endurance MUST be unit-tested for the sustaining, non-sustaining and
   no-distributor cases, and for the unavailability of allocations other than the rated one.
+- **FR-021a**: Convergence MUST be unit-tested including the single-weapon, no-weapon,
+  disabled-weapon and unavailable-geometry cases, and MUST assert that no figure is derived from a
+  schematic's drawing units.
 - **FR-022**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports.
 
@@ -243,11 +306,13 @@ indefinitely is identified as such rather than given a duration.
   at that range identified.
 - **Capacitor endurance**: How long the build sustains continuous fire for a stated WEP pip
   allocation, or the fact that it sustains indefinitely.
+- **Convergence profile**: Where the build's fire arrives at a stated target range, the spread it
+  forms, and the mount furthest from the axis.
 
 ## Upstream dependencies
 
 Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.4`
-today, verified against the installed package on 2026-08-14, with one exception noted below.
+today, verified against the installed package on 2026-08-14, with two exceptions noted below.
 
 User story 1 is directly supported: whole-build and per-weapon metrics, the damage split by type,
 burst and sustained output, ammunition limits, range and falloff data, and armour piercing against a
@@ -270,7 +335,15 @@ capacity figures the package already computes restates no game rule, and every i
 package's. FR-009 and FR-014 bound what that composition may do, and both forbid modelling any
 behaviour the package does not report.
 
-**One gap remains and is raised upstream: WEP pip scaling.** The package is pip-aware for SYS
+**Shot convergence is blocked, and the capability is requested upstream.** The schematics feature 010
+consumes carry no scale metadata — no metres-per-unit, no overall hull dimension, no mount
+coordinates in real units. Every figure user story 4 needs is therefore unobtainable without
+measuring the artwork and assuming a scale, which FR-016e prohibits and constitution principle II
+forbids. What this feature needs is mount geometry in real units: each mount's position relative to
+the hull's axis, in metres. That is requested upstream. Until it ships, FR-016a to FR-016d stand and
+the figures are reported as unavailable under feature 003's FR-006.
+
+**A second gap remains and is raised upstream: WEP pip scaling.** The package is pip-aware for SYS
 (`shieldRecovery` takes `systemsPips`) and for ENG (`mobilityMetrics` interpolates between the hull's
 zero-pip and four-pip endpoints), but the distributor exposes `weaponsRecharge` as a single rated
 figure with no pip parameter, and no hull endpoints exist for it. How recharge scales with WEP pips is
@@ -297,6 +370,8 @@ is reported at the rated allocation, and other allocations are reported as unava
 - **SC-006**: The full offence profile is readable and every per-weapon breakdown reachable on
   desktop, tablet and mobile viewports — the same end-to-end suite passes on all three, with no
   horizontal page scrolling at any of them.
+- **SC-007**: No convergence figure is ever derived from a schematic's drawing units — zero measured
+  figures, asserted by tests that fail if one appears.
 
 ## Assumptions
 
@@ -306,9 +381,14 @@ is reported at the rated allocation, and other allocations are reported as unava
   type.
 - Armour piercing is presented against the hull hardness of the ship being built. Modelling damage
   against another ship's specific defences — time to kill, engagement simulation — is out of scope.
-- Whole-build totals assume every weapon is firing. Whether a Commander can actually bring every
-  mount to bear is a question about mount geometry, which feature 010 answers; this feature states
-  the assumption rather than adjusting the total for it.
+- Whole-build totals assume every weapon is firing and on target. Convergence (user story 4) reports
+  how far apart the shots arrive; it does not adjust the totals for it, and whether a Commander can
+  bring every mount to bear against a manoeuvring target is not modelled.
+- Convergence describes where shots arrive, not what they hit. Modelling a target's silhouette, hit
+  probability or time to kill is out of scope, as it is for armour piercing above.
+- Mount positions are feature 010's record, consumed here as the package publishes them. Where a
+  position disagrees with the game, that is a library defect raised upstream under principle II,
+  never corrected here.
 - The set of ranges output is reported at is chosen to span the build's own weapons rather than
   being a fixed list, so a short-range fit is not reported entirely at ranges none of its weapons
   reach.

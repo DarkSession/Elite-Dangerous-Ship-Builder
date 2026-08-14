@@ -8,30 +8,60 @@
 
 **Input**: Identified by a design review on 2026-08-14. The imported design reads and navigates a
 build on the hull's own technical schematics — top and bottom plates with every mount drawn where it
-physically sits — and projects the mounts forward to show where a build's fire converges. No accepted
-specification covers either.
+physically sits. No accepted specification covered that. The same design also projected the mounts
+forward to show where a build's fire converges; that capability was assigned to
+[feature 007](../007-offence-profile/spec.md) on 2026-08-14 — see "Clarifications".
 
 ## Scope
 
 This specification covers the **spatial view of a build**: the hull's own technical schematics with
-each mount drawn where it sits, what that view reports about every mount, how a Commander navigates
-the build through it, and what the geometry of those mounts implies about where the build's fire
-arrives.
+each mount drawn where it sits, what that view reports about every mount, and how a Commander
+navigates the build through it.
 
-The figures this specification reports about a build — the convergence spread above all — obey
-feature 003's contract exactly as the statistics areas do, including its FR-001a composition rule.
+The figures this specification reports about a build obey feature 003's contract exactly as the
+statistics areas do, including its FR-001a composition rule.
 
-It owns one thing no other feature can express — **where on the ship a mount is** — and what follows
-from it. Reading and changing a slot belongs to
+It owns one thing no other feature can express — **where on the ship a mount is**. Reading and
+changing a slot belongs to
 [feature 002](../002-module-outfitting/spec.md); the figures a build produces belong to the
-statistics family under [feature 003](../003-ship-statistics/spec.md); the illustration shown beside
-a hull in the catalogue belongs to
+statistics family under [feature 003](../003-ship-statistics/spec.md); what follows from mount
+geometry for a build's fire — shot convergence — belongs to
+[feature 007](../007-offence-profile/spec.md), which consumes the positions this feature owns; the
+illustration shown beside a hull in the catalogue belongs to
 [feature 001](../001-ship-selection-and-loading/spec.md). This feature adds a second, independent
 route to the same slots and a class of insight the slot list cannot carry.
 
 The schematics locate mounts only. Core, optional and military internals carry no position, and this
 specification is explicit that they never appear on the plate and are never inferred onto it — see
 FR-012 and "Upstream dependencies".
+
+The anatomy view is a capability of **outfitting**: it describes the hull of the active build, and it
+does not exist where no build is active. Weighing up a hull before committing to one belongs to
+[feature 001](../001-ship-selection-and-loading/spec.md), whose catalogue carries each hull's mount
+layout.
+
+## Clarifications
+
+### Session 2026-08-14
+
+- Q: On a hull the Commander has not chosen, what happens when they select a mount on the schematic?
+  → A: The case does not arise. Hull anatomy is part of outfitting and is only available with an
+  active hull, so User Story 4 and FR-024/FR-025 are withdrawn.
+- Q: While a hull's schematics are still arriving, what must the Commander still be able to do in
+  outfitting? → A: Everything except the plate itself — every slot remains readable and changeable
+  and every figure remains available, with only the anatomy view showing a loading state; schematics
+  are also available offline after first load.
+- Q: When a schematic carries a slot key the hull does not have, or a hull's schematics are missing
+  entirely, who gets told and how? → A: Build-time only — a mismatch fails FR-032's tests before
+  release and never reaches a Commander; a missing schematic shows a neutral "no schematic" state in
+  the anatomy view and nothing further.
+- Q: Until the package publishes mount geometry in real units, what does the Commander see for shot
+  convergence? → A: Nothing here — shot convergence is part of the offence profile. User Story 3 and
+  FR-019 to FR-023 move to [feature 007](../007-offence-profile/spec.md); this feature keeps only the
+  mount positions convergence is computed from.
+- Q: On the most crowded hull at phone width, how does the Commander hit two mounts the schematic
+  draws almost on top of each other? → A: By magnifying and panning the plate, so mounts separate at
+  their true positions. No marker is offset, clustered or dropped.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -98,57 +128,20 @@ on the plate.
 
 ---
 
-### User Story 3 - Read where the build's fire converges (Priority: P2)
+### User Story 3 - _(Withdrawn 2026-08-14.)_
 
-A Commander with mounts spread across a large hull wants to know how far apart their shots arrive at
-the range they engage at, because a wide spread is what makes a fixed loadout miss.
-
-**Why this priority**: Convergence is the one combat property that is purely a consequence of where
-the mounts are, and it is invisible in every list-based view. It is P2 because it refines a loadout
-rather than deciding it, and because it depends on an upstream capability that has not landed.
-
-**Independent Test**: Load a build with hardpoints on opposite extremes of the hull and confirm the
-convergence figures are reported for a chosen target range, each stating the range they assume, or
-reported as unavailable where the package cannot supply the geometry in real units.
-
-**Acceptance Scenarios**:
-
-1. **Given** a build with weapons fitted, **When** the Commander views convergence at a chosen target
-   range, **Then** the spread of the arriving shots is reported, together with the mount that sits
-   furthest from the axis, and every figure states the range it assumes.
-2. **Given** the convergence view, **When** the Commander changes the target range, **Then** the
-   figures recompute for the new range and continue to state it.
-3. **Given** a build with gimballed and fixed mounts, **When** the Commander views convergence,
-   **Then** the two are distinguished, because a gimballed mount converges on the target and a fixed
-   one does not.
-4. **Given** an empty hardpoint or a disabled weapon, **When** convergence is computed, **Then** it
-   contributes nothing and is identified as excluded rather than silently omitted.
-5. **Given** the package does not supply mount geometry in real units, **When** the Commander views
-   convergence, **Then** the figures are reported as unavailable with that reason, and no figure is
-   measured off the drawing.
+Reading where the build's fire converges is out of scope here. Shot convergence is part of the
+offence profile and belongs to [feature 007](../007-offence-profile/spec.md), which consumes the
+mount positions this feature owns. What stays here is the positions themselves.
 
 ---
 
-### User Story 4 - See where a hull's mounts sit before choosing it (Priority: P3)
+### User Story 4 - _(Withdrawn 2026-08-14.)_
 
-A Commander weighing up a hull sees that both its large hardpoints sit under the nose rather than on
-the roof, and factors that into the decision before committing to it.
-
-**Why this priority**: Mount counts are what feature 001's catalogue carries; placement is what those
-counts leave out. It is P3 because a Commander can make a sound choice without it, and because it
-depends on stories 1 and 2 already existing.
-
-**Independent Test**: Open a hull that is not the active build and confirm its schematics and mount
-positions are available without a build existing, with every mount shown as unfitted rather than
-empty.
-
-**Acceptance Scenarios**:
-
-1. **Given** a hull the Commander has not chosen, **When** they view its anatomy, **Then** the mounts
-   the schematic identifies are shown with their sizes, without requiring a build to exist.
-2. **Given** a hull viewed without a build, **When** the Commander views its anatomy, **Then** no
-   mount is described as empty or fitted, because there is no build to fit — the mounts are shown as
-   the hull's own layout.
+Seeing where a hull's mounts sit before choosing it is out of scope. Hull anatomy is a capability of
+outfitting and exists only for an active build (FR-001a). Weighing up a hull before committing to it
+belongs to [feature 001](../001-ship-selection-and-loading/spec.md), whose catalogue carries each
+hull's mount layout under its FR-004.
 
 ---
 
@@ -157,13 +150,17 @@ empty.
 - A hull whose schematics are unavailable: every other route into the build still works, the absence
   is not presented as a defect in the hull, and it is raised against the library rather than filled
   with a plate drawn here.
+- A schematic that has not finished arriving: outfitting is already usable, every slot is already
+  readable and changeable, and the wait is visible in the anatomy view alone rather than holding up
+  the build.
 - A mount the schematic identifies that the hull's slot list does not contain, or the reverse: the
-  mismatch is reported rather than resolved by guessing which slot was meant, and it is raised
-  upstream.
+  build fails on the mismatch rather than shipping it, it is never resolved by guessing which slot
+  was meant, and it is raised upstream.
 - A hull with mining hardpoints, whose slot keys differ from the standard families: they are located
   and navigated exactly as any other mount, because the slot key is the link.
-- Two mounts drawn close enough to overlap at a small viewport: both remain individually selectable,
-  and neither is dropped from the view to make room.
+- Two mounts drawn close enough to overlap at a small viewport: the Commander magnifies the plate and
+  they separate at their true positions. Both remain individually selectable, neither is dropped from
+  the view to make room, and neither is nudged apart to create it.
 - A build whose internals outnumber its mounts: the view states how many of the build's slots it
   locates, so the Commander never reads an absent internal as an absent slot.
 - A module fitted to a mount that the current hardpoint state leaves unpowered: the mount shows the
@@ -173,9 +170,6 @@ empty.
   widening the page.
 - A Commander who cannot use the spatial view at all: every slot remains reachable through feature
   002's enumeration, so no capability is lost.
-- Convergence requested on a build with a single weapon: the spread is reported as zero with that
-  reason, distinct from a build whose spread could not be computed.
-- Convergence requested on a build with no weapons: reported as absent rather than as a zero spread.
 
 ## Requirements _(mandatory)_
 
@@ -183,8 +177,12 @@ empty.
 
 #### The anatomy view
 
-- **FR-001**: The application MUST present, for a hull, the top and bottom technical schematics that
-  `@elite-dangerous-almanac/core` publishes for that hull's `symbol`, and MUST make both reachable.
+- **FR-001**: The application MUST present, for the active build's hull, the top and bottom technical
+  schematics that `@elite-dangerous-almanac/core` publishes for that hull's `symbol`, and MUST make
+  both reachable.
+- **FR-001a**: The anatomy view is a capability of outfitting and MUST require an active build. It
+  MUST NOT be offered for a hull the Commander has not chosen, and selecting a mount MUST NOT create
+  a build — choosing a hull belongs to feature 001's FR-011.
 - **FR-002**: Every mount the schematic identifies MUST be drawn where the schematic places it, and
   MUST be tied to a slot by the game's slot key the schematic itself carries — never by position in a
   list, by drawing order, or by a mapping this application maintains.
@@ -198,6 +196,10 @@ empty.
 - **FR-006**: Preparing a schematic for delivery — compressing it, producing smaller variants,
   stripping editor metadata — is presentation and is permitted. Altering what it depicts, including
   the position of anything it identifies, is not.
+- **FR-006a**: Schematics MUST NOT delay outfitting becoming usable, as feature 001's FR-021 requires
+  of illustrations. The Commander MUST be able to read and change every slot, and read every figure,
+  while the plates are still arriving; only the anatomy view itself carries the loading state. The
+  application MUST remain usable offline after first load with schematics included.
 
 #### What a mount reports
 
@@ -225,10 +227,13 @@ empty.
   locates it, MUST report the same state in both places, and selecting it on either MUST reach the
   same slot. It MUST NOT be counted twice in the coverage FR-012 reports.
 - **FR-014**: A hull whose schematics are unavailable MUST remain fully buildable through every other
-  route, and the absence MUST NOT be presented as a defect in the hull.
+  route, and the absence MUST NOT be presented as a defect in the hull. The anatomy view MUST show a
+  neutral state stating that no schematic is available for the hull.
 - **FR-015**: A mount the schematic identifies whose slot key the hull's slot list does not contain,
   or a mount slot the schematic does not locate, MUST be reported as a mismatch rather than resolved
-  by inference, and MUST be raised against the package.
+  by inference, and MUST be raised against the package. That report is a failing build-time test
+  (FR-032), not a Commander-facing state: the schematics and the slot data ship from the same bundled
+  package version, so a mismatch MUST fail the build before release rather than reach a Commander.
 
 #### Navigation
 
@@ -240,29 +245,23 @@ empty.
 - **FR-018**: The anatomy view MUST NOT be the only route to any slot. Feature 002's slot enumeration
   MUST remain a complete route to every slot the hull has, whether or not the schematic locates it.
 
-#### Shot convergence
+#### Withdrawn scope
 
-- **FR-019**: The application MUST display, for the weapons of the active build at a chosen target
-  range, the spread of the arriving shots and the mount that sits furthest from the axis, each figure
-  stating the range it assumes.
-- **FR-020**: The Commander MUST be able to change the target range, and every convergence figure
-  MUST recompute for it.
-- **FR-021**: Gimballed and fixed mounts MUST be distinguished in the convergence view, because they
-  converge differently.
-- **FR-022**: An empty hardpoint, a disabled weapon or a mount carrying no weapon MUST be excluded
-  from convergence and identified as excluded rather than silently omitted.
-- **FR-023**: Convergence figures MUST be computed by `@elite-dangerous-almanac/core` from mount
-  geometry it publishes in real units. The application MUST NOT measure a schematic, assume a scale,
-  convert drawing units into metres, or otherwise derive a physical dimension from the artwork. Where
-  the package does not supply the geometry in real units, every convergence figure MUST be reported
-  as unavailable with that reason, and the capability waits on the upstream release.
-
-#### Hulls without a build
-
-- **FR-024**: The anatomy view MUST be available for a hull the Commander has not chosen, showing the
-  mounts the schematic identifies with their sizes.
-- **FR-025**: A hull viewed without a build MUST NOT describe any mount as fitted or empty, because
-  no build exists to fit it; the mounts are shown as the hull's own layout.
+- **FR-019**: _(Withdrawn 2026-08-14.)_ Displaying the spread of arriving shots and the mount
+  furthest from the axis is part of the offence profile — moved to
+  [feature 007](../007-offence-profile/spec.md).
+- **FR-020**: _(Withdrawn 2026-08-14.)_ The target-range control moves with FR-019 to feature 007.
+- **FR-021**: _(Withdrawn 2026-08-14.)_ Distinguishing gimballed from fixed mounts in the convergence
+  view moves with FR-019 to feature 007.
+- **FR-022**: _(Withdrawn 2026-08-14.)_ Excluding empty hardpoints and disabled weapons from
+  convergence moves with FR-019 to feature 007.
+- **FR-023**: _(Withdrawn 2026-08-14.)_ The prohibition on deriving a physical dimension from the
+  artwork moves with FR-019 to feature 007. It is not lost here: FR-003 already forbids this feature
+  from inferring any mount position, and SC-006 holds it to that.
+- **FR-024**: _(Withdrawn 2026-08-14.)_ The anatomy view is not available for a hull the Commander
+  has not chosen. It is a capability of outfitting and requires an active build — see FR-001a.
+- **FR-025**: _(Withdrawn 2026-08-14.)_ Follows from FR-024: with no build, no mount can be described
+  as fitted or empty, so the case does not arise.
 - **FR-026**: _(Withdrawn 2026-08-14.)_ Showing two hulls' anatomy side by side is out of scope, in
   keeping with feature 001's withdrawn FR-010. The anatomy view shows one hull.
 
@@ -274,7 +273,14 @@ empty.
   phone even where the schematic draws it small, and MUST NOT depend on hover for any information it
   reports.
 - **FR-029**: Mounts drawn close enough to overlap at a given viewport MUST each remain individually
-  selectable, and none may be dropped from the view to resolve the crowding.
+  selectable, and none may be dropped from the view to resolve the crowding. Crowding MUST be
+  resolved by magnifying and panning the plate, so that mounts separate at their true positions: no
+  marker may be offset from where the schematic places it, collapsed into a cluster, or hidden
+  (FR-003). Magnification and panning MUST work by touch, pointer and keyboard.
+- **FR-029a**: Reaching a mount MUST NOT require magnifying the plate. Keyboard and screen-reader
+  navigation MUST reach every mount at any magnification in the stable order FR-031 requires, and
+  focusing a mount that is outside the visible region MUST bring it into view — as FR-017 requires of
+  the slot being edited.
 - **FR-030**: The plate MUST NOT force horizontal page scrolling at any supported viewport; it scales
   or scrolls within its own container.
 - **FR-031**: Every mount MUST be reachable by keyboard in a stable order, with the focused mount
@@ -289,8 +295,9 @@ empty.
   schematic does not locate.
 - **FR-033**: Coverage reporting MUST be unit-tested, asserting that the number of located slots and
   the hull's total slot count are both reported for every hull.
-- **FR-034**: Convergence MUST be unit-tested including the single-weapon, no-weapon, disabled-weapon
-  and unavailable-geometry cases, and MUST assert that no figure is derived from drawing units.
+- **FR-034**: The mount positions this feature publishes to feature 007 MUST be unit-tested as the
+  package's own values, asserting that none is measured off a schematic or converted from drawing
+  units. Testing convergence itself moves with FR-019 to feature 007.
 - **FR-035**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, including keyboard navigation of the mounts and the
   text equivalent.
@@ -305,8 +312,6 @@ empty.
   engineering, its power priority group and whether it is powered.
 - **Anatomy coverage**: How many of a build's slots the schematics locate, against how many the hull
   has.
-- **Convergence profile**: Where the build's fire arrives at a stated target range, the spread it
-  forms, and the mount furthest from the axis.
 
 ## Upstream dependencies
 
@@ -340,13 +345,14 @@ medium hardpoints and the Lynx Highliner's four — carry the same slot key on t
 schematics, because the mount is visible from both. FR-013a governs them: one slot, drawn twice,
 counted once.
 
-**Shot convergence is blocked, and the capability is requested upstream.** The schematics carry no scale
-metadata — no metres-per-unit, no overall hull dimension, no mount coordinates in real units. Every
-spatial figure user story 3 needs is therefore unobtainable without measuring the artwork and
-assuming a scale, which FR-023 prohibits and constitution principle II forbids. What this feature
-needs is mount geometry in real units: each mount's position relative to the hull's axis, in metres.
-That is requested upstream. Until it ships, FR-019 to FR-022 stand and the figures are reported as
-unavailable — this is the one requirement group in this specification that waits.
+**Mount geometry in real units is absent, and is requested upstream.** The schematics carry no scale
+metadata — no metres-per-unit, no overall hull dimension, no mount coordinates in real units. Nothing
+in this specification needs them: the plate locates a mount for drawing and navigation, not for
+measurement. They are recorded here because
+[feature 007](../007-offence-profile/spec.md) needs them for shot convergence, and because their
+absence is what makes FR-003 and SC-006 load-bearing — a physical figure could only be obtained by
+measuring the artwork against an assumed scale, which constitution principle II forbids. Each mount's
+position relative to the hull's axis, in metres, is requested upstream.
 
 **Composed under feature 003's FR-001a**: the coverage FR-012 reports — how many of a build's slots
 the schematics locate against how many the hull has — counts entries in two collections the package
@@ -369,10 +375,13 @@ returns, the hull's slots and the schematics' slot keys. No game rule is involve
 - **SC-006**: No physical dimension is ever derived from a schematic's drawing units — zero measured
   figures, asserted by tests that fail if one appears.
 - **SC-007**: Every mount is selectable by touch on a phone at both orientations, including on the
-  hull with the most crowded mount layout in the catalogue — zero mounts that cannot be hit and zero
-  dropped to resolve crowding.
+  hull with the most crowded mount layout in the catalogue — zero mounts that cannot be hit, zero
+  dropped to resolve crowding, and zero drawn anywhere but where the schematic places them at any
+  magnification. Every mount is also reachable by keyboard on that hull without magnifying the plate.
 - **SC-008**: The anatomy view is usable on desktop, tablet and mobile viewports — the same end-to-end
   suite passes on all three, with no horizontal page scrolling at any of them.
+- **SC-009**: Every slot of the active build is readable and changeable before any schematic has
+  finished loading, and the anatomy view operates with the network disabled after first load.
 
 ## Assumptions
 
@@ -392,8 +401,9 @@ returns, the hull's slots and the schematics' slot keys. No game rule is involve
   is a library defect raised upstream under principle II, never corrected by nudging a position here.
 - The anatomy view is a second route to a slot, never the primary one. A design may lead with it on a
   narrow viewport, but FR-018 guarantees no Commander depends on it.
-- Convergence describes where shots arrive, not what they hit. Modelling a target's silhouette, hit
-  probability or time to kill is out of scope, as it is in feature 007.
+- This feature owns where a mount is; it does not own what follows from that for a build's fire.
+  Feature 007 consumes the positions for shot convergence, and this specification states no
+  requirement about them beyond FR-003's prohibition on inventing one.
 - How the plates are laid out, whether they appear together or one at a time, and how a mount is drawn
   are decided at plan time against the design system, per constitution principle VII. What this
   specification fixes is what the view must convey and what it must never invent.
