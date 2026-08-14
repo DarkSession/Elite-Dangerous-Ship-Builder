@@ -63,3 +63,11 @@
 - **One gap remains against this contract**: the package's validity and completeness diagnostics are
   English-only, which collides with constitution principle VI. FR-006 and FR-007 surface them, so
   the gap is recorded here rather than in an area specification, and is raised upstream.
+- **The family requires an active build, stated once as FR-000 on 2026-08-14.** Every area assumed it
+  — each acceptance scenario opens "Given an active build" — but no requirement said so, which left
+  it unenforceable and left the empty state undefined. FR-000 states it for all five areas, so none
+  of them restates it and none of them can relax it. It also forbids the two failure modes the
+  assumption hid: showing a hull's catalogue characteristics in place of a build's statistics, and
+  creating a build in order to have something to report on. Feature 002's FR-000 and feature 010's
+  FR-001a say the same for outfitting and hull anatomy; feature 001 owns every route to a build,
+  with feature 004's import the single exception, which FR-006a there records.

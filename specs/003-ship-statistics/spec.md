@@ -43,6 +43,9 @@ which owns ship selection. Where a build's figures are read off the hull's own g
 its catalogue entry, [feature 010](../010-hull-anatomy/spec.md) owns the spatial view they are read
 from.
 
+Every figure in this family describes an active build, so the whole family requires one and none of
+it exists before a hull is chosen. FR-000 states that once, for all five areas.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Read the build's headline statistics (Priority: P1)
@@ -187,6 +190,18 @@ and none of the three is written into the build when it is saved, shared or expo
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
+
+#### A build to report on
+
+- **FR-000**: Every statistic in this family describes the active build, so the family MUST require
+  one. Where no build is active the application MUST NOT present a statistic, a breakdown or a
+  headline set; it MUST NOT substitute a hull's catalogue characteristics for them; and it MUST NOT
+  create a build in order to have something to report on. A Commander arrives at an active build
+  through [feature 001](../001-ship-selection-and-loading/spec.md) — choosing a hull from the
+  catalogue (its FR-011), reopening a saved or working build (its FR-023, FR-023f), or opening a
+  build link (its FR-027, FR-027a) — or by importing one under
+  [feature 004](../004-slef-export/spec.md)'s FR-006. No area of this family offers a route of its
+  own. Every area specification inherits this requirement without restating it.
 
 #### Statistics in general
 
@@ -342,6 +357,9 @@ library. This is raised upstream rather than settled here.
 - **SC-008**: Every statistic is readable, every breakdown reachable and every diagnostic legible on
   desktop, tablet and mobile viewports — the same end-to-end suite passes on all three, with no
   horizontal page scrolling at any of them.
+- **SC-009**: With no build active, no figure from any area of this family is reachable by any route
+  — zero statistics shown, zero breakdowns opened, and zero builds created as a side effect of
+  asking for one.
 
 ## Assumptions
 
@@ -367,5 +385,8 @@ library. This is raised upstream rather than settled here.
 - Comparison between two builds side by side is out of scope; this family covers the active build.
   Comparing two _hulls_ before a build exists is out of scope too, under feature 001's withdrawn
   FR-010.
+- An active build is a precondition of this family, not a state it manages. How a Commander arrives
+  at one, how it is replaced and what confirmation that replacement needs belong to feature 001;
+  FR-000 only requires that no figure here exists without one.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
   scope now; only visual styling is deferred.

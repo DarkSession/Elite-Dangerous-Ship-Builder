@@ -18,9 +18,10 @@ everything, what the distributor holds for systems, engines and weapons, and how
 arrangement runs.
 
 It is one area of the statistics family. [Feature 003](../003-ship-statistics/spec.md) is the
-contract every figure here obeys — provenance, units, the honesty rules for unavailable figures, the
-recompute obligation, and the viewing conditions (load, pips, hardpoint state). Everything it states
-applies here without being restated, and nothing here relaxes it.
+contract every figure here obeys — the requirement that a build be active at all (its FR-000),
+provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
+viewing conditions (load, pips, hardpoint state). Everything it states applies here without being
+restated, and nothing here relaxes it. Nothing in this area is offered before a hull is chosen.
 
 Enabling a module and assigning its power priority group are build changes owned by
 [feature 002](../002-module-outfitting/spec.md); this feature reports what those choices cost. The

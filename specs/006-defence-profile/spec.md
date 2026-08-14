@@ -17,10 +17,12 @@ recovers once broken, how much punishment the hull absorbs after that, and how w
 inside are protected.
 
 It is one area of the statistics family. [Feature 003](../003-ship-statistics/spec.md) is the
-contract every figure here obeys — provenance, units, the honesty rules for unavailable figures, the
-recompute obligation, and the viewing conditions. Everything it states applies here without being
-restated, and nothing here relaxes it. In particular, the pip allocation is a viewing condition
-owned by feature 003; this feature specifies what SYS pips do to the figures.
+contract every figure here obeys — the requirement that a build be active at all (its FR-000),
+provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
+viewing conditions. Everything it states applies here without being restated, and nothing here
+relaxes it. Nothing in this area is offered before a hull is chosen. In particular, the pip
+allocation is a viewing condition owned by feature 003; this feature specifies what SYS pips do to
+the figures.
 
 How hard the build hits belongs to [feature 007](../007-offence-profile/spec.md), which reads the
 hull hardness specified here when it presents armour piercing.

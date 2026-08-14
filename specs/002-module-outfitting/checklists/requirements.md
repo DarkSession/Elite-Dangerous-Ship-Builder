@@ -51,3 +51,9 @@
 - **Naming the data package is deliberate, not an implementation leak.** FR-001, FR-030 and FR-031
   name `@elite-dangerous-almanac/core` because constitution principle II makes it the domain's
   source of truth, exactly as features 001, 003 and 004 do.
+- **Outfitting requires an active build, stated as FR-000 on 2026-08-14.** The specification assumed
+  one throughout — user story 1 opens "A Commander with an active build" — without ever requiring it,
+  so nothing said what this feature does before a hull is chosen. FR-000 makes the precondition
+  explicit and forbids fitting a module from becoming a back route into choosing a hull, which is
+  feature 001's FR-011. Feature 003's FR-000 does the same for the statistics family and feature
+  010's FR-001a for hull anatomy.

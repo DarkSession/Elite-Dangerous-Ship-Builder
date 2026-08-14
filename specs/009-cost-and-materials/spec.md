@@ -15,9 +15,10 @@ modules, the rebuy that follows from them, and the engineering materials a Comma
 before any of it can actually be built.
 
 It is one area of the statistics family. [Feature 003](../003-ship-statistics/spec.md) is the
-contract every figure here obeys — provenance, units, the honesty rules for unavailable figures, the
-recompute obligation, and the viewing conditions. Everything it states applies here without being
-restated, and nothing here relaxes it.
+contract every figure here obeys — the requirement that a build be active at all (its FR-000),
+provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
+viewing conditions. Everything it states applies here without being restated, and nothing here
+relaxes it. Nothing in this area is offered before a hull is chosen.
 
 The engineering choices that generate a material bill are made in
 [feature 002](../002-module-outfitting/spec.md), which shows the cost of one roll on the module it

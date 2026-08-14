@@ -17,11 +17,12 @@ what it weighs, and how those four are bound together by the mass curves the thr
 Shift Drive are measured against.
 
 It is one area of the statistics family. [Feature 003](../003-ship-statistics/spec.md) is the
-contract every figure here obeys — provenance, units, the honesty rules for unavailable figures, the
-recompute obligation, and the viewing conditions. Everything it states applies here without being
-restated, and nothing here relaxes it. In particular, the cargo and fuel assumptions and the ENG pip
-allocation are viewing conditions owned by feature 003; this feature specifies what they do to the
-figures.
+contract every figure here obeys — the requirement that a build be active at all (its FR-000),
+provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
+viewing conditions. Everything it states applies here without being restated, and nothing here
+relaxes it. Nothing in this area is offered before a hull is chosen. In particular, the cargo and
+fuel assumptions and the ENG pip allocation are viewing conditions owned by feature 003; this
+feature specifies what they do to the figures.
 
 Mass matters to more than movement, so it is specified once here and read elsewhere: the shield mass
 curve belongs to [feature 006](../006-defence-profile/spec.md), and the mass of an individual module

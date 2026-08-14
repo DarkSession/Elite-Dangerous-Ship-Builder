@@ -19,6 +19,9 @@ Choosing the hull a build starts from belongs to
 [feature 001](../001-ship-selection-and-loading/spec.md); the figures a change moves belong to the
 statistics family, whose contract is [feature 003](../003-ship-statistics/spec.md).
 
+Everything here acts on an active build and requires one: there are no slots to read and nothing to
+change before a hull is chosen. FR-000 states that.
+
 This feature's slot enumeration is the complete route to every slot a hull has, and remains so.
 [Feature 010](../010-hull-anatomy/spec.md) adds a second, spatial route that reaches the mounts a
 hull's schematics locate; it never replaces this one, and no slot is reachable only through it.
@@ -265,6 +268,17 @@ reflected in the build's power figures and survive save and reload.
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
+
+#### A build to change
+
+- **FR-000**: Outfitting MUST require an active build. Where no build is active the application MUST
+  NOT present a slot list, an offer list, an engineering surface, a power-priority control or an edit
+  history, and MUST NOT create a build in order to offer one. A Commander arrives at an active build
+  through [feature 001](../001-ship-selection-and-loading/spec.md) — choosing a hull from the
+  catalogue (its FR-011), reopening a saved or working build (its FR-023, FR-023f), or opening a
+  build link (its FR-027, FR-027a) — or by importing one under
+  [feature 004](../004-slef-export/spec.md)'s FR-006. This feature offers no route of its own, and
+  fitting a module MUST NOT be a way to choose a hull.
 
 #### Slots and modules
 
