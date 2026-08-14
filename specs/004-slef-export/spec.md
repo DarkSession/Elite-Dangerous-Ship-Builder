@@ -101,6 +101,10 @@ payload.
 
 ### Functional Requirements
 
+- **FR-000**: Export MUST require an active build. Where no build is active,
+  the application MUST NOT offer an export and MUST NOT create a build in order
+  to have something to export. Import is the one capability here that does not
+  require a build, because it produces one — see FR-006a.
 - **FR-001**: SLEF serialisation and parsing MUST be performed by
   `@elite-dangerous-almanac/core`. The application MUST NOT hand-roll the
   format.
@@ -115,6 +119,13 @@ payload.
   and download it as a file.
 - **FR-006**: The application MUST accept a SLEF payload pasted or uploaded by
   the Commander and load it as the active build.
+- **FR-006a**: Import is a route to an active build in its own right, alongside
+  the routes [feature 001](../001-ship-selection-and-loading/spec.md) owns, and
+  is the only capability outside that feature which may create one. It MUST
+  therefore be reachable with no build active, and MUST NOT require a hull to
+  be chosen first. Where a build is already active, a successful import
+  replaces it and MUST require the confirmation feature 001's FR-025 requires
+  of any replacement.
 - **FR-007**: The application MUST accept a journal `Loadout` event as an import
   source in addition to SLEF.
 - **FR-008**: Import MUST use the tolerant reading path for multi-entry or mixed
