@@ -16,6 +16,7 @@ import codecV1TablesJson from './codec-v1.tables.json';
 interface CodecV1Tables {
   readonly CODEC_V1_SHIPS: readonly string[];
   readonly CODEC_V1_MODULES: readonly string[];
+  readonly CODEC_V1_POWERED_MODULES: readonly number[];
   readonly CODEC_V1_BLUEPRINTS: readonly string[];
   readonly CODEC_V1_BLUEPRINT_GRADES: readonly (readonly number[])[];
   readonly CODEC_V1_EXPERIMENTAL_EFFECTS: readonly string[];
@@ -38,8 +39,6 @@ interface CodecV1Tables {
     readonly experimental: number | null;
   }[];
   readonly CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE: readonly (readonly number[])[];
-  readonly CODEC_V1_DECORATIVE_MODIFICATIONS: readonly string[];
-  readonly CODEC_V1_DECORATIVE_SET_BY_MODULE: readonly (readonly number[])[];
 }
 
 const {
@@ -47,8 +46,6 @@ const {
   CODEC_V1_BLUEPRINT_SETS,
   CODEC_V1_BLUEPRINT_GRADES,
   CODEC_V1_BLUEPRINTS,
-  CODEC_V1_DECORATIVE_MODIFICATIONS,
-  CODEC_V1_DECORATIVE_SET_BY_MODULE,
   CODEC_V1_DEFAULT_MODULES_BY_SHIP,
   CODEC_V1_EXPERIMENTAL_SET_BY_MODULE,
   CODEC_V1_EXPERIMENTAL_SETS,
@@ -57,6 +54,7 @@ const {
   CODEC_V1_MODULE_SET_BY_SHIP,
   CODEC_V1_MODULE_SETS,
   CODEC_V1_MODULES,
+  CODEC_V1_POWERED_MODULES,
   CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE,
   CODEC_V1_PRE_ENGINEERED_VARIANTS,
   CODEC_V1_SHIPS,
@@ -74,6 +72,7 @@ const BLUEPRINT_BITS = bitsRequired(CODEC_V1_BLUEPRINTS.length);
 const EXPERIMENTAL_BITS = bitsRequired(CODEC_V1_EXPERIMENTAL_EFFECTS.length + 1);
 const QUALITY_SCALE_4 = 10_000;
 const QUALITY_BITS_4 = bitsRequired(QUALITY_SCALE_4 + 1);
+const POWERED_MODULE_SET = new Set(CODEC_V1_POWERED_MODULES);
 
 /**
  * Encode a loadout into the application-owned, versioned value placed after `#`.
@@ -143,16 +142,21 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
 
   const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[canonicalShip];
   const pristine =
-    moduleIndexes.every(
-      (moduleIndex, index) =>
+    moduleIndexes.every((moduleIndex, index) => {
+      const module = moduleAt(modulesBySlot, slots[index]);
+      return (
         moduleIndex === defaults[index] &&
-        moduleAt(modulesBySlot, slots[index])?.on === undefined &&
-        moduleAt(modulesBySlot, slots[index])?.priority === undefined &&
-        moduleAt(modulesBySlot, slots[index])?.engineering === undefined,
-    ) &&
-    fixedModules.every(({ slot }) => {
+        (!moduleDrawsPower(moduleIndex) ||
+          (module?.on === undefined && module?.priority === undefined)) &&
+        module?.engineering === undefined
+      );
+    }) &&
+    fixedModules.every(({ slot, module: moduleIndex }) => {
       const module = moduleAt(modulesBySlot, slot);
-      return module?.on === undefined && module?.priority === undefined;
+      return (
+        !moduleDrawsPower(moduleIndex) ||
+        (module?.on === undefined && module?.priority === undefined)
+      );
     });
   writer.writeBoolean(pristine);
   if (!pristine) {
@@ -160,14 +164,28 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
     const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
     const occupiedModules = occupiedSlots.map((index) => moduleAt(modulesBySlot, slots[index])!);
     const powerStates: PowerState[] = [
-      ...occupiedModules,
-      ...fixedModules.map(({ slot }) => {
+      ...occupiedModules.flatMap((module, occupiedIndex) =>
+        moduleDrawsPower(moduleIndexes[occupiedSlots[occupiedIndex]!]!)
+          ? [{ on: module.on, priority: module.priority }]
+          : [],
+      ),
+      ...fixedModules.flatMap(({ slot, module: moduleIndex }) => {
+        if (!moduleDrawsPower(moduleIndex)) return [];
         const module = moduleAt(modulesBySlot, slot);
-        return { on: module?.on, priority: module?.priority };
+        return [{ on: module?.on, priority: module?.priority }];
       }),
     ];
     writePowerStates(writer, powerStates);
-    writeEngineeringStates(writer, occupiedModules, moduleIndexes, occupiedSlots);
+    writeEngineeringStates(
+      writer,
+      occupiedModules.map((module, occupiedIndex) =>
+        module.engineering === undefined
+          ? undefined
+          : engineeringStateFromModule(moduleIndexes[occupiedSlots[occupiedIndex]!]!, module),
+      ),
+      moduleIndexes,
+      occupiedSlots,
+    );
   }
 
   const body = writer.toUint8Array();
@@ -217,18 +235,45 @@ export function decodeBuildLinkFragment(fragment: string): ShipLoadout {
         `Build-link codec version ${version} is not supported.`,
       );
     }
-    const loadout = readVersionOneLoadout(reader);
-    if (encodeBuildLinkFragment(loadout) !== value) {
+    const state = readVersionOneState(reader);
+    if (!bytesEqual(writeVersionOneState(state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
-    return loadout;
+    return reconstructVersionOneLoadout(state);
   } catch (error) {
     if (error instanceof BuildLinkCodecError) throw error;
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is invalid.');
   }
 }
 
-function readVersionOneLoadout(reader: BitReader): ShipLoadout {
+type OrdinaryEngineeringState = {
+  readonly kind: 'ordinary';
+  readonly blueprint: number;
+  readonly level: number;
+  readonly quality: number;
+  readonly experimental: number | null;
+};
+
+type PreEngineeredState = {
+  readonly kind: 'preEngineered';
+  readonly variant: number;
+  readonly quality: number;
+  readonly experimental: number | null;
+};
+
+type CodecEngineeringState = OrdinaryEngineeringState | PreEngineeredState;
+
+type VersionOneState = {
+  readonly shipIndex: number;
+  readonly shipName: string | undefined;
+  readonly shipIdent: string | undefined;
+  readonly pristine: boolean;
+  readonly moduleIndexes: readonly (number | null)[];
+  readonly powerStates: readonly PowerState[];
+  readonly engineeringStates: readonly (CodecEngineeringState | undefined)[];
+};
+
+function readVersionOneState(reader: BitReader): VersionOneState {
   const shipIndex = reader.readBits(SHIP_BITS);
   const ship = CODEC_V1_SHIPS[shipIndex];
   if (!ship) throw unknownTableIndex('ship', shipIndex);
@@ -244,7 +289,8 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
     ? [...CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship]]
     : readModuleIdentities(reader, ship, slots);
   const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
-  const powerStateCount = occupiedSlots.length + fixedModules.length;
+  const powerLayout = powerStateLayout(moduleIndexes, occupiedSlots, fixedModules);
+  const powerStateCount = powerLayout.occupied.length + powerLayout.fixed.length;
   const powerStates = pristine
     ? Array.from({ length: powerStateCount }, () => ({ on: undefined, priority: undefined }))
     : readPowerStates(reader, powerStateCount);
@@ -252,24 +298,91 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
     ? occupiedSlots.map(() => undefined)
     : readEngineeringStates(reader, moduleIndexes, occupiedSlots);
 
+  if (!pristine && isPristineState(ship, moduleIndexes, powerStates, engineeringStates)) {
+    throw new BuildLinkCodecError(
+      'invalidPayload',
+      'A stock loadout must use the pristine representation.',
+    );
+  }
+
+  if (!reader.done) {
+    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload has trailing data.');
+  }
+
+  return {
+    shipIndex,
+    shipName,
+    shipIdent,
+    pristine,
+    moduleIndexes,
+    powerStates,
+    engineeringStates,
+  };
+}
+
+function writeVersionOneState(state: VersionOneState): Uint8Array {
+  const writer = new BitWriter();
+  writer.writeBits(CODEC_VERSION, VERSION_BITS);
+  writer.writeBits(state.shipIndex, SHIP_BITS);
+  writer.writeBoolean(state.shipName !== undefined);
+  writer.writeBoolean(state.shipIdent !== undefined);
+  if (state.shipName !== undefined) writer.writeString(state.shipName);
+  if (state.shipIdent !== undefined) writer.writeString(state.shipIdent);
+  writer.writeBoolean(state.pristine);
+  if (!state.pristine) {
+    const ship = CODEC_V1_SHIPS[state.shipIndex] as CodecShip;
+    const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
+    const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship];
+    const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
+    writeModuleIdentities(writer, ship, slots, defaults, state.moduleIndexes);
+    writePowerStates(writer, state.powerStates);
+    writeEngineeringStates(writer, state.engineeringStates, state.moduleIndexes, occupiedSlots);
+  }
+  return writer.toUint8Array();
+}
+
+function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
+  const ship = CODEC_V1_SHIPS[state.shipIndex] as CodecShip;
+  const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
+  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[ship];
+  const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
+  const powerLayout = powerStateLayout(state.moduleIndexes, occupiedSlots, fixedModules);
+  const powerByOccupiedIndex = new Map(
+    powerLayout.occupied.map((occupiedIndex, powerIndex) => [
+      occupiedIndex,
+      state.powerStates[powerIndex]!,
+    ]),
+  );
+  const fixedPowerOffset = powerLayout.occupied.length;
+  const powerByFixedIndex = new Map(
+    powerLayout.fixed.map((fixedIndex, powerIndex) => [
+      fixedIndex,
+      state.powerStates[fixedPowerOffset + powerIndex]!,
+    ]),
+  );
+
   const modules: LoadoutModule[] = occupiedSlots.map((slotIndex, occupiedIndex) => {
-    const moduleIndex = moduleIndexes[slotIndex]!;
+    const moduleIndex = state.moduleIndexes[slotIndex]!;
     const item = CODEC_V1_MODULES[moduleIndex];
     if (!item) throw unknownTableIndex('module', moduleIndex);
-    const { on, priority } = powerStates[occupiedIndex]!;
-    const engineering = engineeringStates[occupiedIndex];
+    const { on, priority } = powerByOccupiedIndex.get(occupiedIndex) ?? EMPTY_POWER_STATE;
+    const engineering = state.engineeringStates[occupiedIndex];
+    const resolvedEngineering =
+      engineering?.kind === 'preEngineered'
+        ? resolvePreEngineeredEngineering(engineering)
+        : undefined;
     return {
       Slot: slots[slotIndex],
       Item: item,
       ...(on === undefined ? {} : { On: on }),
       ...(priority === undefined ? {} : { Priority: priority }),
-      ...(engineering?.Modifiers === undefined ? {} : { Engineering: engineering }),
+      ...(resolvedEngineering === undefined ? {} : { Engineering: resolvedEngineering }),
     };
   });
   fixedModules.forEach(({ slot, module }, fixedIndex) => {
     const item = CODEC_V1_MODULES[module];
     if (!item) throw unknownTableIndex('fixed module', module);
-    const { on, priority } = powerStates[occupiedSlots.length + fixedIndex]!;
+    const { on, priority } = powerByFixedIndex.get(fixedIndex) ?? EMPTY_POWER_STATE;
     modules.push({
       Slot: slot,
       Item: item,
@@ -278,35 +391,74 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
     });
   });
 
-  if (!reader.done) {
-    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload has trailing data.');
-  }
-
   const event: LoadoutEvent = {
     event: 'Loadout',
     Ship: ship,
-    ...(shipName === undefined ? {} : { ShipName: shipName }),
-    ...(shipIdent === undefined ? {} : { ShipIdent: shipIdent }),
+    ...(state.shipName === undefined ? {} : { ShipName: state.shipName }),
+    ...(state.shipIdent === undefined ? {} : { ShipIdent: state.shipIdent }),
     Modules: modules,
   };
   const loadout = ShipLoadout.fromLoadout(event);
   occupiedSlots.forEach((slotIndex, occupiedIndex) => {
-    const engineering = engineeringStates[occupiedIndex];
-    if (engineering === undefined || engineering.Modifiers !== undefined) return;
-    loadout.applyBlueprint(slots[slotIndex], engineering.BlueprintName, {
-      grade: engineering.Level,
-      quality: engineering.Quality,
-      ...(engineering.ExperimentalEffect === undefined
-        ? {}
-        : { experimental: engineering.ExperimentalEffect }),
+    const engineering = state.engineeringStates[occupiedIndex];
+    if (engineering?.kind !== 'ordinary') return;
+    const blueprint = CODEC_V1_BLUEPRINTS[engineering.blueprint];
+    if (!blueprint) throw unknownTableIndex('engineering blueprint', engineering.blueprint);
+    const experimental =
+      engineering.experimental === null
+        ? undefined
+        : CODEC_V1_EXPERIMENTAL_EFFECTS[engineering.experimental];
+    if (engineering.experimental !== null && experimental === undefined) {
+      throw unknownTableIndex('experimental effect', engineering.experimental);
+    }
+    loadout.applyBlueprint(slots[slotIndex], blueprint, {
+      grade: engineering.level,
+      quality: engineering.quality,
+      ...(experimental === undefined ? {} : { experimental }),
     });
   });
   return loadout;
 }
 
+function isPristineState(
+  ship: CodecShip,
+  moduleIndexes: readonly (number | null)[],
+  powerStates: readonly PowerState[],
+  engineeringStates: readonly (CodecEngineeringState | undefined)[],
+): boolean {
+  const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship];
+  return (
+    moduleIndexes.every((moduleIndex, index) => moduleIndex === defaults[index]) &&
+    powerStates.every(({ on, priority }) => on === undefined && priority === undefined) &&
+    engineeringStates.every((engineering) => engineering === undefined)
+  );
+}
+
+function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
+  return left.length === right.length && left.every((byte, index) => byte === right[index]);
+}
+
 type CodecShip = keyof typeof CODEC_V1_SLOTS_BY_SHIP;
 type PowerState = { on: boolean | undefined; priority: number | undefined };
+const EMPTY_POWER_STATE: PowerState = { on: undefined, priority: undefined };
 type CodecFittedModule = ReturnType<ShipLoadout['fittedModules']>[number];
+
+function moduleDrawsPower(moduleIndex: number | null): boolean {
+  return moduleIndex !== null && POWERED_MODULE_SET.has(moduleIndex);
+}
+
+function powerStateLayout(
+  moduleIndexes: readonly (number | null)[],
+  occupiedSlots: readonly number[],
+  fixedModules: readonly { readonly module: number }[],
+): { readonly occupied: number[]; readonly fixed: number[] } {
+  return {
+    occupied: indexesWhere(occupiedSlots, (slotIndex) =>
+      moduleDrawsPower(moduleIndexes[slotIndex]!),
+    ),
+    fixed: indexesWhere(fixedModules, ({ module }) => moduleDrawsPower(module)),
+  };
+}
 type ModuleIdentityContext = {
   context: readonly number[];
   defaultIndex: number | null;
@@ -638,7 +790,8 @@ function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
   if (!reader.readBoolean()) return states;
 
   const mode = reader.readBits(2);
-  if (mode === 0) return readFixedPowerStates(reader, moduleCount);
+  let decoded: PowerState[];
+  if (mode === 0) decoded = readFixedPowerStates(reader, moduleCount);
   if (mode === 1) {
     for (const index of readIndexSet(reader, moduleCount)) {
       states[index] = {
@@ -646,10 +799,20 @@ function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
         priority: decodePriority(reader.readBits(3)),
       };
     }
-    return states;
+    decoded = states;
+  } else if (mode === 2) {
+    decoded = readBaselinePowerStates(reader, moduleCount);
+  } else if (mode !== 0) {
+    throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
   }
-  if (mode === 2) return readBaselinePowerStates(reader, moduleCount);
-  throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
+  const overrides = indexesWhere(
+    decoded!,
+    ({ on, priority }) => on !== undefined || priority !== undefined,
+  );
+  if (overrides.length === 0 || mode !== powerMode(decoded!, overrides)) {
+    throw new BuildLinkCodecError('invalidPayload', 'Power-state mode is not canonical.');
+  }
+  return decoded!;
 }
 
 function powerMode(modules: readonly PowerState[], overrides: readonly number[]): 0 | 1 | 2 {
@@ -714,6 +877,9 @@ function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerS
   }));
   if (reader.readBoolean()) {
     const onChanges = readIndexSet(reader, moduleCount);
+    if (onChanges.length === 0) {
+      throw new BuildLinkCodecError('invalidPayload', 'A baseline power-state set is empty.');
+    }
     const uniform = reader.readBoolean();
     if (uniform) {
       const on = reader.readBoolean() ? false : undefined;
@@ -721,10 +887,22 @@ function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerS
     } else {
       for (const index of onChanges) states[index]!.on = reader.readBoolean() ? false : undefined;
     }
+    const canonicalUniform = onChanges.every(
+      (index) => states[index]!.on === states[onChanges[0]!]!.on,
+    );
+    if (uniform !== canonicalUniform) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A baseline enabled-state mode is not canonical.',
+      );
+    }
   }
 
   if (reader.readBoolean()) {
     const priorityChanges = readIndexSet(reader, moduleCount);
+    if (priorityChanges.length === 0) {
+      throw new BuildLinkCodecError('invalidPayload', 'A baseline priority set is empty.');
+    }
     const allDefined = reader.readBoolean();
     for (const index of priorityChanges) {
       const priority = allDefined
@@ -737,6 +915,12 @@ function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerS
         );
       }
       states[index]!.priority = priority;
+    }
+    const canonicalAllDefined = priorityChanges.every(
+      (index) => states[index]!.priority !== undefined,
+    );
+    if (allDefined !== canonicalAllDefined) {
+      throw new BuildLinkCodecError('invalidPayload', 'A baseline priority mode is not canonical.');
     }
   }
   return states;
@@ -793,30 +977,45 @@ function writeFixedPowerStates(writer: BitWriter, modules: readonly PowerState[]
 
 function readFixedPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
   const onMode = reader.readBits(2);
-  const on =
-    onMode === 0
-      ? Array<boolean | undefined>(moduleCount).fill(undefined)
-      : onMode === 1
-        ? Array<boolean | undefined>(moduleCount).fill(true)
-        : onMode === 2
-          ? Array<boolean | undefined>(moduleCount).fill(false)
-          : reader.readBoolean()
-            ? Array.from({ length: moduleCount }, () => reader.readBoolean())
-            : Array.from({ length: moduleCount }, () => decodeOn(reader.readBits(2)));
+  let on: Array<boolean | undefined>;
+  if (onMode === 0) on = Array<boolean | undefined>(moduleCount).fill(undefined);
+  else if (onMode === 1) on = Array<boolean | undefined>(moduleCount).fill(true);
+  else if (onMode === 2) on = Array<boolean | undefined>(moduleCount).fill(false);
+  else {
+    const allDefined = reader.readBoolean();
+    on = allDefined
+      ? Array.from({ length: moduleCount }, () => reader.readBoolean())
+      : Array.from({ length: moduleCount }, () => decodeOn(reader.readBits(2)));
+    if (allDefined !== on.every((value) => value !== undefined)) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A fixed enabled-state definition mode is not canonical.',
+      );
+    }
+    if (on.every((value) => value === on[0])) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A uniform enabled state must use its fixed mode.',
+      );
+    }
+  }
   const uniformPriority = reader.readBoolean();
   const priority = uniformPriority
     ? Array<number | undefined>(moduleCount).fill(decodePriority(reader.readBits(3)))
     : Array.from({ length: moduleCount }, () => decodePriority(reader.readBits(3)));
+  if (uniformPriority !== priority.every((value) => value === priority[0])) {
+    throw new BuildLinkCodecError('invalidPayload', 'A fixed priority mode is not canonical.');
+  }
   return on.map((value, index) => ({ on: value, priority: priority[index] }));
 }
 
 function writeEngineeringStates(
   writer: BitWriter,
-  modules: readonly CodecFittedModule[],
+  states: readonly (CodecEngineeringState | undefined)[],
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
 ): void {
-  const engineered = indexesWhere(modules, ({ engineering }) => engineering !== undefined);
+  const engineered = indexesWhere(states, (engineering) => engineering !== undefined);
   writer.writeBoolean(engineered.length > 0);
   if (engineered.length === 0) return;
 
@@ -838,35 +1037,20 @@ function writeEngineeringStates(
   }
   const records = engineered.map((occupiedIndex) => ({
     moduleIndex: moduleIndexes[occupiedSlots[occupiedIndex]!]!,
-    module: modules[occupiedIndex]!,
+    engineering: states[occupiedIndex]!,
   }));
-  const firstRecordByKey = new Map<string, number>();
-  const references = records.map(({ module }, index) => {
-    const key = ordinaryEngineeringKey(module);
-    if (key === null) return null;
-    const previous = firstRecordByKey.get(key);
-    if (previous !== undefined) return previous;
-    firstRecordByKey.set(key, index);
-    return null;
-  });
-  const plainCost = records.reduce(
-    (cost, record) => cost + engineeringRecordBitCost(record.moduleIndex, record.module),
-    0,
-  );
+  const references = engineeringReferences(records);
+  const plainCost = records.reduce((cost, record) => cost + engineeringRecordBitCost(record), 0);
   const referenceWidth = bitsRequired(records.length);
   const referenceCost = records.reduce(
     (cost, record, index) =>
-      cost +
-      1 +
-      (references[index] === null
-        ? engineeringRecordBitCost(record.moduleIndex, record.module)
-        : referenceWidth),
+      cost + 1 + (references[index] === null ? engineeringRecordBitCost(record) : referenceWidth),
     0,
   );
   const useReferences = records.length > 1 && referenceCost < plainCost;
   if (records.length > 1) writer.writeBoolean(useReferences);
 
-  for (const [index, { moduleIndex, module }] of records.entries()) {
+  for (const [index, { moduleIndex, engineering }] of records.entries()) {
     if (useReferences) {
       const reference = references[index];
       writer.writeBoolean(reference !== null);
@@ -875,7 +1059,7 @@ function writeEngineeringStates(
         continue;
       }
     }
-    writeEngineering(writer, moduleIndex, module);
+    writeEngineering(writer, moduleIndex, engineering);
   }
 }
 
@@ -883,8 +1067,8 @@ function readEngineeringStates(
   reader: BitReader,
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
-): Array<ModuleEngineering | undefined> {
-  const states: Array<ModuleEngineering | undefined> = occupiedSlots.map(() => undefined);
+): Array<CodecEngineeringState | undefined> {
+  const states: Array<CodecEngineeringState | undefined> = occupiedSlots.map(() => undefined);
   if (!reader.readBoolean()) return states;
 
   const eligible = engineeringEligibleIndexes(moduleIndexes, occupiedSlots);
@@ -894,7 +1078,7 @@ function readEngineeringStates(
     : readIndexSet(reader, eligible.length).map((index) => eligible[index]!);
   const useReferences = engineered.length > 1 && reader.readBoolean();
   const referenceWidth = bitsRequired(engineered.length);
-  const decodedRecords: ModuleEngineering[] = [];
+  const decodedRecords: CodecEngineeringState[] = [];
   const firstRecordByKey = new Map<string, number>();
   for (const [recordIndex, occupiedIndex] of engineered.entries()) {
     const moduleIndex = moduleIndexes[occupiedSlots[occupiedIndex]!]!;
@@ -903,7 +1087,7 @@ function readEngineeringStates(
       const referenced = decodedRecords[reference];
       if (
         referenced === undefined ||
-        referenced.Modifiers !== undefined ||
+        referenced.kind !== 'ordinary' ||
         firstRecordByKey.get(engineeringStateKey(referenced)) !== reference
       ) {
         throw new BuildLinkCodecError(
@@ -917,7 +1101,7 @@ function readEngineeringStates(
     }
 
     const engineering = readEngineering(reader, moduleIndex);
-    if (useReferences && engineering.Modifiers === undefined) {
+    if (useReferences && engineering.kind === 'ordinary') {
       const key = engineeringStateKey(engineering);
       if (firstRecordByKey.has(key)) {
         throw new BuildLinkCodecError(
@@ -930,34 +1114,55 @@ function readEngineeringStates(
     states[occupiedIndex] = engineering;
     decodedRecords.push(engineering);
   }
+  const records = engineered.map((occupiedIndex) => ({
+    moduleIndex: moduleIndexes[occupiedSlots[occupiedIndex]!]!,
+    engineering: states[occupiedIndex]!,
+  }));
+  const references = engineeringReferences(records);
+  const plainCost = records.reduce((cost, record) => cost + engineeringRecordBitCost(record), 0);
+  const referenceWidthForCost = bitsRequired(records.length);
+  const referenceCost = records.reduce(
+    (cost, record, index) =>
+      cost +
+      1 +
+      (references[index] === null ? engineeringRecordBitCost(record) : referenceWidthForCost),
+    0,
+  );
+  if (useReferences !== (records.length > 1 && referenceCost < plainCost)) {
+    throw new BuildLinkCodecError('invalidPayload', 'Engineering reference mode is not canonical.');
+  }
   return states;
 }
 
-function ordinaryEngineeringKey(module: CodecFittedModule): string | null {
-  const engineering = module.engineering!;
-  if (
-    module.preEngineeredVariant !== null ||
-    CODEC_V1_DECORATIVE_MODIFICATIONS.some(
-      (fdname) => normalise(fdname) === normalise(engineering.BlueprintName),
-    )
-  ) {
-    return null;
-  }
-  return engineeringStateKey(engineering);
-}
-
-function engineeringStateKey(engineering: ModuleEngineering): string {
+function engineeringStateKey(engineering: OrdinaryEngineeringState): string {
   return JSON.stringify([
-    normalise(engineering.BlueprintName),
-    engineering.Level,
-    engineering.Quality,
-    engineering.ExperimentalEffect === undefined ? null : normalise(engineering.ExperimentalEffect),
+    engineering.blueprint,
+    engineering.level,
+    engineering.quality,
+    engineering.experimental,
   ]);
 }
 
-function engineeringRecordBitCost(moduleIndex: number, module: CodecFittedModule): number {
+type EngineeringRecord = {
+  readonly moduleIndex: number;
+  readonly engineering: CodecEngineeringState;
+};
+
+function engineeringReferences(records: readonly EngineeringRecord[]): Array<number | null> {
+  const firstRecordByKey = new Map<string, number>();
+  return records.map(({ engineering }, index) => {
+    if (engineering.kind !== 'ordinary') return null;
+    const key = engineeringStateKey(engineering);
+    const previous = firstRecordByKey.get(key);
+    if (previous !== undefined) return previous;
+    firstRecordByKey.set(key, index);
+    return null;
+  });
+}
+
+function engineeringRecordBitCost(record: EngineeringRecord): number {
   const writer = new BitWriter();
-  writeEngineering(writer, moduleIndex, module);
+  writeEngineering(writer, record.moduleIndex, record.engineering);
   return writer.length;
 }
 
@@ -969,8 +1174,7 @@ function engineeringEligibleIndexes(
     const moduleIndex = moduleIndexes[slotIndex]!;
     return (
       blueprintSetForModule(moduleIndex).length > 0 ||
-      preEngineeredSetForModule(moduleIndex).length > 0 ||
-      decorativeSetForModule(moduleIndex).length > 0
+      preEngineeredSetForModule(moduleIndex).length > 0
     );
   });
 }
@@ -1142,10 +1346,6 @@ function preEngineeredSetForModule(moduleIndex: number): readonly number[] {
   return CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE[moduleIndex] ?? [];
 }
 
-function decorativeSetForModule(moduleIndex: number): readonly number[] {
-  return CODEC_V1_DECORATIVE_SET_BY_MODULE[moduleIndex] ?? [];
-}
-
 function resolvePreEngineeredVariant(index: number): PreEngineeredVariant {
   const identity = CODEC_V1_PRE_ENGINEERED_VARIANTS[index];
   if (!identity) throw unknownTableIndex('pre-engineered variant', index);
@@ -1175,12 +1375,35 @@ function preEngineeredVariantIndex(variant: PreEngineeredVariant): number {
   );
 }
 
-function pinnedPreEngineeredExperimental(index: number): string | undefined {
+function pinnedPreEngineeredExperimentalIndex(index: number): number | null {
   const experimental = CODEC_V1_PRE_ENGINEERED_VARIANTS[index]?.experimental;
-  if (experimental === null || experimental === undefined) return undefined;
-  const fdname = CODEC_V1_EXPERIMENTAL_EFFECTS[experimental];
-  if (!fdname) throw unknownTableIndex('pre-engineered experimental effect', experimental);
-  return fdname;
+  if (experimental === null) return null;
+  if (experimental === undefined || !CODEC_V1_EXPERIMENTAL_EFFECTS[experimental]) {
+    throw unknownTableIndex('pre-engineered experimental effect', experimental ?? -1);
+  }
+  return experimental;
+}
+
+function resolvePreEngineeredEngineering(engineering: PreEngineeredState): ModuleEngineering {
+  const variant = resolvePreEngineeredVariant(engineering.variant);
+  const experimental =
+    engineering.experimental === null
+      ? undefined
+      : CODEC_V1_EXPERIMENTAL_EFFECTS[engineering.experimental];
+  if (engineering.experimental !== null && experimental === undefined) {
+    throw unknownTableIndex('experimental effect', engineering.experimental);
+  }
+  const resolvedVariant = {
+    ...variant,
+    ...(experimental === undefined ? { experimental: undefined } : { experimental }),
+  } as PreEngineeredVariant;
+  return {
+    BlueprintName: variant.blueprint,
+    Level: variant.grade,
+    Quality: engineering.quality,
+    ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),
+    Modifiers: getPreEngineeredModifiers(resolvedVariant),
+  };
 }
 
 function indexesWhere<T>(
@@ -1198,75 +1421,38 @@ function moduleAt<T>(modules: ReadonlyMap<string, T>, slot: string | undefined):
   return slot === undefined ? undefined : modules.get(slot);
 }
 
-function writeEngineering(writer: BitWriter, moduleIndex: number, module: CodecFittedModule): void {
+function engineeringStateFromModule(
+  moduleIndex: number,
+  module: CodecFittedModule,
+): CodecEngineeringState {
   const engineering = module.engineering!;
   const preEngineeredIndex =
     module.preEngineeredVariant === null
       ? -1
       : preEngineeredVariantIndex(module.preEngineeredVariant);
-  const decorativeIndex = CODEC_V1_DECORATIVE_MODIFICATIONS.findIndex(
-    (fdname) => normalise(fdname) === normalise(engineering.BlueprintName),
-  );
-  if (decorativeIndex !== -1) {
+  if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      'Decorative modifiers require an Almanac resolver that is not yet available.',
+      'The pre-engineered variant is absent from codec version 1.',
     );
   }
-  const special = preEngineeredIndex !== -1 || decorativeIndex !== -1;
-  const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
-  const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
-  const decorativeAvailable = decorativeSetForModule(moduleIndex).length > 0;
-  const hasSpecialCandidates = preEngineeredAvailable || decorativeAvailable;
-  if (special && !hasSpecialCandidates) {
-    throw new BuildLinkCodecError(
-      'unknownIdentity',
-      'The special engineering identity is unavailable for its fitted module.',
-    );
-  }
-  if (!special && !ordinaryAvailable) {
-    throw new BuildLinkCodecError(
-      'unknownIdentity',
-      'Ordinary engineering is unavailable for its fitted module.',
-    );
-  }
-  if (ordinaryAvailable && hasSpecialCandidates) writer.writeBoolean(special);
-  if (special) {
-    const decorative = preEngineeredIndex === -1;
-    if (preEngineeredAvailable && decorativeAvailable) writer.writeBoolean(decorative);
-    if (decorative) {
-      if (!decorativeSetForModule(moduleIndex).includes(decorativeIndex)) {
-        throw new BuildLinkCodecError(
-          'unknownIdentity',
-          'The decorative modification is unavailable for its fitted module.',
-        );
-      }
-      writeIndexInSet(writer, decorativeIndex, decorativeSetForModule(moduleIndex));
-      if (!Number.isInteger(engineering.Level) || engineering.Level < 1 || engineering.Level > 5) {
-        throw new BuildLinkCodecError('invalidPayload', 'Decorative grade must be from 1 to 5.');
-      }
-      writer.writeBoolean(engineering.Level !== 1);
-      if (engineering.Level !== 1) writer.writeBits(engineering.Level - 2, 2);
-    } else {
-      if (!preEngineeredSetForModule(moduleIndex).includes(preEngineeredIndex)) {
-        throw new BuildLinkCodecError(
-          'unknownIdentity',
-          'The pre-engineered variant is unavailable for its fitted module.',
-        );
-      }
-      writeIndexInSet(writer, preEngineeredIndex, preEngineeredSetForModule(moduleIndex));
-    }
-    writeQuality(writer, engineering.Quality);
-    if (decorative) writeExperimental(writer, moduleIndex, engineering.ExperimentalEffect);
-    else {
-      writeExperimentalWithDefault(
-        writer,
-        moduleIndex,
-        engineering.ExperimentalEffect,
-        pinnedPreEngineeredExperimental(preEngineeredIndex),
+  const experimental =
+    engineering.ExperimentalEffect === undefined
+      ? null
+      : requireIdentity(EXPERIMENTAL_INDEX, engineering.ExperimentalEffect, 'experimental effect');
+  if (preEngineeredIndex !== -1) {
+    if (!preEngineeredSetForModule(moduleIndex).includes(preEngineeredIndex)) {
+      throw new BuildLinkCodecError(
+        'unknownIdentity',
+        'The pre-engineered variant is unavailable for its fitted module.',
       );
     }
-    return;
+    return {
+      kind: 'preEngineered',
+      variant: preEngineeredIndex,
+      quality: engineering.Quality,
+      experimental,
+    };
   }
 
   const blueprint = requireIdentity(
@@ -1275,61 +1461,105 @@ function writeEngineering(writer: BitWriter, moduleIndex: number, module: CodecF
     'engineering blueprint',
   );
   const grades = CODEC_V1_BLUEPRINT_GRADES[blueprint] as readonly number[];
-  const maximumGrade = grades.at(-1)!;
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
       'Engineering grade is unavailable for its blueprint.',
     );
   }
-  writeContextualIndex(writer, blueprint, blueprintSetForModule(moduleIndex), BLUEPRINT_BITS);
-  if (grades.length > 1) {
-    writer.writeBoolean(engineering.Level === maximumGrade);
-    if (engineering.Level !== maximumGrade) {
-      writer.writeBits(grades.indexOf(engineering.Level), bitsRequired(grades.length - 1));
-    }
-  }
-  writeQuality(writer, engineering.Quality);
-  writeExperimental(writer, moduleIndex, engineering.ExperimentalEffect);
+  return {
+    kind: 'ordinary',
+    blueprint,
+    level: engineering.Level,
+    quality: engineering.Quality,
+    experimental,
+  };
 }
 
-function readEngineering(reader: BitReader, moduleIndex: number): ModuleEngineering {
+function writeEngineering(
+  writer: BitWriter,
+  moduleIndex: number,
+  engineering: CodecEngineeringState,
+): void {
   const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
   const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
-  const decorativeAvailable = decorativeSetForModule(moduleIndex).length > 0;
-  const hasSpecialCandidates = preEngineeredAvailable || decorativeAvailable;
-  const special = hasSpecialCandidates && (!ordinaryAvailable || reader.readBoolean());
-  if (special) {
-    const decorative = decorativeAvailable && (!preEngineeredAvailable || reader.readBoolean());
-    if (decorative) {
+  const special = engineering.kind === 'preEngineered';
+  if (special && !preEngineeredAvailable) {
+    throw new BuildLinkCodecError(
+      'unknownIdentity',
+      'The pre-engineered variant is unavailable for its fitted module.',
+    );
+  }
+  if (!special && !ordinaryAvailable) {
+    throw new BuildLinkCodecError(
+      'unknownIdentity',
+      'Ordinary engineering is unavailable for its fitted module.',
+    );
+  }
+  if (ordinaryAvailable && preEngineeredAvailable) writer.writeBoolean(special);
+  if (engineering.kind === 'preEngineered') {
+    if (!preEngineeredSetForModule(moduleIndex).includes(engineering.variant)) {
       throw new BuildLinkCodecError(
         'unknownIdentity',
-        'Decorative modifiers require an Almanac resolver that is not yet available.',
+        'The pre-engineered variant is unavailable for its fitted module.',
       );
     }
+    writeIndexInSet(writer, engineering.variant, preEngineeredSetForModule(moduleIndex));
+    writeQuality(writer, engineering.quality);
+    writeExperimentalWithDefault(
+      writer,
+      moduleIndex,
+      engineering.experimental,
+      pinnedPreEngineeredExperimentalIndex(engineering.variant),
+    );
+    return;
+  }
 
+  const grades = CODEC_V1_BLUEPRINT_GRADES[engineering.blueprint] as readonly number[];
+  const maximumGrade = grades.at(-1)!;
+  if (!Number.isInteger(engineering.level) || !grades.includes(engineering.level)) {
+    throw new BuildLinkCodecError(
+      'invalidPayload',
+      'Engineering grade is unavailable for its blueprint.',
+    );
+  }
+  writeContextualIndex(
+    writer,
+    engineering.blueprint,
+    blueprintSetForModule(moduleIndex),
+    BLUEPRINT_BITS,
+  );
+  if (grades.length > 1) {
+    writer.writeBoolean(engineering.level === maximumGrade);
+    if (engineering.level !== maximumGrade) {
+      writer.writeBits(grades.indexOf(engineering.level), bitsRequired(grades.length - 1));
+    }
+  }
+  writeQuality(writer, engineering.quality);
+  writeExperimental(writer, moduleIndex, engineering.experimental);
+}
+
+function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeringState {
+  const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
+  const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
+  const special = preEngineeredAvailable && (!ordinaryAvailable || reader.readBoolean());
+  if (special) {
     const variantIndex = readIndexFromSet(
       reader,
       preEngineeredSetForModule(moduleIndex),
       'pre-engineered variant',
     );
-    const variant = resolvePreEngineeredVariant(variantIndex);
     const quality = readQuality(reader);
     const experimental = readExperimentalWithDefault(
       reader,
       moduleIndex,
-      pinnedPreEngineeredExperimental(variantIndex),
+      pinnedPreEngineeredExperimentalIndex(variantIndex),
     );
-    const resolvedVariant = {
-      ...variant,
-      ...(experimental === undefined ? { experimental: undefined } : { experimental }),
-    } as PreEngineeredVariant;
     return {
-      BlueprintName: variant.blueprint,
-      Level: variant.grade,
-      Quality: quality,
-      ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),
-      Modifiers: getPreEngineeredModifiers(resolvedVariant),
+      kind: 'preEngineered',
+      variant: variantIndex,
+      quality,
+      experimental,
     };
   }
 
@@ -1338,8 +1568,9 @@ function readEngineering(reader: BitReader, moduleIndex: number): ModuleEngineer
     blueprintSetForModule(moduleIndex),
     BLUEPRINT_BITS,
   );
-  const blueprint = CODEC_V1_BLUEPRINTS[blueprintIndex];
-  if (!blueprint) throw unknownTableIndex('engineering blueprint', blueprintIndex);
+  if (!CODEC_V1_BLUEPRINTS[blueprintIndex]) {
+    throw unknownTableIndex('engineering blueprint', blueprintIndex);
+  }
   const grades = CODEC_V1_BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   let level = maximumGrade;
@@ -1358,10 +1589,11 @@ function readEngineering(reader: BitReader, moduleIndex: number): ModuleEngineer
   const quality = readQuality(reader);
   const experimental = readExperimental(reader, moduleIndex);
   return {
-    BlueprintName: blueprint,
-    Level: level,
-    Quality: quality,
-    ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),
+    kind: 'ordinary',
+    blueprint: blueprintIndex,
+    level,
+    quality,
+    experimental,
   };
 }
 
@@ -1407,15 +1639,10 @@ function readScaledQuality(reader: BitReader): number {
 function writeExperimental(
   writer: BitWriter,
   moduleIndex: number,
-  experimentalEffect: string | undefined,
+  experimental: number | null,
 ): void {
-  writer.writeBoolean(experimentalEffect !== undefined);
-  if (experimentalEffect === undefined) return;
-  const experimental = requireIdentity(
-    EXPERIMENTAL_INDEX,
-    experimentalEffect,
-    'experimental effect',
-  );
+  writer.writeBoolean(experimental !== null);
+  if (experimental === null) return;
   writeContextualIndex(
     writer,
     experimental,
@@ -1424,40 +1651,40 @@ function writeExperimental(
   );
 }
 
-function readExperimental(reader: BitReader, moduleIndex: number): string | undefined {
-  if (!reader.readBoolean()) return undefined;
+function readExperimental(reader: BitReader, moduleIndex: number): number | null {
+  if (!reader.readBoolean()) return null;
   const experimentalIndex = readContextualIndex(
     reader,
     experimentalSetForModule(moduleIndex),
     EXPERIMENTAL_BITS,
   );
-  const experimental = CODEC_V1_EXPERIMENTAL_EFFECTS[experimentalIndex];
-  if (!experimental) throw unknownTableIndex('experimental effect', experimentalIndex);
-  return experimental;
+  if (!CODEC_V1_EXPERIMENTAL_EFFECTS[experimentalIndex]) {
+    throw unknownTableIndex('experimental effect', experimentalIndex);
+  }
+  return experimentalIndex;
 }
 
 function writeExperimentalWithDefault(
   writer: BitWriter,
   moduleIndex: number,
-  experimentalEffect: string | undefined,
-  defaultEffect: string | undefined,
+  experimental: number | null,
+  defaultEffect: number | null,
 ): void {
-  if (defaultEffect === undefined) {
-    writeExperimental(writer, moduleIndex, experimentalEffect);
+  if (defaultEffect === null) {
+    writeExperimental(writer, moduleIndex, experimental);
     return;
   }
-  const matchesDefault =
-    experimentalEffect !== undefined && normalise(experimentalEffect) === normalise(defaultEffect);
+  const matchesDefault = experimental === defaultEffect;
   writer.writeBoolean(!matchesDefault);
-  if (!matchesDefault) writeExperimental(writer, moduleIndex, experimentalEffect);
+  if (!matchesDefault) writeExperimental(writer, moduleIndex, experimental);
 }
 
 function readExperimentalWithDefault(
   reader: BitReader,
   moduleIndex: number,
-  defaultEffect: string | undefined,
-): string | undefined {
-  if (defaultEffect === undefined) return readExperimental(reader, moduleIndex);
+  defaultEffect: number | null,
+): number | null {
+  if (defaultEffect === null) return readExperimental(reader, moduleIndex);
   return reader.readBoolean() ? readExperimental(reader, moduleIndex) : defaultEffect;
 }
 

@@ -1,11 +1,11 @@
 import { BuildLinkCodecError } from './build-link-codec-error';
 
 export const BUILD_LINK_ALPHABET =
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~!$*+/:@';
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!$/:@';
 export const BUILD_LINK_FINAL_ALPHABET =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-/** Encode bytes as Base73 with a Base62 terminal digit safe for bare-link autolinkers. */
+/** Encode bytes as Base69 with a Base62 terminal digit safe for bare-link autolinkers. */
 export function encodeBuildLinkPayload(bytes: Uint8Array): string {
   if (bytes.length === 0) return '';
 
@@ -26,7 +26,7 @@ export function encodeBuildLinkPayload(bytes: Uint8Array): string {
   return BUILD_LINK_ALPHABET[0]!.repeat(leadingZeros) + encoded;
 }
 
-/** Decode canonical Base73/Base62-terminal text to its original bytes. */
+/** Decode canonical Base69/Base62-terminal text to its original bytes. */
 export function decodeBuildLinkPayload(encoded: string): Uint8Array {
   if (encoded.length === 0) return new Uint8Array();
 

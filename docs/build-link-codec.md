@@ -29,7 +29,7 @@ The complete fragment is built in layers:
 ```text
 #b.<encoded payload>
     │
-    └─ Base73 digits with a Base62-only terminal digit
+    └─ Base69 digits with a Base62-only terminal digit
        └─ payload bytes: [versioned bitstream] [CRC-32, little-endian]
           └─ version 1: minimal build state, packed least-significant bit first
              └─ decoded and reconstructed through @elite-dangerous-almanac/core
@@ -41,7 +41,7 @@ convenience.
 
 ### Outer envelope and version dispatch
 
-`b.` permanently identifies the current Base73/Base62-terminal envelope. After decoding only that
+`b.` permanently identifies the current Base69/Base62-terminal envelope. After decoding only that
 generic radix layer, the asynchronous loader reads the first ten bits of the payload and dynamically
 imports the matching codec implementation and JSON table.
 
@@ -57,10 +57,10 @@ existing links.
 ### Radix envelope
 
 The payload bytes are interpreted as one unsigned big-endian integer and encoded with this
-73-character fragment-safe alphabet:
+69-character fragment-safe alphabet:
 
 ```text
-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~!$*+/:@
+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!$/:@
 ```
 
 Leading zero bytes are represented by leading `0` digits. The terminal digit uses only Base62
@@ -87,7 +87,7 @@ partial byte with zero bits; the decoder rejects any non-zero or additional trai
 |     6 | Ship ident          | When present: byte-length varuint followed by UTF-8 bytes                     |
 |     7 | Pristine default    | 1 bit; when set, the hull's pinned stock loadout ends the body                |
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules     |
-|     9 | Power states        | Explicit values for occupied modules and fixed components                     |
+|     9 | Power states        | Explicit values for power-drawing modules and fixed components                |
 |    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects |
 
 The pristine marker is valid only when every module matches the pinned default and every fitted
@@ -140,8 +140,11 @@ strictly smaller, so it can never add overhead to a build that does not repeat m
 
 ### Power state
 
-Power data includes occupied outfittable modules followed by the hull's fixed components. The cargo
-hatch therefore has no presence or identity bit but its power state occupies a stable position.
+Power data includes only occupied outfittable modules and fixed components whose pinned catalogue
+power draw is greater than zero. Passive modules cannot be switched off or assigned a priority, so
+any redundant `On` or `Priority` fields in an imported event are discarded rather than encoded.
+The cargo hatch draws power and therefore has no presence or identity bit but retains an enabled
+state and priority at a stable position.
 
 Data begins with a one-bit `has overrides` marker. An override exists when either `on` or priority is
 explicitly present, including priority `0`; absence remains distinct from an explicit value. When
@@ -162,14 +165,14 @@ out-of-range state:
 
 ### Engineering state
 
-Engineering presence is measured only across fitted modules which have an ordinary blueprint,
-pre-engineered variant, or decorative transformation in the pinned tables. One bit distinguishes
-all eligible modules from an explicit index set.
+Engineering presence is measured only across fitted modules which have an ordinary blueprint or
+pre-engineered variant in the pinned tables. One bit distinguishes all eligible modules from an
+explicit index set.
 
 For multiple engineered modules, ordinary engineering records may refer backward to an identical
 ordinary record already emitted. The direct and reference forms are costed in full, and reference
-mode is used only when smaller. Fixed pre-engineered and decorative records do not participate in
-this record dictionary because their identities carry different reconstruction semantics.
+mode is used only when smaller. Fixed pre-engineered records do not participate in this record
+dictionary because their identities carry different reconstruction semantics.
 
 An ordinary record contains:
 
@@ -182,9 +185,9 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their quality is still encoded, while their modifier arrays are not.
 
-Decorative identities are reserved in the version-1 tables, but version 1 currently refuses to
-encode or decode them. Reconstruction waits for a supported Almanac modifier resolver; it does not
-substitute application-owned calculations.
+Decorative transformations have no version-1 wire identity and do not participate in engineering
+eligibility. The encoder refuses them as unknown engineering until a supported Almanac modifier
+resolver exists; the application does not substitute its own calculation.
 
 ### Scalar values
 
@@ -218,23 +221,26 @@ purchase price or other provenance belongs in a SLEF document, not a build link.
 Validation occurs at every layer:
 
 1. Check the permanent envelope prefix and encoded-length bound.
-2. Decode and canonically re-encode the Base73/Base62-terminal text.
+2. Decode and canonically re-encode the Base69/Base62-terminal text.
 3. Verify CRC-32 before parsing the body.
 4. Select an immutable decoder from the ten-bit version.
-5. Validate every table identity, contextual candidate, mode, range, count, and ordered index.
+5. Parse a table-indexed intermediate representation while validating every identity, contextual
+   candidate, mode, range, count, and ordered index.
 6. Reject non-zero padding and trailing data.
-7. Re-encode the reconstructed loadout and require the exact original fragment.
+7. Canonically reserialise that intermediate representation and require the exact original body.
+8. Only after protocol validation, reconstruct the `ShipLoadout` through the Almanac.
 
-The final round-trip check makes the entire format canonical, including choices which are only
-meaningful after reconstruction. Corruption tests also exercise re-checksummed body mutations so
-structurally valid but non-canonical alternatives cannot bypass the CRC check.
+Canonicality therefore depends only on the immutable decoder and tables, not on Almanac object
+normalisation. Corruption tests also exercise re-checksummed body mutations so structurally valid
+but non-canonical alternatives cannot bypass the CRC check. Almanac reconstruction fidelity remains
+a separately tested compatibility property.
 
 ## Versioned tables and lazy loading
 
 Version 1 uses immutable JSON generated from
 `@elite-dangerous-almanac/core@0.1.0-beta.5`. The table pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
-effects, contextual candidate sets, pre-engineered identities, and reserved decorative identities.
+effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
 Stable game identities originate from the package; indexes exist only inside this version's frozen
 wire table.
 
@@ -247,17 +253,22 @@ loads the current codec. Decoding obtains the version from the first two payload
 only the requested version's implementation; that implementation imports its corresponding JSON.
 Consequently, support for old links does not place every historical table in the initial bundle.
 
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.5`. Every future
+Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
+fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
+requires retaining a compatible reconstruction path for the affected codec version.
+
 ## Reference corpus
 
 The fixed corpus currently produces these complete URL lengths, using
 `https://ships.example/` as the base URL:
 
-| Reference build               | Base73 payload (without `b.`)                                                                                           | Complete URL length | Target |
+| Reference build               | Base69 payload (without `b.`)                                                                                           | Complete URL length | Target |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------: | -----: |
-| Empty Sidewinder              | `1WGofBv1qz`                                                                                                            |                  35 |   <100 |
-| Stock Krait Mk II             | `j05F1hq4`                                                                                                              |                  33 |   <300 |
-| Full engineered Anaconda*     | `$r--q!jo_LNuP1e54__g+BthxYbG*E/585pvN2Gp@W$QHaoOtrfgD!8gJp8LM/VvV$jT6wMJgMd77aC5hr*@l/x3`                              |                 113 |  <=500 |
-| Supplied engineered Corvette† | `620+T.w$pbsJZ/44HAtL5DO*ik.QDUEJv@G/a2CpG2Pd0TVVtWhiBk-RfPOkw!i0WLQdJA3RbRN6kdvMcn~wfoVJEF!M0K+~~nN+e6y8rD+f@krO**5JQ` |                 142 |  <=500 |
+| Empty Sidewinder              | `2I85Wn!NOz`                                                                                                            |                  35 |   <100 |
+| Stock Krait Mk II             | `.7HU@.H4`                                                                                                              |                  33 |   <300 |
+| Full engineered Anaconda*     | `3L5F:lK@0XafSWqm2QX@tu!lbrpvhJV5LPSSAqDXsVY0gZfQ4U1tHQkge@qOGmijcGoi$xGpxJM$NT!9CK`                                    |                 107 |  <=500 |
+| Supplied engineered Corvette† | `FOv7tGRXKalK9SvJ24XMW7vzR.SG$v28lCSNfJqh8-f5eQLSobwc9JsQ1NeWyv:v5EGfapDg-QgVE:bOI1lEoxQs5j7Jw5gizsH7@zk:IuncA8BNXXW-Y` |                 142 |  <=500 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -269,12 +280,14 @@ ammo, engineer, localisation, and purchase fields were removed from the checked-
 
 The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
 Its longest complete URL is 35 characters (the alphabetical tie-break reports the Adder). The
-sanitised real engineered Federal Corvette produces a 142-character complete URL and round-trips
-every calculated module statistic through the Almanac.
+sanitised real engineered Federal Corvette produces a 142-character complete URL. Its original 29
+journal modifier arrays are retained as an external reconstruction corpus. That corpus currently
+exposes Almanac differences tracked in issue 262, so exact calculated-stat reconstruction remains a
+release blocker rather than a property claimed by this document.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
 Anaconda produced an encoded payload of about 1,167 characters before the base URL was added; the
-specialised codec produces 113 characters for the complete URL.
+specialised codec produces 107 characters for the complete URL.
 
 ## Complete reference build definitions
 
@@ -336,21 +349,21 @@ Fixed cargo-hatch power: enabled absent, priority absent.
 | ---------------------- | --------------------------------- | ------: | -------: | -------------------------------------------------------------------- |
 | SmallHardpoint1        | Hpt_PulseLaser_Fixed_Small        |     off |        0 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
 | SmallHardpoint2        | Hpt_PulseLaser_Fixed_Small        |      on |        1 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
-| Armour                 | Anaconda_Armour_Grade1            |      on |        2 | Armour_Thermic G5 Q1 + special_armour_thermic                        |
-| PowerPlant             | Int_Powerplant_Size8_Class1       |      on |        3 | PowerPlant_Stealth G5 Q1 + special_powerplant_toughened              |
+| Armour                 | Anaconda_Armour_Grade1            |       — |        — | Armour_Thermic G5 Q1 + special_armour_thermic                        |
+| PowerPlant             | Int_Powerplant_Size8_Class1       |       — |        — | PowerPlant_Stealth G5 Q1 + special_powerplant_toughened              |
 | MainEngines            | Int_Engine_Size7_Class1           |      on |        4 | Engine_Tuned G5 Q1 + special_engine_toughened                        |
 | FrameShiftDrive        | Int_Hyperdrive_Size6_Class1       |      on |        0 | FSD_Shielded G5 Q1 + special_fsd_toughened                           |
 | LifeSupport            | Int_LifeSupport_Size5_Class1      |      on |        1 | LifeSupport_Shielded G5 Q1                                           |
 | PowerDistributor       | Int_PowerDistributor_Size8_Class1 |     off |        2 | PowerDistributor_Shielded G5 Q1 + special_powerdistributor_toughened |
 | Radar                  | Int_Sensors_Size8_Class1          |      on |        3 | Sensor_WideAngle G5 Q1                                               |
-| FuelTank               | Int_FuelTank_Size5_Class3         |      on |        4 | —                                                                    |
-| Slot01_Size7           | Int_CargoRack_Size6_Class1        |      on |        0 | CargoRack_IncreasedCapacity G5 Q1                                    |
-| Slot02_Size6           | Int_CargoRack_Size5_Class1        |      on |        1 | CargoRack_IncreasedCapacity G5 Q1                                    |
+| FuelTank               | Int_FuelTank_Size5_Class3         |       — |        — | —                                                                    |
+| Slot01_Size7           | Int_CargoRack_Size6_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
+| Slot02_Size6           | Int_CargoRack_Size5_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
 | Slot03_Size6           | Int_ShieldGenerator_Size6_Class1  |      on |        2 | ShieldGenerator_Thermic G5 Q1 + special_shield_toughened             |
-| Slot05_Size5           | Int_CargoRack_Size4_Class1        |      on |        3 | CargoRack_IncreasedCapacity G5 Q1                                    |
-| Slot13_Size2           | Int_CargoRack_Size1_Class1        |     off |        4 | CargoRack_IncreasedCapacity G5 Q1                                    |
+| Slot05_Size5           | Int_CargoRack_Size4_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
+| Slot13_Size2           | Int_CargoRack_Size1_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
 | Slot14_Size1           | Int_SuperCruiseAssist             |      on |        0 | —                                                                    |
-| PlanetaryApproachSuite | int_planetapproachsuite_advanced  |      on |        1 | —                                                                    |
+| PlanetaryApproachSuite | int_planetapproachsuite_advanced  |       — |        — | —                                                                    |
 | HugeHardpoint1         | Hpt_PulseLaser_Fixed_Small        |      on |        3 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
 | LargeHardpoint1        | Hpt_PulseLaser_Fixed_Small        |      on |        4 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
 | LargeHardpoint2        | Hpt_PulseLaser_Fixed_Small        |      on |        0 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
@@ -365,13 +378,13 @@ Fixed cargo-hatch power: enabled absent, priority absent.
 | TinyHardpoint6         | Hpt_ChaffLauncher_Tiny            |      on |        4 | Misc_Shielded G5 Q1                                                  |
 | TinyHardpoint7         | Hpt_ChaffLauncher_Tiny            |      on |        0 | Misc_Shielded G5 Q1                                                  |
 | TinyHardpoint8         | Hpt_ChaffLauncher_Tiny            |      on |        1 | Misc_Shielded G5 Q1                                                  |
-| Slot04_Size6           | Int_FuelTank_Size1_Class3         |      on |        2 | —                                                                    |
-| Slot06_Size5           | Int_FuelTank_Size1_Class3         |      on |        3 | —                                                                    |
-| Slot07_Size5           | Int_FuelTank_Size1_Class3         |      on |        4 | —                                                                    |
+| Slot04_Size6           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
+| Slot06_Size5           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
+| Slot07_Size5           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
 | Military01             | Int_ShieldCellBank_Size1_Class1   |     off |        0 | ShieldCellBank_Specialised G4 Q1 + special_shieldcell_toughened      |
-| Slot08_Size4           | Int_FuelTank_Size1_Class3         |      on |        1 | —                                                                    |
-| Slot09_Size4           | Int_FuelTank_Size1_Class3         |      on |        2 | —                                                                    |
-| Slot10_Size4           | Int_FuelTank_Size1_Class3         |      on |        3 | —                                                                    |
+| Slot08_Size4           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
+| Slot09_Size4           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
+| Slot10_Size4           | Int_FuelTank_Size1_Class3         |       — |        — | —                                                                    |
 
 Fixed cargo-hatch power: on, priority `2`.
 
@@ -401,28 +414,28 @@ Fixed cargo-hatch power: on, priority `2`.
 | TinyHardpoint6         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_Kinetic G5 Q1 + special_shieldbooster_chunky           |
 | TinyHardpoint7         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_HeavyDuty G5 Q1 + special_shieldbooster_chunky         |
 | TinyHardpoint8         | hpt_shieldbooster_size0_class5           |      on |        0 | ShieldBooster_HeavyDuty G5 Q1 + special_shieldbooster_chunky         |
-| Armour                 | federation_corvette_armour_grade3        |      on |        1 | Armour_HeavyDuty G5 Q1 + special_armour_chunky                       |
-| PowerPlant             | int_powerplant_size8_class5              |      on |        1 | PowerPlant_Boosted G5 Q1 + special_powerplant_cooled                 |
+| Armour                 | federation_corvette_armour_grade3        |       — |        — | Armour_HeavyDuty G5 Q1 + special_armour_chunky                       |
+| PowerPlant             | int_powerplant_size8_class5              |       — |        — | PowerPlant_Boosted G5 Q1 + special_powerplant_cooled                 |
 | MainEngines            | int_engine_size7_class5                  |      on |        0 | Engine_Dirty G5 Q1 + special_engine_overloaded                       |
 | FrameShiftDrive        | int_hyperdrive_overcharge_size6_class3   |      on |        0 | FSD_LongRange G5 Q1 + special_fsd_heavy                              |
 | LifeSupport            | int_lifesupport_size5_class2             |      on |        1 | Misc_LightWeight G5 Q1                                               |
 | PowerDistributor       | int_powerdistributor_size8_class5        |      on |        1 | PowerDistributor_HighFrequency G5 Q1 + special_powerdistributor_fast |
 | Radar                  | int_sensors_size8_class5                 |      on |        1 | Sensor_LongRange G5 Q1                                               |
-| FuelTank               | int_fueltank_size5_class3                |      on |        1 | —                                                                    |
+| FuelTank               | int_fueltank_size5_class3                |       — |        — | —                                                                    |
 | Slot01_Size7           | int_shieldgenerator_size7_class3_fast    |      on |        1 | ShieldGenerator_Thermic G5 Q1 + special_shield_regenerative          |
 | Slot02_Size7           | int_shieldcellbank_size7_class5          |      on |        3 | ShieldCellBank_Specialised G4 Q1 + special_shieldcell_oversized      |
 | Slot03_Size7           | int_shieldcellbank_size7_class5          |      on |        3 | ShieldCellBank_Specialised G4 Q1 + special_shieldcell_oversized      |
 | Slot04_Size6           | int_fuelscoop_size6_class5               |      on |        4 | —                                                                    |
 | Slot05_Size6           | int_fighterbay_size6_class1              |      on |        3 | —                                                                    |
-| Slot06_Size5           | int_cargorack_size5_class1               |      on |        1 | —                                                                    |
+| Slot06_Size5           | int_cargorack_size5_class1               |       — |        — | —                                                                    |
 | Slot07_Size5           | int_guardianfsdbooster_size5             |      on |        3 | —                                                                    |
 | Slot08_Size4           | int_fsdinterdictor_size4_class2          |      on |        4 | FSDinterdictor_Expanded G5 Q1                                        |
-| Slot09_Size4           | int_fueltank_size4_class3                |      on |        1 | —                                                                    |
+| Slot09_Size4           | int_fueltank_size4_class3                |       — |        — | —                                                                    |
 | Slot10_Size3           | int_dronecontrol_collection_size3_class5 |      on |        3 | Misc_LightWeight G5 Q1                                               |
 | Slot11_Size1           | int_dockingcomputer_advanced             |      on |        4 | —                                                                    |
-| Military01             | int_hullreinforcement_size5_class2       |      on |        1 | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
-| Military02             | int_hullreinforcement_size5_class2       |      on |        1 | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
-| PlanetaryApproachSuite | int_planetapproachsuite_advanced         |      on |        1 | —                                                                    |
+| Military01             | int_hullreinforcement_size5_class2       |       — |        — | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
+| Military02             | int_hullreinforcement_size5_class2       |       — |        — | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
+| PlanetaryApproachSuite | int_planetapproachsuite_advanced         |       — |        — | —                                                                    |
 
 Fixed cargo-hatch power: on, priority `4`.
 
@@ -443,25 +456,26 @@ the body and then appends the unchanged four-byte CRC:
 | ------------------- | ------------: | ----------------: | -----------: |
 | Empty Sidewinder    |             8 |                10 |           12 |
 | Stock Krait Mk II   |             7 |                 9 |           11 |
-| Engineered Anaconda |            69 |                74 |           73 |
+| Engineered Anaconda |            63 |                68 |           67 |
 
-Both compressors make every reference larger. At 113 characters for the largest synthetic
+Both compressors make every reference larger. At 107 characters for the largest synthetic
 reference and 142 for the sanitised real build, a second compression path is not a reasonable
-trade-off. Base73 still needs interoperability testing in the actual sharing applications, and its
+trade-off. Base69 still needs interoperability testing in the actual sharing applications, and its
 whole-value `BigInt` conversion should become a bounded block converter before application
 integration.
 
 Engineering already gives a blueprint's maximum grade and quality `1` their shortest individual
 forms. Making those defaults global to the engineered set was also evaluated. Because repeated
 engineering records are already back-references, it saves only about 20 to 23 bits on the dense
-references—roughly three Base73 characters before the additional group-mode signalling. That gain
+references—roughly three Base69 characters before the additional group-mode signalling. That gain
 does not justify coupling every engineering record to another adaptive group header.
 
 Module-identity back-references, engineering-record back-references, index-set complements, and the
 baseline-relative module layout are retained because they are selected only when their measured
-cost is lower. A larger alphabet was rejected after testing punctuation handling in bare-link
-autolinkers; Base73 with an alphanumeric terminal digit captures most of the radix gain without
-depending on fragile trailing characters.
+cost is lower. Base73 was one or two characters shorter on the dense references, but its `_`, `~`,
+`*`, and `+` digits create avoidable risk in Markdown-family renderers and query-string relays.
+Base69 drops those characters, while retaining an alphanumeric terminal digit, for cheap
+interoperability insurance.
 
 ## Known limitations and integration work
 
@@ -475,3 +489,10 @@ structural cast. The package exposes the decorative catalogue record but not its
 calculated modifiers. That API gap is tracked upstream in
 [Elite-Dangerous-Almanac issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260);
 production work must consume the released package fix rather than reproduce the calculation locally.
+
+Ordinary blueprint reconstruction also has journal-fidelity differences in Almanac beta.5. The
+retained Corvette modifier corpus exposes 24 modules with at least one effective-stat difference,
+including material burst-interval and ammunition-capacity cases alongside float32 precision
+differences. This is tracked in
+[Elite-Dangerous-Almanac issue 262](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/262).
+The codec remains blocked from release until a supported package fix is consumed.

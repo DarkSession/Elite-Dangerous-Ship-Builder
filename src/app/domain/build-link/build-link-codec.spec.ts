@@ -127,8 +127,13 @@ describe('build-link codec', () => {
     }
   });
 
-  it('treats the cargo hatch as a fixed module and serialises only its power state', () => {
+  it('omits passive-module power fields but retains the cargo hatch power state', () => {
     const stock = ShipLoadout.default('Krait_MkII');
+    const passiveFields = ShipLoadout.default('Krait_MkII');
+    passiveFields.setModuleEnabled('Armour', false);
+    passiveFields.setModulePriority('Armour', 4);
+    passiveFields.setModuleEnabled('PlanetaryApproachSuite', false);
+    passiveFields.setModulePriority('PlanetaryApproachSuite', 4);
     const event = stock.toLoadoutEvent({ moduleOrder: 'slots' });
     const withoutCargoHatch = ShipLoadout.fromLoadout({
       ...event,
@@ -138,6 +143,15 @@ describe('build-link codec', () => {
     powered.setModuleEnabled('CargoHatch', false);
     powered.setModulePriority('CargoHatch', 4);
 
+    expect(encodeBuildLinkFragment(passiveFields)).toBe(encodeBuildLinkFragment(stock));
+    expect(
+      decodeBuildLinkFragment(encodeBuildLinkFragment(passiveFields)).fittedModuleAt('Armour'),
+    ).toMatchObject({ on: undefined, priority: undefined });
+    expect(
+      decodeBuildLinkFragment(encodeBuildLinkFragment(passiveFields)).fittedModuleAt(
+        'PlanetaryApproachSuite',
+      ),
+    ).toMatchObject({ on: undefined, priority: undefined });
     expect(encodeBuildLinkFragment(withoutCargoHatch)).toBe(encodeBuildLinkFragment(stock));
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(powered));
     expect(decoded.fittedModuleAt('CargoHatch')).toMatchObject({
@@ -168,35 +182,56 @@ describe('build-link codec', () => {
     expect(longest).toEqual({ ship: 'Adder', length: 35 });
   });
 
-  it('round-trips a sanitised real journal build including calculated engineering state', () => {
+  it('retains the external modifier corpus which reproduces upstream issue 262', () => {
     const source = ShipLoadout.fromSlef(
       realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
     );
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
-    const event = source.toLoadoutEvent({ moduleOrder: 'slots' });
-    const expected = ShipLoadout.fromLoadout({
-      ...event,
-      Modules: event.Modules.map(({ Engineering: _engineering, ...module }) => module),
-    });
+    const differingEffectiveStats: string[] = [];
     for (const module of source.fittedModules()) {
-      if (!module.engineering) continue;
-      expected.applyBlueprint(module.slot, module.engineering.BlueprintName, {
-        grade: module.engineering.Level,
-        quality: module.engineering.Quality,
-        ...(module.engineering.ExperimentalEffect === undefined
-          ? {}
-          : { experimental: module.engineering.ExperimentalEffect }),
-      });
+      if (module.engineering !== undefined) {
+        expect(module.engineering.Modifiers?.length ?? 0).toBeGreaterThan(0);
+      }
+      if (
+        JSON.stringify(decoded.fittedModuleAt(module.slot)?.effectiveStats) !==
+        JSON.stringify(module.effectiveStats)
+      ) {
+        differingEffectiveStats.push(module.slot);
+      }
     }
+    // Remove this issue-262 reproduction and assert direct equality after consuming its package fix.
+    expect(differingEffectiveStats).toEqual([
+      'hugehardpoint1',
+      'hugehardpoint2',
+      'largehardpoint1',
+      'smallhardpoint1',
+      'smallhardpoint2',
+      'tinyhardpoint1',
+      'tinyhardpoint2',
+      'tinyhardpoint3',
+      'tinyhardpoint4',
+      'tinyhardpoint5',
+      'tinyhardpoint6',
+      'tinyhardpoint7',
+      'tinyhardpoint8',
+      'slot01_size7',
+      'slot02_size7',
+      'slot03_size7',
+      'slot08_size4',
+      'military01',
+      'military02',
+      'powerplant',
+      'mainengines',
+      'frameshiftdrive',
+      'powerdistributor',
+      'armour',
+    ]);
 
     expect(minimalState(decoded)).toEqual(minimalState(source));
-    for (const module of expected.fittedModules()) {
-      expect(decoded.fittedModuleAt(module.slot)?.effectiveStats).toEqual(module.effectiveStats);
-    }
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.620+T.w$pbsJZ/44HAtL5DO*ik.QDUEJv@G/a2CpG2Pd0TVVtWhiBk-RfPOkw!i0WLQdJA3RbRN6kdvMcn~wfoVJEF!M0K+~~nN+e6y8rD+f@krO**5JQ',
+      'b.FOv7tGRXKalK9SvJ24XMW7vzR.SG$v28lCSNfJqh8-f5eQLSobwc9JsQ1NeWyv:v5EGfapDg-QgVE:bOI1lEoxQs5j7Jw5gizsH7@zk:IuncA8BNXXW-Y',
     );
     expect(`https://ships.example/#${fragment}`).toHaveLength(142);
   });
@@ -226,7 +261,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.QiIwal~zVIx8');
+    expect(encodeBuildLinkFragment(source)).toBe('b.kpL1WJMipEk8');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -310,8 +345,9 @@ describe('build-link codec', () => {
     ).rejects.toMatchObject({ code: 'unsupportedVersion' });
   });
 
-  it('keeps literal special-build links stable in the decode direction', () => {
-    const preEngineered = decodeBuildLinkFragment('b.QiIwal~zVIx8');
+  it('keeps the frozen literal special-build link stable in the decode direction', () => {
+    // Freeze before release; once v1 ships, never regenerate this fixture to make a build pass.
+    const preEngineered = decodeBuildLinkFragment('b.kpL1WJMipEk8');
 
     expect(minimalState(preEngineered)).toEqual({
       shipSymbol: 'krait_mkii',
@@ -359,12 +395,13 @@ describe('build-link codec', () => {
     const emptyLink = `${baseUrl}#${emptyFragment}`;
     const typicalLink = `${baseUrl}#${typicalFragment}`;
     const largeLink = `${baseUrl}#${largeFragment}`;
+    // Freeze before release; once v1 ships, never regenerate these fixtures to make a build pass.
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
-      'b.1WGofBv1qz',
-      'b.j05F1hq4',
-      'b.$r--q!jo_LNuP1e54__g+BthxYbG*E/585pvN2Gp@W$QHaoOtrfgD!8gJp8LM/VvV$jT6wMJgMd77aC5hr*@l/x3',
+      'b.2I85Wn!NOz',
+      'b..7HU@.H4',
+      'b.3L5F:lK@0XafSWqm2QX@tu!lbrpvhJV5LPSSAqDXsVY0gZfQ4U1tHQkge@qOGmijcGoi$xGpxJM$NT!9CK',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 113]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 107]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -420,7 +457,7 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b.'), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(501)}`), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment('b.AAAA'), 'invalidPayload');
-    expectCodecError(() => decodeBuildLinkFragment('b.not%base73'), 'invalidEncoding');
+    expectCodecError(() => decodeBuildLinkFragment('b.not%base69'), 'invalidEncoding');
     const canonical = encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII'));
     expectCodecError(
       () => decodeBuildLinkFragment(`${canonical.slice(0, -1)}!`),
@@ -428,7 +465,7 @@ describe('build-link codec', () => {
     );
   });
 
-  it('always ends Base73 fragments with an autolinker-safe alphanumeric digit', () => {
+  it('always ends Base69 fragments with an autolinker-safe alphanumeric digit', () => {
     for (const { symbol } of SHIPS) {
       for (const source of [ShipLoadout.empty(symbol), ShipLoadout.default(symbol)]) {
         expect(BUILD_LINK_FINAL_ALPHABET).toContain(encodeBuildLinkFragment(source).at(-1));
@@ -439,6 +476,17 @@ describe('build-link codec', () => {
   it('rejects a semantically valid but non-canonical index-set mode', () => {
     expectCodecError(
       () => decodeBuildLinkFragment(nonCanonicalEmptySidewinder()),
+      'invalidPayload',
+    );
+  });
+
+  it('rejects non-canonical uniform and all-defined power submodes', () => {
+    expectCodecError(
+      () => decodeBuildLinkFragment(nonCanonicalUniformPriority()),
+      'invalidPayload',
+    );
+    expectCodecError(
+      () => decodeBuildLinkFragment(nonCanonicalAllDefinedEnabledState()),
       'invalidPayload',
     );
   });
@@ -596,21 +644,24 @@ function minimalState(loadout: ShipLoadout): unknown {
     modules: loadout
       .fittedModules()
       .filter((module) => module.slot.toLowerCase() !== 'cargohatch')
-      .map((module) => ({
-        slot: module.slot.toLowerCase(),
-        symbol: module.symbol.toLowerCase(),
-        on: module.on,
-        priority: module.priority,
-        engineering:
-          module.engineering === undefined
-            ? undefined
-            : {
-                blueprint: module.engineering.BlueprintName.toLowerCase(),
-                grade: module.engineering.Level,
-                quality: module.engineering.Quality,
-                experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
-              },
-      }))
+      .map((module) => {
+        const drawsPower = (module.effectiveStats?.powerDraw ?? 0) > 0;
+        return {
+          slot: module.slot.toLowerCase(),
+          symbol: module.symbol.toLowerCase(),
+          on: drawsPower ? module.on : undefined,
+          priority: drawsPower ? module.priority : undefined,
+          engineering:
+            module.engineering === undefined
+              ? undefined
+              : {
+                  blueprint: module.engineering.BlueprintName.toLowerCase(),
+                  grade: module.engineering.Level,
+                  quality: module.engineering.Quality,
+                  experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
+                },
+        };
+      })
       .sort((left, right) => left.slot.localeCompare(right.slot)),
   };
 }
@@ -680,6 +731,54 @@ function nonCanonicalEmptySidewinder(): string {
   writeTestBits(bits, 0, 1); // no power overrides
   writeTestBits(bits, 0, 1); // no engineering
 
+  const body = new Uint8Array(Math.ceil(bits.length / 8));
+  bits.forEach((bit, offset) => {
+    if (bit === 1) body[Math.floor(offset / 8)]! |= 1 << (offset % 8);
+  });
+  const payload = new Uint8Array(body.length + 4);
+  payload.set(body);
+  return encodePayload(payload);
+}
+
+function nonCanonicalUniformPriority(): string {
+  const source = ShipLoadout.default('SideWinder');
+  const modules = powerDrawingModules(source);
+  for (const module of modules) source.setModuleEnabled(module.slot, true);
+  const canonical = decodePayload(encodeBuildLinkFragment(source));
+  const bits = copyPayloadBits(canonical, 32);
+  writeTestBits(bits, 0, 1); // non-canonical: priorities are uniform, but the flag says mixed
+  for (const _module of modules) writeTestBits(bits, 0, 3);
+  writeTestBits(bits, 0, 1); // no engineering
+  return encodeTestBits(bits);
+}
+
+function nonCanonicalAllDefinedEnabledState(): string {
+  const source = ShipLoadout.default('SideWinder');
+  const modules = powerDrawingModules(source);
+  modules.forEach((module, index) => source.setModuleEnabled(module.slot, index % 2 === 0));
+  const canonical = decodePayload(encodeBuildLinkFragment(source));
+  const bits = copyPayloadBits(canonical, 32);
+  writeTestBits(bits, 0, 1); // non-canonical: all values are defined, but the flag says mixed
+  modules.forEach((_module, index) => writeTestBits(bits, index % 2 === 0 ? 2 : 1, 2));
+  writeTestBits(bits, 1, 1); // priorities are uniformly absent
+  writeTestBits(bits, 0, 3);
+  writeTestBits(bits, 0, 1); // no engineering
+  return encodeTestBits(bits);
+}
+
+function powerDrawingModules(source: ShipLoadout): ReturnType<ShipLoadout['fittedModules']> {
+  return source.fittedModules().filter((module) => (module.effectiveStats?.powerDraw ?? 0) > 0);
+}
+
+function copyPayloadBits(payload: Uint8Array, bitCount: number): number[] {
+  const bits: number[] = [];
+  for (let offset = 0; offset < bitCount; offset += 1) {
+    bits.push((payload[Math.floor(offset / 8)]! >> (offset % 8)) & 1);
+  }
+  return bits;
+}
+
+function encodeTestBits(bits: readonly number[]): string {
   const body = new Uint8Array(Math.ceil(bits.length / 8));
   bits.forEach((bit, offset) => {
     if (bit === 1) body[Math.floor(offset / 8)]! |= 1 << (offset % 8);

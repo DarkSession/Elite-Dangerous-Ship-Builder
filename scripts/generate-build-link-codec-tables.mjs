@@ -1,5 +1,4 @@
 import { BLUEPRINTS } from '@elite-dangerous-almanac/core/ships/blueprints';
-import { DECORATIVE_MODIFICATIONS } from '@elite-dangerous-almanac/core/ships/decorative-modifications';
 import {
   getBlueprintsForModule,
   getExperimentalsForModule,
@@ -31,13 +30,25 @@ const ships = SHIPS.map(({ symbol }) => symbol);
 const stockLoadouts = Object.fromEntries(ships.map((ship) => [ship, ShipLoadout.default(ship)]));
 const modules = ALL_MODULES.map(({ symbol }) => symbol);
 const knownModules = new Set(modules.map((symbol) => symbol.toLowerCase()));
+const moduleStatsBySymbol = new Map(
+  ALL_MODULES.map((module) => [module.symbol.toLowerCase(), module]),
+);
 for (const ship of ships) {
-  for (const { symbol } of stockLoadouts[ship].fittedModules()) {
+  for (const module of stockLoadouts[ship].fittedModules()) {
+    const { symbol } = module;
     if (knownModules.has(symbol.toLowerCase())) continue;
+    if (module.stats === null) {
+      throw new Error(`Stock module ${symbol} has no catalogue statistics.`);
+    }
     knownModules.add(symbol.toLowerCase());
     modules.push(symbol);
+    moduleStatsBySymbol.set(symbol.toLowerCase(), module.stats);
   }
 }
+const poweredModules = modules.flatMap((symbol, index) => {
+  const powerDraw = moduleStatsBySymbol.get(symbol.toLowerCase())?.powerDraw;
+  return powerDraw !== undefined && powerDraw > 0 ? [index] : [];
+});
 const blueprints = Object.keys(BLUEPRINTS).sort();
 const blueprintGrades = blueprints.map((fdname) => {
   const grades = Object.keys(BLUEPRINTS[fdname].grades).map(Number);
@@ -108,8 +119,6 @@ const preEngineeredKeys = preEngineeredVariants.map(
 if (new Set(preEngineeredKeys).size !== preEngineeredKeys.length) {
   throw new Error('Pre-engineered codec identities are not unique.');
 }
-const decorativeModifications = Object.keys(DECORATIVE_MODIFICATIONS);
-
 const internSets = (sets) => {
   const unique = [];
   const indexes = new Map();
@@ -172,16 +181,6 @@ const preEngineeredSetByModule = modules.map((symbol) =>
     modules[module].toLowerCase() === symbol.toLowerCase() ? [index] : [],
   ),
 );
-const decorativeSetByModule = modules.map((symbol) =>
-  decorativeModifications.flatMap((fdname, index) =>
-    DECORATIVE_MODIFICATIONS[fdname].modules.some(
-      (moduleSymbol) => moduleSymbol.toLowerCase() === symbol.toLowerCase(),
-    )
-      ? [index]
-      : [],
-  ),
-);
-
 const output = `${JSON.stringify(
   {
     $generated: {
@@ -190,6 +189,7 @@ const output = `${JSON.stringify(
     },
     CODEC_V1_SHIPS: ships,
     CODEC_V1_MODULES: modules,
+    CODEC_V1_POWERED_MODULES: poweredModules,
     CODEC_V1_BLUEPRINTS: blueprints,
     CODEC_V1_BLUEPRINT_GRADES: blueprintGrades,
     CODEC_V1_EXPERIMENTAL_EFFECTS: experimentalEffects,
@@ -204,8 +204,6 @@ const output = `${JSON.stringify(
     CODEC_V1_EXPERIMENTAL_SET_BY_MODULE: experimentalSetByModule,
     CODEC_V1_PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
     CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
-    CODEC_V1_DECORATIVE_MODIFICATIONS: decorativeModifications,
-    CODEC_V1_DECORATIVE_SET_BY_MODULE: decorativeSetByModule,
   },
   null,
   2,

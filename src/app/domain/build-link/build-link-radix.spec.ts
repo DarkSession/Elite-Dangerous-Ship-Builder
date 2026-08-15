@@ -6,7 +6,7 @@ import {
   encodeBuildLinkPayload,
 } from './build-link-radix';
 
-describe('build-link Base73 encoding', () => {
+describe('build-link Base69 encoding', () => {
   it('round-trips arbitrary bytes, including leading zero bytes', () => {
     const samples = [
       new Uint8Array(),
@@ -23,9 +23,12 @@ describe('build-link Base73 encoding', () => {
   });
 
   it('uses the selected unique alphabets and survives browser URL parsing', () => {
-    expect(BUILD_LINK_ALPHABET).toHaveLength(73);
-    expect(new Set(BUILD_LINK_ALPHABET)).toHaveProperty('size', 73);
+    expect(BUILD_LINK_ALPHABET).toHaveLength(69);
+    expect(new Set(BUILD_LINK_ALPHABET)).toHaveProperty('size', 69);
     expect(BUILD_LINK_FINAL_ALPHABET).toHaveLength(62);
+    for (const rendererSensitive of ['*', '_', '~', '+']) {
+      expect(BUILD_LINK_ALPHABET).not.toContain(rendererSensitive);
+    }
     const fragment = `b.${BUILD_LINK_ALPHABET}`;
     expect(new URL(`https://ships.example/#${fragment}`).hash.slice(1)).toBe(fragment);
   });
