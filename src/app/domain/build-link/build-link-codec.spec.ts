@@ -8,6 +8,10 @@ import {
   decodeBuildLinkFragment,
   encodeBuildLinkFragment,
 } from './build-link-codec';
+import {
+  decodeBuildLinkFragment as decodeBuildLinkFragmentOnDemand,
+  encodeBuildLinkFragment as encodeBuildLinkFragmentOnDemand,
+} from './build-link-codec-loader';
 
 describe('build-link codec proof of concept', () => {
   it('round-trips the minimal state imported through the Almanac', () => {
@@ -54,6 +58,26 @@ describe('build-link codec proof of concept', () => {
     expect(
       decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.ExperimentalEffect,
     ).toBeUndefined();
+  });
+
+  it('uses exact compact fixed-point storage for four-decimal journal quality', () => {
+    const source = ShipLoadout.default('Krait_MkII');
+    const floatEscape = ShipLoadout.default('Krait_MkII');
+    source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
+      grade: 5,
+      quality: 0.9438,
+    });
+    floatEscape.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
+      grade: 5,
+      quality: 0.943812345,
+    });
+
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+
+    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Quality).toBe(0.9438);
+    expect(encodeBuildLinkFragment(source).length).toBeLessThan(
+      encodeBuildLinkFragment(floatEscape).length,
+    );
   });
 
   it('uses pinned slot order instead of carrying SLEF module-array order', () => {
@@ -136,6 +160,7 @@ describe('build-link codec proof of concept', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+    expect(encodeBuildLinkFragment(source)).toBe('b.ASAMIJ8HLKd5oQ');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -197,6 +222,9 @@ describe('build-link codec proof of concept', () => {
       });
 
       const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+      if (fdname === 'Decorative_Green') {
+        expect(encodeBuildLinkFragment(source)).toBe('b.ASAMQ6ABXF1VWg');
+      }
 
       expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering).toEqual(
         source.fittedModuleAt('MediumHardpoint1')?.engineering,
@@ -213,6 +241,79 @@ describe('build-link codec proof of concept', () => {
     expect(decodePayload(encoded)[0]).toBe(1);
   });
 
+  it('loads the payload-declared codec and tables on demand', async () => {
+    const source = ShipLoadout.default('Krait_MkII');
+    const encoded = await encodeBuildLinkFragmentOnDemand(source);
+
+    expect(minimalState(await decodeBuildLinkFragmentOnDemand(encoded))).toEqual(
+      minimalState(source),
+    );
+    await expect(
+      decodeBuildLinkFragmentOnDemand(withPayloadVersion(encoded, 2)),
+    ).rejects.toMatchObject({ code: 'unsupportedVersion' });
+  });
+
+  it('keeps literal special-build links stable in the decode direction', () => {
+    const preEngineered = decodeBuildLinkFragment('b.ASAMIJ8HLKd5oQ');
+    const decorative = decodeBuildLinkFragment('b.ASAMQ6ABXF1VWg');
+
+    expect(minimalState(preEngineered)).toEqual({
+      shipSymbol: 'krait_mkii',
+      shipName: null,
+      shipIdent: null,
+      modules: [
+        {
+          slot: 'largehardpoint1',
+          symbol: 'hpt_mining_abrblstr_fixed_small',
+          on: undefined,
+          priority: undefined,
+          engineering: {
+            blueprint: 'weapon_longrange',
+            grade: 5,
+            quality: 1,
+            experimental: undefined,
+          },
+        },
+      ],
+    });
+    expect(preEngineered.fittedModuleAt('LargeHardpoint1')).toMatchObject({
+      preEngineeredVariant: {
+        symbol: 'Hpt_Mining_AbrBlstr_Fixed_Small',
+        blueprint: 'Weapon_LongRange',
+        grade: 5,
+        acquisition: 'communityGoal',
+      },
+      effectiveStats: {
+        integrity: 20,
+        powerDraw: 0.17,
+        distributorDraw: 1,
+        thermalLoad: 1,
+        falloffRange: 5_000,
+        maximumRange: 5_000,
+      },
+    });
+    expect(minimalState(decorative)).toEqual({
+      shipSymbol: 'krait_mkii',
+      shipName: null,
+      shipIdent: null,
+      modules: [
+        {
+          slot: 'mediumhardpoint1',
+          symbol: 'hpt_flakmortar_turret_medium',
+          on: undefined,
+          priority: undefined,
+          engineering: {
+            blueprint: 'decorative_green',
+            grade: 1,
+            quality: 1,
+            experimental: undefined,
+          },
+        },
+      ],
+    });
+    expect(decorative.fittedModuleAt('MediumHardpoint1')?.effectiveStats?.damage).toBe(0.34);
+  });
+
   it('meets the reference link-length targets', () => {
     const baseUrl = 'https://ships.example/';
     const large = makeFullyEngineeredAnaconda();
@@ -225,14 +326,17 @@ describe('build-link codec proof of concept', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.AQAEAH19lP0',
       'b.ASABEacAHA',
-      'b.ARL4_____wcIECBAQMCBQCAQCAQC_w9gAAEEBBBAAP9v37__7thojBqNjcZGY6ONbDQ22rEzdsbO2Bk7Y2fsjJ3P8zzP8zzZt2-zzWabjcj7uRkRAVol',
+      'b.ARL4_____wcIECBAQMCBQCAQCAQC_w9gAAEEBBBAAP9v37__7thojBqNjcZGY6ONbDQ22sXOIAiCIAg8URRFURTJXnttalNjmxryev918wXTtqRD',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([36, 35, 141]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([36, 35, 137]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
     expect(largeLink.length).toBeLessThanOrEqual(500);
     expect(minimalState(decodeBuildLinkFragment(largeFragment))).toEqual(minimalState(large));
+    for (const fragment of [emptyFragment, typicalFragment, largeFragment]) {
+      expect(encodeBuildLinkFragment(decodeBuildLinkFragment(fragment))).toBe(fragment);
+    }
 
     encodeBuildLinkFragment(large);
     const encodeStarted = performance.now();
@@ -281,6 +385,11 @@ describe('build-link codec proof of concept', () => {
     expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(8_193)}`), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment('b.AAAA'), 'invalidPayload');
     expectCodecError(() => decodeBuildLinkFragment('b.not+base64'), 'invalidEncoding');
+    const canonical = encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII'));
+    expectCodecError(
+      () => decodeBuildLinkFragment(`${canonical.slice(0, -1)}B`),
+      'invalidEncoding',
+    );
   });
 
   it('refuses to encode a fragment its own decoder length limit would reject', () => {
