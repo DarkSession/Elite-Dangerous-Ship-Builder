@@ -1,3 +1,7 @@
+import {
+  getDecorativeModifiers,
+  unresolvedDecorativeModifiers,
+} from '@elite-dangerous-almanac/core/ships/decorative-modification-stats';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/pre-engineered';
@@ -20,6 +24,7 @@ interface CodecV1Tables {
   readonly CODEC_V1_BLUEPRINTS: readonly string[];
   readonly CODEC_V1_BLUEPRINT_GRADES: readonly (readonly number[])[];
   readonly CODEC_V1_EXPERIMENTAL_EFFECTS: readonly string[];
+  readonly CODEC_V1_DECORATIVE_MODIFICATIONS: readonly string[];
   readonly CODEC_V1_SLOTS_BY_SHIP: Readonly<Record<string, readonly string[]>>;
   readonly CODEC_V1_FIXED_MODULES_BY_SHIP: Readonly<
     Record<string, readonly { readonly slot: string; readonly module: number }[]>
@@ -47,6 +52,7 @@ const {
   CODEC_V1_BLUEPRINT_GRADES,
   CODEC_V1_BLUEPRINTS,
   CODEC_V1_DEFAULT_MODULES_BY_SHIP,
+  CODEC_V1_DECORATIVE_MODIFICATIONS,
   CODEC_V1_EXPERIMENTAL_SET_BY_MODULE,
   CODEC_V1_EXPERIMENTAL_SETS,
   CODEC_V1_EXPERIMENTAL_EFFECTS,
@@ -70,9 +76,11 @@ const SHIP_BITS = bitsRequired(CODEC_V1_SHIPS.length);
 const MODULE_BITS = bitsRequired(CODEC_V1_MODULES.length);
 const BLUEPRINT_BITS = bitsRequired(CODEC_V1_BLUEPRINTS.length);
 const EXPERIMENTAL_BITS = bitsRequired(CODEC_V1_EXPERIMENTAL_EFFECTS.length + 1);
+const DECORATIVE_BITS = bitsRequired(CODEC_V1_DECORATIVE_MODIFICATIONS.length);
 const QUALITY_SCALE_4 = 10_000;
 const QUALITY_BITS_4 = bitsRequired(QUALITY_SCALE_4 + 1);
 const POWERED_MODULE_SET = new Set(CODEC_V1_POWERED_MODULES);
+const DECORATIVE_INDEX = createIndex(CODEC_V1_DECORATIVE_MODIFICATIONS);
 
 /**
  * Encode a loadout into the application-owned, versioned value placed after `#`.
@@ -140,6 +148,21 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
     moduleIndexes[encodedSlot] = requireIdentity(MODULE_INDEX, module.symbol, 'module');
   }
 
+  const decorativeStates = slots.map((slot, index): number | undefined => {
+    const module = moduleAt(modulesBySlot, slot);
+    if (!module || module.engineering === undefined) return undefined;
+    const modification = DECORATIVE_INDEX.get(normalise(module.engineering.BlueprintName));
+    if (modification === undefined) return undefined;
+    requireDecorativeModification(module.symbol, modification);
+    if (moduleIndexes[index] === null) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A decorative modification is attached to an empty slot.',
+      );
+    }
+    return modification;
+  });
+
   const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[canonicalShip];
   const pristine =
     moduleIndexes.every((moduleIndex, index) => {
@@ -148,7 +171,7 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
         moduleIndex === defaults[index] &&
         (!moduleDrawsPower(moduleIndex) ||
           (module?.on === undefined && module?.priority === undefined)) &&
-        module?.engineering === undefined
+        (module?.engineering === undefined || decorativeStates[index] !== undefined)
       );
     }) &&
     fixedModules.every(({ slot, module: moduleIndex }) => {
@@ -179,7 +202,8 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
     writeEngineeringStates(
       writer,
       occupiedModules.map((module, occupiedIndex) =>
-        module.engineering === undefined
+        module.engineering === undefined ||
+        decorativeStates[occupiedSlots[occupiedIndex]!] !== undefined
           ? undefined
           : engineeringStateFromModule(moduleIndexes[occupiedSlots[occupiedIndex]!]!, module),
       ),
@@ -187,6 +211,7 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
       occupiedSlots,
     );
   }
+  writeDecorativeStates(writer, decorativeStates);
 
   const body = writer.toUint8Array();
   const payload = new Uint8Array(body.length + CRC_LENGTH);
@@ -271,6 +296,7 @@ type VersionOneState = {
   readonly moduleIndexes: readonly (number | null)[];
   readonly powerStates: readonly PowerState[];
   readonly engineeringStates: readonly (CodecEngineeringState | undefined)[];
+  readonly decorativeStates: readonly (number | undefined)[];
 };
 
 function readVersionOneState(reader: BitReader): VersionOneState {
@@ -297,6 +323,12 @@ function readVersionOneState(reader: BitReader): VersionOneState {
   const engineeringStates = pristine
     ? occupiedSlots.map(() => undefined)
     : readEngineeringStates(reader, moduleIndexes, occupiedSlots);
+  const decorativeStates = readDecorativeStates(
+    reader,
+    moduleIndexes,
+    occupiedSlots,
+    engineeringStates,
+  );
 
   if (!pristine && isPristineState(ship, moduleIndexes, powerStates, engineeringStates)) {
     throw new BuildLinkCodecError(
@@ -317,6 +349,7 @@ function readVersionOneState(reader: BitReader): VersionOneState {
     moduleIndexes,
     powerStates,
     engineeringStates,
+    decorativeStates,
   };
 }
 
@@ -338,6 +371,7 @@ function writeVersionOneState(state: VersionOneState): Uint8Array {
     writePowerStates(writer, state.powerStates);
     writeEngineeringStates(writer, state.engineeringStates, state.moduleIndexes, occupiedSlots);
   }
+  writeDecorativeStates(writer, state.decorativeStates);
   return writer.toUint8Array();
 }
 
@@ -417,7 +451,81 @@ function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
       ...(experimental === undefined ? {} : { experimental }),
     });
   });
+  state.decorativeStates.forEach((modification, slotIndex) => {
+    if (modification === undefined) return;
+    const fdname = CODEC_V1_DECORATIVE_MODIFICATIONS[modification];
+    if (!fdname) throw unknownTableIndex('decorative modification', modification);
+    loadout.applyDecorativeModification(slots[slotIndex]!, fdname);
+  });
   return loadout;
+}
+
+function writeDecorativeStates(writer: BitWriter, states: readonly (number | undefined)[]): void {
+  const decorated = indexesWhere(states, (modification) => modification !== undefined);
+  writer.writeBoolean(decorated.length > 0);
+  if (decorated.length === 0) return;
+  writeIndexSet(writer, states.length, decorated);
+  for (const slotIndex of decorated) {
+    const modification = states[slotIndex]!;
+    if (!CODEC_V1_DECORATIVE_MODIFICATIONS[modification]) {
+      throw unknownTableIndex('decorative modification', modification);
+    }
+    writer.writeBits(modification, DECORATIVE_BITS);
+  }
+}
+
+function readDecorativeStates(
+  reader: BitReader,
+  moduleIndexes: readonly (number | null)[],
+  occupiedSlots: readonly number[],
+  engineeringStates: readonly (CodecEngineeringState | undefined)[],
+): Array<number | undefined> {
+  const states: Array<number | undefined> = moduleIndexes.map(() => undefined);
+  if (!reader.readBoolean()) return states;
+  const decorated = readIndexSet(reader, moduleIndexes.length);
+  if (decorated.length === 0) {
+    throw new BuildLinkCodecError(
+      'invalidPayload',
+      'A decorative-modification set cannot be empty.',
+    );
+  }
+  const engineeringBySlot = new Map(
+    occupiedSlots.map((slotIndex, occupiedIndex) => [slotIndex, engineeringStates[occupiedIndex]]),
+  );
+  for (const slotIndex of decorated) {
+    const moduleIndex = moduleIndexes[slotIndex];
+    if (moduleIndex === null) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A decorative modification is attached to an empty slot.',
+      );
+    }
+    if (engineeringBySlot.get(slotIndex) !== undefined) {
+      throw new BuildLinkCodecError(
+        'invalidPayload',
+        'A decorative modification cannot replace engineering on the same slot.',
+      );
+    }
+    const modification = reader.readBits(DECORATIVE_BITS);
+    const symbol = CODEC_V1_MODULES[moduleIndex];
+    if (!symbol) throw unknownTableIndex('module', moduleIndex);
+    requireDecorativeModification(symbol, modification);
+    states[slotIndex] = modification;
+  }
+  return states;
+}
+
+function requireDecorativeModification(symbol: string, modification: number): void {
+  const fdname = CODEC_V1_DECORATIVE_MODIFICATIONS[modification];
+  if (!fdname) throw unknownTableIndex('decorative modification', modification);
+  const modifiers = getDecorativeModifiers(symbol, fdname);
+  const unresolved = unresolvedDecorativeModifiers(symbol, fdname);
+  if (modifiers === null || unresolved === null || unresolved.length > 0) {
+    throw new BuildLinkCodecError(
+      'unknownIdentity',
+      'The decorative modification cannot be reconstructed by the Almanac.',
+    );
+  }
 }
 
 function isPristineState(
@@ -1426,6 +1534,12 @@ function engineeringStateFromModule(
   module: CodecFittedModule,
 ): CodecEngineeringState {
   const engineering = module.engineering!;
+  if (engineering.Level === undefined || engineering.Quality === undefined) {
+    throw new BuildLinkCodecError(
+      'invalidPayload',
+      'Ordinary and pre-engineered state requires a grade and quality.',
+    );
+  }
   const preEngineeredIndex =
     module.preEngineeredVariant === null
       ? -1

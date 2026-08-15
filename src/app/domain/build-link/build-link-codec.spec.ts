@@ -1,3 +1,4 @@
+import { isDecorativeModification } from '@elite-dangerous-almanac/core/ships/decorative-modifications';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { getPreEngineeredModifiers } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
@@ -182,36 +183,23 @@ describe('build-link codec', () => {
     expect(longest).toEqual({ ship: 'Adder', length: 35 });
   });
 
-  it('reconstructs the external modifier corpus through the journal-equivalent Almanac API', () => {
+  it('preserves the external partial-quality capture without treating it as a stat oracle', () => {
     const source = ShipLoadout.fromSlef(
       realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
     );
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
-    const differingModifierSlots: string[] = [];
-    for (const module of source.fittedModules()) {
-      if (module.engineering !== undefined) {
-        expect(module.engineering.Modifiers?.length ?? 0).toBeGreaterThan(0);
-        const numericShape = (modifiers: typeof module.engineering.Modifiers) =>
-          modifiers?.map(({ Label, Value, OriginalValue }) => ({ Label, Value, OriginalValue }));
-        if (
-          JSON.stringify(
-            numericShape(decoded.fittedModuleAt(module.slot)?.engineering?.Modifiers),
-          ) !== JSON.stringify(numericShape(module.engineering.Modifiers))
-        ) {
-          differingModifierSlots.push(module.slot);
-        }
-      }
-    }
-    // The source itself reports a partial quality with complete G5 values in this one slot.
-    expect(differingModifierSlots).toEqual(['smallhardpoint2']);
+    // The game reports partial quality here even though the captured modifiers match a completed
+    // grade-5 roll. Preserve the quality, but do not use this slot as a reconstruction oracle.
+    expect(source.fittedModuleAt('SmallHardpoint2')?.engineering?.Quality).toBe(0.9438);
+    expect(decoded.fittedModuleAt('SmallHardpoint2')?.engineering?.Quality).toBe(0.9438);
 
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.FOv7tGRXKalK9SvJ24XMW7vzR.SG$v28lCSNfJqh8-f5eQLSobwc9JsQ1NeWyv:v5EGfapDg-QgVE:bOI1lEoxQs5j7Jw5gizsH7@zk:IuncA8BNXXW-Y',
+      'b.AphGgXEP9!tHU4OsP8_QG6u3RRXyHQXxGHTY5fSB@rgT3x4M8iuL-IjiCwfvNmBUAkhF8QdaAdush_Y6id.X6.VsIYnfHgKSWTcM6,6kTjIIMdZrCXdnMh',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(142);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(143);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -239,7 +227,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.kpL1WJMipEk8');
+    expect(encodeBuildLinkFragment(source)).toBe('b.eXcDHGhn7Tub');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -287,50 +275,116 @@ describe('build-link codec', () => {
       {
         fdname: 'Decorative_Green',
         module: 'Hpt_FlakMortar_Turret_Medium',
-        modifier: { Label: 'Damage', Value: 0.34, OriginalValue: 34 },
       },
       {
         fdname: 'Decorative_Red',
         module: 'Hpt_PulseLaser_Fixed_Small',
-        modifier: { Label: 'Damage', Value: 0.0205, OriginalValue: 2.05 },
       },
       {
         fdname: 'Decorative_Yellow',
         module: 'Hpt_FlakMortar_Turret_Medium',
-        modifier: { Label: 'Damage', Value: 0.34, OriginalValue: 34 },
       },
     ];
-    for (const { fdname, module, modifier } of cases) {
-      const source = ShipLoadout.fromLoadout({
-        Ship: 'Krait_MkII',
-        Modules: [
-          {
-            Slot: 'MediumHardpoint1',
-            Item: module,
-            Engineering: {
-              BlueprintName: fdname,
-              Level: 1,
-              Quality: 1,
-              Modifiers: [modifier],
-            },
-          },
-        ],
-      });
+    for (const { fdname, module } of cases) {
+      const source = ShipLoadout.empty('Krait_MkII');
+      const fitted = source
+        .modulesForSlot('MediumHardpoint1')
+        .find(({ symbol }) => symbol === module)!;
+      source.setModule('MediumHardpoint1', fitted);
+      source.applyDecorativeModification('MediumHardpoint1', fdname);
+      const modifiers = source.fittedModuleAt('MediumHardpoint1')?.engineering?.Modifiers;
+      expect(modifiers?.length).toBeGreaterThan(0);
 
       const fragment = await encodeBuildLinkFragmentOnDemand(source);
+      if (fdname === 'Decorative_Green') expect(fragment).toBe('b.7pRwpmneNRBGzeI');
       const decoded = await decodeBuildLinkFragmentOnDemand(fragment);
 
-      expect(readPayloadBits(fragment, 0, 10)).toBe(2);
+      expect(readPayloadBits(fragment, 0, 10)).toBe(1);
       expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
       expect(minimalState(decoded)).toEqual(minimalState(source));
-      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering?.Modifiers).toEqual([
-        modifier,
-      ]);
+      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering?.Modifiers).toEqual(modifiers);
+      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering).not.toHaveProperty('Level');
+      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering).not.toHaveProperty('Quality');
       expect(decoded.fittedModuleAt('MediumHardpoint1')?.effectiveStats).toEqual(
         source.fittedModuleAt('MediumHardpoint1')?.effectiveStats,
       );
       expect(await encodeBuildLinkFragmentOnDemand(decoded)).toBe(fragment);
     }
+  });
+
+  it('preserves unrelated engineered state when decoding a decorative slot', () => {
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'Krait_MkII',
+      Modules: [
+        {
+          Slot: 'MediumHardpoint1',
+          Item: 'Hpt_FlakMortar_Turret_Medium',
+        },
+        { Slot: 'LargeHardpoint1', Item: 'Hpt_MultiCannon_Fixed_Medium' },
+      ],
+    });
+    source.applyBlueprint('LargeHardpoint1', 'Weapon_HighCapacity', {
+      grade: 5,
+      quality: 1,
+    });
+    source.applyDecorativeModification('MediumHardpoint1', 'Decorative_Green');
+    const ordinaryBefore = source.fittedModuleAt('LargeHardpoint1')!;
+
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+    const ordinaryAfter = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+    expect(ordinaryAfter.engineering).toEqual(ordinaryBefore.engineering);
+    expect(ordinaryAfter.effectiveStats).toEqual(ordinaryBefore.effectiveStats);
+    expect(ordinaryAfter.effectiveStats?.burstInterval).toBe(
+      ordinaryBefore.effectiveStats?.burstInterval,
+    );
+  });
+
+  it('rejects decorative state on engineered or empty slots and unknown decoration indexes', () => {
+    const ordinaryModule = 'Hpt_PulseLaser_Fixed_Small';
+    const decorativeModule = 'Hpt_FlakMortar_Turret_Medium';
+    const modules: LoadoutEvent['Modules'] = [
+      { Slot: 'MediumHardpoint1', Item: ordinaryModule },
+      { Slot: 'MediumHardpoint2', Item: decorativeModule },
+    ];
+    const ordinary = ShipLoadout.fromLoadout({ Ship: 'Krait_MkII', Modules: modules });
+    ordinary.removeModule('LargeHardpoint1');
+    ordinary.applyBlueprint('MediumHardpoint1', 'Weapon_Sturdy', { grade: 5, quality: 1 });
+    const decorated = ShipLoadout.fromLoadout({ Ship: 'Krait_MkII', Modules: modules });
+    decorated.removeModule('LargeHardpoint1');
+    decorated.applyBlueprint('MediumHardpoint1', 'Weapon_Sturdy', {
+      grade: 5,
+      quality: 1,
+    });
+    decorated.applyDecorativeModification('MediumHardpoint2', 'Decorative_Green');
+
+    const baseline = encodeBuildLinkFragment(ordinary);
+    const fragment = encodeBuildLinkFragment(decorated);
+    const presenceOffset = firstDifferingBodyBit(baseline, fragment);
+    const slots = codecV1Tables.CODEC_V1_SLOTS_BY_SHIP.Krait_MkII;
+    const countWidth = testBitsRequired(slots.length + 1);
+    const slotWidth = testBitsRequired(slots.length);
+    expect(readPayloadBits(fragment, presenceOffset, 1)).toBe(1);
+    expect(readPayloadBits(fragment, presenceOffset + 1, 2)).toBe(1);
+    expect(readPayloadBits(fragment, presenceOffset + 3, countWidth)).toBe(1);
+    const slotOffset = presenceOffset + 3 + countWidth;
+    const modificationOffset = slotOffset + slotWidth;
+
+    const ordinarySlot = slots.indexOf('MediumHardpoint1');
+    expectCodecError(
+      () => decodeBuildLinkFragment(withPayloadBits(fragment, slotOffset, slotWidth, ordinarySlot)),
+      'invalidPayload',
+    );
+    const emptySlot = slots.findIndex((slot) => ordinary.fittedModuleAt(slot) === null);
+    expect(emptySlot).toBeGreaterThanOrEqual(0);
+    expectCodecError(
+      () => decodeBuildLinkFragment(withPayloadBits(fragment, slotOffset, slotWidth, emptySlot)),
+      'invalidPayload',
+    );
+    expectCodecError(
+      () => decodeBuildLinkFragment(withPayloadBits(fragment, modificationOffset, 2, 3)),
+      'unknownIdentity',
+    );
   });
 
   it('stores the table version as the first field inside the payload', () => {
@@ -354,7 +408,7 @@ describe('build-link codec', () => {
 
   it('keeps the frozen literal special-build link stable in the decode direction', () => {
     // Freeze before release; once v1 ships, never regenerate this fixture to make a build pass.
-    const preEngineered = decodeBuildLinkFragment('b.kpL1WJMipEk8');
+    const preEngineered = decodeBuildLinkFragment('b.eXcDHGhn7Tub');
 
     expect(minimalState(preEngineered)).toEqual({
       shipSymbol: 'krait_mkii',
@@ -404,9 +458,9 @@ describe('build-link codec', () => {
     const largeLink = `${baseUrl}#${largeFragment}`;
     // Freeze before release; once v1 ships, never regenerate these fixtures to make a build pass.
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
-      'b.2I85Wn!NOz',
-      'b..7HU@.H4',
-      'b.3L5F:lK@0XafSWqm2QX@tu!lbrpvhJV5LPSSAqDXsVY0gZfQ4U1tHQkge@qOGmijcGoi$xGpxJM$NT!9CK',
+      'b.21B7zk:1Zz',
+      'b.vz,jdQ_4',
+      'b.13CwRAylKDDE1INC0JR96D3Kmyo!u4FKqe/TLGEQfXt6azZWV3jjGJAlpaakay6LK-k@,b,8cIqRF4errK',
     ]);
     expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 107]);
 
@@ -464,7 +518,7 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b.'), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(501)}`), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment('b.AAAA'), 'invalidPayload');
-    expectCodecError(() => decodeBuildLinkFragment('b.not%base69'), 'invalidEncoding');
+    expectCodecError(() => decodeBuildLinkFragment('b.not%base70'), 'invalidEncoding');
     const canonical = encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII'));
     expectCodecError(
       () => decodeBuildLinkFragment(`${canonical.slice(0, -1)}!`),
@@ -472,7 +526,7 @@ describe('build-link codec', () => {
     );
   });
 
-  it('always ends Base69 fragments with an autolinker-safe alphanumeric digit', () => {
+  it('always ends Base70 fragments with an autolinker-safe alphanumeric digit', () => {
     for (const { symbol } of SHIPS) {
       for (const source of [ShipLoadout.empty(symbol), ShipLoadout.default(symbol)]) {
         expect(BUILD_LINK_FINAL_ALPHABET).toContain(encodeBuildLinkFragment(source).at(-1));
@@ -744,12 +798,14 @@ function minimalState(loadout: ShipLoadout): unknown {
           engineering:
             module.engineering === undefined
               ? undefined
-              : {
-                  blueprint: module.engineering.BlueprintName.toLowerCase(),
-                  grade: module.engineering.Level,
-                  quality: module.engineering.Quality,
-                  experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
-                },
+              : isDecorativeModification(module.engineering.BlueprintName)
+                ? { blueprint: module.engineering.BlueprintName.toLowerCase() }
+                : {
+                    blueprint: module.engineering.BlueprintName.toLowerCase(),
+                    grade: module.engineering.Level,
+                    quality: module.engineering.Quality,
+                    experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
+                  },
         };
       })
       .sort((left, right) => left.slot.localeCompare(right.slot)),
@@ -774,6 +830,22 @@ function readPayloadBits(fragment: string, offset: number, width: number): numbe
     if ((payload[byteIndex]! & mask) !== 0) value |= 1 << bit;
   }
   return value;
+}
+
+function firstDifferingBodyBit(leftFragment: string, rightFragment: string): number {
+  const left = decodePayload(leftFragment).subarray(0, -4);
+  const right = decodePayload(rightFragment).subarray(0, -4);
+  const bitCount = Math.min(left.length, right.length) * 8;
+  for (let offset = 0; offset < bitCount; offset += 1) {
+    const leftBit = (left[Math.floor(offset / 8)]! >> (offset % 8)) & 1;
+    const rightBit = (right[Math.floor(offset / 8)]! >> (offset % 8)) & 1;
+    if (leftBit !== rightBit) return offset;
+  }
+  throw new Error('The payload bodies are identical.');
+}
+
+function testBitsRequired(valueCount: number): number {
+  return Math.max(1, Math.ceil(Math.log2(valueCount)));
 }
 
 function withPayloadBits(fragment: string, offset: number, width: number, value: number): string {

@@ -29,10 +29,9 @@ The complete fragment is built in layers:
 ```text
 #b.<encoded payload>
     │
-    └─ Base69 digits with a Base62-only terminal digit
+    └─ Base70 digits with a Base62-only terminal digit
        └─ payload bytes: [versioned bitstream] [CRC-32, little-endian]
-          └─ version 1: minimal build state, packed least-significant bit first
-             └─ version 2: canonical v1 build plus pinned decorative transformations
+          └─ version 1: complete minimal build state, packed least-significant bit first
              └─ decoded and reconstructed through @elite-dangerous-almanac/core
 ```
 
@@ -42,14 +41,14 @@ convenience.
 
 ### Outer envelope and version dispatch
 
-`b.` permanently identifies the current Base69/Base62-terminal envelope. After decoding only that
+`b.` permanently identifies the current Base70/Base62-terminal envelope. After decoding only that
 generic radix layer, the asynchronous loader reads the first ten bits of the payload and dynamically
 imports the matching codec implementation and JSON table.
 
-The embedded version field has 1,024 values. Version `0` is reserved. Version `1` is the immutable
-base format and version `2` adds decorative transformations without changing v1's published bytes
-or tables. Versions `3` through `1023` remain available. A compatible table or binary-layout change
-therefore keeps the `b.` prefix and publishes a new immutable version.
+The embedded version field has 1,024 values. Version `0` is reserved and version `1` is the sole
+format defined before release. The remaining values are available for future immutable formats. A
+compatible table or binary-layout change after release therefore keeps the `b.` prefix and
+publishes a new immutable version.
 
 A future prefix such as `c.` is appropriate only for an incompatible outer envelope that cannot be
 decoded far enough to read the existing ten-bit version. Prefixes are protocol identifiers, not
@@ -59,16 +58,18 @@ existing links.
 ### Radix envelope
 
 The payload bytes are interpreted as one unsigned big-endian integer and encoded with this
-69-character fragment-safe alphabet:
+70-character fragment-safe alphabet:
 
 ```text
-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!$/:@
+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!_/:@,
 ```
 
 Leading zero bytes are represented by leading `0` digits. The terminal digit uses only Base62
 alphanumerics, preventing bare-link autolinkers from dropping trailing punctuation. Decoding must
 re-encode to the exact original text, which rejects invalid characters, redundant leading zeros,
-and other non-canonical integer spellings.
+and other non-canonical integer spellings. Underscore is URI-unreserved; comma is permitted in a
+fragment but cannot appear as the terminal digit. Dollar is deliberately absent because paired
+dollar signs delimit inline mathematics in GitHub Markdown.
 
 The binary body is followed by its four-byte, little-endian CRC-32. The checksum is verified before
 the version-specific parser or the Almanac sees the data. The encoded portion after `b.` is limited
@@ -91,10 +92,11 @@ partial byte with zero bits; the decoder rejects any non-zero or additional trai
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules     |
 |     9 | Power states        | Explicit values for power-drawing modules and fixed components                |
 |    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects |
+|    11 | Decorative states   | Decorated slot set followed by one pinned decorative `fdname` index per slot  |
 
-The pristine marker is valid only when every module matches the pinned default and every fitted
-module has absent power and engineering state. This reduces a stock build to the hull identity plus
-the surrounding fixed fields.
+The pristine marker describes the ordinary base: every module matches the pinned default and every
+fitted module has absent power and ordinary/pre-engineered state. Decorative state follows that
+base independently, so a decorated stock module keeps the pristine shortcut.
 
 ## Adaptive encodings
 
@@ -187,12 +189,12 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their quality is still encoded, while their modifier arrays are not.
 
-Decorative transformations have no version-1 wire identity and do not participate in its
-engineering eligibility. Version 2 retains a complete canonical v1 payload with those
-transformations removed, then overlays the pinned slot and decorative `fdname` pairs. The decoder
-rebuilds their journal modifiers through the Almanac's supported resolver. The package's observed
-module list is not treated as an allowlist: any pinned transformation whose modifiers the Almanac
-can resolve completely for the fitted module is accepted.
+Decorative transformations are separate from ordinary engineering because they have no grade or
+quality. A slot index set selects the decorated fitted modules, followed by each pinned decorative
+`fdname`. The decoder applies each identity to only its selected slot through the Almanac's
+supported loadout operation; it never rebuilds unrelated modules through journal modifier arrays.
+The package's observed module list is not treated as an allowlist: any pinned transformation whose
+modifiers the Almanac can resolve completely for the fitted module is accepted.
 
 ### Scalar values
 
@@ -218,6 +220,8 @@ The decoder creates the minimal loadout event, then reconstructs ordinary engine
 `ShipLoadout.applyBlueprint()`. That Almanac operation regenerates the journal modifier array and
 all effective module statistics from blueprint, grade, quality, and experimental effect.
 Pre-engineered modifiers are likewise obtained from the Almanac's supported resolver.
+Decorative transformations are applied through the Almanac's slot-level operation, preserving the
+already reconstructed state of every unrelated module and emitting no invented grade or quality.
 
 Calculated module values, hull value, aggregate module value, rebuy, and modifier arrays are never
 link state. Catalogue prices are recalculated by the Almanac when exporting SLEF. A captured
@@ -226,7 +230,7 @@ purchase price or other provenance belongs in a SLEF document, not a build link.
 Validation occurs at every layer:
 
 1. Check the permanent envelope prefix and encoded-length bound.
-2. Decode and canonically re-encode the Base69/Base62-terminal text.
+2. Decode and canonically re-encode the Base70/Base62-terminal text.
 3. Verify CRC-32 before parsing the body.
 4. Select an immutable decoder from the ten-bit version.
 5. Parse a table-indexed intermediate representation while validating every identity, contextual
@@ -243,42 +247,36 @@ a separately tested compatibility property.
 ## Versioned tables and lazy loading
 
 Version 1 uses immutable JSON generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.5`. The table pins hulls, hull-specific outfittable slots,
+`@elite-dangerous-almanac/core@0.1.0-beta.7`. The table pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
-effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
-Stable game identities originate from the package; indexes exist only inside this version's frozen
-wire table.
-
-Version 2 uses a separate immutable table generated from Almanac `0.1.0-beta.6`. It pins the known
-decorative identities. Its body embeds the complete v1 payload,
-preserving all v1 model and canonicality rules, and adds a strictly ordered decorative overlay. The
-current table can be regenerated during development with `pnpm run codec:tables`;
-`pnpm run codec:tables:v1` exists only for a checkout using its pinned beta.5 dependency. A
-published table must never be regenerated in place: a catalogue change publishes a new codec
-version, decoder, and JSON file while retaining every earlier version unchanged.
+effects, decorative identities, contextual candidate sets, power-drawing module identities, and
+pre-engineered identities. Stable game identities originate from the package; indexes exist only
+inside this version's frozen wire table. Before the first release it can be regenerated with
+`pnpm run codec:tables`. After release, a catalogue change publishes a new codec version, decoder,
+and JSON file while retaining the earlier version unchanged.
 
 The public asynchronous loader imports only the generic radix code initially. Encoding dynamically
 loads the current codec. Decoding obtains the version from the first two payload bytes and imports
-only the requested version's implementation; that implementation imports its corresponding JSON.
-Consequently, support for old links does not place every historical table in the initial bundle.
+the sole matching implementation and table. Future versions can retain this dispatch without
+placing every historical table in the initial bundle.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.6`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.7`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
 fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
 requires retaining a compatible reconstruction path for the affected codec version.
 
 ## Reference corpus
 
-The fixed corpus currently produces these complete URL lengths, using
-`https://ships.example/` as the base URL:
+The fixed corpus currently produces these encoded data lengths. Each value and length includes the
+`b.` protocol prefix:
 
-| Reference build               | Base69 payload (without `b.`)                                                                                           | Complete URL length | Target |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------: | -----: |
-| Empty Sidewinder              | `2I85Wn!NOz`                                                                                                            |                  35 |   <100 |
-| Stock Krait Mk II             | `.7HU@.H4`                                                                                                              |                  33 |   <300 |
-| Decorative pulse Krait (v2)   | `1OllPbKPUDRfVbodBHwEht5VR4`                                                                                            |                  51 |   <300 |
-| Full engineered Anaconda*     | `3L5F:lK@0XafSWqm2QX@tu!lbrpvhJV5LPSSAqDXsVY0gZfQ4U1tHQkge@qOGmijcGoi$xGpxJM$NT!9CK`                                    |                 107 |  <=500 |
-| Supplied engineered Corvette† | `FOv7tGRXKalK9SvJ24XMW7vzR.SG$v28lCSNfJqh8-f5eQLSobwc9JsQ1NeWyv:v5EGfapDg-QgVE:bOI1lEoxQs5j7Jw5gizsH7@zk:IuncA8BNXXW-Y` |                 142 |  <=500 |
+| Reference build               | Base70 encoded data                                                                                                        | Data length |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------: |
+| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                             |          12 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                               |          10 |
+| Decorative flak Krait         | `b.7pRwpmneNRBGzeI`                                                                                                        |          17 |
+| Full engineered Anaconda*     | `b.13CwRAylKDDE1INC0JR96D3Kmyo!u4FKqe/TLGEQfXt6azZWV3jjGJAlpaakay6LK-k@,b,8cIqRF4errK`                                     |          84 |
+| Supplied engineered Corvette† | `b.AphGgXEP9!tHU4OsP8_QG6u3RRXyHQXxGHTY5fSB@rgT3x4M8iuL-IjiCwfvNmBUAkhF8QdaAdush_Y6id.X6.VsIYnfHgKSWTcM6,6kTjIIMdZrCXdnMh` |         120 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -289,18 +287,17 @@ scope and are not part of the codec model. Identifying ship metadata and all cal
 ammo, engineer, localisation, and purchase fields were removed from the checked-in reference.
 
 The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
-Its longest complete URL is 35 characters (the alphabetical tie-break reports the Adder). The
-v2 literal covers an otherwise unengineered Krait Mk II whose small fixed pulse laser carries
-`Decorative_Red`, including the package-resolved damage modifier. The
-sanitised real engineered Federal Corvette produces a 142-character complete URL. Its original 29
-journal modifier arrays are retained as an external reconstruction corpus. Almanac beta.6
-reconstructs their journal numeric values except for the capture's documented inconsistent slot:
-that slot reports a partial quality alongside complete grade-5 values, so the codec preserves its
-quality and the Almanac correctly calculates from it.
+Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
+decorative literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
+festive green flak launcher, including the package-resolved damage modifier. The sanitised real
+engineered Federal Corvette produces 120 characters of encoded data. It is a preservation fixture:
+one small hardpoint records a partial quality even though its modifier values match the completed
+grade-5 roll. The codec preserves that captured quality exactly; the fixture is not treated as an
+independent oracle for effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced an encoded payload of about 1,167 characters before the base URL was added; the
-specialised codec produces 107 characters for the complete URL.
+Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 84,
+including its `b.` prefix.
 
 ## Complete reference build definitions
 
@@ -457,7 +454,7 @@ Fixed cargo-hatch power: on, priority `4`.
 ## Measured alternatives
 
 The remaining fixed overhead buys format selection, byte alignment, and a CRC-32. Shortening the
-checksum would save only a few URL characters while weakening corruption detection. The
+checksum would save only a few encoded characters while weakening corruption detection. The
 four-decimal quality representation is exact for real SLEF exports and retains a float escape rather
 than quantising exceptional values. Complement sets, repeated-module identities, and repeated
 ordinary engineering records are all enabled only when their exact bit-cost comparison wins.
@@ -471,24 +468,22 @@ the body and then appends the unchanged four-byte CRC:
 | Stock Krait Mk II   |             7 |                 9 |           11 |
 | Engineered Anaconda |            63 |                68 |           67 |
 
-Both compressors make every reference larger. At 107 characters for the largest synthetic
-reference and 142 for the sanitised real build, a second compression path is not a reasonable
-trade-off. Base69 still needs interoperability testing in the actual sharing applications. Its
-radix conversion now uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`, while
-retaining every existing encoded spelling.
+Both compressors make every reference larger. At 84 encoded characters for the largest synthetic
+reference and 120 for the sanitised real build, a second compression path is not a reasonable
+trade-off. Base70 still needs interoperability testing in the actual sharing applications. Its
+radix conversion uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
 
 Engineering already gives a blueprint's maximum grade and quality `1` their shortest individual
 forms. Making those defaults global to the engineered set was also evaluated. Because repeated
 engineering records are already back-references, it saves only about 20 to 23 bits on the dense
-references—roughly three Base69 characters before the additional group-mode signalling. That gain
+references—roughly three Base70 characters before the additional group-mode signalling. That gain
 does not justify coupling every engineering record to another adaptive group header.
 
 Module-identity back-references, engineering-record back-references, index-set complements, and the
 baseline-relative module layout are retained because they are selected only when their measured
-cost is lower. Base73 was one or two characters shorter on the dense references, but its `_`, `~`,
-`*`, and `+` digits create avoidable risk in Markdown-family renderers and query-string relays.
-Base69 drops those characters, while retaining an alphanumeric terminal digit, for cheap
-interoperability insurance.
+cost is lower. Base70 uses underscore and comma but excludes dollar, tilde, asterisk, and plus.
+Keeping an alphanumeric terminal digit prevents punctuation trimming without giving GitHub a pair
+of dollar signs it could interpret as inline mathematics.
 
 ## Known limitations and integration work
 
@@ -496,9 +491,8 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-The former upstream blockers are resolved in Almanac beta.6. Version 2 consumes the supported
-decorative resolver delivered for
-[issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260), and ordinary
-blueprint reconstruction consumes the journal-equivalent arithmetic delivered for
-[issue 262](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/262). Neither result is
-reimplemented or adjusted by the application.
+Almanac beta.7 supplies the package-owned decorative modifier resolver delivered for
+[issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260) and the grade-less,
+slot-level loadout operation delivered for
+[issue 264](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/264). Neither decorative
+values nor ordinary blueprint arithmetic is reimplemented or adjusted by the application.

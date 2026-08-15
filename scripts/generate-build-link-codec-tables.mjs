@@ -1,4 +1,5 @@
 import { BLUEPRINTS } from '@elite-dangerous-almanac/core/ships/blueprints';
+import { DECORATIVE_MODIFICATIONS } from '@elite-dangerous-almanac/core/ships/decorative-modifications';
 import {
   getBlueprintsForModule,
   getExperimentalsForModule,
@@ -11,7 +12,7 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-const CODEC_V1_ALMANAC_VERSION = '0.1.0-beta.5';
+const CODEC_V1_ALMANAC_VERSION = '0.1.0-beta.7';
 const outputPath = fileURLToPath(
   new URL('../src/app/domain/build-link/codec-v1.tables.json', import.meta.url),
 );
@@ -64,6 +65,7 @@ const blueprintGrades = blueprints.map((fdname) => {
   return grades;
 });
 const experimentalEffects = Object.keys(EXPERIMENTAL_EFFECTS).sort();
+const decorativeModifications = Object.keys(DECORATIVE_MODIFICATIONS).sort();
 const moduleIndex = new Map(modules.map((symbol, index) => [symbol.toLowerCase(), index]));
 const blueprintIndex = new Map(blueprints.map((fdname, index) => [fdname.toLowerCase(), index]));
 const experimentalIndex = new Map(
@@ -193,6 +195,7 @@ const output = `${JSON.stringify(
     CODEC_V1_BLUEPRINTS: blueprints,
     CODEC_V1_BLUEPRINT_GRADES: blueprintGrades,
     CODEC_V1_EXPERIMENTAL_EFFECTS: experimentalEffects,
+    CODEC_V1_DECORATIVE_MODIFICATIONS: decorativeModifications,
     CODEC_V1_SLOTS_BY_SHIP: slotsByShip,
     CODEC_V1_FIXED_MODULES_BY_SHIP: fixedModulesByShip,
     CODEC_V1_DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,

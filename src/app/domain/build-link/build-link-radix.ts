@@ -1,11 +1,11 @@
 import { BuildLinkCodecError } from './build-link-codec-error';
 
 export const BUILD_LINK_ALPHABET =
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!$/:@';
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.!_/:@,';
 export const BUILD_LINK_FINAL_ALPHABET =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-/** Encode bytes as Base69 with a Base62 terminal digit safe for bare-link autolinkers. */
+/** Encode bytes as Base70 with a Base62 terminal digit safe for bare-link autolinkers. */
 export function encodeBuildLinkPayload(bytes: Uint8Array): string {
   if (bytes.length === 0) return '';
 
@@ -14,7 +14,7 @@ export function encodeBuildLinkPayload(bytes: Uint8Array): string {
   if (leadingZeros === bytes.length) return BUILD_LINK_ALPHABET[0]!.repeat(leadingZeros);
 
   // Little-endian mixed-radix digits keep every intermediate bounded below 18,000,
-  // independent of payload length. Position zero is Base62; all higher positions are Base69.
+  // independent of payload length. Position zero is Base62; all higher positions are Base70.
   const digits: number[] = [];
   for (const byte of bytes.subarray(leadingZeros)) {
     let carry = byte;
@@ -41,7 +41,7 @@ export function encodeBuildLinkPayload(bytes: Uint8Array): string {
   return BUILD_LINK_ALPHABET[0]!.repeat(leadingZeros) + encoded;
 }
 
-/** Decode canonical Base69/Base62-terminal text to its original bytes. */
+/** Decode canonical Base70/Base62-terminal text to its original bytes. */
 export function decodeBuildLinkPayload(encoded: string): Uint8Array {
   if (encoded.length === 0) return new Uint8Array();
 
