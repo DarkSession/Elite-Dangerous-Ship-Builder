@@ -12,6 +12,13 @@ import {
   decodeBuildLinkFragment as decodeBuildLinkFragmentOnDemand,
   encodeBuildLinkFragment as encodeBuildLinkFragmentOnDemand,
 } from './build-link-codec-loader';
+import {
+  BUILD_LINK_FINAL_ALPHABET,
+  decodeBuildLinkPayload,
+  encodeBuildLinkPayload,
+} from './build-link-radix';
+import codecV1Tables from './codec-v1.tables.json';
+import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture.json';
 
 describe('build-link codec proof of concept', () => {
   it('round-trips the minimal state imported through the Almanac', () => {
@@ -26,6 +33,12 @@ describe('build-link codec proof of concept', () => {
 
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(minimalState(reimported)).toEqual(minimalState(source));
+    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Modifiers).toEqual(
+      source.fittedModuleAt('FrameShiftDrive')?.engineering?.Modifiers,
+    );
+    expect(decoded.fittedModuleAt('FrameShiftDrive')?.effectiveStats).toEqual(
+      source.fittedModuleAt('FrameShiftDrive')?.effectiveStats,
+    );
   });
 
   it('keeps exact non-terminal engineering quality but omits all credit values', () => {
@@ -132,7 +145,37 @@ describe('build-link codec proof of concept', () => {
         length: `https://ships.example/#${encodeBuildLinkFragment(loadout)}`.length,
       }))
       .sort((left, right) => right.length - left.length || left.ship.localeCompare(right.ship))[0];
-    expect(longest).toEqual({ ship: 'Adder', length: 36 });
+    expect(longest).toEqual({ ship: 'Adder', length: 35 });
+  });
+
+  it('round-trips a sanitised real SLEF build including calculated engineering state', () => {
+    const source = ShipLoadout.fromSlef(
+      realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
+    );
+    const fragment = encodeBuildLinkFragment(source);
+    const decoded = decodeBuildLinkFragment(fragment);
+    const event = source.toLoadoutEvent({ moduleOrder: 'slots' });
+    const expected = ShipLoadout.fromLoadout({
+      ...event,
+      Modules: event.Modules.map(({ Engineering: _engineering, ...module }) => module),
+    });
+    for (const module of source.fittedModules()) {
+      if (!module.engineering) continue;
+      expected.applyBlueprint(module.slot, module.engineering.BlueprintName, {
+        grade: module.engineering.Level,
+        quality: module.engineering.Quality,
+        ...(module.engineering.ExperimentalEffect === undefined
+          ? {}
+          : { experimental: module.engineering.ExperimentalEffect }),
+      });
+    }
+
+    expect(minimalState(decoded)).toEqual(minimalState(source));
+    for (const module of expected.fittedModules()) {
+      expect(decoded.fittedModuleAt(module.slot)?.effectiveStats).toEqual(module.effectiveStats);
+    }
+    expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(148);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -160,7 +203,7 @@ describe('build-link codec proof of concept', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.ASAMIJ8HLKd5oQ');
+    expect(encodeBuildLinkFragment(source)).toBe('b.QiIwal~zVIx8');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -203,7 +246,7 @@ describe('build-link codec proof of concept', () => {
     }
   });
 
-  it('preserves every decorative modification and its authoritative package-resolved stats', () => {
+  it('refuses decorative modifications until the Almanac exposes a supported resolver', () => {
     for (const fdname of ['Decorative_Green', 'Decorative_Red', 'Decorative_Yellow']) {
       const source = ShipLoadout.fromLoadout({
         Ship: 'Krait_MkII',
@@ -221,24 +264,15 @@ describe('build-link codec proof of concept', () => {
         ],
       });
 
-      const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-      if (fdname === 'Decorative_Green') {
-        expect(encodeBuildLinkFragment(source)).toBe('b.ASAMQ6ABXF1VWg');
-      }
-
-      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering).toEqual(
-        source.fittedModuleAt('MediumHardpoint1')?.engineering,
-      );
-      expect(decoded.fittedModuleAt('MediumHardpoint1')?.effectiveStats).toEqual(
-        source.fittedModuleAt('MediumHardpoint1')?.effectiveStats,
-      );
+      expectCodecError(() => encodeBuildLinkFragment(source), 'unknownIdentity');
     }
   });
 
   it('stores the table version as the first field inside the payload', () => {
     const encoded = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
 
-    expect(decodePayload(encoded)[0]).toBe(1);
+    expect(readPayloadBits(encoded, 0, 10)).toBe(1);
+    expect(readPayloadBits(withPayloadVersion(encoded, 1_023), 0, 10)).toBe(1_023);
   });
 
   it('loads the payload-declared codec and tables on demand', async () => {
@@ -249,13 +283,12 @@ describe('build-link codec proof of concept', () => {
       minimalState(source),
     );
     await expect(
-      decodeBuildLinkFragmentOnDemand(withPayloadVersion(encoded, 2)),
+      decodeBuildLinkFragmentOnDemand(withPayloadVersion(encoded, 513)),
     ).rejects.toMatchObject({ code: 'unsupportedVersion' });
   });
 
   it('keeps literal special-build links stable in the decode direction', () => {
-    const preEngineered = decodeBuildLinkFragment('b.ASAMIJ8HLKd5oQ');
-    const decorative = decodeBuildLinkFragment('b.ASAMQ6ABXF1VWg');
+    const preEngineered = decodeBuildLinkFragment('b.QiIwal~zVIx8');
 
     expect(minimalState(preEngineered)).toEqual({
       shipSymbol: 'krait_mkii',
@@ -292,26 +325,6 @@ describe('build-link codec proof of concept', () => {
         maximumRange: 5_000,
       },
     });
-    expect(minimalState(decorative)).toEqual({
-      shipSymbol: 'krait_mkii',
-      shipName: null,
-      shipIdent: null,
-      modules: [
-        {
-          slot: 'mediumhardpoint1',
-          symbol: 'hpt_flakmortar_turret_medium',
-          on: undefined,
-          priority: undefined,
-          engineering: {
-            blueprint: 'decorative_green',
-            grade: 1,
-            quality: 1,
-            experimental: undefined,
-          },
-        },
-      ],
-    });
-    expect(decorative.fittedModuleAt('MediumHardpoint1')?.effectiveStats?.damage).toBe(0.34);
   });
 
   it('meets the reference link-length targets', () => {
@@ -324,11 +337,11 @@ describe('build-link codec proof of concept', () => {
     const typicalLink = `${baseUrl}#${typicalFragment}`;
     const largeLink = `${baseUrl}#${largeFragment}`;
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
-      'b.AQAEAH19lP0',
-      'b.ASABEacAHA',
-      'b.ARL4_____wcIECBAQMCBQCAQCAQC_w9gAAEEBBBAAP9v37__7thojBqNjcZGY6ONbDQ22sXOIAiCIAg8URRFURTJXnttalNjmxryev918wXTtqRD',
+      'b.1WGofBv1qz',
+      'b.j05F1hq4',
+      'b.3Id_V/elH:O/_JFVgQ0zx006wm!R-tf$-+/qWRNmbOruMIi5eZSEn@lA76nG2$$2WFV*hhORQZz~TkTDdptZVWvAwi',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([36, 35, 137]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 115]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -360,7 +373,7 @@ describe('build-link codec proof of concept', () => {
     const encoded = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
 
     expectCodecError(
-      () => decodeBuildLinkFragment(withPayloadVersion(encoded, 2)),
+      () => decodeBuildLinkFragment(withPayloadVersion(encoded, 513)),
       'unsupportedVersion',
     );
     expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedVersion');
@@ -382,14 +395,66 @@ describe('build-link codec proof of concept', () => {
 
   it('refuses truncated and malformed encodings', () => {
     expectCodecError(() => decodeBuildLinkFragment('b.'), 'invalidEncoding');
-    expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(8_193)}`), 'invalidEncoding');
+    expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(501)}`), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment('b.AAAA'), 'invalidPayload');
-    expectCodecError(() => decodeBuildLinkFragment('b.not+base64'), 'invalidEncoding');
+    expectCodecError(() => decodeBuildLinkFragment('b.not%base73'), 'invalidEncoding');
     const canonical = encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII'));
     expectCodecError(
-      () => decodeBuildLinkFragment(`${canonical.slice(0, -1)}B`),
+      () => decodeBuildLinkFragment(`${canonical.slice(0, -1)}!`),
       'invalidEncoding',
     );
+  });
+
+  it('always ends Base73 fragments with an autolinker-safe alphanumeric digit', () => {
+    for (const { symbol } of SHIPS) {
+      for (const source of [ShipLoadout.empty(symbol), ShipLoadout.default(symbol)]) {
+        expect(BUILD_LINK_FINAL_ALPHABET).toContain(encodeBuildLinkFragment(source).at(-1));
+      }
+    }
+  });
+
+  it('rejects a semantically valid but non-canonical index-set mode', () => {
+    expectCodecError(
+      () => decodeBuildLinkFragment(nonCanonicalEmptySidewinder()),
+      'invalidPayload',
+    );
+  });
+
+  it('either rejects re-checksummed mutations or decodes them canonically', () => {
+    const references = [
+      encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')),
+      encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII')),
+      encodeBuildLinkFragment(makeFullyEngineeredAnaconda()),
+    ];
+    let state = 0x6d2b_79f5;
+    for (let iteration = 0; iteration < 2_000; iteration += 1) {
+      state ^= state << 13;
+      state ^= state >>> 17;
+      state ^= state << 5;
+      const payload = decodePayload(references[iteration % references.length]!);
+      const bodyBits = (payload.length - 4) * 8;
+      const bit = (state >>> 0) % bodyBits;
+      payload[Math.floor(bit / 8)]! ^= 1 << (bit % 8);
+      const mutated = encodePayload(payload);
+      try {
+        const decoded = decodeBuildLinkFragment(mutated);
+        expect(encodeBuildLinkFragment(decoded)).toBe(mutated);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BuildLinkCodecError);
+      }
+    }
+  });
+
+  it('rejects lone UTF-16 surrogates instead of changing the ship name', () => {
+    const target = ShipLoadout.empty('SideWinder');
+    const source = new Proxy(target, {
+      get(loadout, property) {
+        if (property === 'shipName') return '\ud800';
+        const value: unknown = Reflect.get(loadout, property, loadout);
+        return typeof value === 'function' ? value.bind(loadout) : value;
+      },
+    });
+    expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
   });
 
   it('refuses to encode a fragment its own decoder length limit would reject', () => {
@@ -407,15 +472,15 @@ describe('build-link codec proof of concept', () => {
     const stock = encodeBuildLinkFragment(ShipLoadout.default('SideWinder'));
 
     expectCodecError(
-      () => decodeBuildLinkFragment(withPayloadBits(empty, 8, 6, 63)),
+      () => decodeBuildLinkFragment(withPayloadBits(empty, 10, 6, 63)),
       'unknownIdentity',
     );
     expectCodecError(
-      () => decodeBuildLinkFragment(withPayloadBits(empty, 19, 5, 31)),
+      () => decodeBuildLinkFragment(withPayloadBits(empty, 21, 5, 31)),
       'invalidPayload',
     );
     expectCodecError(
-      () => decodeBuildLinkFragment(withPayloadBits(stock, 16, 1, 0)),
+      () => decodeBuildLinkFragment(withPayloadBits(stock, 18, 1, 0)),
       'invalidPayload',
     );
     expectCodecError(() => decodeBuildLinkFragment(withTrailingByte(empty)), 'invalidPayload');
@@ -423,9 +488,9 @@ describe('build-link codec proof of concept', () => {
 
   it('refuses a payload changed after export', () => {
     const encoded = encodeBuildLinkFragment(ShipLoadout.default('SideWinder'));
-    const position = Math.floor(encoded.length / 2);
-    const replacement = encoded[position] === 'A' ? 'B' : 'A';
-    const tampered = `${encoded.slice(0, position)}${replacement}${encoded.slice(position + 1)}`;
+    const payload = decodePayload(encoded);
+    payload[0]! ^= 0b100;
+    const tampered = `b.${encodeBuildLinkPayload(payload)}`;
 
     expectCodecError(() => decodeBuildLinkFragment(tampered), 'integrityCheckFailed');
   });
@@ -522,22 +587,23 @@ function minimalState(loadout: ShipLoadout): unknown {
 }
 
 function decodePayload(fragment: string): Uint8Array {
-  const encoded = fragment.slice('b.'.length);
-  const padded = encoded
-    .replaceAll('-', '+')
-    .replaceAll('_', '/')
-    .padEnd(encoded.length + ((4 - (encoded.length % 4)) % 4), '=');
-  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+  return decodeBuildLinkPayload(fragment.slice('b.'.length));
 }
 
 function withPayloadVersion(fragment: string, version: number): string {
-  return withPayloadByte(fragment, 0, version);
+  return withPayloadBits(fragment, 0, 10, version);
 }
 
-function withPayloadByte(fragment: string, index: number, value: number): string {
+function readPayloadBits(fragment: string, offset: number, width: number): number {
   const payload = decodePayload(fragment);
-  payload[index] = value;
-  return encodePayload(payload);
+  let value = 0;
+  for (let bit = 0; bit < width; bit += 1) {
+    const absolute = offset + bit;
+    const byteIndex = Math.floor(absolute / 8);
+    const mask = 1 << (absolute % 8);
+    if ((payload[byteIndex]! & mask) !== 0) value |= 1 << bit;
+  }
+  return value;
 }
 
 function withPayloadBits(fragment: string, offset: number, width: number, value: number): string {
@@ -564,9 +630,38 @@ function withTrailingByte(fragment: string): string {
 function encodePayload(payload: Uint8Array): string {
   const body = payload.subarray(0, payload.length - 4);
   new DataView(payload.buffer, payload.byteOffset).setUint32(body.length, crc32(body), true);
-  let binary = '';
-  for (const byte of payload) binary += String.fromCharCode(byte);
-  return `b.${btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '')}`;
+  return `b.${encodeBuildLinkPayload(payload)}`;
+}
+
+function nonCanonicalEmptySidewinder(): string {
+  const canonical = decodePayload(encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')));
+  const canonicalBody = canonical.subarray(0, canonical.length - 4);
+  const bits: number[] = [];
+  for (let offset = 0; offset < 20; offset += 1) {
+    bits.push((canonicalBody[Math.floor(offset / 8)]! >> (offset % 8)) & 1);
+  }
+
+  // Mode 1 spells the changed defaults as an included sparse list; bitmap mode is cheaper.
+  writeTestBits(bits, 1, 2);
+  const defaults = codecV1Tables.CODEC_V1_DEFAULT_MODULES_BY_SHIP.SideWinder;
+  const changed = defaults.flatMap((module, index) => (module === null ? [] : [index]));
+  writeTestBits(bits, changed.length, 5);
+  for (const index of changed) writeTestBits(bits, index, 5);
+  for (const _index of changed) writeTestBits(bits, 0, 1);
+  writeTestBits(bits, 0, 1); // no power overrides
+  writeTestBits(bits, 0, 1); // no engineering
+
+  const body = new Uint8Array(Math.ceil(bits.length / 8));
+  bits.forEach((bit, offset) => {
+    if (bit === 1) body[Math.floor(offset / 8)]! |= 1 << (offset % 8);
+  });
+  const payload = new Uint8Array(body.length + 4);
+  payload.set(body);
+  return encodePayload(payload);
+}
+
+function writeTestBits(bits: number[], value: number, width: number): void {
+  for (let bit = 0; bit < width; bit += 1) bits.push((value >> bit) & 1);
 }
 
 function crc32(bytes: Uint8Array): number {

@@ -1,11 +1,12 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { BuildLinkCodecError } from './build-link-codec-error';
+import { decodeBuildLinkPayload } from './build-link-radix';
 
 export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
 const FRAGMENT_PREFIX = 'b.';
-const MAX_ENCODED_LENGTH = 8_192;
+const MAX_ENCODED_LENGTH = 500;
 const CURRENT_CODEC_VERSION = 1;
 
 /** Encode with the current codec, loading its pinned tables only when first used. */
@@ -39,18 +40,9 @@ function readPayloadVersion(fragment: string): number {
   if (encoded.length === 0 || encoded.length > MAX_ENCODED_LENGTH) {
     throw new BuildLinkCodecError('invalidEncoding', 'The encoded build has an invalid length.');
   }
-  if (!/^[A-Za-z0-9_-]+$/u.test(encoded) || encoded.length % 4 === 1) {
+  const payload = decodeBuildLinkPayload(encoded);
+  if (payload.length < 2) {
     throw new BuildLinkCodecError('invalidEncoding', 'The build-link encoding is invalid.');
   }
-  try {
-    const leading = encoded.slice(0, 4).replaceAll('-', '+').replaceAll('_', '/').padEnd(4, '=');
-    const binary = atob(leading);
-    if (binary.length === 0) {
-      throw new BuildLinkCodecError('invalidEncoding', 'The build-link encoding is invalid.');
-    }
-    return binary.charCodeAt(0);
-  } catch (error) {
-    if (error instanceof BuildLinkCodecError) throw error;
-    throw new BuildLinkCodecError('invalidEncoding', 'The build-link encoding is invalid.');
-  }
+  return payload[0]! | ((payload[1]! & 0b11) << 8);
 }
