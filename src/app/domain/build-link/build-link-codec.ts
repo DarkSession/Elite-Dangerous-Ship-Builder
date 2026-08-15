@@ -81,6 +81,8 @@ const QUALITY_SCALE_4 = 10_000;
 const QUALITY_BITS_4 = bitsRequired(QUALITY_SCALE_4 + 1);
 const POWERED_MODULE_SET = new Set(CODEC_V1_POWERED_MODULES);
 const DECORATIVE_INDEX = createIndex(CODEC_V1_DECORATIVE_MODIFICATIONS);
+const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
+const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
 
 /**
  * Encode a loadout into the application-owned, versioned value placed after `#`.
@@ -1298,6 +1300,14 @@ function writeIndexSet(writer: BitWriter, valueCount: number, indexes: readonly 
     return;
   }
 
+  if (mode === 3) {
+    writer.writeBits(indexes.length, bitsRequired(valueCount + 1));
+    const combinations = combinationCount(valueCount, indexes.length);
+    const width = combinationRankWidth(combinations);
+    if (width > 0) writer.writeBits(combinationRank(valueCount, indexes), width);
+    return;
+  }
+
   const encodedIndexes =
     mode === 1
       ? indexes
@@ -1327,7 +1337,20 @@ function readIndexSet(reader: BitReader, valueCount: number): number[] {
             (_value, index) => !encodedIndexes.includes(index),
           );
   } else {
-    throw new BuildLinkCodecError('invalidPayload', 'An index-set mode is invalid.');
+    const count = reader.readBits(bitsRequired(valueCount + 1));
+    if (count > valueCount) {
+      throw new BuildLinkCodecError('invalidPayload', 'An index set contains too many values.');
+    }
+    if (indexSetModeForCount(valueCount, count) !== 3) {
+      throw new BuildLinkCodecError('invalidPayload', 'An index set is not canonical.');
+    }
+    const combinations = combinationCount(valueCount, count);
+    const width = combinationRankWidth(combinations);
+    const rank = width === 0 ? 0 : reader.readBits(width);
+    if (rank >= combinations) {
+      throw new BuildLinkCodecError('invalidPayload', 'An index-set rank is invalid.');
+    }
+    indexes = combinationUnrank(valueCount, count, rank);
   }
   if (mode !== indexSetMode(valueCount, indexes)) {
     throw new BuildLinkCodecError('invalidPayload', 'An index set is not canonical.');
@@ -1339,24 +1362,83 @@ function indexSetBitCost(valueCount: number, indexes: readonly number[]): number
   return 2 + indexSetDataBitCost(valueCount, indexes, indexSetMode(valueCount, indexes));
 }
 
-function indexSetMode(valueCount: number, indexes: readonly number[]): 0 | 1 | 2 {
+function indexSetMode(valueCount: number, indexes: readonly number[]): 0 | 1 | 2 | 3 {
+  return indexSetModeForCount(valueCount, indexes.length);
+}
+
+function indexSetModeForCount(valueCount: number, selectedCount: number): 0 | 1 | 2 | 3 {
   const costs = [
-    indexSetDataBitCost(valueCount, indexes, 0),
-    indexSetDataBitCost(valueCount, indexes, 1),
-    indexSetDataBitCost(valueCount, indexes, 2),
+    indexSetDataBitCostForCount(valueCount, selectedCount, 0),
+    indexSetDataBitCostForCount(valueCount, selectedCount, 1),
+    indexSetDataBitCostForCount(valueCount, selectedCount, 2),
+    indexSetDataBitCostForCount(valueCount, selectedCount, 3),
   ];
   const minimum = Math.min(...costs);
-  return costs.indexOf(minimum) as 0 | 1 | 2;
+  return costs.indexOf(minimum) as 0 | 1 | 2 | 3;
 }
 
 function indexSetDataBitCost(
   valueCount: number,
   indexes: readonly number[],
-  mode: 0 | 1 | 2,
+  mode: 0 | 1 | 2 | 3,
+): number {
+  return indexSetDataBitCostForCount(valueCount, indexes.length, mode);
+}
+
+function indexSetDataBitCostForCount(
+  valueCount: number,
+  selectedCount: number,
+  mode: 0 | 1 | 2 | 3,
 ): number {
   if (mode === 0) return valueCount;
-  const encodedCount = mode === 1 ? indexes.length : valueCount - indexes.length;
+  if (mode === 3) {
+    const rankWidth = combinationRankWidth(combinationCount(valueCount, selectedCount));
+    return rankWidth <= 31 ? bitsRequired(valueCount + 1) + rankWidth : Number.POSITIVE_INFINITY;
+  }
+  const encodedCount = mode === 1 ? selectedCount : valueCount - selectedCount;
   return bitsRequired(valueCount + 1) + encodedCount * bitsRequired(valueCount);
+}
+
+function combinationCount(valueCount: number, selectedCount: number): number {
+  const smaller = Math.min(selectedCount, valueCount - selectedCount);
+  let result = 1;
+  for (let index = 1; index <= smaller; index += 1) {
+    result = (result * (valueCount - smaller + index)) / index;
+  }
+  return Math.round(result);
+}
+
+function combinationRank(valueCount: number, indexes: readonly number[]): number {
+  let rank = 0;
+  let previous = -1;
+  for (let position = 0; position < indexes.length; position += 1) {
+    for (let candidate = previous + 1; candidate < indexes[position]!; candidate += 1) {
+      rank += combinationCount(valueCount - candidate - 1, indexes.length - position - 1);
+    }
+    previous = indexes[position]!;
+  }
+  return rank;
+}
+
+function combinationRankWidth(combinations: number): number {
+  return combinations <= 1 ? 0 : Math.ceil(Math.log2(combinations));
+}
+
+function combinationUnrank(valueCount: number, selectedCount: number, rank: number): number[] {
+  const indexes: number[] = [];
+  let previous = -1;
+  for (let position = 0; position < selectedCount; position += 1) {
+    for (let candidate = previous + 1; candidate < valueCount; candidate += 1) {
+      const count = combinationCount(valueCount - candidate - 1, selectedCount - position - 1);
+      if (rank < count) {
+        indexes.push(candidate);
+        previous = candidate;
+        break;
+      }
+      rank -= count;
+    }
+  }
+  return indexes;
 }
 
 function readSparseIndexes(reader: BitReader, valueCount: number): number[] {
@@ -1911,7 +1993,18 @@ class BitWriter {
       throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
     }
     const encoded = new TextEncoder().encode(value);
-    this.writeVarUint(encoded.length);
+    const compact = [...value].every((character) => COMPACT_STRING_CHARACTERS.has(character));
+    this.writeVarUint(compact ? value.length * 2 + 1 : encoded.length * 2);
+    if (compact) {
+      for (const character of value) {
+        const index = COMPACT_STRING_ALPHABET.indexOf(character);
+        if (index < 0) {
+          throw new BuildLinkCodecError('invalidPayload', 'A compact string is invalid.');
+        }
+        this.writeBits(index, 6);
+      }
+      return;
+    }
     for (const byte of encoded) this.writeBits(byte, 8);
   }
 
@@ -1997,7 +2090,21 @@ class BitReader {
   }
 
   readString(): string {
-    const length = this.readVarUint();
+    const header = this.readVarUint();
+    const compact = header % 2 === 1;
+    const length = Math.floor(header / 2);
+    if (compact) {
+      if (length > Math.floor(this.remainingBits / 6)) {
+        throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
+      }
+      return Array.from({ length }, () => {
+        const character = COMPACT_STRING_ALPHABET[this.readBits(6)];
+        if (character === undefined) {
+          throw new BuildLinkCodecError('invalidPayload', 'A compact string is invalid.');
+        }
+        return character;
+      }).join('');
+    }
     if (length > Math.floor(this.remainingBits / 8)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
     }

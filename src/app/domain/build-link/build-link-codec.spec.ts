@@ -58,6 +58,82 @@ describe('build-link codec', () => {
     expect(decoded.toLoadoutEvent().Rebuy).toBe(source.toLoadoutEvent().Rebuy);
   });
 
+  it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
+    const cases = [
+      { name: 'Astraea', ident: 'POC-42', length: 27 },
+      { name: 'Astraea 星', ident: 'POC-42', length: 35 },
+      { name: '星', ident: null, length: 17 },
+      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 40 },
+    ];
+    for (const { name, ident, length } of cases) {
+      const source = ShipLoadout.fromLoadout({
+        Ship: 'SideWinder',
+        ShipName: name,
+        ...(ident === null ? {} : { ShipIdent: ident }),
+        Modules: [],
+      });
+      const fragment = encodeBuildLinkFragment(source);
+      const decoded = decodeBuildLinkFragment(fragment);
+
+      expect(fragment).toHaveLength(length);
+      expect(decoded.shipName).toBe(name);
+      expect(decoded.shipIdent).toBe(ident);
+      expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+    }
+  });
+
+  it('pins the compact metadata alphabet and tagged-length boundary', () => {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
+    const compact = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      ShipName: alphabet,
+      Modules: [],
+    });
+    const compactFragment = encodeBuildLinkFragment(compact);
+    const metadataOffset = 10 + testBitsRequired(codecV1Tables.CODEC_V1_SHIPS.length) + 2;
+
+    expect(readPayloadBits(compactFragment, metadataOffset, 8)).toBe(0x81);
+    expect(readPayloadBits(compactFragment, metadataOffset + 8, 8)).toBe(0x01);
+    for (let index = 0; index < alphabet.length; index += 1) {
+      expect(readPayloadBits(compactFragment, metadataOffset + 16 + index * 6, 6)).toBe(index);
+    }
+    expect(decodeBuildLinkFragment(compactFragment).shipName).toBe(alphabet);
+
+    const belowBoundary = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      ShipName: `${'é'.repeat(31)}A`,
+      Modules: [],
+    });
+    const atBoundary = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      ShipName: 'é'.repeat(32),
+      Modules: [],
+    });
+    const belowFragment = encodeBuildLinkFragment(belowBoundary);
+    const boundaryFragment = encodeBuildLinkFragment(atBoundary);
+
+    expect(readPayloadBits(belowFragment, metadataOffset, 8)).toBe(126);
+    expect(readPayloadBits(boundaryFragment, metadataOffset, 8)).toBe(0x80);
+    expect(readPayloadBits(boundaryFragment, metadataOffset + 8, 8)).toBe(0x01);
+    expect(decodeBuildLinkFragment(belowFragment).shipName).toBe(belowBoundary.shipName);
+    expect(decodeBuildLinkFragment(boundaryFragment).shipName).toBe(atBoundary.shipName);
+  });
+
+  it('rejects non-canonical, truncated, and malformed tagged metadata', () => {
+    expectCodecError(
+      () => decodeBuildLinkFragment(handcraftedMetadataFragment(2, [{ value: 65, width: 8 }])),
+      'invalidPayload',
+    );
+    expectCodecError(
+      () => decodeBuildLinkFragment(handcraftedMetadataFragment(129, [], false)),
+      'invalidPayload',
+    );
+    expectCodecError(
+      () => decodeBuildLinkFragment(handcraftedMetadataFragment(2, [{ value: 0xff, width: 8 }])),
+      'invalidPayload',
+    );
+  });
+
   it('round-trips the zero-quality engineering boundary without a special effect', () => {
     const source = ShipLoadout.default('Krait_MkII');
     source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade: 1, quality: 0 });
@@ -197,9 +273,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.AphGgXEP9!tHU4OsP8_QG6u3RRXyHQXxGHTY5fSB@rgT3x4M8iuL-IjiCwfvNmBUAkhF8QdaAdush_Y6id.X6.VsIYnfHgKSWTcM6,6kTjIIMdZrCXdnMh',
+      'b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOEoM53hK0W.fbWHUNVK2',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(143);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(142);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -460,9 +536,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
-      'b.13CwRAylKDDE1INC0JR96D3Kmyo!u4FKqe/TLGEQfXt6azZWV3jjGJAlpaakay6LK-k@,b,8cIqRF4errK',
+      'b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 107]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 105]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -537,6 +613,42 @@ describe('build-link codec', () => {
   it('rejects a semantically valid but non-canonical index-set mode', () => {
     expectCodecError(
       () => decodeBuildLinkFragment(nonCanonicalEmptySidewinder()),
+      'invalidPayload',
+    );
+  });
+
+  it('pins combination-rank boundaries and rejects invalid ranks and preferred-mode ties', () => {
+    const slots = codecV1Tables.CODEC_V1_SLOTS_BY_SHIP.SideWinder;
+    const cases = [
+      { removed: [slots[0]!, slots[1]!], rank: 0 },
+      { removed: [slots[17]!, slots[18]!], rank: 170 },
+    ];
+    for (const { removed, rank } of cases) {
+      const source = ShipLoadout.default('SideWinder');
+      removed.forEach((slot) => source.removeModule(slot));
+      const fragment = encodeBuildLinkFragment(source);
+
+      expect(readPayloadBits(fragment, 20, 2)).toBe(3);
+      expect(readPayloadBits(fragment, 22, 5)).toBe(2);
+      expect(readPayloadBits(fragment, 27, 8)).toBe(rank);
+      expect(minimalState(decodeBuildLinkFragment(fragment))).toEqual(minimalState(source));
+    }
+
+    const invalidRank = ShipLoadout.default('SideWinder');
+    invalidRank.removeModule(slots[17]!);
+    invalidRank.removeModule(slots[18]!);
+    expectCodecError(
+      () =>
+        decodeBuildLinkFragment(withPayloadBits(encodeBuildLinkFragment(invalidRank), 27, 8, 171)),
+      'invalidPayload',
+    );
+
+    const preferredIncluded = ShipLoadout.default('SideWinder');
+    preferredIncluded.removeModule(slots[0]!);
+    const preferredFragment = encodeBuildLinkFragment(preferredIncluded);
+    expect(readPayloadBits(preferredFragment, 20, 2)).toBe(1);
+    expectCodecError(
+      () => decodeBuildLinkFragment(withPayloadBits(preferredFragment, 20, 2, 3)),
       'invalidPayload',
     );
   });
@@ -875,6 +987,29 @@ function encodePayload(payload: Uint8Array): string {
   return `b.${encodeBuildLinkPayload(payload)}`;
 }
 
+function handcraftedMetadataFragment(
+  header: number,
+  values: readonly { readonly value: number; readonly width: number }[],
+  includeTail = true,
+): string {
+  const bits: number[] = [];
+  writeTestBits(bits, 1, 10);
+  writeTestBits(
+    bits,
+    codecV1Tables.CODEC_V1_SHIPS.indexOf('SideWinder'),
+    testBitsRequired(codecV1Tables.CODEC_V1_SHIPS.length),
+  );
+  writeTestBits(bits, 1, 1); // ship name present
+  writeTestBits(bits, 0, 1); // ship ident absent
+  writeTestVarUint(bits, header);
+  values.forEach(({ value, width }) => writeTestBits(bits, value, width));
+  if (includeTail) {
+    writeTestBits(bits, 1, 1); // pristine default
+    writeTestBits(bits, 0, 1); // no decorative state
+  }
+  return encodeTestBits(bits);
+}
+
 function nonCanonicalEmptySidewinder(): string {
   const canonical = decodePayload(encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')));
   const canonicalBody = canonical.subarray(0, canonical.length - 4);
@@ -952,6 +1087,15 @@ function encodeTestBits(bits: readonly number[]): string {
 
 function writeTestBits(bits: number[], value: number, width: number): void {
   for (let bit = 0; bit < width; bit += 1) bits.push((value >> bit) & 1);
+}
+
+function writeTestVarUint(bits: number[], value: number): void {
+  let remaining = value;
+  do {
+    const byte = remaining % 128;
+    remaining = Math.floor(remaining / 128);
+    writeTestBits(bits, byte | (remaining > 0 ? 0x80 : 0), 8);
+  } while (remaining > 0);
 }
 
 function crc32(bytes: Uint8Array): number {

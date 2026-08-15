@@ -86,8 +86,8 @@ partial byte with zero bits; the decoder rejects any non-zero or additional trai
 |     2 | Hull                | Fixed-width index into the pinned hull table                                  |
 |     3 | Ship-name presence  | 1 bit                                                                         |
 |     4 | Ship-ident presence | 1 bit                                                                         |
-|     5 | Ship name           | When present: byte-length varuint followed by UTF-8 bytes                     |
-|     6 | Ship ident          | When present: byte-length varuint followed by UTF-8 bytes                     |
+|     5 | Ship name           | When present: tagged varuint length followed by compact symbols or UTF-8      |
+|     6 | Ship ident          | When present: tagged varuint length followed by compact symbols or UTF-8      |
 |     7 | Pristine default    | 1 bit; when set, the hull's pinned stock loadout ends the body                |
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules     |
 |     9 | Power states        | Explicit values for power-drawing modules and fixed components                |
@@ -107,17 +107,23 @@ the format canonical while allowing sparse and dense builds to use different lay
 ### Index sets
 
 Slot sets are shared by module layout, power overrides, and engineering presence. A two-bit mode
-selects one of three forms:
+selects one of four forms:
 
-| Mode | Form             | Data                                                      |
-| ---: | ---------------- | --------------------------------------------------------- |
-|    0 | Bitmap           | One bit for every candidate                               |
-|    1 | Included indexes | Count followed by strictly increasing fixed-width indexes |
-|    2 | Excluded indexes | Count followed by the strictly increasing complement      |
+| Mode | Form             | Data                                                        |
+| ---: | ---------------- | ----------------------------------------------------------- |
+|    0 | Bitmap           | One bit for every candidate                                 |
+|    1 | Included indexes | Count followed by strictly increasing fixed-width indexes   |
+|    2 | Excluded indexes | Count followed by the strictly increasing complement        |
+|    3 | Combination rank | Count, then `ceil(log2(C(n,k)))` bits of lexicographic rank |
 
-Mode `3` is invalid. Equal-cost modes prefer bitmap, then included indexes, then excluded indexes.
-The complement form is especially effective for nearly complete loadouts: all 38 outfittable
-Anaconda slots can be represented as zero exclusions instead of a 38-bit occupancy map.
+Equal-cost modes prefer bitmap, then included indexes, then excluded indexes, then combination
+rank. Here `n` is the candidate count and `k` is the selected count. A zero-bit rank represents the
+only possible subset when `C(n,k) = 1`. The combination count for the largest 38-slot hull remains
+a safe JavaScript integer. Mode 3 is eligible only when its rank fits in at most 31 bits; with the
+pinned maximum of 38 slots, any wider rank already loses to the bitmap after including its count.
+The decoder rejects such a mode before reading its rank. The complement form is especially
+effective for nearly complete loadouts: all 38 outfittable Anaconda slots can be represented as
+zero exclusions instead of a 38-bit occupancy map.
 
 ### Module layout and identities
 
@@ -211,8 +217,19 @@ forms:
 The float64 escape preserves non-SLEF callers losslessly. The decoder rejects an escaped value that
 has a shorter canonical fixed-point form, and rejects fixed-point encodings of the two endpoints.
 
-Ship name and ident use strict UTF-8. The encoder rejects ill-formed UTF-16 such as lone surrogates,
-and the decoder rejects malformed UTF-8 rather than replacing it with U+FFFD.
+Ship name and ident use a tagged varuint header. In compact form, the header is
+`2 * character count + 1`, followed by one six-bit index per character into this exact ordered
+alphabet:
+
+```text
+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -
+```
+
+Every other value uses strict UTF-8: its header is `2 * UTF-8 byte count`, followed by that many
+bytes. Thus an odd header identifies compact character count and an even header identifies UTF-8
+byte count. The encoder rejects ill-formed UTF-16 such as lone surrogates, and the decoder rejects
+malformed UTF-8 rather than replacing it with U+FFFD. It also rejects a UTF-8 spelling when every
+decoded character belongs to the compact alphabet, because that spelling is non-canonical.
 
 ## Reconstruction and validation
 
@@ -270,13 +287,13 @@ requires retaining a compatible reconstruction path for the affected codec versi
 The fixed corpus currently produces these encoded data lengths. Each value and length includes the
 `b.` protocol prefix:
 
-| Reference build               | Base70 encoded data                                                                                                        | Data length |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------: |
-| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                             |          12 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                               |          10 |
-| Decorative flak Krait         | `b.7pRwpmneNRBGzeI`                                                                                                        |          17 |
-| Full engineered Anaconda*     | `b.13CwRAylKDDE1INC0JR96D3Kmyo!u4FKqe/TLGEQfXt6azZWV3jjGJAlpaakay6LK-k@,b,8cIqRF4errK`                                     |          84 |
-| Supplied engineered Corvette† | `b.AphGgXEP9!tHU4OsP8_QG6u3RRXyHQXxGHTY5fSB@rgT3x4M8iuL-IjiCwfvNmBUAkhF8QdaAdush_Y6id.X6.VsIYnfHgKSWTcM6,6kTjIIMdZrCXdnMh` |         120 |
+| Reference build               | Base70 encoded data                                                                                                       | Data length |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------: |
+| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                            |          12 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                              |          10 |
+| Decorative flak Krait         | `b.7pRwpmneNRBGzeI`                                                                                                       |          17 |
+| Full engineered Anaconda*     | `b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7`                                      |          82 |
+| Supplied engineered Corvette† | `b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOEoM53hK0W.fbWHUNVK2` |         119 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -290,13 +307,13 @@ The every-hull baseline corpus covers empty and stock configurations for all 48 
 Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
 decorative literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
 festive green flak launcher, including the package-resolved damage modifier. The sanitised real
-engineered Federal Corvette produces 120 characters of encoded data. It is a preservation fixture:
+engineered Federal Corvette produces 119 characters of encoded data. It is a preservation fixture:
 one small hardpoint records a partial quality even though its modifier values match the completed
 grade-5 roll. The codec preserves that captured quality exactly; the fixture is not treated as an
 independent oracle for effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 84,
+Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 82,
 including its `b.` prefix.
 
 ## Complete reference build definitions
@@ -466,12 +483,31 @@ the body and then appends the unchanged four-byte CRC:
 | ------------------- | ------------: | ----------------: | -----------: |
 | Empty Sidewinder    |             8 |                10 |           12 |
 | Stock Krait Mk II   |             7 |                 9 |           11 |
-| Engineered Anaconda |            63 |                68 |           67 |
+| Engineered Anaconda |            62 |                67 |           66 |
 
-Both compressors make every reference larger. At 84 encoded characters for the largest synthetic
-reference and 120 for the sanitised real build, a second compression path is not a reasonable
+Both compressors make every reference larger. At 82 encoded characters for the largest synthetic
+reference and 119 for the sanitised real build, a second compression path is not a reasonable
 trade-off. Base70 still needs interoperability testing in the actual sharing applications. Its
 radix conversion uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
+
+The adaptive combination-rank index-set mode leaves empty, stock, and decorative references at
+12, 10, and 17 characters, while reducing the engineered Anaconda from 84 to 82 and the supplied
+Corvette from 120 to 119. A fixed-width truncated-binary index prototype saved at most one
+character and changed several equally sized literals, so the combination rank was the stronger
+trade-off.
+
+The compact metadata path reduced an ASCII `Astraea` / `POC-42` build from 31 to 27 characters, the
+mixed `Astraea 星` / `POC-42` case from 36 to 35, and a longer ASCII example from 50 to 40. A
+short Unicode-only example remained 17 characters. The tag itself costs no additional byte for
+UTF-8 values shorter than 64 bytes. Doubling the tagged length does cross a varuint boundary at 64
+bytes, however, so a 64–127-byte fallback value uses one more header byte than the untagged
+prototype. Eligible metadata gains six-bit storage; other metadata preserves exact text with that
+documented boundary cost.
+
+An empty-loadout template was also tried. A dedicated flag shortened empty builds but enlarged
+some small non-empty builds; using the reserved index-set code avoided that regression but changed
+none of the 48 empty-hull data lengths because byte padding absorbed the saved bits. Neither form
+is retained.
 
 Engineering already gives a blueprint's maximum grade and quality `1` their shortest individual
 forms. Making those defaults global to the engineered set was also evaluated. Because repeated
