@@ -7,10 +7,22 @@ export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
 const FRAGMENT_PREFIX = 'b.';
 const MAX_ENCODED_LENGTH = 500;
-const CURRENT_CODEC_VERSION = 1;
 
 /** Encode with the current codec, loading its pinned tables only when first used. */
 export async function encodeBuildLinkFragment(loadout: ShipLoadout): Promise<string> {
+  const { isDecorativeModification } =
+    await import('@elite-dangerous-almanac/core/ships/decorative-modifications');
+  if (
+    loadout
+      .fittedModules()
+      .some(
+        ({ engineering }) =>
+          engineering !== undefined && isDecorativeModification(engineering.BlueprintName),
+      )
+  ) {
+    const codec = await import('./build-link-codec-v2');
+    return codec.encodeBuildLinkFragment(loadout);
+  }
   const codec = await import('./build-link-codec');
   return codec.encodeBuildLinkFragment(loadout);
 }
@@ -19,8 +31,12 @@ export async function encodeBuildLinkFragment(loadout: ShipLoadout): Promise<str
 export async function decodeBuildLinkFragment(fragment: string): Promise<ShipLoadout> {
   const version = readPayloadVersion(fragment);
   switch (version) {
-    case CURRENT_CODEC_VERSION: {
+    case 1: {
       const codec = await import('./build-link-codec');
+      return codec.decodeBuildLinkFragment(fragment);
+    }
+    case 2: {
+      const codec = await import('./build-link-codec-v2');
       return codec.decodeBuildLinkFragment(fragment);
     }
     default:

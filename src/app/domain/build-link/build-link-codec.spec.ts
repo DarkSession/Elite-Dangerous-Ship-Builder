@@ -182,51 +182,29 @@ describe('build-link codec', () => {
     expect(longest).toEqual({ ship: 'Adder', length: 35 });
   });
 
-  it('retains the external modifier corpus which reproduces upstream issue 262', () => {
+  it('reconstructs the external modifier corpus through the journal-equivalent Almanac API', () => {
     const source = ShipLoadout.fromSlef(
       realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
     );
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
-    const differingEffectiveStats: string[] = [];
+    const differingModifierSlots: string[] = [];
     for (const module of source.fittedModules()) {
       if (module.engineering !== undefined) {
         expect(module.engineering.Modifiers?.length ?? 0).toBeGreaterThan(0);
-      }
-      if (
-        JSON.stringify(decoded.fittedModuleAt(module.slot)?.effectiveStats) !==
-        JSON.stringify(module.effectiveStats)
-      ) {
-        differingEffectiveStats.push(module.slot);
+        const numericShape = (modifiers: typeof module.engineering.Modifiers) =>
+          modifiers?.map(({ Label, Value, OriginalValue }) => ({ Label, Value, OriginalValue }));
+        if (
+          JSON.stringify(
+            numericShape(decoded.fittedModuleAt(module.slot)?.engineering?.Modifiers),
+          ) !== JSON.stringify(numericShape(module.engineering.Modifiers))
+        ) {
+          differingModifierSlots.push(module.slot);
+        }
       }
     }
-    // Remove this issue-262 reproduction and assert direct equality after consuming its package fix.
-    expect(differingEffectiveStats).toEqual([
-      'hugehardpoint1',
-      'hugehardpoint2',
-      'largehardpoint1',
-      'smallhardpoint1',
-      'smallhardpoint2',
-      'tinyhardpoint1',
-      'tinyhardpoint2',
-      'tinyhardpoint3',
-      'tinyhardpoint4',
-      'tinyhardpoint5',
-      'tinyhardpoint6',
-      'tinyhardpoint7',
-      'tinyhardpoint8',
-      'slot01_size7',
-      'slot02_size7',
-      'slot03_size7',
-      'slot08_size4',
-      'military01',
-      'military02',
-      'powerplant',
-      'mainengines',
-      'frameshiftdrive',
-      'powerdistributor',
-      'armour',
-    ]);
+    // The source itself reports a partial quality with complete G5 values in this one slot.
+    expect(differingModifierSlots).toEqual(['smallhardpoint2']);
 
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
@@ -304,25 +282,54 @@ describe('build-link codec', () => {
     }
   });
 
-  it('refuses decorative modifications until the Almanac exposes a supported resolver', () => {
-    for (const fdname of ['Decorative_Green', 'Decorative_Red', 'Decorative_Yellow']) {
+  it('round-trips package-identified decorative modifications and their effective stats', async () => {
+    const cases = [
+      {
+        fdname: 'Decorative_Green',
+        module: 'Hpt_FlakMortar_Turret_Medium',
+        modifier: { Label: 'Damage', Value: 0.34, OriginalValue: 34 },
+      },
+      {
+        fdname: 'Decorative_Red',
+        module: 'Hpt_PulseLaser_Fixed_Small',
+        modifier: { Label: 'Damage', Value: 0.0205, OriginalValue: 2.05 },
+      },
+      {
+        fdname: 'Decorative_Yellow',
+        module: 'Hpt_FlakMortar_Turret_Medium',
+        modifier: { Label: 'Damage', Value: 0.34, OriginalValue: 34 },
+      },
+    ];
+    for (const { fdname, module, modifier } of cases) {
       const source = ShipLoadout.fromLoadout({
         Ship: 'Krait_MkII',
         Modules: [
           {
             Slot: 'MediumHardpoint1',
-            Item: 'Hpt_FlakMortar_Turret_Medium',
+            Item: module,
             Engineering: {
               BlueprintName: fdname,
               Level: 1,
               Quality: 1,
-              Modifiers: [{ Label: 'Damage', Value: 0.34, OriginalValue: 34 }],
+              Modifiers: [modifier],
             },
           },
         ],
       });
 
-      expectCodecError(() => encodeBuildLinkFragment(source), 'unknownIdentity');
+      const fragment = await encodeBuildLinkFragmentOnDemand(source);
+      const decoded = await decodeBuildLinkFragmentOnDemand(fragment);
+
+      expect(readPayloadBits(fragment, 0, 10)).toBe(2);
+      expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
+      expect(minimalState(decoded)).toEqual(minimalState(source));
+      expect(decoded.fittedModuleAt('MediumHardpoint1')?.engineering?.Modifiers).toEqual([
+        modifier,
+      ]);
+      expect(decoded.fittedModuleAt('MediumHardpoint1')?.effectiveStats).toEqual(
+        source.fittedModuleAt('MediumHardpoint1')?.effectiveStats,
+      );
+      expect(await encodeBuildLinkFragmentOnDemand(decoded)).toBe(fragment);
     }
   });
 
@@ -603,29 +610,112 @@ function makeImportedEngineeredBuild(includeCredits = true): ShipLoadout {
 
 function makeFullyEngineeredAnaconda(): ShipLoadout {
   const loadout = ShipLoadout.default('Anaconda');
+  const moduleForEmptySlot = (slot: string): string => {
+    if (slot.startsWith('TinyHardpoint')) return 'Hpt_ChaffLauncher_Tiny';
+    if (slot.includes('Hardpoint')) return 'Hpt_PulseLaser_Fixed_Small';
+    if (slot.startsWith('Military')) return 'Int_ShieldCellBank_Size1_Class1';
+    return 'Int_FuelTank_Size1_Class3';
+  };
   for (const slot of loadout.slots()) {
     if (slot.module || !slot.removable) continue;
-    const candidate = loadout.modulesForSlot(slot.key).find((module) => {
-      try {
-        loadout.setModule(slot.key, module);
-        return true;
-      } catch {
-        return false;
-      }
-    });
+    const symbol = moduleForEmptySlot(slot.key);
+    const candidate = loadout
+      .modulesForSlot(slot.key)
+      .find((module) => module.symbol.toLowerCase() === symbol.toLowerCase());
     expect(candidate, `a module for ${slot.key}`).toBeDefined();
+    loadout.setModule(slot.key, candidate!);
   }
 
-  for (const [index, module] of loadout.fittedModules().entries()) {
-    loadout.setModuleEnabled(module.slot, index % 7 !== 0);
-    loadout.setModulePriority(module.slot, index % 5);
-    const blueprint = loadout.availableBlueprints(module.slot).at(-1);
-    if (!blueprint) continue;
-    const experimental = loadout.availableExperimentalEffects(module.slot).at(-1);
-    loadout.applyBlueprint(module.slot, blueprint.fdname, {
-      grade: blueprint.grades.at(-1)!,
+  const engineeringByModule: Readonly<
+    Record<string, { blueprint: string; grade: number; experimental?: string }>
+  > = {
+    hpt_pulselaser_fixed_small: {
+      blueprint: 'Weapon_Sturdy',
+      grade: 5,
+      experimental: 'special_weapon_toughened',
+    },
+    anaconda_armour_grade1: {
+      blueprint: 'Armour_Thermic',
+      grade: 5,
+      experimental: 'special_armour_thermic',
+    },
+    int_powerplant_size8_class1: {
+      blueprint: 'PowerPlant_Stealth',
+      grade: 5,
+      experimental: 'special_powerplant_toughened',
+    },
+    int_engine_size7_class1: {
+      blueprint: 'Engine_Tuned',
+      grade: 5,
+      experimental: 'special_engine_toughened',
+    },
+    int_hyperdrive_size6_class1: {
+      blueprint: 'FSD_Shielded',
+      grade: 5,
+      experimental: 'special_fsd_toughened',
+    },
+    int_lifesupport_size5_class1: { blueprint: 'LifeSupport_Shielded', grade: 5 },
+    int_powerdistributor_size8_class1: {
+      blueprint: 'PowerDistributor_Shielded',
+      grade: 5,
+      experimental: 'special_powerdistributor_toughened',
+    },
+    int_sensors_size8_class1: { blueprint: 'Sensor_WideAngle', grade: 5 },
+    int_cargorack_size6_class1: { blueprint: 'CargoRack_IncreasedCapacity', grade: 5 },
+    int_cargorack_size5_class1: { blueprint: 'CargoRack_IncreasedCapacity', grade: 5 },
+    int_cargorack_size4_class1: { blueprint: 'CargoRack_IncreasedCapacity', grade: 5 },
+    int_cargorack_size1_class1: { blueprint: 'CargoRack_IncreasedCapacity', grade: 5 },
+    int_shieldgenerator_size6_class1: {
+      blueprint: 'ShieldGenerator_Thermic',
+      grade: 5,
+      experimental: 'special_shield_toughened',
+    },
+    hpt_chafflauncher_tiny: { blueprint: 'Misc_Shielded', grade: 5 },
+    int_shieldcellbank_size1_class1: {
+      blueprint: 'ShieldCellBank_Specialised',
+      grade: 4,
+      experimental: 'special_shieldcell_toughened',
+    },
+  };
+  const powerBySlot: Readonly<Record<string, readonly [on: boolean, priority: number]>> = {
+    smallhardpoint1: [false, 0],
+    smallhardpoint2: [true, 1],
+    mainengines: [true, 4],
+    frameshiftdrive: [true, 0],
+    lifesupport: [true, 1],
+    powerdistributor: [false, 2],
+    radar: [true, 3],
+    slot03_size6: [true, 2],
+    slot14_size1: [true, 0],
+    hugehardpoint1: [true, 3],
+    largehardpoint1: [true, 4],
+    largehardpoint2: [true, 0],
+    largehardpoint3: [false, 1],
+    mediumhardpoint1: [true, 2],
+    mediumhardpoint2: [true, 3],
+    tinyhardpoint1: [true, 4],
+    tinyhardpoint2: [true, 0],
+    tinyhardpoint3: [true, 1],
+    tinyhardpoint4: [true, 2],
+    tinyhardpoint5: [false, 3],
+    tinyhardpoint6: [true, 4],
+    tinyhardpoint7: [true, 0],
+    tinyhardpoint8: [true, 1],
+    military01: [false, 0],
+    cargohatch: [true, 2],
+  };
+  for (const module of loadout.fittedModules()) {
+    const power = powerBySlot[module.slot.toLowerCase()];
+    if (power) {
+      loadout.setModuleEnabled(module.slot, power[0]);
+      loadout.setModulePriority(module.slot, power[1]);
+    }
+    const engineering = engineeringByModule[module.symbol.toLowerCase()];
+    if (!engineering) continue;
+    loadout.applyBlueprint(module.slot, engineering.blueprint, {
+      grade: engineering.grade,
       quality: 1,
-      ...(experimental ? { experimental } : {}),
+      ...(engineering.experimental ? { experimental: engineering.experimental } : {}),
     });
   }
   return loadout;

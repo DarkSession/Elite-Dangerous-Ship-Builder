@@ -32,6 +32,7 @@ The complete fragment is built in layers:
     └─ Base69 digits with a Base62-only terminal digit
        └─ payload bytes: [versioned bitstream] [CRC-32, little-endian]
           └─ version 1: minimal build state, packed least-significant bit first
+             └─ version 2: canonical v1 build plus pinned decorative transformations
              └─ decoded and reconstructed through @elite-dangerous-almanac/core
 ```
 
@@ -45,8 +46,9 @@ convenience.
 generic radix layer, the asynchronous loader reads the first ten bits of the payload and dynamically
 imports the matching codec implementation and JSON table.
 
-The embedded version field has 1,024 values. Version `0` is reserved, version `1` is the current
-format, and versions `2` through `1023` remain available. A compatible table or binary-layout change
+The embedded version field has 1,024 values. Version `0` is reserved. Version `1` is the immutable
+base format and version `2` adds decorative transformations without changing v1's published bytes
+or tables. Versions `3` through `1023` remain available. A compatible table or binary-layout change
 therefore keeps the `b.` prefix and publishes a new immutable version.
 
 A future prefix such as `c.` is appropriate only for an incompatible outer envelope that cannot be
@@ -185,9 +187,12 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their quality is still encoded, while their modifier arrays are not.
 
-Decorative transformations have no version-1 wire identity and do not participate in engineering
-eligibility. The encoder refuses them as unknown engineering until a supported Almanac modifier
-resolver exists; the application does not substitute its own calculation.
+Decorative transformations have no version-1 wire identity and do not participate in its
+engineering eligibility. Version 2 retains a complete canonical v1 payload with those
+transformations removed, then overlays the pinned slot and decorative `fdname` pairs. The decoder
+rebuilds their journal modifiers through the Almanac's supported resolver. The package's observed
+module list is not treated as an allowlist: any pinned transformation whose modifiers the Almanac
+can resolve completely for the fitted module is accepted.
 
 ### Scalar values
 
@@ -244,16 +249,20 @@ effects, contextual candidate sets, power-drawing module identities, and pre-eng
 Stable game identities originate from the package; indexes exist only inside this version's frozen
 wire table.
 
-The tables can be regenerated during development with `pnpm run codec:tables`. A published table
-must never be regenerated in place: a catalogue change publishes a new codec version, decoder, and
-JSON file while retaining version 1 unchanged.
+Version 2 uses a separate immutable table generated from Almanac `0.1.0-beta.6`. It pins the known
+decorative identities. Its body embeds the complete v1 payload,
+preserving all v1 model and canonicality rules, and adds a strictly ordered decorative overlay. The
+current table can be regenerated during development with `pnpm run codec:tables`;
+`pnpm run codec:tables:v1` exists only for a checkout using its pinned beta.5 dependency. A
+published table must never be regenerated in place: a catalogue change publishes a new codec
+version, decoder, and JSON file while retaining every earlier version unchanged.
 
 The public asynchronous loader imports only the generic radix code initially. Encoding dynamically
 loads the current codec. Decoding obtains the version from the first two payload bytes and imports
 only the requested version's implementation; that implementation imports its corresponding JSON.
 Consequently, support for old links does not place every historical table in the initial bundle.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.5`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.6`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
 fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
 requires retaining a compatible reconstruction path for the affected codec version.
@@ -267,6 +276,7 @@ The fixed corpus currently produces these complete URL lengths, using
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------: | -----: |
 | Empty Sidewinder              | `2I85Wn!NOz`                                                                                                            |                  35 |   <100 |
 | Stock Krait Mk II             | `.7HU@.H4`                                                                                                              |                  33 |   <300 |
+| Decorative pulse Krait (v2)   | `1OllPbKPUDRfVbodBHwEht5VR4`                                                                                            |                  51 |   <300 |
 | Full engineered Anaconda*     | `3L5F:lK@0XafSWqm2QX@tu!lbrpvhJV5LPSSAqDXsVY0gZfQ4U1tHQkge@qOGmijcGoi$xGpxJM$NT!9CK`                                    |                 107 |  <=500 |
 | Supplied engineered Corvette† | `FOv7tGRXKalK9SvJ24XMW7vzR.SG$v28lCSNfJqh8-f5eQLSobwc9JsQ1NeWyv:v5EGfapDg-QgVE:bOI1lEoxQs5j7Jw5gizsH7@zk:IuncA8BNXXW-Y` |                 142 |  <=500 |
 
@@ -280,10 +290,13 @@ ammo, engineer, localisation, and purchase fields were removed from the checked-
 
 The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
 Its longest complete URL is 35 characters (the alphabetical tie-break reports the Adder). The
+v2 literal covers an otherwise unengineered Krait Mk II whose small fixed pulse laser carries
+`Decorative_Red`, including the package-resolved damage modifier. The
 sanitised real engineered Federal Corvette produces a 142-character complete URL. Its original 29
-journal modifier arrays are retained as an external reconstruction corpus. That corpus currently
-exposes Almanac differences tracked in issue 262, so exact calculated-stat reconstruction remains a
-release blocker rather than a property claimed by this document.
+journal modifier arrays are retained as an external reconstruction corpus. Almanac beta.6
+reconstructs their journal numeric values except for the capture's documented inconsistent slot:
+that slot reports a partial quality alongside complete grade-5 values, so the codec preserves its
+quality and the Almanac correctly calculates from it.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
 Anaconda produced an encoded payload of about 1,167 characters before the base URL was added; the
@@ -460,9 +473,9 @@ the body and then appends the unchanged four-byte CRC:
 
 Both compressors make every reference larger. At 107 characters for the largest synthetic
 reference and 142 for the sanitised real build, a second compression path is not a reasonable
-trade-off. Base69 still needs interoperability testing in the actual sharing applications, and its
-whole-value `BigInt` conversion should become a bounded block converter before application
-integration.
+trade-off. Base69 still needs interoperability testing in the actual sharing applications. Its
+radix conversion now uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`, while
+retaining every existing encoded spelling.
 
 Engineering already gives a blueprint's maximum grade and quality `1` their shortest individual
 forms. Making those defaults global to the engineered set was also evaluated. Because repeated
@@ -483,16 +496,9 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-Decorative modifier reconstruction needs a supported Almanac resolver before this can ship. The
-codec refuses those builds rather than using the pre-engineered resolver through a synthesised
-structural cast. The package exposes the decorative catalogue record but not its journal-style
-calculated modifiers. That API gap is tracked upstream in
-[Elite-Dangerous-Almanac issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260);
-production work must consume the released package fix rather than reproduce the calculation locally.
-
-Ordinary blueprint reconstruction also has journal-fidelity differences in Almanac beta.5. The
-retained Corvette modifier corpus exposes 24 modules with at least one effective-stat difference,
-including material burst-interval and ammunition-capacity cases alongside float32 precision
-differences. This is tracked in
-[Elite-Dangerous-Almanac issue 262](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/262).
-The codec remains blocked from release until a supported package fix is consumed.
+The former upstream blockers are resolved in Almanac beta.6. Version 2 consumes the supported
+decorative resolver delivered for
+[issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260), and ordinary
+blueprint reconstruction consumes the journal-equivalent arithmetic delivered for
+[issue 262](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/262). Neither result is
+reimplemented or adjusted by the application.

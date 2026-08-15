@@ -1,0 +1,7 @@
+{
+  "$generated": {
+    "script": "scripts/generate-build-link-codec-v2-tables.mjs",
+    "almanacVersion": "0.1.0-beta.6"
+  },
+  "CODEC_V2_DECORATIVE_MODIFICATIONS": ["Decorative_Green", "Decorative_Red", "Decorative_Yellow"]
+}
