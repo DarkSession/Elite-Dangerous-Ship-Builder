@@ -1,0 +1,61 @@
+import { BuildLinkCodecError } from './build-link-codec-error';
+import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-radix';
+
+const FRAGMENT_PREFIX = 'b.';
+const MAX_ENCODED_LENGTH = 500;
+const CRC_LENGTH = 4;
+
+/** Add the permanent envelope and integrity check to a codec body. */
+export function encodeBuildLinkBody(body: Uint8Array): string {
+  const payload = new Uint8Array(body.length + CRC_LENGTH);
+  payload.set(body);
+  new DataView(payload.buffer).setUint32(body.length, crc32(body), true);
+  const fragment = `${FRAGMENT_PREFIX}${encodeBuildLinkPayload(payload)}`;
+  if (fragment.length - FRAGMENT_PREFIX.length > MAX_ENCODED_LENGTH) {
+    throw new BuildLinkCodecError('invalidPayload', 'The encoded build exceeds the link limit.');
+  }
+  return fragment;
+}
+
+/** Decode and verify the generic envelope before selecting a codec table. */
+export function decodeBuildLinkBody(fragment: string): Uint8Array {
+  const value = fragment.startsWith('#') ? fragment.slice(1) : fragment;
+  if (!value.startsWith(FRAGMENT_PREFIX)) {
+    throw new BuildLinkCodecError(
+      'unsupportedEnvelope',
+      'The build-link envelope is not supported.',
+    );
+  }
+
+  const encoded = value.slice(FRAGMENT_PREFIX.length);
+  if (encoded.length === 0 || encoded.length > MAX_ENCODED_LENGTH) {
+    throw new BuildLinkCodecError('invalidEncoding', 'The encoded build has an invalid length.');
+  }
+
+  const payload = decodeBuildLinkPayload(encoded);
+  if (payload.length <= CRC_LENGTH) {
+    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
+  }
+
+  const body = payload.subarray(0, payload.length - CRC_LENGTH);
+  const expectedCrc = new DataView(
+    payload.buffer,
+    payload.byteOffset + body.length,
+    CRC_LENGTH,
+  ).getUint32(0, true);
+  if (crc32(body) !== expectedCrc) {
+    throw new BuildLinkCodecError('integrityCheckFailed', 'The build-link integrity check failed.');
+  }
+  return body;
+}
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffff_ffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb8_8320 : 0);
+    }
+  }
+  return (crc ^ 0xffff_ffff) >>> 0;
+}

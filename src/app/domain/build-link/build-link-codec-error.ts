@@ -1,7 +1,8 @@
 export type BuildLinkCodecErrorCode =
   | 'invalidEncoding'
   | 'integrityCheckFailed'
-  | 'unsupportedVersion'
+  | 'unsupportedEnvelope'
+  | 'unsupportedTableVersion'
   | 'invalidPayload'
   | 'unknownIdentity';
 

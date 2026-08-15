@@ -1,9 +1,10 @@
 {
   "$generated": {
     "script": "scripts/generate-build-link-codec-tables.mjs",
+    "tableVersion": 1,
     "almanacVersion": "0.1.0-beta.7"
   },
-  "CODEC_V1_SHIPS": [
+  "SHIPS": [
     "SideWinder",
     "Eagle",
     "Hauler",
@@ -53,7 +54,7 @@
     "SmallCombat01_NX",
     "MediumTransport01"
   ],
-  "CODEC_V1_MODULES": [
+  "MODULES": [
     "SideWinder_Armour_Grade1",
     "SideWinder_Armour_Grade2",
     "SideWinder_Armour_Grade3",
@@ -1255,7 +1256,7 @@
     "Hpt_XenoScanner_Advanced_Tiny",
     "ModularCargoBayDoorFDL"
   ],
-  "CODEC_V1_POWERED_MODULES": [
+  "POWERED_MODULES": [
     140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158,
     159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
     178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196,
@@ -1303,7 +1304,7 @@
     1172, 1173, 1174, 1175, 1176, 1177, 1178, 1179, 1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187,
     1188, 1189, 1190, 1191, 1192, 1193, 1194, 1195, 1196, 1197, 1198, 1199
   ],
-  "CODEC_V1_BLUEPRINTS": [
+  "BLUEPRINTS": [
     "AFM_Shielded",
     "AbrasionBlaster_FarReaching",
     "Armour_Advanced",
@@ -1412,7 +1413,7 @@
     "Weapon_ShortRange",
     "Weapon_Sturdy"
   ],
-  "CODEC_V1_BLUEPRINT_GRADES": [
+  "BLUEPRINT_GRADES": [
     [1, 2, 3, 4, 5],
     [2, 3, 4, 5],
     [1, 2, 3, 4, 5],
@@ -1521,7 +1522,7 @@
     [1, 2, 3, 4, 5],
     [1, 2, 3, 4, 5]
   ],
-  "CODEC_V1_EXPERIMENTAL_EFFECTS": [
+  "EXPERIMENTAL_EFFECTS": [
     "special_armour_chunky",
     "special_armour_explosive",
     "special_armour_kinetic",
@@ -1609,8 +1610,8 @@
     "special_weapon_rateoffire",
     "special_weapon_toughened"
   ],
-  "CODEC_V1_DECORATIVE_MODIFICATIONS": ["Decorative_Green", "Decorative_Red", "Decorative_Yellow"],
-  "CODEC_V1_SLOTS_BY_SHIP": {
+  "DECORATIVE_MODIFICATIONS": ["Decorative_Green", "Decorative_Red", "Decorative_Yellow"],
+  "SLOTS_BY_SHIP": {
     "SideWinder": [
       "SmallHardpoint1",
       "SmallHardpoint2",
@@ -3003,7 +3004,7 @@
       "PlanetaryApproachSuite"
     ]
   },
-  "CODEC_V1_FIXED_MODULES_BY_SHIP": {
+  "FIXED_MODULES_BY_SHIP": {
     "SideWinder": [
       {
         "slot": "CargoHatch",
@@ -3293,7 +3294,7 @@
       }
     ]
   },
-  "CODEC_V1_DEFAULT_MODULES_BY_SHIP": {
+  "DEFAULT_MODULES_BY_SHIP": {
     "SideWinder": [
       1009,
       1009,
@@ -4686,7 +4687,7 @@
       980
     ]
   },
-  "CODEC_V1_MODULE_SETS": [
+  "MODULE_SETS": [
     [
       1005, 1009, 1012, 1015, 1019, 1022, 1025, 1029, 1032, 1035, 1039, 1042, 1045, 1048, 1050,
       1052, 1056, 1059, 1065, 1067, 1070, 1072, 1075, 1077, 1083, 1088, 1089, 1090, 1091, 1097,
@@ -5227,7 +5228,7 @@
     ],
     [852, 853, 854, 855, 872, 873, 874, 875, 876, 877, 996, 997, 998, 999, 1000, 1001, 1002]
   ],
-  "CODEC_V1_MODULE_SET_BY_SHIP": {
+  "MODULE_SET_BY_SHIP": {
     "SideWinder": [0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 11, 11, 12],
     "Eagle": [0, 0, 0, 1, 13, 3, 14, 15, 6, 16, 17, 18, 19, 10, 20, 11, 11, 11, 11, 12],
     "Hauler": [0, 1, 1, 21, 3, 4, 5, 6, 7, 8, 18, 19, 19, 10, 11, 11, 11, 12],
@@ -5390,7 +5391,7 @@
       37, 19, 10, 11, 12
     ]
   },
-  "CODEC_V1_BLUEPRINT_SETS": [
+  "BLUEPRINT_SETS": [
     [2, 3, 4, 5, 6],
     [66, 67, 68],
     [16, 17, 18],
@@ -5432,7 +5433,7 @@
     [48, 50, 51, 75, 76, 82],
     [86, 87, 88, 89, 90]
   ],
-  "CODEC_V1_BLUEPRINT_SET_BY_MODULE": [
+  "BLUEPRINT_SET_BY_MODULE": [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5476,7 +5477,7 @@
     7, 7, 7, 7, 7, 7, 33, 33, 7, 7, 7, 25, 7, 7, 34, 35, 36, 37, 38, 38, 38, 38, 38, 38, 38, 38, 38,
     38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 7, 7, 7, 7, 7, 7, 7, 7, 36, 7, 7, 7
   ],
-  "CODEC_V1_EXPERIMENTAL_SETS": [
+  "EXPERIMENTAL_SETS": [
     [0, 1, 2, 3],
     [45, 46, 47, 48],
     [14, 15, 16, 17, 18],
@@ -5503,7 +5504,7 @@
     [4],
     [62, 63, 64, 65, 66, 67]
   ],
-  "CODEC_V1_EXPERIMENTAL_SET_BY_MODULE": [
+  "EXPERIMENTAL_SET_BY_MODULE": [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5544,7 +5545,7 @@
     23, 23, 4, 4, 4, 12, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 24, 24, 24,
     24, 24, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
   ],
-  "CODEC_V1_PRE_ENGINEERED_VARIANTS": [
+  "PRE_ENGINEERED_VARIANTS": [
     {
       "module": 1140,
       "blueprint": 1,
@@ -6057,7 +6058,7 @@
       "experimental": null
     }
   ],
-  "CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE": [
+  "PRE_ENGINEERED_SET_BY_MODULE": [
     [],
     [],
     [],

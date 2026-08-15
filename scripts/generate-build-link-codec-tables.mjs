@@ -12,18 +12,19 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-const CODEC_V1_ALMANAC_VERSION = '0.1.0-beta.7';
+const TABLE_VERSION = 1;
+const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.7';
 const outputPath = fileURLToPath(
-  new URL('../src/app/domain/build-link/codec-v1.tables.json', import.meta.url),
+  new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
 );
 const almanacPackageUrl = new URL(
   '../../package.json',
   import.meta.resolve('@elite-dangerous-almanac/core/ships/ships'),
 );
 const almanacPackage = JSON.parse(await readFile(almanacPackageUrl, 'utf8'));
-if (almanacPackage.version !== CODEC_V1_ALMANAC_VERSION) {
+if (almanacPackage.version !== TABLE_1_ALMANAC_VERSION) {
   throw new Error(
-    `Codec v1 is pinned to Almanac ${CODEC_V1_ALMANAC_VERSION}; refusing to generate it from ${almanacPackage.version}.`,
+    `Codec table 1 is pinned to Almanac ${TABLE_1_ALMANAC_VERSION}; refusing to generate it from ${almanacPackage.version}.`,
   );
 }
 
@@ -187,26 +188,27 @@ const output = `${JSON.stringify(
   {
     $generated: {
       script: 'scripts/generate-build-link-codec-tables.mjs',
-      almanacVersion: CODEC_V1_ALMANAC_VERSION,
+      tableVersion: TABLE_VERSION,
+      almanacVersion: TABLE_1_ALMANAC_VERSION,
     },
-    CODEC_V1_SHIPS: ships,
-    CODEC_V1_MODULES: modules,
-    CODEC_V1_POWERED_MODULES: poweredModules,
-    CODEC_V1_BLUEPRINTS: blueprints,
-    CODEC_V1_BLUEPRINT_GRADES: blueprintGrades,
-    CODEC_V1_EXPERIMENTAL_EFFECTS: experimentalEffects,
-    CODEC_V1_DECORATIVE_MODIFICATIONS: decorativeModifications,
-    CODEC_V1_SLOTS_BY_SHIP: slotsByShip,
-    CODEC_V1_FIXED_MODULES_BY_SHIP: fixedModulesByShip,
-    CODEC_V1_DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,
-    CODEC_V1_MODULE_SETS: moduleSets.unique,
-    CODEC_V1_MODULE_SET_BY_SHIP: moduleSetByShip,
-    CODEC_V1_BLUEPRINT_SETS: blueprintSets.unique,
-    CODEC_V1_BLUEPRINT_SET_BY_MODULE: blueprintSetByModule,
-    CODEC_V1_EXPERIMENTAL_SETS: experimentalSets.unique,
-    CODEC_V1_EXPERIMENTAL_SET_BY_MODULE: experimentalSetByModule,
-    CODEC_V1_PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
-    CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
+    SHIPS: ships,
+    MODULES: modules,
+    POWERED_MODULES: poweredModules,
+    BLUEPRINTS: blueprints,
+    BLUEPRINT_GRADES: blueprintGrades,
+    EXPERIMENTAL_EFFECTS: experimentalEffects,
+    DECORATIVE_MODIFICATIONS: decorativeModifications,
+    SLOTS_BY_SHIP: slotsByShip,
+    FIXED_MODULES_BY_SHIP: fixedModulesByShip,
+    DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,
+    MODULE_SETS: moduleSets.unique,
+    MODULE_SET_BY_SHIP: moduleSetByShip,
+    BLUEPRINT_SETS: blueprintSets.unique,
+    BLUEPRINT_SET_BY_MODULE: blueprintSetByModule,
+    EXPERIMENTAL_SETS: experimentalSets.unique,
+    EXPERIMENTAL_SET_BY_MODULE: experimentalSetByModule,
+    PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
+    PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
   },
   null,
   2,

@@ -18,7 +18,7 @@ The format is designed around these constraints:
 - links must remain compact for empty, stock, and fully engineered ships;
 - every accepted link must decode deterministically and losslessly;
 - alternate encodings of the same build must be rejected;
-- published versions and their game-data tables must remain decodable indefinitely;
+- published table versions must remain decodable indefinitely;
 - old tables must not accumulate in the application's initial JavaScript bundle; and
 - malformed, corrupted, unsupported, or ambiguous input must fail instead of being guessed.
 
@@ -30,8 +30,8 @@ The complete fragment is built in layers:
 #b.<encoded payload>
     │
     └─ Base70 digits with a Base62-only terminal digit
-       └─ payload bytes: [versioned bitstream] [CRC-32, little-endian]
-          └─ version 1: complete minimal build state, packed least-significant bit first
+       └─ payload bytes: [table version + packed build state] [CRC-32, little-endian]
+          └─ identities resolved through the selected immutable JSON table
              └─ decoded and reconstructed through @elite-dangerous-almanac/core
 ```
 
@@ -39,21 +39,21 @@ The application hash marker `#` belongs to the URL and is not part of the codec 
 produce and accept `b.<encoded payload>`; the decoder also tolerates a leading `#` for integration
 convenience.
 
-### Outer envelope and version dispatch
+### Outer envelope and table dispatch
 
 `b.` permanently identifies the current Base70/Base62-terminal envelope. After decoding only that
 generic radix layer, the asynchronous loader reads the first ten bits of the payload and dynamically
-imports the matching codec implementation and JSON table.
+imports the matching immutable JSON table. The binary codec is shared by every table snapshot.
 
-The embedded version field has 1,024 values. Version `0` is reserved and version `1` is the sole
-format defined before release. The remaining values are available for future immutable formats. A
-compatible table or binary-layout change after release therefore keeps the `b.` prefix and
-publishes a new immutable version.
+The table-version field has 1,024 values. Table `0` is reserved and table `1` is the sole snapshot
+defined before release. A catalogue update keeps the `b.` prefix and binary layout, publishes a new
+immutable numbered JSON table, and makes that number current for new links. Older table files remain
+available for existing links. Two or three new table snapshots per year do not require cloned codec
+implementations.
 
-A future prefix such as `c.` is appropriate only for an incompatible outer envelope that cannot be
-decoded far enough to read the existing ten-bit version. Prefixes are protocol identifiers, not
-release counters: once published, each prefix, version decoder, and table remains available for its
-existing links.
+A future prefix such as `c.` is appropriate for an incompatible binary layout or outer envelope.
+Prefixes identify codecs, while the embedded field identifies data tables; neither is a release
+counter. Once published, each prefix and referenced table remains available for its existing links.
 
 ### Radix envelope
 
@@ -72,17 +72,17 @@ fragment but cannot appear as the terminal digit. Dollar is deliberately absent 
 dollar signs delimit inline mathematics in GitHub Markdown.
 
 The binary body is followed by its four-byte, little-endian CRC-32. The checksum is verified before
-the version-specific parser or the Almanac sees the data. The encoded portion after `b.` is limited
+the table-indexed parser or the Almanac sees the data. The encoded portion after `b.` is limited
 to 500 characters.
 
-## Version 1 binary body
+## Binary body
 
 Fields are written least-significant bit first within each field and byte. The writer pads the final
 partial byte with zero bits; the decoder rejects any non-zero or additional trailing data.
 
 | Order | Field               | Representation                                                                |
 | ----: | ------------------- | ----------------------------------------------------------------------------- |
-|     1 | Codec version       | 10 bits; value `1`                                                            |
+|     1 | Codec-table version | 10 bits; currently `1`                                                        |
 |     2 | Hull                | Fixed-width index into the pinned hull table                                  |
 |     3 | Ship-name presence  | 1 bit                                                                         |
 |     4 | Ship-ident presence | 1 bit                                                                         |
@@ -249,7 +249,7 @@ Validation occurs at every layer:
 1. Check the permanent envelope prefix and encoded-length bound.
 2. Decode and canonically re-encode the Base70/Base62-terminal text.
 3. Verify CRC-32 before parsing the body.
-4. Select an immutable decoder from the ten-bit version.
+4. Select the immutable JSON table named by the ten-bit table version.
 5. Parse a table-indexed intermediate representation while validating every identity, contextual
    candidate, mode, range, count, and ordered index.
 6. Reject non-zero padding and trailing data.
@@ -263,24 +263,25 @@ a separately tested compatibility property.
 
 ## Versioned tables and lazy loading
 
-Version 1 uses immutable JSON generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.7`. The table pins hulls, hull-specific outfittable slots,
+Table 1 is the immutable `codec-table-1.json`, generated from
+`@elite-dangerous-almanac/core@0.1.0-beta.7`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
 effects, decorative identities, contextual candidate sets, power-drawing module identities, and
 pre-engineered identities. Stable game identities originate from the package; indexes exist only
-inside this version's frozen wire table. Before the first release it can be regenerated with
-`pnpm run codec:tables`. After release, a catalogue change publishes a new codec version, decoder,
-and JSON file while retaining the earlier version unchanged.
+inside the selected frozen table. Before the first release, table 1 can be regenerated with
+`pnpm run codec:tables`. After release, a catalogue change publishes the next numbered JSON table
+while retaining every earlier table unchanged; it does not duplicate or version the codec logic.
 
-The public asynchronous loader imports only the generic radix code initially. Encoding dynamically
-loads the current codec. Decoding obtains the version from the first two payload bytes and imports
-the sole matching implementation and table. Future versions can retain this dispatch without
-placing every historical table in the initial bundle.
+The public asynchronous loader initially imports only the generic envelope, radix, and CRC code.
+It verifies integrity before using the table-version field. Encoding dynamically loads the shared
+codec and current table. Decoding then imports only the matching JSON file alongside the shared
+codec. Adding table snapshots to the loader therefore does not place every historical table in the
+initial bundle.
 
 The current application dependency is exactly pinned to Almanac `0.1.0-beta.7`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
 fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
-requires retaining a compatible reconstruction path for the affected codec version.
+requires retaining a compatible reconstruction path for the affected table version.
 
 ## Reference corpus
 
@@ -492,16 +493,16 @@ radix conversion uses bounded byte/digit arithmetic rather than a whole-payload 
 
 The adaptive combination-rank index-set mode leaves empty, stock, and decorative references at
 12, 10, and 17 characters, while reducing the engineered Anaconda from 84 to 82 and the supplied
-Corvette from 120 to 119. A fixed-width truncated-binary index prototype saved at most one
+Corvette from 120 to 119. A fixed-width truncated-binary index evaluation saved at most one
 character and changed several equally sized literals, so the combination rank was the stronger
 trade-off.
 
-The compact metadata path reduced an ASCII `Astraea` / `POC-42` build from 31 to 27 characters, the
-mixed `Astraea 星` / `POC-42` case from 36 to 35, and a longer ASCII example from 50 to 40. A
+The compact metadata path reduced an ASCII `Astraea` / `TST-42` build from 31 to 27 characters, the
+mixed `Astraea 星` / `TST-42` case from 36 to 35, and a longer ASCII example from 50 to 40. A
 short Unicode-only example remained 17 characters. The tag itself costs no additional byte for
 UTF-8 values shorter than 64 bytes. Doubling the tagged length does cross a varuint boundary at 64
 bytes, however, so a 64–127-byte fallback value uses one more header byte than the untagged
-prototype. Eligible metadata gains six-bit storage; other metadata preserves exact text with that
+encoding. Eligible metadata gains six-bit storage; other metadata preserves exact text with that
 documented boundary cost.
 
 An empty-loadout template was also tried. A dedicated flag shortened empty builds but enlarged

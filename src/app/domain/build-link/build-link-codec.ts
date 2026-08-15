@@ -12,97 +12,113 @@ import type {
   ModuleEngineering,
 } from '@elite-dangerous-almanac/core/ships/slef';
 import { BuildLinkCodecError } from './build-link-codec-error';
-import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-radix';
+import { decodeBuildLinkBody, encodeBuildLinkBody } from './build-link-payload';
 export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
-import codecV1TablesJson from './codec-v1.tables.json';
 
-interface CodecV1Tables {
-  readonly CODEC_V1_SHIPS: readonly string[];
-  readonly CODEC_V1_MODULES: readonly string[];
-  readonly CODEC_V1_POWERED_MODULES: readonly number[];
-  readonly CODEC_V1_BLUEPRINTS: readonly string[];
-  readonly CODEC_V1_BLUEPRINT_GRADES: readonly (readonly number[])[];
-  readonly CODEC_V1_EXPERIMENTAL_EFFECTS: readonly string[];
-  readonly CODEC_V1_DECORATIVE_MODIFICATIONS: readonly string[];
-  readonly CODEC_V1_SLOTS_BY_SHIP: Readonly<Record<string, readonly string[]>>;
-  readonly CODEC_V1_FIXED_MODULES_BY_SHIP: Readonly<
+export interface BuildLinkCodecTables {
+  readonly $generated: {
+    readonly script: string;
+    readonly tableVersion: number;
+    readonly almanacVersion: string;
+  };
+  readonly SHIPS: readonly string[];
+  readonly MODULES: readonly string[];
+  readonly POWERED_MODULES: readonly number[];
+  readonly BLUEPRINTS: readonly string[];
+  readonly BLUEPRINT_GRADES: readonly (readonly number[])[];
+  readonly EXPERIMENTAL_EFFECTS: readonly string[];
+  readonly DECORATIVE_MODIFICATIONS: readonly string[];
+  readonly SLOTS_BY_SHIP: Readonly<Record<string, readonly string[]>>;
+  readonly FIXED_MODULES_BY_SHIP: Readonly<
     Record<string, readonly { readonly slot: string; readonly module: number }[]>
   >;
-  readonly CODEC_V1_DEFAULT_MODULES_BY_SHIP: Readonly<Record<string, readonly (number | null)[]>>;
-  readonly CODEC_V1_MODULE_SETS: readonly (readonly number[])[];
-  readonly CODEC_V1_MODULE_SET_BY_SHIP: Readonly<Record<string, readonly number[]>>;
-  readonly CODEC_V1_BLUEPRINT_SETS: readonly (readonly number[])[];
-  readonly CODEC_V1_BLUEPRINT_SET_BY_MODULE: readonly number[];
-  readonly CODEC_V1_EXPERIMENTAL_SETS: readonly (readonly number[])[];
-  readonly CODEC_V1_EXPERIMENTAL_SET_BY_MODULE: readonly number[];
-  readonly CODEC_V1_PRE_ENGINEERED_VARIANTS: readonly {
+  readonly DEFAULT_MODULES_BY_SHIP: Readonly<Record<string, readonly (number | null)[]>>;
+  readonly MODULE_SETS: readonly (readonly number[])[];
+  readonly MODULE_SET_BY_SHIP: Readonly<Record<string, readonly number[]>>;
+  readonly BLUEPRINT_SETS: readonly (readonly number[])[];
+  readonly BLUEPRINT_SET_BY_MODULE: readonly number[];
+  readonly EXPERIMENTAL_SETS: readonly (readonly number[])[];
+  readonly EXPERIMENTAL_SET_BY_MODULE: readonly number[];
+  readonly PRE_ENGINEERED_VARIANTS: readonly {
     readonly module: number;
     readonly blueprint: number;
     readonly grade: number;
     readonly acquisition: string;
     readonly experimental: number | null;
   }[];
-  readonly CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE: readonly (readonly number[])[];
+  readonly PRE_ENGINEERED_SET_BY_MODULE: readonly (readonly number[])[];
 }
 
-const {
-  CODEC_V1_BLUEPRINT_SET_BY_MODULE,
-  CODEC_V1_BLUEPRINT_SETS,
-  CODEC_V1_BLUEPRINT_GRADES,
-  CODEC_V1_BLUEPRINTS,
-  CODEC_V1_DEFAULT_MODULES_BY_SHIP,
-  CODEC_V1_DECORATIVE_MODIFICATIONS,
-  CODEC_V1_EXPERIMENTAL_SET_BY_MODULE,
-  CODEC_V1_EXPERIMENTAL_SETS,
-  CODEC_V1_EXPERIMENTAL_EFFECTS,
-  CODEC_V1_FIXED_MODULES_BY_SHIP,
-  CODEC_V1_MODULE_SET_BY_SHIP,
-  CODEC_V1_MODULE_SETS,
-  CODEC_V1_MODULES,
-  CODEC_V1_POWERED_MODULES,
-  CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE,
-  CODEC_V1_PRE_ENGINEERED_VARIANTS,
-  CODEC_V1_SHIPS,
-  CODEC_V1_SLOTS_BY_SHIP,
-} = codecV1TablesJson as CodecV1Tables;
+export interface BuildLinkCodec {
+  encodeBuildLinkFragment(loadout: ShipLoadout): string;
+  decodeBuildLinkFragment(fragment: string): ShipLoadout;
+}
 
-const FRAGMENT_PREFIX = 'b.';
-const CODEC_VERSION = 1;
-const MAX_ENCODED_LENGTH = 500;
-const CRC_LENGTH = 4;
-const VERSION_BITS = 10;
-const SHIP_BITS = bitsRequired(CODEC_V1_SHIPS.length);
-const MODULE_BITS = bitsRequired(CODEC_V1_MODULES.length);
-const BLUEPRINT_BITS = bitsRequired(CODEC_V1_BLUEPRINTS.length);
-const EXPERIMENTAL_BITS = bitsRequired(CODEC_V1_EXPERIMENTAL_EFFECTS.length + 1);
-const DECORATIVE_BITS = bitsRequired(CODEC_V1_DECORATIVE_MODIFICATIONS.length);
+interface CodecContext {
+  readonly tableVersion: number;
+  readonly tables: BuildLinkCodecTables;
+  readonly shipBits: number;
+  readonly moduleBits: number;
+  readonly blueprintBits: number;
+  readonly experimentalBits: number;
+  readonly decorativeBits: number;
+  readonly poweredModuleSet: ReadonlySet<number>;
+  readonly decorativeIndex: ReadonlyMap<string, number>;
+  readonly shipIndex: ReadonlyMap<string, number>;
+  readonly moduleIndex: ReadonlyMap<string, number>;
+  readonly blueprintIndex: ReadonlyMap<string, number>;
+  readonly experimentalIndex: ReadonlyMap<string, number>;
+  readonly slotIndexByShip: ReadonlyMap<string, ReadonlyMap<string, number>>;
+}
+
+const TABLE_VERSION_BITS = 10;
 const QUALITY_SCALE_4 = 10_000;
 const QUALITY_BITS_4 = bitsRequired(QUALITY_SCALE_4 + 1);
-const POWERED_MODULE_SET = new Set(CODEC_V1_POWERED_MODULES);
-const DECORATIVE_INDEX = createIndex(CODEC_V1_DECORATIVE_MODIFICATIONS);
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
+let activeCodecContext: CodecContext | undefined;
+
+export function createBuildLinkCodec(
+  tableVersion: number,
+  tables: BuildLinkCodecTables,
+): BuildLinkCodec {
+  if (
+    !Number.isInteger(tableVersion) ||
+    tableVersion < 1 ||
+    tableVersion >= 2 ** TABLE_VERSION_BITS ||
+    tables.$generated.tableVersion !== tableVersion
+  ) {
+    throw new Error('The build-link codec table version is invalid.');
+  }
+  const context = createCodecContext(tableVersion, tables);
+  return {
+    encodeBuildLinkFragment: (loadout) =>
+      withCodecContext(context, () => encodeWithActiveTable(loadout)),
+    decodeBuildLinkFragment: (fragment) =>
+      withCodecContext(context, () => decodeWithActiveTable(fragment)),
+  };
+}
 
 /**
- * Encode a loadout into the application-owned, versioned value placed after `#`.
+ * Encode a loadout into the application-owned, table-versioned value placed after `#`.
  * SLEF parsing and reconstruction remain the Almanac's responsibility; this module
  * only serialises the minimal non-derivable build state.
  */
-export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
+function encodeWithActiveTable(loadout: ShipLoadout): string {
   const writer = new BitWriter();
-  writer.writeBits(CODEC_VERSION, VERSION_BITS);
-  const shipIndex = requireIdentity(SHIP_INDEX, loadout.shipSymbol, 'ship');
-  const canonicalShip = CODEC_V1_SHIPS[shipIndex];
-  const slots = CODEC_V1_SLOTS_BY_SHIP[canonicalShip];
-  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[canonicalShip];
-  const slotIndex = SLOT_INDEX_BY_SHIP.get(canonicalShip);
+  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
+  const shipIndex = requireIdentity(codecContext().shipIndex, loadout.shipSymbol, 'ship');
+  const canonicalShip = codecContext().tables.SHIPS[shipIndex];
+  const slots = codecContext().tables.SLOTS_BY_SHIP[canonicalShip];
+  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[canonicalShip];
+  const slotIndex = codecContext().slotIndexByShip.get(canonicalShip);
   if (!slots || !fixedModules || !slotIndex) {
     throw new BuildLinkCodecError('unknownIdentity', `No codec slots exist for ${canonicalShip}.`);
   }
   const fixedModuleBySlot = new Map(fixedModules.map((fixed) => [normalise(fixed.slot), fixed]));
 
-  writer.writeBits(shipIndex, SHIP_BITS);
+  writer.writeBits(shipIndex, codecContext().shipBits);
   writer.writeBoolean(loadout.shipName !== null);
   writer.writeBoolean(loadout.shipIdent !== null);
   if (loadout.shipName !== null) writer.writeString(loadout.shipName);
@@ -122,7 +138,7 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
             `Slot ${fixed.slot} appears more than once.`,
           );
         }
-        if (requireIdentity(MODULE_INDEX, module.symbol, 'module') !== fixed.module) {
+        if (requireIdentity(codecContext().moduleIndex, module.symbol, 'module') !== fixed.module) {
           throw new BuildLinkCodecError(
             'invalidPayload',
             `Fixed slot ${fixed.slot} does not contain its pinned module.`,
@@ -139,7 +155,7 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
       }
       throw new BuildLinkCodecError(
         'unknownIdentity',
-        `Slot ${module.slot} is absent from codec version 1 for ${canonicalShip}.`,
+        `Slot ${module.slot} is absent from codec table ${codecContext().tableVersion} for ${canonicalShip}.`,
       );
     }
     const slot = slots[encodedSlot];
@@ -147,13 +163,19 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
       throw new BuildLinkCodecError('invalidPayload', `Slot ${slot} appears more than once.`);
     }
     modulesBySlot.set(slot, module);
-    moduleIndexes[encodedSlot] = requireIdentity(MODULE_INDEX, module.symbol, 'module');
+    moduleIndexes[encodedSlot] = requireIdentity(
+      codecContext().moduleIndex,
+      module.symbol,
+      'module',
+    );
   }
 
   const decorativeStates = slots.map((slot, index): number | undefined => {
     const module = moduleAt(modulesBySlot, slot);
     if (!module || module.engineering === undefined) return undefined;
-    const modification = DECORATIVE_INDEX.get(normalise(module.engineering.BlueprintName));
+    const modification = codecContext().decorativeIndex.get(
+      normalise(module.engineering.BlueprintName),
+    );
     if (modification === undefined) return undefined;
     requireDecorativeModification(module.symbol, modification);
     if (moduleIndexes[index] === null) {
@@ -165,7 +187,7 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
     return modification;
   });
 
-  const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[canonicalShip];
+  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[canonicalShip];
   const pristine =
     moduleIndexes.every((moduleIndex, index) => {
       const module = moduleAt(modulesBySlot, slots[index]);
@@ -215,58 +237,27 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
   }
   writeDecorativeStates(writer, decorativeStates);
 
-  const body = writer.toUint8Array();
-  const payload = new Uint8Array(body.length + CRC_LENGTH);
-  payload.set(body);
-  new DataView(payload.buffer).setUint32(body.length, crc32(body), true);
-  const fragment = `${FRAGMENT_PREFIX}${encodeBuildLinkPayload(payload)}`;
-  if (fragment.length - FRAGMENT_PREFIX.length > MAX_ENCODED_LENGTH) {
-    throw new BuildLinkCodecError('invalidPayload', 'The encoded build exceeds the link limit.');
-  }
-  return fragment;
+  return encodeBuildLinkBody(writer.toUint8Array());
 }
 
-/** Decode a fragment produced by {@link encodeBuildLinkFragment}. */
-export function decodeBuildLinkFragment(fragment: string): ShipLoadout {
-  const value = fragment.startsWith('#') ? fragment.slice(1) : fragment;
-  if (!value.startsWith(FRAGMENT_PREFIX)) {
-    throw new BuildLinkCodecError('unsupportedVersion', 'The build-link version is not supported.');
-  }
-
-  const encoded = value.slice(FRAGMENT_PREFIX.length);
-  if (encoded.length === 0 || encoded.length > MAX_ENCODED_LENGTH) {
-    throw new BuildLinkCodecError('invalidEncoding', 'The encoded build has an invalid length.');
-  }
-
-  const payload = decodeBuildLinkPayload(encoded);
-  if (payload.length <= CRC_LENGTH) {
-    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
-  }
-
-  const body = payload.subarray(0, payload.length - CRC_LENGTH);
-  const expectedCrc = new DataView(
-    payload.buffer,
-    payload.byteOffset + body.length,
-    CRC_LENGTH,
-  ).getUint32(0, true);
-  if (crc32(body) !== expectedCrc) {
-    throw new BuildLinkCodecError('integrityCheckFailed', 'The build-link integrity check failed.');
-  }
+/** Decode a fragment produced by the bound encoder for the active table. */
+function decodeWithActiveTable(fragment: string): ShipLoadout {
+  const body = decodeBuildLinkBody(fragment);
 
   try {
     const reader = new BitReader(body);
-    const version = reader.readBits(VERSION_BITS);
-    if (version !== CODEC_VERSION) {
+    const tableVersion = reader.readBits(TABLE_VERSION_BITS);
+    if (tableVersion !== codecContext().tableVersion) {
       throw new BuildLinkCodecError(
-        'unsupportedVersion',
-        `Build-link codec version ${version} is not supported.`,
+        'unsupportedTableVersion',
+        `Build-link table version ${tableVersion} is not supported by the loaded table.`,
       );
     }
-    const state = readVersionOneState(reader);
-    if (!bytesEqual(writeVersionOneState(state), body)) {
+    const state = readCodecState(reader);
+    if (!bytesEqual(writeCodecState(state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
-    return reconstructVersionOneLoadout(state);
+    return reconstructLoadout(state);
   } catch (error) {
     if (error instanceof BuildLinkCodecError) throw error;
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is invalid.');
@@ -290,7 +281,7 @@ type PreEngineeredState = {
 
 type CodecEngineeringState = OrdinaryEngineeringState | PreEngineeredState;
 
-type VersionOneState = {
+type CodecState = {
   readonly shipIndex: number;
   readonly shipName: string | undefined;
   readonly shipIdent: string | undefined;
@@ -301,12 +292,12 @@ type VersionOneState = {
   readonly decorativeStates: readonly (number | undefined)[];
 };
 
-function readVersionOneState(reader: BitReader): VersionOneState {
-  const shipIndex = reader.readBits(SHIP_BITS);
-  const ship = CODEC_V1_SHIPS[shipIndex];
+function readCodecState(reader: BitReader): CodecState {
+  const shipIndex = reader.readBits(codecContext().shipBits);
+  const ship = codecContext().tables.SHIPS[shipIndex];
   if (!ship) throw unknownTableIndex('ship', shipIndex);
-  const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
-  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[ship];
+  const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
+  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[ship];
 
   const hasShipName = reader.readBoolean();
   const hasShipIdent = reader.readBoolean();
@@ -314,7 +305,7 @@ function readVersionOneState(reader: BitReader): VersionOneState {
   const shipIdent = hasShipIdent ? reader.readString() : undefined;
   const pristine = reader.readBoolean();
   const moduleIndexes = pristine
-    ? [...CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship]]
+    ? [...codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship]]
     : readModuleIdentities(reader, ship, slots);
   const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
   const powerLayout = powerStateLayout(moduleIndexes, occupiedSlots, fixedModules);
@@ -355,19 +346,19 @@ function readVersionOneState(reader: BitReader): VersionOneState {
   };
 }
 
-function writeVersionOneState(state: VersionOneState): Uint8Array {
+function writeCodecState(state: CodecState): Uint8Array {
   const writer = new BitWriter();
-  writer.writeBits(CODEC_VERSION, VERSION_BITS);
-  writer.writeBits(state.shipIndex, SHIP_BITS);
+  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
+  writer.writeBits(state.shipIndex, codecContext().shipBits);
   writer.writeBoolean(state.shipName !== undefined);
   writer.writeBoolean(state.shipIdent !== undefined);
   if (state.shipName !== undefined) writer.writeString(state.shipName);
   if (state.shipIdent !== undefined) writer.writeString(state.shipIdent);
   writer.writeBoolean(state.pristine);
   if (!state.pristine) {
-    const ship = CODEC_V1_SHIPS[state.shipIndex] as CodecShip;
-    const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
-    const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship];
+    const ship = codecContext().tables.SHIPS[state.shipIndex] as CodecShip;
+    const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
+    const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship];
     const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
     writeModuleIdentities(writer, ship, slots, defaults, state.moduleIndexes);
     writePowerStates(writer, state.powerStates);
@@ -377,10 +368,10 @@ function writeVersionOneState(state: VersionOneState): Uint8Array {
   return writer.toUint8Array();
 }
 
-function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
-  const ship = CODEC_V1_SHIPS[state.shipIndex] as CodecShip;
-  const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
-  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[ship];
+function reconstructLoadout(state: CodecState): ShipLoadout {
+  const ship = codecContext().tables.SHIPS[state.shipIndex] as CodecShip;
+  const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
+  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[ship];
   const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
   const powerLayout = powerStateLayout(state.moduleIndexes, occupiedSlots, fixedModules);
   const powerByOccupiedIndex = new Map(
@@ -399,7 +390,7 @@ function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
 
   const modules: LoadoutModule[] = occupiedSlots.map((slotIndex, occupiedIndex) => {
     const moduleIndex = state.moduleIndexes[slotIndex]!;
-    const item = CODEC_V1_MODULES[moduleIndex];
+    const item = codecContext().tables.MODULES[moduleIndex];
     if (!item) throw unknownTableIndex('module', moduleIndex);
     const { on, priority } = powerByOccupiedIndex.get(occupiedIndex) ?? EMPTY_POWER_STATE;
     const engineering = state.engineeringStates[occupiedIndex];
@@ -416,7 +407,7 @@ function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
     };
   });
   fixedModules.forEach(({ slot, module }, fixedIndex) => {
-    const item = CODEC_V1_MODULES[module];
+    const item = codecContext().tables.MODULES[module];
     if (!item) throw unknownTableIndex('fixed module', module);
     const { on, priority } = powerByFixedIndex.get(fixedIndex) ?? EMPTY_POWER_STATE;
     modules.push({
@@ -438,12 +429,12 @@ function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
   occupiedSlots.forEach((slotIndex, occupiedIndex) => {
     const engineering = state.engineeringStates[occupiedIndex];
     if (engineering?.kind !== 'ordinary') return;
-    const blueprint = CODEC_V1_BLUEPRINTS[engineering.blueprint];
+    const blueprint = codecContext().tables.BLUEPRINTS[engineering.blueprint];
     if (!blueprint) throw unknownTableIndex('engineering blueprint', engineering.blueprint);
     const experimental =
       engineering.experimental === null
         ? undefined
-        : CODEC_V1_EXPERIMENTAL_EFFECTS[engineering.experimental];
+        : codecContext().tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
     if (engineering.experimental !== null && experimental === undefined) {
       throw unknownTableIndex('experimental effect', engineering.experimental);
     }
@@ -455,7 +446,7 @@ function reconstructVersionOneLoadout(state: VersionOneState): ShipLoadout {
   });
   state.decorativeStates.forEach((modification, slotIndex) => {
     if (modification === undefined) return;
-    const fdname = CODEC_V1_DECORATIVE_MODIFICATIONS[modification];
+    const fdname = codecContext().tables.DECORATIVE_MODIFICATIONS[modification];
     if (!fdname) throw unknownTableIndex('decorative modification', modification);
     loadout.applyDecorativeModification(slots[slotIndex]!, fdname);
   });
@@ -469,10 +460,10 @@ function writeDecorativeStates(writer: BitWriter, states: readonly (number | und
   writeIndexSet(writer, states.length, decorated);
   for (const slotIndex of decorated) {
     const modification = states[slotIndex]!;
-    if (!CODEC_V1_DECORATIVE_MODIFICATIONS[modification]) {
+    if (!codecContext().tables.DECORATIVE_MODIFICATIONS[modification]) {
       throw unknownTableIndex('decorative modification', modification);
     }
-    writer.writeBits(modification, DECORATIVE_BITS);
+    writer.writeBits(modification, codecContext().decorativeBits);
   }
 }
 
@@ -508,8 +499,8 @@ function readDecorativeStates(
         'A decorative modification cannot replace engineering on the same slot.',
       );
     }
-    const modification = reader.readBits(DECORATIVE_BITS);
-    const symbol = CODEC_V1_MODULES[moduleIndex];
+    const modification = reader.readBits(codecContext().decorativeBits);
+    const symbol = codecContext().tables.MODULES[moduleIndex];
     if (!symbol) throw unknownTableIndex('module', moduleIndex);
     requireDecorativeModification(symbol, modification);
     states[slotIndex] = modification;
@@ -518,7 +509,7 @@ function readDecorativeStates(
 }
 
 function requireDecorativeModification(symbol: string, modification: number): void {
-  const fdname = CODEC_V1_DECORATIVE_MODIFICATIONS[modification];
+  const fdname = codecContext().tables.DECORATIVE_MODIFICATIONS[modification];
   if (!fdname) throw unknownTableIndex('decorative modification', modification);
   const modifiers = getDecorativeModifiers(symbol, fdname);
   const unresolved = unresolvedDecorativeModifiers(symbol, fdname);
@@ -536,7 +527,7 @@ function isPristineState(
   powerStates: readonly PowerState[],
   engineeringStates: readonly (CodecEngineeringState | undefined)[],
 ): boolean {
-  const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship];
+  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship];
   return (
     moduleIndexes.every((moduleIndex, index) => moduleIndex === defaults[index]) &&
     powerStates.every(({ on, priority }) => on === undefined && priority === undefined) &&
@@ -548,13 +539,13 @@ function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
   return left.length === right.length && left.every((byte, index) => byte === right[index]);
 }
 
-type CodecShip = keyof typeof CODEC_V1_SLOTS_BY_SHIP;
+type CodecShip = string;
 type PowerState = { on: boolean | undefined; priority: number | undefined };
 const EMPTY_POWER_STATE: PowerState = { on: undefined, priority: undefined };
 type CodecFittedModule = ReturnType<ShipLoadout['fittedModules']>[number];
 
 function moduleDrawsPower(moduleIndex: number | null): boolean {
-  return moduleIndex !== null && POWERED_MODULE_SET.has(moduleIndex);
+  return moduleIndex !== null && codecContext().poweredModuleSet.has(moduleIndex);
 }
 
 function powerStateLayout(
@@ -625,7 +616,9 @@ function readModuleIdentities(
   ship: CodecShip,
   slots: readonly string[],
 ): Array<number | null> {
-  const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship] as readonly (number | null)[];
+  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship] as readonly (
+    number | null
+  )[];
   const useBaseline = reader.readBoolean();
   let modules: Array<number | null>;
   if (useBaseline) {
@@ -836,11 +829,13 @@ function moduleIdentityBitCost(
 ): number {
   const defaultBits = defaultIndex === null ? 0 : 1;
   if (defaultIndex === moduleIndex) return defaultBits;
-  if (context.length === 0) return defaultBits + MODULE_BITS;
+  if (context.length === 0) return defaultBits + codecContext().moduleBits;
   return (
     defaultBits +
     1 +
-    (context.includes(moduleIndex) ? contextualIndexBits(context.length) : MODULE_BITS)
+    (context.includes(moduleIndex)
+      ? contextualIndexBits(context.length)
+      : codecContext().moduleBits)
   );
 }
 
@@ -854,7 +849,7 @@ function writeModuleIdentity(
     writer.writeBoolean(moduleIndex === defaultIndex);
     if (moduleIndex === defaultIndex) return;
   }
-  writeContextualIndex(writer, moduleIndex, context, MODULE_BITS);
+  writeContextualIndex(writer, moduleIndex, context, codecContext().moduleBits);
 }
 
 function readModuleIdentity(
@@ -863,8 +858,8 @@ function readModuleIdentity(
   defaultIndex: number | null,
 ): number {
   if (defaultIndex !== null && reader.readBoolean()) return defaultIndex;
-  const moduleIndex = readContextualIndex(reader, context, MODULE_BITS);
-  if (!CODEC_V1_MODULES[moduleIndex]) throw unknownTableIndex('module', moduleIndex);
+  const moduleIndex = readContextualIndex(reader, context, codecContext().moduleBits);
+  if (!codecContext().tables.MODULES[moduleIndex]) throw unknownTableIndex('module', moduleIndex);
   return moduleIndex;
 }
 
@@ -1512,35 +1507,36 @@ function contextualIndexBits(valueCount: number): number {
 }
 
 function moduleSetForSlot(ship: CodecShip, slotIndex: number): readonly number[] {
-  const setIndex = CODEC_V1_MODULE_SET_BY_SHIP[ship][slotIndex];
-  const set = CODEC_V1_MODULE_SETS[setIndex];
+  const setIndex = codecContext().tables.MODULE_SET_BY_SHIP[ship][slotIndex];
+  const set = codecContext().tables.MODULE_SETS[setIndex];
   if (!set) throw unknownTableIndex('module candidate set', setIndex);
   return set;
 }
 
 function blueprintSetForModule(moduleIndex: number): readonly number[] {
-  const setIndex = CODEC_V1_BLUEPRINT_SET_BY_MODULE[moduleIndex];
-  const set = setIndex === undefined ? undefined : CODEC_V1_BLUEPRINT_SETS[setIndex];
+  const setIndex = codecContext().tables.BLUEPRINT_SET_BY_MODULE[moduleIndex];
+  const set = setIndex === undefined ? undefined : codecContext().tables.BLUEPRINT_SETS[setIndex];
   if (!set) throw unknownTableIndex('blueprint set', setIndex ?? -1);
   return set;
 }
 
 function experimentalSetForModule(moduleIndex: number): readonly number[] {
-  const setIndex = CODEC_V1_EXPERIMENTAL_SET_BY_MODULE[moduleIndex];
-  const set = setIndex === undefined ? undefined : CODEC_V1_EXPERIMENTAL_SETS[setIndex];
+  const setIndex = codecContext().tables.EXPERIMENTAL_SET_BY_MODULE[moduleIndex];
+  const set =
+    setIndex === undefined ? undefined : codecContext().tables.EXPERIMENTAL_SETS[setIndex];
   if (!set) throw unknownTableIndex('experimental-effect set', setIndex ?? -1);
   return set;
 }
 
 function preEngineeredSetForModule(moduleIndex: number): readonly number[] {
-  return CODEC_V1_PRE_ENGINEERED_SET_BY_MODULE[moduleIndex] ?? [];
+  return codecContext().tables.PRE_ENGINEERED_SET_BY_MODULE[moduleIndex] ?? [];
 }
 
 function resolvePreEngineeredVariant(index: number): PreEngineeredVariant {
-  const identity = CODEC_V1_PRE_ENGINEERED_VARIANTS[index];
+  const identity = codecContext().tables.PRE_ENGINEERED_VARIANTS[index];
   if (!identity) throw unknownTableIndex('pre-engineered variant', index);
-  const symbol = CODEC_V1_MODULES[identity.module];
-  const blueprint = CODEC_V1_BLUEPRINTS[identity.blueprint];
+  const symbol = codecContext().tables.MODULES[identity.module];
+  const blueprint = codecContext().tables.BLUEPRINTS[identity.blueprint];
   const variant = PRE_ENGINEERED_MODULES.find(
     (candidate) =>
       normalise(candidate.symbol) === normalise(symbol) &&
@@ -1553,10 +1549,10 @@ function resolvePreEngineeredVariant(index: number): PreEngineeredVariant {
 }
 
 function preEngineeredVariantIndex(variant: PreEngineeredVariant): number {
-  const module = MODULE_INDEX.get(normalise(variant.symbol));
-  const blueprint = BLUEPRINT_INDEX.get(normalise(variant.blueprint));
+  const module = codecContext().moduleIndex.get(normalise(variant.symbol));
+  const blueprint = codecContext().blueprintIndex.get(normalise(variant.blueprint));
   if (module === undefined || blueprint === undefined) return -1;
-  return CODEC_V1_PRE_ENGINEERED_VARIANTS.findIndex(
+  return codecContext().tables.PRE_ENGINEERED_VARIANTS.findIndex(
     (identity) =>
       identity.module === module &&
       identity.blueprint === blueprint &&
@@ -1566,9 +1562,9 @@ function preEngineeredVariantIndex(variant: PreEngineeredVariant): number {
 }
 
 function pinnedPreEngineeredExperimentalIndex(index: number): number | null {
-  const experimental = CODEC_V1_PRE_ENGINEERED_VARIANTS[index]?.experimental;
+  const experimental = codecContext().tables.PRE_ENGINEERED_VARIANTS[index]?.experimental;
   if (experimental === null) return null;
-  if (experimental === undefined || !CODEC_V1_EXPERIMENTAL_EFFECTS[experimental]) {
+  if (experimental === undefined || !codecContext().tables.EXPERIMENTAL_EFFECTS[experimental]) {
     throw unknownTableIndex('pre-engineered experimental effect', experimental ?? -1);
   }
   return experimental;
@@ -1579,7 +1575,7 @@ function resolvePreEngineeredEngineering(engineering: PreEngineeredState): Modul
   const experimental =
     engineering.experimental === null
       ? undefined
-      : CODEC_V1_EXPERIMENTAL_EFFECTS[engineering.experimental];
+      : codecContext().tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
   if (engineering.experimental !== null && experimental === undefined) {
     throw unknownTableIndex('experimental effect', engineering.experimental);
   }
@@ -1629,13 +1625,17 @@ function engineeringStateFromModule(
   if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      'The pre-engineered variant is absent from codec version 1.',
+      `The pre-engineered variant is absent from codec table ${codecContext().tableVersion}.`,
     );
   }
   const experimental =
     engineering.ExperimentalEffect === undefined
       ? null
-      : requireIdentity(EXPERIMENTAL_INDEX, engineering.ExperimentalEffect, 'experimental effect');
+      : requireIdentity(
+          codecContext().experimentalIndex,
+          engineering.ExperimentalEffect,
+          'experimental effect',
+        );
   if (preEngineeredIndex !== -1) {
     if (!preEngineeredSetForModule(moduleIndex).includes(preEngineeredIndex)) {
       throw new BuildLinkCodecError(
@@ -1652,11 +1652,11 @@ function engineeringStateFromModule(
   }
 
   const blueprint = requireIdentity(
-    BLUEPRINT_INDEX,
+    codecContext().blueprintIndex,
     engineering.BlueprintName,
     'engineering blueprint',
   );
-  const grades = CODEC_V1_BLUEPRINT_GRADES[blueprint] as readonly number[];
+  const grades = codecContext().tables.BLUEPRINT_GRADES[blueprint] as readonly number[];
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
@@ -1711,7 +1711,7 @@ function writeEngineering(
     return;
   }
 
-  const grades = CODEC_V1_BLUEPRINT_GRADES[engineering.blueprint] as readonly number[];
+  const grades = codecContext().tables.BLUEPRINT_GRADES[engineering.blueprint] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   if (!Number.isInteger(engineering.level) || !grades.includes(engineering.level)) {
     throw new BuildLinkCodecError(
@@ -1723,7 +1723,7 @@ function writeEngineering(
     writer,
     engineering.blueprint,
     blueprintSetForModule(moduleIndex),
-    BLUEPRINT_BITS,
+    codecContext().blueprintBits,
   );
   if (grades.length > 1) {
     writer.writeBoolean(engineering.level === maximumGrade);
@@ -1762,12 +1762,12 @@ function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeri
   const blueprintIndex = readContextualIndex(
     reader,
     blueprintSetForModule(moduleIndex),
-    BLUEPRINT_BITS,
+    codecContext().blueprintBits,
   );
-  if (!CODEC_V1_BLUEPRINTS[blueprintIndex]) {
+  if (!codecContext().tables.BLUEPRINTS[blueprintIndex]) {
     throw unknownTableIndex('engineering blueprint', blueprintIndex);
   }
-  const grades = CODEC_V1_BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
+  const grades = codecContext().tables.BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   let level = maximumGrade;
   if (grades.length > 1 && !reader.readBoolean()) {
@@ -1843,7 +1843,7 @@ function writeExperimental(
     writer,
     experimental,
     experimentalSetForModule(moduleIndex),
-    EXPERIMENTAL_BITS,
+    codecContext().experimentalBits,
   );
 }
 
@@ -1852,9 +1852,9 @@ function readExperimental(reader: BitReader, moduleIndex: number): number | null
   const experimentalIndex = readContextualIndex(
     reader,
     experimentalSetForModule(moduleIndex),
-    EXPERIMENTAL_BITS,
+    codecContext().experimentalBits,
   );
-  if (!CODEC_V1_EXPERIMENTAL_EFFECTS[experimentalIndex]) {
+  if (!codecContext().tables.EXPERIMENTAL_EFFECTS[experimentalIndex]) {
     throw unknownTableIndex('experimental effect', experimentalIndex);
   }
   return experimentalIndex;
@@ -1913,12 +1913,12 @@ function createIndex(values: readonly string[]): Map<string, number> {
   return new Map(values.map((value, index) => [normalise(value), index]));
 }
 
-function requireIdentity(index: Map<string, number>, value: string, kind: string): number {
+function requireIdentity(index: ReadonlyMap<string, number>, value: string, kind: string): number {
   const result = index.get(normalise(value));
   if (result === undefined) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `${kind} identity ${value} is absent from codec version 1.`,
+      `${kind} identity ${value} is absent from codec table ${codecContext().tableVersion}.`,
     );
   }
   return result;
@@ -1927,7 +1927,7 @@ function requireIdentity(index: Map<string, number>, value: string, kind: string
 function unknownTableIndex(kind: string, index: number): BuildLinkCodecError {
   return new BuildLinkCodecError(
     'unknownIdentity',
-    `${kind} index ${index} is absent from codec version 1.`,
+    `${kind} index ${index} is absent from codec table ${codecContext().tableVersion}.`,
   );
 }
 
@@ -2138,21 +2138,38 @@ function isWellFormedUnicode(value: string): boolean {
   return true;
 }
 
-function crc32(bytes: Uint8Array): number {
-  let crc = 0xffff_ffff;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let bit = 0; bit < 8; bit += 1) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb8_8320 : 0);
-    }
-  }
-  return (crc ^ 0xffff_ffff) >>> 0;
+function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables): CodecContext {
+  return {
+    tableVersion,
+    tables,
+    shipBits: bitsRequired(tables.SHIPS.length),
+    moduleBits: bitsRequired(tables.MODULES.length),
+    blueprintBits: bitsRequired(tables.BLUEPRINTS.length),
+    experimentalBits: bitsRequired(tables.EXPERIMENTAL_EFFECTS.length + 1),
+    decorativeBits: bitsRequired(tables.DECORATIVE_MODIFICATIONS.length),
+    poweredModuleSet: new Set(tables.POWERED_MODULES),
+    decorativeIndex: createIndex(tables.DECORATIVE_MODIFICATIONS),
+    shipIndex: createIndex(tables.SHIPS),
+    moduleIndex: createIndex(tables.MODULES),
+    blueprintIndex: createIndex(tables.BLUEPRINTS),
+    experimentalIndex: createIndex(tables.EXPERIMENTAL_EFFECTS),
+    slotIndexByShip: new Map(
+      tables.SHIPS.map((ship) => [ship, createIndex(tables.SLOTS_BY_SHIP[ship])]),
+    ),
+  };
 }
 
-const SHIP_INDEX = createIndex(CODEC_V1_SHIPS);
-const MODULE_INDEX = createIndex(CODEC_V1_MODULES);
-const BLUEPRINT_INDEX = createIndex(CODEC_V1_BLUEPRINTS);
-const EXPERIMENTAL_INDEX = createIndex(CODEC_V1_EXPERIMENTAL_EFFECTS);
-const SLOT_INDEX_BY_SHIP = new Map(
-  CODEC_V1_SHIPS.map((ship) => [ship, createIndex(CODEC_V1_SLOTS_BY_SHIP[ship])]),
-);
+function withCodecContext<Result>(context: CodecContext, operation: () => Result): Result {
+  const previousContext = activeCodecContext;
+  activeCodecContext = context;
+  try {
+    return operation();
+  } finally {
+    activeCodecContext = previousContext;
+  }
+}
+
+function codecContext(): CodecContext {
+  if (!activeCodecContext) throw new Error('The build-link codec has no active table.');
+  return activeCodecContext;
+}

@@ -4,11 +4,7 @@ import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-
 import { getPreEngineeredModifiers } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
-import {
-  BuildLinkCodecError,
-  decodeBuildLinkFragment,
-  encodeBuildLinkFragment,
-} from './build-link-codec';
+import { BuildLinkCodecError, createBuildLinkCodec } from './build-link-codec';
 import {
   decodeBuildLinkFragment as decodeBuildLinkFragmentOnDemand,
   encodeBuildLinkFragment as encodeBuildLinkFragmentOnDemand,
@@ -18,8 +14,11 @@ import {
   decodeBuildLinkPayload,
   encodeBuildLinkPayload,
 } from './build-link-radix';
-import codecV1Tables from './codec-v1.tables.json';
+import codecTable1Json from './codec-table-1.json';
 import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture.json';
+
+const codecTable1 = codecTable1Json;
+const { decodeBuildLinkFragment, encodeBuildLinkFragment } = createBuildLinkCodec(1, codecTable1);
 
 describe('build-link codec', () => {
   it('round-trips the minimal state imported through the Almanac', () => {
@@ -28,7 +27,7 @@ describe('build-link codec', () => {
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
     const reimported = ShipLoadout.fromSlef(
       decoded.toSlefString({
-        header: { appName: 'Compression POC', appVersion: 1 },
+        header: { appName: 'Elite Dangerous Ship Builder', appVersion: 1 },
       }),
     );
 
@@ -60,8 +59,8 @@ describe('build-link codec', () => {
 
   it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
     const cases = [
-      { name: 'Astraea', ident: 'POC-42', length: 27 },
-      { name: 'Astraea 星', ident: 'POC-42', length: 35 },
+      { name: 'Astraea', ident: 'TST-42', length: 27 },
+      { name: 'Astraea 星', ident: 'TST-42', length: 35 },
       { name: '星', ident: null, length: 17 },
       { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 40 },
     ];
@@ -90,7 +89,7 @@ describe('build-link codec', () => {
       Modules: [],
     });
     const compactFragment = encodeBuildLinkFragment(compact);
-    const metadataOffset = 10 + testBitsRequired(codecV1Tables.CODEC_V1_SHIPS.length) + 2;
+    const metadataOffset = 10 + testBitsRequired(codecTable1.SHIPS.length) + 2;
 
     expect(readPayloadBits(compactFragment, metadataOffset, 8)).toBe(0x81);
     expect(readPayloadBits(compactFragment, metadataOffset + 8, 8)).toBe(0x01);
@@ -437,7 +436,7 @@ describe('build-link codec', () => {
     const baseline = encodeBuildLinkFragment(ordinary);
     const fragment = encodeBuildLinkFragment(decorated);
     const presenceOffset = firstDifferingBodyBit(baseline, fragment);
-    const slots = codecV1Tables.CODEC_V1_SLOTS_BY_SHIP.Krait_MkII;
+    const slots = codecTable1.SLOTS_BY_SHIP.Krait_MkII;
     const countWidth = testBitsRequired(slots.length + 1);
     const slotWidth = testBitsRequired(slots.length);
     expect(readPayloadBits(fragment, presenceOffset, 1)).toBe(1);
@@ -467,10 +466,42 @@ describe('build-link codec', () => {
     const encoded = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
 
     expect(readPayloadBits(encoded, 0, 10)).toBe(1);
-    expect(readPayloadBits(withPayloadVersion(encoded, 1_023), 0, 10)).toBe(1_023);
+    expect(readPayloadBits(withPayloadTableVersion(encoded, 1_023), 0, 10)).toBe(1_023);
   });
 
-  it('loads the payload-declared codec and tables on demand', async () => {
+  it('shares one codec implementation across independent table versions', () => {
+    const table2 = {
+      ...codecTable1,
+      $generated: { ...codecTable1.$generated, tableVersion: 2 },
+      SHIPS: [codecTable1.SHIPS[1]!, codecTable1.SHIPS[0]!, ...codecTable1.SHIPS.slice(2)],
+    };
+    const codec2 = createBuildLinkCodec(2, table2);
+    const source = ShipLoadout.default('SideWinder');
+    const nestedSource = ShipLoadout.empty('Eagle');
+    let nestedFragment: string | undefined;
+    const reentrantSource = new Proxy(source, {
+      get(loadout, property) {
+        if (property === 'shipSymbol') {
+          nestedFragment = encodeBuildLinkFragment(nestedSource);
+        }
+        const value: unknown = Reflect.get(loadout, property, loadout);
+        return typeof value === 'function' ? value.bind(loadout) : value;
+      },
+    });
+    const encoded = codec2.encodeBuildLinkFragment(reentrantSource);
+
+    expect(readPayloadBits(encoded, 0, 10)).toBe(2);
+    expect(readPayloadBits(encoded, 10, testBitsRequired(table2.SHIPS.length))).toBe(1);
+    expect(minimalState(codec2.decodeBuildLinkFragment(encoded))).toEqual(minimalState(source));
+    expect(readPayloadBits(nestedFragment!, 0, 10)).toBe(1);
+    expect(decodeBuildLinkFragment(nestedFragment!).shipSymbol).toBe('Eagle');
+    expectCodecError(() => decodeBuildLinkFragment(encoded), 'unsupportedTableVersion');
+    expect(() => createBuildLinkCodec(2, codecTable1)).toThrowError(
+      'The build-link codec table version is invalid.',
+    );
+  });
+
+  it('loads the payload-declared table on demand', async () => {
     const source = ShipLoadout.default('Krait_MkII');
     const encoded = await encodeBuildLinkFragmentOnDemand(source);
 
@@ -478,12 +509,18 @@ describe('build-link codec', () => {
       minimalState(source),
     );
     await expect(
-      decodeBuildLinkFragmentOnDemand(withPayloadVersion(encoded, 513)),
-    ).rejects.toMatchObject({ code: 'unsupportedVersion' });
+      decodeBuildLinkFragmentOnDemand(withPayloadTableVersion(encoded, 513)),
+    ).rejects.toMatchObject({ code: 'unsupportedTableVersion' });
+
+    const corrupted = decodePayload(encoded);
+    corrupted[0]! ^= 1;
+    await expect(
+      decodeBuildLinkFragmentOnDemand(`b.${encodeBuildLinkPayload(corrupted)}`),
+    ).rejects.toMatchObject({ code: 'integrityCheckFailed' });
   });
 
   it('keeps the frozen literal special-build link stable in the decode direction', () => {
-    // Freeze before release; once v1 ships, never regenerate this fixture to make a build pass.
+    // Freeze before release; once table 1 ships, never regenerate this fixture to make a build pass.
     const preEngineered = decodeBuildLinkFragment('b.eXcDHGhn7Tub');
 
     expect(minimalState(preEngineered)).toEqual({
@@ -532,7 +569,7 @@ describe('build-link codec', () => {
     const emptyLink = `${baseUrl}#${emptyFragment}`;
     const typicalLink = `${baseUrl}#${typicalFragment}`;
     const largeLink = `${baseUrl}#${largeFragment}`;
-    // Freeze before release; once v1 ships, never regenerate these fixtures to make a build pass.
+    // Freeze before release; once table 1 ships, never regenerate these fixtures to make a build pass.
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
@@ -566,17 +603,17 @@ describe('build-link codec', () => {
     expect(decodeBuildLinkFragment(`#${encoded}`).shipSymbol).toBe(source.shipSymbol);
   });
 
-  it('refuses unsupported versions', () => {
+  it('refuses unsupported table versions and envelopes', () => {
     const encoded = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
 
     expectCodecError(
-      () => decodeBuildLinkFragment(withPayloadVersion(encoded, 513)),
-      'unsupportedVersion',
+      () => decodeBuildLinkFragment(withPayloadTableVersion(encoded, 513)),
+      'unsupportedTableVersion',
     );
-    expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedVersion');
+    expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedEnvelope');
   });
 
-  it('refuses identities absent from the pinned version table', () => {
+  it('refuses identities absent from the pinned table', () => {
     const unresolvedSlot = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
       Modules: [{ Slot: 'ImpossibleSlot', Item: 'UnknownModule' }],
@@ -618,7 +655,7 @@ describe('build-link codec', () => {
   });
 
   it('pins combination-rank boundaries and rejects invalid ranks and preferred-mode ties', () => {
-    const slots = codecV1Tables.CODEC_V1_SLOTS_BY_SHIP.SideWinder;
+    const slots = codecTable1.SLOTS_BY_SHIP.SideWinder;
     const cases = [
       { removed: [slots[0]!, slots[1]!], rank: 0 },
       { removed: [slots[17]!, slots[18]!], rank: 170 },
@@ -711,7 +748,7 @@ describe('build-link codec', () => {
     expectCodecError(() => encodeBuildLinkFragment(oversized), 'invalidPayload');
   });
 
-  it('validates version-one fields before reconstructing a build', () => {
+  it('validates table-one fields before reconstructing a build', () => {
     const empty = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
     const stock = encodeBuildLinkFragment(ShipLoadout.default('SideWinder'));
 
@@ -754,7 +791,7 @@ function makeImportedEngineeredBuild(includeCredits = true): ShipLoadout {
     event: 'Loadout',
     Ship: exported.Ship,
     ShipName: 'Astraea 星',
-    ShipIdent: 'POC-42',
+    ShipIdent: 'TST-42',
     ...(includeCredits
       ? {
           HullValue: 12_345_678.5,
@@ -768,7 +805,7 @@ function makeImportedEngineeredBuild(includeCredits = true): ShipLoadout {
   };
   return ShipLoadout.fromSlef([
     {
-      header: { appName: 'Compression POC', appVersion: 1 },
+      header: { appName: 'Elite Dangerous Ship Builder', appVersion: 1 },
       data: event,
     },
   ]);
@@ -928,7 +965,7 @@ function decodePayload(fragment: string): Uint8Array {
   return decodeBuildLinkPayload(fragment.slice('b.'.length));
 }
 
-function withPayloadVersion(fragment: string, version: number): string {
+function withPayloadTableVersion(fragment: string, version: number): string {
   return withPayloadBits(fragment, 0, 10, version);
 }
 
@@ -996,8 +1033,8 @@ function handcraftedMetadataFragment(
   writeTestBits(bits, 1, 10);
   writeTestBits(
     bits,
-    codecV1Tables.CODEC_V1_SHIPS.indexOf('SideWinder'),
-    testBitsRequired(codecV1Tables.CODEC_V1_SHIPS.length),
+    codecTable1.SHIPS.indexOf('SideWinder'),
+    testBitsRequired(codecTable1.SHIPS.length),
   );
   writeTestBits(bits, 1, 1); // ship name present
   writeTestBits(bits, 0, 1); // ship ident absent
@@ -1020,7 +1057,7 @@ function nonCanonicalEmptySidewinder(): string {
 
   // Mode 1 spells the changed defaults as an included sparse list; bitmap mode is cheaper.
   writeTestBits(bits, 1, 2);
-  const defaults = codecV1Tables.CODEC_V1_DEFAULT_MODULES_BY_SHIP.SideWinder;
+  const defaults = codecTable1.DEFAULT_MODULES_BY_SHIP.SideWinder;
   const changed = defaults.flatMap((module, index) => (module === null ? [] : [index]));
   writeTestBits(bits, changed.length, 5);
   for (const index of changed) writeTestBits(bits, index, 5);
