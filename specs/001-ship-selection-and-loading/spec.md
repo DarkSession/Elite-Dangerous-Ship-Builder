@@ -498,7 +498,10 @@ and confirm the build loads identically.
   derived from the catalogue: hull symbol, the module symbol fitted in each occupied slot,
   engineering (blueprint `fdname`, grade, quality, experimental effect `fdname`), each module's
   package-identified fixed pre-engineered variant, decorative modification `fdname`, enabled state
-  and power priority, and the ship's name and ident. Fixed-variant and decorative modifier values
+  and power priority for each outfittable or fixed module whose catalogue power draw is greater
+  than zero (including the cargo hatch), and the ship's name and ident. Passive modules with absent
+  or zero power draw have no power state in the minimal model; redundant `On` or `Priority` fields
+  supplied for them MUST NOT be carried in the link. Fixed-variant and decorative modifier values
   MUST be rebuilt from those identities through the package. Fields that
   `@elite-dangerous-almanac/core` can recompute from those inputs (module names, mass, power draw,
   catalogue costs, rebuy and metrics) MUST NOT appear in the link. Captured purchase values —
@@ -625,8 +628,10 @@ and confirm the build loads identically.
   Its payload is the compressed, URL-safe encoding of the minimal build model — never a full SLEF
   document, and never sent to a server.
 - **Minimal build model**: The non-derivable state of a build — hull, per-slot module symbols,
-  engineering, enabled state and power priority, ship name and ident. Everything else about the
-  build is recomputed from the catalogue on load; no catalogue or captured purchase value is carried.
+  engineering, enabled state and power priority for power-drawing outfittable and fixed modules
+  (including the cargo hatch), ship name and ident. Passive modules have no link power state.
+  Everything else about the build is recomputed from the catalogue on load; no catalogue or
+  captured purchase value is carried.
 
 ## Upstream dependencies
 
