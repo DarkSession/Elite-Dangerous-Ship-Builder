@@ -1581,8 +1581,7 @@
       "Slot04_Size1",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Eagle": [
       "SmallHardpoint1",
@@ -1604,8 +1603,7 @@
       "Slot04_Size1",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Hauler": [
       "SmallHardpoint1",
@@ -1625,8 +1623,7 @@
       "Slot04_Size1",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Adder": [
       "MediumHardpoint1",
@@ -1649,8 +1646,7 @@
       "Slot05_Size1",
       "Slot06_Size1",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Viper": [
       "MediumHardpoint1",
@@ -1674,8 +1670,7 @@
       "Slot04_Size1",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "CobraMkIII": [
       "MediumHardpoint1",
@@ -1700,8 +1695,7 @@
       "Slot06_Size2",
       "Slot07_Size1",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Type6": [
       "SmallHardpoint1",
@@ -1725,8 +1719,7 @@
       "Slot06_Size2",
       "Slot07_Size2",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Dolphin": [
       "SmallHardpoint1",
@@ -1751,8 +1744,7 @@
       "Slot07_Size2",
       "Slot08_Size1",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Type7": [
       "SmallHardpoint1",
@@ -1781,8 +1773,7 @@
       "Slot08_Size2",
       "Slot09_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Asp": [
       "MediumHardpoint1",
@@ -1811,8 +1802,7 @@
       "Slot06_Size2",
       "Slot07_Size2",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Vulture": [
       "LargeHardpoint1",
@@ -1837,8 +1827,7 @@
       "Slot06_Size1",
       "Slot07_Size1",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Empire_Trader": [
       "LargeHardpoint1",
@@ -1866,8 +1855,7 @@
       "Slot07_Size2",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Federation_Dropship": [
       "LargeHardpoint1",
@@ -1897,8 +1885,7 @@
       "Slot06_Size3",
       "Slot09_Size2",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Orca": [
       "LargeHardpoint1",
@@ -1925,8 +1912,7 @@
       "Slot07_Size2",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Type9": [
       "MediumHardpoint1",
@@ -1957,8 +1943,7 @@
       "Slot08_Size3",
       "Slot11_Size2",
       "Slot12_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Python": [
       "LargeHardpoint1",
@@ -1988,8 +1973,7 @@
       "Slot08_Size3",
       "Slot09_Size2",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "BelugaLiner": [
       "MediumHardpoint1",
@@ -2023,8 +2007,7 @@
       "Slot10_Size3",
       "Slot11_Size3",
       "Slot12_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "FerDeLance": [
       "HugeHardpoint1",
@@ -2052,8 +2035,7 @@
       "Slot04_Size2",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Anaconda": [
       "HugeHardpoint1",
@@ -2093,8 +2075,7 @@
       "Slot10_Size4",
       "Slot13_Size2",
       "Slot14_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Federation_Corvette": [
       "HugeHardpoint1",
@@ -2133,8 +2114,7 @@
       "Slot09_Size4",
       "Slot10_Size3",
       "Slot11_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Cutter": [
       "HugeHardpoint1",
@@ -2172,8 +2152,7 @@
       "Slot08_Size4",
       "Slot09_Size3",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "DiamondBack": [
       "MediumHardpoint1",
@@ -2198,8 +2177,7 @@
       "Slot04_Size2",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Empire_Courier": [
       "MediumHardpoint1",
@@ -2225,8 +2203,7 @@
       "Slot06_Size1",
       "Slot07_Size1",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "DiamondBackXL": [
       "LargeHardpoint1",
@@ -2252,8 +2229,7 @@
       "Slot06_Size2",
       "Slot07_Size1",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Empire_Eagle": [
       "MediumHardpoint1",
@@ -2275,8 +2251,7 @@
       "Slot04_Size1",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Federation_Dropship_MkII": [
       "LargeHardpoint1",
@@ -2304,8 +2279,7 @@
       "Slot05_Size2",
       "Slot06_Size2",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Federation_Gunship": [
       "LargeHardpoint1",
@@ -2336,8 +2310,7 @@
       "Slot04_Size2",
       "Slot05_Size2",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Viper_MkIV": [
       "MediumHardpoint1",
@@ -2363,8 +2336,7 @@
       "Slot06_Size1",
       "Slot07_Size1",
       "Slot08_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "CobraMkIV": [
       "MediumHardpoint1",
@@ -2392,8 +2364,7 @@
       "Slot08_Size2",
       "Slot09_Size1",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Independant_Trader": [
       "MediumHardpoint1",
@@ -2418,8 +2389,7 @@
       "Slot05_Size2",
       "Slot06_Size2",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Asp_Scout": [
       "MediumHardpoint1",
@@ -2443,8 +2413,7 @@
       "Slot05_Size2",
       "Slot06_Size2",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Type9_Military": [
       "LargeHardpoint1",
@@ -2484,8 +2453,7 @@
       "Military01",
       "Military02",
       "Slot12_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Krait_MkII": [
       "LargeHardpoint1",
@@ -2514,8 +2482,7 @@
       "Slot07_Size3",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "TypeX": [
       "LargeHardpoint1",
@@ -2545,8 +2512,7 @@
       "Military02",
       "Military03",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "TypeX_2": [
       "LargeHardpoint1",
@@ -2577,8 +2543,7 @@
       "Military02",
       "Military03",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "TypeX_3": [
       "LargeHardpoint1",
@@ -2610,8 +2575,7 @@
       "Military02",
       "Military03",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Krait_Light": [
       "LargeHardpoint1",
@@ -2639,8 +2603,7 @@
       "Slot07_Size3",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Mamba": [
       "HugeHardpoint1",
@@ -2668,8 +2631,7 @@
       "Slot04_Size2",
       "Slot05_Size2",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Python_NX": [
       "LargeHardpoint1",
@@ -2698,8 +2660,7 @@
       "Slot04_Size2",
       "Slot05_Size1",
       "Slot06_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Type8": [
       "MediumHardpoint1",
@@ -2729,8 +2690,7 @@
       "Slot07_Size4",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Mandalay": [
       "MediumHardpoint1",
@@ -2761,8 +2721,7 @@
       "Slot08_Size1",
       "Slot09_Size1",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "CobraMkV": [
       "MediumHardpoint1",
@@ -2791,8 +2750,7 @@
       "Slot07_Size3",
       "Slot08_Size2",
       "Slot09_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Corsair": [
       "LargeHardpoint1",
@@ -2823,8 +2781,7 @@
       "Slot08_Size3",
       "Slot09_Size2",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "PantherMkII": [
       "LargeHardpoint1",
@@ -2863,8 +2820,7 @@
       "Slot08_Size4",
       "Slot09_Size2",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "LakonMiner": [
       "LargeMiningHardpoint1",
@@ -2899,8 +2855,7 @@
       "Slot08_Size2",
       "Slot09_Size1",
       "Slot10_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "Explorer_NX": [
       "LargeHardpoint1",
@@ -2938,8 +2893,7 @@
       "Slot12_Size1",
       "Slot13_Size1",
       "Slot14_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "SmallCombat01_NX": [
       "LargeHardpoint1",
@@ -2967,8 +2921,7 @@
       "Slot05_Size2",
       "Slot06_Size2",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
     ],
     "MediumTransport01": [
       "LargeHardpoint1",
@@ -2998,8 +2951,297 @@
       "Slot05_Size3",
       "Slot06_Size2",
       "Slot07_Size1",
-      "PlanetaryApproachSuite",
-      "CargoHatch"
+      "PlanetaryApproachSuite"
+    ]
+  },
+  "CODEC_V1_FIXED_MODULES_BY_SHIP": {
+    "SideWinder": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Eagle": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Hauler": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Adder": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Viper": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "CobraMkIII": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Type6": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Dolphin": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Type7": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Asp": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Vulture": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Empire_Trader": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Federation_Dropship": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Orca": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Type9": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Python": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "BelugaLiner": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "FerDeLance": [
+      {
+        "slot": "CargoHatch",
+        "module": 1199
+      }
+    ],
+    "Anaconda": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Federation_Corvette": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Cutter": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "DiamondBack": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Empire_Courier": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "DiamondBackXL": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Empire_Eagle": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Federation_Dropship_MkII": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Federation_Gunship": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Viper_MkIV": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "CobraMkIV": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Independant_Trader": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Asp_Scout": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Type9_Military": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Krait_MkII": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "TypeX": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "TypeX_2": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "TypeX_3": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Krait_Light": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Mamba": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Python_NX": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Type8": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Mandalay": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "CobraMkV": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Corsair": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "PantherMkII": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "LakonMiner": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "Explorer_NX": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "SmallCombat01_NX": [
+      {
+        "slot": "CargoHatch",
+        "module": 851
+      }
+    ],
+    "MediumTransport01": [
+      {
+        "slot": "CargoHatch",
+        "module": 1199
+      }
     ]
   },
   "CODEC_V1_DEFAULT_MODULES_BY_SHIP": {
@@ -3022,8 +3264,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Eagle": [
       1005,
@@ -3045,8 +3286,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Hauler": [
       1005,
@@ -3066,8 +3306,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Adder": [
       null,
@@ -3090,8 +3329,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Viper": [
       1005,
@@ -3115,8 +3353,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "CobraMkIII": [
       1005,
@@ -3141,8 +3378,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Type6": [
       1005,
@@ -3166,8 +3402,7 @@
       602,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Dolphin": [
       1005,
@@ -3192,8 +3427,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Type7": [
       1005,
@@ -3222,8 +3456,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Asp": [
       null,
@@ -3252,8 +3485,7 @@
       602,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Vulture": [
       1005,
@@ -3278,8 +3510,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Empire_Trader": [
       null,
@@ -3307,8 +3538,7 @@
       602,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Federation_Dropship": [
       null,
@@ -3338,8 +3568,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Orca": [
       null,
@@ -3366,8 +3595,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Type9": [
       1005,
@@ -3398,8 +3626,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Python": [
       null,
@@ -3429,8 +3656,7 @@
       null,
       602,
       978,
-      980,
-      851
+      980
     ],
     "BelugaLiner": [
       1005,
@@ -3464,8 +3690,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "FerDeLance": [
       null,
@@ -3493,8 +3718,7 @@
       null,
       null,
       978,
-      980,
-      1199
+      980
     ],
     "Anaconda": [
       null,
@@ -3534,8 +3758,7 @@
       null,
       602,
       978,
-      980,
-      851
+      980
     ],
     "Federation_Corvette": [
       null,
@@ -3574,8 +3797,7 @@
       null,
       603,
       978,
-      980,
-      851
+      980
     ],
     "Cutter": [
       null,
@@ -3613,8 +3835,7 @@
       null,
       603,
       978,
-      980,
-      851
+      980
     ],
     "DiamondBack": [
       1005,
@@ -3639,8 +3860,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Empire_Courier": [
       1005,
@@ -3666,8 +3886,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "DiamondBackXL": [
       null,
@@ -3693,8 +3912,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Empire_Eagle": [
       null,
@@ -3716,8 +3934,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Federation_Dropship_MkII": [
       null,
@@ -3745,8 +3962,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Federation_Gunship": [
       null,
@@ -3777,8 +3993,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Viper_MkIV": [
       1005,
@@ -3804,8 +4019,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "CobraMkIV": [
       1005,
@@ -3833,8 +4047,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "Independant_Trader": [
       null,
@@ -3859,8 +4072,7 @@
       602,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Asp_Scout": [
       null,
@@ -3884,8 +4096,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Type9_Military": [
       null,
@@ -3925,8 +4136,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Krait_MkII": [
       null,
@@ -3955,8 +4165,7 @@
       null,
       602,
       978,
-      980,
-      851
+      980
     ],
     "TypeX": [
       1005,
@@ -3986,8 +4195,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "TypeX_2": [
       null,
@@ -4018,8 +4226,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "TypeX_3": [
       null,
@@ -4051,8 +4258,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Krait_Light": [
       null,
@@ -4080,8 +4286,7 @@
       null,
       602,
       978,
-      980,
-      851
+      980
     ],
     "Mamba": [
       null,
@@ -4109,8 +4314,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Python_NX": [
       null,
@@ -4139,8 +4343,7 @@
       null,
       602,
       978,
-      980,
-      851
+      980
     ],
     "Type8": [
       null,
@@ -4170,8 +4373,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "Mandalay": [
       null,
@@ -4202,8 +4404,7 @@
       null,
       null,
       978,
-      980,
-      851
+      980
     ],
     "CobraMkV": [
       1005,
@@ -4232,8 +4433,7 @@
       null,
       979,
       978,
-      980,
-      851
+      980
     ],
     "Corsair": [
       null,
@@ -4264,8 +4464,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "PantherMkII": [
       null,
@@ -4304,8 +4503,7 @@
       null,
       979,
       978,
-      980,
-      851
+      980
     ],
     "LakonMiner": [
       null,
@@ -4340,8 +4538,7 @@
       null,
       979,
       978,
-      980,
-      851
+      980
     ],
     "Explorer_NX": [
       null,
@@ -4379,8 +4576,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "SmallCombat01_NX": [
       null,
@@ -4408,8 +4604,7 @@
       null,
       978,
       979,
-      980,
-      851
+      980
     ],
     "MediumTransport01": [
       null,
@@ -4439,8 +4634,7 @@
       null,
       978,
       979,
-      980,
-      1199
+      980
     ]
   },
   "CODEC_V1_MODULE_SETS": [
@@ -4480,7 +4674,6 @@
       934, 935, 944, 945, 954, 974, 978, 979
     ],
     [846, 980],
-    [],
     [5, 6, 7, 8, 9],
     [140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 339, 395, 396],
     [
@@ -4986,173 +5179,166 @@
     [852, 853, 854, 855, 872, 873, 874, 875, 876, 877, 996, 997, 998, 999, 1000, 1001, 1002]
   ],
   "CODEC_V1_MODULE_SET_BY_SHIP": {
-    "SideWinder": [0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 11, 11, 12, 13],
-    "Eagle": [0, 0, 0, 1, 14, 3, 15, 16, 6, 17, 18, 19, 20, 10, 21, 11, 11, 11, 11, 12, 13],
-    "Hauler": [0, 1, 1, 22, 3, 4, 5, 6, 7, 8, 19, 20, 20, 10, 11, 11, 11, 12, 13],
-    "Adder": [23, 0, 0, 1, 1, 24, 25, 15, 16, 6, 17, 26, 27, 20, 20, 10, 10, 11, 11, 11, 12, 13],
-    "Viper": [
-      23, 23, 0, 0, 1, 1, 28, 25, 15, 16, 29, 30, 26, 19, 20, 20, 31, 10, 11, 11, 11, 12, 13
-    ],
+    "SideWinder": [0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 11, 11, 12],
+    "Eagle": [0, 0, 0, 1, 13, 3, 14, 15, 6, 16, 17, 18, 19, 10, 20, 11, 11, 11, 11, 12],
+    "Hauler": [0, 1, 1, 21, 3, 4, 5, 6, 7, 8, 18, 19, 19, 10, 11, 11, 11, 12],
+    "Adder": [22, 0, 0, 1, 1, 23, 24, 14, 15, 6, 16, 25, 26, 19, 19, 10, 10, 11, 11, 11, 12],
+    "Viper": [22, 22, 0, 0, 1, 1, 27, 24, 14, 15, 28, 29, 25, 18, 19, 19, 30, 10, 11, 11, 11, 12],
     "CobraMkIII": [
-      23, 23, 0, 0, 1, 1, 32, 33, 34, 35, 36, 30, 26, 37, 38, 38, 38, 10, 10, 10, 11, 11, 12, 13
+      22, 22, 0, 0, 1, 1, 31, 32, 33, 34, 35, 29, 25, 36, 37, 37, 37, 10, 10, 10, 11, 11, 12
     ],
-    "Type6": [
-      0, 0, 1, 1, 1, 39, 25, 34, 35, 29, 30, 18, 37, 40, 40, 38, 38, 20, 10, 10, 11, 12, 13
-    ],
+    "Type6": [0, 0, 1, 1, 1, 38, 24, 33, 34, 28, 29, 17, 36, 39, 39, 37, 37, 19, 10, 10, 11, 12],
     "Dolphin": [
-      0, 0, 1, 1, 1, 41, 33, 42, 35, 43, 30, 26, 37, 40, 38, 38, 20, 10, 10, 10, 11, 11, 12, 13
+      0, 0, 1, 1, 1, 40, 32, 41, 34, 42, 29, 25, 36, 39, 37, 37, 19, 10, 10, 10, 11, 11, 12
     ],
     "Type7": [
-      0, 0, 0, 0, 1, 1, 1, 1, 44, 45, 42, 46, 43, 47, 26, 48, 49, 49, 49, 40, 40, 40, 20, 20, 10,
-      11, 12, 13
+      0, 0, 0, 0, 1, 1, 1, 1, 43, 44, 41, 45, 42, 46, 25, 47, 48, 48, 48, 39, 39, 39, 19, 19, 10,
+      11, 12
     ],
     "Asp": [
-      23, 23, 0, 0, 0, 0, 1, 1, 1, 1, 50, 45, 42, 46, 43, 47, 51, 48, 49, 40, 20, 20, 20, 10, 10,
-      11, 12, 13
+      22, 22, 0, 0, 0, 0, 1, 1, 1, 1, 49, 44, 41, 45, 42, 46, 50, 47, 48, 39, 19, 19, 19, 10, 10,
+      11, 12
     ],
     "Vulture": [
-      52, 52, 1, 1, 1, 1, 53, 33, 42, 35, 36, 54, 55, 27, 40, 56, 38, 10, 11, 11, 11, 11, 12, 13
+      51, 51, 1, 1, 1, 1, 52, 32, 41, 34, 35, 53, 54, 26, 39, 55, 37, 10, 11, 11, 11, 11, 12
     ],
     "Empire_Trader": [
-      52, 52, 23, 23, 1, 1, 1, 1, 57, 58, 59, 46, 60, 61, 51, 37, 62, 49, 38, 38, 20, 20, 10, 10,
-      11, 12, 13
+      51, 51, 22, 22, 1, 1, 1, 1, 56, 57, 58, 45, 59, 60, 50, 36, 61, 48, 37, 37, 19, 19, 10, 10,
+      11, 12
     ],
     "Federation_Dropship": [
-      52, 23, 23, 23, 23, 1, 1, 1, 1, 63, 58, 59, 46, 60, 61, 55, 37, 49, 40, 40, 38, 64, 64, 20,
-      20, 10, 11, 12, 13
+      51, 22, 22, 22, 22, 1, 1, 1, 1, 62, 57, 58, 45, 59, 60, 54, 36, 48, 39, 39, 37, 63, 63, 19,
+      19, 10, 11, 12
     ],
     "Orca": [
-      52, 23, 23, 1, 1, 1, 1, 65, 45, 59, 46, 66, 54, 55, 48, 49, 40, 40, 40, 38, 20, 10, 10, 11,
-      12, 13
+      51, 22, 22, 1, 1, 1, 1, 64, 44, 58, 45, 65, 53, 54, 47, 48, 39, 39, 39, 37, 19, 10, 10, 11, 12
     ],
     "Type9": [
-      23, 23, 23, 0, 0, 1, 1, 1, 1, 67, 58, 68, 69, 60, 61, 55, 70, 71, 71, 62, 49, 40, 38, 38, 20,
-      20, 10, 11, 12, 13
+      22, 22, 22, 0, 0, 1, 1, 1, 1, 66, 57, 67, 68, 59, 60, 54, 69, 70, 70, 61, 48, 39, 37, 37, 19,
+      19, 10, 11, 12
     ],
     "Python": [
-      52, 52, 52, 23, 23, 1, 1, 1, 1, 72, 73, 59, 46, 43, 74, 75, 48, 49, 49, 49, 40, 40, 38, 20,
-      20, 10, 11, 12, 13
+      51, 51, 51, 22, 22, 1, 1, 1, 1, 71, 72, 58, 45, 42, 73, 74, 47, 48, 48, 48, 39, 39, 37, 19,
+      19, 10, 11, 12
     ],
     "BelugaLiner": [
-      23, 23, 23, 23, 23, 1, 1, 1, 1, 1, 1, 76, 58, 68, 77, 78, 61, 51, 79, 49, 49, 49, 49, 40, 40,
-      38, 20, 20, 20, 20, 11, 12, 13
+      22, 22, 22, 22, 22, 1, 1, 1, 1, 1, 1, 75, 57, 67, 76, 77, 60, 50, 78, 48, 48, 48, 48, 39, 39,
+      37, 19, 19, 19, 19, 11, 12
     ],
     "FerDeLance": [
-      80, 23, 23, 23, 23, 1, 1, 1, 1, 1, 1, 81, 58, 42, 35, 43, 61, 55, 27, 40, 38, 38, 10, 11, 11,
-      12, 13
+      79, 22, 22, 22, 22, 1, 1, 1, 1, 1, 1, 80, 57, 41, 34, 42, 60, 54, 26, 39, 37, 37, 10, 11, 11,
+      12
     ],
     "Anaconda": [
-      80, 52, 52, 52, 23, 23, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 82, 83, 68, 69, 60, 84, 85, 48, 62, 49,
-      49, 49, 40, 40, 40, 56, 38, 38, 38, 10, 11, 12, 13
+      79, 51, 51, 51, 22, 22, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 81, 82, 67, 68, 59, 83, 84, 47, 61, 48,
+      48, 48, 39, 39, 39, 55, 37, 37, 37, 10, 11, 12
     ],
     "Federation_Corvette": [
-      80, 80, 52, 23, 23, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 86, 83, 68, 69, 60, 84, 85, 48, 62, 62, 62,
-      49, 49, 40, 40, 56, 56, 38, 38, 20, 11, 12, 13
+      79, 79, 51, 22, 22, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 85, 82, 67, 68, 59, 83, 84, 47, 61, 61, 61,
+      48, 48, 39, 39, 55, 55, 37, 37, 19, 11, 12
     ],
     "Cutter": [
-      80, 52, 52, 23, 23, 23, 23, 1, 1, 1, 1, 1, 1, 1, 1, 87, 83, 88, 77, 89, 74, 90, 70, 71, 71,
-      49, 49, 49, 40, 40, 56, 56, 38, 20, 11, 12, 13
+      79, 51, 51, 22, 22, 22, 22, 1, 1, 1, 1, 1, 1, 1, 1, 86, 82, 87, 76, 88, 73, 89, 69, 70, 70,
+      48, 48, 48, 39, 39, 55, 55, 37, 19, 11, 12
     ],
     "DiamondBack": [
-      23, 23, 0, 0, 1, 1, 1, 1, 91, 33, 34, 35, 29, 30, 18, 37, 20, 20, 20, 10, 11, 11, 12, 13
+      22, 22, 0, 0, 1, 1, 1, 1, 90, 32, 33, 34, 28, 29, 17, 36, 19, 19, 19, 10, 11, 11, 12
     ],
     "Empire_Courier": [
-      23, 23, 23, 1, 1, 1, 1, 92, 33, 15, 16, 6, 30, 18, 27, 20, 20, 10, 10, 10, 11, 11, 11, 12, 13
+      22, 22, 22, 1, 1, 1, 1, 91, 32, 14, 15, 6, 29, 17, 26, 19, 19, 10, 10, 10, 11, 11, 11, 12
     ],
     "DiamondBackXL": [
-      52, 23, 23, 1, 1, 1, 1, 93, 33, 34, 46, 36, 47, 26, 48, 38, 38, 20, 20, 10, 10, 11, 11, 12, 13
+      51, 22, 22, 1, 1, 1, 1, 92, 32, 33, 45, 35, 46, 25, 47, 37, 37, 19, 19, 10, 10, 11, 11, 12
     ],
-    "Empire_Eagle": [
-      23, 0, 0, 1, 94, 25, 15, 16, 6, 17, 18, 19, 20, 10, 21, 11, 11, 11, 11, 12, 13
-    ],
+    "Empire_Eagle": [22, 0, 0, 1, 93, 24, 14, 15, 6, 16, 17, 18, 19, 10, 20, 11, 11, 11, 11, 12],
     "Federation_Dropship_MkII": [
-      52, 52, 23, 23, 1, 1, 1, 1, 95, 58, 59, 46, 60, 61, 55, 37, 40, 40, 38, 64, 64, 20, 10, 10,
-      11, 12, 13
+      51, 51, 22, 22, 1, 1, 1, 1, 94, 57, 58, 45, 59, 60, 54, 36, 39, 39, 37, 63, 63, 19, 10, 10,
+      11, 12
     ],
     "Federation_Gunship": [
-      52, 23, 23, 23, 23, 0, 0, 1, 1, 1, 1, 96, 58, 59, 46, 60, 74, 51, 37, 49, 49, 40, 64, 64, 64,
-      10, 10, 11, 12, 13
+      51, 22, 22, 22, 22, 0, 0, 1, 1, 1, 1, 95, 57, 58, 45, 59, 73, 50, 36, 48, 48, 39, 63, 63, 63,
+      10, 10, 11, 12
     ],
     "Viper_MkIV": [
-      23, 23, 0, 0, 1, 1, 97, 33, 34, 35, 29, 30, 26, 37, 38, 38, 20, 31, 10, 10, 11, 11, 11, 12, 13
+      22, 22, 0, 0, 1, 1, 96, 32, 33, 34, 28, 29, 25, 36, 37, 37, 19, 30, 10, 10, 11, 11, 11, 12
     ],
     "CobraMkIV": [
-      23, 23, 0, 0, 0, 1, 1, 98, 33, 34, 35, 36, 30, 26, 37, 38, 38, 38, 38, 20, 20, 10, 10, 11, 11,
-      12, 13
+      22, 22, 0, 0, 0, 1, 1, 97, 32, 33, 34, 35, 29, 25, 36, 37, 37, 37, 37, 19, 19, 10, 10, 11, 11,
+      12
     ],
     "Independant_Trader": [
-      23, 23, 0, 0, 1, 1, 1, 99, 33, 34, 35, 6, 30, 18, 37, 40, 40, 38, 20, 10, 10, 11, 12, 13
+      22, 22, 0, 0, 1, 1, 1, 98, 32, 33, 34, 6, 29, 17, 36, 39, 39, 37, 19, 10, 10, 11, 12
     ],
     "Asp_Scout": [
-      23, 23, 0, 0, 1, 1, 100, 33, 34, 35, 36, 47, 55, 37, 40, 38, 20, 20, 10, 10, 11, 12, 13
+      22, 22, 0, 0, 1, 1, 99, 32, 33, 34, 35, 46, 54, 36, 39, 37, 19, 19, 10, 10, 11, 12
     ],
     "Type9_Military": [
-      52, 52, 52, 52, 23, 23, 23, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 101, 83, 68, 77, 60, 74, 55, 70, 71,
-      62, 49, 40, 38, 38, 20, 20, 10, 56, 56, 11, 12, 13
+      51, 51, 51, 51, 22, 22, 22, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 100, 82, 67, 76, 59, 73, 54, 69, 70,
+      61, 48, 39, 37, 37, 19, 19, 10, 55, 55, 11, 12
     ],
     "Krait_MkII": [
-      52, 52, 52, 23, 23, 1, 1, 1, 1, 102, 73, 59, 46, 43, 74, 75, 48, 49, 49, 40, 40, 38, 20, 20,
-      10, 11, 12, 13
+      51, 51, 51, 22, 22, 1, 1, 1, 1, 101, 72, 58, 45, 42, 73, 74, 47, 48, 48, 39, 39, 37, 19, 19,
+      10, 11, 12
     ],
     "TypeX": [
-      52, 52, 23, 0, 0, 0, 1, 1, 1, 1, 103, 58, 59, 46, 60, 61, 55, 37, 49, 40, 38, 10, 10, 64, 64,
-      64, 11, 12, 13
+      51, 51, 22, 0, 0, 0, 1, 1, 1, 1, 102, 57, 58, 45, 59, 60, 54, 36, 48, 39, 37, 10, 10, 63, 63,
+      63, 11, 12
     ],
     "TypeX_2": [
-      52, 23, 23, 0, 0, 0, 1, 1, 1, 1, 104, 58, 59, 46, 60, 61, 55, 37, 49, 40, 20, 20, 10, 10, 64,
-      64, 64, 11, 12, 13
+      51, 22, 22, 0, 0, 0, 1, 1, 1, 1, 103, 57, 58, 45, 59, 60, 54, 36, 48, 39, 19, 19, 10, 10, 63,
+      63, 63, 11, 12
     ],
     "TypeX_3": [
-      52, 23, 23, 23, 0, 0, 0, 1, 1, 1, 1, 105, 58, 59, 46, 60, 61, 55, 37, 49, 49, 20, 20, 10, 10,
-      64, 64, 64, 11, 12, 13
+      51, 22, 22, 22, 0, 0, 0, 1, 1, 1, 1, 104, 57, 58, 45, 59, 60, 54, 36, 48, 48, 19, 19, 10, 10,
+      63, 63, 63, 11, 12
     ],
     "Krait_Light": [
-      52, 52, 23, 23, 1, 1, 1, 1, 106, 73, 59, 46, 43, 74, 75, 48, 49, 40, 40, 40, 20, 20, 20, 10,
-      11, 12, 13
+      51, 51, 22, 22, 1, 1, 1, 1, 105, 72, 58, 45, 42, 73, 74, 47, 48, 39, 39, 39, 19, 19, 19, 10,
+      11, 12
     ],
     "Mamba": [
-      80, 52, 52, 0, 0, 1, 1, 1, 1, 1, 1, 107, 58, 42, 35, 43, 61, 55, 27, 40, 38, 20, 10, 10, 11,
-      12, 13
+      79, 51, 51, 0, 0, 1, 1, 1, 1, 1, 1, 106, 57, 41, 34, 42, 60, 54, 26, 39, 37, 19, 10, 10, 11,
+      12
     ],
     "Python_NX": [
-      52, 52, 52, 52, 23, 23, 1, 1, 1, 1, 1, 1, 108, 58, 59, 46, 43, 61, 51, 37, 49, 38, 20, 10, 11,
-      11, 12, 13
+      51, 51, 51, 51, 22, 22, 1, 1, 1, 1, 1, 1, 107, 57, 58, 45, 42, 60, 50, 36, 48, 37, 19, 10, 11,
+      11, 12
     ],
     "Type8": [
-      23, 0, 0, 0, 0, 0, 1, 1, 1, 1, 109, 45, 42, 46, 36, 47, 26, 48, 62, 49, 49, 49, 40, 40, 38,
-      10, 11, 12, 13
+      22, 0, 0, 0, 0, 0, 1, 1, 1, 1, 108, 44, 41, 45, 35, 46, 25, 47, 61, 48, 48, 48, 39, 39, 37,
+      10, 11, 12
     ],
     "Mandalay": [
-      23, 23, 23, 23, 0, 0, 1, 1, 1, 1, 110, 45, 42, 46, 43, 54, 51, 48, 49, 40, 38, 38, 20, 20, 10,
-      11, 11, 11, 12, 13
+      22, 22, 22, 22, 0, 0, 1, 1, 1, 1, 109, 44, 41, 45, 42, 53, 50, 47, 48, 39, 37, 37, 19, 19, 10,
+      11, 11, 11, 12
     ],
     "CobraMkV": [
-      23, 23, 23, 0, 0, 1, 1, 1, 1, 111, 33, 34, 35, 36, 47, 26, 37, 40, 38, 38, 38, 20, 20, 20, 10,
-      11, 12, 13
+      22, 22, 22, 0, 0, 1, 1, 1, 1, 110, 32, 33, 34, 35, 46, 25, 36, 39, 37, 37, 37, 19, 19, 19, 10,
+      11, 12
     ],
     "Corsair": [
-      52, 52, 52, 23, 23, 23, 1, 1, 1, 1, 112, 73, 68, 46, 43, 74, 75, 48, 49, 49, 49, 40, 40, 40,
-      38, 20, 10, 11, 12, 13
+      51, 51, 51, 22, 22, 22, 1, 1, 1, 1, 111, 72, 67, 45, 42, 73, 74, 47, 48, 48, 48, 39, 39, 39,
+      37, 19, 10, 11, 12
     ],
     "PantherMkII": [
-      52, 52, 23, 23, 23, 23, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 113, 83, 88, 77, 60, 74, 51, 79, 114,
-      115, 116, 117, 118, 118, 118, 119, 119, 38, 10, 11, 12, 13
+      51, 51, 22, 22, 22, 22, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 112, 82, 87, 76, 59, 73, 50, 78, 113,
+      114, 115, 116, 117, 117, 117, 118, 118, 37, 10, 11, 12
     ],
     "LakonMiner": [
-      120, 121, 121, 23, 122, 0, 0, 0, 1, 1, 1, 1, 123, 58, 42, 46, 36, 74, 26, 48, 118, 118, 118,
-      119, 119, 124, 125, 38, 20, 10, 11, 11, 12, 13
+      119, 120, 120, 22, 121, 0, 0, 0, 1, 1, 1, 1, 122, 57, 41, 45, 35, 73, 25, 47, 117, 117, 117,
+      118, 118, 123, 124, 37, 19, 10, 11, 11, 12
     ],
     "Explorer_NX": [
-      52, 23, 23, 23, 23, 23, 23, 1, 1, 1, 1, 1, 1, 126, 83, 127, 128, 60, 74, 85, 79, 117, 118,
-      118, 119, 119, 119, 119, 38, 38, 20, 10, 11, 11, 11, 12, 13
+      51, 22, 22, 22, 22, 22, 22, 1, 1, 1, 1, 1, 1, 125, 82, 126, 127, 59, 73, 84, 78, 116, 117,
+      117, 118, 118, 118, 118, 37, 37, 19, 10, 11, 11, 11, 12
     ],
     "SmallCombat01_NX": [
-      52, 52, 52, 0, 0, 1, 1, 1, 1, 129, 45, 130, 35, 6, 54, 18, 37, 40, 38, 64, 20, 10, 10, 10, 11,
-      12, 13
+      51, 51, 51, 0, 0, 1, 1, 1, 1, 128, 44, 129, 34, 6, 53, 17, 36, 39, 37, 63, 19, 10, 10, 10, 11,
+      12
     ],
     "MediumTransport01": [
-      52, 23, 23, 23, 23, 1, 1, 1, 1, 131, 45, 59, 46, 66, 54, 26, 48, 49, 132, 132, 133, 40, 38,
-      38, 20, 10, 11, 12, 13
+      51, 22, 22, 22, 22, 1, 1, 1, 1, 130, 44, 58, 45, 65, 53, 25, 47, 48, 131, 131, 132, 39, 37,
+      37, 19, 10, 11, 12
     ]
   },
   "CODEC_V1_BLUEPRINT_SETS": [

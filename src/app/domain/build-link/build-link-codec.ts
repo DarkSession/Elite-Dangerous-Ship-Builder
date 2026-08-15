@@ -20,6 +20,9 @@ interface CodecV1Tables {
   readonly CODEC_V1_BLUEPRINT_GRADES: readonly (readonly number[])[];
   readonly CODEC_V1_EXPERIMENTAL_EFFECTS: readonly string[];
   readonly CODEC_V1_SLOTS_BY_SHIP: Readonly<Record<string, readonly string[]>>;
+  readonly CODEC_V1_FIXED_MODULES_BY_SHIP: Readonly<
+    Record<string, readonly { readonly slot: string; readonly module: number }[]>
+  >;
   readonly CODEC_V1_DEFAULT_MODULES_BY_SHIP: Readonly<Record<string, readonly (number | null)[]>>;
   readonly CODEC_V1_MODULE_SETS: readonly (readonly number[])[];
   readonly CODEC_V1_MODULE_SET_BY_SHIP: Readonly<Record<string, readonly number[]>>;
@@ -50,6 +53,7 @@ const {
   CODEC_V1_EXPERIMENTAL_SET_BY_MODULE,
   CODEC_V1_EXPERIMENTAL_SETS,
   CODEC_V1_EXPERIMENTAL_EFFECTS,
+  CODEC_V1_FIXED_MODULES_BY_SHIP,
   CODEC_V1_MODULE_SET_BY_SHIP,
   CODEC_V1_MODULE_SETS,
   CODEC_V1_MODULES,
@@ -82,10 +86,12 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
   const shipIndex = requireIdentity(SHIP_INDEX, loadout.shipSymbol, 'ship');
   const canonicalShip = CODEC_V1_SHIPS[shipIndex];
   const slots = CODEC_V1_SLOTS_BY_SHIP[canonicalShip];
+  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[canonicalShip];
   const slotIndex = SLOT_INDEX_BY_SHIP.get(canonicalShip);
-  if (!slots || !slotIndex) {
+  if (!slots || !fixedModules || !slotIndex) {
     throw new BuildLinkCodecError('unknownIdentity', `No codec slots exist for ${canonicalShip}.`);
   }
+  const fixedModuleBySlot = new Map(fixedModules.map((fixed) => [normalise(fixed.slot), fixed]));
 
   writer.writeBits(shipIndex, SHIP_BITS);
   writer.writeBoolean(loadout.shipName !== null);
@@ -99,6 +105,29 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
   for (const module of modules) {
     const encodedSlot = slotIndex.get(normalise(module.slot));
     if (encodedSlot === undefined) {
+      const fixed = fixedModuleBySlot.get(normalise(module.slot));
+      if (fixed) {
+        if (modulesBySlot.has(fixed.slot)) {
+          throw new BuildLinkCodecError(
+            'invalidPayload',
+            `Slot ${fixed.slot} appears more than once.`,
+          );
+        }
+        if (requireIdentity(MODULE_INDEX, module.symbol, 'module') !== fixed.module) {
+          throw new BuildLinkCodecError(
+            'invalidPayload',
+            `Fixed slot ${fixed.slot} does not contain its pinned module.`,
+          );
+        }
+        if (module.engineering !== undefined) {
+          throw new BuildLinkCodecError(
+            'invalidPayload',
+            `Fixed slot ${fixed.slot} cannot carry engineering.`,
+          );
+        }
+        modulesBySlot.set(fixed.slot, module);
+        continue;
+      }
       throw new BuildLinkCodecError(
         'unknownIdentity',
         `Slot ${module.slot} is absent from codec version 1 for ${canonicalShip}.`,
@@ -113,19 +142,31 @@ export function encodeBuildLinkFragment(loadout: ShipLoadout): string {
   }
 
   const defaults = CODEC_V1_DEFAULT_MODULES_BY_SHIP[canonicalShip];
-  const pristine = moduleIndexes.every(
-    (moduleIndex, index) =>
-      moduleIndex === defaults[index] &&
-      moduleAt(modulesBySlot, slots[index])?.on === undefined &&
-      moduleAt(modulesBySlot, slots[index])?.priority === undefined &&
-      moduleAt(modulesBySlot, slots[index])?.engineering === undefined,
-  );
+  const pristine =
+    moduleIndexes.every(
+      (moduleIndex, index) =>
+        moduleIndex === defaults[index] &&
+        moduleAt(modulesBySlot, slots[index])?.on === undefined &&
+        moduleAt(modulesBySlot, slots[index])?.priority === undefined &&
+        moduleAt(modulesBySlot, slots[index])?.engineering === undefined,
+    ) &&
+    fixedModules.every(({ slot }) => {
+      const module = moduleAt(modulesBySlot, slot);
+      return module?.on === undefined && module?.priority === undefined;
+    });
   writer.writeBoolean(pristine);
   if (!pristine) {
     writeModuleIdentities(writer, canonicalShip, slots, defaults, moduleIndexes);
     const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
     const occupiedModules = occupiedSlots.map((index) => moduleAt(modulesBySlot, slots[index])!);
-    writePowerStates(writer, occupiedModules);
+    const powerStates: PowerState[] = [
+      ...occupiedModules,
+      ...fixedModules.map(({ slot }) => {
+        const module = moduleAt(modulesBySlot, slot);
+        return { on: module?.on, priority: module?.priority };
+      }),
+    ];
+    writePowerStates(writer, powerStates);
     writeEngineeringStates(writer, occupiedModules, moduleIndexes, occupiedSlots);
   }
 
@@ -192,6 +233,7 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
   const ship = CODEC_V1_SHIPS[shipIndex];
   if (!ship) throw unknownTableIndex('ship', shipIndex);
   const slots = CODEC_V1_SLOTS_BY_SHIP[ship];
+  const fixedModules = CODEC_V1_FIXED_MODULES_BY_SHIP[ship];
 
   const hasShipName = reader.readBoolean();
   const hasShipIdent = reader.readBoolean();
@@ -202,9 +244,10 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
     ? [...CODEC_V1_DEFAULT_MODULES_BY_SHIP[ship]]
     : readModuleIdentities(reader, ship, slots);
   const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
+  const powerStateCount = occupiedSlots.length + fixedModules.length;
   const powerStates = pristine
-    ? occupiedSlots.map(() => ({ on: undefined, priority: undefined }))
-    : readPowerStates(reader, occupiedSlots.length);
+    ? Array.from({ length: powerStateCount }, () => ({ on: undefined, priority: undefined }))
+    : readPowerStates(reader, powerStateCount);
   const engineeringStates = pristine
     ? occupiedSlots.map(() => undefined)
     : readEngineeringStates(reader, moduleIndexes, occupiedSlots);
@@ -222,6 +265,17 @@ function readVersionOneLoadout(reader: BitReader): ShipLoadout {
       ...(priority === undefined ? {} : { Priority: priority }),
       ...(engineering?.Modifiers === undefined ? {} : { Engineering: engineering }),
     };
+  });
+  fixedModules.forEach(({ slot, module }, fixedIndex) => {
+    const item = CODEC_V1_MODULES[module];
+    if (!item) throw unknownTableIndex('fixed module', module);
+    const { on, priority } = powerStates[occupiedSlots.length + fixedIndex]!;
+    modules.push({
+      Slot: slot,
+      Item: item,
+      ...(on === undefined ? {} : { On: on }),
+      ...(priority === undefined ? {} : { Priority: priority }),
+    });
   });
 
   if (!reader.done) {
@@ -560,20 +614,19 @@ function writePowerStates(writer: BitWriter, modules: readonly PowerState[]): vo
   writer.writeBoolean(overrides.length > 0);
   if (overrides.length === 0) return;
 
-  const fixedCost = fixedPowerBitCost(modules);
-  const sparseCost = indexSetBitCost(modules.length, overrides) + overrides.length * 5;
-  const fixed = fixedCost <= sparseCost;
-  writer.writeBoolean(fixed);
-  if (fixed) {
+  const mode = powerMode(modules, overrides);
+  writer.writeBits(mode, 2);
+  if (mode === 0) {
     writeFixedPowerStates(writer, modules);
-    return;
-  }
-
-  writeIndexSet(writer, modules.length, overrides);
-  for (const index of overrides) {
-    const module = modules[index]!;
-    writer.writeBits(encodeOn(module.on), 2);
-    writer.writeBits(encodePriority(module.priority), 3);
+  } else if (mode === 1) {
+    writeIndexSet(writer, modules.length, overrides);
+    for (const index of overrides) {
+      const module = modules[index]!;
+      writer.writeBits(encodeOn(module.on), 2);
+      writer.writeBits(encodePriority(module.priority), 3);
+    }
+  } else {
+    writeBaselinePowerStates(writer, modules);
   }
 }
 
@@ -584,16 +637,122 @@ function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
   }));
   if (!reader.readBoolean()) return states;
 
-  const fixed = reader.readBoolean();
-  if (fixed) return readFixedPowerStates(reader, moduleCount);
+  const mode = reader.readBits(2);
+  if (mode === 0) return readFixedPowerStates(reader, moduleCount);
+  if (mode === 1) {
+    for (const index of readIndexSet(reader, moduleCount)) {
+      states[index] = {
+        on: decodeOn(reader.readBits(2)),
+        priority: decodePriority(reader.readBits(3)),
+      };
+    }
+    return states;
+  }
+  if (mode === 2) return readBaselinePowerStates(reader, moduleCount);
+  throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
+}
 
-  for (const index of readIndexSet(reader, moduleCount)) {
-    states[index] = {
-      on: decodeOn(reader.readBits(2)),
-      priority: decodePriority(reader.readBits(3)),
-    };
+function powerMode(modules: readonly PowerState[], overrides: readonly number[]): 0 | 1 | 2 {
+  const costs = [
+    fixedPowerBitCost(modules),
+    indexSetBitCost(modules.length, overrides) + overrides.length * 5,
+    baselinePowerBitCost(modules),
+  ];
+  return costs.indexOf(Math.min(...costs)) as 0 | 1 | 2;
+}
+
+function baselinePowerBitCost(modules: readonly PowerState[]): number {
+  const onChanges = indexesWhere(modules, ({ on }) => on !== true);
+  const onUniform = onChanges.every((index) => modules[index]!.on === modules[onChanges[0]!]!.on);
+  const priorityChanges = indexesWhere(modules, ({ priority }) => priority !== 1);
+  const prioritiesDefined = priorityChanges.every(
+    (index) => modules[index]!.priority !== undefined,
+  );
+  return (
+    1 +
+    (onChanges.length === 0
+      ? 0
+      : indexSetBitCost(modules.length, onChanges) + 1 + (onUniform ? 1 : onChanges.length)) +
+    1 +
+    (priorityChanges.length === 0
+      ? 0
+      : indexSetBitCost(modules.length, priorityChanges) +
+        1 +
+        priorityChanges.length * (prioritiesDefined ? 2 : 3))
+  );
+}
+
+function writeBaselinePowerStates(writer: BitWriter, modules: readonly PowerState[]): void {
+  const onChanges = indexesWhere(modules, ({ on }) => on !== true);
+  writer.writeBoolean(onChanges.length > 0);
+  if (onChanges.length > 0) {
+    writeIndexSet(writer, modules.length, onChanges);
+    const uniform = onChanges.every((index) => modules[index]!.on === modules[onChanges[0]!]!.on);
+    writer.writeBoolean(uniform);
+    if (uniform) writer.writeBoolean(modules[onChanges[0]!]!.on === false);
+    else for (const index of onChanges) writer.writeBoolean(modules[index]!.on === false);
+  }
+
+  const priorityChanges = indexesWhere(modules, ({ priority }) => priority !== 1);
+  writer.writeBoolean(priorityChanges.length > 0);
+  if (priorityChanges.length > 0) {
+    writeIndexSet(writer, modules.length, priorityChanges);
+    const allDefined = priorityChanges.every((index) => modules[index]!.priority !== undefined);
+    writer.writeBoolean(allDefined);
+    for (const index of priorityChanges) {
+      const priority = modules[index]!.priority;
+      if (allDefined) writer.writeBits(encodeDefinedPriorityDeviation(priority!), 2);
+      else writer.writeBits(encodePriority(priority), 3);
+    }
+  }
+}
+
+function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerState[] {
+  const states: PowerState[] = Array.from({ length: moduleCount }, () => ({
+    on: true,
+    priority: 1,
+  }));
+  if (reader.readBoolean()) {
+    const onChanges = readIndexSet(reader, moduleCount);
+    const uniform = reader.readBoolean();
+    if (uniform) {
+      const on = reader.readBoolean() ? false : undefined;
+      for (const index of onChanges) states[index]!.on = on;
+    } else {
+      for (const index of onChanges) states[index]!.on = reader.readBoolean() ? false : undefined;
+    }
+  }
+
+  if (reader.readBoolean()) {
+    const priorityChanges = readIndexSet(reader, moduleCount);
+    const allDefined = reader.readBoolean();
+    for (const index of priorityChanges) {
+      const priority = allDefined
+        ? decodeDefinedPriorityDeviation(reader.readBits(2))
+        : decodePriority(reader.readBits(3));
+      if (priority === 1) {
+        throw new BuildLinkCodecError(
+          'invalidPayload',
+          'A baseline power-state change restates the default priority.',
+        );
+      }
+      states[index]!.priority = priority;
+    }
   }
   return states;
+}
+
+function encodeDefinedPriorityDeviation(priority: number): number {
+  if (priority === 0) return 0;
+  if (priority >= 2 && priority <= 4) return priority - 1;
+  throw new BuildLinkCodecError(
+    'invalidPayload',
+    'A defined baseline priority deviation must be 0 or from 2 to 4.',
+  );
+}
+
+function decodeDefinedPriorityDeviation(value: number): number {
+  return value === 0 ? 0 : value + 1;
 }
 
 function fixedPowerBitCost(modules: readonly PowerState[]): number {

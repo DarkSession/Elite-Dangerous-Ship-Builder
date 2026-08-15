@@ -176,6 +176,7 @@
           "Slot": "tinyhardpoint8",
           "Item": "hpt_shieldbooster_size0_class5",
           "On": true,
+          "Priority": 0,
           "Engineering": {
             "BlueprintName": "shieldbooster_heavyduty",
             "Level": 5,
@@ -294,6 +295,7 @@
           "Slot": "mainengines",
           "Item": "int_engine_size7_class5",
           "On": true,
+          "Priority": 0,
           "Engineering": {
             "BlueprintName": "engine_dirty",
             "Level": 5,
@@ -305,6 +307,7 @@
           "Slot": "frameshiftdrive",
           "Item": "int_hyperdrive_overcharge_size6_class3",
           "On": true,
+          "Priority": 0,
           "Engineering": {
             "BlueprintName": "fsd_longrange",
             "Level": 5,
@@ -350,6 +353,18 @@
             "Quality": 1,
             "ExperimentalEffect": "special_armour_chunky"
           }
+        },
+        {
+          "Slot": "PlanetaryApproachSuite",
+          "Item": "int_planetapproachsuite_advanced",
+          "On": true,
+          "Priority": 1
+        },
+        {
+          "Slot": "CargoHatch",
+          "Item": "modularcargobaydoor",
+          "On": true,
+          "Priority": 4
         }
       ]
     }

@@ -63,15 +63,32 @@ const slotsByShip = Object.fromEntries(
     ship,
     ShipLoadout.empty(ship)
       .slots()
+      .filter(({ removable }) => removable)
       .map(({ key }) => key),
   ]),
 );
-
 const indexOf = (index, identity, kind) => {
   const value = index.get(identity.toLowerCase());
   if (value === undefined) throw new Error(`Missing ${kind} identity ${identity}.`);
   return value;
 };
+
+const fixedModulesByShip = Object.fromEntries(
+  ships.map((ship) => {
+    const stock = stockLoadouts[ship];
+    return [
+      ship,
+      ShipLoadout.empty(ship)
+        .slots()
+        .filter(({ removable }) => !removable)
+        .map(({ key }) => {
+          const module = stock.fittedModuleAt(key);
+          if (!module) throw new Error(`Fixed slot ${ship}:${key} has no stock module.`);
+          return { slot: key, module: indexOf(moduleIndex, module.symbol, 'fixed module') };
+        }),
+    ];
+  }),
+);
 
 const preEngineeredVariants = PRE_ENGINEERED_MODULES.map(
   ({ symbol, blueprint, grade, acquisition, experimental }) => ({
@@ -177,6 +194,7 @@ const output = `${JSON.stringify(
     CODEC_V1_BLUEPRINT_GRADES: blueprintGrades,
     CODEC_V1_EXPERIMENTAL_EFFECTS: experimentalEffects,
     CODEC_V1_SLOTS_BY_SHIP: slotsByShip,
+    CODEC_V1_FIXED_MODULES_BY_SHIP: fixedModulesByShip,
     CODEC_V1_DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,
     CODEC_V1_MODULE_SETS: moduleSets.unique,
     CODEC_V1_MODULE_SET_BY_SHIP: moduleSetByShip,

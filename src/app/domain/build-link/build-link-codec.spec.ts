@@ -20,7 +20,7 @@ import {
 import codecV1Tables from './codec-v1.tables.json';
 import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture.json';
 
-describe('build-link codec proof of concept', () => {
+describe('build-link codec', () => {
   it('round-trips the minimal state imported through the Almanac', () => {
     const source = makeImportedEngineeredBuild();
 
@@ -127,6 +127,26 @@ describe('build-link codec proof of concept', () => {
     }
   });
 
+  it('treats the cargo hatch as a fixed module and serialises only its power state', () => {
+    const stock = ShipLoadout.default('Krait_MkII');
+    const event = stock.toLoadoutEvent({ moduleOrder: 'slots' });
+    const withoutCargoHatch = ShipLoadout.fromLoadout({
+      ...event,
+      Modules: event.Modules.filter(({ Slot }) => Slot.toLowerCase() !== 'cargohatch'),
+    });
+    const powered = ShipLoadout.default('Krait_MkII');
+    powered.setModuleEnabled('CargoHatch', false);
+    powered.setModulePriority('CargoHatch', 4);
+
+    expect(encodeBuildLinkFragment(withoutCargoHatch)).toBe(encodeBuildLinkFragment(stock));
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(powered));
+    expect(decoded.fittedModuleAt('CargoHatch')).toMatchObject({
+      symbol: 'ModularCargoBayDoor',
+      on: false,
+      priority: 4,
+    });
+  });
+
   it('round-trips every pinned hull in empty and stock configurations', () => {
     const corpus = SHIPS.flatMap(({ symbol }) => [
       ShipLoadout.empty(symbol),
@@ -148,7 +168,7 @@ describe('build-link codec proof of concept', () => {
     expect(longest).toEqual({ ship: 'Adder', length: 35 });
   });
 
-  it('round-trips a sanitised real SLEF build including calculated engineering state', () => {
+  it('round-trips a sanitised real journal build including calculated engineering state', () => {
     const source = ShipLoadout.fromSlef(
       realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
     );
@@ -175,7 +195,10 @@ describe('build-link codec proof of concept', () => {
       expect(decoded.fittedModuleAt(module.slot)?.effectiveStats).toEqual(module.effectiveStats);
     }
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
-    expect(`https://ships.example/#${fragment}`).toHaveLength(148);
+    expect(fragment).toBe(
+      'b.620+T.w$pbsJZ/44HAtL5DO*ik.QDUEJv@G/a2CpG2Pd0TVVtWhiBk-RfPOkw!i0WLQdJA3RbRN6kdvMcn~wfoVJEF!M0K+~~nN+e6y8rD+f@krO**5JQ',
+    );
+    expect(`https://ships.example/#${fragment}`).toHaveLength(142);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -339,9 +362,9 @@ describe('build-link codec proof of concept', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1WGofBv1qz',
       'b.j05F1hq4',
-      'b.3Id_V/elH:O/_JFVgQ0zx006wm!R-tf$-+/qWRNmbOruMIi5eZSEn@lA76nG2$$2WFV*hhORQZz~TkTDdptZVWvAwi',
+      'b.$r--q!jo_LNuP1e54__g+BthxYbG*E/585pvN2Gp@W$QHaoOtrfgD!8gJp8LM/VvV$jT6wMJgMd77aC5hr*@l/x3',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 115]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 113]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -561,12 +584,18 @@ function makeFullyEngineeredAnaconda(): ShipLoadout {
 }
 
 function minimalState(loadout: ShipLoadout): unknown {
+  const cargoHatch = loadout.fittedModuleAt('CargoHatch');
+  const hasCargoHatchPower = cargoHatch?.on !== undefined || cargoHatch?.priority !== undefined;
   return {
     shipSymbol: loadout.shipSymbol.toLowerCase(),
     shipName: loadout.shipName,
     shipIdent: loadout.shipIdent,
+    ...(hasCargoHatchPower
+      ? { cargoHatchPower: { on: cargoHatch?.on, priority: cargoHatch?.priority } }
+      : {}),
     modules: loadout
       .fittedModules()
+      .filter((module) => module.slot.toLowerCase() !== 'cargohatch')
       .map((module) => ({
         slot: module.slot.toLowerCase(),
         symbol: module.symbol.toLowerCase(),
