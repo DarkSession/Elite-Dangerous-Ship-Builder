@@ -469,7 +469,8 @@ names the modules whose draw it could not determine.
    figure at all: every heat state shown is one the package reports whole.
 
 Exposing the retracted headroom and utilisation, and the powered and unpowered draw, on the package's
-power budget would remove the three compositions that remain. Each is a welcome simplification
+power budget would remove the first two of the three compositions that remain; the third, naming the
+modules in each priority group, is a count of what the package already reports and needs nothing. Each is a welcome simplification
 upstream rather than a blocker.
 
 ## Success Criteria _(mandatory)_

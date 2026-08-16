@@ -15,7 +15,8 @@
 
 ## Requirement Completeness
 
-- [x] No [NEEDS CLARIFICATION] markers remain
+- [ ] No [NEEDS CLARIFICATION] markers remain — one was added to FR-014 on 2026-08-16, when the
+      measurement its exclusion rested on did not reproduce
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -53,9 +54,12 @@
   three curve masses and their multipliers, and no drive does — all 72 expose `optMass` alone. So the
   drive's optimal mass is shown against the build's mass and no minimum or maximum mass is. **It is
   not an upstream request**, which an earlier draft called it: the package does compute the drive's
-  dimensionless mass factor (`optMass / loadedMass`), so nothing is missing. Not showing it is a
-  product decision taken on 2026-08-16, so that no dimensionless figure sits beside a drive to be
-  mistaken for a thruster multiplier.
+  dimensionless mass factor (`optMass / loadedMass`), so nothing is missing. Not showing the
+  package's own factor is a product decision taken on 2026-08-16. _(The reason first recorded — that
+  no dimensionless figure may sit beside a drive — was lifted later the same day: FR-015 and FR-016
+  now permit expressing the build's mass against the drive's optimal mass as a proportion. What
+  survives is that the package's `frameShiftDriveMassFactor` is not the figure shown, and that a
+  drive has no minimum or maximum curve mass.)_
 - **FR-013 (mass distribution) is withdrawn, not deferred.** Elite Dangerous models no centre of
   mass and no mass distribution affecting handling, and the package reports none. It reached the
   first draft from a design panel rather than from the game. Specifying it would have obliged this
@@ -84,8 +88,12 @@ Two notes above are superseded by decisions taken on 2026-08-16:
   figures the package reports, which feature 003's FR-001a already permits. It is declared as
   composition 3 in the Upstream dependencies section. Reproducing the curve remains prohibited.
 - **FR-014 shows two curve masses, not three.** The thrusters' minimum curve mass is carried by the
-  package and deliberately not presented: it sits below the unladen mass of every hull the thruster
-  fits, so it marks a position no build occupies. The drive still shows optimal mass alone.
+  package and deliberately not presented, because the curve is read for two thresholds — what to stay
+  near, and what not to pass. The drive still shows optimal mass alone. _(Superseded in part
+  2026-08-16: this note originally justified the exclusion by saying the minimum "sits below the
+  unladen mass of every hull the thruster fits, so it marks a position no build occupies". That was
+  measured false, and FR-014 now carries the measurement and a [NEEDS CLARIFICATION] on whether the
+  exclusion still stands.)_
 
 ## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
 

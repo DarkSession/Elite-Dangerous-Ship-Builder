@@ -148,8 +148,9 @@ the build's mass placed against them.
 4. **Given** a build with thrusters fitted, **When** the Commander views the thruster mass curve,
    **Then** the curve's optimal and maximum mass are shown with the loaded mass the curve is
    evaluated at placed against them — labelled apart from the breakdown's total, and stating how the
-   two differ: this one leaves out the reserve tank and counts a full cargo hold, so on a build with
-   cargo capacity it is the heavier — together with both performance multipliers in force at that mass, the
+   two differ: this one leaves out the reserve tank and counts a full cargo hold, so it is the heavier
+   of the two on any build whose hold outweighs its reserve — together with both performance
+   multipliers in force at that mass, the
    one governing speed and the one governing rotation, and how far the build sits from those
    thresholds.
 5. **Given** a build with a Frame Shift Drive fitted, **When** the Commander views the drive against
@@ -320,18 +321,22 @@ selected state marked among them.
   two thresholds are what the curve is read for — what to stay near, and what not to pass.
   [NEEDS CLARIFICATION: the basis originally given for hiding it was that the minimum "lies below the
   unladen mass of any hull the thrusters fit", so no build could occupy it. Measured against
-  `0.1.0-beta.10` on 2026-08-16, that is false — 58 valid stock hull-and-thruster combinations sit
-  below the fitted thruster's minimum, across 24 hulls and 21 of the 40 thrusters, among them a stock
-  Hauler with a class 5 size-2 thruster at 29.9 t against a minimum of 36 t. Below the minimum the
-  multiplier stops improving, so on those builds it is a threshold a Commander can both reach and act
-  on. Whether FR-014 still excludes it is a product decision this measurement reopens.]
+  `0.1.0-beta.10` on 2026-08-16, that is false. Measured at unladen mass, 58 valid stock
+  hull-and-thruster combinations sit below the fitted thruster's minimum, across 24 hulls and 21 of
+  the 40 thrusters — among them a stock Hauler with a class 5 size-2 thruster at 29.9 t against a
+  minimum of 36 t. Measured at the loaded mass FR-014a actually displays, which adds main-tank fuel
+  and cargo capacity, 32 combinations across 12 hulls remain below it. Either way the minimum is
+  reachable, and below it the multiplier stops improving, so for those builds it is a threshold a
+  Commander can both reach and act on. Whether FR-014 still excludes it is a product decision this
+  measurement reopens.]
 - **FR-014a**: The mass placed against the thruster curve MUST be the loaded mass the package
   evaluates that curve at — the build's unladen mass, its main-tank fuel and its cargo capacity. It
   is not the total FR-011 breaks down, and it MUST be labelled distinctly enough that the two are not
   read as the same number. The two differ in both directions and neither is reliably the larger: this
   figure excludes the reserve tank FR-011 counts, and includes a full cargo hold FR-011 does not, so
-  on a build with any cargo capacity it is the heavier of the two. The relation MUST be stated where
-  both appear rather than left for a Commander to reconcile. The multiplier in
+  it is the lighter on a build with no cargo capacity and the heavier as soon as the hold outweighs
+  the reserve — which all but the smallest holds do. The relation MUST be stated where both appear
+  rather than left for a Commander to reconcile. The multiplier in
   force is the one at this mass; placing any other mass against the curve would show the Commander a
   position their handling was not computed at.
 - **FR-015**: The application MUST display, for the fitted Frame Shift Drive, its optimal mass with
@@ -377,8 +382,10 @@ selected state marked among them.
 - **FR-022**: Mass-curve presentation MUST be unit-tested to assert that every mass and every
   multiplier displayed is one the package reported, that any proportion or headroom shown is a
   comparison of two such figures and no curve is evaluated locally, and that the mass placed against
-  the thruster curve is the loaded mass excluding the reserve tank rather than the breakdown's total,
-  on a build whose reserve makes the two differ.
+  the thruster curve is the loaded mass the package evaluates the curve at rather than the
+  breakdown's total — excluding the reserve tank and including cargo capacity — asserted on a build
+  with a reserve and no hold, where it is the lighter of the two, and on a build with a hold large
+  enough to outweigh the reserve, where it is the heavier.
 - **FR-023**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 

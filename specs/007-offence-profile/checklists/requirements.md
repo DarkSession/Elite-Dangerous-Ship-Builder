@@ -83,7 +83,8 @@
 ## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
 
 - **Re-verified against the installed `0.1.0-beta.9`.** Both gaps stay closed and nothing in this
-  feature waits on an upstream release; the note above records the check at beta.8.
+  feature waits on an upstream release. The note above records both capabilities as arriving in
+  beta.5, which is where they shipped; this project first saw them when it upgraded to beta.8.
 - **A second distributor accessor appeared and endurance deliberately ignores it.** `0.1.0-beta.9`
   adds `ShipLoadout.distributorMetrics`, which reports all three capacitors' capacity and pip-scaled
   recharge for [feature 005](../../005-power-and-heat/spec.md). Endurance here still comes whole from

@@ -98,7 +98,7 @@ withdrawn or narrowed on 2026-08-16 and the notes that rest on them no longer ho
   is now shown on the same terms as the other two, and the systems rate no longer has to be obtained
   by handing the SYS rating to the weapons-capacitor calculation. That closes
   [Elite-Dangerous-Almanac#271](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/271).
-- **Two compositions remain, not four.** The count in the superseded note was already stale — the
+- **Three compositions remain, not four.** The count in the superseded note was already stale — the
   cell bank activation state went with FR-011b, and the ENG rate was never a composition but a
   blocked figure. What this area composes under feature 003's FR-001a is the retracted headroom and
   utilisation, the powered and unpowered shares of the draw, and the modules a shed priority group

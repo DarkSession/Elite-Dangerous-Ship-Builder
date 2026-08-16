@@ -57,7 +57,8 @@ price arrives with an import and leaves with an export under
 - Q: Should the material list be something the Commander can take out of the application — copied or
   downloaded as text — or is reading it on screen the whole of it? → A: On screen only. Copying and
   downloading the list are out of scope for this area; a Commander who needs it later re-opens the
-  build, which [feature 004](../004-slef-export/spec.md) already makes durable as a link. User story
+  build, which [feature 001](../001-ship-selection-and-loading/spec.md) already makes durable as a
+  link. User story
   2's claim that the list is "taken away and used elsewhere" is corrected accordingly rather than
   left standing as an unmet promise.
 - Q: Should the credit side show what each fitted module costs, or only the hull value, the modules
@@ -278,8 +279,9 @@ Costs for an assembled build arrived in `0.1.0-beta.4`: `retailCredits()` comput
 modules value and rebuy for a build assembled in the application, not only for an imported capture,
 and lists the modules the catalogue carries no price for. The older `hullValue`, `modulesValue` and
 `rebuy` accessors remain null for an assembled build, so `retailCredits()` is the accessor this
-feature depends on. A recorded source purchase price remains a distinct value, exported only when
-asked for by name.
+feature depends on. A recorded source purchase price remains a distinct value from the catalogue
+price; how it is carried on export belongs to [feature 004](../004-slef-export/spec.md), which
+settled on 2026-08-16 that no export-time choice governs it.
 
 Two properties of that accessor are what FR-003 and FR-004 report rather than restate. Its modules
 sum counts only the modules it could price and is documented as a lower bound whenever its unpriced
@@ -348,7 +350,7 @@ and no quantity is added to another.
   application does not keep.
 - The material list is read on screen. Copying it to the clipboard and downloading it as a file are
   both out of scope here; a Commander who wants it again re-opens the build, which
-  [feature 004](../004-slef-export/spec.md) makes durable as a link.
+  [feature 001](../001-ship-selection-and-loading/spec.md) makes durable as a link.
 - Material names are game text and belong to `@elite-dangerous-almanac/core` under constitution
   principle VI. As of `0.1.0-beta.9` the package carries a locale for them alongside modules,
   blueprints and experimental effects, so names are asked of it per locale (FR-005b). Its coverage is

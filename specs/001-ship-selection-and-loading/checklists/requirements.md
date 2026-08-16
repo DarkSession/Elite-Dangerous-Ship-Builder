@@ -69,7 +69,7 @@
   game-data version — only its own release number, and a game version recorded as prose in its
   provenance files — so a catalogue version is requested upstream and FR-044a waits on it.
 - **Two properties of the artwork are recorded in the spec so planning does not meet them
-  late**: the installed tree is 64 MB across 144 files — 55 MB of it the 48 illustrations this
+  late**: the installed tree is 66 MB across 144 files — 57 MB of it the 48 illustrations this
   feature consumes, with the largest at 4.1 MB, the rest feature 010's plates — and
   the imagery is Frontier Developments' property under media-usage terms whose notice this
   application must reproduce.
@@ -81,8 +81,11 @@
 
 - **Re-verified against the installed `0.1.0-beta.9`.** Manufacturer and size on 48 of 48 hulls, a
   stock loadout for 48 of 48 that the package reports valid and complete, and an illustration set that
-  is byte-for-byte identical to beta.8 — so the 64 MB / 144 files / 4.1 MB figures recorded above still
-  describe the installed package and need no restatement.
+  is byte-for-byte identical to beta.8 — so the size figures recorded above still describe the
+  installed package and need no restatement. _(Restated 2026-08-16: those figures were then given as
+  64 MB across 144 files, mixing a binary megabyte with the decimal ones used elsewhere and
+  attributing the whole artwork tree to the illustration set. On one decimal basis the tree is 66 MB
+  across 144 files, of which the 48 illustrations are 57 MB.)_
 - **FR-044a still has no catalogue version, and raising one is deferred by decision.** The note above
   says a catalogue version "is requested upstream". Re-checked at beta.9: the package still carries
   the game version only as prose in `PROVENANCE/ships/SOURCES.md` (`4.4.0.3`), with no export,
@@ -92,7 +95,7 @@
   Recorded so the choice stays visible.
 - **Illustrations are now fetched at runtime, not bundled (constitution 3.0.0).** The original FR-017
   required every preview to be a bundled static asset and prohibited fetching one at runtime; against
-  a 64 MB set that made the first load pay for 47 hulls the Commander did not look at. FR-017 now
+  a 57 MB illustration set that made the first load pay for 47 hulls the Commander did not look at. FR-017 now
   permits the fetch and confines it to the application's own origin, FR-017a fixes it at one hull at a
   time cached as that hull is opened, and FR-017b gives an unfetched preview the same
   temporary-absence treatment feature 010's FR-014a already gives an uncached plate. FR-021, SC-008
@@ -101,6 +104,6 @@
   an amendment for any outbound request; it is recorded as 3.0.0 in
   [the constitution](../../../.specify/memory/constitution.md).
 - **The delivery gap is closed at the spec level, not the plan level.** Two facts settle it together:
-  optimisation alone does not bring 64 MB into a first-load budget, and fetching unoptimised 4.1 MB
+  optimisation alone does not bring 57 MB into a first-load budget, and fetching unoptimised 4.1 MB
   artwork per hull would make opening a hull detail slow. The spec therefore requires both, and leaves
   the mechanism (which variants, what cache) to planning.
