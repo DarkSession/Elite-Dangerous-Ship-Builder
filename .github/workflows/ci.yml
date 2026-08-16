@@ -52,10 +52,10 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
-      # Downloading a browser costs more than every step above it combined, so
-      # it waits until they have passed. Every Playwright project drives
-      # Chromium, so only that browser is needed; `--with-deps` adds the system
-      # libraries the runner image lacks.
+      # Only the end-to-end step needs a browser, and fetching one is expensive,
+      # so it waits until the cheaper checks have passed. Every Playwright
+      # project drives Chromium, so only that browser is needed; `--with-deps`
+      # adds the system libraries the runner image lacks.
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
@@ -68,8 +68,9 @@ jobs:
         with:
           name: coverage
           path: coverage/
-          # Absent whenever the job fails before the unit tests run. A reporter
-          # that stopped emitting would fail the coverage thresholds anyway.
+          # Absent whenever the job fails before the unit tests run, which is
+          # too common to warn about. A reporter misconfiguration would be
+          # silent here too; the thresholds in angular.json do not cover that.
           if-no-files-found: ignore
           retention-days: 7
 
