@@ -4,6 +4,8 @@
 
 **Created**: 2026-08-13
 
+**Updated**: 2026-08-16
+
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -57,3 +59,6 @@
   explicit and forbids fitting a module from becoming a back route into choosing a hull, which is
   feature 001's FR-011. Feature 003's FR-000 does the same for the statistics family and feature
   010's FR-001a for hull anatomy.
+- **Engineering quality was removed from the application model on 2026-08-16.** The Commander still
+  selects a grade, but it is always complete at 100%; imported partial rolls are deliberately
+  normalised and never become a second control or state variant.

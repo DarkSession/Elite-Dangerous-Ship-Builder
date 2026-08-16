@@ -78,6 +78,18 @@ One requirement added later, the catalogue version FR-044a asks for, waits on th
   gets, and the empty-build fallback agreed on 2026-08-13 survives only as the drift case FR-011
   describes. Manufacturer, hull size and the ship illustrations are likewise available, so no story in
   this feature is blocked by those three.
+- Q: Where must the link format version live, and should the minimal build model retain credit
+  figures from an import? → A: The format version is the first field inside the decoded binary
+  payload, before any table-dependent value, so it selects the decoder and pinned identifier tables.
+  Credit figures — hull value, module values, aggregate modules value and rebuy — never appear in a
+  build link. Catalogue pricing is derived again by the Almanac, while captured purchase provenance
+  travels only in SLEF when it must be retained.
+
+### Session 2026-08-16
+
+- Q: Does the application model partial engineering quality? → A: No. A selected blueprint grade is
+  always complete (100% quality). Imported partial quality is normalised to 100%, and quality is not
+  stored in persistence or build links because it is invariant application-wide.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -468,7 +480,7 @@ and confirm the build loads identically.
   requires. Reaching a build this way MUST open the same build the complete list would, and MUST
   apply the confirmation FR-025 requires when it replaces an active build.
 - **FR-024**: Persistence MUST be lossless for everything the application models — hull, every
-  slot's fitted module, engineering (blueprint, grade, quality, experimental effect), module enabled
+  slot's fitted module, engineering (blueprint, grade, experimental effect), module enabled
   state and power priority, ship name and ident — for the working slot as well as for named saved
   builds.
 - **FR-025**: Replacing or discarding an active build with unsaved changes MUST require explicit
@@ -490,13 +502,22 @@ and confirm the build loads identically.
   transit MUST be reported as arriving without one rather than opening an empty build.
 - **FR-028**: A build link MUST encode a **minimal build model** — only the state that cannot be
   derived from the catalogue: hull symbol, the module symbol fitted in each occupied slot,
-  engineering (blueprint `fdname`, grade, quality, experimental effect `fdname`), each module's
-  enabled state and power priority, the ship's name and ident, and any recorded source purchase
-  price. Fields that `@elite-dangerous-almanac/core` can recompute from those inputs (module names,
-  mass, power draw, costs, metrics) MUST NOT appear in the link.
+  engineering (blueprint `fdname`, grade, experimental effect `fdname`), each module's
+  package-identified fixed pre-engineered variant, decorative modification `fdname`, enabled state
+  and power priority for each outfittable or fixed module whose catalogue power draw is greater
+  than zero (including the cargo hatch), and the ship's name and ident. Passive modules with absent
+  or zero power draw have no power state in the minimal model; redundant `On` or `Priority` fields
+  supplied for them MUST NOT be carried in the link. Fixed-variant and decorative modifier values
+  MUST be rebuilt from those identities through the package. Fields that
+  `@elite-dangerous-almanac/core` can recompute from those inputs (module names, mass, power draw,
+  catalogue costs, rebuy and metrics) MUST NOT appear in the link. Captured purchase values —
+  including per-module values — MUST NOT appear either; SLEF is the lossless interchange when that
+  provenance must travel.
 - **FR-029**: Opening a build link MUST reconstruct the build — and, on demand, an equivalent SLEF
   document — from the minimal model via the package. The reconstructed build MUST be equivalent to
-  the source build in every field the application models.
+  the source build in every field the link models, and calculated fields MUST be rebuilt by the
+  package. Credit provenance deliberately excluded by FR-028 and partial engineering quality
+  normalised under the application-wide rule are not part of link equivalence.
 - **FR-030**: The link codec — the minimal build model's serialisation, its compression and its
   URL-safe encoding — is owned by this application, not by `@elite-dangerous-almanac/core`. It MUST
   live in a self-contained, framework-agnostic module with no dependency on the UI.
@@ -521,8 +542,10 @@ and confirm the build loads identically.
   typical mid-size build and a fully engineered large ship — MUST be asserted by tests, so that a
   change which lengthens links fails the build rather than passing unnoticed.
 - **FR-036**: Every build link MUST carry a format version identifying the encoding and the
-  identifier tables used to produce it. Any identifier table derived from a catalogue MUST be pinned
-  to that version rather than to whichever catalogue happens to be bundled at decode time.
+  identifier tables used to produce it. The version MUST be the first field inside the decoded
+  binary payload, before any table-dependent value, rather than existing only in an outer textual
+  prefix. Any identifier table derived from a catalogue MUST be pinned to that version rather than
+  to whichever catalogue happens to be bundled at decode time.
 - **FR-037**: A build link MUST keep opening correctly, forever, in every later release of the
   application. The decoder MUST retain the tables and rules for every format version ever published,
   and MUST decode a link using the version the link declares — never the current one.
@@ -612,8 +635,10 @@ and confirm the build loads identically.
   Its payload is the compressed, URL-safe encoding of the minimal build model — never a full SLEF
   document, and never sent to a server.
 - **Minimal build model**: The non-derivable state of a build — hull, per-slot module symbols,
-  engineering, enabled state and power priority, ship name and ident, recorded source purchase
-  price. Everything else about the build is recomputed from the catalogue on load.
+  engineering, enabled state and power priority for power-drawing outfittable and fixed modules
+  (including the cargo hatch), ship name and ident. Passive modules have no link power state.
+  Everything else about the build is recomputed from the catalogue on load; no catalogue or
+  captured purchase value is carried.
 
 ## Upstream dependencies
 
@@ -671,7 +696,7 @@ strength, crew, costs and the full mount layout — are all available today.
   with zero hulls showing another hull's artwork.
 - **SC-007**: A build saved, reloaded, exported to a link and reopened in a different browser is
   byte-for-byte equivalent in every modelled field — 100% round-trip fidelity across saved builds
-  and build links.
+  and build links, with engineering quality fixed at 100% rather than stored as a modelled field.
 - **SC-008**: The application loads and operates with the network disabled after first load, and no
   build data leaves the browser under any interaction. No outbound request — document, asset or
   otherwise — ever carries a build payload, verified by inspecting every request made while
