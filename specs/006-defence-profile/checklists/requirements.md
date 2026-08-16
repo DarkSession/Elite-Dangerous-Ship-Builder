@@ -80,3 +80,37 @@ FR-012 and the Assumptions section were rewritten accordingly.
   [Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281),
   asking for the pool to reflect power state as the neighbouring aggregates already do. FR-009 is
   distinct from it and holds regardless: it describes what the application does meanwhile.
+
+## Amended 2026-08-16 (upstream re-verification)
+
+- **#281 is closed, and the note above is superseded on that point alone.** It was fixed the same
+  evening it was filed, by
+  [Elite-Dangerous-Almanac#282](https://github.com/DarkSession/Elite-Dangerous-Almanac/pull/282),
+  which merged after `0.1.0-beta.9` had already been published. So the gap is no longer an open
+  request, but it is also not yet consumable: no released version carries the fix, and the installed
+  package's behaviour is unchanged — re-verified, a disabled bank still leaves the pool's restorable
+  strength and cell count untouched. FR-009 is unaffected and still describes what the application
+  does today.
+- **Taking the fix will be a deliberate upgrade, not a version bump.** It is a breaking change to the
+  cell bank aggregate's input, and it introduces a zero pool for a build whose banks are all
+  unpowered — a computed figure that FR-008's "carries no banks" state must not be confused with. The
+  Upstream dependencies section now records both, along with the one sentence of FR-009 that describes
+  the package's present behaviour and will need rewriting when the upgrade is taken.
+
+## Amended 2026-08-16 (`0.1.0-beta.10` upgrade)
+
+- **The gap is closed and the upgrade is taken.** `0.1.0-beta.10` was published carrying #282 and
+  nothing else, and the application now consumes it. Verified against the installed package: an
+  Anaconda's single size-5 bank reports 714 restorable across 4 cells while powered and 0 across 0
+  once disabled, with the bank still listed and marked `powered: false`; switching the power plant off
+  produces the same zero pool with the bank likewise marked. This area now waits on nothing.
+- **Two requirements moved with it, both foreseen in the note above.** FR-009 keeps its substance and
+  loses the sentence that described the package as counting every fitted bank — it now presents a
+  figure the package computed rather than qualifying a misleading one, and its prohibition runs both
+  ways, since adding an unpowered bank's strength back in would be as much an invention as
+  subtracting a powered one used to be. **FR-008a is new**: an all-unpowered build's zero pool is a
+  computed figure, and without it that state would be shown as FR-008's "carries no banks", which the
+  package itself distinguishes.
+- **The breaking change cost nothing to adopt.** Nothing in `src/` fed the cell bank aggregate, so the
+  break was taken whole rather than worked around. `pnpm run check` passes on beta.10 — 52 unit tests,
+  coverage 94.9% statements and 89.6% branches, 9 end-to-end tests across desktop, tablet and mobile.

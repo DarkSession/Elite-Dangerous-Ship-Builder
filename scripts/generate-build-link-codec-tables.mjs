@@ -12,7 +12,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const TABLE_VERSION = 1;
-const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.9';
+const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.10';
 const outputPath = fileURLToPath(
   new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
 );

@@ -442,10 +442,11 @@ hull's mount layout under its FR-004.
 ## Upstream dependencies
 
 Verified against `@elite-dangerous-almanac/core@0.1.0-beta.4` on 2026-08-14 and re-verified against
-the installed `0.1.0-beta.9` on 2026-08-16: both plates still ship for all 48 hulls, the slot keys and
-the nine feature categories are unchanged, the six both-plate mounts are unchanged, and no scale
-metadata has appeared. The whole `assets/ships` tree is byte-for-byte identical between `0.1.0-beta.8`
-and `0.1.0-beta.9`, so the measurements below stand unchanged rather than merely unrechecked.
+the installed `0.1.0-beta.10` on 2026-08-16: both plates still ship for all 48 hulls, the slot keys
+and the nine feature categories are unchanged, the six both-plate mounts are unchanged, and no scale
+metadata has appeared. The whole `assets/ships` tree is byte-for-byte identical across `0.1.0-beta.8`,
+`0.1.0-beta.9` and `0.1.0-beta.10`, so the measurements below stand unchanged rather than merely
+unrechecked.
 
 **The mount map is fully backed today.** The package publishes `schematic-top.svg` and
 `schematic-bottom.svg` for all 48 hulls, alongside the illustration feature 001 already consumes. Each
@@ -480,7 +481,7 @@ medium hardpoints and the Lynx Highliner's four — carry the same slot key on t
 schematics, because the mount is visible from both. FR-013a governs them: one slot, drawn twice,
 counted once.
 
-**The schematics are too heavy to ship as SVG.** Measured at beta.8 and unchanged at beta.9, the 96
+**The schematics are too heavy to ship as SVG.** Measured at beta.8 and unchanged at beta.10, the 96
 plates total 9.0 MB —
 3.1 MB gzipped — and a single plate reaches 323 KB (Panther Mk II's underside, 105 KB gzipped). The
 weight is in the path data of a few dozen very long outlines rather than in node count, so the cost is
@@ -492,14 +493,24 @@ the fixed scale FR-029 sets, on the densest supported display (FR-006d). Because
 and no magnification control exists, the resolution needed is known at conversion time rather than
 open-ended.
 
-**Mount geometry in real units is absent, and is requested upstream.** The schematics carry no scale
-metadata — no metres-per-unit, no overall hull dimension, no mount coordinates in real units. Nothing
-in this specification needs them: the plate locates a mount for drawing and navigation, not for
-measurement. They are recorded here because
-[feature 007](../007-offence-profile/spec.md) needs them for shot convergence, and because their
-absence is what makes FR-003 and SC-006 load-bearing — a physical figure could only be obtained by
-measuring the artwork against an assumed scale, which constitution principle II forbids. Each mount's
-position relative to the hull's axis, in metres, is requested upstream.
+**The schematics carry no scale, and nothing needs them to.** There is no metres-per-unit, no overall
+hull dimension and no mount coordinate in real units on any plate — re-verified across all 96 at
+`0.1.0-beta.10`, none of which carries scale metadata of any kind. That absence is what makes FR-003
+and SC-006 load-bearing: a physical figure could only be obtained by measuring the artwork against an
+assumed scale, which constitution principle II forbids. It is not a gap, and **no request for it is
+open upstream**, for two reasons. Nothing in this specification needs one — the plate locates a mount
+for drawing and navigation, not for measurement. And the feature that did need real units,
+[feature 007](../007-offence-profile/spec.md)'s shot convergence, was answered at `0.1.0-beta.8` from
+a different source: `SHIP_GUNSIGHTS` publishes each hardpoint's horizontal and vertical offset from
+the cockpit in metres, observed in-game across all 48 hulls and 234 hardpoints, rather than measured
+off these drawings. So the geometry convergence requires exists today and does not come from the
+schematics, which is precisely the separation feature 007's FR-016e exists to keep.
+
+An earlier draft recorded each mount's position relative to the hull's axis as "requested upstream".
+No such issue was ever filed, and the need it was recorded against has since been met elsewhere; the
+sentence is withdrawn on 2026-08-16 rather than converted into a request, so a later reader does not
+go looking for an issue that was never opened. Should a future capability need hull-relative geometry, it is
+raised then, by the feature that needs it.
 
 **Composed under feature 003's FR-001a**: the coverage FR-012 reports — how many of a build's slots
 the schematics locate against how many the hull has — counts entries in two collections the package

@@ -903,15 +903,15 @@ and confirm the build loads identically.
 
 The three capabilities this feature originally waited on were delivered in
 `@elite-dangerous-almanac/core@0.1.0-beta.4` and re-verified against the installed
-`0.1.0-beta.9` on 2026-08-16: manufacturer and size on 48 of 48 hulls, a stock loadout for 48 of 48
+`0.1.0-beta.10` on 2026-08-16: manufacturer and size on 48 of 48 hulls, a stock loadout for 48 of 48
 that the package reports valid and complete, and the illustration set unchanged byte for byte since
 beta.8. One requirement added on 2026-08-14 remains blocked.
 
 **The game catalogue version is still missing, and has not yet been raised upstream.** The package
 exports no machine-readable version of the game data it carries: only its own release number, which is
 a library version rather than a game one, and a game version recorded as prose in its provenance files
-— `4.4.0.3` in `PROVENANCE/ships/SOURCES.md` at `0.1.0-beta.9`, in a Markdown table rather than in any
-export. Re-checked at beta.9: no export, constant or field carries it. The application's own release
+— `4.4.0.3` in `PROVENANCE/ships/SOURCES.md` at `0.1.0-beta.10`, in a Markdown table rather than in
+any export. Re-checked at beta.10: no export, constant or field carries it. The application's own release
 version and the bundled library's release number are both available at build time and are shown under
 FR-044a today. What waits is the third: which game update the catalogue matches, which a library
 release number does not answer. Until the package reports it, that version reads as unavailable, and

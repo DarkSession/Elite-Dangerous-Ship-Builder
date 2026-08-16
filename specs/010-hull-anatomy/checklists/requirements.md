@@ -119,3 +119,23 @@
   (FR-011) is hardest and most necessary, and FR-018 guarantees no Commander depends on the spatial
   route to reach a slot. Both are stated as functional requirements so that they gate the capability
   rather than trailing it.
+
+## Amended 2026-08-16 (upstream re-verification)
+
+- **The mount geometry note above is superseded: nothing is requested, and nothing needs to be.** The
+  note said the real-unit geometry shot convergence needs was "still absent and still requested" as
+  feature 007's dependency. Neither half held. No such issue was ever filed against
+  `@elite-dangerous-almanac/core`, and the need itself was answered at `0.1.0-beta.8`, which publishes
+  `SHIP_GUNSIGHTS` — each hardpoint's horizontal and vertical offset from the cockpit in metres,
+  observed in-game across all 48 hulls and 234 hardpoints. Feature 007 reads convergence from that
+  catalogue and says so in its own Upstream dependencies section.
+- **What the note was right about survives, and is now stated as a property rather than a request.**
+  The schematics still carry no scale metadata of any kind — re-verified across all 96 plates at
+  `0.1.0-beta.9`. That is what keeps FR-003 and SC-006 load-bearing, because it is what makes deriving
+  a physical figure from the artwork impossible rather than merely discouraged. The Upstream
+  dependencies section was rewritten accordingly, and records the withdrawal so a later reader does not
+  go looking for an issue that was never opened.
+- **This was the third "raised upstream" claim in the specs with no issue behind it**, after the two
+  corrected earlier the same day. The pattern is worth naming: a capability recorded as requested is
+  only true once the issue exists, and the constitution's requirement to raise a gap upstream is not
+  discharged by writing in a specification that it was raised.

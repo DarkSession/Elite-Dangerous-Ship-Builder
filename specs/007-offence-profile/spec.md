@@ -414,7 +414,7 @@ assumes.
 
 ## Upstream dependencies
 
-Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.9`
+Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.10`
 today, verified against the installed package on 2026-08-16. Nothing in this feature waits on an
 upstream release. The two exceptions an earlier draft recorded against `0.1.0-beta.4` — WEP pip
 scaling and mount geometry in real units — both landed in the intervening betas and are described

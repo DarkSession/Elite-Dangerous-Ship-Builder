@@ -253,7 +253,7 @@ totals, and that grade 5 rolls account for the grades beneath them.
 ## Upstream dependencies
 
 Every figure this specification requires is computed by `@elite-dangerous-almanac/core`, re-verified
-against the installed `0.1.0-beta.9` on 2026-08-16. **Nothing here is blocked** — neither a figure nor,
+against the installed `0.1.0-beta.10` on 2026-08-16. **Nothing here is blocked** — neither a figure nor,
 as of this release, the material names.
 
 **Material names now carry a locale.** `0.1.0-beta.9` publishes

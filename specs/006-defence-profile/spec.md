@@ -252,11 +252,17 @@ a build with no module reinforcement says so rather than reporting no protection
   time, duration and heat cost.
 - **FR-008**: A build with no cell banks MUST be reported as carrying none, rather than shown with a
   zero pool.
+- **FR-008a**: A build that carries cell banks of which none are powered MUST NOT be reported as
+  carrying none. Its pool is a zero the package computed, not an absence, and the two states are
+  distinguishable in the package's own report — one lists no banks at all, the other lists banks that
+  are not ready. The application MUST distinguish them, so that a Commander who has fitted a bank and
+  cannot draw on it is told which of the two situations they are in.
 - **FR-009**: A cell bank that is disabled or unpowered in the current power state MUST be shown as
-  such alongside the pool. The package's cell bank pool counts every fitted bank regardless of its
-  power state, so the application MUST NOT recompute a reduced pool by removing that bank — a total
-  the package did not compute. It MUST instead present the package's pool together with the fact that
-  a bank within it is not ready, so the Commander is not misled about what they can actually draw on.
+  such alongside the pool. The package's pool counts only the banks that are powered in the deployed
+  state, and reports every fitted bank individually with its own power state, so the application MUST
+  present both: the pool as reported, and each fitted bank that is not contributing to it. It MUST
+  NOT recompute the pool in either direction — neither adding an unpowered bank's strength back into
+  it nor removing a powered bank's — because either would be a total the package did not compute.
 
 #### Armour and the modules behind it
 
@@ -319,7 +325,8 @@ a build with no module reinforcement says so rather than reporting no protection
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16.
+Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16. **Nothing
+in this area is blocked, and nothing is waiting.**
 
 The shield and armour breakdowns, per-damage-type resistances, module protection and hull hardness
 were available from the outset. Shield recovery and cell banks arrived in `0.1.0-beta.4`: the package
@@ -327,33 +334,48 @@ reports the regeneration rate, the broken-shield regeneration rate and the two r
 requires, and aggregates the cell banks into a total restorable strength and cell count while keeping
 each bank's reinforcement, spin-up, duration and heat individually inspectable.
 
-**One gap stands: a power-aware cell bank pool (FR-009).** The package's cell bank aggregate counts
-every fitted bank whether or not it is enabled or powered — unlike its shield metrics, which already
-account for a generator that is switched off. Re-verified at `0.1.0-beta.9`: disabling a fitted bank
-leaves `totalRestorable` and `totalCells` unchanged, while switching off the shield generator makes
-`shieldMetrics` report nothing at all. So a build whose cell bank sits in an unpowered priority group
-reports the same restorable pool as one whose bank is ready. Removing that bank's contribution here
-would mean producing a total the package did not compute, which feature 003's FR-001a does not permit,
-so FR-009 requires the bank to be flagged within the package's pool instead — which feature 003's
-FR-001b permits, because the build's power state and the package's figure are each shown as reported.
-A power-aware pool upstream would let the figure itself tell the truth.
+**The cell bank pool became power-aware in `0.1.0-beta.10`, which closed the last gap this
+specification carried.** Until that release the aggregate counted every fitted bank whether or not it
+was enabled or powered, while the shield metrics beside it already reported nothing for a generator
+switched off — so a build whose bank sat in an unpowered priority group showed the same restorable
+pool as one whose bank was ready. The pool now counts only the banks that are powered with hardpoints
+deployed, and carries each fitted bank's own power state. Verified against the installed package: on
+an Anaconda with one size-5 bank, the pool reports 714 restorable across 4 cells while the bank is
+powered and 0 across 0 once it is disabled, with the bank still listed and marked `powered: false`;
+switching the power plant off instead produces the same zero pool with the bank likewise marked.
 
-**This is the family's only open gap, and it is now raised upstream as
-[Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281)**,
-filed 2026-08-16 with the minimal reproduction above. Every other request the statistics family made
-is closed and released: pip-scaled recharge for all three capacitors (#271) and the maximum jump's
-total (#273) in `0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling and mount geometry in
-`0.1.0-beta.8`, and the diagnostics contract (#245) as a stable code with parameters. The cell bank
-pool was noted here when `0.1.0-beta.4` delivered the aggregate
+The gap had been recorded here since `0.1.0-beta.4` delivered the aggregate
 ([Elite-Dangerous-Almanac#241](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/241))
-but had never been filed as an issue of its own until now.
+without ever being raised as an issue of its own. It was filed on 2026-08-16 as
+[Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281) with
+a minimal reproduction, fixed the same evening by
+[Elite-Dangerous-Almanac#282](https://github.com/DarkSession/Elite-Dangerous-Almanac/pull/282),
+"Ships: make cell bank totals power-aware", and released in `0.1.0-beta.10`, which carries that change
+and nothing else. Every other request the statistics family made is likewise closed and released:
+pip-scaled recharge for all three capacitors (#271) and the maximum jump's total (#273) in
+`0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling and mount geometry in `0.1.0-beta.8`,
+and the diagnostics contract (#245) as a stable code with parameters.
 
-What #281 asks for is that the pool reflect the build's power state, as `shieldMetrics`,
-`mobilityMetrics` and `distributorMetrics` all already do, with a per-bank flag so an inert bank can
-still be shown and marked. FR-009 stands either way — it describes what this application does while
-the pool counts unpowered banks, and it does not depend on when the fix lands. When it does land,
-FR-009's flag becomes a presentation of the package's own figure rather than a correction beside a
-misleading one.
+**What taking the upgrade changed here.** Two requirements moved with it, and both changes are
+narrowings of what the application may show rather than new capability.
+
+1. **FR-009 now presents the package's own figure instead of qualifying a misleading one.** Its
+   substance is unchanged — present the pool as reported, mark every fitted bank that is not
+   contributing, never recompute the total — but the sentence describing the package was rewritten,
+   because the pool no longer counts unpowered banks and the per-bank power state is now the
+   package's rather than something the application had to supply beside it. The prohibition matters
+   in both directions now: adding an unpowered bank's strength back in would produce a total the
+   package did not compute, exactly as subtracting one used to.
+2. **FR-008a is new, and it exists because of the upgrade.** A build whose banks are all unpowered
+   now reports a zero pool, which is a figure the package computed and not an absence. Without
+   FR-008a it would be indistinguishable on screen from FR-008's build that carries no banks at all,
+   which the package itself distinguishes — one lists no banks, the other lists banks that are not
+   ready.
+
+The change is breaking upstream, and the break was taken whole rather than worked around: the
+data-free aggregator now requires each bank's power state and refuses a summary without one. Nothing
+in this application supplied that input, so the upgrade cost nothing to adopt beyond the two
+requirement edits above.
 
 ## Success Criteria _(mandatory)_
 

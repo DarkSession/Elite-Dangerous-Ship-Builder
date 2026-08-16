@@ -90,3 +90,32 @@
 - **One gap does remain, and it belongs to feature 006**: the cell bank pool counts unpowered banks.
   Re-verified unchanged at beta.9. It is recorded in the Upstream dependencies section here because
   the contract's honesty rules are what it bears on, and in feature 006's FR-009 where it is handled.
+
+## Amended 2026-08-16 (upstream re-verification)
+
+- **The family's last gap is fixed upstream, and nothing here now awaits an upstream decision.** The
+  cell bank pool was filed as
+  [Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281) and
+  closed the same day, but the fix merged after `0.1.0-beta.9` was published, so no released version
+  carries it. The note above therefore stands as written for the installed package — the pool is
+  unchanged when a bank is disabled — while what remains outstanding is a release to upgrade to rather
+  than a question to be answered. Feature 006 owns that upgrade and records what it will change.
+- **The distinction is worth keeping in the contract's terms.** A figure blocked on an upstream
+  decision is one this application may not present at all; a figure blocked on an upstream release is
+  one it presents under FR-001b today and will present more simply later. The cell bank pool has moved
+  from the first category to the second, and no figure in any of the five areas is in the first.
+
+## Amended 2026-08-16 (`0.1.0-beta.10` upgrade)
+
+- **The family has no gaps left.** `0.1.0-beta.10` released the power-aware cell bank pool and the
+  application consumes it, so the last figure presented under FR-001b as a package figure plus a
+  qualification is now simply the package's figure. Every claim in the Upstream dependencies section
+  was re-verified against the installed beta.10 rather than carried forward: the distributor's three
+  pip-scaled rates, the three multi-jump totals, the heat states, the retail credits with their
+  unpriced list, the localized material names, and the diagnostics contract's `code`, `params` and
+  `constraint`.
+- **The catalogue did not move, which is what let the upgrade be routine.** `ALL_MODULES` is 1199 on
+  both sides, the `assets/ships` tree is byte-identical across beta.8, beta.9 and beta.10 (same
+  SHA-256 over 144 files), and regenerating the build-link codec table reproduced every pinned array
+  byte for byte, with only the recorded Almanac version moving. A release that changed one calculation
+  and no data is the cheapest kind to take, and verifying that it was one is what made it cheap.

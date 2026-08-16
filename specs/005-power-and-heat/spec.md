@@ -417,7 +417,7 @@ shown against the hull's heat dissipation, with the contributing sources identif
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16. **Nothing
+Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16. **Nothing
 in this area is blocked.** The engines capacitor's recharge, the one figure this specification carried
 as unavailable, is reported by the package as of `0.1.0-beta.9`.
 

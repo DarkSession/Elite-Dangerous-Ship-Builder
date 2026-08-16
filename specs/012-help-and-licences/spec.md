@@ -281,11 +281,11 @@ capability it describes.
 ## Upstream dependencies
 
 Nothing in this feature is blocked, and one thing it presents is waiting. Verified against the
-installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16.
+installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16.
 
 `@elite-dangerous-almanac/core` ships its licence and its `THIRD_PARTY_NOTICES.md` in the installed
 package, which is what FR-005a generates from; its own release version is available from the
-installed package at build time. The game catalogue version is still not available — at beta.9 the
+installed package at build time. The game catalogue version is still not available — at beta.10 the
 package records it as prose in `PROVENANCE/ships/SOURCES.md` (`4.4.0.3`) rather than as a
 machine-readable value, so FR-006 continues to show that version as unavailable. Feature 001's FR-044a
 owns the gap and records that raising it upstream is deferred by decision rather than pending. FR-006

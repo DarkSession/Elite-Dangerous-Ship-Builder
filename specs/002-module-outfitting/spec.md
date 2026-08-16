@@ -537,7 +537,7 @@ reflected in the build's power figures and survive save and reload.
 - Fittability, engineering availability, grade ranges, and pre-engineered behaviour are
   whatever `@elite-dangerous-almanac/core` reports; this application does not add rules of its own.
 - The per-ship module limits behind FR-003 are the package's, delivered in `0.1.0-beta.4` and
-  re-verified against the installed `0.1.0-beta.9` on 2026-08-16: it excludes a module already at its
+  re-verified against the installed `0.1.0-beta.10` on 2026-08-16: it excludes a module already at its
   allowance from the offer list for a slot, refuses a fitting that would exceed one, and reports the
   excess in its validation. The refusal carries a `duplicateExclusiveModule` code and names the
   exclusion group and the slot already holding one, which is the machine-readable form feature 003's

@@ -388,7 +388,7 @@ selected state marked among them.
 
 ## Upstream dependencies
 
-All of this specification is satisfied by `@elite-dangerous-almanac/core@0.1.0-beta.9`,
+All of this specification is satisfied by `@elite-dangerous-almanac/core@0.1.0-beta.10`,
 verified against the installed package on 2026-08-16. `mobilityMetrics` computes speed, boost, pitch,
 roll and yaw from the build's thrusters, mass and ENG pip allocation, applying the thruster mass
 curves, and reports zero performance above the curve rather than a fabricated value. Jump range and

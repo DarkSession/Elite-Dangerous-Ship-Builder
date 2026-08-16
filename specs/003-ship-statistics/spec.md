@@ -404,7 +404,7 @@ not move, and none of the three is written into the build when it is saved, shar
 ## Upstream dependencies
 
 Every figure this specification's family needs is computed by
-`@elite-dangerous-almanac/core@0.1.0-beta.9`, verified against the installed package on 2026-08-16.
+`@elite-dangerous-almanac/core@0.1.0-beta.10`, verified against the installed package on 2026-08-16.
 **No figure in any of the five areas is blocked.** The four exceptions recorded here at beta.4 are all
 settled: WEP pip-to-recharge scaling (feature 007) landed at beta.8; the number of jumps a full tank
 affords (feature 008) landed at beta.8 and the total at one jump's fuel that survived it at beta.9;
@@ -414,15 +414,20 @@ distributor's pip-scaled recharge for all three capacitors (feature 005) landed 
 areas compose figures under FR-001a; each names what it composes in its own "Upstream dependencies"
 section.
 
-**One gap remains open across the family, and it is feature 006's**: the package's shield cell bank
-pool counts every fitted bank whether or not it is powered, unlike the shield metrics beside it, which
-report nothing for a generator that is switched off. Re-verified against beta.9 on 2026-08-16 — the
-pool is unchanged when a bank is disabled. FR-001a does not permit subtracting the bank's contribution
-here, so feature 006's FR-009 flags the bank within the package's pool instead. That is a presentation
-the constitution allows under FR-001b, not a figure this application produces.
+**The family's last gap closed in `0.1.0-beta.10`.** The package's shield cell bank pool used to count
+every fitted bank whether or not it was powered, unlike the shield metrics beside it, which report
+nothing for a generator that is switched off; feature 006's FR-009 handled that by flagging the
+unpowered bank within the package's pool, because FR-001a does not permit subtracting its
+contribution here. It was filed as
+[Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281),
+fixed the same day, and released in `0.1.0-beta.10`, which the application now consumes. The pool
+counts only powered banks and reports each fitted bank's own power state, so FR-009 presents the
+package's figure directly rather than qualifying a misleading one, and feature 006 gained FR-008a to
+keep a computed zero pool distinct from a build that carries no banks. **No figure in any of the five
+areas is blocked, and none is waiting on an upstream release.**
 
 **The diagnostics locale is settled, and the settlement puts the wording here.** The validity,
-completeness and edit-error messages FR-006 and FR-007 surface remain English-only at beta.9 and are
+completeness and edit-error messages FR-006 and FR-007 surface remain English-only at beta.10 and are
 documented as such — `LoadoutIssue.message` and `LoadoutEditError.message` are for logs. What the
 upstream request
 ([Elite-Dangerous-Almanac#245](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/245),
