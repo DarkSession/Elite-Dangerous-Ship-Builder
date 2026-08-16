@@ -8,15 +8,18 @@ implementation of SLEF.
 
 SLEF import, build reconstruction, calculated statistics, and SLEF export remain the responsibility
 of `@elite-dangerous-almanac/core`. The codec carries only the state needed to reconstruct the same
-loadout: hull, optional ship labels, outfittable module identities, explicit power settings, and
-engineering choices. Fixed components such as the cargo hatch are implied by the hull; only their
-variable power state is carried. The codec deliberately omits calculated values, catalogue and
-purchase prices, aggregate module value, hull value, rebuy, health, and ammunition.
+application loadout after invariant-quality normalisation: hull, optional ship labels, outfittable
+module identities, explicit power settings, and engineering choices. Every blueprint grade is
+treated as complete at 100% quality, so engineering quality is not link state. Fixed components
+such as the cargo hatch are implied by the hull; only their variable power state is carried. The
+codec deliberately omits calculated values, catalogue and purchase prices, aggregate module value,
+hull value, rebuy, health, and ammunition.
 
 The format is designed around these constraints:
 
 - links must remain compact for empty, stock, and fully engineered ships;
-- every accepted link must decode deterministically and losslessly;
+- every accepted link must decode deterministically and losslessly for every field the application
+  models;
 - alternate encodings of the same build must be rejected;
 - published table versions must remain protocol-decodable indefinitely;
 - old tables must not accumulate in the application's initial JavaScript bundle; and
@@ -108,7 +111,7 @@ trailing data.
 |     7 | Pristine default    | Boolean; when set, the hull's pinned stock loadout ends the logical symbol list |
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules       |
 |     9 | Power states        | Explicit values for power-drawing modules and fixed components                  |
-|    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects   |
+|    10 | Engineering states  | Engineering presence, identities, grades, and experimental effects              |
 
 ### Arithmetic representation
 
@@ -178,9 +181,10 @@ fitted module has absent power and engineering state.
 
 ## Adaptive encodings
 
-Each adaptive structure computes its exact bit cost before choosing a representation. Decoders
-repeat that choice and reject any more expensive encoding, including non-preferred ties. This makes
-the format canonical while allowing sparse and dense builds to use different layouts.
+Each adaptive structure computes its exact packed-bit cost before choosing a representation.
+Decoders repeat that choice and reject any more expensive encoding, including non-preferred ties.
+The packed cost is the deliberate stable proxy even when the final body uses arithmetic coding.
+This makes the format canonical while allowing sparse and dense builds to use different layouts.
 
 ### Index sets
 
@@ -195,16 +199,18 @@ selects one of four forms:
 |    3 | Combination rank | Count, then `ceil(log2(C(n,k)))` bits of lexicographic rank |
 
 Equal-cost modes prefer bitmap, then included indexes, then excluded indexes, then combination
-rank. Here `n` is the candidate count and `k` is the selected count. A zero-bit rank represents the
-only possible subset when `C(n,k) = 1`. The combination count for the largest 38-slot hull remains a
-safe JavaScript integer. The generic arithmetic primitive can encode any safe-integer cardinality
-without narrowing it to 32 bits, but the shared index-set grammar deliberately makes mode 3
-eligible only when its bit-packed rank fits in at most 31 bits. Both canonical candidates must
-render the same logical grammar, and with the pinned maximum of 38 slots any wider rank already
-loses to the bitmap after including its count. The decoder rejects such a mode before reading its
-rank. The complement form is especially
-effective for nearly complete loadouts: all 38 outfittable Anaconda slots can be represented as
-zero exclusions instead of a 38-bit occupancy map.
+rank. A universe containing zero or one candidate explicitly uses bitmap mode; it does not rely on
+that tie order to avoid a one-cardinality bounded symbol. Here `n` is the candidate count and `k` is
+the selected count. A zero-bit rank represents the only possible subset when `C(n,k) = 1`. The
+combination count for the largest 38-slot hull remains a safe JavaScript integer. The arithmetic
+primitive can encode any safe-integer cardinality, but the codec rejects a logical symbol when its
+packed width would exceed 31 bits because canonical selection requires both renderers to succeed.
+The shared index-set grammar likewise makes mode 3 eligible only when its bit-packed rank fits in at
+most 31 bits. With the pinned maximum of 38 slots, any wider rank already loses to the bitmap after
+including its count. The packed reader rejects such a mode before reading its rank; the arithmetic
+path rejects it during canonical reserialization. The complement form is especially effective for
+nearly complete loadouts: all 38 outfittable Anaconda slots can be represented as zero exclusions
+instead of a 38-bit occupancy map.
 
 ### Module layout and identities
 
@@ -268,13 +274,13 @@ dictionary because their identities carry different reconstruction semantics.
 An ordinary record contains:
 
 - a blueprint index, normally constrained to the fitted module's candidate set;
-- a grade, with the common maximum grade represented by one bit;
-- an exact quality value; and
+- a grade, with the common maximum grade represented by one bit; when a blueprint has exactly two
+  grades, that maximum/non-maximum bit identifies both and no bounded grade index follows; and
 - an optional experimental effect, normally constrained to the module's candidate set.
 
 Pre-engineered records use a pinned contextual identity composed from module, blueprint, grade, and
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
-Their quality is still encoded, while their modifier arrays are not.
+Their modifier arrays are not encoded.
 
 Almanac beta.8 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants have no published modifier signatures;
@@ -287,18 +293,9 @@ decorative state or application-specific modifier resolver.
 
 ### Scalar values
 
-Engineering quality is constrained to the inclusive range from `0` to `1` and uses four canonical
-forms:
-
-| Value                            | Representation                                     |
-| -------------------------------- | -------------------------------------------------- |
-| `1`                              | 1 bit                                              |
-| `0`                              | 2 bits                                             |
-| Exact interior four-decimal SLEF | 3 flag bits plus a 14-bit integer scaled by 10,000 |
-| Other exact JavaScript value     | 3 flag bits plus a float64 escape                  |
-
-The float64 escape preserves non-SLEF callers losslessly. The decoder rejects an escaped value that
-has a shorter canonical fixed-point form, and rejects fixed-point encodings of the two endpoints.
+Engineering quality consumes no bits. The application models every selected or imported grade as
+complete at quality `1`; a partial value in an imported journal or SLEF capture is deliberately
+normalised rather than retained in the link model.
 
 Ship name and ident use a tagged varuint header. In compact form, the header is
 `2 * character count + 1`, followed by one six-bit index per character into this exact ordered
@@ -318,7 +315,7 @@ decoded character belongs to the compact alphabet, because that spelling is non-
 
 The decoder creates the minimal loadout event, then reconstructs ordinary engineering through
 `ShipLoadout.applyBlueprint()`. That Almanac operation regenerates the journal modifier array and
-all effective module statistics from blueprint, grade, quality, and experimental effect.
+all effective module statistics from blueprint, grade, invariant quality `1`, and experimental effect.
 Pre-engineered modifiers are likewise obtained from the Almanac's supported journal resolver.
 
 Calculated module values, hull value, aggregate module value, rebuy, and modifier arrays are never
@@ -375,13 +372,13 @@ path for the affected table version.
 The fixed corpus currently produces these encoded data lengths. Each value and length includes the
 `b.` protocol prefix:
 
-| Reference build               | Base70 encoded data                                                                                                  | Data length |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------: |
-| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                       |          12 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                         |          10 |
-| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                                     |          14 |
-| Full engineered Anaconda*     | `b.25b5dRYu7rn.aOZ84kdGWEwCnDyLUBm3l.l6hx0nnmZhXXN@VTHDZSvOZ2hRWc.T0WG!P1V87u2Chb`                                   |          80 |
-| Supplied engineered Corvette† | `b.1fS.w,QYTD@6C@euGl/xHC3xdSJdr_IK-E7404@cI:778Ms,DzYtn/!gk,Ei0YHT7vg27GLnj38AzCh2P@67y/Cnp2,uhN/U-QjW160,rrnvyuOT` |         114 |
+| Reference build               | Base70 encoded data                                                                                            | Data length |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------: |
+| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                 |          12 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                   |          10 |
+| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                               |          14 |
+| Full engineered Anaconda*     | `b.dtb4q.j:qTZT5gT0CpDtwq0DVlkN10dKElN9u44u0lRCUMZ99PuBBp5N!ufEu!TCDPaC2f7Xox_9`                               |          78 |
+| Supplied engineered Corvette† | `b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623` |         108 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -394,22 +391,24 @@ ammo, engineer, localisation, and purchase fields were removed from the checked-
 The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
 Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
 festive literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
-package-owned green flak-launcher variant. The sanitised real
-engineered Federal Corvette produces 114 characters of encoded data. It is a preservation fixture:
-one small hardpoint records a partial quality even though its modifier values match the completed
-grade-5 roll. The codec preserves that captured quality exactly; the fixture is not treated as an
-independent oracle for effective-stat reconstruction.
+package-owned green flak-launcher variant. The sanitised real engineered Federal Corvette produces
+108 characters of encoded data. Its source capture records a partial quality on one small
+hardpoint even though its modifier values match the completed grade-5 roll. The codec deliberately
+normalises that field to quality `1`; the fixture is not treated as an independent oracle for
+effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 80,
+Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 78,
 including its `b.` prefix.
 
 ## Complete reference build definitions
 
-These definitions list every field the codec models. Tables contain outfittable modules; the fixed
-cargo hatch is listed separately because only its power state is variable. `—` means the optional
-value is absent; it is different from an explicit `on`, `off`, or priority `0`. Calculated modifier
-arrays are deliberately not repeated because the decoder rebuilds them through the Almanac.
+These definitions list every field the codec models. The engineering column also displays invariant
+quality `Q1` to make the reconstructed result explicit, but that value is not encoded. Tables
+contain outfittable modules; the fixed cargo hatch is listed separately because only its power
+state is variable. `—` means the optional value is absent; it is different from an explicit `on`,
+`off`, or priority `0`. Calculated modifier arrays are deliberately not repeated because the
+decoder rebuilds them through the Almanac.
 
 <details>
 <summary>Empty Sidewinder</summary>
@@ -520,7 +519,7 @@ Fixed cargo-hatch power: on, priority `2`.
 | MediumHardpoint1       | hpt_beamlaser_gimbal_medium              |      on |        3 | Weapon_LongRange G5 Q1 + special_regeneration_sequence               |
 | MediumHardpoint2       | hpt_beamlaser_gimbal_medium              |      on |        3 | Weapon_LongRange G5 Q1 + special_regeneration_sequence               |
 | SmallHardpoint1        | hpt_multicannon_gimbal_small             |      on |        1 | Weapon_HighCapacity G5 Q1 + special_corrosive_shell                  |
-| SmallHardpoint2        | hpt_multicannon_gimbal_small             |      on |        2 | Weapon_HighCapacity G5 Q0.9438 + special_emissive_munitions          |
+| SmallHardpoint2        | hpt_multicannon_gimbal_small             |      on |        2 | Weapon_HighCapacity G5 Q1 + special_emissive_munitions               |
 | TinyHardpoint1         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_Resistive G5 Q1 + special_shieldbooster_chunky         |
 | TinyHardpoint2         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_HeavyDuty G5 Q1 + special_shieldbooster_chunky         |
 | TinyHardpoint3         | hpt_shieldbooster_size0_class5           |      on |        1 | ShieldBooster_Resistive G5 Q1 + special_shieldbooster_chunky         |
@@ -559,10 +558,10 @@ Fixed cargo-hatch power: on, priority `4`.
 ## Measured alternatives
 
 The remaining fixed overhead buys format selection, byte alignment, and a CRC-32. Shortening the
-checksum would save only a few encoded characters while weakening corruption detection. The
-four-decimal quality representation is exact for real SLEF exports and retains a float escape rather
-than quantising exceptional values. Complement sets, repeated-module identities, and repeated
-ordinary engineering records are all enabled only when their exact bit-cost comparison wins.
+checksum would save only a few encoded characters while weakening corruption detection, so CRC-32
+is retained deliberately. Engineering quality is invariant at `1` and omitted entirely.
+Complement sets, repeated-module identities, and repeated ordinary engineering records are all
+enabled only when their packed-bit cost comparison wins.
 
 A general compression pass was also measured. The fair comparison compresses the body and then
 appends the unchanged four-byte CRC:
@@ -571,23 +570,21 @@ appends the unchanged four-byte CRC:
 | ------------------- | ---------------: | ----------------: | -----------: |
 | Empty Sidewinder    |                8 |                10 |           12 |
 | Stock Krait Mk II   |                7 |                 9 |           11 |
-| Engineered Anaconda |               62 |                67 |           66 |
+| Engineered Anaconda |               60 |                65 |           64 |
 
 Both general-purpose compressors make every reference larger. The adopted arithmetic path is
 different: it encodes the codec's existing semantic values against their exact cardinalities and is
-selected only when its final padded body is smaller. It reduces the Anaconda body from 58 to 56
-bytes and its encoded data from 82 to 80 characters. The Corvette body falls from 86 to 82 bytes
-and its encoded data from 119 to 114 characters. Empty, stock, festive, and every other build where
-bit packing wins retain the packed form without a representation-bit penalty. Base70 still needs
-interoperability testing in the actual sharing applications. Its radix conversion uses bounded
-byte/digit arithmetic rather than a whole-payload `BigInt`.
+selected only when its final padded body is smaller. With the quality-free grammar, it reduces the
+Anaconda body from 56 to 55 bytes and produces 78 encoded characters including `b.`. The Corvette
+body falls from 82 to 78 bytes and produces 108 characters. Empty, stock, festive, and every other
+build where bit packing wins retain the packed form without a representation-bit penalty. Base70
+still needs interoperability testing in the actual sharing applications. Its radix conversion uses
+bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
 
 The adaptive combination-rank index-set mode leaves empty and stock references at 12 and 10
-characters, while reducing the bit-packed engineered Anaconda from 84 to 82 and the supplied
-Corvette from 120 to 119. Arithmetic coding then produces the 80- and 114-character canonical
-forms above. A fixed-width truncated-binary index evaluation saved at most one
-character and changed several equally sized literals, so the combination rank was the stronger
-trade-off.
+characters and remains part of the packed-cost grammar used before arithmetic rendering. A
+fixed-width truncated-binary index evaluation saved at most one character and changed several
+equally sized literals, so the combination rank was the stronger trade-off.
 
 The compact metadata path reduced an ASCII `Astraea` / `TST-42` build from 31 to 27 characters, the
 mixed `Astraea 星` / `TST-42` case from 36 to 35, and a longer ASCII example from 50 to 40. A
@@ -602,11 +599,10 @@ some small non-empty builds; using the reserved index-set code avoided that regr
 none of the 48 empty-hull data lengths because byte padding absorbed the saved bits. Neither form
 is retained.
 
-Engineering already gives a blueprint's maximum grade and quality `1` their shortest individual
-forms. Making those defaults global to the engineered set was also evaluated. Because repeated
-engineering records are already back-references, it saves only about 20 to 23 bits on the dense
-references—roughly three Base70 characters before the additional group-mode signalling. That gain
-does not justify coupling every engineering record to another adaptive group header.
+Engineering quality was subsequently made invariant across the application. Removing it from every
+record, instead of adding another adaptive group header, leaves empty and stock references
+unchanged while reducing the engineered Anaconda from 80 to 78 characters and the supplied
+Corvette from 114 to 108.
 
 Module-identity back-references, engineering-record back-references, index-set complements, and the
 baseline-relative module layout are retained because they are selected only when their measured
