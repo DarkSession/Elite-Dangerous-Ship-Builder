@@ -6,8 +6,8 @@
 
 **Status**: Draft
 
-**Input**: Identified by a design review on 2026-08-16. Two obligations every feature already carried
-had no specification of their own: that every visual value comes from a design token, and that the
+**Input**: Identified by design review. Two obligations every feature already carried had no
+specification of their own: that every visual value comes from a design token, and that the
 application is usable by a Commander who cannot use a mouse, cannot see the screen, or cannot read
 small text. Both were stated in the constitution and inherited by every feature, and neither was
 testable anywhere.
@@ -36,29 +36,6 @@ Every accepted feature inherits this specification without restating it, exactly
 feature 003's honesty rules. Where a feature specification is more specific — feature 010's mount
 targets, feature 009's material-grade text alternative, feature 001's hull-art treatment — it
 governs, and it may not relax anything here.
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: Does the application offer a light theme, or a theme the Commander chooses? → A: Neither. One
-  dark theme, defined once in tokens. Every screen in the imported design is dark, an amber-on-near-
-  black interface is what Commanders read the game itself in, and a second theme doubles the surface
-  that has to be designed, tested for contrast and kept honest for no capability gained. The
-  constitution was amended to fix this (principle VII, 2.1.0), and the theme-following clauses in
-  features 001 and 010 were removed with it.
-- Q: What accessibility standard is "accessible" measured against? → A: **WCAG 2.2 level AA**, on
-  every form factor. A named standard is testable and a list of good intentions is not.
-- Q: Is an automated accessibility check enough? → A: No — it is a floor that fails the build, not a
-  proof that passes it. Automated checking catches contrast, names, roles and landmarks; it cannot
-  tell whether the keyboard order makes sense, whether a live region says something useful, or
-  whether a Commander can actually complete a build without seeing it. FR-032 requires the automated
-  check; FR-033 requires the journeys that automation cannot assert.
-- Q: Which browsers must the end-to-end suite run in? → A: Chromium and Firefox, each across the
-  three viewports. One engine proves the application works in that engine.
-- Q: Where do colour literals live, given components may not carry them? → A: In the token layer of
-  the design system and nowhere else. That is a testable statement rather than a stylistic
-  preference: a build-time check reads the source and fails on a colour literal anywhere outside it.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -194,8 +171,7 @@ visual value of its own, and that a change to a token changes every screen that 
   tool is a working surface (constitution principle VII). The colour reaches the application by
   becoming a token, never by being copied out of the tool.
 - Text expanded by translation until a label wraps to three lines: the layout survives it, because
-  translation expansion and increased text size are the same problem (feature 003's device
-  requirements, constitution principle VI).
+  translation expansion and increased text size are the same problem.
 - A right-to-left script: the layout mirrors, and nothing that carries meaning by its side of the
   screen breaks.
 - A figure that updates while a screen reader is reading the previous one: the announcement does not
@@ -225,10 +201,10 @@ visual value of its own, and that a change to a token changes every screen that 
 - **FR-003**: Colour literals MUST exist only in the design system's token layer. Everything else —
   components, screens, charts, converted artwork, generated assets — MUST reference a token. This is
   enforced at build time under FR-030 rather than by review.
-- **FR-004**: The application ships **one theme**. There MUST be no light theme, no theme control and
-  no stored theme preference, and no requirement in any feature may depend on a theme being chosen or
-  changed. A future second theme would be a second set of token values; nothing in the application
-  may need editing to accommodate one.
+- **FR-004**: The application ships **one theme** — the dark one the design system defines. There
+  MUST be no light theme, no theme control and no stored theme preference, and no requirement in any
+  feature may depend on a theme being chosen or changed. A future second theme would be a second set
+  of token values; nothing in the application may need editing to accommodate one.
 - **FR-005**: A screen that needs something the design system lacks MUST extend the design system.
   Solving it inside the screen is prohibited even where the result looks identical.
 - **FR-006**: Every component MUST ship with a preview of every state it handles — default,
@@ -315,7 +291,8 @@ visual value of its own, and that a change to a token changes every screen that 
   with no screen requiring an edit — so that FR-002 is verified by behaviour rather than by
   inspection.
 - **FR-032**: An automated accessibility check MUST run over every screen, in every state the screen
-  can be in, as part of the end-to-end suite. A violation MUST fail the build.
+  can be in, as part of the end-to-end suite. A violation MUST fail the build. It is a floor that
+  fails the build, not a proof that passes it.
 - **FR-033**: The keyboard and screen-reader journeys of User Stories 1 and 2 MUST be tested
   end-to-end, because they assert what automated checking cannot: that every capability is reachable
   without a pointer, that focus is never trapped or lost, that a change is announced, and that the
@@ -371,12 +348,15 @@ visual value of its own, and that a change to a token changes every screen that 
 - Automated accessibility checking is a floor. It catches contrast, names, roles and landmarks and
   cannot judge whether an interface makes sense; the journeys of FR-033 are what assert the
   capability, and a green automated run is never reported as conformance on its own.
-- One theme is a product decision, not a technical limit. The token layer would support a second, and
-  nothing in the application may assume there will never be one; what is prohibited is a requirement
-  that depends on a Commander choosing between them.
+- One dark theme is a product decision, not a technical limit. Every screen in the imported design is
+  dark, an amber-on-near-black interface is what Commanders read the game itself in, and a second
+  theme doubles the surface that has to be designed, tested for contrast and kept honest for no
+  capability gained. The token layer would support a second, and nothing in the application may assume
+  there will never be one; what is prohibited is a requirement that depends on a Commander choosing
+  between them.
 - Chromium and Firefox are the two engines the suite runs. WebKit is not currently in the matrix,
   which is a known gap rather than a claim that the application is untested there by design; adding
-  it is a change to this requirement, not a workaround.
+  it is a change to FR-029, not a workaround.
 - Translatability (constitution principle VI) and responsiveness (principle V) are inseparable from
   accessibility here — text expansion, enlargement and reflow break the same layouts — so they are
   held to the same criteria rather than specified twice.

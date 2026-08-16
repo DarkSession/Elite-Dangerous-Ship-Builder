@@ -1,4 +1,4 @@
-# Feature Specification: SLEF Export
+# Feature Specification: SLEF Import and Export
 
 **Feature Branch**: `004-slef-export`
 
@@ -8,57 +8,14 @@
 
 **Input**: User description: "Users should be able to export the ship into SLEF."
 
-## Clarifications
+## Scope
 
-### Session 2026-08-16
+This specification covers taking the active build out of the application as SLEF, and bringing a
+build in from a SLEF payload or a journal `Loadout` event the Commander pastes.
 
-- Q: When a Commander imports a ship capture that records what they actually paid, and then
-  exports it again, should the export quote those captured prices, the catalogue's retail
-  prices, or no prices at all? → A: The captured prices only, ever. Catalogue retail pricing is
-  never written into an export, and a build carrying no recorded price — one assembled in the
-  application, or an import that stated none — exports no credit figure at all rather than
-  substituting a derived one. There is no export-time choice to make: this supersedes FR-011's
-  "only when explicitly requested".
-- Q: When an import silently discards or changes something the application does not model — a
-  journal capture's ammunition state, the engineer who did the work, the capture timestamp, or a
-  partial engineering roll normalised up to 100% — should the Commander be told, and about which
-  of those? → A: Only about what changes the build's meaning: a partial roll normalised to 100%,
-  and any slot that could not be resolved. State describing the moment of capture rather than the
-  build — ammunition, engineer provenance, timestamps, ship instance and hull health — is
-  discarded without comment. This replaces the Assumptions section's untestable "stated to the
-  Commander when it matters".
-- Q: Should the export's header include a link that opens the exported build back in this
-  application, using the shareable build link that feature 001 already produces? → A: Yes, always,
-  alongside the application's name and version. The link is feature 001's, produced by the codec
-  that feature owns; this feature consumes it and defines no second link format. Where the link
-  cannot be produced, the export still goes ahead without it.
-- Q: Can an export ever contain more than one ship, or is it always just the build the Commander
-  is currently working on? → A: The active build only, always a single entry.
-  A whole-collection backup, if it is ever wanted, belongs to
-  [feature 001](../001-ship-selection-and-loading/spec.md), which owns saved builds.
-- Q: How big a pasted payload must the import cope with, and what should happen to one larger
-  than that? → A: 64 KB, refusing anything larger with a message naming the limit. Re-measured
-  against the installed `0.1.0-beta.10` on 2026-08-16: an Anaconda with every slot filled and a
-  top-grade blueprint on all 32 engineerable slots serialises to **11.8 KB** compact, against 1.6 KB
-  stock — and that is a floor, since it carries no experimental effects and the modifier arrays are
-  what dominate. An earlier draft recorded about 8 KB, which does not reproduce. A game journal
-  capture of such a build — the fattest input FR-007 must accept, carrying engineer names, blueprint
-  ids, ammunition counts and module health — runs larger again, so the limit is set at 64 KB: several
-  times the largest payload measured, while still bounded.
-- Q: Should a payload that contains several ships be refused outright, or still be accepted with
-  the Commander picking the one ship that gets loaded? → A: Refused outright, with a message
-  saying so. Import takes exactly one ship. This removes the tolerant multi-entry reading path,
-  the per-entry diagnostics and the build-picker previously required by FR-008, US2 scenario 2
-  and SC-004; parsing is strict, and a payload is either wholly applied or wholly refused.
-- Q: Does import take a file as well as a paste? → A: A paste only. Both sources a Commander
-  actually has — a SLEF payload from a squadmate and a `Loadout` line out of their own journal —
-  arrive as text they already have selected, and a file picker is a second path to test, to make
-  accessible and to keep working on a phone for no case the paste does not already cover. FR-017's
-  file-upload obligation is withdrawn accordingly. Export is unaffected and still offers a download.
-- Q: Should the application export a journal `Loadout` event, or a Markdown table of the build? →
-  A: Both are wanted and neither is in scope now. They are recorded here as intended future work so
-  that the export surface is planned to take more than one format, and this feature ships SLEF alone
-  until they are specified.
+Export always carries exactly one ship — the active build. Import always takes exactly one ship, by
+paste, and is the one capability outside
+[feature 001](../001-ship-selection-and-loading/spec.md) that may create an active build.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -182,7 +139,7 @@ matches every modelled field, confirm any partial engineering quality becomes
   format.
 - **FR-002**: The application MUST export the active build as a valid SLEF
   payload carrying exactly one entry. Exporting several builds in one payload is
-  out of scope for this feature, matching the single-ship import FR-008 requires.
+  out of scope, matching the single-ship import FR-008 requires.
 - **FR-003**: The export MUST include every fitted module with its engineering
   (blueprint, grade, experimental effect, and invariant 100% quality), enabled state and power
   priority, plus the ship's name and ident where set.
@@ -277,6 +234,18 @@ matches every modelled field, confirm any partial engineering quality becomes
 - **Import diagnostic**: A report of what could not be read, where in the payload,
   and why.
 
+## Upstream dependencies
+
+`@elite-dangerous-almanac/core` performs SLEF serialisation and parsing, reads journal `Loadout`
+events, and carries the source purchase record that FR-011 preserves. Nothing in this feature is
+blocked.
+
+The 64 KB limit FR-008a sets is several times the largest payload the format produces. An Anaconda
+with every slot filled and a top-grade blueprint on all 32 engineerable slots serialises to 11.8 KB
+compact, against 1.6 KB stock, and that is a floor — it carries no experimental effects, and the
+modifier arrays are what dominate. A game journal capture of such a build, carrying engineer names,
+blueprint ids, ammunition counts and module health, runs larger again.
+
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
@@ -320,16 +289,15 @@ matches every modelled field, confirm any partial engineering quality becomes
 - Reading journal files directly from disk, or watching a live journal
   directory, is out of scope — the client-side-only constraint means the
   Commander pastes the payload, and FR-006 makes pasting the whole of the import
-  surface.
-- Exporting to other tools' proprietary formats or link schemes is out of scope
-  for this feature. The one link an export carries is this application's own, and
-  it belongs to [feature 001](../001-ship-selection-and-loading/spec.md) — this
-  feature consumes that codec rather than defining a second link format, and
-  depends on it being available.
+  surface. A file picker would be a second path to test, to make accessible and
+  to keep working on a phone, for no case the paste does not already cover.
+- Exporting to other tools' proprietary formats or link schemes is out of scope.
+  The one link an export carries is this application's own, and it belongs to
+  [feature 001](../001-ship-selection-and-loading/spec.md) — this feature
+  consumes that codec rather than defining a second link format.
 - Two further export formats are wanted and deliberately deferred: a journal
-  `Loadout` event, which would make the journal a two-way format rather than an
-  import source only, and a Markdown table of the build for forum and Discord
-  posts. Neither is specified here and neither ships with this feature; they are
+  `Loadout` event, and a Markdown table of the build for forum and Discord posts.
+  Neither is specified here and neither ships with this feature; they are
   recorded so the export surface is planned as one that will carry more than one
   format rather than as a single SLEF button.
 - A build's note (feature 001's FR-023i) is not exported. It is the Commander's
@@ -340,6 +308,4 @@ matches every modelled field, confirm any partial engineering quality becomes
   [feature 011](../011-interface-foundations/spec.md), which every feature
   inherits as it inherits the constitution.
 - How the export and import surfaces look is decided at plan time against the
-  design system, per constitution principle VII. Nothing visual is deferred to a
-  later workstream; what this specification fixes is what the surfaces must
-  convey and refuse.
+  design system, per constitution principle VII.

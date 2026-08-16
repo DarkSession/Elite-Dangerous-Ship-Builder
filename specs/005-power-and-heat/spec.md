@@ -21,64 +21,12 @@ It is one area of the statistics family. [Feature 003](../003-ship-statistics/sp
 contract every figure here obeys — the requirement that a build be active at all (its FR-000),
 provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
 viewing conditions (load, pips, hardpoint state). Everything it states applies here without being
-restated, and nothing here relaxes it. Nothing in this area is offered before a hull is chosen.
+restated, and nothing here relaxes it.
 
 Enabling a module and assigning its power priority group are build changes owned by
 [feature 002](../002-module-outfitting/spec.md); this feature reports what those choices cost. The
 energy a weapon draws from the WEP capacitor while firing, and how long the capacitor sustains it,
 belong to [feature 007](../007-offence-profile/spec.md), which reads the capacities specified here.
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: When the distributor's three recharge rates are shown, should each be the fixed maximum rate at
-  four pips, or a rate adjusted for the pips the Commander has currently allocated? → A: At the pips
-  in force. Each capacitor shows the pips it holds against the four it can take, and every figure
-  displayed is the figure at that allocation. The pip curve is non-linear and the package owns it, and
-  as of `0.1.0-beta.9` it applies that curve for all three capacitors on one accessor, so every rate
-  comes from the package's own calculation rather than arithmetic here. _(Amended 2026-08-16: when
-  this was first answered the package reported the weapons rate only and stated that systems shared
-  the curve, leaving the engines rate to wait upstream. `0.1.0-beta.9` delivers all three — see
-  FR-008a.)_
-- Q: Feature 003 gives the Commander a retracted/deployed switch as a viewing condition, but this
-  area showed both states side by side — should the power figures follow that switch, or report both
-  states regardless of it? → A: Follow the switch, one state at a time, beginning at deployed. The
-  totals, the priority-group table and the by-module breakdown are all reported under the state in
-  force; with hardpoints retracted the weapons draw nothing and are shown doing so. The heat
-  scenarios are exempt — each carries its own hardpoint condition from the package.
-- Q: When a build's thermal load exceeds what its hull can shed, the package reports the settled
-  heat level as infinite and gives the seconds to 100%; when a build is safe it reports those
-  seconds as empty. How should those two be shown? → A: As verdicts, not as absences. An infinite
-  heat level reads as a build that never settles and climbs until it overheats, with no settled
-  level, because there is none. Empty seconds read as "does not overheat in this state". Neither is
-  presented as unavailable, and the gauge is never capped to keep a number on screen. _(Amended
-  2026-08-16: the seconds to 100% are not shown alongside the verdict — see FR-012b.)_
-- Q: The package's heat scenarios exclude shield cell bank activations and heat sinks — should this
-  area state that exclusion, stay silent, or model the cell bank spike itself? → A: Model it. A cell
-  bank activation is a state of the heat profile in its own right, modelled as the worst activation
-  the build can actually perform, fired with the weapons capacitor drained. Heat sinks cannot be
-  modelled at all — the package expresses no negative load — so they stay excluded and the area says
-  so rather than letting a Commander read an overheat verdict as already allowing for them.
-  _(Withdrawn 2026-08-16: neither half survives. The modelled activation state is dropped with
-  FR-011b, and the per-verdict heat-sink caveat with FR-011c.)_
-- Q: When a build carries several cell banks, and the largest activation heat and the shortest
-  spin-up belong to different banks, which does the worst case take? → A: The worst real bank — the
-  fitted bank whose activation heat divided by its spin-up is the largest. Pairing one bank's heat
-  with another's spin-up would describe an activation the build cannot perform. _(Withdrawn
-  2026-08-16 with FR-011b: no activation state is modelled, so no bank is chosen.)_
-- Q: Which heat figures does this area actually present, after the design review of 2026-08-16? →
-  A: The package's own and nothing assembled around them: heat efficiency, the hull's dissipation,
-  the weapons' thermal load, and the resting heat level in each state the package reports with
-  whether it overheats. Dropped are the hull's heat capacity, the modelled cell bank activation
-  state, the heat-sink caveat repeated beside every verdict, and the time to reach an overheat. Each
-  was a qualification or a construction rather than a figure, and together they made a heat panel
-  that explained itself more than it reported.
-- Q: In the ranked list of modules by power draw, where should a module whose draw the package could
-  not determine appear? → A: Pinned above the ranked entries in a group of its own, marked as
-  unknown, never sorted among the known draws. An unknown draw could be the largest or the smallest
-  on the build, so any position within the ranking would make a claim the package has not made, and
-  pinning it above leaves the ordering beneath legible as one over known draws only.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -90,8 +38,7 @@ which priority group drops offline. They read the budget deployed, and switch to
 the other half of the picture.
 
 **Why this priority**: Deploying hardpoints is the single largest step change in a build's power
-draw, and a build that browns out on deployment is broken in exactly the moment that matters. A
-budget that could not be read in both states would hide it.
+draw, and a build that browns out on deployment is broken in exactly the moment that matters.
 
 **Independent Test**: Load a build whose deployed draw exceeds its plant while its retracted draw
 does not, and confirm the application opens on the deployed state, reports the deficit and the shed
@@ -230,8 +177,7 @@ shown against the hull's heat dissipation, with the contributing sources identif
   draw against capacity, and does not imply a shutdown order that does not exist.
 - A priority group with no modules in it: the package reports every group whether or not anything
   occupies it, so an empty group and a zero-draw group look alike in its output. The application
-  tells them apart by counting the modules assigned to each — composition #3 below — and reports an
-  empty group as empty rather than as a group drawing zero.
+  tells them apart by counting the modules assigned to each and reports an empty group as empty.
 - A build whose deficit is resolved only by disabling a module the game does not allow to be
   disabled: the deficit stands and is reported, rather than being resolved on an assumption.
 - A build with no power plant, or one whose plant is switched off: the package reports no heat
@@ -252,7 +198,7 @@ shown against the hull's heat dissipation, with the contributing sources identif
   that as the state being safe indefinitely rather than as a figure it could not produce.
 - A build carrying heat sinks: the heat figures are the same as they would be without them, because
   the package models no sink. The application neither reduces a figure for them nor attaches a
-  caveat to every verdict about them (FR-011c, withdrawn).
+  caveat to every verdict about them.
 - A build the package cannot resolve to a known hull: the hull's heat dissipation is reported as
   unavailable and the overheat assessment with it, rather than assumed safe. Every hull in the
   catalogue carries the figure, so this arises from an unresolved hull rather than from a gap in the
@@ -288,11 +234,12 @@ shown against the hull's heat dissipation, with the contributing sources identif
 - **FR-007**: The application MUST display each drawing module's own power draw in the state in
   force alongside its slot, ordered by contribution, against the build's stated total. A module that
   draws only while hardpoints are deployed MUST be shown drawing nothing while they are retracted —
-  listed with its slot, never dropped — and MUST be identified as deployed-only in either state, so
-  that a retracted reading is not mistaken for the whole story. A module whose draw is unknown MUST
-  NOT be ordered among the known draws at all: such modules MUST be pinned above the ranked entries
-  in a group of their own, marked as unknown, so that the ordering beneath them is legible as one
-  over known draws only.
+  listed with its slot, never dropped — and MUST be identified as deployed-only in either state. A
+  module whose draw is unknown MUST NOT be ordered among the known draws at all: such modules MUST
+  be pinned above the ranked entries in a group of their own, marked as unknown, so that the
+  ordering beneath them is legible as one over known draws only. An unknown draw could be the
+  largest or the smallest on the build, so any position within the ranking would make a claim the
+  package has not made.
 
 #### Distributor
 
@@ -308,11 +255,8 @@ shown against the hull's heat dissipation, with the contributing sources identif
   weapons alike and returns the allocation it used alongside each rate. The curve MUST NOT be
   reimplemented here for any capacitor: it is not linear, and its exponent is a term the package has
   never reported as data. No rate may be composed from another capacitor's calculation, and none may
-  be scaled, interpolated or inferred from a four-pip maximum. All three capacities are independent of
-  the allocation and MUST be shown in full. _(Amended 2026-08-16: this requirement previously reported
-  the engines rate as unavailable, and obtained the systems rate by handing the SYS rating to a
-  weapons-capacitor calculation. `0.1.0-beta.9` reports all three directly, which removes both the
-  blocked figure and that indirection.)_
+  be scaled, interpolated or inferred from a four-pip maximum. All three capacities are independent
+  of the allocation and MUST be shown in full.
 - **FR-009**: A build with no distributor fitted MUST be reported as having none, rather than shown
   with zero capacities. A distributor that is fitted but switched off, in a priority group the plant
   cannot power, or whose capacitor statistics the package cannot resolve MUST likewise be reported as
@@ -325,28 +269,16 @@ shown against the hull's heat dissipation, with the contributing sources identif
   dissipation, identifying dissipation as the figure thermal load is judged against. The hull's heat
   **capacity** MUST NOT be presented: it is thermal inertia, governing how long a build takes to
   reach a temperature rather than whether it gets there, and with the time-to-overheat figures
-  dropped under FR-012b there is nothing left on screen for it to qualify. A second heat figure that
-  answers no question a Commander is asking reads as one they should be weighing.
+  excluded under FR-012b there is nothing left on screen for it to qualify.
 - **FR-011**: The application MUST display the thermal load of the build's weapons, for a single
   alpha strike and sustained, with per-weapon contributions reachable.
 - **FR-011a**: A build with no power plant fitted, or whose plant is switched off, MUST have its heat
   figures reported as unavailable with that reason. The package reports none for such a build, and
   the application MUST NOT present a partial heat picture in their place.
-- **FR-011b**: _(Withdrawn 2026-08-16.)_ The heat profile carries the states the package reports and
-  no state assembled here. A shield cell bank activation was previously modelled as a state of its
-  own — the worst bank the build could fire, from the drained-capacitor firing state, run through the
-  package's timeline calculation. It is dropped: every one of its terms was the package's, but the
-  scenario was this application's construction, and a heat state a Commander cannot find in the game
-  invites more doubt than the spike it describes resolves. A cell bank's own activation heat is still
-  shown with that bank under [feature 006](../006-defence-profile/spec.md)'s FR-007.
-- **FR-011c**: _(Withdrawn 2026-08-16.)_ The heat-sink caveat is not repeated beside the overheat
-  verdicts. The package models no sink and the verdicts are unaffected by one, but a disclaimer
-  attached to every verdict was read as a defect in the figures rather than as the boundary of what
-  the game models. That heat sinks are outside the model is recorded in this specification's
-  assumptions instead.
 - **FR-012**: The build-level heat figures — the resting heat level at idle, under thrust, while
   charging the Frame Shift Drive and while firing, and whether each overheats — MUST come from the
-  package's build-level heat calculation. The application MUST NOT sum or model heat locally.
+  package's build-level heat calculation. The application MUST NOT sum or model heat locally, and
+  MUST NOT present a heat state the package does not itself report.
 - **FR-012a**: The heat scenarios each carry their own hardpoint condition, as the package defines
   them — idle and under thrust with hardpoints stowed, the firing scenarios with them deployed. The
   hardpoint viewing condition of FR-001 MUST NOT be applied to them, MUST NOT filter which of them
@@ -357,8 +289,8 @@ shown against the hull's heat dissipation, with the contributing sources identif
   or as a gauge reading capped to keep a number on screen. Where the package reports no time to
   overheat, that MUST read as the state not overheating at all, never as a figure it could not
   produce. The time to reach an overheat MUST NOT be shown: the package reports it, but a countdown
-  in seconds reads as a budget a Commander can spend, when what it actually measures is a build that
-  is already wrong. Whether a state overheats is the answer; when it does is not a number to plan
+  in seconds reads as a budget a Commander can spend, when what it measures is a build that is
+  already wrong. Whether a state overheats is the answer; when it does is not a number to plan
   around. The unavailable presentation is reserved for figures the package genuinely does not report,
   such as FR-011a's absent plant.
 - **FR-013**: Where the package could not determine some modules' contribution to heat, those modules
@@ -397,7 +329,6 @@ shown against the hull's heat dissipation, with the contributing sources identif
   calculation. The never-settles and never-overheats cases MUST each be asserted to produce their
   verdict rather than an unavailable figure, and no heat state MUST be produced that the package does
   not itself report.
-- **FR-018a**: _(Withdrawn 2026-08-16 with FR-011b.)_ There is no composed activation state to test.
 - **FR-019**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
@@ -417,37 +348,29 @@ shown against the hull's heat dissipation, with the contributing sources identif
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16. **Nothing
-in this area is blocked.** The engines capacitor's recharge, the one figure this specification carried
-as unavailable, is reported by the package as of `0.1.0-beta.9`.
+**Nothing in this area is blocked.** `@elite-dangerous-almanac/core` computes the deployed and
+retracted power budget, the priority-group breakdown, the distributor's capacities and pip-scaled
+recharge, and the build's heat.
 
 The distributor's catalogue recharge figures are each a maximum at four pips, and the curve that
 turns one of them into the rate at a given allocation is a game rule the package owns, applies and
 documents — `rated × (pips / 4)^1.1`, measured rather than published by the game, and materially not
 linear: at one pip it yields 2.18 MJ/s where a straight line would say 2.50.
-`ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` now applies that curve to
-all three capacitors and returns each one's capacity, its rated four-pip recharge and its actual rate
-at the allocation given, together with the allocation it used. Each allocation defaults independently
-to four pips and the three need not sum to six, so a Commander's allocation and a comparison of
-maxima are both expressible without the application scaling anything. The accessor returns nothing at
-all when no distributor is fitted, when it is switched off, when the retracted power budget sheds it,
-or when its six capacitor statistics cannot be resolved, which is what FR-009 reports.
+`ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` applies that curve to all
+three capacitors and returns each one's capacity, its rated four-pip recharge and its actual rate at
+the allocation given, together with the allocation it used. Each allocation defaults independently to
+four pips and the three need not sum to six, so a Commander's allocation and a comparison of maxima
+are both expressible without the application scaling anything. The accessor returns nothing at all
+when no distributor is fitted, when it is switched off, when the retracted power budget sheds it, or
+when its six capacitor statistics cannot be resolved, which is what FR-009 reports.
 
-That closes [Elite-Dangerous-Almanac#271](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/271),
-raised under feature 003's FR-019 and released in `0.1.0-beta.9`. It removed both the blocked ENG
-figure and the indirection the SYS rate previously required, where the systems rating was handed to
-the weapons-capacitor calculation to get the package's own arithmetic applied to it. Feature 007
-continues to read firing endurance from `weaponsCapacitorMetrics`, which applies the deployed power
-budget; the two accessors agree on the WEP recharge rate at the same allocation, verified against the
-installed package. The capacities were never affected — a capacitor holds what it holds whatever the
-pips.
+Feature 007 reads firing endurance from `weaponsCapacitorMetrics`, which additionally applies the
+deployed power budget; the two accessors agree on the WEP recharge rate at the same allocation.
 
-The deployed and retracted power budget, the priority-group breakdown and the distributor capacities
-were available from the outset. Build heat arrived in `0.1.0-beta.4`: the package computes the
-resting heat level at idle, under thrust, while charging the Frame Shift Drive and while firing
-(both sustained and with the weapons capacitor drained), reports whether each state overheats and
-how long it takes to get there, reports the hull's heat dissipation and capacity separately, and
-names the modules whose draw it could not determine.
+`heatMetrics()` computes the resting heat level at idle, under thrust, while charging the Frame Shift
+Drive and while firing (both sustained and with the weapons capacitor drained), reports whether each
+state overheats and how long it takes to get there, reports the hull's heat dissipation and capacity
+separately, and names the modules whose draw it could not determine.
 
 **Composed under feature 003's FR-001a**, naming what is combined and from which package figures:
 
@@ -464,14 +387,11 @@ names the modules whose draw it could not determine.
    powered in each hardpoint state, and each fitted module carries its own priority group. Naming the
    modules a shed group takes offline, and telling an empty group from a zero-draw one, both count
    the modules assigned to each group. Neither restates a rule about how power is shed.
-   A fourth composition — a shield cell bank activation modelled as a heat state of its own — was
-   recorded here until 2026-08-16 and is gone with FR-011b. Nothing in this area now composes a heat
-   figure at all: every heat state shown is one the package reports whole.
 
-Exposing the retracted headroom and utilisation, and the powered and unpowered draw, on the package's
-power budget would remove the first two of the three compositions that remain; the third, naming the
-modules in each priority group, is a count of what the package already reports and needs nothing. Each is a welcome simplification
-upstream rather than a blocker.
+No heat figure is composed: every heat state shown is one the package reports whole. Exposing the
+retracted headroom and utilisation, and the powered and unpowered draw, on the package's power budget
+would remove the first two compositions; each is a welcome simplification upstream rather than a
+blocker.
 
 ## Success Criteria _(mandatory)_
 
@@ -503,11 +423,13 @@ upstream rather than a blocker.
   which groups survive; it does not model a different rationing scheme.
 - Heat is presented as the package's own discrete states — idle, under thrust, charging the Frame
   Shift Drive, and firing — rather than as a continuous thermal simulation. No state is composed
-  here, and modelling heat over a Commander-defined timeline is out of scope.
+  here, and modelling heat over a Commander-defined timeline is out of scope. A shield cell bank
+  activation is therefore not shown as a heat state of its own; a bank's own activation heat is shown
+  with that bank under [feature 006](../006-defence-profile/spec.md)'s FR-007.
 - Heat sinks are outside the model, because the package expresses no negative thermal load and the
   states it reports do not account for one. This is stated here rather than beside every overheat
-  verdict (FR-011c, withdrawn): it bounds what the game data covers, which belongs in the
-  specification, and repeating it on screen made a sound verdict look doubtful.
+  verdict: it bounds what the game data covers, and repeating it on screen made a sound verdict look
+  doubtful.
 - The hull's heat capacity is deliberately not shown, and neither is the time a state takes to reach
   an overheat. Both are figures the package reports; both describe how quickly a build gets somewhere
   rather than whether it should be going there, and the question this area answers is whether a state

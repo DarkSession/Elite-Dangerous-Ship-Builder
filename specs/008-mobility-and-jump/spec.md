@@ -6,9 +6,9 @@
 
 **Status**: Draft
 
-**Input**: User description: "ship speed, with/without boost, pitch/roll/yaw." Extended after a
-design review on 2026-08-14 with the figures that explain those numbers: the mass the build carries,
-where it sits against the thruster and Frame Shift Drive mass curves, and how range varies with load.
+**Input**: User description: "ship speed, with/without boost, pitch/roll/yaw." Extended by design
+review with the figures that explain those numbers: the mass the build carries, where it sits against
+the thruster and Frame Shift Drive mass curves, and how range varies with load.
 
 ## Scope
 
@@ -20,51 +20,12 @@ It is one area of the statistics family. [Feature 003](../003-ship-statistics/sp
 contract every figure here obeys — the requirement that a build be active at all (its FR-000),
 provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
 viewing conditions. Everything it states applies here without being restated, and nothing here
-relaxes it. Nothing in this area is offered before a hull is chosen. In particular, the load state
-and the ENG pip allocation are viewing conditions owned by feature 003; this feature specifies what
-they do to the figures.
+relaxes it. In particular, the load state and the ENG pip allocation are viewing conditions owned by
+feature 003; this feature specifies what they do to the figures.
 
 Mass matters to more than movement, so it is specified once here and read elsewhere: the shield mass
 curve belongs to [feature 006](../006-defence-profile/spec.md), and the mass of an individual module
 is a module attribute shown by [feature 002](../002-module-outfitting/spec.md).
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: Alongside the drive's optimal mass, should the package's mass factor (optimal mass over the
-  build's loaded mass) also be shown? → A: No — optimal mass only, shown against the build's mass,
-  alongside the hull's mass lock factor. Drives have no minimum or maximum curve mass, and no
-  dimensionless factor is presented for them. _(Amended 2026-08-16: the prohibition on a
-  dimensionless figure is lifted. Where the package reports both an optimal mass and the build's
-  mass, expressing one against the other — as a proportion, or as the headroom between them — is
-  permitted, and reads more plainly than either figure alone. What survives is that a drive has no
-  minimum or maximum curve mass. See FR-015 and FR-016.)_
-- Q: Which total-range figure does the build show, now that the package returns one per full-tank
-  load state, each with its jump count? → A: Three totals, one per load state, so a total stands
-  beside every single-jump figure. The lightest state carries one jump's fuel, so its total is that
-  jump and its count is one.
-- Q: With a drive fitted but no fuel aboard, is the 0 LY the package returns shown as a figure or
-  reported as unavailable? → A: Shown as the figure, stating that the ship carries no fuel — it is
-  the package's own answer and the true statement about the ship, as FR-017's zero already is.
-- Q: Which mass is placed against the thruster mass curve — the mass breakdown's total, or the
-  loaded mass the package evaluates the curve at? → A: The curve's own loaded mass, which excludes
-  the reserve tank, labelled so it is not read as the breakdown's total.
-- Q: With thrusters fitted but unpowered, does mobility read as unavailable for the same reason as
-  no thrusters at all? → A: No — the power state is named as the reason, distinctly from the
-  no-thrusters reason, because the two ask the Commander for different fixes.
-- Q: May the application state how the build's mass sits against a curve threshold — as a percentage
-  of optimal mass, or as the tonnes of headroom left before a maximum? → A: Yes. Both terms are
-  figures the package reports, and feature 003's FR-001a already permits comparing two of its figures
-  and expressing the comparison as a difference or a quotient. No curve is reproduced and no term is
-  supplied here. The blanket prohibition FR-016 previously carried went further than FR-001a and is
-  narrowed to what it was actually protecting: no game rule may be reimplemented.
-- Q: Does the thruster mass curve's minimum mass get shown? → A: No. The curve is read for what a
-  Commander can act on — the optimal mass they are trying to stay near and the maximum beyond which
-  performance is gone, so a third threshold is one more number to weigh. _(The reason recorded with
-  this answer — that a minimum "sits below every real build's mass and describes a state no ship in
-  the catalogue can reach" — was measured false on 2026-08-16 and is withdrawn. FR-014 carries the
-  measurement and a [NEEDS CLARIFICATION] on whether the answer itself still stands.)_
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -125,7 +86,7 @@ build's thrusters, mass and pip allocation.
 
 ### User Story 3 - Judge the mass the build carries (Priority: P2)
 
-A Commander whose jump range dropped after an refit wants to see where the mass went — hull, modules
+A Commander whose jump range dropped after a refit wants to see where the mass went — hull, modules
 or fuel — which modules are the heaviest, and whether the ship has drifted past what its thrusters
 and drive were sized for.
 
@@ -148,11 +109,8 @@ the build's mass placed against them.
 4. **Given** a build with thrusters fitted, **When** the Commander views the thruster mass curve,
    **Then** the curve's optimal and maximum mass are shown with the loaded mass the curve is
    evaluated at placed against them — labelled apart from the breakdown's total, and stating how the
-   two differ: this one leaves out the reserve tank and counts a full cargo hold, so it is the heavier
-   of the two on any build whose hold outweighs its reserve — together with both performance
-   multipliers in force at that mass, the
-   one governing speed and the one governing rotation, and how far the build sits from those
-   thresholds.
+   two differ — together with both performance multipliers in force at that mass, the one governing
+   speed and the one governing rotation, and how far the build sits from those thresholds.
 5. **Given** a build with a Frame Shift Drive fitted, **When** the Commander views the drive against
    its mass, **Then** the drive's optimal mass is shown with the build's mass placed against it and
    how the two stand in relation to one another, and no minimum or maximum curve mass is shown for
@@ -230,8 +188,7 @@ selected state marked among them.
   the catalogue.
 - A cargo hold larger than the fuel the drive can consume in one jump: the laden range is still
   reported, because mass alone shortens a jump rather than preventing it. Where the package does
-  return a zero range, it is the no-fuel case FR-006a governs, and it is shown with its reason rather
-  than suppressed.
+  return a zero range, it is the no-fuel case FR-006a governs.
 - A build with no cargo capacity at all: the laden state equals the unladen state, and the figures
   say so rather than repeating a number without explanation.
 - The mass breakdown and the per-module mass list on a phone: both stay legible and scroll within
@@ -264,13 +221,9 @@ selected state marked among them.
 - **FR-004**: The application MUST display a multi-jump total for each of FR-003's three load states
   — the distance covered and the number of jumps afforded — so that a total stands beside every
   single-jump figure. Both halves of every total MUST come from the package, which reports all three
-  directly: the unladen and laden totals over a full tank with an empty and a full hold, and the
-  maximum single jump's total at one jump's fuel with an empty hold. The application MUST NOT assemble
-  the drive's post-engineering constants to reach any of them — doing so omits a fitted Guardian FSD
-  Booster's contribution, which lives on the booster rather than on the drive, and would diverge from
-  the build's own single-jump figure against SC-001. _(Amended 2026-08-16: the third total was
-  reported as unavailable while the loadout accessor took a cargo load only. `0.1.0-beta.9` accepts a
-  fuel load and carries the total on the summary, so all three are now reported.)_
+  directly. The application MUST NOT assemble the drive's post-engineering constants to reach any of
+  them: doing so omits a fitted Guardian FSD Booster's contribution, which lives on the booster rather
+  than on the drive, and would diverge from the build's own single-jump figure against SC-001.
 - **FR-005**: The application MUST display the hull's mass lock factor.
 - **FR-006**: A build with no Frame Shift Drive MUST have its jump statistics reported as unavailable
   with the reason, rather than shown as zero.
@@ -294,8 +247,7 @@ selected state marked among them.
   powered — switched off, or in a priority group the plant cannot keep lit. The reason reported for
   those unavailable figures MUST name the power state, distinctly from the reason given for a build
   with no thrusters fitted, because the two ask the Commander for different fixes. The hull's base
-  characteristics are still shown labelled as the hull's, under FR-009. Presenting a build's own
-  power state alongside a figure is feature 003's FR-001b and needs no composition allowance.
+  characteristics are still shown labelled as the hull's, under FR-009.
 
 #### Mass
 
@@ -306,10 +258,6 @@ selected state marked among them.
   contributing stated.
 - **FR-012**: The application MUST display each fitted module's own mass alongside its slot, ordered
   by contribution, so the heaviest modules are identifiable without reading every slot.
-- **FR-013**: _(Withdrawn 2026-08-14.)_ How a build's mass is distributed across the hull is not
-  something Elite Dangerous models and not something the package reports, so nothing about where mass
-  sits on the ship is presented. Specifying it would have required this application to invent a
-  figure.
 
 #### Mass curves
 
@@ -319,26 +267,19 @@ selected state marked among them.
   figures. They diverge on thrusters carrying separate speed and rotation curves, so showing one in
   place of both would misattribute the build's handling. The curve's minimum mass MUST NOT be shown:
   two thresholds are what the curve is read for — what to stay near, and what not to pass.
-  [NEEDS CLARIFICATION: the basis originally given for hiding it was that the minimum "lies below the
-  unladen mass of any hull the thrusters fit", so no build could occupy it. Measured against
-  `0.1.0-beta.10` on 2026-08-16, that is false. Measured at unladen mass, 58 valid stock
-  hull-and-thruster combinations sit below the fitted thruster's minimum, across 24 hulls and 21 of
-  the 40 thrusters — among them a stock Hauler with a class 5 size-2 thruster at 29.9 t against a
-  minimum of 36 t. Measured at the loaded mass FR-014a actually displays, which adds main-tank fuel
-  and cargo capacity, 32 combinations across 12 hulls remain below it. Either way the minimum is
-  reachable, and below it the multiplier stops improving, so for those builds it is a threshold a
-  Commander can both reach and act on. Whether FR-014 still excludes it is a product decision this
-  measurement reopens.]
+  [NEEDS CLARIFICATION: a build can sit below the minimum, so it is a threshold a Commander can both
+  reach and act on — below it the multiplier stops improving. Of the 1,144 valid hull-and-thruster
+  combinations, 58 sit below the fitted thruster's minimum at unladen mass and 32 at the loaded mass
+  FR-014a displays. Should the minimum be shown after all?]
 - **FR-014a**: The mass placed against the thruster curve MUST be the loaded mass the package
   evaluates that curve at — the build's unladen mass, its main-tank fuel and its cargo capacity. It
   is not the total FR-011 breaks down, and it MUST be labelled distinctly enough that the two are not
   read as the same number. The two differ in both directions and neither is reliably the larger: this
   figure excludes the reserve tank FR-011 counts, and includes a full cargo hold FR-011 does not, so
   it is the lighter on a build with no cargo capacity and the heavier as soon as the hold outweighs
-  the reserve — which all but the smallest holds do. The relation MUST be stated where both appear
-  rather than left for a Commander to reconcile. The multiplier in
-  force is the one at this mass; placing any other mass against the curve would show the Commander a
-  position their handling was not computed at.
+  the reserve. The relation MUST be stated where both appear rather than left for a Commander to
+  reconcile. The multiplier in force is the one at this mass; placing any other mass against the
+  curve would show the Commander a position their handling was not computed at.
 - **FR-015**: The application MUST display, for the fitted Frame Shift Drive, its optimal mass with
   the build's mass placed against it — the same loaded mass FR-014a defines, the drive's own
   calculation counting the main tank and leaving the reserve out exactly as the thruster curve does,
@@ -352,11 +293,11 @@ selected state marked among them.
   mass, or as the tonnes of headroom before a maximum — is permitted: both terms are the package's,
   and feature 003's FR-001a allows comparing two of its figures and stating that comparison as a
   difference or a quotient. It is often the clearest form of the answer, because "91% of optimal" and
-  "658 t before the ceiling" are what a Commander is actually asking when they read two masses side
-  by side. What remains prohibited is what FR-001 prohibits everywhere: reproducing the curve,
-  interpolating along it, deriving a multiplier rather than reading the one the package computed, or
-  supplying any term the package did not report. A figure the package reports whole MUST be taken
-  from it rather than reassembled.
+  "658 t before the ceiling" are what a Commander is asking when they read two masses side by side.
+  What remains prohibited is what FR-001 prohibits everywhere: reproducing the curve, interpolating
+  along it, deriving a multiplier rather than reading the one the package computed, or supplying any
+  term the package did not report. A figure the package reports whole MUST be taken from it rather
+  than reassembled.
 - **FR-017**: A build whose mass exceeds the thrusters' maximum curve mass MUST show the package's
   zero-performance result as such, rather than a value extrapolated beyond the curve.
 
@@ -406,14 +347,37 @@ selected state marked among them.
 
 ## Upstream dependencies
 
-All of this specification is satisfied by `@elite-dangerous-almanac/core@0.1.0-beta.10`,
-verified against the installed package on 2026-08-16. `mobilityMetrics` computes speed, boost, pitch,
-roll and yaw from the build's thrusters, mass and ENG pip allocation, applying the thruster mass
-curves, and reports zero performance above the curve rather than a fabricated value. Jump range and
-fuel per jump are computed for any load, and `jumpRangeSummary` returns the three single-jump figures
-together with all three multi-jump totals, which satisfies FR-001, FR-003 and FR-004. Hull mass,
+**Nothing in this area is blocked.** `mobilityMetrics` computes speed, boost, pitch, roll and yaw
+from the build's thrusters, mass and ENG pip allocation, applying the thruster mass curves, and
+reports zero performance above the curve rather than a fabricated value. Jump range and fuel per jump
+are computed for any load, and `jumpRangeSummary` returns the three single-jump figures together with
+all three multi-jump totals (`totalMax`, `totalUnladen`, `totalLaden`), which satisfies FR-001, FR-003
+and FR-004. Both routes read the total off the build, so a Guardian FSD Booster's contribution is
+included — fitting one moves the maximum jump's total exactly as it moves the single-jump range,
+where assembling the drive's own constants outside the loadout would have omitted it. Hull mass,
 unladen mass, fuel capacity, cargo capacity, mass lock and each module's own post-engineering mass
 are all available, which satisfies FR-010 and FR-012.
+
+Two boundaries of `totalRange`'s fuel option are worth recording: a fuel load of zero returns a total
+of zero range and zero jumps, which is a figure rather than an absent one and is presented under
+FR-006a; and a fuel load large enough to require more than 100,000 jumps is refused rather than
+iterated, which no load a build can actually carry reaches.
+
+**The Frame Shift Drive has no three-point curve, and that is a property of the data rather than a
+gap.** `MassCurveStats` — three curve masses with their multipliers — is carried by thrusters (40 of 40) and shield generators, but by no drive: all 72 frame shift drives expose `optMass` alone. What the
+package does compute is `frameShiftDriveMassFactor`, the dimensionless `optMass / loadedMass` the jump
+equation uses. How the drive is presented is therefore a product decision, which FR-015 takes.
+
+**The thrusters' minimum curve mass is available and deliberately unused.** All 40 thrusters carry
+`minMass` alongside `optMass` and `maxMass`, and FR-014 shows two of the three. Measured across the
+1,144 valid hull-and-thruster combinations, 58 sit below the fitted thruster's minimum at unladen
+mass — across 24 hulls and 21 of the 40 thrusters — and 32 across 12 hulls remain below it at the
+loaded mass FR-014a displays. The minimum is therefore reachable, which is what FR-014's
+[NEEDS CLARIFICATION] reopens.
+
+FR-016 is the boundary for all of it: every mass and every multiplier is the package's own, and where
+the application states how one stands against another it is comparing two reported figures rather
+than evaluating the curve itself.
 
 **Composed under feature 003's FR-001a**, naming what is combined and from which package figures:
 
@@ -423,56 +387,12 @@ are all available, which satisfies FR-010 and FR-012.
    tanks. No game rule is restated.
 2. **The curve's loaded mass (FR-014a)** — the build's unladen mass, its main-tank fuel capacity and
    its cargo capacity are each reported; the mass the package evaluates the thruster curve at is
-   their sum, with the reserve tank left out because the package leaves it out. Adding contributions
-   the package reports is what FR-001a permits; the curve itself is not reproduced, and the
-   multiplier at that mass is read from the package rather than interpolated here.
+   their sum, with the reserve tank left out because the package leaves it out. The curve itself is
+   not reproduced, and the multiplier at that mass is read from the package rather than interpolated.
 3. **The build's mass against a curve threshold (FR-016)** — the loaded mass of item 2 and the
    threshold it is read against are both figures the package reports, so stating their difference
    (headroom in tonnes) or their quotient (a proportion of optimal mass) is the comparison FR-001a
-   permits. No third term is supplied, the curve is not evaluated, and neither figure replaces the
-   multiplier the package computes at that mass.
-
-**Every item previously raised upstream is settled. Nothing in this area is blocked.**
-
-**The jump count and the maximum jump's total (FR-004) — both closed.** The gap recorded here at
-beta.4 was that `totalRange` iterated the jumps as the tank drained and returned only the distance. It
-returns `{ range, jumps }` as of beta.5. The narrower gap that survived it — that
-`ShipLoadout.totalRange` took a cargo load only and always spent a full main tank, so the maximum
-single jump's total could not be asked of the loadout — closed at `0.1.0-beta.9`. The accessor now
-takes the same `{ fuel, cargo }` options as `jumpRange`, and `jumpRangeSummary` carries a third pair,
-`totalMax`, alongside `totalUnladen` and `totalLaden`. Both routes read the total off the build, so
-the Guardian FSD Booster's contribution is included: verified against the installed package, fitting a
-booster moves the maximum jump's total exactly as it moves the single-jump range, where assembling
-the drive's own constants outside the loadout would have omitted it — the divergence measured at 4 LY
-a jump that made this a blocker rather than an inconvenience. That closes
-[Elite-Dangerous-Almanac#273](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/273),
-released in `0.1.0-beta.9`.
-
-Two boundaries of the new option are worth recording, both verified: a fuel load of zero returns a
-total of zero range and zero jumps, which is a figure rather than an absent one and is presented under
-FR-006a's treatment of the fuelless build; and a fuel load large enough to require more than 100,000
-jumps is refused rather than iterated, which no load a build can actually carry reaches.
-
-**The Frame Shift Drive's mass presentation (FR-015) is settled, not blocked.** `MassCurveStats` —
-three curve masses with their multipliers — is carried by thrusters (40 of 40) and shield generators,
-but by no drive: all 72 frame shift drives expose `optMass` alone, with no `minMass`, `maxMass` or
-multipliers, because a drive has no three-point curve. What the package does compute is
-`frameShiftDriveMassFactor` — the dimensionless `optMass / loadedMass` the jump equation uses. It is
-therefore available rather than missing, and how the drive is presented is a product decision rather
-than an upstream gap: optimal mass against the build's mass, with the relation between them stated
-directly where that is clearer, and no minimum or maximum invented for a curve the drive does not
-have.
-
-**The thrusters' minimum curve mass is available and deliberately unused.** All 40 thrusters carry
-`minMass` alongside `optMass` and `maxMass`, and FR-014 shows two of the three. The reason recorded
-here until 2026-08-16 — that the minimum sits below the unladen mass of every hull a thruster fits,
-so no build can occupy it — does not survive measurement: 58 valid stock combinations sit below it.
-The exclusion now rests on the narrower ground that the curve is read for two thresholds, and
-FR-014 carries a [NEEDS CLARIFICATION] on whether that is enough.
-
-FR-016 is the boundary for both: every mass and every multiplier is the package's own, and where the
-application states how one stands against another it is comparing two reported figures rather than
-evaluating the curve itself.
+   permits.
 
 ## Success Criteria _(mandatory)_
 
@@ -508,10 +428,7 @@ evaluating the curve itself.
   and full of anything, and because the state most easily mislabelled — the maximum single jump —
   carries one jump's fuel rather than none.
 - The load state the Commander selects is one of the three states this comparison already shows, so
-  it is marked among them rather than reported as a fourth figure. FR-003 previously listed it as a
-  fourth state, which was written while the load assumption was thought to be a freely entered cargo
-  and fuel quantity. Feature 003 settled it on 2026-08-16 as a choice among the package's three named
-  states, at which point a fourth column could only ever duplicate one of its neighbours.
+  it is marked among them rather than reported as a fourth figure.
 - Fuel mass counts the main tank and the reserve as the package reports them; the application does
   not model consumption over a route. The reserve counts towards the mass breakdown and not towards
   the mass the thruster curve is evaluated at, which is the package's own distinction rather than a
@@ -522,7 +439,6 @@ evaluating the curve itself.
   reports what one jump and one tank achieve, not where they reach.
 - Mass distribution across the hull is not modelled, because Elite Dangerous does not model it and
   the package reports nothing about it. Mass is a single figure for the build; where it sits on the
-  ship affects nothing, so nothing is reported about it. A design panel suggesting otherwise
-  describes nothing the game does.
+  ship affects nothing, so nothing is reported about it.
 - Which figures are prominent and how the mass breakdown and curve figures are laid out are decided
   at plan time against the design system, per constitution principle VII.

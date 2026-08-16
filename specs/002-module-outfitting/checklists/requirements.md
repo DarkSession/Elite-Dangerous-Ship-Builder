@@ -2,10 +2,6 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 
-**Created**: 2026-08-13
-
-**Updated**: 2026-08-16
-
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -40,25 +36,19 @@
   stories 3 and 5 cover what is undoable, how far back the history goes, what discards it, how it is
   described to a Commander and how it coexists with the browser's Back button. Choosing a hull and
   loading, saving or sharing a build belong to feature 001.
-- **The history's bound is required but not numbered.** FR-023 requires that a bound exists, that
-  reaching it drops the oldest step, and that the Commander can tell history is finite. Fixing the
-  number here would be an implementation decision in a behavioural document; what matters to a
-  Commander is that work is not silently lost and that memory stays bounded in a long session.
-- **Viewing conditions are excluded from the history deliberately** (FR-019). Feature 003's cargo
-  and fuel assumptions, pip allocation and hardpoint state do not change the build, so undo means
-  one thing: reversing a decision about the ship.
-- **Undo and browser history are kept distinct** (FR-026), consistent with feature 001's FR-033,
-  which keeps fragment updates from filling the browser's back stack. Neither may be implemented in
-  terms of the other.
+- **The history's bound is required but not numbered** (FR-023). What matters to a Commander is that
+  work is not silently lost and that memory stays bounded in a long session; fixing the number would
+  be an implementation decision in a behavioural document.
+- **Viewing conditions are excluded from the history deliberately** (FR-019). Feature 003's load
+  assumption, pip allocation and hardpoint state do not change the build, so undo means one thing:
+  reversing a decision about the ship.
+- **Undo and browser history are kept distinct** (FR-026), consistent with feature 001's FR-033.
+  Neither may be implemented in terms of the other.
+- **Outfitting requires an active build** (FR-000), which forbids fitting a module from becoming a
+  back route into choosing a hull. Feature 003's FR-000 and feature 010's FR-001a say the same for
+  the statistics family and for hull anatomy.
+- **Engineering quality is not application state.** The Commander selects a grade and it is always
+  complete at 100%; imported partial rolls are normalised and never become a second control.
 - **Naming the data package is deliberate, not an implementation leak.** FR-001, FR-030 and FR-031
-  name `@elite-dangerous-almanac/core` because constitution principle II makes it the domain's
-  source of truth, exactly as features 001, 003 and 004 do.
-- **Outfitting requires an active build, stated as FR-000 on 2026-08-14.** The specification assumed
-  one throughout — user story 1 opens "A Commander with an active build" — without ever requiring it,
-  so nothing said what this feature does before a hull is chosen. FR-000 makes the precondition
-  explicit and forbids fitting a module from becoming a back route into choosing a hull, which is
-  feature 001's FR-011. Feature 003's FR-000 does the same for the statistics family and feature
-  010's FR-001a for hull anatomy.
-- **Engineering quality was removed from the application model on 2026-08-16.** The Commander still
-  selects a grade, but it is always complete at 100%; imported partial rolls are deliberately
-  normalised and never become a second control or state variant.
+  name `@elite-dangerous-almanac/core` because constitution principle II makes it the domain's source
+  of truth.

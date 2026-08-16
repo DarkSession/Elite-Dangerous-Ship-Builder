@@ -61,21 +61,23 @@ branches, functions and lines; the thresholds are configured in
 
 End-to-end tests live in [`e2e/`](./e2e) and run on
 [Playwright](https://playwright.dev/) as part of `pnpm run check`. Every feature
-is exercised at three viewports — desktop, tablet and mobile — configured as
-separate projects in [`playwright.config.ts`](./playwright.config.ts).
+is exercised at three viewports — desktop, tablet and mobile — in Chromium and
+in Firefox, configured as separate projects in
+[`playwright.config.ts`](./playwright.config.ts). The suite also runs an
+automated accessibility check over every screen.
 
 Playwright needs browsers installed once:
 
 ```bash
-pnpm exec playwright install --with-deps chromium
+pnpm exec playwright install --with-deps chromium firefox
 ```
 
-The dev container does this for you. If your environment already ships a
-Chromium whose build does not match the one Playwright pins, point at it instead
-of editing the config:
+The dev container does this for you. If your environment already ships a browser
+whose build does not match the one Playwright pins, point at it instead of
+editing the config or dropping an engine from the matrix:
 
 ```bash
-E2E_CHROMIUM_PATH=/path/to/chromium pnpm run e2e
+E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e2e
 ```
 
 ## Specifications
@@ -95,12 +97,15 @@ Codex CLI (`.agents/skills`).
 | [007](./specs/007-offence-profile/spec.md)            | Damage by type, per-weapon detail, output at range and capacitor endurance                     |
 | [008](./specs/008-mobility-and-jump/spec.md)          | Speed, handling, mass and its curves, jump range and range by load                             |
 | [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
-| [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — mount map, navigation and shot convergence                |
+| [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |
+| [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, keyboard, screen readers, WCAG AA  |
+| [012](./specs/012-help-and-licences/spec.md)          | Licences, attribution, versions and the answers the application's own decisions provoke        |
 
 Specs 005 to 009 are the areas of the statistics family. Each is independently
 deliverable and inherits spec 003, which fixes what every figure about a build
 must obey: where it comes from, how it is qualified, what happens when it is
-unavailable, and the viewing conditions it is computed under.
+unavailable, and the viewing conditions it is computed under. Spec 011 is the
+same kind of contract for screens, and every feature inherits it.
 
 The project constitution lives in
 [`.specify/memory/constitution.md`](./.specify/memory/constitution.md).

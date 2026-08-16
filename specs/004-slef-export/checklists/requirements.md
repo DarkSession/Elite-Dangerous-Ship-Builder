@@ -2,8 +2,6 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 
-**Created**: 2026-08-16
-
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -34,5 +32,18 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
-- The application-wide engineering rule deliberately excludes partial quality from the model. SLEF
-  import normalises it to 100%, export reports 100%, and every other modelled field remains lossless.
+- **One ship in, one ship out.** Export carries exactly one entry (FR-002) and import takes exactly
+  one (FR-008); parsing is strict, so a payload is either wholly applied or wholly refused. A
+  whole-collection backup would belong to feature 001, which owns saved builds.
+- **Import is the one route to an active build outside feature 001.** FR-006a here is what records
+  that: it is why import is reachable with no build active, and why replacing an existing build
+  requires feature 001's confirmation.
+- **Pricing is not an export-time choice** (FR-011). An export quotes a recorded source purchase
+  price where one exists and no credit figure at all otherwise; catalogue retail is never written
+  into an export.
+- **Partial engineering quality is not a modelled field.** Import normalises it to 100%, export
+  reports 100%, and every other modelled field remains lossless.
+- **Pasting is the whole of the import surface** (FR-006). Both sources a Commander actually has —
+  a SLEF payload from a squadmate and a `Loadout` line from their own journal — arrive as text they
+  have already selected, so a file picker adds a second path to test and to keep accessible for no
+  case the paste does not cover.

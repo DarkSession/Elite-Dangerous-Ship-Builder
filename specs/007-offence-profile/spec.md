@@ -6,12 +6,9 @@
 
 **Status**: Draft
 
-**Input**: User description: "We want to show damage detail, split by type." Extended after a design
-review on 2026-08-14 with the two figures a Commander needs to judge a loadout in a fight: output at
-the range they engage at, and how long the weapons capacitor sustains it. Extended again on
-2026-08-14 with shot convergence (user story 4, FR-016a to FR-016f), reassigned here from
-[feature 010](../010-hull-anatomy/spec.md) during that feature's clarification: where a build's fire
-arrives is a property of what it fires, while where each mount sits stays with feature 010.
+**Input**: User description: "We want to show damage detail, split by type." Extended by design review
+with the two figures a Commander needs to judge a loadout in a fight — output at the range they
+engage at, and how long the weapons capacitor sustains it — and with shot convergence.
 
 ## Scope
 
@@ -23,7 +20,7 @@ It is one area of the statistics family. [Feature 003](../003-ship-statistics/sp
 contract every figure here obeys — the requirement that a build be active at all (its FR-000),
 provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
 viewing conditions. Everything it states applies here without being restated, and nothing here
-relaxes it. Nothing in this area is offered before a hull is chosen.
+relaxes it.
 
 The distributor's capacities and recharge rates belong to
 [feature 005](../005-power-and-heat/spec.md), as does the heat that firing produces; what this
@@ -37,60 +34,6 @@ and this feature states nothing about how a mount is drawn or located there. The
 different records: feature 010 draws the schematics' own slot keys, while convergence reads the
 package's separate catalogue of mount offsets in metres. Neither is derived from the other, and
 nothing here measures artwork.
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: Now that the package computes weapons-capacitor endurance at any WEP pip allocation, should the
-  endurance figure follow the pips the Commander has set rather than being reported only at the rated
-  four-pip figure? → A: Follow the pips in force, at any allocation. The capability landed upstream:
-  `weaponsCapacitorMetrics({ weaponsPips })` returns the actual recharge rate, the net drain and the
-  seconds to drain at the allocation asked for, applying the pip curve the package owns. Endurance is
-  therefore read from that accessor at the pips in force and states the allocation it assumes.
-  FR-015's unavailability for allocations other than the rated one is withdrawn as satisfied
-  upstream, and this area now matches [feature 005](../005-power-and-heat/spec.md), which reports
-  every capacitor figure at the pips in force. Endurance also stops being a composition: the package
-  computes it whole, so composing capacity against a shortfall here would reimplement a calculation
-  it provides.
-- Q: Should "the spread of the arriving shots" be how wide the fire looks from the cockpit at the
-  chosen range — an angle that tightens with distance — rather than a distance in metres between the
-  impact points? → A: Yes, angular, and illustrated with a plot. The package models fixed weapons as
-  firing straight ahead from mounts offset in metres from the cockpit, so the metre gap between
-  impacts is the same at 500 m as at 4 km; only the angle it subtends changes. Reporting metres would
-  leave FR-016b recomputing a figure that cannot move. The spread is therefore reported as an angle
-  at the chosen range, the fixed metre separation is presented as the geometry behind it rather than
-  as a range-dependent figure, and FR-016f adds a plot of where each mount's fire arrives relative to
-  the centre of the Commander's view — the figures remain readable without it, per principle V. This
-  also closes the block: mount geometry in real units landed upstream at `0.1.0-beta.5` as a
-  catalogue of cockpit-relative offsets, independent of the schematics feature 010 draws.
-- Q: Should the target range a Commander picks for convergence be the same control that reports the
-  build's damage at that range? → A: No — two controls, of two different kinds. Damage at range is a
-  chart at five fixed ranges: 500 m, 1,000 m, 1,500 m, 2,000 m and 3,000 m, identical for every build
-  so that two loadouts read against the same scale, replacing the per-build spanning set an earlier
-  draft assumed. Convergence takes a slider the Commander sweeps continuously, because the question
-  there is where the spread becomes acceptable rather than what happens at five stops. Both remain
-  under principle V: the chart's figures are readable without the chart, and the slider works by
-  touch and by keyboard.
-- Q: Should the spread and the plot be built from fixed weapons only, with gimballed and turreted
-  mounts listed as tracking the target instead of being given an arrival point? → A: No — every
-  weapon is treated as fixed. A fitted, enabled weapon contributes its mount's offset whatever its
-  type, and none is excluded, re-aimed or discounted for tracking. The consequence is recorded rather
-  than hidden: a gimballed or turreted weapon does track a locked target in game, so such a build
-  spreads less in practice than the figures say, and FR-016c requires the fixed-geometry assumption
-  to be stated with them. That keeps the figures inside what the package models — its geometry is
-  fixed, ship-forward and models no tracking — where excluding those mounts or drawing them converged
-  would not.
-- Q: When a build has no distributor — none fitted, or one the power plant has shed — should
-  endurance read as a verdict rather than as an unavailable figure? → A: As a verdict, matching
-  [feature 005](../005-power-and-heat/spec.md) and
-  [feature 006](../006-defence-profile/spec.md). The package answers this case definitively — with no
-  powered distributor, capacity and recharge are zero and it returns zero seconds — so the figure
-  reads as no sustained fire at all, with the reason, and "unavailable" stays reserved for figures
-  the package cannot produce. The clarification also settles what FR-016 never covered: endurance
-  follows the deployed power state the package applies, so a shed distributor or a shed weapon is
-  accounted for the same way, and a module whose draw the package could not resolve is assumed
-  powered and said to be.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -288,11 +231,10 @@ assumes.
   ammunition and MUST identify weapons with unlimited ammunition as such.
 - **FR-005**: The application MUST display each weapon's maximum range, falloff range and armour
   piercing where the catalogue carries them. Armour piercing MUST be identified as the rating that is
-  measured against a target's hull hardness, and MUST be shown as the weapon's own rating — the
-  figure the catalogue carries — rather than as a comparison. The hardness of the ship being built is
-  reported by [feature 006](../006-defence-profile/spec.md)'s FR-013, where it describes that ship's
-  own defence; this area MUST NOT restate it beside every weapon. The two figures answer different
-  questions, and a Commander reading their build's offence is not reading it against their own hull.
+  measured against a target's hull hardness, and MUST be shown as the weapon's own rating rather than
+  as a comparison. The hardness of the ship being built is reported by
+  [feature 006](../006-defence-profile/spec.md)'s FR-013; this area MUST NOT restate it beside every
+  weapon, because a Commander reading their build's offence is not reading it against their own hull.
 - **FR-006**: Disabled weapons MUST be excluded from whole-build offence totals and shown as
   disabled rather than omitted from the per-weapon list.
 - **FR-007**: A build carrying no weapons MUST have its offence figures reported as absent rather
@@ -414,60 +356,37 @@ assumes.
 
 ## Upstream dependencies
 
-Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.10`
-today, verified against the installed package on 2026-08-16. Nothing in this feature waits on an
-upstream release. The two exceptions an earlier draft recorded against `0.1.0-beta.4` — WEP pip
-scaling and mount geometry in real units — both landed in the intervening betas and are described
-below as closed.
+**Nothing in this feature waits on an upstream release.** `@elite-dangerous-almanac/core` supplies
+whole-build and per-weapon metrics, the damage split by type, burst and sustained output, ammunition
+limits, range and falloff data, and armour piercing.
 
-User story 1 is directly supported: whole-build and per-weapon metrics, the damage split by type,
-burst and sustained output, ammunition limits, range and falloff data, and armour piercing against a
-hull's hardness.
+`ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })` returns the whole endurance figure — the
+actual recharge rate at the allocation, the sustained draw, the net drain and the seconds to drain,
+at any allocation in `[0, 4]`, applying the package's own pip curve and the deployed power budget. A
+second accessor, `distributorMetrics`, reports all three capacitors' capacity and pip-scaled recharge
+and is what [feature 005](../005-power-and-heat/spec.md) presents; the two agree on the WEP recharge
+rate at the same allocation. Endurance must still be read whole from `weaponsCapacitorMetrics` rather
+than reassembled from the distributor accessor's capacity and rate, which is the composition FR-014
+forbids.
 
-**Composed under feature 003's FR-001a**, naming what is combined, from which package figures, and
-under which of that requirement's permitted operations.
+Mount geometry is published in real units, independent of the schematics feature 010 draws:
+`SHIP_GUNSIGHTS` gives each hardpoint's horizontal and vertical offset from the cockpit in metres,
+observed in-game rather than measured off artwork, covering all 48 hulls and 234 hardpoints, and
+`projectGunsight(gunsight, targetRangeMetres)` turns those offsets into the angular figures user
+story 4 reports. FR-016e's prohibition is load-bearing: the offsets come from that catalogue, never
+from the drawings.
 
-Each damage type's **share** (FR-002) divides that type's reported amount by the sum of the
-partitioning amounts the package reports — it publishes the amounts, not the proportions. **Output at
-range** (FR-008) applies a factor the package reports to a figure it reports, then adds the results:
-`damageFalloff(weapon, metres)` reports how much of a weapon's damage still lands at a range, and
-combining it with the damage figures the package already computes restates no game rule. Both are
-operations FR-001a permits; neither supplies a term the package did not report, and neither
-reproduces an algorithm it performs. FR-009 bounds what that composition may do, forbidding any
-falloff behaviour the package does not report.
+**Composed under feature 003's FR-001a**, naming what is combined and under which permitted
+operation:
 
-**Endurance** (FR-012) is not composed. `weaponsCapacitorMetrics({ weaponsPips })` returns the whole
-figure — recharge at the allocation, sustained draw, net drain and seconds to drain — so composing it
-from a capacity and a shortfall here would reimplement a calculation the package provides, which
-principle II prohibits.
+1. **Each damage type's share (FR-002)** — divides that type's reported amount by the sum of the
+   partitioning amounts the package reports. It publishes the amounts, not the proportions.
+2. **Output at range (FR-008)** — applies a factor the package reports to a figure it reports, then
+   adds the results: `damageFalloff(weapon, metres)` reports how much of a weapon's damage still
+   lands at a range, and combining it with the damage figures the package already computes restates
+   no game rule. FR-009 bounds what that composition may do.
 
-**Shot convergence has landed and is no longer blocked.** An earlier draft recorded it as waiting
-upstream, because the only mount data the package published was the schematics feature 010 draws, and
-those carry no scale metadata — no metres-per-unit, no hull dimension, no coordinates in real units.
-`0.1.0-beta.5` publishes a separate catalogue: `SHIP_GUNSIGHTS` gives each hardpoint's horizontal and
-vertical offset from the cockpit in metres, observed in-game rather than measured off artwork,
-covering all 48 hulls and 234 hardpoints, and `projectGunsight(gunsight, targetRangeMetres)` turns
-those offsets into the angular figures user story 4 reports. The prohibition in FR-016e is unchanged
-and still load-bearing: the offsets come from that catalogue, never from the drawings.
-
-**WEP pip scaling has landed and no longer constrains this feature.** An earlier draft recorded it as
-a gap: at `0.1.0-beta.4` the distributor exposed `weaponsRecharge` as a single rated figure with no
-pip parameter, so how recharge scales with WEP pips was a game rule this application would have had
-to invent. `0.1.0-beta.5` publishes `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })`, which
-returns the actual recharge rate, the sustained draw, the net drain and the seconds to drain at any
-allocation in `[0, 4]`, applying the package's own curve. Endurance is therefore read whole from that
-accessor rather than composed here, which is why FR-014 forbids the composition an earlier draft
-permitted, and no allocation is reported as unavailable.
-
-**A second distributor accessor exists as of `0.1.0-beta.9`, and endurance does not use it.**
-`ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` reports all three
-capacitors' capacity and pip-scaled recharge, which is what [feature 005](../005-power-and-heat/spec.md)
-presents. Endurance here still comes from `weaponsCapacitorMetrics`, which additionally applies the
-deployed power budget and returns the sustained draw, net drain and seconds to drain that FR-012
-needs. The two agree on the WEP recharge rate at the same allocation, verified against the installed
-package, so there is one figure and two accessors rather than two figures — but the endurance
-calculation must not be reassembled from the distributor accessor's capacity and rate, which would be
-exactly the composition FR-014 forbids.
+Endurance (FR-012) is **not** composed: the package computes it whole.
 
 ## Success Criteria _(mandatory)_
 
@@ -499,31 +418,29 @@ exactly the composition FR-014 forbids.
   type.
 - Armour piercing is the weapon's own rating, shown here as the catalogue carries it. Hardness is a
   property of a target, and the only target this application knows about is the ship being built,
-  whose hardness feature 006 reports in its own area. Pairing every weapon with the build's own
-  hardness would describe a ship shooting itself. Modelling damage against another ship's specific
-  defences — time to kill, engagement simulation — is out of scope.
-- Whole-build totals assume every weapon is firing and on target. Convergence (user story 4) reports
-  how far apart the shots arrive; it does not adjust the totals for it, and whether a Commander can
-  bring every mount to bear against a manoeuvring target is not modelled.
+  whose hardness feature 006 reports. Pairing every weapon with the build's own hardness would
+  describe a ship shooting itself. Modelling damage against another ship's specific defences — time
+  to kill, engagement simulation — is out of scope.
+- Whole-build totals assume every weapon is firing and on target. Convergence reports how far apart
+  the shots arrive; it does not adjust the totals for it, and whether a Commander can bring every
+  mount to bear against a manoeuvring target is not modelled.
 - Convergence describes where shots arrive, not what they hit. Modelling a target's silhouette, hit
-  probability or time to kill is out of scope, as it is for armour piercing above.
+  probability or time to kill is out of scope.
 - Mount geometry is the package's own catalogue of offsets in metres, observed in-game and
   independent of the schematics feature 010 draws. It is consumed as published; where an offset
-  disagrees with the game, that is a library defect raised upstream under principle II, never
-  corrected here.
+  disagrees with the game, that is a library defect raised upstream under principle II.
 - The geometry describes fixed, ship-forward fire. Projectile travel, target motion, the Commander's
   head-look and gimbal or turret tracking are not modelled, because the package does not model them.
 - Every mount is read as fixed, whatever it carries. A gimballed or turreted weapon does track a
   locked target in game, so a build carrying them spreads less in practice than the figures say: the
   reported spread is the untracked worst case, and FR-016c requires it to be labelled as such. The
   alternative — excluding tracking mounts, or drawing them converged — would have the application
-  model tracking behaviour the package explicitly does not, which principle II forbids. Reporting one
-  honest, stated assumption is the deliberate trade.
+  model tracking behaviour the package explicitly does not, which principle II forbids.
 - The five ranges output is charted at are fixed and identical for every build, so two loadouts can
   be read against the same scale. The trade is deliberate: a weapon that reaches past 3,000 m is not
   characterised beyond it, and a weapon that reaches none of the five is charted as contributing
   nothing at all of them under FR-010 rather than being dropped. Its own maximum range and falloff
-  range are still stated per weapon under FR-005, which is where a fit outside this band is read.
+  range are still stated per weapon under FR-005.
 - Convergence's slider spans the ranges the build's own weapons reach, since a spread at a range no
   weapon covers describes nothing. Where that span begins and ends, and what it defaults to, is
   settled at plan time against the design system.

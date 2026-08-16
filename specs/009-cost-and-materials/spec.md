@@ -18,55 +18,13 @@ It is one area of the statistics family. [Feature 003](../003-ship-statistics/sp
 contract every figure here obeys — the requirement that a build be active at all (its FR-000),
 provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
 viewing conditions. Everything it states applies here without being restated, and nothing here
-relaxes it. Nothing in this area is offered before a hull is chosen.
+relaxes it.
 
 The engineering choices that generate a material bill are made in
 [feature 002](../002-module-outfitting/spec.md), which shows on each module what its own engineering
-costs in total — every roll from unengineered to the grade selected, under its FR-012b; this feature
-consolidates those per-module totals across the whole build. A recorded source purchase
-price arrives with an import and leaves with an export under
+costs in total under its FR-012b; this feature consolidates those per-module totals across the whole
+build. A recorded source purchase price arrives with an import and leaves with an export under
 [feature 004](../004-slef-export/spec.md); this feature keeps it distinct from catalogue retail.
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: When some of a build's modules have no catalogue price, should the modules total and the rebuy
-  still be shown as "at least" figures with the unpriced modules named, or reported as unavailable?
-  → A: Lower bounds throughout. The package's modules sum is documented as a floor when anything is
-  unpriced, and the rebuy is taken from that same floor, so both are presented as figures the build
-  costs _at least_, with every unpriced module named. This holds whether one module or every module
-  in the build is unpriced — a floor is a true statement and a useful one, where "unavailable" would
-  discard the prices the catalogue does carry.
-- Q: Should each entry in the material list carry the material's category (raw, manufactured or
-  encoded) and its grade, or only its name and the quantity needed? → A: Grade only, and shown as an
-  image. Each entry carries the material's grade from the package's catalogue; the category and the
-  line are deliberately not shown. The grade appears as an image rather than a number or a word,
-  which keeps rarity readable at a glance and free of translation. The package publishes no material
-  artwork, so the image is the application's own, from the design system under principle VII, and it
-  carries a text alternative through the localisation layer so the grade reaches a screen reader as
-  well as the eye.
-- Q: When the list states how many engineering operations lie behind it, should one operation mean
-  one roll at an engineer, one blueprint grade, or one blueprint applied to one module? → A: None of
-  them — the operations count is dropped, and FR-007 states only how many distinct materials the list
-  covers. What the list totals is confirmed: the materials to take a module from unengineered to the
-  grade selected, where each grade in between contributes its own recipe as many times as that grade
-  requires, and the recipes differ from grade to grade. The rolls behind that are process detail a
-  Commander does not act on; what they are gathering for is the whole build's engineering, so no
-  count of rolls, grades or engineering jobs is presented.
-- Q: Should the material list be something the Commander can take out of the application — copied or
-  downloaded as text — or is reading it on screen the whole of it? → A: On screen only. Copying and
-  downloading the list are out of scope for this area; a Commander who needs it later re-opens the
-  build, which [feature 001](../001-ship-selection-and-loading/spec.md) already makes durable as a
-  link. User story
-  2's claim that the list is "taken away and used elsewhere" is corrected accordingly rather than
-  left standing as an unmet promise.
-- Q: Should the credit side show what each fitted module costs, or only the hull value, the modules
-  total and the rebuy? → A: Totals only. A per-module price belongs where modules are chosen —
-  [feature 002](../002-module-outfitting/spec.md) already shows each module's retail cost as it is
-  offered and fitted — so repeating it here would duplicate that area rather than add to this one.
-  The only modules this area names individually remain the unpriced ones under FR-003, because their
-  absence is what qualifies the totals.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -148,8 +106,7 @@ totals, and that grade 5 rolls account for the grades beneath them.
 - The same blueprint applied to several modules: each application contributes its own materials, and
   the consolidated total reflects every one of them rather than the blueprint once.
 - A build imported at a partial engineering quality: the application treats the selected grade as
-  complete at 100% before producing the same grade-based material list as any other build —
-  consistent with feature 002's application-wide quality rule.
+  complete at 100% before producing the same grade-based material list as any other build.
 - A build where every module is unpriced: the modules total and rebuy carry the hull alone and are
   presented as lower bounds with every unpriced module named, rather than as exact figures or as zero
   credits.
@@ -176,7 +133,9 @@ totals, and that grade 5 rolls account for the grades beneath them.
   assemble a total from catalogue prices or compute a rebuy percentage locally.
 - **FR-003**: A module the catalogue carries no price for MUST be named as unpriced, and the modules
   total and rebuy MUST be presented as lower bounds — what the build costs at least — rather than as
-  exact figures or as zero. This holds whether one module or every module in the build is unpriced.
+  exact figures or as zero. This holds whether one module or every module in the build is unpriced: a
+  floor is a true statement and a useful one, where "unavailable" would discard the prices the
+  catalogue does carry.
 - **FR-004**: The rebuy figure MUST state the insurance rate it assumes.
 
 #### Materials
@@ -186,7 +145,8 @@ totals, and that grade 5 rolls account for the grades beneath them.
   with each material named, totalled and carrying its grade.
 - **FR-005a**: A material's grade MUST be presented as an image rather than as a number or a word,
   and that image MUST carry a text alternative resolved through the localisation layer, so the grade
-  is available to a screen reader as well as by sight.
+  is available to a screen reader as well as by sight. The image is the application's own artwork,
+  held in the design system under constitution principle VII, because the package publishes none.
 - **FR-005b**: A material's name MUST be asked of the package for the active locale, and MUST NOT be
   translated here — it is game text, which constitution principle VI reserves to
   `@elite-dangerous-almanac/core`. Where the package reports no name for that locale it MUST NOT be
@@ -203,8 +163,8 @@ totals, and that grade 5 rolls account for the grades beneath them.
   totals that climb produces — one quantity per material for the whole build. The climb itself MUST
   NOT be itemised: no per-grade breakdown, no ordering of the rolls, no route through the engineers.
   A Commander gathers materials, and the quantity they need is the same whatever order they spend it
-  in, so the journey is process detail the list deliberately leaves out. This matches what
-  [feature 002](../002-module-outfitting/spec.md)'s FR-012b shows on a single module.
+  in. This matches what [feature 002](../002-module-outfitting/spec.md)'s FR-012b shows on a single
+  module.
 - **FR-007**: The application MUST state how many distinct materials the list covers. No count of
   rolls, grades or engineering jobs is presented: the list answers what the build's engineering costs
   in materials, not how many operations produce it.
@@ -253,48 +213,35 @@ totals, and that grade 5 rolls account for the grades beneath them.
 
 ## Upstream dependencies
 
-Every figure this specification requires is computed by `@elite-dangerous-almanac/core`, re-verified
-against the installed `0.1.0-beta.10` on 2026-08-16. **Nothing here is blocked** — neither a figure nor,
-as of this release, the material names.
+**Nothing here is blocked** — neither a figure nor the material names.
 
-**Material names now carry a locale.** `0.1.0-beta.9` publishes
-`getMaterialName(symbol, locale)` on the same contract as the module, blueprint and effect accessors,
-which closes
-[Elite-Dangerous-Almanac#275](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/275).
-It returns the localized name, the canonical English name for any English tag, or `null` where the
-pinned source carries no value — it never falls back to English silently, so a missing translation is
-distinguishable from a translated one. That is what FR-005b relies on. Its companion
-`getMicroResourceName` covers Odyssey micro resources, which this feature's material list does not
-reach; it is noted only so the two are not confused, since a material and a micro resource are
-different catalogues with different accessors.
-
-Coverage is sparse and deliberately so, which is a presentation fact rather than a defect. Verified
-against the installed package across the 146 materials: English, Spanish and Russian cover all 146;
-Portuguese and French cover 140; German 128; Georgian 28; and Hungarian, Italian and both Chinese tags
-carry none. So a build's material list will routinely mix translated and untranslated names within one
-locale, which is why FR-005b requires the fallback to be marked per material rather than declared once
-for the list.
-
-Costs for an assembled build arrived in `0.1.0-beta.4`: `retailCredits()` computes hull value,
-modules value and rebuy for a build assembled in the application, not only for an imported capture,
-and lists the modules the catalogue carries no price for. The older `hullValue`, `modulesValue` and
-`rebuy` accessors remain null for an assembled build, so `retailCredits()` is the accessor this
-feature depends on. A recorded source purchase price remains a distinct value from the catalogue
-price; how it is carried on export belongs to [feature 004](../004-slef-export/spec.md), which
-settled on 2026-08-16 that no export-time choice governs it.
-
-Two properties of that accessor are what FR-003 and FR-004 report rather than restate. Its modules
-sum counts only the modules it could price and is documented as a lower bound whenever its unpriced
-list is non-empty, and its rebuy is five percent of that same priced total — so both figures inherit
-the floor, which is why FR-003 presents them as lower bounds rather than as exact figures. The five
-percent is the package's own rate, and is the rate FR-004 states.
+`retailCredits()` computes hull value, modules value and rebuy for a build assembled in the
+application as well as for an imported capture, and lists the modules the catalogue carries no price
+for. The older `hullValue`, `modulesValue` and `rebuy` accessors stay null for an assembled build, so
+`retailCredits()` is the accessor this feature depends on. Two of its properties are what FR-003 and
+FR-004 report rather than restate: its modules sum counts only the modules it could price and is
+documented as a lower bound whenever its unpriced list is non-empty, and its rebuy is five percent of
+that same priced total, so both figures inherit the floor. The five percent is the package's own
+rate, and is the rate FR-004 states.
 
 The material list is composed from the package's own functions rather than summed here: the
 per-blueprint cost it reports already prices the whole climb from unengineered, charging each grade
 its own recipe as many times as that grade requires, which satisfies FR-006, and merging the lists
-across a build's modules is the package's operation too.
-Walking the build's fitted modules to feed those functions is application code; the arithmetic is
-not, which is what feature 003's FR-001 requires.
+across a build's modules is the package's operation too. Walking the build's fitted modules to feed
+those functions is application code; the arithmetic is not, which is what feature 003's FR-001
+requires.
+
+`getMaterialName(symbol, locale)` supplies material names on the same contract as the module,
+blueprint and effect accessors: it returns the localized name, the canonical English name for any
+English tag, or nothing where the pinned source carries no value. It never falls back to English
+silently, so a missing translation is distinguishable from a translated one, which is what FR-005b
+relies on. Coverage is sparse and deliberately so: across the 146 materials, English, Spanish and
+Russian cover all 146; Portuguese and French cover 140; German 128; Georgian 28; and Hungarian,
+Italian and both Chinese tags carry none. A build's material list will therefore routinely mix
+translated and untranslated names within one locale, which is why FR-005b requires the fallback to be
+marked per material. The neighbouring `getMicroResourceName` covers Odyssey micro resources, a
+separate catalogue this feature's material list does not reach; it is noted only so the two are not
+confused.
 
 **Composed under feature 003's FR-001a**: the count FR-007 requires — how many distinct materials the
 list covers — is a count of entries in a collection the package returns. No game rule is involved,
@@ -336,15 +283,11 @@ and no quantity is added to another.
   the package's materials catalogue carries it.
 - A material's grade is shown; its category and its line are not. The package's catalogue carries
   those two as well, so either is available if it is ever wanted, but grade alone answers the question
-  the list is for — how rare each entry is — and the omissions are a considered exclusion rather than
-  a gap.
-- The grade image is the application's own artwork, held in the design system under principle VII.
-  The package publishes artwork for ships only and carries none for materials, so nothing here waits
-  on it.
+  the list is for — how rare each entry is.
 - The material list states how many distinct materials it covers, not a grand total of units summed
   across them. A single number adding units of selenium to units of iron describes nothing a
-  Commander can act on, so it is deliberately not required. Neither is any count of rolls, grades or
-  engineering jobs: those describe the process rather than what has to be gathered.
+  Commander can act on. Neither is any count of rolls, grades or engineering jobs presented: those
+  describe the process rather than what has to be gathered.
 - What a Commander already holds in their material storage is not modelled. The list is what the
   build needs, not what remains to be gathered — tracking inventory would require state this
   application does not keep.
@@ -352,11 +295,10 @@ and no quantity is added to another.
   both out of scope here; a Commander who wants it again re-opens the build, which
   [feature 001](../001-ship-selection-and-loading/spec.md) makes durable as a link.
 - Material names are game text and belong to `@elite-dangerous-almanac/core` under constitution
-  principle VI. As of `0.1.0-beta.9` the package carries a locale for them alongside modules,
-  blueprints and experimental effects, so names are asked of it per locale (FR-005b). Its coverage is
-  sparse by design and it never substitutes English for a missing translation, so the application
-  marks the materials that fall back rather than presenting untranslated text as a translation. A
-  locale the package does not carry at all is the same case as a material it has no value for: shown
-  in English, marked, and raised upstream rather than filled in here.
+  principle VI. Its coverage is sparse by design and it never substitutes English for a missing
+  translation, so the application marks the materials that fall back rather than presenting
+  untranslated text as a translation. A locale the package does not carry at all is the same case as
+  a material it has no value for: shown in English, marked, and raised upstream rather than filled in
+  here.
 - Which figures are prominent and how the material list is grouped are decided at plan time against
   the design system, per constitution principle VII.

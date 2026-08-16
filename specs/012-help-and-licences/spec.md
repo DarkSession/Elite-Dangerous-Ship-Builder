@@ -6,13 +6,13 @@
 
 **Status**: Draft
 
-**Input**: Identified by a design review on 2026-08-16. Three obligations spread across the accepted
-specifications had nowhere to land: Frontier Developments' media-usage notice, which
+**Input**: Identified by design review. Three obligations spread across the accepted specifications
+had nowhere to land: Frontier Developments' media-usage notice, which
 [feature 001](../001-ship-selection-and-loading/spec.md)'s FR-020 and
 [feature 010](../010-hull-anatomy/spec.md)'s FR-005 both require the application to reproduce; the
-versions FR-044a requires it to identify; and the answers to the questions the application's own
-design provokes — what the link carries, why a build is never uploaded, why engineering is always
-shown complete.
+versions feature 001's FR-044a requires it to identify; and the answers to the questions the
+application's own design provokes — what the link carries, why a build is never uploaded, why
+engineering is always shown complete.
 
 ## Scope
 
@@ -21,42 +21,13 @@ travel under, the versions it was built from, and the answers to the questions a
 reasonably asks about how it behaves.
 
 It owns no build state and reports no figure about a build. It requires no active build and MUST be
-reachable at any time, including before a hull is chosen and with the network disabled.
+reachable at any time, including before a hull is chosen and with the network disabled — everything
+it presents is bundled, precisely because it is the surface that explains what does and does not work
+offline.
 
 What it does not own: the illustrations and schematics themselves (features 001 and 010), the
 statistics the answers describe (feature 003's family), and how any of it is presented, which is
 [feature 011](../011-interface-foundations/spec.md)'s contract like every other screen.
-
-## Clarifications
-
-### Session 2026-08-16
-
-- Q: Where does Frontier Developments' media-usage notice live, given features 001 and 010 both
-  require it? → A: Here, once. Both features require the notice to be _reachable_ from wherever
-  artwork is shown; reproducing it in each place would be two copies to keep correct. This feature
-  presents it, and those features owe the route.
-- Q: Is the licence text written here or taken from what actually ships? → A: Taken, and generated at
-  build time from the installed packages. A hand-written licence page is a copy that goes stale
-  silently and misstates the terms of software the Commander is actually running — which is a worse
-  failure than having no page at all.
-- Q: Which versions does the application state? → A: Three things, two of which it has. Its own
-  release version and the bundled `@elite-dangerous-almanac/core` version are both real and both
-  shown. The version of the _game data_ — which game update the catalogue matches — is not something
-  the package reports, and reads as unavailable rather than being impersonated by either of the
-  other two. Feature 001's FR-044a fixes this; this feature presents it.
-- Q: Is the FAQ marketing copy, or does it answer real questions? → A: It answers the questions the
-  application's own decisions provoke, and every answer states what the application actually does.
-  Where a decision is a deliberate limitation — no comparison, no partial engineering quality, no
-  jump range in the catalogue — the answer says so plainly rather than presenting the limitation as a
-  feature.
-- Q: Does this surface need a network connection? → A: No. Everything it presents is bundled: the
-  licence texts, the notices, the versions and the answers. An outbound link may be offered where one
-  is genuinely useful (the library's repository, an upstream issue), but nothing here may _require_
-  one to be readable. This surface is bundled in full precisely because it is the one that explains
-  what does and does not work offline: the application's capabilities all do, while hull artwork is
-  fetched per hull and so is available for the hulls the Commander has opened (constitution
-  principle I, amended 3.0.0 on 2026-08-16). A page that could not be read without a network would be
-  unreadable exactly when a Commander went looking for that explanation.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -200,16 +171,13 @@ capability it describes.
   their `LICENSE` and notice files — rather than transcribed into this repository. Where an expected
   file is absent, the build MUST fail rather than produce an application that reproduces no notice.
 - **FR-005b**: [NEEDS CLARIFICATION: the terms the ship artwork is redistributed under, and whether
-  they are compatible with this application's own licence and with how it is deployed.] The
-  illustrations and schematics are Frontier Developments' property, redistributed through
-  `@elite-dangerous-almanac/core`, and a design review found the artwork credited to a third-party
-  asset site under a non-commercial, share-alike licence in the same panel that declared the
-  application's own source terms. Those two sets of terms may not sit together, and the answer
-  governs what this surface must state and possibly whether the artwork can ship at all. It is a
-  licensing question rather than a product one, and it is recorded here rather than resolved by
-  assumption. Until it is answered, FR-004 and FR-005 stand: reproduce exactly what the package
-  publishes, claim nothing about compatibility, and state no licence for the artwork that the
-  package does not itself state.
+  they are compatible with this application's own licence and with how it is deployed. A design
+  review found the artwork credited to a third-party asset site under a non-commercial, share-alike
+  licence in the same panel that declared the application's own source terms.] This is a licensing
+  question rather than a product one; the answer governs what this surface must state and possibly
+  whether the artwork can ship at all. Until it is answered, FR-004 and FR-005 stand: reproduce
+  exactly what the package publishes, claim nothing about compatibility, and state no licence for the
+  artwork that the package does not itself state.
 
 #### Versions
 
@@ -280,16 +248,15 @@ capability it describes.
 
 ## Upstream dependencies
 
-Nothing in this feature is blocked, and one thing it presents is waiting. Verified against the
-installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16.
-
 `@elite-dangerous-almanac/core` ships its licence and its `THIRD_PARTY_NOTICES.md` in the installed
-package, which is what FR-005a generates from; its own release version is available from the
-installed package at build time. The game catalogue version is still not available — at beta.10 the
-package records it as prose in `PROVENANCE/ships/SOURCES.md` (`4.4.0.3`) rather than as a
-machine-readable value, so FR-006 continues to show that version as unavailable. Feature 001's FR-044a
-owns the gap and records that raising it upstream is deferred by decision rather than pending. FR-006
-here is unaffected either way, since it presents the absence rather than waiting on a fix.
+package, which is what FR-005a generates from, and its own release version is available from the
+installed package at build time. Nothing in this feature is blocked.
+
+The game catalogue version is not available: the package records it as prose in
+`PROVENANCE/ships/SOURCES.md` rather than as a machine-readable value, so FR-006 shows that version
+as unavailable. Feature 001's FR-044a owns the gap and records that raising it upstream is deferred
+by decision rather than pending. FR-006 is unaffected either way, since it presents the absence
+rather than waiting on a fix.
 
 ## Success Criteria _(mandatory)_
 
@@ -319,12 +286,9 @@ here is unaffected either way, since it presents the absence rather than waiting
 - The answers this feature presents are the application's own words and are translated. The legal
   texts are not, because a translated licence is not the licence.
 - Whether the ship artwork's terms permit how this application ships is an open question (FR-005b)
-  and is not resolved by assumption. It is recorded because a design review surfaced two sets of
-  terms in one panel that may not be compatible; answering it may change what this surface states.
+  and is not resolved by assumption. Answering it may change what this surface states.
 - Support, feedback and community routes beyond the library's issue tracker are out of scope. The
   application has no backend and collects nothing, so it has nowhere to receive a report; the one
   route it offers is where a wrong figure actually gets fixed.
 - Which of these belongs on one screen and which appears in place beside the capability it explains
-  is decided at plan time against the design system, per constitution principle VII. What this
-  specification fixes is that each exists, that each is reachable, and that none of it is written by
-  hand where it can be generated.
+  is decided at plan time against the design system, per constitution principle VII.
