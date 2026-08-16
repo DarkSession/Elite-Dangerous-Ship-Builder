@@ -60,7 +60,10 @@ layout.
 - Q: Until the package publishes mount geometry in real units, what does the Commander see for shot
   convergence? → A: Nothing here — shot convergence is part of the offence profile. User Story 3 and
   FR-019 to FR-023 move to [feature 007](../007-offence-profile/spec.md); this feature keeps only the
-  mount positions convergence is computed from.
+  mount positions convergence is computed from. _(The question's premise expired on 2026-08-16: the
+  package published that geometry at `0.1.0-beta.8` as `SHIP_GUNSIGHTS`, from its own catalogue rather
+  than from these schematics. The answer is unaffected — convergence was never this feature's to
+  show.)_
 - Q: On the most crowded hull at phone width, how does the Commander hit two mounts the schematic
   draws almost on top of each other? → A: By magnifying and panning the plate, so mounts separate at
   their true positions. No marker is offset, clustered or dropped. _(Superseded 2026-08-16: the

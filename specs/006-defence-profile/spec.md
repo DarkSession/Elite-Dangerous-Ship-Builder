@@ -202,8 +202,9 @@ a build with no module reinforcement says so rather than reporting no protection
 - A resistance of 100% or better against a damage type: the package reports the effective hit points
   for it as infinite. That is a verdict and not a missing figure — nothing of that type gets through
   — and it is stated as such rather than as a number, a blank or an unavailable figure.
-- Cell banks of mixed classes and ratings fitted together: the pool is the total across all of them,
-  and per-bank figures remain individually inspectable.
+- Cell banks of mixed classes and ratings fitted together: the pool is the total across those that
+  are powered, on FR-009's basis, and every fitted bank's own figures remain individually
+  inspectable whether or not it contributes to that total.
 - A cell bank whose spin-up, duration or heat the catalogue does not carry: that bank is named as
   incomplete rather than contributing a silent zero to the pool.
 - A build with a shield generator whose mass curve puts the hull outside its optimal range: the
@@ -363,13 +364,18 @@ without ever being raised as an issue of its own. It was filed on 2026-08-16 as
 a minimal reproduction, fixed the same evening by
 [Elite-Dangerous-Almanac#282](https://github.com/DarkSession/Elite-Dangerous-Almanac/pull/282),
 "Ships: make cell bank totals power-aware", and released in `0.1.0-beta.10`, which carries that change
-and nothing else. Every other request the statistics family made is likewise closed and released:
-pip-scaled recharge for all three capacitors (#271) and the maximum jump's total (#273) in
-`0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling in `0.1.0-beta.8`, and the
-diagnostics contract (#245) as a stable code with parameters. Mount geometry in real units arrived in
-`0.1.0-beta.8` as well, but it belongs on a separate line: no issue was ever filed for it, so it was
-delivered rather than requested, and feature 010 records why the request it once claimed to have made
-was withdrawn instead of raised.
+and nothing else. Every other request the statistics family made is likewise closed and released, and
+each carries the issue that records it: pip-scaled recharge for the engines capacitor (#271) and the
+maximum jump's total (#273) in `0.1.0-beta.9`, material names (#275) likewise, and the diagnostics
+contract (#245) as a stable code with parameters.
+
+Two capabilities this family depends on arrived in `0.1.0-beta.8` without an issue behind them — WEP
+pip scaling and mount geometry in real units — so they were delivered rather than requested, and
+neither belongs in the list above. Both had been recorded in an earlier draft as gaps rather than as
+filed requests, which is the distinction worth keeping: a capability the package happens to add is not
+evidence that asking for it worked, and writing in a specification that something was raised upstream
+never made it so. Feature 010 records why the mount-geometry request it once claimed was withdrawn
+instead of raised.
 
 **What taking the upgrade changed here.** Two requirements moved with it, and both changes are
 narrowings of what the application may show rather than new capability.
