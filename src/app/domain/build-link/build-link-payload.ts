@@ -5,6 +5,13 @@ const FRAGMENT_PREFIX = 'b.';
 const MAX_ENCODED_LENGTH = 500;
 const CRC_LENGTH = 4;
 
+declare const verifiedBuildLinkBody: unique symbol;
+
+/** A codec body whose Base70 envelope and CRC-32 have already been verified. */
+export type VerifiedBuildLinkBody = Uint8Array & {
+  readonly [verifiedBuildLinkBody]: true;
+};
+
 /** Add the permanent envelope and integrity check to a codec body. */
 export function encodeBuildLinkBody(body: Uint8Array): string {
   const payload = new Uint8Array(body.length + CRC_LENGTH);
@@ -18,7 +25,7 @@ export function encodeBuildLinkBody(body: Uint8Array): string {
 }
 
 /** Decode and verify the generic envelope before selecting a codec table. */
-export function decodeBuildLinkBody(fragment: string): Uint8Array {
+export function decodeBuildLinkBody(fragment: string): VerifiedBuildLinkBody {
   const value = fragment.startsWith('#') ? fragment.slice(1) : fragment;
   if (!value.startsWith(FRAGMENT_PREFIX)) {
     throw new BuildLinkCodecError(
@@ -46,7 +53,7 @@ export function decodeBuildLinkBody(fragment: string): Uint8Array {
   if (crc32(body) !== expectedCrc) {
     throw new BuildLinkCodecError('integrityCheckFailed', 'The build-link integrity check failed.');
   }
-  return body;
+  return body as VerifiedBuildLinkBody;
 }
 
 function crc32(bytes: Uint8Array): number {

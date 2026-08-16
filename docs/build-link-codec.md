@@ -307,7 +307,8 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -
 
 Every other value uses strict UTF-8: its header is `2 * UTF-8 byte count`, followed by that many
 bytes. Thus an odd header identifies compact character count and an even header identifies UTF-8
-byte count. The encoder rejects ill-formed UTF-16 such as lone surrogates, and the decoder rejects
+byte count. A compact value is limited to 2,048 characters; a fallback value is limited to 2,048
+UTF-8 bytes. The encoder rejects ill-formed UTF-16 such as lone surrogates, and the decoder rejects
 malformed UTF-8 rather than replacing it with U+FFFD. It also rejects a UTF-8 spelling when every
 decoded character belongs to the compact alphabet, because that spelling is non-canonical.
 
@@ -355,10 +356,11 @@ inside the selected frozen table. Before the first release, table 1 can be regen
 while retaining every earlier table unchanged; it does not duplicate or version the codec logic.
 
 The public asynchronous loader initially imports only the generic envelope, radix, and CRC code.
-It verifies integrity before using the table-version field. Encoding dynamically loads the shared
-codec and current table. Decoding then imports only the matching JSON file alongside the shared
-codec. Adding table snapshots to the loader therefore does not place every historical table in the
-initial bundle.
+It radix-decodes the envelope and verifies CRC-32 once before using the table-version field, then
+passes that verified body through the asynchronous table load without decoding it again. Encoding
+dynamically loads the shared codec and current table. Decoding then imports only the matching JSON
+file alongside the shared codec. Adding table snapshots to the loader therefore does not place
+every historical table in the initial bundle.
 
 The current application dependency is exactly pinned to Almanac `0.1.0-beta.8`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol

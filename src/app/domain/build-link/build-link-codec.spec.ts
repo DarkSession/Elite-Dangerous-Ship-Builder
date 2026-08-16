@@ -801,16 +801,25 @@ describe('build-link codec', () => {
     }
   });
 
-  it('rejects lone UTF-16 surrogates instead of changing the ship name', () => {
-    const target = ShipLoadout.empty('SideWinder');
-    const source = new Proxy(target, {
-      get(loadout, property) {
-        if (property === 'shipName') return '\ud800';
-        const value: unknown = Reflect.get(loadout, property, loadout);
-        return typeof value === 'function' ? value.bind(loadout) : value;
-      },
+  it('preserves surrogate pairs and rejects unpaired UTF-16 surrogates', () => {
+    const valid = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      ShipName: 'Astraea 🚀',
+      Modules: [],
     });
-    expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    expect(decodeBuildLinkFragment(encodeBuildLinkFragment(valid)).shipName).toBe('Astraea 🚀');
+
+    for (const invalidName of ['\ud800', '\udc00', '\ud800A', '\ud800\ud800']) {
+      const target = ShipLoadout.empty('SideWinder');
+      const source = new Proxy(target, {
+        get(loadout, property) {
+          if (property === 'shipName') return invalidName;
+          const value: unknown = Reflect.get(loadout, property, loadout);
+          return typeof value === 'function' ? value.bind(loadout) : value;
+        },
+      });
+      expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    }
   });
 
   it('enforces the string-unit bound before the outer encoded-length bound', () => {

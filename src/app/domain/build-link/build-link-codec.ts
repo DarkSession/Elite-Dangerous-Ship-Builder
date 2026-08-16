@@ -10,6 +10,7 @@ import type {
 import { ArithmeticDecoder, ArithmeticEncoder } from './build-link-arithmetic';
 import { BuildLinkCodecError } from './build-link-codec-error';
 import { decodeBuildLinkBody, encodeBuildLinkBody } from './build-link-payload';
+import type { VerifiedBuildLinkBody } from './build-link-payload';
 export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
@@ -49,7 +50,7 @@ export interface BuildLinkCodecTables {
 export interface BuildLinkCodec {
   encodeBuildLinkFragment(loadout: ShipLoadout): string;
   decodeBuildLinkFragment(fragment: string): ShipLoadout;
-  decodeVerifiedBuildLinkBody(body: Uint8Array): ShipLoadout;
+  decodeVerifiedBuildLinkBody(body: VerifiedBuildLinkBody): ShipLoadout;
 }
 
 interface CodecContext {
@@ -1902,7 +1903,7 @@ class SymbolWriter implements CodecWriter {
   }
 
   writeString(value: string): void {
-    if (!(value as string & { isWellFormed(): boolean }).isWellFormed()) {
+    if (!isWellFormedUnicode(value)) {
       throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
     }
     const compact = [...value].every((character) => COMPACT_STRING_CHARACTERS.has(character));
@@ -2157,6 +2158,21 @@ function bitsRequired(valueCount: number): number {
     capacity *= 2;
   }
   return width;
+}
+
+function isWellFormedUnicode(value: string): boolean {
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      if (index + 1 >= value.length) return false;
+      const following = value.charCodeAt(index + 1);
+      if (following < 0xdc00 || following > 0xdfff) return false;
+      index += 1;
+    } else if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables): CodecContext {

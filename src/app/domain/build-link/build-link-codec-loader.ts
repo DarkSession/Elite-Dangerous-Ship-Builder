@@ -2,6 +2,7 @@ import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loado
 import type { BuildLinkCodec, BuildLinkCodecTables } from './build-link-codec';
 import { BuildLinkCodecError } from './build-link-codec-error';
 import { decodeBuildLinkBody } from './build-link-payload';
+import type { VerifiedBuildLinkBody } from './build-link-payload';
 
 export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
@@ -23,7 +24,7 @@ export async function decodeBuildLinkFragment(fragment: string): Promise<ShipLoa
   return codec.decodeVerifiedBuildLinkBody(body);
 }
 
-function readPayloadTableVersion(body: Uint8Array): number {
+function readPayloadTableVersion(body: VerifiedBuildLinkBody): number {
   if (body.length < 2) {
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
   }
