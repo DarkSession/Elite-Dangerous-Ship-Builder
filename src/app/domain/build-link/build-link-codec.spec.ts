@@ -3,6 +3,7 @@ import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-
 import { getPreEngineeredJournalModifiers } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
+import { ArithmeticEncoder } from './build-link-arithmetic';
 import { BuildLinkCodecError, createBuildLinkCodec } from './build-link-codec';
 import {
   decodeBuildLinkFragment as decodeBuildLinkFragmentOnDemand,
@@ -271,9 +272,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOPaL.X-orhwB!-f94/oZ',
+      'b.1fS.w,QYTD@6C@euGl/xHC3xdSJdr_IK-E7404@cI:778Ms,DzYtn/!gk,Ei0YHT7vg27GLnj38AzCh2P@67y/Cnp2,uhN/U-QjW160,rrnvyuOT',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(142);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(137);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -577,9 +578,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
-      'b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7',
+      'b.25b5dRYu7rn.aOZ84kdGWEwCnDyLUBm3l.l6hx0nnmZhXXN@VTHDZSvOZ2hRWc.T0WG!P1V87u2Chb',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 105]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 103]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -705,6 +706,54 @@ describe('build-link codec', () => {
     );
   });
 
+  it('uses arithmetic coding only when its final body is shorter', () => {
+    const dense = encodeBuildLinkFragment(makeFullyEngineeredAnaconda());
+    const shipCount = codecTable1.SHIPS.length;
+    const tagWidth = testBitsRequired(shipCount + 1);
+
+    expect(readPayloadBits(dense, 10, tagWidth)).toBeGreaterThanOrEqual(shipCount);
+    expect(
+      readPayloadBits(encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')), 10, tagWidth),
+    ).toBeLessThan(shipCount);
+    expectCodecError(
+      () =>
+        decodeBuildLinkFragment(
+          'b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7',
+        ),
+      'invalidPayload',
+    );
+
+    const packedEmpty = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
+    const arithmeticEmpty = nonCanonicalArithmeticEmptySidewinder();
+    expect(decodePayload(arithmeticEmpty)).toHaveLength(decodePayload(packedEmpty).length);
+    expectCodecError(() => decodeBuildLinkFragment(arithmeticEmpty), 'invalidPayload');
+  });
+
+  it('rejects every re-checksummed arithmetic truncation and trailing-data form', () => {
+    const fragment = encodeBuildLinkFragment(makeFullyEngineeredAnaconda());
+    const payload = decodePayload(fragment);
+    const body = payload.subarray(0, payload.length - 4);
+    for (let length = 0; length < body.length; length += 1) {
+      const truncated = new Uint8Array(length + 4);
+      truncated.set(body.subarray(0, length));
+      expectCodecError(() => decodeBuildLinkFragment(encodePayload(truncated)), 'invalidPayload');
+    }
+    for (const suffix of [[0], [0xff], [0, 0], [0xff, 0x55]]) {
+      const extended = new Uint8Array(body.length + suffix.length + 4);
+      extended.set(body);
+      extended.set(suffix, body.length);
+      expectCodecError(() => decodeBuildLinkFragment(encodePayload(extended)), 'invalidPayload');
+    }
+
+    const alternateSuffix = decodePayload(fragment);
+    const finalBodyByte = body.length - 1;
+    alternateSuffix[finalBodyByte]! ^= 0x80;
+    expectCodecError(
+      () => decodeBuildLinkFragment(encodePayload(alternateSuffix)),
+      'invalidPayload',
+    );
+  });
+
   it('either rejects re-checksummed mutations or decodes them canonically', () => {
     const references = [
       encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')),
@@ -758,7 +807,7 @@ describe('build-link codec', () => {
 
     expectCodecError(
       () => decodeBuildLinkFragment(withPayloadBits(empty, 10, 6, 63)),
-      'unknownIdentity',
+      'invalidPayload',
     );
     expectCodecError(
       () => decodeBuildLinkFragment(withPayloadBits(empty, 21, 5, 31)),
@@ -1046,6 +1095,36 @@ function handcraftedMetadataFragment(
   if (includeTail) {
     writeTestBits(bits, 1, 1); // pristine default
   }
+  return encodeTestBits(bits);
+}
+
+function nonCanonicalArithmeticEmptySidewinder(): string {
+  const bits: number[] = [];
+  const shipCount = codecTable1.SHIPS.length;
+  const tagWidth = testBitsRequired(shipCount + 1);
+  const markerCount = 2 ** tagWidth - shipCount;
+  const shipIndex = codecTable1.SHIPS.indexOf('SideWinder');
+  const remainder = shipIndex % markerCount;
+  const groupCount = Math.floor((shipCount - 1 - remainder) / markerCount) + 1;
+  writeTestBits(bits, 1, 10);
+  writeTestBits(bits, shipCount + remainder, tagWidth);
+
+  const encoder = new ArithmeticEncoder((bit) => bits.push(bit));
+  encoder.write(Math.floor(shipIndex / markerCount), groupCount);
+  const symbols: Array<{ readonly value: number; readonly count: number }> = [
+    { value: 0, count: 2 }, // ship name absent
+    { value: 0, count: 2 }, // ship ident absent
+    { value: 0, count: 2 }, // not the pristine stock loadout
+    { value: 0, count: 2 }, // absolute module layout
+    { value: 3, count: 4 }, // combination-rank index set
+    { value: 0, count: codecTable1.SLOTS_BY_SHIP.SideWinder.length + 1 },
+  ];
+  symbols.push(
+    { value: 0, count: 2 }, // no power overrides
+    { value: 0, count: 2 }, // no engineering
+  );
+  symbols.forEach(({ value, count }) => encoder.write(value, count));
+  encoder.finish();
   return encodeTestBits(bits);
 }
 

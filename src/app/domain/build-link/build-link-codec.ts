@@ -7,6 +7,7 @@ import type {
   LoadoutModule,
   ModuleEngineering,
 } from '@elite-dangerous-almanac/core/ships/slef';
+import { ArithmeticDecoder, ArithmeticEncoder } from './build-link-arithmetic';
 import { BuildLinkCodecError } from './build-link-codec-error';
 import { decodeBuildLinkBody, encodeBuildLinkBody } from './build-link-payload';
 export { BuildLinkCodecError } from './build-link-codec-error';
@@ -53,10 +54,7 @@ export interface BuildLinkCodec {
 interface CodecContext {
   readonly tableVersion: number;
   readonly tables: BuildLinkCodecTables;
-  readonly shipBits: number;
   readonly moduleBits: number;
-  readonly blueprintBits: number;
-  readonly experimentalBits: number;
   readonly poweredModuleSet: ReadonlySet<number>;
   readonly shipIndex: ReadonlyMap<string, number>;
   readonly moduleIndex: ReadonlyMap<string, number>;
@@ -66,8 +64,8 @@ interface CodecContext {
 }
 
 const TABLE_VERSION_BITS = 10;
+const MAX_STRING_UNITS = 2_048;
 const QUALITY_SCALE_4 = 10_000;
-const QUALITY_BITS_4 = bitsRequired(QUALITY_SCALE_4 + 1);
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
 let activeCodecContext: CodecContext | undefined;
@@ -99,8 +97,11 @@ export function createBuildLinkCodec(
  * only serialises the minimal non-derivable build state.
  */
 function encodeWithActiveTable(loadout: ShipLoadout): string {
-  const writer = new BitWriter();
-  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
+  return encodeBuildLinkBody(canonicalBody(writeWithActiveTable(loadout).symbols));
+}
+
+function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
+  const writer = new SymbolWriter();
   const shipIndex = requireIdentity(codecContext().shipIndex, loadout.shipSymbol, 'ship');
   const canonicalShip = codecContext().tables.SHIPS[shipIndex];
   const slots = codecContext().tables.SLOTS_BY_SHIP[canonicalShip];
@@ -111,7 +112,7 @@ function encodeWithActiveTable(loadout: ShipLoadout): string {
   }
   const fixedModuleBySlot = new Map(fixedModules.map((fixed) => [normalise(fixed.slot), fixed]));
 
-  writer.writeBits(shipIndex, codecContext().shipBits);
+  writer.writeBounded(shipIndex, codecContext().tables.SHIPS.length);
   writer.writeBoolean(loadout.shipName !== null);
   writer.writeBoolean(loadout.shipIdent !== null);
   if (loadout.shipName !== null) writer.writeString(loadout.shipName);
@@ -210,7 +211,7 @@ function encodeWithActiveTable(loadout: ShipLoadout): string {
       occupiedSlots,
     );
   }
-  return encodeBuildLinkBody(writer.toUint8Array());
+  return writer;
 }
 
 /** Decode a fragment produced by the bound encoder for the active table. */
@@ -218,15 +219,36 @@ function decodeWithActiveTable(fragment: string): ShipLoadout {
   const body = decodeBuildLinkBody(fragment);
   let state: CodecState;
   try {
-    const reader = new BitReader(body);
-    const tableVersion = reader.readBits(TABLE_VERSION_BITS);
+    const source = new RawBitReader(body);
+    const tableVersion = source.readBits(TABLE_VERSION_BITS);
     if (tableVersion !== codecContext().tableVersion) {
       throw new BuildLinkCodecError(
         'unsupportedTableVersion',
         `Build-link table version ${tableVersion} is not supported by the loaded table.`,
       );
     }
-    state = readCodecState(reader);
+    const shipCount = codecContext().tables.SHIPS.length;
+    const shipTagWidth = bitsRequired(shipCount + 1);
+    const representationTag = source.readBits(shipTagWidth);
+    const arithmetic = representationTag >= shipCount;
+    const reader: CodecReader = arithmetic
+      ? new ArithmeticSymbolReader(source)
+      : new PackedSymbolReader(source);
+    let shipIndex = representationTag;
+    if (arithmetic) {
+      const markerCount = 2 ** shipTagWidth - shipCount;
+      const remainder = representationTag - shipCount;
+      const groupCount = arithmeticShipGroupCount(shipCount, markerCount, remainder);
+      const group = groupCount === 1 ? 0 : reader.readBounded(groupCount);
+      shipIndex = group * markerCount + remainder;
+      if (shipIndex >= shipCount) {
+        throw new BuildLinkCodecError(
+          'invalidPayload',
+          'The build-link representation is invalid.',
+        );
+      }
+    }
+    state = readCodecState(reader, shipIndex);
     if (!bytesEqual(writeCodecState(state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
@@ -273,8 +295,8 @@ type CodecState = {
   readonly engineeringStates: readonly (CodecEngineeringState | undefined)[];
 };
 
-function readCodecState(reader: BitReader): CodecState {
-  const shipIndex = reader.readBits(codecContext().shipBits);
+function readCodecState(reader: CodecReader, packedShipIndex?: number): CodecState {
+  const shipIndex = packedShipIndex ?? reader.readBounded(codecContext().tables.SHIPS.length);
   const ship = codecContext().tables.SHIPS[shipIndex];
   if (!ship) throw unknownTableIndex('ship', shipIndex);
   const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
@@ -320,9 +342,8 @@ function readCodecState(reader: BitReader): CodecState {
 }
 
 function writeCodecState(state: CodecState): Uint8Array {
-  const writer = new BitWriter();
-  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
-  writer.writeBits(state.shipIndex, codecContext().shipBits);
+  const writer = new SymbolWriter();
+  writer.writeBounded(state.shipIndex, codecContext().tables.SHIPS.length);
   writer.writeBoolean(state.shipName !== undefined);
   writer.writeBoolean(state.shipIdent !== undefined);
   if (state.shipName !== undefined) writer.writeString(state.shipName);
@@ -337,7 +358,7 @@ function writeCodecState(state: CodecState): Uint8Array {
     writePowerStates(writer, state.powerStates);
     writeEngineeringStates(writer, state.engineeringStates, state.moduleIndexes, occupiedSlots);
   }
-  return writer.toUint8Array();
+  return canonicalBody(writer.symbols);
 }
 
 function reconstructLoadout(state: CodecState): ShipLoadout {
@@ -465,7 +486,7 @@ type ModuleIdentityContext = {
 type ModuleIdentityEntry = ModuleIdentityContext & { moduleIndex: number };
 
 function writeModuleIdentities(
-  writer: BitWriter,
+  writer: CodecWriter,
   ship: CodecShip,
   slots: readonly string[],
   defaults: readonly (number | null)[],
@@ -510,7 +531,7 @@ function writeModuleIdentities(
 }
 
 function readModuleIdentities(
-  reader: BitReader,
+  reader: CodecReader,
   ship: CodecShip,
   slots: readonly string[],
 ): Array<number | null> {
@@ -597,7 +618,7 @@ function moduleIdentityLayoutCosts(
 }
 
 function writeModuleIdentitySequence(
-  writer: BitWriter,
+  writer: CodecWriter,
   entries: readonly ModuleIdentityEntry[],
 ): void {
   if (entries.length === 0) return;
@@ -639,7 +660,7 @@ function writeModuleIdentitySequence(
 }
 
 function readModuleIdentitySequence(
-  reader: BitReader,
+  reader: CodecReader,
   contexts: readonly ModuleIdentityContext[],
 ): number[] {
   if (contexts.length === 0) return [];
@@ -727,7 +748,7 @@ function moduleIdentityBitCost(
 }
 
 function writeModuleIdentity(
-  writer: BitWriter,
+  writer: CodecWriter,
   moduleIndex: number,
   context: readonly number[],
   defaultIndex: number | null,
@@ -736,21 +757,21 @@ function writeModuleIdentity(
     writer.writeBoolean(moduleIndex === defaultIndex);
     if (moduleIndex === defaultIndex) return;
   }
-  writeContextualIndex(writer, moduleIndex, context, codecContext().moduleBits);
+  writeContextualIndex(writer, moduleIndex, context, codecContext().tables.MODULES.length);
 }
 
 function readModuleIdentity(
-  reader: BitReader,
+  reader: CodecReader,
   context: readonly number[],
   defaultIndex: number | null,
 ): number {
   if (defaultIndex !== null && reader.readBoolean()) return defaultIndex;
-  const moduleIndex = readContextualIndex(reader, context, codecContext().moduleBits);
+  const moduleIndex = readContextualIndex(reader, context, codecContext().tables.MODULES.length);
   if (!codecContext().tables.MODULES[moduleIndex]) throw unknownTableIndex('module', moduleIndex);
   return moduleIndex;
 }
 
-function writePowerStates(writer: BitWriter, modules: readonly PowerState[]): void {
+function writePowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
   const overrides = indexesWhere(
     modules,
     ({ on, priority }) => on !== undefined || priority !== undefined,
@@ -759,29 +780,29 @@ function writePowerStates(writer: BitWriter, modules: readonly PowerState[]): vo
   if (overrides.length === 0) return;
 
   const mode = powerMode(modules, overrides);
-  writer.writeBits(mode, 2);
+  writer.writeBounded(mode, 3);
   if (mode === 0) {
     writeFixedPowerStates(writer, modules);
   } else if (mode === 1) {
     writeIndexSet(writer, modules.length, overrides);
     for (const index of overrides) {
       const module = modules[index]!;
-      writer.writeBits(encodeOn(module.on), 2);
-      writer.writeBits(encodePriority(module.priority), 3);
+      writer.writeBounded(encodeOn(module.on), 3);
+      writer.writeBounded(encodePriority(module.priority), 6);
     }
   } else {
     writeBaselinePowerStates(writer, modules);
   }
 }
 
-function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
+function readPowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
   const states: PowerState[] = Array.from({ length: moduleCount }, () => ({
     on: undefined,
     priority: undefined,
   }));
   if (!reader.readBoolean()) return states;
 
-  const mode = reader.readBits(2);
+  const mode = reader.readBounded(3);
   let decoded: PowerState[];
   switch (mode) {
     case 0:
@@ -790,8 +811,8 @@ function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
     case 1:
       for (const index of readIndexSet(reader, moduleCount)) {
         states[index] = {
-          on: decodeOn(reader.readBits(2)),
-          priority: decodePriority(reader.readBits(3)),
+          on: decodeOn(reader.readBounded(3)),
+          priority: decodePriority(reader.readBounded(6)),
         };
       }
       decoded = states;
@@ -842,7 +863,7 @@ function baselinePowerBitCost(modules: readonly PowerState[]): number {
   );
 }
 
-function writeBaselinePowerStates(writer: BitWriter, modules: readonly PowerState[]): void {
+function writeBaselinePowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
   const onChanges = indexesWhere(modules, ({ on }) => on !== true);
   writer.writeBoolean(onChanges.length > 0);
   if (onChanges.length > 0) {
@@ -862,12 +883,12 @@ function writeBaselinePowerStates(writer: BitWriter, modules: readonly PowerStat
     for (const index of priorityChanges) {
       const priority = modules[index]!.priority;
       if (allDefined) writer.writeBits(encodeDefinedPriorityDeviation(priority!), 2);
-      else writer.writeBits(encodePriority(priority), 3);
+      else writer.writeBounded(encodePriority(priority), 6);
     }
   }
 }
 
-function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerState[] {
+function readBaselinePowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
   const states: PowerState[] = Array.from({ length: moduleCount }, () => ({
     on: true,
     priority: 1,
@@ -904,7 +925,7 @@ function readBaselinePowerStates(reader: BitReader, moduleCount: number): PowerS
     for (const index of priorityChanges) {
       const priority = allDefined
         ? decodeDefinedPriorityDeviation(reader.readBits(2))
-        : decodePriority(reader.readBits(3));
+        : decodePriority(reader.readBounded(6));
       if (priority === 1) {
         throw new BuildLinkCodecError(
           'invalidPayload',
@@ -946,7 +967,7 @@ function fixedPowerBitCost(modules: readonly PowerState[]): number {
   return onCost + (allPrioritiesSame ? 4 : 1 + modules.length * 3);
 }
 
-function writeFixedPowerStates(writer: BitWriter, modules: readonly PowerState[]): void {
+function writeFixedPowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
   const on = modules.map((module) => module.on);
   const onMode = on.every((value) => value === undefined)
     ? 0
@@ -961,18 +982,18 @@ function writeFixedPowerStates(writer: BitWriter, modules: readonly PowerState[]
     writer.writeBoolean(allDefined);
     for (const value of on) {
       if (allDefined) writer.writeBoolean(value!);
-      else writer.writeBits(encodeOn(value), 2);
+      else writer.writeBounded(encodeOn(value), 3);
     }
   }
 
   const priorities = modules.map((module) => module.priority);
   const uniform = priorities.every((value) => value === priorities[0]);
   writer.writeBoolean(uniform);
-  if (uniform) writer.writeBits(encodePriority(priorities[0]), 3);
-  else for (const priority of priorities) writer.writeBits(encodePriority(priority), 3);
+  if (uniform) writer.writeBounded(encodePriority(priorities[0]), 6);
+  else for (const priority of priorities) writer.writeBounded(encodePriority(priority), 6);
 }
 
-function readFixedPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
+function readFixedPowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
   const onMode = reader.readBits(2);
   let on: Array<boolean | undefined>;
   if (onMode === 0) on = Array<boolean | undefined>(moduleCount).fill(undefined);
@@ -982,7 +1003,7 @@ function readFixedPowerStates(reader: BitReader, moduleCount: number): PowerStat
     const allDefined = reader.readBoolean();
     on = allDefined
       ? Array.from({ length: moduleCount }, () => reader.readBoolean())
-      : Array.from({ length: moduleCount }, () => decodeOn(reader.readBits(2)));
+      : Array.from({ length: moduleCount }, () => decodeOn(reader.readBounded(3)));
     if (allDefined !== on.every((value) => value !== undefined)) {
       throw new BuildLinkCodecError(
         'invalidPayload',
@@ -998,8 +1019,8 @@ function readFixedPowerStates(reader: BitReader, moduleCount: number): PowerStat
   }
   const uniformPriority = reader.readBoolean();
   const priority = uniformPriority
-    ? Array<number | undefined>(moduleCount).fill(decodePriority(reader.readBits(3)))
-    : Array.from({ length: moduleCount }, () => decodePriority(reader.readBits(3)));
+    ? Array<number | undefined>(moduleCount).fill(decodePriority(reader.readBounded(6)))
+    : Array.from({ length: moduleCount }, () => decodePriority(reader.readBounded(6)));
   if (uniformPriority !== priority.every((value) => value === priority[0])) {
     throw new BuildLinkCodecError('invalidPayload', 'A fixed priority mode is not canonical.');
   }
@@ -1007,7 +1028,7 @@ function readFixedPowerStates(reader: BitReader, moduleCount: number): PowerStat
 }
 
 function writeEngineeringStates(
-  writer: BitWriter,
+  writer: CodecWriter,
   states: readonly (CodecEngineeringState | undefined)[],
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
@@ -1052,7 +1073,7 @@ function writeEngineeringStates(
       const reference = references[index];
       writer.writeBoolean(reference !== null);
       if (reference !== null) {
-        writer.writeBits(reference, referenceWidth);
+        writer.writeBounded(reference, records.length);
         continue;
       }
     }
@@ -1061,7 +1082,7 @@ function writeEngineeringStates(
 }
 
 function readEngineeringStates(
-  reader: BitReader,
+  reader: CodecReader,
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
 ): Array<CodecEngineeringState | undefined> {
@@ -1074,13 +1095,12 @@ function readEngineeringStates(
     ? eligible
     : readIndexSet(reader, eligible.length).map((index) => eligible[index]!);
   const useReferences = engineered.length > 1 && reader.readBoolean();
-  const referenceWidth = bitsRequired(engineered.length);
   const decodedRecords: CodecEngineeringState[] = [];
   const firstRecordByKey = new Map<string, number>();
   for (const [recordIndex, occupiedIndex] of engineered.entries()) {
     const moduleIndex = moduleIndexes[occupiedSlots[occupiedIndex]!]!;
     if (useReferences && reader.readBoolean()) {
-      const reference = reader.readBits(referenceWidth);
+      const reference = reader.readBounded(engineered.length);
       const referenced = decodedRecords[reference];
       if (
         referenced === undefined ||
@@ -1141,7 +1161,7 @@ function engineeringReferences(records: readonly EngineeringRecord[]): Array<num
 }
 
 function engineeringRecordBitCost(record: EngineeringRecord): number {
-  const writer = new BitWriter();
+  const writer = new SymbolWriter();
   writeEngineering(writer, record.moduleIndex, record.engineering);
   return writer.length;
 }
@@ -1159,7 +1179,7 @@ function engineeringEligibleIndexes(
   });
 }
 
-function writeIndexSet(writer: BitWriter, valueCount: number, indexes: readonly number[]): void {
+function writeIndexSet(writer: CodecWriter, valueCount: number, indexes: readonly number[]): void {
   const mode = indexSetMode(valueCount, indexes);
   writer.writeBits(mode, 2);
   if (mode === 0) {
@@ -1171,10 +1191,12 @@ function writeIndexSet(writer: BitWriter, valueCount: number, indexes: readonly 
   }
 
   if (mode === 3) {
-    writer.writeBits(indexes.length, bitsRequired(valueCount + 1));
+    writer.writeBounded(indexes.length, valueCount + 1);
     const combinations = combinationCount(valueCount, indexes.length);
     const width = combinationRankWidth(combinations);
-    if (width > 0) writer.writeBits(combinationRank(valueCount, indexes), width);
+    if (width > 0) {
+      writer.writeBounded(combinationRank(valueCount, indexes), combinations);
+    }
     return;
   }
 
@@ -1185,11 +1207,11 @@ function writeIndexSet(writer: BitWriter, valueCount: number, indexes: readonly 
           Array.from({ length: valueCount }, () => false),
           (_value, index) => !indexes.includes(index),
         );
-  writer.writeBits(encodedIndexes.length, bitsRequired(valueCount + 1));
-  for (const index of encodedIndexes) writer.writeBits(index, bitsRequired(valueCount));
+  writer.writeBounded(encodedIndexes.length, valueCount + 1);
+  for (const index of encodedIndexes) writer.writeBounded(index, valueCount);
 }
 
-function readIndexSet(reader: BitReader, valueCount: number): number[] {
+function readIndexSet(reader: CodecReader, valueCount: number): number[] {
   const mode = reader.readBits(2);
   let indexes: number[];
   if (mode === 0) {
@@ -1207,13 +1229,13 @@ function readIndexSet(reader: BitReader, valueCount: number): number[] {
             (_value, index) => !encodedIndexes.includes(index),
           );
   } else {
-    const count = reader.readBits(bitsRequired(valueCount + 1));
+    const count = reader.readBounded(valueCount + 1);
     if (count > valueCount) {
       throw new BuildLinkCodecError('invalidPayload', 'An index set contains too many values.');
     }
     const combinations = combinationCount(valueCount, count);
     const width = combinationRankWidth(combinations);
-    const rank = width === 0 ? 0 : reader.readBits(width);
+    const rank = width === 0 ? 0 : reader.readBounded(combinations);
     if (rank >= combinations) {
       throw new BuildLinkCodecError('invalidPayload', 'An index-set rank is invalid.');
     }
@@ -1305,14 +1327,14 @@ function combinationUnrank(valueCount: number, selectedCount: number, rank: numb
   return indexes;
 }
 
-function readSparseIndexes(reader: BitReader, valueCount: number): number[] {
-  const count = reader.readBits(bitsRequired(valueCount + 1));
+function readSparseIndexes(reader: CodecReader, valueCount: number): number[] {
+  const count = reader.readBounded(valueCount + 1);
   if (count > valueCount) {
     throw new BuildLinkCodecError('invalidPayload', 'An index set contains too many values.');
   }
   const indexes: number[] = [];
   for (let position = 0; position < count; position += 1) {
-    const index = reader.readBits(bitsRequired(valueCount));
+    const index = reader.readBounded(valueCount);
     if (index >= valueCount || (indexes.at(-1) ?? -1) >= index) {
       throw new BuildLinkCodecError('invalidPayload', 'An index set is not strictly ordered.');
     }
@@ -1322,44 +1344,44 @@ function readSparseIndexes(reader: BitReader, valueCount: number): number[] {
 }
 
 function writeContextualIndex(
-  writer: BitWriter,
+  writer: CodecWriter,
   value: number,
   context: readonly number[],
-  globalBits: number,
+  globalValueCount: number,
 ): void {
   if (context.length === 0) {
-    writer.writeBits(value, globalBits);
+    writer.writeBounded(value, globalValueCount);
     return;
   }
   const contextualIndex = context.indexOf(value);
   writer.writeBoolean(contextualIndex !== -1);
-  if (contextualIndex === -1) writer.writeBits(value, globalBits);
-  else if (context.length > 1) writer.writeBits(contextualIndex, bitsRequired(context.length));
+  if (contextualIndex === -1) writer.writeBounded(value, globalValueCount);
+  else if (context.length > 1) writer.writeBounded(contextualIndex, context.length);
 }
 
 function readContextualIndex(
-  reader: BitReader,
+  reader: CodecReader,
   context: readonly number[],
-  globalBits: number,
+  globalValueCount: number,
 ): number {
-  if (context.length === 0) return reader.readBits(globalBits);
+  if (context.length === 0) return reader.readBounded(globalValueCount);
   if (reader.readBoolean()) return readIndexFromSet(reader, context, 'contextual identity');
-  const value = reader.readBits(globalBits);
+  const value = reader.readBounded(globalValueCount);
   if (context.includes(value)) {
     throw new BuildLinkCodecError('invalidPayload', 'A contextual identity is not canonical.');
   }
   return value;
 }
 
-function readIndexFromSet(reader: BitReader, context: readonly number[], kind: string): number {
+function readIndexFromSet(reader: CodecReader, context: readonly number[], kind: string): number {
   const width = contextualIndexBits(context.length);
-  const contextualIndex = width === 0 ? 0 : reader.readBits(width);
+  const contextualIndex = width === 0 ? 0 : reader.readBounded(context.length);
   const value = context[contextualIndex];
   if (value === undefined) throw unknownTableIndex(kind, contextualIndex);
   return value;
 }
 
-function writeIndexInSet(writer: BitWriter, value: number, context: readonly number[]): void {
+function writeIndexInSet(writer: CodecWriter, value: number, context: readonly number[]): void {
   const contextualIndex = context.indexOf(value);
   if (contextualIndex === -1) {
     throw new BuildLinkCodecError(
@@ -1368,7 +1390,7 @@ function writeIndexInSet(writer: BitWriter, value: number, context: readonly num
     );
   }
   const width = contextualIndexBits(context.length);
-  if (width > 0) writer.writeBits(contextualIndex, width);
+  if (width > 0) writer.writeBounded(contextualIndex, context.length);
 }
 
 function contextualIndexBits(valueCount: number): number {
@@ -1543,7 +1565,7 @@ function engineeringStateFromModule(
 }
 
 function writeEngineering(
-  writer: BitWriter,
+  writer: CodecWriter,
   moduleIndex: number,
   engineering: CodecEngineeringState,
 ): void {
@@ -1593,19 +1615,19 @@ function writeEngineering(
     writer,
     engineering.blueprint,
     blueprintSetForModule(moduleIndex),
-    codecContext().blueprintBits,
+    codecContext().tables.BLUEPRINTS.length,
   );
   if (grades.length > 1) {
     writer.writeBoolean(engineering.level === maximumGrade);
     if (engineering.level !== maximumGrade) {
-      writer.writeBits(grades.indexOf(engineering.level), bitsRequired(grades.length - 1));
+      writer.writeBounded(grades.indexOf(engineering.level), grades.length - 1);
     }
   }
   writeQuality(writer, engineering.quality);
   writeExperimental(writer, moduleIndex, engineering.experimental);
 }
 
-function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeringState {
+function readEngineering(reader: CodecReader, moduleIndex: number): CodecEngineeringState {
   const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
   const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
   const special = preEngineeredAvailable && (!ordinaryAvailable || reader.readBoolean());
@@ -1632,7 +1654,7 @@ function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeri
   const blueprintIndex = readContextualIndex(
     reader,
     blueprintSetForModule(moduleIndex),
-    codecContext().blueprintBits,
+    codecContext().tables.BLUEPRINTS.length,
   );
   if (!codecContext().tables.BLUEPRINTS[blueprintIndex]) {
     throw unknownTableIndex('engineering blueprint', blueprintIndex);
@@ -1641,7 +1663,7 @@ function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeri
   const maximumGrade = grades.at(-1)!;
   let level = maximumGrade;
   if (grades.length > 1 && !reader.readBoolean()) {
-    const gradeIndex = reader.readBits(bitsRequired(grades.length - 1));
+    const gradeIndex = reader.readBounded(grades.length - 1);
     if (gradeIndex >= grades.length - 1) {
       throw new BuildLinkCodecError(
         'invalidPayload',
@@ -1663,7 +1685,7 @@ function readEngineering(reader: BitReader, moduleIndex: number): CodecEngineeri
   };
 }
 
-function writeQuality(writer: BitWriter, quality: number): void {
+function writeQuality(writer: CodecWriter, quality: number): void {
   if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
     throw new BuildLinkCodecError('invalidPayload', 'Engineering quality must be from 0 to 1.');
   }
@@ -1674,11 +1696,11 @@ function writeQuality(writer: BitWriter, quality: number): void {
 
   const scaled4 = exactScaledQuality(quality, QUALITY_SCALE_4);
   writer.writeBoolean(scaled4 === null);
-  if (scaled4 !== null) writer.writeBits(scaled4, QUALITY_BITS_4);
+  if (scaled4 !== null) writer.writeBounded(scaled4, QUALITY_SCALE_4 + 1);
   else writer.writeFloat64(quality);
 }
 
-function readQuality(reader: BitReader): number {
+function readQuality(reader: CodecReader): number {
   if (!reader.readBoolean()) return 1;
   if (!reader.readBoolean()) return 0;
   if (!reader.readBoolean()) return readScaledQuality(reader);
@@ -1694,8 +1716,8 @@ function exactScaledQuality(quality: number, scale: number): number | null {
   return scaled / scale === quality ? scaled : null;
 }
 
-function readScaledQuality(reader: BitReader): number {
-  const scaled = reader.readBits(QUALITY_BITS_4);
+function readScaledQuality(reader: CodecReader): number {
+  const scaled = reader.readBounded(QUALITY_SCALE_4 + 1);
   if (scaled <= 0 || scaled >= QUALITY_SCALE_4) {
     throw new BuildLinkCodecError('invalidPayload', 'Engineering quality is not canonical.');
   }
@@ -1703,7 +1725,7 @@ function readScaledQuality(reader: BitReader): number {
 }
 
 function writeExperimental(
-  writer: BitWriter,
+  writer: CodecWriter,
   moduleIndex: number,
   experimental: number | null,
 ): void {
@@ -1713,16 +1735,16 @@ function writeExperimental(
     writer,
     experimental,
     experimentalSetForModule(moduleIndex),
-    codecContext().experimentalBits,
+    codecContext().tables.EXPERIMENTAL_EFFECTS.length,
   );
 }
 
-function readExperimental(reader: BitReader, moduleIndex: number): number | null {
+function readExperimental(reader: CodecReader, moduleIndex: number): number | null {
   if (!reader.readBoolean()) return null;
   const experimentalIndex = readContextualIndex(
     reader,
     experimentalSetForModule(moduleIndex),
-    codecContext().experimentalBits,
+    codecContext().tables.EXPERIMENTAL_EFFECTS.length,
   );
   if (!codecContext().tables.EXPERIMENTAL_EFFECTS[experimentalIndex]) {
     throw unknownTableIndex('experimental effect', experimentalIndex);
@@ -1731,7 +1753,7 @@ function readExperimental(reader: BitReader, moduleIndex: number): number | null
 }
 
 function writeExperimentalWithDefault(
-  writer: BitWriter,
+  writer: CodecWriter,
   moduleIndex: number,
   experimental: number | null,
   defaultEffect: number | null,
@@ -1746,7 +1768,7 @@ function writeExperimentalWithDefault(
 }
 
 function readExperimentalWithDefault(
-  reader: BitReader,
+  reader: CodecReader,
   moduleIndex: number,
   defaultEffect: number | null,
 ): number | null {
@@ -1805,13 +1827,144 @@ function normalise(value: string): string {
   return value.toLowerCase();
 }
 
-class BitWriter {
-  private readonly bytes: number[] = [];
+type EncodedSymbol = { readonly value: number; readonly valueCount: number };
+
+interface CodecWriter {
+  writeBoolean(value: boolean): void;
+  writeBits(value: number, width: number): void;
+  writeBounded(value: number, valueCount: number): void;
+  writeFloat64(value: number): void;
+  writeString(value: string): void;
+}
+
+interface CodecReader {
+  readonly done: boolean;
+  readBoolean(): boolean;
+  readBits(width: number): number;
+  readBounded(valueCount: number): number;
+  readNonNegativeFloat(): number;
+  readUnitFloat(): number;
+  readString(): string;
+}
+
+class SymbolWriter implements CodecWriter {
+  readonly symbols: EncodedSymbol[] = [];
   private bitLength = 0;
 
   get length(): number {
     return this.bitLength;
   }
+
+  writeBoolean(value: boolean): void {
+    this.writeBits(value ? 1 : 0, 1);
+  }
+
+  writeBits(value: number, width: number): void {
+    if (!Number.isInteger(width) || width < 1 || width > 31) {
+      throw new BuildLinkCodecError('invalidPayload', 'A bit width is invalid.');
+    }
+    this.writeSymbol(value, 2 ** width);
+  }
+
+  writeBounded(value: number, valueCount: number): void {
+    this.writeSymbol(value, valueCount);
+  }
+
+  writeFloat64(value: number): void {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new BuildLinkCodecError('invalidPayload', 'A non-negative number is required.');
+    }
+    const bytes = new Uint8Array(8);
+    new DataView(bytes.buffer).setFloat64(0, value, true);
+    for (const byte of bytes) this.writeBits(byte, 8);
+  }
+
+  writeString(value: string): void {
+    if (!isWellFormedUnicode(value)) {
+      throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
+    }
+    const encoded = new TextEncoder().encode(value);
+    const compact = [...value].every((character) => COMPACT_STRING_CHARACTERS.has(character));
+    this.writeVarUint(compact ? value.length * 2 + 1 : encoded.length * 2);
+    if (compact) {
+      for (const character of value) {
+        this.writeBounded(COMPACT_STRING_ALPHABET.indexOf(character), 64);
+      }
+      return;
+    }
+    for (const byte of encoded) this.writeBits(byte, 8);
+  }
+
+  private writeVarUint(value: number): void {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new BuildLinkCodecError('invalidPayload', 'An unsigned integer is invalid.');
+    }
+    let remaining = value;
+    do {
+      const byte = remaining % 128;
+      remaining = Math.floor(remaining / 128);
+      this.writeBits(byte | (remaining > 0 ? 0x80 : 0), 8);
+    } while (remaining > 0);
+  }
+
+  private writeSymbol(value: number, valueCount: number): void {
+    if (
+      !Number.isSafeInteger(value) ||
+      value < 0 ||
+      !Number.isSafeInteger(valueCount) ||
+      valueCount < 2 ||
+      value >= valueCount
+    ) {
+      throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
+    }
+    this.symbols.push({ value, valueCount });
+    this.bitLength += bitsRequired(valueCount);
+  }
+}
+
+function canonicalBody(symbols: readonly EncodedSymbol[]): Uint8Array {
+  const packed = renderBody(symbols, false);
+  const arithmetic = renderBody(symbols, true);
+  return arithmetic.length < packed.length ? arithmetic : packed;
+}
+
+function renderBody(symbols: readonly EncodedSymbol[], arithmetic: boolean): Uint8Array {
+  const [ship, ...remaining] = symbols;
+  if (ship === undefined || ship.valueCount !== codecContext().tables.SHIPS.length) {
+    throw new BuildLinkCodecError('invalidPayload', 'The codec ship symbol is invalid.');
+  }
+  const writer = new RawBitWriter();
+  const shipCount = codecContext().tables.SHIPS.length;
+  const shipTagWidth = bitsRequired(shipCount + 1);
+  const markerCount = 2 ** shipTagWidth - shipCount;
+  const remainder = ship.value % markerCount;
+  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
+  writer.writeBits(arithmetic ? shipCount + remainder : ship.value, shipTagWidth);
+  if (arithmetic) {
+    const encoder = new ArithmeticEncoder((bit) => writer.writeBoolean(bit === 1));
+    const groupCount = arithmeticShipGroupCount(shipCount, markerCount, remainder);
+    if (groupCount > 1) encoder.write(Math.floor(ship.value / markerCount), groupCount);
+    for (const { value, valueCount } of remaining) encoder.write(value, valueCount);
+    encoder.finish();
+  } else {
+    for (const { value, valueCount } of remaining) {
+      writer.writeBits(value, bitsRequired(valueCount));
+    }
+  }
+  return writer.toUint8Array();
+}
+
+function arithmeticShipGroupCount(
+  shipCount: number,
+  markerCount: number,
+  remainder: number,
+): number {
+  return Math.floor((shipCount - 1 - remainder) / markerCount) + 1;
+}
+
+class RawBitWriter {
+  private readonly bytes: number[] = [];
+  private bitLength = 0;
 
   writeBoolean(value: boolean): void {
     this.writeBits(value ? 1 : 0, 1);
@@ -1837,59 +1990,18 @@ class BitWriter {
     }
   }
 
-  writeVarUint(value: number): void {
-    if (!Number.isSafeInteger(value) || value < 0) {
-      throw new BuildLinkCodecError('invalidPayload', 'An unsigned integer is invalid.');
-    }
-    let remaining = value;
-    do {
-      const byte = remaining % 128;
-      remaining = Math.floor(remaining / 128);
-      this.writeBits(byte | (remaining > 0 ? 0x80 : 0), 8);
-    } while (remaining > 0);
-  }
-
-  writeFloat64(value: number): void {
-    if (!Number.isFinite(value) || value < 0) {
-      throw new BuildLinkCodecError('invalidPayload', 'A non-negative number is required.');
-    }
-    const bytes = new Uint8Array(8);
-    new DataView(bytes.buffer).setFloat64(0, value, true);
-    for (const byte of bytes) this.writeBits(byte, 8);
-  }
-
-  writeString(value: string): void {
-    if (!isWellFormedUnicode(value)) {
-      throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
-    }
-    const encoded = new TextEncoder().encode(value);
-    const compact = [...value].every((character) => COMPACT_STRING_CHARACTERS.has(character));
-    this.writeVarUint(compact ? value.length * 2 + 1 : encoded.length * 2);
-    if (compact) {
-      for (const character of value) {
-        const index = COMPACT_STRING_ALPHABET.indexOf(character);
-        if (index < 0) {
-          throw new BuildLinkCodecError('invalidPayload', 'A compact string is invalid.');
-        }
-        this.writeBits(index, 6);
-      }
-      return;
-    }
-    for (const byte of encoded) this.writeBits(byte, 8);
-  }
-
   toUint8Array(): Uint8Array {
     return Uint8Array.from(this.bytes);
   }
 }
 
-class BitReader {
+class RawBitReader {
   private bitOffset = 0;
 
   constructor(private readonly bytes: Uint8Array) {}
 
   get done(): boolean {
-    const remaining = this.remainingBits;
+    const remaining = this.bytes.length * 8 - this.bitOffset;
     if (remaining >= 8) return false;
     for (let offset = this.bitOffset; offset < this.bytes.length * 8; offset += 1) {
       const byte = this.bytes[Math.floor(offset / 8)]!;
@@ -1898,12 +2010,13 @@ class BitReader {
     return true;
   }
 
-  private get remainingBits(): number {
-    return this.bytes.length * 8 - this.bitOffset;
-  }
-
   readBoolean(): boolean {
     return this.readBits(1) === 1;
+  }
+
+  readBitOrZero(): number {
+    if (this.bitOffset >= this.bytes.length * 8) return 0;
+    return this.readBits(1);
   }
 
   readBits(width: number): number {
@@ -1922,25 +2035,15 @@ class BitReader {
     this.bitOffset += width;
     return value;
   }
+}
 
-  readVarUint(): number {
-    let value = 0;
-    let factor = 1;
-    for (let count = 0; count < 8; count += 1) {
-      const byte = this.readBits(8);
-      value += (byte & 0x7f) * factor;
-      if (!Number.isSafeInteger(value)) {
-        throw new BuildLinkCodecError('invalidPayload', 'An encoded integer is too large.');
-      }
-      if ((byte & 0x80) === 0) return value;
-      factor *= 128;
-    }
-    throw new BuildLinkCodecError('invalidPayload', 'An encoded integer is too long.');
-  }
+abstract class SymbolReader implements CodecReader {
+  abstract readonly done: boolean;
+  abstract readBits(width: number): number;
+  abstract readBounded(valueCount: number): number;
 
-  readFloat64(): number {
-    const bytes = Uint8Array.from({ length: 8 }, () => this.readBits(8));
-    return new DataView(bytes.buffer).getFloat64(0, true);
+  readBoolean(): boolean {
+    return this.readBits(1) === 1;
   }
 
   readNonNegativeFloat(): number {
@@ -1963,23 +2066,77 @@ class BitReader {
     const header = this.readVarUint();
     const compact = header % 2 === 1;
     const length = Math.floor(header / 2);
-    if (compact) {
-      if (length > Math.floor(this.remainingBits / 6)) {
-        throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
-      }
-      return Array.from({ length }, () => {
-        const character = COMPACT_STRING_ALPHABET[this.readBits(6)];
-        if (character === undefined) {
-          throw new BuildLinkCodecError('invalidPayload', 'A compact string is invalid.');
-        }
-        return character;
-      }).join('');
+    if (length > MAX_STRING_UNITS) {
+      throw new BuildLinkCodecError('invalidPayload', 'A build-link string is too long.');
     }
-    if (length > Math.floor(this.remainingBits / 8)) {
-      throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
+    if (compact) {
+      return Array.from({ length }, () => COMPACT_STRING_ALPHABET[this.readBits(6)]!).join('');
     }
     const encoded = Uint8Array.from({ length }, () => this.readBits(8));
     return new TextDecoder('utf-8', { fatal: true }).decode(encoded);
+  }
+
+  private readVarUint(): number {
+    let value = 0;
+    let factor = 1;
+    for (let count = 0; count < 8; count += 1) {
+      const byte = this.readBits(8);
+      value += (byte & 0x7f) * factor;
+      if (!Number.isSafeInteger(value)) {
+        throw new BuildLinkCodecError('invalidPayload', 'An encoded integer is too large.');
+      }
+      if ((byte & 0x80) === 0) return value;
+      factor *= 128;
+    }
+    throw new BuildLinkCodecError('invalidPayload', 'An encoded integer is too long.');
+  }
+
+  private readFloat64(): number {
+    const bytes = Uint8Array.from({ length: 8 }, () => this.readBits(8));
+    return new DataView(bytes.buffer).getFloat64(0, true);
+  }
+}
+
+class PackedSymbolReader extends SymbolReader {
+  constructor(private readonly source: RawBitReader) {
+    super();
+  }
+
+  get done(): boolean {
+    return this.source.done;
+  }
+
+  readBits(width: number): number {
+    return this.source.readBits(width);
+  }
+
+  readBounded(valueCount: number): number {
+    const value = this.source.readBits(bitsRequired(valueCount));
+    if (value >= valueCount) {
+      throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
+    }
+    return value;
+  }
+}
+
+class ArithmeticSymbolReader extends SymbolReader {
+  readonly done = true;
+  private readonly decoder: ArithmeticDecoder;
+
+  constructor(source: RawBitReader) {
+    super();
+    this.decoder = new ArithmeticDecoder(() => source.readBitOrZero());
+  }
+
+  readBits(width: number): number {
+    if (!Number.isInteger(width) || width < 1 || width > 31) {
+      throw new BuildLinkCodecError('invalidPayload', 'A bit width is invalid.');
+    }
+    return this.decoder.read(2 ** width);
+  }
+
+  readBounded(valueCount: number): number {
+    return this.decoder.read(valueCount);
   }
 }
 
@@ -2012,10 +2169,7 @@ function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables):
   return {
     tableVersion,
     tables,
-    shipBits: bitsRequired(tables.SHIPS.length),
     moduleBits: bitsRequired(tables.MODULES.length),
-    blueprintBits: bitsRequired(tables.BLUEPRINTS.length),
-    experimentalBits: bitsRequired(tables.EXPERIMENTAL_EFFECTS.length),
     poweredModuleSet: new Set(tables.POWERED_MODULES),
     shipIndex: createIndex(tables.SHIPS),
     moduleIndex: createIndex(tables.MODULES),

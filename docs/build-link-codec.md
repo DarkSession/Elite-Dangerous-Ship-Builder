@@ -30,7 +30,7 @@ The complete fragment is built in layers:
 #b.<encoded payload>
     │
     └─ Base70 digits with a Base62-only terminal digit
-       └─ payload bytes: [table version + packed build state] [CRC-32, little-endian]
+       └─ payload bytes: [table version + adaptive build state] [CRC-32, little-endian]
           └─ identities resolved through the selected immutable JSON table
              └─ decoded and reconstructed through @elite-dangerous-almanac/core
 ```
@@ -77,21 +77,101 @@ to 500 characters.
 
 ## Binary body
 
-Fields are written least-significant bit first within each field and byte. The writer pads the final
-partial byte with zero bits; the decoder rejects any non-zero or additional trailing data.
+The first ten bits are always the directly readable codec-table version. The next fixed-width hull
+tag also selects the body representation. For a table with `h` hulls, its width is
+`ceil(log2(h + 1))`:
 
-| Order | Field               | Representation                                                                |
-| ----: | ------------------- | ----------------------------------------------------------------------------- |
-|     1 | Codec-table version | 10 bits; currently `1`                                                        |
-|     2 | Hull                | Fixed-width index into the pinned hull table                                  |
-|     3 | Ship-name presence  | 1 bit                                                                         |
-|     4 | Ship-ident presence | 1 bit                                                                         |
-|     5 | Ship name           | When present: tagged varuint length followed by compact symbols or UTF-8      |
-|     6 | Ship ident          | When present: tagged varuint length followed by compact symbols or UTF-8      |
-|     7 | Pristine default    | 1 bit; when set, the hull's pinned stock loadout ends the body                |
-|     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules     |
-|     9 | Power states        | Explicit values for power-drawing modules and fixed components                |
-|    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects |
+- tag values below `h` select bit packing and are the hull index;
+- tag values from `h` upward select arithmetic coding and carry the hull-index remainder across the
+  unused tag values; the arithmetic stream begins with the corresponding quotient when needed.
+
+For table 1, `h = 48`, so its six-bit values `0..47` are packed hulls and `48..63` are arithmetic
+markers. This uses capacity the hull tag already needed and preserves small packed bodies exactly.
+That no-penalty reuse applies when `h` is not a power of two; a future power-of-two hull count makes
+the combined tag one bit wider than a packed hull index alone. The writer finalises both
+representations and uses arithmetic coding only when its padded body is strictly shorter; a tie uses
+bit packing.
+
+Packed fields are written least-significant bit first within each field and byte. Arithmetic output
+bits continue immediately after the hull tag, without byte alignment. Both forms pad the final
+partial byte with zero bits, and exact canonical reserialization rejects non-zero or additional
+trailing data.
+
+| Order | Field               | Representation                                                                  |
+| ----: | ------------------- | ------------------------------------------------------------------------------- |
+|     1 | Codec-table version | 10 raw bits; currently `1`                                                      |
+|     2 | Representation/hull | Fixed-width packed hull index or arithmetic marker described above              |
+|     3 | Ship-name presence  | Boolean                                                                         |
+|     4 | Ship-ident presence | Boolean                                                                         |
+|     5 | Ship name           | When present: tagged varuint length followed by compact symbols or UTF-8        |
+|     6 | Ship ident          | When present: tagged varuint length followed by compact symbols or UTF-8        |
+|     7 | Pristine default    | Boolean; when set, the hull's pinned stock loadout ends the logical symbol list |
+|     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules       |
+|     9 | Power states        | Explicit values for power-drawing modules and fixed components                  |
+|    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects   |
+
+### Arithmetic representation
+
+The arithmetic branch is a 64-bit integer Witten–Neal–Cleary coder with inclusive `low` and `high`
+intervals and deterministic E1/E2/E3 renormalisation. Every logical value is encoded against its
+actual uniform cardinality: booleans use `2`, bytes use `256`, contextual identities use the size of
+their candidate set, and an eligible combination rank uses its exact combination count.
+
+The immutable arithmetic constants are:
+
+```text
+P    = 2^64
+MAX  = P - 1
+HALF = P / 2
+Q1   = P / 4
+Q3   = 3 * P / 4
+low  = 0
+high = MAX
+```
+
+For a symbol `s` in a uniform alphabet of cardinality `N`, `2 <= N <=
+Number.MAX_SAFE_INTEGER` and `0 <= s < N`, the encoder updates the inclusive interval with exact
+`BigInt` arithmetic:
+
+```text
+range   = high - low + 1
+newHigh = low + floor(range * (s + 1) / N) - 1
+newLow  = low + floor(range * s / N)
+```
+
+After each update, renormalisation repeats the first applicable case:
+
+```text
+E1: high < HALF              => emit 0 and all pending complements
+E2: low >= HALF              => emit 1 and all pending complements; subtract HALF
+E3: low >= Q1 and high < Q3  => increment pending underflow; subtract Q1
+otherwise                    => stop renormalising
+```
+
+Each completed E1/E2/E3 step then sets `low = 2 * low` and `high = 2 * high + 1`. Emitting a bit
+also emits every pending-underflow bit as its complement, then clears the pending count. Arithmetic
+stream bits are stored in emission order at successive physical bit positions; because physical
+positions increase least-significant position first within a byte, they are not reversed or grouped
+as a multi-bit integer.
+
+The decoder initialises `code` from the first 64 arithmetic stream bits in emission order, shifting
+the previous code left before adding each bit. Missing physical bits are zero. It selects the next
+symbol with:
+
+```text
+range = high - low + 1
+s     = floor((((code - low + 1) * N) - 1) / range)
+```
+
+It applies the same interval update. During E2 it subtracts `HALF` from `low`, `high`, and `code`;
+during E3 it subtracts `Q1` from all three. Every completed renormalisation step doubles `low` and
+sets `high = 2 * high + 1` and `code = 2 * code + nextBit`.
+
+Termination increments the pending-underflow count once. If `low < Q1`, it emits `0` followed by
+pending `1` bits; otherwise it emits `1` followed by pending `0` bits. The grammar supplies the
+symbol count, so no EOF symbol or eight-byte code flush is needed. Exact body reserialization makes
+virtual zero extension safe: truncated input, alternate termination, extra bytes, a non-preferred
+representation, and non-zero padding all fail canonical validation.
 
 The pristine marker describes the ordinary base: every module matches the pinned default and every
 fitted module has absent power and engineering state.
@@ -116,10 +196,13 @@ selects one of four forms:
 
 Equal-cost modes prefer bitmap, then included indexes, then excluded indexes, then combination
 rank. Here `n` is the candidate count and `k` is the selected count. A zero-bit rank represents the
-only possible subset when `C(n,k) = 1`. The combination count for the largest 38-slot hull remains
-a safe JavaScript integer. Mode 3 is eligible only when its rank fits in at most 31 bits; with the
-pinned maximum of 38 slots, any wider rank already loses to the bitmap after including its count.
-The decoder rejects such a mode before reading its rank. The complement form is especially
+only possible subset when `C(n,k) = 1`. The combination count for the largest 38-slot hull remains a
+safe JavaScript integer. The generic arithmetic primitive can encode any safe-integer cardinality
+without narrowing it to 32 bits, but the shared index-set grammar deliberately makes mode 3
+eligible only when its bit-packed rank fits in at most 31 bits. Both canonical candidates must
+render the same logical grammar, and with the pinned maximum of 38 slots any wider rank already
+loses to the bitmap after including its count. The decoder rejects such a mode before reading its
+rank. The complement form is especially
 effective for nearly complete loadouts: all 38 outfittable Anaconda slots can be represented as
 zero exclusions instead of a 38-bit occupancy map.
 
@@ -251,7 +334,8 @@ Validation occurs at every layer:
 5. Parse a table-indexed intermediate representation while validating every identity, contextual
    candidate, mode, range, count, and ordered index.
 6. Reject non-zero padding and trailing data.
-7. Canonically reserialise that intermediate representation and require the exact original body.
+7. Finalise both packed and arithmetic forms, select the strictly shorter padded body (packed on a
+   tie), and require that canonical body to match the input exactly.
 8. Only after protocol validation, reconstruct the `ShipLoadout` through the Almanac.
 
 Canonicality therefore depends only on the immutable decoder and tables, not on Almanac object
@@ -291,13 +375,13 @@ path for the affected table version.
 The fixed corpus currently produces these encoded data lengths. Each value and length includes the
 `b.` protocol prefix:
 
-| Reference build               | Base70 encoded data                                                                                                       | Data length |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------: |
-| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                            |          12 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                              |          10 |
-| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                                          |          14 |
-| Full engineered Anaconda*     | `b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7`                                      |          82 |
-| Supplied engineered Corvette† | `b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOPaL.X-orhwB!-f94/oZ` |         119 |
+| Reference build               | Base70 encoded data                                                                                                  | Data length |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------: |
+| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                       |          12 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                         |          10 |
+| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                                     |          14 |
+| Full engineered Anaconda*     | `b.25b5dRYu7rn.aOZ84kdGWEwCnDyLUBm3l.l6hx0nnmZhXXN@VTHDZSvOZ2hRWc.T0WG!P1V87u2Chb`                                   |          80 |
+| Supplied engineered Corvette† | `b.1fS.w,QYTD@6C@euGl/xHC3xdSJdr_IK-E7404@cI:778Ms,DzYtn/!gk,Ei0YHT7vg27GLnj38AzCh2P@67y/Cnp2,uhN/U-QjW160,rrnvyuOT` |         114 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -311,13 +395,13 @@ The every-hull baseline corpus covers empty and stock configurations for all 48 
 Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
 festive literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
 package-owned green flak-launcher variant. The sanitised real
-engineered Federal Corvette produces 119 characters of encoded data. It is a preservation fixture:
+engineered Federal Corvette produces 114 characters of encoded data. It is a preservation fixture:
 one small hardpoint records a partial quality even though its modifier values match the completed
 grade-5 roll. The codec preserves that captured quality exactly; the fixture is not treated as an
 independent oracle for effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 82,
+Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 80,
 including its `b.` prefix.
 
 ## Complete reference build definitions
@@ -480,23 +564,28 @@ four-decimal quality representation is exact for real SLEF exports and retains a
 than quantising exceptional values. Complement sets, repeated-module identities, and repeated
 ordinary engineering records are all enabled only when their exact bit-cost comparison wins.
 
-A general compression pass was also measured after these changes. The fair comparison compresses
-the body and then appends the unchanged four-byte CRC:
+A general compression pass was also measured. The fair comparison compresses the body and then
+appends the unchanged four-byte CRC:
 
-| Build               | Current bytes | Raw DEFLATE + CRC | Brotli + CRC |
-| ------------------- | ------------: | ----------------: | -----------: |
-| Empty Sidewinder    |             8 |                10 |           12 |
-| Stock Krait Mk II   |             7 |                 9 |           11 |
-| Engineered Anaconda |            62 |                67 |           66 |
+| Build               | Bit-packed + CRC | Raw DEFLATE + CRC | Brotli + CRC |
+| ------------------- | ---------------: | ----------------: | -----------: |
+| Empty Sidewinder    |                8 |                10 |           12 |
+| Stock Krait Mk II   |                7 |                 9 |           11 |
+| Engineered Anaconda |               62 |                67 |           66 |
 
-Both compressors make every reference larger. At 82 encoded characters for the largest synthetic
-reference and 119 for the sanitised real build, a second compression path is not a reasonable
-trade-off. Base70 still needs interoperability testing in the actual sharing applications. Its
-radix conversion uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
+Both general-purpose compressors make every reference larger. The adopted arithmetic path is
+different: it encodes the codec's existing semantic values against their exact cardinalities and is
+selected only when its final padded body is smaller. It reduces the Anaconda body from 58 to 56
+bytes and its encoded data from 82 to 80 characters. The Corvette body falls from 86 to 82 bytes
+and its encoded data from 119 to 114 characters. Empty, stock, festive, and every other build where
+bit packing wins retain the packed form without a representation-bit penalty. Base70 still needs
+interoperability testing in the actual sharing applications. Its radix conversion uses bounded
+byte/digit arithmetic rather than a whole-payload `BigInt`.
 
 The adaptive combination-rank index-set mode leaves empty and stock references at 12 and 10
-characters, while reducing the engineered Anaconda from 84 to 82 and the supplied Corvette from
-120 to 119. A fixed-width truncated-binary index evaluation saved at most one
+characters, while reducing the bit-packed engineered Anaconda from 84 to 82 and the supplied
+Corvette from 120 to 119. Arithmetic coding then produces the 80- and 114-character canonical
+forms above. A fixed-width truncated-binary index evaluation saved at most one
 character and changed several equally sized literals, so the combination rank was the stronger
 trade-off.
 
