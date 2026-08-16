@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-13
 
-**Updated**: 2026-08-14
+**Updated**: 2026-08-16
 
 **Feature**: [spec.md](../spec.md)
 
@@ -71,3 +71,6 @@
   late**: the installed set is 64 MB across 144 files with the largest illustration at 4.1 MB, and
   the imagery is Frontier Developments' property under media-usage terms whose notice this
   application must reproduce.
+- **Engineering quality was removed from the application model on 2026-08-16.** FR-024, FR-028,
+  FR-029 and SC-007 now treat every selected or imported grade as complete at 100% and no longer
+  require persistence or links to carry an invariant field.

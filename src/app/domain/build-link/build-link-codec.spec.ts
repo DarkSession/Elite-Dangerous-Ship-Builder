@@ -41,14 +41,14 @@ describe('build-link codec', () => {
     );
   });
 
-  it('keeps exact non-terminal engineering quality but omits all credit values', () => {
-    const source = makeImportedEngineeredBuild(true);
-    const withoutCredits = makeImportedEngineeredBuild(false);
+  it('assumes complete engineering quality and omits all credit values', () => {
+    const source = makeImportedEngineeredBuild(true, 0.73123456789);
+    const withoutCredits = makeImportedEngineeredBuild(false, 0.73123456789);
 
     const encoded = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(encoded);
 
-    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Quality).toBe(0.73123456789);
+    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Quality).toBe(1);
     expect(source.sourcePurchase).not.toBeNull();
     expect(decoded.sourcePurchase).toBeNull();
     expect(encoded).toBe(encodeBuildLinkFragment(withoutCredits));
@@ -133,7 +133,7 @@ describe('build-link codec', () => {
     );
   });
 
-  it('round-trips the zero-quality engineering boundary without a special effect', () => {
+  it('normalises imported zero-quality engineering without a special effect', () => {
     const source = ShipLoadout.default('Krait_MkII');
     source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade: 1, quality: 0 });
 
@@ -142,14 +142,14 @@ describe('build-link codec', () => {
     expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering).toMatchObject({
       BlueprintName: 'FSD_LongRange',
       Level: 1,
-      Quality: 0,
+      Quality: 1,
     });
     expect(
       decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.ExperimentalEffect,
     ).toBeUndefined();
   });
 
-  it('uses exact compact fixed-point storage for four-decimal journal quality', () => {
+  it('omits partial engineering quality from the canonical build model', () => {
     const source = ShipLoadout.default('Krait_MkII');
     const floatEscape = ShipLoadout.default('Krait_MkII');
     source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
@@ -163,10 +163,8 @@ describe('build-link codec', () => {
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
 
-    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Quality).toBe(0.9438);
-    expect(encodeBuildLinkFragment(source).length).toBeLessThan(
-      encodeBuildLinkFragment(floatEscape).length,
-    );
+    expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering?.Quality).toBe(1);
+    expect(encodeBuildLinkFragment(source)).toBe(encodeBuildLinkFragment(floatEscape));
   });
 
   it('uses pinned slot order instead of carrying SLEF module-array order', () => {
@@ -258,23 +256,23 @@ describe('build-link codec', () => {
     expect(longest).toEqual({ ship: 'Adder', length: 35 });
   });
 
-  it('preserves the external partial-quality capture without treating it as a stat oracle', () => {
+  it('normalises an external partial-quality capture to a completed blueprint', () => {
     const source = ShipLoadout.fromSlef(
       realisticEngineeredCorvette as Parameters<typeof ShipLoadout.fromSlef>[0],
     );
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
-    // The game reports partial quality here even though the captured modifiers match a completed
-    // grade-5 roll. Preserve the quality, but do not use this slot as a reconstruction oracle.
+    // The application models a selected grade as a completed blueprint even when a journal capture
+    // reports the partial roll that happened to produce the imported modifiers.
     expect(source.fittedModuleAt('SmallHardpoint2')?.engineering?.Quality).toBe(0.9438);
-    expect(decoded.fittedModuleAt('SmallHardpoint2')?.engineering?.Quality).toBe(0.9438);
+    expect(decoded.fittedModuleAt('SmallHardpoint2')?.engineering?.Quality).toBe(1);
 
-    expect(minimalState(decoded)).toEqual(minimalState(source));
+    expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.1fS.w,QYTD@6C@euGl/xHC3xdSJdr_IK-E7404@cI:778Ms,DzYtn/!gk,Ei0YHT7vg27GLnj38AzCh2P@67y/Cnp2,uhN/U-QjW160,rrnvyuOT',
+      'b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(137);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(131);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -435,6 +433,30 @@ describe('build-link codec', () => {
     expect(readPayloadBits(withPayloadTableVersion(encoded, 1_023), 0, 10)).toBe(1_023);
   });
 
+  it('encodes both grades of a two-grade blueprint without a redundant bounded symbol', () => {
+    const blueprintIndex = codecTable1.BLUEPRINTS.indexOf('FSD_LongRange');
+    const table2 = {
+      ...codecTable1,
+      $generated: { ...codecTable1.$generated, tableVersion: 2 },
+      BLUEPRINT_GRADES: codecTable1.BLUEPRINT_GRADES.map((grades, index) =>
+        index === blueprintIndex ? [1, 5] : grades,
+      ),
+    };
+    const codec2 = createBuildLinkCodec(2, table2);
+
+    for (const grade of [1, 5]) {
+      const source = ShipLoadout.default('Krait_MkII');
+      source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade, quality: 1 });
+      const decoded = codec2.decodeBuildLinkFragment(codec2.encodeBuildLinkFragment(source));
+
+      expect(decoded.fittedModuleAt('FrameShiftDrive')?.engineering).toMatchObject({
+        BlueprintName: 'FSD_LongRange',
+        Level: grade,
+        Quality: 1,
+      });
+    }
+  });
+
   it('shares one codec implementation across independent table versions', () => {
     const table2 = {
       ...codecTable1,
@@ -578,9 +600,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
-      'b.25b5dRYu7rn.aOZ84kdGWEwCnDyLUBm3l.l6hx0nnmZhXXN@VTHDZSvOZ2hRWc.T0WG!P1V87u2Chb',
+      'b.dtb4q.j:qTZT5gT0CpDtwq0DVlkN10dKElN9u44u0lRCUMZ99PuBBp5N!ufEu!TCDPaC2f7Xox_9',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 103]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 101]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -843,11 +865,11 @@ describe('build-link codec', () => {
   });
 });
 
-function makeImportedEngineeredBuild(includeCredits = true): ShipLoadout {
+function makeImportedEngineeredBuild(includeCredits = true, quality = 1): ShipLoadout {
   const assembled = ShipLoadout.default('Krait_MkII');
   assembled.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
     grade: 5,
-    quality: 0.73123456789,
+    quality,
     experimental: 'special_fsd_heavy',
   });
   assembled.setModuleEnabled('FrameShiftDrive', false);
@@ -990,7 +1012,7 @@ function makeFullyEngineeredAnaconda(): ShipLoadout {
   return loadout;
 }
 
-function minimalState(loadout: ShipLoadout): unknown {
+function minimalState(loadout: ShipLoadout, assumeFullQuality = false): unknown {
   const cargoHatch = loadout.fittedModuleAt('CargoHatch');
   const hasCargoHatchPower = cargoHatch?.on !== undefined || cargoHatch?.priority !== undefined;
   return {
@@ -1016,7 +1038,7 @@ function minimalState(loadout: ShipLoadout): unknown {
               : {
                   blueprint: module.engineering.BlueprintName.toLowerCase(),
                   grade: module.engineering.Level,
-                  quality: module.engineering.Quality,
+                  quality: assumeFullQuality ? 1 : module.engineering.Quality,
                   experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
                 },
         };

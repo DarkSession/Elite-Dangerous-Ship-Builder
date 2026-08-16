@@ -65,10 +65,8 @@ interface CodecContext {
 
 const TABLE_VERSION_BITS = 10;
 const MAX_STRING_UNITS = 2_048;
-const QUALITY_SCALE_4 = 10_000;
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
-let activeCodecContext: CodecContext | undefined;
 
 export function createBuildLinkCodec(
   tableVersion: number,
@@ -82,13 +80,17 @@ export function createBuildLinkCodec(
   ) {
     throw new Error('The build-link codec table version is invalid.');
   }
-  const context = createCodecContext(tableVersion, tables);
-  return {
-    encodeBuildLinkFragment: (loadout) =>
-      withCodecContext(context, () => encodeWithActiveTable(loadout)),
-    decodeBuildLinkFragment: (fragment) =>
-      withCodecContext(context, () => decodeWithActiveTable(fragment)),
-  };
+  return new TableBoundBuildLinkCodec(createCodecContext(tableVersion, tables));
+}
+
+class TableBoundBuildLinkCodec implements BuildLinkCodec {
+  constructor(private readonly context: CodecContext) {}
+
+  readonly encodeBuildLinkFragment = (loadout: ShipLoadout): string =>
+    encodeWithTable(this.context, loadout);
+
+  readonly decodeBuildLinkFragment = (fragment: string): ShipLoadout =>
+    decodeWithTable(this.context, fragment);
 }
 
 /**
@@ -96,23 +98,23 @@ export function createBuildLinkCodec(
  * SLEF parsing and reconstruction remain the Almanac's responsibility; this module
  * only serialises the minimal non-derivable build state.
  */
-function encodeWithActiveTable(loadout: ShipLoadout): string {
-  return encodeBuildLinkBody(canonicalBody(writeWithActiveTable(loadout).symbols));
+function encodeWithTable(codec: CodecContext, loadout: ShipLoadout): string {
+  return encodeBuildLinkBody(canonicalBody(codec, writeWithTable(codec, loadout).symbols));
 }
 
-function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
+function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter {
   const writer = new SymbolWriter();
-  const shipIndex = requireIdentity(codecContext().shipIndex, loadout.shipSymbol, 'ship');
-  const canonicalShip = codecContext().tables.SHIPS[shipIndex];
-  const slots = codecContext().tables.SLOTS_BY_SHIP[canonicalShip];
-  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[canonicalShip];
-  const slotIndex = codecContext().slotIndexByShip.get(canonicalShip);
+  const shipIndex = requireIdentity(codec, codec.shipIndex, loadout.shipSymbol, 'ship');
+  const canonicalShip = codec.tables.SHIPS[shipIndex];
+  const slots = codec.tables.SLOTS_BY_SHIP[canonicalShip];
+  const fixedModules = codec.tables.FIXED_MODULES_BY_SHIP[canonicalShip];
+  const slotIndex = codec.slotIndexByShip.get(canonicalShip);
   if (!slots || !fixedModules || !slotIndex) {
     throw new BuildLinkCodecError('unknownIdentity', `No codec slots exist for ${canonicalShip}.`);
   }
   const fixedModuleBySlot = new Map(fixedModules.map((fixed) => [normalise(fixed.slot), fixed]));
 
-  writer.writeBounded(shipIndex, codecContext().tables.SHIPS.length);
+  writer.writeBounded(shipIndex, codec.tables.SHIPS.length);
   writer.writeBoolean(loadout.shipName !== null);
   writer.writeBoolean(loadout.shipIdent !== null);
   if (loadout.shipName !== null) writer.writeString(loadout.shipName);
@@ -132,7 +134,7 @@ function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
             `Slot ${fixed.slot} appears more than once.`,
           );
         }
-        if (requireIdentity(codecContext().moduleIndex, module.symbol, 'module') !== fixed.module) {
+        if (requireIdentity(codec, codec.moduleIndex, module.symbol, 'module') !== fixed.module) {
           throw new BuildLinkCodecError(
             'invalidPayload',
             `Fixed slot ${fixed.slot} does not contain its pinned module.`,
@@ -149,7 +151,7 @@ function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
       }
       throw new BuildLinkCodecError(
         'unknownIdentity',
-        `Slot ${module.slot} is absent from codec table ${codecContext().tableVersion} for ${canonicalShip}.`,
+        `Slot ${module.slot} is absent from codec table ${codec.tableVersion} for ${canonicalShip}.`,
       );
     }
     const slot = slots[encodedSlot];
@@ -157,20 +159,16 @@ function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
       throw new BuildLinkCodecError('invalidPayload', `Slot ${slot} appears more than once.`);
     }
     modulesBySlot.set(slot, module);
-    moduleIndexes[encodedSlot] = requireIdentity(
-      codecContext().moduleIndex,
-      module.symbol,
-      'module',
-    );
+    moduleIndexes[encodedSlot] = requireIdentity(codec, codec.moduleIndex, module.symbol, 'module');
   }
 
-  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[canonicalShip];
+  const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[canonicalShip];
   const pristine =
     moduleIndexes.every((moduleIndex, index) => {
       const module = moduleAt(modulesBySlot, slots[index]);
       return (
         moduleIndex === defaults[index] &&
-        (!moduleDrawsPower(moduleIndex) ||
+        (!moduleDrawsPower(codec, moduleIndex) ||
           (module?.on === undefined && module?.priority === undefined)) &&
         module?.engineering === undefined
       );
@@ -178,34 +176,39 @@ function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
     fixedModules.every(({ slot, module: moduleIndex }) => {
       const module = moduleAt(modulesBySlot, slot);
       return (
-        !moduleDrawsPower(moduleIndex) ||
+        !moduleDrawsPower(codec, moduleIndex) ||
         (module?.on === undefined && module?.priority === undefined)
       );
     });
   writer.writeBoolean(pristine);
   if (!pristine) {
-    writeModuleIdentities(writer, canonicalShip, slots, defaults, moduleIndexes);
+    writeModuleIdentities(codec, writer, canonicalShip, slots, defaults, moduleIndexes);
     const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
     const occupiedModules = occupiedSlots.map((index) => moduleAt(modulesBySlot, slots[index])!);
     const powerStates: PowerState[] = [
       ...occupiedModules.flatMap((module, occupiedIndex) =>
-        moduleDrawsPower(moduleIndexes[occupiedSlots[occupiedIndex]!]!)
+        moduleDrawsPower(codec, moduleIndexes[occupiedSlots[occupiedIndex]!]!)
           ? [{ on: module.on, priority: module.priority }]
           : [],
       ),
       ...fixedModules.flatMap(({ slot, module: moduleIndex }) => {
-        if (!moduleDrawsPower(moduleIndex)) return [];
+        if (!moduleDrawsPower(codec, moduleIndex)) return [];
         const module = moduleAt(modulesBySlot, slot);
         return [{ on: module?.on, priority: module?.priority }];
       }),
     ];
     writePowerStates(writer, powerStates);
     writeEngineeringStates(
+      codec,
       writer,
       occupiedModules.map((module, occupiedIndex) =>
         module.engineering === undefined
           ? undefined
-          : engineeringStateFromModule(moduleIndexes[occupiedSlots[occupiedIndex]!]!, module),
+          : engineeringStateFromModule(
+              codec,
+              moduleIndexes[occupiedSlots[occupiedIndex]!]!,
+              module,
+            ),
       ),
       moduleIndexes,
       occupiedSlots,
@@ -215,19 +218,19 @@ function writeWithActiveTable(loadout: ShipLoadout): SymbolWriter {
 }
 
 /** Decode a fragment produced by the bound encoder for the active table. */
-function decodeWithActiveTable(fragment: string): ShipLoadout {
+function decodeWithTable(codec: CodecContext, fragment: string): ShipLoadout {
   const body = decodeBuildLinkBody(fragment);
   let state: CodecState;
   try {
     const source = new RawBitReader(body);
     const tableVersion = source.readBits(TABLE_VERSION_BITS);
-    if (tableVersion !== codecContext().tableVersion) {
+    if (tableVersion !== codec.tableVersion) {
       throw new BuildLinkCodecError(
         'unsupportedTableVersion',
         `Build-link table version ${tableVersion} is not supported by the loaded table.`,
       );
     }
-    const shipCount = codecContext().tables.SHIPS.length;
+    const shipCount = codec.tables.SHIPS.length;
     const shipTagWidth = bitsRequired(shipCount + 1);
     const representationTag = source.readBits(shipTagWidth);
     const arithmetic = representationTag >= shipCount;
@@ -248,8 +251,8 @@ function decodeWithActiveTable(fragment: string): ShipLoadout {
         );
       }
     }
-    state = readCodecState(reader, shipIndex);
-    if (!bytesEqual(writeCodecState(state), body)) {
+    state = readCodecState(codec, reader, shipIndex);
+    if (!bytesEqual(writeCodecState(codec, state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
   } catch (error) {
@@ -257,7 +260,7 @@ function decodeWithActiveTable(fragment: string): ShipLoadout {
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is invalid.');
   }
   try {
-    return reconstructLoadout(state);
+    return reconstructLoadout(codec, state);
   } catch (error) {
     if (error instanceof BuildLinkCodecError) throw error;
     throw new BuildLinkCodecError(
@@ -272,14 +275,12 @@ type OrdinaryEngineeringState = {
   readonly kind: 'ordinary';
   readonly blueprint: number;
   readonly level: number;
-  readonly quality: number;
   readonly experimental: number | null;
 };
 
 type PreEngineeredState = {
   readonly kind: 'preEngineered';
   readonly variant: number;
-  readonly quality: number;
   readonly experimental: number | null;
 };
 
@@ -295,12 +296,16 @@ type CodecState = {
   readonly engineeringStates: readonly (CodecEngineeringState | undefined)[];
 };
 
-function readCodecState(reader: CodecReader, packedShipIndex?: number): CodecState {
-  const shipIndex = packedShipIndex ?? reader.readBounded(codecContext().tables.SHIPS.length);
-  const ship = codecContext().tables.SHIPS[shipIndex];
-  if (!ship) throw unknownTableIndex('ship', shipIndex);
-  const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
-  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[ship];
+function readCodecState(
+  codec: CodecContext,
+  reader: CodecReader,
+  packedShipIndex?: number,
+): CodecState {
+  const shipIndex = packedShipIndex ?? reader.readBounded(codec.tables.SHIPS.length);
+  const ship = codec.tables.SHIPS[shipIndex];
+  if (!ship) throw unknownTableIndex(codec, 'ship', shipIndex);
+  const slots = codec.tables.SLOTS_BY_SHIP[ship];
+  const fixedModules = codec.tables.FIXED_MODULES_BY_SHIP[ship];
 
   const hasShipName = reader.readBoolean();
   const hasShipIdent = reader.readBoolean();
@@ -308,18 +313,18 @@ function readCodecState(reader: CodecReader, packedShipIndex?: number): CodecSta
   const shipIdent = hasShipIdent ? reader.readString() : undefined;
   const pristine = reader.readBoolean();
   const moduleIndexes = pristine
-    ? [...codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship]]
-    : readModuleIdentities(reader, ship, slots);
+    ? [...codec.tables.DEFAULT_MODULES_BY_SHIP[ship]]
+    : readModuleIdentities(codec, reader, ship, slots);
   const occupiedSlots = indexesWhere(moduleIndexes, (moduleIndex) => moduleIndex !== null);
-  const powerLayout = powerStateLayout(moduleIndexes, occupiedSlots, fixedModules);
+  const powerLayout = powerStateLayout(codec, moduleIndexes, occupiedSlots, fixedModules);
   const powerStateCount = powerLayout.occupied.length + powerLayout.fixed.length;
   const powerStates = pristine
     ? Array.from({ length: powerStateCount }, () => ({ on: undefined, priority: undefined }))
     : readPowerStates(reader, powerStateCount);
   const engineeringStates = pristine
     ? occupiedSlots.map(() => undefined)
-    : readEngineeringStates(reader, moduleIndexes, occupiedSlots);
-  if (!pristine && isPristineState(ship, moduleIndexes, powerStates, engineeringStates)) {
+    : readEngineeringStates(codec, reader, moduleIndexes, occupiedSlots);
+  if (!pristine && isPristineState(codec, ship, moduleIndexes, powerStates, engineeringStates)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
       'A stock loadout must use the pristine representation.',
@@ -341,32 +346,38 @@ function readCodecState(reader: CodecReader, packedShipIndex?: number): CodecSta
   };
 }
 
-function writeCodecState(state: CodecState): Uint8Array {
+function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
   const writer = new SymbolWriter();
-  writer.writeBounded(state.shipIndex, codecContext().tables.SHIPS.length);
+  writer.writeBounded(state.shipIndex, codec.tables.SHIPS.length);
   writer.writeBoolean(state.shipName !== undefined);
   writer.writeBoolean(state.shipIdent !== undefined);
   if (state.shipName !== undefined) writer.writeString(state.shipName);
   if (state.shipIdent !== undefined) writer.writeString(state.shipIdent);
   writer.writeBoolean(state.pristine);
   if (!state.pristine) {
-    const ship = codecContext().tables.SHIPS[state.shipIndex] as CodecShip;
-    const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
-    const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship];
+    const ship = codec.tables.SHIPS[state.shipIndex] as CodecShip;
+    const slots = codec.tables.SLOTS_BY_SHIP[ship];
+    const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[ship];
     const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
-    writeModuleIdentities(writer, ship, slots, defaults, state.moduleIndexes);
+    writeModuleIdentities(codec, writer, ship, slots, defaults, state.moduleIndexes);
     writePowerStates(writer, state.powerStates);
-    writeEngineeringStates(writer, state.engineeringStates, state.moduleIndexes, occupiedSlots);
+    writeEngineeringStates(
+      codec,
+      writer,
+      state.engineeringStates,
+      state.moduleIndexes,
+      occupiedSlots,
+    );
   }
-  return canonicalBody(writer.symbols);
+  return canonicalBody(codec, writer.symbols);
 }
 
-function reconstructLoadout(state: CodecState): ShipLoadout {
-  const ship = codecContext().tables.SHIPS[state.shipIndex] as CodecShip;
-  const slots = codecContext().tables.SLOTS_BY_SHIP[ship];
-  const fixedModules = codecContext().tables.FIXED_MODULES_BY_SHIP[ship];
+function reconstructLoadout(codec: CodecContext, state: CodecState): ShipLoadout {
+  const ship = codec.tables.SHIPS[state.shipIndex] as CodecShip;
+  const slots = codec.tables.SLOTS_BY_SHIP[ship];
+  const fixedModules = codec.tables.FIXED_MODULES_BY_SHIP[ship];
   const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
-  const powerLayout = powerStateLayout(state.moduleIndexes, occupiedSlots, fixedModules);
+  const powerLayout = powerStateLayout(codec, state.moduleIndexes, occupiedSlots, fixedModules);
   const powerByOccupiedIndex = new Map(
     powerLayout.occupied.map((occupiedIndex, powerIndex) => [
       occupiedIndex,
@@ -383,13 +394,13 @@ function reconstructLoadout(state: CodecState): ShipLoadout {
 
   const modules: LoadoutModule[] = occupiedSlots.map((slotIndex, occupiedIndex) => {
     const moduleIndex = state.moduleIndexes[slotIndex]!;
-    const item = codecContext().tables.MODULES[moduleIndex];
-    if (!item) throw unknownTableIndex('module', moduleIndex);
+    const item = codec.tables.MODULES[moduleIndex];
+    if (!item) throw unknownTableIndex(codec, 'module', moduleIndex);
     const { on, priority } = powerByOccupiedIndex.get(occupiedIndex) ?? EMPTY_POWER_STATE;
     const engineering = state.engineeringStates[occupiedIndex];
     const resolvedEngineering =
       engineering?.kind === 'preEngineered'
-        ? resolvePreEngineeredEngineering(engineering)
+        ? resolvePreEngineeredEngineering(codec, engineering)
         : undefined;
     return {
       Slot: slots[slotIndex],
@@ -400,8 +411,8 @@ function reconstructLoadout(state: CodecState): ShipLoadout {
     };
   });
   fixedModules.forEach(({ slot, module }, fixedIndex) => {
-    const item = codecContext().tables.MODULES[module];
-    if (!item) throw unknownTableIndex('fixed module', module);
+    const item = codec.tables.MODULES[module];
+    if (!item) throw unknownTableIndex(codec, 'fixed module', module);
     const { on, priority } = powerByFixedIndex.get(fixedIndex) ?? EMPTY_POWER_STATE;
     modules.push({
       Slot: slot,
@@ -422,18 +433,18 @@ function reconstructLoadout(state: CodecState): ShipLoadout {
   occupiedSlots.forEach((slotIndex, occupiedIndex) => {
     const engineering = state.engineeringStates[occupiedIndex];
     if (engineering?.kind !== 'ordinary') return;
-    const blueprint = codecContext().tables.BLUEPRINTS[engineering.blueprint];
-    if (!blueprint) throw unknownTableIndex('engineering blueprint', engineering.blueprint);
+    const blueprint = codec.tables.BLUEPRINTS[engineering.blueprint];
+    if (!blueprint) throw unknownTableIndex(codec, 'engineering blueprint', engineering.blueprint);
     const experimental =
       engineering.experimental === null
         ? undefined
-        : codecContext().tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
+        : codec.tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
     if (engineering.experimental !== null && experimental === undefined) {
-      throw unknownTableIndex('experimental effect', engineering.experimental);
+      throw unknownTableIndex(codec, 'experimental effect', engineering.experimental);
     }
     loadout.applyBlueprint(slots[slotIndex], blueprint, {
       grade: engineering.level,
-      quality: engineering.quality,
+      quality: 1,
       ...(experimental === undefined ? {} : { experimental }),
     });
   });
@@ -441,12 +452,13 @@ function reconstructLoadout(state: CodecState): ShipLoadout {
 }
 
 function isPristineState(
+  codec: CodecContext,
   ship: CodecShip,
   moduleIndexes: readonly (number | null)[],
   powerStates: readonly PowerState[],
   engineeringStates: readonly (CodecEngineeringState | undefined)[],
 ): boolean {
-  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship];
+  const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[ship];
   return (
     moduleIndexes.every((moduleIndex, index) => moduleIndex === defaults[index]) &&
     powerStates.every(({ on, priority }) => on === undefined && priority === undefined) &&
@@ -463,20 +475,21 @@ type PowerState = { on: boolean | undefined; priority: number | undefined };
 const EMPTY_POWER_STATE: PowerState = { on: undefined, priority: undefined };
 type CodecFittedModule = ReturnType<ShipLoadout['fittedModules']>[number];
 
-function moduleDrawsPower(moduleIndex: number | null): boolean {
-  return moduleIndex !== null && codecContext().poweredModuleSet.has(moduleIndex);
+function moduleDrawsPower(codec: CodecContext, moduleIndex: number | null): boolean {
+  return moduleIndex !== null && codec.poweredModuleSet.has(moduleIndex);
 }
 
 function powerStateLayout(
+  codec: CodecContext,
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
   fixedModules: readonly { readonly module: number }[],
 ): { readonly occupied: number[]; readonly fixed: number[] } {
   return {
     occupied: indexesWhere(occupiedSlots, (slotIndex) =>
-      moduleDrawsPower(moduleIndexes[slotIndex]!),
+      moduleDrawsPower(codec, moduleIndexes[slotIndex]!),
     ),
-    fixed: indexesWhere(fixedModules, ({ module }) => moduleDrawsPower(module)),
+    fixed: indexesWhere(fixedModules, ({ module }) => moduleDrawsPower(codec, module)),
   };
 }
 type ModuleIdentityContext = {
@@ -486,6 +499,7 @@ type ModuleIdentityContext = {
 type ModuleIdentityEntry = ModuleIdentityContext & { moduleIndex: number };
 
 function writeModuleIdentities(
+  codec: CodecContext,
   writer: CodecWriter,
   ship: CodecShip,
   slots: readonly string[],
@@ -493,6 +507,7 @@ function writeModuleIdentities(
   modules: readonly (number | null)[],
 ): void {
   const { changed, occupied, baselineCost, absoluteCost } = moduleIdentityLayoutCosts(
+    codec,
     ship,
     slots,
     defaults,
@@ -510,34 +525,34 @@ function writeModuleIdentities(
       if (moduleIndex !== null) {
         entries.push({
           moduleIndex,
-          context: moduleSetForSlot(ship, slotIndex),
+          context: moduleSetForSlot(codec, ship, slotIndex),
           defaultIndex: null,
         });
       }
     }
-    writeModuleIdentitySequence(writer, entries);
+    writeModuleIdentitySequence(codec, writer, entries);
     return;
   }
 
   writeIndexSet(writer, slots.length, occupied);
   writeModuleIdentitySequence(
+    codec,
     writer,
     occupied.map((slotIndex) => ({
       moduleIndex: modules[slotIndex]!,
-      context: moduleSetForSlot(ship, slotIndex),
+      context: moduleSetForSlot(codec, ship, slotIndex),
       defaultIndex: defaults[slotIndex] ?? null,
     })),
   );
 }
 
 function readModuleIdentities(
+  codec: CodecContext,
   reader: CodecReader,
   ship: CodecShip,
   slots: readonly string[],
 ): Array<number | null> {
-  const defaults = codecContext().tables.DEFAULT_MODULES_BY_SHIP[ship] as readonly (
-    number | null
-  )[];
+  const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[ship] as readonly (number | null)[];
   const useBaseline = reader.readBoolean();
   let modules: Array<number | null>;
   if (useBaseline) {
@@ -546,9 +561,10 @@ function readModuleIdentities(
     const present = changed.map(() => reader.readBoolean());
     const presentSlots = changed.filter((_slotIndex, index) => present[index]);
     const identities = readModuleIdentitySequence(
+      codec,
       reader,
       presentSlots.map((slotIndex) => ({
-        context: moduleSetForSlot(ship, slotIndex),
+        context: moduleSetForSlot(codec, ship, slotIndex),
         defaultIndex: null,
       })),
     );
@@ -567,9 +583,10 @@ function readModuleIdentities(
     modules = slots.map(() => null);
     const occupied = readIndexSet(reader, slots.length);
     const identities = readModuleIdentitySequence(
+      codec,
       reader,
       occupied.map((slotIndex) => ({
-        context: moduleSetForSlot(ship, slotIndex),
+        context: moduleSetForSlot(codec, ship, slotIndex),
         defaultIndex: defaults[slotIndex] ?? null,
       })),
     );
@@ -582,6 +599,7 @@ function readModuleIdentities(
 }
 
 function moduleIdentityLayoutCosts(
+  codec: CodecContext,
   ship: CodecShip,
   slots: readonly string[],
   defaults: readonly (number | null)[],
@@ -598,11 +616,11 @@ function moduleIdentityLayoutCosts(
     const moduleIndex = modules[slotIndex];
     return moduleIndex === null
       ? []
-      : [{ moduleIndex, context: moduleSetForSlot(ship, slotIndex), defaultIndex: null }];
+      : [{ moduleIndex, context: moduleSetForSlot(codec, ship, slotIndex), defaultIndex: null }];
   });
   const absoluteEntries = occupied.map((slotIndex): ModuleIdentityEntry => ({
     moduleIndex: modules[slotIndex]!,
-    context: moduleSetForSlot(ship, slotIndex),
+    context: moduleSetForSlot(codec, ship, slotIndex),
     defaultIndex: defaults[slotIndex] ?? null,
   }));
   return {
@@ -611,29 +629,31 @@ function moduleIdentityLayoutCosts(
     baselineCost:
       indexSetBitCost(slots.length, changed) +
       changed.length +
-      moduleIdentitySequenceBitCost(baselineEntries),
+      moduleIdentitySequenceBitCost(codec, baselineEntries),
     absoluteCost:
-      indexSetBitCost(slots.length, occupied) + moduleIdentitySequenceBitCost(absoluteEntries),
+      indexSetBitCost(slots.length, occupied) +
+      moduleIdentitySequenceBitCost(codec, absoluteEntries),
   };
 }
 
 function writeModuleIdentitySequence(
+  codec: CodecContext,
   writer: CodecWriter,
   entries: readonly ModuleIdentityEntry[],
 ): void {
   if (entries.length === 0) return;
   if (entries.length === 1) {
     const entry = entries[0]!;
-    writeModuleIdentity(writer, entry.moduleIndex, entry.context, entry.defaultIndex);
+    writeModuleIdentity(codec, writer, entry.moduleIndex, entry.context, entry.defaultIndex);
     return;
   }
 
   const useReferences =
-    referencedModuleIdentityBitCost(entries) < plainModuleIdentityBitCost(entries);
+    referencedModuleIdentityBitCost(codec, entries) < plainModuleIdentityBitCost(codec, entries);
   writer.writeBoolean(useReferences);
   if (!useReferences) {
     for (const entry of entries) {
-      writeModuleIdentity(writer, entry.moduleIndex, entry.context, entry.defaultIndex);
+      writeModuleIdentity(codec, writer, entry.moduleIndex, entry.context, entry.defaultIndex);
     }
     return;
   }
@@ -653,13 +673,14 @@ function writeModuleIdentitySequence(
         return;
       }
     }
-    writeModuleIdentity(writer, entry.moduleIndex, entry.context, entry.defaultIndex);
+    writeModuleIdentity(codec, writer, entry.moduleIndex, entry.context, entry.defaultIndex);
     distinct.push(entry.moduleIndex);
     previous = entry.moduleIndex;
   });
 }
 
 function readModuleIdentitySequence(
+  codec: CodecContext,
   reader: CodecReader,
   contexts: readonly ModuleIdentityContext[],
 ): number[] {
@@ -673,7 +694,7 @@ function readModuleIdentitySequence(
     if (useReferences && index > 0 && reader.readBoolean()) {
       moduleIndex = previous!;
     } else if (useReferences && index > 0 && reader.readBoolean()) {
-      moduleIndex = readIndexFromSet(reader, distinct, 'module back-reference');
+      moduleIndex = readIndexFromSet(codec, reader, distinct, 'module back-reference');
       if (moduleIndex === previous) {
         throw new BuildLinkCodecError(
           'invalidPayload',
@@ -681,7 +702,7 @@ function readModuleIdentitySequence(
         );
       }
     } else {
-      moduleIndex = readModuleIdentity(reader, context.context, context.defaultIndex);
+      moduleIndex = readModuleIdentity(codec, reader, context.context, context.defaultIndex);
       if (useReferences && distinct.includes(moduleIndex)) {
         throw new BuildLinkCodecError(
           'invalidPayload',
@@ -697,22 +718,35 @@ function readModuleIdentitySequence(
   return modules;
 }
 
-function moduleIdentitySequenceBitCost(entries: readonly ModuleIdentityEntry[]): number {
-  if (entries.length < 2) return plainModuleIdentityBitCost(entries);
+function moduleIdentitySequenceBitCost(
+  codec: CodecContext,
+  entries: readonly ModuleIdentityEntry[],
+): number {
+  if (entries.length < 2) return plainModuleIdentityBitCost(codec, entries);
   return (
-    1 + Math.min(plainModuleIdentityBitCost(entries), referencedModuleIdentityBitCost(entries))
+    1 +
+    Math.min(
+      plainModuleIdentityBitCost(codec, entries),
+      referencedModuleIdentityBitCost(codec, entries),
+    )
   );
 }
 
-function plainModuleIdentityBitCost(entries: readonly ModuleIdentityEntry[]): number {
+function plainModuleIdentityBitCost(
+  codec: CodecContext,
+  entries: readonly ModuleIdentityEntry[],
+): number {
   return entries.reduce(
     (cost, entry) =>
-      cost + moduleIdentityBitCost(entry.moduleIndex, entry.context, entry.defaultIndex),
+      cost + moduleIdentityBitCost(codec, entry.moduleIndex, entry.context, entry.defaultIndex),
     0,
   );
 }
 
-function referencedModuleIdentityBitCost(entries: readonly ModuleIdentityEntry[]): number {
+function referencedModuleIdentityBitCost(
+  codec: CodecContext,
+  entries: readonly ModuleIdentityEntry[],
+): number {
   const distinct: number[] = [];
   let previous: number | undefined;
   return entries.reduce((cost, entry, index) => {
@@ -725,29 +759,31 @@ function referencedModuleIdentityBitCost(entries: readonly ModuleIdentityEntry[]
     distinct.push(entry.moduleIndex);
     previous = entry.moduleIndex;
     return (
-      cost + prefix + moduleIdentityBitCost(entry.moduleIndex, entry.context, entry.defaultIndex)
+      cost +
+      prefix +
+      moduleIdentityBitCost(codec, entry.moduleIndex, entry.context, entry.defaultIndex)
     );
   }, 0);
 }
 
 function moduleIdentityBitCost(
+  codec: CodecContext,
   moduleIndex: number,
   context: readonly number[],
   defaultIndex: number | null,
 ): number {
   const defaultBits = defaultIndex === null ? 0 : 1;
   if (defaultIndex === moduleIndex) return defaultBits;
-  if (context.length === 0) return defaultBits + codecContext().moduleBits;
+  if (context.length === 0) return defaultBits + codec.moduleBits;
   return (
     defaultBits +
     1 +
-    (context.includes(moduleIndex)
-      ? contextualIndexBits(context.length)
-      : codecContext().moduleBits)
+    (context.includes(moduleIndex) ? contextualIndexBits(context.length) : codec.moduleBits)
   );
 }
 
 function writeModuleIdentity(
+  codec: CodecContext,
   writer: CodecWriter,
   moduleIndex: number,
   context: readonly number[],
@@ -757,17 +793,18 @@ function writeModuleIdentity(
     writer.writeBoolean(moduleIndex === defaultIndex);
     if (moduleIndex === defaultIndex) return;
   }
-  writeContextualIndex(writer, moduleIndex, context, codecContext().tables.MODULES.length);
+  writeContextualIndex(writer, moduleIndex, context, codec.tables.MODULES.length);
 }
 
 function readModuleIdentity(
+  codec: CodecContext,
   reader: CodecReader,
   context: readonly number[],
   defaultIndex: number | null,
 ): number {
   if (defaultIndex !== null && reader.readBoolean()) return defaultIndex;
-  const moduleIndex = readContextualIndex(reader, context, codecContext().tables.MODULES.length);
-  if (!codecContext().tables.MODULES[moduleIndex]) throw unknownTableIndex('module', moduleIndex);
+  const moduleIndex = readContextualIndex(codec, reader, context, codec.tables.MODULES.length);
+  if (!codec.tables.MODULES[moduleIndex]) throw unknownTableIndex(codec, 'module', moduleIndex);
   return moduleIndex;
 }
 
@@ -1028,6 +1065,7 @@ function readFixedPowerStates(reader: CodecReader, moduleCount: number): PowerSt
 }
 
 function writeEngineeringStates(
+  codec: CodecContext,
   writer: CodecWriter,
   states: readonly (CodecEngineeringState | undefined)[],
   moduleIndexes: readonly (number | null)[],
@@ -1037,7 +1075,7 @@ function writeEngineeringStates(
   writer.writeBoolean(engineered.length > 0);
   if (engineered.length === 0) return;
 
-  const eligible = engineeringEligibleIndexes(moduleIndexes, occupiedSlots);
+  const eligible = engineeringEligibleIndexes(codec, moduleIndexes, occupiedSlots);
   if (engineered.some((occupiedIndex) => !eligible.includes(occupiedIndex))) {
     throw new BuildLinkCodecError(
       'invalidPayload',
@@ -1058,11 +1096,16 @@ function writeEngineeringStates(
     engineering: states[occupiedIndex]!,
   }));
   const references = engineeringReferences(records);
-  const plainCost = records.reduce((cost, record) => cost + engineeringRecordBitCost(record), 0);
+  const plainCost = records.reduce(
+    (cost, record) => cost + engineeringRecordBitCost(codec, record),
+    0,
+  );
   const referenceWidth = bitsRequired(records.length);
   const referenceCost = records.reduce(
     (cost, record, index) =>
-      cost + 1 + (references[index] === null ? engineeringRecordBitCost(record) : referenceWidth),
+      cost +
+      1 +
+      (references[index] === null ? engineeringRecordBitCost(codec, record) : referenceWidth),
     0,
   );
   const useReferences = records.length > 1 && referenceCost < plainCost;
@@ -1077,11 +1120,12 @@ function writeEngineeringStates(
         continue;
       }
     }
-    writeEngineering(writer, moduleIndex, engineering);
+    writeEngineering(codec, writer, moduleIndex, engineering);
   }
 }
 
 function readEngineeringStates(
+  codec: CodecContext,
   reader: CodecReader,
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
@@ -1089,7 +1133,7 @@ function readEngineeringStates(
   const states: Array<CodecEngineeringState | undefined> = occupiedSlots.map(() => undefined);
   if (!reader.readBoolean()) return states;
 
-  const eligible = engineeringEligibleIndexes(moduleIndexes, occupiedSlots);
+  const eligible = engineeringEligibleIndexes(codec, moduleIndexes, occupiedSlots);
   const all = reader.readBoolean();
   const engineered = all
     ? eligible
@@ -1117,7 +1161,7 @@ function readEngineeringStates(
       continue;
     }
 
-    const engineering = readEngineering(reader, moduleIndex);
+    const engineering = readEngineering(codec, reader, moduleIndex);
     if (useReferences && engineering.kind === 'ordinary') {
       const key = engineeringStateKey(engineering);
       if (firstRecordByKey.has(key)) {
@@ -1135,12 +1179,7 @@ function readEngineeringStates(
 }
 
 function engineeringStateKey(engineering: OrdinaryEngineeringState): string {
-  return JSON.stringify([
-    engineering.blueprint,
-    engineering.level,
-    engineering.quality,
-    engineering.experimental,
-  ]);
+  return JSON.stringify([engineering.blueprint, engineering.level, engineering.experimental]);
 }
 
 type EngineeringRecord = {
@@ -1160,21 +1199,22 @@ function engineeringReferences(records: readonly EngineeringRecord[]): Array<num
   });
 }
 
-function engineeringRecordBitCost(record: EngineeringRecord): number {
+function engineeringRecordBitCost(codec: CodecContext, record: EngineeringRecord): number {
   const writer = new SymbolWriter();
-  writeEngineering(writer, record.moduleIndex, record.engineering);
+  writeEngineering(codec, writer, record.moduleIndex, record.engineering);
   return writer.length;
 }
 
 function engineeringEligibleIndexes(
+  codec: CodecContext,
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
 ): number[] {
   return indexesWhere(occupiedSlots, (slotIndex) => {
     const moduleIndex = moduleIndexes[slotIndex]!;
     return (
-      blueprintSetForModule(moduleIndex).length > 0 ||
-      preEngineeredSetForModule(moduleIndex).length > 0
+      blueprintSetForModule(codec, moduleIndex).length > 0 ||
+      preEngineeredSetForModule(codec, moduleIndex).length > 0
     );
   });
 }
@@ -1253,6 +1293,9 @@ function indexSetMode(valueCount: number, indexes: readonly number[]): 0 | 1 | 2
 }
 
 function indexSetModeForCount(valueCount: number, selectedCount: number): 0 | 1 | 2 | 3 {
+  // A one-value universe is a one-bit bitmap. Sparse modes would otherwise win only by a
+  // tie-break and then attempt to emit a bounded symbol with a cardinality of one.
+  if (valueCount <= 1) return 0;
   const costs = [
     indexSetDataBitCostForCount(valueCount, selectedCount, 0),
     indexSetDataBitCostForCount(valueCount, selectedCount, 1),
@@ -1360,12 +1403,13 @@ function writeContextualIndex(
 }
 
 function readContextualIndex(
+  codec: CodecContext,
   reader: CodecReader,
   context: readonly number[],
   globalValueCount: number,
 ): number {
   if (context.length === 0) return reader.readBounded(globalValueCount);
-  if (reader.readBoolean()) return readIndexFromSet(reader, context, 'contextual identity');
+  if (reader.readBoolean()) return readIndexFromSet(codec, reader, context, 'contextual identity');
   const value = reader.readBounded(globalValueCount);
   if (context.includes(value)) {
     throw new BuildLinkCodecError('invalidPayload', 'A contextual identity is not canonical.');
@@ -1373,11 +1417,16 @@ function readContextualIndex(
   return value;
 }
 
-function readIndexFromSet(reader: CodecReader, context: readonly number[], kind: string): number {
+function readIndexFromSet(
+  codec: CodecContext,
+  reader: CodecReader,
+  context: readonly number[],
+  kind: string,
+): number {
   const width = contextualIndexBits(context.length);
   const contextualIndex = width === 0 ? 0 : reader.readBounded(context.length);
   const value = context[contextualIndex];
-  if (value === undefined) throw unknownTableIndex(kind, contextualIndex);
+  if (value === undefined) throw unknownTableIndex(codec, kind, contextualIndex);
   return value;
 }
 
@@ -1397,37 +1446,40 @@ function contextualIndexBits(valueCount: number): number {
   return valueCount <= 1 ? 0 : bitsRequired(valueCount);
 }
 
-function moduleSetForSlot(ship: CodecShip, slotIndex: number): readonly number[] {
-  const setIndex = codecContext().tables.MODULE_SET_BY_SHIP[ship][slotIndex];
-  const set = codecContext().tables.MODULE_SETS[setIndex];
-  if (!set) throw unknownTableIndex('module candidate set', setIndex);
+function moduleSetForSlot(
+  codec: CodecContext,
+  ship: CodecShip,
+  slotIndex: number,
+): readonly number[] {
+  const setIndex = codec.tables.MODULE_SET_BY_SHIP[ship][slotIndex];
+  const set = codec.tables.MODULE_SETS[setIndex];
+  if (!set) throw unknownTableIndex(codec, 'module candidate set', setIndex);
   return set;
 }
 
-function blueprintSetForModule(moduleIndex: number): readonly number[] {
-  const setIndex = codecContext().tables.BLUEPRINT_SET_BY_MODULE[moduleIndex];
-  const set = setIndex === undefined ? undefined : codecContext().tables.BLUEPRINT_SETS[setIndex];
-  if (!set) throw unknownTableIndex('blueprint set', setIndex ?? -1);
+function blueprintSetForModule(codec: CodecContext, moduleIndex: number): readonly number[] {
+  const setIndex = codec.tables.BLUEPRINT_SET_BY_MODULE[moduleIndex];
+  const set = setIndex === undefined ? undefined : codec.tables.BLUEPRINT_SETS[setIndex];
+  if (!set) throw unknownTableIndex(codec, 'blueprint set', setIndex ?? -1);
   return set;
 }
 
-function experimentalSetForModule(moduleIndex: number): readonly number[] {
-  const setIndex = codecContext().tables.EXPERIMENTAL_SET_BY_MODULE[moduleIndex];
-  const set =
-    setIndex === undefined ? undefined : codecContext().tables.EXPERIMENTAL_SETS[setIndex];
-  if (!set) throw unknownTableIndex('experimental-effect set', setIndex ?? -1);
+function experimentalSetForModule(codec: CodecContext, moduleIndex: number): readonly number[] {
+  const setIndex = codec.tables.EXPERIMENTAL_SET_BY_MODULE[moduleIndex];
+  const set = setIndex === undefined ? undefined : codec.tables.EXPERIMENTAL_SETS[setIndex];
+  if (!set) throw unknownTableIndex(codec, 'experimental-effect set', setIndex ?? -1);
   return set;
 }
 
-function preEngineeredSetForModule(moduleIndex: number): readonly number[] {
-  return codecContext().tables.PRE_ENGINEERED_SET_BY_MODULE[moduleIndex] ?? [];
+function preEngineeredSetForModule(codec: CodecContext, moduleIndex: number): readonly number[] {
+  return codec.tables.PRE_ENGINEERED_SET_BY_MODULE[moduleIndex] ?? [];
 }
 
-function resolvePreEngineeredVariant(index: number): PreEngineeredVariant {
-  const identity = codecContext().tables.PRE_ENGINEERED_VARIANTS[index];
-  if (!identity) throw unknownTableIndex('pre-engineered variant', index);
-  const symbol = codecContext().tables.MODULES[identity.module];
-  const blueprint = codecContext().tables.BLUEPRINTS[identity.blueprint];
+function resolvePreEngineeredVariant(codec: CodecContext, index: number): PreEngineeredVariant {
+  const identity = codec.tables.PRE_ENGINEERED_VARIANTS[index];
+  if (!identity) throw unknownTableIndex(codec, 'pre-engineered variant', index);
+  const symbol = codec.tables.MODULES[identity.module];
+  const blueprint = codec.tables.BLUEPRINTS[identity.blueprint];
   const variant = PRE_ENGINEERED_MODULES.find(
     (candidate) =>
       normalise(candidate.symbol) === normalise(symbol) &&
@@ -1435,15 +1487,15 @@ function resolvePreEngineeredVariant(index: number): PreEngineeredVariant {
       candidate.grade === identity.grade &&
       candidate.acquisition === identity.acquisition,
   );
-  if (!variant) throw unknownTableIndex('pre-engineered variant', index);
+  if (!variant) throw unknownTableIndex(codec, 'pre-engineered variant', index);
   return variant;
 }
 
-function preEngineeredVariantIndex(variant: PreEngineeredVariant): number {
-  const module = codecContext().moduleIndex.get(normalise(variant.symbol));
-  const blueprint = codecContext().blueprintIndex.get(normalise(variant.blueprint));
+function preEngineeredVariantIndex(codec: CodecContext, variant: PreEngineeredVariant): number {
+  const module = codec.moduleIndex.get(normalise(variant.symbol));
+  const blueprint = codec.blueprintIndex.get(normalise(variant.blueprint));
   if (module === undefined || blueprint === undefined) return -1;
-  return codecContext().tables.PRE_ENGINEERED_VARIANTS.findIndex(
+  return codec.tables.PRE_ENGINEERED_VARIANTS.findIndex(
     (identity) =>
       identity.module === module &&
       identity.blueprint === blueprint &&
@@ -1452,23 +1504,26 @@ function preEngineeredVariantIndex(variant: PreEngineeredVariant): number {
   );
 }
 
-function pinnedPreEngineeredExperimentalIndex(index: number): number | null {
-  const experimental = codecContext().tables.PRE_ENGINEERED_VARIANTS[index]?.experimental;
+function pinnedPreEngineeredExperimentalIndex(codec: CodecContext, index: number): number | null {
+  const experimental = codec.tables.PRE_ENGINEERED_VARIANTS[index]?.experimental;
   if (experimental === null) return null;
-  if (experimental === undefined || !codecContext().tables.EXPERIMENTAL_EFFECTS[experimental]) {
-    throw unknownTableIndex('pre-engineered experimental effect', experimental ?? -1);
+  if (experimental === undefined || !codec.tables.EXPERIMENTAL_EFFECTS[experimental]) {
+    throw unknownTableIndex(codec, 'pre-engineered experimental effect', experimental ?? -1);
   }
   return experimental;
 }
 
-function resolvePreEngineeredEngineering(engineering: PreEngineeredState): ModuleEngineering {
-  const variant = resolvePreEngineeredVariant(engineering.variant);
+function resolvePreEngineeredEngineering(
+  codec: CodecContext,
+  engineering: PreEngineeredState,
+): ModuleEngineering {
+  const variant = resolvePreEngineeredVariant(codec, engineering.variant);
   const experimental =
     engineering.experimental === null
       ? undefined
-      : codecContext().tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
+      : codec.tables.EXPERIMENTAL_EFFECTS[engineering.experimental];
   if (engineering.experimental !== null && experimental === undefined) {
-    throw unknownTableIndex('experimental effect', engineering.experimental);
+    throw unknownTableIndex(codec, 'experimental effect', engineering.experimental);
   }
   const resolvedVariant = {
     ...variant,
@@ -1478,7 +1533,7 @@ function resolvePreEngineeredEngineering(engineering: PreEngineeredState): Modul
   return {
     BlueprintName: variant.blueprint,
     Level: variant.grade,
-    Quality: engineering.quality,
+    Quality: 1,
     ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),
     ...(modifiers.length === 0 ? {} : { Modifiers: modifiers }),
   };
@@ -1500,36 +1555,38 @@ function moduleAt<T>(modules: ReadonlyMap<string, T>, slot: string | undefined):
 }
 
 function engineeringStateFromModule(
+  codec: CodecContext,
   moduleIndex: number,
   module: CodecFittedModule,
 ): CodecEngineeringState {
   const engineering = module.engineering!;
-  if (engineering.Level === undefined || engineering.Quality === undefined) {
+  if (engineering.Level === undefined) {
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'Ordinary and pre-engineered state requires a grade and quality.',
+      'Ordinary and pre-engineered state requires a grade.',
     );
   }
   const preEngineeredIndex =
     module.preEngineeredVariant === null
       ? -1
-      : preEngineeredVariantIndex(module.preEngineeredVariant);
+      : preEngineeredVariantIndex(codec, module.preEngineeredVariant);
   if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `The pre-engineered variant is absent from codec table ${codecContext().tableVersion}.`,
+      `The pre-engineered variant is absent from codec table ${codec.tableVersion}.`,
     );
   }
   const experimental =
     engineering.ExperimentalEffect === undefined
       ? null
       : requireIdentity(
-          codecContext().experimentalIndex,
+          codec,
+          codec.experimentalIndex,
           engineering.ExperimentalEffect,
           'experimental effect',
         );
   if (preEngineeredIndex !== -1) {
-    if (!preEngineeredSetForModule(moduleIndex).includes(preEngineeredIndex)) {
+    if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
       throw new BuildLinkCodecError(
         'unknownIdentity',
         'The pre-engineered variant is unavailable for its fitted module.',
@@ -1538,17 +1595,17 @@ function engineeringStateFromModule(
     return {
       kind: 'preEngineered',
       variant: preEngineeredIndex,
-      quality: engineering.Quality,
       experimental,
     };
   }
 
   const blueprint = requireIdentity(
-    codecContext().blueprintIndex,
+    codec,
+    codec.blueprintIndex,
     engineering.BlueprintName,
     'engineering blueprint',
   );
-  const grades = codecContext().tables.BLUEPRINT_GRADES[blueprint] as readonly number[];
+  const grades = codec.tables.BLUEPRINT_GRADES[blueprint] as readonly number[];
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
@@ -1559,18 +1616,18 @@ function engineeringStateFromModule(
     kind: 'ordinary',
     blueprint,
     level: engineering.Level,
-    quality: engineering.Quality,
     experimental,
   };
 }
 
 function writeEngineering(
+  codec: CodecContext,
   writer: CodecWriter,
   moduleIndex: number,
   engineering: CodecEngineeringState,
 ): void {
-  const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
-  const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
+  const ordinaryAvailable = blueprintSetForModule(codec, moduleIndex).length > 0;
+  const preEngineeredAvailable = preEngineeredSetForModule(codec, moduleIndex).length > 0;
   const special = engineering.kind === 'preEngineered';
   if (special && !preEngineeredAvailable) {
     throw new BuildLinkCodecError(
@@ -1586,24 +1643,24 @@ function writeEngineering(
   }
   if (ordinaryAvailable && preEngineeredAvailable) writer.writeBoolean(special);
   if (engineering.kind === 'preEngineered') {
-    if (!preEngineeredSetForModule(moduleIndex).includes(engineering.variant)) {
+    if (!preEngineeredSetForModule(codec, moduleIndex).includes(engineering.variant)) {
       throw new BuildLinkCodecError(
         'unknownIdentity',
         'The pre-engineered variant is unavailable for its fitted module.',
       );
     }
-    writeIndexInSet(writer, engineering.variant, preEngineeredSetForModule(moduleIndex));
-    writeQuality(writer, engineering.quality);
+    writeIndexInSet(writer, engineering.variant, preEngineeredSetForModule(codec, moduleIndex));
     writeExperimentalWithDefault(
+      codec,
       writer,
       moduleIndex,
       engineering.experimental,
-      pinnedPreEngineeredExperimentalIndex(engineering.variant),
+      pinnedPreEngineeredExperimentalIndex(codec, engineering.variant),
     );
     return;
   }
 
-  const grades = codecContext().tables.BLUEPRINT_GRADES[engineering.blueprint] as readonly number[];
+  const grades = codec.tables.BLUEPRINT_GRADES[engineering.blueprint] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   if (!Number.isInteger(engineering.level) || !grades.includes(engineering.level)) {
     throw new BuildLinkCodecError(
@@ -1614,56 +1671,60 @@ function writeEngineering(
   writeContextualIndex(
     writer,
     engineering.blueprint,
-    blueprintSetForModule(moduleIndex),
-    codecContext().tables.BLUEPRINTS.length,
+    blueprintSetForModule(codec, moduleIndex),
+    codec.tables.BLUEPRINTS.length,
   );
   if (grades.length > 1) {
     writer.writeBoolean(engineering.level === maximumGrade);
-    if (engineering.level !== maximumGrade) {
+    if (engineering.level !== maximumGrade && grades.length > 2) {
       writer.writeBounded(grades.indexOf(engineering.level), grades.length - 1);
     }
   }
-  writeQuality(writer, engineering.quality);
-  writeExperimental(writer, moduleIndex, engineering.experimental);
+  writeExperimental(codec, writer, moduleIndex, engineering.experimental);
 }
 
-function readEngineering(reader: CodecReader, moduleIndex: number): CodecEngineeringState {
-  const ordinaryAvailable = blueprintSetForModule(moduleIndex).length > 0;
-  const preEngineeredAvailable = preEngineeredSetForModule(moduleIndex).length > 0;
+function readEngineering(
+  codec: CodecContext,
+  reader: CodecReader,
+  moduleIndex: number,
+): CodecEngineeringState {
+  const ordinaryAvailable = blueprintSetForModule(codec, moduleIndex).length > 0;
+  const preEngineeredAvailable = preEngineeredSetForModule(codec, moduleIndex).length > 0;
   const special = preEngineeredAvailable && (!ordinaryAvailable || reader.readBoolean());
   if (special) {
     const variantIndex = readIndexFromSet(
+      codec,
       reader,
-      preEngineeredSetForModule(moduleIndex),
+      preEngineeredSetForModule(codec, moduleIndex),
       'pre-engineered variant',
     );
-    const quality = readQuality(reader);
     const experimental = readExperimentalWithDefault(
+      codec,
       reader,
       moduleIndex,
-      pinnedPreEngineeredExperimentalIndex(variantIndex),
+      pinnedPreEngineeredExperimentalIndex(codec, variantIndex),
     );
     return {
       kind: 'preEngineered',
       variant: variantIndex,
-      quality,
       experimental,
     };
   }
 
   const blueprintIndex = readContextualIndex(
+    codec,
     reader,
-    blueprintSetForModule(moduleIndex),
-    codecContext().tables.BLUEPRINTS.length,
+    blueprintSetForModule(codec, moduleIndex),
+    codec.tables.BLUEPRINTS.length,
   );
-  if (!codecContext().tables.BLUEPRINTS[blueprintIndex]) {
-    throw unknownTableIndex('engineering blueprint', blueprintIndex);
+  if (!codec.tables.BLUEPRINTS[blueprintIndex]) {
+    throw unknownTableIndex(codec, 'engineering blueprint', blueprintIndex);
   }
-  const grades = codecContext().tables.BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
+  const grades = codec.tables.BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   let level = maximumGrade;
   if (grades.length > 1 && !reader.readBoolean()) {
-    const gradeIndex = reader.readBounded(grades.length - 1);
+    const gradeIndex = grades.length === 2 ? 0 : reader.readBounded(grades.length - 1);
     if (gradeIndex >= grades.length - 1) {
       throw new BuildLinkCodecError(
         'invalidPayload',
@@ -1672,59 +1733,19 @@ function readEngineering(reader: CodecReader, moduleIndex: number): CodecEnginee
     }
     level = grades[gradeIndex];
   }
-  if (level === undefined) throw unknownTableIndex('engineering grade', -1);
+  if (level === undefined) throw unknownTableIndex(codec, 'engineering grade', -1);
 
-  const quality = readQuality(reader);
-  const experimental = readExperimental(reader, moduleIndex);
+  const experimental = readExperimental(codec, reader, moduleIndex);
   return {
     kind: 'ordinary',
     blueprint: blueprintIndex,
     level,
-    quality,
     experimental,
   };
 }
 
-function writeQuality(writer: CodecWriter, quality: number): void {
-  if (!Number.isFinite(quality) || quality < 0 || quality > 1) {
-    throw new BuildLinkCodecError('invalidPayload', 'Engineering quality must be from 0 to 1.');
-  }
-  writer.writeBoolean(quality !== 1);
-  if (quality === 1) return;
-  writer.writeBoolean(quality !== 0);
-  if (quality === 0) return;
-
-  const scaled4 = exactScaledQuality(quality, QUALITY_SCALE_4);
-  writer.writeBoolean(scaled4 === null);
-  if (scaled4 !== null) writer.writeBounded(scaled4, QUALITY_SCALE_4 + 1);
-  else writer.writeFloat64(quality);
-}
-
-function readQuality(reader: CodecReader): number {
-  if (!reader.readBoolean()) return 1;
-  if (!reader.readBoolean()) return 0;
-  if (!reader.readBoolean()) return readScaledQuality(reader);
-  const quality = reader.readUnitFloat();
-  if (exactScaledQuality(quality, QUALITY_SCALE_4) !== null) {
-    throw new BuildLinkCodecError('invalidPayload', 'Engineering quality is not canonical.');
-  }
-  return quality;
-}
-
-function exactScaledQuality(quality: number, scale: number): number | null {
-  const scaled = Math.round(quality * scale);
-  return scaled / scale === quality ? scaled : null;
-}
-
-function readScaledQuality(reader: CodecReader): number {
-  const scaled = reader.readBounded(QUALITY_SCALE_4 + 1);
-  if (scaled <= 0 || scaled >= QUALITY_SCALE_4) {
-    throw new BuildLinkCodecError('invalidPayload', 'Engineering quality is not canonical.');
-  }
-  return scaled / QUALITY_SCALE_4;
-}
-
 function writeExperimental(
+  codec: CodecContext,
   writer: CodecWriter,
   moduleIndex: number,
   experimental: number | null,
@@ -1734,46 +1755,53 @@ function writeExperimental(
   writeContextualIndex(
     writer,
     experimental,
-    experimentalSetForModule(moduleIndex),
-    codecContext().tables.EXPERIMENTAL_EFFECTS.length,
+    experimentalSetForModule(codec, moduleIndex),
+    codec.tables.EXPERIMENTAL_EFFECTS.length,
   );
 }
 
-function readExperimental(reader: CodecReader, moduleIndex: number): number | null {
+function readExperimental(
+  codec: CodecContext,
+  reader: CodecReader,
+  moduleIndex: number,
+): number | null {
   if (!reader.readBoolean()) return null;
   const experimentalIndex = readContextualIndex(
+    codec,
     reader,
-    experimentalSetForModule(moduleIndex),
-    codecContext().tables.EXPERIMENTAL_EFFECTS.length,
+    experimentalSetForModule(codec, moduleIndex),
+    codec.tables.EXPERIMENTAL_EFFECTS.length,
   );
-  if (!codecContext().tables.EXPERIMENTAL_EFFECTS[experimentalIndex]) {
-    throw unknownTableIndex('experimental effect', experimentalIndex);
+  if (!codec.tables.EXPERIMENTAL_EFFECTS[experimentalIndex]) {
+    throw unknownTableIndex(codec, 'experimental effect', experimentalIndex);
   }
   return experimentalIndex;
 }
 
 function writeExperimentalWithDefault(
+  codec: CodecContext,
   writer: CodecWriter,
   moduleIndex: number,
   experimental: number | null,
   defaultEffect: number | null,
 ): void {
   if (defaultEffect === null) {
-    writeExperimental(writer, moduleIndex, experimental);
+    writeExperimental(codec, writer, moduleIndex, experimental);
     return;
   }
   const matchesDefault = experimental === defaultEffect;
   writer.writeBoolean(!matchesDefault);
-  if (!matchesDefault) writeExperimental(writer, moduleIndex, experimental);
+  if (!matchesDefault) writeExperimental(codec, writer, moduleIndex, experimental);
 }
 
 function readExperimentalWithDefault(
+  codec: CodecContext,
   reader: CodecReader,
   moduleIndex: number,
   defaultEffect: number | null,
 ): number | null {
-  if (defaultEffect === null) return readExperimental(reader, moduleIndex);
-  return reader.readBoolean() ? readExperimental(reader, moduleIndex) : defaultEffect;
+  if (defaultEffect === null) return readExperimental(codec, reader, moduleIndex);
+  return reader.readBoolean() ? readExperimental(codec, reader, moduleIndex) : defaultEffect;
 }
 
 function encodeOn(value: boolean | undefined): number {
@@ -1805,21 +1833,26 @@ function createIndex(values: readonly string[]): Map<string, number> {
   return new Map(values.map((value, index) => [normalise(value), index]));
 }
 
-function requireIdentity(index: ReadonlyMap<string, number>, value: string, kind: string): number {
+function requireIdentity(
+  codec: CodecContext,
+  index: ReadonlyMap<string, number>,
+  value: string,
+  kind: string,
+): number {
   const result = index.get(normalise(value));
   if (result === undefined) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `${kind} identity ${value} is absent from codec table ${codecContext().tableVersion}.`,
+      `${kind} identity ${value} is absent from codec table ${codec.tableVersion}.`,
     );
   }
   return result;
 }
 
-function unknownTableIndex(kind: string, index: number): BuildLinkCodecError {
+function unknownTableIndex(codec: CodecContext, kind: string, index: number): BuildLinkCodecError {
   return new BuildLinkCodecError(
     'unknownIdentity',
-    `${kind} index ${index} is absent from codec table ${codecContext().tableVersion}.`,
+    `${kind} index ${index} is absent from codec table ${codec.tableVersion}.`,
   );
 }
 
@@ -1833,7 +1866,6 @@ interface CodecWriter {
   writeBoolean(value: boolean): void;
   writeBits(value: number, width: number): void;
   writeBounded(value: number, valueCount: number): void;
-  writeFloat64(value: number): void;
   writeString(value: string): void;
 }
 
@@ -1842,8 +1874,6 @@ interface CodecReader {
   readBoolean(): boolean;
   readBits(width: number): number;
   readBounded(valueCount: number): number;
-  readNonNegativeFloat(): number;
-  readUnitFloat(): number;
   readString(): string;
 }
 
@@ -1868,15 +1898,6 @@ class SymbolWriter implements CodecWriter {
 
   writeBounded(value: number, valueCount: number): void {
     this.writeSymbol(value, valueCount);
-  }
-
-  writeFloat64(value: number): void {
-    if (!Number.isFinite(value) || value < 0) {
-      throw new BuildLinkCodecError('invalidPayload', 'A non-negative number is required.');
-    }
-    const bytes = new Uint8Array(8);
-    new DataView(bytes.buffer).setFloat64(0, value, true);
-    for (const byte of bytes) this.writeBits(byte, 8);
   }
 
   writeString(value: string): void {
@@ -1913,32 +1934,39 @@ class SymbolWriter implements CodecWriter {
       value < 0 ||
       !Number.isSafeInteger(valueCount) ||
       valueCount < 2 ||
+      bitsRequired(valueCount) > 31 ||
       value >= valueCount
     ) {
       throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
     }
     this.symbols.push({ value, valueCount });
+    // Adaptive layout decisions deliberately use packed-bit cost as the stable canonical proxy,
+    // even when arithmetic rendering ultimately produces the shorter link.
     this.bitLength += bitsRequired(valueCount);
   }
 }
 
-function canonicalBody(symbols: readonly EncodedSymbol[]): Uint8Array {
-  const packed = renderBody(symbols, false);
-  const arithmetic = renderBody(symbols, true);
+function canonicalBody(codec: CodecContext, symbols: readonly EncodedSymbol[]): Uint8Array {
+  const packed = renderBody(codec, symbols, false);
+  const arithmetic = renderBody(codec, symbols, true);
   return arithmetic.length < packed.length ? arithmetic : packed;
 }
 
-function renderBody(symbols: readonly EncodedSymbol[], arithmetic: boolean): Uint8Array {
+function renderBody(
+  codec: CodecContext,
+  symbols: readonly EncodedSymbol[],
+  arithmetic: boolean,
+): Uint8Array {
   const [ship, ...remaining] = symbols;
-  if (ship === undefined || ship.valueCount !== codecContext().tables.SHIPS.length) {
+  if (ship === undefined || ship.valueCount !== codec.tables.SHIPS.length) {
     throw new BuildLinkCodecError('invalidPayload', 'The codec ship symbol is invalid.');
   }
   const writer = new RawBitWriter();
-  const shipCount = codecContext().tables.SHIPS.length;
+  const shipCount = codec.tables.SHIPS.length;
   const shipTagWidth = bitsRequired(shipCount + 1);
   const markerCount = 2 ** shipTagWidth - shipCount;
   const remainder = ship.value % markerCount;
-  writer.writeBits(codecContext().tableVersion, TABLE_VERSION_BITS);
+  writer.writeBits(codec.tableVersion, TABLE_VERSION_BITS);
   writer.writeBits(arithmetic ? shipCount + remainder : ship.value, shipTagWidth);
   if (arithmetic) {
     const encoder = new ArithmeticEncoder((bit) => writer.writeBoolean(bit === 1));
@@ -2046,22 +2074,6 @@ abstract class SymbolReader implements CodecReader {
     return this.readBits(1) === 1;
   }
 
-  readNonNegativeFloat(): number {
-    const value = this.readFloat64();
-    if (!Number.isFinite(value) || value < 0) {
-      throw new BuildLinkCodecError('invalidPayload', 'A non-negative number is required.');
-    }
-    return value;
-  }
-
-  readUnitFloat(): number {
-    const value = this.readNonNegativeFloat();
-    if (value > 1) {
-      throw new BuildLinkCodecError('invalidPayload', 'Engineering quality must be from 0 to 1.');
-    }
-    return value;
-  }
-
   readString(): string {
     const header = this.readVarUint();
     const compact = header % 2 === 1;
@@ -2090,11 +2102,6 @@ abstract class SymbolReader implements CodecReader {
     }
     throw new BuildLinkCodecError('invalidPayload', 'An encoded integer is too long.');
   }
-
-  private readFloat64(): number {
-    const bytes = Uint8Array.from({ length: 8 }, () => this.readBits(8));
-    return new DataView(bytes.buffer).getFloat64(0, true);
-  }
 }
 
 class PackedSymbolReader extends SymbolReader {
@@ -2120,6 +2127,8 @@ class PackedSymbolReader extends SymbolReader {
 }
 
 class ArithmeticSymbolReader extends SymbolReader {
+  // Arithmetic decoding pads its internal code value with zero bits. Exact completion is instead
+  // enforced by re-rendering the decoded symbols and comparing the canonical body byte-for-byte.
   readonly done = true;
   private readonly decoder: ArithmeticDecoder;
 
@@ -2179,19 +2188,4 @@ function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables):
       tables.SHIPS.map((ship) => [ship, createIndex(tables.SLOTS_BY_SHIP[ship])]),
     ),
   };
-}
-
-function withCodecContext<Result>(context: CodecContext, operation: () => Result): Result {
-  const previousContext = activeCodecContext;
-  activeCodecContext = context;
-  try {
-    return operation();
-  } finally {
-    activeCodecContext = previousContext;
-  }
-}
-
-function codecContext(): CodecContext {
-  if (!activeCodecContext) throw new Error('The build-link codec has no active table.');
-  return activeCodecContext;
 }

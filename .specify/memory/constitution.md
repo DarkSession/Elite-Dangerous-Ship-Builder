@@ -79,6 +79,12 @@ A build is round-trippable and never silently wrong.
 - Import → edit → export MUST preserve everything the application understands
   and MUST NOT invent values the source did not contain. Absent data stays
   absent; it is never substituted with zero or a guess.
+- Engineering quality is deliberately outside the application model. A selected
+  blueprint grade always represents a completed (100% quality) grade. Imports
+  carrying a partial engineering quality are normalised to 100%, and exports
+  report 100%; the application does not retain or present the source roll's
+  partial quality. This explicit product rule is the sole exception to the
+  preservation obligation above.
 - Where the package reports a value as unavailable or a build as invalid or
   incomplete (`validation`, the nullable aggregates and their `*Result`
   counterparts), the application MUST surface that state rather than hide it
@@ -275,9 +281,16 @@ review of any spec the change invalidates.
 Every review MUST verify compliance with these principles. Added complexity has
 to justify itself against them; when it cannot, the simpler option wins.
 
-**Version**: 1.3.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-13
+**Version**: 2.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
 
 ### Amendment history
+
+- **2.0.0** — Defined engineering grades as complete (100% quality) throughout
+  the application and removed partial engineering quality from the model. An
+  imported partial roll is deliberately normalised rather than preserved. This
+  is a major amendment because it narrows principle IV's preservation rule and
+  invalidates the partial-quality requirements previously accepted in features
+  001, 002, 004 and 009; those specifications are amended with this change.
 
 - **1.3.0** — Added principle VII (one design system) and ended the deferral of
   visual design. Tokens are the only source of visual values, components are

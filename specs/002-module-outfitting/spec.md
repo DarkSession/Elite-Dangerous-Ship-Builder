@@ -131,7 +131,7 @@ Drives, then decides the trade-off is wrong and rolls it back.
 parts list. It depends on stories 1 and 2 but is a distinct, independently demonstrable slice.
 
 **Independent Test**: On an engineerable module, confirm the offered blueprints and experimental
-effects are those the module actually accepts; apply one at a chosen grade and quality and confirm
+effects are those the module actually accepts; apply one at a chosen grade and confirm
 the module's attributes and the build's statistics change accordingly; swap it for a different
 blueprint and grade and confirm the previous one is gone; remove the experimental effect alone and
 confirm the blueprint survives; then clear the engineering and confirm exact restoration of the
@@ -142,26 +142,25 @@ stock values.
 1. **Given** a fitted module, **When** the Commander opens its engineering, **Then** they are offered
    exactly the blueprints that module accepts and, separately, exactly the experimental effects it
    accepts.
-2. **Given** a blueprint is chosen, **When** the Commander sets a grade and quality within the
-   permitted range, **Then** the module's modified attributes are shown against their stock values,
-   with improvements and penalties distinguishable.
+2. **Given** a blueprint is chosen, **When** the Commander sets a permitted grade, **Then** that
+   grade is applied at 100% quality and the module's modified attributes are shown against their
+   stock values, with improvements and penalties distinguishable.
 3. **Given** an already-engineered module, **When** the Commander chooses a different blueprint, or a
-   different grade or quality for the one it has, **Then** the new choice replaces the previous one
+   different grade for the one it has, **Then** the new choice replaces the previous one
    with no trace of the old blueprint left on the module, and the module's attributes and the
    build's statistics update immediately.
 4. **Given** an engineered module, **When** the Commander adds, changes or removes an experimental
    effect, **Then** the module's attributes and the build's statistics update immediately, and
-   removing the effect leaves the blueprint, its grade and its quality untouched.
+   removing the effect leaves the blueprint and its grade untouched.
 5. **Given** an engineered module, **When** the Commander clears its engineering, **Then** the module
    returns exactly to its stock attributes, and no other module's engineering changes.
 6. **Given** a module with no engineering available, **When** the Commander views it, **Then** the
    application says so plainly instead of offering an empty picker.
 7. **Given** a pre-engineered module, **When** it is fitted, **Then** its pre-applied modifications
    are shown, and any restriction on engineering it further is stated.
-8. **Given** a module whose engineering arrived from an import at a quality the Commander did not
-   choose, **When** they view its engineering, **Then** it is identified as an imported roll at that
-   quality, distinct from one the Commander set, so a partial roll is not mistaken for a target they
-   could ask an engineer for.
+8. **Given** a module whose engineering arrived from an import at partial quality, **When** it is
+   loaded, **Then** the application treats its selected grade as complete at 100% quality and does
+   not offer or display the partial roll as application state.
 
 ---
 
@@ -230,11 +229,10 @@ reflected in the build's power figures and survive save and reload.
   dropped with the module, never silently transplanted.
 - A blueprint whose journal spelling is ambiguous across module families: the blueprint is resolved
   for the specific module rather than by name alone.
-- Quality or grade at the boundary of the permitted range: accepted at the boundary, rejected beyond
-  it, with the valid range stated.
-- An imported build carrying a partial engineering quality — the roll the Commander's own ship
-  happens to have: it is kept exactly, shown as an imported roll at that quality, and never rounded
-  to a value that looks like something an engineer could be asked for. Re-rolling replaces it.
+- A grade at the boundary of the permitted range: accepted at the boundary, rejected beyond it,
+  with the valid range stated.
+- An imported build carrying partial engineering quality: its blueprint and grade are retained, the
+  grade is treated as complete at 100% quality, and the source roll's partial quality is not retained.
 - An experimental effect already applied when the blueprint beneath it is changed: the effect is
   kept where the module still accepts it alongside the new blueprint and dropped where it does not,
   and a dropped effect is reported rather than removed silently.
@@ -305,22 +303,20 @@ reflected in the build's power figures and survive save and reload.
 - **FR-008**: For any fitted module, the application MUST offer exactly the blueprints and
   experimental effects the package reports as available for that module.
 - **FR-009**: For each fitted module independently, the Commander MUST be able to select a blueprint
-  that module accepts, set its grade and its quality within the permitted range, select an
+  that module accepts, set its grade at an assumed 100% quality, select an
   experimental effect that module accepts, change any of those afterwards, remove the experimental
   effect on its own, and clear the module's engineering entirely.
-- **FR-009a**: Changing a module's blueprint, grade or quality MUST replace what it had rather than
-  accumulating alongside it, and removing an experimental effect MUST leave the blueprint, grade and
-  quality intact. Engineering applied to one module MUST NOT affect any other module.
+- **FR-009a**: Changing a module's blueprint or grade MUST replace what it had rather than
+  accumulating alongside it, and removing an experimental effect MUST leave the blueprint and grade
+  intact. Engineering applied to one module MUST NOT affect any other module.
 - **FR-010**: Clearing engineering MUST restore the module's stock attributes exactly.
 - **FR-011**: Engineered attributes MUST be displayed alongside their stock values, with the
   direction of each change apparent.
 - **FR-012**: Pre-engineered modules MUST show their pre-applied modifications and any restriction
   on further engineering.
-- **FR-012a**: Engineering that arrived with an imported build, at a quality the Commander did not
-  choose, MUST be identified as an imported roll at that quality and MUST be distinguishable from
-  engineering the Commander set. The application MUST NOT round, normalise or present such a quality
-  as a value a Commander could target, and re-rolling the module MUST replace the imported quality
-  with the chosen one rather than blending the two.
+- **FR-012a**: Engineering that arrives with partial quality MUST be normalised to 100% quality while
+  retaining its blueprint, grade and experimental effect. Partial quality MUST NOT be retained,
+  offered as a control or presented as application state.
 
 #### Power priorities
 
@@ -342,7 +338,7 @@ reflected in the build's power figures and survive save and reload.
 - **FR-019**: Changes to viewing conditions — feature 003's cargo and fuel assumptions, pip
   allocation and hardpoint state — MUST NOT enter the history, because they do not change the build.
 - **FR-020**: Each undo and redo step MUST correspond to one Commander decision. A continuous
-  adjustment, such as holding a grade or quality control, MUST resolve to a single step rather than
+  adjustment, such as holding a grade control, MUST resolve to a single step rather than
   one step per intermediate value.
 - **FR-021**: Statistics, validity and every other derived view MUST recompute after undo and redo
   exactly as they do after a direct change.
@@ -383,8 +379,7 @@ reflected in the build's power figures and survive save and reload.
   and engineering detail — may be reachable only by hover.
 - **FR-034**: On narrow viewports the slot list and module picker MUST remain navigable without
   horizontal page scrolling; wide content scrolls within its own container.
-- **FR-035**: Grade and quality controls MUST be adjustable by touch as precisely as by pointer or
-  keyboard.
+- **FR-035**: Grade controls MUST be adjustable by touch as precisely as by pointer or keyboard.
 - **FR-036**: Undo and redo MUST be reachable by touch from wherever the Commander is editing,
   without navigating away from the slot in hand, and MUST also be operable by keyboard.
 - **FR-036a**: Searching the offer list for the slot in hand MUST be reachable from the keyboard
@@ -394,9 +389,9 @@ reflected in the build's power figures and survive save and reload.
 
 ### Testing Requirements
 
-- **FR-037**: Fittability, blueprint and effect selection, grade and quality setting, replacing one
+- **FR-037**: Fittability, blueprint and effect selection, grade setting, replacing one
   blueprint with another, removing an experimental effect on its own, clearing engineering, module
-  replacement semantics, imported-quality handling and power priority handling MUST be unit-tested
+  replacement semantics, imported partial-quality normalisation and power priority handling MUST be unit-tested
   against the domain layer without rendering components.
 - **FR-037a**: Ordering the offer list MUST be unit-tested for both directions, for ties and for
   candidates whose compared attribute is unavailable, against the domain layer without rendering
@@ -416,7 +411,7 @@ reflected in the build's power figures and survive save and reload.
 - **Fitted module**: A module occupying a slot in the active build, together with its engineering,
   enabled state and power priority.
 - **Blueprint**: An engineering recipe, identified by its `fdname`, applicable to a module at a grade
-  and quality.
+  that this application always treats as complete (100% quality).
 - **Experimental effect**: A secondary modification, identified by its `fdname`, applicable alongside
   a blueprint.
 - **Edit step**: One Commander decision that changed the build, described in the Commander's terms
@@ -454,26 +449,25 @@ reflected in the build's power figures and survive save and reload.
   desktop.
 - **SC-012**: A Commander can identify the best candidate for a slot on any compared attribute
   without reading the whole offer list, for every slot on every hull in the catalogue.
-- **SC-013**: Every imported engineering quality survives import, editing of other slots and export
-  unchanged — zero rounded, normalised or re-labelled qualities across the round-trip corpus.
+- **SC-013**: Every partial engineering quality in the import corpus becomes 100% on import and
+  remains 100% through editing and export; no partial value remains in application state.
 
 ## Assumptions
 
-- Fittability, engineering availability, grade and quality ranges, and pre-engineered behaviour are
+- Fittability, engineering availability, grade ranges, and pre-engineered behaviour are
   whatever `@elite-dangerous-almanac/core` reports; this application does not add rules of its own.
 - The per-ship module limits behind FR-003 are the package's as of `0.1.0-beta.4`: it excludes a
   module already at its allowance from the offer list for a slot, refuses a fitting that would
   exceed one, and reports the excess in its validation. Whether a slot may be emptied is likewise a
   property the package reports, with a machine-readable reason when it may not, so FR-005 is
   answered without provoking an error to find out.
-- Engineering is modelled as an outcome (blueprint, grade, quality, effect), not as a rolling
+- Engineering is modelled as an outcome (blueprint, completed grade, effect), not as a rolling
   simulation of individual engineer visits.
 - Material and credit costs of engineering are surfaced where the package provides them; the
   consolidated material list for a whole build belongs to
   [feature 009](../009-cost-and-materials/spec.md).
-- Engineering quality is a value a Commander sets, except where it arrived with an import. The
-  application models the distinction (FR-012a) because it changes what the figure means, not because
-  the two behave differently once applied.
+- Engineering quality is not application state. Every selected or imported grade is treated as 100%
+  quality; partial source rolls are deliberately discarded under FR-012a.
 - Ship-launched fighters, crew, cosmetic liveries and ship kits are out of scope for this feature.
 - The edit history covers the active build only. It is session-scoped, so it is not persisted,
   shared or exported, and a Commander returning to a saved build starts with an empty history.

@@ -33,8 +33,8 @@ SLEF consumer.
 3. **Given** the exported payload, **When** it is inspected, **Then** it
    identifies this application and its version in the SLEF header.
 4. **Given** a build with engineered modules, **When** it is exported, **Then**
-   every blueprint, grade, quality and experimental effect is present in the
-   payload.
+   every blueprint, grade and experimental effect is present in the payload,
+   with engineering quality reported as 100%.
 5. **Given** a build with disabled modules and assigned power priorities,
    **When** it is exported, **Then** those states are carried in the payload.
 
@@ -43,7 +43,8 @@ SLEF consumer.
 ### User Story 2 - Import SLEF back in (Priority: P2)
 
 A Commander pastes a SLEF payload from a squadmate — or a `Loadout` event copied
-out of their own journal — and gets that exact ship to inspect and modify.
+out of their own journal — and gets that ship to inspect and modify, with any
+partial engineering quality treated as a completed grade.
 
 **Why this priority**: Export without import makes the application a dead end.
 Importing is what lets a Commander bring their in-game ship in and plan changes
@@ -51,8 +52,8 @@ against it. It is independently testable and complements feature 001's URL
 import.
 
 **Independent Test**: Paste a known SLEF payload, confirm the resulting build
-matches the payload exactly, and confirm re-exporting it produces an equivalent
-payload.
+matches every modelled field, confirm any partial engineering quality becomes
+100%, and confirm re-exporting it produces an equivalent payload under that rule.
 
 **Acceptance Scenarios**:
 
@@ -111,7 +112,7 @@ payload.
 - **FR-002**: The application MUST export the active build as a valid SLEF
   payload.
 - **FR-003**: The export MUST include every fitted module with its engineering
-  (blueprint, grade, quality, experimental effect), enabled state and power
+  (blueprint, grade, experimental effect, and invariant 100% quality), enabled state and power
   priority, plus the ship's name and ident where set.
 - **FR-004**: The exported SLEF header MUST identify this application by name
   and version.
@@ -134,7 +135,8 @@ payload.
 - **FR-009**: Import MUST validate before applying; a failed import MUST leave
   the existing active build unchanged.
 - **FR-010**: Import → export MUST be lossless for every field the application
-  models, and MUST NOT introduce values absent from the source.
+  models. Partial engineering quality is not a modelled field: imports MUST
+  normalise it to 100%, and exports MUST report 100%.
 - **FR-011**: A recorded source purchase price MUST be preserved unedited across
   import and export, and MUST remain distinct from catalogue retail pricing;
   it MUST be exported only when explicitly requested.
@@ -186,7 +188,7 @@ payload.
   for 100% of valid builds in the test corpus.
 - **SC-002**: Import → export round-trips preserve every modelled field exactly,
   across a corpus covering every ship in the catalogue and a range of
-  engineering states.
+  engineering states; every partial input quality is 100% in the exported result.
 - **SC-003**: A Commander can get a SLEF payload onto their clipboard in no more
   than two interactions from viewing a build.
 - **SC-004**: Every malformed-input case produces a specific diagnostic naming

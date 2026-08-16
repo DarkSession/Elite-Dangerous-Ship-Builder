@@ -4,6 +4,8 @@
 
 **Created**: 2026-08-14
 
+**Updated**: 2026-08-16
+
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -34,6 +36,8 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
+- The 2026-08-16 application-wide engineering rule makes quality invariant at 100%. Material costs
+  remain grade-based, so the partial-import edge case now normalises before reaching this capability.
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.

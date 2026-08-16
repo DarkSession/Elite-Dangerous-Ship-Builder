@@ -104,9 +104,9 @@ totals, and that grade 5 rolls account for the grades beneath them.
   materials still reach the list.
 - The same blueprint applied to several modules: each application contributes its own materials, and
   the consolidated total reflects every one of them rather than the blueprint once.
-- A build imported at a partial engineering quality: the material list reports what it would cost to
-  roll that blueprint and grade, and states that a partial roll is not something a Commander can
-  target — consistent with feature 002's treatment of imported rolls.
+- A build imported at a partial engineering quality: the application treats the selected grade as
+  complete at 100% before producing the same grade-based material list as any other build —
+  consistent with feature 002's application-wide quality rule.
 - A build where every module is unpriced: the credit totals are reported as unavailable rather than
   as zero credits.
 - A build the package cannot resolve to a known hull: it reports no hull value and no rebuy, so both
