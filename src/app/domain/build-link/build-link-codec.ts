@@ -94,7 +94,7 @@ class TableBoundBuildLinkCodec implements BuildLinkCodec {
   readonly decodeBuildLinkFragment = (fragment: string): ShipLoadout =>
     this.decodeVerifiedBuildLinkBody(decodeBuildLinkBody(fragment));
 
-  readonly decodeVerifiedBuildLinkBody = (body: Uint8Array): ShipLoadout =>
+  readonly decodeVerifiedBuildLinkBody = (body: VerifiedBuildLinkBody): ShipLoadout =>
     decodeBodyWithTable(this.context, body);
 }
 
