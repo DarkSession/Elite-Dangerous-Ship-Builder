@@ -49,6 +49,7 @@ export interface BuildLinkCodecTables {
 export interface BuildLinkCodec {
   encodeBuildLinkFragment(loadout: ShipLoadout): string;
   decodeBuildLinkFragment(fragment: string): ShipLoadout;
+  decodeVerifiedBuildLinkBody(body: Uint8Array): ShipLoadout;
 }
 
 interface CodecContext {
@@ -90,7 +91,10 @@ class TableBoundBuildLinkCodec implements BuildLinkCodec {
     encodeWithTable(this.context, loadout);
 
   readonly decodeBuildLinkFragment = (fragment: string): ShipLoadout =>
-    decodeWithTable(this.context, fragment);
+    this.decodeVerifiedBuildLinkBody(decodeBuildLinkBody(fragment));
+
+  readonly decodeVerifiedBuildLinkBody = (body: Uint8Array): ShipLoadout =>
+    decodeBodyWithTable(this.context, body);
 }
 
 /**
@@ -217,9 +221,8 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
   return writer;
 }
 
-/** Decode a fragment produced by the bound encoder for the active table. */
-function decodeWithTable(codec: CodecContext, fragment: string): ShipLoadout {
-  const body = decodeBuildLinkBody(fragment);
+/** Decode an envelope-verified body produced by the bound encoder for the active table. */
+function decodeBodyWithTable(codec: CodecContext, body: Uint8Array): ShipLoadout {
   let state: CodecState;
   try {
     const source = new RawBitReader(body);
@@ -252,6 +255,9 @@ function decodeWithTable(codec: CodecContext, fragment: string): ShipLoadout {
       }
     }
     state = readCodecState(codec, reader, shipIndex);
+    if (!arithmetic && !source.done) {
+      throw new BuildLinkCodecError('invalidPayload', 'The build-link payload has trailing data.');
+    }
     if (!bytesEqual(writeCodecState(codec, state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
@@ -329,10 +335,6 @@ function readCodecState(
       'invalidPayload',
       'A stock loadout must use the pristine representation.',
     );
-  }
-
-  if (!reader.done) {
-    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload has trailing data.');
   }
 
   return {
@@ -1870,7 +1872,6 @@ interface CodecWriter {
 }
 
 interface CodecReader {
-  readonly done: boolean;
   readBoolean(): boolean;
   readBits(width: number): number;
   readBounded(valueCount: number): number;
@@ -1901,18 +1902,25 @@ class SymbolWriter implements CodecWriter {
   }
 
   writeString(value: string): void {
-    if (!isWellFormedUnicode(value)) {
+    if (!(value as string & { isWellFormed(): boolean }).isWellFormed()) {
       throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
     }
-    const encoded = new TextEncoder().encode(value);
     const compact = [...value].every((character) => COMPACT_STRING_CHARACTERS.has(character));
-    this.writeVarUint(compact ? value.length * 2 + 1 : encoded.length * 2);
     if (compact) {
+      if (value.length > MAX_STRING_UNITS) {
+        throw new BuildLinkCodecError('invalidPayload', 'A build-link string is too long.');
+      }
+      this.writeVarUint(value.length * 2 + 1);
       for (const character of value) {
         this.writeBounded(COMPACT_STRING_ALPHABET.indexOf(character), 64);
       }
       return;
     }
+    const encoded = new TextEncoder().encode(value);
+    if (encoded.length > MAX_STRING_UNITS) {
+      throw new BuildLinkCodecError('invalidPayload', 'A build-link string is too long.');
+    }
+    this.writeVarUint(encoded.length * 2);
     for (const byte of encoded) this.writeBits(byte, 8);
   }
 
@@ -2066,7 +2074,6 @@ class RawBitReader {
 }
 
 abstract class SymbolReader implements CodecReader {
-  abstract readonly done: boolean;
   abstract readBits(width: number): number;
   abstract readBounded(valueCount: number): number;
 
@@ -2109,10 +2116,6 @@ class PackedSymbolReader extends SymbolReader {
     super();
   }
 
-  get done(): boolean {
-    return this.source.done;
-  }
-
   readBits(width: number): number {
     return this.source.readBits(width);
   }
@@ -2127,9 +2130,6 @@ class PackedSymbolReader extends SymbolReader {
 }
 
 class ArithmeticSymbolReader extends SymbolReader {
-  // Arithmetic decoding pads its internal code value with zero bits. Exact completion is instead
-  // enforced by re-rendering the decoded symbols and comparing the canonical body byte-for-byte.
-  readonly done = true;
   private readonly decoder: ArithmeticDecoder;
 
   constructor(source: RawBitReader) {
@@ -2157,21 +2157,6 @@ function bitsRequired(valueCount: number): number {
     capacity *= 2;
   }
   return width;
-}
-
-function isWellFormedUnicode(value: string): boolean {
-  for (let index = 0; index < value.length; index += 1) {
-    const codeUnit = value.charCodeAt(index);
-    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
-      if (index + 1 >= value.length) return false;
-      const following = value.charCodeAt(index + 1);
-      if (following < 0xdc00 || following > 0xdfff) return false;
-      index += 1;
-    } else if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) {
-      return false;
-    }
-  }
-  return true;
 }
 
 function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables): CodecContext {

@@ -17,13 +17,13 @@ export async function encodeBuildLinkFragment(loadout: ShipLoadout): Promise<str
 
 /** Decode with the payload-declared table, loading only that immutable JSON snapshot. */
 export async function decodeBuildLinkFragment(fragment: string): Promise<ShipLoadout> {
-  const tableVersion = readPayloadTableVersion(fragment);
+  const body = decodeBuildLinkBody(fragment);
+  const tableVersion = readPayloadTableVersion(body);
   const codec = await loadCodec(tableVersion);
-  return codec.decodeBuildLinkFragment(fragment);
+  return codec.decodeVerifiedBuildLinkBody(body);
 }
 
-function readPayloadTableVersion(fragment: string): number {
-  const body = decodeBuildLinkBody(fragment);
+function readPayloadTableVersion(body: Uint8Array): number {
   if (body.length < 2) {
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
   }

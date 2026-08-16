@@ -813,6 +813,17 @@ describe('build-link codec', () => {
     expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
   });
 
+  it('enforces the string-unit bound before the outer encoded-length bound', () => {
+    const oversizedNames = ['A'.repeat(2_049), 'é'.repeat(1_025)];
+
+    for (const ShipName of oversizedNames) {
+      const source = ShipLoadout.fromLoadout({ Ship: 'SideWinder', ShipName, Modules: [] });
+      expect(() => encodeBuildLinkFragment(source)).toThrowError(
+        'A build-link string is too long.',
+      );
+    }
+  });
+
   it('refuses to encode a fragment its own decoder length limit would reject', () => {
     const oversized = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
