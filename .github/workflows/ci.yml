@@ -40,11 +40,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Every Playwright project drives Chromium, so only that browser is
-      # needed. `--with-deps` adds the system libraries the runner image lacks.
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Check formatting
         run: pnpm run format:check
 
@@ -57,6 +52,13 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
+      # Downloading a browser costs more than every step above it combined, so
+      # it waits until they have passed. Every Playwright project drives
+      # Chromium, so only that browser is needed; `--with-deps` adds the system
+      # libraries the runner image lacks.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: End-to-end tests
         run: pnpm run e2e
 
@@ -66,6 +68,8 @@ jobs:
         with:
           name: coverage
           path: coverage/
+          # Absent whenever the job fails before the unit tests run. A reporter
+          # that stopped emitting would fail the coverage thresholds anyway.
           if-no-files-found: ignore
           retention-days: 7
 
@@ -77,5 +81,6 @@ jobs:
           path: |
             playwright-report/
             dist/e2e-results/
+          # Absent whenever the job fails before the end-to-end tests run.
           if-no-files-found: ignore
           retention-days: 7
