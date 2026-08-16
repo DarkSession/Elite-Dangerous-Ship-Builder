@@ -201,13 +201,13 @@ on the plate.
   is empty, without the Commander having to select the mount.
 - **FR-007a**: The plate's at-a-glance state is exactly three things: whether a module is fitted or
   the mount is empty (FR-007), whether a fitted module is engineered or pre-engineered (FR-008), and
-  whether the mount is the slot currently focused on the build (FR-010). No other figure MUST be
-  required to appear on the plate, and no other figure MUST be readable only from it.
+  whether the mount is the slot currently focused on the build (FR-010). No other figure is required
+  to appear on the plate, and the application MUST NOT make any figure readable only from it.
 - **FR-007b**: The anatomy view MUST have one mode. The plate MUST NOT be switchable between
-  alternative data overlays — power, mass, defence, offence or any other area's figures — because
-  those areas own figures the hull's outline does not express, and a plate whose meaning changes
-  under a mode control forces a Commander to check which mode is in force before they can trust what
-  they are looking at. What varies on the plate is the build, never what the plate is about.
+  alternative data overlays — power, mass, defence, offence or any other area's figures — because a
+  plate whose meaning changes under a mode control forces a Commander to check which mode is in force
+  before they can trust what they are looking at. What varies on the plate is the build, never what
+  the plate is about.
 - **FR-008**: The plate MUST show whether a fitted module is engineered or pre-engineered, without
   the Commander having to select the mount. The module's own identity is reported at the focused slot
   under FR-009.
@@ -435,6 +435,9 @@ returns, the hull's slots and the schematics' slot keys. No game rule is involve
   its own, including what a Commander may do with a feature that locates no slot.
 - Mount placement is the library's record of where a mount is. Where it disagrees with the game, that
   is a library defect raised upstream under principle II, never corrected by nudging a position here.
+- Whether the artwork's own terms permit how this application ships it is an open question, recorded
+  as [feature 012](../012-help-and-licences/spec.md)'s FR-005b. It covers the schematics exactly as it
+  covers the illustrations they ship alongside.
 - The anatomy view is a second route to a slot, never the primary one. A design may lead with it on a
   narrow viewport, but FR-018 guarantees no Commander depends on it.
 - The anatomy view shows one hull. Showing two hulls' anatomy side by side is out of scope, in keeping

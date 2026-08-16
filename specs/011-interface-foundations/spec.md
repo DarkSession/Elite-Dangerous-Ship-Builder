@@ -255,8 +255,8 @@ visual value of its own, and that a change to a token changes every screen that 
 - **FR-021**: Interactive targets MUST meet the AA target-size rule, on every form factor. Where a
   drawn element is smaller than that — a mount on a schematic, a point on a plot — its target MUST
   NOT be.
-- **FR-022**: Motion MUST respect `prefers-reduced-motion`, and nothing MUST depend on an animation
-  having played to be understood or operated.
+- **FR-022**: Motion MUST respect `prefers-reduced-motion`, and the application MUST NOT make
+  anything depend on an animation having played to be understood or operated.
 - **FR-023**: The application MUST NOT rely on a specific pointing device, hover, or a gesture with
   no single-pointer equivalent.
 - **FR-024**: Layouts MUST survive translation and right-to-left scripts under constitution principle

@@ -284,7 +284,7 @@ selected state marked among them.
   the build's mass placed against it — the same loaded mass FR-014a defines, the drive's own
   calculation counting the main tank and leaving the reserve out exactly as the thruster curve does,
   so that one mass figure serves both. A drive has no minimum or maximum curve mass and no
-  three-point performance curve, so neither MUST be shown for it. How the build's mass stands against
+  three-point performance curve, so the application MUST NOT show either for it. How the build's mass stands against
   that optimal mass MAY be expressed directly, under FR-016; where it is, it MUST be labelled as the
   drive's and MUST NOT be presentable as one of the thruster multipliers FR-014 shows, which measure
   something else entirely.
@@ -292,9 +292,9 @@ selected state marked among them.
   such values. Expressing the build's mass against a curve threshold — as a proportion of the optimal
   mass, or as the tonnes of headroom before a maximum — is permitted: both terms are the package's,
   and feature 003's FR-001a allows comparing two of its figures and stating that comparison as a
-  difference or a quotient. It is often the clearest form of the answer, because "91% of optimal" and
-  "658 t before the ceiling" are what a Commander is asking when they read two masses side by side.
-  What remains prohibited is what FR-001 prohibits everywhere: reproducing the curve, interpolating
+  difference or a quotient — which is usually the clearest form of the answer, since a proportion of
+  optimal or a headroom in tonnes is what a Commander reads two masses side by side to find. What
+  remains prohibited is what FR-001 prohibits everywhere: reproducing the curve, interpolating
   along it, deriving a multiplier rather than reading the one the package computed, or supplying any
   term the package did not report. A figure the package reports whole MUST be taken from it rather
   than reassembled.

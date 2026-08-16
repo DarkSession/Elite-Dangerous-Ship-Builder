@@ -259,8 +259,8 @@ reflected in the build's power figures and survive save and reload.
   displays a mixture of two states.
 - Undo while a module picker or engineering panel is open on the slot being reverted: the open
   surface reflects the reverted state rather than acting on a module that is no longer fitted.
-- Changing a viewing condition — feature 003's cargo and fuel assumptions, pip allocation and
-  hardpoint state: not a build change, so it does not enter the history and undo does not reverse
+- Changing a viewing condition — feature 003's load assumption, pip allocation and hardpoint state:
+  not a build change, so it does not enter the history and undo does not reverse
   it.
 - A session left open for a long time with many changes: memory use stays bounded, which is what the
   history limit exists to guarantee.
@@ -359,8 +359,8 @@ reflected in the build's power figures and survive save and reload.
 - **FR-018**: Every change that alters the build MUST be undoable: fitting, replacing and removing
   modules, applying, changing and clearing engineering, enabling and disabling modules, changing
   power priority, and setting the ship's name and ident.
-- **FR-019**: Changes to viewing conditions — feature 003's cargo and fuel assumptions, pip
-  allocation and hardpoint state — MUST NOT enter the history, because they do not change the build.
+- **FR-019**: Changes to viewing conditions — feature 003's load assumption, pip allocation and
+  hardpoint state — MUST NOT enter the history, because they do not change the build.
 - **FR-020**: Each undo and redo step MUST correspond to one Commander decision. Repeated adjustment
   of a single control on a single slot, such as holding a grade control, MUST resolve to a single
   step rather than one step per intermediate value, and that step MUST close when the control is left

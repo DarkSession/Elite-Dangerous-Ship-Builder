@@ -201,9 +201,8 @@ a build with no module reinforcement says so rather than reporting no protection
   proportion of the shield: the package reports the two durations and the two rates but not the
   fraction at which protection returns, and naming one here would be a game rule this application
   does not own. The application MUST NOT present the two durations' sum as a single collapse-to-full
-  figure, which the package does not report, which measures a moment nobody plans around, and which
-  would bury the one that matters: when protection comes back. Where the package reports a recovery
-  duration as infinite, regeneration being unsustainable at the allocation in force, the application
+  figure: the package does not report it, and it would bury the figure that matters — when protection
+  comes back. Where the package reports a recovery duration as infinite, regeneration being unsustainable at the allocation in force, the application
   MUST state that as the verdict it is — the shield does not come back at this allocation — and MUST
   NOT present it as a zero, a blank, an infinite number or an unavailable figure.
 - **FR-007**: The application MUST display shield cell bank capacity for the build — the total
@@ -235,7 +234,7 @@ a build with no module reinforcement says so rather than reporting no protection
 - **FR-012**: The application MUST display the build-level module protection the package reports —
   the pool of module damage the build's reinforcement absorbs, and the proportion of incoming module
   damage it stops — as figures distinct from armour hit points, and MUST report their absence as
-  absence rather than as zero protection. Neither MUST be labelled "integrity": integrity is an
+  absence rather than as zero protection. The application MUST NOT label either "integrity": integrity is an
   individual module's own health, shown with that module under
   [feature 002](../002-module-outfitting/spec.md)'s FR-002, and a build carries no single integrity
   figure.
@@ -301,6 +300,16 @@ pool reports 714 restorable across 4 cells while the bank is powered and 0 acros
 disabled, with the bank still listed and marked as unpowered; switching the power plant off instead
 produces the same zero pool with the bank likewise marked. That is what FR-009 presents directly and
 what FR-008a keeps distinct from a build carrying no banks.
+
+**Composed under feature 003's FR-001a**, naming what is combined and from which package figures:
+
+1. **Telling a build with no cell banks from one whose banks are all unpowered (FR-008, FR-008a)** —
+   the package reports the same zero pool and zero cells for both, and the difference is whether its
+   list of fitted banks is empty. Counting entries in a collection it returns is what FR-001a
+   permits; no total is recomputed, which FR-009 forbids in both directions.
+2. **Reporting an absent module protection as absent rather than as zero (FR-012)** — the package
+   reports zero for a build carrying no reinforcement, so the absence is read from the build's own
+   fitted modules and presented beside the figure. This is the same count as item 1.
 
 **The recovery threshold is not published, and FR-006 is written around that.** `shieldRecovery`
 carries `regenRate`, `brokenRegenRate`, `recoveryTime` and `regenTime` and no threshold field, and no

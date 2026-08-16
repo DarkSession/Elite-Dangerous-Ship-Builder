@@ -319,4 +319,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 3.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
+**Version**: 3.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16

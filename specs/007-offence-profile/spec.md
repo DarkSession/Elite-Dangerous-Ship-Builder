@@ -282,13 +282,18 @@ assumes.
 
 - **FR-016a**: The application MUST display, for the weapons of the active build at a chosen target
   range, how widely the build's fire spreads at that range — as an angle — and which mount sits
-  furthest from the centre line, each figure stating the range it assumes.
-- **FR-016b**: The Commander MUST be able to sweep the target range continuously — a slider, not a
-  fixed set of stops — across the ranges the build's weapons reach, and every angular convergence
-  figure and the plot MUST recompute as it moves. Convergence's range is its own; it is independent
-  of FR-008's fixed chart ranges. The separation between the mounts themselves is fixed geometry and
-  does not vary with range; where it is shown, it MUST be presented as such rather than as a figure
-  the slider moves.
+  furthest from the centre line, each figure stating the range it assumes. The package projects each
+  mount onto the target plane as a dimensionless angular tangent rather than as an angle, so
+  expressing that tangent as an angle is a unit conversion of the package's own figure, permitted by
+  feature 003's FR-001a on the same terms FR-005 there sets for resistances. The spread and the
+  furthest mount are the extremes of the set of points the package returned, selected by that same
+  allowance. No other geometry may be derived: the offsets, the projection and every point are the
+  package's.
+- **FR-016b**: The Commander MUST be able to vary the target range continuously rather than choosing
+  from a fixed set of stops, and every angular convergence figure and the plot MUST recompute as it
+  changes. Convergence's range is its own; it is independent of FR-008's fixed chart ranges. The
+  separation between the mounts themselves is fixed geometry and does not vary with range; where it
+  is shown, it MUST be presented as such rather than as a figure the range control moves.
 - **FR-016c**: Convergence MUST treat every mount as fixed, ship-forward geometry: a fitted, enabled
   weapon contributes its mount's offset to the spread and to the plot whatever its mount type. No
   mount is excluded, re-aimed or discounted for gimbal or turret tracking. Each mount's type MUST
@@ -309,13 +314,21 @@ assumes.
   target range, relative to the centre of the Commander's view, and the plot MUST recompute with the
   range. The plot MUST NOT be the only route to the convergence figures: the same information MUST
   be readable as stated figures for a Commander who cannot use it.
+- **FR-016g**: Each mount offset MUST be bound to the slot it belongs to through the package's own
+  slot enumeration, in the order that enumeration returns, which is the order the offset catalogue is
+  published in. The application MUST NOT read the number out of a journal slot key and use it as an
+  index into that catalogue: the package states that some hulls skip or reorder those numbers, so the
+  number in a slot key is not the array index. This is constitution principle II's prohibition on
+  positional identities applied to the one catalogue that is published positionally — the binding is
+  the package's own ordering, never a mapping this application maintains. FR-016c's mount type and
+  FR-016d's exclusion of empty and disabled hardpoints both depend on this binding being right.
 
 ### Device Requirements
 
 - **FR-017**: The per-weapon table, the damage-type split, the output-by-range chart, the convergence
-  slider and the convergence plot MUST be fully usable on desktop, tablet and mobile, in both
+  range control and the convergence plot MUST be fully usable on desktop, tablet and mobile, in both
   portrait and landscape, scrolling within their own container rather than widening the page. The
-  slider MUST be operable by touch and by keyboard, not by pointer alone.
+  range control MUST be operable by touch and by keyboard, not by pointer alone.
 - **FR-018**: A weapon in the offence profile MUST lead to the hardpoint it is fitted in, by touch
   as well as by pointer and keyboard.
 
@@ -337,6 +350,11 @@ assumes.
   contributes whatever its mount type, MUST assert that the angular figures and the plotted points
   tighten as the target range grows while the metre separation between mounts does not, and MUST
   assert that no figure is derived from a schematic's drawing units.
+- **FR-021b**: FR-016g's binding MUST be unit-tested across every hull in the catalogue, asserting
+  that each offset resolves to the hardpoint the package's slot enumeration pairs it with, and
+  explicitly on a hull whose journal slot numbers are not its enumeration order — so that reading an
+  index out of a slot key fails the test rather than reaching a Commander as fire drawn from the
+  wrong mount.
 - **FR-022**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
@@ -372,9 +390,14 @@ forbids.
 Mount geometry is published in real units, independent of the schematics feature 010 draws:
 `SHIP_GUNSIGHTS` gives each hardpoint's horizontal and vertical offset from the cockpit in metres,
 observed in-game rather than measured off artwork, covering all 48 hulls and 234 hardpoints, and
-`projectGunsight(gunsight, targetRangeMetres)` turns those offsets into the angular figures user
-story 4 reports. FR-016e's prohibition is load-bearing: the offsets come from that catalogue, never
-from the drawings.
+`projectGunsight(gunsight, targetRangeMetres)` projects those offsets onto a target plane. FR-016e's
+prohibition is load-bearing: the offsets come from that catalogue, never from the drawings.
+
+Two properties of that catalogue shape the requirements. It returns **dimensionless angular
+tangents** rather than angles, which is why FR-016a states the conversion rather than assuming one.
+And it is published **positionally** — one offset per hardpoint, in the same order as the package's
+own slot enumeration, with the package warning that the number in a journal slot key is not the array
+index. FR-016g requires the binding to go through that enumeration.
 
 **Composed under feature 003's FR-001a**, naming what is combined and under which permitted
 operation:
@@ -385,6 +408,10 @@ operation:
    adds the results: `damageFalloff(weapon, metres)` reports how much of a weapon's damage still
    lands at a range, and combining it with the damage figures the package already computes restates
    no game rule. FR-009 bounds what that composition may do.
+3. **The convergence angle (FR-016a)** — converts a projected tangent the package returns into the
+   equivalent angle, the unit conversion FR-001a permits.
+4. **The spread and the furthest mount (FR-016a)** — selects the extremes of the set of points the
+   package returned, by the values it reported for them. No point is computed here.
 
 Endurance (FR-012) is **not** composed: the package computes it whole.
 
@@ -441,12 +468,12 @@ Endurance (FR-012) is **not** composed: the package computes it whole.
   characterised beyond it, and a weapon that reaches none of the five is charted as contributing
   nothing at all of them under FR-010 rather than being dropped. Its own maximum range and falloff
   range are still stated per weapon under FR-005.
-- Convergence's slider spans the ranges the build's own weapons reach, since a spread at a range no
+- Convergence's range control spans the ranges the build's own weapons reach, since a spread at a range no
   weapon covers describes nothing. Where that span begins and ends, and what it defaults to, is
   settled at plan time against the design system.
 - Ammunition and reload behaviour are the package's; the application does not model a magazine
   cycle of its own.
 - Which figures are prominent, and how the per-weapon table, the range chart, the convergence plot
-  and its slider are drawn and placed, are decided at plan time against the design system, per
+  and its range control are drawn and placed, are decided at plan time against the design system, per
   constitution principle VII. What this specification fixes is that those three exist, what they
   convey, and that none of them is the only route to its figures.

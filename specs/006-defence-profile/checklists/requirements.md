@@ -2,6 +2,8 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 
+**Created**: 2026-08-14
+
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -35,8 +37,11 @@
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
-- **No figure here is blocked, and nothing in this area composes one.** Every defence figure is the
-  package's own, including the power-aware cell bank pool FR-009 presents directly.
+- **No figure here is blocked.** Every defence figure is the package's own, including the
+  power-aware cell bank pool FR-009 presents directly. Two things are composed under feature 003's
+  FR-001a, both of them counts of a collection the package returns: telling a build with no cell
+  banks from one whose banks are all unpowered (FR-008, FR-008a), and reporting an absent module
+  protection as absent rather than as the zero the package computes (FR-012).
 - **Armour penetration is split with feature 007.** The hull's hardness is a property of the ship
   being built and is reported here (FR-013); a weapon's own piercing rating is a property of what the
   build fires and is reported there. Neither area repeats the other's figure.

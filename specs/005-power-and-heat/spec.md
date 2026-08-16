@@ -237,9 +237,9 @@ shown against the hull's heat dissipation, with the contributing sources identif
   listed with its slot, never dropped — and MUST be identified as deployed-only in either state. A
   module whose draw is unknown MUST NOT be ordered among the known draws at all: such modules MUST
   be pinned above the ranked entries in a group of their own, marked as unknown, so that the
-  ordering beneath them is legible as one over known draws only. An unknown draw could be the
-  largest or the smallest on the build, so any position within the ranking would make a claim the
-  package has not made.
+  ordering beneath them is legible as one over known draws only. An unknown draw could be the largest
+  or the smallest on the build, so any position within the ranking would claim something the package
+  has not.
 
 #### Distributor
 
@@ -290,9 +290,8 @@ shown against the hull's heat dissipation, with the contributing sources identif
   overheat, that MUST read as the state not overheating at all, never as a figure it could not
   produce. The time to reach an overheat MUST NOT be shown: the package reports it, but a countdown
   in seconds reads as a budget a Commander can spend, when what it measures is a build that is
-  already wrong. Whether a state overheats is the answer; when it does is not a number to plan
-  around. The unavailable presentation is reserved for figures the package genuinely does not report,
-  such as FR-011a's absent plant.
+  already wrong. The unavailable presentation is reserved for figures the package genuinely does not
+  report, such as FR-011a's absent plant.
 - **FR-013**: Where the package could not determine some modules' contribution to heat, those modules
   MUST be named **and** every heat figure MUST be marked as a projection over the modules that did
   resolve — not as a bound in either direction — with the overheat verdict marked as untrustworthy.
@@ -327,7 +326,7 @@ shown against the hull's heat dissipation, with the contributing sources identif
   zero rate shown as a figure, and that the switched-off and unpowered distributor read as
   unavailable naming that state. Tests MUST assert that no rate is derived from another capacitor's
   calculation. The never-settles and never-overheats cases MUST each be asserted to produce their
-  verdict rather than an unavailable figure, and no heat state MUST be produced that the package does
+  verdict rather than an unavailable figure, and that no heat state is produced which the package does
   not itself report.
 - **FR-019**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
@@ -355,7 +354,8 @@ recharge, and the build's heat.
 The distributor's catalogue recharge figures are each a maximum at four pips, and the curve that
 turns one of them into the rate at a given allocation is a game rule the package owns, applies and
 documents — `rated × (pips / 4)^1.1`, measured rather than published by the game, and materially not
-linear: at one pip it yields 2.18 MJ/s where a straight line would say 2.50.
+linear: on the catalogue's highest rated recharge of 10.1 MJ/s, one pip yields 2.20 MJ/s where a
+straight line would say 2.53.
 `ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` applies that curve to all
 three capacitors and returns each one's capacity, its rated four-pip recharge and its actual rate at
 the allocation given, together with the allocation it used. Each allocation defaults independently to

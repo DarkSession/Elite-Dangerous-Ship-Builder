@@ -221,13 +221,15 @@ not move, and none of the three is written into the build when it is saved, shar
 - **FR-001a**: The application MAY combine figures the package computes, where doing so restates no
   game rule. The permitted operations are: adding contributions it reports; comparing two of its
   figures, including expressing that comparison as their difference; counting entries in a collection
-  it returns; applying a factor it reports to a figure it reports; and dividing one of its figures by
-  another. What remains forbidden under FR-001 is supplying any term the package did not report, and
-  reproducing an algorithm it already performs — a curve, a formula, a scaling law, or an iteration.
-  Every input MUST remain the package's own, and where the package reports the combined figure
-  itself, that figure MUST be used rather than reassembled from its parts. An area specification that
-  relies on this allowance MUST say so in its "Upstream dependencies" section, naming what it
-  composes and from which package figures.
+  it returns; ordering a collection it returns by one of its own reported values, and selecting an
+  entry by that ordering (a largest, a smallest); converting a figure it reports into an equivalent
+  unit, as FR-005 requires of resistances; applying a factor it reports to a figure it reports; and
+  dividing one of its figures by another. What remains forbidden under FR-001 is supplying any term
+  the package did not report, and reproducing an algorithm it already performs — a curve, a formula,
+  a scaling law, or an iteration. Every input MUST remain the package's own, and where the package
+  reports the combined figure itself, that figure MUST be used rather than reassembled from its
+  parts. An area specification that relies on this allowance MUST say so in its "Upstream
+  dependencies" section, naming what it composes and from which package figures.
 - **FR-001b**: Presenting a build's own state alongside a figure — that a module is disabled, sits in
   a priority group the plant cannot power, or is unresolved — is not a composition and needs no
   declaration under FR-001a. The build's state and the package's figures are both read as reported;
@@ -237,10 +239,13 @@ not move, and none of the three is written into the build when it is saved, shar
   hardpoint-state assumptions it was computed under.
 - **FR-003**: Every statistic MUST recompute automatically on every build change and on every change
   to a viewing condition, and the displayed set MUST always be internally consistent for one state.
-- **FR-004**: No figure in any area MUST carry a comparison against anything. Comparison is not a
-  capability of this application: a figure reports the active build as it now stands, not against the
-  state before the last edit, not against the version last saved, not against a pinned baseline, and
-  not against another build. A Commander judging a change makes it and reads the result.
+- **FR-004**: A figure MUST report the active build as it now stands, and MUST NOT be presented
+  against another build or against an earlier state of this one — not the state before the last edit,
+  not the version last saved, not a pinned baseline. Comparison in that sense is not a capability of
+  this application: a Commander judging a change makes it and reads the result. This does not touch
+  the comparisons FR-001a permits between two figures of the same build, such as a deficit against a
+  capacity or a mass against a curve threshold, nor an area presenting several figures of one build
+  side by side, such as feature 008's three load states.
 - **FR-005**: Resistances MUST be presented as percentages, converted from the package's fractional
   values.
 - **FR-006**: Every figure the package reports as unavailable, incomplete or absent MUST be
@@ -250,14 +255,14 @@ not move, and none of the three is written into the build when it is saved, shar
   area and the slot each belongs to, and MUST NOT suppress the statistics that can still be
   computed.
 - **FR-007a**: The wording of a package diagnostic is this application's to write and to translate,
-  composed from the diagnostic's stable `code` and the `params` and `constraint` it carries, and MUST
-  go through the localisation layer like any other string the application owns. The package's own
-  English sentence MUST NOT be displayed — it is documented as being for logs — and MUST NOT be
-  parsed to recover the slot, module or constraint it mentions, each of which the diagnostic reports
-  as its own field. Game **text** is asked of the package under constitution principle VI, while
-  diagnostic **wording** is composed here from what the package reports. A diagnostic carrying a code
-  this application has no wording for MUST still show that code and the slot it names rather than
-  nothing.
+  composed from the diagnostic's stable `code` and the values it carries alongside it — its `params`,
+  the slot and module symbol it names, and, on an edit error, its `constraint` — and MUST go through
+  the localisation layer like any other string the application owns. The package's own English
+  sentence MUST NOT be displayed, and MUST NOT be parsed to recover a value the diagnostic already
+  reports as its own field. Game **text** is asked of the package under constitution principle VI,
+  while diagnostic **wording** is composed here from what the package reports. A diagnostic carrying
+  a code this application has no wording for MUST still show that code and the slot it names rather
+  than nothing.
 
 #### The headline set
 
@@ -374,14 +379,17 @@ the five areas is blocked or waiting on an upstream release.** Several areas com
 FR-001a; each names what it composes in its own "Upstream dependencies" section.
 
 **Diagnostic wording belongs here, by settled division of responsibility.** The validity,
-completeness and edit-error messages FR-006 and FR-007 surface are English-only and documented as
-being for logs — `LoadoutIssue.message` and `LoadoutEditError.message`. What the package publishes
-instead is the machine-readable half: every diagnostic carries a stable `code`, the `params` it
-interpolates, and where applicable the `constraint` that produced it, so a consumer composes and
-translates the sentence itself. Constitution principle VI's "ask for a locale there" rule is
-satisfied for game **text** — hull, module, blueprint, effect and material names all come from the
-package — while diagnostic **wording** is this application's to write and to translate. This is what
-FR-007's "plain language" obligation rests on.
+completeness and edit-error messages FR-006 and FR-007 surface are English-only:
+`LoadoutIssue.message` is a human-readable explanation and `LoadoutEditError.message` an English
+fallback the package documents as suitable for logs. What the package publishes alongside them is
+the machine-readable half, and it publishes it for exactly this purpose: a validation issue carries a
+stable `code`, its `severity`, the `slot` and module `symbol` involved, and `params` documented as
+"values interpolated into `message`, for consumers composing localized text"; an edit error carries a
+`code`, `params` and the `constraint` that produced it. So a consumer composes and translates the
+sentence itself. Constitution principle VI's "ask for a locale there" rule is satisfied for game
+**text** — hull, module, blueprint, effect and material names all come from the package — while
+diagnostic **wording** is this application's to write and to translate. This is what FR-007's "plain
+language" obligation rests on.
 
 ## Success Criteria _(mandatory)_
 

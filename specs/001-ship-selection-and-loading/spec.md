@@ -404,12 +404,14 @@ and confirm the build loads identically.
   manufacturer, its hull size, its top speed and boost speed in metres per second, its base shield
   strength in megajoules, its base armour as hit points, its hull mass in tonnes, its full mount
   layout — the hardpoints by size that the listing also shows, plus the utility mounts, core mount
-  sizes and optional slots the listing does not — its crew seats, and its cost figures. Hull mass is
-  `Ship.hullMass`, the hull's own mass before anything is fitted; hull hardness is a different field
-  and MUST NOT be shown. Every figure MUST carry its unit under FR-013. The detail MUST offer the
-  action that creates the build (FR-011), and MUST make the builds already saved against that hull
-  reachable under FR-023h. Every characteristic the catalogue records for a hull MUST be readable
-  here even though it is neither a column, a sort key nor a filter.
+  sizes and optional slots the listing does not — its crew seats, and its cost figures. That list is
+  what the detail carries; it is where every characteristic the five listed columns leave out is
+  read, and a characteristic on it is neither a sort key nor a filter. Hull mass is `Ship.hullMass`,
+  the hull's own mass before anything is fitted; hull hardness is a different field and is not shown
+  here, because it describes how a ship resists an attacker rather than what it is — it belongs to
+  [feature 006](../006-defence-profile/spec.md)'s FR-013, which reports it for a build. Every figure
+  MUST carry its unit under FR-013. The detail MUST offer the action that creates the build (FR-011),
+  and MUST make the builds already saved against that hull reachable under FR-023h.
 - **FR-012**: Characteristics shown before a build exists describe a hull as the catalogue records
   it, not a build. This holds for the hull detail exactly as it holds for the listing: a hull the
   Commander has not built has no fitted modules, so any figure that depends on them MUST either be
@@ -637,8 +639,8 @@ and confirm the build loads identically.
 - **FR-044a**: The application MUST identify **two** versions, distinctly named, and MUST keep both
   reachable from wherever catalogue figures are shown: its own release version, and the version of
   `@elite-dangerous-almanac/core` bundled with it. Both MUST be taken from the artefacts themselves
-  at build time rather than maintained by hand. Neither MUST be labelled as the version of the game
-  data. That third version — the game catalogue version — MUST be shown as unavailable while the
+  at build time rather than maintained by hand. The application MUST NOT label either as the version
+  of the game data. That third version — the game catalogue version — MUST be shown as unavailable while the
   package reports none, and MUST NOT be represented by either of the other two.
   [Feature 012](../012-help-and-licences/spec.md) presents all three; this feature requires that they
   exist and that catalogue figures lead to them.
@@ -847,6 +849,10 @@ rather than pending: nothing in any feature depends on the value, so no issue is
 - The illustration set covers every hull in the catalogue, so a hull without a preview is a temporary
   gap to be raised upstream rather than an expected state — while FR-015 still requires the catalogue
   to work when one is missing.
+- Whether the artwork's own terms permit how this application ships it is an open question, recorded
+  as [feature 012](../012-help-and-licences/spec.md)'s FR-005b. It is a licensing question rather
+  than a product one, and until it is answered these requirements stand as written; the answer could
+  change what the application may show.
 - How illustrations are optimised, and by what mechanism they are fetched and cached, is a plan-time
   decision constrained by FR-017a, FR-021 and FR-022.
 - The design system owns how a hull illustration looks, exactly as it owns how a schematic looks
