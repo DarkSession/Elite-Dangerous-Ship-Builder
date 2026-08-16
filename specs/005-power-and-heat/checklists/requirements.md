@@ -38,12 +38,14 @@
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated. This document adds only
   what is specific to power, the distributor and heat.
-- **Nothing here is blocked.** Every figure was verified against the installed
-  `@elite-dangerous-almanac/core@0.1.0-beta.4` on 2026-08-14. Build heat arrived in that release;
-  the power budget, the priority-group breakdown and the distributor capacities predate it. Three
-  figures are composed under feature 003's FR-001a — the retracted headroom and utilisation, the
-  powered and unpowered shares of the draw, and the modules a shed priority group takes offline — and
-  the Upstream dependencies section names all three.
+- **One figure is blocked.** Every figure was re-verified against the installed
+  `@elite-dangerous-almanac/core@0.1.0-beta.8` on 2026-08-16. Only the engines capacitor's recharge
+  at the pip allocation in force is unavailable: the package applies its non-linear pip curve for
+  the weapons capacitor and states that the systems capacitor shares it, but says nothing about ENG,
+  and FR-008a declines to assert a game rule the package has not stated. Four figures are composed
+  under feature 003's FR-001a — the retracted headroom and utilisation, the powered and unpowered
+  shares of the draw, the modules a shed priority group takes offline, and the cell bank activation
+  heat state — and the Upstream dependencies section names all four.
 - **Heat capacity is not a budget.** The package is explicit that heat capacity is thermal inertia,
   governing how long a build takes to reach a temperature, while thermal load against hull heat
   dissipation is what decides whether it overheats. An earlier draft framed the heat figures against
@@ -61,4 +63,27 @@
 - **The WEP capacitor is deliberately split across two specifications.** Its capacity and recharge
   are the distributor's, specified here; how quickly a given loadout drains it belongs to
   [feature 007](../../007-offence-profile/spec.md), which composes them with the weapons' draw. That
-  composition is blocked upstream and recorded there, not here.
+  composition was blocked on WEP pip scaling; `0.1.0-beta.8` closes it, so feature 007's own
+  Upstream dependencies section needs re-checking against the installed version.
+- **The cell bank activation heat state crosses into feature 006.** FR-011b models the worst
+  activation a build can perform as a heat state of its own. Each bank's own heat cost, spin-up and
+  duration remain [feature 006](../../006-defence-profile/spec.md)'s to present; what is specified
+  here is only what an activation does to the build's temperature. Heat sinks are excluded outright
+  under FR-011c — the package models no negative load — and the exclusion is stated on screen rather
+  than left for a Commander to discover.
+
+## Amended 2026-08-16 (design review)
+
+The notes above describe the specification as it stood on 2026-08-14. Four heat requirements were
+withdrawn or narrowed on 2026-08-16 and the notes that rest on them no longer hold:
+
+- **FR-011b is withdrawn**, so there is no composed cell bank activation heat state. The fourth
+  composition named above is gone, and nothing in this area composes a heat figure at all. A bank's
+  own activation heat remains feature 006's to present.
+- **FR-011c is withdrawn**, so the heat-sink exclusion is recorded in the specification's Assumptions
+  rather than stated beside every overheat verdict.
+- **FR-010 no longer requires the hull's heat capacity.** The note above is still true about what
+  capacity means; the requirement now shows dissipation alone, because with the time-to-overheat
+  figures dropped there is nothing left for capacity to qualify.
+- **FR-012 and FR-012b no longer show the time to reach an overheat.** Whether a state overheats is
+  the verdict; when it does is not presented.

@@ -20,20 +20,71 @@ It is one area of the statistics family. [Feature 003](../003-ship-statistics/sp
 contract every figure here obeys — the requirement that a build be active at all (its FR-000),
 provenance, units, the honesty rules for unavailable figures, the recompute obligation, and the
 viewing conditions. Everything it states applies here without being restated, and nothing here
-relaxes it. Nothing in this area is offered before a hull is chosen. In particular, the pip
-allocation is a viewing condition owned by feature 003; this feature specifies what SYS pips do to
-the figures.
+relaxes it. Nothing in this area is offered before a hull is chosen, and nothing is offered for a
+build whose hull the package cannot resolve: feature 003's FR-000 requires a build to report on, and
+a hull the package cannot resolve leaves nothing to report. In particular, the pip allocation is a
+viewing condition owned by feature 003; this feature specifies what SYS pips do to the figures.
 
-How hard the build hits belongs to [feature 007](../007-offence-profile/spec.md), which reads the
-hull hardness specified here when it presents armour piercing.
+How hard the build hits belongs to [feature 007](../007-offence-profile/spec.md). The two areas
+divide armour penetration between them: the hull's hardness — what an attacker's fire is measured
+against — is a property of the ship being built and is reported here, while a weapon's own piercing
+rating is a property of what the build fires and is reported there. Neither repeats the other.
+
+## Clarifications
+
+### Session 2026-08-16
+
+- Q: Should this feature let a Commander put two builds side by side, or does SC-002 just mean each
+  figure is readable without mental maths? → A: Readability, not comparison. Feature 003 rules
+  side-by-side comparison out of scope and nothing here relaxes it, so SC-002 is a single-build
+  criterion: the resistance and effective hit points for a damage type are read straight off the
+  active build. A Commander weighing two fits loads each in turn; what this feature owes them is
+  figures that need no arithmetic to weigh, not a comparison surface.
+- Q: For an unresolved hull, should the armour zeroes be hidden as unavailable, or shown with the
+  unresolved state flagged? → A: Neither — a build whose hull the package cannot resolve gets no
+  defence profile at all. The package reports the unresolved hull as a validity issue in its own
+  right, and feature 003's FR-000 requires a build to report on; an unresolved hull leaves nothing to
+  report, so the whole area is withheld rather than the armour group alone being suppressed. This is
+  a deliberate trade: the shield, recovery and cell-bank figures for such a build remain computable
+  and are withheld with the rest, because a defence profile assembled around a hull the application
+  cannot name would mislead more than it informs. It also removes the apparent conflict with FR-001b,
+  which governs a *valid* build whose figure ignores its power state — the unpowered generator and
+  cell bank — and never licensed suppressing a computed figure.
+- Q: How should a defence figure the package reports as infinite be presented? → A: As a verdict, in
+  words, matching the convention feature 005 already sets. An infinite effective hit-point figure —
+  the package's answer at a resistance of 100% or better — reads as nothing of that damage type
+  getting through. An infinite recovery duration reads as the shield not coming back at the
+  allocation in force. Neither is an unavailable figure, a zero, a blank or a rendered infinity: the
+  package produced a definite answer about the build, and the application states it.
+- Q: Is a single "collapse to full strength" duration worth showing alongside the two recovery
+  phases? → A: No, and it is worth saying why rather than only that it is forbidden. The two phases
+  are different things: the broken-shield rate carries the shield from collapse to the threshold at
+  which it comes back up, and the ordinary regeneration rate carries it from there to full. A
+  collapse-to-full figure is the first phase plus the remainder of the second, and the moment it
+  describes — a shield at exactly 100% — is not a moment any Commander plans around. What they plan
+  around is when protection returns, which is the first phase, and that is the figure the sum would
+  bury.
+- Q: Is a build-level "integrity" figure a second name for module protection, or a different thing?
+  → A: A different thing, and neither is called integrity at build level. Integrity is a **module's**
+  own health — how much damage that one module absorbs before it fails — and it belongs to that
+  module under feature 002. What this area reports is the build-level module protection the
+  reinforcement packages provide. An earlier assumption here treated "integrity" as an alternative
+  label for the build-level figure and forbade showing both; that was the wrong distinction. The
+  correct one is that a build-level figure is never labelled "integrity" at all.
+- Q: What should FR-015's "lead to the slot it is fitted in" actually give the Commander? → A: A
+  route into outfitting at that slot. Following a contribution takes the Commander to that slot in
+  feature 002's enumeration, ready to edit, rather than merely naming the slot or expanding the
+  module's details in place. This mirrors feature 003's FR-009, where a headline figure is a route to
+  the breakdown that owns it, and it matches why a Commander opens a contribution at all: to change
+  it.
 
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Read the full defence profile (Priority: P1)
 
-A Commander compares two shield fits and needs more than a single strength number: where the
-strength comes from, how it resists each damage type, and how much punishment the hull takes once
-shields drop.
+A Commander weighing two shield fits, loading each in turn, needs more than a single strength
+number: where the strength comes from, how it resists each damage type, and how much punishment the
+hull takes once shields drop.
 
 **Why this priority**: Defence is half of every combat build decision, and an aggregated figure
 cannot answer "which of these two fits survives a plasma accelerator". The package already computes
@@ -103,14 +154,15 @@ describe whether it is still able to fight while it does. A Commander cannot tel
 reinforcement from hull reinforcement without them.
 
 **Independent Test**: Load a build with module reinforcement packages fitted and confirm hull
-hardness, the module-damage pool and module protection are each shown as their own figure, and that
+hardness and the build's module protection are each shown as their own figure, and that
 a build with no module reinforcement says so rather than reporting no protection.
 
 **Acceptance Scenarios**:
 
 1. **Given** module reinforcement packages are fitted, **When** the Commander views the defence
-   profile, **Then** the module-damage pool and module protection are shown as their own figures,
-   distinct from armour hit points.
+   profile, **Then** the module protection they provide — the pool of module damage absorbed and the
+   proportion of it stopped — is shown as its own figures, distinct from armour hit points and never
+   labelled as the build's integrity.
 2. **Given** a build with no module reinforcement, **When** the Commander views these figures,
    **Then** their absence is reported as absence rather than as zero protection.
 3. **Given** an active build, **When** the Commander views the defence profile, **Then** the hull's
@@ -133,10 +185,14 @@ a build with no module reinforcement says so rather than reporting no protection
   power is different — the package still reports full strength for it, so the application shows that
   figure with the unpowered state flagged beside it rather than overriding it, exactly as FR-009
   requires for cell banks.
-- Shield recovery at a SYS allocation that cannot sustain regeneration — the default state at zero
-  SYS pips: the package still reports both regeneration rates normally, and reports both recovery
-  durations as infinite. The rates are shown as usual; the two durations are reported as unavailable
-  for that allocation, with the reason, rather than as zero, as a blank, or as an infinite number.
+- Shield recovery at a SYS allocation that cannot sustain regeneration — at zero SYS pips, for
+  instance: the package still reports both regeneration rates normally, and reports both recovery
+  durations as infinite. The rates are shown as usual; each infinite duration is stated as the
+  verdict it is — the shield does not come back at this allocation — rather than as a zero, a blank,
+  an infinite number, or a figure the package could not produce.
+- A resistance of 100% or better against a damage type: the package reports the effective hit points
+  for it as infinite. That is a verdict and not a missing figure — nothing of that type gets through
+  — and it is stated as such rather than as a number, a blank or an unavailable figure.
 - Cell banks of mixed classes and ratings fitted together: the pool is the total across all of them,
   and per-bank figures remain individually inspectable.
 - A cell bank whose spin-up, duration or heat the catalogue does not carry: that bank is named as
@@ -146,10 +202,13 @@ a build with no module reinforcement says so rather than reporting no protection
   into the total.
 - Guardian and reactive contributions that resist some damage types and worsen others: each
   contribution is shown with its own effect, not averaged into a single figure.
-- A build the package cannot resolve to a known hull: the package reports zero armour hit points and
-  zero resistances for it, and hardness has no value at all. Those zeroes are an artefact of the
-  unresolved hull, not a defenceless ship, so the armour figures are reported as unavailable with
-  that reason rather than displayed as zeroes.
+- A build the package cannot resolve to a known hull: no defence profile is presented for it at all.
+  The package reports the unresolved hull as a validity problem and computes zero armour hit points
+  and zero resistances around it, and those zeroes are an artefact of the unresolved hull rather than
+  a defenceless ship. Because the hull is what armour, hardness and module protection are all
+  measured from, the area has no build to report on and is withheld entire — the shield, recovery and
+  cell-bank figures included, computable though they remain. The Commander is told the hull is
+  unresolved, with the package's reason, instead.
 - A per-damage-type table on a phone: it stays legible and scrolls within its own container rather
   than forcing the page sideways.
 
@@ -162,7 +221,10 @@ a build with no module reinforcement says so rather than reporting no protection
 - **FR-001**: The application MUST display total shield strength together with its generator,
   booster and reinforcement contributions and the mass-curve and boost multipliers applied.
 - **FR-002**: The application MUST display shield resistance as a percentage and effective hit
-  points for every damage type the package reports, including caustic.
+  points for every damage type the package reports, including caustic. Where the package reports a
+  damage type's effective hit points as infinite — its answer at a resistance of 100% or better — the
+  application MUST state that as the verdict it is, that nothing of that type gets through, and MUST
+  NOT present it as a number, a blank or an unavailable figure.
 - **FR-003**: A build with no shield generator MUST have its shield figures reported as absent, not
   as zero strength, and MUST still show its armour figures in full.
 - **FR-004**: Changing the SYS pip allocation MUST recompute shield resistances, effective hit points
@@ -176,9 +238,15 @@ a build with no module reinforcement says so rather than reporting no protection
 - **FR-006**: The application MUST display the shield regeneration rate, the broken-shield
   regeneration rate, and the two recovery phases the package reports as the distinct figures they
   are: the time from collapse to the threshold at which the shield comes back up, and the time from
-  that threshold to full strength. The application MUST NOT present their sum as a single
-  collapse-to-full figure, which the package does not report and which would obscure the moment a
-  Commander actually regains protection.
+  that threshold to full strength. Each phase MUST identify the rate that governs it — the broken
+  rate up to the threshold, the ordinary rate beyond it — and the threshold MUST be the one the
+  package reports rather than a proportion assumed here, so a Commander reads what fraction of their
+  shield they get back when protection returns. The application MUST NOT present their sum as a
+  single collapse-to-full figure, which the package does not report, which measures a moment nobody
+  plans around, and which would bury the one that matters: when protection comes back. Where the package reports a recovery duration as infinite,
+  regeneration being unsustainable at the allocation in force, the application MUST state that as the
+  verdict it is — the shield does not come back at this allocation — and MUST NOT present it as a
+  zero, a blank, an infinite number or an unavailable figure.
 - **FR-007**: The application MUST display shield cell bank capacity for the build — the total
   restorable shield strength and the number of cells available — together with each bank's spin-up
   time, duration and heat cost.
@@ -194,15 +262,21 @@ a build with no module reinforcement says so rather than reporting no protection
 
 - **FR-010**: The application MUST display total armour hit points together with the bulkhead and
   hull-reinforcement contributions, and armour resistance as a percentage and effective hit points
-  per damage type.
+  per damage type, under FR-002's rule for an effective hit-point figure the package reports as
+  infinite.
 - **FR-011**: The application MUST identify the bulkhead in force alongside the armour it
   contributes.
-- **FR-012**: The application MUST display the module-damage pool and module protection as distinct
-  figures, separate from armour hit points, and MUST report their absence as absence rather than as
-  zero protection.
+- **FR-012**: The application MUST display the build-level module protection the package reports —
+  the pool of module damage the build's reinforcement absorbs, and the proportion of incoming module
+  damage it stops — as figures distinct from armour hit points, and MUST report their absence as
+  absence rather than as zero protection. Neither MUST be labelled "integrity": integrity is an
+  individual module's own health, shown with that module under
+  [feature 002](../002-module-outfitting/spec.md)'s FR-002, and a build carries no single integrity
+  figure.
 - **FR-013**: The application MUST display the hull's hardness, identified as the figure an
-  attacker's armour piercing is measured against — the same figure feature 007 presents a weapon's
-  piercing against.
+  attacker's armour piercing is measured against. Hardness is a property of the ship being built and
+  belongs here; a weapon's own piercing rating is a property of what the build fires and belongs to
+  [feature 007](../007-offence-profile/spec.md)'s FR-005. Neither area repeats the other's figure.
 
 ### Device Requirements
 
@@ -210,27 +284,32 @@ a build with no module reinforcement says so rather than reporting no protection
   be fully readable on desktop, tablet and mobile, in both portrait and landscape, scrolling within
   their own container rather than widening the page.
 - **FR-015**: A contribution behind an aggregate — a booster, a reinforcement package, a cell bank —
-  MUST lead to the slot it is fitted in, by touch as well as by pointer and keyboard.
+  MUST be a route to the slot it is fitted in, taking the Commander to that slot in
+  [feature 002](../002-module-outfitting/spec.md)'s slot enumeration ready to edit, by touch as well
+  as by pointer and keyboard. Naming the slot without offering the route does not satisfy this
+  requirement.
 
 ### Testing Requirements
 
 - **FR-016**: Shield and armour presentation MUST be unit-tested against known builds, including the
-  no-shield, no-cell-bank, negative-resistance, switched-off-generator, unpowered-generator,
-  unpowered-cell-bank, unresolved-hull and no-recovery-at-this-allocation cases, asserting for the
-  last of these that the regeneration rates are still shown and that neither infinite duration is
-  rendered as a number or a zero.
+  no-shield, no-cell-bank, negative-resistance, total-resistance, switched-off-generator,
+  unpowered-generator, unpowered-cell-bank, unresolved-hull and no-recovery-at-this-allocation cases,
+  asserting for the unresolved-hull case that no defence figure of any kind is presented — not the
+  armour group alone — and for the two infinite cases, total resistance and no recovery at this
+  allocation, that each infinite figure reads as a verdict rather than as a number, a zero, a blank
+  or an unavailable figure, the regeneration rates still being shown alongside the latter.
 - **FR-017**: The pip-dependent shield figures MUST be unit-tested at several SYS allocations,
   asserting that every figure states the allocation it was computed under.
 - **FR-018**: Contribution breakdowns MUST be unit-tested to sum to the totals the package reports,
   so a contribution can never be shown that the total does not account for.
 - **FR-019**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
 ### Key Entities
 
 - **Defence profile**: Shield strength with its contributions, armour with its contributions,
-  resistances and effective hit points per damage type, the module-damage pool and module
-  protection, regeneration rates and cell bank capacity.
+  resistances and effective hit points per damage type, the build's module protection, regeneration
+  rates and cell bank capacity.
 - **Shield contribution**: One source of shield strength — the generator, a booster, a reinforcement
   — with the amount it adds and the slot it comes from.
 - **Resistance**: One damage type's resistance percentage and the effective hit points that follow
@@ -262,8 +341,9 @@ pool instead. A power-aware pool upstream would let the figure itself tell the t
 
 - **SC-001**: Every defence figure matches the value `@elite-dangerous-almanac/core` computes for
   the same build and the same pip allocation — zero divergence across the reference corpus.
-- **SC-002**: A Commander can determine which of two shield fits survives longer against a stated
-  damage type without performing any arithmetic.
+- **SC-002**: A Commander can read the active build's survivability against any stated damage type —
+  its resistance and the effective hit points that follow from it — directly from the displayed
+  figures, without performing any arithmetic.
 - **SC-003**: Shield strength equals the sum of the contributions displayed for it, for every build
   in the corpus — zero unexplained strength and zero contribution the total does not account for.
 - **SC-004**: For every build with no shields, no cell banks or no module reinforcement, the
@@ -280,13 +360,20 @@ pool instead. A power-aware pool upstream would let the figure itself tell the t
   application shows the multipliers the package applied; it does not reproduce the curve.
 - "Effective hit points" is the package's figure for a damage type, not a local product of strength
   and resistance.
-- The module-damage pool is the figure the package calls **module armour**. A design or a community
-  tool may label it "integrity"; it is one figure under two names, not two figures, and the
-  application MUST NOT present both.
-- Module integrity as a per-module property — how much damage an individual module absorbs before it
-  fails — is a module attribute, shown with that module under feature 002's FR-002 as one of "the
-  attributes relevant to its module type", not a build-level defence figure.
+- Module protection is the build-level figure, and it is what module reinforcement buys. The package
+  reports it as a pool of absorbed module damage together with the proportion of incoming module
+  damage it stops; both are shown, because they answer different questions — how much and how
+  much of it.
+- **Integrity is per module, never per build.** How much damage one module absorbs before it fails is
+  an attribute of that module, shown with it under feature 002's FR-002. A build-level figure
+  labelled "integrity" describes nothing: there is no pool of integrity, and using the word for the
+  module-protection pool invites a Commander to read a module attribute as a ship-wide one. An
+  earlier assumption here had it the other way round, treating "integrity" as a second name for the
+  build-level figure; the correction is recorded in the 2026-08-16 clarifications.
 - Modelling damage against another ship's specific defences — time to kill, engagement simulation —
   is out of scope, as it is in feature 007.
+- Comparing two builds side by side is out of scope here exactly as it is in feature 003. This
+  feature is answerable for figures a Commander needs no arithmetic to weigh, not for a surface that
+  weighs two builds for them.
 - Which figures are prominent and how the per-damage-type tables are laid out are decided at plan
   time against the design system, per constitution principle VII.

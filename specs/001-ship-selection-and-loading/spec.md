@@ -24,8 +24,10 @@ own geometry rather than counted, [feature 010](../010-hull-anatomy/spec.md) own
 
 The three capabilities this feature originally waited on — manufacturer and hull size, stock
 configurations, and the ship illustrations — arrived in `@elite-dangerous-almanac/core@0.1.0-beta.4`.
-One requirement added later, the catalogue version FR-044a asks for, waits on the package. See
-"Upstream dependencies".
+One thing added later still waits on the package: the version of the game data the catalogue carries,
+which is one of the three versions FR-044a covers. See "Upstream dependencies". Where the application
+presents its versions, its licences and Frontier Developments' media-usage notice belongs to
+[feature 012](../012-help-and-licences/spec.md).
 
 ## Clarifications
 
@@ -56,7 +58,9 @@ One requirement added later, the catalogue version FR-044a asks for, waits on th
 - Q: When a Commander reloads the page with an active build they never explicitly saved, should that
   build still be there? → A: Yes — the active build is autosaved to a working slot, separate from
   named saved builds and never listed among them. Saving under a name is about keeping a build, not
-  about surviving a reload.
+  about surviving a reload. _(Second half superseded 2026-08-16: a working build **is** listed among
+  the saved builds, marked as unsaved. What survives is that it is autosaved, that it is a distinct
+  kind of record, and that saving under a name is a separate act.)_
 - Q: Is a saved build identified by its name, so two saved builds can never share one, or by an
   internal identity that lets duplicate names coexist? → A: An internal identity independent of the
   name. Duplicate names are permitted; the application warns that a name is already in use and lets
@@ -90,6 +94,35 @@ One requirement added later, the catalogue version FR-044a asks for, waits on th
 - Q: Does the application model partial engineering quality? → A: No. A selected blueprint grade is
   always complete (100% quality). Imported partial quality is normalised to 100%, and quality is not
   stored in persistence or build links because it is invariant application-wide.
+- Q: Must a hull's illustration take its colour from the design system's tokens, overriding the
+  palette the artwork carries? → A: Yes, on the same terms
+  [feature 010](../010-hull-anatomy/spec.md) already sets for the schematics that ship alongside it.
+  Every illustration is presented through one treatment the design system owns, identical for all 48
+  hulls, so that no colour on screen originates in the artwork. What the illustration depicts is
+  untouched — the treatment resolves colour, never form. Whether it is baked into the delivered
+  variant or applied at presentation time is a plan-time decision, exactly as it is for the plates.
+- Q: Does the illustration treatment follow a theme the Commander chooses? → A: There is no theme to
+  follow. The application ships one dark theme (constitution principle VII, amended 2026-08-16), so
+  the treatment resolves against that one set of token values. This removes the per-theme variant
+  clause an earlier draft of FR-022a permitted; the obligation it served — no colour from the
+  artwork, one treatment for every hull — is unchanged.
+- Q: Should an autosaved working build appear in the list of saved builds, or stay out of it? → A: In
+  it, marked as unsaved. A Commander looking for a build they were working on looks in one list, not
+  two, and a working build that is only offered at startup is easy to lose track of. It remains a
+  distinct kind of record — writing it touches no named build, and it is still unsaved until the
+  Commander names it.
+- Q: Can a Commander attach a note to a build? → A: Yes — one free-text note per build, kept with the
+  build in storage and editable wherever a build is saved. It is storage-local: it is not carried in
+  a build link, which has a length budget it would wreck, and it is not written into a SLEF export.
+- Q: The saved-build list flags builds that have problems — where does that flag come from, given no
+  statistic exists without an active build? → A: From the build record. The validity summary is
+  computed when the build is saved and stored with it, so the list reads a stored fact rather than
+  activating each build to compute one. Feature 003's FR-000 is untouched: a stored count is not a
+  statistic in that family.
+- Q: Which version numbers does the application show? → A: Two, both of them real — the application's
+  own release version and the version of `@elite-dangerous-almanac/core` bundled with it. The game
+  catalogue version FR-044a originally asked for is a third thing the package still does not report,
+  and it stays unavailable rather than being impersonated by either of these.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -183,9 +216,14 @@ without breaking the list.
    legible and do not push the characteristics off the screen or force horizontal page scrolling.
 4. **Given** illustrations are shown anywhere in the application, **When** the Commander looks for
    their provenance, **Then** Frontier Developments' media-usage notice is reachable, as the terms
-   the artwork travels under require.
+   the artwork travels under require — presented by
+   [feature 012](../012-help-and-licences/spec.md), which owns that surface.
 5. **Given** a Commander using a screen reader, **When** they reach a preview, **Then** the hull is
    identified in text; no information is carried by the preview alone.
+6. **Given** the catalogue lists several hulls, **When** the Commander views their previews together,
+   **Then** every one of them is presented through the same design-system treatment, none carries a
+   colour from its own artwork, and no hull is set apart from the others by how its preview is
+   treated.
 
 ---
 
@@ -222,13 +260,14 @@ offered and restores with the same hull, modules and engineering.
 6. **Given** two saved builds share a name, **When** the Commander opens or deletes one of them,
    **Then** the action takes effect on the build they chose, and the list gives them enough to tell
    the two apart.
-7. **Given** an autosaved working build is restored, **When** the Commander views the list of saved
-   builds, **Then** the working build is not among them; it becomes a saved build only when the
-   Commander saves it under a name.
+7. **Given** an autosaved working build exists, **When** the Commander views the list of saved
+   builds, **Then** the working build is listed among them, marked as unsaved and distinguishable
+   from the named builds, and naming it turns that same record into a named saved build rather than
+   creating a second one.
 8. **Given** working builds exist from earlier tabs or sessions, **When** the Commander opens the
-   application in a new tab, **Then** those working builds are offered for selection alongside the
-   saved builds, each identified as unsaved and distinguishable by its ship and last-modified time,
-   and opening one makes it this tab's active build.
+   application in a new tab, **Then** those working builds are in that one list too, each identified
+   as unsaved and distinguishable by its ship and last-modified time, and opening one makes it this
+   tab's active build.
 9. **Given** two tabs are open on different builds, **When** each is reloaded, **Then** each returns
    to the build it was showing, and neither tab's work has been overwritten by the other's.
 10. **Given** local storage is unavailable or full, **When** the Commander tries to save, **Then**
@@ -237,6 +276,12 @@ offered and restores with the same hull, modules and engineering.
     catalogue, **Then** the builds saved against it are reachable from there and their number is
     visible, so returning to earlier work on a ship does not require reading the whole saved-build
     list.
+12. **Given** a build the Commander wants to say something about — why it exists, what it is for,
+    what they were part-way through — **When** they save it, **Then** they can attach a note to it,
+    and reopening the build brings the note back with it.
+13. **Given** a saved build that had problems when it was saved, **When** the Commander views the
+    build list, **Then** that build is flagged with how many problems it carries, without the build
+    being opened or made active to find out.
 
 ---
 
@@ -298,6 +343,13 @@ and confirm the build loads identically.
   and the rows do not reflow as each illustration lands.
 - The application used offline after first load: previews already delivered remain available, and
   any not yet delivered are absent rather than rendering as failures.
+- An illustration whose own palette sits badly beside the rest of the application: it never reaches
+  the screen in that palette, because every hull is presented through the one treatment FR-022a
+  fixes. No hull is given a treatment of its own to make it fit, and none is left untreated.
+- A hull whose illustration is dark, light or unusually saturated relative to the others: the
+  treatment is unchanged for it, and it stays recognisable under the same treatment as every other
+  hull. An illustration that cannot survive the treatment is a defect in the treatment or in the
+  artwork, resolved in the design system or raised upstream — never by exempting that one hull.
 - A hull whose stock configuration the package reports as unavailable: the build is empty and says
   so, and no module is fitted on an assumption about what the ship is delivered with. The package
   supplies a configuration for every hull today, so this is drift between a catalogue update and the
@@ -309,13 +361,22 @@ and confirm the build loads identically.
   written: the Commander is told up front that this build will not survive a reload, rather than
   discovering it after a refresh.
 - Two tabs open on different builds: each reloads into its own, and closing one does not disturb the
-  other. A tab closed without saving leaves its working build behind, offered for selection the next
-  time the application is opened.
+  other. A tab closed without saving leaves its working build behind, still listed among the builds
+  the next time the application is opened.
 - The same working build opened from a second tab while the first still holds it: the second tab
   gets a working build of its own rather than both tabs writing to one record.
 - Working builds accumulating over many sessions: the retained set stays bounded and the Commander
   can discard any of them, and reaching the bound is reported rather than quietly dropping the
-  oldest unsaved work.
+  oldest unsaved work. They are listed with the named builds, so a list of mostly-unsaved builds is
+  the normal state rather than a fault, and the unsaved ones are always distinguishable from the
+  named ones.
+- A note longer than the bound: the Commander is told the limit as they reach it and keeps what they
+  typed, rather than having it silently cut at save time.
+- A build saved before a catalogue update, whose stored problem count no longer describes it: the
+  count is shown as recorded when the build was saved, not as a current verdict, and opening the
+  build is what produces a current one.
+- A build with no problems when it was saved: it carries no flag at all, rather than a flag reading
+  zero.
 - A saved build references a hull or module symbol that no longer exists in the current catalogue
   version (a data update removed or renamed it): the application reports which entries could not be
   resolved instead of dropping them silently, and does not lose the rest of the build.
@@ -431,24 +492,50 @@ and confirm the build loads identically.
   exactly as a private catalogue would.
 - **FR-020**: The application MUST reproduce Frontier Developments' media-usage notice, as the
   library's attribution terms require of any project that redistributes the imagery, and MUST keep
-  it discoverable from wherever illustrations are shown.
+  it discoverable from wherever illustrations are shown. The notice itself is presented by
+  [feature 012](../012-help-and-licences/spec.md) along with the application's other licence and
+  attribution text; what this feature owes is that the route to it exists wherever a hull is shown.
 - **FR-021**: Illustrations MUST NOT delay the catalogue becoming usable. The Commander MUST be able
   to search, sort, filter and select while previews are still arriving, and the application MUST
   remain usable offline after first load with previews included.
 - **FR-022**: Preparing an illustration for delivery — compressing it, producing smaller variants,
-  stripping editor metadata — is presentation and is permitted. Altering what the illustration
-  depicts is not.
+  stripping editor metadata, and resolving the colours it shows to the design system's tokens under
+  FR-022a — is presentation and is permitted. Altering what the illustration depicts is not: the
+  hull's form, its markings and its proportions are the library's record of the ship, and MUST NOT
+  be redrawn, retouched, cropped to a different subject, or composited with anything else. Colour is
+  presentation; form is depiction.
+- **FR-022a**: A hull illustration MUST be presented through the design system's own hull-art
+  treatment, so that every colour it shows on screen comes from the design system's tokens rather
+  than from the artwork. The treatment MUST be defined once, in the design system, and applied
+  wherever an illustration appears — the catalogue listing, a hull's detail, and anywhere a later
+  feature shows one — so that no screen carries a treatment of its own, per constitution principle
+  VII. Resolving the treatment when the illustration is prepared for delivery is a permitted way to
+  meet this, as is applying it at presentation time; the application ships one theme, so exactly one
+  resolved form of the treatment exists either way. This is the obligation
+  [feature 010](../010-hull-anatomy/spec.md)'s FR-006c places on the hull schematics, discharged
+  here for the illustrations that ship alongside them.
+- **FR-022b**: The treatment MUST be the same for every hull. It MUST NOT be varied per hull, per
+  manufacturer or per ship size, and it MUST NOT carry information: a hull that is filtered out,
+  unavailable, already carrying saved builds, or the one currently selected MUST be distinguished by
+  something other than how its illustration is treated, consistent with FR-016. A hull MUST remain
+  recognisable under the treatment at every supported viewport — recognition is the whole purpose of
+  the preview (User Story 3), and a treatment that costs a hull its identity fails the requirement it
+  was applied under.
 
 #### Saving and reopening builds
 
 - **FR-023**: The application MUST be able to persist named builds to browser local storage, and
-  MUST list, open, rename, duplicate and delete them.
+  MUST list, open, rename, duplicate and delete them. That list is the application's one list of
+  builds: it carries the working builds FR-023a describes alongside the named ones, so a Commander
+  looking for a build they were working on has one place to look.
 - **FR-023a**: The active build MUST be autosaved to browser local storage as a **working build**,
   and MUST be restored as the active build when that tab is reloaded. Each tab owns exactly one
   working build, identified by an internal identity, so that tabs editing different builds never
-  overwrite one another's work. A working build is distinct from a named saved build: it MUST NOT
-  appear in the saved-build list, writing it MUST NOT create, overwrite or touch any named saved
-  build, and a build restored from it MUST still be identified as unsaved.
+  overwrite one another's work. A working build is still a distinct kind of record from a named saved
+  build: it MUST be marked as unsaved wherever it is listed, writing it MUST NOT create, overwrite or
+  touch any named saved build, and a build restored from it MUST still be identified as unsaved.
+  Naming a working build MUST turn that record into a named saved build rather than leaving a
+  duplicate behind.
 - **FR-023b**: A saved build MUST be identified by an internal identity that is independent of its
   name. Renaming a build MUST NOT change which build it is, saving MUST update the build being
   edited rather than any other build that happens to share its name, and two saved builds MAY carry
@@ -465,12 +552,12 @@ and confirm the build loads identically.
   it. Where it did, the application MUST report the conflict and offer the Commander a choice:
   overwrite the stored build, keep both by saving theirs as a separate build, or cancel. It MUST NOT
   discard either version without the Commander choosing.
-- **FR-023f**: When the application is opened in a new tab or a new session, the working builds
-  already in storage MUST be offered for selection alongside the Commander's saved builds, each
-  distinguishable by its ship and last-modified time and identified as unsaved. Opening one MUST
-  make it that tab's active build. Where the working build being opened is still owned by another
-  live tab, the application MUST give this tab a distinct working build of its own rather than
-  letting two tabs write to the same record.
+- **FR-023f**: The working builds already in storage MUST appear in the build list of FR-023 —
+  including when the application is opened in a new tab or a new session — each distinguishable by
+  its ship and last-modified time and identified as unsaved. Opening one MUST make it that tab's
+  active build. Where the working build being opened is still owned by another live tab, the
+  application MUST give this tab a distinct working build of its own rather than letting two tabs
+  write to the same record.
 - **FR-023g**: A working build MUST be retained until the Commander saves it under a name or
   discards it, and the Commander MUST be able to discard one they no longer want. The retained set
   MUST be bounded; where the bound or the storage quota is reached, the application MUST say so and
@@ -479,10 +566,25 @@ and confirm the build loads identically.
   that hull in the catalogue, with their number visible, in addition to the complete list FR-023
   requires. Reaching a build this way MUST open the same build the complete list would, and MUST
   apply the confirmation FR-025 requires when it replaces an active build.
+- **FR-023i**: A build MUST be able to carry one free-text **note** — the Commander's own words about
+  what the build is for or what they were part-way through. The note MUST be editable wherever a
+  build is saved and MUST come back with the build when it is reopened, for a working build as well
+  as a named one. It is storage-local: it MUST NOT be carried in a build link (FR-028), and it MUST
+  NOT be written into a SLEF export. A note MUST NOT be required — a build without one is complete —
+  and its length MUST be bounded, with the bound stated rather than silently truncating what the
+  Commander typed.
+- **FR-023j**: A stored build MUST carry the validity and completeness summary the package reported
+  for it when it was written — at minimum the number of problems — so the build list can show which
+  stored builds have problems without opening or activating any of them. The summary MUST be
+  refreshed every time the build is written, MUST be identified as recorded at that moment rather
+  than as a live figure, and a stored build whose summary predates a catalogue update MUST NOT be
+  presented as verified against the current catalogue. This is a stored property of the record, not a
+  statistic: [feature 003](../003-ship-statistics/spec.md)'s FR-000 still forbids computing a
+  statistic without an active build, and nothing here computes one.
 - **FR-024**: Persistence MUST be lossless for everything the application models — hull, every
   slot's fitted module, engineering (blueprint, grade, experimental effect), module enabled
-  state and power priority, ship name and ident — for the working slot as well as for named saved
-  builds.
+  state and power priority, ship name and ident, and the note of FR-023i — for the working slot as
+  well as for named saved builds.
 - **FR-025**: Replacing or discarding an active build with unsaved changes MUST require explicit
   confirmation. The working slot does not make a build saved: a build that has never been saved
   under a name, or that has changed since it was, still counts as having unsaved changes.
@@ -512,7 +614,9 @@ and confirm the build loads identically.
   `@elite-dangerous-almanac/core` can recompute from those inputs (module names, mass, power draw,
   catalogue costs, rebuy and metrics) MUST NOT appear in the link. Captured purchase values —
   including per-module values — MUST NOT appear either; SLEF is the lossless interchange when that
-  provenance must travel.
+  provenance must travel. The build note (FR-023i) is likewise not part of the minimal model: it is
+  free text of unbounded shape against a link with a 500-character budget, and it describes the
+  Commander's intent rather than the ship.
 - **FR-029**: Opening a build link MUST reconstruct the build — and, on demand, an equivalent SLEF
   document — from the minimal model via the package. The reconstructed build MUST be equivalent to
   the source build in every field the link models, and calculated fields MUST be rebuilt by the
@@ -578,11 +682,15 @@ and confirm the build loads identically.
 - **FR-044**: Every hull characteristic shown MUST come from `@elite-dangerous-almanac/core`. The
   application MUST NOT derive, estimate or supplement a hull characteristic, and MUST NOT maintain
   its own record of one.
-- **FR-044a**: The application MUST identify the version of the bundled catalogue its game data comes
-  from, and MUST keep that identification reachable from wherever catalogue figures are shown. The
-  version MUST be the one the package reports for the build it was compiled against — never a value
-  this application maintains, and never the application's own release version standing in for it.
-  Until the package reports one, the version MUST be shown as unavailable.
+- **FR-044a**: The application MUST identify **two** versions, distinctly named, and MUST keep both
+  reachable from wherever catalogue figures are shown: its own release version, and the version of
+  `@elite-dangerous-almanac/core` bundled with it. Both MUST be taken from the artefacts themselves
+  at build time rather than maintained by hand, so neither can drift from what actually shipped.
+  Neither MUST be labelled as the version of the game data: the library's release number tells a
+  Commander which library computed their figures, not which game update the catalogue matches. That
+  third version — the game catalogue version — MUST be shown as unavailable until the package reports
+  one, and MUST NOT be represented by either of the other two. [Feature 012](../012-help-and-licences/spec.md)
+  presents all three; this feature requires that they exist and that catalogue figures lead to them.
 - **FR-045**: Where a characteristic or capability this feature requires is not available from
   `@elite-dangerous-almanac/core`, it MUST be raised against the package and delivered there. The
   requirement waits on the released fix; it is not satisfied by a value maintained in this
@@ -604,13 +712,23 @@ and confirm the build loads identically.
 
 - **FR-050**: Build encoding and decoding, storage persistence and their failure paths MUST be
   unit-tested, including every malformed-input case in this spec, the working builds' autosave,
-  restore, per-tab isolation and separation from named saved builds, and the concurrent-save
+  restore and per-tab isolation, their appearance among the named builds marked as unsaved, the
+  conversion of a working build into a named one without leaving a duplicate, and the concurrent-save
   conflict path with each of its three outcomes.
 - **FR-051**: Sorting, filtering, searching and absent-characteristic handling MUST be unit-tested
   against the domain layer without rendering components, including ties, empty results and every
   absent-value case.
+- **FR-051a**: The hull-art treatment MUST be tested across every hull in the catalogue: that no
+  illustration is presented untreated, that the treatment applied is the design system's own rather
+  than a value held on a screen or a component, and that it is identical for all 48 hulls. This
+  mirrors what feature 010's FR-036 asserts of the converted plates.
+- **FR-051b**: The build note and the stored validity summary MUST be unit-tested: that a note
+  survives save, reload and reopen for a working build as well as a named one, that it never appears
+  in a build link or a SLEF export, that the bound on its length is enforced with the Commander told
+  rather than by silent truncation, and that the stored summary is rewritten on every save and is
+  never computed by activating a build.
 - **FR-052**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
 ### Key Entities
 
@@ -623,14 +741,18 @@ and confirm the build loads identically.
 - **Hull preview**: A bundled, static representation of a hull shown alongside its characteristics,
   never the sole carrier of information.
 - **Build**: The active working state — a hull plus its fitted, engineered modules, with an optional
-  ship name and ident. The unit that is saved, shared and exported.
+  ship name and ident and an optional note. The unit that is saved, shared and exported.
 - **Saved build**: A build stored in browser local storage, identified by an internal, storage-local
-  identity and carrying a Commander-chosen name — which need not be unique — and a last-modified
-  timestamp.
+  identity and carrying a Commander-chosen name — which need not be unique — a last-modified
+  timestamp, its note, and the validity summary recorded when it was written.
 - **Working build**: An autosaved, unnamed build owned by one tab and identified by an internal
-  identity. It survives a reload, is offered for selection when the application is opened in a new
-  tab or session, never appears in the saved-build list, and remains unsaved until the Commander
-  saves it under a name.
+  identity. It survives a reload, is listed among the saved builds marked as unsaved, and remains
+  unsaved until the Commander names it — at which point that same record becomes a named saved build.
+- **Build note**: One free text passage the Commander attaches to a build, bounded in length, stored
+  with it and never carried in a build link or a SLEF export.
+- **Stored validity summary**: The count and substance of the problems the package reported for a
+  build at the moment it was written, kept with the record so the build list can flag it without
+  activating it. A recorded fact about the record, not a live statistic.
 - **Build link**: A URL whose **fragment** carries a complete build, requiring no server to resolve.
   Its payload is the compressed, URL-safe encoding of the minimal build model — never a full SLEF
   document, and never sent to a server.
@@ -646,12 +768,14 @@ The three capabilities this feature originally waited on were delivered in
 `@elite-dangerous-almanac/core@0.1.0-beta.4` and verified against the installed package on
 2026-08-14. One requirement added on 2026-08-14 is blocked.
 
-**The catalogue version (FR-044a) is raised upstream.** The package exports no machine-readable
-version of the game data it carries: only its own release number, which is a library version rather
-than a game one, and a game version recorded as prose in its provenance files. FR-044a asks a
-Commander to be able to tell which game data they are reading, which a library release number does
-not answer. Until the package reports a catalogue version, FR-044a waits — the application MUST NOT
-substitute its own release version for it.
+**The game catalogue version is raised upstream; the other two versions FR-044a requires are not
+blocked.** The package exports no machine-readable version of the game data it carries: only its own
+release number, which is a library version rather than a game one, and a game version recorded as
+prose in its provenance files. The application's own release version and the bundled library's
+release number are both available at build time and are shown under FR-044a today. What waits is the
+third: which game update the catalogue matches, which a library release number does not answer. Until
+the package reports it, that version reads as unavailable, and neither of the other two may stand in
+for it.
 
 1. **Manufacturer and hull size** — `Ship.manufacturer` and `Ship.size` are carried for all 48
    hulls, so the catalogue shows both and can filter and group on them (FR-003, FR-007).
@@ -694,6 +818,10 @@ strength, crew, costs and the full mount layout — are all available today.
 - **SC-006**: The catalogue is searchable, sortable and selectable before any illustration has
   arrived, and every hull carries its own illustration — 48 of 48 hulls,
   with zero hulls showing another hull's artwork.
+- **SC-006a**: Every colour an illustration shows on screen comes from the design system — zero
+  hulls presented in the artwork's own palette, across all 48. The treatment is identical for all 48
+  hulls, so zero hulls are distinguishable from one another by their treatment alone, and every hull
+  remains recognisable under it at every supported viewport.
 - **SC-007**: A build saved, reloaded, exported to a link and reopened in a different browser is
   byte-for-byte equivalent in every modelled field — 100% round-trip fidelity across saved builds
   and build links, with engineering quality fixed at 100% rather than stored as a modelled field.
@@ -711,6 +839,12 @@ strength, crew, costs and the full mount layout — are all available today.
   work across a reload, in every state a build can be in.
 - **SC-010b**: No saved build is ever replaced by another tab's version without the Commander
   choosing that outcome — zero silent overwrites across concurrent-tab scenarios.
+- **SC-010c**: A Commander finds every build they have — named and unsaved alike — in one list, with
+  the unsaved ones always distinguishable; and every build that had problems when it was written is
+  identifiable from that list without opening it. Zero builds reachable only from a second list, and
+  zero builds activated in order to flag them.
+- **SC-010d**: A note survives save, reload, reopen, rename and duplicate for every build in the
+  round-trip corpus, and appears in zero build links and zero SLEF exports.
 - **SC-011**: A build link for a fully engineered large ship with every slot filled is at most 500
   characters end to end, and a typical mid-size build is under 300 — measured across a reference
   corpus covering every hull in the catalogue, with the longest link in the corpus reported.
@@ -740,7 +874,9 @@ strength, crew, costs and the full mount layout — are all available today.
   Commander has not chosen has no build, so no jump range is quoted for it even though the package
   can produce a stock configuration on selection. Jump range is the case this matters most for: it
   is the characteristic Commanders most want to sort a catalogue by, and the one most easily
-  mistaken for a property of the hull. FR-012a keeps it out.
+  mistaken for a property of the hull. It is also the one a stock figure would mislead on most —
+  nobody flies the ship the shipyard hands them, so a stock jump range describes a configuration no
+  Commander will ever have. FR-012a keeps it out.
 - Comparing hulls side by side is out of scope (FR-010, withdrawn), as is comparing two complete
   builds. What the catalogue provides is comparable figures and the means to narrow on them —
   search, sort and filters — which is what choosing one hull out of forty-eight actually requires.
@@ -761,6 +897,21 @@ strength, crew, costs and the full mount layout — are all available today.
 - How illustrations are optimised and delivered is a plan-time decision constrained by FR-021 and
   FR-022, not a spec-time one. What this specification fixes is that the catalogue never waits on
   them and that their content is never altered.
+- The design system owns how a hull illustration looks, exactly as it owns how a schematic looks
+  under feature 010's FR-006c. What this specification fixes is that a treatment exists, that it
+  belongs to the system rather than to a screen, that it is the same for all 48 hulls, and that it
+  never carries information. The treatment itself — and whether it is resolved when the illustration
+  is prepared for delivery or applied at presentation time — is a plan-time decision under
+  constitution principle VII. Tinting is not the alteration FR-022 prohibits: it changes the palette
+  a hull is drawn in, not the hull that is drawn.
+- There is one theme, so there is one resolved treatment. An earlier draft allowed a variant per
+  theme; the constitution fixed a single dark theme on 2026-08-16 and that allowance has nothing left
+  to permit. Nothing else about the obligation changes.
+- The two kinds of hull artwork the library publishes are treated on the same terms but not by the
+  same mechanism. The schematics are rasterised at build time because they are too heavy to ship as
+  SVG (feature 010's FR-006), which is where their colours are resolved; an illustration carries no
+  such constraint, so where its treatment is resolved is left open. The obligation — no colour from
+  the artwork, one treatment for every hull — is identical for both.
 - The link payload is a minimal build model rather than a SLEF document, so link fidelity is bounded
   by what the application models — the same bound that already applies to saved builds and to SLEF
   round-trips (feature 004).
@@ -782,7 +933,10 @@ strength, crew, costs and the full mount layout — are all available today.
 - The ship catalogue is the version bundled with the deployed `@elite-dangerous-almanac/core`;
   catalogue currency is a release concern, not a runtime lookup.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
-  scope now; only visual styling is deferred.
+  scope now, and how they are met is fixed by
+  [feature 011](../011-interface-foundations/spec.md), which every feature inherits as it inherits
+  the constitution. Nothing visual is deferred: the design system is defined in this repository
+  alongside the behaviour it presents (constitution principle VII).
 - Which characteristics are prominent, how the catalogue is laid out and how the saved-build list
   is presented are decided at plan time against the design system, per constitution principle VII;
   this spec constrains behaviour and the information shown, not layout.

@@ -26,6 +26,33 @@ This feature's slot enumeration is the complete route to every slot a hull has, 
 [Feature 010](../010-hull-anatomy/spec.md) adds a second, spatial route that reaches the mounts a
 hull's schematics locate; it never replaces this one, and no slot is reachable only through it.
 
+## Clarifications
+
+### Session 2026-08-16
+
+- Q: When the Almanac package refuses an edit or reports a build problem, whose words does the
+  Commander read — a sentence this application writes and translates, or the package's English text
+  shown as-is? → A: The application's own. Every diagnostic is composed from its machine-readable
+  `code`, `params` and `constraint` and resolved through the localisation layer; the package's
+  English `message` is never rendered, and the game nouns inside the sentence remain the package's.
+- Q: When a Commander makes several changes in quick succession, which of them get merged into a
+  single undo step? → A: Only repeated adjustment of one control on one slot, such as a grade
+  control being held; that step closes when the control is left or the Commander pauses. Fitting a
+  different module is always its own step however fast it follows, and changes to different slots
+  never merge.
+- Q: When a Commander powers a module down, which of the build's figures should stop counting it? →
+  A: Only what the module does while powered — its power draw and the capability it provides. Its
+  mass, cost and rebuy contribution remain, so a disabled module never improves jump range or speed
+  and is never treated as an empty slot.
+- Q: Which spec owns the report of what stays online in each priority group when power is short —
+  this one, or the power and heat profile? → A: [Feature 005](../005-power-and-heat/spec.md), under
+  its FR-002 and FR-003. This feature owns enabling, disabling and assigning a priority group; the
+  figures those settings move are reported there.
+- Q: Should this feature require showing what a single engineering roll costs, on the module being
+  engineered? → A: Not one roll — the total. A module's engineering cost is every roll required to
+  take it from unengineered to the grade the Commander selected, at 100% quality, plus any chosen
+  experimental effect. Materials, and credits where the package carries them.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - See what is fitted (Priority: P1)
@@ -132,7 +159,8 @@ parts list. It depends on stories 1 and 2 but is a distinct, independently demon
 
 **Independent Test**: On an engineerable module, confirm the offered blueprints and experimental
 effects are those the module actually accepts; apply one at a chosen grade and confirm
-the module's attributes and the build's statistics change accordingly; swap it for a different
+the module's attributes and the build's statistics change accordingly and that the cost shown covers
+every roll up to that grade; swap it for a different
 blueprint and grade and confirm the previous one is gone; remove the experimental effect alone and
 confirm the blueprint survives; then clear the engineering and confirm exact restoration of the
 stock values.
@@ -161,6 +189,9 @@ stock values.
 8. **Given** a module whose engineering arrived from an import at partial quality, **When** it is
    loaded, **Then** the application treats its selected grade as complete at 100% quality and does
    not offer or display the partial roll as application state.
+9. **Given** a blueprint and grade selected on a module, **When** the Commander looks at what it
+   costs, **Then** they see the total for every roll needed to reach that grade from unengineered —
+   not the selected grade alone — together with the cost of any experimental effect chosen.
 
 ---
 
@@ -209,10 +240,11 @@ reflected in the build's power figures and survive save and reload.
 **Acceptance Scenarios**:
 
 1. **Given** a fitted module that can be powered down, **When** the Commander disables it, **Then**
-   it stops drawing power in the build's power figures and its contribution to the build's
-   statistics is removed.
+   it stops drawing power in the build's power figures and the capability it provides is removed
+   from the build's statistics, while its mass, cost and rebuy contribution remain.
 2. **Given** a fitted module, **When** the Commander assigns it a power priority group, **Then** the
-   build reports which modules stay online in each priority group given the available power.
+   assignment is held on the build and the power figures recompute from it; which modules stay
+   online in each group is reported by [feature 005](../005-power-and-heat/spec.md), not here.
 3. **Given** modules have been disabled or re-prioritised, **When** the build is saved, shared or
    exported, **Then** those settings are preserved.
 
@@ -231,14 +263,19 @@ reflected in the build's power figures and survive save and reload.
   for the specific module rather than by name alone.
 - A grade at the boundary of the permitted range: accepted at the boundary, rejected beyond it,
   with the valid range stated.
+- A module taken to grade 5: its cost is every roll from grade 1 through grade 5, not grade 5's
+  alone, so a Commander weighing one grade against another sees the full price of each.
 - An imported build carrying partial engineering quality: its blueprint and grade are retained, the
   grade is treated as complete at 100% quality, and the source roll's partial quality is not retained.
 - An experimental effect already applied when the blueprint beneath it is changed: the effect is
   kept where the module still accepts it alongside the new blueprint and dropped where it does not,
   and a dropped effect is reported rather than removed silently.
+- A module powered down to free up power: the build's jump range, speed and handling are unchanged,
+  because the module's mass is unchanged, and its cost and rebuy still count it.
 - Rapidly repeated changes (holding a stepper, switching modules quickly): the displayed statistics
-  converge on the correct values and never show a figure from a superseded state, and the burst
-  resolves to a single history step rather than one per intermediate value.
+  converge on the correct values and never show a figure from a superseded state. Holding one
+  control on one slot resolves to a single history step rather than one per intermediate value;
+  switching modules quickly does not — each fitting stays its own step under FR-020.
 - Undoing past the point where a build was saved: permitted — the saved build is untouched, and the
   active build simply differs from it until saved again.
 - Undo after a build link was produced: the link already shared continues to describe the build it
@@ -292,7 +329,7 @@ reflected in the build's power figures and survive save and reload.
   consistent with feature 001's FR-009.
 - **FR-004**: The Commander MUST be able to fit a module into a slot, replacing any existing module.
 - **FR-005**: The Commander MUST be able to remove a module from a slot where the game permits it,
-  and MUST be told why when it does not.
+  and MUST be told why when it does not, in the application's own words under FR-029a.
 - **FR-006**: Replacing a module MUST discard that slot's engineering; it MUST NOT be carried over
   to the new module.
 - **FR-007**: Modules that cannot be resolved against the catalogue MUST be reported in place, not
@@ -317,11 +354,28 @@ reflected in the build's power figures and survive save and reload.
 - **FR-012a**: Engineering that arrives with partial quality MUST be normalised to 100% quality while
   retaining its blueprint, grade and experimental effect. Partial quality MUST NOT be retained,
   offered as a control or presented as application state.
+- **FR-012b**: For the blueprint and grade selected on a module, the application MUST show what
+  engineering that module costs in total — every roll required to take it from unengineered to that
+  grade at 100% quality, cumulatively rather than the selected grade's roll alone — together with the
+  cost of any experimental effect chosen. Materials MUST be shown, and credits where the package
+  carries them; a cost the catalogue does not carry MUST be named as unavailable rather than shown as
+  zero. What is shown is that one total. The application MUST NOT present the climb grade by grade —
+  no per-grade itemisation, no roll count, no sequence of engineer visits — because what a Commander
+  acts on is the materials they must gather, not the order they will spend them in. A pre-engineered
+  module's pre-applied modifications MUST contribute no cost, because the Commander does not roll
+  them. The consolidated bill across a whole build belongs to
+  [feature 009](../009-cost-and-materials/spec.md), which totals these per-module figures.
 
 #### Power priorities
 
 - **FR-013**: The Commander MUST be able to enable or disable a fitted module and set its power
-  priority group, and those settings MUST participate in the build's power figures.
+  priority group, and those settings MUST participate in the build's power figures. Reporting the
+  power budget itself — the draw per priority group and which groups stay online — belongs to
+  [feature 005](../005-power-and-heat/spec.md) under its FR-002 and FR-003; this feature owns the
+  settings it reads, not the report.
+- **FR-013a**: Disabling a module MUST remove only what it does while powered — its power draw and
+  the capability it provides. Its mass, cost and rebuy contribution MUST remain, because the module
+  is still fitted. A disabled module MUST NOT be treated as an empty slot.
 
 #### Undo, redo and edit history
 
@@ -337,9 +391,11 @@ reflected in the build's power figures and survive save and reload.
   power priority, and setting the ship's name and ident.
 - **FR-019**: Changes to viewing conditions — feature 003's cargo and fuel assumptions, pip
   allocation and hardpoint state — MUST NOT enter the history, because they do not change the build.
-- **FR-020**: Each undo and redo step MUST correspond to one Commander decision. A continuous
-  adjustment, such as holding a grade control, MUST resolve to a single step rather than
-  one step per intermediate value.
+- **FR-020**: Each undo and redo step MUST correspond to one Commander decision. Repeated adjustment
+  of a single control on a single slot, such as holding a grade control, MUST resolve to a single
+  step rather than one step per intermediate value, and that step MUST close when the control is left
+  or the Commander pauses. Fitting a different module MUST always be its own step however quickly it
+  follows the previous one, and changes to different slots MUST NOT merge.
 - **FR-021**: Statistics, validity and every other derived view MUST recompute after undo and redo
   exactly as they do after a direct change.
 - **FR-022**: Undo and redo MUST name the change they would reverse or reapply, in the Commander's
@@ -364,6 +420,13 @@ reflected in the build's power figures and survive save and reload.
 - **FR-029**: The application MUST surface the package's validity and completeness reporting for the
   build after every change — including builds that cannot fly — rather than blocking edits that
   produce an invalid build.
+- **FR-029a**: The Commander-facing wording of every package diagnostic — a refused edit, a validity
+  or completeness finding — MUST be an application string, composed from the diagnostic's
+  machine-readable `code`, `params` and `constraint` and resolved through the localisation layer.
+  The package's English `message` MUST NOT be rendered. Game nouns carried in the diagnostic —
+  module, blueprint, effect and slot names — remain the package's under FR-030. A diagnostic whose
+  `code` the application does not recognise MUST still resolve to a translated statement of what
+  happened; a raw code, an empty string or the package's English text MUST NOT reach the screen.
 - **FR-030**: All module, blueprint and effect data MUST come from `@elite-dangerous-almanac/core`;
   the application MUST NOT maintain its own copy of that data.
 - **FR-031**: Where the package's data or behaviour is wrong or missing, the problem MUST be raised
@@ -396,11 +459,19 @@ reflected in the build's power figures and survive save and reload.
 - **FR-037a**: Ordering the offer list MUST be unit-tested for both directions, for ties and for
   candidates whose compared attribute is unavailable, against the domain layer without rendering
   components.
+- **FR-037b**: FR-012b's cumulative engineering cost MUST be unit-tested: that a grade reports every
+  roll beneath it rather than its own alone, that an experimental effect adds its cost, that a
+  pre-engineered module adds none, and that a cost the catalogue lacks is reported as unavailable
+  rather than as zero.
 - **FR-038**: Undo and redo MUST be unit-tested for sequence fidelity across every undoable change
-  type, redo-path discard, the history bound, history discard on build replacement, and exclusion of
-  viewing conditions.
+  type, redo-path discard, the history bound, history discard on build replacement, exclusion of
+  viewing conditions, and FR-020's step boundary — one step for a held control, one step per fitting
+  for rapid module changes, and no merging across slots.
+- **FR-038a**: Every diagnostic `code` the package can report for an outfitting edit or a build's
+  validation MUST have an application message under FR-029a, and a code without one MUST fail a test
+  rather than reach a Commander.
 - **FR-039**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
 ### Key Entities
 
@@ -410,6 +481,9 @@ reflected in the build's power figures and survive save and reload.
   rating, mass, power draw, cost and type-specific attributes.
 - **Fitted module**: A module occupying a slot in the active build, together with its engineering,
   enabled state and power priority.
+- **Diagnostic**: A refusal or a validity or completeness finding reported by the package, identified
+  by its machine-readable `code` and carrying `params` and any `constraint`. The values and the game
+  nouns are the package's; the sentence the Commander reads is this application's (FR-029a).
 - **Blueprint**: An engineering recipe, identified by its `fdname`, applicable to a module at a grade
   that this application always treats as complete (100% quality).
 - **Experimental effect**: A secondary modification, identified by its `fdname`, applicable alongside
@@ -451,6 +525,12 @@ reflected in the build's power figures and survive save and reload.
   without reading the whole offer list, for every slot on every hull in the catalogue.
 - **SC-013**: Every partial engineering quality in the import corpus becomes 100% on import and
   remains 100% through editing and export; no partial value remains in application state.
+- **SC-014**: No package-authored English text reaches the screen: every refusal and every validity
+  finding a Commander can provoke while outfitting is an application string resolved through the
+  localisation layer, across the whole diagnostic corpus.
+- **SC-015**: For every engineerable module and every grade it accepts, the cost shown equals the sum
+  of every roll from unengineered to that grade — no grade's materials missing and none counted
+  twice — plus the chosen experimental effect's own cost.
 
 ## Assumptions
 
@@ -463,11 +543,15 @@ reflected in the build's power figures and survive save and reload.
   answered without provoking an error to find out.
 - Engineering is modelled as an outcome (blueprint, completed grade, effect), not as a rolling
   simulation of individual engineer visits.
-- Material and credit costs of engineering are surfaced where the package provides them; the
-  consolidated material list for a whole build belongs to
-  [feature 009](../009-cost-and-materials/spec.md).
+- A module's engineering cost is cumulative under FR-012b — every roll from unengineered to the
+  selected grade at 100% quality — and is surfaced where the package provides it. The consolidated
+  bill for a whole build belongs to [feature 009](../009-cost-and-materials/spec.md).
 - Engineering quality is not application state. Every selected or imported grade is treated as 100%
-  quality; partial source rolls are deliberately discarded under FR-012a.
+  quality; partial source rolls are deliberately discarded under FR-012a. The reason is what a build
+  is for: builds are shared so that other Commanders can build them, and a partial roll cannot be
+  rebuilt — nobody can reproduce someone else's 84% grade 5 at an engineer. A plan quoting one would
+  describe a ship its reader cannot make, so the completed grade is the only figure the application
+  plans against.
 - Ship-launched fighters, crew, cosmetic liveries and ship kits are out of scope for this feature.
 - The edit history covers the active build only. It is session-scoped, so it is not persisted,
   shared or exported, and a Commander returning to a saved build starts with an empty history.
@@ -477,7 +561,10 @@ reflected in the build's power figures and survive save and reload.
 - Undo and redo operate on build state. Navigation, filter and sort state, and viewing conditions
   are deliberately excluded, so that undo means one thing.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
-  scope now; only visual styling is deferred.
+  scope now, and how they are met is fixed by
+  [feature 011](../011-interface-foundations/spec.md), which every feature inherits as it inherits
+  the constitution. Nothing visual is deferred: the design system is defined in this repository
+  alongside the behaviour it presents (constitution principle VII).
 - Which slots are prominent, how the module picker and engineering panel are laid out, and how undo
   and redo are presented are decided at plan time against the design system, per constitution
   principle VII.

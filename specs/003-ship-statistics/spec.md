@@ -46,6 +46,35 @@ from.
 Every figure in this family describes an active build, so the whole family requires one and none of
 it exists before a hull is chosen. FR-000 states that once, for all five areas.
 
+## Clarifications
+
+### Session 2026-08-16
+
+- Q: When a build first loads, how should the six distributor pips be divided across SYS, ENG and
+  WEP? → A: The game's balanced allocation — two pips to each capacitor.
+- Q: If a Commander sets viewing conditions and then reloads the page or opens a new session, should
+  those conditions come back, or reset to the defaults? → A: Never persisted; every load starts at
+  the defaults.
+- Q: When a build change leaves the assumed cargo or fuel above what the ship can now carry, what
+  happens to that assumption? → A: The case cannot arise. Load is a choice among the package's three
+  named states — maximum single jump, unladen and laden — not an enterable cargo or fuel quantity.
+- Q: After a module change, what should a statistic's change from its previous value be measured
+  against, and how long should that indication stay on screen? → A: Against the immediately
+  preceding build state, and it stands until the next build change. _(Withdrawn 2026-08-16: the
+  application presents no comparison of any kind, so there is no baseline to choose. See FR-004.)_
+- Q: Does the application compare a build against anything — a saved version, a pinned baseline, the
+  state before the last edit? → A: No. Comparison is not a capability of this application. A figure
+  describes the active build as it is now, and nothing else, so FR-004's change indication is
+  withdrawn along with the side-by-side comparison feature 001 and this specification already ruled
+  out. A Commander judging a change makes it and reads the result.
+- Q: The package names its three load states; how are they labelled so a Commander is not left
+  guessing what each assumes? → A: The package's name, plus a fixed plain-language gloss of the load
+  it stands for — "maximum jump (one jump's fuel, empty hold)", "unladen (full tank, empty hold)",
+  "laden (full tank, full hold)". The gloss explains the name; it never replaces it, and no state may
+  be labelled with a word the package uses for a different one.
+- Q: On what hardware should the 100 ms recompute budget be verified? → A: The slowest supported
+  target — a throttled mobile CPU profile, which desktop and tablet then inherit.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Read the build's headline statistics (Priority: P1)
@@ -95,8 +124,9 @@ interaction, and that unaffected statistics do not flicker or change.
 1. **Given** a displayed set of statistics, **When** any module is fitted, removed, engineered,
    disabled or re-prioritised, **Then** all affected statistics update immediately and consistently
    with each other, in every area.
-2. **Given** a change has been made, **When** the Commander looks at a changed statistic, **Then**
-   the direction and size of the change from the previous value is apparent.
+2. **Given** a change has been made, **When** the Commander looks at the statistics, **Then** they
+   describe the build as it now stands, with no figure carrying a comparison against an earlier
+   state, a saved version or any other build.
 3. **Given** modules are disabled or assigned to priority groups, **When** statistics are computed,
    **Then** the contributions of disabled modules are excluded from every figure the package computes
    without them, and the module remains visible as disabled rather than omitted. Where the package
@@ -136,22 +166,22 @@ remain correct.
 
 ### User Story 4 - Explore statistics under different viewing conditions (Priority: P2)
 
-A Commander checks jump range with a full cargo hold and a half tank before committing to a trade
-run, puts four pips into SYS to see what their shields really resist, and deploys hardpoints to see
-what the power plant does about it.
+A Commander checks jump range laden before committing to a trade run, puts four pips into SYS to see
+what their shields really resist, and deploys hardpoints to see what the power plant does about it.
 
 **Why this priority**: Viewing conditions are the one input a Commander changes constantly without
 changing the ship. Getting their semantics right — that they never become part of the build — is
 what keeps a saved or shared build meaning one thing.
 
-**Independent Test**: Vary the cargo and fuel assumptions, the pip allocation and the hardpoint
-state, and confirm the dependent figures recompute consistently, the independent ones do not move,
-and none of the three is written into the build when it is saved, shared or exported.
+**Independent Test**: Switch between the named load states, vary the pip allocation and the
+hardpoint state, and confirm the dependent figures recompute consistently, the independent ones do
+not move, and none of the three is written into the build when it is saved, shared or exported.
 
 **Acceptance Scenarios**:
 
-1. **Given** an active build, **When** the Commander varies assumed cargo and fuel, **Then** every
-   figure that depends on load recomputes for those assumptions and states the assumption it used.
+1. **Given** an active build, **When** the Commander selects a different load state, **Then** every
+   figure that depends on load recomputes for that state and names the state it used, using the
+   package's name for it.
 2. **Given** an active build, **When** the Commander allocates pips across the three capacitors,
    **Then** the allocation is constrained to the game's rule and is shown alongside every figure
    computed under it.
@@ -163,6 +193,9 @@ and none of the three is written into the build when it is saved, shared or expo
 5. **Given** viewing conditions have been varied, **When** the build is saved, shared as a link or
    exported, **Then** none of the three is carried with it, and reopening the build restores the
    application's default conditions rather than the ones in force when it was saved.
+6. **Given** viewing conditions have been varied, **When** the page is reloaded, a new tab is
+   opened, or a working build is restored in a later session, **Then** the conditions begin again at
+   the application's defaults rather than the ones last in force.
 
 ---
 
@@ -229,8 +262,13 @@ and none of the three is written into the build when it is saved, shared or expo
   hardpoint-state assumptions it was computed under.
 - **FR-003**: Every statistic MUST recompute automatically on every build change and on every change
   to a viewing condition, and the displayed set MUST always be internally consistent for one state.
-- **FR-004**: The change in each statistic relative to its previous value MUST be discernible after
-  a build change.
+- **FR-004**: _(Withdrawn 2026-08-16.)_ Comparison is not a capability of this application, so no
+  statistic carries a change indication. A figure reports the active build as it now stands: not
+  against the state before the last edit, not against the version last saved, not against a pinned
+  baseline, and not against another build. This closes the gap between the side-by-side comparison
+  this specification and feature 001 already ruled out and the per-figure delta that had survived it —
+  both are the same capability at different scales, and neither is offered. Making a change and
+  reading the result is how a Commander judges it.
 - **FR-005**: Resistances MUST be presented as percentages, converted from the package's fractional
   values.
 - **FR-006**: Every figure the package reports as unavailable, incomplete or absent MUST be
@@ -255,18 +293,39 @@ and none of the three is written into the build when it is saved, shared or expo
 
 #### Viewing conditions
 
-- **FR-012**: The Commander MUST be able to vary the assumed cargo and fuel load and see dependent
-  statistics recompute.
+- **FR-012**: The Commander MUST be able to select the load a figure is computed for, and see
+  dependent statistics recompute. The choice is among the load states the package names — the
+  maximum single jump (one jump's fuel, no cargo), unladen (full tank, empty hold) and laden (full
+  tank, full hold) — under the package's own names for them. Cargo and fuel MUST NOT be enterable as
+  arbitrary quantities, the application MUST NOT introduce a name for a load state the package
+  already names, and MUST NOT apply one of those names to a different state. Until the Commander
+  selects one, the unladen state applies.
+- **FR-012a**: Each load state MUST be labelled with the package's name for it and a fixed
+  plain-language gloss of the load that name stands for: **maximum jump** — one jump's fuel, empty
+  hold; **unladen** — full tank, empty hold; **laden** — full tank, full hold. The gloss explains the
+  name and MUST NOT replace it, MUST be the same wherever that state appears, and MUST NOT be
+  elaborated per area. This is what FR-012's prohibition is for in practice: "unladen" and "laden"
+  are ordinary English words a Commander will otherwise read as meaning empty and full of anything,
+  and the state most easily mislabelled is the maximum single jump, which carries fuel for one jump
+  rather than none.
 - **FR-013**: The Commander MUST be able to allocate pips across the three capacitors, and the
-  allocation MUST be constrained to what the game permits.
+  allocation MUST be constrained to what the game permits. Until the Commander allocates them, every
+  pip-dependent figure MUST be computed under the game's balanced allocation — two pips to each of
+  SYS, ENG and WEP — and MUST state it under FR-015 like any other allocation.
 - **FR-014**: The Commander MUST be able to select the hardpoint state — retracted or deployed —
-  under which state-dependent figures are reported.
-- **FR-015**: The current load assumptions, pip allocation and hardpoint state MUST be shown
+  under which state-dependent figures are reported. Until they select one, the deployed state
+  applies, that being the state a build's power draw has to fit, and it MUST be stated under FR-015
+  like any other condition.
+- **FR-015**: The current load state, pip allocation and hardpoint state MUST be shown
   alongside every statistic computed under them, and any statistic that depends on one MUST state
   the value it assumes.
-- **FR-016**: Load assumptions, pip allocation and hardpoint state are viewing conditions, not part
+- **FR-016**: Load state, pip allocation and hardpoint state are viewing conditions, not part
   of the build. They MUST NOT alter any statistic that does not depend on them, MUST NOT be
   persisted into the build, and MUST NOT be saved with it, carried in a build link or exported.
+- **FR-016a**: Viewing conditions MUST NOT be persisted anywhere else either — not as a browser
+  preference, not per tab, and not against the working build feature 001's FR-023a autosaves. Every
+  page load, every new tab and every restored working build MUST begin at the application's default
+  conditions, so the same build reads the same way for every Commander who opens it.
 - **FR-017**: Changing a viewing condition MUST NOT enter the edit history, consistent with feature
   002's FR-019, because it does not change the build.
 
@@ -291,19 +350,21 @@ and none of the three is written into the build when it is saved, shared or expo
 - **FR-023**: Detail behind an aggregate — per-module contributions, per-weapon figures, per-bank
   cell figures, per-material contributions and diagnostic reasons — MUST be reachable by touch as
   well as by pointer and keyboard, never by hover alone.
-- **FR-024**: The viewing-condition controls — load assumptions, pip allocation and hardpoint state
+- **FR-024**: The viewing-condition controls — load state, pip allocation and hardpoint state
   — MUST be operable by touch, with targets large enough to hit reliably on a phone, and MUST NOT
   depend on hover.
 
 ### Testing Requirements
 
 - **FR-025**: The rules in this specification MUST be unit-tested against known builds: the
-  fraction-to-percentage conversion, the unavailable, absent, incomplete and invalid cases, and the
-  requirement that a viewing condition changes only the figures that depend on it.
+  fraction-to-percentage conversion, the unavailable, absent, incomplete and invalid cases, the
+  requirement that a viewing condition changes only the figures that depend on it, and that no figure
+  in any area carries a comparison against an earlier build state, a saved build or another build
+  (FR-004).
 - **FR-026**: The headline set MUST be unit-tested for completeness and for the unavailable case, so
   that a figure the package cannot produce is never silently dropped from it.
 - **FR-027**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
 ### Key Entities
 
@@ -311,8 +372,10 @@ and none of the three is written into the build when it is saved, shared or expo
   computed under where relevant, and either a value or a reason it is unavailable.
 - **Headline set**: The figures a Commander reads at a glance, each a route to the area breakdown
   behind it.
-- **Load assumption**: The cargo and fuel a figure is computed for. A viewing condition, not part of
-  the build.
+- **Load assumption**: Which of the package's named load states — the maximum single jump, unladen
+  or laden — a figure is computed for, carrying the fixed gloss FR-012a fixes for that name. A
+  discrete selection, never an entered cargo or fuel quantity. A viewing condition, not part of the
+  build.
 - **Pip allocation**: How the Commander has distributed the distributor's pips across systems,
   engines and weapons. A viewing condition, not part of the build.
 - **Hardpoint state**: Retracted or deployed — the condition under which a state-dependent figure is
@@ -343,8 +406,13 @@ library. This is raised upstream rather than settled here.
   `@elite-dangerous-almanac/core` for the same build and the same viewing conditions — zero
   divergence across a corpus of reference builds.
 - **SC-002**: Statistics reflect a build change within 100 ms, with no manual refresh.
-- **SC-003**: Changing the pip allocation, the load assumptions or the hardpoint state updates every
+- **SC-003**: Changing the pip allocation, the load state or the hardpoint state updates every
   dependent figure within 100 ms, and leaves every independent figure unchanged.
+- **SC-003a**: The 100 ms budgets in SC-002 and SC-003 are measured on the slowest supported target —
+  a throttled mobile processor profile, not the machine the suite happens to run on — and cover the
+  interval from the Commander's input to the updated figure being on screen. Desktop and tablet
+  inherit the budget rather than carrying one of their own. Emulating a mobile viewport at
+  desktop processor speed does not verify it.
 - **SC-004**: For every figure the package reports as unavailable, absent or incomplete, the
   application shows it as such with a reason — zero fabricated zeroes and zero locally derived
   substitutes, verified across a corpus covering each kind of gap the package can report: an
@@ -352,8 +420,9 @@ library. This is raised upstream rather than settled here.
 - **SC-005**: Every figure carries its unit and its load, pip and hardpoint-state assumptions — no
   unlabelled numbers, in any area.
 - **SC-006**: A Commander can reach the breakdown behind any headline figure in one interaction.
-- **SC-007**: No viewing condition survives a save, a build link or a SLEF export — zero leakage
-  into the build across the round-trip corpus.
+- **SC-007**: No viewing condition survives a save, a build link, a SLEF export, a page reload or a
+  new session — zero leakage into the build across the round-trip corpus, and zero carry-over
+  between loads.
 - **SC-008**: Every statistic is readable, every breakdown reachable and every diagnostic legible on
   desktop, tablet and mobile viewports — the same end-to-end suite passes on all three, with no
   horizontal page scrolling at any of them.
@@ -371,22 +440,42 @@ library. This is raised upstream rather than settled here.
 - The area specifications are independently deliverable. A Commander with only this specification
   and one area has a coherent product; the contract does not require all five areas to exist before
   any of them is useful.
-- The default pip allocation puts no pips into SYS, so the pip-dependent shield figures —
-  resistances, effective hit points and the recovery durations feature 006 reports — match what an
-  outfitting screen shows. The Commander allocates pips deliberately from there. Shield strength
-  itself does not depend on the allocation, so it carries no such convention.
-- The default load assumption is a full fuel tank and an empty cargo hold, which is the state a ship
-  leaves a station in and the one feature 008 calls unladen.
-- The default hardpoint state is retracted, so the headline power figure matches the state a ship
-  spends most of its time in, and the deployed state is something the Commander asks for.
+- The default pip allocation is the game's balanced two-two-two, the state a ship undocks in, so a
+  Commander who allocates nothing reads the build in the condition they will actually fly it. It
+  follows that the pip-dependent figures — the shield resistances, effective hit points and recovery
+  durations feature 006 reports, and the speeds feature 008 reports — differ by default from the
+  zero-pip and four-pip figures an outfitting screen or a comparable tool headlines. That is a
+  deliberate choice of a flyable default over cross-tool parity; FR-015 makes the allocation visible
+  beside every figure computed under it, so the difference is legible rather than surprising. Shield
+  strength itself does not depend on the allocation, so it carries no such convention.
+- The load assumption is a choice among the three states the package already names, not a cargo or
+  fuel quantity the Commander types in. A discrete selection cannot outrun the build's capacity, so
+  no clamping rule is needed when a refit shrinks the hold or the tank; a build with no cargo
+  capacity simply reads the same laden as unladen, which feature 008 already requires.
+- The default load assumption is unladen — a full fuel tank and an empty cargo hold, the state a ship
+  leaves a station in.
+- The default hardpoint state is deployed, that being the state a build's power draw has to fit, so a
+  Commander reads the demanding case first and asks for the retracted one. FR-014 states it, and
+  [feature 005](../005-power-and-heat/spec.md)'s FR-001 reports every power figure under it. An
+  earlier draft of this assumption said retracted, which contradicted FR-014 rather than qualifying
+  it; the deployed default is the settled answer.
 - Constraining pip entry to the game's rule — six pips across three capacitors, at most four to any
   one, in half-pip steps — is input validation on a control, not a game calculation. If the package
   later exposes the rule, the application defers to it.
-- Comparison between two builds side by side is out of scope; this family covers the active build.
-  Comparing two _hulls_ before a build exists is out of scope too, under feature 001's withdrawn
-  FR-010.
+- Comparison is out of scope in every form the application could offer it: two builds side by side,
+  a build against the version last saved, a build against the state before the last edit, and two
+  _hulls_ before a build exists (feature 001's withdrawn FR-010). This family reports the active
+  build as it now stands. FR-004 records the withdrawal of the last of those, which had survived
+  earlier drafts as a per-figure delta.
+- The stored problem count feature 001's FR-023j keeps against a saved build is not a statistic in
+  this family and does not weaken FR-000. It is a fact recorded on the record when it was written,
+  read back from storage like the build's name or its last-modified time; no build is activated and
+  nothing is computed to produce it.
 - An active build is a precondition of this family, not a state it manages. How a Commander arrives
   at one, how it is replaced and what confirmation that replacement needs belong to feature 001;
   FR-000 only requires that no figure here exists without one.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
-  scope now; only visual styling is deferred.
+  scope now, and how they are met is fixed by
+  [feature 011](../011-interface-foundations/spec.md), which every feature inherits as it inherits
+  the constitution. Nothing visual is deferred: the design system is defined in this repository
+  alongside the behaviour it presents (constitution principle VII).

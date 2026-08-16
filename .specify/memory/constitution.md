@@ -108,10 +108,23 @@ fallback.
   Interactive targets MUST be large enough to hit reliably on a phone, and
   nothing essential may depend on hover.
 - Portrait and landscape orientations MUST both work on tablet and mobile.
-- The application MUST remain accessible: keyboard-operable, screen-reader
-  navigable, and legible at increased text sizes on every form factor.
-- End-to-end tests MUST cover desktop, tablet and mobile viewports (see
-  principle VIII). A feature is not done until it passes on all three.
+- The application MUST meet **WCAG 2.2 level AA** on every form factor. That is
+  the standard, not an aspiration: every capability MUST be operable by
+  keyboard alone in a sensible order with a visible focus indicator, navigable
+  by screen reader with correct roles, names and state, legible at 200% text
+  size and at 400% zoom without loss of content or function, and free of any
+  information carried by colour, shape or position alone. Contrast MUST meet the
+  AA ratios for text and for the non-text elements that carry meaning; touch
+  targets MUST meet the AA target-size rule; motion MUST respect
+  `prefers-reduced-motion`.
+- Accessibility is verified, not assumed: an automated accessibility check MUST
+  run over every screen as part of the end-to-end suite, and a failure MUST fail
+  the build. An automated pass is a floor rather than a proof — a capability
+  that cannot be operated by keyboard or understood by screen reader is
+  incomplete however the checker scores it.
+- End-to-end tests MUST cover desktop, tablet and mobile viewports in every
+  browser engine principle VIII names. A feature is not done until it passes on
+  all of them.
 
 ### VI. Speaks the Commander's Language (NON-NEGOTIABLE)
 
@@ -163,8 +176,11 @@ improvised screen by screen, and not deferred until the domain is finished.
 - Design tokens — colour, type scale, spacing, radius, elevation, motion — are
   defined once and are the only source of visual values. No component and no
   screen may hard-code a colour, size, spacing or duration.
-- Theming is a matter of tokens. Changing a theme MUST NOT require editing a
-  component.
+- The application ships **one theme** — the dark one the design system defines.
+  It is not a Commander preference, no light theme is offered, and no
+  requirement anywhere in this repository may depend on a theme being chosen or
+  changed. Theming remains a matter of tokens: were a second theme ever added it
+  would be a second set of token values, never an edit to a component.
 - Components are presentation only. They render the state they are handed and
   dispatch intent; they MUST NOT reach into domain services or hold build state
   (principle III).
@@ -196,7 +212,12 @@ Correctness is enforced by the build, not by inspection.
   coverage MUST NOT be manufactured with tests that assert nothing.
 - End-to-end tests are written with **Playwright** and MUST run as part of the
   build. Every user story's primary journey MUST have an end-to-end test, run
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports in **both Chromium and Firefox**.
+  Two engines is the minimum that catches an engine-specific defect at all; a
+  suite that passes in one browser only proves the application works in that
+  browser. A journey is not covered until it passes in both.
+- The end-to-end suite MUST include an automated accessibility check over every
+  screen, under principle V. A violation fails the build like any other test.
 - `pnpm run check` — format, typecheck, build, unit tests with coverage, and the
   Playwright suite — MUST pass before a change is proposed for merge, and MUST
   pass in CI.
@@ -230,11 +251,12 @@ requirements without prescribing implementation.
   side-effect free.
 - **Testing**: Vitest via the Angular unit-test builder, with coverage
   thresholds configured in `angular.json`; Playwright for end-to-end, with
-  desktop, tablet and mobile projects configured in `playwright.config.ts`.
+  desktop, tablet and mobile projects configured in `playwright.config.ts`,
+  each run in Chromium and in Firefox.
 - **Design system**: one component library under `src/app/ui/`, with design
-  tokens defined in the global stylesheet layer. It is versioned in this
-  repository, and this repository is the source of truth for any external design
-  tool it synchronises with (principle VII).
+  tokens defined in the global stylesheet layer and one dark theme built from
+  them. It is versioned in this repository, and this repository is the source of
+  truth for any external design tool it synchronises with (principle VII).
 - **Build output**: static assets only. No server-side rendering, no runtime
   environment configuration baked into the bundle.
 
@@ -281,9 +303,28 @@ review of any spec the change invalidates.
 Every review MUST verify compliance with these principles. Added complexity has
 to justify itself against them; when it cannot, the simpler option wins.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
+**Version**: 2.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
 
 ### Amendment history
+
+- **2.1.0** — Three additions, all following a design review on 2026-08-16.
+
+  Principle VII now fixes **one theme**, the dark one the design system defines.
+  Theming stays a matter of tokens, but nothing may require a Commander-selectable
+  theme. Feature 001's FR-022a, FR-022b, FR-051a and SC-006a and feature 010's
+  FR-006c and SC-010 carried theme-following clauses and are amended with this
+  change; the obligation they existed for — that no colour on screen originates
+  in the artwork — is unaffected.
+
+  Principle V now names **WCAG 2.2 level AA** as the standard rather than
+  listing accessibility qualities loosely, and requires an automated
+  accessibility check in the end-to-end suite. This tightens an obligation every
+  accepted spec already carried, so it invalidates none of them; feature 011
+  states the testable form of it.
+
+  Principle VIII now requires the end-to-end suite to run in **Chromium and
+  Firefox** as well as across the three viewports. Each accepted spec's
+  end-to-end requirement is amended to say so.
 
 - **2.0.0** — Defined engineering grades as complete (100% quality) throughout
   the application and removed partial engineering quality from the model. An

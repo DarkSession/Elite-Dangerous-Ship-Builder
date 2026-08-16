@@ -57,3 +57,10 @@
 - **Negative resistances are a requirement, not an edge case only.** FR-005 forbids clamping because
   reactive bulkheads genuinely produce a negative thermal resistance, and a clamped zero would be the
   fabricated value constitution principle IV prohibits.
+
+## Amended 2026-08-16 (design review)
+
+The note above about module armour and "integrity" is superseded. Integrity is a **module's** own
+health, per module, belonging to feature 002 — not a second label for a build-level figure. What this
+area reports is the build-level module protection, and no build-level figure is called integrity.
+FR-012 and the Assumptions section were rewritten accordingly.

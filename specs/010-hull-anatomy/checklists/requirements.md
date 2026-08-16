@@ -46,9 +46,13 @@
   mounts only — 16 located mounts against the 39 slots the package reports for an Anaconda. An
   internal has no single external position to draw, so FR-012 requires the coverage to be stated and
   FR-013 forbids inventing one. This is deliberately not raised upstream as a defect.
-- **The cargo hatch is the boundary case.** It is a real slot, it is drawn on all 48 bottom plates and no top plate, and it
-  carries no slot key — so it is drawn but not located, and FR-013 applies. Getting this wrong in
-  either direction (navigating to it, or omitting it from the drawing) would misrepresent the data.
+- **The cargo hatch is the boundary case, and it settled where the view's boundary sits** (FR-003a,
+  decided 2026-08-16). It is a real slot, it is marked on all 48 bottom plates and no top plate, and it
+  carries no slot key. Presenting it would put a shape on the plate that a Commander would reasonably
+  try to select and that FR-013 forbids resolving to the slot it plainly is. The view therefore
+  presents hardpoints and utility mounts only — the two categories of nine that carry slot keys — so
+  everything on the plate is reachable and nothing on it is a dead end. FR-012's coverage figure
+  remains what tells the Commander the plate does not account for every slot.
 - **Shot convergence moved out on 2026-08-14** (clarification session). Where a build's fire arrives
   is a property of what it fires rather than of where its mounts are drawn, so user story 3 and
   FR-019 to FR-023 were reassigned to [feature 007](../../007-offence-profile/spec.md), which
@@ -64,11 +68,14 @@
   import — creates a build.
 - **FR-026 (two hulls side by side) is withdrawn**, in keeping with feature 001's withdrawn FR-010.
   The anatomy view shows one hull.
-- **Crowding is resolved by magnification, never by moving a marker** (FR-029, decided 2026-08-14).
-  On the most crowded hull at phone width, FR-028 and FR-029 would otherwise contradict each other.
-  Magnifying and panning separates mounts at their true positions, which leaves FR-003 intact, where
-  offsetting or clustering markers would not. FR-029a keeps the keyboard and screen-reader route free
-  of any zoom gesture.
+- **Crowding is resolved by the plate's fixed scale, never by moving a marker** (FR-029, decided
+  2026-08-16, superseding the magnification answer of 2026-08-14). On the most crowded hull at phone
+  width, FR-028 and FR-029 would otherwise contradict each other. The application offers no
+  magnification control, so the plate is drawn at one scale set by exactly that hull's closest pair of
+  mounts — which leaves FR-003 intact, where offsetting or clustering markers would not. A viewport
+  smaller than the plate pans it (FR-029a) rather than scaling it down (FR-030), and the keyboard and
+  screen-reader route needs no panning at all. FR-037 makes the scale a tested property rather than an
+  assumed one.
 - **Schematics never hold up outfitting** (FR-006a, decided 2026-08-14), mirroring feature 001's
   FR-021 for illustrations. Every slot stays readable and changeable while the plates arrive, and
   SC-009 makes that testable.
@@ -76,6 +83,27 @@
   2026-08-14). The schematics and the slot data ship from one bundled package version, so FR-032's
   catalogue-wide tests are the report; only a missing schematic has a Commander-facing state, under
   FR-014.
+- **The plate is a raster produced at build time, not the library's SVG** (FR-006 and FR-006b to
+  FR-006d, decided 2026-08-16). The 96 plates total 9.0 MB — 3.1 MB gzipped, and up to 323 KB for a
+  single plate — so they are converted at build time, with the design system's colours applied in place
+  of the artwork's fixed palette. Two consequences are requirements rather than plan-time choices:
+  rasterising destroys the schematic's per-mount elements, so positions and slot keys are extracted at
+  build time and the mounts are drawn over the raster at runtime (FR-002a, FR-002b); and the raster's
+  resolution is set by the fixed scale of FR-029, which is knowable precisely because no magnification
+  control exists. The converted plates are build output and are never committed, or FR-004's
+  prohibition on a vendored copy would be defeated by another route.
+- **The plate carries three states, not everything a mount knows** (FR-007a, decided 2026-08-16).
+  Fitted or empty, engineered, and whether the mount is the focused slot are readable at a glance; the
+  slot's identity, size and kind, the module, its priority group and whether it is powered are read at
+  the focused slot after selecting the mount. This keeps a crowded hull legible at phone width and
+  keeps FR-011's text equivalent to a size a screen-reader user can actually move through. The
+  unpowered-mount edge case changed with it: the plate now claims nothing about power rather than
+  distinguishing a powered mount from an unpowered one.
+- **Offline coverage is what the Commander has opened, not the catalogue** (FR-006a and FR-014a,
+  decided 2026-08-16). Precaching 48 hulls of artwork is a download nobody asked for, and FR-018
+  guarantees no Commander depends on the plate. What this costs is a distinct offline-unavailable
+  state, kept worded apart from FR-014's "no schematic exists for this hull" so a temporary absence is
+  never read as a permanent one.
 - **Accessibility is a functional requirement here, not a device concern.** A view whose whole
   premise is spatial is the case where "no information carried by colour or position alone"
   (FR-011) is hardest and most necessary, and FR-018 guarantees no Commander depends on the spatial
