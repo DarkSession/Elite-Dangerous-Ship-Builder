@@ -62,7 +62,7 @@ nothing here measures artwork.
   at the chosen range, the fixed metre separation is presented as the geometry behind it rather than
   as a range-dependent figure, and FR-016f adds a plot of where each mount's fire arrives relative to
   the centre of the Commander's view — the figures remain readable without it, per principle V. This
-  also closes the block: mount geometry in real units landed upstream at `0.1.0-beta.8` as a
+  also closes the block: mount geometry in real units landed upstream at `0.1.0-beta.5` as a
   catalogue of cockpit-relative offsets, independent of the schematics feature 010 draws.
 - Q: Should the target range a Commander picks for convergence be the same control that reports the
   build's damage at that range? → A: No — two controls, of two different kinds. Damage at range is a
@@ -444,7 +444,7 @@ principle II prohibits.
 **Shot convergence has landed and is no longer blocked.** An earlier draft recorded it as waiting
 upstream, because the only mount data the package published was the schematics feature 010 draws, and
 those carry no scale metadata — no metres-per-unit, no hull dimension, no coordinates in real units.
-`0.1.0-beta.8` publishes a separate catalogue: `SHIP_GUNSIGHTS` gives each hardpoint's horizontal and
+`0.1.0-beta.5` publishes a separate catalogue: `SHIP_GUNSIGHTS` gives each hardpoint's horizontal and
 vertical offset from the cockpit in metres, observed in-game rather than measured off artwork,
 covering all 48 hulls and 234 hardpoints, and `projectGunsight(gunsight, targetRangeMetres)` turns
 those offsets into the angular figures user story 4 reports. The prohibition in FR-016e is unchanged
@@ -453,7 +453,7 @@ and still load-bearing: the offsets come from that catalogue, never from the dra
 **WEP pip scaling has landed and no longer constrains this feature.** An earlier draft recorded it as
 a gap: at `0.1.0-beta.4` the distributor exposed `weaponsRecharge` as a single rated figure with no
 pip parameter, so how recharge scales with WEP pips was a game rule this application would have had
-to invent. `0.1.0-beta.8` publishes `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })`, which
+to invent. `0.1.0-beta.5` publishes `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })`, which
 returns the actual recharge rate, the sustained draw, the net drain and the seconds to drain at any
 allocation in `[0, 4]`, applying the package's own curve. Endurance is therefore read whole from that
 accessor rather than composed here, which is why FR-014 forbids the composition an earlier draft

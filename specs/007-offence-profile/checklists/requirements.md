@@ -50,7 +50,7 @@
   package does not report — inventing a curve or interpolating one. FR-014 forbids composing
   endurance at all. SC-004 makes a game rule appearing in this application detectable by test rather
   than by review, which is the line that actually matters.
-- **Both gaps closed at `0.1.0-beta.8`**, verified against the installed package on 2026-08-16.
+- **Both gaps closed at `0.1.0-beta.5`**, verified against the installed package on 2026-08-16.
   **WEP pip scaling**: `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })` returns the actual
   recharge, net drain and seconds to drain at any allocation, applying the package's own pip curve, so
   FR-015 now reports endurance at the pips in force and nothing reads as unavailable.

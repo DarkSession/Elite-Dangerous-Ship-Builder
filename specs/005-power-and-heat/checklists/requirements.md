@@ -63,7 +63,7 @@
 - **The WEP capacitor is deliberately split across two specifications.** Its capacity and recharge
   are the distributor's, specified here; how quickly a given loadout drains it belongs to
   [feature 007](../../007-offence-profile/spec.md), which composes them with the weapons' draw. That
-  composition was blocked on WEP pip scaling; `0.1.0-beta.8` closes it, so feature 007's own
+  composition was blocked on WEP pip scaling; `0.1.0-beta.5` closes it, so feature 007's own
   Upstream dependencies section needs re-checking against the installed version.
 - **The cell bank activation heat state crosses into feature 006.** FR-011b models the worst
   activation a build can perform as a heat state of its own. Each bank's own heat cost, spin-up and

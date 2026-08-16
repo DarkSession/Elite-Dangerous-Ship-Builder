@@ -155,8 +155,8 @@ presents its versions, its licences and Frontier Developments' media-usage notic
   Hull size is likewise one fact under one name: the game's small, medium or large, which is the same
   thing as the landing pad the ship needs.
 - Q: Must a hull's illustration be bundled into the application, or may it be fetched when the hull is
-  opened? → A: Fetched when it is opened, from the application's own origin. The installed set is
-  64 MB and no optimisation closes a gap that size, so bundling it would make every Commander pay for
+  opened? → A: Fetched when it is opened, from the application's own origin. The illustrations alone
+  are 55 MB and no optimisation closes a gap that size, so bundling them would make every Commander pay for
   47 hulls they did not look at before the catalogue appears. This overturns the original FR-017,
   which required previews to be bundled, and it required an amendment to constitution principle I
   (3.0.0, 2026-08-16) rather than a spec-level decision. The prohibition the original requirement
@@ -937,12 +937,14 @@ so a later reader does not go looking for an issue that was never opened.
    package into this application's own assets — which is consumption of a published artefact, not
    the vendored copy FR-019 prohibits.
 
-   Two properties of the set shape planning. The installed set is **64 MB across 144 files**, the
-   largest single illustration **4.1 MB**, which no application can ship wholesale to a phone in a
-   first load; delivery therefore needs both optimised variants, which FR-022 permits and FR-021
-   constrains, and per-hull fetching at runtime, which FR-017 and FR-017a now require and which the
-   constitution permitted on 2026-08-16 (3.0.0). Neither alone is sufficient: optimisation does not
-   reduce 64 MB to a first-load budget, and fetching unoptimised 4.1 MB artwork per hull would make
+   Two properties of the set shape planning. The 48 illustrations this feature consumes are **55 MB**,
+   the largest single one **4.1 MB** — part of a **64 MB, 144-file** artwork tree whose remaining
+   9.0 MB is the 96 schematic plates [feature 010](../010-hull-anatomy/spec.md) draws. No application
+   can ship that wholesale to a phone in a first load; delivery therefore needs both optimised
+   variants, which FR-022 permits and FR-021 constrains, and per-hull fetching at runtime, which
+   FR-017 and FR-017a now require and which the constitution permitted on 2026-08-16 (3.0.0). Neither
+   alone is sufficient: optimisation does not reduce 55 MB to a first-load budget, and fetching
+   unoptimised 4.1 MB artwork per hull would make
    opening a hull detail slow on the connections a Commander actually has. And the imagery is
    Frontier Developments' property under their media-usage terms,
    carrying a notice this application must reproduce (FR-020) — the package ships that notice in its

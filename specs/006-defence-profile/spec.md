@@ -313,7 +313,8 @@ a build with no module reinforcement says so rather than reporting no protection
   no-shield, no-cell-bank, negative-resistance, total-resistance, switched-off-generator,
   unpowered-generator, unpowered-cell-bank, all-banks-unpowered, unresolved-hull and
   no-recovery-at-this-allocation cases, asserting for the all-banks-unpowered case that its zero pool
-  is presented distinctly from the no-cell-bank build's absent one (FR-008a),
+  is presented distinctly from the no-cell-bank build's absent one (FR-008a), asserting that no
+  recovery figure states the threshold as a proportion of shield strength (FR-006),
   asserting for the unresolved-hull case that no defence figure of any kind is presented — not the
   armour group alone — and for the two infinite cases, total resistance and no recovery at this
   allocation, that each infinite figure reads as a verdict rather than as a number, a zero, a blank
@@ -371,7 +372,7 @@ each carries the issue that records it: pip-scaled recharge for the engines capa
 maximum jump's total (#273) in `0.1.0-beta.9`, material names (#275) likewise, and the diagnostics
 contract (#245) as a stable code with parameters.
 
-Two capabilities this family depends on arrived in `0.1.0-beta.8` without an issue behind them — WEP
+Two capabilities this family depends on arrived in `0.1.0-beta.5` without an issue behind them — WEP
 pip scaling and mount geometry in real units — so they were delivered rather than requested, and
 neither belongs in the list above. Earlier drafts recorded both as raised upstream, which was untrue
 of each, and that is the distinction worth keeping: a capability the package happens to add is not

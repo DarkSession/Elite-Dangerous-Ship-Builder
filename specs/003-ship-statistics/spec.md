@@ -406,7 +406,7 @@ not move, and none of the three is written into the build when it is saved, shar
 Every figure this specification's family needs is computed by
 `@elite-dangerous-almanac/core@0.1.0-beta.10`, verified against the installed package on 2026-08-16.
 **No figure in any of the five areas is blocked.** The four exceptions recorded here at beta.4 are all
-settled: WEP pip-to-recharge scaling (feature 007) landed at beta.8; the number of jumps a full tank
+settled: WEP pip-to-recharge scaling (feature 007) landed at beta.5; the number of jumps a full tank
 affords (feature 008) landed at beta.8 and the total at one jump's fuel that survived it at beta.9;
 the Frame Shift Drive's mass curve (feature 008) turned out not to be a gap, because a drive has no
 three-point curve and the package computes the mass factor the jump equation actually uses; and the

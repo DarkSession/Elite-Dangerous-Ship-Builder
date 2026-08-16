@@ -28,7 +28,9 @@ capability is delivered:
 | Keyboard operation                                      | FR-008 to FR-012 |
 | Screen readers and text alternatives                    | FR-013 to FR-018 |
 | Legibility, contrast, targets and motion                | FR-019 to FR-024 |
-| Verification                                            | FR-028 to FR-033 |
+| The standard, and where a defect belongs                | FR-025 to FR-027 |
+| Every form factor                                       | FR-028           |
+| Verification                                            | FR-029 to FR-034 |
 
 Every accepted feature inherits this specification without restating it, exactly as it inherits
 feature 003's honesty rules. Where a feature specification is more specific — feature 010's mount

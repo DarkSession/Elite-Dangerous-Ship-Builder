@@ -44,7 +44,7 @@
   each module's own mass, under feature 003's FR-001a. The jump count (FR-004) does not: `totalRange`
   already iterates the jumps and returns only the distance, so counting them here would reproduce a
   library algorithm rather than combine library figures. FR-001a covers the operations it lists — not
-  re-running a loop. **That gap closed at beta.8**, verified 2026-08-16: `totalRange` now returns
+  re-running a loop. **That gap closed at beta.5**, verified 2026-08-16: `totalRange` now returns
   `{ range, jumps }` and `jumpRangeSummary` carries the pair for the unladen and laden states. FR-004
   now requires a total per load state, and what remains upstream is only that the loadout accessor
   takes a cargo load and no fuel load, so the lightest state's total cannot be asked for.

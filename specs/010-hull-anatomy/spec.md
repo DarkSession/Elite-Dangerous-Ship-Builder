@@ -61,7 +61,7 @@ layout.
   convergence? → A: Nothing here — shot convergence is part of the offence profile. User Story 3 and
   FR-019 to FR-023 move to [feature 007](../007-offence-profile/spec.md); this feature keeps only the
   mount positions convergence is computed from. _(The question's premise expired on 2026-08-16: the
-  package published that geometry at `0.1.0-beta.8` as `SHIP_GUNSIGHTS`, from its own catalogue rather
+  package published that geometry at `0.1.0-beta.5` as `SHIP_GUNSIGHTS`, from its own catalogue rather
   than from these schematics. The answer is unaffected — convergence was never this feature's to
   show.)_
 - Q: On the most crowded hull at phone width, how does the Commander hit two mounts the schematic
@@ -503,7 +503,7 @@ and SC-006 load-bearing: a physical figure could only be obtained by measuring t
 assumed scale, which constitution principle II forbids. It is not a gap, and **no request for it is
 open upstream**, for two reasons. Nothing in this specification needs one — the plate locates a mount
 for drawing and navigation, not for measurement. And the feature that did need real units,
-[feature 007](../007-offence-profile/spec.md)'s shot convergence, was answered at `0.1.0-beta.8` from
+[feature 007](../007-offence-profile/spec.md)'s shot convergence, was answered at `0.1.0-beta.5` from
 a different source: `SHIP_GUNSIGHTS` publishes each hardpoint's horizontal and vertical offset from
 the cockpit in metres, observed in-game across all 48 hulls and 234 hardpoints, rather than measured
 off these drawings. So the geometry convergence requires exists today and does not come from the

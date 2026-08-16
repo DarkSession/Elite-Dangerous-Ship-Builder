@@ -125,7 +125,7 @@
 - **The mount geometry note above is superseded: nothing is requested, and nothing needs to be.** The
   note said the real-unit geometry shot convergence needs was "still absent and still requested" as
   feature 007's dependency. Neither half held. No such issue was ever filed against
-  `@elite-dangerous-almanac/core`, and the need itself was answered at `0.1.0-beta.8`, which publishes
+  `@elite-dangerous-almanac/core`, and the need itself was answered at `0.1.0-beta.5`, which publishes
   `SHIP_GUNSIGHTS` — each hardpoint's horizontal and vertical offset from the cockpit in metres,
   observed in-game across all 48 hulls and 234 hardpoints. Feature 007 reads convergence from that
   catalogue and says so in its own Upstream dependencies section.

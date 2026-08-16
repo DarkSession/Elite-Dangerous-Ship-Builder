@@ -76,7 +76,7 @@
 
 - **No figure in the family is blocked.** Re-verified against the installed
   `@elite-dangerous-almanac/core@0.1.0-beta.9`. The four exceptions the Upstream dependencies section
-  recorded at beta.4 are all settled: WEP pip scaling and the jump count at beta.8, the distributor's
+  recorded at beta.4 are all settled: WEP pip scaling and the jump count at beta.5, the distributor's
   three pip-scaled recharge rates and the maximum jump's total at beta.9, and the Frame Shift Drive's
   "mass curve" resolved as a non-gap because a drive has no three-point curve.
 - **The diagnostics note above is superseded.** It records the English-only diagnostics as a gap

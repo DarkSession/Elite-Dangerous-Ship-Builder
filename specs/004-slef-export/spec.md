@@ -37,11 +37,14 @@
   A whole-collection backup, if it is ever wanted, belongs to
   [feature 001](../001-ship-selection-and-loading/spec.md), which owns saved builds.
 - Q: How big a pasted payload must the import cope with, and what should happen to one larger
-  than that? → A: 64 KB, refusing anything larger with a message naming the limit. Measured
-  against the bundled package, a fully outfitted and engineered large ship serialises to about
-  8 KB, and a game journal capture of one — the fattest input FR-007 must accept, carrying
-  engineer names, blueprint ids, ammunition counts and module health — is estimated at 15–25 KB,
-  so 64 KB leaves headroom without inviting unbounded input.
+  than that? → A: 64 KB, refusing anything larger with a message naming the limit. Re-measured
+  against the installed `0.1.0-beta.10` on 2026-08-16: an Anaconda with every slot filled and a
+  top-grade blueprint on all 32 engineerable slots serialises to **11.8 KB** compact, against 1.6 KB
+  stock — and that is a floor, since it carries no experimental effects and the modifier arrays are
+  what dominate. An earlier draft recorded about 8 KB, which does not reproduce. A game journal
+  capture of such a build — the fattest input FR-007 must accept, carrying engineer names, blueprint
+  ids, ammunition counts and module health — runs larger again, so the limit is set at 64 KB: several
+  times the largest payload measured, while still bounded.
 - Q: Should a payload that contains several ships be refused outright, or still be accepted with
   the Commander picking the one ship that gets loaded? → A: Refused outright, with a message
   saying so. Import takes exactly one ship. This removes the tolerant multi-entry reading path,

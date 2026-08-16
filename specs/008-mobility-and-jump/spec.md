@@ -61,8 +61,10 @@ is a module attribute shown by [feature 002](../002-module-outfitting/spec.md).
   narrowed to what it was actually protecting: no game rule may be reimplemented.
 - Q: Does the thruster mass curve's minimum mass get shown? → A: No. The curve is read for what a
   Commander can act on — the optimal mass they are trying to stay near and the maximum beyond which
-  performance is gone. A minimum sits below every real build's mass and describes a state no ship in
-  the catalogue can reach, so it is a third threshold that answers nothing.
+  performance is gone, so a third threshold is one more number to weigh. _(The reason recorded with
+  this answer — that a minimum "sits below every real build's mass and describes a state no ship in
+  the catalogue can reach" — was measured false on 2026-08-16 and is withdrawn. FR-014 carries the
+  measurement and a [NEEDS CLARIFICATION] on whether the answer itself still stands.)_
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -145,8 +147,9 @@ the build's mass placed against them.
    fitted module's own mass is listed with its slot, ordered by contribution.
 4. **Given** a build with thrusters fitted, **When** the Commander views the thruster mass curve,
    **Then** the curve's optimal and maximum mass are shown with the loaded mass the curve is
-   evaluated at placed against them — labelled apart from the breakdown's total, which it is lighter
-   than by the reserve tank — together with both performance multipliers in force at that mass, the
+   evaluated at placed against them — labelled apart from the breakdown's total, and stating how the
+   two differ: this one leaves out the reserve tank and counts a full cargo hold, so on a build with
+   cargo capacity it is the heavier — together with both performance multipliers in force at that mass, the
    one governing speed and the one governing rotation, and how far the build sits from those
    thresholds.
 5. **Given** a build with a Frame Shift Drive fitted, **When** the Commander views the drive against
@@ -314,13 +317,21 @@ selected state marked among them.
   package reports at that mass — the one governing speed and the one governing rotation — as distinct
   figures. They diverge on thrusters carrying separate speed and rotation curves, so showing one in
   place of both would misattribute the build's handling. The curve's minimum mass MUST NOT be shown:
-  the package carries it, but it lies below the unladen mass of any hull the thrusters fit, so it
-  marks a position no build occupies and a Commander cannot act on. Two thresholds are what the curve
-  is read for — what to stay near, and what not to pass.
+  two thresholds are what the curve is read for — what to stay near, and what not to pass.
+  [NEEDS CLARIFICATION: the basis originally given for hiding it was that the minimum "lies below the
+  unladen mass of any hull the thrusters fit", so no build could occupy it. Measured against
+  `0.1.0-beta.10` on 2026-08-16, that is false — 58 valid stock hull-and-thruster combinations sit
+  below the fitted thruster's minimum, across 24 hulls and 21 of the 40 thrusters, among them a stock
+  Hauler with a class 5 size-2 thruster at 29.9 t against a minimum of 36 t. Below the minimum the
+  multiplier stops improving, so on those builds it is a threshold a Commander can both reach and act
+  on. Whether FR-014 still excludes it is a product decision this measurement reopens.]
 - **FR-014a**: The mass placed against the thruster curve MUST be the loaded mass the package
-  evaluates that curve at — the build's unladen mass, its main-tank fuel and its cargo. The reserve
-  tank is excluded from it, so this figure is lighter than the total mass FR-011 breaks down, and it
-  MUST be labelled distinctly enough that the two are not read as the same number. The multiplier in
+  evaluates that curve at — the build's unladen mass, its main-tank fuel and its cargo capacity. It
+  is not the total FR-011 breaks down, and it MUST be labelled distinctly enough that the two are not
+  read as the same number. The two differ in both directions and neither is reliably the larger: this
+  figure excludes the reserve tank FR-011 counts, and includes a full cargo hold FR-011 does not, so
+  on a build with any cargo capacity it is the heavier of the two. The relation MUST be stated where
+  both appear rather than left for a Commander to reconcile. The multiplier in
   force is the one at this mass; placing any other mass against the curve would show the Commander a
   position their handling was not computed at.
 - **FR-015**: The application MUST display, for the fitted Frame Shift Drive, its optimal mass with
@@ -418,7 +429,7 @@ are all available, which satisfies FR-010 and FR-012.
 
 **The jump count and the maximum jump's total (FR-004) — both closed.** The gap recorded here at
 beta.4 was that `totalRange` iterated the jumps as the tank drained and returned only the distance. It
-returns `{ range, jumps }` as of beta.8. The narrower gap that survived it — that
+returns `{ range, jumps }` as of beta.5. The narrower gap that survived it — that
 `ShipLoadout.totalRange` took a cargo load only and always spent a full main tank, so the maximum
 single jump's total could not be asked of the loadout — closed at `0.1.0-beta.9`. The accessor now
 takes the same `{ fuel, cargo }` options as `jumpRange`, and `jumpRangeSummary` carries a third pair,
@@ -446,9 +457,11 @@ directly where that is clearer, and no minimum or maximum invented for a curve t
 have.
 
 **The thrusters' minimum curve mass is available and deliberately unused.** All 40 thrusters carry
-`minMass` alongside `optMass` and `maxMass`. FR-014 shows two of the three: a minimum below the
-unladen mass of every hull the thruster fits marks a position no build can occupy, and a threshold a
-Commander cannot cross is a number they have to work out they can ignore.
+`minMass` alongside `optMass` and `maxMass`, and FR-014 shows two of the three. The reason recorded
+here until 2026-08-16 — that the minimum sits below the unladen mass of every hull a thruster fits,
+so no build can occupy it — does not survive measurement: 58 valid stock combinations sit below it.
+The exclusion now rests on the narrower ground that the curve is read for two thresholds, and
+FR-014 carries a [NEEDS CLARIFICATION] on whether that is enough.
 
 FR-016 is the boundary for both: every mass and every multiplier is the package's own, and where the
 application states how one stands against another it is comparing two reported figures rather than

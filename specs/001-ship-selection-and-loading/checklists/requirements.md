@@ -68,8 +68,9 @@
   version the game data comes from to be identifiable. The package exports no machine-readable
   game-data version — only its own release number, and a game version recorded as prose in its
   provenance files — so a catalogue version is requested upstream and FR-044a waits on it.
-- **Two properties of the illustration set are recorded in the spec so planning does not meet them
-  late**: the installed set is 64 MB across 144 files with the largest illustration at 4.1 MB, and
+- **Two properties of the artwork are recorded in the spec so planning does not meet them
+  late**: the installed tree is 64 MB across 144 files — 55 MB of it the 48 illustrations this
+  feature consumes, with the largest at 4.1 MB, the rest feature 010's plates — and
   the imagery is Frontier Developments' property under media-usage terms whose notice this
   application must reproduce.
 - **Engineering quality was removed from the application model on 2026-08-16.** FR-024, FR-028,
