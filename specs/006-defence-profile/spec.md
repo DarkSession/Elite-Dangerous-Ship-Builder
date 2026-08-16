@@ -48,8 +48,10 @@ rating is a property of what the build fires and is reported there. Neither repe
   a deliberate trade: the shield, recovery and cell-bank figures for such a build remain computable
   and are withheld with the rest, because a defence profile assembled around a hull the application
   cannot name would mislead more than it informs. It also removes the apparent conflict with FR-001b,
-  which governs a _valid_ build whose figure ignores its power state — the unpowered generator and
-  cell bank — and never licensed suppressing a computed figure.
+  which governs a _valid_ build whose figure ignores its power state — the generator that keeps
+  reporting full strength from an unpowered priority group — and never licensed suppressing a
+  computed figure. The cell bank pool belonged in that list until `0.1.0-beta.10` made it
+  power-aware; it no longer does, and FR-009 covers it instead.
 - Q: How should a defence figure the package reports as infinite be presented? → A: As a verdict, in
   words, matching the convention feature 005 already sets. An infinite effective hit-point figure —
   the package's answer at a resistance of 100% or better — reads as nothing of that damage type
@@ -133,13 +135,18 @@ shown for that build.
    threshold at which shields come back up, and the time from that threshold to full strength are
    each shown as their own figure, the two durations stating the SYS allocation they assume.
 2. **Given** a build with shield cell banks fitted, **When** the Commander views them, **Then** the
-   total restorable shield strength across all banks is shown, together with the number of cells
-   available, and each bank's spin-up time, duration and heat cost.
+   total restorable shield strength across the banks that are powered is shown on that basis,
+   together with the number of cells available, and each bank's spin-up time, duration and heat cost
+   whether or not it is powered.
 3. **Given** a build with no cell banks, **When** the Commander views shield recovery, **Then** the
    application says the build carries no cell banks rather than showing a zero pool.
 4. **Given** a cell bank that is disabled or sits in an unpowered priority group, **When** the
-   Commander views the cell bank pool, **Then** the pool is shown as the package reports it, and that
-   bank is identified within it as not ready in the current power state.
+   Commander views the cell bank pool, **Then** the pool is shown as the package reports it —
+   excluding that bank — and the bank is still listed and identified as not ready in the current
+   power state.
+5. **Given** a build whose cell banks are all disabled or unpowered, **When** the Commander views the
+   cell bank pool, **Then** the pool reads as zero for a build that carries banks it cannot draw on,
+   worded so it cannot be mistaken for scenario 3's build that carries none.
 
 ---
 
@@ -183,8 +190,10 @@ a build with no module reinforcement says so rather than reporting no protection
 - A shield generator switched off: the package reports no shield metrics for it, so the figures are
   unavailable and say so. A generator that is enabled but sits in a priority group the plant cannot
   power is different — the package still reports full strength for it, so the application shows that
-  figure with the unpowered state flagged beside it rather than overriding it, exactly as FR-009
-  requires for cell banks.
+  figure with the unpowered state flagged beside it rather than overriding it, under FR-001b. The
+  cell bank pool is no longer the parallel case: since `0.1.0-beta.10` it drops an unpowered bank
+  from the total instead of carrying it, which is why FR-009 states its own basis rather than
+  deferring to this one.
 - Shield recovery at a SYS allocation that cannot sustain regeneration — at zero SYS pips, for
   instance: the package still reports both regeneration rates normally, and reports both recovery
   durations as infinite. The rates are shown as usual; each infinite duration is stated as the
@@ -248,8 +257,9 @@ a build with no module reinforcement says so rather than reporting no protection
   verdict it is — the shield does not come back at this allocation — and MUST NOT present it as a
   zero, a blank, an infinite number or an unavailable figure.
 - **FR-007**: The application MUST display shield cell bank capacity for the build — the total
-  restorable shield strength and the number of cells available — together with each bank's spin-up
-  time, duration and heat cost.
+  restorable shield strength and the number of cells available, both counting the banks that are
+  powered, on the basis FR-009 states — together with each fitted bank's spin-up time, duration and
+  heat cost, which are properties of the bank and are shown whether or not it is powered.
 - **FR-008**: A build with no cell banks MUST be reported as carrying none, rather than shown with a
   zero pool.
 - **FR-008a**: A build that carries cell banks of which none are powered MUST NOT be reported as
@@ -299,7 +309,9 @@ a build with no module reinforcement says so rather than reporting no protection
 
 - **FR-016**: Shield and armour presentation MUST be unit-tested against known builds, including the
   no-shield, no-cell-bank, negative-resistance, total-resistance, switched-off-generator,
-  unpowered-generator, unpowered-cell-bank, unresolved-hull and no-recovery-at-this-allocation cases,
+  unpowered-generator, unpowered-cell-bank, all-banks-unpowered, unresolved-hull and
+  no-recovery-at-this-allocation cases, asserting for the all-banks-unpowered case that its zero pool
+  is presented distinctly from the no-cell-bank build's absent one (FR-008a),
   asserting for the unresolved-hull case that no defence figure of any kind is presented — not the
   armour group alone — and for the two infinite cases, total resistance and no recovery at this
   allocation, that each infinite figure reads as a verdict rather than as a number, a zero, a blank
@@ -353,8 +365,11 @@ a minimal reproduction, fixed the same evening by
 "Ships: make cell bank totals power-aware", and released in `0.1.0-beta.10`, which carries that change
 and nothing else. Every other request the statistics family made is likewise closed and released:
 pip-scaled recharge for all three capacitors (#271) and the maximum jump's total (#273) in
-`0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling and mount geometry in `0.1.0-beta.8`,
-and the diagnostics contract (#245) as a stable code with parameters.
+`0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling in `0.1.0-beta.8`, and the
+diagnostics contract (#245) as a stable code with parameters. Mount geometry in real units arrived in
+`0.1.0-beta.8` as well, but it belongs on a separate line: no issue was ever filed for it, so it was
+delivered rather than requested, and feature 010 records why the request it once claimed to have made
+was withdrawn instead of raised.
 
 **What taking the upgrade changed here.** Two requirements moved with it, and both changes are
 narrowings of what the application may show rather than new capability.
@@ -389,7 +404,9 @@ requirement edits above.
 - **SC-003**: Shield strength equals the sum of the contributions displayed for it, for every build
   in the corpus — zero unexplained strength and zero contribution the total does not account for.
 - **SC-004**: For every build with no shields, no cell banks or no module reinforcement, the
-  affected figures read as absent — zero fabricated zeroes across the corpus.
+  affected figures read as absent — zero fabricated zeroes across the corpus. For every build that
+  carries cell banks none of which are powered, the pool reads as a zero the build earned rather than
+  as an absence — zero builds across the corpus where the two are worded the same way.
 - **SC-005**: Changing SYS pips updates every pip-dependent defence figure within 100 ms, and each
   updated figure states the allocation it assumes.
 - **SC-006**: The full defence profile is readable and every breakdown reachable on desktop, tablet

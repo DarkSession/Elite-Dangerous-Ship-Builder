@@ -282,7 +282,7 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their modifier arrays are not encoded.
 
-Almanac beta.9 publishes modifier signatures for 54 fixed variants, which makes those articles
+Almanac beta.10 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants have no published modifier signatures;
 Almanac reports those fitted modules as unidentified, so the codec rejects them rather than
 re-deriving a package result from blueprint metadata.
@@ -347,7 +347,7 @@ protocol data.
 ## Versioned tables and lazy loading
 
 Table 1 is the immutable `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.9`. It pins hulls, hull-specific outfittable slots,
+`@elite-dangerous-almanac/core@0.1.0-beta.10`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
 effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
 Stable game identities originate from the package; indexes exist only
@@ -362,13 +362,19 @@ dynamically loads the shared codec and current table. Decoding then imports only
 file alongside the shared codec. Adding table snapshots to the loader therefore does not place
 every historical table in the initial bundle.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.9`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.10`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass. The `0.1.0-beta.8` to
-`0.1.0-beta.9` upgrade was checked this way: regenerating table 1 against beta.9 reproduced every
-pinned array byte for byte — beta.9 changes no hull, module, blueprint, experimental-effect,
-pre-engineered or stock-loadout identity — so the snapshot carries forward under its existing number
-with only its recorded provenance version advanced, and the frozen literals decode unchanged. Frozen tables preserve
+fixtures and must never be regenerated merely to make an upgrade pass. Both upgrades so far were
+checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for
+byte, and the `0.1.0-beta.9` to `0.1.0-beta.10` upgrade did the same — beta.10 carries one
+calculation change, the power-aware cell bank pool, and alters no hull, module, blueprint,
+experimental-effect, pre-engineered or stock-loadout identity; `ALL_MODULES` is 1199 on both sides and
+the `assets/ships` tree is byte-identical across all three releases. So the snapshot carries forward
+under its existing number with only its recorded provenance version advanced, and the frozen literals
+decode unchanged. Note that the generator writes raw `JSON.stringify` output while the committed file
+is Prettier-formatted, so an upgrade check must compare against `pnpm run codec:tables`, which pairs
+the two: a bare generator run differs from the committed file in whitespace alone, which reads
+alarmingly like drift. Frozen tables preserve
 protocol interpretation, but full `ShipLoadout` reconstruction also depends on compatible Almanac
 identities and behaviour; an incompatible upgrade requires retaining a compatible reconstruction
 path for the affected table version.
@@ -622,6 +628,6 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-Almanac beta.9 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+Almanac beta.10 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
 those values or ordinary blueprint arithmetic.

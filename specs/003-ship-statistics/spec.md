@@ -130,9 +130,9 @@ interaction, and that unaffected statistics do not flicker or change.
 3. **Given** modules are disabled or assigned to priority groups, **When** statistics are computed,
    **Then** the contributions of disabled modules are excluded from every figure the package computes
    without them, and the module remains visible as disabled rather than omitted. Where the package
-   reports a figure that counts a disabled module regardless — the shield cell bank pool, under
-   feature 006's FR-009 — that state is shown beside the figure under FR-001b rather than subtracted
-   from it.
+   reports a figure that counts a module the build cannot power regardless — a shield generator in an
+   unpowered priority group, whose strength the package still reports in full — that state is shown
+   beside the figure under FR-001b rather than subtracted from it.
 
 ---
 
