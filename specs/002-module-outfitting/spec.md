@@ -15,9 +15,9 @@ This specification covers changing a build: reading its slots, fitting, replacin
 modules, engineering them, managing power priorities, and stepping backwards and forwards through
 those changes.
 
-Choosing the hull a build starts from belongs to
-[feature 001](../001-ship-selection-and-loading/spec.md); the figures a change moves belong to the
-statistics family, whose contract is [feature 003](../003-ship-statistics/spec.md).
+Choosing the hull a build starts from belongs to [feature
+001](../001-ship-selection-and-loading/spec.md); the figures a change moves belong to the statistics
+family, whose contract is [feature 003](../003-ship-statistics/spec.md).
 
 Everything here acts on an active build and requires one: there are no slots to read and nothing to
 change before a hull is chosen. FR-000 states that.
@@ -105,8 +105,8 @@ state, redo them all forward, and confirm the build matches at every step.
 
 **Acceptance Scenarios**:
 
-1. **Given** a build that has been changed at least once, **When** the Commander undoes, **Then** the
-   build returns to its state immediately before that change, and every statistic recomputes
+1. **Given** a build that has been changed at least once, **When** the Commander undoes, **Then**
+   the build returns to its state immediately before that change, and every statistic recomputes
    accordingly.
 2. **Given** a change has been undone, **When** the Commander redoes it, **Then** the build returns
    to the state before the undo, exactly.
@@ -139,21 +139,21 @@ and confirm exact restoration of the stock values.
 
 **Acceptance Scenarios**:
 
-1. **Given** a fitted module, **When** the Commander opens its engineering, **Then** they are offered
-   exactly the blueprints that module accepts and, separately, exactly the experimental effects it
-   accepts.
+1. **Given** a fitted module, **When** the Commander opens its engineering, **Then** they are
+   offered exactly the blueprints that module accepts and, separately, exactly the experimental
+   effects it accepts.
 2. **Given** a blueprint is chosen, **When** the Commander sets a permitted grade, **Then** that
    grade is applied at 100% quality and the module's modified attributes are shown against their
    stock values, with improvements and penalties distinguishable.
-3. **Given** an already-engineered module, **When** the Commander chooses a different blueprint, or a
-   different grade for the one it has, **Then** the new choice replaces the previous one with no
+3. **Given** an already-engineered module, **When** the Commander chooses a different blueprint, or
+   a different grade for the one it has, **Then** the new choice replaces the previous one with no
    trace of the old blueprint left on the module, and the module's attributes and the build's
    statistics update immediately.
 4. **Given** an engineered module, **When** the Commander adds, changes or removes an experimental
    effect, **Then** the module's attributes and the build's statistics update immediately, and
    removing the effect leaves the blueprint and its grade untouched.
-5. **Given** an engineered module, **When** the Commander clears its engineering, **Then** the module
-   returns exactly to its stock attributes, and no other module's engineering changes.
+5. **Given** an engineered module, **When** the Commander clears its engineering, **Then** the
+   module returns exactly to its stock attributes, and no other module's engineering changes.
 6. **Given** a module with no engineering available, **When** the Commander views it, **Then** the
    application says so plainly instead of offering an empty picker.
 7. **Given** a pre-engineered module, **When** it is fitted, **Then** its pre-applied modifications
@@ -188,9 +188,9 @@ told before it happens.
 2. **Given** a Commander holds down or repeatedly triggers undo, **When** steps are reversed,
    **Then** each change is reversed as its own step; a single burst of activity does not collapse
    several distinct decisions into one.
-3. **Given** an action would discard the edit history — replacing the hull, opening a saved build, or
-   importing a build — **When** the Commander triggers it, **Then** they are told the history will be
-   lost as part of the confirmation feature 001 already requires.
+3. **Given** an action would discard the edit history — replacing the hull, opening a saved build,
+   or importing a build — **When** the Commander triggers it, **Then** they are told the history
+   will be lost as part of the confirmation feature 001 already requires.
 4. **Given** the Commander has used undo, **When** they press the browser's Back button, **Then** it
    behaves as navigation and does not silently reverse a build change; the two are never confused.
 5. **Given** the history has reached its limit, **When** a further change is made, **Then** the
@@ -233,8 +233,8 @@ reflected in the build's power figures and survive save and reload.
   dropped with the module, never silently transplanted.
 - A blueprint whose journal spelling is ambiguous across module families: the blueprint is resolved
   for the specific module rather than by name alone.
-- A grade at the boundary of the permitted range: accepted at the boundary, rejected beyond it,
-  with the valid range stated.
+- A grade at the boundary of the permitted range: accepted at the boundary, rejected beyond it, with
+  the valid range stated.
 - A module taken to grade 5: its cost is every roll from grade 1 through grade 5, not grade 5's
   alone, so a Commander weighing one grade against another sees the full price of each.
 - An imported build carrying partial engineering quality: its blueprint and grade are retained, the
@@ -260,8 +260,7 @@ reflected in the build's power figures and survive save and reload.
 - Undo while a module picker or engineering panel is open on the slot being reverted: the open
   surface reflects the reverted state rather than acting on a module that is no longer fitted.
 - Changing a viewing condition — feature 003's load assumption, pip allocation and hardpoint state:
-  not a build change, so it does not enter the history and undo does not reverse
-  it.
+  not a build change, so it does not enter the history and undo does not reverse it.
 - A session left open for a long time with many changes: memory use stays bounded, which is what the
   history limit exists to guarantee.
 - A hull with dozens of slots viewed on a phone: every slot stays reachable and the Commander does
@@ -279,13 +278,13 @@ reflected in the build's power figures and survive save and reload.
 #### A build to change
 
 - **FR-000**: Outfitting MUST require an active build. Where no build is active the application MUST
-  NOT present a slot list, an offer list, an engineering surface, a power-priority control or an edit
-  history, and MUST NOT create a build in order to offer one. A Commander arrives at an active build
-  through [feature 001](../001-ship-selection-and-loading/spec.md) — choosing a hull from the
+  NOT present a slot list, an offer list, an engineering surface, a power-priority control or an
+  edit history, and MUST NOT create a build in order to offer one. A Commander arrives at an active
+  build through [feature 001](../001-ship-selection-and-loading/spec.md) — choosing a hull from the
   catalogue (its FR-011), reopening a saved or working build (its FR-023, FR-023f), or opening a
-  build link (its FR-027, FR-027a) — or by importing one under
-  [feature 004](../004-slef-export/spec.md)'s FR-006. This feature offers no route of its own, and
-  fitting a module MUST NOT be a way to choose a hull.
+  build link (its FR-027, FR-027a) — or by importing one under [feature
+  004](../004-slef-export/spec.md)'s FR-006. This feature offers no route of its own, and fitting a
+  module MUST NOT be a way to choose a hull.
 
 #### Slots and modules
 
@@ -296,9 +295,9 @@ reflected in the build's power figures and survive save and reload.
 - **FR-003**: For any slot, the application MUST offer exactly the set of modules the package
   reports as fittable to that slot, and MUST NOT offer others.
 - **FR-003a**: The Commander MUST be able to order the offer list for a slot by any attribute it is
-  compared on, in either direction, with the active ordering visible. A candidate whose attribute the
-  catalogue does not carry MUST be grouped rather than ordered as though the attribute were zero,
-  consistent with feature 001's FR-009.
+  compared on, in either direction, with the active ordering visible. A candidate whose attribute
+  the catalogue does not carry MUST be grouped rather than ordered as though the attribute were
+  zero, consistent with feature 001's FR-009.
 - **FR-004**: The Commander MUST be able to fit a module into a slot, replacing any existing module.
 - **FR-005**: The Commander MUST be able to remove a module from a slot where the game permits it,
   and MUST be told why when it does not, in the application's own words under FR-029a.
@@ -323,18 +322,18 @@ reflected in the build's power figures and survive save and reload.
   direction of each change apparent.
 - **FR-012**: Pre-engineered modules MUST show their pre-applied modifications and any restriction
   on further engineering.
-- **FR-012a**: Engineering that arrives with partial quality MUST be normalised to 100% quality while
-  retaining its blueprint, grade and experimental effect. Partial quality MUST NOT be retained,
-  offered as a control or presented as application state.
+- **FR-012a**: Engineering that arrives with partial quality MUST be normalised to 100% quality
+  while retaining its blueprint, grade and experimental effect. Partial quality MUST NOT be
+  retained, offered as a control or presented as application state.
 - **FR-012b**: For the blueprint and grade selected on a module, the application MUST show what
   engineering that module costs in total — every roll required to take it from unengineered to that
-  grade at 100% quality, cumulatively rather than the selected grade's roll alone — together with the
-  cost of any experimental effect chosen. Materials MUST be shown, and credits where the package
-  carries them; a cost the catalogue does not carry MUST be named as unavailable rather than shown as
-  zero. The application MUST NOT present the climb grade by grade — no per-grade itemisation, no roll
-  count, no sequence of engineer visits — because what a Commander acts on is the materials they must
-  gather, not the order they will spend them in. A pre-engineered module's pre-applied modifications
-  MUST contribute no cost. The consolidated bill across a whole build belongs to
+  grade at 100% quality, cumulatively rather than the selected grade's roll alone — together with
+  the cost of any experimental effect chosen. Materials MUST be shown, and credits where the package
+  carries them; a cost the catalogue does not carry MUST be named as unavailable rather than shown
+  as zero. The application MUST NOT present the climb grade by grade — no per-grade itemisation, no
+  roll count, no sequence of engineer visits — because what a Commander acts on is the materials
+  they must gather, not the order they will spend them in. A pre-engineered module's pre-applied
+  modifications MUST contribute no cost. The consolidated bill across a whole build belongs to
   [feature 009](../009-cost-and-materials/spec.md), which totals these per-module figures.
 
 #### Power priorities
@@ -363,9 +362,9 @@ reflected in the build's power figures and survive save and reload.
   hardpoint state — MUST NOT enter the history, because they do not change the build.
 - **FR-020**: Each undo and redo step MUST correspond to one Commander decision. Repeated adjustment
   of a single control on a single slot, such as holding a grade control, MUST resolve to a single
-  step rather than one step per intermediate value, and that step MUST close when the control is left
-  or the Commander pauses. Fitting a different module MUST always be its own step however quickly it
-  follows the previous one, and changes to different slots MUST NOT merge.
+  step rather than one step per intermediate value, and that step MUST close when the control is
+  left or the Commander pauses. Fitting a different module MUST always be its own step however
+  quickly it follows the previous one, and changes to different slots MUST NOT merge.
 - **FR-021**: Statistics, validity and every other derived view MUST recompute after undo and redo
   exactly as they do after a direct change.
 - **FR-022**: Undo and redo MUST name the change they would reverse or reapply, in the Commander's
@@ -451,13 +450,14 @@ reflected in the build's power figures and survive save and reload.
   rating, mass, power draw, cost and type-specific attributes.
 - **Fitted module**: A module occupying a slot in the active build, together with its engineering,
   enabled state and power priority.
-- **Diagnostic**: A refusal or a validity or completeness finding reported by the package, identified
-  by its machine-readable `code` and carrying `params` and any `constraint`. The values and the game
-  nouns are the package's; the sentence the Commander reads is this application's (FR-029a).
-- **Blueprint**: An engineering recipe, identified by its `fdname`, applicable to a module at a grade
-  that this application always treats as complete (100% quality).
-- **Experimental effect**: A secondary modification, identified by its `fdname`, applicable alongside
-  a blueprint.
+- **Diagnostic**: A refusal or a validity or completeness finding reported by the package,
+  identified by its machine-readable `code` and carrying `params` and any `constraint`. The values
+  and the game nouns are the package's; the sentence the Commander reads is this application's
+  (FR-029a).
+- **Blueprint**: An engineering recipe, identified by its `fdname`, applicable to a module at a
+  grade that this application always treats as complete (100% quality).
+- **Experimental effect**: A secondary modification, identified by its `fdname`, applicable
+  alongside a blueprint.
 - **Edit step**: One Commander decision that changed the build, described in the Commander's terms
   and reversible as a unit.
 - **Edit history**: The bounded, session-scoped sequence of edit steps behind and ahead of the
@@ -472,9 +472,11 @@ package's own edit operations, and each refusal carries the machine-readable `co
 `constraint` FR-029a composes its wording from.
 
 Per-ship module limits are the package's: it excludes a module already at its allowance from the
-offer list for a slot, refuses a fitting that would exceed one with a `duplicateExclusiveModule`
-code naming the exclusion group and the slot already holding one, and reports the excess in its
-validation. Whether a slot may be emptied is likewise a property it reports, with a machine-readable
+offer list for a slot, refuses a fitting that would exceed one, and reports the excess in its
+validation. It distinguishes the two rules it enforces — `duplicateExclusiveModule` for a module
+only one of which a ship may carry, naming the exclusion group and the slot already holding one, and
+`moduleLimitExceeded` for a per-ship count allowance — so FR-029a composes different wording for
+each. Whether a slot may be emptied is likewise a property it reports, with a machine-readable
 reason when it may not, so FR-005 is answered without provoking an error to find out.
 
 ## Success Criteria _(mandatory)_
@@ -512,8 +514,8 @@ reason when it may not, so FR-005 is answered without provoking an error to find
 - **SC-014**: No package-authored English text reaches the screen: every refusal and every validity
   finding a Commander can provoke while outfitting is an application string resolved through the
   localisation layer, across the whole diagnostic corpus.
-- **SC-015**: For every engineerable module and every grade it accepts, the cost shown equals the sum
-  of every roll from unengineered to that grade — no grade's materials missing and none counted
+- **SC-015**: For every engineerable module and every grade it accepts, the cost shown equals the
+  sum of every roll from unengineered to that grade — no grade's materials missing and none counted
   twice — plus the chosen experimental effect's own cost.
 
 ## Assumptions
@@ -537,9 +539,8 @@ reason when it may not, so FR-005 is answered without provoking an error to find
 - Undo and redo operate on build state. Navigation, filter and sort state, and viewing conditions
   are deliberately excluded, so that undo means one thing.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
-  scope now, and how they are met is fixed by
-  [feature 011](../011-interface-foundations/spec.md), which every feature inherits as it inherits
-  the constitution.
+  scope now, and how they are met is fixed by [feature 011](../011-interface-foundations/spec.md),
+  which every feature inherits as it inherits the constitution.
 - Which slots are prominent, how the module picker and engineering panel are laid out, and how undo
   and redo are presented are decided at plan time against the design system, per constitution
   principle VII.

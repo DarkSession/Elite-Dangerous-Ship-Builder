@@ -6,9 +6,9 @@
 
 **Status**: Draft
 
-**Input**: User description: "We want to show damage detail, split by type." Extended by design review
-with the two figures a Commander needs to judge a loadout in a fight — output at the range they
-engage at, and how long the weapons capacitor sustains it — and with shot convergence.
+**Input**: User description: "We want to show damage detail, split by type." Extended by design
+review with the two figures a Commander needs to judge a loadout in a fight — output at the range
+they engage at, and how long the weapons capacitor sustains it — and with shot convergence.
 
 ## Scope
 
@@ -22,11 +22,11 @@ provenance, units, the honesty rules for unavailable figures, the recompute obli
 viewing conditions. Everything it states applies here without being restated, and nothing here
 relaxes it.
 
-The distributor's capacities and recharge rates belong to
-[feature 005](../005-power-and-heat/spec.md), as does the heat that firing produces; what this
-feature reports is how long that capacitor holds a build's fire up, which the package computes
-whole. The hull hardness a weapon's piercing is measured against belongs to
-[feature 006](../006-defence-profile/spec.md).
+The distributor's capacities and recharge rates belong to [feature
+005](../005-power-and-heat/spec.md), as does the heat that firing produces; what this feature
+reports is how long that capacitor holds a build's fire up, which the package computes whole. The
+hull hardness a weapon's piercing is measured against belongs to [feature
+006](../006-defence-profile/spec.md).
 
 Where the build's fire physically converges belongs here, as a property of what the build fires.
 Where a mount is drawn on a hull's schematic belongs to [feature 010](../010-hull-anatomy/spec.md),
@@ -55,8 +55,8 @@ distinguished and ammunition-limited sustained output stated.
 
 1. **Given** a build with weapons fitted, **When** the Commander views its offence, **Then**
    whole-build damage per second is shown split by damage type, with burst and sustained figures
-   distinguished and each labelled, and with anti-xeno damage shown under its own label as an overlay
-   rather than as a slice of the conventional total.
+   distinguished and each labelled, and with anti-xeno damage shown under its own label as an
+   overlay rather than as a slice of the conventional total.
 2. **Given** the offence profile, **When** the Commander opens a single weapon, **Then** that
    weapon's damage per shot, rate of fire, sustained rate of fire, damage by type, energy per
    second, heat per second, power draw and ammunition capacity are shown.
@@ -79,10 +79,10 @@ distinguished and ammunition-limited sustained output stated.
 A Commander choosing between a rail gun fit and a multi-cannon fit wants to know what each one does
 at 500 m and at 2 km, because the answer reverses between the two.
 
-**Why this priority**: Peak damage per second is quoted at point-blank range, which is not where most
-engagements happen. A loadout that wins on paper and loses at engagement range is the specific
-mistake this figure prevents. It is P2 because story 1's figures decide most builds; this one decides
-the close ones.
+**Why this priority**: Peak damage per second is quoted at point-blank range, which is not where
+most engagements happen. A loadout that wins on paper and loses at engagement range is the specific
+mistake this figure prevents. It is P2 because story 1's figures decide most builds; this one
+decides the close ones.
 
 **Independent Test**: Load a build with weapons of differing falloff characteristics and confirm the
 build's output is charted at 500 m, 1,000 m, 1,500 m, 2,000 m and 3,000 m, each figure stating the
@@ -135,8 +135,8 @@ all.
    figure recomputes at that allocation and states the allocation it assumes, together with the
    recharge rate the allocation produces.
 4. **Given** a build with no distributor fitted, or one the power plant has shed, **When** the
-   Commander views endurance, **Then** it reads as no sustained fire at all, with that reason, rather
-   than as an unavailable figure.
+   Commander views endurance, **Then** it reads as no sustained fire at all, with that reason,
+   rather than as an unavailable figure.
 
 ---
 
@@ -146,8 +146,8 @@ A Commander with mounts spread across a large hull wants to know how far apart t
 the range they engage at, because a wide spread is what makes a fixed loadout miss.
 
 **Why this priority**: Convergence is the one offence property that is a consequence of where the
-mounts sit rather than what they fire, and it is invisible in every list-based view. It is P2 because
-it refines a loadout rather than deciding it.
+mounts sit rather than what they fire, and it is invisible in every list-based view. It is P2
+because it refines a loadout rather than deciding it.
 
 **Independent Test**: Load a build with hardpoints on opposite extremes of the hull and confirm the
 spread is reported as an angle at a chosen target range, alongside a plot of where each mount's fire
@@ -156,18 +156,19 @@ assumes.
 
 **Acceptance Scenarios**:
 
-1. **Given** a build with weapons fitted, **When** the Commander views convergence at a chosen target
-   range, **Then** how wide the fire spreads at that range is reported as an angle, together with the
-   mount that sits furthest from the centre line, and every figure states the range it assumes.
-2. **Given** the convergence figures, **When** the Commander increases the target range, **Then** the
-   angular figures tighten and continue to state the range they assume, while the separation in
+1. **Given** a build with weapons fitted, **When** the Commander views convergence at a chosen
+   target range, **Then** how wide the fire spreads at that range is reported as an angle, together
+   with the mount that sits furthest from the centre line, and every figure states the range it
+   assumes.
+2. **Given** the convergence figures, **When** the Commander increases the target range, **Then**
+   the angular figures tighten and continue to state the range they assume, while the separation in
    metres between the mounts is unchanged and is presented as the fixed geometry it is.
 3. **Given** the convergence figures, **When** the Commander reads them, **Then** a plot shows where
    each included mount's fire arrives relative to the centre of the Commander's view at that range,
    and it recomputes with the target range.
 4. **Given** a build with gimballed, turreted and fixed mounts, **When** the Commander views
-   convergence, **Then** every one of them contributes its offset to the spread and to the plot, each
-   point shows the mount type it belongs to, and the figures state that they assume fixed,
+   convergence, **Then** every one of them contributes its offset to the spread and to the plot,
+   each point shows the mount type it belongs to, and the figures state that they assume fixed,
    ship-forward fire.
 5. **Given** an empty hardpoint or a disabled weapon, **When** convergence is computed, **Then** it
    contributes nothing and is identified as excluded rather than silently omitted.
@@ -195,8 +196,8 @@ assumes.
 - Mixed gimballed, fixed and turreted mounts: each weapon's own figures stand, and the whole-build
   total does not assume every weapon is on target at once — the assumption it does make is stated.
 - A build whose weapons are all gimballed or turreted: convergence still reports a spread, computed
-  as though every mount fired straight ahead, and says so — it is the worst case before any tracking,
-  not a claim that these weapons miss by that much.
+  as though every mount fired straight ahead, and says so — it is the worst case before any
+  tracking, not a claim that these weapons miss by that much.
 - A weapon whose ammunition is exhausted in the sustained calculation: the sustained figure states
   the magazine and reload behind it rather than presenting an average with no explanation.
 - The per-weapon table on a phone: it stays legible and scrolls within its own container rather than
@@ -221,8 +222,8 @@ assumes.
   its own label and identified as an overlay.
 - **FR-002**: The application MUST display each damage type's share of the whole-build total, so the
   balance of a mixed loadout is readable without arithmetic. Shares MUST be taken over the
-  partitioning types only. Anti-xeno damage overlays conventional damage rather than partitioning it,
-  so it MUST NOT be given a share of a total it is not part of; it is shown as its own figure
+  partitioning types only. Anti-xeno damage overlays conventional damage rather than partitioning
+  it, so it MUST NOT be given a share of a total it is not part of; it is shown as its own figure
   alongside the split.
 - **FR-003**: The application MUST display, per weapon, damage per shot, rate of fire, sustained
   rate of fire, damage by type, energy per second, heat per second, power draw and ammunition
@@ -230,11 +231,11 @@ assumes.
 - **FR-004**: The application MUST state, for each weapon, whether sustained output is limited by
   ammunition and MUST identify weapons with unlimited ammunition as such.
 - **FR-005**: The application MUST display each weapon's maximum range, falloff range and armour
-  piercing where the catalogue carries them. Armour piercing MUST be identified as the rating that is
-  measured against a target's hull hardness, and MUST be shown as the weapon's own rating rather than
-  as a comparison. The hardness of the ship being built is reported by
-  [feature 006](../006-defence-profile/spec.md)'s FR-013; this area MUST NOT restate it beside every
-  weapon, because a Commander reading their build's offence is not reading it against their own hull.
+  piercing where the catalogue carries them. Armour piercing MUST be identified as the rating that
+  is measured against a target's hull hardness, and MUST be shown as the weapon's own rating rather
+  than as a comparison. The hardness of the ship being built is reported by [feature
+  006](../006-defence-profile/spec.md)'s FR-013; this area MUST NOT restate it beside every weapon,
+  because a Commander reading their build's offence is not reading it against their own hull.
 - **FR-006**: Disabled weapons MUST be excluded from whole-build offence totals and shown as
   disabled rather than omitted from the per-weapon list.
 - **FR-007**: A build carrying no weapons MUST have its offence figures reported as absent rather
@@ -262,9 +263,9 @@ assumes.
   weapons capacitor is exhausted, together with the capacitor draw and the recharge rate that
   produce it.
 - **FR-012a**: Endurance MUST be reported under the deployed power state, as the package computes
-  it: a weapon or distributor the plant sheds contributes nothing. Where a fitted module's power draw
-  is unresolved, the package assumes it powered, and the endurance figure MUST say so rather than
-  presenting the result as settled.
+  it: a weapon or distributor the plant sheds contributes nothing. Where a fitted module's power
+  draw is unresolved, the package assumes it powered, and the endurance figure MUST say so rather
+  than presenting the result as settled.
 - **FR-013**: A build whose weapons draw no more than the weapons capacitor recharges MUST be
   identified as able to fire indefinitely, rather than shown with a duration.
 - **FR-014**: The endurance figure MUST be the one `@elite-dangerous-almanac/core` computes for the
@@ -282,13 +283,20 @@ assumes.
 
 - **FR-016a**: The application MUST display, for the weapons of the active build at a chosen target
   range, how widely the build's fire spreads at that range — as an angle — and which mount sits
-  furthest from the centre line, each figure stating the range it assumes. The package projects each
-  mount onto the target plane as a dimensionless angular tangent rather than as an angle, so
-  expressing that tangent as an angle is a unit conversion of the package's own figure, permitted by
-  feature 003's FR-001a on the same terms FR-005 there sets for resistances. The spread and the
-  furthest mount are the extremes of the set of points the package returned, selected by that same
-  allowance. No other geometry may be derived: the offsets, the projection and every point are the
-  package's.
+  furthest from the centre line, each figure stating the range it assumes. Every arrival point MUST
+  be the one `projectGunsight` produces; the application MUST NOT project a mount itself. That
+  accessor reports each point as a pair of dimensionless angular tangents rather than as an angle,
+  so expressing one of those tangents as an angle is a unit conversion of the package's own figure,
+  permitted by feature 003's FR-001a on the terms its FR-005 sets for resistances. [NEEDS
+  CLARIFICATION: the spread and the furthest mount need more than that. Both are plane geometry over
+  the pairs the package returns — a separation between two points, and a distance from the centre —
+  so each yields a number the package did not itself compute, which constitution principle II's
+  "never a different value from the one it computed" may not permit even though no game rule is
+  involved. The package publishes these points expressly "suitable for a renderer", with
+  instructions for placing them on a display, which reads as sanctioning exactly this. Is that
+  geometry permitted presentation, or must the two figures be asked of the package?] Until it is
+  answered, the plot of FR-016f — which places the package's points and derives nothing — is the
+  part of user story 4 that is unambiguously specified.
 - **FR-016b**: The Commander MUST be able to vary the target range continuously rather than choosing
   from a fixed set of stops, and every angular convergence figure and the plot MUST recompute as it
   changes. Convergence's range is its own; it is independent of FR-008's fixed chart ranges. The
@@ -306,8 +314,8 @@ assumes.
   from convergence and identified as excluded rather than silently omitted.
 - **FR-016e**: Every convergence figure, and every point on the plot, MUST come from the mount
   geometry `@elite-dangerous-almanac/core` publishes in real units and from the projection it
-  performs onto a target range. The application MUST NOT measure a schematic, assume a scale, convert
-  drawing units into metres, or otherwise derive a physical dimension from the artwork
+  performs onto a target range. The application MUST NOT measure a schematic, assume a scale,
+  convert drawing units into metres, or otherwise derive a physical dimension from the artwork
   [feature 010](../010-hull-anatomy/spec.md) draws. Where the catalogue does not cover the build's
   hull, every convergence figure and the plot MUST be reported as unavailable with that reason.
 - **FR-016f**: The application MUST plot where each included mount's fire arrives at the chosen
@@ -315,20 +323,20 @@ assumes.
   range. The plot MUST NOT be the only route to the convergence figures: the same information MUST
   be readable as stated figures for a Commander who cannot use it.
 - **FR-016g**: Each mount offset MUST be bound to the slot it belongs to through the package's own
-  slot enumeration, in the order that enumeration returns, which is the order the offset catalogue is
-  published in. The application MUST NOT read the number out of a journal slot key and use it as an
-  index into that catalogue: the package states that some hulls skip or reorder those numbers, so the
-  number in a slot key is not the array index. This is constitution principle II's prohibition on
-  positional identities applied to the one catalogue that is published positionally — the binding is
-  the package's own ordering, never a mapping this application maintains. FR-016c's mount type and
-  FR-016d's exclusion of empty and disabled hardpoints both depend on this binding being right.
+  slot enumeration, in the order that enumeration returns, which is the order the offset catalogue
+  is published in. The application MUST NOT read the number out of a journal slot key and use it as
+  an index into that catalogue: the package states that some hulls skip or reorder those numbers, so
+  the number in a slot key is not the array index. This is constitution principle II's prohibition
+  on positional identities applied to the one catalogue that is published positionally — the binding
+  is the package's own ordering, never a mapping this application maintains. FR-016c's mount type
+  and FR-016d's exclusion of empty and disabled hardpoints both depend on this binding being right.
 
 ### Device Requirements
 
-- **FR-017**: The per-weapon table, the damage-type split, the output-by-range chart, the convergence
-  range control and the convergence plot MUST be fully usable on desktop, tablet and mobile, in both
-  portrait and landscape, scrolling within their own container rather than widening the page. The
-  range control MUST be operable by touch and by keyboard, not by pointer alone.
+- **FR-017**: The per-weapon table, the damage-type split, the output-by-range chart, the
+  convergence range control and the convergence plot MUST be fully usable on desktop, tablet and
+  mobile, in both portrait and landscape, scrolling within their own container rather than widening
+  the page. The range control MUST be operable by touch and by keyboard, not by pointer alone.
 - **FR-018**: A weapon in the offence profile MUST lead to the hardpoint it is fitted in, by touch
   as well as by pointer and keyboard.
 
@@ -336,8 +344,9 @@ assumes.
 
 - **FR-019**: Whole-build and per-weapon presentation MUST be unit-tested against known builds,
   including mixed damage types, anti-xeno and unclassified components, continuous-fire weapons,
-  disabled weapons, a build with no weapons, and the unresolved-hull case. The damage-share test MUST
-  assert that the partitioning types sum to the whole and that anti-xeno is excluded from that sum.
+  disabled weapons, a build with no weapons, and the unresolved-hull case. The damage-share test
+  MUST assert that the partitioning types sum to the whole and that anti-xeno is excluded from that
+  sum.
 - **FR-020**: Output by range MUST be unit-tested across weapons with differing falloff profiles,
   including the beyond-maximum-range and missing-range-data cases, asserting that the five charted
   ranges are the ones FR-008 fixes and that every attenuation applied is one the package reported.
@@ -381,11 +390,11 @@ limits, range and falloff data, and armour piercing.
 `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })` returns the whole endurance figure — the
 actual recharge rate at the allocation, the sustained draw, the net drain and the seconds to drain,
 at any allocation in `[0, 4]`, applying the package's own pip curve and the deployed power budget. A
-second accessor, `distributorMetrics`, reports all three capacitors' capacity and pip-scaled recharge
-and is what [feature 005](../005-power-and-heat/spec.md) presents; the two agree on the WEP recharge
-rate at the same allocation. Endurance must still be read whole from `weaponsCapacitorMetrics` rather
-than reassembled from the distributor accessor's capacity and rate, which is the composition FR-014
-forbids.
+second accessor, `distributorMetrics`, reports all three capacitors' capacity and pip-scaled
+recharge and is what [feature 005](../005-power-and-heat/spec.md) presents; the two agree on the WEP
+recharge rate at the same allocation. Endurance must still be read whole from
+`weaponsCapacitorMetrics` rather than reassembled from the distributor accessor's capacity and rate,
+which is the composition FR-014 forbids.
 
 Mount geometry is published in real units, independent of the schematics feature 010 draws:
 `SHIP_GUNSIGHTS` gives each hardpoint's horizontal and vertical offset from the cockpit in metres,
@@ -393,11 +402,15 @@ observed in-game rather than measured off artwork, covering all 48 hulls and 234
 `projectGunsight(gunsight, targetRangeMetres)` projects those offsets onto a target plane. FR-016e's
 prohibition is load-bearing: the offsets come from that catalogue, never from the drawings.
 
-Two properties of that catalogue shape the requirements. It returns **dimensionless angular
-tangents** rather than angles, which is why FR-016a states the conversion rather than assuming one.
-And it is published **positionally** — one offset per hardpoint, in the same order as the package's
-own slot enumeration, with the package warning that the number in a journal slot key is not the array
-index. FR-016g requires the binding to go through that enumeration.
+Two properties shape the requirements. `projectGunsight` reports each arrival point as a pair of
+**dimensionless angular tangents** rather than as an angle — the catalogue itself holds metre
+offsets — which is why FR-016a states the conversion rather than assuming one, and why the spread
+and the furthest mount carry a [NEEDS CLARIFICATION] there. And the catalogue is published
+**positionally**: one offset per hardpoint, in the same order as the package's own slot enumeration,
+with the package warning that the number in a journal slot key is not the array index. Two hulls
+make that concrete — the Type-8, whose small hardpoints skip 3, and the Caspian Explorer, whose
+medium hardpoints are ordered 6, 5, 1, 2, 3, 4 — so FR-016g requires the binding to go through that
+enumeration and FR-021b tests it on such a hull.
 
 **Composed under feature 003's FR-001a**, naming what is combined and under which permitted
 operation:
@@ -410,8 +423,9 @@ operation:
    no game rule. FR-009 bounds what that composition may do.
 3. **The convergence angle (FR-016a)** — converts a projected tangent the package returns into the
    equivalent angle, the unit conversion FR-001a permits.
-4. **The spread and the furthest mount (FR-016a)** — selects the extremes of the set of points the
-   package returned, by the values it reported for them. No point is computed here.
+
+The spread and the furthest mount are deliberately absent from that list: whether the plane geometry
+they need is permitted presentation is the open question FR-016a records.
 
 Endurance (FR-012) is **not** composed: the package computes it whole.
 
@@ -419,8 +433,8 @@ Endurance (FR-012) is **not** composed: the package computes it whole.
 
 ### Measurable Outcomes
 
-- **SC-001**: Every offence figure matches the value `@elite-dangerous-almanac/core` computes for the
-  same build — zero divergence across the reference corpus.
+- **SC-001**: Every offence figure matches the value `@elite-dangerous-almanac/core` computes for
+  the same build — zero divergence across the reference corpus.
 - **SC-002**: For a build with weapons of more than one damage type, the share of output contributed
   by each partitioning damage type is readable directly, without the Commander performing any
   arithmetic, and those shares sum to the whole — anti-xeno never appears among them.
@@ -440,9 +454,9 @@ Endurance (FR-012) is **not** composed: the package computes it whole.
 ## Assumptions
 
 - Damage-type coverage is whatever the package reports. Unclassified damage is a partitioning
-  component the package reports only when non-zero; anti-xeno overlays conventional damage instead of
-  partitioning it, which is why FR-002 keeps it out of the shares. Neither is folded into an existing
-  type.
+  component the package reports only when non-zero; anti-xeno overlays conventional damage instead
+  of partitioning it, which is why FR-002 keeps it out of the shares. Neither is folded into an
+  existing type.
 - Armour piercing is the weapon's own rating, shown here as the catalogue carries it. Hardness is a
   property of a target, and the only target this application knows about is the ship being built,
   whose hardness feature 006 reports. Pairing every weapon with the build's own hardness would
@@ -468,12 +482,12 @@ Endurance (FR-012) is **not** composed: the package computes it whole.
   characterised beyond it, and a weapon that reaches none of the five is charted as contributing
   nothing at all of them under FR-010 rather than being dropped. Its own maximum range and falloff
   range are still stated per weapon under FR-005.
-- Convergence's range control spans the ranges the build's own weapons reach, since a spread at a range no
-  weapon covers describes nothing. Where that span begins and ends, and what it defaults to, is
-  settled at plan time against the design system.
-- Ammunition and reload behaviour are the package's; the application does not model a magazine
-  cycle of its own.
+- Convergence's range control spans the ranges the build's own weapons reach, since a spread at a
+  range no weapon covers describes nothing. Where that span begins and ends, and what it defaults
+  to, is settled at plan time against the design system.
+- Ammunition and reload behaviour are the package's; the application does not model a magazine cycle
+  of its own.
 - Which figures are prominent, and how the per-weapon table, the range chart, the convergence plot
-  and its range control are drawn and placed, are decided at plan time against the design system, per
-  constitution principle VII. What this specification fixes is that those three exist, what they
+  and its range control are drawn and placed, are decided at plan time against the design system,
+  per constitution principle VII. What this specification fixes is that those three exist, what they
   convey, and that none of them is the only route to its figures.

@@ -43,8 +43,8 @@
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
 - **Nothing here is blocked.** Three figures are composed under feature 003's FR-001a — mass by
-  source, the loaded mass the thruster curve is evaluated at, and how the build's mass stands against
-  a curve threshold — and the Upstream dependencies section names all three.
+  source, the loaded mass the thruster curve is evaluated at, and how the build's mass stands
+  against a curve threshold — and the Upstream dependencies section names all three.
 - **Two masses, deliberately kept apart** (FR-014a). The breakdown's total counts the reserve tank
   and no cargo; the mass the thruster curve is evaluated at excludes the reserve and counts a full
   hold. Neither is reliably the larger, so the relation must be stated wherever both appear.

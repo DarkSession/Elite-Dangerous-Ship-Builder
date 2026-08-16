@@ -98,11 +98,11 @@ interaction, and that unaffected statistics do not flicker or change.
    describe the build as it now stands, with no figure carrying a comparison against an earlier
    state, a saved version or any other build.
 3. **Given** modules are disabled or assigned to priority groups, **When** statistics are computed,
-   **Then** the contributions of disabled modules are excluded from every figure the package computes
-   without them, and the module remains visible as disabled rather than omitted. Where the package
-   reports a figure that counts a module the build cannot power regardless — a shield generator in an
-   unpowered priority group, whose strength the package still reports in full — that state is shown
-   beside the figure under FR-001b rather than subtracted from it.
+   **Then** the contributions of disabled modules are excluded from every figure the package
+   computes without them, and the module remains visible as disabled rather than omitted. Where the
+   package reports a figure that counts a module the build cannot power regardless — a shield
+   generator in an unpowered priority group, whose strength the package still reports in full — that
+   state is shown beside the figure under FR-001b rather than subtracted from it.
 
 ---
 
@@ -187,13 +187,14 @@ not move, and none of the three is written into the build when it is saved, shar
 - The full statistics set on a phone: every breakdown stays reachable and legible at increased text
   sizes, no figure is truncated to the point of ambiguity, and no per-damage-type table forces the
   page to scroll horizontally.
-- A diagnostic the package reports: its English sentence is for logs, and the application composes and
-  translates its own wording from the diagnostic's code and parameters. It never displays the
-  package's sentence as though it were translated, and never parses that sentence to recover the slot
-  or module it names — those are separate fields.
-- A diagnostic whose code the application has no wording for: the code and the slot it names are shown
-  rather than nothing, so an unhandled diagnostic is still actionable, and the missing wording is a
-  defect in this application rather than in the package.
+- A diagnostic the package reports: the application composes and translates its own wording from the
+  diagnostic's code and the values beside it. It never displays the package's English sentence as
+  though it were translated, and never parses that sentence to recover a value the diagnostic
+  already reports — a validation issue carries its slot and module symbol as fields of their own,
+  and an edit error carries them among its parameters.
+- A diagnostic whose code the application has no wording for: the code and the slot it names are
+  shown rather than nothing, so an unhandled diagnostic is still actionable, and the missing wording
+  is a defect in this application rather than in the package.
 
 ## Requirements _(mandatory)_
 
@@ -207,62 +208,67 @@ not move, and none of the three is written into the build when it is saved, shar
   create a build in order to have something to report on. A Commander arrives at an active build
   through [feature 001](../001-ship-selection-and-loading/spec.md) — choosing a hull from the
   catalogue (its FR-011), reopening a saved or working build (its FR-023, FR-023f), or opening a
-  build link (its FR-027, FR-027a) — or by importing one under
-  [feature 004](../004-slef-export/spec.md)'s FR-006. No area of this family offers a route of its
-  own. Every area specification inherits this requirement without restating it.
+  build link (its FR-027, FR-027a) — or by importing one under [feature
+  004](../004-slef-export/spec.md)'s FR-006. No area of this family offers a route of its own. Every
+  area specification inherits this requirement without restating it.
 
 #### Statistics in general
 
-- **FR-001**: Every statistic MUST originate in `@elite-dangerous-almanac/core`. The application MUST
-  NOT implement a game rule — a curve, a formula, a scaling law, a resistance or falloff model, or an
-  iteration the package already performs — and MUST NOT clamp, round or otherwise adjust a figure the
-  package computed. A figure that would require a game rule this application does not have waits on
-  the upstream release rather than being approximated here.
+- **FR-001**: Every statistic MUST originate in `@elite-dangerous-almanac/core`. The application
+  MUST NOT implement a game rule — a curve, a formula, a scaling law, a resistance or falloff model,
+  or an iteration the package already performs — and MUST NOT clamp, round or otherwise adjust a
+  figure the package computed. A figure that would require a game rule this application does not
+  have waits on the upstream release rather than being approximated here.
 - **FR-001a**: The application MAY combine figures the package computes, where doing so restates no
   game rule. The permitted operations are: adding contributions it reports; comparing two of its
-  figures, including expressing that comparison as their difference; counting entries in a collection
-  it returns; ordering a collection it returns by one of its own reported values, and selecting an
-  entry by that ordering (a largest, a smallest); converting a figure it reports into an equivalent
-  unit, as FR-005 requires of resistances; applying a factor it reports to a figure it reports; and
-  dividing one of its figures by another. What remains forbidden under FR-001 is supplying any term
-  the package did not report, and reproducing an algorithm it already performs — a curve, a formula,
-  a scaling law, or an iteration. Every input MUST remain the package's own, and where the package
-  reports the combined figure itself, that figure MUST be used rather than reassembled from its
-  parts. An area specification that relies on this allowance MUST say so in its "Upstream
-  dependencies" section, naming what it composes and from which package figures.
-- **FR-001b**: Presenting a build's own state alongside a figure — that a module is disabled, sits in
-  a priority group the plant cannot power, or is unresolved — is not a composition and needs no
+  figures, including expressing that comparison as their difference; counting entries in a
+  collection it returns; converting a figure it reports into an equivalent unit, as FR-005 requires
+  of resistances; applying a factor it reports to a figure it reports; and dividing one of its
+  figures by another. What remains forbidden under FR-001 is supplying any term the package did not
+  report, and reproducing an algorithm it already performs — a curve, a formula, a scaling law, or
+  an iteration. Every input MUST remain the package's own, and where the package reports the
+  combined figure itself, that figure MUST be used rather than reassembled from its parts. An area
+  specification that relies on this allowance MUST say so in its "Upstream dependencies" section,
+  naming what it composes and from which package figures.
+- **FR-001b**: Presenting a build's own state alongside a figure — that a module is disabled, sits
+  in a priority group the plant cannot power, or is unresolved — is not a composition and needs no
   declaration under FR-001a. The build's state and the package's figures are both read as reported;
   no new value is produced. This is the mechanism by which a figure the package computes without
   regard to power state is shown honestly rather than overridden.
+- **FR-001c**: Ordering a collection the package returns by a value it reports for each entry, and
+  selecting an entry by that ordering, is **presentation** rather than composition: constitution
+  principle II names ordering among the sanctioned local operations, and no new value is produced —
+  the figures shown are the ones the package reported, arranged. It needs no declaration under
+  FR-001a. This covers the ranked by-module lists feature 005 and feature 008 present and the
+  largest-contributor questions their success criteria ask.
 - **FR-002**: Every figure MUST carry its unit and, where applicable, the load, pip and
   hardpoint-state assumptions it was computed under.
 - **FR-003**: Every statistic MUST recompute automatically on every build change and on every change
   to a viewing condition, and the displayed set MUST always be internally consistent for one state.
 - **FR-004**: A figure MUST report the active build as it now stands, and MUST NOT be presented
-  against another build or against an earlier state of this one — not the state before the last edit,
-  not the version last saved, not a pinned baseline. Comparison in that sense is not a capability of
-  this application: a Commander judging a change makes it and reads the result. This does not touch
-  the comparisons FR-001a permits between two figures of the same build, such as a deficit against a
-  capacity or a mass against a curve threshold, nor an area presenting several figures of one build
-  side by side, such as feature 008's three load states.
+  against another build or against an earlier state of this one — not the state before the last
+  edit, not the version last saved, not a pinned baseline. Comparison in that sense is not a
+  capability of this application: a Commander judging a change makes it and reads the result. This
+  does not touch the comparisons FR-001a permits between two figures of the same build, such as a
+  deficit against a capacity or a mass against a curve threshold, nor an area presenting several
+  figures of one build side by side, such as feature 008's three load states.
 - **FR-005**: Resistances MUST be presented as percentages, converted from the package's fractional
   values.
-- **FR-006**: Every figure the package reports as unavailable, incomplete or absent MUST be
-  surfaced as such together with the reason the package gives for it, and MUST NOT be shown as zero or
-  an estimate.
+- **FR-006**: Every figure the package reports as unavailable, incomplete or absent MUST be surfaced
+  as such together with the reason the package gives for it, and MUST NOT be shown as zero or an
+  estimate.
 - **FR-007**: Build validity and completeness problems MUST be listed in plain language, naming the
   area and the slot each belongs to, and MUST NOT suppress the statistics that can still be
   computed.
 - **FR-007a**: The wording of a package diagnostic is this application's to write and to translate,
-  composed from the diagnostic's stable `code` and the values it carries alongside it — its `params`,
-  the slot and module symbol it names, and, on an edit error, its `constraint` — and MUST go through
-  the localisation layer like any other string the application owns. The package's own English
-  sentence MUST NOT be displayed, and MUST NOT be parsed to recover a value the diagnostic already
-  reports as its own field. Game **text** is asked of the package under constitution principle VI,
-  while diagnostic **wording** is composed here from what the package reports. A diagnostic carrying
-  a code this application has no wording for MUST still show that code and the slot it names rather
-  than nothing.
+  composed from the diagnostic's stable `code` and the values it carries alongside it — its
+  `params`, the slot and module symbol it names, and, on an edit error, its `constraint` — and MUST
+  go through the localisation layer like any other string the application owns. The package's own
+  English sentence MUST NOT be displayed, and MUST NOT be parsed to recover a value the diagnostic
+  already reports as its own field. Game **text** is asked of the package under constitution
+  principle VI, while diagnostic **wording** is composed here from what the package reports. A
+  diagnostic carrying a code this application has no wording for MUST still show that code and the
+  slot it names rather than nothing.
 
 #### The headline set
 
@@ -288,8 +294,8 @@ not move, and none of the three is written into the build when it is saved, shar
   selects one, the unladen state applies.
 - **FR-012a**: Each load state MUST be labelled with the package's name for it and a fixed
   plain-language gloss of the load that name stands for: **maximum jump** — one jump's fuel, empty
-  hold; **unladen** — full tank, empty hold; **laden** — full tank, full hold. The gloss explains the
-  name and MUST NOT replace it, MUST be the same wherever that state appears, and MUST NOT be
+  hold; **unladen** — full tank, empty hold; **laden** — full tank, full hold. The gloss explains
+  the name and MUST NOT replace it, MUST be the same wherever that state appears, and MUST NOT be
   elaborated per area. "Unladen" and "laden" are ordinary English words a Commander will otherwise
   read as meaning empty and full of anything, and the state most easily mislabelled is the maximum
   single jump, which carries fuel for one jump rather than none.
@@ -301,12 +307,12 @@ not move, and none of the three is written into the build when it is saved, shar
   under which state-dependent figures are reported. Until they select one, the deployed state
   applies, that being the state a build's power draw has to fit, and it MUST be stated under FR-015
   like any other condition.
-- **FR-015**: The current load state, pip allocation and hardpoint state MUST be shown
-  alongside every statistic computed under them, and any statistic that depends on one MUST state
-  the value it assumes.
-- **FR-016**: Load state, pip allocation and hardpoint state are viewing conditions, not part
-  of the build. They MUST NOT alter any statistic that does not depend on them, MUST NOT be
-  persisted into the build, and MUST NOT be saved with it, carried in a build link or exported.
+- **FR-015**: The current load state, pip allocation and hardpoint state MUST be shown alongside
+  every statistic computed under them, and any statistic that depends on one MUST state the value it
+  assumes.
+- **FR-016**: Load state, pip allocation and hardpoint state are viewing conditions, not part of the
+  build. They MUST NOT alter any statistic that does not depend on them, MUST NOT be persisted into
+  the build, and MUST NOT be saved with it, carried in a build link or exported.
 - **FR-016a**: Viewing conditions MUST NOT be persisted anywhere else either — not as a browser
   preference, not per tab, and not against the working build feature 001's FR-023a autosaves. Every
   page load, every new tab and every restored working build MUST begin at the application's default
@@ -343,11 +349,11 @@ not move, and none of the three is written into the build when it is saved, shar
 
 - **FR-025**: The rules in this specification MUST be unit-tested against known builds: the
   fraction-to-percentage conversion, the unavailable, absent, incomplete and invalid cases, the
-  requirement that a viewing condition changes only the figures that depend on it, and that no figure
-  in any area carries a comparison against an earlier build state, a saved build or another build
-  (FR-004).
-- **FR-025a**: Diagnostic presentation MUST be unit-tested to assert that every displayed sentence is
-  composed from the diagnostic's code and parameters through the localisation layer, that no
+  requirement that a viewing condition changes only the figures that depend on it, and that no
+  figure in any area carries a comparison against an earlier build state, a saved build or another
+  build (FR-004).
+- **FR-025a**: Diagnostic presentation MUST be unit-tested to assert that every displayed sentence
+  is composed from the diagnostic's code and parameters through the localisation layer, that no
   package-owned English sentence reaches the screen, that none is parsed to recover a field the
   diagnostic already carries, and that a code with no wording still yields the code and its slot.
 - **FR-026**: The headline set MUST be unit-tested for completeness and for the unavailable case, so
@@ -382,14 +388,14 @@ FR-001a; each names what it composes in its own "Upstream dependencies" section.
 completeness and edit-error messages FR-006 and FR-007 surface are English-only:
 `LoadoutIssue.message` is a human-readable explanation and `LoadoutEditError.message` an English
 fallback the package documents as suitable for logs. What the package publishes alongside them is
-the machine-readable half, and it publishes it for exactly this purpose: a validation issue carries a
-stable `code`, its `severity`, the `slot` and module `symbol` involved, and `params` documented as
-"values interpolated into `message`, for consumers composing localized text"; an edit error carries a
-`code`, `params` and the `constraint` that produced it. So a consumer composes and translates the
+the machine-readable half, and it publishes it for exactly this purpose: a validation issue carries
+a stable `code`, its `severity`, the `slot` and module `symbol` involved, and `params` documented as
+"values interpolated into `message`, for consumers composing localized text"; an edit error carries
+a `code`, `params` and the `constraint` that produced it. So a consumer composes and translates the
 sentence itself. Constitution principle VI's "ask for a locale there" rule is satisfied for game
-**text** — hull, module, blueprint, effect and material names all come from the package — while
-diagnostic **wording** is this application's to write and to translate. This is what FR-007's "plain
-language" obligation rests on.
+**text** — module, blueprint, effect and material names all come from the package — while diagnostic
+**wording** is this application's to write and to translate. This is what FR-007's "plain language"
+obligation rests on.
 
 ## Success Criteria _(mandatory)_
 
@@ -401,9 +407,9 @@ language" obligation rests on.
 - **SC-002**: Statistics reflect a build change within 100 ms, with no manual refresh.
 - **SC-003**: Changing the pip allocation, the load state or the hardpoint state updates every
   dependent figure within 100 ms, and leaves every independent figure unchanged.
-- **SC-003a**: The 100 ms budgets in SC-002 and SC-003 are measured on the slowest supported target —
-  a throttled mobile processor profile, not the machine the suite happens to run on — and cover the
-  interval from the Commander's input to the updated figure being on screen. Desktop and tablet
+- **SC-003a**: The 100 ms budgets in SC-002 and SC-003 are measured on the slowest supported target
+  — a throttled mobile processor profile, not the machine the suite happens to run on — and cover
+  the interval from the Commander's input to the updated figure being on screen. Desktop and tablet
   inherit the budget rather than carrying one of their own. Emulating a mobile viewport at desktop
   processor speed does not verify it.
 - **SC-004**: For every figure the package reports as unavailable, absent or incomplete, the
@@ -435,22 +441,22 @@ language" obligation rests on.
 - The default pip allocation is the game's balanced two-two-two, the state a ship undocks in, so a
   Commander who allocates nothing reads the build in the condition they will actually fly it. The
   pip-dependent figures therefore differ by default from the zero-pip and four-pip figures a
-  comparable tool headlines. That is a deliberate choice of a flyable default over cross-tool parity;
-  FR-015 makes the allocation visible beside every figure computed under it. Shield strength itself
-  does not depend on the allocation, so it carries no such convention.
+  comparable tool headlines. That is a deliberate choice of a flyable default over cross-tool
+  parity; FR-015 makes the allocation visible beside every figure computed under it. Shield strength
+  itself does not depend on the allocation, so it carries no such convention.
 - The load assumption is a choice among the three states the package names, not a cargo or fuel
   quantity the Commander types in. A discrete selection cannot outrun the build's capacity, so no
   clamping rule is needed when a refit shrinks the hold or the tank; a build with no cargo capacity
   simply reads the same laden as unladen.
-- The default load assumption is unladen — a full fuel tank and an empty cargo hold, the state a ship
-  leaves a station in.
-- The default hardpoint state is deployed, that being the state a build's power draw has to fit, so a
-  Commander reads the demanding case first and asks for the retracted one.
+- The default load assumption is unladen — a full fuel tank and an empty cargo hold, the state a
+  ship leaves a station in.
+- The default hardpoint state is deployed, that being the state a build's power draw has to fit, so
+  a Commander reads the demanding case first and asks for the retracted one.
 - Constraining pip entry to the game's rule — six pips across three capacitors, at most four to any
   one, in half-pip steps — is input validation on a control, not a game calculation. If the package
   later exposes the rule, the application defers to it.
-- Comparison is out of scope in every form the application could offer it: two builds side by side, a
-  build against the version last saved, a build against the state before the last edit, and two
+- Comparison is out of scope in every form the application could offer it: two builds side by side,
+  a build against the version last saved, a build against the state before the last edit, and two
   _hulls_ before a build exists. This family reports the active build as it now stands (FR-004).
 - The stored problem count feature 001's FR-023j keeps against a saved build is not a statistic in
   this family and does not weaken FR-000. It is a fact recorded on the record when it was written,
@@ -458,6 +464,5 @@ language" obligation rests on.
 - An active build is a precondition of this family, not a state it manages. How a Commander arrives
   at one, how it is replaced and what confirmation that replacement needs belong to feature 001.
 - Responsiveness, touch support, accessibility and translatability are behavioural requirements in
-  scope now, and how they are met is fixed by
-  [feature 011](../011-interface-foundations/spec.md), which every feature inherits as it inherits
-  the constitution.
+  scope now, and how they are met is fixed by [feature 011](../011-interface-foundations/spec.md),
+  which every feature inherits as it inherits the constitution.

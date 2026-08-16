@@ -60,24 +60,27 @@ branches, functions and lines; the thresholds are configured in
 [`angular.json`](./angular.json) and a build below them fails.
 
 End-to-end tests live in [`e2e/`](./e2e) and run on
-[Playwright](https://playwright.dev/) as part of `pnpm run check`. Every feature
-is exercised at three viewports — desktop, tablet and mobile — in Chromium and
-in Firefox, configured as separate projects in
-[`playwright.config.ts`](./playwright.config.ts). The suite also runs an
-automated accessibility check over every screen.
+[Playwright](https://playwright.dev/) as part of `pnpm run check`.
+[`playwright.config.ts`](./playwright.config.ts) currently defines three
+projects — desktop, tablet and mobile — in Chromium.
+
+Spec 011 requires more than that, and the config has yet to catch up: every
+journey must run in **Firefox** as well as Chromium (FR-029), and an automated
+accessibility check must cover every screen (FR-032). Adding them is a change to
+the config, never a change to those requirements.
 
 Playwright needs browsers installed once:
 
 ```bash
-pnpm exec playwright install --with-deps chromium firefox
+pnpm exec playwright install --with-deps chromium
 ```
 
-The dev container does this for you. If your environment already ships a browser
-whose build does not match the one Playwright pins, point at it instead of
-editing the config or dropping an engine from the matrix:
+The dev container does this for you. If your environment already ships a
+Chromium whose build does not match the one Playwright pins, point at it instead
+of editing the config:
 
 ```bash
-E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e2e
+E2E_CHROMIUM_PATH=/path/to/chromium pnpm run e2e
 ```
 
 ## Specifications

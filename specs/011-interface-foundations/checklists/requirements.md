@@ -38,14 +38,14 @@
   figures. It names no screen and owns no capability; every accepted feature inherits it without
   restating it, and a more specific feature requirement may tighten it but never relax it.
 - **Naming `src/app/ui/` is deliberate, not an implementation leak.** Constitution principle VII
-  fixes one component library at that path, exactly as principle II fixes the data package, so FR-001
-  names it for the same reason every other spec names `@elite-dangerous-almanac/core`.
-- **The colour-literal rule is testable, which is why it is stated as one** (FR-003, FR-030). "Tokens
-  are the only source of visual values" is a review instruction; "a build-time check fails on a
-  colour literal outside the token layer, naming the file" is a requirement.
-- **The automated accessibility check is a floor, not a proof** (FR-032). It catches contrast, names,
-  roles and landmarks and cannot judge whether an interface makes sense; FR-033's keyboard and
-  screen-reader journeys are what assert the capability.
+  fixes one component library at that path, exactly as principle II fixes the data package, so
+  FR-001 names it for the same reason every other spec names `@elite-dangerous-almanac/core`.
+- **The colour-literal rule is testable, which is why it is stated as one** (FR-003, FR-030).
+  "Tokens are the only source of visual values" is a review instruction; "a build-time check fails
+  on a colour literal outside the token layer, naming the file" is a requirement.
+- **The automated accessibility check is a floor, not a proof** (FR-032). It catches contrast,
+  names, roles and landmarks and cannot judge whether an interface makes sense; FR-033's keyboard
+  and screen-reader journeys are what assert the capability.
 - **One dark theme is a product decision, not a technical limit.** What is prohibited is a
   requirement anywhere that depends on a Commander choosing between themes (FR-004).
 - **WebKit is a known gap in the engine matrix**, recorded in the Assumptions rather than left

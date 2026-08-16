@@ -45,7 +45,7 @@
   into an export.
 - **Partial engineering quality is not a modelled field.** Import normalises it to 100%, export
   reports 100%, and every other modelled field remains lossless.
-- **Pasting is the whole of the import surface** (FR-006). Both sources a Commander actually has —
-  a SLEF payload from a squadmate and a `Loadout` line from their own journal — arrive as text they
+- **Pasting is the whole of the import surface** (FR-006). Both sources a Commander actually has — a
+  SLEF payload from a squadmate and a `Loadout` line from their own journal — arrive as text they
   have already selected, so a file picker adds a second path to test and to keep accessible for no
   case the paste does not cover.

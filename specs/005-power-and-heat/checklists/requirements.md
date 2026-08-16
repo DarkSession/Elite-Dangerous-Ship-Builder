@@ -37,10 +37,10 @@
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
-- **Nothing here is blocked.** Three figures are composed under feature 003's FR-001a — the retracted
-  headroom and utilisation, the powered and unpowered shares of the draw, and the modules a shed
-  priority group takes offline — and the Upstream dependencies section names all three. No heat
-  figure is composed: every heat state shown is one the package reports whole.
+- **Nothing here is blocked.** Three figures are composed under feature 003's FR-001a — the
+  retracted headroom and utilisation, the powered and unpowered shares of the draw, and the modules
+  a shed priority group takes offline — and the Upstream dependencies section names all three. No
+  heat figure is composed: every heat state shown is one the package reports whole.
 - **The power figures follow the hardpoint viewing condition, one state at a time** (FR-001),
   defaulting to deployed because that is the state a build's draw has to fit. The heat scenarios are
   exempt (FR-012a): each carries its own hardpoint condition from the package.

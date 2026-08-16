@@ -2,7 +2,9 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 
-**Created**: 2026-08-12
+**Created**: 2026-08-13
+
+**Updated**: 2026-08-16
 
 **Feature**: [spec.md](../spec.md)
 
@@ -52,5 +54,5 @@
 - **Engineering quality is not application state.** The Commander selects a grade and it is always
   complete at 100%; imported partial rolls are normalised and never become a second control.
 - **Naming the data package is deliberate, not an implementation leak.** FR-001, FR-030 and FR-031
-  name `@elite-dangerous-almanac/core` because constitution principle II makes it the domain's source
-  of truth.
+  name `@elite-dangerous-almanac/core` because constitution principle II makes it the domain's
+  source of truth.

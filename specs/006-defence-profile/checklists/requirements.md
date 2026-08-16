@@ -38,21 +38,22 @@
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
 - **No figure here is blocked.** Every defence figure is the package's own, including the
-  power-aware cell bank pool FR-009 presents directly. Two things are composed under feature 003's
-  FR-001a, both of them counts of a collection the package returns: telling a build with no cell
-  banks from one whose banks are all unpowered (FR-008, FR-008a), and reporting an absent module
-  protection as absent rather than as the zero the package computes (FR-012).
+  power-aware cell bank pool FR-009 presents directly. One thing is composed under feature 003's
+  FR-001a — telling a build with no cell banks from one whose banks are all unpowered (FR-008,
+  FR-008a), which counts the collection the package returns. Reporting an absent module protection
+  (FR-012) is not: that figure is a scalar, so the absence is read from the build's own fitted
+  modules under FR-001b.
 - **Armour penetration is split with feature 007.** The hull's hardness is a property of the ship
-  being built and is reported here (FR-013); a weapon's own piercing rating is a property of what the
-  build fires and is reported there. Neither area repeats the other's figure.
+  being built and is reported here (FR-013); a weapon's own piercing rating is a property of what
+  the build fires and is reported there. Neither area repeats the other's figure.
 - **An unresolved hull withholds the whole area, not just the armour group.** The package computes
   zero armour and zero resistances around a hull it cannot name, and those zeroes are an artefact
   rather than a defenceless ship. The shield, recovery and cell-bank figures remain computable and
   are withheld with the rest, because a defence profile assembled around an unnamed hull would
   mislead more than it informs.
-- **Infinite is a verdict, not a missing figure.** Infinite effective hit points mean nothing of that
-  damage type gets through; an infinite recovery duration means the shield does not come back at the
-  allocation in force. Neither is presented as unavailable, a zero or a blank.
+- **Infinite is a verdict, not a missing figure.** Infinite effective hit points mean nothing of
+  that damage type gets through; an infinite recovery duration means the shield does not come back
+  at the allocation in force. Neither is presented as unavailable, a zero or a blank.
 - **The recovery threshold is deliberately not quoted.** The package reports both recovery durations
   and both regeneration rates but no threshold field, so naming the proportion would mean stating a
   game rule from documentation rather than data. FR-006 requires the two phases and their governing

@@ -35,13 +35,14 @@
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
 - **One marker is open, and it is the most consequential in the repository.** FR-005b records that
-  the ship artwork's redistribution terms may not sit with this application's own licence, and the
-  answer governs what this surface must state and possibly whether the artwork can ship at all. It is
-  a licensing question rather than a product one, so `/speckit-clarify` cannot settle it — it needs
-  an answer from outside. Features 001 and 010 point at it from their assumptions, because they are
-  the features that show the artwork.
-- **Reproducing a notice is a legal obligation, not a courtesy**, which is why FR-005a puts a failing
-  build behind a missing notice file rather than degrading gracefully.
+  Frontier's media-usage rules — under which the package attributes and redistributes the artwork —
+  may not sit with this application's own licence, and the answer governs what this surface must
+  state and possibly whether the artwork can ship at all. It is a licensing question rather than a
+  product one, so `/speckit-clarify` cannot settle it — it needs an answer from outside. Features
+  001 and 010 point at it from their assumptions, because they are the features that show the
+  artwork.
+- **Reproducing a notice is a legal obligation, not a courtesy**, which is why FR-005a puts a
+  failing build behind a missing notice file rather than degrading gracefully.
 - **Licence text is generated, never authored here** (FR-005a). A hand-maintained copy is the same
   class of mistake as a hand-maintained catalogue, except that this one misstates the terms of
   software a Commander is running.

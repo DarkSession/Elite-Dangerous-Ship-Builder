@@ -36,20 +36,22 @@
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
 - **This feature owns one thing: where on the ship a mount is.** Reading and changing a slot belongs
   to feature 002, which stays a complete route to every slot (FR-018); the figures a build produces
-  belong to feature 003's family; the catalogue illustration belongs to feature 001. Shot convergence
-  belongs to feature 007 and reads the package's own cockpit-offset catalogue, not anything drawn
-  here.
-- **The anatomy view requires an active build** (FR-001a), so seeing where a hull's mounts sit before
-  choosing it is out of scope; feature 001's catalogue carries each hull's mount layout instead.
+  belong to feature 003's family; the catalogue illustration belongs to feature 001. Shot
+  convergence belongs to feature 007 and reads the package's own cockpit-offset catalogue, not
+  anything drawn here.
+- **The anatomy view requires an active build** (FR-001a), so seeing where a hull's mounts sit
+  before choosing it is out of scope; feature 001's catalogue carries each hull's mount layout
+  instead.
 - **Only mounts are located.** Slot keys appear on hardpoints and utility mounts alone, so an
   Anaconda's plates locate 16 of its 39 slots. FR-012 requires the coverage to be stated and FR-013
   forbids inventing a position, because an internal has no single external position to draw.
 - **Seven of the nine schematic feature categories are deliberately not presented** (FR-003a). The
   cargo hatch is why the line falls there: it is a real slot, marked on all 48 bottom plates, and it
-  carries no slot key, so drawing it would put a shape on the plate that looks selectable and is not.
-- **The plate has one mode and three states** (FR-007a, FR-007b). It is not a canvas other areas draw
-  their figures onto; a plate whose meaning changed under a mode control would force a Commander to
-  check which mode was in force before trusting what they saw.
+  carries no slot key, so drawing it would put a shape on the plate that looks selectable and is
+  not.
+- **The plate has one mode and three states** (FR-007a, FR-007b). It is not a canvas other areas
+  draw their figures onto; a plate whose meaning changed under a mode control would force a
+  Commander to check which mode was in force before trusting what they saw.
 - **There is no magnification control** (FR-029). The plate is drawn at one fixed scale, set by the
   closest pair of mounts on the most crowded hull so that both carry a full touch target at their
   true positions, and it pans within its container where the viewport is smaller. FR-037 makes the
