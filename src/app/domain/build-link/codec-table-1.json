@@ -2,7 +2,7 @@
   "$generated": {
     "script": "scripts/generate-build-link-codec-tables.mjs",
     "tableVersion": 1,
-    "almanacVersion": "0.1.0-beta.7"
+    "almanacVersion": "0.1.0-beta.8"
   },
   "SHIPS": [
     "SideWinder",
@@ -1320,6 +1320,9 @@
     "CollectionLimpet_LightWeight",
     "CollectionLimpet_Reinforced",
     "CollectionLimpet_Shielded",
+    "Decorative_Green",
+    "Decorative_Red",
+    "Decorative_Yellow",
     "DetailedSurfaceScanner_LongRange",
     "Engine_Dirty",
     "Engine_Reinforced",
@@ -1429,6 +1432,9 @@
     [1, 2, 3, 4, 5],
     [1, 2, 3, 4, 5],
     [1, 2, 3, 4, 5],
+    [],
+    [],
+    [],
     [2, 3, 4, 5],
     [1, 2, 3, 4, 5],
     [1, 2, 3, 4, 5],
@@ -1610,7 +1616,6 @@
     "special_weapon_rateoffire",
     "special_weapon_toughened"
   ],
-  "DECORATIVE_MODIFICATIONS": ["Decorative_Green", "Decorative_Red", "Decorative_Yellow"],
   "SLOTS_BY_SHIP": {
     "SideWinder": [
       "SmallHardpoint1",
@@ -5393,45 +5398,45 @@
   },
   "BLUEPRINT_SETS": [
     [2, 3, 4, 5, 6],
-    [66, 67, 68],
-    [16, 17, 18],
-    [20, 21, 22],
-    [41, 42, 43],
-    [60, 61, 62, 63, 64, 65],
-    [83, 84, 85],
-    [],
-    [93, 94, 95, 96],
-    [91, 92],
-    [11],
-    [33, 34, 35],
-    [81],
-    [27, 28],
-    [74],
-    [23, 24],
-    [0],
-    [36, 37, 38, 39, 40],
-    [12, 13, 14],
-    [29, 30, 31],
     [69, 70, 71],
-    [32],
-    [72, 98, 99, 101, 102, 103, 104, 105, 106],
-    [8, 98, 99, 101, 102, 103, 104, 105, 106],
-    [7, 98, 101, 102, 103, 105, 106],
-    [98, 100, 101, 102, 103, 104, 105, 106],
-    [97, 98, 100, 101, 103, 104, 106],
-    [44, 98, 100, 101, 102, 104, 105, 106],
-    [98, 99, 101, 102, 103, 104, 105, 106],
-    [100, 101, 102, 105, 106],
-    [100, 101, 104, 106],
-    [101, 106],
-    [100],
-    [44],
-    [46, 48, 50, 51],
-    [48, 50, 51],
-    [47, 48, 50, 51],
-    [48, 49, 50, 51],
-    [48, 50, 51, 75, 76, 82],
-    [86, 87, 88, 89, 90]
+    [19, 20, 21],
+    [23, 24, 25],
+    [44, 45, 46],
+    [63, 64, 65, 66, 67, 68],
+    [86, 87, 88],
+    [],
+    [96, 97, 98, 99],
+    [94, 95],
+    [11],
+    [36, 37, 38],
+    [84],
+    [30, 31],
+    [77],
+    [26, 27],
+    [0],
+    [39, 40, 41, 42, 43],
+    [12, 13, 14],
+    [32, 33, 34],
+    [72, 73, 74],
+    [35],
+    [75, 101, 102, 104, 105, 106, 107, 108, 109],
+    [8, 101, 102, 104, 105, 106, 107, 108, 109],
+    [7, 101, 104, 105, 106, 108, 109],
+    [101, 103, 104, 105, 106, 107, 108, 109],
+    [100, 101, 103, 104, 106, 107, 109],
+    [47, 101, 103, 104, 105, 107, 108, 109],
+    [101, 102, 104, 105, 106, 107, 108, 109],
+    [103, 104, 105, 108, 109],
+    [103, 104, 107, 109],
+    [104, 109],
+    [103],
+    [47],
+    [49, 51, 53, 54],
+    [51, 53, 54],
+    [50, 51, 53, 54],
+    [51, 52, 53, 54],
+    [51, 53, 54, 78, 79, 85],
+    [89, 90, 91, 92, 93]
   ],
   "BLUEPRINT_SET_BY_MODULE": [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5555,77 +5560,77 @@
     },
     {
       "module": 1110,
-      "blueprint": 19,
+      "blueprint": 22,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1048,
-      "blueprint": 26,
+      "blueprint": 29,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1080,
-      "blueprint": 25,
+      "blueprint": 28,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1075,
-      "blueprint": 45,
+      "blueprint": 48,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1053,
-      "blueprint": 53,
+      "blueprint": 56,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1066,
-      "blueprint": 73,
+      "blueprint": 76,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1068,
-      "blueprint": 79,
+      "blueprint": 82,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1069,
-      "blueprint": 79,
+      "blueprint": 82,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 1068,
+      "blueprint": 83,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
+      "module": 1068,
+      "blueprint": 81,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
+      "module": 1069,
       "blueprint": 80,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 1068,
-      "blueprint": 78,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 1069,
-      "blueprint": 77,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
@@ -5646,202 +5651,195 @@
     },
     {
       "module": 631,
-      "blueprint": 15,
+      "blueprint": 18,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
       "module": 887,
-      "blueprint": 52,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 261,
-      "blueprint": 54,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 264,
       "blueprint": 55,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
-      "module": 266,
-      "blueprint": 56,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 269,
+      "module": 261,
       "blueprint": 57,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
-      "module": 274,
-      "blueprint": 59,
-      "grade": 1,
-      "acquisition": "mercenary",
-      "experimental": null
-    },
-    {
-      "module": 279,
+      "module": 264,
       "blueprint": 58,
       "grade": 1,
       "acquisition": "mercenary",
       "experimental": null
     },
     {
+      "module": 266,
+      "blueprint": 59,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
+      "module": 269,
+      "blueprint": 60,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
+      "module": 274,
+      "blueprint": 62,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
+      "module": 279,
+      "blueprint": 61,
+      "grade": 1,
+      "acquisition": "mercenary",
+      "experimental": null
+    },
+    {
       "module": 1140,
-      "blueprint": 102,
+      "blueprint": 105,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1110,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1048,
-      "blueprint": 97,
+      "blueprint": 100,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 53
     },
     {
       "module": 1080,
-      "blueprint": 97,
+      "blueprint": 100,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 53
     },
     {
       "module": 1115,
-      "blueprint": 102,
+      "blueprint": 105,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1053,
-      "blueprint": 104,
+      "blueprint": 107,
       "grade": 1,
       "acquisition": "communityGoal",
       "experimental": 37
     },
     {
       "module": 1066,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 19
     },
     {
       "module": 1084,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 75
     },
     {
       "module": 1068,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 1,
       "acquisition": "communityGoal",
       "experimental": 12
     },
     {
       "module": 1068,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 24
     },
     {
       "module": 1069,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": 24
     },
     {
       "module": 1165,
-      "blueprint": 48,
+      "blueprint": 51,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1182,
-      "blueprint": 82,
+      "blueprint": 85,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1180,
-      "blueprint": 82,
+      "blueprint": 85,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1167,
-      "blueprint": 48,
+      "blueprint": 51,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 264,
-      "blueprint": 63,
+      "blueprint": 66,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 261,
-      "blueprint": 63,
+      "blueprint": 66,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 269,
-      "blueprint": 63,
+      "blueprint": 66,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 266,
-      "blueprint": 63,
+      "blueprint": 66,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 279,
-      "blueprint": 63,
-      "grade": 5,
-      "acquisition": "communityGoal",
-      "experimental": null
-    },
-    {
-      "module": 114,
       "blueprint": 66,
       "grade": 5,
       "acquisition": "communityGoal",
@@ -5849,42 +5847,49 @@
     },
     {
       "module": 114,
-      "blueprint": 67,
+      "blueprint": 69,
+      "grade": 5,
+      "acquisition": "communityGoal",
+      "experimental": null
+    },
+    {
+      "module": 114,
+      "blueprint": 70,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 119,
-      "blueprint": 67,
+      "blueprint": 70,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 124,
-      "blueprint": 67,
+      "blueprint": 70,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 184,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 189,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 199,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
@@ -5905,156 +5910,177 @@
     },
     {
       "module": 536,
-      "blueprint": 93,
+      "blueprint": 96,
       "grade": 5,
       "acquisition": "communityGoal",
       "experimental": null
     },
     {
       "module": 1100,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1101,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1157,
-      "blueprint": 44,
+      "blueprint": 47,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": 4
     },
     {
       "module": 1156,
-      "blueprint": 44,
+      "blueprint": 47,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": 4
     },
     {
       "module": 1135,
-      "blueprint": 104,
+      "blueprint": 107,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1109,
-      "blueprint": 104,
+      "blueprint": 107,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1132,
-      "blueprint": 103,
+      "blueprint": 106,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1113,
-      "blueprint": 103,
+      "blueprint": 106,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1134,
-      "blueprint": 102,
+      "blueprint": 105,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1115,
-      "blueprint": 102,
+      "blueprint": 105,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 1075,
-      "blueprint": 102,
+      "blueprint": 105,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": 32
     },
     {
       "module": 1068,
-      "blueprint": 100,
+      "blueprint": 103,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": 77
     },
     {
       "module": 1166,
-      "blueprint": 47,
+      "blueprint": 50,
       "grade": 1,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 194,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 451,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 455,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 459,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 463,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 467,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 471,
-      "blueprint": 21,
+      "blueprint": 24,
       "grade": 5,
       "acquisition": "techBroker",
       "experimental": null
     },
     {
       "module": 631,
-      "blueprint": 81,
+      "blueprint": 84,
       "grade": 5,
       "acquisition": "techBroker",
+      "experimental": null
+    },
+    {
+      "module": 1106,
+      "blueprint": 15,
+      "grade": 5,
+      "acquisition": "eventReward",
+      "experimental": null
+    },
+    {
+      "module": 1106,
+      "blueprint": 16,
+      "grade": 5,
+      "acquisition": "eventReward",
+      "experimental": null
+    },
+    {
+      "module": 1106,
+      "blueprint": 17,
+      "grade": 5,
+      "acquisition": "eventReward",
       "experimental": null
     }
   ],
@@ -7165,7 +7191,7 @@
     [],
     [],
     [],
-    [],
+    [73, 74, 75],
     [],
     [],
     [57],

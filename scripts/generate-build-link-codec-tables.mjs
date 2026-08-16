@@ -1,5 +1,4 @@
 import { BLUEPRINTS } from '@elite-dangerous-almanac/core/ships/blueprints';
-import { DECORATIVE_MODIFICATIONS } from '@elite-dangerous-almanac/core/ships/decorative-modifications';
 import {
   getBlueprintsForModule,
   getExperimentalsForModule,
@@ -13,7 +12,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const TABLE_VERSION = 1;
-const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.7';
+const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.8';
 const outputPath = fileURLToPath(
   new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
 );
@@ -51,9 +50,16 @@ const poweredModules = modules.flatMap((symbol, index) => {
   const powerDraw = moduleStatsBySymbol.get(symbol.toLowerCase())?.powerDraw;
   return powerDraw !== undefined && powerDraw > 0 ? [index] : [];
 });
-const blueprints = Object.keys(BLUEPRINTS).sort();
+const blueprints = [
+  ...new Set([
+    ...Object.keys(BLUEPRINTS),
+    ...PRE_ENGINEERED_MODULES.map(({ blueprint }) => blueprint),
+  ]),
+].sort();
 const blueprintGrades = blueprints.map((fdname) => {
-  const grades = Object.keys(BLUEPRINTS[fdname].grades).map(Number);
+  const blueprint = BLUEPRINTS[fdname];
+  if (!blueprint) return [];
+  const grades = Object.keys(blueprint.grades).map(Number);
   if (
     grades.length === 0 ||
     grades.some(
@@ -66,7 +72,6 @@ const blueprintGrades = blueprints.map((fdname) => {
   return grades;
 });
 const experimentalEffects = Object.keys(EXPERIMENTAL_EFFECTS).sort();
-const decorativeModifications = Object.keys(DECORATIVE_MODIFICATIONS).sort();
 const moduleIndex = new Map(modules.map((symbol, index) => [symbol.toLowerCase(), index]));
 const blueprintIndex = new Map(blueprints.map((fdname, index) => [fdname.toLowerCase(), index]));
 const experimentalIndex = new Map(
@@ -122,6 +127,7 @@ const preEngineeredKeys = preEngineeredVariants.map(
 if (new Set(preEngineeredKeys).size !== preEngineeredKeys.length) {
   throw new Error('Pre-engineered codec identities are not unique.');
 }
+
 const internSets = (sets) => {
   const unique = [];
   const indexes = new Map();
@@ -197,7 +203,6 @@ const output = `${JSON.stringify(
     BLUEPRINTS: blueprints,
     BLUEPRINT_GRADES: blueprintGrades,
     EXPERIMENTAL_EFFECTS: experimentalEffects,
-    DECORATIVE_MODIFICATIONS: decorativeModifications,
     SLOTS_BY_SHIP: slotsByShip,
     FIXED_MODULES_BY_SHIP: fixedModulesByShip,
     DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,

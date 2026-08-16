@@ -92,11 +92,9 @@ partial byte with zero bits; the decoder rejects any non-zero or additional trai
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules     |
 |     9 | Power states        | Explicit values for power-drawing modules and fixed components                |
 |    10 | Engineering states  | Engineering presence, identities, grades, qualities, and experimental effects |
-|    11 | Decorative states   | Decorated slot set followed by one pinned decorative `fdname` index per slot  |
 
 The pristine marker describes the ordinary base: every module matches the pinned default and every
-fitted module has absent power and ordinary/pre-engineered state. Decorative state follows that
-base independently, so a decorated stock module keeps the pristine shortcut.
+fitted module has absent power and engineering state.
 
 ## Adaptive encodings
 
@@ -195,12 +193,9 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their quality is still encoded, while their modifier arrays are not.
 
-Decorative transformations are separate from ordinary engineering because they have no grade or
-quality. A slot index set selects the decorated fitted modules, followed by each pinned decorative
-`fdname`. The decoder applies each identity to only its selected slot through the Almanac's
-supported loadout operation; it never rebuilds unrelated modules through journal modifier arrays.
-The package's observed module list is not treated as an allowlist: any pinned transformation whose
-modifiers the Almanac can resolve completely for the fitted module is accepted.
+Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
+the same contextual pre-engineered identity as every other fixed article; the codec has no separate
+decorative state or application-specific modifier resolver.
 
 ### Scalar values
 
@@ -236,9 +231,7 @@ decoded character belongs to the compact alphabet, because that spelling is non-
 The decoder creates the minimal loadout event, then reconstructs ordinary engineering through
 `ShipLoadout.applyBlueprint()`. That Almanac operation regenerates the journal modifier array and
 all effective module statistics from blueprint, grade, quality, and experimental effect.
-Pre-engineered modifiers are likewise obtained from the Almanac's supported resolver.
-Decorative transformations are applied through the Almanac's slot-level operation, preserving the
-already reconstructed state of every unrelated module and emitting no invented grade or quality.
+Pre-engineered modifiers are likewise obtained from the Almanac's supported journal resolver.
 
 Calculated module values, hull value, aggregate module value, rebuy, and modifier arrays are never
 link state. Catalogue prices are recalculated by the Almanac when exporting SLEF. A captured
@@ -264,10 +257,10 @@ a separately tested compatibility property.
 ## Versioned tables and lazy loading
 
 Table 1 is the immutable `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.7`. It pins hulls, hull-specific outfittable slots,
+`@elite-dangerous-almanac/core@0.1.0-beta.8`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
-effects, decorative identities, contextual candidate sets, power-drawing module identities, and
-pre-engineered identities. Stable game identities originate from the package; indexes exist only
+effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
+Stable game identities originate from the package; indexes exist only
 inside the selected frozen table. Before the first release, table 1 can be regenerated with
 `pnpm run codec:tables`. After release, a catalogue change publishes the next numbered JSON table
 while retaining every earlier table unchanged; it does not duplicate or version the codec logic.
@@ -278,7 +271,7 @@ codec and current table. Decoding then imports only the matching JSON file along
 codec. Adding table snapshots to the loader therefore does not place every historical table in the
 initial bundle.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.7`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.8`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
 fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
 requires retaining a compatible reconstruction path for the affected table version.
@@ -292,9 +285,9 @@ The fixed corpus currently produces these encoded data lengths. Each value and l
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------: |
 | Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                            |          12 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                              |          10 |
-| Decorative flak Krait         | `b.7pRwpmneNRBGzeI`                                                                                                       |          17 |
+| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                                          |          14 |
 | Full engineered Anaconda*     | `b.K0sHIwAq0MqZOAnrkyWdTvF5Px1CSCHkHbs9/.VvX,@2y9UOqj8YkgFciGNH9_l3LnvS.rtR3x74NVG7`                                      |          82 |
-| Supplied engineered Corvette† | `b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOEoM53hK0W.fbWHUNVK2` |         119 |
+| Supplied engineered Corvette† | `b.2_aUH5tzdOvrUi_wg:aWzJPBybfanfmi65y186R_hSzPV92v@2kMAdB,R_eDa7DHxVXWGECEABkEAqx!1u2B0H2Je/_OpcktqOPaL.X-orhwB!-f94/oZ` |         119 |
 
 \* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
 fixed cargo hatch has an explicit power state.
@@ -306,8 +299,8 @@ ammo, engineer, localisation, and purchase fields were removed from the checked-
 
 The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
 Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
-decorative literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
-festive green flak launcher, including the package-resolved damage modifier. The sanitised real
+festive literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
+package-owned green flak-launcher variant. The sanitised real
 engineered Federal Corvette produces 119 characters of encoded data. It is a preservation fixture:
 one small hardpoint records a partial quality even though its modifier values match the completed
 grade-5 roll. The codec preserves that captured quality exactly; the fixture is not treated as an
@@ -491,9 +484,9 @@ reference and 119 for the sanitised real build, a second compression path is not
 trade-off. Base70 still needs interoperability testing in the actual sharing applications. Its
 radix conversion uses bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
 
-The adaptive combination-rank index-set mode leaves empty, stock, and decorative references at
-12, 10, and 17 characters, while reducing the engineered Anaconda from 84 to 82 and the supplied
-Corvette from 120 to 119. A fixed-width truncated-binary index evaluation saved at most one
+The adaptive combination-rank index-set mode leaves empty and stock references at 12 and 10
+characters, while reducing the engineered Anaconda from 84 to 82 and the supplied Corvette from
+120 to 119. A fixed-width truncated-binary index evaluation saved at most one
 character and changed several equally sized literals, so the combination rank was the stronger
 trade-off.
 
@@ -528,8 +521,6 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-Almanac beta.7 supplies the package-owned decorative modifier resolver delivered for
-[issue 260](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/260) and the grade-less,
-slot-level loadout operation delivered for
-[issue 264](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/264). Neither decorative
-values nor ordinary blueprint arithmetic is reimplemented or adjusted by the application.
+Almanac beta.8 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+modifier reconstruction for known fixed articles. The application does not reimplement or adjust
+those values or ordinary blueprint arithmetic.
