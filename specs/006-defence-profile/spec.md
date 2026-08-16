@@ -48,7 +48,7 @@ rating is a property of what the build fires and is reported there. Neither repe
   a deliberate trade: the shield, recovery and cell-bank figures for such a build remain computable
   and are withheld with the rest, because a defence profile assembled around a hull the application
   cannot name would mislead more than it informs. It also removes the apparent conflict with FR-001b,
-  which governs a *valid* build whose figure ignores its power state — the unpowered generator and
+  which governs a _valid_ build whose figure ignores its power state — the unpowered generator and
   cell bank — and never licensed suppressing a computed figure.
 - Q: How should a defence figure the package reports as infinite be presented? → A: As a verdict, in
   words, matching the convention feature 005 already sets. An infinite effective hit-point figure —
@@ -319,7 +319,7 @@ a build with no module reinforcement says so rather than reporting no protection
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.4` on 2026-08-14.
+Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16.
 
 The shield and armour breakdowns, per-damage-type resistances, module protection and hull hardness
 were available from the outset. Shield recovery and cell banks arrived in `0.1.0-beta.4`: the package
@@ -327,13 +327,33 @@ reports the regeneration rate, the broken-shield regeneration rate and the two r
 requires, and aggregates the cell banks into a total restorable strength and cell count while keeping
 each bank's reinforcement, spin-up, duration and heat individually inspectable.
 
-**One gap is raised upstream: a power-aware cell bank pool (FR-009).** The package's cell bank
-aggregate counts every fitted bank whether or not it is enabled or powered — unlike its shield
-metrics, which already account for a generator that is switched off. So a build whose cell bank sits
-in an unpowered priority group reports the same restorable pool as one whose bank is ready. Removing
-that bank's contribution here would mean producing a total the package did not compute, which
-feature 003's FR-001a does not permit, so FR-009 requires the bank to be flagged within the package's
-pool instead. A power-aware pool upstream would let the figure itself tell the truth.
+**One gap stands: a power-aware cell bank pool (FR-009).** The package's cell bank aggregate counts
+every fitted bank whether or not it is enabled or powered — unlike its shield metrics, which already
+account for a generator that is switched off. Re-verified at `0.1.0-beta.9`: disabling a fitted bank
+leaves `totalRestorable` and `totalCells` unchanged, while switching off the shield generator makes
+`shieldMetrics` report nothing at all. So a build whose cell bank sits in an unpowered priority group
+reports the same restorable pool as one whose bank is ready. Removing that bank's contribution here
+would mean producing a total the package did not compute, which feature 003's FR-001a does not permit,
+so FR-009 requires the bank to be flagged within the package's pool instead — which feature 003's
+FR-001b permits, because the build's power state and the package's figure are each shown as reported.
+A power-aware pool upstream would let the figure itself tell the truth.
+
+**This is the family's only open gap, and it is now raised upstream as
+[Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281)**,
+filed 2026-08-16 with the minimal reproduction above. Every other request the statistics family made
+is closed and released: pip-scaled recharge for all three capacitors (#271) and the maximum jump's
+total (#273) in `0.1.0-beta.9`, material names (#275) likewise, WEP pip scaling and mount geometry in
+`0.1.0-beta.8`, and the diagnostics contract (#245) as a stable code with parameters. The cell bank
+pool was noted here when `0.1.0-beta.4` delivered the aggregate
+([Elite-Dangerous-Almanac#241](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/241))
+but had never been filed as an issue of its own until now.
+
+What #281 asks for is that the pool reflect the build's power state, as `shieldMetrics`,
+`mobilityMetrics` and `distributorMetrics` all already do, with a per-bank flag so an inert bank can
+still be shown and marked. FR-009 stands either way — it describes what this application does while
+the pool counts unpowered banks, and it does not depend on when the fix lands. When it does land,
+FR-009's flag becomes a presentation of the package's own figure rather than a correction beside a
+misleading one.
 
 ## Success Criteria _(mandatory)_
 

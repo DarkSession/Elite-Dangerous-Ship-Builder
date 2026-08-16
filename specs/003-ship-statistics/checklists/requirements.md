@@ -71,3 +71,22 @@
   creating a build in order to have something to report on. Feature 002's FR-000 and feature 010's
   FR-001a say the same for outfitting and hull anatomy; feature 001 owns every route to a build,
   with feature 004's import the single exception, which FR-006a there records.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **No figure in the family is blocked.** Re-verified against the installed
+  `@elite-dangerous-almanac/core@0.1.0-beta.9`. The four exceptions the Upstream dependencies section
+  recorded at beta.4 are all settled: WEP pip scaling and the jump count at beta.8, the distributor's
+  three pip-scaled recharge rates and the maximum jump's total at beta.9, and the Frame Shift Drive's
+  "mass curve" resolved as a non-gap because a drive has no three-point curve.
+- **The diagnostics note above is superseded.** It records the English-only diagnostics as a gap
+  "raised upstream". That request
+  ([Elite-Dangerous-Almanac#245](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/245))
+  is closed, and what it delivered was the machine-readable half — a stable `code`, the `params` a
+  message interpolates, and the `constraint` behind an edit error — with the English sentence
+  documented as being for logs. The wording is therefore this application's to compose and translate,
+  which new **FR-007a** states and new **FR-025a** tests. Game _text_ still comes from the package;
+  diagnostic _wording_ does not. This is a settled division, not an outstanding request.
+- **One gap does remain, and it belongs to feature 006**: the cell bank pool counts unpowered banks.
+  Re-verified unchanged at beta.9. It is recorded in the Upstream dependencies section here because
+  the contract's honesty rules are what it bears on, and in feature 006's FR-009 where it is handled.

@@ -414,7 +414,7 @@ assumes.
 
 ## Upstream dependencies
 
-Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.8`
+Everything this specification requires is available from `@elite-dangerous-almanac/core@0.1.0-beta.9`
 today, verified against the installed package on 2026-08-16. Nothing in this feature waits on an
 upstream release. The two exceptions an earlier draft recorded against `0.1.0-beta.4` — WEP pip
 scaling and mount geometry in real units — both landed in the intervening betas and are described
@@ -458,6 +458,16 @@ returns the actual recharge rate, the sustained draw, the net drain and the seco
 allocation in `[0, 4]`, applying the package's own curve. Endurance is therefore read whole from that
 accessor rather than composed here, which is why FR-014 forbids the composition an earlier draft
 permitted, and no allocation is reported as unavailable.
+
+**A second distributor accessor exists as of `0.1.0-beta.9`, and endurance does not use it.**
+`ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` reports all three
+capacitors' capacity and pip-scaled recharge, which is what [feature 005](../005-power-and-heat/spec.md)
+presents. Endurance here still comes from `weaponsCapacitorMetrics`, which additionally applies the
+deployed power budget and returns the sustained draw, net drain and seconds to drain that FR-012
+needs. The two agree on the WEP recharge rate at the same allocation, verified against the installed
+package, so there is one figure and two accessors rather than two figures — but the endurance
+calculation must not be reassembled from the distributor accessor's capacity and rate, which would be
+exactly the composition FR-014 forbids.
 
 ## Success Criteria _(mandatory)_
 

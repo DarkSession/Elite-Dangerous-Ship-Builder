@@ -50,7 +50,9 @@ layout.
 - Q: While a hull's schematics are still arriving, what must the Commander still be able to do in
   outfitting? → A: Everything except the plate itself — every slot remains readable and changeable
   and every figure remains available, with only the anatomy view showing a loading state; schematics
-  are also available offline after first load.
+  are also available offline after first load. _(Narrowed 2026-08-16 by the answer below: the plates
+  available offline are those of the hulls the Commander has already opened, not the whole catalogue.
+  Everything else in this answer stands.)_
 - Q: When a schematic carries a slot key the hull does not have, or a hull's schematics are missing
   entirely, who gets told and how? → A: Build-time only — a mismatch fails FR-032's tests before
   release and never reaches a Commander; a missing schematic shows a neutral "no schematic" state in
@@ -267,8 +269,10 @@ hull's mount layout under its FR-004.
   view presents (FR-003a) is a decision about what to show, not an alteration of what is shown.
 - **FR-006a**: Schematics MUST NOT delay outfitting becoming usable, as feature 001's FR-021 requires
   of illustrations. The Commander MUST be able to read and change every slot, and read every figure,
-  while the plates are still arriving; only the anatomy view itself carries the loading state. The
-  application MUST remain usable offline after first load. A hull's plates MUST be cached as that hull
+  while the plates are still arriving; only the anatomy view itself carries the loading state. Every
+  capability MUST remain usable offline after first load. Plates MUST be fetched at runtime from the
+  origin the application is served from and MUST NOT be fetched from any other
+  (constitution principle I, amended 3.0.0 on 2026-08-16). A hull's plates MUST be cached as that hull
   is opened rather than precached for the whole catalogue, so every hull the Commander has already
   opened keeps its anatomy with the network disabled; a hull whose plates were never fetched is
   governed by FR-014a.
@@ -404,6 +408,12 @@ hull's mount layout under its FR-004.
   converted plates, that each is accompanied by the extracted mount positions and slot keys FR-002a
   requires, that no colour outside the design system's tokens appears in a converted plate, and that no
   converted plate is committed to this repository (FR-006b).
+- **FR-036a**: Plate delivery MUST be tested end to end, as feature 001's FR-051c requires of
+  illustrations: that opening a hull requests only that hull's plates, that every request goes to the
+  origin the application was served from and to no other, that a hull opened once keeps its anatomy
+  with the network disabled while one never opened shows FR-014a's offline-unavailable state rather
+  than FR-014's "no schematic" state, that every slot stays readable and changeable throughout
+  (FR-006a), and that the plates arrive when the network returns without a reload.
 - **FR-037**: The plate's fixed scale MUST be unit-tested against the catalogue, asserting that the
   closest pair of mounts on every hull is separated by at least a full touch target at that scale
   (FR-029), so that the hull which sets the scale is identified by the test rather than assumed.
@@ -432,9 +442,10 @@ hull's mount layout under its FR-004.
 ## Upstream dependencies
 
 Verified against `@elite-dangerous-almanac/core@0.1.0-beta.4` on 2026-08-14 and re-verified against
-the installed `0.1.0-beta.8` on 2026-08-16: both plates still ship for all 48 hulls, the slot keys and
+the installed `0.1.0-beta.9` on 2026-08-16: both plates still ship for all 48 hulls, the slot keys and
 the nine feature categories are unchanged, the six both-plate mounts are unchanged, and no scale
-metadata has appeared.
+metadata has appeared. The whole `assets/ships` tree is byte-for-byte identical between `0.1.0-beta.8`
+and `0.1.0-beta.9`, so the measurements below stand unchanged rather than merely unrechecked.
 
 **The mount map is fully backed today.** The package publishes `schematic-top.svg` and
 `schematic-bottom.svg` for all 48 hulls, alongside the illustration feature 001 already consumes. Each
@@ -469,7 +480,8 @@ medium hardpoints and the Lynx Highliner's four — carry the same slot key on t
 schematics, because the mount is visible from both. FR-013a governs them: one slot, drawn twice,
 counted once.
 
-**The schematics are too heavy to ship as SVG.** Measured at beta.8, the 96 plates total 9.0 MB —
+**The schematics are too heavy to ship as SVG.** Measured at beta.8 and unchanged at beta.9, the 96
+plates total 9.0 MB —
 3.1 MB gzipped — and a single plate reaches 323 KB (Panther Mk II's underside, 105 KB gzipped). The
 weight is in the path data of a few dozen very long outlines rather than in node count, so the cost is
 bytes rather than DOM. FR-006 therefore has them rasterised at build time, which is also where the
@@ -531,10 +543,14 @@ returns, the hull's slots and the schematics' slot keys. No game rule is involve
 ## Assumptions
 
 - The schematics are the library's artwork, consumed as a published artefact exactly as the
-  illustrations are. They are static assets under the client-side-only principle: bundled at build
-  time, never fetched from a third party at runtime. What ships is the converted plate rather than the
-  library's SVG (FR-006, FR-006b); the SVG remains the source, read from the installed package by the
-  build.
+  illustrations are. They are the application's own static assets under the client-side-only
+  principle: converted at build time, served from the application's own origin, and fetched from it
+  per hull at runtime (FR-006a) — never from a third party. What ships is the converted plate rather
+  than the library's SVG (FR-006, FR-006b); the SVG remains the source, read from the installed
+  package by the build. This assumption previously read "bundled at build time", which contradicted
+  FR-006a and FR-014a in this same specification; the constitution settled the question in favour of
+  the requirements on 2026-08-16 (principle I, 3.0.0), and feature 001's illustrations now load the
+  same way.
 - Both schematics exist for every hull in the catalogue today, so a hull without them is treated as a
   temporary gap to be raised upstream rather than an expected state — while FR-014 still requires the
   application to work when one is missing, exactly as feature 001's FR-015 does for illustrations.

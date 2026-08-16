@@ -104,6 +104,16 @@
   guarantees no Commander depends on the plate. What this costs is a distinct offline-unavailable
   state, kept worded apart from FR-014's "no schematic exists for this hull" so a temporary absence is
   never read as a permanent one.
+- **That decision was ahead of the constitution until 2026-08-16.** Principle I guaranteed an
+  unqualified offline application and required an amendment for any outbound request, so FR-006a and
+  FR-014a — which fetch a hull's plates when the hull is opened — described something the governing
+  document did not permit, and this feature's own Assumptions section still claimed the plates were
+  "bundled at build time". The constitution was amended (principle I, 3.0.0) to permit runtime
+  fetching from the application's own origin and to restate the offline guarantee as one about
+  capabilities rather than artwork. Nothing in this feature's requirements changed as a result: the
+  assumption was corrected to match them, FR-006a now names the origin restriction explicitly, and
+  FR-036a makes the behaviour testable. Feature 001's illustrations moved to the same model in the
+  same change.
 - **Accessibility is a functional requirement here, not a device concern.** A view whose whole
   premise is spatial is the case where "no information carried by colour or position alone"
   (FR-011) is hardest and most necessary, and FR-018 guarantees no Commander depends on the spatial

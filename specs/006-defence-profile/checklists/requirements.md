@@ -64,3 +64,19 @@ The note above about module armour and "integrity" is superseded. Integrity is a
 health, per module, belonging to feature 002 — not a second label for a build-level figure. What this
 area reports is the build-level module protection, and no build-level figure is called integrity.
 FR-012 and the Assumptions section were rewritten accordingly.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **The cell bank gap is re-verified and still open at `0.1.0-beta.9`.** Disabling a fitted bank
+  leaves the pool's restorable strength and cell count unchanged, while switching off the shield
+  generator makes the shield metrics report nothing — the same asymmetry recorded at beta.4. FR-009 is
+  unchanged. Everything else in this area was re-verified against the installed beta.9 on 2026-08-16;
+  the note above still cites beta.4 and 2026-08-14 for that check.
+- **It is now the statistics family's only open gap, and it has been filed.** Every other request the
+  family made is closed and released — see the Upstream dependencies section. This one was written
+  down here when beta.4 delivered the aggregate but had never been raised as an issue against
+  `@elite-dangerous-almanac/core`, which the constitution requires of a missing capability. It was
+  filed on 2026-08-16 with a minimal reproduction as
+  [Elite-Dangerous-Almanac#281](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/281),
+  asking for the pool to reflect power state as the neighbouring aggregates already do. FR-009 is
+  distinct from it and holds regardless: it describes what the application does meanwhile.

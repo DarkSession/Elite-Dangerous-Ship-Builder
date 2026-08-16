@@ -22,8 +22,8 @@ how all of it is verified.
 It names no screen and owns no capability of its own. What it fixes is how every other feature's
 capability is delivered:
 
-| Obligation                                             | Stated here      |
-| ------------------------------------------------------ | ---------------- |
+| Obligation                                              | Stated here      |
+| ------------------------------------------------------- | ---------------- |
 | One design system, one theme, tokens as the only source | FR-001 to FR-007 |
 | Keyboard operation                                      | FR-008 to FR-012 |
 | Screen readers and text alternatives                    | FR-013 to FR-018 |

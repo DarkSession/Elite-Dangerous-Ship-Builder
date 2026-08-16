@@ -35,10 +35,12 @@ belong to [feature 007](../007-offence-profile/spec.md), which reads the capacit
 - Q: When the distributor's three recharge rates are shown, should each be the fixed maximum rate at
   four pips, or a rate adjusted for the pips the Commander has currently allocated? → A: At the pips
   in force. Each capacitor shows the pips it holds against the four it can take, and every figure
-  displayed is the figure at that allocation. The pip curve is non-linear and the package owns it: it
-  applies the curve for the weapons capacitor and states that the systems capacitor shares the same
-  one, so both rates come from the package's own calculation rather than arithmetic here. It says
-  nothing about the engines capacitor, so that rate alone waits upstream.
+  displayed is the figure at that allocation. The pip curve is non-linear and the package owns it, and
+  as of `0.1.0-beta.9` it applies that curve for all three capacitors on one accessor, so every rate
+  comes from the package's own calculation rather than arithmetic here. _(Amended 2026-08-16: when
+  this was first answered the package reported the weapons rate only and stated that systems shared
+  the curve, leaving the engines rate to wait upstream. `0.1.0-beta.9` delivers all three — see
+  FR-008a.)_
 - Q: Feature 003 gives the Commander a retracted/deployed switch as a viewing condition, but this
   area showed both states side by side — should the power figures follow that switch, or report both
   states regardless of it? → A: Follow the switch, one state at a time, beginning at deployed. The
@@ -156,7 +158,8 @@ shields, and it is the module most often chosen on its recharge rate rather than
 
 **Independent Test**: Load a build with an engineered distributor and confirm capacity and recharge
 rate are displayed for each of the three capacitors, reflecting that engineering, and that a change
-to the WEP pips moves the weapons capacitor's recharge rate while leaving its capacity alone.
+to any one capacitor's pips moves that capacitor's recharge rate while leaving its capacity, and the
+other two capacitors' figures, alone.
 
 **Acceptance Scenarios**:
 
@@ -166,12 +169,15 @@ to the WEP pips moves the weapons capacitor's recharge rate while leaving its ca
 2. **Given** a pip allocation, **When** the Commander views the distributor, **Then** each capacitor
    states the pips it holds against the four it can take, and every figure shown is the figure at
    that allocation, as feature 003's FR-015 requires.
-3. **Given** the engines capacitor, whose recharge at a given allocation the package neither reports
-   nor defines, **When** the Commander views the distributor, **Then** that rate is shown as
-   unavailable with that reason rather than as its four-pip maximum, while its capacity is shown in
-   full.
+3. **Given** the engines capacitor, **When** the Commander views the distributor, **Then** its
+   recharge at the allocation in force is shown on the same terms as the systems and weapons rates,
+   all three coming from the package's own pip-scaled calculation, and none of them shown as its
+   four-pip maximum standing in for the rate in force.
 4. **Given** no distributor is fitted, **When** the Commander views the distributor, **Then** the
    application says the build has no distributor rather than showing zero capacities.
+5. **Given** a distributor that is fitted but switched off, or one the plant cannot power, **When**
+   the Commander views the distributor, **Then** the capacities and rates are reported as unavailable
+   naming that power state, rather than shown as though the capacitors were charging.
 
 ---
 
@@ -231,11 +237,11 @@ shown against the hull's heat dissipation, with the contributing sources identif
 - A build with no power plant, or one whose plant is switched off: the package reports no heat
   metrics at all for it, so every heat figure is reported as unavailable with that reason. This is an
   ordinary mid-build state, not an error.
-- A distributor fitted but disabled or unpowered: its capacities are reported as unavailable in that
-  state rather than shown as though the capacitors were charging.
-- A capacitor whose recharge at the allocation in force the package does not define — the engines
-  capacitor today: that rate is reported as unavailable with that reason, never as the four-pip
-  maximum standing in for it and never scaled here, while the capacity is shown in full.
+- A distributor fitted but disabled or unpowered: its capacities and rates are reported as unavailable
+  in that state rather than shown as though the capacitors were charging. The package returns nothing
+  for such a build, so this is its answer rather than a suppression applied here.
+- A pip allocation of zero on a capacitor: the package returns a recharge of zero for it, which is a
+  figure and is shown as one, with the capacity unchanged — not reported as unavailable.
 - A build with no weapons: the firing heat figures are reported as absent rather than as zero
   thermal load, and the idle and thrust figures are still shown in full.
 - A state whose thermal load exceeds the hull's dissipation: the package reports no settled heat
@@ -297,17 +303,21 @@ shown against the hull's heat dissipation, with the contributing sources identif
   the four it can take. A rate the package reports only as a four-pip maximum MUST NOT stand in for
   the rate in force, and MUST NOT be scaled to the allocation here — the pip curve is a game rule,
   and feature 003's FR-001 reserves it to the package.
-- **FR-008a**: The weapons and systems capacitors' recharge at the selected pips MUST be obtained
-  from the package, which performs the curve itself: it reports the weapons rate directly, and it
-  states that the systems capacitor follows the same curve, so that rate is its arithmetic and not
-  this application's. The package neither reports the engines capacitor's rate nor states that it
-  shares that curve, so the engines rate MUST be reported as unavailable with that reason until it
-  does — asserting that ENG behaves like the other two would be supplying a game rule the package has
-  not stated. The curve MUST NOT be reimplemented here for any capacitor: it is not linear, and its
-  exponent is a term the package has never reported as data. All three capacities are unaffected and
-  MUST be shown in full.
+- **FR-008a**: All three capacitors' recharge at the selected pips MUST be obtained from the
+  package's single distributor accessor, which performs the curve itself for systems, engines and
+  weapons alike and returns the allocation it used alongside each rate. The curve MUST NOT be
+  reimplemented here for any capacitor: it is not linear, and its exponent is a term the package has
+  never reported as data. No rate may be composed from another capacitor's calculation, and none may
+  be scaled, interpolated or inferred from a four-pip maximum. All three capacities are independent of
+  the allocation and MUST be shown in full. _(Amended 2026-08-16: this requirement previously reported
+  the engines rate as unavailable, and obtained the systems rate by handing the SYS rating to a
+  weapons-capacitor calculation. `0.1.0-beta.9` reports all three directly, which removes both the
+  blocked figure and that indirection.)_
 - **FR-009**: A build with no distributor fitted MUST be reported as having none, rather than shown
-  with zero capacities.
+  with zero capacities. A distributor that is fitted but switched off, in a priority group the plant
+  cannot power, or whose capacitor statistics the package cannot resolve MUST likewise be reported as
+  unavailable naming that state — the package reports nothing for it, and the application MUST NOT
+  present the catalogue figures in place of what a build in that state actually holds.
 
 #### Heat
 
@@ -380,11 +390,13 @@ shown against the hull's heat dissipation, with the contributing sources identif
   the no-distributor, no-weapons, no-power-plant, switched-off-plant, unresolved-hull and
   undetermined-contribution cases, asserting for the last of these that every heat figure is marked
   as a projection and the overheat verdict as untrustworthy. The pip-dependent case MUST be covered
-  too: that the weapons and systems recharge rates follow their own allocations while the capacities
-  do not, that neither matches a straight-line scaling of the four-pip figure, and that the engines
-  rate is reported as unavailable rather than as a four-pip maximum. The never-settles and
-  never-overheats cases MUST each be asserted to produce their verdict rather than an unavailable
-  figure, and no heat state MUST be produced that the package does not itself report.
+  too: that each of the three recharge rates follows its own allocation while the capacities do not,
+  that none matches a straight-line scaling of the four-pip figure, that a zero allocation yields a
+  zero rate shown as a figure, and that the switched-off and unpowered distributor read as
+  unavailable naming that state. Tests MUST assert that no rate is derived from another capacitor's
+  calculation. The never-settles and never-overheats cases MUST each be asserted to produce their
+  verdict rather than an unavailable figure, and no heat state MUST be produced that the package does
+  not itself report.
 - **FR-018a**: _(Withdrawn 2026-08-16 with FR-011b.)_ There is no composed activation state to test.
 - **FR-019**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
@@ -405,23 +417,29 @@ shown against the hull's heat dissipation, with the contributing sources identif
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.8` on 2026-08-16. **One
-figure is blocked**: the engines capacitor's recharge at the pip allocation in force (FR-008a).
+Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16. **Nothing
+in this area is blocked.** The engines capacitor's recharge, the one figure this specification carried
+as unavailable, is reported by the package as of `0.1.0-beta.9`.
 
 The distributor's catalogue recharge figures are each a maximum at four pips, and the curve that
 turns one of them into the rate at a given allocation is a game rule the package owns, applies and
 documents — `rated × (pips / 4)^1.1`, measured rather than published by the game, and materially not
-linear: at one pip it yields 2.18 MJ/s where a straight line would say 2.50. The package applies that
-curve for the weapons capacitor and states that the systems capacitor follows the same one, so both
-rates are obtained by handing the rated figure to its own calculation. It neither reports nor defines
-the engines capacitor's rate, and that is the blocked figure: this application will not assert that
-ENG shares the curve, because that is a rule the package has not stated.
+linear: at one pip it yields 2.18 MJ/s where a straight line would say 2.50.
+`ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })` now applies that curve to
+all three capacitors and returns each one's capacity, its rated four-pip recharge and its actual rate
+at the allocation given, together with the allocation it used. Each allocation defaults independently
+to four pips and the three need not sum to six, so a Commander's allocation and a comparison of
+maxima are both expressible without the application scaling anything. The accessor returns nothing at
+all when no distributor is fitted, when it is switched off, when the retracted power budget sheds it,
+or when its six capacitor statistics cannot be resolved, which is what FR-009 reports.
 
-Exposing all three capacitors' pip-scaled recharge on one accessor is raised against
-`@elite-dangerous-almanac/core` under feature 003's FR-019, as
-[Elite-Dangerous-Almanac#271](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/271). It
-would deliver ENG and end the current awkwardness of reading the SYS rate out of a weapons-capacitor
-calculation. The capacities are unaffected either way — a capacitor holds what it holds whatever the
+That closes [Elite-Dangerous-Almanac#271](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/271),
+raised under feature 003's FR-019 and released in `0.1.0-beta.9`. It removed both the blocked ENG
+figure and the indirection the SYS rate previously required, where the systems rating was handed to
+the weapons-capacitor calculation to get the package's own arithmetic applied to it. Feature 007
+continues to read firing endurance from `weaponsCapacitorMetrics`, which applies the deployed power
+budget; the two accessors agree on the WEP recharge rate at the same allocation, verified against the
+installed package. The capacities were never affected — a capacitor holds what it holds whatever the
 pips.
 
 The deployed and retracted power budget, the priority-group breakdown and the distributor capacities
@@ -446,9 +464,9 @@ names the modules whose draw it could not determine.
    powered in each hardpoint state, and each fitted module carries its own priority group. Naming the
    modules a shed group takes offline, and telling an empty group from a zero-draw one, both count
    the modules assigned to each group. Neither restates a rule about how power is shed.
-A fourth composition — a shield cell bank activation modelled as a heat state of its own — was
-recorded here until 2026-08-16 and is gone with FR-011b. Nothing in this area now composes a heat
-figure at all: every heat state shown is one the package reports whole.
+   A fourth composition — a shield cell bank activation modelled as a heat state of its own — was
+   recorded here until 2026-08-16 and is gone with FR-011b. Nothing in this area now composes a heat
+   figure at all: every heat state shown is one the package reports whole.
 
 Exposing the retracted headroom and utilisation, and the powered and unpowered draw, on the package's
 power budget would remove the three compositions that remain. Each is a welcome simplification

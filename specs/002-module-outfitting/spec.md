@@ -536,11 +536,14 @@ reflected in the build's power figures and survive save and reload.
 
 - Fittability, engineering availability, grade ranges, and pre-engineered behaviour are
   whatever `@elite-dangerous-almanac/core` reports; this application does not add rules of its own.
-- The per-ship module limits behind FR-003 are the package's as of `0.1.0-beta.4`: it excludes a
-  module already at its allowance from the offer list for a slot, refuses a fitting that would
-  exceed one, and reports the excess in its validation. Whether a slot may be emptied is likewise a
-  property the package reports, with a machine-readable reason when it may not, so FR-005 is
-  answered without provoking an error to find out.
+- The per-ship module limits behind FR-003 are the package's, delivered in `0.1.0-beta.4` and
+  re-verified against the installed `0.1.0-beta.9` on 2026-08-16: it excludes a module already at its
+  allowance from the offer list for a slot, refuses a fitting that would exceed one, and reports the
+  excess in its validation. The refusal carries a `duplicateExclusiveModule` code and names the
+  exclusion group and the slot already holding one, which is the machine-readable form feature 003's
+  FR-007a composes its wording from. Whether a slot may be emptied is likewise a property the package
+  reports, with a machine-readable reason when it may not, so FR-005 is answered without provoking an
+  error to find out.
 - Engineering is modelled as an outcome (blueprint, completed grade, effect), not as a rolling
   simulation of individual engineer visits.
 - A module's engineering cost is cumulative under FR-012b — every roll from unengineered to the

@@ -17,12 +17,22 @@ Consequences that follow from this and MUST be honoured:
 
 - Build state lives in the browser (in-memory, `localStorage`) or in a URL. It
   is never uploaded.
-- The application MUST remain fully usable offline after first load, and MUST
-  be deployable as static files to any static host.
+- The application MUST be deployable as static files to any static host.
+- Every capability MUST remain usable offline after first load. **Assets the
+  application serves from its own origin MAY be fetched at runtime** rather than
+  bundled into the initial load — hull illustrations, schematics and anything
+  else whose weight would make the first load pay for artwork the Commander has
+  not asked to see. What is available offline is then what the Commander has
+  already opened, not the whole catalogue. An asset that has not been fetched
+  MUST NOT block or degrade any capability, MUST show its absence as a temporary
+  one rather than as a fault or a permanent gap, and MUST arrive once the network
+  returns without the Commander reloading the application.
 - No accounts, no authentication, no server-side persistence and no server-side
   sharing. A build is shared by handing someone a URL or a SLEF payload.
-- No telemetry, analytics or third-party network beacons. Any future outbound
-  request needs an amendment to this constitution.
+- No telemetry, analytics or third-party network beacons, and **no request to any
+  origin other than the one the application is served from**. Runtime asset
+  requests to the application's own origin are permitted by the clause above; any
+  other outbound request needs an amendment to this constitution.
 
 ### II. The Almanac Is the Source of Truth (NON-NEGOTIABLE)
 
@@ -143,9 +153,13 @@ or formatting a figure for one locale only, is not.
 - Numbers, percentages, credits, distances and dates MUST be formatted for the
   active locale. Translated labels wrapped around English-formatted figures do
   not satisfy this principle.
-- Translations MUST ship as static assets bundled with the application. No
-  runtime translation service, no outbound request, no server-side rendering of
-  translated text (principle I).
+- Translations MUST ship as the application's own static assets. No runtime
+  translation service, no request to any other origin, and no server-side
+  rendering of translated text (principle I). A locale's messages MAY be fetched
+  from the application's own origin under principle I's runtime-asset clause —
+  but text is not artwork: a Commander MUST NOT be left unable to read the
+  interface because a locale did not arrive, so the fallback language the next
+  clause requires MUST be present without a network.
 - A missing translation MUST fall back to a language the Commander can read. A
   raw message key, an empty string or a placeholder MUST NOT reach the screen.
 - Layouts MUST survive translation. Text expansion and right-to-left scripts are
@@ -303,9 +317,45 @@ review of any spec the change invalidates.
 Every review MUST verify compliance with these principles. Added complexity has
 to justify itself against them; when it cannot, the simpler option wins.
 
-**Version**: 2.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
+**Version**: 3.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
 
 ### Amendment history
+
+- **3.0.0** — Principle I now permits **runtime fetching of the application's own
+  assets**. Illustrations and schematics may be fetched on demand from the origin
+  the application is served from rather than bundled into the initial load, and
+  the offline guarantee is restated accordingly: every _capability_ stays usable
+  offline after first load, while the _artwork_ available offline is what the
+  Commander has already opened. The prohibition that mattered is unchanged and is
+  now stated positively — no request to any origin other than the application's
+  own, so no third party learns which hulls a Commander looks at.
+
+  This is a major amendment because it overturns an accepted requirement rather
+  than tightening one: feature 001's FR-017 required previews to be bundled and
+  prohibited fetching them at runtime outright, and FR-021 and SC-008 claimed an
+  unqualified offline guarantee that included them. Those are amended with this
+  change, along with feature 012's account of what works offline. Feature 010
+  already specified plates as fetched per hull and cached as a hull is opened
+  (FR-006a, FR-014a) — it was ahead of the constitution rather than in breach of
+  it, and no obligation of its changes here; what this amendment does is make it
+  legal and make feature 001 consistent with it. Its FR-006a gains the origin
+  restriction explicitly, its Assumptions section is corrected where it still
+  claimed the plates were bundled, and FR-036a is added so the behaviour it
+  already required is tested.
+
+  The rationale is delivery, and it is not marginal: the installed illustration
+  set is 64 MB across 144 files with the largest single file at 4.1 MB, and the
+  schematics add 9.0 MB. Bundling that into a first load is not a thing a phone
+  can be asked to do, and optimising the artwork alone does not close a gap of
+  that size. Fetching a hull's artwork when the Commander opens that hull does.
+
+  Principle VI's translation clause is harmonised with the same change. It read
+  "no outbound request", which after this amendment would have contradicted
+  principle I; it now prohibits a request to any _other_ origin and permits a
+  locale to be fetched from the application's own, while keeping the obligation
+  that mattered — the interface stays readable without a network, so a fallback
+  locale is present rather than fetched. No spec depends on this, since how a
+  Commander selects a language has no feature spec yet.
 
 - **2.1.0** — Three additions, all following a design review on 2026-08-16.
 

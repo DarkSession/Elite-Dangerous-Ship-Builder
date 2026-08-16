@@ -217,8 +217,13 @@ not move, and none of the three is written into the build when it is saved, shar
 - The full statistics set on a phone: every breakdown stays reachable and legible at increased text
   sizes, no figure is truncated to the point of ambiguity, and no per-damage-type table forces the
   page to scroll horizontally.
-- A diagnostic the package emits only in English: the application says the wording is the library's
-  rather than presenting an untranslated string as a translation, and the gap is raised upstream.
+- A diagnostic the package reports: its English sentence is for logs, and the application composes and
+  translates its own wording from the diagnostic's code and parameters. It never displays the
+  package's sentence as though it were translated, and never parses that sentence to recover the slot
+  or module it names — those are separate fields.
+- A diagnostic whose code the application has no wording for: the code and the slot it names are shown
+  rather than nothing, so an unhandled diagnostic is still actionable, and the missing wording is a
+  defect in this application rather than in the package.
 
 ## Requirements _(mandatory)_
 
@@ -272,11 +277,20 @@ not move, and none of the three is written into the build when it is saved, shar
 - **FR-005**: Resistances MUST be presented as percentages, converted from the package's fractional
   values.
 - **FR-006**: Every figure the package reports as unavailable, incomplete or absent MUST be
-  surfaced as such together with the package's diagnostic reason, and MUST NOT be shown as zero or
+  surfaced as such together with the reason the package gives for it, and MUST NOT be shown as zero or
   an estimate.
 - **FR-007**: Build validity and completeness problems MUST be listed in plain language, naming the
   area and the slot each belongs to, and MUST NOT suppress the statistics that can still be
   computed.
+- **FR-007a**: The wording of a package diagnostic is this application's to write and to translate,
+  composed from the diagnostic's stable code and the parameters it carries, and MUST go through the
+  localisation layer like any other string the application owns. The package's own English sentence
+  MUST NOT be displayed — it is documented as being for logs — and MUST NOT be parsed to recover the
+  slot, module or constraint it mentions, each of which the diagnostic reports as its own field. This
+  is the settled division of responsibility, not a gap: game **text** is asked of the package under
+  constitution principle VI, while diagnostic **wording** is composed here from what the package
+  reports. A diagnostic carrying a code this application has no wording for MUST still show that code
+  and the slot it names rather than nothing.
 
 #### The headline set
 
@@ -361,6 +375,10 @@ not move, and none of the three is written into the build when it is saved, shar
   requirement that a viewing condition changes only the figures that depend on it, and that no figure
   in any area carries a comparison against an earlier build state, a saved build or another build
   (FR-004).
+- **FR-025a**: Diagnostic presentation MUST be unit-tested to assert that every displayed sentence is
+  composed from the diagnostic's code and parameters through the localisation layer, that no
+  package-owned English sentence reaches the screen, that none is parsed to recover a field the
+  diagnostic already carries, and that a code with no wording still yields the code and its slot.
 - **FR-026**: The headline set MUST be unit-tested for completeness and for the unavailable case, so
   that a figure the package cannot produce is never silently dropped from it.
 - **FR-027**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
@@ -385,18 +403,37 @@ not move, and none of the three is written into the build when it is saved, shar
 
 ## Upstream dependencies
 
-The figures this specification's family needs are computed by
-`@elite-dangerous-almanac/core@0.1.0-beta.4` today, with four exceptions, each raised in the area
-specification that needs it: WEP pip-to-recharge scaling (feature 007), the Frame Shift Drive's mass
-curve and the number of jumps a full tank affords (feature 008), and a power-aware shield cell bank
-pool (feature 006). Several areas also compose figures under FR-001a; each names what it composes in
-its own "Upstream dependencies" section.
+Every figure this specification's family needs is computed by
+`@elite-dangerous-almanac/core@0.1.0-beta.9`, verified against the installed package on 2026-08-16.
+**No figure in any of the five areas is blocked.** The four exceptions recorded here at beta.4 are all
+settled: WEP pip-to-recharge scaling (feature 007) landed at beta.8; the number of jumps a full tank
+affords (feature 008) landed at beta.8 and the total at one jump's fuel that survived it at beta.9;
+the Frame Shift Drive's mass curve (feature 008) turned out not to be a gap, because a drive has no
+three-point curve and the package computes the mass factor the jump equation actually uses; and the
+distributor's pip-scaled recharge for all three capacitors (feature 005) landed at beta.9. Several
+areas compose figures under FR-001a; each names what it composes in its own "Upstream dependencies"
+section.
 
-One thing this contract needs from the package is a **locale for its diagnostics**: the validity,
-completeness and edit-error messages FR-006 and FR-007 surface are English-only. Each carries a
-machine-readable code and parameters, so the application could render the wording itself, but under
-the constitution's "ask for a locale there" rule the wording of game diagnostics belongs to the
-library. This is raised upstream rather than settled here.
+**One gap remains open across the family, and it is feature 006's**: the package's shield cell bank
+pool counts every fitted bank whether or not it is powered, unlike the shield metrics beside it, which
+report nothing for a generator that is switched off. Re-verified against beta.9 on 2026-08-16 — the
+pool is unchanged when a bank is disabled. FR-001a does not permit subtracting the bank's contribution
+here, so feature 006's FR-009 flags the bank within the package's pool instead. That is a presentation
+the constitution allows under FR-001b, not a figure this application produces.
+
+**The diagnostics locale is settled, and the settlement puts the wording here.** The validity,
+completeness and edit-error messages FR-006 and FR-007 surface remain English-only at beta.9 and are
+documented as such — `LoadoutIssue.message` and `LoadoutEditError.message` are for logs. What the
+upstream request
+([Elite-Dangerous-Almanac#245](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/245),
+closed) delivered instead is the machine-readable half: every diagnostic carries a stable `code`, the
+`params` it interpolates, and where applicable the `constraint` that produced it, so a consumer
+composes and translates the sentence itself. So the constitution's "ask for a locale there" rule is
+satisfied for game **text** — hull, module, blueprint, effect and, as of beta.9, material names all
+come from the package — while diagnostic **wording** is this application's to write and to translate,
+from the package's codes and parameters and never by parsing its English. This is a settled division
+of responsibility rather than an outstanding request, and it is what FR-007's "plain language"
+obligation rests on.
 
 ## Success Criteria _(mandatory)_
 

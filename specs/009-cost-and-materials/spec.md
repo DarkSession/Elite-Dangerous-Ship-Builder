@@ -186,6 +186,16 @@ totals, and that grade 5 rolls account for the grades beneath them.
 - **FR-005a**: A material's grade MUST be presented as an image rather than as a number or a word,
   and that image MUST carry a text alternative resolved through the localisation layer, so the grade
   is available to a screen reader as well as by sight.
+- **FR-005b**: A material's name MUST be asked of the package for the active locale, and MUST NOT be
+  translated here — it is game text, which constitution principle VI reserves to
+  `@elite-dangerous-almanac/core`. Where the package reports no name for that locale it MUST NOT be
+  read as an absent material: the material is still listed, under the canonical English name the
+  catalogue carries, marked as untranslated so a Commander is not shown English as though it were
+  their language. That marking MUST be per material rather than a single notice for the list, because
+  coverage varies material by material within one locale and a list will routinely mix the two.
+  Falling back MUST NOT be silent, and the application MUST NOT keep a private translation of a
+  material name to fill the gap — a missing translation is raised upstream like any other game-text
+  gap.
 - **FR-006**: The material list MUST cover taking each module from unengineered to its applied grade,
   not the applied grade alone: every grade in between contributes its own recipe, as many times as
   that grade requires, and the recipes differ from grade to grade. What the list presents is the
@@ -221,6 +231,11 @@ totals, and that grade 5 rolls account for the grades beneath them.
 - **FR-015**: Material aggregation MUST be unit-tested against builds with repeated blueprints,
   multi-grade rolls, experimental effects and pre-engineered modules, and against a build with no
   engineering at all.
+- **FR-015a**: Material naming MUST be unit-tested for the localised, the untranslated and the
+  unsupported-locale cases, asserting that a material the package has no name for in the active locale
+  is still listed under its canonical English name and marked as untranslated, that the marking is
+  carried per material rather than for the list, and that no material name originates anywhere but
+  the package.
 - **FR-016**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 
@@ -238,17 +253,26 @@ totals, and that grade 5 rolls account for the grades beneath them.
 ## Upstream dependencies
 
 Every figure this specification requires is computed by `@elite-dangerous-almanac/core`, re-verified
-against the installed `0.1.0-beta.8` on 2026-08-16. No figure here is blocked; one piece of **text**
-is, and is raised upstream.
+against the installed `0.1.0-beta.9` on 2026-08-16. **Nothing here is blocked** — neither a figure nor,
+as of this release, the material names.
 
-**Material names carry no locale.** The package's i18n surface covers modules, blueprints and
-experimental effects; materials are not among them, and each material has a single English display
-name. Under constitution principle VI a private translation table here is prohibited, so material
-names appear in the language the package provides and the application states that, exactly as
-feature 003 does for the package's English-only diagnostics. A materials locale is requested as
-[Elite-Dangerous-Almanac#275](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/275),
-asking for a `getMaterialName(symbol, locale)` on the same contract as the module, blueprint and
-effect accessors that already exist.
+**Material names now carry a locale.** `0.1.0-beta.9` publishes
+`getMaterialName(symbol, locale)` on the same contract as the module, blueprint and effect accessors,
+which closes
+[Elite-Dangerous-Almanac#275](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/275).
+It returns the localized name, the canonical English name for any English tag, or `null` where the
+pinned source carries no value — it never falls back to English silently, so a missing translation is
+distinguishable from a translated one. That is what FR-005b relies on. Its companion
+`getMicroResourceName` covers Odyssey micro resources, which this feature's material list does not
+reach; it is noted only so the two are not confused, since a material and a micro resource are
+different catalogues with different accessors.
+
+Coverage is sparse and deliberately so, which is a presentation fact rather than a defect. Verified
+against the installed package across the 146 materials: English, Spanish and Russian cover all 146;
+Portuguese and French cover 140; German 128; Georgian 28; and Hungarian, Italian and both Chinese tags
+carry none. So a build's material list will routinely mix translated and untranslated names within one
+locale, which is why FR-005b requires the fallback to be marked per material rather than declared once
+for the list.
 
 Costs for an assembled build arrived in `0.1.0-beta.4`: `retailCredits()` computes hull value,
 modules value and rebuy for a build assembled in the application, not only for an imported capture,
@@ -292,6 +316,10 @@ and no quantity is added to another.
 - **SC-006**: The cost summary and material list are readable on desktop, tablet and mobile
   viewports — the same end-to-end suite passes on all three, with no horizontal page scrolling at any
   of them, and every material's grade is available as text to a screen reader at each of them.
+- **SC-007**: Every material name displayed comes from `@elite-dangerous-almanac/core` for the active
+  locale — zero names originating in this application, across every supported locale — and every
+  material the package has no name for in that locale is listed under its canonical English name and
+  marked as untranslated, with zero silent fallbacks.
 
 ## Assumptions
 
@@ -322,9 +350,11 @@ and no quantity is added to another.
   both out of scope here; a Commander who wants it again re-opens the build, which
   [feature 004](../004-slef-export/spec.md) makes durable as a link.
 - Material names are game text and belong to `@elite-dangerous-almanac/core` under constitution
-  principle VI. The package carries locales for modules, blueprints and experimental effects but not
-  for materials, which have a single English display name. Until that lands, material names appear in
-  the language the package provides and the application says so, rather than presenting untranslated
-  text as a translation.
+  principle VI. As of `0.1.0-beta.9` the package carries a locale for them alongside modules,
+  blueprints and experimental effects, so names are asked of it per locale (FR-005b). Its coverage is
+  sparse by design and it never substitutes English for a missing translation, so the application
+  marks the materials that fall back rather than presenting untranslated text as a translation. A
+  locale the package does not carry at all is the same case as a material it has no value for: shown
+  in English, marked, and raised upstream rather than filled in here.
 - Which figures are prominent and how the material list is grouped are decided at plan time against
   the design system, per constitution principle VII.

@@ -87,3 +87,27 @@ withdrawn or narrowed on 2026-08-16 and the notes that rest on them no longer ho
   figures dropped there is nothing left for capacity to qualify.
 - **FR-012 and FR-012b no longer show the time to reach an overheat.** Whether a state overheats is
   the verdict; when it does is not presented.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **Nothing in this area is blocked any more.** The note above headed "One figure is blocked" is
+  superseded. `0.1.0-beta.9` publishes
+  `ShipLoadout.distributorMetrics({ systemsPips, enginesPips, weaponsPips })`, which applies the
+  package's own pip curve to all three capacitors and returns each one's capacity, rated four-pip
+  recharge and actual rate at the allocation given. The engines rate FR-008a reported as unavailable
+  is now shown on the same terms as the other two, and the systems rate no longer has to be obtained
+  by handing the SYS rating to the weapons-capacitor calculation. That closes
+  [Elite-Dangerous-Almanac#271](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/271).
+- **Two compositions remain, not four.** The count in the superseded note was already stale — the
+  cell bank activation state went with FR-011b, and the ENG rate was never a composition but a
+  blocked figure. What this area composes under feature 003's FR-001a is the retracted headroom and
+  utilisation, the powered and unpowered shares of the draw, and the modules a shed priority group
+  takes offline; the Upstream dependencies section names those three.
+- **FR-009 now covers the powered state as well as the absent one.** The package returns no
+  distributor metrics for a build whose distributor is switched off, shed by the retracted power
+  budget, or unresolvable, so those states are reported as unavailable naming the state rather than
+  shown with catalogue capacities.
+- **Feature 007's re-check is done.** The note above asked for it. Both accessors agree on the WEP
+  recharge rate at the same allocation, verified against the installed package; feature 007 continues
+  to read firing endurance from `weaponsCapacitorMetrics`, which additionally applies the deployed
+  power budget.

@@ -62,3 +62,21 @@
 - **Material inventory is out of scope by assumption, not oversight.** The list is what the build
   requires, not what remains to be gathered; tracking what a Commander holds would need state this
   application does not keep.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **Nothing here is blocked any more, text included.** The note above headed "No figure here is
+  blocked; one piece of text is" is superseded. `0.1.0-beta.9` publishes
+  `getMaterialName(symbol, locale)` on the same contract as the module, blueprint and effect
+  accessors, closing
+  [Elite-Dangerous-Almanac#275](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/275).
+  New **FR-005b** requires material names to be asked of it per locale.
+- **Sparse coverage is the case FR-005b is written for.** Verified against the installed package:
+  of the 146 materials, English, Spanish and Russian cover all of them, Portuguese and French 140,
+  German 128, Georgian 28, and Hungarian, Italian and both Chinese tags none. The package never
+  substitutes English for a missing translation, so one list in one locale will mix translated and
+  untranslated names — which is why the fallback is marked per material rather than announced once
+  for the list, and why new **FR-015a** tests that case rather than only the happy path.
+- **A neighbouring accessor is not this one.** `getMicroResourceName` covers Odyssey micro resources,
+  a separate catalogue this feature's material list does not reach. It is recorded so the two are not
+  conflated when the material list is built.

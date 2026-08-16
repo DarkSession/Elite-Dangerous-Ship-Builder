@@ -32,7 +32,7 @@ statistics the answers describe (feature 003's family), and how any of it is pre
 ### Session 2026-08-16
 
 - Q: Where does Frontier Developments' media-usage notice live, given features 001 and 010 both
-  require it? → A: Here, once. Both features require the notice to be *reachable* from wherever
+  require it? → A: Here, once. Both features require the notice to be _reachable_ from wherever
   artwork is shown; reproducing it in each place would be two copies to keep correct. This feature
   presents it, and those features owe the route.
 - Q: Is the licence text written here or taken from what actually ships? → A: Taken, and generated at
@@ -41,7 +41,7 @@ statistics the answers describe (feature 003's family), and how any of it is pre
   failure than having no page at all.
 - Q: Which versions does the application state? → A: Three things, two of which it has. Its own
   release version and the bundled `@elite-dangerous-almanac/core` version are both real and both
-  shown. The version of the *game data* — which game update the catalogue matches — is not something
+  shown. The version of the _game data_ — which game update the catalogue matches — is not something
   the package reports, and reads as unavailable rather than being impersonated by either of the
   other two. Feature 001's FR-044a fixes this; this feature presents it.
 - Q: Is the FAQ marketing copy, or does it answer real questions? → A: It answers the questions the
@@ -51,8 +51,12 @@ statistics the answers describe (feature 003's family), and how any of it is pre
   feature.
 - Q: Does this surface need a network connection? → A: No. Everything it presents is bundled: the
   licence texts, the notices, the versions and the answers. An outbound link may be offered where one
-  is genuinely useful (the library's repository, an upstream issue), but nothing here may *require*
-  one to be readable, since the application is fully usable offline after first load.
+  is genuinely useful (the library's repository, an upstream issue), but nothing here may _require_
+  one to be readable. This surface is bundled in full precisely because it is the one that explains
+  what does and does not work offline: the application's capabilities all do, while hull artwork is
+  fetched per hull and so is available for the hulls the Commander has opened (constitution
+  principle I, amended 3.0.0 on 2026-08-16). A page that could not be read without a network would be
+  unreadable exactly when a Commander went looking for that explanation.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -224,6 +228,12 @@ capability it describes.
   at a completed grade; why the catalogue quotes no figure that depends on a fitted module; where
   every figure comes from and what happens when one is wrong; what survives a browser's storage being
   cleared; and what works offline.
+- **FR-008a**: The offline answer FR-008 requires MUST distinguish the application's capabilities,
+  which all work offline after first load, from hull artwork, which is fetched from the application's
+  own origin when a hull is opened and is therefore available offline only for the hulls the
+  Commander has already opened. It MUST say that the artwork comes from this application and from no
+  third party, so that a Commander who sees a request being made knows where it goes and knows that
+  nobody outside the application learns which hulls they look at.
 - **FR-009**: Every answer MUST describe what the application currently does. An answer that
   describes an intention, a former behaviour or a planned one MUST NOT be presented as a statement of
   behaviour.
@@ -270,14 +280,16 @@ capability it describes.
 
 ## Upstream dependencies
 
-Nothing in this feature is blocked, and one thing it presents is waiting.
+Nothing in this feature is blocked, and one thing it presents is waiting. Verified against the
+installed `@elite-dangerous-almanac/core@0.1.0-beta.9` on 2026-08-16.
 
 `@elite-dangerous-almanac/core` ships its licence and its `THIRD_PARTY_NOTICES.md` in the installed
 package, which is what FR-005a generates from; its own release version is available from the
-installed package at build time. The game catalogue version is not available and is raised upstream
-under feature 001's FR-044a — the package records a game version as prose in its provenance files
-rather than as a machine-readable value. Until it reports one, FR-006 shows that version as
-unavailable.
+installed package at build time. The game catalogue version is still not available — at beta.9 the
+package records it as prose in `PROVENANCE/ships/SOURCES.md` (`4.4.0.3`) rather than as a
+machine-readable value, so FR-006 continues to show that version as unavailable. Feature 001's FR-044a
+owns the gap and records that raising it upstream is deferred by decision rather than pending. FR-006
+here is unaffected either way, since it presents the absence rather than waiting on a fix.
 
 ## Success Criteria _(mandatory)_
 

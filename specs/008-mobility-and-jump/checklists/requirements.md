@@ -86,3 +86,17 @@ Two notes above are superseded by decisions taken on 2026-08-16:
 - **FR-014 shows two curve masses, not three.** The thrusters' minimum curve mass is carried by the
   package and deliberately not presented: it sits below the unladen mass of every hull the thruster
   fits, so it marks a position no build occupies. The drive still shows optimal mass alone.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **The last of the jump gaps is closed.** The note above ends by recording that the loadout accessor
+  took a cargo load and no fuel load, so the lightest state's total could not be asked for.
+  `0.1.0-beta.9` gives `ShipLoadout.totalRange` the same `{ fuel, cargo }` options as `jumpRange` and
+  adds `totalMax` to `jumpRangeSummary`. FR-004 now reports all three totals, none of them
+  unavailable, and this area has no blocked figure. That closes
+  [Elite-Dangerous-Almanac#273](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/273).
+- **The reason it had to be closed upstream is now demonstrable.** Reaching the total through the pure
+  `totalRange(mass, fuel, fsd)` would have omitted a fitted Guardian FSD Booster, whose `jumpBoost`
+  lives on the booster module and not on the drive record. Verified against the installed package:
+  fitting one moves the maximum jump's total in step with the single-jump range, which is what
+  SC-001 requires and what assembling the drive's constants locally would have broken.

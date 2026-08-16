@@ -189,8 +189,8 @@ selected state marked among them.
    state carries a multi-jump total — the distance the tank covers and the number of jumps it affords
    — beside its single-jump range.
 5. **Given** the maximum single jump, **When** the Commander views its total, **Then** it is that one
-   jump, reported as a single jump, or reported as unavailable while the package's loadout accessor
-   cannot be asked for a total at one jump's fuel.
+   jump — the same distance as its single-jump figure, with a jump count of one — read from the
+   package rather than inferred from the fact that one jump's fuel affords one jump.
 6. **Given** a build with no cargo capacity, **When** the Commander views range by load, **Then** the
    laden state is reported as identical to the unladen state rather than implied to be worse.
 
@@ -259,13 +259,14 @@ selected state marked among them.
   values.
 - **FR-004**: The application MUST display a multi-jump total for each of FR-003's three load states
   — the distance covered and the number of jumps afforded — so that a total stands beside every
-  single-jump figure. Both halves of every total MUST come from the package. The unladen and laden
-  totals are reported directly, over a full tank with an empty and a full hold. The maximum single
-  jump carries one jump's fuel, so its total is that jump and its count is one; the package computes
-  such a total, but its loadout accessor takes a cargo load only and cannot be asked for one at a
-  chosen fuel load. Assembling the drive's post-engineering constants here to call the underlying
-  calculation would risk diverging from the build's own figures, against SC-001, so that third total
-  is reported as unavailable until the accessor accepts a fuel load.
+  single-jump figure. Both halves of every total MUST come from the package, which reports all three
+  directly: the unladen and laden totals over a full tank with an empty and a full hold, and the
+  maximum single jump's total at one jump's fuel with an empty hold. The application MUST NOT assemble
+  the drive's post-engineering constants to reach any of them — doing so omits a fitted Guardian FSD
+  Booster's contribution, which lives on the booster rather than on the drive, and would diverge from
+  the build's own single-jump figure against SC-001. _(Amended 2026-08-16: the third total was
+  reported as unavailable while the loadout accessor took a cargo load only. `0.1.0-beta.9` accepts a
+  fuel load and carries the total on the summary, so all three are now reported.)_
 - **FR-005**: The application MUST display the hull's mass lock factor.
 - **FR-006**: A build with no Frame Shift Drive MUST have its jump statistics reported as unavailable
   with the reason, rather than shown as zero.
@@ -387,12 +388,12 @@ selected state marked among them.
 
 ## Upstream dependencies
 
-Almost all of this specification is satisfied by `@elite-dangerous-almanac/core@0.1.0-beta.8`,
+All of this specification is satisfied by `@elite-dangerous-almanac/core@0.1.0-beta.9`,
 verified against the installed package on 2026-08-16. `mobilityMetrics` computes speed, boost, pitch,
 roll and yaw from the build's thrusters, mass and ENG pip allocation, applying the thruster mass
 curves, and reports zero performance above the curve rather than a fabricated value. Jump range and
 fuel per jump are computed for any load, and `jumpRangeSummary` returns the three single-jump figures
-together with the unladen and laden multi-jump totals, which satisfies FR-001 and FR-003. Hull mass,
+together with all three multi-jump totals, which satisfies FR-001, FR-003 and FR-004. Hull mass,
 unladen mass, fuel capacity, cargo capacity, mass lock and each module's own post-engineering mass
 are all available, which satisfies FR-010 and FR-012.
 
@@ -413,21 +414,26 @@ are all available, which satisfies FR-010 and FR-012.
    permits. No third term is supplied, the curve is not evaluated, and neither figure replaces the
    multiplier the package computes at that mass.
 
-**Both items previously raised upstream are settled. One narrower request replaces them.**
+**Every item previously raised upstream is settled. Nothing in this area is blocked.**
 
-**The jump count (FR-004) — closed, and re-scoped.** The gap recorded here at beta.4 was that
-`totalRange` iterated the jumps as the tank drained and returned only the distance. It now returns
-`{ range, jumps }`, and `jumpRangeSummary` carries that pair for the unladen and the laden state, so
-no iteration is re-run here. What remains open is narrower: `ShipLoadout.totalRange` accepts a cargo
-load only and always spends a full main tank, so the maximum single jump's total — one jump's fuel,
-no cargo, therefore one jump — cannot be asked of the loadout. The underlying
-`totalRange(mass, fuel, fsd)` accepts any fuel load, but reaching it means assembling the drive's
-post-engineering constants and any Guardian booster bonus outside the loadout that already derives
-them, which invites exactly the divergence SC-001 forbids — measured at 4 LY a jump on a build with a
-Guardian FSD Booster, whose `jumpBoost` the drive's own record does not carry. A `fuel` option on the
-accessor, or a third total on the summary, closes it. Raised upstream as
-[Elite-Dangerous-Almanac#273](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/273);
-FR-004 reports that total as unavailable meanwhile.
+**The jump count and the maximum jump's total (FR-004) — both closed.** The gap recorded here at
+beta.4 was that `totalRange` iterated the jumps as the tank drained and returned only the distance. It
+returns `{ range, jumps }` as of beta.8. The narrower gap that survived it — that
+`ShipLoadout.totalRange` took a cargo load only and always spent a full main tank, so the maximum
+single jump's total could not be asked of the loadout — closed at `0.1.0-beta.9`. The accessor now
+takes the same `{ fuel, cargo }` options as `jumpRange`, and `jumpRangeSummary` carries a third pair,
+`totalMax`, alongside `totalUnladen` and `totalLaden`. Both routes read the total off the build, so
+the Guardian FSD Booster's contribution is included: verified against the installed package, fitting a
+booster moves the maximum jump's total exactly as it moves the single-jump range, where assembling
+the drive's own constants outside the loadout would have omitted it — the divergence measured at 4 LY
+a jump that made this a blocker rather than an inconvenience. That closes
+[Elite-Dangerous-Almanac#273](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/273),
+released in `0.1.0-beta.9`.
+
+Two boundaries of the new option are worth recording, both verified: a fuel load of zero returns a
+total of zero range and zero jumps, which is a figure rather than an absent one and is presented under
+FR-006a's treatment of the fuelless build; and a fuel load large enough to require more than 100,000
+jumps is refused rather than iterated, which no load a build can actually carry reaches.
 
 **The Frame Shift Drive's mass presentation (FR-015) is settled, not blocked.** `MassCurveStats` —
 three curve masses with their multipliers — is carried by thrusters (40 of 40) and shield generators,

@@ -79,3 +79,15 @@
   [feature 010](../../010-hull-anatomy/spec.md). This specification records the assumption in its
   Assumptions section instead of discounting a total, which would be exactly the local correction
   principle II forbids.
+
+## Amended 2026-08-16 (`0.1.0-beta.9` upgrade)
+
+- **Re-verified against the installed `0.1.0-beta.9`.** Both gaps stay closed and nothing in this
+  feature waits on an upstream release; the note above records the check at beta.8.
+- **A second distributor accessor appeared and endurance deliberately ignores it.** `0.1.0-beta.9`
+  adds `ShipLoadout.distributorMetrics`, which reports all three capacitors' capacity and pip-scaled
+  recharge for [feature 005](../../005-power-and-heat/spec.md). Endurance here still comes whole from
+  `weaponsCapacitorMetrics`, which also applies the deployed power budget. The two agree on the WEP
+  rate at the same allocation, verified — so FR-014's prohibition now has a specific temptation to
+  name: reassembling endurance from the distributor's capacity and rate would be the composition it
+  forbids, and would additionally drop the power-budget term.
