@@ -310,10 +310,11 @@ describe('build-link codec', () => {
     expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
   });
 
-  it('round-trips every package-owned fixed pre-engineered variant', () => {
-    expect(PRE_ENGINEERED_MODULES).toHaveLength(76);
+  it('round-trips every package-identifiable fixed pre-engineered variant', () => {
+    const identifiable = PRE_ENGINEERED_MODULES.filter(({ modifiers }) => modifiers?.length);
+    expect(identifiable).toHaveLength(54);
 
-    for (const variant of PRE_ENGINEERED_MODULES) {
+    for (const variant of identifiable) {
       const source = ShipLoadout.fromLoadout({
         Ship: 'Krait_MkII',
         Modules: [
@@ -340,6 +341,31 @@ describe('build-link codec', () => {
       expect(decoded.fittedModuleAt('LargeHardpoint1')?.effectiveStats).toEqual(
         source.fittedModuleAt('LargeHardpoint1')?.effectiveStats,
       );
+    }
+  });
+
+  it('does not classify fixed variants that the Almanac cannot identify', () => {
+    const unidentified = PRE_ENGINEERED_MODULES.filter(({ modifiers }) => !modifiers?.length);
+    expect(unidentified).toHaveLength(22);
+
+    for (const variant of unidentified) {
+      const source = ShipLoadout.fromLoadout({
+        Ship: 'Krait_MkII',
+        Modules: [
+          {
+            Slot: 'LargeHardpoint1',
+            Item: variant.symbol,
+            Engineering: {
+              BlueprintName: variant.blueprint,
+              Level: variant.grade,
+              Quality: 1,
+            },
+          },
+        ],
+      });
+
+      expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toBeNull();
+      expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
     }
   });
 
@@ -438,6 +464,45 @@ describe('build-link codec', () => {
     expect(() => createBuildLinkCodec(2, codecTable1)).toThrowError(
       'The build-link codec table version is invalid.',
     );
+  });
+
+  it('does not widen global experimental indexes at an exact power of two', () => {
+    const source = ShipLoadout.default('Krait_MkII');
+    source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
+      grade: 5,
+      quality: 1,
+      experimental: 'special_fsd_heavy',
+    });
+    source.applyBlueprint('PowerPlant', 'PowerPlant_Armoured', {
+      grade: 5,
+      quality: 1,
+    });
+    const moduleIndex = codecTable1.MODULES.indexOf(
+      source.fittedModuleAt('FrameShiftDrive')!.symbol,
+    );
+    const emptySetIndex = codecTable1.EXPERIMENTAL_SETS.length;
+    const tableWithEffectCount = (effectCount: number) => ({
+      ...codecTable1,
+      $generated: { ...codecTable1.$generated, tableVersion: 2 },
+      EXPERIMENTAL_EFFECTS: [
+        ...codecTable1.EXPERIMENTAL_EFFECTS,
+        ...Array.from(
+          { length: effectCount - codecTable1.EXPERIMENTAL_EFFECTS.length },
+          (_value, index) => `TestEffect_${index}`,
+        ),
+      ],
+      EXPERIMENTAL_SETS: [...codecTable1.EXPERIMENTAL_SETS, []],
+      EXPERIMENTAL_SET_BY_MODULE: codecTable1.EXPERIMENTAL_SET_BY_MODULE.map((set, index) =>
+        index === moduleIndex ? emptySetIndex : set,
+      ),
+    });
+
+    const at127 = createBuildLinkCodec(2, tableWithEffectCount(127));
+    const at128 = createBuildLinkCodec(2, tableWithEffectCount(128));
+    const fragment = at127.encodeBuildLinkFragment(source);
+
+    expect(at128.encodeBuildLinkFragment(source)).toBe(fragment);
+    expect(minimalState(at128.decodeBuildLinkFragment(fragment))).toEqual(minimalState(source));
   });
 
   it('loads the payload-declared table on demand', async () => {
@@ -704,6 +769,19 @@ describe('build-link codec', () => {
       'invalidPayload',
     );
     expectCodecError(() => decodeBuildLinkFragment(withTrailingByte(empty)), 'invalidPayload');
+  });
+
+  it('distinguishes a valid payload from an Almanac reconstruction failure', () => {
+    const encoded = encodeBuildLinkFragment(ShipLoadout.default('SideWinder'));
+    const reconstruction = vi.spyOn(ShipLoadout, 'fromLoadout').mockImplementationOnce(() => {
+      throw new TypeError('Synthetic Almanac failure');
+    });
+
+    try {
+      expectCodecError(() => decodeBuildLinkFragment(encoded), 'reconstructionFailed');
+    } finally {
+      reconstruction.mockRestore();
+    }
   });
 
   it('refuses a payload changed after export', () => {

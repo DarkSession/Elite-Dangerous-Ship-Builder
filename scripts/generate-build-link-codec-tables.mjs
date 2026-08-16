@@ -27,6 +27,23 @@ if (almanacPackage.version !== TABLE_1_ALMANAC_VERSION) {
   );
 }
 
+const assertUniqueIdentities = (values, kind) => {
+  const seen = new Set();
+  for (const value of values) {
+    if (typeof value !== 'string' || value.length === 0) {
+      throw new Error(`${kind} contains an empty or non-string identity.`);
+    }
+    const key = value.toLowerCase();
+    if (seen.has(key)) throw new Error(`${kind} contains duplicate identity ${value}.`);
+    seen.add(key);
+  }
+};
+const assertIndexes = (values, valueCount, kind) => {
+  if (values.some((value) => !Number.isInteger(value) || value < 0 || value >= valueCount)) {
+    throw new Error(`${kind} contains an out-of-range index.`);
+  }
+};
+
 const ships = SHIPS.map(({ symbol }) => symbol);
 const stockLoadouts = Object.fromEntries(ships.map((ship) => [ship, ShipLoadout.default(ship)]));
 const modules = ALL_MODULES.map(({ symbol }) => symbol);
@@ -72,6 +89,10 @@ const blueprintGrades = blueprints.map((fdname) => {
   return grades;
 });
 const experimentalEffects = Object.keys(EXPERIMENTAL_EFFECTS).sort();
+assertUniqueIdentities(ships, 'Ship table');
+assertUniqueIdentities(modules, 'Module table');
+assertUniqueIdentities(blueprints, 'Blueprint table');
+assertUniqueIdentities(experimentalEffects, 'Experimental-effect table');
 const moduleIndex = new Map(modules.map((symbol, index) => [symbol.toLowerCase(), index]));
 const blueprintIndex = new Map(blueprints.map((fdname, index) => [fdname.toLowerCase(), index]));
 const experimentalIndex = new Map(
@@ -86,6 +107,7 @@ const slotsByShip = Object.fromEntries(
       .map(({ key }) => key),
   ]),
 );
+for (const ship of ships) assertUniqueIdentities(slotsByShip[ship], `${ship} slot table`);
 const indexOf = (index, identity, kind) => {
   const value = index.get(identity.toLowerCase());
   if (value === undefined) throw new Error(`Missing ${kind} identity ${identity}.`);
@@ -128,7 +150,7 @@ if (new Set(preEngineeredKeys).size !== preEngineeredKeys.length) {
   throw new Error('Pre-engineered codec identities are not unique.');
 }
 
-const internSets = (sets) => {
+const internSets = () => {
   const unique = [];
   const indexes = new Map();
   return {
@@ -190,6 +212,69 @@ const preEngineeredSetByModule = modules.map((symbol) =>
     modules[module].toLowerCase() === symbol.toLowerCase() ? [index] : [],
   ),
 );
+
+assertIndexes(poweredModules, modules.length, 'Powered-module table');
+for (const ship of ships) {
+  const slots = slotsByShip[ship];
+  if (
+    moduleSetByShip[ship].length !== slots.length ||
+    defaultModulesByShip[ship].length !== slots.length
+  ) {
+    throw new Error(`${ship} has inconsistent parallel slot tables.`);
+  }
+  assertIndexes(moduleSetByShip[ship], moduleSets.unique.length, `${ship} module-set table`);
+  assertIndexes(
+    defaultModulesByShip[ship].filter((value) => value !== null),
+    modules.length,
+    `${ship} default-module table`,
+  );
+  assertIndexes(
+    fixedModulesByShip[ship].map(({ module }) => module),
+    modules.length,
+    `${ship} fixed-module table`,
+  );
+  assertUniqueIdentities(
+    fixedModulesByShip[ship].map(({ slot }) => slot),
+    `${ship} fixed-slot table`,
+  );
+}
+for (const [index, set] of moduleSets.unique.entries()) {
+  assertIndexes(set, modules.length, `Module candidate set ${index}`);
+}
+for (const [index, set] of blueprintSets.unique.entries()) {
+  assertIndexes(set, blueprints.length, `Blueprint candidate set ${index}`);
+}
+for (const [index, set] of experimentalSets.unique.entries()) {
+  assertIndexes(set, experimentalEffects.length, `Experimental candidate set ${index}`);
+}
+if (
+  blueprintGrades.length !== blueprints.length ||
+  blueprintSetByModule.length !== modules.length ||
+  experimentalSetByModule.length !== modules.length ||
+  preEngineeredSetByModule.length !== modules.length
+) {
+  throw new Error('Codec table parallel arrays have inconsistent lengths.');
+}
+assertIndexes(blueprintSetByModule, blueprintSets.unique.length, 'Blueprint-set mapping');
+assertIndexes(experimentalSetByModule, experimentalSets.unique.length, 'Experimental-set mapping');
+for (const [index, variant] of preEngineeredVariants.entries()) {
+  assertIndexes([variant.module], modules.length, `Pre-engineered variant ${index} module`);
+  assertIndexes(
+    [variant.blueprint],
+    blueprints.length,
+    `Pre-engineered variant ${index} blueprint`,
+  );
+  if (variant.experimental !== null) {
+    assertIndexes(
+      [variant.experimental],
+      experimentalEffects.length,
+      `Pre-engineered variant ${index} experimental`,
+    );
+  }
+}
+for (const [index, set] of preEngineeredSetByModule.entries()) {
+  assertIndexes(set, preEngineeredVariants.length, `Pre-engineered module set ${index}`);
+}
 const output = `${JSON.stringify(
   {
     $generated: {

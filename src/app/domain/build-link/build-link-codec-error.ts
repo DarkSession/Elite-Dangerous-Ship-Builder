@@ -4,14 +4,16 @@ export type BuildLinkCodecErrorCode =
   | 'unsupportedEnvelope'
   | 'unsupportedTableVersion'
   | 'invalidPayload'
-  | 'unknownIdentity';
+  | 'unknownIdentity'
+  | 'reconstructionFailed';
 
 export class BuildLinkCodecError extends Error {
   constructor(
     readonly code: BuildLinkCodecErrorCode,
     message: string,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
     this.name = 'BuildLinkCodecError';
   }
 }

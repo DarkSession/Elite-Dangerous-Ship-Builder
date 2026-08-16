@@ -18,7 +18,7 @@ The format is designed around these constraints:
 - links must remain compact for empty, stock, and fully engineered ships;
 - every accepted link must decode deterministically and losslessly;
 - alternate encodings of the same build must be rejected;
-- published table versions must remain decodable indefinitely;
+- published table versions must remain protocol-decodable indefinitely;
 - old tables must not accumulate in the application's initial JavaScript bundle; and
 - malformed, corrupted, unsupported, or ambiguous input must fail instead of being guessed.
 
@@ -193,6 +193,11 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their quality is still encoded, while their modifier arrays are not.
 
+Almanac beta.8 publishes modifier signatures for 54 fixed variants, which makes those articles
+identifiable and shareable. Its 22 Mercenary-system variants have no published modifier signatures;
+Almanac reports those fitted modules as unidentified, so the codec rejects them rather than
+re-deriving a package result from blueprint metadata.
+
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
 the same contextual pre-engineered identity as every other fixed article; the codec has no separate
 decorative state or application-specific modifier resolver.
@@ -250,9 +255,12 @@ Validation occurs at every layer:
 8. Only after protocol validation, reconstruct the `ShipLoadout` through the Almanac.
 
 Canonicality therefore depends only on the immutable decoder and tables, not on Almanac object
-normalisation. Corruption tests also exercise re-checksummed body mutations so structurally valid
-but non-canonical alternatives cannot bypass the CRC check. Almanac reconstruction fidelity remains
-a separately tested compatibility property.
+normalisation. The final intermediate-state reserialization is authoritative; inner readers retain
+structural bounds and reference checks but do not duplicate the writer's adaptive cost model.
+Corruption tests also exercise re-checksummed body mutations so structurally valid but non-canonical
+alternatives cannot bypass the CRC check. Almanac reconstruction fidelity remains a separately
+tested compatibility property, and a reconstruction failure is reported separately from malformed
+protocol data.
 
 ## Versioned tables and lazy loading
 
@@ -273,8 +281,10 @@ initial bundle.
 
 The current application dependency is exactly pinned to Almanac `0.1.0-beta.8`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass; an incompatible upgrade
-requires retaining a compatible reconstruction path for the affected table version.
+fixtures and must never be regenerated merely to make an upgrade pass. Frozen tables preserve
+protocol interpretation, but full `ShipLoadout` reconstruction also depends on compatible Almanac
+identities and behaviour; an incompatible upgrade requires retaining a compatible reconstruction
+path for the affected table version.
 
 ## Reference corpus
 

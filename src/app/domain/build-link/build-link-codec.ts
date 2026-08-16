@@ -216,7 +216,7 @@ function encodeWithActiveTable(loadout: ShipLoadout): string {
 /** Decode a fragment produced by the bound encoder for the active table. */
 function decodeWithActiveTable(fragment: string): ShipLoadout {
   const body = decodeBuildLinkBody(fragment);
-
+  let state: CodecState;
   try {
     const reader = new BitReader(body);
     const tableVersion = reader.readBits(TABLE_VERSION_BITS);
@@ -226,14 +226,23 @@ function decodeWithActiveTable(fragment: string): ShipLoadout {
         `Build-link table version ${tableVersion} is not supported by the loaded table.`,
       );
     }
-    const state = readCodecState(reader);
+    state = readCodecState(reader);
     if (!bytesEqual(writeCodecState(state), body)) {
       throw new BuildLinkCodecError('invalidPayload', 'The build-link encoding is not canonical.');
     }
-    return reconstructLoadout(state);
   } catch (error) {
     if (error instanceof BuildLinkCodecError) throw error;
     throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is invalid.');
+  }
+  try {
+    return reconstructLoadout(state);
+  } catch (error) {
+    if (error instanceof BuildLinkCodecError) throw error;
+    throw new BuildLinkCodecError(
+      'reconstructionFailed',
+      'The build link is valid but its loadout could not be reconstructed.',
+      { cause: error },
+    );
   }
 }
 
@@ -548,10 +557,6 @@ function readModuleIdentities(
     });
   }
 
-  const costs = moduleIdentityLayoutCosts(ship, slots, defaults, modules);
-  if (useBaseline !== costs.baselineCost <= costs.absoluteCost) {
-    throw new BuildLinkCodecError('invalidPayload', 'The module layout is not canonical.');
-  }
   return modules;
 }
 
@@ -668,13 +673,6 @@ function readModuleIdentitySequence(
     previous = moduleIndex;
   }
 
-  const entries = modules.map((moduleIndex, index) => ({ ...contexts[index]!, moduleIndex }));
-  const canonicalReferences =
-    entries.length > 1 &&
-    referencedModuleIdentityBitCost(entries) < plainModuleIdentityBitCost(entries);
-  if (useReferences !== canonicalReferences) {
-    throw new BuildLinkCodecError('invalidPayload', 'Module identity encoding is not canonical.');
-  }
   return modules;
 }
 
@@ -785,28 +783,33 @@ function readPowerStates(reader: BitReader, moduleCount: number): PowerState[] {
 
   const mode = reader.readBits(2);
   let decoded: PowerState[];
-  if (mode === 0) decoded = readFixedPowerStates(reader, moduleCount);
-  if (mode === 1) {
-    for (const index of readIndexSet(reader, moduleCount)) {
-      states[index] = {
-        on: decodeOn(reader.readBits(2)),
-        priority: decodePriority(reader.readBits(3)),
-      };
-    }
-    decoded = states;
-  } else if (mode === 2) {
-    decoded = readBaselinePowerStates(reader, moduleCount);
-  } else if (mode !== 0) {
-    throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
+  switch (mode) {
+    case 0:
+      decoded = readFixedPowerStates(reader, moduleCount);
+      break;
+    case 1:
+      for (const index of readIndexSet(reader, moduleCount)) {
+        states[index] = {
+          on: decodeOn(reader.readBits(2)),
+          priority: decodePriority(reader.readBits(3)),
+        };
+      }
+      decoded = states;
+      break;
+    case 2:
+      decoded = readBaselinePowerStates(reader, moduleCount);
+      break;
+    default:
+      throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
   }
   const overrides = indexesWhere(
-    decoded!,
+    decoded,
     ({ on, priority }) => on !== undefined || priority !== undefined,
   );
-  if (overrides.length === 0 || mode !== powerMode(decoded!, overrides)) {
+  if (overrides.length === 0 || mode !== powerMode(decoded, overrides)) {
     throw new BuildLinkCodecError('invalidPayload', 'Power-state mode is not canonical.');
   }
-  return decoded!;
+  return decoded;
 }
 
 function powerMode(modules: readonly PowerState[], overrides: readonly number[]): 0 | 1 | 2 {
@@ -1108,23 +1111,6 @@ function readEngineeringStates(
     states[occupiedIndex] = engineering;
     decodedRecords.push(engineering);
   }
-  const records = engineered.map((occupiedIndex) => ({
-    moduleIndex: moduleIndexes[occupiedSlots[occupiedIndex]!]!,
-    engineering: states[occupiedIndex]!,
-  }));
-  const references = engineeringReferences(records);
-  const plainCost = records.reduce((cost, record) => cost + engineeringRecordBitCost(record), 0);
-  const referenceWidthForCost = bitsRequired(records.length);
-  const referenceCost = records.reduce(
-    (cost, record, index) =>
-      cost +
-      1 +
-      (references[index] === null ? engineeringRecordBitCost(record) : referenceWidthForCost),
-    0,
-  );
-  if (useReferences !== (records.length > 1 && referenceCost < plainCost)) {
-    throw new BuildLinkCodecError('invalidPayload', 'Engineering reference mode is not canonical.');
-  }
   return states;
 }
 
@@ -1225,9 +1211,6 @@ function readIndexSet(reader: BitReader, valueCount: number): number[] {
     if (count > valueCount) {
       throw new BuildLinkCodecError('invalidPayload', 'An index set contains too many values.');
     }
-    if (indexSetModeForCount(valueCount, count) !== 3) {
-      throw new BuildLinkCodecError('invalidPayload', 'An index set is not canonical.');
-    }
     const combinations = combinationCount(valueCount, count);
     const width = combinationRankWidth(combinations);
     const rank = width === 0 ? 0 : reader.readBits(width);
@@ -1235,9 +1218,6 @@ function readIndexSet(reader: BitReader, valueCount: number): number[] {
       throw new BuildLinkCodecError('invalidPayload', 'An index-set rank is invalid.');
     }
     indexes = combinationUnrank(valueCount, count, rank);
-  }
-  if (mode !== indexSetMode(valueCount, indexes)) {
-    throw new BuildLinkCodecError('invalidPayload', 'An index set is not canonical.');
   }
   return indexes;
 }
@@ -1510,7 +1490,7 @@ function engineeringStateFromModule(
   }
   const preEngineeredIndex =
     module.preEngineeredVariant === null
-      ? preEngineeredVariantIndexFromEngineering(moduleIndex, engineering)
+      ? -1
       : preEngineeredVariantIndex(module.preEngineeredVariant);
   if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
@@ -1560,23 +1540,6 @@ function engineeringStateFromModule(
     quality: engineering.Quality,
     experimental,
   };
-}
-
-function preEngineeredVariantIndexFromEngineering(
-  moduleIndex: number,
-  engineering: ModuleEngineering,
-): number {
-  const matches = preEngineeredSetForModule(moduleIndex).filter((variantIndex) => {
-    const identity = codecContext().tables.PRE_ENGINEERED_VARIANTS[variantIndex];
-    if (!identity) return false;
-    const blueprint = codecContext().tables.BLUEPRINTS[identity.blueprint];
-    return (
-      normalise(blueprint) === normalise(engineering.BlueprintName) &&
-      identity.grade === engineering.Level &&
-      resolvePreEngineeredVariant(variantIndex).modifiers === undefined
-    );
-  });
-  return matches.length === 1 ? matches[0]! : -1;
 }
 
 function writeEngineering(
@@ -2052,7 +2015,7 @@ function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables):
     shipBits: bitsRequired(tables.SHIPS.length),
     moduleBits: bitsRequired(tables.MODULES.length),
     blueprintBits: bitsRequired(tables.BLUEPRINTS.length),
-    experimentalBits: bitsRequired(tables.EXPERIMENTAL_EFFECTS.length + 1),
+    experimentalBits: bitsRequired(tables.EXPERIMENTAL_EFFECTS.length),
     poweredModuleSet: new Set(tables.POWERED_MODULES),
     shipIndex: createIndex(tables.SHIPS),
     moduleIndex: createIndex(tables.MODULES),
