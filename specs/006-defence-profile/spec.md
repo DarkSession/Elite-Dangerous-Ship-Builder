@@ -249,9 +249,10 @@ a build with no module reinforcement says so rather than reporting no protection
   regeneration rate, and the two recovery phases the package reports as the distinct figures they
   are: the time from collapse to the threshold at which the shield comes back up, and the time from
   that threshold to full strength. Each phase MUST identify the rate that governs it — the broken
-  rate up to the threshold, the ordinary rate beyond it — and the threshold MUST be the one the
-  package reports rather than a proportion assumed here, so a Commander reads what fraction of their
-  shield they get back when protection returns. The application MUST NOT present their sum as a
+  rate up to the threshold, the ordinary rate beyond it. The threshold itself MUST NOT be quoted as a
+  proportion of the shield: the package reports the two durations and the two rates but not the
+  fraction at which protection returns, and naming one here would be a game rule this application
+  does not own. The application MUST NOT present their sum as a
   single collapse-to-full figure, which the package does not report, which measures a moment nobody
   plans around, and which would bury the one that matters: when protection comes back. Where the package reports a recovery duration as infinite,
   regeneration being unsustainable at the allocation in force, the application MUST state that as the
@@ -338,8 +339,9 @@ a build with no module reinforcement says so rather than reporting no protection
 
 ## Upstream dependencies
 
-Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16. **Nothing
-in this area is blocked, and nothing is waiting.**
+Verified against the installed `@elite-dangerous-almanac/core@0.1.0-beta.10` on 2026-08-16. **No
+figure this area presents is blocked.** One value it might have presented is not published, and
+FR-006 is written around that rather than against it — see the recovery threshold below.
 
 The shield and armour breakdowns, per-damage-type resistances, module protection and hull hardness
 were available from the outset. Shield recovery and cell banks arrived in `0.1.0-beta.4`: the package
@@ -371,8 +373,8 @@ contract (#245) as a stable code with parameters.
 
 Two capabilities this family depends on arrived in `0.1.0-beta.8` without an issue behind them — WEP
 pip scaling and mount geometry in real units — so they were delivered rather than requested, and
-neither belongs in the list above. Both had been recorded in an earlier draft as gaps rather than as
-filed requests, which is the distinction worth keeping: a capability the package happens to add is not
+neither belongs in the list above. Earlier drafts recorded both as raised upstream, which was untrue
+of each, and that is the distinction worth keeping: a capability the package happens to add is not
 evidence that asking for it worked, and writing in a specification that something was raised upstream
 never made it so. Feature 010 records why the mount-geometry request it once claimed was withdrawn
 instead of raised.
@@ -397,6 +399,22 @@ The change is breaking upstream, and the break was taken whole rather than worke
 data-free aggregator now requires each bank's power state and refuses a summary without one. Nothing
 in this application supplied that input, so the upgrade cost nothing to adopt beyond the two
 requirement edits above.
+
+**The recovery threshold is not published, and FR-006 is written around that.** The package reports
+both recovery durations and both regeneration rates, but nothing that names the fraction of shield
+strength at which protection returns: `shieldRecovery` carries `regenRate`, `brokenRegenRate`,
+`recoveryTime` and `regenTime` and no threshold field, and no export or constant carries the value —
+verified at `0.1.0-beta.10`. The 50% the package applies internally is documented in its prose only.
+An earlier draft of FR-006 required the threshold to be "the one the package reports", which no
+version has ever reported; quoting the figure anyway would mean stating a game rule from the
+package's documentation rather than its data, which principle II forbids. FR-006 therefore requires
+the two phases and their governing rates, and forbids quoting the proportion at all.
+
+Raising it upstream is a judgement call rather than an obligation, and it is **left open
+deliberately**: nothing here is blocked by the absence, the durations carry the information a
+Commander acts on, and the value would be a presentational nicety. It is recorded here so the choice
+stays visible, and so no later reader assumes a request exists — none does. The same position feature
+001 takes on the game catalogue version, for the same reason.
 
 ## Success Criteria _(mandatory)_
 

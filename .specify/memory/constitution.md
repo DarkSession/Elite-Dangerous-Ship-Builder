@@ -343,11 +343,12 @@ to justify itself against them; when it cannot, the simpler option wins.
   claimed the plates were bundled, and FR-036a is added so the behaviour it
   already required is tested.
 
-  The rationale is delivery, and it is not marginal: the installed illustration
-  set is 64 MB across 144 files with the largest single file at 4.1 MB, and the
-  schematics add 9.0 MB. Bundling that into a first load is not a thing a phone
-  can be asked to do, and optimising the artwork alone does not close a gap of
-  that size. Fetching a hull's artwork when the Commander opens that hull does.
+  The rationale is delivery, and it is not marginal: the installed ship artwork
+  is 64 MB across 144 files with the largest single file at 4.1 MB — 55 MB of
+  that the 48 illustrations, the remaining 9.0 MB the 96 schematic plates.
+  Bundling that into a first load is not a thing a phone can be asked to do, and
+  optimising the artwork alone does not close a gap of that size. Fetching a
+  hull's artwork when the Commander opens that hull does.
 
   Principle VI's translation clause is harmonised with the same change. It read
   "no outbound request", which after this amendment would have contradicted
