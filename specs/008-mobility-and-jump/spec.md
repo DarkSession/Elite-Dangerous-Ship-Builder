@@ -368,10 +368,9 @@ than iterated, which no load a build can actually carry reaches.
 **The Frame Shift Drive has no three-point curve, and that is a property of the data rather than a
 gap.** `MassCurveStats` — three curve masses with their multipliers — is carried by thrusters
 (40 of 40) and shield generators, but by no drive: all 72 frame shift drives expose `optMass` alone.
-What
-the package does compute is `frameShiftDriveMassFactor`, the dimensionless `optMass / loadedMass`
-the jump equation uses. How the drive is presented is therefore a product decision, which FR-015
-takes.
+What the package does compute is `frameShiftDriveMassFactor`, the dimensionless
+`optMass / loadedMass` the jump equation uses. How the drive is presented is therefore a product
+decision, which FR-015 takes.
 
 **The thrusters' minimum curve mass is available and deliberately unused.** All 40 thrusters carry
 `minMass` alongside `optMass` and `maxMass`, and FR-014 shows two of the three. Measured across the

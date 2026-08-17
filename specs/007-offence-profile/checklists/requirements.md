@@ -36,16 +36,16 @@
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
 - **One marker is open, and it governs three figures.** FR-016a covers the convergence spread, the
   mount furthest from the centre line, and the fixed separation in metres between the mounts that
-  FR-016b presents. Each needs plane geometry over pairs the package publishes — a separation between
-  two points, or a distance from the centre — taken either over the tangents `projectGunsight`
-  returns or over the catalogue's metre offsets, and each therefore yields a number the package did
-  not itself compute. No game rule is involved, and the package publishes those points expressly for
-  a renderer, but constitution principle II sanctions only presentation of what the library returns.
-  Whether that geometry is permitted here or must be asked of the package is the open question. Do
-  not close this gate on an answer that covers only the two angular figures: the metre separation
-  sits under a MUST in FR-016b and carries a mandated test in FR-021a, so a partial answer would tick
-  the box with that permission still unresolved. The plot of FR-016f, which places the package's
-  points and derives nothing, is unaffected either way.
+  FR-016b presents. Each needs plane geometry over pairs the package publishes — a separation
+  between two points, or a distance from the centre — taken either over the tangents
+  `projectGunsight` returns or over the catalogue's metre offsets, and each therefore yields a
+  number the package did not itself compute. No game rule is involved, and the package publishes
+  those points expressly for a renderer, but constitution principle II sanctions only presentation
+  of what the library returns. Whether that geometry is permitted here or must be asked of the
+  package is the open question. Do not close this gate on an answer that covers only the two angular
+  figures: the metre separation sits under a MUST in FR-016b and carries a mandated test in FR-021a,
+  so a partial answer would tick the box with that permission still unresolved. The plot of FR-016f,
+  which places the package's points and derives nothing, is unaffected either way.
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
