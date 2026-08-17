@@ -36,41 +36,22 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
-- **Ship selection and the changes made after it are owned separately.** This spec covers the
-  catalogue, previews and how a build is loaded, saved and shared; undo and redo belong to feature
-  002, with the changes they reverse. Each behaviour has exactly one owner, as constitution
-  principle IX requires.
-- **Two scope decisions taken on 2026-08-14.** FR-010 (side-by-side hull comparison) is withdrawn:
-  the catalogue narrows to one hull rather than laying two out together, and a comparison surface
-  would be a feature in its own right. FR-012a keeps jump range out of the catalogue entirely
-  instead of admitting it as a labelled stock-configuration figure — it exists only once a drive is
-  fitted, and a labelled build figure in a hull listing is still a build figure.
-- **Previews are the Almanac's own ship illustrations, and they now ship with the package.** One
-  coloured three-quarter vector illustration per hull, 48 of 48, at
-  `assets/ships/<symbol>/illustration.svg`, keyed by the same `symbol` this application already uses,
-  with top and bottom schematics alongside (which feature 010 consumes). FR-014 to FR-022 cover
-  source, delivery, attribution, performance and what may and may not be altered.
+- **Ownership.** This spec covers the catalogue, hull details, previews and how a build is loaded,
+  saved and shared. Undo and redo belong to feature 002, with the changes they reverse; every figure
+  about a build belongs to feature 003's family. Each behaviour has exactly one owner, as
+  constitution principle IX requires.
 - **Naming the data package is deliberate, not an implementation leak.** FR-002, FR-044, FR-045 and
   SC-003 name `@elite-dangerous-almanac/core` because constitution principle II makes it the
-  domain's source of truth, exactly as features 002, 003 and 004 do.
-- **Storage requirements name the browser deliberately too.** FR-023a to FR-023g describe working
-  builds, saved-build identity and concurrent tabs in terms a Commander experiences — work that
-  survives a reload, builds that can share a name, and a save that never silently discards another
-  tab's. Local storage is named because constitution principle I makes it the only place a build can
-  live.
-- **The three requirement areas this checklist once recorded as blocked are all delivered.**
-  Manufacturer and hull size, `ShipLoadout.default()` for a stock configuration, and the published
-  illustrations all arrived in `@elite-dangerous-almanac/core@0.1.0-beta.4`, verified against the
-  installed package on 2026-08-14. The earlier note described `0.1.0-beta.1`; the spec's "Upstream
-  dependencies" section is the current record.
-- **One requirement area still depends on upstream library work.** FR-044a requires the catalogue
-  version the game data comes from to be identifiable. The package exports no machine-readable
-  game-data version — only its own release number, and a game version recorded as prose in its
-  provenance files — so a catalogue version is requested upstream and FR-044a waits on it.
-- **Two properties of the illustration set are recorded in the spec so planning does not meet them
-  late**: the installed set is 64 MB across 144 files with the largest illustration at 4.1 MB, and
-  the imagery is Frontier Developments' property under media-usage terms whose notice this
-  application must reproduce.
-- **Engineering quality was removed from the application model on 2026-08-16.** FR-024, FR-028,
-  FR-029 and SC-007 now treat every selected or imported grade as complete at 100% and no longer
-  require persistence or links to carry an invariant field.
+  domain's source of truth. Local storage is named for the same reason: principle I makes it the
+  only place a build can live.
+- **Two scope decisions are settled.** Side-by-side hull comparison is out of scope — the catalogue
+  narrows to one hull, and a comparison surface would be a feature in its own right. FR-012a keeps
+  jump range out of the catalogue entirely rather than admitting it as a labelled stock figure.
+- **One version is unavailable and stays that way.** FR-044a requires the game catalogue version to
+  be identifiable; the package exports no machine-readable one, so the requirement is satisfied by
+  showing it as unavailable with its reason. Raising it upstream is deferred by decision — nothing
+  depends on the value and no requirement is blocked.
+- **Artwork weight is recorded in the spec so planning does not meet it late**: the installed tree
+  is 66 MB across 144 files, 57 MB of it the 48 illustrations this feature consumes, the largest
+  single file 4.1 MB. The spec requires both optimised variants and per-hull runtime fetching,
+  because neither alone closes a gap of that size, and leaves the mechanism to planning.

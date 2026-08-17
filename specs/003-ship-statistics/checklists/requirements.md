@@ -36,38 +36,26 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
-- **This specification is a contract, and the areas are capabilities.** It previously carried every
-  figure about a build. On 2026-08-14 the breakdowns moved into five area specifications — 005
-  power and heat, 006 defence, 007 offence, 008 mobility and jump, 009 cost and materials — and this
-  document retained what governs all of them: provenance, units, the honesty rules, the recompute
-  obligation, the viewing conditions and the headline set.
-
-  This supersedes the earlier note that "one specification owns every figure about a build". That
-  note was written to reject a split by _depth_ — the withdrawn `005-advanced-ship-statistics`, which
-  extended this feature rather than owning a capability — and it was right to. A split by _area_ is
-  the opposite: each area is a capability a Commander recognises and can be delivered on its own,
-  which is what the constitution's Development Workflow asks for. No behaviour has two owners,
-  because the contract states rules and the areas state figures.
-
+- **This specification is a contract, and the areas are capabilities.** The breakdowns live in five
+  area specifications — 005 power and heat, 006 defence, 007 offence, 008 mobility and jump, 009
+  cost and materials. This document retains what governs all of them: provenance, units, the honesty
+  rules, the recompute obligation, the viewing conditions and the headline set. No behaviour has two
+  owners, because the contract states rules and the areas state figures.
+- **The family requires an active build** (FR-000), stated once for all five areas so that none of
+  them restates it and none can relax it. It forbids the two failure modes the assumption otherwise
+  hides: showing a hull's catalogue characteristics in place of a build's statistics, and creating a
+  build in order to have something to report on.
+- **No area is waiting on an upstream release.** Every figure the five areas present today is
+  computed by `@elite-dangerous-almanac/core` at the pinned version. The one open question that
+  could change that is feature 007's FR-016a, which would turn its three convergence figures into an
+  upstream request if it is answered against composing them here. Feature 008 carries the family's
+  other marker, but that one is a product decision rather than an upstream matter. Each area names
+  what it composes under FR-001a in its own Upstream dependencies section.
+- **Diagnostic wording belongs to this application, not to the package.** The package publishes a
+  stable `code`, the `params` a message interpolates, the slot and module symbol a validation issue
+  names, and the `constraint` behind an edit error — the last documented as carrying an English
+  fallback suitable for logs. FR-007a requires the sentence to be composed here and translated;
+  FR-025a tests it. Game _text_ still comes from the package; diagnostic _wording_ does not.
 - **Naming the data package is deliberate, not an implementation leak.**
-  `@elite-dangerous-almanac/core` is named in FR-001, FR-018, FR-019, SC-001 and the "Upstream
-  dependencies" section because constitution principle II makes it the domain's source of truth:
-  "every statistic comes from the package, and a gap waits on an upstream fix" is a behavioural
-  constraint, not a technology choice. Every specification in this family names it for the same
-  reason.
-- **The four requirement groups this document once listed as blocked are all delivered.** Build
-  mobility, shield recovery and cell banks, build heat, and costs for an assembled build arrived in
-  `@elite-dangerous-almanac/core@0.1.0-beta.4`, verified against the installed package on
-  2026-08-14. The earlier note recorded them as blocked at `0.1.0-beta.1`; that is stale. The area
-  specifications carry their own upstream sections and are the current record.
-- **One gap remains against this contract**: the package's validity and completeness diagnostics are
-  English-only, which collides with constitution principle VI. FR-006 and FR-007 surface them, so
-  the gap is recorded here rather than in an area specification, and is raised upstream.
-- **The family requires an active build, stated once as FR-000 on 2026-08-14.** Every area assumed it
-  — each acceptance scenario opens "Given an active build" — but no requirement said so, which left
-  it unenforceable and left the empty state undefined. FR-000 states it for all five areas, so none
-  of them restates it and none of them can relax it. It also forbids the two failure modes the
-  assumption hid: showing a hull's catalogue characteristics in place of a build's statistics, and
-  creating a build in order to have something to report on. Feature 002's FR-000 and feature 010's
-  FR-001a say the same for outfitting and hull anatomy; feature 001 owns every route to a build,
-  with feature 004's import the single exception, which FR-006a there records.
+  `@elite-dangerous-almanac/core` is named in FR-001, FR-018, FR-019 and SC-001 because constitution
+  principle II makes it the domain's source of truth.

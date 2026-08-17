@@ -17,12 +17,22 @@ Consequences that follow from this and MUST be honoured:
 
 - Build state lives in the browser (in-memory, `localStorage`) or in a URL. It
   is never uploaded.
-- The application MUST remain fully usable offline after first load, and MUST
-  be deployable as static files to any static host.
+- The application MUST be deployable as static files to any static host.
+- Every capability MUST remain usable offline after first load. **Assets the
+  application serves from its own origin MAY be fetched at runtime** rather than
+  bundled into the initial load — hull illustrations, schematics and anything
+  else whose weight would make the first load pay for artwork the Commander has
+  not asked to see. What is available offline is then what the Commander has
+  already opened, not the whole catalogue. An asset that has not been fetched
+  MUST NOT block or degrade any capability, MUST show its absence as a temporary
+  one rather than as a fault or a permanent gap, and MUST arrive once the network
+  returns without the Commander reloading the application.
 - No accounts, no authentication, no server-side persistence and no server-side
   sharing. A build is shared by handing someone a URL or a SLEF payload.
-- No telemetry, analytics or third-party network beacons. Any future outbound
-  request needs an amendment to this constitution.
+- No telemetry, analytics or third-party network beacons, and **no request to any
+  origin other than the one the application is served from**. Runtime asset
+  requests to the application's own origin are permitted by the clause above; any
+  other outbound request needs an amendment to this constitution.
 
 ### II. The Almanac Is the Source of Truth (NON-NEGOTIABLE)
 
@@ -108,10 +118,23 @@ fallback.
   Interactive targets MUST be large enough to hit reliably on a phone, and
   nothing essential may depend on hover.
 - Portrait and landscape orientations MUST both work on tablet and mobile.
-- The application MUST remain accessible: keyboard-operable, screen-reader
-  navigable, and legible at increased text sizes on every form factor.
-- End-to-end tests MUST cover desktop, tablet and mobile viewports (see
-  principle VIII). A feature is not done until it passes on all three.
+- The application MUST meet **WCAG 2.2 level AA** on every form factor. That is
+  the standard, not an aspiration: every capability MUST be operable by
+  keyboard alone in a sensible order with a visible focus indicator, navigable
+  by screen reader with correct roles, names and state, legible at 200% text
+  size and at 400% zoom without loss of content or function, and free of any
+  information carried by colour, shape or position alone. Contrast MUST meet the
+  AA ratios for text and for the non-text elements that carry meaning; touch
+  targets MUST meet the AA target-size rule; motion MUST respect
+  `prefers-reduced-motion`.
+- Accessibility is verified, not assumed: an automated accessibility check MUST
+  run over every screen as part of the end-to-end suite, and a failure MUST fail
+  the build. An automated pass is a floor rather than a proof — a capability
+  that cannot be operated by keyboard or understood by screen reader is
+  incomplete however the checker scores it.
+- End-to-end tests MUST cover desktop, tablet and mobile viewports in every
+  browser engine principle VIII names. A feature is not done until it passes on
+  all of them.
 
 ### VI. Speaks the Commander's Language (NON-NEGOTIABLE)
 
@@ -130,9 +153,13 @@ or formatting a figure for one locale only, is not.
 - Numbers, percentages, credits, distances and dates MUST be formatted for the
   active locale. Translated labels wrapped around English-formatted figures do
   not satisfy this principle.
-- Translations MUST ship as static assets bundled with the application. No
-  runtime translation service, no outbound request, no server-side rendering of
-  translated text (principle I).
+- Translations MUST ship as the application's own static assets. No runtime
+  translation service, no request to any other origin, and no server-side
+  rendering of translated text (principle I). A locale's messages MAY be fetched
+  from the application's own origin under principle I's runtime-asset clause —
+  but text is not artwork: a Commander MUST NOT be left unable to read the
+  interface because a locale did not arrive, so the fallback language the next
+  clause requires MUST be present without a network.
 - A missing translation MUST fall back to a language the Commander can read. A
   raw message key, an empty string or a placeholder MUST NOT reach the screen.
 - Layouts MUST survive translation. Text expansion and right-to-left scripts are
@@ -163,8 +190,11 @@ improvised screen by screen, and not deferred until the domain is finished.
 - Design tokens — colour, type scale, spacing, radius, elevation, motion — are
   defined once and are the only source of visual values. No component and no
   screen may hard-code a colour, size, spacing or duration.
-- Theming is a matter of tokens. Changing a theme MUST NOT require editing a
-  component.
+- The application ships **one theme** — the dark one the design system defines.
+  It is not a Commander preference, no light theme is offered, and no
+  requirement anywhere in this repository may depend on a theme being chosen or
+  changed. Theming remains a matter of tokens: were a second theme ever added it
+  would be a second set of token values, never an edit to a component.
 - Components are presentation only. They render the state they are handed and
   dispatch intent; they MUST NOT reach into domain services or hold build state
   (principle III).
@@ -196,7 +226,12 @@ Correctness is enforced by the build, not by inspection.
   coverage MUST NOT be manufactured with tests that assert nothing.
 - End-to-end tests are written with **Playwright** and MUST run as part of the
   build. Every user story's primary journey MUST have an end-to-end test, run
-  against desktop, tablet and mobile viewports.
+  against desktop, tablet and mobile viewports in **both Chromium and Firefox**.
+  Two engines is the minimum that catches an engine-specific defect at all; a
+  suite that passes in one browser only proves the application works in that
+  browser. A journey is not covered until it passes in both.
+- The end-to-end suite MUST include an automated accessibility check over every
+  screen, under principle V. A violation fails the build like any other test.
 - `pnpm run check` — format, typecheck, build, unit tests with coverage, and the
   Playwright suite — MUST pass before a change is proposed for merge, and MUST
   pass in CI.
@@ -230,11 +265,12 @@ requirements without prescribing implementation.
   side-effect free.
 - **Testing**: Vitest via the Angular unit-test builder, with coverage
   thresholds configured in `angular.json`; Playwright for end-to-end, with
-  desktop, tablet and mobile projects configured in `playwright.config.ts`.
+  desktop, tablet and mobile projects configured in `playwright.config.ts`,
+  each run in Chromium and in Firefox.
 - **Design system**: one component library under `src/app/ui/`, with design
-  tokens defined in the global stylesheet layer. It is versioned in this
-  repository, and this repository is the source of truth for any external design
-  tool it synchronises with (principle VII).
+  tokens defined in the global stylesheet layer and one dark theme built from
+  them. It is versioned in this repository, and this repository is the source of
+  truth for any external design tool it synchronises with (principle VII).
 - **Build output**: static assets only. No server-side rendering, no runtime
   environment configuration baked into the bundle.
 
@@ -279,48 +315,8 @@ review of any spec the change invalidates.
 - **PATCH**: clarification and wording that does not change obligations.
 
 Every review MUST verify compliance with these principles. Added complexity has
-to justify itself against them; when it cannot, the simpler option wins.
+to justify itself against them; when it cannot, the simpler option wins. An
+amendment's rationale is recorded in the change that makes it; this document
+states the principles as they stand now, not the history of how they got here.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
-
-### Amendment history
-
-- **2.0.0** — Defined engineering grades as complete (100% quality) throughout
-  the application and removed partial engineering quality from the model. An
-  imported partial roll is deliberately normalised rather than preserved. This
-  is a major amendment because it narrows principle IV's preservation rule and
-  invalidates the partial-quality requirements previously accepted in features
-  001, 002, 004 and 009; those specifications are amended with this change.
-
-- **1.3.0** — Added principle VII (one design system) and ended the deferral of
-  visual design. Tokens are the only source of visual values, components are
-  presentation-only and carry their own accessibility and state previews, and
-  this repository is the source of truth for any design tool it synchronises
-  with. Tested-before-it-ships renumbered to VIII and
-  specification-before-implementation to IX.
-
-  The Development Workflow now states what was previously only implied: a
-  feature spec is scoped to a capability and names no screen, while screens are
-  defined at plan time in `specs/<NNN>-<short-name>/design/` and mapped to the
-  requirements they satisfy. Accepted specs 001 to 005 already follow this — none
-  names a screen — so none is invalidated. What changes is that their screens
-  are now defined during planning rather than postponed to a later workstream,
-  and that the screen inventory and its requirement mapping gate task breakdown.
-- **1.2.0** — Added principle VI (speaks the Commander's language): every string
-  the application owns is translatable and locale-formatted, translations ship
-  as static assets, and game text stays the library's to translate under
-  principle II. Tested-before-it-ships renumbered to VII and
-  specification-before-implementation to VIII.
-
-  The principle binds architecture rather than a language inventory, so it
-  invalidates no accepted spec. Specs 001 to 005 predate it and state no
-  language requirement; they inherit the obligation as they inherit principle V,
-  and how a Commander selects a language, what falls back when a translation is
-  missing, and which languages ship still need a feature spec of their own.
-- **1.1.0** — Added principle V (works on desktop, tablet and mobile) and
-  principle VI (tested before it ships: ≥80% unit coverage, Playwright
-  end-to-end in the build); specification-before-implementation renumbered to
-  VII. Hardened principle II: library defects are fixed in
-  `@elite-dangerous-almanac/core`, and workarounds in this application are
-  prohibited rather than merely discouraged.
-- **1.0.0** — Initial ratification.
+**Version**: 3.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16

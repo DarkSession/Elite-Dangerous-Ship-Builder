@@ -15,7 +15,7 @@
 
 ## Requirement Completeness
 
-- [x] No [NEEDS CLARIFICATION] markers remain
+- [ ] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -34,38 +34,45 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
+- **One marker is open, and it governs three figures.** FR-016a covers the convergence spread, the
+  mount furthest from the centre line, and the fixed separation in metres between the mounts that
+  FR-016b presents. Each needs plane geometry over pairs the package publishes — a separation
+  between two points, or a distance from the centre — taken either over the tangents
+  `projectGunsight` returns or over the catalogue's metre offsets, and each therefore yields a
+  number the package did not itself compute. No game rule is involved, and the package publishes
+  those points expressly for a renderer, but constitution principle II sanctions only presentation
+  of what the library returns. Whether that geometry is permitted here or must be asked of the
+  package is the open question. Do not close this gate on an answer that covers only the two angular
+  figures: the metre separation sits under a MUST in FR-016b and carries a mandated test in FR-021a,
+  so a partial answer would tick the box with that permission still unresolved. The plot of FR-016f,
+  which places the package's points and derives nothing, is unaffected either way.
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
-- **Damage at a range and capacitor endurance are composed, not blocked.** An earlier draft recorded
-  both as waiting on upstream capability, reading constitution principle II to forbid combining two
-  package figures into a third. That reading was too strict and was corrected on 2026-08-14: the
-  prohibition is on reimplementing a calculation the package provides and on substituting a
-  different value for one it computed, not on composing figures it does compute. `damageFalloff`
-  reports how much damage still lands at a range, and `energyPerSecond` against the distributor's
-  capacity and recharge is a comparison the package's own documentation invites. No game rule is
-  restated here.
-- **FR-009 and FR-014 bound the composition.** Each forbids modelling behaviour the package does not
-  report — inventing a falloff curve, interpolating one, or modelling capacitor behaviour beyond the
-  composition. SC-004 makes a game rule appearing in this application detectable by test rather than
-  by review, which is the line that actually matters.
-- **Two gaps remain.** **WEP pip scaling** (FR-015): the package is pip-aware for SYS and ENG but
-  exposes `weaponsRecharge` as a single rated figure with no pip parameter and no hull endpoints to
-  interpolate between. How recharge scales with WEP pips is a game rule, so endurance is reported at
-  the rated allocation and other allocations read as unavailable until the scaling lands upstream.
-  **Mount geometry in real units** (FR-016e): the schematics carry no scale metadata, so every
-  convergence figure reads as unavailable until the package publishes each mount's position relative
-  to the hull's axis in metres. Both are requested upstream.
-- **User stories 2 and 3 came from a design review on 2026-08-14**, which found both figures present
-  in the imported design and absent from every accepted specification.
-- **User story 4 (shot convergence) was reassigned here from
-  [feature 010](../../010-hull-anatomy/spec.md) on 2026-08-14**, during that feature's clarification.
-  Where a build's fire arrives is a property of what the build fires and belongs to the offence
-  profile; where each mount sits stays with feature 010, which owns the positions and publishes them.
-  FR-016a to FR-016e and FR-021a are lettered so that the existing FR-017 to FR-022 keep their
-  numbers.
-- **Whole-build totals state an assumption rather than adjusting for it.** Whether a Commander can
-  bring every mount to bear is a question about mount geometry, answered by
-  [feature 010](../../010-hull-anatomy/spec.md). This specification records the assumption in its
-  Assumptions section instead of discounting a total, which would be exactly the local correction
-  principle II forbids.
+- **No figure here is blocked today**, though FR-016a's open question could turn its three
+  convergence figures into an upstream request rather than a local calculation. Two figures are
+  composed under feature 003's FR-001a — each damage type's share, and output at a range — and the
+  Upstream dependencies section names both. Endurance is not composed: the package computes it
+  whole, so reassembling it from a capacity and a rate would reimplement a calculation it provides
+  (FR-014).
+- **Anti-xeno damage is an overlay, not a partition** (FR-002). It is shown under its own label and
+  excluded from the shares, so a build's shares still sum to the whole.
+- **Convergence reads the package's cockpit-offset catalogue, never the schematics.** Feature 010's
+  plates carry no scale of any kind, so FR-016e's prohibition on deriving a physical dimension from
+  artwork is load-bearing and SC-007 tests it.
+- **That catalogue is published positionally, and FR-016g is what keeps it honest.** It carries one
+  offset per hardpoint in the package's own slot-enumeration order, and the package warns that the
+  number in a journal slot key is not the array index. Binding an offset by parsing that number
+  would draw a build's fire from the wrong mount on the hulls that skip or reorder them, so FR-021b
+  tests the binding on such a hull rather than only on a well-behaved one.
+- **The package projects to tangents, not angles.** FR-016a states the conversion explicitly and
+  declares it under FR-001a, on the same terms feature 003's FR-005 sets for resistances, so that no
+  reader assumes an angle arrives ready-made.
+- **Every mount is treated as fixed, ship-forward geometry** (FR-016c). A gimballed or turreted
+  build spreads less in practice than the figures say, so the assumption is stated with the figures
+  rather than hidden; excluding tracking mounts or drawing them converged would model behaviour the
+  package explicitly does not.
+- **Two range controls, of two different kinds.** Damage at range is charted at five fixed ranges
+  identical for every build, so two loadouts read against one scale; convergence varies
+  continuously, because the question there is where the spread becomes acceptable. Neither chart nor
+  plot may be the only route to its figures.
