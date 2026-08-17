@@ -2,7 +2,7 @@
 
 ## Scope
 
-This specification covers the consolidated account of the active build's condition: a readiness
+This specification covers the consolidated account of the active build's condition: a structural
 verdict, every finding that explains it, the headline figures that describe the build's main
 capabilities, and the credits and engineering materials the build requires. It inherits the
 statistic rules and viewing conditions in
@@ -28,22 +28,26 @@ surfaces the resulting state. Import and export diagnostics belong to
 
 ### User Story 1 - Know whether the build works (Priority: P1)
 
-A Commander can tell at a glance whether the active build is flyable as described, and read every
-finding that explains why it is not.
+A Commander can tell at a glance what the Almanac reports about the active build's structure, and
+read every finding that explains what would stop it working.
 
 **Independent Test**: Load valid, invalid and incomplete reference builds and compare the verdict
 and the complete finding list with the Almanac's validation result for the same build.
 
 **Acceptance Scenarios**:
 
-1. **Given** an active build, **When** its status is shown, **Then** one readiness verdict is
-   present and reflects the Almanac's valid and complete flags for that build.
-2. **Given** a build the Almanac reports as invalid or incomplete, **When** status is shown, **Then**
+1. **Given** an active build, **When** its status is shown, **Then** one structural verdict is
+   present, reflects the Almanac's valid and complete flags for that build, and is named as
+   structural validity and completeness rather than as readiness to fly.
+2. **Given** a build the package reports as valid and complete but outside its power budget, **When**
+   its status is shown, **Then** the verdict still reports what those flags say, the power-budget
+   state appears as a finding, and nothing describes the build as ready to fly.
+3. **Given** a build the Almanac reports as invalid or incomplete, **When** status is shown, **Then**
    every issue the Almanac returned is listed with its own explanation.
-3. **Given** a build the Almanac reports as valid and complete with no qualified results, **When**
+4. **Given** a build the Almanac reports as valid and complete with no qualified results, **When**
    status is shown, **Then** the report states that there are no findings rather than showing an
    empty area.
-4. **Given** any finding, **When** it is read, **Then** it identifies whether the build cannot be
+5. **Given** any finding, **When** it is read, **Then** it identifies whether the build cannot be
    flown as described, is incomplete, or has a figure that is unavailable or a lower bound.
 
 ### User Story 2 - Read the key numbers at a glance (Priority: P1)
@@ -125,13 +129,25 @@ make the change that resolves it and verify the finding disappears and the verdi
 
 - **FR-001**: The status report MUST require an active build and MUST NOT create one as a side
   effect.
-- **FR-002**: The report MUST state one readiness verdict derived solely from the Almanac's
-  validation valid and complete flags for the active build. The application MUST NOT form a verdict
-  of its own from statistic values.
+- **FR-002**: The report MUST state one structural verdict derived solely from the Almanac's
+  validation valid and complete flags for the active build, and MUST name it for what those flags
+  mean — the build is structurally valid and its slots are complete. The application MUST NOT form a
+  verdict of its own from statistic values.
+- **FR-002a**: That verdict MUST NOT be presented as the build being flyable, ready or working.
+  Those flags are structural: a build whose power plant is disabled reports `valid` and `complete`
+  while `powerBudget()` reports `withinBudget: false`, and the package returns no validation issue
+  for it. The report MUST NOT imply such a build is ready, and MUST NOT compensate by inventing a
+  readiness rule of its own — the power-budget state reaches the Commander as a finding under FR-003
+  and FR-007, classified by FR-006, and it is the findings taken together that describe whether the
+  build works. A single package-owned readiness result MUST be requested against
+  [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac) and MUST replace
+  this arrangement when it lands; until then no application-owned verdict fills the gap.
 - **FR-003**: Every finding MUST trace to a fact `@elite-dangerous-almanac/core` reported for the
   active build — a returned validation issue, an absent or qualified result, or a state flag the
   package returns. The application MUST NOT diagnose a build from its numbers, and MUST NOT raise a
-  finding the package's results do not support.
+  finding the package's results do not support. Fixed-mount normalisation provenance under FR-009 is
+  the single exemption, because it records a change the application itself made to the build; it is
+  not a package finding and MUST NOT be presented as one.
 - **FR-004**: Each validation issue the package returns MUST appear as a finding carrying that
   issue's code, parameters and, where the package supplies them, its severity, affected slot and
   constraint. The application MUST NOT drop, merge or re-rank an issue the package returned.
@@ -150,8 +166,12 @@ make the change that resolves it and verify the finding disappears and the verdi
 - **FR-008**: A finding the package associates with a slot MUST lead to that slot in one
   interaction. A finding with no package-named slot MUST remain listed without an invented location.
 - **FR-009**: Where the active build was changed by fixed-mount normalisation, the report MUST keep
-  that change visible as a finding naming the mounts filled and the identities replaced, until those
-  mounts are changed by the Commander.
+  that change visible until those mounts are changed by the Commander, naming the mounts filled and
+  the identities replaced. This is the application's own record of what it did on load, not a
+  package result: it MUST be presented as normalisation provenance, distinctly from the
+  package-reported findings FR-003 governs, and MUST NOT be classified under FR-006 or ordered among
+  them under FR-010. It persists after the package stops reporting anything about those mounts,
+  which is the point of keeping it.
 - **FR-010**: Findings MUST be ordered so that those stopping the build being flown as described
   come first. Ordering is presentation and MUST NOT alter, combine or suppress any package result.
 - **FR-011**: With no findings, the report MUST state that the Almanac reported none rather than

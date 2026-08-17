@@ -226,6 +226,7 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
       ),
       moduleIndexes,
       occupiedSlots,
+      occupiedModules.map((module) => module.slot),
     );
   }
   return writer;
@@ -379,6 +380,7 @@ function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
       state.engineeringStates,
       state.moduleIndexes,
       occupiedSlots,
+      occupiedSlots.map((slotIndex) => slots[slotIndex]!),
     );
   }
   return canonicalBody(codec, writer.symbols);
@@ -1082,16 +1084,21 @@ function writeEngineeringStates(
   states: readonly (CodecEngineeringState | undefined)[],
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
+  occupiedSlotNames: readonly string[],
 ): void {
   const engineered = indexesWhere(states, (engineering) => engineering !== undefined);
   writer.writeBoolean(engineered.length > 0);
   if (engineered.length === 0) return;
 
   const eligible = engineeringEligibleIndexes(codec, moduleIndexes, occupiedSlots);
-  if (engineered.some((occupiedIndex) => !eligible.includes(occupiedIndex))) {
+  const ineligible = engineered.find((occupiedIndex) => !eligible.includes(occupiedIndex));
+  if (ineligible !== undefined) {
+    const slot = occupiedSlotNames[ineligible];
+    const symbol = codec.tables.MODULES[moduleIndexes[occupiedSlots[ineligible]!]!] ?? 'the module';
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'A module without engineering recipes carries engineering.',
+      `${slot === undefined ? '' : `Slot ${slot}: `}${symbol} carries engineering, but codec ` +
+        `table ${codec.tableVersion} records no engineering recipe for it.`,
     );
   }
   const all = engineered.length === eligible.length;

@@ -523,6 +523,25 @@ describe('build-link codec', () => {
     }
   });
 
+  it('names the slot when a module carrying engineering has no recipe for it', () => {
+    // The advanced small mining laser accepts no blueprint, so a capture that engineers one cannot
+    // be spelled. FR-022b wants the refusal to say which slot, not merely that one exists.
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      Modules: [
+        {
+          Slot: 'SmallHardpoint1',
+          Item: 'Hpt_MiningLaser_Fixed_Small_Advanced',
+          Engineering: { BlueprintName: 'Weapon_LongRange', Level: 3, Quality: 1 },
+        },
+      ],
+    });
+
+    const error = expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    expect(error.message).toContain('SmallHardpoint1');
+    expect(error.message).toContain('Hpt_MiningLaser_Fixed_Small_Advanced');
+  });
+
   it('refuses an upgraded Mercenary article table 1 cannot spell', () => {
     // These three sit on modules the package reports no ordinary blueprint for, so table 1 records
     // none either and the ordinary record cannot name one. Refusing is the only honest answer: the
