@@ -75,8 +75,9 @@ fragment but cannot appear as the terminal digit. Dollar is deliberately absent 
 dollar signs delimit inline mathematics in GitHub Markdown.
 
 The binary body is followed by its four-byte, little-endian CRC-32. The checksum is verified before
-the table-indexed parser or the Almanac sees the data. The encoded portion after `b.` is limited
-to 500 characters.
+the table-indexed parser or the Almanac sees the data. A complete codec value is limited to 500
+characters, `b.` counted among them, because FR-028 bounds the link a Commander copies rather than
+the digits inside it. That leaves 498 encoded digits.
 
 ## Binary body
 
@@ -342,7 +343,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -
 
 Every other value uses strict UTF-8: its header is `2 * UTF-8 byte count`, followed by that many
 bytes. Thus an odd header identifies compact character count and an even header identifies UTF-8
-byte count. A compact value is limited to 64 characters and a fallback value to 64 UTF-8 bytes, a
+byte count. A compact value is limited to 32 characters and a fallback value to 32 UTF-8 bytes, a
 bound derived from the link budget below rather than chosen for its own sake.
 The encoder rejects ill-formed UTF-16 such as lone surrogates, and the decoder rejects
 malformed UTF-8 rather than replacing it with U+FFFD. It also rejects a UTF-8 spelling when every
@@ -391,16 +392,14 @@ or candidates per set, and 2^31 − 1 mounts on one hull. Grades are bounded at 
 range, which the generator checks. The ten-bit table-version field is the one small structural
 limit: 1,023 snapshots, one of them spent.
 
-What growth actually costs is link length, and links are bounded. Five hundred encoded characters
-hold exactly 383 payload bytes — a 379-byte body plus its four-byte CRC-32, or 3,032 bits. The
-reference builds use a fraction of it: the fully engineered Anaconda body is 440 bits and the
-supplied Corvette 624 bits, about 17 bits for each of its 37 engineered modules.
+What growth actually costs is link length, and links are bounded. Five hundred characters, two of
+them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
+reference builds use a fraction of it — the fully engineered Anaconda body is 440 bits and the
+supplied Corvette 624, about 17 bits for each of its 37 engineered modules.
 
-The table below records the growth the budget is sized for. `CODEC_TABLE_CAPACITY` in
+The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
-numbers and the generator refuses to mint a table that exceeds one, because outgrowing a limit is a
-re-budgeting decision — not a codec failure, and not something to discover from a link that will not
-fit.
+numbers, and generation refuses a table that exceeds one.
 
 | Dimension                          | Table 1 | Budgeted for | Encoded width at that size   |
 | ---------------------------------- | ------: | -----------: | ---------------------------- |
@@ -408,31 +407,36 @@ fit.
 | Modules                            |   1,200 |        2,048 | 11-bit global fallback index |
 | Blueprints                         |     110 |          256 | 8-bit global fallback index  |
 | Experimental effects               |      86 |          256 | 8-bit global fallback index  |
-| Outfittable mounts on one hull     |      38 |           64 | 64-bit bitmap, 6-bit indexes |
+| Outfittable mounts on one hull     |      38 |           48 | 48-bit bitmap, 6-bit indexes |
+| Fixed mounts on one hull           |       1 |            4 | power state only             |
+| Grades on one blueprint            |       5 |            5 | 1 bit, or 3 below the top    |
 | Largest module candidate set       |     473 |        1,024 | 10 bits per fitted module    |
 | Largest blueprint candidate set    |       9 |           32 | 5 bits per engineered module |
 | Largest experimental candidate set |      12 |           32 | 5 bits per engineered module |
 | Largest pre-engineered set         |       6 |           32 | 5 bits per engineered module |
 
-Dimensions are only half the budget. The property that matters is that **every build a table can
-express is a build that can be shared**, so generation also prices the largest body the table
-admits — every mount filled and engineered, every identity reached through its widest index, both
-labels at their unit bound in UTF-8 — and refuses to write when that exceeds the 379 bytes a link
-carries. Table 1 prices at 338 of 379 bytes, and each run prints the figure so the trend is visible
-well before it refuses. Two properties of the writer keep so blunt a bound sound: each adaptive
-structure is written in whichever mode costs least, so pricing one arbitrary mode can only
-over-count, and the canonical body is the shorter of the packed and arithmetic renderings, so the
-packed cost bounds both. Real builds sit far below it — the supplied Corvette carrying a 64-byte
-name and a 64-byte ident encodes to 279 of the 500 characters.
+Those numbers are a promise, so generation prices them as though a table had already grown into
+every one: **339 of the 377 bytes** a link carries, for a build with every mount filled and
+engineered, every identity reached through its widest index, and both labels at their unit bound in
+UTF-8. The table as it actually stands prices at 272, and both figures print on every run. Two
+properties of the writer keep so blunt a bound sound: each adaptive structure is written in
+whichever mode costs least, so pricing one arbitrary mode can only over-count, and the canonical
+body is the shorter of the packed and arithmetic renderings, so the packed cost bounds both. Real
+builds sit far below either figure — the supplied Corvette carrying a 32-byte name and a 32-byte
+ident encodes to 195 of the 500 characters.
 
-That check is what sets `MAX_STRING_UNITS`, because metadata is the one part of a build with no
-natural size. At 2,048 the bound was unreachable decoration: two labels alone were four times an
-entire link, so the envelope always rejected them first and the string limit never spoke. 64 units
-is the largest power of two the priced worst case still fits under, which is what makes the
-shareable-by-construction property true rather than hopeful. It is worth knowing what 64 buys in
-non-Latin text: 64 compact-alphabet characters, 32 accented Latin characters, or 21 CJK characters,
-because the fallback form counts UTF-8 bytes. Raising it is a budget change, not a constant change —
-the generator will say so.
+Pricing capacity rather than the current table is what makes the budget honest, and it is the
+constraint that sets both the mount and label limits. Mounts are much the most expensive dimension
+at roughly 44 bits each, and the two limits trade directly against one another: 64 mounts, an
+earlier draft of this table, needs 474 bytes at a 32-unit label bound and 493 at a 64-unit one —
+either way beyond a link. The pair had to give, and it gave on labels, because of an asymmetry in
+which of them can move later. `MAX_STRING_UNITS` is shared by every table's decoder, so raising it
+is free while lowering it would strand links already published; a mount count is data, and refusing
+to mint a table for a hull the game has actually shipped is the worse failure. So the label bound is
+set low now — 32 units, which is 32 compact characters, 16 accented Latin characters or 10 CJK
+characters, since the fallback form counts UTF-8 bytes — and the mounts keep their headroom. Should
+the game ship a hull past 48 mounts, versioning the label bound per table is the move that buys
+capacity back without touching a published link's decoder.
 
 ## Versioned tables and lazy loading
 

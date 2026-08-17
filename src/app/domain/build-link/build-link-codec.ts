@@ -68,12 +68,12 @@ interface CodecContext {
 const TABLE_VERSION_BITS = 10;
 /**
  * Ship name and ident are each bounded so that metadata can never crowd a loadout out of the
- * 500-character envelope. Two 64-unit strings cost at most 132 bytes of the 379-byte body,
- * which leaves room for a fully engineered hull at the sizes `CODEC_TABLE_CAPACITY` budgets
- * for. A larger bound is not reachable anyway: the envelope rejects it first, and rejecting a
- * name at its own limit says what is wrong.
+ * 500-character link. Two 32-unit labels cost at most 66 bytes of the 377-byte body, which is
+ * what leaves room for a hull grown to the mounts `CODEC_TABLE_CAPACITY` budgets for. The bound
+ * is deliberately on the low side: every table's decoder shares it, so raising it later is free
+ * while lowering it would strand links already published.
  */
-const MAX_STRING_UNITS = 64;
+const MAX_STRING_UNITS = 32;
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
 

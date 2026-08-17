@@ -2,7 +2,12 @@ import { BuildLinkCodecError } from './build-link-codec-error';
 import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-radix';
 
 const FRAGMENT_PREFIX = 'b.';
-const MAX_ENCODED_LENGTH = 500;
+/**
+ * The bound FR-028 states, counted the way it reads: a complete codec value, `b.` included.
+ * The prefix is part of the link a Commander copies, so it is part of the 500, which leaves
+ * 498 encoded digits.
+ */
+const MAX_LINK_CHARACTERS = 500;
 const CRC_LENGTH = 4;
 
 declare const verifiedBuildLinkBody: unique symbol;
@@ -18,7 +23,7 @@ export function encodeBuildLinkBody(body: Uint8Array): string {
   payload.set(body);
   new DataView(payload.buffer).setUint32(body.length, crc32(body), true);
   const fragment = `${FRAGMENT_PREFIX}${encodeBuildLinkPayload(payload)}`;
-  if (fragment.length - FRAGMENT_PREFIX.length > MAX_ENCODED_LENGTH) {
+  if (fragment.length > MAX_LINK_CHARACTERS) {
     throw new BuildLinkCodecError('invalidPayload', 'The encoded build exceeds the link limit.');
   }
   return fragment;
@@ -35,7 +40,7 @@ export function decodeBuildLinkBody(fragment: string): VerifiedBuildLinkBody {
   }
 
   const encoded = value.slice(FRAGMENT_PREFIX.length);
-  if (encoded.length === 0 || encoded.length > MAX_ENCODED_LENGTH) {
+  if (encoded.length === 0 || value.length > MAX_LINK_CHARACTERS) {
     throw new BuildLinkCodecError('invalidEncoding', 'The encoded build has an invalid length.');
   }
 

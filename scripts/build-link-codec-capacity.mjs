@@ -24,7 +24,11 @@ export const CODEC_TABLE_CAPACITY = Object.freeze({
   /** Global experimental-effect index, on the same fallback path as blueprints. */
   EXPERIMENTAL_EFFECTS: 256,
   /** Outfittable mounts on one hull; every index set over a loadout is this wide. */
-  SLOTS_PER_SHIP: 64,
+  SLOTS_PER_SHIP: 48,
+  /** Mounts carried as stock because they offer no choice of module, such as the cargo hatch. */
+  FIXED_MODULES_PER_SHIP: 4,
+  /** Grades one blueprint can offer, which the game's own range already bounds. */
+  BLUEPRINT_GRADES: 5,
   /** Largest per-slot module candidate list: one contextual index per fitted module. */
   MODULE_CANDIDATE_SET: 1_024,
   /** Largest per-module blueprint candidate list: one index per engineered module. */
@@ -45,6 +49,10 @@ export function codecTableDimensions(table) {
     BLUEPRINTS: table.BLUEPRINTS.length,
     EXPERIMENTAL_EFFECTS: table.EXPERIMENTAL_EFFECTS.length,
     SLOTS_PER_SHIP: maximumLength(Object.values(table.SLOTS_BY_SHIP).map((slots) => slots.length)),
+    FIXED_MODULES_PER_SHIP: maximumLength(
+      Object.values(table.FIXED_MODULES_BY_SHIP).map((modules) => modules.length),
+    ),
+    BLUEPRINT_GRADES: maximumLength(table.BLUEPRINT_GRADES.map((grades) => grades.length)),
     MODULE_CANDIDATE_SET: maximumLength(table.MODULE_SETS.map((set) => set.length)),
     BLUEPRINT_CANDIDATE_SET: maximumLength(table.BLUEPRINT_SETS.map((set) => set.length)),
     EXPERIMENTAL_CANDIDATE_SET: maximumLength(table.EXPERIMENTAL_SETS.map((set) => set.length)),
@@ -106,22 +114,22 @@ const contextualIndexBits = (valueCount) => (valueCount <= 1 ? 0 : bitsRequired(
 const varUintBits = (value) => 8 * Math.max(1, Math.ceil(bitsRequired(value + 1) / 7));
 
 /**
- * An upper bound, in bits, on the largest body this table can produce.
+ * An upper bound, in bits, on the largest body a table of these dimensions can produce.
  *
  * Two properties of the writer make a bound this simple sound. Every adaptive structure is
  * written in whichever mode costs least, so pricing one arbitrary mode — here the bitmap index
  * set, the sparse power form, and literal identities — can only over-count. And the canonical
  * body is the shorter of the packed and arithmetic renderings, so the packed cost bounds both.
- * The build priced is the worst one the table admits: every mount filled and engineered, every
- * identity reached through its widest index, both labels at their unit bound in UTF-8.
+ * The build priced is the worst one those dimensions admit: every mount filled and engineered,
+ * every identity reached through its widest index, both labels at their unit bound in UTF-8.
+ *
+ * It takes dimensions rather than a table so that the declared capacity can be priced as if it
+ * were a table — which is what makes the advertised growth a promise rather than a hope.
  */
-export function worstCaseBodyBits(table, maxStringUnits) {
-  const dimensions = codecTableDimensions(table);
+export function worstCaseBodyBits(dimensions, maxStringUnits) {
   const slots = dimensions.SLOTS_PER_SHIP;
-  const fixed = Math.max(
-    ...Object.values(table.FIXED_MODULES_BY_SHIP).map((modules) => modules.length),
-  );
-  const grades = Math.max(...table.BLUEPRINT_GRADES.map((blueprint) => blueprint.length));
+  const fixed = dimensions.FIXED_MODULES_PER_SHIP;
+  const grades = dimensions.BLUEPRINT_GRADES;
 
   // Default-match bit, contextual-membership bit, then the wider of the contextual and global index.
   const identity =
@@ -173,10 +181,15 @@ export function worstCaseBodyBits(table, maxStringUnits) {
   );
 }
 
-/** Bytes of body a fully used encoded envelope holds, after its four-byte CRC-32. */
-export function envelopeBodyBytes(maxEncodedLength) {
+/**
+ * Bytes of body a full-length link holds, after its `b.` prefix and four-byte CRC-32.
+ *
+ * The prefix counts against the limit because FR-028 bounds a complete link, so 500 characters
+ * leave 498 encoded digits.
+ */
+export function envelopeBodyBytes(maxLinkCharacters) {
   // The terminal digit is Base62 and every other digit Base70; leading zero bytes are literal.
-  const capacity = 62n * 70n ** BigInt(maxEncodedLength - 1);
+  const capacity = 62n * 70n ** BigInt(maxLinkCharacters - 'b.'.length - 1);
   let bytes = 0n;
   for (let value = 1n; value * 256n <= capacity; value *= 256n) bytes += 1n;
   return Number(bytes) - 4;
@@ -195,20 +208,45 @@ export async function readCodecConstants() {
   };
   return {
     maxStringUnits: await read('build-link-codec.ts', 'MAX_STRING_UNITS'),
-    maxEncodedLength: await read('build-link-payload.ts', 'MAX_ENCODED_LENGTH'),
+    maxLinkCharacters: await read('build-link-payload.ts', 'MAX_LINK_CHARACTERS'),
   };
 }
 
-/** Refuse a table that could express a build too large to share. */
-export function assertTableFitsEnvelope(table, { maxStringUnits, maxEncodedLength }) {
-  const bytes = Math.ceil(worstCaseBodyBits(table, maxStringUnits) / 8);
-  const limit = envelopeBodyBytes(maxEncodedLength);
+const fitsEnvelope = (dimensions, { maxStringUnits, maxLinkCharacters }) => ({
+  bytes: Math.ceil(worstCaseBodyBits(dimensions, maxStringUnits) / 8),
+  limit: envelopeBodyBytes(maxLinkCharacters),
+});
+
+/**
+ * Refuse capacity that promises more growth than a link can carry.
+ *
+ * This is the check that keeps the budget honest, because the label bound is the only lever it
+ * leaves and that lever moves one way. `MAX_STRING_UNITS` is shared by every table's decoder, so
+ * raising it later is free while lowering it would strand links already published — which means
+ * the capacity a table is allowed to reach has to be affordable at today's bound, not at one this
+ * project would be unable to choose by then.
+ */
+export function assertCapacityFitsEnvelope(constants) {
+  const { bytes, limit } = fitsEnvelope(CODEC_TABLE_CAPACITY, constants);
+  if (bytes > limit) {
+    throw new Error(
+      `A table grown to the budgeted capacity would need up to ${bytes} bytes, beyond the ${limit} a\n` +
+        `${constants.maxLinkCharacters}-character link carries. The advertised growth has to be growth\n` +
+        `the format can actually absorb, so lower a capacity — SLOTS_PER_SHIP is much the most\n` +
+        `expensive, at roughly 44 bits each — or raise the envelope. Lowering MAX_STRING_UNITS\n` +
+        `(currently ${constants.maxStringUnits}) buys 2 bytes per unit but cannot be undone once links exist.`,
+    );
+  }
+  return { bytes, limit };
+}
+
+/** Report what the table as generated can reach, well inside what capacity already promises. */
+export function assertTableFitsEnvelope(table, constants) {
+  const { bytes, limit } = fitsEnvelope(codecTableDimensions(table), constants);
   if (bytes > limit) {
     throw new Error(
       `The largest build this table can express needs up to ${bytes} bytes, beyond the ${limit} a\n` +
-        `${maxEncodedLength}-character link carries. Every encodable build has to be shareable, so\n` +
-        `lower MAX_STRING_UNITS (currently ${maxStringUnits}, worth ${maxStringUnits} bytes per label),\n` +
-        `raise the envelope, or narrow what the table admits — then mint the next table version.`,
+        `${constants.maxLinkCharacters}-character link carries.`,
     );
   }
   return { bytes, limit };

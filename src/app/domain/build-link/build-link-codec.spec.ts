@@ -82,41 +82,49 @@ describe('build-link codec', () => {
     }
   });
 
-  it('pins the compact metadata alphabet and tagged-length boundary', () => {
+  it('pins the compact metadata alphabet and its tagged lengths', () => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
+    // The alphabet is exactly two labels wide at the 32-unit bound, so it takes both to pin it.
+    const name = alphabet.slice(0, 32);
+    const ident = alphabet.slice(32);
     const compact = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
-      ShipName: alphabet,
+      ShipName: name,
+      ShipIdent: ident,
       Modules: [],
     });
     const compactFragment = encodeBuildLinkFragment(compact);
     const metadataOffset = 10 + testBitsRequired(codecTable1.SHIPS.length) + 2;
+    const identOffset = metadataOffset + 8 + name.length * 6;
 
-    expect(readPayloadBits(compactFragment, metadataOffset, 8)).toBe(0x81);
-    expect(readPayloadBits(compactFragment, metadataOffset + 8, 8)).toBe(0x01);
+    // An odd header is a compact character count: 2 * 32 + 1, inside a single varuint byte.
+    expect(readPayloadBits(compactFragment, metadataOffset, 8)).toBe(65);
+    expect(readPayloadBits(compactFragment, identOffset, 8)).toBe(65);
     for (let index = 0; index < alphabet.length; index += 1) {
-      expect(readPayloadBits(compactFragment, metadataOffset + 16 + index * 6, 6)).toBe(index);
+      const offset =
+        index < name.length
+          ? metadataOffset + 8 + index * 6
+          : identOffset + 8 + (index - name.length) * 6;
+      expect(readPayloadBits(compactFragment, offset, 6)).toBe(index);
     }
-    expect(decodeBuildLinkFragment(compactFragment).shipName).toBe(alphabet);
+    expect(decodeBuildLinkFragment(compactFragment).shipName).toBe(name);
+    expect(decodeBuildLinkFragment(compactFragment).shipIdent).toBe(ident);
 
-    const belowBoundary = ShipLoadout.fromLoadout({
+    // An even header is a UTF-8 byte count. The widest label the codec accepts is 2 * 32, so
+    // every header it writes fits one byte and a longer one can only come from outside.
+    const fallback = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
-      ShipName: `${'é'.repeat(31)}A`,
+      ShipName: 'é'.repeat(16),
       Modules: [],
     });
-    const atBoundary = ShipLoadout.fromLoadout({
-      Ship: 'SideWinder',
-      ShipName: 'é'.repeat(32),
-      Modules: [],
-    });
-    const belowFragment = encodeBuildLinkFragment(belowBoundary);
-    const boundaryFragment = encodeBuildLinkFragment(atBoundary);
+    const fallbackFragment = encodeBuildLinkFragment(fallback);
 
-    expect(readPayloadBits(belowFragment, metadataOffset, 8)).toBe(126);
-    expect(readPayloadBits(boundaryFragment, metadataOffset, 8)).toBe(0x80);
-    expect(readPayloadBits(boundaryFragment, metadataOffset + 8, 8)).toBe(0x01);
-    expect(decodeBuildLinkFragment(belowFragment).shipName).toBe(belowBoundary.shipName);
-    expect(decodeBuildLinkFragment(boundaryFragment).shipName).toBe(atBoundary.shipName);
+    expect(readPayloadBits(fallbackFragment, metadataOffset, 8)).toBe(64);
+    expect(decodeBuildLinkFragment(fallbackFragment).shipName).toBe('é'.repeat(16));
+    // A two-byte header still parses, and is then refused for what it claims rather than ignored.
+    expect(() =>
+      decodeBuildLinkFragment(handcraftedMetadataFragment(128, [{ value: 0x41, width: 8 }])),
+    ).toThrowError('A build-link string is too long.');
   });
 
   it('rejects non-canonical, truncated, and malformed tagged metadata', () => {
@@ -867,7 +875,7 @@ describe('build-link codec', () => {
 
   it('refuses truncated and malformed encodings', () => {
     expectCodecError(() => decodeBuildLinkFragment('b.'), 'invalidEncoding');
-    expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(501)}`), 'invalidEncoding');
+    expectCodecError(() => decodeBuildLinkFragment(`b.${'A'.repeat(499)}`), 'invalidEncoding');
     expectCodecError(() => decodeBuildLinkFragment('b.AAAA'), 'invalidPayload');
     expectCodecError(() => decodeBuildLinkFragment('b.not%base70'), 'invalidEncoding');
     const canonical = encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII'));
@@ -1036,8 +1044,8 @@ describe('build-link codec', () => {
   it('accepts metadata at the string-unit bound and rejects the unit beyond it', () => {
     const atBound = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
-      ShipName: 'A'.repeat(64),
-      ShipIdent: 'é'.repeat(32),
+      ShipName: 'A'.repeat(32),
+      ShipIdent: 'é'.repeat(16),
       Modules: [],
     });
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(atBound));
@@ -1045,7 +1053,7 @@ describe('build-link codec', () => {
     expect(decoded.shipName).toBe(atBound.shipName);
     expect(decoded.shipIdent).toBe(atBound.shipIdent);
 
-    for (const ShipName of ['A'.repeat(65), 'é'.repeat(33)]) {
+    for (const ShipName of ['A'.repeat(33), 'é'.repeat(17)]) {
       const source = ShipLoadout.fromLoadout({ Ship: 'SideWinder', ShipName, Modules: [] });
       expect(() => encodeBuildLinkFragment(source)).toThrowError(
         'A build-link string is too long.',
@@ -1057,24 +1065,24 @@ describe('build-link codec', () => {
     const named = structuredClone(realisticEngineeredCorvette) as unknown as {
       data: { ShipName: string; ShipIdent: string };
     }[];
-    // The widest metadata the codec accepts: 64 UTF-8 bytes each, both on its largest build.
-    named[0]!.data.ShipName = 'é'.repeat(32);
-    named[0]!.data.ShipIdent = 'é'.repeat(32);
+    // The widest metadata the codec accepts: 32 UTF-8 bytes each, both on its largest build.
+    named[0]!.data.ShipName = 'é'.repeat(16);
+    named[0]!.data.ShipIdent = 'é'.repeat(16);
     const source = ShipLoadout.fromSlef(named as Parameters<typeof ShipLoadout.fromSlef>[0]);
 
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
 
-    expect(fragment.length).toBeLessThanOrEqual(502);
-    expect(decoded.shipName).toBe('é'.repeat(32));
-    expect(decoded.shipIdent).toBe('é'.repeat(32));
+    // FR-028 counts a complete link, `b.` included.
+    expect(fragment.length).toBeLessThanOrEqual(500);
+    expect(decoded.shipName).toBe('é'.repeat(16));
+    expect(decoded.shipIdent).toBe('é'.repeat(16));
   });
 
   it('refuses to encode a body its own decoder length limit would reject', () => {
-    // Unreachable through table 1, whose largest build and longest metadata together stay well
-    // inside the envelope; the guard covers a future table with far larger hulls.
-    expectCodecError(() => encodeBuildLinkBody(new Uint8Array(380).fill(0xff)), 'invalidPayload');
-    expect(() => encodeBuildLinkBody(new Uint8Array(379).fill(0xff))).not.toThrow();
+    // 500 characters including `b.` leave 498 encoded digits, which carry 377 bytes of body.
+    expectCodecError(() => encodeBuildLinkBody(new Uint8Array(378).fill(0xff)), 'invalidPayload');
+    expect(encodeBuildLinkBody(new Uint8Array(377).fill(0xff))).toHaveLength(500);
   });
 
   it('validates table-one fields before reconstructing a build', () => {
