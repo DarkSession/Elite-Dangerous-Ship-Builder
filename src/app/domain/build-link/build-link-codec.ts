@@ -1546,17 +1546,20 @@ function resolvePreEngineeredEngineering(
  * Whether a pre-engineered record would reconstruct the engineering a module actually carries.
  *
  * The record carries an identity, not a state: decoding replays the variant's own grade and the
- * modifier block the package publishes for it. It is therefore only usable while the fitted module
- * still sits at that state, and a Mercenary article is the one fixed variant that can leave it —
- * two ways, both reachable from a real capture.
+ * modifier block the package publishes for it, composed with any experimental effect. That is
+ * sufficient for every acquisition the package identifies *by* that block — a reward article is
+ * recognised from its stat signature, so a module carrying the identity carries the state, and the
+ * record restores exactly what identified it.
  *
- * Its purchase-exclusive blueprint crafts grades 2 to 5 and the identity survives the upgrade, so
- * the fitted grade can be past the purchase grade the record would restore. And the package
- * publishes no modifier block for a Mercenary purchase, so a capture that states its modifiers
- * would come back with none at all. Either way the ordinary record — blueprint and grade, with the
- * Almanac re-deriving the purchase identity on reconstruction — is the form that can spell the
- * module, and where it cannot the encoder refuses. A link that opens as a different build than the
- * one shared is worse than no link.
+ * A Mercenary article is the exception, because it is the one identified from a blueprint instead.
+ * Its identity therefore says nothing about its state, and it can hold engineering the record
+ * cannot describe: the purchase-exclusive blueprint crafts grades 2 to 5 with the identity
+ * surviving the upgrade, and no modifier block is published for the purchase itself, so a capture
+ * stating modifiers would come back with only whatever an experimental effect contributes. For
+ * those the record is used only when it reproduces the module's engineering outright. Anything else
+ * takes the ordinary record — blueprint and grade, with the Almanac re-deriving the purchase
+ * identity on reconstruction — and where that cannot spell the module the encoder refuses. A link
+ * that opens as a different build than the one shared is worse than no link.
  */
 function preEngineeredRecordReproduces(
   codec: CodecContext,
@@ -1565,8 +1568,23 @@ function preEngineeredRecordReproduces(
   variant: PreEngineeredVariant,
 ): boolean {
   if (engineering.Level !== variant.grade) return false;
-  const restored = resolvePreEngineeredEngineering(codec, record);
-  return (restored.Modifiers?.length ?? 0) >= (engineering.Modifiers?.length ?? 0);
+  if (variant.acquisition !== 'mercenary') return true;
+  return sameModifiers(
+    resolvePreEngineeredEngineering(codec, record).Modifiers,
+    engineering.Modifiers,
+  );
+}
+
+function sameModifiers(
+  left: ModuleEngineering['Modifiers'],
+  right: ModuleEngineering['Modifiers'],
+): boolean {
+  const signature = (modifiers: ModuleEngineering['Modifiers']): string =>
+    [...(modifiers ?? [])]
+      .map((modifier) => `${normalise(String(modifier.Label))}=${String(modifier.Value)}`)
+      .sort()
+      .join('|');
+  return signature(left) === signature(right);
 }
 
 function indexesWhere<T>(
@@ -1593,7 +1611,7 @@ function engineeringStateFromModule(
   if (engineering.Level === undefined) {
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'Ordinary and pre-engineered state requires a grade.',
+      `Slot ${module.slot}: ordinary and pre-engineered state requires a grade.`,
     );
   }
   const preEngineeredIndex =
@@ -1603,7 +1621,8 @@ function engineeringStateFromModule(
   if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `The pre-engineered variant is absent from codec table ${codec.tableVersion}.`,
+      `Slot ${module.slot}: the pre-engineered variant fitted to ${module.symbol} is absent from ` +
+        `codec table ${codec.tableVersion}.`,
     );
   }
   const experimental =
@@ -1626,7 +1645,7 @@ function engineeringStateFromModule(
       if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
         throw new BuildLinkCodecError(
           'unknownIdentity',
-          'The pre-engineered variant is unavailable for its fitted module.',
+          `Slot ${module.slot}: the pre-engineered variant is unavailable for ${module.symbol}.`,
         );
       }
       return record;
@@ -1654,7 +1673,8 @@ function engineeringStateFromModule(
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'Engineering grade is unavailable for its blueprint.',
+      `Slot ${module.slot}: grade ${engineering.Level} is unavailable for blueprint ` +
+        `${engineering.BlueprintName}.`,
     );
   }
   return {

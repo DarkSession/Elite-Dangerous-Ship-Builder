@@ -405,11 +405,89 @@ describe('build-link codec', () => {
       // The ordinary record is the fallback, and no Mercenary blueprint offers the purchase grade
       // as a craftable one, so it cannot spell this either. Which refusal arrives depends on
       // whether the module has an ordinary blueprint set at all.
-      expectCodecError(
+      const error = expectCodecError(
         () => encodeBuildLinkFragment(source),
         hasOrdinaryBlueprints(variant.symbol) ? 'invalidPayload' : 'unknownIdentity',
       );
+      expect(error.message).toContain('LargeHardpoint1');
     }
+  });
+
+  it('refuses a Mercenary purchase whose modifiers an experimental effect cannot account for', () => {
+    // With an effect applied the record does restore modifiers — the effect's. Comparing counts
+    // would wave this through and decode the module to entirely different values, so the record is
+    // taken only when it reproduces the module's own modifiers.
+    const variant = mercenaryVariants().find(
+      ({ symbol }) => symbol === 'Int_PowerDistributor_Size5_Class5',
+    )!;
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'Krait_MkII',
+      Modules: [
+        {
+          Slot: 'Slot01_Size6',
+          Item: variant.symbol,
+          Engineering: {
+            BlueprintName: variant.blueprint,
+            Level: variant.grade,
+            Quality: 1,
+            ExperimentalEffect: 'special_powerdistributor_capacity',
+            Modifiers: [
+              { Label: 'WeaponsCapacity', Value: 30, OriginalValue: 41 },
+              { Label: 'SystemsCapacity', Value: 32, OriginalValue: 29 },
+              { Label: 'EnginesCapacity', Value: 32, OriginalValue: 29 },
+            ],
+          },
+        },
+      ],
+    });
+    const sourceModule = source.fittedModuleAt('Slot01_Size6')!;
+    expect(sourceModule.preEngineeredVariant).toEqual(variant);
+    expect(sourceModule.engineering?.Modifiers).toHaveLength(3);
+
+    const error = expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    expect(error.message).toContain('Slot01_Size6');
+  });
+
+  it('round-trips a Mercenary purchase whose capture agrees with its experimental effect', () => {
+    // The record does describe this one: the effect is pinned in the record, and the capture states
+    // exactly the modifiers that effect contributes, so decoding reproduces them. The application
+    // cannot reach this state itself — the package rejects an uncatalogued variant effect — so a
+    // journal or SLEF capture is the only way in, which is exactly what a shared link must carry.
+    const variant = mercenaryVariants().find(
+      ({ symbol }) => symbol === 'Int_PowerDistributor_Size5_Class5',
+    )!;
+    const experimental = 'special_powerdistributor_capacity';
+    const faithful = getPreEngineeredJournalModifiers({ ...variant, experimental });
+    expect(faithful.length).toBeGreaterThan(0);
+
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'Krait_MkII',
+      Modules: [
+        {
+          Slot: 'Slot01_Size6',
+          Item: variant.symbol,
+          Engineering: {
+            BlueprintName: variant.blueprint,
+            Level: variant.grade,
+            Quality: 1,
+            ExperimentalEffect: experimental,
+            Modifiers: faithful,
+          },
+        },
+      ],
+    });
+    const sourceModule = source.fittedModuleAt('Slot01_Size6')!;
+    expect(sourceModule.preEngineeredVariant).toEqual(variant);
+
+    const fragment = encodeBuildLinkFragment(source);
+    const decoded = decodeBuildLinkFragment(fragment);
+    const decodedModule = decoded.fittedModuleAt('Slot01_Size6')!;
+
+    expect(decodedModule.engineering?.ExperimentalEffect).toBe(experimental);
+    expect(decodedModule.engineering?.Modifiers).toEqual(sourceModule.engineering?.Modifiers);
+    expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
+    expect(decodedModule.preEngineeredVariant?.acquisition).toBe('mercenary');
+    expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
   });
 
   it('keeps the fitted grade of a Mercenary variant upgraded past its purchase', () => {
