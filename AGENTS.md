@@ -37,8 +37,11 @@ planning ship loadouts.
 - **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
   branches, functions, lines) — enforced in `angular.json`; never lower the
   threshold to get green. Playwright end-to-end tests run as part of
-  `pnpm run check` across desktop, tablet and mobile viewports, in **Chromium
-  and Firefox**, and include an automated accessibility check. Do not skip,
+  `pnpm run check` and must cover desktop, tablet and mobile viewports, in
+  **Chromium and Firefox**, with an automated accessibility check over every
+  screen. The suite has yet to reach that: `playwright.config.ts` configures the
+  three viewports in Chromium only, and no accessibility check runs. Closing the
+  gap is work on the suite, never a relaxation of the obligation. Do not skip,
   quarantine or delete tests to pass a build.
 - **Accessible to WCAG 2.2 AA.** Keyboard-operable with a visible focus order,
   screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
@@ -70,10 +73,14 @@ planning ship loadouts.
   coverage, Playwright) before proposing a change.
 - Unit tests live beside their source in `src/`; end-to-end tests live in
   `e2e/`. New user journeys need both.
-- The end-to-end suite runs every project in Chromium and in Firefox. If a
-  preinstalled browser does not match the version Playwright pins, point at its
-  executable (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing the
-  config or dropping a browser from the matrix.
+- The end-to-end suite must run every project in Chromium **and** in Firefox, with
+  an automated accessibility check over every screen (feature 011, FR-029 and
+  FR-032). `playwright.config.ts` has yet to catch up: it currently defines the
+  three viewport projects in Chromium only. Closing that gap is a change to the
+  config, never to those requirements, and no browser may be dropped from the
+  matrix to get a build green. If a preinstalled browser does not match the
+  version Playwright pins, point at its executable (`E2E_CHROMIUM_PATH`, and
+  `E2E_FIREFOX_PATH` once Firefox is configured) rather than editing the config.
 - **Specs are scoped to a capability and name no screen.** They constrain
   behaviour and the information a screen must convey. Screens are defined at
   plan time in `specs/<NNN>-<short-name>/design/`, recording what each screen
