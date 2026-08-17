@@ -326,8 +326,8 @@ shown against the hull's heat dissipation, with the contributing sources identif
   zero rate shown as a figure, and that the switched-off and unpowered distributor read as
   unavailable naming that state. Tests MUST assert that no rate is derived from another capacitor's
   calculation. The never-settles and never-overheats cases MUST each be asserted to produce their
-  verdict rather than an unavailable figure, and MUST assert that the application produces no heat
-  state the package does not itself report.
+  verdict rather than an unavailable figure, and a test MUST assert that the application produces no
+  heat state the package does not itself report.
 - **FR-019**: Each user story's primary journey MUST have a Playwright end-to-end test that runs
   against desktop, tablet and mobile viewports, in Chromium and in Firefox.
 

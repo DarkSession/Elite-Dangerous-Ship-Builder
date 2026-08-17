@@ -154,6 +154,10 @@ spread is reported as an angle at a chosen target range, alongside a plot of whe
 arrives, that both tighten as the range is increased, and that every figure states the range it
 assumes.
 
+**Contingent on FR-016a's open question**: scenarios 1 and 2 assert the spread, the furthest mount
+and the mounts' separation in metres. Whether this application may compute those three, or must
+obtain them from the package, is unresolved; scenario 3's plot is unaffected either way.
+
 **Acceptance Scenarios**:
 
 1. **Given** a build with weapons fitted, **When** the Commander views convergence at a chosen
@@ -287,16 +291,22 @@ assumes.
   be the one `projectGunsight` produces; the application MUST NOT project a mount itself. That
   accessor reports each point as a pair of dimensionless angular tangents rather than as an angle,
   so expressing one of those tangents as an angle is a unit conversion of the package's own figure,
-  permitted by feature 003's FR-001a on the terms its FR-005 sets for resistances. [NEEDS
-  CLARIFICATION: the spread and the furthest mount need more than that. Both are plane geometry over
-  the pairs the package returns — a separation between two points, and a distance from the centre —
-  so each yields a number the package did not itself compute, which constitution principle II's
-  "never a different value from the one it computed" may not permit even though no game rule is
-  involved. The package publishes these points expressly "suitable for a renderer", with
-  instructions for placing them on a display, which reads as sanctioning exactly this. Is that
-  geometry permitted presentation, or must the two figures be asked of the package?] Until it is
-  answered, the plot of FR-016f — which places the package's points and derives nothing — is the
-  part of user story 4 that is unambiguously specified.
+  permitted by feature 003's FR-001a on the terms its FR-005 sets for resistances.
+
+  [NEEDS CLARIFICATION: three figures need more than that — the spread, the mount furthest from the
+  centre line, and the fixed separation in metres between the mounts that FR-016b presents. Each is
+  plane geometry over pairs the package publishes: a separation between two points, or a distance
+  from the centre, taken either over the projected tangents or over the catalogue's metre offsets.
+  Each therefore yields a number the package did not itself compute, which constitution principle
+  II's "never a different value from the one it computed" may not permit — even though no game rule
+  is involved, and the package publishes the points expressly "suitable for a renderer" with
+  instructions for placing them on a display. Is that geometry permitted presentation, or must the
+  three figures be asked of the package?]
+
+  Until it is answered, the plot of FR-016f — which places the package's points and derives
+  nothing — is the part of user story 4 that is unambiguously specified, and the acceptance
+  scenarios and testing requirements asserting those three figures are contingent on the answer.
+
 - **FR-016b**: The Commander MUST be able to vary the target range continuously rather than choosing
   from a fixed set of stops, and every angular convergence figure and the plot MUST recompute as it
   changes. Convergence's range is its own; it is independent of FR-008's fixed chart ranges. The
@@ -323,7 +333,8 @@ assumes.
   range. The plot MUST NOT be the only route to the convergence figures: the same information MUST
   be readable as stated figures for a Commander who cannot use it.
 - **FR-016g**: Each mount offset MUST be bound to the slot it belongs to through the package's own
-  slot enumeration, in the order that enumeration returns, which is the order the offset catalogue
+  slot enumeration, in the order that enumeration returns its **hardpoint** entries — the utility
+  mounts it also returns carry no offset — which is the order the offset catalogue
   is published in. The application MUST NOT read the number out of a journal slot key and use it as
   an index into that catalogue: the package states that some hulls skip or reorder those numbers, so
   the number in a slot key is not the array index. This is constitution principle II's prohibition
@@ -383,9 +394,10 @@ assumes.
 
 ## Upstream dependencies
 
-**Nothing in this feature waits on an upstream release.** `@elite-dangerous-almanac/core` supplies
-whole-build and per-weapon metrics, the damage split by type, burst and sustained output, ammunition
-limits, range and falloff data, and armour piercing.
+**No figure in this feature is blocked today**, though FR-016a's open question could turn its three
+convergence figures into an upstream request — see the end of this section.
+`@elite-dangerous-almanac/core` supplies whole-build and per-weapon metrics, the damage split by
+type, burst and sustained output, ammunition limits, range and falloff data, and armour piercing.
 
 `ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })` returns the whole endurance figure — the
 actual recharge rate at the allocation, the sustained draw, the net drain and the seconds to drain,
@@ -404,13 +416,14 @@ prohibition is load-bearing: the offsets come from that catalogue, never from th
 
 Two properties shape the requirements. `projectGunsight` reports each arrival point as a pair of
 **dimensionless angular tangents** rather than as an angle — the catalogue itself holds metre
-offsets — which is why FR-016a states the conversion rather than assuming one, and why the spread
-and the furthest mount carry a [NEEDS CLARIFICATION] there. And the catalogue is published
-**positionally**: one offset per hardpoint, in the same order as the package's own slot enumeration,
-with the package warning that the number in a journal slot key is not the array index. Two hulls
-make that concrete — the Type-8, whose small hardpoints skip 3, and the Caspian Explorer, whose
-medium hardpoints are ordered 6, 5, 1, 2, 3, 4 — so FR-016g requires the binding to go through that
-enumeration and FR-021b tests it on such a hull.
+offsets — which is why FR-016a states the conversion rather than assuming one, and why the three
+geometric figures carry an open question there. And the catalogue is published **positionally**: one
+offset per hardpoint, in the same order as the package's own slot enumeration, with the package
+warning that the number in a journal slot key is not the array index. Three hulls make that concrete
+— the Type-8, whose small hardpoints skip 3; the Caspian Explorer, whose medium hardpoints are
+ordered 6, 5, 1, 2, 3, 4; and the Type-11 Prospector, which interleaves mining and standard mounts —
+so FR-016g requires the binding to go through that enumeration and FR-021b tests it on such a
+hull.
 
 **Composed under feature 003's FR-001a**, naming what is combined and under which permitted
 operation:
@@ -424,8 +437,11 @@ operation:
 3. **The convergence angle (FR-016a)** — converts a projected tangent the package returns into the
    equivalent angle, the unit conversion FR-001a permits.
 
-The spread and the furthest mount are deliberately absent from that list: whether the plane geometry
-they need is permitted presentation is the open question FR-016a records.
+The spread, the furthest mount and the mounts' separation in metres are deliberately absent from
+that list: whether the plane geometry all three need is permitted presentation is the open question
+FR-016a records. Nothing in `ships/gunsights` computes any of them — it exports the offset
+catalogue, a lookup and the projection, and no separation accessor — so if the answer is that they
+must come from the package, they become an upstream request rather than a local calculation.
 
 Endurance (FR-012) is **not** composed: the package computes it whole.
 

@@ -4,6 +4,8 @@
 
 **Created**: 2026-08-14
 
+**Updated**: 2026-08-16
+
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality

@@ -70,10 +70,14 @@ planning ship loadouts.
   coverage, Playwright) before proposing a change.
 - Unit tests live beside their source in `src/`; end-to-end tests live in
   `e2e/`. New user journeys need both.
-- The end-to-end suite runs every project in Chromium and in Firefox. If a
-  preinstalled browser does not match the version Playwright pins, point at its
-  executable (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing the
-  config or dropping a browser from the matrix.
+- The end-to-end suite must run every project in Chromium **and** in Firefox, with
+  an automated accessibility check over every screen (feature 011, FR-029 and
+  FR-032). `playwright.config.ts` has yet to catch up: it currently defines the
+  three viewport projects in Chromium only. Closing that gap is a change to the
+  config, never to those requirements, and no browser may be dropped from the
+  matrix to get a build green. If a preinstalled browser does not match the
+  version Playwright pins, point at its executable (`E2E_CHROMIUM_PATH`, and
+  `E2E_FIREFOX_PATH` once Firefox is configured) rather than editing the config.
 - **Specs are scoped to a capability and name no screen.** They constrain
   behaviour and the information a screen must convey. Screens are defined at
   plan time in `specs/<NNN>-<short-name>/design/`, recording what each screen

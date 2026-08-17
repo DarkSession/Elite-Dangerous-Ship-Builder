@@ -176,8 +176,9 @@ capability it describes.
   freely licensed open-source application — and what this surface must state about the relationship
   between those rules and the application's own licence.] The package attributes the illustrations
   and schematics to Frontier Developments plc and redistributes them under the media-usage rules it
-  quotes in `THIRD_PARTY_NOTICES.md`; the non-commercial and share-alike licences that notice also
-  carries belong to two of its **data** sources, not to the artwork. So the question is not who owns
+  quotes in `THIRD_PARTY_NOTICES.md`; the CC BY-NC and CC BY-SA licences that notice also carries
+  belong to two of its **data** sources rather than to the artwork, though Frontier's own rules
+  restrict the imagery to non-commercial use in terms of their own. So the question is not who owns
   the artwork, which is settled, but whether one set of terms sits with the other. It is a licensing
   question rather than a product one, and the answer governs what this surface must state and
   possibly whether the artwork can ship at all. Until it is answered, FR-004 and FR-005 stand:

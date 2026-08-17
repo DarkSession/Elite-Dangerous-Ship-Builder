@@ -377,8 +377,8 @@ takes.
 `minMass` alongside `optMass` and `maxMass`, and FR-014 shows two of the three. Measured across the
 1,144 valid hull-and-thruster combinations, 58 sit below the fitted thruster's minimum at unladen
 mass — across 24 hulls and 21 of the 40 thrusters — and 32 across 12 hulls remain below it at the
-loaded mass FR-014a displays. The minimum is therefore reachable, which is what FR-014's [NEEDS
-CLARIFICATION] reopens.
+loaded mass FR-014a displays. The minimum is therefore reachable, which is what the open question on
+FR-014 reopens.
 
 FR-016 is the boundary for all of it: every mass and every multiplier is the package's own, and
 where the application states how one stands against another it is comparing two reported figures
