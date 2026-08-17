@@ -2,312 +2,103 @@
 
 ## Scope
 
-This specification covers reading every slot in the active build; fitting, replacing, removing,
-engineering, enabling and prioritising modules; and undoing or redoing build changes.
+Commanders can inspect every slot; fit, replace, remove and engineer modules; manage module power;
+and undo or redo build edits. Build creation belongs to [001](../001-ship-selection-and-loading/spec.md).
 
-Creating, opening and replacing builds belongs to
-[Ship Selection and Build Loading](../001-ship-selection-and-loading/spec.md). Resulting statistics
-follow [Ship Statistics](../003-ship-statistics/spec.md).
+## User Scenarios
 
-## Clarifications
+### Story 1 — Fit modules (P1)
 
-### Session 2026-08-17
+1. Every Almanac slot is shown by game slot key, including empty and unresolved slots.
+2. A slot offers exactly the modules the Almanac reports as fittable for the current build.
+3. Fitting, replacing or removing a module updates the build and all Almanac results.
+4. A non-removable slot shows the package reason and offers no removal action.
 
-- Q: When a Commander searches a slot's module choices, which facts about a module should the typed
-  text be matched against? → A: Module name plus class, rating, and mount type for weapons
-- Q: What should a Commander see when their search text matches no module? → A: A "no matches"
-  message and a way to clear the search
-- Q: Before any search text is entered, in what order should a slot's compatible modules be listed?
-  → A: Grouped by module type, then class descending, then rating ascending
-- Q: How should the typed text be compared against a module's name, class, rating and mount? → A:
-  Every whitespace-separated term must match some field as a case- and accent-insensitive substring,
-  in any order
-- Q: How quickly must the list update as a Commander types, and how large a candidate list must stay
-  usable? → A: Within 100 ms of a keystroke, for the largest list any hull and slot produces
-- Q: What should a slot offer when the package reports no fittable module for it, as it does for the
-  cargo hatch on every hull? → A: No choice list and no search at all; only power state stays
-  editable
-- Q: How should pre-engineered variants reach the Commander? → A: Each variant is its own row in the
-  slot's choices, alongside the stock module
-- Q: Where should tech-broker variants sit? → A: With mercenary ones — natural position, marked as
-  not ordinarily available
-- Q: Should module rows needing a game unlock also be marked? → A: Yes, mark every module the package
-  records an entitlement for
+### Story 2 — Find a replacement (P1)
 
-## User Scenarios & Testing
+1. Choices are grouped by module name, then class descending and package rating order ascending;
+   stock precedes variants and unique rewards form a final section.
+2. Every whitespace-separated search term must match name, class, rating or weapon mount type as a
+   case- and accent-insensitive substring.
+3. No matches shows an empty result with a clear-search action.
+4. Acquisition and entitlement restrictions remain visible before and after fitting.
 
-### User Story 1 - Inspect and change fitted modules (Priority: P1)
+### Story 3 — Engineer and power a module (P1)
 
-A Commander can see every hull slot, inspect what is fitted, and find and choose a module among only
-those the Almanac allows in that slot.
+1. Only Almanac-supported blueprints, grades and experimental effects are offered.
+2. A Commander can apply or replace a blueprint and grade, add, replace or remove only an
+   experimental effect, or clear all ordinary engineering. Removing only the effect preserves the
+   blueprint and grade.
+3. Grades are always modelled at 100% quality; imported partial quality is normalised and reported.
+4. Enabled state and priority update every affected package calculation while mass and cost remain
+   because the module is still fitted.
 
-**Independent Test**: Load a reference build, compare every slot and fitted module with the Almanac,
-search a slot's candidates, then replace and remove modules in removable slots.
+### Story 4 — Undo and redo (P2)
 
-**Acceptance Scenarios**:
-
-1. **Given** an active build, **When** outfitting is shown, **Then** every package slot is present by
-   game slot key, including empty slots.
-2. **Given** a fitted module, **When** it is shown, **Then** its package identity, class, rating,
-   mass, power draw, retail cost and relevant type-specific attributes are available.
-3. **Given** a slot, **When** replacement choices are shown, **Then** they are exactly the modules
-   the package reports as fittable for the current build, grouped by module type, with the largest
-   class first within each group and ratings in the package's own order.
-4. **Given** a slot's replacement choices, **When** the Commander enters search text, **Then** the
-   listed choices are exactly those matching every entered term, in any order and ignoring case and
-   accents, against name, class, rating or weapon mount type.
-5. **Given** search text matching no choice, **When** the result is shown, **Then** a no-matches
-   message appears and clearing the search restores the full list.
-6. **Given** a removable slot, **When** its module is removed, **Then** the slot becomes empty and
-   the package recomputes the build.
-7. **Given** a non-removable slot, **When** it is inspected, **Then** removal is unavailable and the
-   package's reason is visible.
-8. **Given** the cargo hatch, **When** it is inspected, **Then** no replacement, search, engineering
-   or removal is offered, while its attributes and power state remain available.
-9. **Given** a slot's choices, **When** they are listed, **Then** each pre-engineered variant is its
-   own choice, unique rewards come last in a section identifying them as such, and mercenary,
-   tech-broker and entitlement-gated choices are marked in their natural positions.
-10. **Given** a fitted mercenary purchase, **When** the build is saved and reloaded, **Then** the
-    package still resolves it and it stays marked as not ordinarily available.
-11. **Given** a mercenary purchase engineered to a higher grade, **When** it is shown, **Then** its
-    mark and the fitted grade are both correct, the fitted grade coming from its engineering rather
-    than from the variant's purchase grade.
-
-### User Story 2 - Engineer a module (Priority: P1)
-
-A Commander can apply, change and clear supported engineering and see the package-computed module
-and build results.
-
-**Independent Test**: Apply each supported engineering operation to reference modules, compare all
-modified attributes with the Almanac and verify clearing restores stock values.
-
-**Acceptance Scenarios**:
-
-1. **Given** a fitted module, **When** engineering choices are shown, **Then** only package-supported
-   blueprints, grades and experimental effects are offered.
-2. **Given** selected engineering, **When** it is applied, **Then** the selected grade is treated as
-   100% complete and all modified attributes come from the package.
-3. **Given** existing engineering, **When** the blueprint or grade changes, **Then** it is replaced;
-   removing only the experimental effect leaves the blueprint and grade intact.
-4. **Given** engineering is cleared, **When** the module is recomputed, **Then** all ordinary
-   engineering is gone and stock package values are restored.
-5. **Given** a selected blueprint grade and effect, **When** their cost is shown, **Then** the
-   package's cumulative blueprint cost and effect cost are used.
-
-### User Story 3 - Control module power (Priority: P2)
-
-A Commander can enable or disable modules and assign power priorities that participate in Almanac
-power calculations.
-
-**Independent Test**: Toggle and reprioritise modules, verifying stored state and every affected
-package result.
-
-**Acceptance Scenarios**:
-
-1. **Given** a power-manageable fitted module, **When** the Commander changes its enabled state or
-   priority, **Then** the build stores that state and affected package results update.
-2. **Given** a disabled module, **When** other build properties are shown, **Then** its mass and cost
-   remain because it is still fitted.
-
-### User Story 4 - Undo and redo changes (Priority: P2)
-
-A Commander can safely explore changes and restore earlier build states during the session.
-
-**Independent Test**: Make a sequence covering every editable field, undo to the initial build and
-redo to the final build, comparing each intermediate state.
-
-**Acceptance Scenarios**:
-
-1. **Given** a build change, **When** it is undone, **Then** every modeled field returns to its prior
-   state and package results recompute.
-2. **Given** an undone change, **When** it is redone, **Then** the exact later state returns.
-3. **Given** an undone change followed by a new change, **When** history is inspected, **Then** the
-   old redo path is gone.
-4. **Given** available undo or redo, **When** it is presented, **Then** the affected slot or property
-   is described in Commander-facing terms.
-
-### Edge Cases
-
-- Unknown module identities remain visible in their slots; they are not treated as empty.
-- The cargo hatch is the only slot the package reports no fittable module for, on every hull. It is
-  shown with its attributes and power state and offers no way to change the module itself.
-- A module carrying variants in more than one acquisition category appears once per variant, so the
-  same weapon can be listed both in its natural position and among the unique rewards.
-- A fixed mount arriving empty or unresolved is normalized according to the constitution before any
-  statistic is read.
-- A module replacement never inherits engineering from the previous module.
-- A build may remain editable while invalid or incomplete; package validation explains the state.
-- Viewing-condition changes do not enter edit history.
+1. Every Commander-authored build edit can be undone and redone during the session.
+2. A new edit after undo discards the redo path.
+3. One Commander decision creates one history step.
 
 ## Requirements
 
-### Slots and Modules
+- **FR-001**: Outfitting MUST require an active build and MUST NOT create one.
+- **FR-002**: Slots, module facts, post-engineering attributes, compatibility, removability and edit
+  results MUST come from `ShipLoadout`. Slot identity MUST be the game slot key, never position.
+- **FR-003**: Missing facts and unresolved modules MUST remain unavailable and visible in their
+  original slots; the application MUST NOT infer or replace them outside fixed-mount normalisation.
+- **FR-004**: Replacement choices MUST contain the stock form and each package pre-engineered
+  variant of every currently fittable module, with no application-added candidates.
+- **FR-005**: Search and ordering MAY arrange package records but MUST NOT alter their values or admit
+  an unfittable module. Search MUST use the package name for the active locale plus class, rating and
+  weapon mount type. The no-match and clear-search states MUST be explicit.
+- **FR-006**: Choice and fitted-module labels MUST reflect package acquisition and entitlement data.
+  Community-goal and event rewards MUST be identified as unique rewards; Mercenary and tech-broker
+  variants MUST be identified as not ordinarily available. A choice MAY carry multiple labels.
+- **FR-007**: A fitted variant MUST be recognized only by `FittedModule.preEngineeredVariant`.
+  Variant purchase grade and current ordinary engineering grade MUST remain distinct.
+- **FR-008**: Fitting, replacing and removing MUST use package edit operations and surface their
+  structured refusal results.
+- **FR-009**: The cargo hatch MUST expose its facts and editable power state but MUST offer no
+  replacement, search, engineering or removal because the package offers none.
+- **FR-010**: On load, an empty or unresolved fixed mount MUST be filled with that hull's package
+  default module before any calculation. The Commander MUST be told the slot and replaced identity.
+  If the package has no default, the slot remains empty and the build remains incomplete.
+- **FR-011**: Fixed-mount normalisation MUST change the build but MUST NOT enter edit history.
+- **FR-012**: Blueprint and effect identities MUST use package `fdname` values. Each module MUST
+  support applying and replacing a blueprint and grade, adding, replacing and removing only an
+  experimental effect, and clearing all ordinary engineering exactly as the package permits.
+  Removing only the effect MUST preserve the blueprint and grade. Availability, modified attributes
+  and restrictions on further engineering MUST come from the package.
+- **FR-013**: Every selected ordinary grade MUST represent 100% quality. Partial imported quality
+  MUST be normalised to 100% and reported.
+- **FR-014**: Engineering material costs MUST use package cost results. Fixed pre-engineering MUST
+  add no craft cost unless the package reports separately selected ordinary engineering.
+- **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
+  MUST use the Commander's one-based priority labels.
+- **FR-016**: Undo and redo MUST restore all modelled fields exactly, recompute package results and
+  cover module, engineering, power, ship name and ident edits.
+- **FR-017**: History MUST retain at least the 100 most recent Commander decisions, remain
+  session-only and be discarded when the active build is replaced. It MUST NOT enter storage, links,
+  SLEF or browser navigation.
+- **FR-018**: Viewing conditions and automatic normalisation MUST NOT enter edit history.
 
-- **FR-001**: Outfitting MUST require an active build and MUST NOT create one as a side effect.
-- **FR-002**: Slots MUST come from the active `ShipLoadout` and use game slot keys, never positional
-  identities. Empty slots MUST remain visible.
-- **FR-003**: Fitted-module facts and post-engineering attributes MUST come from the package. Missing
-  facts MUST remain unavailable rather than being inferred.
-- **FR-004**: Replacement choices MUST be exactly the result of the package's fittability rules for
-  the active build, including hull restrictions, exclusivity and per-ship limits. A fittable module
-  contributes one choice for its stock form and one further choice for each pre-engineered variant
-  the package records for it.
-- **FR-005**: Candidate filtering, searching and ordering MUST arrange package records only and MUST
-  NOT alter or supplement their values. Missing compared values MUST remain distinct from zero.
-- **FR-005a**: A slot's replacement choices MUST be searchable by free text. Search MUST narrow the
-  choices to those whose package-provided name in the active language, class, rating or — for
-  hardpoint modules — mount type matches the entered text. No other module attribute participates in
-  matching, and search MUST NOT admit a module the package reports as unfittable.
-- **FR-005b**: Search text matching no choice MUST show a no-matches message and MUST offer clearing
-  the search, which restores the unnarrowed choices. Where the package reports no fittable module for
-  a slot, no choice list and no search MUST be offered at all, rather than an empty list.
-- **FR-005c**: With no search text entered, replacement choices MUST be grouped by module name, and
-  within a group ordered by class descending then by rating ascending in the package's recorded
-  rating sequence, so that A precedes E and armour grade I precedes V. Within one module name, a
-  stock choice MUST precede that module's variants. The order MUST be stable across openings of the
-  same slot on the same build.
-- **FR-005d**: Search text MUST be split on whitespace, and a module MUST be listed only when every
-  term matches at least one of its searchable fields as a substring, in any order. Matching MUST
-  ignore letter case and diacritics in both the entered text and the package's name, so that a term
-  typed without accents still matches an accented name. Terms MUST NOT be corrected for spelling.
-- **FR-005e**: Unique-reward choices MUST be ordered after every other choice, as a distinct trailing
-  section that says these are rewards no longer ordinarily obtainable. A choice is a unique reward
-  when the package records its variant's acquisition as a community goal or an event reward. The
-  trailing section MUST use the same grouping and ordering as the rest of the list.
-- **FR-005f**: Every choice MUST carry the package's own account of how its module is obtained. A
-  choice whose variant acquisition is a community goal or an event reward MUST be marked a unique
-  reward; one whose acquisition is mercenary or tech broker MUST be marked as not ordinarily
-  available while keeping its natural position; and a module the package records an entitlement for
-  MUST be marked as requiring that entitlement. A choice MAY carry more than one mark. No mark may be
-  carried by colour, shape or position alone, and each MUST reach assistive technology. The
-  application MUST NOT classify or reword the package's entitlement values into groups of its own.
-- **FR-005g**: A choice's marks MUST also apply to the module once fitted, and MUST survive saving
-  and reloading the build. The package resolves every acquisition category back from a fitted module,
-  mercenary included, so `FittedModule.preEngineeredVariant` MUST be the only source of a fitted
-  module's marks. The application MUST NOT recognize a variant by any rule of its own.
-- **FR-005h**: A mercenary variant resolves from the purchase-exclusive blueprint and keeps
-  resolving after the Commander engineers the module to a higher grade. The variant reports the
-  purchase grade, so the module's fitted grade MUST come from its engineering and MUST NOT be read
-  off the variant. Clearing the module's engineering removes the package's identification, and the
-  mark MUST go with it.
-- **FR-006**: Fitting, replacing and removing MUST use the package's edit operations and surface
-  their structured success or refusal results.
-- **FR-007**: The application MUST NOT offer removal where the package reports a slot as
-  non-removable. The seven core mounts, armour and cargo hatch MUST follow the package's fixed-mount
-  report.
-- **FR-007a**: The cargo hatch MUST NOT be offered as a module the Commander can change. On every
-  hull the package reports no fittable module, no blueprint and no experimental effect for it and
-  refuses to empty it, so no replacement, search, engineering or removal MUST be presented. Its
-  identity, attributes and power state remain visible, and enabling, disabling and prioritising it
-  MUST stay available because the package accepts those edits and its draw counts against the power
-  budget.
-- **FR-008**: A fixed mount that arrives empty or contains an unresolved module MUST be filled with
-  that hull's package stock module before presentation and calculation. The Commander MUST be told
-  the slot, fitted module and replaced identity. If no stock module exists, the build remains
-  incomplete.
-- **FR-009**: Fixed-mount normalization MUST be part of loading, not edit history; undo and redo MUST
-  NOT restore the invalid source gap.
-- **FR-010**: Outside fixed-mount normalization, unresolved fitted identities MUST remain reported in
-  their original slots.
+## Edge Cases
 
-### Engineering and Power State
-
-- **FR-011**: Blueprint, grade, experimental-effect and pre-engineered availability MUST come from
-  the package and use package `fdname` identities.
-- **FR-012**: Each module MUST support applying, replacing and clearing ordinary engineering exactly
-  as the package permits. Engineering on one slot MUST NOT affect another.
-- **FR-013**: Every selected or imported ordinary grade MUST represent 100% quality. Partial quality
-  MUST be normalized and reported, not stored or offered as a control.
-- **FR-014**: Modified attributes MUST be package-computed and shown with their stock values. The
-  application MUST NOT apply engineering modifiers itself.
-- **FR-015**: Engineering costs MUST use package cost functions. The application MUST NOT calculate
-  grade rolls or material quantities.
-- **FR-016**: Package-identified pre-engineered modules MUST show their fixed modifications and any
-  restriction on further engineering; their supplied modifications have no craft cost. A mercenary
-  article is the exception the package states: it publishes no modifier block for the purchase, so
-  no fixed modification MUST be shown for one and none MUST be inferred. Its visible engineering is
-  whatever the Commander has since crafted.
-- **FR-017**: Supported fitted modules MUST allow enabled-state and priority changes using package
-  build state. Disabled modules remain fitted and retain mass and cost.
-
-### Undo and Redo
-
-- **FR-018**: Every Commander-authored build change MUST be undoable and redoable for the session,
-  including modules, engineering, enabled state, priority, ship name and ident.
-- **FR-019**: Undo and redo MUST restore all modeled build fields exactly and trigger the same
-  package recomputation as a direct edit.
-- **FR-020**: One Commander decision MUST create one history step. Changes on different slots and
-  separate module fittings MUST NOT merge. Choosing a pre-engineered variant is one decision and MUST
-  remain one step even though it takes more than one package operation to apply.
-- **FR-021**: A new change after undo MUST discard the redo path. Undoing beyond the last saved state
-  MUST NOT alter the saved record.
-- **FR-022**: History MUST be bounded, session-only and discarded when the active build is replaced.
-  It MUST NOT be saved, linked, exported or confused with browser navigation.
-- **FR-023**: Viewing conditions and automatic fixed-mount normalization MUST NOT enter edit history.
-
-### Verification Requirements
-
-- **FR-024**: Domain tests MUST cover package slot enumeration, every fitting constraint, removal,
-  module replacement, enabled state, priority and unresolved identities without rendering UI.
-- **FR-024a**: Search tests MUST cover each searchable field, multi-term and any-order matching, case
-  and accent insensitivity, the no-matches state and its clearing, the default order, and the largest
-  candidate list any hull and slot produces.
-- **FR-024b**: Cargo-hatch tests MUST confirm, for every package hull, that no replacement, search,
-  engineering or removal is offered, that its attributes stay readable, and that enabling, disabling
-  and prioritising it still work and move the power budget.
-- **FR-024c**: Choice-composition tests MUST cover variant choices, each acquisition category, a
-  module carrying variants in more than one category, the trailing unique-reward section, every mark,
-  entitlement-gated modules, and a fitted mercenary purchase across a save and reload — at its
-  purchase grade, engineered above it, and after its engineering is cleared.
-- **FR-025**: Engineering tests MUST cover supported choices, 100% quality normalization,
-  replacement, effect-only removal, clearing, pre-engineered modules and package-provided costs.
-- **FR-026**: Fixed-mount tests MUST cover every package hull and every build source, including
-  missing stock data and the absence of normalization history.
-- **FR-027**: History tests MUST cover every change type, step boundaries, bounds, redo discard,
-  build replacement and exclusion of viewing conditions.
-- **FR-028**: Each primary journey MUST have end-to-end coverage at desktop, tablet and mobile
-  viewports in Chromium and Firefox, including automated accessibility checks.
-
-## Key Entities
-
-- **Slot**: A package fitting position identified by its game slot key.
-- **Replacement choices**: The package's fittable modules for one slot on the active build, each in
-  its stock form and once per pre-engineered variant, as narrowed by the Commander's search text.
-- **Pre-engineered variant**: A package-recorded ready-engineered form of a module, carrying the
-  acquisition that identifies it as a mercenary, community-goal, event-reward or tech-broker article.
-- **Fitted module**: A package module plus slot-local engineering, enabled state and priority.
-- **Fixed mount**: A core, armour or cargo-hatch mount the package reports as non-removable.
-- **Edit history**: The bounded session-only sequence of Commander-authored build changes.
+- A build remains editable while invalid or incomplete.
+- Replacing a module does not inherit the previous module's engineering.
+- A module appearing through multiple acquisition routes remains one package variant per route.
+- Clearing Mercenary engineering can remove the package's ability to identify the purchased variant;
+  the application follows the resulting package state.
 
 ## Almanac Coverage
 
-The Almanac supplies slot enumeration, module records, module names in the Commander's language,
-fittability, removability, stock loadouts, edit operations, validation, engineering choices and
-computations, power state and cumulative engineering-cost functions. It also supplies authoritative
-fixed-mount removability, the pre-engineered variants with the acquisition that classifies each one,
-and the entitlement a module requires. No game number or calculation is application-owned.
-
-Recognising a fitted variant is the package's too, in every acquisition category. `0.1.0-beta.12`
-closed the one gap this area had: a fitted mercenary article now resolves from the blueprint only its
-purchase grants, so the application-owned recognition rule that
-[Cost and Materials](../009-cost-and-materials/spec.md) used to own is gone rather than restated
-here. Mercenary variants publish no modifier block, which is why FR-016 has nothing fixed to show for
-one.
+The package supplies slots, fittability, module limits, removability, defaults, edit operations,
+engineering choices and calculations, costs, variants, acquisition and entitlement data. No game
+rule, value or variant-recognition heuristic is application-owned.
 
 ## Success Criteria
 
-- **SC-001**: Every package slot is present and every offered module, searched or not, is fittable
-  for that slot and build.
-- **SC-002**: Every modified module value and engineering cost equals the package result.
-- **SC-003**: No active build contains an empty or unresolved fixed mount when the package supplies a
-  stock replacement, and every normalization is reported.
-- **SC-004**: Twenty mixed changes can be undone to the initial state and redone to the final state
-  with exact fidelity at every step.
-- **SC-005**: Direct edits, undo and redo update all affected package results within 100 ms.
-- **SC-005a**: Replacement choices update within 100 ms of a keystroke, for the largest candidate
-  list any hull and slot produces, at every supported viewport.
-- **SC-006**: The complete feature passes the required viewport, browser and accessibility test
-  matrix without horizontal page scrolling.
-- **SC-007**: Every choice's obtaining marks and its placement inside or outside the unique-reward
-  section match the package's record, and a fitted mercenary purchase stays resolved across a save
-  and reload at every grade it can be engineered to.
+- **SC-001**: Every slot, candidate, edit result and modified value matches the Almanac.
+- **SC-002**: Replacement search updates within 100 ms for the largest package candidate list.
+- **SC-003**: Undo and redo reproduce every intermediate modelled build exactly.
+- **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.

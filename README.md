@@ -65,9 +65,9 @@ End-to-end tests live in [`e2e/`](./e2e) and run on
 projects — desktop, tablet and mobile — in Chromium.
 
 Spec 011 requires more than that, and the config has yet to catch up: every
-journey must run in **Firefox** as well as Chromium (FR-020), and an automated
-accessibility check must cover every capability (FR-021). Adding them is a change to
-the config, never a change to those requirements.
+journey must run in **Firefox** as well as Chromium (FR-021), and an automated
+accessibility check must cover every capability and relevant state (FR-022). Adding them is a
+change to the config, never a change to those requirements.
 
 Playwright needs browsers installed once:
 
@@ -93,15 +93,15 @@ Codex CLI (`.agents/skills`).
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | [001](./specs/001-ship-selection-and-loading/spec.md) | Ship selection and build loading (search, sort, filters, previews, local storage, build links) |
 | [002](./specs/002-module-outfitting/spec.md)          | Module outfitting and engineering, with undo, redo and the edit history                        |
-| [003](./specs/003-ship-statistics/spec.md)            | Ship statistics — the contract every build figure obeys, and the headline set                  |
-| [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                       |
-| [005](./specs/005-power-and-heat/spec.md)             | Power budget in both hardpoint states, the distributor, and heat                               |
+| [003](./specs/003-ship-statistics/spec.md)            | Structural status, issues, headline statistics, assembly requirements and viewing conditions   |
+| [004](./specs/004-slef/spec.md)                       | SLEF                                                                                           |
+| [005](./specs/005-power-and-heat/spec.md)             | Selectable deployed or retracted power budget, the distributor, and heat                       |
 | [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
 | [007](./specs/007-offence-profile/spec.md)            | Almanac-provided damage totals, per-weapon detail, ammunition and capacitor endurance          |
 | [008](./specs/008-mobility-and-jump/spec.md)          | Almanac-provided speed, handling, mass, capacities and jump performance by load                |
 | [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
 | [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |
-| [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, keyboard, screen readers, WCAG AA  |
+| [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, screen readers, localisation       |
 | [012](./specs/012-help-and-licences/spec.md)          | Licences, attribution, versions and the answers the application's own decisions provoke        |
 
 Specs 005 to 009 are the areas of the statistics family. Each is independently

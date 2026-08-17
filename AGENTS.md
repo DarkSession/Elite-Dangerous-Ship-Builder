@@ -25,8 +25,8 @@ planning ship loadouts.
   clamp, re-derive or special-case a library result inside this application —
   not even temporarily. A blocked feature waits on the upstream fix.
 - **Desktop, tablet and mobile are all first-class.** Every feature must be
-  fully usable on all three, by touch as well as pointer and keyboard, in
-  portrait and landscape, with no horizontal page scrolling.
+  fully usable on all three, by touch as well as pointer, in portrait and
+  landscape, with no horizontal page scrolling.
 - **Nothing ships untranslatable.** Every string the application owns goes
   through the localisation layer — never hard-coded in a component, template or
   formatter — and numbers, credits and dates are formatted for the active
@@ -43,10 +43,13 @@ planning ship loadouts.
   three viewports in Chromium only, and no accessibility check runs. Closing the
   gap is work on the suite, never a relaxation of the obligation. Do not skip,
   quarantine or delete tests to pass a build.
-- **Accessible to WCAG 2.2 AA.** Keyboard-operable with a visible focus order,
-  screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
+- **Accessible to WCAG 2.2 AA, except the keyboard-operation criteria.**
+  Screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
   touch targets, `prefers-reduced-motion` honoured, and nothing carried by
   colour alone. It is a requirement of every feature, not a later pass.
+  Keyboard operation is out of scope by constitutional exclusion (principle V
+  names the criteria), so the application never claims unqualified AA — state
+  the exclusion wherever conformance is stated.
 - **Identities come from the package**: `symbol` for hulls and modules, `fdname`
   for blueprints and experimental effects, and the game's own slot keys — never
   positional indices.
@@ -74,8 +77,8 @@ planning ship loadouts.
 - Unit tests live beside their source in `src/`; end-to-end tests live in
   `e2e/`. New user journeys need both.
 - The end-to-end suite must run every project in Chromium **and** in Firefox, with
-  an automated accessibility check over every capability (feature 011, FR-020 and
-  FR-021). `playwright.config.ts` has yet to catch up: it currently defines the
+  an automated accessibility check over every capability and relevant state (feature 011, FR-021
+  and FR-022). `playwright.config.ts` has yet to catch up: it currently defines the
   three viewport projects in Chromium only. Closing that gap is a change to the
   config, never to those requirements, and no browser may be dropped from the
   matrix to get a build green. If a preinstalled browser does not match the

@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Ship Statistics
+# Specification Quality Checklist: Ship Statistics and Status
 
 **Purpose**: Validate specification quality before planning
 **Created**: 2026-08-17
@@ -25,13 +25,15 @@
 ## Almanac Integrity
 
 - [x] Almanac-owned game data uses package identities and values
-- [x] Every required game number or calculation is available from the package
-- [x] No local game formula, correction, estimate or unsupported aggregate is required
+- [x] Every required game number, flag and calculation is available from the package
+- [x] No local game formula, correction, estimate, unsupported aggregate or readiness verdict is
+      required
 - [x] Missing package values remain unavailable rather than being fabricated
+- [x] No finding may be raised without a package-reported fact behind it
 
 ## Delivery Readiness
 
-- [x] Desktop, tablet and mobile behavior is covered
-- [x] Keyboard, touch, screen-reader and automated accessibility verification is covered
-- [x] Unit and end-to-end verification obligations are defined
+- [x] Desktop, tablet and mobile behavior is covered by the project-wide requirements
+- [x] Touch, screen-reader and automated accessibility obligations are explicit or project-wide
+- [x] Unit and end-to-end verification obligations are project-wide
 - [x] Specification is ready for planning

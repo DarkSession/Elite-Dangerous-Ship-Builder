@@ -137,23 +137,29 @@ fallback.
 - Layouts MUST be responsive and fluid rather than pinned to fixed widths. The
   page MUST NOT scroll horizontally at any supported viewport; wide content
   (statistics tables, module lists) scrolls within its own container.
-- All interactions MUST work by touch as well as by pointer and keyboard.
-  Interactive targets MUST be large enough to hit reliably on a phone, and
-  nothing essential may depend on hover.
+- All interactions MUST work by touch as well as by pointer. Interactive targets
+  MUST be large enough to hit reliably on a phone, and nothing essential may
+  depend on hover.
 - Portrait and landscape orientations MUST both work on tablet and mobile.
-- The application MUST meet **WCAG 2.2 level AA** on every form factor. That is
-  the standard, not an aspiration: every capability MUST be operable by
-  keyboard alone in a sensible order with a visible focus indicator, navigable
-  by screen reader with correct roles, names and state, legible at 200% text
-  size and at 400% zoom without loss of content or function, and free of any
-  information carried by colour, shape or position alone. Contrast MUST meet the
-  AA ratios for text and for the non-text elements that carry meaning; touch
-  targets MUST meet the AA target-size rule; motion MUST respect
-  `prefers-reduced-motion`.
+- The application MUST meet **WCAG 2.2 level AA** on every form factor, with one
+  exclusion: the keyboard-operation criteria — 2.1.1 Keyboard, 2.1.2 No Keyboard
+  Trap, 2.1.4 Character Key Shortcuts, 2.4.1 Bypass Blocks, 2.4.3 Focus Order,
+  2.4.7 Focus Visible and 2.4.11 Focus Not Obscured (Minimum) — are out of scope,
+  and no requirement in this repository may demand them. The rest of the standard
+  is not an aspiration: every capability MUST be navigable by screen reader with
+  correct roles, names and state, legible at 200% text size and at 400% zoom
+  without loss of content or function, and free of any information carried by
+  colour, shape or position alone. Contrast MUST meet the AA ratios for text and
+  for the non-text elements that carry meaning; touch targets MUST meet the AA
+  target-size rule; motion MUST respect `prefers-reduced-motion`.
+- Because criteria at level A and AA are excluded, the application MUST NOT claim
+  unqualified WCAG 2.2 AA conformance. Wherever conformance is stated — in the
+  interface, in documentation or in a specification — the excluded criteria MUST
+  be named alongside it.
 - Accessibility is verified, not assumed: an automated accessibility check MUST
-  run over every screen as part of the end-to-end suite, and a failure MUST fail
-  the build. An automated pass is a floor rather than a proof — a capability
-  that cannot be operated by keyboard or understood by screen reader is
+  run over every screen as part of the end-to-end suite, and a failure of an
+  in-scope criterion MUST fail the build. An automated pass is a floor rather
+  than a proof — a capability that cannot be understood by screen reader is
   incomplete however the checker scores it.
 - End-to-end tests MUST cover desktop, tablet and mobile viewports in every
   browser engine principle VIII names. A feature is not done until it passes on
@@ -225,8 +231,8 @@ improvised screen by screen, and not deferred until the domain is finished.
   populated, empty, loading, error, disabled — at desktop, tablet and mobile
   widths (principle V).
 - Accessibility belongs to the component, not to the screen that uses it.
-  Contrast, focus order, keyboard operation, touch target size and semantic
-  labelling are part of a component's definition (principle V).
+  Contrast, touch target size and semantic labelling are part of a component's
+  definition (principle V).
 - Every string a component renders resolves through the localisation layer, and
   every component survives text expansion (principle VI).
 - The library is versioned in this repository, and this repository is the source
@@ -342,4 +348,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 3.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-17
+**Version**: 4.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-17
