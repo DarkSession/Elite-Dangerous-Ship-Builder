@@ -66,7 +66,14 @@ interface CodecContext {
 }
 
 const TABLE_VERSION_BITS = 10;
-const MAX_STRING_UNITS = 2_048;
+/**
+ * Ship name and ident are each bounded so that metadata can never crowd a loadout out of the
+ * 500-character envelope. Two 64-unit strings cost at most 132 bytes of the 379-byte body,
+ * which leaves room for a fully engineered hull at the sizes `CODEC_TABLE_CAPACITY` budgets
+ * for. A larger bound is not reachable anyway: the envelope rejects it first, and rejecting a
+ * name at its own limit says what is wrong.
+ */
+const MAX_STRING_UNITS = 64;
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
 

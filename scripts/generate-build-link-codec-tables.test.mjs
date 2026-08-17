@@ -5,6 +5,15 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import {
+  CODEC_TABLE_CAPACITY,
+  assertCapacityWithinCodecLimits,
+  assertTableFitsEnvelope,
+  assertTableWithinCapacity,
+  codecTableDimensions,
+  envelopeBodyBytes,
+  readCodecConstants,
+} from './build-link-codec-capacity.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const generatorPath = fileURLToPath(
@@ -33,4 +42,78 @@ test('refuses to overwrite a table whose payload does not match its declared has
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /content does not match its declared hash/);
   assert.equal(await readFile(tamperedTablePath, 'utf8'), tamperedContent);
+});
+
+test('the committed table stays within the capacity its link budget is sized for', async () => {
+  const table = JSON.parse(await readFile(committedTablePath, 'utf8'));
+
+  assert.doesNotThrow(() => assertTableWithinCapacity(table));
+  for (const [dimension, actual] of Object.entries(codecTableDimensions(table))) {
+    assert.ok(
+      actual <= CODEC_TABLE_CAPACITY[dimension],
+      `${dimension} is ${actual}, beyond its budgeted ${CODEC_TABLE_CAPACITY[dimension]}`,
+    );
+  }
+});
+
+test('refuses a table whose growth outruns the link budget', async () => {
+  const table = JSON.parse(await readFile(committedTablePath, 'utf8'));
+  const filler = (count, value) => Array.from({ length: count }, (_entry, index) => value(index));
+  const overgrown = {
+    ...table,
+    SHIPS: [...table.SHIPS, ...filler(CODEC_TABLE_CAPACITY.SHIPS, (index) => `Hull${index}`)],
+    BLUEPRINTS: [
+      ...table.BLUEPRINTS,
+      ...filler(CODEC_TABLE_CAPACITY.BLUEPRINTS, (index) => `Blueprint${index}`),
+    ],
+  };
+
+  assert.throws(
+    () => assertTableWithinCapacity(overgrown),
+    (error) =>
+      /SHIPS: \d+, budgeted for 128/.test(error.message) &&
+      /BLUEPRINTS: \d+, budgeted for 256/.test(error.message) &&
+      /MAX_STRING_UNITS/.test(error.message),
+  );
+});
+
+test('every budgeted limit stays inside the codec, and the envelope is measured exactly', () => {
+  assert.doesNotThrow(() => assertCapacityWithinCodecLimits());
+  // 500 Base70 digits with a Base62 terminal hold 383 payload bytes: 379 of body, four of CRC-32.
+  assert.equal(envelopeBodyBytes(500), 379);
+  // Nine payload bytes fit in twelve digits, so five of body survive the four-byte checksum.
+  assert.equal(envelopeBodyBytes(12), 5);
+});
+
+test('the committed table cannot express a build too large to share', async () => {
+  const table = JSON.parse(await readFile(committedTablePath, 'utf8'));
+  const constants = await readCodecConstants();
+
+  const { bytes, limit } = assertTableFitsEnvelope(table, constants);
+
+  assert.equal(constants.maxEncodedLength, 500);
+  assert.equal(limit, 379);
+  assert.ok(bytes <= limit, `worst case ${bytes} bytes exceeds the ${limit} a link carries`);
+});
+
+test('refuses a table whose worst case outgrows the link, metadata included', async () => {
+  const table = JSON.parse(await readFile(committedTablePath, 'utf8'));
+  const constants = await readCodecConstants();
+
+  // The bound the codec carried before this budget existed: two labels alone outrun the envelope.
+  assert.throws(
+    () => assertTableFitsEnvelope(table, { ...constants, maxStringUnits: 2_048 }),
+    /beyond the 379 a\n500-character link carries/,
+  );
+  // So does an ordinary table given hulls twice today's size at the current label bound.
+  const doubled = {
+    ...table,
+    SLOTS_BY_SHIP: Object.fromEntries(
+      Object.entries(table.SLOTS_BY_SHIP).map(([ship, slots]) => [
+        ship,
+        [...slots, ...slots.map((slot) => `${slot}_b`)],
+      ]),
+    ),
+  };
+  assert.throws(() => assertTableFitsEnvelope(doubled, constants), /too large to share|beyond the/);
 });

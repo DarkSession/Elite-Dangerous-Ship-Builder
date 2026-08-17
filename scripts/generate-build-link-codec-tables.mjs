@@ -11,6 +11,12 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import {
+  assertCapacityWithinCodecLimits,
+  assertTableFitsEnvelope,
+  assertTableWithinCapacity,
+  readCodecConstants,
+} from './build-link-codec-capacity.mjs';
 
 const TABLE_VERSION = 1;
 const defaultOutputPath = fileURLToPath(
@@ -323,6 +329,10 @@ const payload = {
   PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
 };
 
+assertCapacityWithinCodecLimits();
+assertTableWithinCapacity(payload);
+const envelope = assertTableFitsEnvelope(payload, await readCodecConstants());
+
 const contentHash = contentHashOf(payload);
 const previous = JSON.parse(await readFile(outputPath, 'utf8').catch(() => 'null'));
 // A table committed before this script recorded a hash is still comparable: re-hash its own
@@ -379,4 +389,8 @@ console.log(
   previous && previousHash === contentHash
     ? `Codec table ${TABLE_VERSION} unchanged under Almanac ${almanacVersion} (${contentHash.slice(0, 12)}…).`
     : `Codec table ${TABLE_VERSION} written from Almanac ${almanacVersion} (${contentHash.slice(0, 12)}…).`,
+);
+// Printed every run so the trend is visible long before the budget refuses a table.
+console.log(
+  `Largest build it can express: up to ${envelope.bytes} of the ${envelope.limit} bytes a link carries.`,
 );
