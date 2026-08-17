@@ -97,7 +97,7 @@ Codex CLI (`.agents/skills`).
 | [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                       |
 | [005](./specs/005-power-and-heat/spec.md)             | Power budget in both hardpoint states, the distributor, and heat                               |
 | [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
-| [007](./specs/007-offence-profile/spec.md)            | Damage by type, per-weapon detail, output at range and capacitor endurance                     |
+| [007](./specs/007-offence-profile/spec.md)            | Damage by type, per-weapon detail, output at range, capacitor endurance and shot convergence   |
 | [008](./specs/008-mobility-and-jump/spec.md)          | Speed, handling, mass and its curves, jump range and range by load                             |
 | [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
 | [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |

@@ -435,6 +435,7 @@ than a blocker.
   somewhere rather than whether it should be going there, and the question this area answers is
   whether a state overheats at all.
 - The WEP capacitor's capacity and recharge belong here; how fast a particular loadout drains it
-  belongs to feature 007, which composes it with the weapons' energy draw.
+  belongs to feature 007, which reads that endurance whole from the package rather than composing it
+  (its FR-014).
 - Which figures are prominent and how the priority-group and by-module breakdowns are laid out are
   decided at plan time against the design system, per constitution principle VII.

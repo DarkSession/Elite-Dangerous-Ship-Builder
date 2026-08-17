@@ -380,9 +380,14 @@ not move, and none of the three is written into the build when it is saved, shar
 
 ## Upstream dependencies
 
-Every figure this family needs is computed by `@elite-dangerous-almanac/core`. **No figure in any of
-the five areas is blocked or waiting on an upstream release.** Several areas compose figures under
-FR-001a; each names what it composes in its own "Upstream dependencies" section.
+Every figure this family presents today is computed by `@elite-dangerous-almanac/core`, and **no
+area is waiting on an upstream release**. One area carries an open question that could change that:
+[feature 007](../007-offence-profile/spec.md)'s FR-016a asks whether the plane geometry behind its
+three convergence figures is permitted presentation or must be obtained from the package, and if the
+answer is the latter they become an upstream request. That question is recorded there rather than
+here, because it is about what this application may compute rather than about what the package
+reports. Several areas compose figures under FR-001a; each names what it composes in its own
+"Upstream dependencies" section.
 
 **Diagnostic wording belongs here, by settled division of responsibility.** The validity,
 completeness and edit-error messages FR-006 and FR-007 surface are English-only:

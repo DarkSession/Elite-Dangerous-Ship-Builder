@@ -45,9 +45,11 @@
   them restates it and none can relax it. It forbids the two failure modes the assumption otherwise
   hides: showing a hull's catalogue characteristics in place of a build's statistics, and creating a
   build in order to have something to report on.
-- **No figure in the family is blocked.** Every figure the five areas need is computed by
-  `@elite-dangerous-almanac/core` at the pinned version. Each area names what it composes under
-  FR-001a in its own Upstream dependencies section.
+- **No area is waiting on an upstream release.** Every figure the five areas present today is
+  computed by `@elite-dangerous-almanac/core` at the pinned version. The one open question is feature
+  007's FR-016a, which could turn its three convergence figures into an upstream request depending on
+  how it is answered. Each area names what it composes under FR-001a in its own Upstream dependencies
+  section.
 - **Diagnostic wording belongs to this application, not to the package.** The package publishes a
   stable `code`, the `params` a message interpolates, the slot and module symbol a validation issue
   names, and the `constraint` behind an edit error — the last documented as carrying an English
