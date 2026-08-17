@@ -11,6 +11,7 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { assertTableWithinCapacity } from './build-link-codec-capacity.mjs';
 
 const TABLE_VERSION = 1;
 const defaultOutputPath = fileURLToPath(
@@ -322,6 +323,8 @@ const payload = {
   PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
   PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
 };
+
+assertTableWithinCapacity(payload);
 
 const contentHash = contentHashOf(payload);
 const previous = JSON.parse(await readFile(outputPath, 'utf8').catch(() => 'null'));

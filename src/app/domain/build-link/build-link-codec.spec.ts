@@ -5,6 +5,7 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
 import { ArithmeticEncoder } from './build-link-arithmetic';
 import { BuildLinkCodecError, createBuildLinkCodec } from './build-link-codec';
+import { encodeBuildLinkBody } from './build-link-payload';
 import {
   decodeBuildLinkFragment as decodeBuildLinkFragmentOnDemand,
   encodeBuildLinkFragment as encodeBuildLinkFragmentOnDemand,
@@ -835,10 +836,19 @@ describe('build-link codec', () => {
     }
   });
 
-  it('enforces the string-unit bound before the outer encoded-length bound', () => {
-    const oversizedNames = ['A'.repeat(2_049), 'é'.repeat(1_025)];
+  it('accepts metadata at the string-unit bound and rejects the unit beyond it', () => {
+    const atBound = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      ShipName: 'A'.repeat(64),
+      ShipIdent: 'é'.repeat(32),
+      Modules: [],
+    });
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(atBound));
 
-    for (const ShipName of oversizedNames) {
+    expect(decoded.shipName).toBe(atBound.shipName);
+    expect(decoded.shipIdent).toBe(atBound.shipIdent);
+
+    for (const ShipName of ['A'.repeat(65), 'é'.repeat(33)]) {
       const source = ShipLoadout.fromLoadout({ Ship: 'SideWinder', ShipName, Modules: [] });
       expect(() => encodeBuildLinkFragment(source)).toThrowError(
         'A build-link string is too long.',
@@ -846,14 +856,28 @@ describe('build-link codec', () => {
     }
   });
 
-  it('refuses to encode a fragment its own decoder length limit would reject', () => {
-    const oversized = ShipLoadout.fromLoadout({
-      Ship: 'SideWinder',
-      ShipName: 'A'.repeat(7_000),
-      Modules: [],
-    });
+  it('keeps the largest reference build inside the envelope with metadata at its bound', () => {
+    const named = structuredClone(realisticEngineeredCorvette) as unknown as {
+      data: { ShipName: string; ShipIdent: string };
+    }[];
+    // The widest metadata the codec accepts: 64 UTF-8 bytes each, both on its largest build.
+    named[0]!.data.ShipName = 'é'.repeat(32);
+    named[0]!.data.ShipIdent = 'é'.repeat(32);
+    const source = ShipLoadout.fromSlef(named as Parameters<typeof ShipLoadout.fromSlef>[0]);
 
-    expectCodecError(() => encodeBuildLinkFragment(oversized), 'invalidPayload');
+    const fragment = encodeBuildLinkFragment(source);
+    const decoded = decodeBuildLinkFragment(fragment);
+
+    expect(fragment.length).toBeLessThanOrEqual(502);
+    expect(decoded.shipName).toBe('é'.repeat(32));
+    expect(decoded.shipIdent).toBe('é'.repeat(32));
+  });
+
+  it('refuses to encode a body its own decoder length limit would reject', () => {
+    // Unreachable through table 1, whose largest build and longest metadata together stay well
+    // inside the envelope; the guard covers a future table with far larger hulls.
+    expectCodecError(() => encodeBuildLinkBody(new Uint8Array(380).fill(0xff)), 'invalidPayload');
+    expect(() => encodeBuildLinkBody(new Uint8Array(379).fill(0xff))).not.toThrow();
   });
 
   it('validates table-one fields before reconstructing a build', () => {
