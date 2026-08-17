@@ -85,9 +85,11 @@ browser and share builds by URL. SLEF import and export are specified in
   and reason, and SLEF MUST remain available.
 - **FR-020**: Navigated and pasted links MUST use the same validation and replacement rules. Build
   edits MUST replace the fragment without adding a history entry for each edit.
-- **FR-021**: A link for the package hull with the most slots, with every slot fitted and every
-  supported modelled field populated, MUST not exceed 500 characters. Builds that cannot meet the
-  limit MUST use SLEF instead.
+- **FR-021**: A codec value for the package hull with the most slots, with every slot fitted and
+  every supported modelled field populated, MUST not exceed 500 characters, its `b.` prefix counted
+  among them. The bound is on the value the codec produces, not on the URL carrying it: the origin,
+  path and `#` belong to the deployment, so a bound stated over them could not be enforced by the
+  codec that has to satisfy it. Builds that cannot meet the limit MUST use SLEF instead.
 
 ## Edge Cases
 

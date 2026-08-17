@@ -12,6 +12,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import {
+  assertCapacityFitsEnvelope,
   assertCapacityWithinCodecLimits,
   assertTableFitsEnvelope,
   assertTableWithinCapacity,
@@ -329,9 +330,11 @@ const payload = {
   PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
 };
 
+const codecConstants = await readCodecConstants();
 assertCapacityWithinCodecLimits();
+const budgeted = assertCapacityFitsEnvelope(codecConstants);
 assertTableWithinCapacity(payload);
-const envelope = assertTableFitsEnvelope(payload, await readCodecConstants());
+const envelope = assertTableFitsEnvelope(payload, codecConstants);
 
 const contentHash = contentHashOf(payload);
 const previous = JSON.parse(await readFile(outputPath, 'utf8').catch(() => 'null'));
@@ -392,5 +395,6 @@ console.log(
 );
 // Printed every run so the trend is visible long before the budget refuses a table.
 console.log(
-  `Largest build it can express: up to ${envelope.bytes} of the ${envelope.limit} bytes a link carries.`,
+  `Largest build it can express: up to ${envelope.bytes} of the ${envelope.limit} bytes a codec value holds` +
+    ` (${budgeted.bytes} once grown to the budgeted capacity).`,
 );

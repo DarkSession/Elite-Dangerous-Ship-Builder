@@ -7,12 +7,14 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
   CODEC_TABLE_CAPACITY,
+  assertCapacityFitsEnvelope,
   assertCapacityWithinCodecLimits,
   assertTableFitsEnvelope,
   assertTableWithinCapacity,
   codecTableDimensions,
   envelopeBodyBytes,
   readCodecConstants,
+  worstCaseBodyBits,
 } from './build-link-codec-capacity.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -79,10 +81,28 @@ test('refuses a table whose growth outruns the link budget', async () => {
 
 test('every budgeted limit stays inside the codec, and the envelope is measured exactly', () => {
   assert.doesNotThrow(() => assertCapacityWithinCodecLimits());
-  // 500 Base70 digits with a Base62 terminal hold 383 payload bytes: 379 of body, four of CRC-32.
-  assert.equal(envelopeBodyBytes(500), 379);
-  // Nine payload bytes fit in twelve digits, so five of body survive the four-byte checksum.
-  assert.equal(envelopeBodyBytes(12), 5);
+  // A 500-character codec value spends two on `b.`, leaving 498 digits: 381 payload, 377 of body.
+  assert.equal(envelopeBodyBytes(500), 377);
+  // Seven payload bytes fit in twelve characters, so three of body survive the checksum.
+  assert.equal(envelopeBodyBytes(12), 3);
+});
+
+test('a table grown to the budgeted capacity still fits a link', async () => {
+  const constants = await readCodecConstants();
+
+  // The promise the capacity table makes, priced as though a table had already grown into it.
+  const { bytes, limit } = assertCapacityFitsEnvelope(constants);
+
+  assert.ok(bytes <= limit, `capacity prices at ${bytes} bytes against ${limit}`);
+  // Slots are much the most expensive dimension, and the reason capacity cannot simply be raised:
+  // the 64 first advertised here prices at 427 bytes, well beyond a link, at this label bound.
+  const sixtyFourMounts = Math.ceil(
+    worstCaseBodyBits({ ...CODEC_TABLE_CAPACITY, SLOTS_PER_SHIP: 64 }, constants.maxStringUnits) /
+      8,
+  );
+
+  assert.equal(sixtyFourMounts, 427);
+  assert.ok(sixtyFourMounts > limit);
 });
 
 test('the committed table cannot express a build too large to share', async () => {
@@ -91,8 +111,8 @@ test('the committed table cannot express a build too large to share', async () =
 
   const { bytes, limit } = assertTableFitsEnvelope(table, constants);
 
-  assert.equal(constants.maxEncodedLength, 500);
-  assert.equal(limit, 379);
+  assert.equal(constants.maxLinkCharacters, 500);
+  assert.equal(limit, 377);
   assert.ok(bytes <= limit, `worst case ${bytes} bytes exceeds the ${limit} a link carries`);
 });
 
@@ -103,7 +123,7 @@ test('refuses a table whose worst case outgrows the link, metadata included', as
   // The bound the codec carried before this budget existed: two labels alone outrun the envelope.
   assert.throws(
     () => assertTableFitsEnvelope(table, { ...constants, maxStringUnits: 2_048 }),
-    /beyond the 379 a\n500-character link carries/,
+    /beyond the 377 a\n500-character codec value carries/,
   );
   // So does an ordinary table given hulls twice today's size at the current label bound.
   const doubled = {
