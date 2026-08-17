@@ -139,7 +139,10 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
             `Slot ${fixed.slot} appears more than once.`,
           );
         }
-        if (requireIdentity(codec, codec.moduleIndex, module.symbol, 'module') !== fixed.module) {
+        if (
+          requireIdentity(codec, codec.moduleIndex, module.symbol, 'module', module.slot) !==
+          fixed.module
+        ) {
           throw new BuildLinkCodecError(
             'invalidPayload',
             `Fixed slot ${fixed.slot} does not contain its pinned module.`,
@@ -164,7 +167,13 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
       throw new BuildLinkCodecError('invalidPayload', `Slot ${slot} appears more than once.`);
     }
     modulesBySlot.set(slot, module);
-    moduleIndexes[encodedSlot] = requireIdentity(codec, codec.moduleIndex, module.symbol, 'module');
+    moduleIndexes[encodedSlot] = requireIdentity(
+      codec,
+      codec.moduleIndex,
+      module.symbol,
+      'module',
+      module.slot,
+    );
   }
 
   const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[canonicalShip];
@@ -1633,6 +1642,7 @@ function engineeringStateFromModule(
           codec.experimentalIndex,
           engineering.ExperimentalEffect,
           'experimental effect',
+          module.slot,
         );
   const variant = module.preEngineeredVariant;
   if (variant !== null && preEngineeredIndex !== -1) {
@@ -1668,6 +1678,7 @@ function engineeringStateFromModule(
     codec.blueprintIndex,
     engineering.BlueprintName,
     'engineering blueprint',
+    module.slot,
   );
   const grades = codec.tables.BLUEPRINT_GRADES[blueprint] as readonly number[];
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
@@ -1903,12 +1914,14 @@ function requireIdentity(
   index: ReadonlyMap<string, number>,
   value: string,
   kind: string,
+  slot?: string,
 ): number {
   const result = index.get(normalise(value));
   if (result === undefined) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `${kind} identity ${value} is absent from codec table ${codec.tableVersion}.`,
+      `${slot === undefined ? '' : `Slot ${slot}: `}${kind} identity ${value} is absent from ` +
+        `codec table ${codec.tableVersion}.`,
     );
   }
   return result;

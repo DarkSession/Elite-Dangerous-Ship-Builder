@@ -207,10 +207,13 @@ and pre-engineered modules and compare it with the Almanac cost and material-sum
 - **FR-012**: Unit tests MUST compare credit presentation with `retailCredits()` across assembled,
   imported, unpriced and unknown-hull cases.
 - **FR-012a**: Unit tests MUST cover every Mercenary article the package publishes, at the purchase
-  grade and above it, and MUST verify that each shown price equals the resolved variant's
-  `mercCoinCost`, that the build total equals `mercCoinCost()`, that clearing the engineering removes
-  both, that a build with no such module shows nothing rather than zero, and that credit and rebuy
-  values are unchanged and unannotated by the presence of a Merc-Coin module.
+  grade and — for every article whose blueprint offers a grade above it — above it too. Three
+  articles have no craftable grade at all, because the package reports no blueprint for their module;
+  covering those at the purchase grade alone satisfies this. The tests MUST verify that each shown
+  price equals the resolved variant's `mercCoinCost`, that the build total equals `mercCoinCost()`,
+  that clearing the engineering removes both, that a build with no such module shows nothing rather
+  than zero, and that credit and rebuy values are unchanged and unannotated by the presence of a
+  Merc-Coin module.
 - **FR-013**: Unit tests MUST compare every material quantity with the result of
   `getBlueprintCost()`, `getExperimentalEffectCost()` and `sumMaterials()` across repeated recipes,
   grades, effects, missing costs and pre-engineered modules.

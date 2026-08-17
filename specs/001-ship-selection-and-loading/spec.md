@@ -154,8 +154,9 @@ storage and compare all modeled fields and all Almanac-recomputed values with th
   higher grade. Recording the variant MUST NOT stand in for that grade, and a link MUST NOT
   reconstruct a module at a grade the Commander did not leave it at.
 - **FR-022b**: A build the codec cannot spell completely MUST be refused when the link is made, with
-  the slot and the reason named. Encoding a build to something the Commander did not build is never
-  the answer, and SLEF remains available for it.
+  the reason named, and with the slot named wherever the refusal is attributable to a fitted module.
+  Encoding a build to something the Commander did not build is never the answer, and SLEF remains
+  available for it.
 - **FR-023**: Calculated statistics, catalogue records, prices, source-purchase provenance, notes and
   storage identities MUST NOT appear in a build link. They MUST be reconstructed or remain absent
   according to their source.
