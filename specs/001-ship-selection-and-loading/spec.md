@@ -83,6 +83,11 @@ storage and compare all modeled fields and all Almanac-recomputed values with th
 - Two tabs never write to the same working-build record.
 - Duplicate build names are allowed after warning because identity does not depend on the name.
 - A build link from a newer or unknown format is refused rather than decoded heuristically.
+- A module can be a package-identified variant and separately engineered at the same time; a link
+  that carried only the identity would quietly restore the purchase grade instead of the fitted one.
+- A handful of mercenary articles sit on modules the pinned table records no ordinary blueprint for.
+  Engineered above their purchase grade they cannot be spelled, and the link is refused rather than
+  made lossy. A later table closes this; the refusal is not a licence to approximate.
 
 ## Requirements
 
@@ -143,6 +148,15 @@ storage and compare all modeled fields and all Almanac-recomputed values with th
 - **FR-022**: The link payload MUST contain only non-derivable modeled state: hull and module
   identities, game slot keys, engineering identities and grade, package-identified pre-engineered
   and decorative variants, applicable enabled states and power priorities, ship name and ident.
+- **FR-022a**: Where a module carries both a package-identified variant and engineering the
+  Commander chose, the payload MUST carry enough to restore both. A mercenary article is the case
+  that exists: the package identifies it from a blueprint the Commander can then engineer to a
+  higher grade. Recording the variant MUST NOT stand in for that grade, and a link MUST NOT
+  reconstruct a module at a grade the Commander did not leave it at.
+- **FR-022b**: A build the codec cannot spell completely MUST be refused when the link is made, with
+  the reason named, and with the slot named wherever the refusal is attributable to a fitted module.
+  Encoding a build to something the Commander did not build is never the answer, and SLEF remains
+  available for it.
 - **FR-023**: Calculated statistics, catalogue records, prices, source-purchase provenance, notes and
   storage identities MUST NOT appear in a build link. They MUST be reconstructed or remain absent
   according to their source.
@@ -165,7 +179,11 @@ storage and compare all modeled fields and all Almanac-recomputed values with th
 - **FR-030**: Storage tests MUST cover full modeled-state round trips, working and named builds,
   duplicate names, multiple tabs, write conflicts, quota failure and unknown identities.
 - **FR-031**: Link tests MUST cover the reference build corpus, the 500-character limit, every
-  published format version, malformed input and equivalence after Almanac reconstruction.
+  published format version, malformed input and equivalence after Almanac reconstruction. They MUST
+  also cover every package-identified variant that can carry a Commander-chosen grade, at each grade
+  that variant's blueprint offers, and MUST assert the refusal wherever the pinned table cannot spell
+  one. An Almanac upgrade MUST re-run this corpus against the frozen link literals, which MUST NOT be
+  regenerated to make an upgrade pass.
 - **FR-032**: Each primary journey MUST have end-to-end coverage at desktop, tablet and mobile
   viewports in Chromium and Firefox, including automated accessibility checks.
 

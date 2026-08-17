@@ -344,28 +344,225 @@ describe('build-link codec', () => {
     }
   });
 
-  it('does not classify fixed variants that the Almanac cannot identify', () => {
-    const unidentified = PRE_ENGINEERED_MODULES.filter(({ modifiers }) => !modifiers?.length);
-    expect(unidentified).toHaveLength(22);
+  it('pins which fixed variants the package publishes a modifier block for', () => {
+    // The 22/54 split is the axis both records turn on, so pin it in both directions: a
+    // non-Mercenary variant shipping without a modifier block would change what the
+    // pre-engineered record can restore, and must not pass unnoticed.
+    const withoutModifiers = PRE_ENGINEERED_MODULES.filter(({ modifiers }) => !modifiers?.length);
+    const mercenary = PRE_ENGINEERED_MODULES.filter(
+      ({ acquisition }) => acquisition === 'mercenary',
+    );
+    expect(withoutModifiers).toHaveLength(22);
+    expect(mercenary).toHaveLength(22);
+    expect(new Set(withoutModifiers)).toEqual(new Set(mercenary));
+  });
 
-    for (const variant of unidentified) {
-      const source = ShipLoadout.fromLoadout({
-        Ship: 'Krait_MkII',
-        Modules: [
-          {
-            Slot: 'LargeHardpoint1',
-            Item: variant.symbol,
-            Engineering: {
-              BlueprintName: variant.blueprint,
-              Level: variant.grade,
-              Quality: 1,
-            },
+  it('leaves a Mercenary purchase fitted in the application carrying no modifiers', () => {
+    // This is what makes the pre-engineered record sufficient for the purchase itself, and so what
+    // the round-trip test below relies on. The package publishes no modifier block for one.
+    const variant = mercenaryVariants().find(
+      ({ symbol }) => symbol === 'Hpt_Railgun_Fixed_Medium',
+    )!;
+    const build = ShipLoadout.empty('Krait_MkII');
+    build.setPreEngineeredVariant('LargeHardpoint1', variant);
+    const fitted = build.fittedModuleAt('LargeHardpoint1')!;
+
+    expect(fitted.preEngineeredVariant).toEqual(variant);
+    expect(fitted.engineering?.Level).toBe(variant.grade);
+    expect(fitted.engineering?.Modifiers ?? []).toHaveLength(0);
+  });
+
+  it('round-trips every Mercenary variant at its purchase grade', () => {
+    for (const variant of mercenaryVariants()) {
+      const source = mercenaryBuild(variant, variant.grade);
+      const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
+      expect(sourceModule.preEngineeredVariant).toEqual(variant);
+      expect(sourceModule.engineering?.Modifiers ?? []).toHaveLength(0);
+
+      const fragment = encodeBuildLinkFragment(source);
+      const decoded = decodeBuildLinkFragment(fragment);
+      const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+      expect(decodedModule.preEngineeredVariant).toEqual(variant);
+      expect(decodedModule.engineering?.Level).toBe(variant.grade);
+      expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
+      expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+      expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+    }
+  });
+
+  it('refuses a Mercenary purchase whose capture states modifiers the record cannot restore', () => {
+    // The package publishes no modifier block for a Mercenary purchase, so the pre-engineered
+    // record restores none. A capture that states them would decode as a stock module, which is
+    // why this is refused rather than encoded. beta.11 refused it too, for want of the identity.
+    for (const variant of mercenaryVariants()) {
+      const source = mercenaryBuild(variant, variant.grade, [
+        { Label: 'Mass', Value: 3, OriginalValue: 2 },
+      ]);
+      const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
+      expect(sourceModule.preEngineeredVariant).toEqual(variant);
+      expect(sourceModule.engineering?.Modifiers).toHaveLength(1);
+
+      // The ordinary record is the fallback, and no Mercenary blueprint offers the purchase grade
+      // as a craftable one, so it cannot spell this either. Which refusal arrives depends on
+      // whether the module has an ordinary blueprint set at all.
+      const error = expectCodecError(
+        () => encodeBuildLinkFragment(source),
+        hasOrdinaryBlueprints(variant.symbol) ? 'invalidPayload' : 'unknownIdentity',
+      );
+      expect(error.message).toContain('LargeHardpoint1');
+    }
+  });
+
+  it('refuses a Mercenary purchase whose modifiers an experimental effect cannot account for', () => {
+    // With an effect applied the record does restore modifiers — the effect's. Comparing counts
+    // would wave this through and decode the module to entirely different values, so the record is
+    // taken only when it reproduces the module's own modifiers.
+    const variant = mercenaryVariants().find(
+      ({ symbol }) => symbol === 'Int_PowerDistributor_Size5_Class5',
+    )!;
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'Krait_MkII',
+      Modules: [
+        {
+          Slot: 'Slot01_Size6',
+          Item: variant.symbol,
+          Engineering: {
+            BlueprintName: variant.blueprint,
+            Level: variant.grade,
+            Quality: 1,
+            ExperimentalEffect: 'special_powerdistributor_capacity',
+            Modifiers: [
+              { Label: 'WeaponsCapacity', Value: 30, OriginalValue: 41 },
+              { Label: 'SystemsCapacity', Value: 32, OriginalValue: 29 },
+              { Label: 'EnginesCapacity', Value: 32, OriginalValue: 29 },
+            ],
           },
-        ],
-      });
+        },
+      ],
+    });
+    const sourceModule = source.fittedModuleAt('Slot01_Size6')!;
+    expect(sourceModule.preEngineeredVariant).toEqual(variant);
+    expect(sourceModule.engineering?.Modifiers).toHaveLength(3);
 
-      expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toBeNull();
-      expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    const error = expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    expect(error.message).toContain('Slot01_Size6');
+  });
+
+  it('round-trips a Mercenary purchase whose capture agrees with its experimental effect', () => {
+    // The record does describe this one: the effect is pinned in the record, and the capture states
+    // exactly the modifiers that effect contributes, so decoding reproduces them. The application
+    // cannot reach this state itself — the package rejects an uncatalogued variant effect — so a
+    // journal or SLEF capture is the only way in, which is exactly what a shared link must carry.
+    const variant = mercenaryVariants().find(
+      ({ symbol }) => symbol === 'Int_PowerDistributor_Size5_Class5',
+    )!;
+    const experimental = 'special_powerdistributor_capacity';
+    const faithful = getPreEngineeredJournalModifiers({ ...variant, experimental });
+    expect(faithful.length).toBeGreaterThan(0);
+
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'Krait_MkII',
+      Modules: [
+        {
+          Slot: 'Slot01_Size6',
+          Item: variant.symbol,
+          Engineering: {
+            BlueprintName: variant.blueprint,
+            Level: variant.grade,
+            Quality: 1,
+            ExperimentalEffect: experimental,
+            Modifiers: faithful,
+          },
+        },
+      ],
+    });
+    const sourceModule = source.fittedModuleAt('Slot01_Size6')!;
+    expect(sourceModule.preEngineeredVariant).toEqual(variant);
+
+    const fragment = encodeBuildLinkFragment(source);
+    const decoded = decodeBuildLinkFragment(fragment);
+    const decodedModule = decoded.fittedModuleAt('Slot01_Size6')!;
+
+    expect(decodedModule.engineering?.ExperimentalEffect).toBe(experimental);
+    expect(decodedModule.engineering?.Modifiers).toEqual(sourceModule.engineering?.Modifiers);
+    expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
+    expect(decodedModule.preEngineeredVariant?.acquisition).toBe('mercenary');
+    expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+  });
+
+  it('keeps the fitted grade of a Mercenary variant upgraded past its purchase', () => {
+    const upgradable = PRE_ENGINEERED_MODULES.filter(
+      (variant) => variant.acquisition === 'mercenary' && hasOrdinaryBlueprints(variant.symbol),
+    );
+    expect(upgradable).toHaveLength(19);
+
+    for (const variant of upgradable) {
+      const grades = blueprintGrades(variant.blueprint);
+      expect(grades).not.toContain(variant.grade);
+
+      for (const grade of grades) {
+        const source = mercenaryBuild(variant, grade);
+        const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
+        expect(sourceModule.preEngineeredVariant).toEqual(variant);
+        expect(sourceModule.engineering?.Level).toBe(grade);
+
+        const fragment = encodeBuildLinkFragment(source);
+        const decoded = decodeBuildLinkFragment(fragment);
+        const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+        expect(decodedModule.engineering?.Level).toBe(grade);
+        expect(decodedModule.preEngineeredVariant).toEqual(variant);
+        expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+        expect(minimalState(decoded)).toEqual(minimalState(source));
+        expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+        // The crafted grade must survive as engineering, not merely as a number: the decoded
+        // module carries the blueprint's regenerated modifiers and stats that differ from stock.
+        expect(decodedModule.engineering?.Modifiers?.length ?? 0).toBeGreaterThan(0);
+        expect(decodedModule.effectiveStats).not.toEqual(stockStats(variant.symbol));
+      }
+    }
+  });
+
+  it('names the slot when a module carrying engineering has no recipe for it', () => {
+    // The advanced small mining laser accepts no blueprint, so a capture that engineers one cannot
+    // be spelled. FR-022b wants the refusal to say which slot, not merely that one exists.
+    const source = ShipLoadout.fromLoadout({
+      Ship: 'SideWinder',
+      Modules: [
+        {
+          Slot: 'SmallHardpoint1',
+          Item: 'Hpt_MiningLaser_Fixed_Small_Advanced',
+          Engineering: { BlueprintName: 'Weapon_LongRange', Level: 3, Quality: 1 },
+        },
+      ],
+    });
+
+    const error = expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+    expect(error.message).toContain('SmallHardpoint1');
+    expect(error.message).toContain('Hpt_MiningLaser_Fixed_Small_Advanced');
+  });
+
+  it('refuses an upgraded Mercenary article table 1 cannot spell', () => {
+    // These three sit on modules the package reports no ordinary blueprint for, so table 1 records
+    // none either and the ordinary record cannot name one. Refusing is the only honest answer: the
+    // pre-engineered record would silently restore the purchase grade. beta.11 refused them too.
+    const unspellable = PRE_ENGINEERED_MODULES.filter(
+      (variant) => variant.acquisition === 'mercenary' && !hasOrdinaryBlueprints(variant.symbol),
+    );
+    expect(unspellable.map(({ symbol }) => symbol).sort()).toEqual([
+      'Hpt_MiningLaser_Fixed_Small',
+      'Hpt_Mining_AbrBlstr_Fixed_Small',
+      'Int_ModuleReinforcement_Size5_Class2',
+    ]);
+
+    for (const variant of unspellable) {
+      for (const grade of blueprintGrades(variant.blueprint)) {
+        const source = mercenaryBuild(variant, grade);
+        expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toEqual(variant);
+        const error = expectCodecError(() => encodeBuildLinkFragment(source), 'unknownIdentity');
+        expect(error.message).toContain('LargeHardpoint1');
+      }
     }
   });
 
@@ -1069,6 +1266,59 @@ function makeFullyEngineeredAnaconda(): ShipLoadout {
   return loadout;
 }
 
+function blueprintGrades(fdname: string): readonly number[] {
+  const index = codecTable1.BLUEPRINTS.indexOf(fdname);
+  const grades = codecTable1.BLUEPRINT_GRADES[index] as readonly number[] | undefined;
+  if (!grades) throw new Error(`Blueprint ${fdname} is absent from codec table 1.`);
+  return grades;
+}
+
+function hasOrdinaryBlueprints(symbol: string): boolean {
+  const moduleIndex = codecTable1.MODULES.indexOf(symbol);
+  const setIndex = codecTable1.BLUEPRINT_SET_BY_MODULE[moduleIndex];
+  return setIndex !== undefined && codecTable1.BLUEPRINT_SETS[setIndex].length > 0;
+}
+
+function stockStats(symbol: string): unknown {
+  const stock = ShipLoadout.fromLoadout({
+    Ship: 'Krait_MkII',
+    Modules: [{ Slot: 'LargeHardpoint1', Item: symbol }],
+  });
+  return stock.fittedModuleAt('LargeHardpoint1')?.effectiveStats;
+}
+
+function mercenaryVariants(): readonly (typeof PRE_ENGINEERED_MODULES)[number][] {
+  const variants = PRE_ENGINEERED_MODULES.filter(({ acquisition }) => acquisition === 'mercenary');
+  expect(variants).toHaveLength(22);
+  return variants;
+}
+
+function mercenaryBuild(
+  variant: (typeof PRE_ENGINEERED_MODULES)[number],
+  grade: number,
+  modifiers?: readonly {
+    readonly Label: string;
+    readonly Value: number;
+    readonly OriginalValue: number;
+  }[],
+): ShipLoadout {
+  return ShipLoadout.fromLoadout({
+    Ship: 'Krait_MkII',
+    Modules: [
+      {
+        Slot: 'LargeHardpoint1',
+        Item: variant.symbol,
+        Engineering: {
+          BlueprintName: variant.blueprint,
+          Level: grade,
+          Quality: 1,
+          ...(modifiers === undefined ? {} : { Modifiers: modifiers }),
+        },
+      },
+    ],
+  });
+}
+
 function minimalState(loadout: ShipLoadout, assumeFullQuality = false): unknown {
   const cargoHatch = loadout.fittedModuleAt('CargoHatch');
   const hasCargoHatchPower = cargoHatch?.on !== undefined || cargoHatch?.priority !== undefined;
@@ -1327,12 +1577,13 @@ function crc32(bytes: Uint8Array): number {
 function expectCodecError(
   operation: () => unknown,
   code: InstanceType<typeof BuildLinkCodecError>['code'],
-): void {
+): BuildLinkCodecError {
   try {
     operation();
     expect.fail('Expected the codec to reject the input.');
   } catch (error) {
     expect(error).toBeInstanceOf(BuildLinkCodecError);
     expect((error as BuildLinkCodecError).code).toBe(code);
+    return error as BuildLinkCodecError;
   }
 }

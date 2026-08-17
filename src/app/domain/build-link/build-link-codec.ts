@@ -146,7 +146,10 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
             `Slot ${fixed.slot} appears more than once.`,
           );
         }
-        if (requireIdentity(codec, codec.moduleIndex, module.symbol, 'module') !== fixed.module) {
+        if (
+          requireIdentity(codec, codec.moduleIndex, module.symbol, 'module', module.slot) !==
+          fixed.module
+        ) {
           throw new BuildLinkCodecError(
             'invalidPayload',
             `Fixed slot ${fixed.slot} does not contain its pinned module.`,
@@ -171,7 +174,13 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
       throw new BuildLinkCodecError('invalidPayload', `Slot ${slot} appears more than once.`);
     }
     modulesBySlot.set(slot, module);
-    moduleIndexes[encodedSlot] = requireIdentity(codec, codec.moduleIndex, module.symbol, 'module');
+    moduleIndexes[encodedSlot] = requireIdentity(
+      codec,
+      codec.moduleIndex,
+      module.symbol,
+      'module',
+      module.slot,
+    );
   }
 
   const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[canonicalShip];
@@ -224,6 +233,7 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
       ),
       moduleIndexes,
       occupiedSlots,
+      occupiedModules.map((module) => module.slot),
     );
   }
   return writer;
@@ -377,6 +387,7 @@ function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
       state.engineeringStates,
       state.moduleIndexes,
       occupiedSlots,
+      occupiedSlots.map((slotIndex) => slots[slotIndex]!),
     );
   }
   return canonicalBody(codec, writer.symbols);
@@ -1080,16 +1091,21 @@ function writeEngineeringStates(
   states: readonly (CodecEngineeringState | undefined)[],
   moduleIndexes: readonly (number | null)[],
   occupiedSlots: readonly number[],
+  occupiedSlotNames: readonly string[],
 ): void {
   const engineered = indexesWhere(states, (engineering) => engineering !== undefined);
   writer.writeBoolean(engineered.length > 0);
   if (engineered.length === 0) return;
 
   const eligible = engineeringEligibleIndexes(codec, moduleIndexes, occupiedSlots);
-  if (engineered.some((occupiedIndex) => !eligible.includes(occupiedIndex))) {
+  const ineligible = engineered.find((occupiedIndex) => !eligible.includes(occupiedIndex));
+  if (ineligible !== undefined) {
+    const slot = occupiedSlotNames[ineligible];
+    const symbol = codec.tables.MODULES[moduleIndexes[occupiedSlots[ineligible]!]!] ?? 'the module';
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'A module without engineering recipes carries engineering.',
+      `${slot === undefined ? '' : `Slot ${slot}: `}${symbol} carries engineering, but codec ` +
+        `table ${codec.tableVersion} records no engineering recipe for it.`,
     );
   }
   const all = engineered.length === eligible.length;
@@ -1549,6 +1565,51 @@ function resolvePreEngineeredEngineering(
   };
 }
 
+/**
+ * Whether a pre-engineered record would reconstruct the engineering a module actually carries.
+ *
+ * The record carries an identity, not a state: decoding replays the variant's own grade and the
+ * modifier block the package publishes for it, composed with any experimental effect. That is
+ * sufficient for every acquisition the package identifies *by* that block — a reward article is
+ * recognised from its stat signature, so a module carrying the identity carries the state, and the
+ * record restores exactly what identified it.
+ *
+ * A Mercenary article is the exception, because it is the one identified from a blueprint instead.
+ * Its identity therefore says nothing about its state, and it can hold engineering the record
+ * cannot describe: the purchase-exclusive blueprint crafts grades 2 to 5 with the identity
+ * surviving the upgrade, and no modifier block is published for the purchase itself, so a capture
+ * stating modifiers would come back with only whatever an experimental effect contributes. For
+ * those the record is used only when it reproduces the module's engineering outright. Anything else
+ * takes the ordinary record — blueprint and grade, with the Almanac re-deriving the purchase
+ * identity on reconstruction — and where that cannot spell the module the encoder refuses. A link
+ * that opens as a different build than the one shared is worse than no link.
+ */
+function preEngineeredRecordReproduces(
+  codec: CodecContext,
+  record: PreEngineeredState,
+  engineering: ModuleEngineering,
+  variant: PreEngineeredVariant,
+): boolean {
+  if (engineering.Level !== variant.grade) return false;
+  if (variant.acquisition !== 'mercenary') return true;
+  return sameModifiers(
+    resolvePreEngineeredEngineering(codec, record).Modifiers,
+    engineering.Modifiers,
+  );
+}
+
+function sameModifiers(
+  left: ModuleEngineering['Modifiers'],
+  right: ModuleEngineering['Modifiers'],
+): boolean {
+  const signature = (modifiers: ModuleEngineering['Modifiers']): string =>
+    [...(modifiers ?? [])]
+      .map((modifier) => `${normalise(String(modifier.Label))}=${String(modifier.Value)}`)
+      .sort()
+      .join('|');
+  return signature(left) === signature(right);
+}
+
 function indexesWhere<T>(
   values: readonly T[],
   predicate: (value: T, index: number) => boolean,
@@ -1573,7 +1634,7 @@ function engineeringStateFromModule(
   if (engineering.Level === undefined) {
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'Ordinary and pre-engineered state requires a grade.',
+      `Slot ${module.slot}: ordinary and pre-engineered state requires a grade.`,
     );
   }
   const preEngineeredIndex =
@@ -1583,7 +1644,8 @@ function engineeringStateFromModule(
   if (module.preEngineeredVariant !== null && preEngineeredIndex === -1) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `The pre-engineered variant is absent from codec table ${codec.tableVersion}.`,
+      `Slot ${module.slot}: the pre-engineered variant fitted to ${module.symbol} is absent from ` +
+        `codec table ${codec.tableVersion}.`,
     );
   }
   const experimental =
@@ -1594,19 +1656,35 @@ function engineeringStateFromModule(
           codec.experimentalIndex,
           engineering.ExperimentalEffect,
           'experimental effect',
+          module.slot,
         );
-  if (preEngineeredIndex !== -1) {
-    if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
-      throw new BuildLinkCodecError(
-        'unknownIdentity',
-        'The pre-engineered variant is unavailable for its fitted module.',
-      );
-    }
-    return {
+  const variant = module.preEngineeredVariant;
+  if (variant !== null && preEngineeredIndex !== -1) {
+    const record = {
       kind: 'preEngineered',
       variant: preEngineeredIndex,
       experimental,
-    };
+    } as const;
+    if (preEngineeredRecordReproduces(codec, record, engineering, variant)) {
+      if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
+        throw new BuildLinkCodecError(
+          'unknownIdentity',
+          `Slot ${module.slot}: the pre-engineered variant is unavailable for ${module.symbol}.`,
+        );
+      }
+      return record;
+    }
+    // The record cannot restore this module, so the ordinary record must. Where the module has no
+    // ordinary blueprint set the ordinary record cannot name a blueprint for it either, and the
+    // refusal belongs here, where the slot is known, rather than as an unattributed error later.
+    if (blueprintSetForModule(codec, moduleIndex).length === 0) {
+      throw new BuildLinkCodecError(
+        'unknownIdentity',
+        `Slot ${module.slot}: codec table ${codec.tableVersion} records no ordinary blueprint for ` +
+          `${module.symbol}, so its engineering cannot be encoded apart from the ` +
+          `${variant.acquisition} variant's own.`,
+      );
+    }
   }
 
   const blueprint = requireIdentity(
@@ -1614,12 +1692,14 @@ function engineeringStateFromModule(
     codec.blueprintIndex,
     engineering.BlueprintName,
     'engineering blueprint',
+    module.slot,
   );
   const grades = codec.tables.BLUEPRINT_GRADES[blueprint] as readonly number[];
   if (!Number.isInteger(engineering.Level) || !grades.includes(engineering.Level)) {
     throw new BuildLinkCodecError(
       'invalidPayload',
-      'Engineering grade is unavailable for its blueprint.',
+      `Slot ${module.slot}: grade ${engineering.Level} is unavailable for blueprint ` +
+        `${engineering.BlueprintName}.`,
     );
   }
   return {
@@ -1848,12 +1928,14 @@ function requireIdentity(
   index: ReadonlyMap<string, number>,
   value: string,
   kind: string,
+  slot?: string,
 ): number {
   const result = index.get(normalise(value));
   if (result === undefined) {
     throw new BuildLinkCodecError(
       'unknownIdentity',
-      `${kind} identity ${value} is absent from codec table ${codec.tableVersion}.`,
+      `${slot === undefined ? '' : `Slot ${slot}: `}${kind} identity ${value} is absent from ` +
+        `codec table ${codec.tableVersion}.`,
     );
   }
   return result;

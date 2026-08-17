@@ -280,12 +280,47 @@ An ordinary record contains:
 
 Pre-engineered records use a pinned contextual identity composed from module, blueprint, grade, and
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
-Their modifier arrays are not encoded.
+Their modifier arrays are not encoded, because decoding regenerates them from the pinned identity.
+A module therefore takes this record only while that regeneration would reproduce the engineering it
+carries; see the Mercenary case below.
 
-Almanac beta.11 publishes modifier signatures for 54 fixed variants, which makes those articles
-identifiable and shareable. Its 22 Mercenary-system variants have no published modifier signatures;
-Almanac reports those fitted modules as unidentified, so the codec rejects them rather than
-re-deriving a package result from blueprint metadata.
+Almanac beta.12 publishes modifier signatures for 54 fixed variants, which makes those articles
+identifiable and shareable. Its 22 Mercenary-system variants still have no published modifier
+signatures, but beta.12 identifies them by their purchase-exclusive blueprint instead, so they are
+identifiable and shareable too. The codec continues to take every identity from the package and
+re-derives nothing from blueprint metadata itself.
+
+The difference between the two identification routes matters to the encoder. A reward article is
+recognised _from_ its published block, so a module carrying that identity is carrying that state and
+the record restores exactly what identified it. A Mercenary article is recognised from a blueprint
+instead, so its identity says nothing about its state, and it is the one fixed variant that can hold
+engineering the record cannot describe. Two ways: its purchase is grade 1 while the same blueprint
+crafts grades 2 to 5 with the identity surviving the upgrade, so the fitted grade can be past the one
+the record replays; and no modifier block is published for the purchase, so the record restores only
+whatever an experimental effect contributes, and a capture stating anything else would decode to
+different values.
+
+For a Mercenary article, therefore, the record is used only when decoding it would reproduce the
+module's engineering outright — same grade, same modifiers. Reward articles keep taking the record
+whenever the package identifies them, unchanged. Anything a record cannot describe is written as an
+ordinary record, blueprint and grade, exactly as beta.11 wrote it while the article was
+unidentifiable, and the Almanac re-derives the purchase identity on reconstruction. The two forms
+stay unambiguous because no Mercenary blueprint offers grade 1 as a craftable grade, so the purchase
+grade is unspellable in the ordinary form and grades 2 to 5 are unspellable in the pre-engineered
+one.
+
+Where neither form fits, the encoder refuses, naming the slot. That covers a purchase whose capture
+states modifiers the record cannot account for — there is no craftable grade 1 to fall back to — and
+it covers three of the 22 whenever they are engineered above their purchase grade: the two small
+mining tools and the class-2 size-5 module reinforcement package. Those three still share correctly
+at their purchase grade, which is the state the record was made for. The package reports no ordinary
+blueprint for those modules, so table 1 records none, and the discriminator that would select the
+ordinary form is not even written for a module with an empty blueprint set: the reader infers the
+pre-engineered form from the table alone. Note this is the discriminator, not the blueprint index —
+an ordinary record can name a blueprint outside its module's candidate set, and all nineteen working
+Mercenary articles do exactly that. None of this is new; beta.11 refused the same builds. Closing it
+means a later table that carries Mercenary-route blueprints in each module's candidate set, which
+changes what the discriminator can express rather than the record layouts themselves.
 
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
 the same contextual pre-engineered identity as every other fixed article; the codec has no separate
@@ -402,7 +437,7 @@ the generator will say so.
 ## Versioned tables and lazy loading
 
 Table 1 is the immutable `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.11`. It pins hulls, hull-specific outfittable slots,
+`@elite-dangerous-almanac/core@0.1.0-beta.12`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
 effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
 Stable game identities originate from the package; indexes exist only
@@ -431,17 +466,32 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.11`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.12`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass. All three upgrades so far were
+fixtures and must never be regenerated merely to make an upgrade pass. All four upgrades so far were
 checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for
 byte, and `0.1.0-beta.9` to `0.1.0-beta.10` did the same — beta.10 carries one
 calculation change, the power-aware cell bank pool, and alters no hull, module, blueprint,
 experimental-effect, pre-engineered or stock-loadout identity. `0.1.0-beta.10` to `0.1.0-beta.11`
-likewise reproduced the table exactly, at content hash
+and `0.1.0-beta.11` to `0.1.0-beta.12` likewise reproduced the table exactly, at content hash
 `a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0`; `ALL_MODULES` is 1199 throughout
-and the `assets/ships` tree is byte-identical across all four releases. So the snapshot carries
+and the `assets/ships` tree is byte-identical across all five releases. So the snapshot carries
 forward under its existing number, unchanged on disk, and the frozen literals decode unchanged.
+
+beta.12 changed no catalogue, but it did change an answer the encoder reads. Mercenary articles now
+resolve to their variant, so a module the encoder used to see as ordinarily engineered — a Rail Gun
+carrying grade 5 of `RailGun_LongShot`, say — now arrives carrying a pre-engineered identity as well.
+Written as a pre-engineered record, that build came back at the purchase grade: the Commander's
+upgrade was silently discarded on decode. A purchase-grade article whose capture stated modifiers
+lost those the same way, decoding to the values the record regenerates instead — stock where no
+experimental effect was applied, the effect's own where one was — in each case where beta.11 had
+refused the build outright. The record choice now asks whether decoding it would reproduce the
+engineering the module carries, grade and modifiers both, and asks it only of Mercenary articles,
+since a reward article is identified by the very block the record restores. That restores the beta.11
+outcome for every affected build, leaves reward encoding untouched, and leaves every frozen literal
+untouched with it. This was the application's own inference to correct, not an Almanac defect: the
+package reported the fitted grade, the modifiers and the purchase identity accurately, and it was the
+encoder that treated the identity as standing in for the rest.
 
 beta.11 did, however, require a correction to how the generator partitions mounts, and it is worth
 recording why. The generator used to split slots on the package's `removable` flag: everything
@@ -713,6 +763,6 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-Almanac beta.11 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+Almanac beta.12 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
 those values or ordinary blueprint arithmetic.
