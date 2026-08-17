@@ -433,6 +433,19 @@ describe('build-link codec', () => {
     expect(readPayloadBits(withPayloadTableVersion(encoded, 1_023), 0, 10)).toBe(1_023);
   });
 
+  it('pins table 1 to its content hash so an Almanac upgrade cannot move it silently', async () => {
+    // Every published link names the table version that decodes it, so table 1's content is
+    // frozen and an Almanac upgrade must leave this file untouched. A hash that no longer
+    // matches this literal means the encoding changed and belongs under the next table
+    // number — never a re-pin to make an upgrade pass.
+    const { contentHash, tableVersion } = codecTable1.$generated;
+    const { $generated: _omitted, ...payload } = codecTable1;
+
+    expect(contentHash).toBe('a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0');
+    expect(await canonicalHash(payload)).toBe(contentHash);
+    expect(tableVersion).toBe(1);
+  });
+
   it('encodes both grades of a two-grade blueprint without a redundant bounded symbol', () => {
     const blueprintIndex = codecTable1.BLUEPRINTS.indexOf('FSD_LongRange');
     const table2 = {
@@ -1225,6 +1238,24 @@ function nonCanonicalAllDefinedEnabledState(): string {
 
 function powerDrawingModules(source: ShipLoadout): ReturnType<ShipLoadout['fittedModules']> {
   return source.fittedModules().filter((module) => (module.effectiveStats?.powerDraw ?? 0) > 0);
+}
+
+/** Mirrors the canonicalisation in `scripts/generate-build-link-codec-tables.mjs`. */
+async function canonicalHash(payload: unknown): Promise<string> {
+  const canonicalise = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(canonicalise);
+    if (value !== null && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.keys(value as Record<string, unknown>)
+          .sort()
+          .map((key) => [key, canonicalise((value as Record<string, unknown>)[key])]),
+      );
+    }
+    return value;
+  };
+  const encoded = new TextEncoder().encode(JSON.stringify(canonicalise(payload)));
+  const digest = await crypto.subtle.digest('SHA-256', encoded);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function copyPayloadBits(payload: Uint8Array, bitCount: number): number[] {

@@ -282,7 +282,7 @@ Pre-engineered records use a pinned contextual identity composed from module, bl
 acquisition method. The pinned default experimental effect is implied unless explicitly changed.
 Their modifier arrays are not encoded.
 
-Almanac beta.10 publishes modifier signatures for 54 fixed variants, which makes those articles
+Almanac beta.11 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants have no published modifier signatures;
 Almanac reports those fitted modules as unidentified, so the codec rejects them rather than
 re-deriving a package result from blueprint metadata.
@@ -347,7 +347,7 @@ protocol data.
 ## Versioned tables and lazy loading
 
 Table 1 is the immutable `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.10`. It pins hulls, hull-specific outfittable slots,
+`@elite-dangerous-almanac/core@0.1.0-beta.11`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
 effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
 Stable game identities originate from the package; indexes exist only
@@ -362,16 +362,46 @@ dynamically loads the shared codec and current table. Decoding then imports only
 file alongside the shared codec. Adding table snapshots to the loader therefore does not place
 every historical table in the initial bundle.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.10`. Every future
+A table's identity is its content, not the release it was generated from, and
+`$generated.contentHash` — a SHA-256 over the table with its `$generated` block removed — is what
+states that identity. That block is excluded because it holds the table's label and the hash itself
+rather than any encoded value, and it holds nothing else: a table records what it encodes and the
+fingerprint of that content, not the release or the script it came from. Which Almanac version
+reproduces a given table is recorded here and in git history, where it can be corrected without
+touching a frozen artefact. `pnpm run codec:tables` hashes the committed payload, verifies its
+declared hash and compares that actual content with the freshly generated content. It **refuses to
+write when either check differs**, because every published link names the table version that decodes
+it, so a table whose content moved is a new encoding and belongs under the next number with this one
+retained. A table committed before the hash existed is re-hashed the same way for the comparison, so
+the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
+link has been published against it.
+
+The current application dependency is exactly pinned to Almanac `0.1.0-beta.11`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass. Both upgrades so far were
+fixtures and must never be regenerated merely to make an upgrade pass. All three upgrades so far were
 checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for
-byte, and the `0.1.0-beta.9` to `0.1.0-beta.10` upgrade did the same — beta.10 carries one
+byte, and `0.1.0-beta.9` to `0.1.0-beta.10` did the same — beta.10 carries one
 calculation change, the power-aware cell bank pool, and alters no hull, module, blueprint,
-experimental-effect, pre-engineered or stock-loadout identity; `ALL_MODULES` is 1199 on both sides and
-the `assets/ships` tree is byte-identical across all three releases. So the snapshot carries forward
-under its existing number with only its recorded provenance version advanced, and the frozen literals
-decode unchanged. Note that the generator writes raw `JSON.stringify` output while the committed file
+experimental-effect, pre-engineered or stock-loadout identity. `0.1.0-beta.10` to `0.1.0-beta.11`
+likewise reproduced the table exactly, at content hash
+`a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0`; `ALL_MODULES` is 1199 throughout
+and the `assets/ships` tree is byte-identical across all four releases. So the snapshot carries
+forward under its existing number, unchanged on disk, and the frozen literals decode unchanged.
+
+beta.11 did, however, require a correction to how the generator partitions mounts, and it is worth
+recording why. The generator used to split slots on the package's `removable` flag: everything
+removable was encoded, the rest carried as fixed. beta.11 closed
+[almanac issue #283](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/283), so armour
+and the seven core internals now correctly report `removable: false`. Under the old split that would
+have moved 384 mounts out of the encoded set and into the fixed set, changing the table and — worse —
+leaving a build's chosen power plant, thrusters and drive unrepresentable, since a fixed mount is
+encoded as its stock module. The flag never meant what the generator read it as: `removable` is about
+what may be **emptied**, and the codec cares about what may be **fitted**. Those coincided until
+beta.11 and no longer do. The partition now keys on the built-in cargo hatch, the only mount that
+offers no choice of module at all, which reproduces the committed table exactly. The content hash is
+what turned a silent format break into a refusal to write.
+
+Note that the generator writes raw `JSON.stringify` output while the committed file
 is Prettier-formatted, so an upgrade check must compare against `pnpm run codec:tables`, which pairs
 the two: a bare generator run differs from the committed file in whitespace alone, which reads
 alarmingly like drift. Frozen tables preserve
@@ -628,6 +658,6 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-Almanac beta.10 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+Almanac beta.11 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
 those values or ordinary blueprint arithmetic.

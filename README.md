@@ -65,8 +65,8 @@ End-to-end tests live in [`e2e/`](./e2e) and run on
 projects — desktop, tablet and mobile — in Chromium.
 
 Spec 011 requires more than that, and the config has yet to catch up: every
-journey must run in **Firefox** as well as Chromium (FR-029), and an automated
-accessibility check must cover every screen (FR-032). Adding them is a change to
+journey must run in **Firefox** as well as Chromium (FR-020), and an automated
+accessibility check must cover every capability (FR-021). Adding them is a change to
 the config, never a change to those requirements.
 
 Playwright needs browsers installed once:
@@ -97,8 +97,8 @@ Codex CLI (`.agents/skills`).
 | [004](./specs/004-slef-export/spec.md)                | SLEF export (and import)                                                                       |
 | [005](./specs/005-power-and-heat/spec.md)             | Power budget in both hardpoint states, the distributor, and heat                               |
 | [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
-| [007](./specs/007-offence-profile/spec.md)            | Damage by type, per-weapon detail, output at range, capacitor endurance and shot convergence   |
-| [008](./specs/008-mobility-and-jump/spec.md)          | Speed, handling, mass and its curves, jump range and range by load                             |
+| [007](./specs/007-offence-profile/spec.md)            | Almanac-provided damage totals, per-weapon detail, ammunition and capacitor endurance          |
+| [008](./specs/008-mobility-and-jump/spec.md)          | Almanac-provided speed, handling, mass, capacities and jump performance by load                |
 | [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
 | [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |
 | [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, keyboard, screen readers, WCAG AA  |
@@ -131,3 +131,31 @@ With Claude Code or Codex CLI in this repository:
 /speckit-tasks       # break the plan into tasks
 /speckit-implement   # execute the tasks
 ```
+
+## Licence
+
+This project's own code and documentation are **MIT**-licensed — see
+[`LICENSE`](./LICENSE), which is also where the terms below are carried in full.
+
+The MIT licence does not cover the Elite Dangerous game data and imagery the
+application displays. Those are the property of **Frontier Developments plc**,
+reach the application through
+[`@elite-dangerous-almanac/core`](https://github.com/DarkSession/Elite-Dangerous-Almanac),
+and are used under Frontier's
+[media-usage rules](https://forums.frontier.co.uk/threads/elite-dangerous-media-usage-rules.510879/):
+
+> Elite Dangerous Ship Builder was created using assets and imagery from Elite
+> Dangerous, with the permission of Frontier Developments plc, for
+> non-commercial purposes. It is not endorsed by nor reflects the views or
+> opinions of Frontier Developments and no employee of Frontier Developments was
+> involved in the making of it.
+
+Those terms are carried here, not granted here. A distribution or use that retains
+the covered game data or imagery must comply with them, including the non-commercial
+condition; the MIT licence does not lift those terms. The library's bundled catalogues travel under further terms of
+their own — some sources state no explicit licence, EDSY-derived material is
+CC BY-NC 4.0 — listed in the `THIRD_PARTY_NOTICES.md` shipped with the installed
+package. Review them before redistributing the data or using it commercially.
+
+[Spec 012](./specs/012-help-and-licences/spec.md) requires the running application
+to reproduce all of this.

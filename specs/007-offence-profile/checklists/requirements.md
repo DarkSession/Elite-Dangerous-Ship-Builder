@@ -1,78 +1,37 @@
 # Specification Quality Checklist: Offence Profile
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning
-
-**Created**: 2026-08-14
-
+**Purpose**: Validate specification quality before planning
+**Created**: 2026-08-17
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs)
-- [x] Focused on user value and business needs
-- [x] Written for non-technical stakeholders
-- [x] All mandatory sections completed
+- [x] States only current accepted behavior
+- [x] Focuses on user-visible behavior and outcomes
+- [x] Avoids screen layouts and plan-time implementation choices
+- [x] Uses concise, direct language
+- [x] Contains all mandatory sections
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] Contains no unresolved clarification markers
 - [x] Requirements are testable and unambiguous
+- [x] Acceptance scenarios cover each user story
+- [x] Edge cases distinguish zero, absence, invalidity and incomplete data where relevant
+- [x] Scope and exclusions are explicit
+- [x] Cross-feature ownership is clear
 - [x] Success criteria are measurable
-- [x] Success criteria are technology-agnostic (no implementation details)
-- [x] All acceptance scenarios are defined
-- [x] Edge cases are identified
-- [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified
 
-## Feature Readiness
+## Almanac Integrity
 
-- [x] All functional requirements have clear acceptance criteria
-- [x] User scenarios cover primary flows
-- [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [x] Almanac-owned game data uses package identities and values
+- [x] Every required game number or calculation is available from the package
+- [x] No local game formula, correction, estimate or unsupported aggregate is required
+- [x] Missing package values remain unavailable rather than being fabricated
 
-## Notes
+## Delivery Readiness
 
-- Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
-- **One marker is open, and it governs three figures.** FR-016a covers the convergence spread, the
-  mount furthest from the centre line, and the fixed separation in metres between the mounts that
-  FR-016b presents. Each needs plane geometry over pairs the package publishes — a separation
-  between two points, or a distance from the centre — taken either over the tangents
-  `projectGunsight` returns or over the catalogue's metre offsets, and each therefore yields a
-  number the package did not itself compute. No game rule is involved, and the package publishes
-  those points expressly for a renderer, but constitution principle II sanctions only presentation
-  of what the library returns. Whether that geometry is permitted here or must be asked of the
-  package is the open question. Do not close this gate on an answer that covers only the two angular
-  figures: the metre separation sits under a MUST in FR-016b and carries a mandated test in FR-021a,
-  so a partial answer would tick the box with that permission still unresolved. The plot of FR-016f,
-  which places the package's points and derives nothing, is unaffected either way.
-- **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
-  the contract: provenance, units, the honesty rules for unavailable figures, the recompute
-  obligation and the viewing conditions apply here without being restated.
-- **No figure here is blocked today**, though FR-016a's open question could turn its three
-  convergence figures into an upstream request rather than a local calculation. Two figures are
-  composed under feature 003's FR-001a — each damage type's share, and output at a range — and the
-  Upstream dependencies section names both. Endurance is not composed: the package computes it
-  whole, so reassembling it from a capacity and a rate would reimplement a calculation it provides
-  (FR-014).
-- **Anti-xeno damage is an overlay, not a partition** (FR-002). It is shown under its own label and
-  excluded from the shares, so a build's shares still sum to the whole.
-- **Convergence reads the package's cockpit-offset catalogue, never the schematics.** Feature 010's
-  plates carry no scale of any kind, so FR-016e's prohibition on deriving a physical dimension from
-  artwork is load-bearing and SC-007 tests it.
-- **That catalogue is published positionally, and FR-016g is what keeps it honest.** It carries one
-  offset per hardpoint in the package's own slot-enumeration order, and the package warns that the
-  number in a journal slot key is not the array index. Binding an offset by parsing that number
-  would draw a build's fire from the wrong mount on the hulls that skip or reorder them, so FR-021b
-  tests the binding on such a hull rather than only on a well-behaved one.
-- **The package projects to tangents, not angles.** FR-016a states the conversion explicitly and
-  declares it under FR-001a, on the same terms feature 003's FR-005 sets for resistances, so that no
-  reader assumes an angle arrives ready-made.
-- **Every mount is treated as fixed, ship-forward geometry** (FR-016c). A gimballed or turreted
-  build spreads less in practice than the figures say, so the assumption is stated with the figures
-  rather than hidden; excluding tracking mounts or drawing them converged would model behaviour the
-  package explicitly does not.
-- **Two range controls, of two different kinds.** Damage at range is charted at five fixed ranges
-  identical for every build, so two loadouts read against one scale; convergence varies
-  continuously, because the question there is where the spread becomes acceptable. Neither chart nor
-  plot may be the only route to its figures.
+- [x] Desktop, tablet and mobile behavior is covered
+- [x] Keyboard, touch, screen-reader and automated accessibility verification is covered
+- [x] Unit and end-to-end verification obligations are defined
+- [x] Specification is ready for planning

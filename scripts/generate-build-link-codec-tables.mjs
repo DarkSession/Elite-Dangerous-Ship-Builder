@@ -8,24 +8,45 @@ import { ALL_MODULES } from '@elite-dangerous-almanac/core/ships/modules-all';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
+import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const TABLE_VERSION = 1;
-const TABLE_1_ALMANAC_VERSION = '0.1.0-beta.10';
-const outputPath = fileURLToPath(
+const defaultOutputPath = fileURLToPath(
   new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
 );
+const outputPath = process.env.CODEC_TABLE_OUTPUT_PATH ?? defaultOutputPath;
 const almanacPackageUrl = new URL(
   '../../package.json',
   import.meta.resolve('@elite-dangerous-almanac/core/ships/ships'),
 );
 const almanacPackage = JSON.parse(await readFile(almanacPackageUrl, 'utf8'));
-if (almanacPackage.version !== TABLE_1_ALMANAC_VERSION) {
-  throw new Error(
-    `Codec table 1 is pinned to Almanac ${TABLE_1_ALMANAC_VERSION}; refusing to generate it from ${almanacPackage.version}.`,
-  );
-}
+const almanacVersion = almanacPackage.version;
+const overwrite = process.argv.includes('--overwrite');
+
+/**
+ * A table's identity is its content, not the Almanac release it came from. Upgrading the
+ * package is expected to reproduce the same table; only a table whose content moved is a
+ * new encoding, because every published link is decoded with the table its payload names.
+ * Hashing the payload — everything but `$generated`, which holds the table's label and the
+ * hash itself rather than any encoded value — is what tells those two cases apart.
+ */
+const canonicalise = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalise);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonicalise(value[key])]),
+    );
+  }
+  return value;
+};
+const contentHashOf = (payload) =>
+  createHash('sha256')
+    .update(JSON.stringify(canonicalise(payload)))
+    .digest('hex');
 
 const assertUniqueIdentities = (values, kind) => {
   const seen = new Set();
@@ -98,12 +119,19 @@ const blueprintIndex = new Map(blueprints.map((fdname, index) => [fdname.toLower
 const experimentalIndex = new Map(
   experimentalEffects.map((fdname, index) => [fdname.toLowerCase(), index]),
 );
+/**
+ * The codec encodes the mounts whose module the commander chooses, and carries the rest as
+ * stock. That split is about what can be *fitted*, not what can be *emptied*: a hull's
+ * armour and seven core internals cannot be left empty, yet every one of them takes a
+ * choice of module. Only the built-in cargo hatch offers no choice at all.
+ */
+const isEncodableSlot = ({ kind }) => kind !== 'cargoHatch';
 const slotsByShip = Object.fromEntries(
   ships.map((ship) => [
     ship,
     ShipLoadout.empty(ship)
       .slots()
-      .filter(({ removable }) => removable)
+      .filter(isEncodableSlot)
       .map(({ key }) => key),
   ]),
 );
@@ -121,7 +149,7 @@ const fixedModulesByShip = Object.fromEntries(
       ship,
       ShipLoadout.empty(ship)
         .slots()
-        .filter(({ removable }) => !removable)
+        .filter((slot) => !isEncodableSlot(slot))
         .map(({ key }) => {
           const module = stock.fittedModuleAt(key);
           if (!module) throw new Error(`Fixed slot ${ship}:${key} has no stock module.`);
@@ -275,33 +303,80 @@ for (const [index, variant] of preEngineeredVariants.entries()) {
 for (const [index, set] of preEngineeredSetByModule.entries()) {
   assertIndexes(set, preEngineeredVariants.length, `Pre-engineered module set ${index}`);
 }
-const output = `${JSON.stringify(
-  {
-    $generated: {
-      script: 'scripts/generate-build-link-codec-tables.mjs',
-      tableVersion: TABLE_VERSION,
-      almanacVersion: TABLE_1_ALMANAC_VERSION,
-    },
-    SHIPS: ships,
-    MODULES: modules,
-    POWERED_MODULES: poweredModules,
-    BLUEPRINTS: blueprints,
-    BLUEPRINT_GRADES: blueprintGrades,
-    EXPERIMENTAL_EFFECTS: experimentalEffects,
-    SLOTS_BY_SHIP: slotsByShip,
-    FIXED_MODULES_BY_SHIP: fixedModulesByShip,
-    DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,
-    MODULE_SETS: moduleSets.unique,
-    MODULE_SET_BY_SHIP: moduleSetByShip,
-    BLUEPRINT_SETS: blueprintSets.unique,
-    BLUEPRINT_SET_BY_MODULE: blueprintSetByModule,
-    EXPERIMENTAL_SETS: experimentalSets.unique,
-    EXPERIMENTAL_SET_BY_MODULE: experimentalSetByModule,
-    PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
-    PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
-  },
-  null,
-  2,
-)}\n`;
+const payload = {
+  SHIPS: ships,
+  MODULES: modules,
+  POWERED_MODULES: poweredModules,
+  BLUEPRINTS: blueprints,
+  BLUEPRINT_GRADES: blueprintGrades,
+  EXPERIMENTAL_EFFECTS: experimentalEffects,
+  SLOTS_BY_SHIP: slotsByShip,
+  FIXED_MODULES_BY_SHIP: fixedModulesByShip,
+  DEFAULT_MODULES_BY_SHIP: defaultModulesByShip,
+  MODULE_SETS: moduleSets.unique,
+  MODULE_SET_BY_SHIP: moduleSetByShip,
+  BLUEPRINT_SETS: blueprintSets.unique,
+  BLUEPRINT_SET_BY_MODULE: blueprintSetByModule,
+  EXPERIMENTAL_SETS: experimentalSets.unique,
+  EXPERIMENTAL_SET_BY_MODULE: experimentalSetByModule,
+  PRE_ENGINEERED_VARIANTS: preEngineeredVariants,
+  PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
+};
 
-await writeFile(outputPath, output);
+const contentHash = contentHashOf(payload);
+const previous = JSON.parse(await readFile(outputPath, 'utf8').catch(() => 'null'));
+// A table committed before this script recorded a hash is still comparable: re-hash its own
+// payload the same way, so the first run after the hash landed proves the content held.
+const previousHash = previous
+  ? contentHashOf(
+      Object.fromEntries(Object.entries(previous).filter(([key]) => key !== '$generated')),
+    )
+  : null;
+const declaredPreviousHash = previous?.$generated?.contentHash;
+
+if (declaredPreviousHash && declaredPreviousHash !== previousHash) {
+  const detail =
+    `Codec table ${TABLE_VERSION} content does not match its declared hash\n` +
+    `  declared: ${declaredPreviousHash}\n` +
+    `  actual:   ${previousHash}`;
+  if (!overwrite) {
+    throw new Error(`${detail}\nRefusing to replace a table whose integrity check failed.`);
+  }
+  console.warn(`${detail}\nOverwriting table ${TABLE_VERSION} in place (--overwrite).`);
+}
+
+if (previous && previousHash !== contentHash) {
+  const detail =
+    `Codec table ${TABLE_VERSION} content changed under Almanac ${almanacVersion}\n` +
+    `  committed: ${previousHash ?? '(none recorded)'}\n` +
+    `  generated: ${contentHash}\n` +
+    `Every published link names the table version that decodes it, so a changed table is a\n` +
+    `new encoding: mint the next table version and keep this one for the links already out.`;
+  if (!overwrite) {
+    throw new Error(
+      `${detail}\nRe-run with --overwrite only while no link has been published against table ${TABLE_VERSION}.`,
+    );
+  }
+  console.warn(`${detail}\nOverwriting table ${TABLE_VERSION} in place (--overwrite).`);
+}
+
+await writeFile(
+  outputPath,
+  `${JSON.stringify(
+    {
+      $generated: {
+        tableVersion: TABLE_VERSION,
+        contentHash,
+      },
+      ...payload,
+    },
+    null,
+    2,
+  )}\n`,
+);
+
+console.log(
+  previous && previousHash === contentHash
+    ? `Codec table ${TABLE_VERSION} unchanged under Almanac ${almanacVersion} (${contentHash.slice(0, 12)}…).`
+    : `Codec table ${TABLE_VERSION} written from Almanac ${almanacVersion} (${contentHash.slice(0, 12)}…).`,
+);
