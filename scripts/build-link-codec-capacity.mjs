@@ -1,3 +1,8 @@
+import { readFile } from 'node:fs/promises';
+
+/** The widest bounded symbol the packed writer accepts, and so the codec's structural ceiling. */
+export const CODEC_SYMBOL_BITS = 31;
+
 /**
  * The growth each codec-table dimension is budgeted for.
  *
@@ -68,4 +73,143 @@ export function assertTableWithinCapacity(table) {
       `re-check the budget in docs/build-link-codec.md — including MAX_STRING_UNITS — raise the\n` +
       `limit deliberately, and mint the next table version.`,
   );
+}
+
+/** Every budgeted limit must still be a table the binary layout can address at all. */
+export function assertCapacityWithinCodecLimits() {
+  const ceiling = 2 ** CODEC_SYMBOL_BITS;
+  // A hull count also feeds the `ceil(log2(h + 1))` representation tag, and an index set writes
+  // its selected count against `slots + 1`, so both stop one entry short of the symbol ceiling.
+  const ceilingFor = (dimension) =>
+    dimension === 'SHIPS' || dimension === 'SLOTS_PER_SHIP' ? ceiling - 1 : ceiling;
+  const exceeded = Object.entries(CODEC_TABLE_CAPACITY).filter(
+    ([dimension, budgeted]) => budgeted > ceilingFor(dimension),
+  );
+  if (exceeded.length > 0) {
+    throw new Error(
+      `Budgeted capacity exceeds what a ${CODEC_SYMBOL_BITS}-bit bounded symbol can address:\n` +
+        exceeded.map(([dimension, budgeted]) => `  ${dimension}: ${budgeted}`).join('\n'),
+    );
+  }
+}
+
+const bitsRequired = (valueCount) => {
+  let width = 1;
+  let capacity = 2;
+  while (capacity < valueCount) {
+    width += 1;
+    capacity *= 2;
+  }
+  return width;
+};
+const contextualIndexBits = (valueCount) => (valueCount <= 1 ? 0 : bitsRequired(valueCount));
+const varUintBits = (value) => 8 * Math.max(1, Math.ceil(bitsRequired(value + 1) / 7));
+
+/**
+ * An upper bound, in bits, on the largest body this table can produce.
+ *
+ * Two properties of the writer make a bound this simple sound. Every adaptive structure is
+ * written in whichever mode costs least, so pricing one arbitrary mode — here the bitmap index
+ * set, the sparse power form, and literal identities — can only over-count. And the canonical
+ * body is the shorter of the packed and arithmetic renderings, so the packed cost bounds both.
+ * The build priced is the worst one the table admits: every mount filled and engineered, every
+ * identity reached through its widest index, both labels at their unit bound in UTF-8.
+ */
+export function worstCaseBodyBits(table, maxStringUnits) {
+  const dimensions = codecTableDimensions(table);
+  const slots = dimensions.SLOTS_PER_SHIP;
+  const fixed = Math.max(
+    ...Object.values(table.FIXED_MODULES_BY_SHIP).map((modules) => modules.length),
+  );
+  const grades = Math.max(...table.BLUEPRINT_GRADES.map((blueprint) => blueprint.length));
+
+  // Default-match bit, contextual-membership bit, then the wider of the contextual and global index.
+  const identity =
+    2 +
+    Math.max(
+      contextualIndexBits(dimensions.MODULE_CANDIDATE_SET),
+      bitsRequired(dimensions.MODULES),
+    );
+  const experimental =
+    2 +
+    Math.max(
+      contextualIndexBits(dimensions.EXPERIMENTAL_CANDIDATE_SET),
+      bitsRequired(dimensions.EXPERIMENTAL_EFFECTS),
+    );
+  const ordinary =
+    1 +
+    Math.max(
+      contextualIndexBits(dimensions.BLUEPRINT_CANDIDATE_SET),
+      bitsRequired(dimensions.BLUEPRINTS),
+    ) +
+    1 +
+    (grades > 2 ? bitsRequired(grades - 1) : 0) +
+    experimental;
+  const preEngineered =
+    contextualIndexBits(dimensions.PRE_ENGINEERED_CANDIDATE_SET) + 1 + experimental;
+  const engineering = 1 + Math.max(ordinary, preEngineered);
+  const label = varUintBits(2 * maxStringUnits) + 8 * maxStringUnits;
+
+  return (
+    10 + // table version
+    bitsRequired(dimensions.SHIPS + 1) + // representation tag
+    2 + // label presence
+    2 * label +
+    1 + // pristine marker
+    1 +
+    (2 + slots) +
+    1 +
+    slots * identity + // layout mode, occupancy bitmap, reference mode, identities
+    1 +
+    2 +
+    (2 + slots + fixed) +
+    (slots + fixed) * 5 + // power: marker, mode, sparse set, values
+    1 +
+    1 +
+    (2 + slots) +
+    1 +
+    slots * engineering + // engineering: presence, subset, reference mode, records
+    7 // final byte padding
+  );
+}
+
+/** Bytes of body a fully used encoded envelope holds, after its four-byte CRC-32. */
+export function envelopeBodyBytes(maxEncodedLength) {
+  // The terminal digit is Base62 and every other digit Base70; leading zero bytes are literal.
+  const capacity = 62n * 70n ** BigInt(maxEncodedLength - 1);
+  let bytes = 0n;
+  for (let value = 1n; value * 256n <= capacity; value *= 256n) bytes += 1n;
+  return Number(bytes) - 4;
+}
+
+/** The codec's own bounds, read from source so this budget cannot drift away from them. */
+export async function readCodecConstants() {
+  const read = async (file, name) => {
+    const source = await readFile(
+      new URL(`../src/app/domain/build-link/${file}`, import.meta.url),
+      'utf8',
+    );
+    const match = new RegExp(`const ${name} = ([\\d_]+)`).exec(source);
+    if (!match) throw new Error(`Cannot read ${name} from ${file}; the codec bound moved.`);
+    return Number(match[1].replaceAll('_', ''));
+  };
+  return {
+    maxStringUnits: await read('build-link-codec.ts', 'MAX_STRING_UNITS'),
+    maxEncodedLength: await read('build-link-payload.ts', 'MAX_ENCODED_LENGTH'),
+  };
+}
+
+/** Refuse a table that could express a build too large to share. */
+export function assertTableFitsEnvelope(table, { maxStringUnits, maxEncodedLength }) {
+  const bytes = Math.ceil(worstCaseBodyBits(table, maxStringUnits) / 8);
+  const limit = envelopeBodyBytes(maxEncodedLength);
+  if (bytes > limit) {
+    throw new Error(
+      `The largest build this table can express needs up to ${bytes} bytes, beyond the ${limit} a\n` +
+        `${maxEncodedLength}-character link carries. Every encodable build has to be shareable, so\n` +
+        `lower MAX_STRING_UNITS (currently ${maxStringUnits}, worth ${maxStringUnits} bytes per label),\n` +
+        `raise the envelope, or narrow what the table admits — then mint the next table version.`,
+    );
+  }
+  return { bytes, limit };
 }

@@ -379,19 +379,25 @@ fit.
 | Largest experimental candidate set |      12 |           32 | 5 bits per engineered module |
 | Largest pre-engineered set         |       6 |           16 | 4 bits per engineered module |
 
-Those widths add roughly three bits to each engineered module, so a 64-mount hull engineered
-throughout costs about 20 bits per module: 1,280 bits, or 160 of the 379 body bytes. The remaining
-219 bytes are what bounds ship name and ident. Two 64-unit strings cost at most 132 bytes — 64 UTF-8
-bytes and a two-byte header each — which fits with 87 bytes to spare, and 64 units is the largest
-power of two that does: at 128 the pair alone needs 260 bytes and the guarantee fails. So every
-build the codec accepts is a build it can share, and metadata can never be what pushes a loadout
-past the envelope. Measured against table 1, the supplied Corvette carrying a 64-byte name and a
-64-byte ident encodes to 279 of the 500 characters.
+Dimensions are only half the budget. The property that matters is that **every build a table can
+express is a build that can be shared**, so generation also prices the largest body the table
+admits — every mount filled and engineered, every identity reached through its widest index, both
+labels at their unit bound in UTF-8 — and refuses to write when that exceeds the 379 bytes a link
+carries. Table 1 prices at 338 of 379 bytes, and each run prints the figure so the trend is visible
+well before it refuses. Two properties of the writer keep so blunt a bound sound: each adaptive
+structure is written in whichever mode costs least, so pricing one arbitrary mode can only
+over-count, and the canonical body is the shorter of the packed and arithmetic renderings, so the
+packed cost bounds both. Real builds sit far below it — the supplied Corvette carrying a 64-byte
+name and a 64-byte ident encodes to 279 of the 500 characters.
 
-The bound is a single constant, `MAX_STRING_UNITS`, and it is worth knowing what it buys in
-non-Latin text: 64 UTF-8 bytes is 64 compact-alphabet characters, 32 accented Latin characters, or
-21 CJK characters, because the fallback form counts bytes. Raising it means re-checking the
-arithmetic above, not just the constant.
+That check is what sets `MAX_STRING_UNITS`, because metadata is the one part of a build with no
+natural size. At 2,048 the bound was unreachable decoration: two labels alone were four times an
+entire link, so the envelope always rejected them first and the string limit never spoke. 64 units
+is the largest power of two the priced worst case still fits under, which is what makes the
+shareable-by-construction property true rather than hopeful. It is worth knowing what 64 buys in
+non-Latin text: 64 compact-alphabet characters, 32 accented Latin characters, or 21 CJK characters,
+because the fallback form counts UTF-8 bytes. Raising it is a budget change, not a constant change —
+the generator will say so.
 
 ## Versioned tables and lazy loading
 
