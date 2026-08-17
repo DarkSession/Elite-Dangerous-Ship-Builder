@@ -388,9 +388,10 @@ obtain them from the package, is unresolved; scenario 3's plot is unaffected eit
   at that range identified.
 - **Capacitor endurance**: How long the build sustains continuous fire at a stated WEP pip
   allocation, or the fact that it sustains indefinitely, or that it cannot sustain fire at all.
-- **Convergence profile**: Where the build's fire arrives at a stated target range — the angular
-  spread it forms, the mount furthest from the centre line, the fixed separation between the mounts,
-  and the arrival point of each included mount's fire.
+- **Convergence profile**: Where the build's fire arrives at a stated target range — the arrival
+  point of each included mount's fire, which the package projects, together with the angular spread
+  it forms, the mount furthest from the centre line and the fixed separation between the mounts,
+  those three being the figures FR-016a's open question governs.
 
 ## Upstream dependencies
 

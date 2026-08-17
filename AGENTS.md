@@ -37,8 +37,11 @@ planning ship loadouts.
 - **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
   branches, functions, lines) — enforced in `angular.json`; never lower the
   threshold to get green. Playwright end-to-end tests run as part of
-  `pnpm run check` across desktop, tablet and mobile viewports, in **Chromium
-  and Firefox**, and include an automated accessibility check. Do not skip,
+  `pnpm run check` and must cover desktop, tablet and mobile viewports, in
+  **Chromium and Firefox**, with an automated accessibility check over every
+  screen. The suite has yet to reach that: `playwright.config.ts` configures the
+  three viewports in Chromium only, and no accessibility check runs. Closing the
+  gap is work on the suite, never a relaxation of the obligation. Do not skip,
   quarantine or delete tests to pass a build.
 - **Accessible to WCAG 2.2 AA.** Keyboard-operable with a visible focus order,
   screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
