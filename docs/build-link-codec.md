@@ -289,21 +289,31 @@ signatures, but beta.12 identifies them by their purchase-exclusive blueprint in
 identifiable and shareable too. The codec continues to take every identity from the package and
 re-derives nothing from blueprint metadata itself.
 
-A Mercenary article is the one fixed variant whose fitted grade can move: the purchase is grade 1
-and the same blueprint crafts grades 2 to 5, with the identity surviving the upgrade. The
-pre-engineered record has no room for a grade, so it can only carry the article at its purchase
-grade. An upgraded Mercenary article is therefore written as an ordinary record — blueprint and
-grade, exactly as beta.11 wrote it while the article was unidentifiable — and the Almanac re-derives
-the purchase identity when it reconstructs the module. Choosing the record by whether the fitted
-grade is still the variant's own grade keeps both forms unambiguous, because no Mercenary blueprint
-offers grade 1 as a craftable grade.
+A Mercenary article is the one fixed variant that can leave the state its record would restore, and
+it can do so in two ways. Its purchase is grade 1 while the same blueprint crafts grades 2 to 5, and
+the identity survives the upgrade, so the fitted grade can be past the one the record replays. And
+because no modifier block is published for the purchase, the record restores no modifiers at all, so
+a capture that states them would decode as a stock module.
 
-Three of the 22 sit on modules table 1 records no ordinary blueprint for at all — the two small
-mining tools and the class-2 size-5 module reinforcement package. An ordinary record names its
-blueprint from the module's candidate set, and for those modules that set is empty, so an upgraded
-article cannot be spelled in table 1 and the encoder refuses it. This is not new: beta.11 refused
-the same builds. Closing it means a later table that carries Mercenary-route blueprints in each
-module's candidate set, not a change to the record forms.
+Both are handled the same way: the pre-engineered record is used only where decoding it would
+reproduce the engineering the module actually carries — the fitted grade is still the variant's, and
+the record restores at least the modifiers the capture holds. Otherwise the module is written as an
+ordinary record, blueprint and grade, exactly as beta.11 wrote it while the article was
+unidentifiable, and the Almanac re-derives the purchase identity on reconstruction. The two forms
+stay unambiguous because no Mercenary blueprint offers grade 1 as a craftable grade, so the purchase
+grade is unspellable in the ordinary form and grades 2 to 5 are unspellable in the pre-engineered
+one.
+
+Where neither form fits, the encoder refuses. That covers a purchase whose capture states modifiers
+— no craftable grade 1 to fall back to — and it covers three of the 22 outright: the two small
+mining tools and the class-2 size-5 module reinforcement package. The package reports no ordinary
+blueprint for those modules, so table 1 records none, and the discriminator that would select the
+ordinary form is not even written for a module with an empty blueprint set: the reader infers the
+pre-engineered form from the table alone. Note this is the discriminator, not the blueprint index —
+an ordinary record can name a blueprint outside its module's candidate set, and all nineteen working
+Mercenary articles do exactly that. None of this is new; beta.11 refused the same builds. Closing it
+means a later table that carries Mercenary-route blueprints in each module's candidate set, which
+changes what the discriminator can express rather than the record layouts themselves.
 
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
 the same contextual pre-engineered identity as every other fixed article; the codec has no separate
@@ -410,11 +420,13 @@ beta.12 changed no catalogue, but it did change an answer the encoder reads. Mer
 resolve to their variant, so a module the encoder used to see as ordinarily engineered — a Rail Gun
 carrying grade 5 of `RailGun_LongShot`, say — now arrives carrying a pre-engineered identity as well.
 Written as a pre-engineered record, that build came back at the purchase grade: the Commander's
-upgrade was silently discarded on decode. The record choice now keys on whether the fitted grade is
-still the variant's own, which restores the beta.11 encoding for every upgraded article and leaves
-every frozen literal untouched. This was the application's own inference to correct, not an Almanac
-defect: the package reported the fitted grade and the purchase identity accurately, and it was the
-encoder that treated the second as excluding the first.
+upgrade was silently discarded on decode. A purchase-grade article whose capture stated modifiers
+lost those the same way, decoding as a stock module where beta.11 had refused the build outright. The
+record choice now asks whether decoding it would reproduce the engineering the module carries, which
+restores the beta.11 outcome in both cases and leaves every frozen literal untouched. This was the
+application's own inference to correct, not an Almanac defect: the package reported the fitted grade,
+the modifiers and the purchase identity accurately, and it was the encoder that treated the identity
+as standing in for the rest.
 
 beta.11 did, however, require a correction to how the generator partitions mounts, and it is worth
 recording why. The generator used to split slots on the package's `removable` flag: everything

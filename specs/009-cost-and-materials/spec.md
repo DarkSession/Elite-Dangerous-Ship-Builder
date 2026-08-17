@@ -12,7 +12,10 @@ Captured purchase prices remain separate provenance handled by
 
 ## Clarifications
 
-### Session 2026-08-17
+### Session 2026-08-17 — Almanac 0.1.0-beta.11
+
+Recorded while the package neither identified a fitted Mercenary article nor totalled Merc Coin. The
+first and fourth answers below are superseded by the beta.12 session that follows; the rest stand.
 
 - Q: Should the app add up Merc Coin itself to show a build total, or only show each module's Merc
   Coin price until the Almanac package supplies a total? → A: Show each module's Merc Coin price
@@ -162,6 +165,11 @@ and pre-engineered modules and compare it with the Almanac cost and material-sum
 - **FR-004e**: A build-level Merc Coin total MUST be `ShipLoadout.mercCoinCost()`. The application
   MUST NOT sum, adjust or re-derive it. `retailCredits()` carries no Merc Coin figure, so the two
   currencies MUST stay separate results as well as separate presentations.
+- **FR-004e-i**: The package's total counts an unpriced purchase as zero, which FR-004c will not let
+  the application present as a price. Where any recognized purchase in the build is unpriced, the
+  total MUST be labelled a lower bound and the unpriced slots named, exactly as FR-003 requires of
+  credits. The application MUST NOT substitute its own total, and MUST NOT show the figure as
+  complete. Every published variant is currently priced, so this is a guard rather than a live case.
 - **FR-004f**: Merc Coin MUST be presented only when at least one fitted module is recognized as a
   Merc-Coin purchase. A build with none MUST NOT show a Merc Coin figure, empty state or zero, and
   the package's total of zero MUST NOT be presented as a value.
@@ -179,9 +187,13 @@ and pre-engineered modules and compare it with the Almanac cost and material-sum
   each input list for traceability but MUST NOT alter the quantities.
 - **FR-007**: A missing cost list MUST be reported against its blueprint or effect and MUST NOT be
   replaced with an empty list.
-- **FR-008**: Pre-engineered modifications MUST contribute no craft cost unless the package returns
-  a separately selected blueprint — ordinary or Mercenary-route — or experimental effect for the
-  fitted module. A Merc Coin price is a purchase price, not a craft cost.
+- **FR-008**: Pre-engineered modifications MUST contribute no craft cost unless the package returns a
+  separately selected blueprint or experimental effect for the fitted module. A Merc Coin price is a
+  purchase price, not a craft cost.
+- **FR-008a**: A Mercenary article's own purchase grade MUST contribute no material cost and MUST NOT
+  be reported as a missing cost list under FR-007. The package publishes no cost for it because it is
+  bought rather than crafted, and its blueprint offers the crafted grades above it. Only those
+  crafted grades MUST draw on `getBlueprintCost()`.
 - **FR-009**: Material identity, grade and localized name MUST come from the Almanac material and
   localization catalogues.
 - **FR-010**: Where the package has no name for the active locale, the package's canonical English

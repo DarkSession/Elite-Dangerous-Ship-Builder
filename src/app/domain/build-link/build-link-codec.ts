@@ -1542,6 +1542,33 @@ function resolvePreEngineeredEngineering(
   };
 }
 
+/**
+ * Whether a pre-engineered record would reconstruct the engineering a module actually carries.
+ *
+ * The record carries an identity, not a state: decoding replays the variant's own grade and the
+ * modifier block the package publishes for it. It is therefore only usable while the fitted module
+ * still sits at that state, and a Mercenary article is the one fixed variant that can leave it —
+ * two ways, both reachable from a real capture.
+ *
+ * Its purchase-exclusive blueprint crafts grades 2 to 5 and the identity survives the upgrade, so
+ * the fitted grade can be past the purchase grade the record would restore. And the package
+ * publishes no modifier block for a Mercenary purchase, so a capture that states its modifiers
+ * would come back with none at all. Either way the ordinary record — blueprint and grade, with the
+ * Almanac re-deriving the purchase identity on reconstruction — is the form that can spell the
+ * module, and where it cannot the encoder refuses. A link that opens as a different build than the
+ * one shared is worse than no link.
+ */
+function preEngineeredRecordReproduces(
+  codec: CodecContext,
+  record: PreEngineeredState,
+  engineering: ModuleEngineering,
+  variant: PreEngineeredVariant,
+): boolean {
+  if (engineering.Level !== variant.grade) return false;
+  const restored = resolvePreEngineeredEngineering(codec, record);
+  return (restored.Modifiers?.length ?? 0) >= (engineering.Modifiers?.length ?? 0);
+}
+
 function indexesWhere<T>(
   values: readonly T[],
   predicate: (value: T, index: number) => boolean,
@@ -1588,25 +1615,33 @@ function engineeringStateFromModule(
           engineering.ExperimentalEffect,
           'experimental effect',
         );
-  // A pre-engineered record reconstructs the variant's own fixed state, so it can only carry a
-  // module still sitting at that state. A Mercenary article the Commander has upgraded past its
-  // purchase grade is identified by the same blueprint at a higher grade; that grade is state the
-  // record has no room for, so such a module takes the ordinary path, which carries blueprint and
-  // grade and leaves the Almanac to re-derive the purchase identity on reconstruction.
-  const atVariantState =
-    preEngineeredIndex !== -1 && engineering.Level === module.preEngineeredVariant!.grade;
-  if (atVariantState) {
-    if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
-      throw new BuildLinkCodecError(
-        'unknownIdentity',
-        'The pre-engineered variant is unavailable for its fitted module.',
-      );
-    }
-    return {
+  const variant = module.preEngineeredVariant;
+  if (variant !== null && preEngineeredIndex !== -1) {
+    const record = {
       kind: 'preEngineered',
       variant: preEngineeredIndex,
       experimental,
-    };
+    } as const;
+    if (preEngineeredRecordReproduces(codec, record, engineering, variant)) {
+      if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
+        throw new BuildLinkCodecError(
+          'unknownIdentity',
+          'The pre-engineered variant is unavailable for its fitted module.',
+        );
+      }
+      return record;
+    }
+    // The record cannot restore this module, so the ordinary record must. Where the module has no
+    // ordinary blueprint set the ordinary record cannot name a blueprint for it either, and the
+    // refusal belongs here, where the slot is known, rather than as an unattributed error later.
+    if (blueprintSetForModule(codec, moduleIndex).length === 0) {
+      throw new BuildLinkCodecError(
+        'unknownIdentity',
+        `Slot ${module.slot}: codec table ${codec.tableVersion} records no ordinary blueprint for ` +
+          `${module.symbol}, so its engineering cannot be encoded apart from the ` +
+          `${variant.acquisition} variant's own.`,
+      );
+    }
   }
 
   const blueprint = requireIdentity(
