@@ -67,8 +67,11 @@ search a slot's candidates, then replace and remove modules in removable slots.
 9. **Given** a slot's choices, **When** they are listed, **Then** each pre-engineered variant is its
    own choice, unique rewards come last in a section identifying them as such, and mercenary,
    tech-broker and entitlement-gated choices are marked in their natural positions.
-10. **Given** a fitted mercenary purchase, **When** the build is saved and reloaded, **Then** it is
-    still recognized and marked as not ordinarily available.
+10. **Given** a fitted mercenary purchase, **When** the build is saved and reloaded, **Then** the
+    package still resolves it and it stays marked as not ordinarily available.
+11. **Given** a mercenary purchase engineered to a higher grade, **When** it is shown, **Then** its
+    mark and the fitted grade are both correct, the fitted grade coming from its engineering rather
+    than from the variant's purchase grade.
 
 ### User Story 2 - Engineer a module (Priority: P1)
 
@@ -179,11 +182,14 @@ redo to the final build, comparing each intermediate state.
   carried by colour, shape or position alone, and each MUST reach assistive technology. The
   application MUST NOT classify or reword the package's entitlement values into groups of its own.
 - **FR-005g**: A choice's marks MUST also apply to the module once fitted, and MUST survive saving
-  and reloading the build. The package resolves community-goal, event-reward and tech-broker
-  variants back from a fitted module, but returns none for any mercenary variant, so a fitted
-  mercenary purchase MUST be recognized by its Mercenary-route blueprint exactly as
-  [Cost and Materials](../009-cost-and-materials/spec.md) FR-004a defines. The application MUST NOT
-  introduce a second recognition rule, and the upstream request FR-004a names covers this use too.
+  and reloading the build. The package resolves every acquisition category back from a fitted module,
+  mercenary included, so `FittedModule.preEngineeredVariant` MUST be the only source of a fitted
+  module's marks. The application MUST NOT recognize a variant by any rule of its own.
+- **FR-005h**: A mercenary variant resolves from the purchase-exclusive blueprint and keeps
+  resolving after the Commander engineers the module to a higher grade. The variant reports the
+  purchase grade, so the module's fitted grade MUST come from its engineering and MUST NOT be read
+  off the variant. Clearing the module's engineering removes the package's identification, and the
+  mark MUST go with it.
 - **FR-006**: Fitting, replacing and removing MUST use the package's edit operations and surface
   their structured success or refusal results.
 - **FR-007**: The application MUST NOT offer removal where the package reports a slot as
@@ -217,7 +223,10 @@ redo to the final build, comparing each intermediate state.
 - **FR-015**: Engineering costs MUST use package cost functions. The application MUST NOT calculate
   grade rolls or material quantities.
 - **FR-016**: Package-identified pre-engineered modules MUST show their fixed modifications and any
-  restriction on further engineering; their supplied modifications have no craft cost.
+  restriction on further engineering; their supplied modifications have no craft cost. A mercenary
+  article is the exception the package states: it publishes no modifier block for the purchase, so
+  no fixed modification MUST be shown for one and none MUST be inferred. Its visible engineering is
+  whatever the Commander has since crafted.
 - **FR-017**: Supported fitted modules MUST allow enabled-state and priority changes using package
   build state. Disabled modules remain fitted and retain mass and cost.
 
@@ -248,8 +257,8 @@ redo to the final build, comparing each intermediate state.
   and prioritising it still work and move the power budget.
 - **FR-024c**: Choice-composition tests MUST cover variant choices, each acquisition category, a
   module carrying variants in more than one category, the trailing unique-reward section, every mark,
-  entitlement-gated modules, and the recognition of a fitted mercenary purchase across a save and
-  reload.
+  entitlement-gated modules, and a fitted mercenary purchase across a save and reload — at its
+  purchase grade, engineered above it, and after its engineering is cleared.
 - **FR-025**: Engineering tests MUST cover supported choices, 100% quality normalization,
   replacement, effect-only removal, clearing, pre-engineered modules and package-provided costs.
 - **FR-026**: Fixed-mount tests MUST cover every package hull and every build source, including
@@ -278,11 +287,12 @@ computations, power state and cumulative engineering-cost functions. It also sup
 fixed-mount removability, the pre-engineered variants with the acquisition that classifies each one,
 and the entitlement a module requires. No game number or calculation is application-owned.
 
-One recognition is. The package resolves a fitted module back to its community-goal, event-reward or
-tech-broker variant, but returns none for any mercenary variant, so recognising a fitted mercenary
-purchase falls to the application under
-[Cost and Materials](../009-cost-and-materials/spec.md) FR-004a, which owns the rule and the upstream
-request that would retire it. This specification consumes that recognition and MUST NOT restate it.
+Recognising a fitted variant is the package's too, in every acquisition category. `0.1.0-beta.12`
+closed the one gap this area had: a fitted mercenary article now resolves from the blueprint only its
+purchase grants, so the application-owned recognition rule that
+[Cost and Materials](../009-cost-and-materials/spec.md) used to own is gone rather than restated
+here. Mercenary variants publish no modifier block, which is why FR-016 has nothing fixed to show for
+one.
 
 ## Success Criteria
 
@@ -299,5 +309,5 @@ request that would retire it. This specification consumes that recognition and M
 - **SC-006**: The complete feature passes the required viewport, browser and accessibility test
   matrix without horizontal page scrolling.
 - **SC-007**: Every choice's obtaining marks and its placement inside or outside the unique-reward
-  section match the package's record, and a fitted mercenary purchase stays recognized across a save
-  and reload.
+  section match the package's record, and a fitted mercenary purchase stays resolved across a save
+  and reload at every grade it can be engineered to.

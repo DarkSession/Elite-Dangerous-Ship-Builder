@@ -1588,7 +1588,14 @@ function engineeringStateFromModule(
           engineering.ExperimentalEffect,
           'experimental effect',
         );
-  if (preEngineeredIndex !== -1) {
+  // A pre-engineered record reconstructs the variant's own fixed state, so it can only carry a
+  // module still sitting at that state. A Mercenary article the Commander has upgraded past its
+  // purchase grade is identified by the same blueprint at a higher grade; that grade is state the
+  // record has no room for, so such a module takes the ordinary path, which carries blueprint and
+  // grade and leaves the Almanac to re-derive the purchase identity on reconstruction.
+  const atVariantState =
+    preEngineeredIndex !== -1 && engineering.Level === module.preEngineeredVariant!.grade;
+  if (atVariantState) {
     if (!preEngineeredSetForModule(codec, moduleIndex).includes(preEngineeredIndex)) {
       throw new BuildLinkCodecError(
         'unknownIdentity',

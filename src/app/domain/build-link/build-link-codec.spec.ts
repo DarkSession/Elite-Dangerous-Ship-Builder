@@ -343,28 +343,72 @@ describe('build-link codec', () => {
     }
   });
 
-  it('does not classify fixed variants that the Almanac cannot identify', () => {
-    const unidentified = PRE_ENGINEERED_MODULES.filter(({ modifiers }) => !modifiers?.length);
-    expect(unidentified).toHaveLength(22);
+  it('round-trips every Mercenary variant at its purchase grade', () => {
+    const mercenary = PRE_ENGINEERED_MODULES.filter(
+      ({ acquisition }) => acquisition === 'mercenary',
+    );
+    expect(mercenary).toHaveLength(22);
+    expect(mercenary.every(({ modifiers }) => !modifiers?.length)).toBe(true);
 
-    for (const variant of unidentified) {
-      const source = ShipLoadout.fromLoadout({
-        Ship: 'Krait_MkII',
-        Modules: [
-          {
-            Slot: 'LargeHardpoint1',
-            Item: variant.symbol,
-            Engineering: {
-              BlueprintName: variant.blueprint,
-              Level: variant.grade,
-              Quality: 1,
-            },
-          },
-        ],
-      });
+    for (const variant of mercenary) {
+      const source = mercenaryBuild(variant, variant.grade);
+      const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
+      expect(sourceModule.preEngineeredVariant).toEqual(variant);
 
-      expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toBeNull();
-      expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
+      const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+      const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+      expect(decodedModule.preEngineeredVariant).toEqual(variant);
+      expect(decodedModule.engineering?.Level).toBe(variant.grade);
+      expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
+      expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+    }
+  });
+
+  it('keeps the fitted grade of a Mercenary variant upgraded past its purchase', () => {
+    const upgradable = PRE_ENGINEERED_MODULES.filter(
+      (variant) => variant.acquisition === 'mercenary' && hasOrdinaryBlueprints(variant.symbol),
+    );
+    expect(upgradable).toHaveLength(19);
+
+    for (const variant of upgradable) {
+      const grades = blueprintGrades(variant.blueprint);
+      expect(grades).not.toContain(variant.grade);
+
+      for (const grade of grades) {
+        const source = mercenaryBuild(variant, grade);
+        const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
+        expect(sourceModule.preEngineeredVariant).toEqual(variant);
+        expect(sourceModule.engineering?.Level).toBe(grade);
+
+        const fragment = encodeBuildLinkFragment(source);
+        const decoded = decodeBuildLinkFragment(fragment);
+        const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+        expect(decodedModule.engineering?.Level).toBe(grade);
+        expect(decodedModule.preEngineeredVariant).toEqual(variant);
+        expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+        expect(minimalState(decoded)).toEqual(minimalState(source));
+        expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+      }
+    }
+  });
+
+  it('refuses an upgraded Mercenary article table 1 cannot spell', () => {
+    // Three Mercenary articles sit on modules table 1 records no ordinary blueprint for, so the
+    // record that would carry the upgraded grade has no blueprint slot to name. Refusing is the
+    // only honest answer: the pre-engineered record would silently restore the purchase grade.
+    const unspellable = PRE_ENGINEERED_MODULES.filter(
+      (variant) => variant.acquisition === 'mercenary' && !hasOrdinaryBlueprints(variant.symbol),
+    );
+    expect(unspellable).toHaveLength(3);
+
+    for (const variant of unspellable) {
+      for (const grade of blueprintGrades(variant.blueprint)) {
+        const source = mercenaryBuild(variant, grade);
+        expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toEqual(variant);
+        expectCodecError(() => encodeBuildLinkFragment(source), 'unknownIdentity');
+      }
     }
   });
 
@@ -1043,6 +1087,35 @@ function makeFullyEngineeredAnaconda(): ShipLoadout {
     });
   }
   return loadout;
+}
+
+function blueprintGrades(fdname: string): readonly number[] {
+  const index = codecTable1.BLUEPRINTS.indexOf(fdname);
+  const grades = codecTable1.BLUEPRINT_GRADES[index] as readonly number[] | undefined;
+  if (!grades) throw new Error(`Blueprint ${fdname} is absent from codec table 1.`);
+  return grades;
+}
+
+function hasOrdinaryBlueprints(symbol: string): boolean {
+  const moduleIndex = codecTable1.MODULES.indexOf(symbol);
+  const setIndex = codecTable1.BLUEPRINT_SET_BY_MODULE[moduleIndex];
+  return setIndex !== undefined && codecTable1.BLUEPRINT_SETS[setIndex].length > 0;
+}
+
+function mercenaryBuild(
+  variant: (typeof PRE_ENGINEERED_MODULES)[number],
+  grade: number,
+): ShipLoadout {
+  return ShipLoadout.fromLoadout({
+    Ship: 'Krait_MkII',
+    Modules: [
+      {
+        Slot: 'LargeHardpoint1',
+        Item: variant.symbol,
+        Engineering: { BlueprintName: variant.blueprint, Level: grade, Quality: 1 },
+      },
+    ],
+  });
 }
 
 function minimalState(loadout: ShipLoadout, assumeFullQuality = false): unknown {
