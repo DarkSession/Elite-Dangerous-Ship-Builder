@@ -76,8 +76,13 @@ dollar signs delimit inline mathematics in GitHub Markdown.
 
 The binary body is followed by its four-byte, little-endian CRC-32. The checksum is verified before
 the table-indexed parser or the Almanac sees the data. A complete codec value is limited to 500
-characters, `b.` counted among them, because FR-028 bounds the link a Commander copies rather than
-the digits inside it. That leaves 498 encoded digits.
+characters, `b.` counted among them, which leaves 498 encoded digits.
+
+That bound is the codec's own, and it is not FR-028. FR-028 bounds the complete URL, which adds an
+origin, a path and `#` that this layer never sees — so the 500 here is a floor under the
+requirement, not the requirement: a value that fails it can never fit a URL, while one that passes
+still has to be measured against the deployed origin. Enforcing the URL, and offering SLEF when a
+build cannot meet it, belongs to the sharing feature.
 
 ## Binary body
 
@@ -428,7 +433,7 @@ ident encodes to 195 of the 500 characters.
 Pricing capacity rather than the current table is what makes the budget honest, and it is the
 constraint that sets both the mount and label limits. Mounts are much the most expensive dimension
 at roughly 44 bits each, and the two limits trade directly against one another: 64 mounts, an
-earlier draft of this table, needs 474 bytes at a 32-unit label bound and 493 at a 64-unit one —
+earlier draft of this table, needs 427 bytes at the 32-unit label bound and 493 at a 64-unit one —
 either way beyond a link. The pair had to give, and it gave on labels, because of an asymmetry in
 which of them can move later. `MAX_STRING_UNITS` is shared by every table's decoder, so raising it
 is free while lowering it would strand links already published; a mount count is data, and refusing
@@ -766,6 +771,13 @@ of dollar signs it could interpret as inline mathematics.
 The codec is currently a domain implementation, not the feature UI or complete URL lifecycle. It
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
+
+FR-028 is among them. The requirement bounds a complete URL at 500 characters and calls for SLEF to
+be offered when a build cannot meet it, and only the sharing feature knows the origin and path that
+a codec value has to fit inside. Its budget is 500 less that prefix and the `#`: on the
+`https://ships.example/#` origin the tests use, 477 characters, against which the largest reference
+build spends 108. Real builds leave room; a build at the codec's own 500-character bound would not,
+which is why the check belongs where the origin is known.
 
 Almanac beta.12 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust

@@ -95,13 +95,14 @@ test('a table grown to the budgeted capacity still fits a link', async () => {
 
   assert.ok(bytes <= limit, `capacity prices at ${bytes} bytes against ${limit}`);
   // Slots are much the most expensive dimension, and the reason capacity cannot simply be raised:
-  // the 64 first advertised here needs 474 bytes at this label bound, well beyond a link.
-  assert.ok(
-    Math.ceil(
-      worstCaseBodyBits({ ...CODEC_TABLE_CAPACITY, SLOTS_PER_SHIP: 64 }, constants.maxStringUnits) /
-        8,
-    ) > limit,
+  // the 64 first advertised here prices at 427 bytes, well beyond a link, at this label bound.
+  const sixtyFourMounts = Math.ceil(
+    worstCaseBodyBits({ ...CODEC_TABLE_CAPACITY, SLOTS_PER_SHIP: 64 }, constants.maxStringUnits) /
+      8,
   );
+
+  assert.equal(sixtyFourMounts, 427);
+  assert.ok(sixtyFourMounts > limit);
 });
 
 test('the committed table cannot express a build too large to share', async () => {

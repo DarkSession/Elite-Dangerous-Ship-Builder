@@ -3,9 +3,13 @@ import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-rad
 
 const FRAGMENT_PREFIX = 'b.';
 /**
- * The bound FR-028 states, counted the way it reads: a complete codec value, `b.` included.
- * The prefix is part of the link a Commander copies, so it is part of the 500, which leaves
- * 498 encoded digits.
+ * A complete codec value, `b.` included, leaving 498 encoded digits.
+ *
+ * This is the codec's own bound, not FR-028. That requirement bounds the complete URL a
+ * Commander copies, which carries an origin, a path and `#` that this layer never sees, so
+ * satisfying it belongs to the sharing feature. The 500 here is a floor under it: a codec value
+ * that already fails this can never fit a URL, and one that passes still has to be measured
+ * against the deployed origin before it is offered as a link.
  */
 const MAX_LINK_CHARACTERS = 500;
 const CRC_LENGTH = 4;
