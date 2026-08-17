@@ -37,8 +37,8 @@ and utility mount appears at its package position with the correct slot and buil
 A Commander can activate a mount to edit that slot and can locate the currently focused slot on the
 hull when the package provides a position.
 
-**Independent Test**: Activate every located mount for a reference hull from pointer, touch,
-keyboard and screen reader navigation and verify the matching game slot key is reached.
+**Independent Test**: Activate every located mount for a reference hull from pointer, touch and
+screen reader navigation and verify the matching game slot key is reached.
 
 **Acceptance Scenarios**:
 
@@ -48,8 +48,8 @@ keyboard and screen reader navigation and verify the matching game slot key is r
    a plate containing it is brought into view.
 3. **Given** the same mount appears on both plates, **When** either instance is activated, **Then**
    both refer to one slot and expose identical state.
-4. **Given** keyboard or screen-reader navigation, **When** the Commander moves through mounts,
-   **Then** every mount is reachable in a stable order and focus is visible.
+4. **Given** screen-reader navigation, **When** the Commander moves through mounts, **Then** every
+   mount is reachable in a stable order.
 
 ### Edge Cases
 
@@ -87,8 +87,8 @@ keyboard and screen reader navigation and verify the matching game slot key is r
   MAY remain available offline; uncached assets MUST be identified as temporarily unavailable.
 - **FR-011**: Artwork provenance and the applicable media-usage notice MUST be reachable from hull
   anatomy.
-- **FR-012**: Every mount MUST be independently operable by pointer, touch and keyboard with an AA
-  target size while remaining at its package position.
+- **FR-012**: Every mount MUST be independently operable by pointer and touch with an AA target size
+  while remaining at its package position.
 - **FR-013**: Anatomy MAY pan inside its own container but MUST NOT widen the page or make panning the
   only way to reach a mount.
 
@@ -98,8 +98,8 @@ keyboard and screen reader navigation and verify the matching game slot key is r
   resolves to the hull, no plate repeats one slot and no application-owned position exists.
 - **FR-015**: Tests MUST verify that only package-located hardpoints and utility mounts are
   presented and that slots shown on both plates resolve to one build slot.
-- **FR-016**: Tests MUST verify mount state, text equivalence, stable keyboard order, target size and
-  navigation to the exact slot at every supported viewport.
+- **FR-016**: Tests MUST verify mount state, text equivalence, stable screen-reader order, target
+  size and navigation to the exact slot at every supported viewport.
 - **FR-017**: Each primary journey MUST have end-to-end coverage at desktop, tablet and mobile
   viewports in Chromium and Firefox, including automated accessibility checks and unavailable
   asset states.
@@ -123,7 +123,7 @@ game value from the artwork.
   catalogue hull.
 - **SC-002**: A Commander can reach a located slot from its mount in one interaction.
 - **SC-003**: Every located mount and state has an equivalent text representation and works by
-  pointer, touch, keyboard and screen reader.
+  pointer, touch and screen reader.
 - **SC-004**: Every slot remains reachable without hull anatomy.
 - **SC-005**: No physical number or unlocated position is derived from schematic artwork.
 - **SC-006**: The complete feature passes the required viewport, browser and accessibility test

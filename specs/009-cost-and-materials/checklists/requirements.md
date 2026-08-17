@@ -32,6 +32,6 @@
 ## Delivery Readiness
 
 - [x] Desktop, tablet and mobile behavior is covered
-- [x] Keyboard, touch, screen-reader and automated accessibility verification is covered
+- [x] Touch, screen-reader and automated accessibility verification is covered
 - [x] Unit and end-to-end verification obligations are defined
 - [x] Specification is ready for planning
