@@ -1,8 +1,7 @@
 {
   "$generated": {
-    "script": "scripts/generate-build-link-codec-tables.mjs",
     "tableVersion": 1,
-    "almanacVersion": "0.1.0-beta.10"
+    "contentHash": "a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0"
   },
   "SHIPS": [
     "SideWinder",

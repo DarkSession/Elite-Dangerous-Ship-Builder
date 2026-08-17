@@ -29,10 +29,13 @@ Consequences that follow from this and MUST be honoured:
   returns without the Commander reloading the application.
 - No accounts, no authentication, no server-side persistence and no server-side
   sharing. A build is shared by handing someone a URL or a SLEF payload.
-- No telemetry, analytics or third-party network beacons, and **no request to any
-  origin other than the one the application is served from**. Runtime asset
-  requests to the application's own origin are permitted by the clause above; any
-  other outbound request needs an amendment to this constitution.
+- No telemetry, analytics or third-party network beacons, and **no automatic or
+  programmatic request to any origin other than the one the application is served
+  from**. Runtime asset requests to the application's own origin are permitted by
+  the clause above. A Commander MAY explicitly navigate to identified external
+  documentation or an issue tracker; that navigation MUST follow a deliberate
+  action, MUST be identified as leaving the application and MUST NOT include build
+  data. Any other outbound request needs an amendment to this constitution.
 
 ### II. The Almanac Is the Source of Truth (NON-NEGOTIABLE)
 
@@ -88,13 +91,33 @@ A build is round-trippable and never silently wrong.
 
 - Import → edit → export MUST preserve everything the application understands
   and MUST NOT invent values the source did not contain. Absent data stays
-  absent; it is never substituted with zero or a guess.
-- Engineering quality is deliberately outside the application model. A selected
-  blueprint grade always represents a completed (100% quality) grade. Imports
-  carrying a partial engineering quality are normalised to 100%, and exports
-  report 100%; the application does not retain or present the source roll's
-  partial quality. This explicit product rule is the sole exception to the
-  preservation obligation above.
+  absent; it is never substituted with zero or a guess. The two bullets below
+  are the **only** exceptions. Each is a deliberate product rule rather than a
+  convenience, each is reported to the Commander rather than applied silently,
+  and each substitutes something a Commander could reproduce in the game — not a
+  plausible-looking value. A third exception requires amending this principle.
+- **Engineering quality is deliberately outside the application model.** A
+  selected blueprint grade always represents a completed (100% quality) grade.
+  Imports carrying a partial engineering quality are normalised to 100%, and
+  exports report 100%; the application does not retain or present the source
+  roll's partial quality. A build is shared so that another Commander can build
+  it, and a partial roll cannot be reproduced at an engineer, so a plan quoting
+  one would describe a ship its reader cannot make.
+- **A fixed mount is never empty.** The seven core internals, armour and the
+  built-in cargo hatch are mounts every hull always carries and none can fly
+  without; outfitting offers a swap and no route to a ship missing one. A build
+  reaching the application with such a mount empty — or carrying a module symbol
+  the catalogue cannot resolve — MUST have that hull's stock module fitted
+  before the build is presented and before any figure is read from it, and the
+  Commander MUST be told which mounts were filled and what was replaced. The
+  stock module is the one `@elite-dangerous-almanac/core` records in the hull's
+  default loadout; the application MUST NOT derive a substitute of its own, and
+  where the package carries no stock module for that mount the mount stays empty
+  and the build is reported incomplete. The fill changes the build rather than
+  the display, so a later save, share or export carries it. Emptying a fixed
+  mount MUST NOT be offered at all, which the application MUST reach by
+  surfacing the package's own removability report rather than by a rule of its
+  own (principle II).
 - Where the package reports a value as unavailable or a build as invalid or
   incomplete (`validation`, the nullable aggregates and their `*Result`
   counterparts), the application MUST surface that state rather than hide it
@@ -319,4 +342,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 3.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-16
+**Version**: 3.1.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-17

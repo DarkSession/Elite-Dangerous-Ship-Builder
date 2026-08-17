@@ -16,9 +16,9 @@ export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
 export interface BuildLinkCodecTables {
   readonly $generated: {
-    readonly script: string;
     readonly tableVersion: number;
-    readonly almanacVersion: string;
+    /** SHA-256 over the table's content; a table whose hash moves is a new encoding. */
+    readonly contentHash: string;
   };
   readonly SHIPS: readonly string[];
   readonly MODULES: readonly string[];
