@@ -68,7 +68,7 @@ interface CodecContext {
 const TABLE_VERSION_BITS = 10;
 /**
  * Ship name and ident are each bounded so that metadata can never crowd a loadout out of the
- * 500-character link. Two 32-unit labels cost at most 66 bytes of the 377-byte body, which is
+ * 500-character codec value. Two 32-unit labels cost at most 66 bytes of the 377-byte body, which
  * what leaves room for a hull grown to the mounts `CODEC_TABLE_CAPACITY` budgets for. The bound
  * is deliberately on the low side: every table's decoder shares it, so raising it later is free
  * while lowering it would strand links already published.

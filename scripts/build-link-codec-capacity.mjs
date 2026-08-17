@@ -184,8 +184,8 @@ export function worstCaseBodyBits(dimensions, maxStringUnits) {
 /**
  * Bytes of body a full-length link holds, after its `b.` prefix and four-byte CRC-32.
  *
- * The prefix counts against the limit because FR-028 bounds a complete link, so 500 characters
- * leave 498 encoded digits.
+ * The prefix counts against the limit because FR-021 bounds a complete codec value, so 500
+ * characters leave 498 encoded digits.
  */
 export function envelopeBodyBytes(maxLinkCharacters) {
   // The terminal digit is Base62 and every other digit Base70; leading zero bytes are literal.
@@ -231,8 +231,8 @@ export function assertCapacityFitsEnvelope(constants) {
   if (bytes > limit) {
     throw new Error(
       `A table grown to the budgeted capacity would need up to ${bytes} bytes, beyond the ${limit} a\n` +
-        `${constants.maxLinkCharacters}-character link carries. The advertised growth has to be growth\n` +
-        `the format can actually absorb, so lower a capacity — SLOTS_PER_SHIP is much the most\n` +
+        `${constants.maxLinkCharacters}-character codec value carries. The advertised growth has to be\n` +
+        `growth the format can actually absorb, so lower a capacity — SLOTS_PER_SHIP is much the most\n` +
         `expensive, at roughly 44 bits each — or raise the envelope. Lowering MAX_STRING_UNITS\n` +
         `(currently ${constants.maxStringUnits}) buys 2 bytes per unit but cannot be undone once links exist.`,
     );
@@ -246,7 +246,7 @@ export function assertTableFitsEnvelope(table, constants) {
   if (bytes > limit) {
     throw new Error(
       `The largest build this table can express needs up to ${bytes} bytes, beyond the ${limit} a\n` +
-        `${constants.maxLinkCharacters}-character link carries.`,
+        `${constants.maxLinkCharacters}-character codec value carries.`,
     );
   }
   return { bytes, limit };

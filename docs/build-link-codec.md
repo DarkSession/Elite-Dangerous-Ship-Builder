@@ -78,7 +78,7 @@ The binary body is followed by its four-byte, little-endian CRC-32. The checksum
 the table-indexed parser or the Almanac sees the data. A complete codec value is limited to 500
 characters, `b.` counted among them, which leaves 498 encoded digits.
 
-That is the bound FR-028 states. The requirement was amended to say so: it had been written over a
+That is the bound FR-021 states. The requirement was amended to say so: it had been written over a
 complete URL, which no codec can enforce, since the origin, path and `#` around a value belong to
 wherever the application is deployed. Stating it over the value makes it a bound the layer that has
 to satisfy it can actually see. What the URL adds is still real — on the `https://ships.example/#`
@@ -422,7 +422,7 @@ numbers, and generation refuses a table that exceeds one.
 | Largest pre-engineered set         |       6 |           32 | 5 bits per engineered module |
 
 Those numbers are a promise, so generation prices them as though a table had already grown into
-every one: **339 of the 377 bytes** a link carries, for a build with every mount filled and
+every one: **339 of the 377 bytes** a codec value holds, for a build with every mount filled and
 engineered, every identity reached through its widest index, and both labels at their unit bound in
 UTF-8. The table as it actually stands prices at 272, and both figures print on every run. Two
 properties of the writer keep so blunt a bound sound: each adaptive structure is written in
@@ -773,11 +773,11 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-FR-028's other half is among them: SLEF has to be offered when a build cannot meet the limit, and
-the offer is part of the sharing feature rather than the codec, which can only refuse. The same
-feature owns whatever its deployed origin costs on top of a codec value — 23 characters on the
-`https://ships.example/#` origin the tests use, against which the largest reference build spends
-108 of its 500.
+FR-021's other half is among them: SLEF has to be used when a build cannot meet the limit, and
+making that offer belongs to the sharing feature rather than the codec, which can only refuse. The
+same feature owns whatever its deployed origin costs on top of a codec value — 23 characters on the
+`https://ships.example/#` origin the tests use, against which the largest reference build spends 108
+of its 500.
 
 Almanac beta.12 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust

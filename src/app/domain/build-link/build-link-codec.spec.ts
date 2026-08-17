@@ -1073,7 +1073,7 @@ describe('build-link codec', () => {
     const fragment = encodeBuildLinkFragment(source);
     const decoded = decodeBuildLinkFragment(fragment);
 
-    // FR-028 counts a complete link, `b.` included.
+    // FR-021 counts a complete codec value, `b.` included.
     expect(fragment.length).toBeLessThanOrEqual(500);
     expect(decoded.shipName).toBe('é'.repeat(16));
     expect(decoded.shipIdent).toBe('é'.repeat(16));

@@ -81,7 +81,7 @@ test('refuses a table whose growth outruns the link budget', async () => {
 
 test('every budgeted limit stays inside the codec, and the envelope is measured exactly', () => {
   assert.doesNotThrow(() => assertCapacityWithinCodecLimits());
-  // A 500-character link spends two on `b.`, leaving 498 digits: 381 payload bytes, 377 of body.
+  // A 500-character codec value spends two on `b.`, leaving 498 digits: 381 payload, 377 of body.
   assert.equal(envelopeBodyBytes(500), 377);
   // Seven payload bytes fit in twelve characters, so three of body survive the checksum.
   assert.equal(envelopeBodyBytes(12), 3);
@@ -123,7 +123,7 @@ test('refuses a table whose worst case outgrows the link, metadata included', as
   // The bound the codec carried before this budget existed: two labels alone outrun the envelope.
   assert.throws(
     () => assertTableFitsEnvelope(table, { ...constants, maxStringUnits: 2_048 }),
-    /beyond the 377 a\n500-character link carries/,
+    /beyond the 377 a\n500-character codec value carries/,
   );
   // So does an ordinary table given hulls twice today's size at the current label bound.
   const doubled = {

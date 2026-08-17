@@ -3,7 +3,7 @@ import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-rad
 
 const FRAGMENT_PREFIX = 'b.';
 /**
- * The bound FR-028 states: a complete codec value, `b.` included, leaving 498 encoded digits.
+ * The bound FR-021 states: a complete codec value, `b.` included, leaving 498 encoded digits.
  *
  * The requirement is stated over the codec value rather than the URL carrying it, because the
  * origin, path and `#` belong to wherever the application is deployed and this layer never sees

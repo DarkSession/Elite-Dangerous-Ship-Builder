@@ -395,6 +395,6 @@ console.log(
 );
 // Printed every run so the trend is visible long before the budget refuses a table.
 console.log(
-  `Largest build it can express: up to ${envelope.bytes} of the ${envelope.limit} bytes a link carries` +
+  `Largest build it can express: up to ${envelope.bytes} of the ${envelope.limit} bytes a codec value holds` +
     ` (${budgeted.bytes} once grown to the budgeted capacity).`,
 );
