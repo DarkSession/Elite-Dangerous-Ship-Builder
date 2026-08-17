@@ -34,20 +34,27 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
-- **One marker is open.** FR-016a reports the convergence spread and the furthest mount, and both
-  need plane geometry over the points `projectGunsight` returns — a separation and a distance from
-  the centre — which yields a number the package did not itself compute. No game rule is involved,
-  but constitution principle II sanctions only presentation of what the library returns, and the
-  package publishes those points expressly for a renderer. Whether that geometry is permitted here
-  or must be asked of the package is the open question; the plot of FR-016f, which places the
-  package's points and derives nothing, is unaffected either way.
+- **One marker is open, and it governs three figures.** FR-016a covers the convergence spread, the
+  mount furthest from the centre line, and the fixed separation in metres between the mounts that
+  FR-016b presents. Each needs plane geometry over pairs the package publishes — a separation between
+  two points, or a distance from the centre — taken either over the tangents `projectGunsight`
+  returns or over the catalogue's metre offsets, and each therefore yields a number the package did
+  not itself compute. No game rule is involved, and the package publishes those points expressly for
+  a renderer, but constitution principle II sanctions only presentation of what the library returns.
+  Whether that geometry is permitted here or must be asked of the package is the open question. Do
+  not close this gate on an answer that covers only the two angular figures: the metre separation
+  sits under a MUST in FR-016b and carries a mandated test in FR-021a, so a partial answer would tick
+  the box with that permission still unresolved. The plot of FR-016f, which places the package's
+  points and derives nothing, is unaffected either way.
 - **This is an area of the statistics family.** [Feature 003](../../003-ship-statistics/spec.md) is
   the contract: provenance, units, the honesty rules for unavailable figures, the recompute
   obligation and the viewing conditions apply here without being restated.
-- **Nothing here is blocked.** Two figures are composed under feature 003's FR-001a — each damage
-  type's share, and output at a range — and the Upstream dependencies section names both. Endurance
-  is not composed: the package computes it whole, so reassembling it from a capacity and a rate
-  would reimplement a calculation it provides (FR-014).
+- **No figure here is blocked today**, though FR-016a's open question could turn its three
+  convergence figures into an upstream request rather than a local calculation. Two figures are
+  composed under feature 003's FR-001a — each damage type's share, and output at a range — and the
+  Upstream dependencies section names both. Endurance is not composed: the package computes it
+  whole, so reassembling it from a capacity and a rate would reimplement a calculation it provides
+  (FR-014).
 - **Anti-xeno damage is an overlay, not a partition** (FR-002). It is shown under its own label and
   excluded from the shares, so a build's shares still sum to the whole.
 - **Convergence reads the package's cockpit-offset catalogue, never the schematics.** Feature 010's
