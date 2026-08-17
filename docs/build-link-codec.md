@@ -78,11 +78,12 @@ The binary body is followed by its four-byte, little-endian CRC-32. The checksum
 the table-indexed parser or the Almanac sees the data. A complete codec value is limited to 500
 characters, `b.` counted among them, which leaves 498 encoded digits.
 
-That bound is the codec's own, and it is not FR-028. FR-028 bounds the complete URL, which adds an
-origin, a path and `#` that this layer never sees — so the 500 here is a floor under the
-requirement, not the requirement: a value that fails it can never fit a URL, while one that passes
-still has to be measured against the deployed origin. Enforcing the URL, and offering SLEF when a
-build cannot meet it, belongs to the sharing feature.
+That is the bound FR-028 states. The requirement was amended to say so: it had been written over a
+complete URL, which no codec can enforce, since the origin, path and `#` around a value belong to
+wherever the application is deployed. Stating it over the value makes it a bound the layer that has
+to satisfy it can actually see. What the URL adds is still real — on the `https://ships.example/#`
+origin the tests use, 23 characters — but a deployment long enough for that to matter is the sharing
+feature's to notice.
 
 ## Binary body
 
@@ -772,12 +773,11 @@ The codec is currently a domain implementation, not the feature UI or complete U
 does not update `location.hash`, manage browser history, import pasted links, or present localised
 diagnostics. Those responsibilities belong to the sharing feature which consumes this format.
 
-FR-028 is among them. The requirement bounds a complete URL at 500 characters and calls for SLEF to
-be offered when a build cannot meet it, and only the sharing feature knows the origin and path that
-a codec value has to fit inside. Its budget is 500 less that prefix and the `#`: on the
-`https://ships.example/#` origin the tests use, 477 characters, against which the largest reference
-build spends 108. Real builds leave room; a build at the codec's own 500-character bound would not,
-which is why the check belongs where the origin is known.
+FR-028's other half is among them: SLEF has to be offered when a build cannot meet the limit, and
+the offer is part of the sharing feature rather than the codec, which can only refuse. The same
+feature owns whatever its deployed origin costs on top of a codec value — 23 characters on the
+`https://ships.example/#` origin the tests use, against which the largest reference build spends
+108 of its 500.
 
 Almanac beta.12 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
