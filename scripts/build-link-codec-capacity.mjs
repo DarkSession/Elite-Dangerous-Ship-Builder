@@ -31,8 +31,8 @@ export const CODEC_TABLE_CAPACITY = Object.freeze({
   BLUEPRINT_CANDIDATE_SET: 32,
   /** Largest per-module experimental candidate list: one index per engineered module. */
   EXPERIMENTAL_CANDIDATE_SET: 32,
-  /** Largest per-module pre-engineered variant list. */
-  PRE_ENGINEERED_CANDIDATE_SET: 16,
+  /** Largest per-module pre-engineered variant list: one index per pre-engineered module. */
+  PRE_ENGINEERED_CANDIDATE_SET: 32,
 });
 
 const maximumLength = (values) => values.reduce((largest, value) => Math.max(largest, value), 0);

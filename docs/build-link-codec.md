@@ -377,7 +377,7 @@ fit.
 | Largest module candidate set       |     473 |        1,024 | 10 bits per fitted module    |
 | Largest blueprint candidate set    |       9 |           32 | 5 bits per engineered module |
 | Largest experimental candidate set |      12 |           32 | 5 bits per engineered module |
-| Largest pre-engineered set         |       6 |           16 | 4 bits per engineered module |
+| Largest pre-engineered set         |       6 |           32 | 5 bits per engineered module |
 
 Dimensions are only half the budget. The property that matters is that **every build a table can
 express is a build that can be shared**, so generation also prices the largest body the table
