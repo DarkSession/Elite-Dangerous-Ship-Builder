@@ -2,211 +2,112 @@
 
 ## Scope
 
-This specification defines the interface behavior every capability inherits: one design system,
-assistive-technology operation, responsive reflow, readable contrast, verified WCAG 2.2 AA support
-excluding the keyboard-operation criteria, and the localisation layer every capability resolves its
-text and figures through. It creates no build capability of its own.
+Every capability uses one design system, works with pointer, touch and screen reader at all supported
+sizes, and resolves application text and formatting through one localisation layer. The target is
+WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 
-Keyboard operation is outside this specification and outside the application's accessibility target.
-The constitution's principle V names the excluded criteria; no requirement here may demand them.
+## User Scenarios
 
-## Clarifications
+### Story 1 — Use every capability with assistive technology (P1)
 
-### Session 2026-08-17
+1. Controls expose matching visible and accessible names, roles, states and errors.
+2. Statistics expose meaning, unit, availability and viewing conditions as text.
+3. Important changes and errors are announced once without repeating unaffected content.
+4. Every visual information carrier has a complete text equivalent.
 
-- Q: Does feature 011 own building the localisation layer itself — translatable strings, a language
-  chooser, locale-aware number formatting and fallback — or does something else own it? → A: 011
-  owns it in full (translatable owned strings, persisted language chooser, locale-aware formatting,
-  fallback language, translations as static assets).
-- Q: Which keyboard material should be removed — the separate keyboard-only verification journey, or
-  the keyboard operability requirements themselves? → A: Remove every keyboard-specific requirement
-  and amend the constitution; the application no longer claims the WCAG 2.2 keyboard-operation
-  criteria.
+### Story 2 — Use every supported size (P1)
 
-## User Scenarios & Testing
+1. Every capability remains available on desktop, tablet and mobile in portrait and landscape.
+2. Content remains complete at 200% text size and 400% zoom without horizontal page scrolling.
+3. In-scope text and non-text contrast and touch targets meet WCAG 2.2 AA.
+4. Reduced-motion preference removes nonessential motion without removing meaning.
 
-### User Story 1 - Complete every journey with a screen reader (Priority: P1)
+### Story 3 — Read the appropriate language (P2)
 
-A Commander can understand controls, build state, statistics, changes, errors and visuals without
-seeing the screen.
-
-**Independent Test**: Complete every accepted feature's primary journey with a screen reader and
-verify labels, state, structure, announcements and text alternatives.
-
-**Acceptance Scenarios**:
-
-1. **Given** a control, **When** the screen reader reaches it, **Then** its visible name, role and
-   state are announced.
-2. **Given** a statistic, **When** it is read, **Then** its meaning, unit, availability and relevant
-   viewing conditions are available as text.
-3. **Given** a build change, error or import result, **When** it appears, **Then** the relevant change
-   is announced once without repeating unrelated content.
-4. **Given** an image, chart, schematic or visual state, **When** it is encountered, **Then** all
-   information it conveys is also available as text.
-
-### User Story 2 - Use the interface at any supported size (Priority: P1)
-
-A Commander can use every capability on desktop, tablet and mobile, at increased text size and zoom.
-
-**Independent Test**: Run every primary journey at all supported viewports, 200% text size and 400%
-zoom with reduced motion enabled.
-
-**Acceptance Scenarios**:
-
-1. **Given** any supported viewport or orientation, **When** the interface is used, **Then** no
-   capability is removed and the page does not scroll horizontally.
-2. **Given** 200% text size or 400% zoom, **When** content reflows, **Then** no content or action is
-   clipped, overlapped or made ambiguous.
-3. **Given** meaningful text and non-text content, **When** contrast is measured, **Then** it meets
-   WCAG 2.2 AA.
-4. **Given** reduced-motion preference, **When** the interface changes state, **Then** nonessential
-   motion is removed and no meaning depends on animation.
-
-### User Story 3 - Learn one visual language (Priority: P2)
-
-A Commander encounters consistent controls and states throughout the application.
-
-**Independent Test**: Verify every capability composes the shared design system and that token and
-component changes propagate to every consumer.
-
-**Acceptance Scenarios**:
-
-1. **Given** a shared control or state, **When** it appears in different capabilities, **Then** it
-   uses the same component behavior and visual language.
-2. **Given** a visual token change, **When** the application is rebuilt, **Then** every consumer
-   reflects it without a capability-specific override.
-3. **Given** a missing component need, **When** it is implemented, **Then** the design system gains
-   the reusable component and the capability composes it.
-
-### User Story 4 - Read the interface in a chosen language (Priority: P2)
-
-A Commander can choose a language, and the interface — including every figure — is presented in it
-and stays there on return.
-
-**Independent Test**: Choose each shipped language, complete a primary journey, reload, and verify
-text, formatting and the retained choice.
-
-**Acceptance Scenarios**:
-
-1. **Given** a shipped language, **When** the Commander selects it, **Then** every application-owned
-   string and every figure is presented in that language and its formatting.
-2. **Given** a chosen language, **When** the Commander returns in a later session, **Then** the
-   choice is still in effect.
-3. **Given** a string with no translation for the active language, **When** it is displayed, **Then**
-   a readable fallback language is shown and no message key or placeholder appears.
-4. **Given** game text the package cannot supply in the active language, **When** it is displayed,
-   **Then** the package's own text is shown and identified as untranslated.
-
-### Edge Cases
-
-- Translation expansion and right-to-left text preserve content and operation.
-- A locale's messages that have not arrived leave the fallback language readable without a network.
-- Dense tables scroll within their own containers, not the page.
-- A passing automated accessibility scan does not excuse a failed screen-reader journey.
-- Colour, shape, position and motion are never the only carriers of meaning.
-- A target drawn smaller than the AA minimum receives a larger operable hit area.
+1. On first use, the application selects a shipped language matching the browser language setting;
+   when none matches, it uses English.
+2. A Commander can choose another shipped language and keep that choice across sessions.
+3. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
+   active locale.
+4. Missing application translation falls back to bundled English text.
+5. Game text unavailable in the active locale uses the package text and is identified as untranslated.
 
 ## Requirements
 
 ### Design System
 
-- **FR-001**: Every capability MUST compose the single shared component library and design token
-  system. Capability-specific visual systems and duplicate shared components are prohibited.
-- **FR-002**: Colour, typography, spacing, radius, elevation, borders and motion MUST use design
-  tokens. Visual literals outside the token layer MUST fail verification.
-- **FR-003**: The application MUST ship one dark theme with no theme control or stored theme
-  preference.
-- **FR-004**: Components MUST be presentation-only and MUST expose all supported states in previews
-  at desktop, tablet and mobile widths.
-- **FR-005**: A capability that needs a missing visual pattern MUST extend the design system before
-  using it.
+- **FR-001**: Every capability MUST compose the shared component library and design-token system.
+  Duplicate shared components and capability-specific visual systems are prohibited.
+- **FR-002**: Color, type, spacing, radius, elevation, borders and motion MUST use design tokens;
+  visual literals outside the token layer are prohibited.
+- **FR-003**: The application MUST ship one dark theme with no theme control or stored preference.
+- **FR-004**: Components MUST be presentation-only and preview every supported populated, empty,
+  loading, error and disabled state at desktop, tablet and mobile widths.
+- **FR-005**: A missing reusable pattern MUST be added to the design system before a capability uses it.
 
-### Accessible Operation
+### Accessible and Responsive Operation
 
-- **FR-006**: Every capability MUST be operable by pointer and touch without relying on hover or a
-  multi-pointer gesture.
-- **FR-007**: *(withdrawn — keyboard focus order, focus visibility and modal focus containment)*
-- **FR-008**: *(withdrawn — bypass for repeated content, keyboard shortcuts)*
-- **FR-009**: Every control MUST expose a visible-name-matching accessible name, role, state and
-  relationship to its label or error.
-- **FR-010**: Every capability MUST expose meaningful landmarks and heading structure.
-- **FR-011**: Dynamic changes and errors MUST be announced at the appropriate urgency without
-  announcing every unaffected value.
-- **FR-012**: Every visual information carrier MUST have a complete text equivalent. Meaning MUST
-  never depend on colour, shape, position or motion alone.
+- **FR-006**: Every capability MUST work by pointer and touch without hover or multi-pointer gestures.
+- **FR-007**: Every control MUST expose an accessible name matching its visible name, role, state and
+  relationship to labels and errors.
+- **FR-008**: Every capability MUST expose meaningful landmarks and heading structure.
+- **FR-009**: A blocking error MUST be announced promptly. Other changes MUST be announced without
+  interrupting current speech or announcing unaffected values.
+- **FR-010**: Meaning MUST NOT depend on colour, shape, position or motion; every visual information
+  carrier MUST have a text equivalent.
+- **FR-011**: Every capability MUST remain available on desktop, tablet and mobile in portrait and
+  landscape and at 200% text size and 400% zoom, with no horizontal page scrolling.
+- **FR-012**: Text, meaningful non-text content and interactive targets MUST meet WCAG 2.2 AA contrast
+  and target-size rules.
+- **FR-013**: Motion MUST respect `prefers-reduced-motion` and MUST NOT carry required meaning.
+- **FR-014**: Layout and interaction MUST survive text expansion and right-to-left content.
+- **FR-015**: Conformance statements MUST name the excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.4.1,
+  2.4.3, 2.4.7 and 2.4.11. Unqualified WCAG 2.2 AA claims are prohibited.
 
-### Reflow and Perception
+### Localization
 
-- **FR-013**: Every capability MUST remain available at desktop, tablet and mobile viewports in
-  portrait and landscape.
-- **FR-014**: The interface MUST remain fully usable at 200% text size and 400% zoom with no
-  horizontal page scrolling.
-- **FR-015**: Text and meaningful non-text content MUST meet WCAG 2.2 AA contrast.
-- **FR-016**: Interactive targets MUST meet WCAG 2.2 AA target size on every form factor.
-- **FR-017**: Motion MUST respect `prefers-reduced-motion` and MUST NOT carry required meaning.
-- **FR-018**: Layout and interaction MUST survive translated and right-to-left content.
-- **FR-019**: The application MUST meet WCAG 2.2 AA except the keyboard-operation criteria the
-  constitution's principle V excludes (2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7, 2.4.11). The listed
-  requirements do not replace the rest of the standard. Any stated conformance MUST name the
-  exclusion rather than claim unqualified AA.
+- **FR-016**: Every application-owned user-facing string MUST resolve through the localisation layer;
+  hard-coded display text in components, templates and formatters is prohibited.
+- **FR-017**: When no saved language selection exists, the application MUST automatically select a
+  shipped language matching the browser language setting and MUST fall back to English when none
+  matches. A Commander MUST be able to select another shipped language and persist that selection
+  in the browser.
+- **FR-018**: Numbers, percentages, credits, distances and dates MUST use the active locale.
+- **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
+  MUST be available without a network. Raw keys, empty strings and placeholders MUST not appear.
+- **FR-020**: Game text MUST come from the Almanac. If the package cannot supply the active locale,
+  its canonical text MUST be shown and identified as untranslated; the application MUST NOT keep a
+  private game-text translation.
 
-### Localisation
+### Verification
 
-Existing requirement numbers are stable; these were added after the original set, so their numbers
-follow the verification block's.
+- **FR-021**: Every primary journey MUST run at desktop, tablet and mobile viewports in Chromium and
+  Firefox.
+- **FR-022**: Automated accessibility checks MUST cover every capability and relevant state and MUST
+  fail the build on an in-scope violation.
+- **FR-023**: Screen-reader journeys MUST supplement automation for every primary capability.
+- **FR-024**: Automated checks MUST reject visual literals outside tokens, hard-coded application
+  display text and missing component-state previews.
 
-- **FR-025**: Every user-facing string the application owns MUST be translatable and MUST resolve
-  through the shared localisation layer. Display text hard-coded in a component, template or
-  formatter is prohibited.
-- **FR-026**: The Commander MUST be able to choose a language, and the choice MUST persist in the
-  browser across sessions.
-- **FR-027**: Numbers, percentages, credits, distances and dates MUST be formatted for the active
-  locale. A translated label around an English-formatted figure does not satisfy this.
-- **FR-028**: Translations MUST ship as the application's own static assets, and the fallback
-  language MUST be readable without a network. A missing translation MUST fall back to a language
-  the Commander can read; a raw message key, empty string or placeholder MUST NOT reach the screen.
-- **FR-029**: Game text MUST come from the Almanac package. The application MUST NOT maintain a
-  private translation of game data, and game nouns the package cannot supply in the active locale
-  MUST appear in the language it provides and be identified as untranslated.
+## Almanac Coverage
 
-### Verification Requirements
+The package supplies game names for supported locales and an explicit missing-translation result.
+It does not own application messages, locale selection, formatting, accessibility or the design
+system.
 
-- **FR-020**: End-to-end tests MUST run every primary journey at desktop, tablet and mobile
-  viewports in Chromium and Firefox.
-- **FR-021**: Automated accessibility checks MUST cover every capability and relevant state and MUST
-  fail the build on a violation of an in-scope criterion (FR-019).
-- **FR-022**: Screen-reader primary journeys MUST supplement automated checks.
-- **FR-023**: Automated checks MUST reject visual literals outside the token layer and missing
-  component state previews.
-- **FR-024**: Reflow, contrast, target size, reduced motion, text expansion and right-to-left layout
-  MUST be verified at the component and journey levels.
-- **FR-030**: Automated checks MUST reject user-facing display text declared outside the
-  localisation layer.
-- **FR-031**: Verification MUST cover language selection, persistence of the choice, locale-aware
-  formatting and missing-translation fallback.
+## Current Almanac Limit
 
-## Key Entities
-
-- **Design token**: A named visual or motion value shared by all components.
-- **Component**: A reusable presentation-only control or pattern with defined states and accessible
-  behavior.
-- **Accessibility journey**: A feature's primary task completed with a screen reader.
-- **Localised message**: An application-owned string resolved by key through the localisation layer
-  for the active locale.
-- **Locale**: The Commander's chosen language and its formatting rules, persisted in the browser.
+Package localisation covers modules, blueprints, experimental effects and materials, but not hull
+names or diagnostic messages. Those remain in the package's canonical language and MUST be
+identified as untranslated. The application MUST NOT fill the gap with private game-text or
+diagnostic translations.
 
 ## Success Criteria
 
-- **SC-001**: Every primary journey can be completed with pointer, touch and screen reader.
-- **SC-002**: Automated scans report zero violations of an in-scope WCAG criterion across every
-  tested capability and state.
-- **SC-003**: Every capability remains complete at all supported viewports, 200% text size and 400%
-  zoom with no horizontal page scrolling.
-- **SC-004**: Every meaningful visual element meets AA contrast and every target meets AA size.
-- **SC-005**: No visual literal exists outside the token layer and no shared pattern is reimplemented
-  within a capability.
-- **SC-006**: The full end-to-end suite passes in Chromium and Firefox at all three viewport classes.
-- **SC-007**: Every application-owned string resolves through the localisation layer, and no
-  hard-coded display text, raw message key or placeholder reaches the screen.
-- **SC-008**: The Commander's chosen language persists across sessions and every figure is formatted
-  for the active locale.
+- **SC-001**: Every primary journey completes with pointer, touch and screen reader.
+- **SC-002**: Automated scans report no in-scope WCAG violations.
+- **SC-003**: Every capability remains complete at all supported sizes without horizontal page scroll.
+- **SC-004**: No visual literal or application-owned display string bypasses its shared system.
+- **SC-005**: The full journey suite passes in Chromium and Firefox at all three viewport classes.
+- **SC-006**: A matching browser language selects the corresponding shipped language, an unsupported
+  browser language selects English, and a saved Commander selection remains active.

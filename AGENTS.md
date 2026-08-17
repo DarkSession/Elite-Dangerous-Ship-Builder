@@ -77,8 +77,8 @@ planning ship loadouts.
 - Unit tests live beside their source in `src/`; end-to-end tests live in
   `e2e/`. New user journeys need both.
 - The end-to-end suite must run every project in Chromium **and** in Firefox, with
-  an automated accessibility check over every capability (feature 011, FR-020 and
-  FR-021). `playwright.config.ts` has yet to catch up: it currently defines the
+  an automated accessibility check over every capability and relevant state (feature 011, FR-021
+  and FR-022). `playwright.config.ts` has yet to catch up: it currently defines the
   three viewport projects in Chromium only. Closing that gap is a change to the
   config, never to those requirements, and no browser may be dropped from the
   matrix to get a build green. If a preinstalled browser does not match the
