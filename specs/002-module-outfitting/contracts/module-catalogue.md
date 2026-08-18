@@ -24,6 +24,8 @@ It performs no storage, navigation or build mutation.
 
 An unknown slot or unknown hull layout yields a structured unavailable/refused chooser, not an empty
 claim. A package-valid empty array, including cargo hatch, means the package offers no replacement.
+Opening a chooser while its query is loading does not imply a fit capability; distinguish
+`notReplaceable`, `loading`, `packageEmpty`, `noMatches`, `stale` and `refused`.
 
 ## Identity
 
@@ -80,6 +82,16 @@ Clearing resets the query and restores all choices without changing selection or
 
 The immutable index is rebuilt on slot, build revision or locale change. The browser-visible result
 must settle within 100 ms for the largest pinned-package choice list.
+
+## Candidate facts
+
+Every choice has an explicit textual `fitted`, `stock` or `pre-engineered` state where applicable.
+The wide manifest prioritizes the package-provided facts represented in canvas 1c—module identity,
+class, rating, mount, mass, power, weapon draw, cost and relevant offensive value—but shows a column
+only when that fact is in feature scope and supplied by the package. A labeled overflow container may
+hold the wide table. Compact cards disclose the same in-scope facts progressively without hiding
+identity, class/rating/mount, fitted state or restrictions. `null`/absence remains unavailable; no
+zero, estimate, suitability delta or better/worse color is invented.
 
 ## Acquisition and entitlement labels
 

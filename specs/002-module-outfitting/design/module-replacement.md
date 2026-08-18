@@ -15,8 +15,9 @@ the build.
 - Visibly labeled `CandidateSearch`, result count and clear action.
 - Standard-choice section followed by explicit unique-reward section.
 - Responsive semantic manifest grouped by localized package module name and ordered by class/rating.
-- Rows expose stock/variant identity, class/rating/mount, acquisition and entitlement labels, and
-  package price/available facts only when in feature scope.
+- Rows expose explicit fitted/stock/variant state, class/rating/mount, acquisition and entitlement
+  labels, and package-provided DPS, mass, power, weapon draw, credit and other in-scope facts where
+  available. Unavailable columns/facts remain labeled unavailable rather than zero.
 - Explicit fit/replace action for the selected choice; explicit remove action only when
   `LoadoutSlot.removable` is true; cancel/close leaves the build unchanged.
 
@@ -56,6 +57,8 @@ The region may scroll internally. It cannot cause page-level horizontal overflow
 - Mercenary/tech-broker variants show route plus not-ordinarily-available.
 - Entitlement adds another label and does not replace acquisition.
 - Missing translation uses canonical package text plus untranslated disclosure.
+- Canvas 1d's weapon-family chips are intentionally omitted. Required AND search covers only the
+  package-localized name, class, rating and mount; no local family taxonomy is introduced.
 
 Do not show invented suitability rankings, “recommended” badges, inferred compatibility, local
 comparison deltas or design-mock purchase labels. Choosing a package record is not proof it can still

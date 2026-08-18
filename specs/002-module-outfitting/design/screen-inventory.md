@@ -1,63 +1,65 @@
 # Screen and Surface Inventory
 
-Feature 002 adds no top-level route. Every surface composes inside feature 001's `/build` workspace.
-At wide widths, replacement and engineering are inline regions. At narrow widths and 400% zoom, they
-are full-screen layers with explicit back/cancel/apply actions. This responsive treatment does not put
-build edits into browser navigation.
+Feature 002 adds no route. Every surface composes inside feature 001's `/build` workspace or an
+owning feature's pre-activation ingress flow. Canvas sizes are references, not breakpoints; exact
+wide, tablet and compact behavior is in
+[responsive-composition.md](./responsive-composition.md).
 
-| Surface                                           | Wide/tablet presentation                                                  | Narrow/zoomed presentation                                                                     | Requirements                                |
-| ------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| [Outfitting workspace](./outfitting-workspace.md) | Grouped slot ledger, selected-module region, direct power/history actions | Category controls and semantic slot cards; power per card; history in named action region/menu | FR-001–FR-003, FR-006–FR-011, FR-015–FR-018 |
-| [Module replacement](./module-replacement.md)     | Inline searchable manifest and choice detail/actions                      | Full-screen chooser with search, grouped cards and explicit fit/cancel                         | FR-002, FR-004–FR-008                       |
-| [Engineering editor](./engineering-editor.md)     | Inline blueprint/grade/effect, attributes and costs panel                 | Full-screen draft editor with explicit apply/cancel/clear                                      | FR-002, FR-007, FR-012–FR-014               |
-| Normalization notice                              | Workspace notice linking/naming each affected slot                        | Same complete notice reflowed above slot categories                                            | FR-010, FR-011, FR-013, FR-018              |
+| Surface                                           | Wide presentation                                                                          | Tablet presentation                                                    | Compact/zoomed presentation                                                                    | Requirements                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [Outfitting workspace](./outfitting-workspace.md) | Complete ledger, inline selected-slot bench, direct history actions                        | Roomy landscape uses two panes; portrait/constrained uses compact flow | Source-faithful status/anatomy-before-ledger order, slot cards and persistent selected actions | FR-001–FR-003, FR-006–FR-011, FR-015–FR-018 |
+| [Module replacement](./module-replacement.md)     | Inline searchable manifest, choice facts and explicit confirm                              | Inline in roomy two-pane mode; full-screen layer when compact          | Full-screen layer with independent scroll and persistent cancel/fit                            | FR-002, FR-004–FR-008                       |
+| [Engineering editor](./engineering-editor.md)     | Inline draft, result facts and costs with explicit apply/cancel                            | Inline in roomy two-pane mode; full-screen layer when compact          | Full-screen layer with independent scroll and persistent revert/apply                          | FR-002, FR-007, FR-012–FR-014               |
+| Workspace normalization notice                    | Accepted build notice names successful quality completion, fixed repair or missing default | Same content reflows                                                   | Same content reflows before shared outlets                                                     | FR-010, FR-011, FR-013, FR-018              |
+| Incoming-build normalization refusal              | Owning feature 001/004 ingress surface shown before activation                             | Same content reflows                                                   | Same content reflows; never opens an editor                                                    | FR-003, FR-013, FR-018                      |
+
+The incoming-build refusal remains visible even when there is no current build. It identifies every
+affected exact slot, source module/engineering identity, original quality and package reason; states
+that activation did not occur; and announces once as an alert. It never appears as an editable
+workspace or engineering state for the rejected candidate.
 
 ## Requirement ownership
 
-| Requirement | Surface behavior                                                                                                                                                        |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | Workspace requires the feature 001 active build; no-build state points to select/open/import actions and does not construct a hull.                                     |
-| FR-002      | Workspace and editor projections re-read package slots, facts, effective attributes, compatibility, removability, mutation outcomes and calculations by exact slot key. |
-| FR-003      | Known empty/unresolved and unknown original-slot entries are explicit; unavailable facts remain unavailable.                                                            |
-| FR-004      | Replacement surface contains exactly stock `modulesForSlot` results plus every package variant.                                                                         |
-| FR-005      | Replacement surface owns required ordering, cached four-field multi-term search, no-match and clear states.                                                             |
-| FR-006      | Workspace fitted state and replacement choices expose package acquisition/entitlement labels, including stacked labels.                                                 |
-| FR-007      | Workspace/editor display purchase variant only from `preEngineeredVariant` and show purchase/current grade separately.                                                  |
-| FR-008      | Replacement actions dispatch package-backed stock/variant/remove transactions and surface structured refusal.                                                           |
-| FR-009      | Workspace cargo hatch exposes facts, enabled and priority only; no editor action opens.                                                                                 |
-| FR-010      | Shared ingress normalizer repairs package-reported fixed mounts before presentation; workspace notice names slot/original/default or missing-default result.            |
-| FR-011      | Normalization notice is local provenance; undo remains unavailable when normalization was the only change.                                                              |
-| FR-012      | Engineering editor offers exact package fdname menus and distinct apply/effect-only/clear semantics.                                                                    |
-| FR-013      | Engineering editor has no quality field; workspace notice reports every imported partial value completed to 100%.                                                       |
-| FR-014      | Engineering editor shows package material results, unavailable/known-zero distinction and no baked reward craft cost.                                                   |
-| FR-015      | Workspace power controls use package setters and localized one-based labels over zero-based values.                                                                     |
-| FR-016      | Workspace undo/redo restores every modelled field and re-renders package results.                                                                                       |
-| FR-017      | Workspace exposes a 100-decision in-memory tape reset by active-build replacement and absent from all export/navigation boundaries.                                     |
-| FR-018      | Viewing controls and normalization never enable undo; only Commander build decisions do.                                                                                |
+| Requirement | Surface behavior                                                                                                                                                                                                           |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | No-build state explains the dependency and composes only actions supplied by their owners: feature 001 create/open/navigation, feature 004 import when present. Feature 002 promises none itself.                          |
+| FR-002      | Workspace/editors re-read package slots, facts, effective attributes, compatibility, removability, mutation outcomes and calculations by exact game slot key.                                                              |
+| FR-003      | Empty, unresolved known-slot and unknown original-slot entries stay visible. Fully rolled/unengineered unresolved entries are preserved; fixed repair and rejected partial ingress are explicit exceptions.                |
+| FR-004      | Replacement contains exactly stock `modulesForSlot()` results plus every package variant.                                                                                                                                  |
+| FR-005      | Replacement owns name grouping, class-descending/rating-ascending/stock-first/unique-last order and four-field AND search with no-match/clear.                                                                             |
+| FR-006      | Workspace/replacement expose exact, stackable package acquisition and entitlement labels.                                                                                                                                  |
+| FR-007      | Purchase variant comes only from `preEngineeredVariant`; purchase and ordinary current grades stay separate.                                                                                                               |
+| FR-008      | Stock/variant/remove actions use package-backed atomic transactions and surface package refusal without mutation.                                                                                                          |
+| FR-009      | Cargo hatch exposes facts and package-supported power controls only; replace/remove/engineer are absent with reason.                                                                                                       |
+| FR-010      | Shared ingress first resolves supported partials, then repairs source-missing/unresolved fixed mounts; notices distinguish repaired, automatically repaired and default-unavailable outcomes.                              |
+| FR-011      | Normalization notice/provenance is not history; undo remains disabled if it was the only change.                                                                                                                           |
+| FR-012      | Engineering offers exact package menus and distinct apply, effect-only and clear-all semantics.                                                                                                                            |
+| FR-013      | Supported partial quality produces a 100% workspace notice; unresolved/unsupported partial candidates produce a pre-activation atomic refusal naming every affected slot/identity and leaving the current build unchanged. |
+| FR-014      | Editor distinguishes package material `null` from `[]`, does not price baked fixed engineering and keeps Merc Coin separate.                                                                                               |
+| FR-015      | Named power controls use package setters and localized one-based labels over zero-based values.                                                                                                                            |
+| FR-016      | Package-owned checkpoints restore all modeled/private aggregate state; feature 001 name/ident controls dispatch history-recorded Commander decisions. Implementation waits for the Almanac clone/checkpoint gate.          |
+| FR-017      | A 100-decision session tape resets only after accepted active-build replacement and never enters persistence/export/navigation.                                                                                            |
+| FR-018      | Slot selection, category/anatomy/status mode, query, open/close/cancel and draft changes never enable undo; automatic ingress changes/refusals also create no history.                                                     |
 
 ## Cross-feature composition
 
-- Feature 001 owns active build, save/share status and workspace shell.
+- Feature 001 owns active build, identity controls, save/share status and workspace shell.
 - Feature 003 owns conditions and headline basic statistics.
 - Features 005–009 own specialist calculations/status summaries.
-- Feature 010 owns interactive hull anatomy and node-to-slot visualization.
-- Feature 004 owns import/export; feature 012 owns help/licensing.
+- Feature 010 owns interactive anatomy. Anatomy and ledger exchange the exact selected game slot key;
+  neither may use a positional identity.
+- Feature 004 owns import/export and composes the incoming-build refusal for SLEF import.
+- Feature 012 owns help/licensing.
 - Feature 011 owns tokens, localization primitives, shared components, previews and the complete
   browser/accessibility harness.
 
-Feature 002 may reserve composition regions shown in canvases 1c/1d, but cannot implement mock values
-from another capability as local placeholders.
+Feature 002 reserves composition outlets shown in canvases 1c/1d but never implements another
+feature's mock values as placeholders.
 
 ## Shared component additions
 
-Feature 002 extends `src/app/ui/` through feature 011 with:
-
-- `SlotGroup`, `SlotCard` and `UnresolvedSlotCard`;
-- `ModuleIdentity`, `AcquisitionBadges` and `UnavailableFact`;
-- `PowerToggle` and one-based `PrioritySelect`;
-- `CandidateSearch`, `ResponsiveCandidateList` and `CandidateChoice`;
-- `BlueprintChoice`, `GradeChoice`, `ExperimentalChoice` and `MaterialCostList`;
-- `UndoRedoActions`, `NormalizationNotice` and `PackageRefusalNotice`.
-
-Each component has relevant default/populated, empty, unavailable, selected, disabled, loading and
-error previews at desktop, tablet and mobile widths, including expanded/RTL text.
+Feature 002 extends `src/app/ui/` through feature 011 with slot groups/cards, unresolved entries,
+module identity/acquisition badges, unavailable facts, named power controls, candidate search/list,
+engineering choices/material costs, undo/redo actions, accepted-normalization notices and ingress/edit
+refusal notices. Previews cover default/populated, selected, empty, unavailable, disabled, loading,
+stale and refusal states at wide, tablet and compact widths with expanded/RTL text.

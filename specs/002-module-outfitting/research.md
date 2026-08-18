@@ -1,347 +1,314 @@
 # Research: Module Outfitting and Engineering
 
-Research was performed against the installed
-`@elite-dangerous-almanac/core@0.1.1`, the repository constitution and architecture, feature
-001's planned active-build boundaries, and `.design/Ship Builder.dc.html` canvases 1c/1d. Runtime
-probes used only package data and detached `ShipLoadout` instances.
+Research was rerun on 2026-08-18 against the amended Constitution 5.0.0, the clarified feature spec,
+the installed `@elite-dangerous-almanac/core@0.1.1`, planned feature 001/011 contracts, the actual
+repository baseline and `.design/Ship Builder.dc.html`. Package probes used detached loadouts only.
 
-## Decision 1: one package aggregate and one active-build store
+## Decision 1: treat 001 and 011 as prerequisites, not existing code
 
-**Decision**: Extend feature 001's `ActiveBuildStore`. `ShipLoadout` remains the sole live game-domain
-aggregate. An `OutfittingStore` owns only selected slot, chooser/editor draft, query and presentation
-state. Components never keep a fitted-module array or second loadout.
+**Decision**: Feature 002 extends feature 001's planned `/build`, `ActiveBuildState` and package-owned
+active-loadout clone/checkpoint/swap boundary, and feature 011's planned strict, localization,
+design-system and test foundations. `BuildSnapshotV1` is only the persistence/publication DTO. Tasks
+must depend on those deliveries. Feature 002 does not create a substitute shell or local UI
+foundation.
 
-Every Commander mutation runs through `BuildEditTransaction`:
+**Rationale**: The current source tree contains only the application shell and build-link codec. The
+current `tsconfig` is not fully strict, and Playwright defines only three Chromium projects with no
+axe integration. Describing planned contracts as present would hide real delivery blockers.
+
+**Alternatives considered**: Duplicating active-build, localization or components inside outfitting
+would violate the one-build and one-design-system principles. Weakening tests until feature 011 lands
+would violate the build gate.
+
+## Decision 2: require a package-owned lossless clone before detached atomic edits
+
+**Decision**: Keep exactly one observable committed `ShipLoadout` in application state. Every
+Commander edit must follow this flow after an upstream package release supplies a lossless clone:
 
 ```text
-current lossless snapshot
-  -> reconstruct detached ShipLoadout candidate
-  -> invoke exactly one logical package-backed command
-  -> package refusal: return structured failure; discard candidate
-  -> success: serialize candidate and compare with current snapshot
-      no change: discard; no history
-      changed: push one checkpoint; atomically replace active loadout
-               -> autosave/link publication/calculation presenters observe one revision
+current package aggregate
+  -> package-owned lossless detached clone
+  -> invoke one logical package-backed command
+  -> refusal/no-op: discard candidate; change nothing
+  -> changed: retain prior aggregate as opaque history frame; atomically install candidate
 ```
 
-Ship name and ident have no `ShipLoadout` setter. Their command updates the explicit feature 001
-snapshot and reconstructs through `ShipLoadout.fromLoadout()`. This is still one detached transaction.
+The transaction may briefly hold active and candidate aggregates, but only one is observable. The
+active-build boundary exclusively owns mutable instances and exposes frozen projections. Ship
+name/ident also require released provenance-preserving update methods or copy options because
+`ShipLoadout` exposes getters but no setters.
 
-**Rationale**: `ShipLoadout` is mutable and its fitted/slot values are frozen point-in-time snapshots.
-Candidate-first reconstruction prevents a thrown operation from leaking a partial mutation and makes
-signal invalidation deterministic.
+Pinned 0.1.1 has no clone/checkpoint API. `BuildSnapshotV1` omits private source-purchase provenance.
+`toLoadoutEvent({ credits: 'source' })` also loses a source module value once an edit makes it
+temporarily invalid, even though the original aggregate can restore that value if the module is
+later fitted again. Reconstructing a candidate from either public shape therefore is not lossless.
 
-**Alternatives rejected**:
+**Rationale**: `ShipLoadout` is mutable while its returned views are frozen snapshots. Candidate-first
+editing prevents thrown operations from leaking partial state and gives history/autosave/link
+observers one revision boundary, but only the package can copy its private provenance exactly.
 
-- Mutating the shared instance in a component risks stale snapshots and partial UI state.
-- Component-owned module arrays duplicate package state and fitting rules.
-- Inverse commands cannot faithfully recreate unresolved identities, acquisition variants or future
-  package behavior.
+**Alternatives considered**: Direct component/active mutation risks partial commits. Raw-module
+overlays, private source-purchase mirrors, event reconstruction and unbounded intent replay would
+reimplement package ownership. Inverse commands cannot guarantee exact restoration. All are rejected
+under Constitution II and IV; implementation waits for the upstream API.
 
-## Decision 2: package slot and fitted-module views are authoritative
+## Decision 3: use exact package leaves for slots, edits and display text
 
-Use the leaf export:
+**Decision**: Use these package boundaries:
 
 ```ts
 import {
   LoadoutEditError,
   ShipLoadout,
-  type ApplyBlueprintOptions,
   type AvailableBlueprint,
+  type EngineeringNormalizationResult,
+  type ExperimentalEffectMutationResult,
   type FittedModule,
-  type ImmovableReason,
+  type FixedMountRepairResult,
   type LoadoutSlot,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-```
-
-Authoritative reads are `slots(kind?)`, `fittedModuleAt(slotKey)`, `fittedModules()` and
-`validation`. `LoadoutSlot.key` is the game identity. A known slot with an unresolved module retains
-the imported `module.symbol` and `module.raw`; `stats`, `effectiveStats` and
-`preEngineeredVariant` are `null`. Unknown/original slot entries that are not in the hull layout remain
-visible through `fittedModules()` and are appended to an explicitly unresolved group; they are never
-dropped or assigned a positional identity.
-
-Re-read package snapshots after every committed edit. Missing stats or values render unavailable;
-they are never inferred from the symbol or replaced with zero.
-
-`FittedModule` is exported from the same leaf in 0.1.1; no derived-type workaround or broad barrel
-import is needed. This closes [Almanac #294](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/294).
-
-## Decision 3: exact candidate expansion
-
-Use these leaf imports:
-
-```ts
-import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modules';
+import {
+  getModuleBySymbol,
+  type ModuleMount,
+  type ModuleRating,
+  type OutfittingModule,
+} from '@elite-dangerous-almanac/core/ships/modules';
 import {
   getPreEngineeredVariants,
   type PreEngineeredVariant,
 } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 ```
 
-For the selected package slot:
+Authoritative reads are `slots(kind?)`, `fittedModuleAt()`, `fittedModules()`, `validation`,
+`modulesForSlot()`, `availableBlueprints()` and `availableExperimentalEffects()`. Identity is always
+`LoadoutSlot.key`, `symbol` or `fdname`, never an ordinal or translated label.
 
-```ts
-const choices = loadout.modulesForSlot(slotKey).flatMap((module, sourceOrdinal) => [
-  { kind: 'stock', module, sourceOrdinal },
-  ...getPreEngineeredVariants(module.symbol).map((variant, variantOrdinal) => ({
-    kind: 'variant',
-    module,
-    variant,
-    sourceOrdinal,
-    variantOrdinal,
-  })),
-]);
-```
+Display calls the relevant leaves under `@elite-dangerous-almanac/core/i18n/`: `modules`, `slots`,
+`pre-engineered`, `blueprints`, `experimental-effects`, `experimental-effect-descriptions`,
+`engineering-groups`, `materials` and `diagnostics`. `LoadoutSlot.name` is canonical English, not the
+active-locale label; use `getLoadoutSlotName()` and `getSlotRestrictionLabel()`. A locale miss shows
+package canonical text with feature 011's untranslated disclosure, or unavailable when the package
+has no text.
 
-`modulesForSlot()` already applies size, category, slot/hull restrictions, exclusive families and
-current module-count limits. It returned at most 473 stock records in the 0.1.1 catalogue probe;
-after package variants, the maximum was 481 choices for `PantherMkII` `Slot01_Size8`. The package
-contains 76 published variants: 22 Mercenary, 30 community-goal, 21 tech-broker and 3 event-reward.
+**Rationale**: This keeps game identities, values, names and diagnostic source text package-owned
+while allowing application-owned control labels and framing to be translated locally.
 
-Fit stock with `setModule(slotKey, module)` and variants with
-`setPreEngineeredVariant(slotKey, variant)`. A choice key contains the full route-distinguishing
-identity: base symbol, blueprint fdname, purchase grade, effect fdname/absence and acquisition.
-Multiple package routes are not deduplicated.
+**Alternatives considered**: Broad barrels add unrelated catalogues. Private game-name, slot-name or
+diagnostic translations would fork package data. Rendering `LoadoutSlot.name` as localized would
+misrepresent its contract.
 
-**Alternatives rejected**:
+## Decision 4: preserve every slot and unresolved entry
 
-- Filtering `ALL_MODULES` locally duplicates compatibility rules and bundles unnecessary catalogue
-  data.
-- Resolving variant stats and calling `setModule` loses the package's variant identity operation.
-- A symbol-only key collapses route-distinct package variants.
+**Decision**: Render all package `slots()` in package order, including empty and unresolved known
+mounts. Append any `fittedModules()` record whose original slot is absent from `slots()` to a clearly
+unresolved group, keeping exact slot spelling, module symbol and raw record. Re-read all views after
+each commit.
 
-## Decision 4: ordering and search are immutable projections
+Capability comes from current package evidence. Removal mirrors `LoadoutSlot.removable`; replacement
+queries `modulesForSlot()`; engineering comes from current menus/result state; power setters apply to
+fitted modules. Cargo hatch is visible and power-editable but package-empty menus plus its immutable
+slot state provide no replacement, removal or engineering action.
 
-Choices have two sections: ordinary/non-unique first; `communityGoal` and `eventReward` unique
-rewards last. Within each section:
+**Rationale**: The package distinguishes hull mounts from extra imported entries and exposes missing
+facts as `null`/absence. Retaining both sets is lossless and gives no unknown slot a fabricated edit.
 
-1. group/order by displayed package module name with the active locale's `Intl.Collator` at base
-   sensitivity;
-2. class descending;
-3. package `ModuleRating` order ascending (`A` through `I`, exhaustively checked against the package
-   type);
-4. stock before variants;
-5. retained package stock/variant ordinals as deterministic final tie-breakers.
+**Alternatives considered**: Positional reconciliation, symbol inference and zero/default display
+would violate FR-002/003. A cargo-hatch symbol special case is unnecessary; package slot/menu results
+supply the capability.
 
-This changes presentation only. The chosen object is still the exact package record returned by the
-expansion step.
+## Decision 5: expand candidates exactly, then project order and search
 
-Build one immutable `CandidateSearchIndex` whenever the selected slot, active-build revision or
-locale changes. For each choice, fold only the displayed package name, decimal class, rating and
-package mount value:
+**Decision**: For the selected exact slot, emit one stock choice for every
+`modulesForSlot(slotKey)` record and one variant choice for every
+`getPreEngineeredVariants(module.symbol)` row. Retain the exact package objects for the source
+revision. Fit them with `setModule()` or `setPreEngineeredVariant()`.
 
-```text
-Unicode NFKD -> remove combining marks -> locale-aware lower-case
-```
+Present two ordered sections: standard, then unique rewards (`communityGoal`/`eventReward`). Within
+each section group/order by active-locale displayed module name using `Intl.Collator` at base
+sensitivity, class descending, exhaustive package rating order `A` through `I`, stock before variants,
+then package ordinals for deterministic ties. Multiple acquisition routes remain separate.
 
-Fold the query the same way, split on Unicode whitespace and remove empty terms. A choice matches
-only when every term is a substring of at least one indexed field. Symbols, acquisition text,
-blueprint names, stats and private aliases are not searchable because FR-005 does not admit them.
+Index only the displayed name, decimal class, rating and mount. Fold values/query with Unicode NFKD,
+remove combining marks, locale-lowercase, split on Unicode whitespace and require every non-empty
+term to match at least one of those four fields. Rebuild on slot, build revision or locale change.
 
-An empty query returns all choices. A non-empty zero-result query retains the input and emits an
-explicit no-match state with a clear action. A Node microbenchmark over the 481-choice
-empty/incomplete `PantherMkII` list was far below 100 ms; Playwright must measure browser
-input-to-render time with `performance.now()` and a `MutationObserver` so automation transport time
-is excluded.
+The 0.1.1 probe found 48 hulls, 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
+event-reward), and a maximum 481 choices for empty `PantherMkII` `Slot01_Size8` (473 + 8).
 
-## Decision 5: acquisition and entitlement remain package-derived
+**Rationale**: Membership stays package-owned while FR-005 permits deterministic presentation. An
+immutable index makes the 100 ms target straightforward without caching stale candidates.
 
-Before fitting, read `OutfittingModule.entitlement` and `PreEngineeredVariant.acquisition`. After
-fitting, read `FittedModule.stats?.entitlement` and only
-`FittedModule.preEngineeredVariant`. Never infer a variant from symbol, blueprint, grade, modifier
-values or text.
+**Alternatives considered**: Filtering `ALL_MODULES`, deduplicating routes or reconstructing choices
+would introduce rules. The design's weapon-family chips are omitted: the spec does not define that
+filter and the package exposes no required grouping contract. Symbols, acquisition and private
+synonyms are not searchable.
 
-Presentation may map package enums to localized explanatory badges:
+## Decision 6: package data supplies acquisition, variants and edit refusal text
 
-- `communityGoal` / `eventReward`: route badge plus unique-reward status;
-- `mercenary` / `techBroker`: route badge plus not-ordinarily-available status;
-- `entitlement`: localized generic entitlement explanation containing the package token.
+**Decision**: Before fitting, project `OutfittingModule.entitlement` and
+`PreEngineeredVariant.acquisition`; after fitting, use `FittedModule.stats?.entitlement` and only
+`FittedModule.preEngineeredVariant`. Community/event routes receive a localized unique-reward
+explanation; Mercenary/tech-broker routes receive a localized not-ordinarily-available explanation;
+entitlement remains an independent label. Purchase grade and current ordinary grade never merge.
 
-Labels stack; none suppresses another. 0.1.1 has no friendly entitlement-name API, so the app does
-not maintain a private token-to-product catalogue. Clearing Mercenary engineering intentionally makes
-the package lose its purchase identity; the acquisition badge and Merc Coin cost disappear with it.
+For `LoadoutEditError`, retain `code`, `constraint`, `params` and slot for state/testing, and request
+text with `getLoadoutEditErrorMessage(error, locale)`. On locale miss, show the package's canonical
+message through the disclosed fallback presenter; do not privately translate the package reason.
+Plain unexpected package exceptions receive localized application framing without an invented game
+cause. Structured engineering/normalization results have localized app-owned action framing while
+their package code/params remain untranslated data.
 
-Package name helpers are imported independently:
+**Rationale**: Acquisition/entitlement explanations describe package values without inferring them.
+Package diagnostics are game text under Constitution VI.
 
-```ts
-import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
-import { getBlueprintName } from '@elite-dangerous-almanac/core/i18n/blueprints';
-import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
-import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
-```
+**Alternatives considered**: Inferring a reward from engineering modifiers is forbidden. Mapping
+each package diagnostic code to private translated game prose would duplicate the Almanac.
 
-A missing localized game name uses canonical package text with the constitution-required
-untranslated disclosure. Variant names use `getPreEngineeredVariantName()` from
-`@elite-dangerous-almanac/core/i18n/pre-engineered`; a locale miss follows the same disclosed
-canonical fallback rule.
+## Decision 7: handle each package mutation by its actual result shape
 
-## Decision 6: package edit operations and structured refusals
+**Decision**:
 
-| Intent                                             | Package operation                                                      |
-| -------------------------------------------------- | ---------------------------------------------------------------------- |
-| Fit/replace stock                                  | `setModule(slotKey, module)`                                           |
-| Fit/replace package variant                        | `setPreEngineeredVariant(slotKey, variant)`                            |
-| Remove                                             | `removeModule(slotKey)`                                                |
-| Apply/replace blueprint, grade and optional effect | `applyBlueprint(slotKey, fdname, { grade, quality: 1, experimental })` |
-| Clear ordinary engineering                         | `clearEngineering(slotKey)`                                            |
-| Enable/disable                                     | `setModuleEnabled(slotKey, on)`                                        |
-| Set power priority                                 | `setModulePriority(slotKey, zeroBasedPriority)`                        |
+| Intent                     | Package operation                                                 | Outcome handling                                                        |
+| -------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Fit/replace stock          | `setModule(slotKey, exactModule)`                                 | Catch structured fitting errors; compare package-owned state            |
+| Fit/replace variant        | `setPreEngineeredVariant(slotKey, exactVariant)`                  | Catch structured fitting errors; preserve variant identity              |
+| Remove                     | `removeModule(slotKey)`                                           | Offer only when removable; catch structured refusal                     |
+| Apply blueprint            | `applyBlueprint(slotKey, fdname, {grade, quality: 1, ...effect})` | Effect property is omitted when none; thrown refusal discards candidate |
+| Change/remove effect only  | `setExperimentalEffect(slotKey, fdnameOrNull)`                    | Branch on `updated`, `unchanged`, `unsupported`                         |
+| Clear ordinary engineering | `clearEngineering(slotKey)`                                       | Separate intent; may remove Mercenary identity                          |
+| Enable/disable             | `setModuleEnabled(slotKey, boolean)`                              | Module stays fitted                                                     |
+| Set priority               | `setModulePriority(slotKey, zeroBased)`                           | Present one-based `1..5`                                                |
 
-`LoadoutEditError` provides `code`, optional `constraint` and language-neutral `params` for fitting
-and removal refusals. Map these to localized app messages; never parse or present its English fallback
-as application text. Programming/input failures and engineering refusals are plain `TypeError` or
-`RangeError`; the UI only emits package-offered keys and reports an unexpected refusal without
-inventing a cause.
+Selection and draft changes never mutate the active build. Applying one blueprint + grade + optional
+effect is one decision. Replacing a module never carries old engineering.
 
-An occupied module's engineering is not inherited by a replacement. A failed or no-op edit does not
-change the active revision or history.
+**Rationale**: `setExperimentalEffect()` returns a discriminated union; the other editing methods
+primarily mutate/throw. Treating them as one generic exception contract would lose stable outcomes.
 
-## Decision 7: cargo hatch has package-defined power-only behavior
+**Alternatives considered**: Editing raw `Engineering.Modifiers`, passing local computed stats or
+using a null blueprint as clear-all would blur package semantics and violate FR-012.
 
-Runtime probes confirm that the cargo hatch reports `kind: 'cargoHatch'`, `removable: false` and
-`immovableReason: 'cargoHatch'`. Candidate and engineering menu methods return empty arrays; set/remove
-throw `LoadoutEditError('immutableSlot')`; enabled and priority setters work.
+## Decision 8: preflight partial quality before construction, then normalize ingress
 
-The slot remains visible with facts, a switch and a one-based priority selector. It has no chooser,
-remove or engineering action. This state is derived from package reads rather than an application
-symbol list.
+**Decision**: Every stock/open/link/SLEF/reload replacement uses one shared ingress pipeline:
 
-## Decision 8: fixed-mount repair is a pre-calculation ingress reconstruction
+1. Decode to the source DTO without changing the active build. Reject malformed quality values
+   through the owning decoder.
+2. Before `ShipLoadout.fromLoadout()`, retain each source record with finite quality in `[0, 1)` and
+   ask `getModuleBySymbol()` to resolve its identity. If the package cannot resolve it, refuse the
+   entire candidate with the exact source slot/module/engineering identity.
+3. Capture every source fixed-mount identity, then construct the detached loadout.
+4. Correlate every retained source partial with the constructed fitted record by case-insensitive
+   slot and exact source symbol. A missing/replaced/mismatched record (including the package's
+   automatic unresolved-cargo repair) refuses the candidate before activation. Otherwise call
+   `completeEngineeringGrade(slotKey)`. Accept only `normalized`; `unsupported` rejects the whole
+   candidate and `unchanged` for a source partial is a package-contract failure. Never call this
+   operation for absent quality or quality `1`: final/unknown fully rolled articles can legitimately
+   return `unsupported` and must remain preserved.
+5. Only after all partials succeed, repair fixed mounts that were missing or unresolved in the source.
+   Use `repairFixedMount()` and retain each result. `repaired` changes the candidate;
+   `defaultUnavailable` keeps the candidate incomplete; `refused` is an internal contract failure
+   because selection was package-derived. Source comparison reports automatic cargo repair.
+6. Commit the fully processed candidate atomically, publish notices, then start/reset history. Read
+   validation/calculations only after commit.
 
-The shared feature 001 replacement pipeline gains a `FixedMountNormalizer`:
+Atomic refusal changes no active build, revision, working record, fragment or history. Successful
+quality completion is transiently reported; fixed-mount provenance follows feature 001's local-record
+contract. Neither automatic operation enters edit history.
 
-1. Before construction, record missing/unresolved fixed identities from the source DTO so automatic
-   cargo-hatch restoration remains visible in the normalization report. Reconstruct a detached
-   candidate; an unknown hull is a construction refusal. Read no calculation.
-2. Select only slots whose package `immovableReason` is `requiredSlot` or `cargoHatch`. A temporary
-   `moduleLimit` reason does not make a mount fixed.
-3. A missing module or `module.stats === null` needs repair.
-4. Call `repairFixedMount(slotKey)` on the detached loadout. Accept `repaired`, `unchanged`,
-   `defaultUnavailable` and `refused` exactly as the package reports them; do not look up or fit a
-   default locally.
-5. Call `completeEngineeringGrade(slotKey)` for each engineered module and preserve its structured
-   `normalized`, `unchanged` or `unsupported` result.
-6. Only after repair and quality normalization expose validation/calculations or commit.
-7. Compare the source record with the constructed/repaired candidate and emit local notices containing
-   original slot key, absent/replaced identity and package-reported default identity. Normalization
-   creates no history frame.
+**Rationale**: Constitution 5.0.0 resolves the prior contradiction by rejecting only partial states
+the package cannot complete. Preflight is package resolution, not a local module heuristic. Ordering
+prevents fixed repair from stripping evidence that must trigger refusal.
 
-`fromLoadout()` automatically restores a missing or unresolved cargo hatch from the package default;
-the source comparison supplies the required notice, and a later `repairFixedMount('CargoHatch')`
-normally reports `unchanged`. Other fixed mounts use `repairFixedMount()`, preserving source-purchase
-semantics. All 48 0.1.1 default loadouts contain resolvable defaults for every fixed slot. If a future
-package reports `defaultUnavailable`, leave the original state and package validation visible. This
-construction-time cargo restoration closes
-[Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293).
+**Alternatives considered**: Changing only `Quality`, retaining partial modifiers, stripping
+engineering or accepting `unsupported` are prohibited. Repair-first loses unresolved-partial
+evidence. Rejecting `defaultUnavailable` would contradict FR-010.
 
-## Decision 9: ordinary engineering state and package costs
+## Decision 9: package menus, candidate stats and cost functions own engineering
 
-Use `availableBlueprints(slotKey)` for `{ fdname, grades, route }` and
-`availableExperimentalEffects(slotKey)` for effect fdnames. Present current values from
-`FittedModule.engineering`, current resolved article facts from `stats`, and post-engineering values
-from `effectiveStats`. Do not recompute stat values or better/worse direction from modifier labels;
-0.1.1 explicitly documents `LessIsGood` as unreliable.
+**Decision**: Build drafts from exact `AvailableBlueprint[]` and effect fdnames. A draft stores
+selection only. Produce preview attributes by applying the intended operation to a detached candidate
+and reading its `stats`/`effectiveStats`; do not compute or color-code better/worse semantics.
 
-Use `getEngineeringGroupName(groupId, locale)` for engineering-group labels. Regression fixtures pin
-0.1.1's corrected AX multi-cannon, AX missile-rack and Enzyme Missile Rack menus; removed package
-groups and routes are not recreated locally.
+Use `getBlueprintCost(fdname, targetGrade, currentGrade)` only when continuing the same ordinary or
+Mercenary recipe; otherwise price from grade 0. Use `getBlueprintGradeCost()` only for an explicitly
+shown per-roll fact, `getExperimentalEffectCost()` for adding/replacing the selected effect, and
+`sumMaterials()` only when every source is known. Effect removal costs nothing selected. Preserve
+`null` as unavailable and `[]` as known zero. Baked fixed engineering has no craft cost; Merc Coin is
+separate from materials and credits.
 
-Every Commander-authored blueprint call explicitly passes `quality: 1`. The UI has no quality field.
-Effect-only edits call `setExperimentalEffect(slotKey, fdnameOrNull)` and preserve supported fixed
-article stats and identity. `clearEngineering()` is distinct: it
-removes all ordinary engineering and may remove Mercenary identity.
+**Rationale**: Detached preview uses the same package mutation path as apply. Package cost functions
+encode grade progression and missing data.
 
-Cost leaf imports:
+**Alternatives considered**: Reimplementing modifiers, trusting `LessIsGood`, summing unavailable
+lists or charging from the current grade after switching recipes would fabricate results.
 
-```ts
-import {
-  getBlueprintCost,
-  getBlueprintGradeCost,
-} from '@elite-dangerous-almanac/core/ships/blueprint-costs';
-import { getExperimentalEffectCost } from '@elite-dangerous-almanac/core/ships/experimental-effect-costs';
-import { sumMaterials } from '@elite-dangerous-almanac/core/ships/engineering';
-```
+## Decision 10: opaque package-owned bounded checkpoint history is an upstream gate
 
-`null` is unavailable; `[]` is known zero. A fixed reward's baked engineering has no craft cost. A
-Mercenary upgrade prices only grades above its purchase grade. Selected ordinary engineering and an
-effect use their package cost results; Merc Coin remains separate from materials and credits.
+**Decision**: After the required Almanac API lands, store `past` and `future` frames containing opaque,
+package-owned loadout instances/checkpoints plus an unformatted intent-summary key and scalar params.
+On one successful changed Commander decision, move the pre-edit aggregate into `past`, keep the newest
+100 and clear `future`. Undo/redo atomically swap owned package checkpoints; no serializer or app DTO
+reconstructs them.
 
-## Decision 10: bounded checkpoint history
+Include fit, remove, engineering, effect-only, clear, power, priority, ship name and ident. Exclude
+selection, category/anatomy/status mode, query, draft, open/close/cancel, failed/no-op/refused edits,
+automatic normalization, autosave and fragment publication. Every active-build replacement resets
+both stacks.
 
-`SessionEditHistory<BuildSnapshotV1>` holds `past` and `future` checkpoint arrays. On a successful
-Commander edit, push the exact pre-edit snapshot to `past`, cap it to the 100 newest decisions, clear
-`future`, and commit. Undo moves current to `future` and restores the newest `past`; redo performs the
-inverse. The combined reachable decision path never exceeds the retained 100 entries.
+**Rationale**: `ShipLoadout` 0.1.1 has no clone/history primitive. `BuildSnapshotV1` omits private
+source-purchase provenance. `toLoadoutEvent()` changes identity spelling and exports only currently
+valid source values, so an event round trip can permanently lose provenance that the original
+aggregate retains. Only a package-owned copy/checkpoint can meet FR-016 without duplicating Almanac
+state.
 
-One confirmation is one step, including blueprint + grade + effect. Fit, replace, remove,
-engineering, effect-only changes, clear, enabled, priority, ship name and ident participate. Search,
-selection, editor drafts, viewing conditions, canceled/failed/no-op commands, automatic normalization,
-autosave and link publication do not.
+**Alternatives considered**: Persistence snapshots, event round trips, inverse operations, intent
+replay and browser history cannot meet exact restoration/session boundaries. App-owned preservation
+of hidden provenance is constitutionally forbidden.
 
-Stock creation, saved/working build open, link load, SLEF import, reload restore and hull replacement
-are active-build replacements and reset the tape. Restored snapshots are reconstructed through the
-package so all results recompute. The tape is neither serializable nor injectable into storage, URL,
-SLEF or browser history boundaries.
+## Decision 11: adapt both design canvases and define the missing tablet state
 
-## Decision 11: responsive surfaces stay under `/build`
+**Decision**: Preserve canvas 1c's wide three-region hierarchy and canvas 1d's compact hierarchy,
+full-screen editor layers and persistent selected-slot actions. Define tablet by available content
+space: two-pane ledger/editor in roomy landscape; compact composition in portrait or whenever
+localized/zoomed content cannot satisfy both panes. Feature 011 container tokens select composition,
+not device detection or the reference pixel widths.
 
-There is no new top-level route. The wide workspace composes grouped slots, selected-module detail,
-inline chooser/engineering region and history actions. Narrow/400%-zoom composition shows category
-tabs and slot cards, with chooser and engineering as full-screen layers. These layers are application
-view state: opening/closing them does not replace the build or create browser/edit history.
+At all widths, replacement and engineering are drafts with explicit apply/cancel. The desktop mock's
+immediate-looking rows/dropdowns are intentionally changed so one confirmation creates one atomic
+history decision. Shared anatomy/status/calculation areas remain outlets owned by other features.
 
-The canvases' anatomy, headline statistics, import/export/save and help controls belong to features
-010, 003/005–009, 001/004 and 012 respectively. Feature 002 exposes stable composition outlets but
-does not duplicate those capabilities.
+**Rationale**: `.design` contains 1560px and 390px references but no tablet. Explicit interpolation
+is required by Constitution V, while confirmation protects atomic edits/history.
 
-## Released API verification
+**Alternatives considered**: Calling the wide canvas “tablet” is unsupported. Copying fixed widths,
+clickable `div`s, tiny controls, external fonts/assets, mock values, reward assumptions, comparison
+arrows or partial-roll help text violates the accepted requirements.
 
-### A. Fixed-reward experimental-only mutation
+## Decision 12: verification measures behavior, not screenshots alone
 
-Tracked in [Almanac #291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291).
+**Decision**: Upstream acceptance tests first prove the released package clone/checkpoint regression.
+Feature unit tests then use real package records for membership/mutation and package-owned clone/swap
+adapters for transactions/history. Cover every structured result, unresolved/empty states, partial
+preflight including cargo hatch, missing defaults, 481-choice search, `null` versus `[]`, route labels,
+101 edits and all history exclusions.
 
-Almanac 0.1.1 adds `setExperimentalEffect(slotKey, experimental)` with structured `updated`,
-`unchanged` and `unsupported` outcomes. For supported community-goal and tech-broker rewards it
-retains the fixed modifier block and `preEngineeredVariant`; final articles refuse explicitly.
+Playwright runs each primary story at 1440×900, 834×1112, 1112×834, 390×844 and 844×390 in Chromium
+and Firefox. Every meaningful workspace/layer/refusal state receives axe plus semantic, touch,
+no-overflow, 200%-text, 400%-zoom, expansion/RTL and reduced-motion assertions. Browser
+`performance.now()` plus a result-settle marker excludes automation transport from the 100 ms search
+measurement.
 
-Minimal reproduction:
+**Rationale**: The constitution requires both engines, all form factors and automated accessibility.
+The current harness does not yet provide them, so green Chromium-only subsets are not completion.
 
-1. Create a Python and fit the package tech-broker 5A frame shift drive with
-   `setPreEngineeredVariant()`.
-2. Observe `effectiveStats.optMass === 1785` and acquisition `techBroker`.
-3. Call `applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade: 5, quality: 1,
-experimental: 'special_fsd_heavy' })`.
-4. Observe `effectiveStats.optMass === 1692.599976` and `preEngineeredVariant === null`.
+**Alternatives considered**: Visual comparison to `.design`, axe alone, desktop-only tests or
+lowering coverage cannot prove the behavioral contract.
 
-The historical reproduction must remain as a regression test, but invoke `setExperimentalEffect`
-and assert purchase identity and grade remain unchanged while the package-owned experimental effect
-updates effective stats (Mass Manager raises the probed optimal mass from 1785 to 1856.399902). This
-closes #291.
+## Research status
 
-### B. Universal partial-quality normalization
-
-Tracked in [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292).
-
-`ShipLoadout.fromLoadout()` preserves imported partial quality until the caller deliberately invokes
-`completeEngineeringGrade(slotKey)`. In 0.1.1 that operation recomputes supported ordinary,
-Mercenary and recognized fixed-reward states at quality 1, and returns a structured `unsupported`
-outcome when it cannot do so losslessly.
-
-Changing only the `Quality` scalar still lies about the effective roll, and merging/rebuilding
-modifiers in the app remains prohibited. Regression fixtures must cover every result discriminator
-and prove supported imports reach quality 1 without changing unrelated state. This closes #292 and
-removes the upstream implementation gate.
-
-## Test research conclusion
-
-Unit tests inject the snapshot adapter and use real package records for membership/mutation tests.
-They cover unresolved states, all command/refusal paths, 481-choice search performance, exact
-acquisition routes, `null` versus `[]` costs, quality normalization, cargo hatch, 101+ history edits
-and every exclusion/reset.
-
-Playwright covers all four user stories in desktop, tablet and mobile portrait/landscape, in Chromium
-and Firefox. Every workspace/chooser/engineering/normalization state receives an axe scan plus manual
-semantic assertions, no-page-overflow checks, 200% text, 400% zoom, expanded/RTL text, reduced motion
-and touch actions. Feature 011 must first add Firefox, landscape projects and automated accessibility
-to the current harness.
+No product clarification remains. Planning is complete, but implementation is **upstream-blocked**:
+`@elite-dangerous-almanac/core@0.1.1` cannot losslessly clone/checkpoint the aggregate after source
+provenance becomes temporarily invalid. The required package API and minimal regression are specified
+above. Features 001 and 011 are additional repository prerequisites. The FR-013 atomic-refusal path
+itself is supported by the current package resolution/normalization outcomes.

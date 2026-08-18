@@ -1,99 +1,121 @@
 # Implementation Plan: Module Outfitting and Engineering
 
-**Branch**: `002-module-outfitting` | **Date**: 2026-08-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `002-module-outfitting` | **Date**: 2026-08-18 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/002-module-outfitting/spec.md`
 
 ## Summary
 
-Extend feature 001's single active-build boundary with package-authoritative slot inspection,
-replacement candidates, ordinary and pre-engineered module fitting, engineering, power controls and
-a session-only 100-decision undo/redo tape. Every Commander intent is evaluated against a detached
-`ShipLoadout` candidate and committed atomically only after the Almanac accepts it. Candidate search
-and ordering are pure presentation projections over `ShipLoadout.modulesForSlot()` plus
-`getPreEngineeredVariants()`; calculations, compatibility, engineering state, costs and refusals stay
-package-owned.
+Add package-authoritative outfitting to feature 001's single active build: enumerate every mount,
+find and fit stock or package pre-engineered modules, apply supported engineering, edit module power,
+and retain a session-only 100-decision undo/redo history. Components render immutable presentation
+models and dispatch intents. Pure TypeScript services query and edit package-owned detached
+`ShipLoadout` clones; only a successful, changed candidate atomically replaces the active build.
 
-The `.design/Ship Builder.dc.html` canvases 1c and 1d define the responsive visual hierarchy: an
-inline three-region outfitting workspace at wide widths and full-screen chooser/engineering layers at
-narrow widths. They are adapted through feature 011's shared dark design system and localization
-layer. Almanac 0.1.1 now supplies structured partial-quality normalization, fixed-mount repair and
-effect-only edits that preserve supported fixed rewards. The upstream gate is satisfied; no
-application-side modifier rewrite is permitted.
+The design follows `.design/Ship Builder.dc.html` canvases 1c and 1d: a dense wide workspace with an
+inline fitting bench and responsive narrow full-screen replacement/engineering layers. The source's
+1560px and 390px canvases are references, not breakpoints. Tablet portrait/landscape and zoomed
+layouts are defined explicitly in [design/responsive-composition.md](./design/responsive-composition.md).
+Mock game values, external assets, inferred comparison arrows and inaccessible interactions are not
+copied.
+
+Ingress runs before activation and before any calculation is read. Package-resolved partial grades
+are completed through `completeEngineeringGrade()`. Any partial grade returning `unsupported`
+rejects the whole candidate and leaves the current build intact, as required by Constitution 5.0.0
+and clarified FR-013. Missing package defaults instead retain an incomplete candidate under FR-010.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for tooling
+**Language/Version**: TypeScript 6.0.3, Angular HTML and SCSS; Node.js 24.18.0 in the reference
+environment. Full TypeScript/template strictness is the constitutional target but is not enabled in
+the current root configuration; enabling it through the shared foundation is an implementation
+prerequisite
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.1 leaf exports,
-and feature 001's active-build/snapshot/replacement boundaries
+**Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8;
+`@elite-dangerous-almanac/core` with released lossless `ShipLoadout` clone/checkpoint and
+name/ident-update APIs (absent from pinned 0.1.1); feature 001's planned active-build ownership/swap
+boundary; feature 011's planned UI, localization, announcement and verification foundations
 
-**Storage**: Live `ShipLoadout` in memory; bounded edit history in memory only. Feature 001 continues
-to own local persistence and fragments; history, selection, search and editor drafts never cross those
-boundaries
+**Storage**: One observable committed `ShipLoadout`; package-owned loadout clones/checkpoints in
+session memory only. `BuildSnapshotV1` remains feature 001's persistence/link model and is not an
+edit/history clone. Selection, queries, editor drafts, refusals and history are never serialized
 
-**Testing**: Vitest through Angular's unit-test builder with 80% minimum coverage; Playwright with
-`@axe-core/playwright` over desktop, tablet and mobile portrait/landscape projects in Chromium and
-Firefox
+**Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
+function and line thresholds; Playwright 1.62 with planned `@axe-core/playwright` scans across
+desktop, tablet portrait/landscape and mobile portrait/landscape in Chromium and Firefox. The current
+repository has only three Chromium projects and no axe integration; feature 011 must close that gap
+before feature 002 can pass its gate
 
-**Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; installable/static
-client application usable offline after first load
+**Target Platform**: Modern evergreen desktop, tablet and mobile browsers; touch, pointer and screen
+reader; portrait and landscape; static same-origin deployment usable offline after first load
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
-**Performance Goals**: Search-to-render under 100 ms for the largest package candidate list; package
-results refresh once per committed edit; one Commander decision commits as one observable revision;
-undo/redo restores an exact snapshot without incremental drift
+**Performance Goals**: Search input to settled candidate results below 100 ms for the largest pinned
+package list; one active-build revision and one result refresh per accepted decision; exact
+package-owned checkpoint restoration without cumulative mutation or provenance drift
 
-**Constraints**: No server, account, telemetry or cross-origin request; no application-owned fitting,
-engineering, calculation or variant-recognition rule; no silent partial-quality retention; no page
-horizontal scrolling; one dark tokenized theme; all application text translatable; touch-first
-operation; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+**Constraints**: No backend, account, telemetry or cross-origin runtime request; no private fitting,
+variant, engineering or calculation rules; no page horizontal scrolling; one tokenized dark theme;
+all application text translatable; all package game text/diagnostics remain package-owned; WCAG 2.2
+AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: Every package slot on 48 pinned hulls; 0.1.1's largest observed reachable chooser is
-481 choices (473 stock records plus 8 package variants) for an empty/incomplete `PantherMkII`
-`Slot01_Size8` build; the default loadout fixture yields 478 (470 plus 8); 76 published
-pre-engineered variants; at least the 100 most recent Commander decisions
+**Scale/Scope**: 48 package hulls and every package slot; 76 pre-engineered variants; largest probed
+chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); at least the newest
+100 Commander decisions; three product surfaces composed within `/build`
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d. Adopted and rejected details
-are recorded in [design/reference-review.md](./design/reference-review.md).
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1c (1560px wide reference) and 1d
+(390px, minimum 844px-high mobile reference). Adoption and intentional departures are recorded in
+[design/reference-review.md](./design/reference-review.md).
 
 ## Constitution Check
 
-_GATE: Passed. Almanac 0.1.1 supplies the required package-owned operations and introduces no
-constitutional exception. Re-check completed after the dependency upgrade._
+_GATE: **ERROR — BLOCKED FOR IMPLEMENTATION**. Planning and design are complete, but implementation cannot
+start against `@elite-dangerous-almanac/core@0.1.1`. The package has no lossless detached-copy or
+checkpoint API for `ShipLoadout`; reconstructing from public exports loses package-private source
+purchase provenance after an edit invalidates a source value. Constitution II and IV prohibit an
+application-owned reconstruction workaround. Re-run this gate against the released upstream API._
 
-| Principle                               | Design evidence                                                                                                                                                           | Status                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All editing, search and history run in-browser over installed package/static assets; no new persistence or network boundary.                                              | PASS                   |
-| II. Almanac Source of Truth             | Slots, candidates, variants, mutations, costs, validation and calculations use 0.1.1 leaf APIs, including effect-only mutation and normalization.                         | PASS                   |
-| III. Domain Logic Outside UI            | Pure query, transaction, normalization, snapshot and history services precede the signal store; components receive immutable views and emit intents.                      | PASS                   |
-| IV. Lossless, Honest Builds             | Detached candidate commits prevent partial edits; unavailable fields remain unavailable; package fixed-mount repair and quality normalization run before results/history. | PASS                   |
-| V. Desktop, Tablet and Mobile           | Wide inline and narrow full-screen surfaces preserve every action for touch, screen reader, 200% text, 400% zoom, portrait and landscape.                                 | PASS                   |
-| VI. Commander's Language                | Package i18n leaf helpers provide game names where available; app labels and formatters use feature 011 localization with explicit untranslated fallback disclosure.      | PASS                   |
-| VII. One Design System                  | Every surface composes feature 011 primitives/tokens; the HTML canvas supplies hierarchy only.                                                                            | PASS                   |
-| VIII. Tested Before It Ships            | Domain tests plus dual-engine, multi-viewport Playwright and axe coverage are specified without lowering thresholds.                                                      | PASS, prerequisite 011 |
-| IX. Specification Before Implementation | Every FR maps to a plan-time screen/surface before tasks are generated.                                                                                                   | PASS                   |
+| Principle                               | Plan evidence                                                                                                                             | Status                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                          | PASS                       |
+| II. Almanac Source of Truth             | All game behavior remains package-owned, but 0.1.1 lacks the clone/checkpoint primitive needed for lossless candidate-first edits.        | **BLOCKED: upstream API**  |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                     | PASS                       |
+| IV. Lossless, Honest Builds             | Ingress rules are lossless, but public 0.1.1 reconstruction can erase invalidated source-credit provenance during edits/history.          | **BLOCKED: upstream API**  |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit. | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                              | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                            | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                       | PASS                       |
 
-Released upstream work consumed from 0.1.1:
+No application workaround is proposed. The required Almanac release must provide a package-owned
+lossless clone/detached-copy or opaque checkpoint/restore operation that preserves all private
+aggregate provenance, plus a provenance-preserving way to update ship name/ident. Existing getters
+have no setters. `toLoadoutEvent({ credits: 'source' })`, `BuildSnapshotV1`, raw-module overlays and
+intent replay are explicitly rejected as substitutes. Separately,
+`completeEngineeringGrade()` returning `unsupported` triggers atomic ingress refusal;
+`repairFixedMount().status === 'defaultUnavailable'` is a nonblocking FR-010 outcome.
 
-1. [Almanac #291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291): `setExperimentalEffect()` adds/replaces/removes an experimental effect on a re-engineerable
-   fixed pre-engineered article while retaining its fixed modifiers and
-   `FittedModule.preEngineeredVariant` identity.
-2. [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292): `completeEngineeringGrade()` provides lossless package normalization for imported partial-quality engineering, including recognized
-   fixed rewards with later effects and a structured outcome for unsupported identities.
+## Delivery Prerequisites
 
-The release also closes missing-cargo validation
-[Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) and exports
-`FittedModule` from the leaf requested by
-[Almanac #294](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/294).
-Engineering-group presentation uses 0.1.1's `getEngineeringGroupName()`, and regression fixtures pin
-the corrected AX/Enzyme engineering menus rather than a private grouping list.
+The source tree currently contains only the application shell and build-link codec. These planned
+contracts must exist before feature 002 UI implementation is complete:
 
-The minimal reproductions and expected package contract are in [research.md](./research.md). Feature
-002 consumes those released operations; editing raw engineering blocks or recomputing modifiers
-locally is not an available fallback.
+1. **Almanac upstream gate**: release and pin lossless `ShipLoadout` detached-copy/checkpoint and
+   name/ident-update APIs.
+   Acceptance must cover a source-priced module changed away, cloned while that source value is
+   invalid, then changed back with the original source value restored; exact identity spelling,
+   sparse fields, unresolved records, engineering and all pre-engineered variants must also survive.
+2. Feature 011: strict TypeScript/templates, token and localization layers, shared components and
+   announcements, preview catalogue, Firefox/landscape projects and axe scans.
+3. Feature 001: `/build`, one `ActiveBuildState`, package-owned clone/checkpoint/swap operations,
+   atomic replacement notification, persistence/fragment observers and normalization provenance.
+   Its `BuildSnapshotV1` remains persistence/publication data only.
+4. Feature 002 then extends those boundaries; it does not create temporary substitute shells,
+   styles, locale messages or persistence formats.
+
+Task generation must express these dependencies. Their current absence is not permission to weaken
+the design or claim a partial feature complete.
 
 ## Project Structure
 
@@ -110,8 +132,9 @@ specs/002-module-outfitting/
 │   ├── module-catalogue.md
 │   └── outfitting-editor.md
 └── design/
-    ├── reference-review.md
     ├── screen-inventory.md
+    ├── reference-review.md
+    ├── responsive-composition.md
     ├── outfitting-workspace.md
     ├── module-replacement.md
     └── engineering-editor.md
@@ -124,94 +147,88 @@ specs/002-module-outfitting/
 ```text
 src/app/
 ├── domain/
-│   ├── build/                         # feature 001 shared snapshot/reconstruction boundary
+│   ├── build/
+│   │   ├── build-ingress-normalizer.ts   # shared by every feature-001 replacement path
+│   │   └── active-loadout-checkpoint.ts  # feature-001 package-owned clone/swap boundary
 │   └── outfitting/
 │       ├── build-edit-transaction.ts
-│       ├── candidate-query.ts
 │       ├── engineering-cost.ts
-│       ├── fixed-mount-normalizer.ts
 │       └── session-edit-history.ts
 ├── application/
-│   ├── active-build/                  # feature 001; extended, never duplicated
+│   ├── active-build/                       # feature 001; integrated, not duplicated
 │   └── outfitting/
-│       ├── outfitting-presenter.ts
+│       ├── candidate-query.ts            # locale-dependent projection/search
+│       ├── outfitting.presenter.ts
 │       └── outfitting.store.ts
-├── i18n/                              # supplied by feature 011
-├── ui/                                # supplied/extended through feature 011
-└── features/
-    └── build-workspace/
-        └── outfitting/
-            ├── outfitting-workspace/
-            ├── module-replacement/
-            └── engineering-editor/
+├── i18n/                                      # feature 011 package/app text presenter
+├── ui/                                        # feature 011 primitives extended here
+└── features/build-workspace/outfitting/
+    ├── outfitting-workspace/
+    ├── module-replacement/
+    └── engineering-editor/
 
 e2e/
 ├── accessibility.ts
-├── module-engineering.spec.ts
 ├── module-outfitting.spec.ts
+├── module-engineering.spec.ts
 └── outfitting-history.spec.ts
 ```
 
-**Structure Decision**: Keep one Angular application and one active build. Package-facing domain
-adapters and pure query/history services are render-free; one application store coordinates selected
-slot/editor state with the shared active build; route components render presentation models only.
-All feature surfaces stay within `/build`. Wide layouts compose the chooser and engineering editor
-inline; narrow layouts present the same states as full-screen layers without encoding edits or history
-in browser navigation.
+**Structure Decision**: Keep one Angular application, one committed active loadout and no new route.
+Cross-feature ingress normalization belongs with the shared build domain. Outfitting query,
+transaction, cost and history code is framework-agnostic; one signal store owns only ephemeral
+selection/editor state and coordinates feature 001. Presentational components consume immutable
+views and emit intents. Wide and tablet layouts compose inline regions where content fits; narrow
+and 400%-zoom layouts use in-document application layers, not browser navigation.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and released regressions are recorded in
-[research.md](./research.md). The decisive outcomes are:
+The full decisions and alternatives are in [research.md](./research.md):
 
-- `ShipLoadout.slots()`, `fittedModules()`, `validation` and `modulesForSlot()` are the sole slot,
-  fitted-state, removability and compatibility boundary.
-- Each stock result expands with every package `getPreEngineeredVariants(symbol)` record. Stock fits
-  call `setModule`; variant fits call `setPreEngineeredVariant`.
-- Search uses a cached locale-folded projection of package display name, class, rating and mount;
-  every whitespace term must match. Ordering changes presentation only.
-- Source fixed identities are captured before construction. `fromLoadout()` restores cargo and
-  `repairFixedMount()` repairs remaining package-recognized fixed mounts before any calculation;
-  source/result differences remain visible without an application default lookup.
-- Every Commander edit is a detached snapshot transaction. Successful edits push one pre-edit
-  checkpoint; failed/no-op edits do not. The tape retains 100 decisions and is reset on build
-  replacement.
-- Material lists come only from `getBlueprintCost`, `getBlueprintGradeCost`,
-  `getExperimentalEffectCost` and `sumMaterials`; `null` remains unavailable and fixed reward
-  engineering adds no craft cost.
-- 0.1.1 meets the fixed-reward effect-only and universal partial-quality requirements through
-  structured package operations; regression tests pin their outcomes.
+- `ShipLoadout.slots()`, `fittedModules()`, `modulesForSlot()`, engineering menus and structured edit
+  methods are the only game-domain boundary.
+- Candidate membership is each exact `modulesForSlot()` record plus all
+  `getPreEngineeredVariants(symbol)` rows. Search/order are immutable presentation projections.
+- Every edit must start from a lossless package-owned detached clone, invoke a package operation and
+  commit that candidate or nothing. Almanac 0.1.1 cannot yet supply the clone.
+- Ingress records partial/fixed source identities before construction, correlates only validated
+  qualities in `[0,1)`, rejects resolution/construction mismatch or `unsupported`, then repairs only
+  source-missing/unresolved fixed mounts and commits no history.
+- Package i18n leaves own module, variant, slot, restriction, blueprint, effect, engineering-group,
+  material and diagnostic source text. App localization owns framing and controls only.
+- Opaque package-owned loadout checkpoints, not `BuildSnapshotV1`, inverse commands or
+  `toLoadoutEvent()` output, implement undo/redo after the upstream gate lands.
+
+No `NEEDS CLARIFICATION` marker remains.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines slot/fitted views, candidates, search indexes,
-  engineering drafts/costs, normalization results, edit transactions and the bounded history tape.
-- [contracts/module-catalogue.md](./contracts/module-catalogue.md) freezes exact candidate expansion,
-  section/group order, multi-term search and acquisition/entitlement presentation.
-- [contracts/outfitting-editor.md](./contracts/outfitting-editor.md) defines package reads and atomic
-  fit/remove/engineering/power/normalization command outcomes.
-- [contracts/edit-history.md](./contracts/edit-history.md) defines one-decision checkpoints,
-  undo/redo/reset/exclusion rules and boundary isolation.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every requirement to a surface; the
-  adjacent design files define wide/narrow composition and state coverage.
-- [design/reference-review.md](./design/reference-review.md) records the accepted 1c/1d hierarchy and
-  the package, scope, localization and accessibility adaptations.
-- [quickstart.md](./quickstart.md) provides the end-to-end acceptance scenarios and released-API
-  verification.
+- [data-model.md](./data-model.md): active presentation state, exact slot/candidate/engineering views,
+  ingress results, atomic edits and bounded history.
+- [contracts/module-catalogue.md](./contracts/module-catalogue.md): candidate membership, identity,
+  required order, four-field AND search, labels and performance.
+- [contracts/outfitting-editor.md](./contracts/outfitting-editor.md): package reads/commands, ingress,
+  atomic refusal, power and persistence boundaries.
+- [contracts/edit-history.md](./contracts/edit-history.md): one-decision checkpoints, capacity,
+  restoration, reset and serialization exclusions.
+- [design/screen-inventory.md](./design/screen-inventory.md): complete surface-to-FR mapping.
+- [design/reference-review.md](./design/reference-review.md): `.design` adoption and departures.
+- [design/responsive-composition.md](./design/responsive-composition.md): explicit wide, tablet,
+  narrow, orientation and zoom composition absent from the source reference.
+- Adjacent workspace, replacement and engineering definitions specify every required state.
+- [quickstart.md](./quickstart.md): runnable validation order and expected outcomes.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, private catalogue, alternate calculation, component-owned build,
-persisted history, hard-coded display text or visual literal. Unresolved package values remain
-visible; every mutation and restoration reconstructs through the package. Design-reference deltas and
-direction arrows are omitted where no authoritative package result supplies them. All FRs have a
-screen/surface owner and a dual-engine accessibility path.
-
-The planning gate remains **PASS** with no exception. The Almanac gate is satisfied by 0.1.1;
-implementation is sequenced only behind features 001 and 011. Rerun the released-API regressions and
-the full constitution check during task generation and implementation.
+Phase 1 adds no server, private catalogue, local game calculation, component-owned build, persisted
+history, hard-coded display string, visual literal or hidden unavailable value. Every FR, including
+the FR-013 rejection path, has a surface owner and validation scenario. The gate remains
+**ERROR — BLOCKED FOR IMPLEMENTATION** solely on the named Almanac clone/checkpoint API plus the planned
+001/011 foundations; the plan grants no constitutional exception.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. Released package operations replace every formerly
-blocked path; application-side exceptions and workarounds remain prohibited.
+No constitutional violation is accepted. A temporary package-owned detached clone is not a second
+observable build. The tablet composition document closes a reference gap rather than introducing
+another product surface. App-owned serialization of package-private provenance is deliberately not
+tracked as complexity because it is forbidden, not an implementation option.

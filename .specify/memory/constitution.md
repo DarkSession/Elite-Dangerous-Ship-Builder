@@ -1,3 +1,16 @@
+<!--
+Sync Impact Report
+- Version change: 4.0.0 -> 5.0.0
+- Modified principles: IV. Lossless, Honest Builds (partial-quality import refusal)
+- Added sections: None
+- Removed sections: None
+- Follow-up TODOs:
+  - specs/004-slef/contracts/slef-import.md must limit quality completion to validated source
+    qualities below 1 and preserve fully rolled/unengineered unresolved entries.
+  - Raise the feature-002 lossless ShipLoadout clone/checkpoint and name/ident-update gaps upstream
+    with the minimal source-provenance reproduction, then consume the released fix.
+-->
+
 # Elite Dangerous Ship Builder Constitution
 
 The Elite Dangerous Ship Builder is a browser application for planning ship
@@ -98,11 +111,21 @@ A build is round-trippable and never silently wrong.
   plausible-looking value. A third exception requires amending this principle.
 - **Engineering quality is deliberately outside the application model.** A
   selected blueprint grade always represents a completed (100% quality) grade.
-  Imports carrying a partial engineering quality are normalised to 100%, and
-  exports report 100%; the application does not retain or present the source
-  roll's partial quality. A build is shared so that another Commander can build
-  it, and a partial roll cannot be reproduced at an engineer, so a plan quoting
-  one would describe a ship its reader cannot make.
+  When `@elite-dangerous-almanac/core` resolves the fitted module and engineering
+  identity, imports carrying a partial engineering quality MUST be normalised
+  through the package to 100%, and exports report 100%. The source quality MAY be
+  shown in transient normalisation/refusal feedback, but MUST NOT remain build
+  state, an editable control or the represented active quality. When the package
+  cannot resolve that identity or cannot complete it losslessly, the incoming
+  build MUST be refused atomically before activation, the current build MUST
+  remain intact, and the Commander MUST be told which slot and identity could not
+  be normalised.
+  The application MUST NOT accept the candidate by changing only its quality
+  scalar, stripping its engineering, retaining the partial roll or fabricating
+  modifiers. An unresolved module that does not carry partial-quality engineering
+  remains subject to the ordinary preservation rules above. A build is shared so
+  that another Commander can build it, and a partial roll cannot be reproduced at
+  an engineer, so a plan quoting one would describe a ship its reader cannot make.
 - **A fixed mount is never empty.** The seven core internals, armour and the
   built-in cargo hatch are mounts every hull always carries and none can fly
   without; outfitting offers a swap and no route to a ship missing one. A build
@@ -348,4 +371,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 4.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-17
+**Version**: 5.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-18

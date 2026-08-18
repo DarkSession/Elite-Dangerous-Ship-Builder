@@ -1,13 +1,27 @@
 # Edit History Contract
 
+## Upstream gate
+
+This contract cannot be implemented with `@elite-dangerous-almanac/core@0.1.1`. Feature 001 must
+first expose a package-backed, lossless `ActiveLoadoutCheckpoint` boundary using released Almanac
+clone/checkpoint and ship-name/ident update APIs. `BuildSnapshotV1` is a persistence/publication DTO
+and is not an active-session checkpoint.
+
+The release gate must prove that cloning while a source purchase value is temporarily invalid does
+not erase the private provenance needed to restore that value after a later edit. It must also retain
+exact slot/item spelling, order and field absence, unresolved records, ordinary engineering, every
+pre-engineered variant, name, ident and package calculation state. Public event reconstruction, raw
+overlays, inverse commands and app-owned provenance are not substitutes.
+
 ## Scope
 
-`SessionEditHistory<BuildSnapshotV1>` is a framework-agnostic, in-memory checkpoint tape attached to
-the current active-build session. It is not browser history and has no persistence/export codec.
+`SessionEditHistory<ActiveLoadoutCheckpoint>` is a framework-agnostic, in-memory tape attached to the
+current active-build session. Only feature 001's active-build boundary can create, own or restore its
+opaque frames. It is not browser history and has no persistence/export codec.
 
 ## Included decisions
 
-One successful Commander confirmation creates exactly one checkpoint for:
+One successful, changed Commander confirmation creates exactly one frame for:
 
 - stock or variant fit/replace;
 - module removal;
@@ -19,91 +33,86 @@ One successful Commander confirmation creates exactly one checkpoint for:
 - ship name;
 - ship ident.
 
-Blueprint, grade and effect chosen in one apply action are one decision. Repeated intents producing an
-identical canonical snapshot are no-ops and create no checkpoint.
+Blueprint, grade and effect confirmed together are one decision. A package-reported no-op creates no
+frame. History summaries retain an application message key and scalar parameters, never formatted or
+game-text strings.
 
 ## Exclusions
 
-No checkpoint is created for slot selection, chooser search, editor draft changes, viewing conditions,
-dialogs opened/canceled, failed/stale/refused commands, calculation reads, autosave, link publication,
-normalization or provenance-notice changes.
+No frame is created for slot selection, category/anatomy/status mode, chooser search, editor draft,
+open/close/cancel, failed/stale/refused commands, calculation reads, autosave, link publication,
+ingress normalization or provenance-notice changes.
 
 ## Capacity and transitions
 
-Capacity is exactly 100 retained decisions, satisfying the required minimum. A frame contains the
-exact pre-decision `BuildSnapshotV1` plus optional localized intent-summary identity; restoration uses
-only the snapshot.
+Capacity is exactly 100 retained decisions.
 
 ```text
 successful changed edit:
-  append current frame to past
+  edit a lossless package clone
+  append ownership of the prior active loadout to past
   drop oldest while past.length > 100
   future = []
-  current = committed candidate
+  atomically install candidate
 
 undo:
   if past empty -> unchanged
-  prepend current frame to future
-  restore/remove newest past frame
+  move ownership of current loadout to front of future
+  atomically install newest past checkpoint
 
 redo:
   if future empty -> unchanged
-  append current frame to past
-  restore/remove first future frame
+  move ownership of current loadout to past
+  atomically install first future checkpoint
 ```
 
-Undo followed by a new successful edit clears the entire future branch. Moving frames between past
-and future does not increase the retained decision path beyond 100.
+Undo followed by a new successful edit clears the future branch. Moving frames does not increase the
+retained decision path beyond 100.
 
 ## Restoration
 
-Undo/redo reconstructs a fresh `ShipLoadout` through feature 001's canonical snapshot adapter and
-atomically replaces the active loadout. All package validation and calculations are then re-read.
-Restoration must reproduce every modelled field, including original slot spelling, unresolved module
-identity, variant identity, engineering, enabled/priority absence, name and ident.
+Undo/redo swaps a package-owned aggregate/checkpoint into the one active slot; it does not reconstruct
+through `BuildSnapshotV1` or `LoadoutEvent`. All projections, validation and calculations are re-read
+after one active-build revision. Restoration reproduces every package-owned field and provenance.
 
-An impossible reconstruction is a blocking internal/package error. Do not partially restore or skip a
-field. The current build and tape remain unchanged.
+An impossible restore is a blocking package/internal failure. Do not partially restore, skip a field
+or consume either frame; current loadout and tape remain unchanged.
 
-## Reset
+## Reset and normalization
 
-Clear `past` and `future` after every active-build replacement:
+Clear both directions after every successful active-build replacement: stock/hull creation, working
+or named record open, URL load, SLEF import and reload restoration. A refused incoming candidate does
+not reset history because it never replaces the build.
 
-- stock build creation/hull replacement;
-- working or named record open;
-- URL build load;
-- SLEF import;
-- reload restoration.
-
-Fixed-mount and quality normalization run on the detached incoming candidate before this reset and are
-therefore never undoable. Editing a normalized mount later is an ordinary Commander decision.
-That successful edit clears the mount's local fixed-normalisation provenance outside the tape; undo
-restores only the modelled snapshot and does not recreate the disclosure.
+Fixed-mount repair and supported partial-quality completion occur on the detached incoming candidate
+before reset and are never undoable. Editing a normalized mount later is an ordinary Commander
+decision. That edit clears the slot's local fixed-normalization provenance; undo restores build state
+but does not recreate the disclosure metadata.
 
 ## Boundary isolation
 
-The following types/APIs accept no history value:
+These types/APIs accept no history or checkpoint value:
 
 - local record and `BuildSnapshotV1` serializers;
 - compact build-link codec;
 - SLEF serializer;
-- Angular Router/History API synchronization.
+- Angular Router/History synchronization.
 
-Autosave and fragment publication observe the restored active snapshot after undo/redo, just as after
-a normal edit. They never serialize the checkpoint tape or intent summaries.
+Autosave and fragment publication observe the active build after undo/redo just as after a normal
+edit. They never serialize the tape, opaque checkpoints or summaries.
 
-## UI state
+## UI and verification
 
-Expose `canUndo`, `canRedo` and localized next-action summaries. Disable, do not hide, an unavailable
-action where the design-system control remains present. State is textual/programmatic, not color
-alone. Wide canvases show direct undo/redo actions; narrow canvases may place the same actions in the
-accessible workspace action menu without reducing capability.
+Expose `canUndo`, `canRedo` and localized next-action summaries. Disable rather than hide a present
+design-system control. Wide composition shows direct actions; compact composition places the same
+actions in its named accessible overflow region.
 
-## Verification
+Tests must prove:
 
-- 101 successful decisions retain only decisions 2–101 and restore all 100.
-- Undo/redo reproduces byte-equivalent canonical snapshots for every edit kind.
-- Undo then new edit discards redo.
-- No-op, refusal, cancel, search, viewing and normalization create no frame.
-- Build replacement clears both directions.
-- History cannot appear in local JSON, fragment, SLEF or browser navigation assertions.
+- the upstream provenance regression before feature implementation;
+- 101 successful decisions retain decisions 2–101 and restore all 100;
+- every included edit restores exact package state/provenance;
+- undo then new edit discards redo;
+- no-op, refusal, cancel, viewing and normalization create no frame;
+- accepted replacement clears both directions while refused ingress preserves them;
+- no checkpoint/history data reaches JSON, fragments, SLEF or browser navigation.

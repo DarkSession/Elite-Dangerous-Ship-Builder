@@ -1,7 +1,8 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
-This is an acceptance guide for the plan, not implementation code. Almanac 0.1.1 satisfies the
-former engineering gates; features 001 and 011 remain repository prerequisites.
+This is an acceptance guide for the plan, not implementation code. Feature implementation is blocked
+until Almanac releases a lossless `ShipLoadout` clone/checkpoint API. Features 001 and 011 remain
+additional repository prerequisites.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -15,21 +16,31 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
 
 ## 1. Prerequisites and released-API verification
 
-1. Confirm feature 001 supplies one active `ShipLoadout`, lossless `BuildSnapshotV1`, atomic active
-   replacement and autosave/fragment observers.
-2. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
+1. Upgrade from Almanac 0.1.1 to a released version supplying package-owned lossless detached-copy or
+   checkpoint/restore and provenance-preserving ship name/ident update APIs. Reproduce this gate:
+   - import a module with a source `Value`;
+   - fit another module so the source value becomes invalid;
+   - clone/checkpoint that away-state;
+   - restore/edit the original module back;
+   - confirm the original source value and provenance return exactly.
+2. Confirm the same package copy retains exact slot/item spelling, sparse power fields, unresolved
+   records, name/ident, ordinary engineering and every pre-engineered variant.
+3. Confirm feature 001 supplies one active `ShipLoadout`, package-backed clone/checkpoint/swap,
+   atomic replacement and autosave/fragment observers. `BuildSnapshotV1` is persistence only.
+4. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
-3. Confirm pinned Almanac 0.1.1 provides:
+5. Confirm the pinned released Almanac provides:
    - fixed-reward experimental-effect add/replace/remove that preserves the fixed base modifier
      block and variant identity while recomputing effect-dependent stats;
    - complete supported partial-quality normalization with a structured unsupported outcome.
-4. Run the two minimal reproductions in [research.md](./research.md). Mass Manager must change the
+6. Run the engineering reproductions in [research.md](./research.md). Mass Manager must change the
    tech-broker FSD's optimal mass from 1785 to 1856.399902 while preserving `preEngineeredVariant`;
    removing it must return to 1785. Do not proceed if supported partial quality remains partial.
-5. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
+7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected: the Almanac gate is ready; no app modifier rewrite, clamp,
-private catalogue or hidden capability is introduced.
+Expected: all upstream and feature prerequisites are ready. With 0.1.1, stop here and report the
+clone/checkpoint blocker; do not implement event reconstruction, raw provenance overlays, inverse
+commands or intent replay.
 
 ## 2. Inspect every slot
 
@@ -51,13 +62,16 @@ Expected:
 ## 3. Verify fixed-mount normalization
 
 1. Prepare imports with missing and unresolved armour/core/cargo-hatch entries and at least one
-   unresolved removable entry.
+   unresolved removable entry. Include unresolved partial-quality fixed-core, cargo-hatch, removable
+   and unknown-original-slot cases in the ingress suite.
 2. Run the candidate through the shared ingress pipeline.
 3. Observe the active build before any calculation presenter reads it.
 4. Inspect normalization notices and history controls.
 
 Expected:
 
+- raw partial evidence is captured/resolved before construction, correlated after construction and
+  completed/refused before fixed repair;
 - only slots whose package reason is `requiredSlot`/`cargoHatch` are normalized;
 - `fromLoadout()` restores cargo and `repairFixedMount()` repairs remaining fixed mounts from package defaults;
 - removable unresolved entry is untouched;
@@ -116,7 +130,7 @@ Expected:
 Expected:
 
 - facts, enabled and priority are available; replace/search/engineering/remove are absent;
-- UI `1..5` maps to package `0..4` without changing absence in lossless snapshots;
+- UI `1..5` maps to package `0..4` without fabricating an absent source value;
 - power-dependent results refresh from `ShipLoadout`;
 - module remains fitted, so mass/cost remain.
 
@@ -154,7 +168,8 @@ Expected:
 ## 9. Normalize imported quality
 
 1. Import known ordinary, Mercenary, fixed reward plus later effect, and package-supported uncommon
-   recipes at partial qualities.
+   recipes at partial qualities. Add unresolved partial cargo-hatch, fixed-core, removable and
+   unknown-original-slot candidates, plus unresolved quality-1 and unengineered controls.
 2. Complete ingress and inspect active engineering/effective stats/notices before any calculations.
 3. Save/share/export and reload the result.
 
@@ -164,12 +179,16 @@ Expected:
 - notices name original quality/slot and the 100% result;
 - active/persisted/published/exported build represents quality 1;
 - normalization creates no undo step;
+- every unresolved/unsupported partial candidate is atomically refused before activation with exact
+  slot/source identity and package reason; the current build, revision, dirty state, storage,
+  fragment, notices and history remain unchanged;
+- unresolved quality-1 and unengineered controls remain accepted/visible;
 - a structured unsupported package outcome never becomes fabricated modifiers or silent partial state.
 
 ## 10. Exercise 100-decision undo/redo
 
 1. Mix fits, remove, engineering, effect, power, name and ident edits.
-2. Undo and redo each intermediate state, comparing canonical snapshots and package results.
+2. Undo and redo each intermediate state, comparing package-owned state, provenance and results.
 3. Undo several, make a new edit and check redo.
 4. Execute 101 decisions and traverse the retained history.
 5. Open/create/import/restore a replacement build.
@@ -178,7 +197,7 @@ Expected:
 
 - one successful decision equals one checkpoint; draft/no-op/cancel/refusal/viewing/normalization equals
   none;
-- every restored snapshot is exact and results recompute through the package;
+- every restored package checkpoint is exact, including source-purchase provenance;
 - new edit clears redo;
 - newest 100 decisions remain after 101;
 - replacement resets both directions;
@@ -208,5 +227,5 @@ project/axe scan runs, and no test/browser is skipped. Search production source 
 barrels, color/spacing literals outside tokens, hard-coded application strings, history serialization,
 raw modifier rewrites and local fit/variant rules.
 
-Expected: the released Almanac regressions pass and the full suite is green once feature 001/011
-prerequisites are present. A green subset is not feature completion.
+Expected: the released Almanac clone and engineering regressions pass and the full suite is green
+once feature 001/011 prerequisites are present. A green subset is not feature completion.

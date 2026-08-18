@@ -1,213 +1,230 @@
 # Data Model: Module Outfitting and Engineering
 
-All game-bearing values are immutable projections of the active
-`@elite-dangerous-almanac/core` `ShipLoadout`. Application records below represent editor workflow,
-search and history only. `BuildSnapshotV1` is defined by feature 001 and is reused unchanged.
+Game-bearing values are current immutable projections of one committed
+`@elite-dangerous-almanac/core` `ShipLoadout`. Application records below model workflow, exact
+in-memory restoration, search and history; they never replace package facts or calculations.
 
 ## OutfittingState
 
-Ephemeral application state layered over the shared active build.
+Ephemeral application state layered over feature 001's active build.
 
-| Field              | Type                                      | Rule                                                                             |
-| ------------------ | ----------------------------------------- | -------------------------------------------------------------------------------- |
-| `buildRevision`    | non-negative integer                      | Increments once per committed edit or replacement; never persisted as game state |
-| `selectedSlotKey`  | `string \| null`                          | Exact package/game slot key; selection only                                      |
-| `surface`          | `workspace \| replacement \| engineering` | Responsive view state inside `/build`; not browser/edit history                  |
-| `candidateQuery`   | `CandidateQueryState \| null`             | Present only for a replaceable selected slot                                     |
-| `engineeringDraft` | `EngineeringDraft \| null`                | Present only while editing a supported fitted module                             |
-| `history`          | `SessionHistoryState`                     | In-memory only                                                                   |
-| `lastEditFailure`  | `EditFailure \| null`                     | Structured application/package refusal for the latest attempted decision         |
+| Field              | Type                                      | Rule                                                                       |
+| ------------------ | ----------------------------------------- | -------------------------------------------------------------------------- |
+| `buildRevision`    | non-negative integer                      | Changes once per committed edit/replacement; never game or persisted state |
+| `selectedSlotKey`  | `string \| null`                          | Exact package/game slot key; view state only                               |
+| `surface`          | `workspace \| replacement \| engineering` | In-document view state; never route/browser history                        |
+| `candidateQuery`   | `CandidateQueryState \| null`             | Current chooser state for the selected exact revision                      |
+| `engineeringDraft` | `EngineeringDraft \| null`                | Uncommitted selection state                                                |
+| `history`          | `SessionHistoryState`                     | In-memory checkpoints only                                                 |
+| `lastEditFailure`  | `EditFailure \| null`                     | Latest package/application workflow refusal                                |
 
 Invariants:
 
-- `OutfittingState` cannot contain a second `ShipLoadout` or fitted-module collection.
-- A missing active build clears selection, drafts and history and renders the no-build state.
-- Selection/surface/query/draft changes never increment the active build revision.
-- A build replacement clears all fields except the newly established build revision and its
-  normalization notices.
+- Only feature 001 owns the committed `ShipLoadout`; this state contains no second live aggregate.
+- A temporary transaction/preview candidate is scoped to one service call and never published.
+- No active build clears selection, draft, query and history.
+- Selection, category/anatomy/status mode, search, open/close and draft changes never change the
+  revision or history.
+- Active-build replacement clears editing state/history after ingress succeeds. Ingress refusal keeps
+  all current state and separately publishes its refusal surface.
 
-## SlotProjection
+## SlotView
 
-One current package slot presented by exact game key.
+One current `LoadoutSlot`, identified by exact game key.
 
-| Field             | Type                              | Source/rule                                              |
-| ----------------- | --------------------------------- | -------------------------------------------------------- |
-| `key`             | string                            | `LoadoutSlot.key`; identity and command argument         |
-| `name`            | package string/unavailable        | `LoadoutSlot.name`                                       |
-| `kind`            | package `SlotKind`                | `LoadoutSlot.kind`                                       |
-| `size`            | package number/unavailable        | `LoadoutSlot.size`                                       |
-| `restriction`     | package value/unavailable         | `LoadoutSlot.restriction`                                |
-| `module`          | `FittedModuleProjection \| null`  | Null only when package slot is empty                     |
-| `removable`       | boolean                           | `LoadoutSlot.removable`                                  |
-| `immovableReason` | package `ImmovableReason \| null` | `cargoHatch`, `moduleLimit`, `requiredSlot` or absent    |
-| `capabilities`    | `SlotCapabilities`                | Presence of package results/menus, not symbol heuristics |
+| Field             | Type                       | Source/rule                                                        |
+| ----------------- | -------------------------- | ------------------------------------------------------------------ |
+| `key`             | string                     | `LoadoutSlot.key`; identity and command argument                   |
+| `canonicalName`   | string                     | `LoadoutSlot.name`; canonical package text, not assumed localized  |
+| `displayName`     | `GameText`                 | `getLoadoutSlotName(slot, locale)` or disclosed canonical fallback |
+| `kind`            | package `SlotKind`         | `LoadoutSlot.kind`                                                 |
+| `size`            | number/unavailable         | Package slot value                                                 |
+| `restriction`     | package value/unavailable  | Raw package restriction identity                                   |
+| `restrictionText` | `GameText \| null`         | `getSlotRestrictionLabel()` or disclosed fallback/unavailable      |
+| `module`          | `FittedModuleView \| null` | Current fitted snapshot or empty                                   |
+| `removable`       | boolean                    | Exact `LoadoutSlot.removable`                                      |
+| `immovableReason` | package reason/null        | `cargoHatch`, `moduleLimit`, `requiredSlot` or absent              |
+| `capabilities`    | `SlotCapabilities`         | Derived only from current package operation/query evidence         |
 
-`SlotCapabilities` has explicit booleans for `replace`, `remove`, `engineer`, `setEnabled` and
-`setPriority`. `replace` requires a non-empty successful `modulesForSlot()` query; `remove` mirrors
-`removable`; engineering comes from package menus/current state; cargo hatch exposes only power
-controls. Capability calculation never admits an operation the package did not offer.
+`GameText` is feature 011's `{text, translationStatus}` presentation value. `SlotCapabilities`
+separates `canOpenReplacement`, `canFitSelection`, `canRemove`, `canOpenEngineering`, `canSetEnabled`
+and `canSetPriority`. A successful empty candidate query may open and show `packageEmpty`; it does not
+make a fit action available. Cargo hatch exposes power controls only because its package menus are
+empty and the mount is immutable.
 
-## FittedModuleProjection
+## FittedModuleView
 
-| Field               | Type                              | Source/rule                                                                             |
-| ------------------- | --------------------------------- | --------------------------------------------------------------------------------------- |
-| `slotKey`           | string                            | `FittedModule.slot`; retained spelling                                                  |
-| `symbol`            | string                            | `FittedModule.symbol`; resolved or unresolved identity                                  |
-| `enabled`           | `boolean \| unspecified`          | `FittedModule.on`; presenter may show package effective default without erasing absence |
-| `priority`          | `0..4 \| unspecified`             | Package zero-based value; UI label is localized `1..5`                                  |
-| `raw`               | package `LoadoutModule`           | Read-only lossless state; never mutated                                                 |
-| `article`           | `OutfittingModule \| unavailable` | `FittedModule.stats`                                                                    |
-| `effectiveArticle`  | `OutfittingModule \| unavailable` | `FittedModule.effectiveStats`                                                           |
-| `engineering`       | `EngineeringProjection \| null`   | Current package engineering block                                                       |
-| `variant`           | `VariantIdentity \| null`         | Only `FittedModule.preEngineeredVariant`                                                |
-| `acquisitionLabels` | readonly `AcquisitionLabel[]`     | Projection of current package variant + entitlement                                     |
+| Field              | Type                              | Source/rule                                          |
+| ------------------ | --------------------------------- | ---------------------------------------------------- |
+| `slotKey`          | string                            | `FittedModule.slot`, retained spelling               |
+| `symbol`           | string                            | Package or unresolved identity                       |
+| `enabled`          | `boolean \| unspecified`          | `FittedModule.on`; absence is preserved              |
+| `priority`         | `0..4 \| unspecified`             | Package value; UI displays localized `1..5`          |
+| `raw`              | package `LoadoutModule`           | Frozen lossless record; never mutated                |
+| `article`          | `OutfittingModule \| unavailable` | `FittedModule.stats`                                 |
+| `effectiveArticle` | `OutfittingModule \| unavailable` | `FittedModule.effectiveStats`                        |
+| `engineering`      | `EngineeringView \| null`         | Current raw/package-resolved engineering             |
+| `variant`          | `PreEngineeredVariant \| null`    | Only `FittedModule.preEngineeredVariant`             |
+| `labels`           | readonly `AcquisitionLabel[]`     | Package entitlement and identified route projections |
 
-`stats === null` means unresolved and remains visible. For a fixed reward, `stats` describes the
-resolved reward article; it must not be labeled universally as stock. `effectiveStats` is the
-post-engineering source for current attributes.
+`stats === null` and missing fields remain unavailable. A fixed reward's `stats` is the resolved
+article, not necessarily stock. Variant purchase grade remains separate from current ordinary grade.
 
-## UnresolvedSlotProjection
+## UnresolvedEntryView
 
-An entry from `fittedModules()` whose original slot is not described by `slots()`.
+A `fittedModules()` record whose original slot is absent from `slots()`.
 
-| Field          | Type                                 | Rule                                                     |
-| -------------- | ------------------------------------ | -------------------------------------------------------- |
-| `slotKey`      | string                               | Original `FittedModule.slot` and spelling                |
-| `symbol`       | string                               | Original module identity                                 |
-| `raw`          | package `LoadoutModule`              | Lossless package snapshot                                |
-| `packageIssue` | package validation issue/unavailable | Exact matching issue where supplied                      |
-| `capabilities` | none                                 | No fit/edit operation is fabricated for an unknown mount |
+| Field          | Type                                 | Rule                                          |
+| -------------- | ------------------------------------ | --------------------------------------------- |
+| `slotKey`      | string                               | Exact original spelling                       |
+| `symbol`       | string                               | Exact unresolved module identity              |
+| `raw`          | package `LoadoutModule`              | Preserved source record                       |
+| `packageIssue` | package validation issue/unavailable | Matching package issue when present           |
+| `capabilities` | none                                 | No operation is invented for an unknown mount |
 
-These entries render in an unresolved group after package-described slots. They remain in
-snapshot/save/link/SLEF boundaries as those formats permit.
+These entries appear after known slot groups and remain in feature 001/004 boundaries where those
+formats allow them. An unengineered or quality-1 unresolved entry is valid application state; a
+partial unresolved entry is refused before activation.
 
 ## ModuleChoice
 
-A chooser item produced only from `modulesForSlot()` and package variants.
-
 ```ts
-type ModuleChoice = StockChoice | VariantChoice;
-
-interface StockChoice {
-  kind: 'stock';
-  key: string;
-  module: OutfittingModule;
-  sourceOrdinal: number;
-  presentation: ChoicePresentation;
-}
-
-interface VariantChoice {
-  kind: 'variant';
-  key: string;
-  module: OutfittingModule;
-  variant: PreEngineeredVariant;
-  sourceOrdinal: number;
-  variantOrdinal: number;
-  presentation: ChoicePresentation;
-}
+type ModuleChoice =
+  | {
+      kind: 'stock';
+      key: string;
+      module: OutfittingModule;
+      sourceOrdinal: number;
+      presentation: ChoicePresentation;
+    }
+  | {
+      kind: 'variant';
+      key: string;
+      module: OutfittingModule;
+      variant: PreEngineeredVariant;
+      sourceOrdinal: number;
+      variantOrdinal: number;
+      presentation: ChoicePresentation;
+    };
 ```
 
-The stable key is a collision-safe encoding of `kind`, module symbol, and for a variant its blueprint
-fdname, grade, optional effect, acquisition and variant ordinal. It is UI identity only; the exact
-package object is passed to the edit transaction.
+The UI key encodes kind, module symbol and, for a variant, blueprint fdname, grade, effect absence/id,
+acquisition and package ordinal. It is view identity only. A fit passes the retained exact package
+object from the matching build revision.
 
 ### ChoicePresentation
 
-| Field           | Type                          | Rule                                                            |
-| --------------- | ----------------------------- | --------------------------------------------------------------- |
-| `displayedName` | string + translation status   | Package localized module name or canonical disclosed fallback   |
-| `class`         | package number                | Never parsed from symbol/text                                   |
-| `rating`        | package `ModuleRating`        | Never replaced with a private grade                             |
-| `mount`         | package `ModuleMount \| null` | Search/display only when present                                |
-| `section`       | `standard \| uniqueReward`    | Unique only for package community-goal/event-reward acquisition |
-| `labels`        | readonly `AcquisitionLabel[]` | Entitlement and route labels may coexist                        |
-| `purchaseGrade` | package grade or null         | Variant grade; never current ordinary grade                     |
+| Field           | Type                          | Rule                                                        |
+| --------------- | ----------------------------- | ----------------------------------------------------------- |
+| `name`          | `GameText`                    | Package localized module/variant name or disclosed fallback |
+| `class`         | package number                | Never parsed from identity/text                             |
+| `rating`        | package `ModuleRating`        | Exact package value                                         |
+| `mount`         | package `ModuleMount \| null` | Exact package value; indexed when present                   |
+| `section`       | `standard \| uniqueReward`    | Unique only for community/event acquisition                 |
+| `labels`        | readonly `AcquisitionLabel[]` | Route and entitlement may stack                             |
+| `purchaseGrade` | package grade/null            | Variant purchase state, not current grade                   |
+| `facts`         | readonly package values       | Only in-scope values; unavailable remains explicit          |
 
 ## AcquisitionLabel
 
-An application-owned localized explanation of package data, not a new game fact.
+Application-localized explanations of exact package enum/token values.
 
-| Field          | Type                                                                                                               | Rule                                                             |
-| -------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `kind`         | `entitlement \| mercenary \| techBroker \| communityGoal \| eventReward \| uniqueReward \| notOrdinarilyAvailable` | Derived only from package enum/presence                          |
-| `packageValue` | string                                                                                                             | Entitlement token or acquisition enum                            |
-| `messageKey`   | localization key                                                                                                   | Application phrasing                                             |
-| `params`       | readonly scalar map                                                                                                | May include raw package token; no private entitlement-name table |
+| Field          | Type                                                                                                               | Rule                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `kind`         | `entitlement \| mercenary \| techBroker \| communityGoal \| eventReward \| uniqueReward \| notOrdinarilyAvailable` | Direct projection only                            |
+| `packageValue` | string                                                                                                             | Exact package token/enum                          |
+| `messageKey`   | localization key                                                                                                   | App-owned explanation, not private game-name data |
+| `params`       | readonly scalar map                                                                                                | May include disclosed raw package token           |
 
 ## CandidateQueryState
 
-| Field           | Type                                           | Rule                                           |
-| --------------- | ---------------------------------------------- | ---------------------------------------------- |
-| `slotKey`       | string                                         | Exact selected game slot                       |
-| `buildRevision` | integer                                        | Invalidates results after any edit             |
-| `locale`        | BCP 47 tag                                     | Invalidates display/search index               |
-| `query`         | string                                         | Commander input, retained verbatim for editing |
-| `index`         | readonly `CandidateSearchEntry[]`              | Immutable projection over all choices          |
-| `results`       | readonly `ModuleChoice[]`                      | Filtered in required section/group order       |
-| `status`        | `ready \| noMatches \| unavailable \| refused` | Explicit, never inferred from blank DOM        |
+| Field           | Type                                                                | Rule                                                     |
+| --------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
+| `slotKey`       | string                                                              | Exact selected mount                                     |
+| `buildRevision` | integer                                                             | Invalidates every retained choice after edit/replacement |
+| `locale`        | BCP 47 tag                                                          | Invalidates display/index                                |
+| `query`         | string                                                              | Retained Commander input                                 |
+| `choices`       | readonly `ModuleChoice[]`                                           | Full ordered package expansion                           |
+| `index`         | readonly `CandidateSearchEntry[]`                                   | Four-field immutable index                               |
+| `results`       | readonly `ModuleChoice[]`                                           | Current ordered matches                                  |
+| `status`        | `loading \| ready \| noMatches \| packageEmpty \| stale \| refused` | Distinct observable state                                |
 
-### CandidateSearchEntry
+Each `CandidateSearchEntry` contains folded displayed name, decimal class, rating and mount plus its
+choice key. Every folded query term must occur in at least one of those fields. `noMatches` retains a
+non-empty query and clear action; `packageEmpty` means a successful package query returned nothing.
 
-| Field          | Type   | Rule                                        |
-| -------------- | ------ | ------------------------------------------- |
-| `choiceKey`    | string | Joins to exact `ModuleChoice`               |
-| `foldedName`   | string | Locale-folded displayed package module name |
-| `foldedClass`  | string | Folded decimal class                        |
-| `foldedRating` | string | Folded package rating                       |
-| `foldedMount`  | string | Folded package mount or empty               |
+## EngineeringView and EngineeringDraft
 
-All non-empty folded query terms must match at least one field on one entry. Search never mutates or
-creates choices.
+`EngineeringView` presents current package state:
 
-## EngineeringProjection
+| Field             | Type                          | Rule                                     |
+| ----------------- | ----------------------------- | ---------------------------------------- |
+| `blueprintFdname` | string/unavailable            | Current package raw identity             |
+| `currentGrade`    | `1..5`/unavailable            | Current ordinary grade                   |
+| `quality`         | literal `1`                   | Every active modeled grade after ingress |
+| `effectFdname`    | `string \| null`              | Current effect identity                  |
+| `modifiers`       | package modifiers/unavailable | Never locally reconstructed              |
+| `purchaseVariant` | package variant/null          | Separate identified fixed purchase       |
 
-| Field             | Type                                   | Source/rule                                                             |
-| ----------------- | -------------------------------------- | ----------------------------------------------------------------------- |
-| `blueprintFdname` | string                                 | Current `Engineering.BlueprintName`                                     |
-| `currentGrade`    | `1..5`                                 | Current `Engineering.Level`                                             |
-| `quality`         | number                                 | Must be `1` after ingress; partial source value exists only in a notice |
-| `effectFdname`    | `string \| null`                       | Current `Engineering.ExperimentalEffect`                                |
-| `modifiers`       | readonly package modifiers/unavailable | Current package block; never recalculated in app                        |
-| `purchaseVariant` | `VariantIdentity \| null`              | Separate `preEngineeredVariant`, including purchase grade               |
-| `canClear`        | boolean                                | Package-supported current article state                                 |
+`EngineeringDraft` is non-build state:
 
-Purchase grade and current ordinary grade are separate even when their blueprint fdname is the same.
-Clearing a Mercenary recipe follows the package and can set `purchaseVariant` to null.
+| Field                     | Type                                | Rule                                         |
+| ------------------------- | ----------------------------------- | -------------------------------------------- |
+| `slotKey`                 | string                              | Exact selected slot                          |
+| `baseBuildRevision`       | integer                             | Apply refuses/rebuilds when stale            |
+| `blueprints`              | readonly `AvailableBlueprint[]`     | Exact current package menu                   |
+| `selectedBlueprintFdname` | `string \| null`                    | Null means no draft selection, not clear-all |
+| `selectedRoute`           | package route/null                  | From selected descriptor                     |
+| `selectedGrade`           | package-offered grade/null          | Must occur in selected descriptor            |
+| `effects`                 | readonly fdname[]                   | Exact current package menu                   |
+| `selectedEffectFdname`    | `string \| null`                    | Null explicitly means no effect              |
+| `preview`                 | detached package result/unavailable | Read from candidate `stats`/`effectiveStats` |
+| `cost`                    | `EngineeringCostView`               | Package cost results only                    |
 
-## EngineeringDraft
+`clearEngineering` is a separate confirmed intent. It is never encoded as a null blueprint choice.
+Opening/changing/canceling a draft creates no history. A rejected incoming partial build never
+creates an editor draft.
 
-Non-build editor input. Opening/canceling/changing it has no history effect.
+## EngineeringCostView
 
-| Field                     | Type                            | Rule                                                        |
-| ------------------------- | ------------------------------- | ----------------------------------------------------------- |
-| `slotKey`                 | string                          | Exact selected slot                                         |
-| `baseBuildRevision`       | integer                         | Apply is refused/rebased if active state changed underneath |
-| `blueprints`              | readonly `AvailableBlueprint[]` | Exact package menu                                          |
-| `selectedBlueprintFdname` | `string \| null`                | Package fdname or clear-all intent                          |
-| `selectedRoute`           | `ordinary \| mercenary \| null` | From selected `AvailableBlueprint`                          |
-| `selectedGrade`           | package-offered grade or null   | Must occur in that package descriptor                       |
-| `effects`                 | readonly fdname[]               | Exact `availableExperimentalEffects()` result               |
-| `selectedEffectFdname`    | `string \| null`                | Package fdname or no effect                                 |
-| `quality`                 | literal `1`                     | Fixed invariant, not a user field                           |
-| `attributes`              | before/after package values     | `stats`/candidate `effectiveStats`; unavailable preserved   |
-| `cost`                    | `EngineeringCostProjection`     | Package material results only                               |
+| Field           | Type                                               | Rule                                                     |
+| --------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `blueprint`     | `known(materials[]) \| unavailable \| notSelected` | Complete climb for a selected package menu recipe        |
+| `singleRoll`    | `known(materials[]) \| unavailable \| notShown`    | Only if UI explicitly presents per-roll cost             |
+| `experimental`  | `known(materials[]) \| unavailable \| notSelected` | New selected effect; removal has no craft cost           |
+| `combined`      | `known(materials[]) \| unavailable`                | `sumMaterials()` only when every selected input is known |
+| `fixedPurchase` | `notCrafted \| null`                               | Baked reward is never priced from its identity           |
+| `mercCoin`      | package number/null                                | Purchase currency, separate from materials/credits       |
 
-The apply transaction reconstructs a detached candidate and invokes the package; the draft itself
-does not contain modifier calculations.
+`null` package cost maps to unavailable and `[]` to known zero. Same-recipe continuation passes the
+current completed grade; a replacement recipe starts from zero. Names/numbers use package i18n and
+active-locale formatters.
 
-## EngineeringCostProjection
+## ActiveLoadoutCheckpoint
 
-| Field           | Type                                               | Rule                                                       |
-| --------------- | -------------------------------------------------- | ---------------------------------------------------------- |
-| `blueprint`     | `known(materials[]) \| unavailable`                | `getBlueprintCost`; `[]` is known zero, `null` unavailable |
-| `experimental`  | `known(materials[]) \| unavailable \| notSelected` | `getExperimentalEffectCost`                                |
-| `combined`      | `known(materials[]) \| unavailable`                | `sumMaterials` only when every selected source is known    |
-| `fixedPurchase` | literal `notCrafted` or null                       | Baked fixed reward adds no material list                   |
-| `mercCoin`      | package number or null                             | Purchase currency, never combined with materials/credits   |
+An opaque, package-owned, in-memory-only checkpoint used by detached transactions and history after
+the required Almanac clone/checkpoint and provenance-preserving ship-name/ident update APIs are
+released. The application cannot inspect, construct or serialize its private aggregate state.
 
-Material identity and name are package values. Formatting/localized lookup is a presentation concern.
+```ts
+declare const activeLoadoutCheckpointBrand: unique symbol;
 
-## BuildEditIntent
+interface ActiveLoadoutCheckpoint {
+  readonly [activeLoadoutCheckpointBrand]: true;
+}
+```
+
+Feature 001's active-build boundary alone may create a detached working clone, take ownership of a
+prior active instance/checkpoint, or atomically swap one into the active slot. Components and feature
+002 services receive only immutable projections and capability methods.
+
+Pinned Almanac 0.1.1 cannot implement this type losslessly: `BuildSnapshotV1` omits package-private
+source-purchase provenance, and `toLoadoutEvent({ credits: 'source' })` omits currently invalid source
+values. Raw overlays or app-owned provenance fields are prohibited. `BuildSnapshotV1` remains only
+the durable/publication model. No implementation task beyond the upstream gate may begin until this
+opaque boundary is backed by a released package API.
+
+## BuildEditIntent and BuildEditResult
 
 ```ts
 type BuildEditIntent =
@@ -227,72 +244,63 @@ type BuildEditIntent =
   | { kind: 'setPriority'; slotKey: string; priority: 0 | 1 | 2 | 3 | 4 }
   | { kind: 'setShipName'; value: string | null }
   | { kind: 'setShipIdent'; value: string | null };
-```
 
-All identities are package/game keys. An intent never carries a locally computed module, modifier or
-cost. `setExperimental` binds directly to released `setExperimentalEffect()` for supported fixed
-reward articles; no app-side special case is allowed.
-
-## BuildEditResult
-
-```ts
 type BuildEditResult =
-  | { kind: 'committed'; revision: number; snapshot: BuildSnapshotV1 }
+  | { kind: 'committed'; revision: number }
   | { kind: 'unchanged'; revision: number }
   | { kind: 'refused'; failure: EditFailure; revision: number };
 ```
 
-### EditFailure
+`EditFailure` retains category (`packageEdit`, `packageResult`, `staleDraft`, `unavailableOperation`,
+`unexpectedPackageRefusal`), exact slot, package code/constraint/params where present and an
+app-localized framing key. Package `LoadoutEditError` text comes through the package diagnostic
+presenter, never a private translation. Refusal changes no active state, persistence, fragment or
+history.
 
-| Field        | Type                                                                            | Rule                                             |
-| ------------ | ------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `kind`       | `packageEdit \| staleDraft \| unavailableOperation \| unexpectedPackageRefusal` | Stable app category                              |
-| `code`       | package error code or app code                                                  | `LoadoutEditError.code` retained where available |
-| `constraint` | package constraint or null                                                      | Never parsed from message                        |
-| `params`     | language-neutral readonly map                                                   | Package params plus safe app context             |
-| `slotKey`    | string or null                                                                  | Exact affected slot                              |
-| `messageKey` | localization key                                                                | Presenter chooses from structured fields         |
+## Ingress records and outcomes
 
-Refusal never mutates the active build, revision, autosave, fragment or history.
+### SourcePartialEngineering
 
-## NormalizationResult
+Captured from validated input before package construction.
+
+| Field             | Type                    | Rule                                   |
+| ----------------- | ----------------------- | -------------------------------------- |
+| `slotKey`         | string                  | Exact source slot                      |
+| `moduleSymbol`    | string                  | Exact source identity                  |
+| `blueprintFdname` | string/unavailable      | Source engineering identity            |
+| `effectFdname`    | string/null/unavailable | Source effect identity                 |
+| `grade`           | number/unavailable      | Source grade                           |
+| `quality`         | number in `[0,1)`       | Only validated partials enter this set |
+
+### IngressResult
 
 ```ts
-type NormalizationResult =
-  | { kind: 'unchanged'; candidate: ShipLoadout }
-  | { kind: 'normalized'; candidate: ShipLoadout; notices: NormalizationNotice[] }
-  | { kind: 'blocked'; failure: NormalizationFailure };
+type IngressResult =
+  | { kind: 'accepted'; candidate: ShipLoadout; notices: IngressNotice[] }
+  | { kind: 'refused'; failures: PartialEngineeringFailure[] };
 ```
 
-### NormalizationNotice
+`IngressNotice` is one of:
 
-| Field                 | Type                                                         | Rule                                                     |
-| --------------------- | ------------------------------------------------------------ | -------------------------------------------------------- |
-| `kind`                | `fixedMountFilled \| fixedMountReplaced \| qualityCompleted` | Explicit sanctioned normalization                        |
-| `slotKey`             | string                                                       | Original/package slot key                                |
-| `originalIdentity`    | string or null                                               | Missing is null; unresolved identity retained for notice |
-| `replacementIdentity` | string                                                       | Package default or same engineering identity             |
-| `originalQuality`     | number or null                                               | Present only for quality normalization                   |
-| `resultQuality`       | literal `1` or null                                          | Present only for quality normalization                   |
+- `qualityCompleted`: exact slot/identity, source quality and result quality `1`;
+- `fixedMountFilled` or `fixedMountReplaced`: original/absent identity and package default;
+- `fixedMountDefaultUnavailable`: exact slot, optional unresolved default identity and incomplete
+  status.
 
-Notices are local provenance. They are not game fields and do not enter edit history, link or SLEF.
-Feature 001's `LocalRecordV1.fixedMountNormalisation` retains fixed-mount entries until a successful
-Commander edit changes the exact affected mount; feature 003 presents them separately from package
-issues. Quality-completion notices remain transient unless a later accepted specification adds an
-equally explicit persistence rule.
+`PartialEngineeringFailure` contains exact source slot/module/engineering identity and either package
+resolution/construction mismatch or `EngineeringNormalizationResult` code/params. It never contains a
+partially mutated candidate. If any partial fails, discard the whole candidate and publish the
+pre-activation refusal; successful earlier normalizations create no notice on the active build.
 
-### NormalizationFailure
-
-Structured failure returned when the package cannot satisfy a mandatory normalization without loss.
-It identifies slot, original identity, normalization kind and package outcome. With the accepted spec,
-such a path is an upstream blocker rather than a shippable retained-partial state.
+Fixed-mount notices may persist under feature 001's local provenance contract. Quality-completion and
+refusal records are workflow feedback, never build, history, link or SLEF state.
 
 ## SessionHistoryState
 
 ```ts
 interface HistoryFrame {
-  snapshot: BuildSnapshotV1;
-  intent: HistoryIntentSummary;
+  checkpoint: ActiveLoadoutCheckpoint;
+  intent: HistoryIntentSummary; // unformatted message key + scalar params
 }
 
 interface SessionHistoryState {
@@ -302,33 +310,29 @@ interface SessionHistoryState {
 }
 ```
 
-`HistoryIntentSummary` contains only a localization key and safe package identities needed to label
-the action. Restoration correctness depends solely on `snapshot`.
-
 Transitions:
 
 ```text
-commit changed intent:
-  past = newest100(past + current checkpoint)
+changed Commander edit:
+  candidate = packageClone(current)
+  apply intent to candidate
+  past = newest100(past + takeOwnership(current))
   future = []
-  current = candidate
+  current = committed candidate
 
-undo when past non-empty:
-  future = [current checkpoint] + future
-  current = last(past)
-  past = past without last
+undo:
+  future = [takeOwnership(current)] + future
+  current = restoreOwned(last(past)); past = past without last
 
-redo when future non-empty:
-  past = past + current checkpoint
-  current = first(future)
-  future = future without first
+redo:
+  past = newest100(past + takeOwnership(current))
+  current = restoreOwned(first(future)); future = future without first
 
-active-build replacement:
-  past = []
-  future = []
-  current = normalized replacement
+successful active-build replacement:
+  past = []; future = []; current = accepted candidate
 ```
 
-The history service exposes snapshots only to the build transaction/restoration adapter. Storage,
-fragment, SLEF and browser-history interfaces accept no `SessionHistoryState`, making accidental
-serialization a type-level boundary violation.
+Restore/swap is package-owned and atomic; it never reconstructs from an application DTO. A package
+checkpoint failure leaves current/history unchanged and reports a blocking internal/package failure.
+Storage, fragment, SLEF and browser-navigation APIs accept no `SessionHistoryState` or
+`ActiveLoadoutCheckpoint`.

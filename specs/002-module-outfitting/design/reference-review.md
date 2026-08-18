@@ -6,6 +6,10 @@
 - Canvas **1c**: wide outfitting workspace, module manifest and engineering/material regions
 - Canvas **1d**: narrow slot list, change-module layer and engineering layer
 
+Canvas 1c is 1560px wide. Canvas 1d is 390px wide with an 844px minimum root height. No tablet or
+intermediate-width canvas exists; [responsive-composition.md](./responsive-composition.md) records
+the intentional tablet interpolation.
+
 The canvas is a visual/product reference, not source code, package data or a component implementation.
 
 ## Adopted decisions
@@ -19,6 +23,12 @@ The canvas is a visual/product reference, not source code, package data or a com
 | Direct wide undo/redo and compact narrow actions      | Same session-history capability at every width.                                                    |
 | Per-module enabled/priority control                   | Separate accessible switch/select, with package zero-based values and one-based labels.            |
 | Visible engineering/material context before apply     | Draft shows package current/candidate facts and costs before one atomic decision.                  |
+
+Exact responsive differences retained: wide offers `ALL` plus four fitting categories while compact
+offers the four categories without `ALL`; wide Mounts may show top/bottom anatomy simultaneously
+while compact toggles them; wide history is direct while compact history is in the overflow action
+region; compact has persistent selected-slot actions. Canvas 1d places anatomy/status before fitting,
+and the plan uses that same compact order.
 
 ## Required adaptations
 
@@ -42,7 +52,9 @@ The canvas is a visual/product reference, not source code, package data or a com
 ### Normalization and engineering
 
 - The canvas/help statement that imported modules keep a partial roll contradicts the constitution.
-  Every modelled grade is completed to 100%, with original quality reported in a notice.
+  Package-supported partials complete to 100% with notice; unresolved/unsupported partial candidates
+  are refused atomically before activation. Fully rolled or unengineered unresolved entries remain
+  supported.
 - Fixed missing/unresolved mounts are repaired from package defaults before the workspace/calculations
   render, with slot and replaced identity disclosed.
 - The engineering surface has distinct effect-only and clear-all behavior. It cannot rewrite raw
@@ -59,8 +71,13 @@ The canvas is a visual/product reference, not source code, package data or a com
   enabled and priority are distinct named controls.
 - Candidate selection uses radio/button semantics and explicit apply; editor draft changes are not
   immediate history steps.
+- Canvas 1c does not show desktop Fit/Apply/Cancel controls. Adding explicit confirmation and draft
+  semantics at every width is a deliberate safety/history deviation: selection has no side effect and
+  one confirmation produces one atomic Commander decision.
 - Search gains a visible label, exact result count, polite announcement, explicit no-match status and
   clear action.
+- Canvas 1d's weapon-family chips are omitted because neither the specification nor a required package
+  grouping supplies that filter. The required four-field AND search remains.
 - Selected, engineered, disabled, invalid/unresolved and reward states gain text/programmatic state;
   amber border, opacity, dots and icons are never the sole cue.
 

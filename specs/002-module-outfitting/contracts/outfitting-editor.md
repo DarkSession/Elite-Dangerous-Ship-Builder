@@ -2,10 +2,11 @@
 
 ## Boundary
 
-The editor receives feature 001's current `BuildSnapshotV1` and active revision. For every intent it
-reconstructs a detached `ShipLoadout`, invokes package operations, and commits a new snapshot/loadout
-only on success. Components receive immutable localized projections and emit intent; they cannot call
-the Almanac or retain a mutable build.
+The editor receives feature 001's immutable active-loadout projection, revision and package-backed
+transaction capability. For every intent the active-build boundary creates a lossless detached
+package clone, invokes package operations, and atomically installs it only on success. Components
+cannot call the Almanac or retain a mutable build. This boundary is upstream-blocked until Almanac
+releases the clone/checkpoint API defined in [edit-history.md](./edit-history.md).
 
 ## Slot and module reads
 
@@ -29,7 +30,7 @@ the Almanac or retain a mutable build.
 | Clear ordinary engineering           | `clearEngineering(slotKey)`                                | Package base state restored; Mercenary identity may disappear                                |
 | Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                       | Package power-dependent results recompute                                                    |
 | Priority                             | `setModulePriority(slotKey, priority0to4)`                 | UI presents localized `1..5`                                                                 |
-| Name/ident                           | Update canonical snapshot and reconstruct                  | All other modelled fields exact                                                              |
+| Name/ident                           | Package-backed clone/update through feature 001 boundary   | All other package-owned state/provenance exact                                               |
 
 Every successful changed command produces one active revision and one history decision. It also
 clears any feature 001 `fixedMountNormalisation` entry for the exact edited slot before autosave;
@@ -38,10 +39,15 @@ stale-draft and no-op commands produce no revision/history and clear no provenan
 
 ## Refusals
 
-For `LoadoutEditError`, retain `code`, `constraint`, `params` and affected slot and map them to an
-application localization key. Never parse its English message. Plain `TypeError`/`RangeError` after a
+For `LoadoutEditError`, retain `code`, `constraint`, `params` and affected slot, and obtain package
+diagnostic text from `getLoadoutEditErrorMessage(error, locale)`. On locale miss, use feature 011's
+disclosed canonical/untranslated presentation; never privately translate or parse the package reason.
+Application localization owns only workflow framing. Plain `TypeError`/`RangeError` after a
 package-offered engineering action becomes an unexpected structured refusal; active state remains
 unchanged and the option list is refreshed.
+
+Branch explicitly on `setExperimentalEffect()` results: `updated` may commit, `unchanged` creates no
+revision/history, and `unsupported` surfaces its package code/params without mutation.
 
 Invalid/incomplete builds remain editable wherever the package provides an operation. Missing values
 remain unavailable. A refusal must not be converted into a local compatibility rule.
@@ -72,18 +78,26 @@ Merc Coin is presented separately.
 
 Before any active-build replacement is presented or any calculation is read:
 
-1. record source fixed-mount identities, construct the package loadout and reject an unknown hull;
-   construction may already restore the cargo hatch;
-2. find missing/unresolved mounts whose package reason is `requiredSlot` or `cargoHatch`;
-3. call `repairFixedMount(slotKey)` and preserve its structured outcome;
-4. call `completeEngineeringGrade(slotKey)` for each engineered module;
-5. preserve every package normalization result, including `unsupported`;
-6. compare source and result, then return candidate plus slot/identity/source-quality notices;
-7. commit before history starts.
+1. decode without changing the active build; capture every source module whose validated finite
+   `Engineering.Quality` is in `[0,1)`, plus source fixed-mount identities;
+2. resolve each captured partial identity through `getModuleBySymbol()`; any unresolved identity
+   refuses the whole incoming candidate with exact slot/module/engineering context;
+3. construct the detached `ShipLoadout`, then correlate every captured partial by case-insensitive
+   source slot and exact module symbol; missing/replaced/mismatched records (including automatic cargo
+   repair) refuse the candidate;
+4. call `completeEngineeringGrade(slotKey)` only for those correlated source partials; accept
+   `normalized`, atomically refuse `unsupported`, and treat `unchanged` as a package-contract failure;
+5. only after all partials succeed, call `repairFixedMount()` for mounts that were missing/unresolved
+   in the source and whose package reason is `requiredSlot` or `cargoHatch`;
+6. retain `repaired` notices; retain an incomplete candidate for `defaultUnavailable`; treat
+   package-derived `refused` as an internal/package failure;
+7. commit once before history starts or resets, then allow validation/calculation reads.
 
-`moduleLimit` is not a fixed-mount reason. No package default means no substitute; retain the source
-state and package incompleteness. A package inability to normalize a required supported state is a
-release blocker, not permission to change raw modifiers or merely overwrite `Quality`.
+Never call `completeEngineeringGrade()` for absent quality or quality `1`; fully rolled or
+unengineered unresolved entries remain supported. `moduleLimit` is not a fixed-mount reason. No
+package default means no substitute; retain package incompleteness. Atomic partial-quality refusal is
+an expected ingress outcome, not the clone/checkpoint release blocker. Refusal leaves the current
+build, revision, dirty state, autosave, fragment, notices and history untouched.
 
 ## Power and recalculation
 
@@ -93,14 +107,16 @@ application does not add/remove contributions itself.
 
 ## Released API acceptance
 
-Implementation pins 0.1.1 and proves that it:
+Before feature implementation, a released Almanac version must prove that it:
 
-1. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
+1. losslessly clones/checkpoints a loadout after source-credit provenance becomes temporarily invalid
+   and restores it when later valid again, including provenance-preserving ship name/ident edits;
+2. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
    fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
-2. normalizes supported imported partial-quality states losslessly and returns a stable structured
+3. normalizes supported imported partial-quality states losslessly and returns a stable structured
    result for unsupported identities.
 
-Cross-package tests must pin both minimal reproductions before UI implementation proceeds.
+Cross-package tests must pin all three minimal reproductions before UI implementation proceeds.
 
 ## Persistence and publication
 

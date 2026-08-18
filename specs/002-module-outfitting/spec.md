@@ -5,6 +5,14 @@
 Commanders can inspect every slot; fit, replace, remove and engineer modules; manage module power;
 and undo or redo build edits. Build creation belongs to [001](../001-ship-selection-and-loading/spec.md).
 
+## Clarifications
+
+### Session 2026-08-18
+
+- Q: What happens when an incoming build contains an unresolved module with partial-quality
+  engineering? → A: Reject the incoming build atomically and keep the current build intact; fully
+  rolled or unengineered unresolved modules remain supported.
+
 ## User Scenarios
 
 ### Story 1 — Fit modules (P1)
@@ -29,7 +37,9 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 2. A Commander can apply or replace a blueprint and grade, add, replace or remove only an
    experimental effect, or clear all ordinary engineering. Removing only the effect preserves the
    blueprint and grade.
-3. Grades are always modelled at 100% quality; imported partial quality is normalised and reported.
+3. Grades are always modelled at 100% quality. Resolved imported partial quality is normalised and
+   reported; an incoming build whose partial engineering cannot be resolved and completed losslessly
+   is refused before activation.
 4. Enabled state and priority update every affected package calculation while mass and cost remain
    because the module is still fitted.
 
@@ -70,7 +80,12 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
   Removing only the effect MUST preserve the blueprint and grade. Availability, modified attributes
   and restrictions on further engineering MUST come from the package.
 - **FR-013**: Every selected ordinary grade MUST represent 100% quality. Partial imported quality
-  MUST be normalised to 100% and reported.
+  MUST be normalised to 100% through the package and reported. If the package cannot resolve the
+  fitted module or engineering identity, or otherwise cannot complete the grade losslessly, the
+  entire incoming build MUST be refused before activation, the current build MUST remain unchanged,
+  and the refusal MUST identify the affected slot and unresolved identity. The application MUST NOT
+  accept the candidate by changing only its quality scalar, stripping engineering, retaining the
+  partial roll or fabricating modifiers.
 - **FR-014**: Engineering material costs MUST use package cost results. Fixed pre-engineering MUST
   add no craft cost unless the package reports separately selected ordinary engineering.
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
@@ -85,6 +100,8 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 ## Edge Cases
 
 - A build remains editable while invalid or incomplete.
+- An unresolved module remains preservable and visible when it is unengineered or already reports
+  completed quality; only unresolved partial-quality engineering causes atomic ingress refusal.
 - Replacing a module does not inherit the previous module's engineering.
 - A module appearing through multiple acquisition routes remains one package variant per route.
 - Clearing Mercenary engineering can remove the package's ability to identify the purchased variant;
@@ -93,8 +110,10 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 ## Almanac Coverage
 
 The package supplies slots, fittability, module limits, removability, defaults, edit operations,
-engineering choices and calculations, costs, variants, acquisition and entitlement data. No game
-rule, value or variant-recognition heuristic is application-owned.
+engineering choices and calculations, costs, variants, acquisition and entitlement data. Package
+module resolution, construction outcomes and the structured engineering-normalisation result decide
+whether a partial grade is completed or the incoming candidate is refused. No game rule, value or
+variant-recognition heuristic is application-owned.
 
 ## Success Criteria
 
@@ -102,3 +121,5 @@ rule, value or variant-recognition heuristic is application-owned.
 - **SC-002**: Replacement search updates within 100 ms for the largest package candidate list.
 - **SC-003**: Undo and redo reproduce every intermediate modelled build exactly.
 - **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.
+- **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
+  100%; every unsupported partial-quality candidate is rejected without changing the active build.

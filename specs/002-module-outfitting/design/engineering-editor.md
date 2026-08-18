@@ -38,8 +38,9 @@ package material requirements. Draft changes do not mutate the active build unti
 | Clear ordinary engineering        | `clearEngineering`; remove blueprint/effect together; follow package loss of Mercenary identity; one step.                          |
 | Cancel/revert draft               | Active build and history unchanged.                                                                                                 |
 
-The editor calls 0.1.1's `setExperimentalEffect()` for fixed-reward effect-only edits. It never
-merges raw modifiers locally.
+The editor calls the pinned released package's structured `setExperimentalEffect()` for fixed-reward
+effect-only edits. It never merges raw modifiers locally. `updated`, `unchanged` and `unsupported`
+remain distinct outcomes.
 
 ## States
 
@@ -54,6 +55,7 @@ merges raw modifiers locally.
 | Known zero cost                      | Explicit zero remaining cost from `[]`; not presented as unavailable.                                                  |
 | Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                       |
 | Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                  |
+| Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.     |
 | Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                  |
 | Package refusal                      | Structured localized error; current build/history unchanged.                                                           |
 
