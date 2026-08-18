@@ -1,29 +1,46 @@
 # Browser Delivery Contract
 
-All actions require one `SlefExportArtifact` and a deliberate Commander gesture. Browser APIs are
-injected ports for deterministic tests.
+All actions consume one current `SlefExportArtifact` and require a deliberate Commander gesture.
+Browser globals are hidden behind injected ports for deterministic tests. No port regenerates or
+changes the artifact.
+
+## Selectable payload
+
+The labelled readonly payload is always available while the artifact is current. It supports native
+selection/copy behavior and remains after every programmatic failure. Full JSON is never placed in a
+live region.
 
 ## Copy
 
-- Use async Clipboard API; never `document.execCommand()`.
-- Return stable permission/unavailable/failure status, not raw exception UI.
-- On failure retain and select/focus the labelled payload where supported; download stays available.
-- Success/failure does not close or clear the panel.
+- Invoke async `navigator.clipboard.writeText(artifact.payload)` from the explicit action.
+- Never use `document.execCommand()` and never fabricate success.
+- Return `copied` only after promise resolution; unavailable/permission/failure maps to stable
+  app-owned status without raw exception prose.
+- On failure, keep the payload and Download/Share alternatives; select/focus the payload where the
+  browser supports that presentation intent.
 
 ## Download
 
-- Blob bytes equal the payload with `application/json;charset=utf-8`.
-- Use a fixed safe `.slef.json` filename with no user/untrusted text.
-- Trigger/revoke object URL only for the explicit action.
-- Failure leaves copy, share (if present) and payload available.
+- Create exact payload bytes with `application/json;charset=utf-8` and a fixed safe `.slef.json`
+  filename containing no hull, ship name/ident or other untrusted text.
+- Create/trigger/revoke the object URL only from the explicit action; remove any temporary anchor.
+- Report `dispatched` after setup/trigger or `setupFailed` before it. The app cannot observe or claim
+  that a browser/user saved the file.
+- Download remains present on every form factor, including when Web Share supports files.
 
 ## Platform share
 
-- Render only when `navigator.share` is callable.
-- Share `File` when `navigator.canShare({files})` accepts it; otherwise share payload text.
-- Treat user cancellation separately from failure.
-- Never invoke automatically, select/retry a target or perform a network request.
+- Render Share only when `navigator.share` is callable; do not infer capability from viewport/device.
+- Build a `File` from the exact artifact. Use file share only when callable
+  `navigator.canShare({ files: [file] })` returns true; otherwise share exact payload text.
+- Invoke `navigator.share` directly within transient activation. Do not perform asynchronous
+  preparation first that could consume/expire it.
+- Treat `AbortError` as neutral `cancelled`; other rejection is `failed`; resolution is `shared`.
+- Never invoke automatically, retry a target, select a target or send an application network request.
 
-Capability detection is advisory; later failure changes status only. Actions have matching accessible
-names and at least 44 CSS px targets. A polite live region announces concise status, never full JSON.
-Playwright mocks share and asserts exact bytes without sending real data.
+Capability detection is advisory: every operation may still fail. All actions have visible/matching
+accessible names, text state and shared touch-target sizing. A concise polite announcement may name
+the action/result; it never announces JSON, a filename derived from user data or raw DOM errors.
+
+Playwright mocks every port, asserts identical UTF-8 bytes and forbids real Clipboard/share targets
+and unexpected requests.

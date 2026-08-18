@@ -1,43 +1,58 @@
-# Import Build Screen
+# Import Build Layer
 
 ## Purpose and entry
 
 Accept exactly one pasted SLEF entry or bare journal `Loadout` without requiring a current build.
-Import is available through the shared shell on ship-selection and build contexts; the no-build
-workspace also presents it as a primary recovery action.
+The shared shell exposes Import from ship selection, hull detail, build workspace and build library;
+the no-build workspace presents it as a primary recovery action. Opening the layer never chooses or
+creates a hull.
 
 ## Composition
 
-- shared layer heading and close action;
-- accepted-input/privacy explanation;
-- labelled editable monospaced field with associated byte usage and 64 KiB limit;
-- status/live summary and semantic package diagnostic list;
-- clear/cancel and inspect/import actions;
-- feature 001 replacement confirmation when unsaved work exists;
-- post-commit normalization/unresolved/validation notice list in the workspace.
+- shared modal/sheet layer with visible heading, accepted-input/privacy description and named close;
+- visibly labelled editable monospaced multiline field whose exact draft is preserved;
+- programmatically associated localized UTF-8 byte usage and 64-KiB limit/status;
+- concise status/announcement summary plus semantic exact package diagnostic list;
+- candidate summary using safe package hull/name/validation presentation;
+- Clear, Cancel/Close and Inspect/Import actions;
+- feature 001 shared replacement confirmation when dirty work exists.
 
-The screen owns no `ShipLoadout`; it emits draft and submit intent.
+The component owns no `ShipLoadout`, parser, byte counter, package call or replacement decision. It
+renders an immutable view and emits draft/clear/submit/cancel intents.
 
-## States
+## States and action behavior
 
-| State                 | Presentation                                                            |
-| --------------------- | ----------------------------------------------------------------------- |
-| Empty/editing         | Exact draft, localized byte count; submit disabled only while empty     |
-| Near/over limit       | Textual usage warning; over-limit field invalid and package not invoked |
-| Checking              | Draft remains readable; newer request token supersedes duplicate submit |
-| Syntax                | Localized summary, no invented path/code; draft editable                |
-| Zero/multiple         | Observed count/exactly-one rule; mixed package diagnostics retained     |
-| Package diagnostics   | Entry, path, code/constraint, params/message exposed semantically       |
-| Normalization blocked | Stable package outcome; active state unchanged                          |
-| Candidate ready       | Incoming hull/name/validation; confirmation if required                 |
-| Cancelled             | Current build and draft remain; one concise announcement                |
-| Imported              | Close after commit; workspace shows quality/fixed/unresolved report     |
+| State                           | Presentation and enabled actions                                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Empty                           | Exact empty/whitespace draft and byte count; submit disabled; Clear disabled when truly empty                      |
+| Editing within limit            | Draft and localized byte use; submit enabled; no stale failure after a newer edit unless still applicable          |
+| Over limit                      | Associated invalid state names actual/limit bytes; submit unavailable and package inspector is not called          |
+| Inspecting                      | Draft stays readable; duplicate submit disabled; cancel/close invalidates request token                            |
+| Syntax                          | Localized app summary only; no raw exception, invented path or code; edit/resubmit available                       |
+| Zero/multiple/mixed cardinality | Observed count and exactly-one rule; all package diagnostics retained for mixed input                              |
+| Package diagnostic              | Entry/path/code/constraint/params and package-locale/canonical-disclosed reason in a semantic list                 |
+| Unknown hull/construction       | Exact source hull where safe plus generic app framing; no fabricated package diagnostic                            |
+| Normalization unsupported       | Exact source slot/module context and package code/params returned by `completeEngineeringGrade()`                  |
+| Correlation/package failure     | Stable app-owned category, exact source context and only the structured package reason/result actually returned    |
+| Candidate ready                 | Incoming hull/name/final validation summary; direct commit only when feature 001 says confirmation unnecessary     |
+| Awaiting replacement            | Layer remains behind shared confirmation; candidate/token cannot commit independently                              |
+| Cancelled/superseded            | Draft/current work remain; concise no-op status, no stale announcement/commit                                      |
+| Committed transition            | After one confirmed commit, move to `/build` when needed and expose Import Outcome before removing the input layer |
 
-Wide layouts constrain a modal within the viewport. Ordinary narrow layouts use the reference's
-bottom sheet; short landscape viewports, text expansion and 400% zoom may promote it to a vertical
-full-height layer. The field may scroll internally, never the document horizontally.
-Labels/instructions/errors are associated, paths direction-isolated, updates concise, targets at
-least 44 CSS px and all app copy localized. Package text follows the standard untranslated
-disclosure.
+## Responsive behavior
 
-Requirements: FR-007–FR-014 plus import aspects of FR-002, FR-005 and FR-006.
+Use a contained dialog where content fits, ordinary bottom sheet on narrow portrait following canvases
+1b/1d, and full-height vertically scrollable layer when short landscape, expansion, RTL, text sizing
+or zoom would clip content/actions. Action groups wrap/stack; the field/diagnostic technical content
+owns bounded wrapping/overflow. No document horizontal overflow.
+
+## Accessibility, localization and previews
+
+The layer has modal semantics and programmatic heading/description; its background is inert/hidden.
+The visible field label, instructions, byte count and error relationship remain discoverable by
+screen reader. Status never relies on color. Updates announce bounded summaries, not draft JSON or a
+whole diagnostic list. Package messages follow Almanac locale/canonical disclosure; app framing and
+counts use feature 011 catalogues/formatters. JSON, paths, codes and identities are direction-isolated.
+
+Previews cover every state above at desktop/tablet/mobile widths plus expanded, RTL and reduced-motion
+variants. Requirements: FR-007–FR-012, FR-014 and import aspects of FR-002, FR-005, FR-006 and FR-013.

@@ -1,111 +1,140 @@
 # Research: SLEF Import and Export
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted spec,
-constitution, feature 001 active-build/build-link contracts, feature 002 normalization research and
-`.design/Ship Builder.dc.html`. Runtime probes used detached package values only.
+Research used the accepted feature spec, Constitution 5.0.0, feature 001/002/011 design contracts,
+the current repository, `.design/Ship Builder.dc.html`, and the pinned
+`@elite-dangerous-almanac/core@0.1.1` source/tag. Package probes used generated or public fixture data
+only.
 
-## Decision 1: the Almanac is the only parser and serializer
+## Decision 1: the Almanac owns SLEF inspection, construction and serialization
 
-**Decision**: Pass raw input directly to `inspectSlef` from
-`@elite-dangerous-almanac/core/ships/slef`. After exactly one valid entry is established, construct
-with `ShipLoadout.fromLoadout(entry.data)`. Export through `ShipLoadout.toSlefString()`.
+**Decision**: Import `inspectSlef` and its records from
+`@elite-dangerous-almanac/core/ships/slef`; pass it the exact input string. After one accepted entry,
+construct with `ShipLoadout.fromLoadout(entry.data)` from the `ships/ship-loadout` leaf. Export only
+with `ShipLoadout.toSlefString()`.
 
-**Rationale**: The inspector accepts standard arrays, one envelope and a bare journal event, checks
-public fields and returns structured package diagnostics. The inspected entry is trusted package
-output; the loadout method guarantees one export entry.
+**Rationale**: `inspectSlef` performs the package JSON parse and public-shape validation, accepts a
+standard array, one envelope or a bare journal `Loadout`, and returns frozen structured diagnostics.
+Its returned `entry.data` is already package-validated, so `fromLoadout` avoids parsing a second time
+while retaining the same package construction path. `toSlefString` always emits exactly one entry.
 
-**Alternatives considered**: App `JSON.parse()`, schema duplication, event-field heuristics, link
-recognition, repair and likely-format decoding were rejected under FR-009.
-
-## Decision 2: byte and cardinality gates are workflow rules
-
-**Decision**: Reject whitespace-only text or original UTF-8 length over 65,536 before inspection. Use
-`TextEncoder`; never trim/transform the string given to the package. After inspection, observed entry
-count is `entries.length + diagnostics.length`. Accept only count one, one valid entry and zero
-diagnostics; retain diagnostics even alongside a cardinality failure.
-
-**Rationale**: The limit is bytes, not UTF-16 characters. Probes returned zero results for `[]`, two
-entries for two valid envelopes, one entry plus an index-1 diagnostic for mixed input, one entry for a
-bare event, and `SyntaxError` for empty JSON text.
-
-**Alternatives considered**: `string.length`, textarea `maxlength` and choosing the first valid entry
+**Alternatives considered**: Application `JSON.parse`, a private schema, event/envelope heuristics,
+`fromSlef(..., 0)` without a cardinality gate, share-link recognition and repair of malformed input
 were rejected.
 
-## Decision 3: package diagnostics cross intact
+## Decision 2: original UTF-8 bytes gate before empty/cardinality checks
 
-**Decision**: Retain exact `index`, `path`, `code`, `constraint`, `params` and package-owned `message`.
-The UI adds localized framing but neither parses nor rewrites the message. A JSON `SyntaxError` gets a
-localized syntax category; the app does not fabricate a SLEF diagnostic.
+**Decision**: Measure `new TextEncoder().encode(text).byteLength`. If it exceeds 65,536, return
+`tooLarge` before any whitespace or package work. Then reject whitespace-only input as `empty` without
+changing the string. Pass all other text untouched to `inspectSlef`.
 
-**Rationale**: This preserves FR-011's stable location/reason data and respects package text ownership.
+**Rationale**: FR-008 requires every larger input to receive the limit failure; checking empty first
+would misclassify an oversized whitespace payload. JavaScript string length counts UTF-16 code units,
+not UTF-8 bytes. Trimming or normalizing would inspect different evidence from what the Commander
+provided.
 
-**Alternatives considered**: String flattening, parsing exception prose and invented paths/codes were
+**Alternatives considered**: `string.length`, textarea `maxlength`, trimming before inspection and an
+empty-first gate were rejected.
+
+## Decision 3: observed cardinality includes valid and rejected entries
+
+**Decision**: Define observed count as `inspection.entries.length + inspection.diagnostics.length`.
+Accept only observed count one, one valid entry and zero diagnostics. Zero, multiple and mixed
+valid/invalid arrays are refused whole; all returned diagnostics remain available beside a
+cardinality failure.
+
+**Rationale**: In 0.1.1 every top-level array item yields exactly one valid entry or one diagnostic;
+non-arrays are one candidate item and `[]` yields zero. This preserves top-level input cardinality and
+never selects the first usable build silently.
+
+**Alternatives considered**: Counting valid entries only, dropping mixed diagnostics and choosing
+index zero were rejected.
+
+## Decision 4: diagnostics remain exact package data and use package locale presentation
+
+**Decision**: Retain exact `index`, `path`, `code`, `constraint`, `params` and canonical `message`.
+Presentation asks `getSlefDiagnosticMessage(diagnostic, locale)` through feature 011's package-text
+presenter. A locale miss uses the canonical package message with the standard untranslated
+disclosure. App-owned syntax/cardinality/limit framing is localized separately. Do not parse thrown
+or diagnostic prose.
+
+**Rationale**: FR-011 requires stable structured detail, while Constitution VI makes package
+diagnostic text package-owned. `SyntaxError`, an unknown hull and unexpected construction exceptions
+do not expose `SlefDiagnostic`; the app may classify the workflow failure but must not invent a
+package code/path/reason.
+
+**Alternatives considered**: Flattening diagnostics, privately translating codes, showing undisclosed
+English in a non-English UI and extracting facts from exception messages were rejected.
+
+## Decision 5: import supplies source evidence to one shared ingress normalizer
+
+**Decision**: Before construction, the shared feature 002 ingress boundary records:
+
+1. every source module with validated finite `Engineering.Quality` in `[0, 1)`;
+2. the source identity state of package slots whose fixed reason is `requiredSlot` or `cargoHatch`;
+3. the source hull and module identities needed for package lookups/correlation.
+
+Resolve each partial's module through the package before construction. An unresolved partial refuses
+the candidate. Construct with `ShipLoadout.fromLoadout(entry.data)`, correlate each retained partial
+to the constructed slot and symbol, and call `completeEngineeringGrade(slotKey)` only for those
+source partials. Every must return `normalized`; `unsupported` refuses atomically and `unchanged` for
+a source partial is a package-contract failure. Never call the method for absent quality or quality
+`1` because complete locked/final articles may correctly return `unsupported`.
+
+Only after all partials succeed, call `repairFixedMount()` for source-missing or package-unresolved
+fixed mounts. Accept `repaired`; retain incomplete state for `defaultUnavailable`; treat a
+package-derived `refused` as a package-contract failure. Construction's cargo-hatch restoration is
+detected by comparing the source evidence with the constructed result and reported as an
+application-owned `autoRestored` classification backed by exact source/result identities.
+
+**Rationale**: Quality-first ordering prevents fixed/cargo repair from replacing the evidence that
+must trigger partial-quality refusal. The two normalizations are the constitution's only sanctioned
+changes. A resolved but incompatible fixed module is not silently repaired: the accepted rule covers
+empty/unresolved identities, so other package-invalid state stays visible in final validation.
+
+**Alternatives considered**: A SLEF-only normalization loop, fixed-first ordering, normalizing every
+engineered module, scalar quality mutation, repairing every invalid fixed mount, application default
+lookup and accepting unsupported partials were rejected.
+
+## Decision 6: feature 001 owns the only commit and persistence effects
+
+**Decision**: Inspection and ingress produce a detached candidate plus metadata. Feature 004 hands
+that result and an opaque request token to feature 001's replacement coordinator. It does not set
+active provenance, confirm, autosave, update the fragment or reset history itself. On acceptance,
+feature 001 commits once as `working`, navigates to `/build` where needed, autosaves the tab working
+record, synchronizes the fragment, and notifies feature 002 to reset history. Cancellation,
+supersession or failure changes none of those states.
+
+**Rationale**: This keeps one active-build transition shared by stock, record, link and SLEF ingress
+and prevents an implementation dependency cycle. Feature 001 core does not import feature 004; the
+top-level composition wires shell/workspace import/export intents to feature 004.
+
+**Alternatives considered**: Adding `slef` active provenance, committing inside the SLEF store,
+writing before confirmation and importing feature 004 from feature 001 domain/application code were
 rejected.
 
-## Decision 4: import is a detached candidate transaction
+## Decision 7: split detailed outcome from feature 001 record metadata
 
-**Decision**: Inspection, construction, fixed-mount repair, quality normalization and final package
-validation occur on a detached candidate. Only feature 001's replacement coordinator may commit it.
-Unsaved work uses the shared confirmation; failure, cancellation or a stale request token discards the
-candidate. Success forks/autosaves the working record after commit and resets feature 002 history.
+**Decision**: Bind the accepted import outcome to the committed active revision. Quality completion,
+unresolved issue details and full validation presentation are transient/dismissible workspace
+feedback. Successful fixed-mount fills/replacements are also handed to feature 001's
+`FixedMountNormalisationProvenance[]` and persist as local-record metadata until that mount is edited.
+Feature 001 independently persists the accepted revision's `valid`/`complete` booleans as ordinary
+record-list metadata. Neither detailed outcome nor fixed provenance enters the modelled snapshot,
+edit history, link or SLEF payload.
 
-**Rationale**: `ShipLoadout` is mutable. Candidate-first orchestration prevents partial state and
-makes stock, record, link and SLEF ingress share one atomic transition.
+**Rationale**: FR-012 requires durable-enough post-layer disclosure, feature 001 already owns local
+fixed-normalization provenance, and FR-006 forbids exporting it. Treating the entire report as
+non-persisted would contradict the accepted persistence contract.
 
-**Alternatives considered**: Current-instance mutation, pre-normalization autosave and component
-special cases were rejected.
+**Alternatives considered**: SLEF custom properties, putting reports in the build snapshot, dropping
+the report when the layer closes and excluding fixed provenance from local records were rejected.
 
-## Decision 5: fixed mounts use package defaults before calculations
+## Decision 8: export one sparse source-credit artifact
 
-**Decision**: Share one ingress normalizer. Before construction, capture missing/unresolved fixed
-identities from the inspected source DTO, including `CargoHatch`. Construct with `fromLoadout()`;
-unknown hull is a refusal and the package automatically restores a missing/unresolved cargo hatch.
-Compare source and constructed identities so that restoration remains visible in the report.
-
-On the detached constructed loadout, inspect `slots()`/`fittedModules()`. A fixed slot is package
-`immovableReason: 'requiredSlot' | 'cargoHatch'`, never `moduleLimit`. For every remaining missing or
-unresolved core/armour mount, call `repairFixedMount()` and preserve its `repaired`, `unchanged`,
-`defaultUnavailable` or `refused` outcome. A later cargo-hatch repair normally reports `unchanged`.
-No application code looks up or fits a default.
-
-**Rationale**: The constitution mandates package-default fill and FR-005 mandates package source
-semantics. The package owns both automatic cargo restoration and explicit repair source-purchase
-invalidation; the pre-construction comparison preserves the only evidence of a replaced cargo
-identity without reconstructing provenance.
-
-**Alternatives considered**: Local fixed-slot lists/default derivation, retaining the old price or
-app-authored credit invalidation were rejected.
-
-## Decision 6: iterating modules cannot universally normalize quality
-
-**Decision**: Use 0.1.1's `completeEngineeringGrade()` released for #292. It normalizes ordinary
-and package-identified pre-engineering, supported later effects and return structured outcomes for
-states it cannot normalize. No supported partial candidate reaches active state before it succeeds.
-
-**Rationale**: Import intentionally preserves `Quality: 0.42` until the product requests
-normalization. Fitted snapshots stay frozen; `completeEngineeringGrade()` performs the supported
-recomputation and reports unsupported identities without an application loop or scalar rewrite.
-
-**Alternatives considered**: Scalar mutation, universal `applyBlueprint` iteration, dropping unknown
-engineering and app-side modifier merging were rejected.
-
-## Decision 7: reports are local workflow state
-
-**Decision**: A successful report lists each quality completion, fixed fill, fixed default gap and
-retained unresolved identity using package slot/symbol/code data. It stays with active workflow notices
-and is excluded from loadout, snapshot, local record, build URL and SLEF.
-
-**Rationale**: FR-012 requires disclosure and FR-006 forbids exporting provenance.
-
-**Alternatives considered**: SLEF custom properties, silent normalization and dropping unresolved
-optional modules were rejected.
-
-## Decision 8: export uses sparse state and source provenance
-
-**Decision**: Call:
+**Decision**: Call exactly:
 
 ```text
-toSlefString({
+loadout.toSlefString({
   header,
   credits: 'source',
   moduleOrder: 'fitted',
@@ -114,81 +143,155 @@ toSlefString({
 })
 ```
 
-Read validation for disclosure only; invalid/incomplete builds remain exportable. Source mode retains
-only valid captured values and emits none when provenance is absent. Link failure never fails export.
+Read package validation for disclosure only; invalid or incomplete builds remain exportable.
+`credits: 'source'` emits captured values only while the package still considers their identity
+provenance valid and emits nothing when no source value exists. Engineering quality completion keeps
+the module identity and therefore retains applicable source credits; symbol replacement/removal and
+fixed repair follow the package's own narrowing rules. Retail is never fallback.
 
-**Rationale**: These package options retain order and absence, provide selectable readable JSON and
-forbid retail fallback.
+**Rationale**: Fitted order and sparse power preserve absence/order; readable indentation supports
+selection; source mode satisfies FR-005 without application price logic. Explicitly captured
+`On: true` and `Priority: 0` still survive. The package recomputes or omits derived top-level figures.
 
-**Alternatives considered**: `JSON.stringify(toLoadoutEvent())`, retail/default credits, forced power
-fields, blocking invalid builds and serializing notices were rejected.
+**Alternatives considered**: `JSON.stringify(toLoadoutEvent())`, retail credits, forced power fields,
+application invalidation rules and blocking invalid builds were rejected.
 
-## Decision 9: honest header and opportunistic link
+## Decision 9: capture-only health creates an upstream/spec gate
 
-**Decision**: Read the root `package.json` version at build time. Supply stable product identity and
-release version. Include feature 001's already-published same-origin canonical URL only when it names
-the exact active revision; otherwise omit `appURL` without retrying encoding.
+**Decision**: Follow the accepted spec: health is capture-only and does not enter durable build/SLEF
+state. Almanac 0.1.1 nevertheless retains and re-exports fitted module `Health`. Feature 004 is
+blocked until a released package-owned omission option/fix exists or the spec is deliberately
+clarified/amended to retain module health. The application must not post-process `toSlefString()` or
+rewrite the inspected event.
 
-**Rationale**: The version cannot drift, and the optional link is demonstrably equivalent. Export is
-independent of link refusal.
+After that gate, compare hull, slot/module identity/order, ordinary and identified pre-engineering,
+completed grade/effect, enabled state, priority, ship name/ident and source purchase behavior. Permit
+package identity casing normalization and recomputation/omission of derived top-level `UnladenMass`,
+`CargoCapacity`, `FuelCapacity` and `MaxJumpRange`. Drop capture-only `timestamp`, `ShipID`, health,
+`Hot`, ammunition and engineer/blueprint numeric provenance.
 
-**Alternatives considered**: Hard-coded version, runtime config request, stale/noncanonical link and
-blocking link generation were rejected.
+**Rationale**: Constitution II makes the package authoritative but also forbids a local correction
+when its output cannot meet the accepted application boundary. Waiting on a released fix or
+deliberately changing the spec is the only honest resolution.
 
-## Decision 10: delivery is capability-gated and artifact preserving
+**Alternatives considered**: Silently narrowing “health” to `HullHealth`, locally deleting module
+`Health`, mutating raw input, byte equality, echoing source aggregates and retaining other
+capture/engineer instance fields were rejected.
 
-**Decision**: Inject ports for async Clipboard, Blob/object-URL download and Web Share. Download uses
-the exact payload, JSON MIME type and a fixed safe filename. Show share only when `navigator.share`
-exists; prefer a file when `canShare({files})`, otherwise share text. Every failure/cancel leaves the
-same selectable artifact and alternate actions.
+## Decision 10: honest build metadata and exact-revision optional link
 
-**Rationale**: Browser permission/capability failures are normal. One immutable artifact prevents
-divergent outputs and guarantees fallback. Web Share opens only from a Commander gesture; no automatic
-request/transmission occurs.
+**Decision**: Generate stable application name/version metadata at build time from repository
+configuration and `package.json#version`; never fetch runtime configuration or copy mock versions.
+Take one atomic feature 001 snapshot containing active loadout, active revision and a certified
+same-origin canonical `/build#b.…` URL for that same revision when available. Include that URL as
+`appURL`; omit pending/refused/stale/invalid link state and do not call or retry the codec.
 
-**Alternatives considered**: `execCommand`, fake success, automatic share, hidden fallback and
-unavailable share buttons were rejected.
+**Rationale**: The header identifies the actual producer/release, and only a revision-matched link is
+equivalent to the artifact. Export must remain independent of link encoding failure.
 
-## Decision 11: adapt the reference, not its mock behavior
+**Alternatives considered**: Hard-coded versions, concatenating base paths in feature 004, stale
+published fragments, encoding during export and failing SLEF when link publication fails were
+rejected.
 
-**Decision**: Adopt the reference's wide dialogs and ordinary narrow bottom sheets, escalating the
-same logical content to a full-height layer in constrained landscape or at 400% zoom. Retain the
-monospaced field, metadata and action weight. Import keeps editable text plus diagnostics; export
-has one SLEF format only. Replace mock controls/literals with feature 011 primitives/tokens and 44
-CSS px targets.
+## Decision 11: one immutable artifact feeds every delivery path
 
-**Rationale**: The visual hierarchy is useful, but the mock uses heuristic parsing, fake delivery,
-invented links/versions, no limit/cardinality/atomicity and says partial rolls remain partial.
+**Decision**: Key `SlefExportArtifact` to the active revision and retain its exact payload/bytes.
+Selectable text, download, clipboard and Web Share receive that same value. A modelled edit or
+replacement invalidates it before another action can use it; delivery failure never regenerates it.
 
-**Alternatives considered**: Copying HTML/JS, retaining out-of-scope tabs or ignoring the reference
-were rejected.
+Use injected ports:
 
-## Decision 12: package fixtures and observable browser tests
+- async Clipboard `writeText` after an explicit action;
+- Blob/object-URL download with a fixed safe filename and JSON UTF-8 type;
+- Web Share shown only when `navigator.share` is callable, preferring `File` only when
+  `navigator.canShare({ files })` accepts it and otherwise sharing text.
 
-**Decision**: Unit tests cover every input/result kind, ASCII/multibyte byte boundaries, mixed
-diagnostics, normalization, source credits, link omission and delivery outcomes. Package fixtures
-cover ordinary/pre-engineered/effects, false enabled, priority zero, name/ident, unresolved optional
-and fixed repair. Playwright covers all UI states, rejects unexpected requests, measures domain work
-with browser `performance.now()` and runs the feature 011 dual-engine/viewport/axe matrix.
+Share must remain in the transient user activation. Treat `AbortError` as cancellation, not failure.
+Download can report `dispatched` or `setupFailed`; it cannot claim the browser/user saved the file.
 
-The stress fixture is generated from package identities for a 39-slot hull and fills each slot using
-package candidate APIs; import/export must each finish under 500 ms.
+**Rationale**: Browser permissions and Web Share support vary. Independent fallbacks and exact bytes
+satisfy FR-004 without fake success or automatic transmission.
 
-**Rationale**: Generated fixtures avoid private game data and browser observation proves client-only
-behavior. Current probes found 48 hulls and a maximum 39 slots.
+**Alternatives considered**: `document.execCommand`, automatic retry/share, UA sniffing, a mobile
+share replacement for download, untrusted filenames and a generic delivery “success” state were
+rejected.
 
-**Alternatives considered**: Hand-maintained values, Playwright transport timing, Chromium-only and
-axe-only accessibility claims were rejected.
+## Decision 12: compose feature 001 Link and feature 004 SLEF in one exchange layer
 
-## Dependencies and released gates
+**Decision**: Retain the `.design` single Export Build layer. Its accessible mode control exposes
+feature 001's Share Link mode and feature 004's SLEF mode; feature 004 contracts only SLEF content.
+Journal and Markdown modes are omitted. Import is available through the shared shell on ship
+selection and build hosts, including a no-build workspace; export opens only with an active build.
+Successful import from a non-workspace host navigates to `/build`; ordinary open/close/failure keeps
+the host route and history.
 
-- Feature 001 supplies active build, replacement, persistence and canonical link state.
-- Feature 011 supplies localization, shared UI and complete Playwright/axe matrix.
-- Feature 002 consumes the same normalized ingress and resets history; it must not add a second loop.
-- Almanac 0.1.1 closes [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
-  [#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) and
-  [#293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293). Regression tests pin
-  quality normalization, fixed-mount repair and cargo-hatch validation.
+**Rationale**: This respects the accepted feature 001 composition and the reference's exchange
+hierarchy without code-import cycles or extra routes.
 
-No product clarification or upstream gate remains. The released boundaries are not permission for
-an application workaround.
+**Alternatives considered**: Separate export dialogs, a feature 004-only no-tab layer, `/import` or
+`/export` routes, journal/Markdown implementations and exporting a selected library record were
+rejected.
+
+## Decision 13: responsive and semantic behavior is available-space driven
+
+**Decision**: Use a contained dialog when content fits, the reference bottom sheet on ordinary narrow
+portrait layouts, and a vertically scrollable full-height layer for short landscape, 200% text,
+400% zoom or expanded/RTL copy. All actions remain present and wrap/stack; JSON and diagnostic paths
+own bounded internal wrapping/overflow. Background content is inert and hidden from the accessibility
+tree.
+
+Shared components provide a visible heading, description, programmatically labelled multiline field,
+associated byte/error state, structured diagnostic list, validation/notice presentation, semantic
+mode control, named actions and concise announcement events. App text/counts use feature 011
+catalogues/formatters; technical content is direction-isolated; status has text equivalents and does
+not rely on color. Every meaningful state has desktop/tablet/mobile previews including expansion,
+RTL and reduced motion.
+
+**Rationale**: Canvas widths are examples, not breakpoints. Component-owned semantics and adaptive
+composition preserve equal capability at all constitutional form factors.
+
+**Alternatives considered**: Fixed 560/760-pixel panels, device detection, hidden mobile actions,
+title/placeholder-only labels, color-only feedback and axe as the sole proof were rejected.
+
+## Decision 14: test package behavior, atomic application state and browser effects separately
+
+**Decision**: Unit/contract tests cover UTF-8 boundaries, all inspector shapes/cardinality,
+diagnostic preservation/presentation, construction/normalization outcomes, quality-first ordering,
+fixed provenance split, source credits, derived-field round trips, exact-link inclusion, artifact
+invalidation and browser-port outcomes. Discover the maximum-slot hull from package data at test time
+and populate supported fields through package APIs; require import/export under 500 ms.
+
+Playwright uses feature 011's ten Chromium/Firefox viewport-orientation projects and scans every
+relevant layer, confirmation, outcome, unavailable and delivery state with axe plus semantic,
+target-size, overflow, reduced-motion, doubled-copy, RTL and 200%-text assertions. Reject unexpected
+requests. Keep actual 400% browser zoom and NVDA/Firefox, TalkBack/Chromium (and materially different
+tablet) screen-reader scripts as recorded manual gates.
+
+Generate a hashed reference-export corpus from the current application and record successful import
+of every artifact into both Coriolis and EDSY. The compatibility record names each consumer's exact
+release/build, date, corpus hash and result. Prefer locally pinned releases where distributable;
+otherwise use a deliberate manual importer check with synthetic/non-personal data. Static fixtures
+originating from those tools remain useful parser inputs but are not evidence that they accept newly
+generated output. Runtime and automated tests make no remote consumer request.
+
+**Rationale**: Package tests prove domain fidelity; state snapshots prove atomicity; mocked ports
+prove exact browser handoff without sending real data; the shared browser matrix proves responsive
+capability. Automated zoom emulation is not a substitute for actual 400% zoom.
+
+**Alternatives considered**: Hard-coded game fixtures, treating consumer-originated fixtures as
+output acceptance, runtime/networked compatibility probes, Chromium-only tests, axe-only
+accessibility and claiming automated browser zoom coverage were rejected.
+
+## Dependency and gate conclusion
+
+- Almanac 0.1.1 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
+  fixed repair and source-credit behavior, but its module-`Health` retention/export conflicts with
+  the accepted durable-state boundary. Feature 004 is blocked pending upstream/spec alignment.
+- Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
+  contract is also required, but its separate clone/checkpoint blocker for editing/history is not
+  needed to construct a fresh SLEF candidate.
+- The current repository does not yet contain those planned foundations; feature 004 must not create
+  temporary shells, locale logic, active-build storage or test-matrix substitutes.
+
+No additional design choice remains unresolved. The named package/spec health conflict is an explicit
+implementation blocker, not a silent planning assumption.
