@@ -298,8 +298,8 @@ carries; see the Mercenary case below.
 
 Almanac 0.1.1 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants still have no published modifier
-signatures, but the package identifies them by their purchase-exclusive blueprint instead, so they are
-identifiable and shareable too. The codec continues to take every identity from the package and
+signatures, but the package identifies them by their purchase-exclusive blueprint instead, so they
+are identifiable and shareable too. The codec continues to take every identity from the package and
 re-derives nothing from blueprint metadata itself.
 
 The difference between the two identification routes matters to the encoder. A reward article is
@@ -449,10 +449,11 @@ Two measured findings shaped the design:
 
 ### Measured results
 
-`build-link-codec-models.spec.ts` prints the comparison on every run and asserts that no reference
+`build-link-codec-models.spec.ts` pins both columns of the table below and asserts that no reference
 or hull link lengthens while the engineered references shrink. The comparison baseline is the same
-table with its `MODELS` block removed: bit packing ignores models, so the baseline reproduces
-every packed body — and with it every empty and stock reference — byte for byte.
+table with its `MODELS` block removed: bit packing ignores models, so the baseline reproduces every
+packed body — and with it every empty and stock reference — byte for byte, which the spec asserts
+character for character across all 48 hulls.
 
 | Reference build              | Without models | With models | Saving |
 | ---------------------------- | -------------: | ----------: | -----: |
@@ -514,9 +515,9 @@ limit: 1,023 snapshots, one of them spent.
 
 What growth actually costs is link length, and links are bounded. Five hundred characters, two of
 them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
-reference builds use a fraction of it — the current engineered Anaconda remains well below the
-supplied Corvette's unmodelled cost of 624 bits, about 17 bits for each of its 37 represented
-outfittable modules — and the pinned symbol models price the same Corvette lower still.
+reference builds use a fraction of it — under the pinned symbol models the engineered Anaconda
+body is 360 bits and the supplied Corvette 552, about 15 bits for each of the Corvette's 37
+represented outfittable modules. Without models the same bodies are 424 and 624 bits.
 
 The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
@@ -562,15 +563,14 @@ capacity back without touching a published link's decoder.
 ## Versioned tables and lazy loading
 
 Table 1 is the pre-release `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.1`. It pins hulls, hull-specific outfittable slots,
-fixed components, stock modules, module identities, blueprints and their grades, experimental
-effects, contextual candidate sets, power-drawing module identities, pre-engineered identities,
-and the `MODELS` block of pinned symbol weights. Stable game identities originate from the
-package; indexes exist only inside the selected table. Before the first application/link-format
-release, the table may be explicitly regenerated with `--overwrite`; normal
-`pnpm run codec:tables` still refuses an in-place content change. After release, a catalogue
-change publishes the next numbered JSON table while retaining every earlier table unchanged; it
-does not duplicate or version the codec logic.
+`@elite-dangerous-almanac/core@0.1.1`. It pins hulls, hull-specific outfittable slots, fixed
+components, stock modules, module identities, blueprints and their grades, experimental effects,
+contextual candidate sets, power-drawing module identities, pre-engineered identities, and the
+`MODELS` block of pinned symbol weights. Stable game identities originate from the package; indexes
+exist only inside the selected table. Before the first application/link-format release, the table
+may be explicitly regenerated with `--overwrite`; normal `pnpm run codec:tables` still refuses an
+in-place content change. After release, a catalogue change publishes the next numbered JSON table
+while retaining every earlier table unchanged; it does not duplicate or version the codec logic.
 
 The public asynchronous loader initially imports only the generic envelope, radix, and CRC code.
 It radix-decodes the envelope and verifies CRC-32 once before using the table-version field, then
@@ -860,14 +860,14 @@ appends the unchanged four-byte CRC:
 Both general-purpose compressors make every reference larger. The adopted arithmetic path is
 different: it encodes the codec's existing semantic values against their exact cardinalities and is
 selected only when its final padded body is smaller. In table 1's then-valid fixture, the
-quality-free grammar reduced the Anaconda body from 56 to 55 bytes and produced 78 encoded characters
-including `b.`. The Corvette
-body falls from 82 to 78 bytes and produces 108 characters. Empty, stock, festive, and every other
-build where bit packing wins retain the packed form without a representation-bit penalty. The
-pinned symbol models then take the same two engineered references to 65 and 97 characters, as
-measured under [Pinned symbol models](#pinned-symbol-models). Base70
-still needs interoperability testing in the actual sharing applications. Its radix conversion uses
-bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
+quality-free grammar reduced the Anaconda body from 56 to 55 bytes and produced 78 encoded
+characters including `b.`, while the Corvette body fell from 82 to 78 bytes and produced 108
+characters. Empty, stock, festive, and every other build where bit packing wins retain the packed
+form without a representation-bit penalty. The pinned symbol models then take the same two
+engineered references to 65 and 97 characters, as measured under [Pinned symbol
+models](#pinned-symbol-models). Base70 still needs interoperability testing in the actual sharing
+applications. Its radix conversion uses bounded byte/digit arithmetic rather than a whole-payload
+`BigInt`.
 
 The adaptive combination-rank index-set mode leaves empty and stock references at 12 and 10
 characters and remains part of the packed-cost grammar used before arithmetic rendering. A

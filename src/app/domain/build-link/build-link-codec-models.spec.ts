@@ -75,16 +75,16 @@ describe('build-link codec pinned symbol models', () => {
       const modelledLength = modelledCodec.encodeBuildLinkFragment(source).length;
       return { label, baselineLength, modelledLength };
     });
-    console.info(
-      ['Symbol-model link lengths (characters, including the b. prefix):']
-        .concat(
-          rows.map(
-            ({ label, baselineLength, modelledLength }) =>
-              `  ${label}: unmodelled ${baselineLength} -> modelled ${modelledLength}`,
-          ),
-        )
-        .join('\n'),
-    );
+    // Both columns are pinned because `docs/build-link-codec.md` publishes them as the models'
+    // measured effect. A runner shows no console output for a passing spec, so a printed table
+    // would let either column drift unnoticed; an assertion cannot.
+    expect(rows).toEqual([
+      { label: 'empty Sidewinder', baselineLength: 12, modelledLength: 12 },
+      { label: 'stock Krait Mk II', baselineLength: 10, modelledLength: 10 },
+      { label: 'engineered Anaconda', baselineLength: 76, modelledLength: 65 },
+      { label: 'supplied engineered Corvette', baselineLength: 108, modelledLength: 97 },
+      { label: 'named stock Krait Mk II', baselineLength: 38, modelledLength: 34 },
+    ]);
 
     for (const { label, baselineLength, modelledLength } of rows) {
       expect(modelledLength, label).toBeLessThanOrEqual(baselineLength);
@@ -95,18 +95,19 @@ describe('build-link codec pinned symbol models', () => {
     }
   });
 
-  it('never lengthens any empty or stock hull link', () => {
+  it('spells every empty and stock hull link identically with and without models', () => {
+    // Every empty and stock hull keeps its packed rendering, and bit packing ignores models, so
+    // the two tables must agree character for character. That is stricter than merely never
+    // lengthening, and it is the claim the codec document makes.
     let longest = 0;
     for (const { symbol } of SHIPS) {
       for (const source of [ShipLoadout.empty(symbol), ShipLoadout.default(symbol)]) {
-        const modelledLength = modelledCodec.encodeBuildLinkFragment(source).length;
-        longest = Math.max(longest, modelledLength);
-        expect(modelledLength, symbol).toBeLessThanOrEqual(
-          baselineCodec.encodeBuildLinkFragment(source).length,
-        );
+        const modelledFragment = modelledCodec.encodeBuildLinkFragment(source);
+        longest = Math.max(longest, modelledFragment.length);
+        expect(modelledFragment, symbol).toBe(baselineCodec.encodeBuildLinkFragment(source));
       }
     }
-    console.info(`Longest empty/stock hull link: ${longest} characters.`);
+    expect(longest).toBe(12);
   });
 
   it('shrinks compact metadata under the character model', () => {

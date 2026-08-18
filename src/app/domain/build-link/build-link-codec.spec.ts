@@ -986,10 +986,7 @@ describe('build-link codec', () => {
     for (let length = 0; length < body.length; length += 1) {
       const truncated = new Uint8Array(length + 4);
       truncated.set(body.subarray(0, length));
-      expectCodecError(
-        () => decodeBuildLinkFragment(encodePayload(truncated)),
-        ['invalidPayload', 'unknownIdentity'],
-      );
+      expectCodecError(() => decodeBuildLinkFragment(encodePayload(truncated)), 'invalidPayload');
     }
     for (const suffix of [[0], [0xff], [0, 0], [0xff, 0x55]]) {
       const extended = new Uint8Array(body.length + suffix.length + 4);
