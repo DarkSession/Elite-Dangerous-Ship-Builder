@@ -1,0 +1,121 @@
+# Publishes the production build to GitHub Pages at https://sb.edct.dev/.
+#
+# The application is client-side only, so a deployment is nothing more than the
+# static output of `pnpm run build` handed to Pages. Nothing is built on the
+# host and no server runs there.
+#
+# Deployment is gated on CI: this workflow starts only once the `CI` workflow
+# has finished for a commit on `main`, and stops unless that run succeeded, so
+# a build that fails the checks is never published. `workflow_dispatch` publishes
+# the ref it is dispatched from — useful after changing the Pages settings — and
+# runs the checks itself, because there is no CI result to lean on.
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time, and never cancel one in flight: a half-finished
+# publish would leave the site on a partial build.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    # `workflow_run` fires for every conclusion, including failure and
+    # cancellation, so the successful ones are selected here.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    # Generous enough for the manual path, which runs the whole `check` gate,
+    # end-to-end suite included.
+    timeout-minutes: 40
+
+    steps:
+      # `workflow_run` runs against the default branch, not against the commit
+      # that triggered CI, so the commit CI passed on is checked out explicitly.
+      # On a manual run the ref is whatever was dispatched.
+      - name: Check out the repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      # Installed before setup-node so the `pnpm` cache backend can resolve the
+      # store path. The version comes from `packageManager` in package.json.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The commit already passed CI, so only the build is repeated here to
+      # produce the files to publish.
+      - name: Build
+        run: pnpm run build
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+
+      - name: Install Playwright Chromium
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      # A manual run has no CI result behind it, so it earns green the same way
+      # a pushed commit does before anything reaches the site. `check` builds as
+      # part of the gate, which is why the plain build step is skipped here. It
+      # reports as one step rather than naming the stage that broke — the CI
+      # workflow is where a failure is diagnosed; this path is the escape hatch.
+      - name: Check and build
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: pnpm run check
+
+      # Pages serves its own 404 page for any path that is not a file, which
+      # would break a deep link into a client-side route. Serving the
+      # application from 404.html instead hands those paths to the router,
+      # which resolves them without a redirect or a hash fragment. `index.html`
+      # already carries `<base href="/">`, correct for a domain of our own.
+      - name: Serve client-side routes from the 404 page
+        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      # `public/CNAME` names the custom domain and is copied into the build by
+      # the asset glob in angular.json, so the domain survives every deployment.
+      - name: Upload the build as a Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/elite-dangerous-ship-builder/browser
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # `pages` and `id-token` are what actions/deploy-pages needs to publish and
+    # to prove the artifact came from this workflow run.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

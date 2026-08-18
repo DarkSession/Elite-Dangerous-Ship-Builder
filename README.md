@@ -83,6 +83,40 @@ of editing the config:
 E2E_CHROMIUM_PATH=/path/to/chromium pnpm run e2e
 ```
 
+## Deployment
+
+The application is published to GitHub Pages at
+**[sb.edct.dev](https://sb.edct.dev/)** by
+[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). A deployment is
+only the static output of `pnpm run build`: there is no host-side build step and
+nothing runs on the server.
+
+The workflow starts when the `CI` workflow finishes for a commit on `main` and
+stops unless that run succeeded, so nothing that fails the checks is published.
+`workflow_dispatch` publishes the ref it is dispatched from and runs
+`pnpm run check` itself, since there is no CI result behind a manual run.
+
+Two details make the deployment behave on Pages:
+
+- [`public/CNAME`](./public/CNAME) names the custom domain. It is copied into the
+  build by the asset glob in [`angular.json`](./angular.json), so the domain
+  survives every deployment. `<base href="/">` in
+  [`src/index.html`](./src/index.html) is correct for a domain of our own and
+  needs no rewriting.
+- `index.html` is copied to `404.html` before upload. Pages answers any path that
+  is not a file with its own 404 page, which would break a deep link into a
+  client-side route; serving the application from `404.html` hands those paths to
+  the Angular router instead, with no redirect and no hash fragment.
+
+The repository has to be set up once for this to work: **Settings → Pages →
+Build and deployment → Source** set to **GitHub Actions**, and a DNS `CNAME`
+record for `sb.edct.dev` pointing at `darksession.github.io`. Enable **Enforce
+HTTPS** once GitHub has issued the certificate.
+
+Angular CLI usage analytics are disabled in [`angular.json`](./angular.json)
+(`cli.analytics: false`), so no build — local or in CI — reports to Google. The
+application itself sends no telemetry either; the constitution forbids it.
+
 ## Specifications
 
 This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) for
