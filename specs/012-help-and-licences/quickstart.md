@@ -1,136 +1,179 @@
 # Quickstart: Validate Help, Licences and Provenance
 
-This guide validates the completed capability end to end. It does not replace implementation tasks or
-the contracts in [contracts/](./contracts/).
+This guide validates the completed feature end to end. It assumes feature 001's application frame/
+offline shell and feature 011's localisation, shared dialog, preview and complete Playwright/axe
+matrix are present. Commands named below are implementation targets from the plan; tasks must wire
+them into `pnpm run check`.
 
-## Prerequisites and released regression
+## Prerequisites
 
-1. Use the repository's Node version and committed dependency graph:
-
-   ```bash
-   nvm use
-   pnpm install --frozen-lockfile
-   ```
-
-2. Confirm features 001 and 011 provide the accepted app shell/service worker, localisation/design
-   system, ten Playwright projects and automated accessibility harness.
-3. With Almanac 0.1.1 pinned, rerun the [#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307)
-   reproduction in [research.md](./research.md#almanac-notice-regression).
-4. Run the explicit legal sync command once for the upgraded package, review the tracked
-   `legal/almanac/` byte changes, then run verification. Stop if the installed notice says the
-   shipped provenance files are absent. Do not add a downstream correction.
-
-## Focused and full commands
+- Use the Node.js version accepted by `.nvmrc` and `package.json#engines`.
+- Install with the committed lockfile:
 
 ```bash
-pnpm run distribution:verify
-pnpm run test:scripts
-pnpm test -- --include 'src/app/domain/distribution/**/*.spec.ts' --include 'src/app/application/help/**/*.spec.ts' --include 'src/app/features/help/**/*.spec.ts'
-pnpm exec playwright test e2e/help-and-licences.spec.ts
-pnpm exec playwright test --list
-pnpm run check
+pnpm install --frozen-lockfile
 ```
 
-The Playwright list must include ten projects: Chromium and Firefox at desktop, tablet portrait,
-tablet landscape, mobile portrait and mobile landscape. The full gate must run formatting, strict
-typecheck, production build and artifact verification, script tests, unit coverage at 80% or above
-for all four measures, and the complete Playwright matrix without skips/quarantine.
+- Confirm the installed dependency is the lockfile-selected package and do not edit its artifacts.
+- For container browsers whose executables differ from Playwright's pinned download, set
+  `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` rather than changing the required project matrix.
 
-## Scenario 1: artifact and source-distribution integrity
+## 1. Generate and verify the help manifest
 
-Run the generator/verifier against the installed package and inspect the production output.
+```bash
+pnpm run help:manifest:check
+pnpm run test:scripts
+```
+
+Expected:
+
+- root application and installed Almanac manifests resolve locally;
+- exactly one project-specific Frontier disclaimer is extracted from root `LICENSE`;
+- the extracted payload is non-empty and its byte count/SHA-256 match generated runtime text;
+- application and Almanac versions are distinct manifest facts;
+- the repository `LICENSE` and Almanac issues destinations match their exact allowlists and contain
+  no query/fragment;
+- installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` exactly equal tracked
+  `legal/almanac/` mirrors;
+- the generated module contains no absolute path, personal/environment identifier, build data or
+  extra legal document.
+
+Run the generator's fixture suite and confirm named failures for missing/duplicate/malformed/empty
+disclaimer blocks, invalid UTF-8, one-byte mirror drift, unsafe destinations, mismatched release
+evidence and missing/unsafe non-release IDs. No failure may fall back to runtime content.
+
+## 2. Verify release and non-release identities
+
+Build the normal repository configuration and open Help · About.
 
 Expected:
 
 - application version equals root `package.json#version`;
-- bundled Almanac version and issue URL equal installed `package.json` fields;
-- root application licence, installed Almanac licence and installed third-party notice are non-empty
-  UTF-8 and each runtime/static copy has the same byte count and SHA-256 as its source;
-- `legal/almanac/` copies are tracked and byte-equal to installed files;
-- the static distribution carries all three raw documents while the initial browser bundle embeds
-  their exact text;
-- no generated source exposes an absolute workspace path or personal/build-machine information.
+- bundled Almanac version equals installed package `package.json#version`;
+- the current placeholder/development build is visibly Non-release and shows its generated build ID;
+- no label describes either value as the live game or live catalogue version.
 
-Use isolated script fixtures to remove, empty, whitespace-fill, corrupt and byte-modify each input and
-to mismatch package mirrors. Every case must fail before Angular compilation with the affected
-artifact named; no case may emit a runtime placeholder.
+In release-workflow fixture tests, provide version-matched evidence and confirm release state. Repeat
+with missing, placeholder and mismatched evidence and confirm generation fails.
 
-## Scenario 2: release and non-release identities
+## 3. Open and close without navigation or mutation
 
-Generate a normal local/CI build and open `/help`.
+Start the application:
 
-Expected: “Application version” and “Bundled Almanac version” are distinct exact facts; the build is
-visibly non-release and shows the safe CI/commit identifier. Neither value is labelled live game,
-live data or live catalogue.
+```bash
+pnpm start
+```
 
-Exercise generator fixtures for matching release evidence, mismatched tag/version, `0.0.0` release,
-missing build ID and identifiers containing whitespace, URL/path, branch/user/machine-like content.
-Only the matching non-placeholder release succeeds as `release`; every ambiguous/unsafe case fails.
-
-## Scenario 3: help from every context
-
-From no-build catalogue/library state, an active build capability, a package-artwork/value region and
-a full-screen/modal layer, activate the visible Help/data-and-licences action.
-
-Expected: each reaches the same eager `/help` document without requiring a build/network. Browser
-Back returns to the source with the same active build, URL fragment and local/session storage bytes.
-No help route contains or copies the build payload.
-
-Read all seven topics and compare them with the accepted list in
-[contracts/help-navigation.md](./contracts/help-navigation.md). No raw key, blank copy, future promise,
-cloud/account implication or private game-text translation appears.
-
-## Scenario 4: complete legal and provenance presentation
-
-Inspect the legal coverage index, expand each document and compare its DOM text (UTF-8 re-encoded)
-with the authoritative artifact.
+From a no-build capability, record pathname/query/fragment/history length, open Help · About from the
+frame, read it and close it. Repeat from an active build, the narrow action menu, package artwork and
+a package value/calculation surface.
 
 Expected:
 
-- application, Almanac, Frontier and other third-party scopes are distinct and the app MIT terms are
-  never said to relicense game/package data;
-- every document is complete and byte/hash-equivalent after transport decoding;
-- legal text remains English, is programmatically `lang=en` and has a localised untranslated-English
-  disclosure;
-- exact content is text, not interpreted HTML/Markdown, and URLs inside it do not become automatic
-  unlabeled external actions;
-- the Frontier notice remains within its full authoritative documents;
-- provenance says the bundled Almanac supplies catalogue/calculations without a currency claim.
+- exactly one labelled modal appears above the unchanged capability;
+- the URL, history length, build revision, selected capability/slot and stored records do not change;
+- all entries reach the same modal; contextual entry may change only its initial in-modal position;
+- close returns to the same underlying state; no focus/keyboard behavior is asserted;
+- no route chunk, help file, legal file or cross-origin request occurs on open.
 
-## Scenario 5: deliberate package-defect navigation
+## 4. Validate accepted help and provenance
 
-Observe requests before action, then intercept the external package-defect link activation.
+Confirm the modal contains all seven topics from
+[contracts/help-navigation.md](./contracts/help-navigation.md): build-link privacy,
+accounts/uploads/telemetry, browser persistence/clearing, offline assets, completed engineering
+grades, hull facts versus build results and Almanac ownership.
 
-Expected: no GitHub or other cross-origin request/navigation occurs before the Commander clicks. The
-visible/accessibility text says the action is for Almanac package data/calculation defects and leaves
-the app. The intercepted URL exactly equals installed `package.json#bugs.url`, uses no query/fragment
-and contains no build/SLEF/ship/module/route/local data. `rel` includes `noreferrer noopener`.
+Expected:
 
-## Scenario 6: first-load and offline behavior
+- every topic matches accepted current behavior;
+- no reference-only import promise appears;
+- no answer says partial engineering rolls are retained;
+- provenance says the bundled Almanac supplies catalogue data, validation and calculations;
+- versions/provenance make no live-game/live-catalogue currency claim;
+- the issue action is explicitly limited to Almanac package data/calculation defects.
 
-Serve the production static browser output with SPA fallback rather than `ng serve`. Load the app
-once, wait for the feature 001 service worker to control the page, then take the browser context
-offline and directly reload `/help`.
+## 5. Validate exact legal presentation
 
-Expected: the route, English fallback, help topics, identities, coverage index and all expanded exact
-documents remain available. Opening help/each disclosure causes no route-specific request. No
-cross-origin request, telemetry, runtime translation, package lookup or legal-content fetch occurs.
+Compare the modal's English disclaimer text with a fresh generator extraction from root `LICENSE`.
 
-## Scenario 7: localisation, responsive and accessibility matrix
+Expected:
 
-For release/non-release, overview, every expanded document and an alternate-locale state, run the
-shared axe scan and semantic/no-overflow assertions in all ten projects.
+- exactly the project-specific disclaimer appears, unchanged, non-empty and marked as original
+  English;
+- application-owned attribution/framing is localised and distinguishes MIT rights from
+  Frontier/package rights;
+- no complete MIT licence, Almanac licence, third-party notice or second legal body is embedded;
+- exactly one action is described as the destination for all remaining terms;
+- its destination is
+  `https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE`;
+- the separate Almanac issues action is not described as legal detail.
 
-Also verify manually at 200% text and 400% zoom with expanded/RTL framing and reduced motion:
+## 6. Verify deliberate external navigation and privacy
 
-- no document-level horizontal overflow, clipped legal text or lost action;
-- one `main`/`h1`, coherent nested headings, fact relationships and disclosure expanded states;
-- visible names match accessible names and every action meets the touch target;
-- language/source/coverage, non-release and leaving-app meaning remain explicit without color/icon;
-- a screen reader can find global help, read versions/provenance, expand all notices and identify the
-  warned external action in the designed order;
-- legal English remains unchanged while owned framing/messages use the active locale and bundled
-  English fallback works offline.
+Use Playwright interception rather than making internet requests. Before activation, assert that no
+request or popup targets GitHub. Activate each external action independently.
 
-Automated success does not waive manual failures. Any conformance statement must name the seven
-keyboard-operation criteria excluded by the constitution.
+Expected:
+
+- visible and accessible text says the action leaves the application and may need a network;
+- the native links use `rel="noreferrer noopener"`;
+- exact destinations contain no query, fragment, current route, build payload, SLEF, hull/module
+  identity, locale or browser data;
+- licence activation targets only the repository `LICENSE`;
+- issue activation targets only the Almanac issues page.
+
+## 7. Verify initial-load and offline behavior
+
+Build and serve the production output through the feature 001 app-shell harness. Load once to install
+the shell, then disable network and reload a no-build capability. Open the modal before opening any
+hull artwork.
+
+Expected:
+
+- all seven topics, both versions, non-release/release state and the exact disclaimer are present;
+- opening/reading/closing causes no request and has no loading/error/stale state;
+- the licence and issue actions remain visible with their network warning but are not automatically
+  followed;
+- uncached package artwork may be temporarily absent under its owning contract, while help remains
+  complete.
+
+## 8. Validate localisation, reflow and accessibility
+
+Run feature 011's preview and product E2E suites across desktop, tablet/mobile portrait and
+landscape in Chromium and Firefox:
+
+```bash
+pnpm run e2e
+```
+
+Exercise release/non-release, global/contextual, alternate-locale, doubled-text, RTL, reduced-motion,
+200%-text and actual-400%-zoom states.
+
+Expected:
+
+- owned strings translate with no raw key, blank or interpolation placeholder;
+- the exact disclaimer remains unchanged, is marked `lang="en"` and stays understandable inside RTL
+  framing;
+- desktop uses the centered modal and narrow/constrained layouts use the complete sheet treatment;
+- title/close remain available, all actions meet the shared touch target and no essential behavior
+  relies on hover;
+- no page/modal horizontal overflow, clipped disclaimer or unreachable final action occurs;
+- axe reports no in-scope violation on the background and every open state.
+
+Complete the manual screen-reader protocol: discover global/contextual entries, hear one labelled
+modal, confirm background isolation, read headings/topics/facts, distinguish release/version facts,
+identify disclaimer source/language and external warnings, then close and verify the unchanged
+underlying capability.
+
+## 9. Run the complete gate
+
+```bash
+pnpm run check
+```
+
+Expected: formatting, typecheck, production build, generator/script tests, unit coverage (at least
+80% statements/branches/functions/lines) and the complete Playwright/axe matrix all pass. No browser,
+viewport, accessibility rule or test is skipped to obtain a green build.
+
+If conformance is reported, use the constitution's qualified statement: WCAG 2.2 AA except criteria
+2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.

@@ -1,117 +1,167 @@
-# Contract: Help, Provenance and Navigation
+# Contract: Help Modal and Navigation
 
-This contract defines the user-facing `/help` capability and every route into it.
+This contract defines the shared Help · About modal, every entry into it and the deliberate external
+navigations it offers.
 
-## Route and availability
+## Availability and state preservation
 
-- `/help` is an eagerly imported top-level route in the initial Angular bundle.
-- It requires no active build, storage availability, network, authentication or package lookup.
-- Opening or closing help never changes active build state, named/working records, language choice,
-  SLEF, history payloads or the canonical `/build#b.…` data.
-- Browser Back returns to the source capability. The help route does not duplicate or append a build
-  fragment.
-- Once feature 001's app shell is installed, direct offline reload of `/help` exposes all help,
-  identity and legal content without route-specific requests.
+- One shared modal instance is mounted by the eagerly loaded application frame.
+- It requires no active build, storage availability, network, authentication, route load, package
+  lookup or legal fetch.
+- Global/contextual actions dispatch `open(invocation)` to the ephemeral help-dialog store. They do
+  not invoke Angular Router or History.
+- Opening and closing preserve pathname, query, fragment, history length, active capability, build
+  revision, dirty state, selected slot/hull, viewing conditions, undo history, stored records and
+  locale preference.
+- Close returns to the unchanged underlying capability; no focus/keyboard behavior is required by
+  this feature.
+- A second open request while open may replace only the transient invocation/topic position. It
+  cannot create a second dialog or duplicate content.
 
 ## Entry surfaces
 
-1. The shared application shell exposes a visible, localised Help / data-and-licences action from
-   every route and no-build state.
-2. Standard full-screen/modal layer headers retain that action when they obscure the shell.
-3. Package-backed artwork/value regions use a shared contextual provenance action when relevant.
-   They point to the common help/provenance content and do not own duplicate legal text.
+1. The shared application frame exposes a visible localised Help · About action on every route and
+   no-build state.
+2. Narrow navigation/action menus retain a visible Help · About item when the frame's wide action is
+   collapsed.
+3. Package-backed artwork and value regions expose the shared contextual Help, data and licences
+   action wherever their capability contract requires provenance or legal access.
+4. Full-screen/nested layers that obscure the frame retain a route to the same modal rather than
+   copying help content.
 
-Every entry has a visible name matching its accessible name, meets the shared touch target, works by
-pointer/touch and does not depend on hover. FR-011 permits a general help destination; contextual
-entries may additionally target a stable local section.
+Every entry has visible text matching its accessible name, uses the shared minimum 44 CSS-pixel
+target, works by touch and pointer, and does not rely on an icon, tooltip or hover. A contextual entry
+may provide a topic hint, but the complete modal remains available and FR-011 does not require an
+exact deep link.
 
-## Required document order
+## Required information order
 
-The semantic reading order is:
+The invariant DOM/reading order is:
 
-1. page title and short localised purpose;
-2. in-page section navigation;
-3. help topics;
-4. application and bundled-Almanac identity facts;
-5. catalogue/calculation/artwork/data provenance and package-defect reporting;
-6. legal coverage index;
-7. complete application licence;
-8. complete Almanac licence;
-9. complete Almanac third-party notices.
+1. visible Help · About title, purpose and close action;
+2. Help topics;
+3. application/build and bundled-Almanac identity facts;
+4. catalogue/calculation/artwork provenance and package-defect reporting;
+5. Licence heading and attribution;
+6. visible original-English notice and exact project-specific Frontier disclaimer; and
+7. the warned repository-`LICENSE` action for every remaining licence and third-party term.
 
-Layout may place adjacent regions in columns only when that does not change DOM/reading order. Narrow,
-zoomed and expanded-text layouts use one complete stack.
+Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed, RTL
+and expanded-text states use the same complete single-column order.
 
 ## Required help topics
 
-The localised content describes only accepted current behavior:
+Owned/localised content describes only accepted current behavior:
 
-- shared build-link fragment privacy and the consequence of deliberately sharing the URL;
-- absence of accounts, uploads and telemetry;
-- local/session browser persistence and what clearing site data removes;
-- bundled offline content versus same-origin artwork cached after opening;
-- completed 100% engineering grades and partial-import normalisation;
-- catalogue hull facts versus fitted-build results/viewing conditions;
-- Almanac ownership of catalogue values and calculations.
+- **Build-link privacy**: canonical build data is in the URL fragment, which is not transmitted in
+  HTTP requests; deliberately sharing the full URL shares the encoded loadout.
+- **Accounts/uploads/telemetry**: there are no accounts, authentication, application uploads,
+  telemetry or server persistence.
+- **Browser persistence**: working/named builds and preferences remain in browser storage; clearing
+  site data removes them, so export/share is needed for a separate copy.
+- **Offline assets**: installed app-shell/bundled data remains usable offline; same-origin artwork is
+  offline only after being opened/cached, and temporary absence cannot block the capability.
+- **Completed engineering grades**: every represented grade is 100%; validated partial imports are
+  completed through Almanac or refused atomically before activation.
+- **Hull facts and build results**: package hull facts are not fitted-build results; result values may
+  also depend on declared viewing conditions.
+- **Almanac ownership**: the bundled Almanac supplies catalogue data, validation and calculations;
+  the application does not maintain or correct those game values.
 
-Raw message keys, empty content, future promises and private game-text translations are prohibited.
+Raw message keys, blank answers, future promises, unsupported import claims, private game-text
+translations and the reference's retained-partial-roll wording are prohibited.
 
 ## Identity and provenance
 
-- Show “Application version” and “Bundled Almanac version” as separate facts sourced from the
-  generated manifest.
-- A non-release build also shows a visible non-release label and build ID. It is never visually or
-  textually presented as a release.
-- Provenance says only that the bundled Almanac supplies catalogue data and calculations; it makes no
-  claim about live-game or live-catalogue currency.
-- Localised coverage descriptions distinguish application MIT terms, Almanac code terms, Frontier
-  game-data/imagery terms and other upstream terms. No description says application MIT grants rights
-  to package artwork/game data.
+- Display “Application version” and “Bundled Almanac version” as separate localised facts sourced
+  from `HelpManifestV1`.
+- A non-release build also displays a textual non-release state and its build ID. Styling alone never
+  conveys non-release state.
+- A release identity is shown only when generator evidence classified it as release.
+- Provenance says only that the bundled Almanac supplies catalogue data, validation and calculations
+  and that Frontier owns the covered game data/imagery. It makes no live-game/live-catalogue currency
+  claim.
+- Package-backed artwork/value regions route to this same provenance; they own no duplicated notice.
+- The package-defect action is specifically for Almanac data/calculation defects. Application
+  behavior, UI and translation defects are not directed to it.
 
 ## Legal presentation
 
-- Render every `LegalDocument.exactText` as text content in an English-language region; do not use
-  `innerHTML`, a Markdown renderer, iframe or translated copy.
-- Localised framing names the artifact owner, source artifact, covered material and that the legal
-  text remains in its original English.
-- Long documents may use native `details`/`summary`; all exact text is already in the DOM/bundle and
-  expansion performs no fetch.
-- Preformatted text wraps and long URLs/tokens break within the content area. Document-level
-  horizontal overflow is prohibited at supported viewports, 200% text and 400% zoom.
-- There is no runtime missing/loading/error legal state. Such input is a build failure. Component
-  previews cover release/non-release, each document, collapsed/expanded, alternate locale, long
-  expansion/RTL framing and all supported widths.
+- The modal embeds exactly one legal body: `FrontierDisclaimer.exactText` from root `LICENSE`.
+- Render it as text content in an English-language region. Do not use `innerHTML`, Markdown, iframe,
+  translated copy, automatic links or a separately typed quotation.
+- Localised framing names Frontier, identifies the source as the repository `LICENSE`, states that
+  the excerpt remains in original English and distinguishes it from the application's MIT grant.
+- The complete application licence, Almanac licence and package third-party notices are not embedded
+  as additional modal bodies.
+- Exactly one modal action is described as the destination for all remaining licence and third-party
+  terms: the generated repository `LICENSE` URL.
+- The exact disclaimer and all framing are already loaded. Expanding/scrolling/reading legal content
+  performs no request and has no runtime loading, missing or stale state.
+- Text and long identifiers wrap within the content measure; legal prose never requires horizontal
+  scrolling.
 
-## External package-defect action
+## External navigation
 
-The only Almanac issue action is a native external link created from the generated exact
-`package.json#bugs.url`:
+The repository-licence and package-defect actions:
 
-```text
-https://github.com/DarkSession/Elite-Dangerous-Almanac/issues
-```
+- are native links and inert until Commander activation;
+- visibly and programmatically state that they leave the application and may require a network;
+- use `rel="noreferrer noopener"`;
+- receive their exact URLs from the generated manifest;
+- are never prefetched, probed, opened programmatically or rewritten with application state; and
+- contain no query, fragment, build URL/payload, SLEF, hull/module identity, current route, locale or
+  browser-storage value.
 
-- Its visible and accessible text says it reports an Almanac package data/calculation defect and
-  leaves the application.
-- It uses `rel="noreferrer noopener"` and is inert until a Commander activates it.
-- No programmatic open, prefetch, beacon or validation request is allowed.
-- No query, fragment, build URL/payload, SLEF, ship/module identity, current route or local data is
-  appended.
-- Application behavior/translation/UI defects are not directed to this destination.
+The issue tracker is a support action, not another legal-details link. Tests intercept both
+navigations and assert exact destinations without requiring network access.
 
-Tests intercept the navigation so they can prove the exact destination without requiring network.
+## Dialog semantics and responsive behavior
 
-## Accessibility and localisation
+- Use feature 011's shared modal layer with `role="dialog"`, `aria-modal="true"`, a visible labelled
+  title and isolated background content.
+- Wide layouts center a readable-width dialog with bounded block size and an internal vertical
+  content scroller. Narrow layouts present a full-width bottom sheet; constrained landscape/400%-zoom
+  layouts may fill the viewport.
+- The title/close header stays available while modal content scrolls. Background page scroll does not
+  compete with the dialog.
+- All interactions meet the shared touch target and work without hover. No meaning depends on color,
+  position, icon, shape, animation or dimming.
+- At 200% text and actual 400% zoom, every section/action remains reachable and there is no document
+  horizontal overflow or clipped legal text.
+- Any shared transition honors `prefers-reduced-motion`; motion is not needed to understand open or
+  closed state.
 
-- One `main`, one visible `h1`, nested headings, semantic definition lists/articles and associated
-  source/language/coverage descriptions define the screen-reader order.
-- Meaning never depends on colour, icon, shape, placement, collapsed state or external-link ornament.
-- The exact legal region has `lang="en"`; the active app language and direction apply only to framing
-  and help text. Bundled English fallback prevents unreadable app labels offline.
-- The page and entry actions survive translation expansion and RTL framing while preserving legal
-  text direction/language.
-- Automated axe and semantic/no-overflow checks run for overview and every expanded document in all
-  Chromium/Firefox viewport/orientation projects. Manual screen-reader journeys verify navigation,
-  identities, language disclosure, document expansion and the external-warning relationship.
+## Localisation and accessibility
+
+- Every application-owned title, heading, topic, fact label, warning and action resolves through
+  feature 011's localisation layer with bundled English fallback.
+- The source disclaimer is unchanged and marked `lang="en"`; surrounding framing follows the active
+  document language and direction.
+- Expanded and RTL fixtures preserve source-text language/direction boundaries, section order,
+  complete labels and wrapping.
+- The dialog heading hierarchy, topic group, definition facts, provenance notice, disclaimer source/
+  language relationship and external warnings form a coherent screen-reader reading order.
+- Opening is announced through native/shared dialog semantics; long content is not injected into a
+  live region. Closing returns to the invoking origin.
+- Axe/semantic/no-overflow checks cover closed background and open release/non-release, contextual,
+  alternate-locale and long-text states in every Chromium/Firefox viewport/orientation project.
+- Manual screen-reader checks verify discovery from no-build and active capabilities, dialog
+  isolation, identity distinctions, disclaimer attribution/language, warning relationships and the
+  underlying capability after close.
 - Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11.
+
+## Component previews
+
+Feature 011's preview catalogue must include:
+
+- closed trigger/global/contextual entry states;
+- open release and non-release modal states;
+- all seven populated help topics;
+- long application/build/package identifiers;
+- exact disclaimer and warned external actions;
+- desktop centered, tablet/mobile portrait and landscape sheet states;
+- doubled/expanded text, RTL framing with English disclaimer, reduced motion and 400%-zoom reflow.
+
+Missing/empty/drifted artifact states are generator tests, not runtime component previews.

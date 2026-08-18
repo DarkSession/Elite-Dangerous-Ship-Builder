@@ -1,200 +1,213 @@
 # Research: Help, Licences and Provenance
 
-Research used the accepted feature specifications, constitution, current Angular/build/test setup,
-the root `LICENSE` and `README.md`, `.design/Ship Builder.dc.html`, installed
-`@elite-dangerous-almanac/core@0.1.1`, and the package's manifest, licence, notices and
-provenance tree. No runtime network source or hand-maintained package text is planned.
+Research used the accepted feature specs and contracts, constitution 5.0.0, root `LICENSE`, root
+`package.json`, `.design/Ship Builder.dc.html`, the current Angular/build/test configuration and the
+installed `@elite-dangerous-almanac/core@0.1.1` manifest/legal artifacts. No runtime network source
+or hand-maintained package wording is planned.
 
-## Installed-artifact boundary
+## Shared modal rather than a help route
 
-**Decision**: At build time, resolve the exported leaf
-`@elite-dangerous-almanac/core/ships/ships`, then locate `package.json`, `LICENSE`,
-`THIRD_PARTY_NOTICES.md` and `PROVENANCE/` relative to that resolved module. This is the same package-
-root pattern already used by `scripts/generate-build-link-codec-tables.mjs`. Read the application
-version and licence from the repository root. Produce one immutable generated TypeScript manifest
-for browser consumption.
+**Decision**: Mount one `HelpDialog` with the application frame and open it through an
+application-level signal store. The frame's global action and package-backed contextual actions emit
+the same `open(source)` intent. The modal overlays the current capability; close returns to the
+unchanged underlying state. It does not invoke Angular Router, alter history or copy a build fragment.
 
-**Rationale**: The package export map intentionally does not expose its manifest/legal files as
-browser subpaths, but the installed artifacts are available to Node tooling. Resolving an exported
-leaf works with pnpm's symlinked store and does not assume a registry, backend or runtime filesystem.
+**Rationale**: FR-001 explicitly requires a modal without navigation. One instance prevents the four
+copied reference overlays from drifting and works when no build exists. A small store allows deeply
+nested package-backed surfaces to request the shared modal without importing a feature component or
+duplicating state.
 
-**Alternatives considered**: Direct `@elite-dangerous-almanac/core/package.json` imports were rejected
-because the export map does not expose them. Reading `pnpm-lock.yaml`, hard-coding the package root,
-using Angular's generic `3rdpartylicenses.txt`, fetching GitHub/npm at build or runtime, and copying
-text by hand were rejected because they do not prove the shipped package artifacts.
+**Alternatives considered**: The previous `/help` route was rejected because it leaves the current
+capability and contradicts FR-001. A modal per route, URL/query-driven dialog state and copied legal
+blocks were rejected because they duplicate state or mutate navigation. A component-owned boolean
+was rejected because it cannot serve every capability cleanly.
 
-## Exact legal artifacts and source distribution
+## Accepted help content
 
-**Decision**: Treat the root `LICENSE`, installed Almanac `LICENSE` and installed
-`THIRD_PARTY_NOTICES.md` as the three required exact documents. Validate each as decodable UTF-8,
-non-empty and non-whitespace; record its source path, language (`en`), byte count and SHA-256. Embed
-the exact strings in the generated browser manifest. Commit package copies at `legal/almanac/` and
-make generation fail unless they are byte-for-byte equal to the installed package. Ship the raw
-copies with the static distribution as trace evidence.
+**Decision**: Keep seven application-owned, localised topic records covering:
 
-The Frontier media-usage notice remains inside the complete application/package documents that
-carry it. Localised framing identifies the notice and what it covers; the app does not rewrite,
-translate or Markdown-render the legal bytes.
+1. build links place the build in a URL fragment, which browsers do not send in HTTP requests, but a
+   Commander deliberately sharing the URL shares the encoded loadout;
+2. the application has no accounts, authentication, uploads, telemetry or server persistence;
+3. working/named builds and preferences stay in browser storage, and clearing site data removes
+   them;
+4. the app shell and bundled data remain available offline after installation, while same-origin
+   artwork is available offline only after it has been opened/cached and its temporary absence never
+   blocks the capability;
+5. every selected engineering grade represents completed 100% quality; validated imported partial
+   grades are completed through Almanac or the incoming build is refused before activation;
+6. hull catalogue facts are distinct from fitted-build results and from viewing conditions; and
+7. the bundled Almanac owns catalogue values, validation and calculations, with no live-game
+   currency claim.
 
-**Rationale**: This simultaneously satisfies first-load/offline delivery, source-distribution terms,
-verbatim presentation and traceability to the dependency actually installed. Text-node rendering
-prevents package Markdown from becoming executable HTML and preserves exact content.
+Each topic is a stable ID plus question/body message keys. Content review links each topic to the
+constitution or accepted feature contract it describes.
 
-**Alternatives considered**: Runtime fetches from `public/` were rejected because `/help` would have
-a loading/error state and would not have content in the initial application load. Rendering Markdown
-to HTML, extracting and rewriting the Frontier paragraph, translating legal text, relying only on a
-hash, or letting the build silently refresh committed copies were rejected because each weakens
-verbatim/source-review guarantees.
+**Rationale**: These are exactly FR-010's questions and reflect accepted behavior. Stable records
+support ordered rendering, completeness tests and localisation without putting product prose in a
+component.
 
-## Almanac notice regression
+**Alternatives considered**: Copying the reference FAQ was rejected. Its import answer is outside
+FR-010 and its statement that partial rolls are retained conflicts with constitution 5.0.0 and
+feature 002. Free-form Markdown, remote help and package-owned translations were rejected because
+they weaken review, offline delivery or ownership boundaries.
 
-**Decision**: Consume Almanac 0.1.1's released
-[fix for #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307). Do not patch,
-annotate inside, omit or replace the installed notice.
+## Exact Frontier disclaimer extraction
 
-**Rationale**: 0.1.1's `THIRD_PARTY_NOTICES.md` states that the matching files ship under
-`PROVENANCE/`. The artifact contains non-empty `PROVENANCE/SNAPSHOTS.md` and six domain `SOURCES.md`
-files, its manifest includes `PROVENANCE`, and its README says the record travels with the installed
-version. Feature 012 reproduces the corrected notice verbatim.
+**Decision**: At build time, decode root `LICENSE` as strict UTF-8 and locate the unique section
+headed `Elite Dangerous game data and imagery (Frontier media-usage notice)`. Within that section,
+locate the unique `Under those rules:` marker and take the immediately following non-empty
+Markdown-indented block as the project-specific disclaimer. Remove exactly the four-space Markdown
+structural prefix from each block line and preserve every other character, line break and internal
+space. Reject absent, empty, duplicate, malformed or boundary-crossing matches. Record source path,
+language `en`, UTF-8 byte length and SHA-256 with the extracted exact text.
 
-Minimal reproduction:
+The generated browser module is rebuilt before any Angular command that imports it. Generator and
+post-build tests independently re-extract the root source and prove that the runtime string encodes
+to the same bytes/hash. No second hand-edited disclaimer is committed.
 
-```bash
-pnpm add @elite-dangerous-almanac/core@0.1.1
-test -f node_modules/@elite-dangerous-almanac/core/PROVENANCE/SNAPSHOTS.md
-find node_modules/@elite-dangerous-almanac/core/PROVENANCE -type f
-rg -n 'includes matching copies under `PROVENANCE/`' \
-  node_modules/@elite-dangerous-almanac/core/THIRD_PARTY_NOTICES.md
-```
+**Rationale**: The repository `LICENSE` remains the sole wording authority. Parsing a uniquely
+anchored Markdown block distinguishes the project-specific quotation from the adjacent Almanac
+description and keeps the modal synchronized without embedding the complete licence.
 
-The test succeeds, `find` lists seven files and `rg` reports the matching shipped-location claim.
+**Alternatives considered**: Copying the paragraph into a translation catalogue/component, using a
+hard-coded regex over the quoted wording, embedding the entire `LICENSE`, rendering Markdown, or
+fetching the file at runtime were rejected because they duplicate text, permit the wrong excerpt,
+violate the “only” boundary or lose first-load availability. Adding translated disclaimer variants
+was rejected by FR-006.
 
-**Alternatives considered**: A downstream footnote, altered copy, hiding the provenance section and
-linking only to GitHub were rejected as package-text forks or incomplete offline disclosure.
+## Installed-artifact and identity boundary
 
-## Build and release identity
+**Decision**: Read the application version from root `package.json`. Resolve the exported leaf
+`@elite-dangerous-almanac/core/ships/ships`, walk to the installed package root and read its
+`package.json` for package name, version and `bugs.url`, matching the repository's existing codec
+table generator pattern. Emit one immutable generated manifest for browser consumption.
 
-**Decision**: Generate one discriminated `BuildIdentity` from build-time evidence. The application
-version always comes from root `package.json`; the bundled Almanac version always comes from its
-installed `package.json`. Only the release workflow may request `kind: release`, and the generator
-must verify that its supplied release version/ref equals the non-placeholder application version.
-Every other build is `kind: nonRelease` and visibly includes a safe build identifier supplied by CI
-or, locally, a commit abbreviation with an optional `dirty` suffix. Permit only a conservative
-non-personal identifier alphabet and length; never include a branch, runner, path, account or machine
-name. Missing/mismatched release evidence or an unavailable non-release identifier fails generation.
+Only explicit release-workflow evidence whose release version/ref matches the non-placeholder root
+version produces `{ kind: 'release' }`. Every other build is `{ kind: 'nonRelease', buildId }`.
+CI supplies a bounded immutable build ID; a repository build uses the current commit abbreviation
+plus an optional `dirty` marker. The accepted alphabet excludes whitespace, URLs, paths, branch
+names, people, machines and account identifiers. If no truthful identifier is available, generation
+fails.
 
-**Rationale**: Production optimisation does not mean a release, and the current `0.0.0` manifest is
-clearly not a release. Explicit evidence prevents development builds from masquerading as releases,
-while compile-time data keeps the static app deterministic and offline.
+**Rationale**: The package export map does not expose its manifest to browser code, but installed
+artifacts are available to Node tooling under pnpm. Explicit classification prevents an optimized
+build or the current `0.0.0` version from masquerading as a release. Compile-time values work offline
+and describe exactly what was built.
 
-**Alternatives considered**: Hard-coded versions, runtime environment files, deployment timestamps,
-branch/user/machine labels, random IDs and inferring release state from `ng build --configuration
-production` were rejected as drifting, personal, nondeterministic or misleading.
+**Alternatives considered**: Hard-coded mock versions, reading `pnpm-lock.yaml`, importing an
+unexported package subpath, runtime environment files, timestamps, random IDs, branch/user/machine
+labels and inferring release status from Angular's production configuration were rejected as stale,
+unsupported, nondeterministic, personal or misleading.
+
+## External destinations
+
+**Decision**: Keep one audited application-owned constant for
+`https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE`. The generator accepts
+only HTTPS, the exact GitHub host/repository/ref/path, and no query, fragment, credentials or port.
+This is the sole modal action described as the destination for remaining licence and third-party
+terms.
+
+Read the Almanac package-defect destination from installed `package.json#bugs.url`; validate it as
+the exact query/fragment-free HTTPS issues URL. Render it in the provenance section as a separate,
+specific package-defect action, never as a second legal-details destination. Both use native links,
+visible leaving-app/network warnings and `rel="noreferrer noopener"`; nothing opens, prefetches or
+probes them before activation.
+
+**Rationale**: A checked-in allowlisted repository licence location is auditable and independent of
+developer git remotes. The installed package manifest remains authoritative for its own issue
+tracker. Exact URLs make it straightforward to prove that no route, fragment, SLEF or build identity
+is appended.
+
+**Alternatives considered**: Deriving URLs from local git remotes, using the current page URL,
+linking package notices separately, auto-opening a new window, client-side availability probes and
+adding issue templates/query parameters were rejected because they are environment-dependent,
+create extra legal destinations, trigger network activity or risk leaking build context.
+
+## Source-distribution terms
+
+**Decision**: Commit exact mirrors of the installed Almanac `LICENSE` and
+`THIRD_PARTY_NOTICES.md` under `legal/almanac/`. The generator verifies strict UTF-8, non-empty
+content and byte-for-byte equality with the installed package on every checked build. Root `LICENSE`
+continues to distinguish the application's MIT grant from Frontier/package material and points
+readers to the applicable bundled terms. Package upgrades require an explicit sync command and
+review; ordinary build/check commands never rewrite tracked mirrors.
+
+These source-distribution artifacts are not imported into the Angular bundle and are not exposed as
+additional modal links. The modal embeds only the root project disclaimer and uses only the root
+GitHub `LICENSE` legal-details link required by FR-003.
+
+**Rationale**: A source checkout/archive must carry the terms needed to redistribute package game
+data and artwork, even though the concise runtime modal has a deliberately smaller legal boundary.
+Exact package copies preserve ownership and avoid a downstream paraphrase.
+
+**Alternatives considered**: Depending on `node_modules` being present in a source archive, copying
+package text into root `LICENSE`, silently updating mirrors during builds, embedding all package
+documents in the app, or treating MIT as covering package assets were rejected because they make
+terms disappear, fork package wording, hide review changes or contradict FR-003/FR-004.
 
 ## Initial-load and offline delivery
 
-**Decision**: Eagerly import the `/help` route and generated manifest into the initial Angular bundle.
-Feature 001's service worker prefetches the app shell, main bundle, bundled English fallback and raw
-legal trace files. The route performs no dynamic import, HTTP request or package lookup. Validate
-offline behavior against the production build: after app-shell installation, take the context
-offline, reload `/help` directly and read every help topic and full notice.
+**Decision**: Eagerly import the generated help manifest and feature 011's bundled English message
+entries with the application frame. The shared modal component may instantiate on demand, but all
+facts, accepted help text and exact disclaimer bytes are already in the initial JavaScript bundle.
+Opening it performs no dynamic import or fetch. Feature 001's app-shell/service-worker policy caches
+that initial bundle; other locale catalogues may use feature 011's same-origin loading and bundled
+English fallback.
 
-**Rationale**: The three exact texts are small enough for the existing initial bundle budget and the
-feature explicitly requires initial-load availability. Testing `ng serve` alone cannot prove service-
-worker caching.
+**Rationale**: This satisfies first-load/offline availability without adding a runtime missing,
+loading or stale legal state. It also ensures the modal is independent of build data, storage and
+artwork cache state.
 
-**Alternatives considered**: Lazy route chunks, service-worker data groups, GitHub links as the only
-copy, runtime `fetch()` and requiring a build before help appears were rejected because they add a
-network/loading boundary to mandatory content.
+**Alternatives considered**: Lazy route/component chunks, runtime fetches from `LICENSE` or GitHub,
+same-origin JSON help files and service-worker runtime fallback were rejected because opening help
+could require a request or produce a degradable legal state.
 
-## Help content ownership
+## Modal composition, responsiveness and accessibility
 
-**Decision**: Keep application-owned help as static feature 011 message keys covering exactly the
-accepted behaviors:
+**Decision**: Reuse feature 011's application frame, dialog/layer, fact list, notice, action and
+external-link primitives. The semantic order follows the reference: title/purpose, Help topics,
+Versions and data provenance, then Licence. Wide layouts use a centered modal with a bounded
+readable measure and internal vertical scrolling; narrow layouts use a full-width bottom sheet with
+a persistent header/close action. At 400% zoom or constrained landscape height, the same single
+column may fill the viewport. DOM and reading order never change.
 
-1. build data in a shared link is confined to the URL fragment, while deliberately sharing the URL
-   shares that build;
-2. there are no accounts, uploads or telemetry;
-3. working/named state uses browser storage, and clearing site data removes it;
-4. interface/help/legal/fallback text is bundled offline, while same-origin artwork may become
-   available offline only after it has been opened;
-5. a selected blueprint grade represents a completed 100% grade and imported partial quality is
-   normalised under the accepted product rule;
-6. hull facts describe the catalogue hull, while build results depend on fitted modules and viewing
-   conditions;
-7. the bundled Almanac supplies game catalogue values and calculations, not a claim about the live
-   game's current version.
+The shared dialog supplies `role="dialog"`, `aria-modal="true"`, a visible labelled title and
+background isolation. Every entry and close/external action has a visible localised name and at least
+the shared 44 CSS-pixel target.
+The exact disclaimer is text in a region with `lang="en"` and a visible localised “original English”
+statement. Long text and identifiers wrap; no horizontal document or legal-excerpt scroll is used.
+No essential interaction depends on hover, animation, icon, color or placement.
 
-No help copy predicts future behavior or duplicates package-owned game diagnostics.
+**Rationale**: This preserves `.design`'s recognizable desktop/mobile modal treatment while making
+the content resilient at tablet/mobile landscape, 200% text, 400% zoom, expanded translation and RTL
+framing. Native semantics and one visible order are easier to verify than a custom panel system.
 
-**Rationale**: These topics answer every question named by FR-010 without becoming a parallel product
-specification. Static message assets make them translatable and offline.
-
-**Alternatives considered**: Generic FAQ filler, implementation internals, future promises, raw
-English component strings and private translations of package terms were rejected.
-
-## Provenance and package-defect reporting
-
-**Decision**: Present separate localised facts for the application, bundled Almanac, catalogue/data,
-calculations, Frontier assets/game data and other third-party sources. Source the external defect
-destination from installed `package.json#bugs.url`, validate it at build time as the Almanac HTTPS
-issues URL with no query or fragment, and expose it only as a native Commander-activated link whose
-visible and accessible label says it leaves the application. Never append a build, route, referrer
-payload, query or fragment; use `rel="noreferrer noopener"`. Explain that it is for package data or
-calculation defects, not application defects.
-
-**Rationale**: Package ownership stays explicit, and a normal link click is the constitutionally
-permitted deliberate external navigation. Deriving the destination from the installed manifest
-avoids a second mutable location.
-
-**Alternatives considered**: Automatic issue creation, prefilled issue queries, adding build/SLEF
-data, runtime URL discovery, generic unlabeled external links and routing application defects to the
-Almanac were rejected.
-
-## Route, UI and accessibility composition
-
-**Decision**: Add one eager `/help` document with sections for help, versions, provenance/defect
-reporting and licences. The persistent shell owns the universal entry; package artwork/value regions
-compose a shared contextual provenance link, and standard full-screen/modal headers retain a help
-action when the shell is obscured. Use semantic headings, definition lists and native
-`details`/`summary` disclosures. Render legal text in an English `pre`/text node with wrapping and
-long-token breaking. There is no runtime empty/loading/error legal state: generation failure prevents
-the app from shipping.
-
-**Rationale**: One document provides a predictable screen-reader order and a responsive narrow stack
-without duplicating routes or notices. Native disclosures keep a long 17 KiB notice manageable while
-the content remains in the DOM and initial bundle.
-
-**Alternatives considered**: Separate lazy help/about/licence routes, a feature-local modal on every
-screen, `innerHTML`, iframe/PDF rendering, fixed-width preformatted overflow and shell-only access
-behind an obscuring layer were rejected.
-
-## Design reference treatment
-
-**Decision**: Adopt the reference's persistent help entry and wide-overlay/narrow-sheet information
-hierarchy only. Reject its `APP VERSION 4.2.1`, `LIBRARY VERSION 3.8.0.3`, EDASSETS.ORG artwork claim,
-typeface licence claim, incomplete three-line licence summary, fixed dimensions, colors and styles.
-
-**Rationale**: Those mock facts do not come from shipped artifacts and some conflict with current
-repository provenance. The repository's design system owns visuals; feature 012's generated manifest
-owns versions/legal text.
-
-**Alternatives considered**: Copying the mock values or treating the HTML as authoritative legal
-content was rejected. Ignoring its useful navigation hierarchy was also rejected.
+**Alternatives considered**: A fixed 620 px dialog, fixed 82/88% heights, icon-only `?`,
+title-attribute naming, route navigation, two-column DOM reordering, clipped disclaimer text and
+hover-only provenance were rejected as direct conflicts with the design system, touch,
+localisation/reflow or screen-reader requirements.
 
 ## Verification strategy
 
-**Decision**: Node tests cover missing, empty, whitespace-only, invalid UTF-8, stale committed copy,
-wrong version/ref, unsafe/missing build ID, unsafe issue URL and successful exact generation. Unit
-tests cover manifest invariants and localised presentation without altering legal bytes. Production
-Playwright covers all help/document states, offline reload, no route request, exact identity labels,
-no build mutation, the inert-before-click and exact external URL, all feature 011 viewport/browser
-projects, axe, semantic/screen-reader order, 200% text, 400% zoom, expanded/RTL labels and reduced
-motion. CI must run script tests as well as the full `pnpm run check` gate.
+**Decision**: Test at three layers:
 
-**Rationale**: Required missing artifacts are release failures, not runtime states. Browser coverage
-must prove both static delivery and usable long-form content; generic build licence extraction and an
-axe-only pass cannot prove either.
+- Node tests cover every generator rejection, exact extraction, hashes, version/release identity,
+  destination allowlists and package-mirror equality.
+- Vitest covers manifest invariants, topic completeness, presenter localisation, store transitions,
+  view-model distinctions and component intents/semantics.
+- Playwright covers global and contextual entry from no-build and active capabilities, URL/build
+  stability, all content, release/non-release fixtures, offline opening/reload, exact destinations,
+  no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
+  reduced motion, axe and no-overflow across feature 011's ten Chromium/Firefox projects.
 
-**Alternatives considered**: Snapshotting rewritten Markdown, manual-only licence review, Chromium-
-only tests, `ng serve` offline assertions, skipped network tests and lowering coverage were rejected.
+Manual screen-reader protocol verifies that the modal is announced, the background is not traversed
+as active content, headings/topics/facts/disclaimer language/warnings are understandable, and the
+unchanged underlying capability is available again after close. The documented conformance
+statement retains the constitution's keyboard-criteria exclusions.
+
+**Rationale**: Artifact correctness cannot be established by UI tests alone, and an axe pass cannot
+prove reading order or meaning. Layered checks place failures at their owning boundary.
+
+**Alternatives considered**: Snapshots, screenshots, one browser, desktop-only checks, axe alone and
+manual exact-text review were rejected as insufficient release gates.

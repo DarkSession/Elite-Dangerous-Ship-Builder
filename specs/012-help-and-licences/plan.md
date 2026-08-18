@@ -6,96 +6,97 @@
 
 ## Summary
 
-Add one eagerly loaded `/help` capability, reachable through the shared application shell and from
-package-backed artwork/value contexts. It presents accepted help topics, distinct application and
-bundled-Almanac identities, catalogue/calculation provenance, a deliberate package-defect link and
-three complete verbatim legal documents. A build-time Node pipeline reads the root application
-artifacts and installed `@elite-dangerous-almanac/core` package, validates and fingerprints them,
-checks committed source-distribution copies byte-for-byte, and generates an immutable TypeScript
-manifest for the initial browser bundle. Missing, empty, stale or ambiguous artifacts fail the build;
-the runtime has no legal-content loading fallback and makes no network request.
+Add one shared Help · About modal to the application frame. A visible global action opens it from
+every capability and no-build state, while package-backed artwork and value surfaces can dispatch
+the same open intent. Opening and closing the modal changes no route, URL fragment, build, storage or
+capability state. The modal presents current privacy/offline/engineering help, separate application
+and bundled-Almanac identities, bounded provenance, the exact project-specific Frontier disclaimer
+extracted from the root `LICENSE`, one warned external link to that `LICENSE` on GitHub, and one
+separately identified Almanac package-defect link.
 
-Almanac 0.1.1 includes the correction filed as
-[Elite-Dangerous-Almanac #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307).
-Its installed `THIRD_PARTY_NOTICES.md` now truthfully states that matching records ship under
-`PROVENANCE/`. The application preserves the notice byte-for-byte.
+A build-time Node generator validates the root and installed-package artifacts, extracts the one
+permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
+and emits an immutable TypeScript manifest imported by the initial Angular bundle. Missing, empty,
+ambiguous or drifted inputs fail before release. Installed Almanac legal artifacts remain mirrored
+byte-for-byte in the source distribution to satisfy redistribution terms, but they are not embedded
+or linked as additional legal documents in the modal.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for
-artifact generation and verification
+**Language/Version**: TypeScript 6.0 in strict mode; Angular HTML and SCSS; Node.js 24 per `.nvmrc`
+for artifact generation and verification
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router and signals,
-`@elite-dangerous-almanac/core` 0.1.1 artifacts, Node standard
-library (`fs`, `crypto`, `child_process`) for build-time ingestion, feature 001's application shell
-and offline service worker, and feature 011's component/localisation/accessibility infrastructure
+**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals,
+`@elite-dangerous-almanac/core` 0.1.1 installed artifacts, Node standard library (`fs`, `crypto`,
+`child_process`, `url`) for build-time generation, feature 001's application frame and offline app
+shell, and feature 011's dialog, localisation, token and accessibility infrastructure
 
-**Storage**: No feature-owned persistence. Help and legal data are immutable build artifacts;
-disclosure state is ephemeral UI state. Language persistence remains owned by feature 011, and
-opening help does not alter active builds, Web Storage or build-link fragments
+**Storage**: No feature-owned persistence. Open/closed state and invocation context are ephemeral;
+the immutable help manifest is compiled into the initial application bundle. Locale persistence
+remains owned by feature 011
 
-**Testing**: Node test runner for artifact-generation failures and byte equality; Vitest through
-Angular's unit-test builder with the 80% coverage gate; Playwright with `@axe-core/playwright` over
-desktop, tablet/mobile portrait and landscape in Chromium and Firefox. The current repository still
-lacks the feature 011 Firefox, landscape and automated-accessibility harness
+**Testing**: Node test runner for extraction, source-distribution equality and release metadata;
+Vitest through Angular's unit-test builder with the existing 80% thresholds; Playwright with
+`@axe-core/playwright` over desktop, tablet/mobile portrait and landscape in Chromium and Firefox.
+The current repository still depends on feature 011 to add Firefox, landscape and automated axe
+coverage
 
 **Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; static client
-application whose help and legal content is usable from the installed application shell without a
-network
+application with modal content usable from the initial app shell without a network
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
-**Performance Goals**: Activating `/help` performs zero route-specific or cross-origin requests; all
-owned help messages, exact legal text and identity data are in the initial application bundle, with
-no lazy help chunk or runtime metadata fetch
+**Performance Goals**: Opening the already-loaded modal performs no route load, same-origin asset
+request or cross-origin request and presents its first complete frame within 100 ms under the shared
+mobile 4x-CPU test profile; preserve the production initial-bundle error budget
 
-**Constraints**: No backend, runtime environment configuration, telemetry or automatic external
-request; legal bytes stay exact and untranslated; package artifacts remain package-owned; versions
-come from manifests; non-release builds show a non-personal immutable build identifier; no build
-data enters the issue-tracker URL; no page horizontal scrolling; one dark tokenised theme; all
-application framing is localised; touch/screen-reader operation; WCAG 2.2 AA except criteria 2.1.1,
-2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+**Constraints**: No backend, account, telemetry, runtime legal fetch, runtime environment
+configuration or automatic external navigation; only the exact project-specific Frontier disclaimer
+is embedded; the repository `LICENSE` is the sole legal-details link; source terms remain distinct
+from the application MIT grant; versions come from shipped manifests; non-release builds show a
+non-personal immutable identifier; external URLs contain no build data; no document horizontal
+scrolling; one dark tokenised theme; all application framing is localised; untranslated legal text is
+identified as English; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+2.4.11
 
-**Scale/Scope**: One `/help` route; seven accepted help topics; application and Almanac identity
-facts; root `LICENSE`; byte-exact installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md`; one
-external package-defect destination
+**Scale/Scope**: One shared modal and dialog state; global plus contextual entry surfaces; seven
+accepted help topics; application, build and Almanac identity facts; one exact Frontier excerpt;
+one repository-licence destination; one Almanac package-defect destination; two required mirrored
+Almanac source-distribution artifacts
 
-**Design Reference**: `.design/Ship Builder.dc.html` help/about controls and overlays in canvases
-1a–1d. Their global access, grouped information order and wide-to-narrow responsive intent are
-retained. The repeated fixed overlays are deliberately replaced by the single eager `/help` route,
-and their invented versions and unsupported licence/asset claims are rejected in
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. The grouped About → FAQ →
+Licence order, centered wide modal, narrow bottom sheet, persistent close control and global/mobile
+entry intent are retained. Invented versions, obsolete FAQ answers, unverified asset/typeface claims,
+fixed visual literals and title-only `?` controls are rejected in
 [design/reference-review.md](./design/reference-review.md).
 
 ## Constitution Check
 
-_GATE: Passed for planning because the design preserves installed artifacts and the upstream
-correction is released. Repository prerequisites remain. Re-check after Phase 1._
+_GATE: Passed before Phase 0 research. Re-check after Phase 1. No constitutional exception is
+requested._
 
-| Principle                               | Design evidence                                                                                                                                        | Status                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
-| I. Client-Side Only                     | Build-time ingestion produces static same-origin output; runtime help performs no upload, API call, telemetry or automatic external navigation.        | PASS                   |
-| II. Almanac Source of Truth             | Version, licence, notices, issue URL and provenance statements originate in the installed package; the released #307 wording is preserved exactly.     | PASS                   |
-| III. Domain Logic Outside UI            | Pure manifest validation and a read-only facade own identity/document invariants; components render view models and navigation intent.                 | PASS                   |
-| IV. Lossless, Honest Builds             | Missing/empty/drifted artifacts fail generation; release and non-release identities are explicit; no version or legal text is invented.                | PASS                   |
-| V. Desktop, Tablet and Mobile           | One responsive semantic document covers all sizes/orientations, touch, screen reader, 200% text and 400% zoom without document overflow.               | PASS                   |
-| VI. Commander's Language                | Help/framing is localised; exact English legal text is unchanged and programmatically identified as English/untranslated.                              | PASS                   |
-| VII. One Design System                  | The route and shell/context entries compose feature 011 primitives and tokens; no screen-local visual language is introduced.                          | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Generator failure cases, exact-byte tests, dual-engine viewport journeys, axe and manual screen-reader checks are specified without relaxing coverage. | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every requirement maps to a plan-time surface and contract before tasks are generated.                                                                 | PASS                   |
+| Principle                               | Design evidence                                                                                                                                         | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.            | PASS                   |
+| II. Almanac Source of Truth             | Almanac version and issue destination come from the installed manifest; provenance claims only the package's catalogue/calculation role.                | PASS                   |
+| III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close/navigation intent.        | PASS                   |
+| IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.               | PASS                   |
+| V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract. | PASS                   |
+| VI. Commander's Language                | Owned help/framing is localised with bundled English fallback; exact disclaimer remains unchanged in a labelled English region.                         | PASS                   |
+| VII. One Design System                  | Feature 011's application frame, dialog, disclosures, facts, notices, links and tokens are reused or extended under `src/app/ui/`.                      | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Generator failure tests, exact-source assertions, modal journeys, dual-engine viewports, axe and manual screen-reader checks retain all gates.          | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every requirement maps to a plan-time surface, model, contract and validation scenario before tasks are generated.                                      | PASS                   |
 
-### Required released and repository dependencies
+### Required repository dependencies
 
-1. Almanac 0.1.1 supplies the corrected
-   [#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307) notice. The package notice
-   remains verbatim in the app; a local wording patch is prohibited.
-2. Feature 001 must supply the persistent application shell, canonical `/build#b.…` behavior and
-   production service-worker/app-shell caching used by the offline validation.
-3. Feature 011 must supply shared tokens/components, locale selection/messages, Firefox and
-   portrait/landscape projects, and the automated accessibility harness.
-4. The release pipeline must provide explicit version-matched release evidence. Every other build
-   is non-release and must have a safe build identifier; ambiguous metadata fails generation.
-
-Feature 012 may be tasked after these repository contracts are accepted. No Almanac release gate remains.
+1. Feature 001 supplies the persistent application frame, canonical build-fragment behavior,
+   browser persistence and production service-worker/app-shell caching referenced by help.
+2. Feature 011 supplies shared dialog/layer primitives, tokens, localisation with bundled English
+   fallback, component previews, Firefox/landscape projects and the automated accessibility harness.
+3. Release automation supplies explicit version-matched release evidence. Every other build is
+   classified as non-release and must have a safe immutable build identifier.
+4. No Almanac defect blocks this feature. The installed 0.1.1 manifest and legal artifacts are
+   sufficient inputs and are consumed without local correction.
 
 ## Project Structure
 
@@ -123,98 +124,109 @@ specs/012-help-and-licences/
 ```text
 legal/
 └── almanac/
-    ├── LICENSE                         # committed exact installed-package copy
-    └── THIRD_PARTY_NOTICES.md          # committed exact installed-package copy
+    ├── LICENSE                         # exact installed-package source-distribution mirror
+    └── THIRD_PARTY_NOTICES.md          # exact installed-package source-distribution mirror
 
 scripts/
-├── generate-distribution-manifest.mjs # validate sources, metadata and staged copies
-└── generate-distribution-manifest.test.mjs
+├── generate-help-manifest.mjs         # validate/extract identities, disclaimer and destinations
+└── generate-help-manifest.test.mjs
 
 src/app/
 ├── domain/distribution/
-│   ├── distribution-manifest.ts        # immutable identities/documents and invariants
-│   └── distribution-manifest.spec.ts
+│   ├── help-manifest.ts               # immutable artifact contracts and invariant validation
+│   └── help-manifest.spec.ts
 ├── platform/build/
-│   └── distribution-manifest.generated.ts # ignored, deterministic build input
+│   └── help-manifest.generated.ts     # ignored deterministic browser input
 ├── application/help/
-│   ├── help.facade.ts                  # read-only generated manifest + locale view
-│   └── help.presenter.ts
+│   ├── help-dialog.store.ts           # global ephemeral open/close/source state
+│   ├── help.presenter.ts              # generated facts + localised help view model
+│   └── help.presenter.spec.ts
 ├── features/help/
-│   ├── help.page.ts
-│   ├── help.page.html
-│   └── help.page.scss
-├── i18n/                               # feature 011 owned help/framing messages
-└── ui/                                 # feature 011 shared/extended document/link primitives
+│   ├── help-dialog.component.ts
+│   ├── help-dialog.component.html
+│   └── help-dialog.component.scss
+├── i18n/                              # feature 011-owned help/framing message entries
+└── ui/                                # reused/extended dialog, fact, notice and external-link UI
 
 e2e/
 └── help-and-licences.spec.ts
 ```
 
-Tests live beside domain/application/component source. Existing shell, service-worker,
-localisation, UI and E2E infrastructure is extended in its owning feature paths rather than copied
-under help.
+Tests remain beside TypeScript/component sources where possible. The existing frame,
+service-worker, localisation, UI and E2E infrastructure is extended in its owning feature paths
+rather than duplicated under help.
 
-**Structure Decision**: Keep one Angular application and one eager route. A Node build boundary is
-the only code allowed to read package files; it produces one immutable browser manifest and verifies
-committed source-distribution copies. A pure validator defines truth, a read-only facade adds
-localised framing, and the page only renders it. No mutable feature store, runtime file fetch,
-Markdown/HTML interpretation, private legal copy or second navigation system is added.
+**Structure Decision**: Keep one Angular application and one shared modal instance mounted by the
+application frame. Node tooling is the only boundary allowed to read package/repository files. It
+emits the minimal browser manifest and separately verifies exact source-distribution mirrors. A
+signal store owns only ephemeral modal state, a presenter combines immutable facts with localised
+messages, and presentation components render inputs. No help route, mutable feature persistence,
+runtime legal fetch, Markdown renderer, private legal wording or second navigation system is added.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and the released regression are recorded in
-[research.md](./research.md). The decisive outcomes are:
+All decisions and alternatives are recorded in [research.md](./research.md). The decisive outcomes
+are:
 
-- Resolve an exported Almanac leaf and walk to the installed package root, matching the repository's
-  existing codec-table generator; direct browser/package subpath imports are not required.
-- Validate UTF-8, non-whitespace content, exact package/app versions, safe metadata and SHA-256/byte
-  identity before Angular compilation. Verify committed package legal copies byte-for-byte.
-- Embed exact text in the initial TypeScript bundle and also ship traceable raw copies. Legal text is
-  rendered as text, never translated, Markdown-rendered or inserted as HTML.
-- Classify a release only from explicit version-matched release-workflow evidence. Every other build
-  is visibly non-release and carries a sanitised CI identifier or commit abbreviation plus dirty
-  marker; missing evidence fails the build.
-- Use one eager `/help` route plus shared shell/context links. Browser Back returns to the source;
-  active build/storage state is untouched.
-- Source the package-defect destination from `package.json#bugs.url`; permit only an explicit native
-  external action with a visible leaving-app warning and no query, fragment or build state.
-- 0.1.1's notice correctly identifies its installed `PROVENANCE/` tree; byte-equality remains a
-  regression requirement.
+- Use the reference's single grouped modal, not the old plan's `/help` route. Global and contextual
+  actions dispatch one store intent, so the current capability, URL and build remain intact.
+- Keep seven accepted help topics as localised application messages derived from the constitution
+  and accepted feature contracts. Exclude the mock's import claim and its obsolete partial-roll
+  answer.
+- Extract the unique Markdown-indented disclaimer block beneath the Frontier section's “Under those
+  rules” marker. Remove only Markdown's structural four-space prefix; preserve every remaining byte,
+  newline and character, record its SHA-256 and language, and fail on ambiguity or drift.
+- Read application and Almanac versions from their actual manifests. Only explicit version-matched
+  release evidence produces a release identity; every other build carries a sanitised CI identifier
+  or git commit abbreviation plus optional dirty marker.
+- Validate one audited, query-free GitHub `LICENSE` URL as the sole legal-details destination. Read
+  and validate the separate package-defect destination from Almanac `package.json#bugs.url`.
+- Keep installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` as byte-exact tracked mirrors for
+  source redistribution, but do not expose them as extra modal documents or links.
+- Import the generated manifest and bundled English help catalogue eagerly. Opening the modal never
+  enters a loading/error state and never causes a request.
+- Compose feature 011's dialog/facts/notices/actions, with a centered wide treatment and bottom-sheet
+  narrow treatment matching `.design` while meeting reflow, touch, screen-reader and reduced-motion
+  requirements.
 
-No planning clarification marker or unresolved Almanac dependency remains.
+No planning clarification marker or unresolved upstream dependency remains.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines build identity, exact legal documents, package provenance,
-  help topics, external destinations and the generated immutable manifest.
-- [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) freezes artifact
-  resolution, byte validation, committed-copy equality, release classification and build failures.
-- [contracts/help-navigation.md](./contracts/help-navigation.md) freezes route ownership, content,
-  legal rendering, contextual provenance and external-navigation behavior.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the shell/context entry
-  surfaces and the `/help` route.
-- [design/help-and-licences.md](./design/help-and-licences.md) defines information order,
-  wide/narrow composition, legal-document states and accessibility behavior.
-- [design/reference-review.md](./design/reference-review.md) records which hierarchy is adopted and
-  which invented mock facts are excluded.
-- [quickstart.md](./quickstart.md) supplies runnable upstream, artifact, build, offline, responsive,
+- [data-model.md](./data-model.md) defines immutable build/package identity, the exact disclaimer,
+  external destinations, source-distribution evidence, help topics, dialog state and the composed
+  view model.
+- [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) freezes source
+  resolution, exact extraction, byte/hash checks, source-distribution mirrors, URL validation,
+  release classification and failure behavior.
+- [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, entry
+  surfaces, information order, accepted help content, legal/provenance framing, external navigation
+  and state preservation.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
+  entry, contextual provenance entry and shared Help · About modal.
+- [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
+  semantic order, modal states, responsive behavior and component-system impact.
+- [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`
+  and why mock facts, obsolete behavior and literal styling are excluded.
+- [quickstart.md](./quickstart.md) supplies runnable artifact, modal-state, offline, responsive,
   localisation, external-navigation and accessibility validation scenarios.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, runtime configuration request, telemetry, private game data, package
-wording correction, mutable legal-content state, hard-coded display label or visual literal. The
-full legal bytes and artifact identities remain traceable to shipped files; missing or contradictory
-package content blocks release instead of degrading at runtime. Every FR has a surface owner and a
-dual-engine responsive/accessibility validation path.
+Phase 1 introduces no server, runtime metadata request, telemetry, build-state field, private game
+data, package correction, translated legal copy, second theme or route transition. The exact
+Frontier excerpt remains traceable to the root `LICENSE`; package redistribution documents remain
+traceable to the installed package; missing or contradictory inputs block release instead of
+degrading at runtime. Every FR has an owning surface and a dual-engine responsive/accessibility
+validation path. The modal's single legal-details link and separate package-defect action are
+identified, allowlisted and free of application/build data.
 
-The planning gate remains **PASS with no exception**. The Almanac gate is satisfied; implementation
-is sequenced behind the relevant feature 001 and 011 foundations. Before task generation,
-resynchronise the committed legal copies and verify every hash/byte count.
+The post-design gate remains **PASS with no exception**. Implementation is sequenced behind the
+relevant feature 001 and 011 foundations.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. The build generator, immutable manifest and read-only
-facade are the minimum separation that keeps filesystem/package concerns out of browser components,
-makes release failures testable and keeps legal bytes exact. The single route and native disclosure
-elements avoid a second content/navigation framework.
+No constitutional violation requires justification. The small build generator is necessary to make
+verbatim legal text and shipped versions mechanically traceable; the signal store is necessary to
+let every capability open one shared dialog without navigation or duplicated state. Both remain
+narrower than a route/content framework or runtime document loader.
