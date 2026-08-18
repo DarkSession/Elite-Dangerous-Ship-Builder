@@ -2,7 +2,7 @@
 
 ## Almanac catalogue and hull facts
 
-**Decision**: Import `SHIPS`, `getShipBySymbol`, `getShipSlots` and type `Ship` from `@elite-dangerous-almanac/core/ships/ships`. Present the package fields directly and use the package `symbol` as every hull key. Preserve an explicit unavailable state even though beta.12 currently populates all required facts.
+**Decision**: Import `SHIPS`, `getShipBySymbol`, `getShipSlots` and type `Ship` from `@elite-dangerous-almanac/core/ships/ships`. Present the package fields directly and use the package `symbol` as every hull key. Preserve an explicit unavailable state even though 0.1.1 currently populates all required facts.
 
 **Rationale**: The installed release contains 48 unique hull records and documents the required fields and units. Case-insensitive `getShipBySymbol()` returns `null` for unknown symbols, which gives the detail route a safe error boundary.
 
@@ -12,7 +12,7 @@
 
 **Decision**: Expand the hull layout with `enumerateSlots(getShipSlots(symbol))` from `@elite-dangerous-almanac/core/ships/slots`. Use `getDefaultLoadout(symbol)` from `ships/default-loadouts` only as the availability check, then create the live build with `ShipLoadout.default(symbol)` from `ships/ship-loadout`.
 
-**Rationale**: The slot helper preserves irregular game-owned keys; the live factory creates an independent, calculated stock build using the complete catalogue. All beta.12 hulls currently have complete valid defaults, while the null/error states remain required defensive behavior.
+**Rationale**: The slot helper preserves irregular game-owned keys; the live factory creates an independent, calculated stock build using the complete catalogue. All 0.1.1 hulls currently have complete valid defaults, while the null/error states remain required defensive behavior.
 
 **Alternatives considered**: Deriving keys from slot position or `_SizeN` text was rejected because several hulls violate those patterns. Replaying default module records through UI fitting operations was rejected because the package already owns the factory.
 
@@ -20,7 +20,7 @@
 
 **Decision**: Configure Angular's asset pipeline to copy only package `assets/ships/*/illustration.svg` files to a same-origin `/assets/ships/<symbol>/illustration.svg` path. Cache the app shell and bundled English messages eagerly; cache hull illustrations on first request with the service worker. Reserve artwork aspect ratio, keep creation independent of image state, and have the artwork coordinator retry a failed uncached request when the browser reports that connectivity returned so no page reload is required.
 
-**Rationale**: The package documents these static files and beta.12 has one illustration for every hull. Same-origin lazy caching satisfies the constitution without placing every image on the initial critical path.
+**Rationale**: The package documents these static files and 0.1.1 has one illustration for every hull. Same-origin lazy caching satisfies the constitution without placing every image on the initial critical path.
 
 **Alternatives considered**: Importing SVGs as JavaScript was rejected because the package intentionally exposes them as static assets. Cross-origin/CDN access and private copied artwork were rejected. Eagerly loading every illustration was rejected because detail artwork is optional presentation weight.
 
@@ -36,7 +36,10 @@
 
 **Decision**: Define an application-owned, versioned `BuildSnapshotV1` containing hull symbol, nullable ship name/ident, and fitted entries keyed by their original game slot. Each entry retains its module symbol/casing, presence of enabled/priority fields, package-identified pre-engineered tuple, ordinary blueprint grade/effect and unresolved raw identity. Construct it from `ShipLoadout` getters and `fittedModules().raw`, and reconstruct through `ShipLoadout.fromLoadout()` before accepting it.
 
-**Rationale**: `fromLoadout()` retains unknown hull, slot, module, blueprint and effect identities. `fittedModules()` includes unresolved slots that `slots()` cannot enumerate. `toLoadoutEvent()` is unsuitable as the storage DTO because it lowercases identities and adds recomputed derived fields.
+**Rationale**: `fromLoadout()` rejects an unknown hull before it can become active, and retains
+unknown slot, module, blueprint and effect identities for a known hull. `fittedModules()` includes
+unresolved slots that `slots()` cannot enumerate. `toLoadoutEvent()` is unsuitable as the storage DTO
+because it lowercases identities and adds recomputed derived fields.
 
 **Alternatives considered**: `JSON.stringify(ShipLoadout)` was rejected because class internals are not a durable contract. Wholesale SLEF/loadout-event storage was rejected because it mixes modelled and derived/capture data. The build-link DTO was rejected because links intentionally refuse some unresolved state that storage must retain.
 
@@ -90,9 +93,14 @@
 
 ## Localization and package-language gaps
 
-**Decision**: Consume feature 011's runtime `LocaleStore`, bundled English fallback, same-origin locale assets and `Intl` formatters. Render Almanac hull names, manufacturers and diagnostics in the canonical language supplied by beta.12 and identify them as untranslated when the active locale differs. Never create a private game-text translation.
+**Decision**: Consume feature 011's runtime `LocaleStore`, bundled English fallback, same-origin locale assets and `Intl` formatters. Resolve hull names and manufacturers through
+`@elite-dangerous-almanac/core/i18n/ships` and structured diagnostics through
+`@elite-dangerous-almanac/core/i18n/diagnostics`. When a helper returns `null`, render the package
+canonical text with an untranslated disclosure. Never create a private game-text translation.
 
-**Rationale**: Beta.12 has localized helpers for some module/engineering data but no hull-name, manufacturer or diagnostic localization API. The constitution explicitly permits canonical package text with disclosure until that capability exists upstream.
+**Rationale**: 0.1.1 closes Almanac #309 with locale-result helpers for hull names, manufacturers and
+diagnostics. Their explicit `null` result preserves the constitution's disclosed canonical fallback
+without a private game-text table.
 
 **Alternatives considered**: Angular compile-time-only i18n was rejected because the application requires persistent runtime choice. Translating package text in application messages was rejected as a source-of-truth fork.
 
@@ -116,6 +124,7 @@
 
 - Feature 011 is implemented before feature 001 UI work, or its full shared subset is explicitly included in the feature 001 task plan.
 - Feature 004 supplies the SLEF action reached from link refusal; feature 001 owns the refusal and integration contract.
-- Supporting non-English hull/diagnostic text beyond the canonical package output waits for an Almanac release; this is disclosed behavior, not an application workaround.
+- Almanac 0.1.1 supplies hull and structured diagnostic locale-result leaves; an explicit `null`
+  remains canonical package text with the shared untranslated disclosure.
 
 All technical questions are resolved.

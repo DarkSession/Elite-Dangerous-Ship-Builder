@@ -1,6 +1,6 @@
 # Research: Mobility, Mass and Jump
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, its public leaf types,
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, its public leaf types,
 runtime probes over detached `ShipLoadout` values, the accepted feature 003/005 contracts and the
 `.design/Ship Builder.dc.html` Drives & Mass regions. No application formula or private game datum
 was used.
@@ -40,7 +40,7 @@ Issue `field`, optional `slot`, optional `symbol`, canonical `message` and `para
 The presenter does not parse the message. A complete numeric zero is never converted to incomplete or
 unavailable.
 
-**Rationale**: Beta.12 deliberately uses a discriminated result for aggregate completeness. Runtime
+**Rationale**: 0.1.1 deliberately uses a discriminated result for aggregate completeness. Runtime
 probes confirm that an unresolved hardpoint can make mass incomplete and that an unresolved optional
 module can make mass, fuel and cargo incomplete because its role is unknown. Dependent jump/mobility
 methods throw rather than guess, so the diagnostic results are the required safe gate.
@@ -78,24 +78,23 @@ Those are valid package answers, not empty states.
 - Calculating jump count or totals locally violates FR-001/FR-002.
 - Collapsing equal laden/unladen results loses their distinct load identities.
 
-## Decision 4: reuse feature 003's package-only standard loads
+## Decision 4: reuse feature 003's package-produced standard loads
 
 **Decision**: Feature 008 creates no load selector. It consumes feature 003's settled mapping:
 
-| Selected load | Jump field | Mobility arguments                                               |
-| ------------- | ---------- | ---------------------------------------------------------------- |
-| maximum       | `max`      | `cargo: 0`, `fuel: fuelPerJump(maxJumpRange())`                  |
-| unladen       | `unladen`  | `cargo: 0`, package default full main tank                       |
-| laden         | `laden`    | completed package cargo capacity, package default full main tank |
+| Selected load | Jump field | Mobility arguments              |
+| ------------- | ---------- | ------------------------------- |
+| maximum       | `max`      | `standardLoadResult('maximum')` |
+| unladen       | `unladen`  | `standardLoadResult('unladen')` |
+| laden         | `laden`    | `standardLoadResult('laden')`   |
 
-The maximum case is two package method calls, not an application formula. No consumer repeats
+Every case is a package-produced `CalculationResult<StandardLoadInputs>`. No consumer repeats
 `min(mainCapacity, maxFuel)` or derives fuel from drive constants.
 
 **Rationale**: This mapping is already frozen by
 `specs/003-ship-statistics/contracts/viewing-conditions.md`. It keeps the headline and detail on one
 condition revision. [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295)
-requests a direct standard-load result, but its existing package-only composition is exact and
-non-blocking.
+is closed by the 0.1.1 `standardLoadResult()` contract.
 
 **Alternatives considered**:
 
@@ -105,7 +104,7 @@ non-blocking.
 
 ## Decision 5: map all mobility fields exactly once
 
-**Decision**: Call `mobilityMetrics({ fuel, cargo, enginesPips })` exactly once for the selected
+**Decision**: Call `mobilityMetricsResult({ fuel, cargo, enginesPips })` exactly once for the selected
 settled load and feature 003 ENG pips. A ready result copies all seven fields:
 
 | Field                         | Meaning/unit                               |
@@ -118,10 +117,10 @@ settled load and feature 003 ENG pips. A ready result copies all seven fields:
 | `massCurveMultiplier`         | speed-curve multiplier at selected load    |
 | `rotationMassCurveMultiplier` | rotation-curve multiplier at selected load |
 
-`null` remains unavailable. A non-null result with all numeric zeroes because loaded mass exceeds the
-thruster maximum remains ready zero performance.
+An incomplete result remains unavailable with its ordered structured issues. A complete result with
+all numeric zeroes because loaded mass exceeds the thruster maximum remains ready zero performance.
 
-**Rationale**: Beta.12 accepts finite non-negative fuel/cargo and ENG pips from 0 through 4,
+**Rationale**: 0.1.1 accepts finite non-negative fuel/cargo and ENG pips from 0 through 4,
 including half steps. The returned object is already the complete package projection. Above supported
 mass is explicitly documented and observed as zero performance rather than null.
 
@@ -131,12 +130,12 @@ mass is explicitly documented and observed as zero performance rather than null.
 - Treating a falsy speed as unavailable collapses package zero into null.
 - Hiding the multipliers would violate FR-004.
 
-## Decision 6: wait for package-authored powered-thruster behavior
+## Decision 6: consume package-authored powered-thruster diagnostics
 
-**Decision**: Feature 008 is blocked until a released fix for
-[Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is pinned. Beta.12's
-documented contract says mobility is null without powered, fully described thrusters, but the method
-ignores priority shedding:
+**Decision**: Consume Almanac 0.1.1's released
+[`mobilityMetricsResult()` fix](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296).
+Disabled or shed power yields an incomplete result with a structured `CalculationIssue`; the nullable
+facade returns `null`:
 
 ```js
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
@@ -145,23 +144,25 @@ const build = ShipLoadout.default('SideWinder').setModuleEnabled('PowerPlant', f
 
 console.log(build.powerBudget().available); // 0
 console.log(build.powerBudget().bands[0].poweredRetracted); // false
-console.log(build.mobilityMetrics()); // beta.12: finite, should be null
+console.log(build.mobilityMetrics()); // null
+console.log(build.mobilityMetricsResult()); // incomplete, powerCapacity/disabled
 ```
 
-After #296, feature 005's package-backed exact-slot observation supplies the textual distinction
-between present-but-unpowered and absent/disabled/unresolved thrusters. That observation depends on
-the public module consumer projection requested by
+Feature 005's shared exact-slot observation combines `PowerBudget.consumers` state with the matching
+returned `PowerBudget.bands` verdict, supplying the textual distinction between
+present-but-unpowered and absent/disabled/unresolved thrusters. That observation depends on the
+public module consumer projection released for
 [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299). Feature 008 neither
 copies priority rules nor infers “unpowered” merely because other known states were excluded.
 
-**Rationale**: The spec explicitly requires unpowered thrusters to remain distinct. Nulling the
-finite beta.12 result or reverse-engineering power bands in feature 008 would be a local correction
-of package behavior. #296 and #299 both contain minimal upstream reproductions and requested
-contracts, so no duplicate issue is needed.
+**Rationale**: The spec explicitly requires unpowered thrusters to remain distinct. The released
+result, consumer and band records supply both numeric withholding and attribution without local
+power arithmetic.
 
 **Alternatives considered**:
 
-- A local `powerBudget()` gate changes the result before the library fix lands.
+- The former local `powerBudget()` gate was rejected because it changed the result instead of
+  consuming the released structured result and shared package-backed observation.
 - Inferring power state from a nullable mobility result invents a diagnosis the result does not
   carry.
 - Copying feature 005's consumer logic creates divergent power ownership.
@@ -178,7 +179,7 @@ speed/rotation multiplier triples. Actual selected-load multipliers remain the t
 `MobilityMetrics` result fields. No fact is derived from another and absent optional members remain
 absent.
 
-**Rationale**: Beta.12 exposes post-engineering drive parameters and thruster curve records through
+**Rationale**: 0.1.1 exposes post-engineering drive parameters and thruster curve records through
 public leaf contracts. Showing identity beside results satisfies provenance without maintaining a
 private catalogue or turning thresholds into a locally calculated graph.
 
@@ -271,20 +272,17 @@ figures. The matrix and accessibility scan are constitutional release gates.
 - Hand-calculated expected values recreate Almanac logic.
 - Chromium-only, portrait-only or axe-only coverage is incomplete.
 
-## Almanac dependencies and release gates
+## Almanac dependency verification
 
-Every unresolved Almanac dependency identified by this plan is already raised in the Almanac
-repository:
+Every Almanac dependency identified by this plan is closed and included in 0.1.1:
 
-1. [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is the direct blocking
-   defect for feature 008: beta.12 returns finite mobility for power-shed thrusters.
+1. [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) supplies structured
+   mobility diagnostics and withholds mobility for power-shed thrusters.
 2. [#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) supplies feature 005's
    package-authored per-module power observation, required to name the unpowered state without local
    consumer reconstruction.
-3. [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) is a non-blocking API
-   improvement for first-class standard-load inputs/results.
+3. [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) supplies first-class
+   standard-load inputs/results.
 
 No additional package defect or missing direct mobility/jump/mass/capacity API was established.
-Implementation waits for released #296/#299 contracts, pins the released package, reruns both
-minimal reproductions and updates these type projections if the released API shape differs. No local
-workaround is planned.
+Regression tests pin these released shapes; no local workaround is planned.

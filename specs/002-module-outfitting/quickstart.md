@@ -1,7 +1,7 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
-This is an acceptance guide for the plan, not implementation code. Feature 002 remains blocked until
-the Almanac engineering gates below are available in a released package.
+This is an acceptance guide for the plan, not implementation code. Almanac 0.1.1 satisfies the
+former engineering gates; features 001 and 011 remain repository prerequisites.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -13,22 +13,22 @@ pnpm start
 Run focused unit or Playwright files during development, then use `pnpm run check` for the mandatory
 complete gate. The scenarios below define the fixtures and expected outcomes those tests must cover.
 
-## 1. Prerequisite and upstream gate
+## 1. Prerequisites and released-API verification
 
 1. Confirm feature 001 supplies one active `ShipLoadout`, lossless `BuildSnapshotV1`, atomic active
    replacement and autosave/fragment observers.
 2. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
-3. Upgrade from beta.12 to an Almanac release with:
-   - fixed-reward experimental-effect add/replace/remove that preserves fixed stats and variant
-     identity;
+3. Confirm pinned Almanac 0.1.1 provides:
+   - fixed-reward experimental-effect add/replace/remove that preserves the fixed base modifier
+     block and variant identity while recomputing effect-dependent stats;
    - complete supported partial-quality normalization with a structured unsupported outcome.
-4. Run the two minimal reproductions in [research.md](./research.md). Do not proceed if applying an
-   effect turns the tech-broker FSD's 1785 optimal mass into the ordinary roll or loses
-   `preEngineeredVariant`, or if supported partial quality remains partial.
+4. Run the two minimal reproductions in [research.md](./research.md). Mass Manager must change the
+   tech-broker FSD's optimal mass from 1785 to 1856.399902 while preserving `preEngineeredVariant`;
+   removing it must return to 1785. Do not proceed if supported partial quality remains partial.
 5. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected: the implementation gate moves from blocked to ready; no app modifier rewrite, clamp,
+Expected: the Almanac gate is ready; no app modifier rewrite, clamp,
 private catalogue or hidden capability is introduced.
 
 ## 2. Inspect every slot
@@ -58,9 +58,8 @@ Expected:
 
 Expected:
 
-- only slots whose package reason is `requiredSlot`/`cargoHatch` receive the case-insensitively matched
-  package default;
-- cargo hatch is repaired by reconstruction despite being immutable to `setModule`;
+- only slots whose package reason is `requiredSlot`/`cargoHatch` are normalized;
+- `fromLoadout()` restores cargo and `repairFixedMount()` repairs remaining fixed mounts from package defaults;
 - removable unresolved entry is untouched;
 - notices name slot, absent/replaced identity and default identity;
 - saved/shared/exported active state carries repairs;
@@ -87,7 +86,7 @@ Expected:
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
-- result rendering settles under 100 ms for the 478-choice beta.12 maximum (or the upgraded package's
+- result rendering settles under 100 ms for the 481-choice 0.1.1 maximum (or a later package's
   newly measured maximum).
 
 ## 5. Fit, replace, remove and refuse
@@ -138,14 +137,15 @@ Expected:
 
 ## 8. Engineer fixed/final rewards and validate costs
 
-1. Fit the upstream-gate tech-broker FSD and add/replace/remove a later experimental effect.
+1. Fit the regression-fixture tech-broker FSD and add/replace/remove a later experimental effect.
 2. Inspect a final Guardian reward.
 3. Compare ordinary, Mercenary upgrade, selected effect and fixed baked-reward costs with package APIs.
 4. Use known-zero `[]` and unavailable `null` cost fixtures.
 
 Expected:
 
-- fixed reward stats, acquisition and `preEngineeredVariant` survive effect-only changes;
+- fixed base modifiers, acquisition and `preEngineeredVariant` survive effect-only changes while
+  effect-dependent stats recompute;
 - final article exposes the package restriction and no unsupported actions;
 - fixed baked engineering adds no craft cost;
 - Mercenary progression starts above purchase grade; Merc Coin is separate;
@@ -208,5 +208,5 @@ project/axe scan runs, and no test/browser is skipped. Search production source 
 barrels, color/spacing literals outside tokens, hard-coded application strings, history serialization,
 raw modifier rewrites and local fit/variant rules.
 
-Expected: all checks pass only after the Almanac release gate and feature 001/011 prerequisites are
-present. A green subset is not feature completion.
+Expected: the released Almanac regressions pass and the full suite is green once feature 001/011
+prerequisites are present. A green subset is not feature completion.

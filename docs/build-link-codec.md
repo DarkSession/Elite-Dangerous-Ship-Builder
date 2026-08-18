@@ -291,9 +291,9 @@ Their modifier arrays are not encoded, because decoding regenerates them from th
 A module therefore takes this record only while that regeneration would reproduce the engineering it
 carries; see the Mercenary case below.
 
-Almanac beta.12 publishes modifier signatures for 54 fixed variants, which makes those articles
+Almanac 0.1.1 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants still have no published modifier
-signatures, but beta.12 identifies them by their purchase-exclusive blueprint instead, so they are
+signatures, but the package identifies them by their purchase-exclusive blueprint instead, so they are
 identifiable and shareable too. The codec continues to take every identity from the package and
 re-derives nothing from blueprint metadata itself.
 
@@ -400,8 +400,8 @@ limit: 1,023 snapshots, one of them spent.
 
 What growth actually costs is link length, and links are bounded. Five hundred characters, two of
 them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
-reference builds use a fraction of it — the fully engineered Anaconda body is 440 bits and the
-supplied Corvette 624, about 17 bits for each of its 37 engineered modules.
+reference builds use a fraction of it — the current engineered Anaconda remains well below the
+supplied Corvette's 624 bits, about 17 bits for each of its 37 represented outfittable modules.
 
 The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
@@ -446,14 +446,15 @@ capacity back without touching a published link's decoder.
 
 ## Versioned tables and lazy loading
 
-Table 1 is the immutable `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.0-beta.12`. It pins hulls, hull-specific outfittable slots,
+Table 1 is the pre-release `codec-table-1.json`, generated from
+`@elite-dangerous-almanac/core@0.1.1`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
 effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
 Stable game identities originate from the package; indexes exist only
-inside the selected frozen table. Before the first release, table 1 can be regenerated with
-`pnpm run codec:tables`. After release, a catalogue change publishes the next numbered JSON table
-while retaining every earlier table unchanged; it does not duplicate or version the codec logic.
+inside the selected table. Before the first application/link-format release, table 1 may be
+explicitly regenerated with `--overwrite`; normal `pnpm run codec:tables` still refuses an in-place
+content change. After release, a catalogue change publishes the next numbered JSON table while
+retaining every earlier table unchanged; it does not duplicate or version the codec logic.
 
 The public asynchronous loader initially imports only the generic envelope, radix, and CRC code.
 It radix-decodes the envelope and verifies CRC-32 once before using the table-version field, then
@@ -476,17 +477,20 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.0-beta.12`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.1`. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass. All four upgrades so far were
+fixtures and must never be regenerated merely to make an upgrade pass. The beta upgrades were
 checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for
 byte, and `0.1.0-beta.9` to `0.1.0-beta.10` did the same — beta.10 carries one
 calculation change, the power-aware cell bank pool, and alters no hull, module, blueprint,
 experimental-effect, pre-engineered or stock-loadout identity. `0.1.0-beta.10` to `0.1.0-beta.11`
 and `0.1.0-beta.11` to `0.1.0-beta.12` likewise reproduced the table exactly, at content hash
 `a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0`; `ALL_MODULES` is 1199 throughout
-and the `assets/ships` tree is byte-identical across all five releases. So the snapshot carries
-forward under its existing number, unchanged on disk, and the frozen literals decode unchanged.
+and the `assets/ships` tree is byte-identical across all five releases. Almanac 0.1.1 then changed
+contextual blueprint and fixed-variant sets. Because the application remains `0.0.0` and no link
+format has shipped, table 1 was deliberately regenerated under the repository's pre-release rule at
+content hash `257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d`. After the first release this
+exception closes: changed content must use the next table number.
 
 beta.12 changed no catalogue, but it did change an answer the encoder reads. Mercenary articles now
 resolve to their variant, so a module the encoder used to see as ordinarily engineered — a Rail Gun
@@ -534,11 +538,12 @@ The fixed corpus currently produces these encoded data lengths. Each value and l
 | Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                 |          12 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                   |          10 |
 | Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                               |          14 |
-| Full engineered Anaconda*     | `b.dtb4q.j:qTZT5gT0CpDtwq0DVlkN10dKElN9u44u0lRCUMZ99PuBBp5N!ufEu!TCDPaC2f7Xox_9`                               |          78 |
+| Full engineered Anaconda*     | `b.2@IuThA23pZ8gLACxkX-QZq3nTYaU83myRNcX75/5MHeqAp5weDpxt74HbVN,.dp.Ehr8DZ5!L`                                 |          76 |
 | Supplied engineered Corvette† | `b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623` |         108 |
 
-\* All 38 outfittable slots are occupied, all 29 engineerable modules are engineered, and the
-fixed cargo hatch has an explicit power state.
+\* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
+the fixed cargo hatch has an explicit power state. Cargo racks remain stock because 0.1.1 correctly
+does not offer the fixed `CargoRack_IncreasedCapacity` reward as ordinary engineering.
 
 † All 37 outfittable modules present in the supplied journal event are represented, plus the fixed
 cargo hatch's power state. Sixteen cosmetic and livery slots are outside the outfitting feature's
@@ -555,7 +560,7 @@ normalises that field to quality `1`; the fixture is not treated as an independe
 effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced about 1,167 characters of encoded data; the specialised codec produces 78,
+Anaconda produced about 1,167 characters of encoded data; the current specialised codec produces 76,
 including its `b.` prefix.
 
 ## Complete reference build definitions
@@ -628,11 +633,11 @@ Fixed cargo-hatch power: enabled absent, priority absent.
 | PowerDistributor       | Int_PowerDistributor_Size8_Class1 |     off |        2 | PowerDistributor_Shielded G5 Q1 + special_powerdistributor_toughened |
 | Radar                  | Int_Sensors_Size8_Class1          |      on |        3 | Sensor_WideAngle G5 Q1                                               |
 | FuelTank               | Int_FuelTank_Size5_Class3         |       — |        — | —                                                                    |
-| Slot01_Size7           | Int_CargoRack_Size6_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
-| Slot02_Size6           | Int_CargoRack_Size5_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
+| Slot01_Size7           | Int_CargoRack_Size6_Class1        |       — |        — | —                                                                    |
+| Slot02_Size6           | Int_CargoRack_Size5_Class1        |       — |        — | —                                                                    |
 | Slot03_Size6           | Int_ShieldGenerator_Size6_Class1  |      on |        2 | ShieldGenerator_Thermic G5 Q1 + special_shield_toughened             |
-| Slot05_Size5           | Int_CargoRack_Size4_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
-| Slot13_Size2           | Int_CargoRack_Size1_Class1        |       — |        — | CargoRack_IncreasedCapacity G5 Q1                                    |
+| Slot05_Size5           | Int_CargoRack_Size4_Class1        |       — |        — | —                                                                    |
+| Slot13_Size2           | Int_CargoRack_Size1_Class1        |       — |        — | —                                                                    |
 | Slot14_Size1           | Int_SuperCruiseAssist             |      on |        0 | —                                                                    |
 | PlanetaryApproachSuite | int_planetapproachsuite_advanced  |       — |        — | —                                                                    |
 | HugeHardpoint1         | Hpt_PulseLaser_Fixed_Small        |      on |        3 | Weapon_Sturdy G5 Q1 + special_weapon_toughened                       |
@@ -731,8 +736,9 @@ appends the unchanged four-byte CRC:
 
 Both general-purpose compressors make every reference larger. The adopted arithmetic path is
 different: it encodes the codec's existing semantic values against their exact cardinalities and is
-selected only when its final padded body is smaller. With the quality-free grammar, it reduces the
-Anaconda body from 56 to 55 bytes and produces 78 encoded characters including `b.`. The Corvette
+selected only when its final padded body is smaller. In table 1's then-valid fixture, the
+quality-free grammar reduced the Anaconda body from 56 to 55 bytes and produced 78 encoded characters
+including `b.`. The Corvette
 body falls from 82 to 78 bytes and produces 108 characters. Empty, stock, festive, and every other
 build where bit packing wins retain the packed form without a representation-bit penalty. Base70
 still needs interoperability testing in the actual sharing applications. Its radix conversion uses
@@ -757,8 +763,8 @@ none of the 48 empty-hull data lengths because byte padding absorbed the saved b
 is retained.
 
 Engineering quality was subsequently made invariant across the application. Removing it from every
-record, instead of adding another adaptive group header, leaves empty and stock references
-unchanged while reducing the engineered Anaconda from 80 to 78 characters and the supplied
+record, instead of adding another adaptive group header, left table 1's empty and stock references
+unchanged while reducing its engineered Anaconda from 80 to 78 characters and the supplied
 Corvette from 114 to 108.
 
 Module-identity back-references, engineering-record back-references, index-set complements, and the
@@ -779,6 +785,6 @@ same feature owns whatever its deployed origin costs on top of a codec value —
 `https://ships.example/#` origin the tests use, against which the largest reference build spends 108
 of its 500.
 
-Almanac beta.12 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+Almanac 0.1.1 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
 those values or ordinary blueprint arithmetic.

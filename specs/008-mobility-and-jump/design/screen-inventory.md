@@ -23,7 +23,7 @@ state.
 | FR-001      | One immutable projection copies only package results, fitted facts and shared package-backed observations; visuals add no game result. |
 | FR-002      | Three jump groups map the complete single/total/count `jumpRangeSummary()` fields and identify one exact fitted FSD.                   |
 | FR-003      | Diagnostic mass/fuel/cargo results gate jump calls; incomplete issues remain adjacent and zero fuel remains numeric zero.              |
-| FR-004      | Shared feature 003 load/ENG conditions feed one `mobilityMetrics()` call; all seven returned fields appear.                            |
+| FR-004      | Shared feature 003 load/ENG conditions feed one `mobilityMetricsResult()` call; all seven returned fields or package issues appear.    |
 | FR-005      | Null mobility has no hull fallback; absent, disabled, unpowered and unresolved thruster observations remain textual and distinct.      |
 | FR-006      | Unladen mass, main/reserve fuel and cargo show exact diagnostic results with all ordered issues.                                       |
 | FR-007      | Every fitted package snapshot has one exact-slot post-engineering mass entry; no list subtotal is created.                             |
@@ -36,7 +36,8 @@ state.
   it never mutates a module.
 - Feature 003 owns the shared maximum/unladen/laden and ENG-pip state, condition revision, Mobility
   headline and detail navigation.
-- Feature 005 owns the shared package-backed exact-slot power observation after Almanac #299.
+- Feature 005 owns the shared package-backed exact-slot power observation from
+  `PowerBudget.consumers` plus the matching returned band verdict.
 - Feature 010 may visualize module locations, but anatomy cannot replace complete textual metrics or
   module mass entries.
 - Feature 011 owns layout primitives, tokens, controls, localization/formatting, announcements,

@@ -3,7 +3,7 @@
 This guide validates the completed capability end to end. It does not replace implementation tasks or
 the contracts in [contracts/](./contracts/).
 
-## Prerequisites and release gate
+## Prerequisites and released regression
 
 1. Use the repository's Node version and committed dependency graph:
 
@@ -14,11 +14,10 @@ the contracts in [contracts/](./contracts/).
 
 2. Confirm features 001 and 011 provide the accepted app shell/service worker, localisation/design
    system, ten Playwright projects and automated accessibility harness.
-3. Confirm [Almanac #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307) is closed
-   by a released package, upgrade the exact dependency, and rerun the reproduction in
-   [research.md](./research.md#inaccurate-almanac-notice--upstream-blocker).
+3. With Almanac 0.1.1 pinned, rerun the [#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307)
+   reproduction in [research.md](./research.md#almanac-notice-regression).
 4. Run the explicit legal sync command once for the upgraded package, review the tracked
-   `legal/almanac/` byte changes, then run verification. Stop if the installed notice still says the
+   `legal/almanac/` byte changes, then run verification. Stop if the installed notice says the
    shipped provenance files are absent. Do not add a downstream correction.
 
 ## Focused and full commands

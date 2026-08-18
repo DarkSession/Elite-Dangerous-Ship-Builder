@@ -17,16 +17,16 @@ package-owned.
 The `.design/Ship Builder.dc.html` canvases 1c and 1d define the responsive visual hierarchy: an
 inline three-region outfitting workspace at wide widths and full-screen chooser/engineering layers at
 narrow widths. They are adapted through feature 011's shared dark design system and localization
-layer. Implementation is currently **blocked** on an Almanac release that can normalize every
-supported partial engineering state and edit an experimental effect on a fixed reward without
-destroying its hand-authored stats or identity. No application-side modifier rewrite is permitted.
+layer. Almanac 0.1.1 now supplies structured partial-quality normalization, fixed-mount repair and
+effect-only edits that preserve supported fixed rewards. The upstream gate is satisfied; no
+application-side modifier rewrite is permitted.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required for the blockers below),
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports,
 and feature 001's active-build/snapshot/replacement boundaries
 
 **Storage**: Live `ShipLoadout` in memory; bounded edit history in memory only. Feature 001 continues
@@ -51,8 +51,9 @@ engineering, calculation or variant-recognition rule; no silent partial-quality 
 horizontal scrolling; one dark tokenized theme; all application text translatable; touch-first
 operation; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: Every package slot on 48 pinned hulls; beta.12's largest observed chooser is 478
-choices (470 stock records plus 8 package variants) for `PantherMkII` `Slot01_Size8`; 76 published
+**Scale/Scope**: Every package slot on 48 pinned hulls; 0.1.1's largest observed reachable chooser is
+481 choices (473 stock records plus 8 package variants) for an empty/incomplete `PantherMkII`
+`Slot01_Size8` build; the default loadout fixture yields 478 (470 plus 8); 76 published
 pre-engineered variants; at least the 100 most recent Commander decisions
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d. Adopted and rejected details
@@ -60,38 +61,39 @@ are recorded in [design/reference-review.md](./design/reference-review.md).
 
 ## Constitution Check
 
-_GATE: Passed for planning because the architecture waits for package truth and introduces no
-constitutional exception. Implementation cannot begin until the two Almanac blockers are fixed and a
-released package version is pinned. Re-check required after Phase 1 design and after that upgrade._
+_GATE: Passed. Almanac 0.1.1 supplies the required package-owned operations and introduces no
+constitutional exception. Re-check completed after the dependency upgrade._
 
-| Principle                               | Design evidence                                                                                                                                                                                        | Status                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| I. Client-Side Only                     | All editing, search and history run in-browser over installed package/static assets; no new persistence or network boundary.                                                                           | PASS                       |
-| II. Almanac Source of Truth             | Slots, candidates, variants, mutations, costs, validation and calculations use leaf package APIs. Two missing lossless engineering operations are treated as upstream blockers, never app workarounds. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure query, transaction, normalization, snapshot and history services precede the signal store; components receive immutable views and emit intents.                                                   | PASS                       |
-| IV. Lossless, Honest Builds             | Detached candidate commits prevent partial edits; unavailable fields remain unavailable; fixed mounts and quality normalize before results/history. The latter awaits package support for every state. | PASS; implementation gated |
-| V. Desktop, Tablet and Mobile           | Wide inline and narrow full-screen surfaces preserve every action for touch, screen reader, 200% text, 400% zoom, portrait and landscape.                                                              | PASS                       |
-| VI. Commander's Language                | Package i18n leaf helpers provide game names where available; app labels and formatters use feature 011 localization with explicit untranslated fallback disclosure.                                   | PASS                       |
-| VII. One Design System                  | Every surface composes feature 011 primitives/tokens; the HTML canvas supplies hierarchy only.                                                                                                         | PASS                       |
-| VIII. Tested Before It Ships            | Domain tests plus dual-engine, multi-viewport Playwright and axe coverage are specified without lowering thresholds.                                                                                   | PASS, prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to a plan-time screen/surface before tasks are generated.                                                                                                                                | PASS                       |
+| Principle                               | Design evidence                                                                                                                                                           | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All editing, search and history run in-browser over installed package/static assets; no new persistence or network boundary.                                              | PASS                   |
+| II. Almanac Source of Truth             | Slots, candidates, variants, mutations, costs, validation and calculations use 0.1.1 leaf APIs, including effect-only mutation and normalization.                         | PASS                   |
+| III. Domain Logic Outside UI            | Pure query, transaction, normalization, snapshot and history services precede the signal store; components receive immutable views and emit intents.                      | PASS                   |
+| IV. Lossless, Honest Builds             | Detached candidate commits prevent partial edits; unavailable fields remain unavailable; package fixed-mount repair and quality normalization run before results/history. | PASS                   |
+| V. Desktop, Tablet and Mobile           | Wide inline and narrow full-screen surfaces preserve every action for touch, screen reader, 200% text, 400% zoom, portrait and landscape.                                 | PASS                   |
+| VI. Commander's Language                | Package i18n leaf helpers provide game names where available; app labels and formatters use feature 011 localization with explicit untranslated fallback disclosure.      | PASS                   |
+| VII. One Design System                  | Every surface composes feature 011 primitives/tokens; the HTML canvas supplies hierarchy only.                                                                            | PASS                   |
+| VIII. Tested Before It Ships            | Domain tests plus dual-engine, multi-viewport Playwright and axe coverage are specified without lowering thresholds.                                                      | PASS, prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to a plan-time screen/surface before tasks are generated.                                                                                                   | PASS                   |
 
-Required upstream work:
+Released upstream work consumed from 0.1.1:
 
-1. [Almanac #291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291): add an operation that adds/replaces/removes an experimental effect on a re-engineerable
+1. [Almanac #291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291): `setExperimentalEffect()` adds/replaces/removes an experimental effect on a re-engineerable
    fixed pre-engineered article while retaining its fixed modifiers and
    `FittedModule.preEngineeredVariant` identity.
-2. [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292): add lossless package normalization for imported partial-quality engineering, including recognized
+2. [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292): `completeEngineeringGrade()` provides lossless package normalization for imported partial-quality engineering, including recognized
    fixed rewards with later effects and a structured outcome for unsupported identities.
 
-The prospective missing-cargo validation case is tracked in
-[Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293), and the non-blocking
-leaf type-export omission in
+The release also closes missing-cargo validation
+[Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) and exports
+`FittedModule` from the leaf requested by
 [Almanac #294](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/294).
+Engineering-group presentation uses 0.1.1's `getEngineeringGroupName()`, and regression fixtures pin
+the corrected AX/Enzyme engineering menus rather than a private grouping list.
 
 The minimal reproductions and expected package contract are in [research.md](./research.md). Feature
-002 must consume a released fix; editing raw engineering blocks or recomputing modifiers locally is
-not an available fallback.
+002 consumes those released operations; editing raw engineering blocks or recomputing modifiers
+locally is not an available fallback.
 
 ## Project Structure
 
@@ -159,7 +161,7 @@ in browser navigation.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and blockers are recorded in
+All decisions, package probes, alternatives and released regressions are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
 - `ShipLoadout.slots()`, `fittedModules()`, `validation` and `modulesForSlot()` are the sole slot,
@@ -168,17 +170,17 @@ All decisions, package probes, alternatives and blockers are recorded in
   call `setModule`; variant fits call `setPreEngineeredVariant`.
 - Search uses a cached locale-folded projection of package display name, class, rating and mount;
   every whitespace term must match. Ordering changes presentation only.
-- Fixed mounts are recognized from package `immovableReason` values, repaired from
-  `getDefaultLoadout`, and reconstructed before any calculation because cargo hatch is immutable to
-  editor operations.
+- Source fixed identities are captured before construction. `fromLoadout()` restores cargo and
+  `repairFixedMount()` repairs remaining package-recognized fixed mounts before any calculation;
+  source/result differences remain visible without an application default lookup.
 - Every Commander edit is a detached snapshot transaction. Successful edits push one pre-edit
   checkpoint; failed/no-op edits do not. The tape retains 100 decisions and is reset on build
   replacement.
 - Material lists come only from `getBlueprintCost`, `getBlueprintGradeCost`,
   `getExperimentalEffectCost` and `sumMaterials`; `null` remains unavailable and fixed reward
   engineering adds no craft cost.
-- Beta.12 cannot meet the fixed-reward effect-only and universal partial-quality requirements. Those
-  are release-blocking upstream API gaps.
+- 0.1.1 meets the fixed-reward effect-only and universal partial-quality requirements through
+  structured package operations; regression tests pin their outcomes.
 
 ## Phase 1: Design Outputs
 
@@ -194,7 +196,8 @@ All decisions, package probes, alternatives and blockers are recorded in
   adjacent design files define wide/narrow composition and state coverage.
 - [design/reference-review.md](./design/reference-review.md) records the accepted 1c/1d hierarchy and
   the package, scope, localization and accessibility adaptations.
-- [quickstart.md](./quickstart.md) provides the end-to-end acceptance scenarios and upstream gate.
+- [quickstart.md](./quickstart.md) provides the end-to-end acceptance scenarios and released-API
+  verification.
 
 ## Post-Design Constitution Re-check
 
@@ -204,12 +207,11 @@ visible; every mutation and restoration reconstructs through the package. Design
 direction arrows are omitted where no authoritative package result supplies them. All FRs have a
 screen/surface owner and a dual-engine accessibility path.
 
-The planning gate therefore remains **PASS** with no exception. Implementation remains **blocked
-upstream** until a released Almanac API satisfies the two engineering cases above. After upgrading the
-pinned package, rerun the minimal reproductions and the full constitution check before task generation
-or implementation.
+The planning gate remains **PASS** with no exception. The Almanac gate is satisfied by 0.1.1;
+implementation is sequenced only behind features 001 and 011. Rerun the released-API regressions and
+the full constitution check during task generation and implementation.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. The upstream block is intentionally not converted into an
-application-side exception or workaround.
+No constitutional exception is requested. Released package operations replace every formerly
+blocked path; application-side exceptions and workarounds remain prohibited.

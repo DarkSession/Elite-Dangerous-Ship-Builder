@@ -43,10 +43,10 @@ navigation or build state.
 - Feature 010 may later visualize package power facts on hull anatomy. Its
   diagram cannot replace the complete textual feature 005 surfaces.
 
-Feature 003 currently has no completed plan/design contract and the relevant
-features are not implemented in the current shell. Tasks must preserve these
-boundaries rather than inventing parallel controls while prerequisites are
-being built.
+Feature 003's completed plan and design contract own the shared viewing-condition
+state; the relevant features are not implemented in the current shell. Tasks must
+preserve these boundaries rather than inventing parallel controls while
+prerequisites are being built.
 
 ## Shared states
 

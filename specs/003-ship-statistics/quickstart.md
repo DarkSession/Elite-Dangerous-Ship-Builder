@@ -1,6 +1,6 @@
 # Quickstart: Ship Statistics and Status
 
-This guide validates feature 003 after its prerequisites and released Almanac fixes are available.
+This guide validates feature 003 against its prerequisites and pinned Almanac 0.1.1.
 
 ## 1. Confirm prerequisites
 
@@ -10,11 +10,11 @@ This guide validates feature 003 after its prerequisites and released Almanac fi
 3. Confirm features 005–009 expose the five area ports defined in the status-snapshot contract.
 4. Confirm feature 011 supplies localization, tokens/components, Chromium and Firefox viewport
    projects, and automated accessibility scanning.
-5. Upgrade Almanac to a release containing fixes for
+5. Confirm pinned 0.1.1 contains fixes for
    [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) and
    [#297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297). Rerun their minimal
    reproductions. Do not implement local gates or corrections.
-6. For fixed-mount provenance, also confirm feature 002's released package dependencies
+6. For fixed-mount provenance, also pin feature 002's released package regressions
    [#291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291) and
    [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292).
 

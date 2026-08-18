@@ -69,14 +69,23 @@ not coerced into formatted numbers.
 
 ## Almanac names and diagnostics
 
-Call the relevant leaf helper by stable package identity. A non-null result is localized for the
-requested locale. A `null` result for a known record uses package canonical text, gives that text its
-canonical language boundary and attaches the shared visible/programmatic untranslated disclosure.
+Call the relevant 0.1.1 leaf helper by stable package identity:
 
-Package-owned text without a beta.12 locale helper follows the canonical/disclosed path. This
-includes the families filed in [Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309).
-Do not map diagnostic codes/params to private application translations. After a released upstream
-fix, consume its leaf result and retain the same explicit-miss behavior.
+- existing module, blueprint, experimental-effect and material name helpers;
+- `i18n/ships` for ship name/manufacturer;
+- `i18n/slots` for loadout slot/restriction;
+- `i18n/pre-engineered`, `i18n/engineering-groups` and
+  `i18n/experimental-effect-descriptions` for those identities;
+- `i18n/diagnostics` for structured loadout, calculation, SLEF and edit diagnostics.
+
+A non-null result is localized for the requested locale. For a `null` result, request canonical
+English through the package helper and then the record's package-owned canonical field when that
+family has one. Present found text at its canonical language boundary with the shared
+visible/programmatic untranslated disclosure. If no canonical text exists, return the explicit
+unavailable state and its localized application framing—never a raw identity or invented game text.
+Do not map diagnostic codes/params to private application translations. The released
+[#309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309) contract retains these
+explicit-miss semantics.
 
 ## Persistence and privacy
 

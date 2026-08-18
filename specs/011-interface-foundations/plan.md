@@ -14,11 +14,11 @@ build gate with policy checks, ten Chromium/Firefox viewport-orientation project
 screen-reader protocols. The product gains no new content route; the language selector is part of
 the application frame and the preview catalogue is tooling-only.
 
-Almanac beta.12 still has package-owned user-facing text without locale-result APIs. The complete
-gap and minimal reproduction are filed as
-[Elite-Dangerous-Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309).
-This does not block feature 011 because FR-020 requires the canonical package text plus a localized
-untranslated disclosure until a released package supplies the requested locale.
+Almanac 0.1.1 includes the locale-result APIs filed as
+[Elite-Dangerous-Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309):
+ship/manufacturer, slot/restriction, pre-engineered variant, engineering-group,
+experimental-description and structured diagnostic helpers. An explicit `null` requests canonical
+package text and disclosure; if the package has no canonical text, FR-020 presents unavailable.
 
 ## Technical Context
 
@@ -27,7 +27,7 @@ untranslated disclosure until a released package supplies the requested locale.
 
 **Primary Dependencies**: Angular 22.1 standalone, explicitly zoneless APIs; Angular Router and
 service worker; RxJS 7.8; `@jsverse/transloco` 8.4 runtime localization; browser `Intl` APIs;
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf i18n and catalogue exports;
+`@elite-dangerous-almanac/core` 0.1.1 leaf i18n and catalogue exports;
 `@axe-core/playwright` 4.13 and Playwright 1.62 for verification
 
 **Storage**: One versioned locale-preference record in `localStorage` through an injected adapter;
@@ -70,7 +70,7 @@ _GATE: Passed before research. Re-check after Phase 1. No constitutional excepti
 | Principle                               | Design evidence                                                                                                                                         | Status |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | I. Client-Side Only                     | Locale assets and preview output are static; only a local preference is persisted; no cross-origin runtime dependency is introduced.                    | PASS   |
-| II. Almanac Source of Truth             | Game names use named leaf helpers; unavailable package text remains canonical and disclosed. Gap #309 is upstream with no local translation table.      | PASS   |
+| II. Almanac Source of Truth             | Game names and diagnostics use named leaf helpers; unavailable locale results remain canonical and disclosed, with no local translation table.          | PASS   |
 | III. Domain Logic Outside UI            | Locale, formatting, announcements and browser persistence sit in stores/services/adapters; components accept presentation state and emit intent.        | PASS   |
 | IV. Lossless, Honest Builds             | Interface state never enters or changes a build; unavailable and untranslated values remain explicit instead of becoming empty text or estimates.       | PASS   |
 | V. Desktop, Tablet and Mobile           | Fluid components, five size/orientation profiles per browser, axe, touch, zoom, text expansion, reduced motion and screen-reader protocols are planned. | PASS   |
@@ -173,9 +173,9 @@ All decisions, dependency probes, alternatives and the upstream reproduction are
   product and preview state with axe and retain manual screen-reader/actual-400%-zoom protocols.
 - Add one repository policy checker for application text, visual literals and preview completeness;
   generic lint configuration cannot prove all three FR-024 boundaries.
-- Beta.12's localized module/blueprint/effect/material helpers return `null` on a locale miss.
-  Remaining package text has no locale result; #309 tracks it. Canonical disclosure is the planned
-  interim, not a local translation.
+- Released game-text helpers return `null` on a locale or source-text miss. The presenter uses a
+  canonical package value with disclosure when present and unavailable otherwise; it never
+  substitutes a private translation.
 
 No planning clarification marker remains.
 
@@ -208,8 +208,9 @@ Phase 1 introduces no server, account, cross-origin runtime request, build persi
 game-text translation, second theme, production preview surface or component-owned domain state.
 Every requirement has a surface owner and validation path. English remains readable without a
 network; the German catalogue is selectable only while complete; locale changes cannot mutate a
-build. Product and preview targets consume the same tokens/components/providers. #309 remains an
-upstream enhancement, while the accepted canonical/disclosed state lets feature 011 proceed.
+build. Product and preview targets consume the same tokens/components/providers. The released #309
+helpers preserve explicit null: disclose canonical package text when it exists and present
+unavailable when it does not.
 
 The post-design gate remains **PASS with no exception**. Before task generation, retain `en` and `de`
 as the accepted initial locale set; changing that product set requires a deliberate spec/plan update,

@@ -26,24 +26,23 @@ shared result union; feature 003 does not reclassify a numeric value based on pr
 7. Confirm the active build and condition revisions still match.
 8. Publish the complete immutable `StatusSnapshot` in one signal assignment, or discard it.
 
-Synchronous beta.12 reads still follow the transaction. If a port is lazy/asynchronous, all ports
+Synchronous 0.1.1 reads still follow the transaction. If a port is lazy/asynchronous, all ports
 settle under one request token. The UI may expose an updating state for the new context, never old
 figures labelled with the new context.
 
 ## Package-source matrix
 
-The owning ports use these beta.12 sources; future package releases may replace composition with a
-more direct result without changing this contract:
+The owning ports use these direct 0.1.1 sources:
 
 | Result                  | Package source                                                               |
 | ----------------------- | ---------------------------------------------------------------------------- |
 | Structural state/issues | `ShipLoadout.validation`                                                     |
 | Selected power          | `powerBudget().deployed` or `.retracted`, plus `.available`                  |
-| Shield strength         | `shieldMetrics({ systemsPips })?.strength`                                   |
+| Shield strength         | completed `shieldMetricsResult({ systemsPips })` value                       |
 | Armour                  | `armourMetrics().hitPoints`                                                  |
 | Sustained DPS           | `weaponMetrics().total.sustainedDamagePerSecond`                             |
 | Selected jump           | `jumpRangeSummary().max`, `.unladen` or `.laden`                             |
-| Top speed               | `mobilityMetrics({ fuel, cargo, enginesPips })?.speed`                       |
+| Top speed               | completed `mobilityMetricsResult({ fuel, cargo, enginesPips })` value        |
 | Unladen mass            | `unladenMassResult`                                                          |
 | Credits                 | `retailCredits()`                                                            |
 | Merc Coin               | recognized fitted variant fields and `mercCoinCost()`                        |
@@ -77,22 +76,18 @@ Canonical package diagnostics can be accompanied by the shared untranslated disc
 application labels, units, conditions and availability messages use localization identities and
 locale-aware number/unit formatting.
 
-## Failure and upstream gates
+## Failure and released regressions
 
 An unexpected adapter exception produces a nonnumeric application failure state and leaves the last
 settled snapshot associated only with its original revision; it is not relabelled as current.
 
-Implementation must consume released fixes for:
-
-- [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296), because the
-  current package returns finite mobility after the thrusters are power-shed;
-- [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297), because the
-  current package returns zero hull-dependent defence figures for an unresolved hull.
-
-No adapter may locally gate, null, clamp or repair those package results.
+Regression fixtures pin 0.1.1's [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296)
+structured unavailable mobility/shield/recovery results and
+[#297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) unknown-hull construction
+rejection. No adapter may locally gate, null, clamp or repair those package results.
 
 ## Verification
 
 Contract tests supply spies for all ports and prove one identical revision tuple reaches each. They
 cover stale synchronous/async work, exact package issue preservation, every discriminated state,
-unknown-draw semantics and regression fixtures for the two upstream defects after upgrade.
+unknown-draw semantics and regression fixtures for the two released fixes.

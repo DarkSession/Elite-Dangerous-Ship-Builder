@@ -48,6 +48,7 @@ Cross-cutting fixtures add:
 - reduced motion;
 - localized number/unit/date content;
 - canonical Almanac text with untranslated disclosure;
+- unavailable Almanac text when no canonical source exists;
 - pointer/touch-visible state without hover.
 
 Fixtures are presentation data, not asserted Almanac facts. Package examples must be clearly marked

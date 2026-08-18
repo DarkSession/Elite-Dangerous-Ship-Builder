@@ -58,7 +58,7 @@ The surface and component previews cover:
 - unknown bank draw qualification;
 - negative, zero and unbounded damage outcomes;
 - non-stock bulkhead, hull reinforcement and module reinforcement;
-- unresolved hull/package-authorized unavailable defence;
+- unknown-hull construction rejection at the feature 001/004 boundary;
 - unexpected projection failure with no stale figures.
 
 Previews include default, populated, empty, loading, error and disabled states where meaningful at

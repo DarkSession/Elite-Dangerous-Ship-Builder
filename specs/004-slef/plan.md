@@ -14,18 +14,17 @@ constructs and normalizes a detached candidate, then delegates the only state ch
 replacement coordinator. Browser delivery sits behind injected clipboard/download/share ports.
 
 The `.design/Ship Builder.dc.html` layers establish the responsive hierarchy, but journal/Markdown
-export, heuristic parsing and partial-roll retention are rejected. Implementation is **blocked** on a
-released Almanac API for universal 100%-quality normalization (Almanac #292). Reapplying a blueprint
-at quality 1 works for recognized ordinary modules, but cannot safely cover fixed pre-engineered,
-effect-modified or unresolved states. A package boundary is also required to repair an unresolved
-immutable cargo hatch while retaining package source-purchase invalidation semantics.
+export, heuristic parsing and partial-roll retention are rejected. Almanac 0.1.1 supplies
+`completeEngineeringGrade()` for structured 100%-quality normalization and `repairFixedMount()` for
+package-owned immutable-mount repair with source-purchase semantics. The upstream gates are
+satisfied.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 6.0 strict; HTML/SCSS; Node.js 24 tooling
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required), feature 001 active-build/
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports, feature 001 active-build/
 replacement/build-link boundaries, and feature 011 design/localization/accessibility foundations
 
 **Storage**: Drafts, artifacts and delivery status remain in memory. Accepted imports flow into
@@ -46,7 +45,7 @@ private parser, heuristic repair, app-owned calculation or retail fallback; fail
 active and stored state untouched; one dark tokenized theme; translatable; touch-first; WCAG 2.2 AA
 except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: One active build and one SLEF entry; 48 beta.12 hulls; largest observed layouts are
+**Scale/Scope**: One active build and one SLEF entry; 48 0.1.1 hulls; largest observed layouts are
 39 slots (`Anaconda`, `Type9_Military`); input bounded at 64 KiB
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a/1b provide shipyard import, canvas
@@ -56,31 +55,29 @@ sheets. Reconciliation and the responsive escalation for constrained/zoomed view
 
 ## Constitution Check
 
-_GATE: Passed for planning because format/build behavior remains package-owned and no constitutional
-exception is proposed. Implementation cannot begin until released package APIs close both
-normalization gaps. Re-check after Phase 1 and the package upgrade._
+_GATE: Passed. Format/build behavior remains package-owned, 0.1.1 closes both normalization gaps and
+no constitutional exception is proposed. The post-upgrade re-check is complete._
 
-| Principle                               | Evidence                                                                                                                                            | Status                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | In-memory processing and user-triggered browser delivery make no request.                                                                           | PASS                       |
-| II. Almanac Source of Truth             | Package inspection, construction, normalization and serialization only; missing operations are upstream gates.                                      | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure coordinators and browser ports precede the signal store.                                                                                       | PASS                       |
-| IV. Lossless, Honest Builds             | Candidate-first replacement, exact diagnostics/source credits and visible normalization prevent silent loss.                                        | PASS; implementation gated |
-| V. Desktop, Tablet and Mobile           | Wide dialogs become narrow bottom sheets, escalating to full-height layers when space/zoom requires, with identical touch/screen-reader capability. | PASS                       |
-| VI. Commander's Language                | App text uses feature 011; package diagnostics retain package ownership/disclosure.                                                                 | PASS                       |
-| VII. One Design System                  | Screens compose feature 011 fields, notices, diagnostics, buttons and layers.                                                                       | PASS                       |
-| VIII. Tested Before It Ships            | Dual-engine/multi-viewport unit, Playwright and axe coverage is specified.                                                                          | PASS, prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contract.                                                                                                  | PASS                       |
+| Principle                               | Evidence                                                                                                                                            | Status                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | In-memory processing and user-triggered browser delivery make no request.                                                                           | PASS                   |
+| II. Almanac Source of Truth             | Package inspection, construction, fixed-mount repair, quality normalization and serialization use released leaf APIs only.                          | PASS                   |
+| III. Domain Logic Outside UI            | Pure coordinators and browser ports precede the signal store.                                                                                       | PASS                   |
+| IV. Lossless, Honest Builds             | Candidate-first replacement, structured package outcomes, exact diagnostics/source credits and visible normalization prevent silent loss.           | PASS                   |
+| V. Desktop, Tablet and Mobile           | Wide dialogs become narrow bottom sheets, escalating to full-height layers when space/zoom requires, with identical touch/screen-reader capability. | PASS                   |
+| VI. Commander's Language                | App text uses feature 011; package diagnostics retain package ownership/disclosure.                                                                 | PASS                   |
+| VII. One Design System                  | Screens compose feature 011 fields, notices, diagnostics, buttons and layers.                                                                       | PASS                   |
+| VIII. Tested Before It Ships            | Dual-engine/multi-viewport unit, Playwright and axe coverage is specified.                                                                          | PASS, prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contract.                                                                                                  | PASS                   |
 
-Required upstream work:
+Released upstream work consumed from 0.1.1:
 
-1. [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292) must ship
-   universal supported partial-quality normalization with structured refusal for unsupported state.
-2. [Almanac #298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) must add a
-   fixed-mount normalization/edit operation for an unresolved immutable cargo hatch that installs the
-   hull default and applies package source-purchase invalidation.
-3. [Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) tracks the related
-   missing-cargo-hatch validation gap; the app must not manufacture a validation issue.
+1. [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292) ships
+   `completeEngineeringGrade()` with structured refusal for unsupported state.
+2. [Almanac #298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) ships
+   `repairFixedMount()` for exact hull-default repair and source-purchase invalidation.
+3. [Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) makes
+   construction restore a missing or unresolved cargo hatch from the known hull's package default.
 
 ## Project Structure
 
@@ -153,8 +150,9 @@ See [research.md](./research.md). Key decisions:
 - Use `toSlefString()` with source credits, fitted order, sparse power state, build metadata and an
   optional already-published exact-revision link.
 - Keep one immutable artifact for selectable text, download, clipboard and capability-gated share.
-- Beta.12 retains `Quality: 0.42`; iterating `applyBlueprint(...quality: 1)` can normalize known
-  ordinary recipes only and cannot satisfy universal losslessness. Package support is required.
+- Imported partial quality remains unchanged until the app deliberately calls
+  `completeEngineeringGrade()`; supported states then normalize losslessly and unsupported states
+  remain structured package outcomes.
 
 ## Phase 1: Design Outputs
 
@@ -166,7 +164,7 @@ See [research.md](./research.md). Key decisions:
 - [contracts/routes-and-ui.md](./contracts/routes-and-ui.md): entry points, i18n, a11y and UI boundary.
 - [design/screen-inventory.md](./design/screen-inventory.md) and adjacent design files: requirement
   mapping, responsive composition and reference reconciliation.
-- [quickstart.md](./quickstart.md): acceptance/performance scenarios and upstream gate.
+- [quickstart.md](./quickstart.md): acceptance/performance scenarios and released-API verification.
 
 ## Post-Design Constitution Re-check
 
@@ -175,11 +173,12 @@ normalization, retail fallback, hard-coded display string or visual literal. Inp
 state until a fully normalized candidate is accepted; export cannot be disabled by link or clipboard
 failure. Every FR has a responsive surface and dual-engine accessibility path.
 
-The gate remains **PASS with no exception**. Implementation remains **blocked upstream** until
-released Almanac APIs satisfy universal quality normalization and immutable fixed-mount repair with
-source-purchase semantics. Re-run reproductions and the constitution check after upgrading.
+The gate remains **PASS with no exception**. Almanac 0.1.1 satisfies universal quality normalization
+and immutable fixed-mount repair with source-purchase semantics. Re-run those regressions during task
+generation and implementation.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. Upstream blocks are not converted into application-side
-format, engineering, fixed-mount or purchase-provenance workarounds.
+No constitutional exception is requested. Released APIs replace the former upstream blocks;
+application-side format, engineering, fixed-mount or purchase-provenance workarounds remain
+prohibited.

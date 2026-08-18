@@ -28,6 +28,7 @@ Then apply relevant cross-cutting variants:
 - reduced motion;
 - localized German numbers/units/dates;
 - package canonical text plus untranslated disclosure;
+- package text unavailable because no canonical source exists;
 - long unbroken identity and nested label/error relationships.
 
 An N/A declaration is acceptable only when the component contract cannot represent that state (for

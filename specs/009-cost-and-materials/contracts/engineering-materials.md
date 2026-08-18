@@ -55,13 +55,13 @@ canonical English package name, keep it visible and attach the shared localized 
 disclosure. Owned headings, source kinds, qualifiers, grade labels, quantities and accessible names
 come from application messages and locale formatters.
 
-## Upstream gate
+## Released regression
 
-[Almanac #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306) must be fixed in a
-released version. The application must not special-case `CargoRack_IncreasedCapacity`, reinterpret
-its empty recipe or replace it with another recipe. A package regression test must prove that a stock
-rack no longer exposes/applies that fixed reward as ordinary engineering while fixed variants remain
-identifiable and Mercenary climbs remain distinct.
+Almanac 0.1.1 includes the [#306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306)
+fix. The application must not special-case `CargoRack_IncreasedCapacity` or replace it with another
+recipe. A package regression test proves that a stock rack does not expose/apply that fixed reward as
+ordinary engineering, its cost lookup is `null`, fixed variants remain identifiable, and Mercenary
+climbs remain distinct.
 
 ## Verification
 

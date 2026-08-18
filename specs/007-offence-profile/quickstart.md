@@ -1,6 +1,6 @@
 # Quickstart: Offence Profile Validation
 
-This guide validates feature 007 after its upstream and repository prerequisites are available. It
+This guide validates feature 007 after its repository prerequisites are available. It
 is an acceptance/run guide, not an implementation recipe.
 
 ## Prerequisites
@@ -23,22 +23,21 @@ pnpm install --frozen-lockfile
 If the environment supplies browser executables instead of Playwright's pinned downloads, set
 `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` to those exact executables.
 
-## Upstream release gates
+## Released-API regressions
 
-1. Confirm [Almanac #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300) is
-   closed by a released package contract that returns sparse post-engineering maximum/falloff range,
+1. Confirm pinned 0.1.1 closes [Almanac #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300)
+   with sparse post-engineering maximum/falloff range,
    projectile-boundary metadata and armour piercing with each fitted weapon.
 2. Confirm feature 005 can consume the package work tracked by
    [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) for authoritative
    distributor/power observation.
-3. Check [Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301). It is not
-   a functional blocker, but the feature must preserve returned order until a released fix is pinned
-   and must not contain a local sorting repair.
-4. Upgrade the exact dependency and lockfile through the normal dependency change, then rerun the
+3. Confirm [Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301) returns
+   canonical known-slot order and preserves source order for appended unknown slots, with no local sort.
+4. Rerun the
    minimal probes documented in [research.md](./research.md).
 
-Before #300 and #299 are released and consumed, feature 007 must remain blocked; do not implement a
-`fittedModuleAt()` range join or local module-power attribution.
+Do not implement a `fittedModuleAt()` range join or local module-power attribution; fail the
+regression if the released projection is absent.
 
 Useful audit commands:
 

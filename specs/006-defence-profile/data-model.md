@@ -175,10 +175,9 @@ type ArmourProfileView =
   | { kind: 'unavailable' };
 ```
 
-The current beta.12 `armourMetrics()` signature is non-nullable, but the #297 release must provide an
-authoritative unavailable/diagnostic outcome for unresolved hull facts. The application boundary is
-intentionally discriminated without assuming whether the released package uses `null` or a result
-object.
+The 0.1.1 `armourMetrics()` signature remains non-nullable because unknown hulls are rejected during
+construction. The `unavailable` view is reserved for an unexpected package failure on a known active
+hull, never a locally suppressed zero.
 
 `moduleArmour` and `moduleProtection` never contribute to `hitPoints`. `hullHardness` is the exact
 `Ship.hardness` value and is not a weapon-damage result.

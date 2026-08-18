@@ -14,11 +14,11 @@ build/condition revision owns fitted, empty, engineered, selected and current po
 SVG occurrences reference that one slot identity. A package-ordered text equivalent and feature
 002's complete slot ledger remain fully usable when either schematic is absent.
 
-Implementation is **blocked** on a released Almanac contract for schematic annotations and safe
-inline content ([#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308)) and on the
-authoritative per-module power projection already requested in
-[#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299). No application-side
-annotation promise or power reconstruction is permitted.
+Almanac 0.1.1 includes the released schematic annotation/safe-inline contract
+([#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308)) and the authoritative
+per-module `PowerBudget.consumers` projection
+([#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)). No application-side
+annotation promise or power reconstruction is needed.
 
 ## Technical Context
 
@@ -26,8 +26,8 @@ annotation promise or power reconstruction is permitted.
 tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-Angular service worker, `@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required
-for #308 and #299), feature 001's active-build/artwork boundary, feature 002's exact slot selection,
+Angular service worker, `@elite-dangerous-almanac/core` 0.1.1 leaf exports, feature 001's
+active-build/artwork boundary, feature 002's exact slot selection,
 feature 003's viewing conditions, feature 005's power observation, feature 011's design/i18n/test
 foundations and feature 012's provenance/help target
 
@@ -66,26 +66,26 @@ coordinates, utility nodes, mock values and cross-capability overlays are reject
 
 ## Constitution Check
 
-_GATE: Passed for planning because unresolved package contracts remain upstream gates and no
-constitutional exception is introduced. Re-check required after Phase 1 and after package upgrades._
+_GATE: Passed for planning because the required package contracts are released and no
+constitutional exception is introduced. Re-check required after Phase 1._
 
-| Principle                               | Design evidence                                                                                                                                                                    | Status                     |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Installed SVGs become same-origin static assets and use feature 001's lazy versioned cache/retry path; no build data or asset request leaves the origin.                           | PASS                       |
-| II. Almanac Source of Truth             | Hull symbols, slots, geometry annotations, fitted state and power facts stay package-owned. Missing annotation and power contracts are #308/#299 gates, never local rules.         | PASS; implementation gated |
-| III. Domain Logic Outside UI            | A pure projector joins validated annotations, one revision context and shared power observations; components render a typed inert tree and emit exact-slot intents.                | PASS                       |
-| IV. Lossless, Honest Builds             | Missing/unresolved SVG annotations and unavailable module facts remain explicit; schema or fetch failure removes no slot and fabricates no geometry/value.                         | PASS                       |
-| V. Desktop, Tablet and Mobile           | Paired/side-selected views, bounded native panning, 44-pixel geometry-derived hit areas and a complete text equivalent preserve touch/screen-reader/zoom use in both orientations. | PASS                       |
-| VI. Commander's Language                | App labels use feature 011; module names use Almanac localization with disclosed canonical fallback; identifiers and unavailable states are never translated guesses.              | PASS                       |
-| VII. One Design System                  | SVG state styling, hit width, layout, notices, tabs, details and list controls use shared components/tokens; package artwork is never restyled with local literals.                | PASS                       |
-| VIII. Tested Before It Ships            | Package-contract, pure projection, dual-engine multi-viewport, production-cache and automated/manual accessibility scenarios are specified without threshold or matrix reduction.  | PASS, prerequisite 011     |
-| IX. Specification Before Implementation | The complete capability and fallback surfaces map to FR-001–FR-012 in `design/` before task generation.                                                                            | PASS                       |
+| Principle                               | Design evidence                                                                                                                                                                    | Status                 |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Installed SVGs become same-origin static assets and use feature 001's lazy versioned cache/retry path; no build data or asset request leaves the origin.                           | PASS                   |
+| II. Almanac Source of Truth             | Hull symbols, slots, geometry annotations, fitted state and power facts stay package-owned through the released #308/#299 contracts.                                               | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector joins validated annotations, one revision context and shared power observations; components render a typed inert tree and emit exact-slot intents.                | PASS                   |
+| IV. Lossless, Honest Builds             | Missing/unresolved SVG annotations and unavailable module facts remain explicit; schema or fetch failure removes no slot and fabricates no geometry/value.                         | PASS                   |
+| V. Desktop, Tablet and Mobile           | Paired/side-selected views, bounded native panning, 44-pixel geometry-derived hit areas and a complete text equivalent preserve touch/screen-reader/zoom use in both orientations. | PASS                   |
+| VI. Commander's Language                | App labels use feature 011; module names use Almanac localization with disclosed canonical fallback; identifiers and unavailable states are never translated guesses.              | PASS                   |
+| VII. One Design System                  | SVG state styling, hit width, layout, notices, tabs, details and list controls use shared components/tokens; package artwork is never restyled with local literals.                | PASS                   |
+| VIII. Tested Before It Ships            | Package-contract, pure projection, dual-engine multi-viewport, production-cache and automated/manual accessibility scenarios are specified without threshold or matrix reduction.  | PASS, prerequisite 011 |
+| IX. Specification Before Implementation | The complete capability and fallback surfaces map to FR-001–FR-012 in `design/` before task generation.                                                                            | PASS                   |
 
-Required upstream and project work:
+Required released and project work:
 
-1. [Almanac #308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308) must publish and
-   test the supported asset path, annotation, duplicate and inline-content contract.
-2. [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) must provide the
+1. Almanac 0.1.1 supplies the released [#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308)
+   asset-path, annotation, duplicate and safe-inline contract.
+2. Almanac 0.1.1 supplies the released [#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
    per-module projection consumed by feature 005; feature 010 consumes feature 005's resulting
    current-power observation rather than reconstructing it.
 3. Features 001, 002, 003, 005, 011 and 012 must supply the shared active revision, complete ledger
@@ -161,16 +161,16 @@ feature 012 remains the only owner of legal content.
 
 ## Phase 0: Research Conclusions
 
-All decisions, alternatives, audit evidence and blockers are recorded in
+All decisions, alternatives, audit evidence and released dependencies are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
-- Beta.12 ships exactly three SVGs for each of 48 hull symbols. All 234 hardpoints resolve from 240
+- 0.1.1 ships exactly three SVGs for each of 48 hull symbols. All 234 hardpoints resolve from 240
   annotated instances; six slots intentionally occur on both views and no side repeats a slot.
 - The factual spec prose was corrected: the files also annotate all 195 utility slots. FR-002 still
   admits only annotations whose feature is `hardpoint` and whose canonical resolved slot kind is
   `hardpoint`; spelling such as `TinyHardpoint` is never classified locally.
-- The package documents filenames but not annotation/safety/duplicate promises. #308 blocks inline
-  consumption until a released public contract is available.
+- The installed README and package tests document the supported paths, annotation identity,
+  duplicate semantics and safe-inline content promised by #308.
 - Assets are copied from `node_modules`, loaded per active hull and lazily cached by feature 001's
   Angular service worker. Top and bottom fail/retry independently and never gate outfitting.
 - Runtime SVG becomes a strictly validated inert typed tree rendered through Angular templates; no
@@ -180,7 +180,8 @@ All decisions, alternatives, audit evidence and blockers are recorded in
 - Exact geometry clones with a non-scaling tokenized hit stroke provide large targets without
   measuring or moving package geometry. Native internal scrolling provides pan; the canonical list
   remains a separate route to every hardpoint.
-- FR-008's supplied/shed state comes through feature 005 after #299. Raw `on`/`priority` is not
+- FR-008's supplied/shed state comes through feature 005 from each `PowerBudget.consumers` entry
+  combined with its matching returned `PowerBudget.bands` verdict. Raw `on`/`priority` is not
   silently promoted into a complete power verdict.
 
 ## Phase 1: Design Outputs
@@ -211,14 +212,12 @@ visual literal. SVG load/schema failures and unmatched keys remain visible packa
 complete slot ledger stays usable. Utility annotations are deliberately excluded by semantic package
 kind, not name heuristics. Every FR has a surface owner and dual-engine responsive/accessibility path.
 
-The planning gate remains **PASS with no exception**. Implementation remains **blocked upstream** by
-Almanac #308 and #299 and sequenced behind features 001, 002, 003, 005, 011 and 012. After released
-fixes and prerequisites land, rerun the package audit, verify the generated service-worker manifest,
-re-evaluate this constitution table and only then generate or refresh tasks.
+The planning gate remains **PASS with no exception**. The Almanac gates are satisfied; implementation
+is sequenced behind features 001, 002, 003, 005, 011 and 012. After those prerequisites land, verify
+the generated service-worker manifest and generate or refresh tasks.
 
 ## Complexity Tracking
 
 No constitutional exception is requested. The loader/parser/projector/store split is the minimum
 structure that keeps untrusted markup out of templates, package geometry out of source, revision
-state out of components and slot identity shared with outfitting. Upstream gaps remain gates rather
-than application-owned contracts.
+state out of components and slot identity shared with outfitting.

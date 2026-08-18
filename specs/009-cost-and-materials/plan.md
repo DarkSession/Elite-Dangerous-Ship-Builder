@@ -15,12 +15,11 @@ between exact, lower-bound, unavailable, absent, fixed-not-crafted and incomplet
 signal-based store publishes one immutable snapshot; feature 003 consumes the same snapshot through
 its `AssemblyRequirementsPort`, while feature 002 receives exact-slot intents.
 
-Implementation is **blocked** on an Almanac release that removes the false ordinary route for the
-fixed Expanded Cargo Rack reward. Beta.12 and current upstream `main` expose
-`CargoRack_IncreasedCapacity` grade 5 as free ordinary engineering on a stock rack and return `[]`
-for its cost. The defect is filed as
-[Elite-Dangerous-Almanac #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306).
-No local fdname exception, substitute recipe or reinterpretation of `[]` is planned.
+Almanac 0.1.1 includes the fix for
+[Elite-Dangerous-Almanac #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306):
+stock cargo racks no longer offer `CargoRack_IncreasedCapacity`, its cost lookup returns `null`, and
+the fixed community-goal and Mercenary variants remain distinct. No local fdname exception,
+substitute recipe or reinterpretation is needed.
 
 The `.design/Ship Builder.dc.html` 1c/1d cost-and-material hierarchy informs the wide and narrow
 composition. Its invented combined credit total, authored material totals, truncated material list,
@@ -32,7 +31,7 @@ merged Merc Coin/material card and cross-origin material icons are excluded.
 tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required for #306), feature 001's
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports, feature 001's
 active-build/revision boundary, feature 002's normalized fitted engineering and exact-slot intent,
 feature 003's `AssemblyRequirementsPort`, and feature 011's UI/localization/testing infrastructure
 
@@ -60,7 +59,7 @@ remain separate; `null`, `[]`, zero and absence stay distinct; no page horizonta
 tokenized theme; all application text and figures localized; touch/screen-reader operation; WCAG 2.2
 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: One active build; 107 beta.12 blueprint cost records, 86 experimental-effect cost
+**Scale/Scope**: One active build; 106 0.1.1 blueprint cost records, 86 experimental-effect cost
 records, 106 material identities used by those recipes, the 146-entry ship-material catalogue and 22
 current Mercenary variants
 
@@ -69,39 +68,38 @@ required departures are recorded in [design/reference-review.md](./design/refere
 
 ## Constitution Check
 
-_GATE: Passed for planning because the design waits for package truth and introduces no
-constitutional exception. Implementation is gated on the released Almanac dependency and repository
-prerequisites below. Re-check after Phase 1 and after the package upgrade._
+_GATE: Passed for planning because the design consumes package truth and introduces no
+constitutional exception. The Almanac dependency is released; repository prerequisites remain.
+Re-check after Phase 1._
 
-| Principle                               | Design evidence                                                                                                                                                           | Status                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | All projections use the in-browser active build, static package data and same-origin messages; no persistence or network boundary is added.                               | PASS                       |
-| II. Almanac Source of Truth             | Every quantity and recognition comes from named package APIs. #306 is a release gate; no fdname special case or substitute recipe is planned.                             | PASS; implementation gated |
-| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed store coordinates revisions; components render localized inputs and emit intents.                             | PASS                       |
-| IV. Lossless, Honest Builds             | Exact, lower-bound, unavailable, absent, fixed-not-crafted, known-empty and incomplete states remain distinct; source purchase is not relabelled as retail.               | PASS                       |
-| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow.             | PASS                       |
-| VI. Commander's Language                | Owned labels and figures use feature 011; material/module names use Almanac locale helpers with disclosed canonical fallback.                                             | PASS                       |
-| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                            | PASS; prerequisite 011     |
-| VIII. Tested Before It Ships            | Exact package equality, source traceability, dual-engine multi-viewport journeys and automated/manual accessibility coverage are specified without relaxing the 80% gate. | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to a plan-time surface and interface contracts exist before task breakdown.                                                                                 | PASS                       |
+| Principle                               | Design evidence                                                                                                                                                           | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All projections use the in-browser active build, static package data and same-origin messages; no persistence or network boundary is added.                               | PASS                   |
+| II. Almanac Source of Truth             | Every quantity and recognition comes from named package APIs. The released #306 regression stays covered without a consumer special case.                                 | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed store coordinates revisions; components render localized inputs and emit intents.                             | PASS                   |
+| IV. Lossless, Honest Builds             | Exact, lower-bound, unavailable, absent, fixed-not-crafted, known-empty and incomplete states remain distinct; source purchase is not relabelled as retail.               | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow.             | PASS                   |
+| VI. Commander's Language                | Owned labels and figures use feature 011; material/module names use Almanac locale helpers with disclosed canonical fallback.                                             | PASS                   |
+| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                            | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact package equality, source traceability, dual-engine multi-viewport journeys and automated/manual accessibility coverage are specified without relaxing the 80% gate. | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to a plan-time surface and interface contracts exist before task breakdown.                                                                                 | PASS                   |
 
-### Required upstream and repository dependencies
+### Required released and repository dependencies
 
-1. [Almanac issue #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306)
-   must land in a released package. The minimal reproduction and required semantics are in
-   [research.md](./research.md#expanded-cargo-rack--upstream-blocker).
+1. Almanac 0.1.1 supplies the released
+   [#306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306) behavior. The regression
+   probe and required semantics are in [research.md](./research.md#expanded-cargo-rack-regression).
 2. Feature 001 must supply the single active `ShipLoadout`, atomic build revision and `/build`
    workspace.
 3. Feature 002 must supply normalized fixed/ordinary engineering state, exact-slot selection and the
-   shared per-selection cost classifier. Its upstream editing/import gates #291 and #292 remain
+   shared per-selection cost classifier. Its released #291/#292 editing and import contracts remain
    applicable to the state feature 009 reads, but do not add a separate 009 calculation.
 4. Feature 003 must accept feature 009's immutable `AssemblyRequirementsPort` projection without
    recomputing totals or qualifications.
 5. Feature 011 must supply shared components/tokens, localization/formatting, Firefox/landscape
    projects and the automated accessibility harness.
 
-Feature 009 may be tasked only after these contracts are accepted. It cannot be implemented or
-shipped until #306 is released and consumed.
+Feature 009 may be tasked after these repository contracts are accepted. No Almanac release gate remains.
 
 ## Project Structure
 
@@ -168,7 +166,7 @@ storage adapter, calculation service, private catalogue or second `ShipLoadout` 
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and the blocker are recorded in
+All decisions, package probes, alternatives and released regressions are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
 - `retailCredits()` is the only credit boundary. Hull, modules, rebuy and ordered unpriced entries
@@ -181,13 +179,12 @@ All decisions, package probes, alternatives and the blocker are recorded in
   source-list contributors so traceability is a join, never a re-sum.
 - `getMaterialBySymbol()` supplies grade/identity and `getMaterialName()` supplies active-locale text;
   canonical English remains visibly disclosed when localization returns `null`.
-- Beta.12's only empty cumulative blueprint result is the false ordinary Expanded Cargo Rack route.
-  #306 blocks implementation rather than permitting a consumer exception.
+- The released #306 behavior removes the false ordinary Expanded Cargo Rack route and its cost key;
+  fixed variants remain package-identifiable.
 - The reference's glanceable order is retained after removing its unsupported combined totals,
   counts, truncation, cross-origin images and merged currency treatment.
 
-No planning clarification marker remains. The unresolved work is an explicit external dependency,
-not an ambiguity to solve by assumption.
+No planning clarification marker or unresolved Almanac dependency remains.
 
 ## Phase 1: Design Outputs
 
@@ -216,15 +213,13 @@ absent, zero, lower-bound, known-empty and unavailable state remains distinguish
 Merc Coin never share a total. Every FR has a surface owner and a dual-engine responsive/accessibility
 validation path.
 
-The planning gate remains **PASS with no exception**. Implementation remains **blocked upstream** by
-Almanac #306 and sequenced behind features 001, 002, 003 and 011. After upgrading the pinned package
-and completing those prerequisites, rerun the minimal reproduction, confirm the public leaf
-contracts, re-evaluate this constitution table and then generate or refresh tasks.
+The planning gate remains **PASS with no exception**. The Almanac gate is satisfied; implementation
+is sequenced behind features 001, 002, 003 and 011. After completing those prerequisites, generate or
+refresh tasks.
 
 ## Complexity Tracking
 
 No constitutional exception is requested. The projector/store/presenter split is the minimum
 structure that keeps package projection testable without rendering, guarantees revision coherence
 and prevents locale state from contaminating domain quantities. The shared selection-cost classifier
-avoids duplication with feature 002. Upstream gaps remain blockers rather than application-side
-rules.
+avoids duplication with feature 002.

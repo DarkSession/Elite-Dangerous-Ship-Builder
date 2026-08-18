@@ -5,7 +5,7 @@ contracts are in [contracts/](./contracts/), the state model is in
 [data-model.md](./data-model.md), and surfaces are mapped in
 [design/screen-inventory.md](./design/screen-inventory.md).
 
-## 1. Prerequisites and release gates
+## 1. Prerequisites and released regressions
 
 Use Node.js from `.nvmrc`, pnpm from `packageManager` and the committed lockfile:
 
@@ -16,12 +16,11 @@ pnpm install --frozen-lockfile
 
 Before implementation or acceptance, confirm:
 
-- [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is fixed in a
-  released package and shed generators no longer return finite `shieldRecovery()`;
-- [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) is fixed in a
-  released package and unresolved hull defence is package-authorized unavailable/diagnostic rather
-  than numeric zero;
-- this repository pins that released Almanac version and both minimal reproductions pass;
+- [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is pinned in 0.1.1
+  and shed generators return structured unavailable shield/recovery results;
+- [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) is pinned in 0.1.1
+  and unknown hulls are rejected during construction;
+- both minimal reproductions pass;
 - feature 001 supplies the active build/revision and `/build` workspace;
 - feature 002 supplies exact-slot selection;
 - feature 003 supplies one atomic valid pip condition/revision;
@@ -29,8 +28,7 @@ Before implementation or acceptance, confirm:
   automated accessibility scans.
 
 Expected: there is no local power/availability override, hull fallback, resistance/EHP/recovery
-formula, aggregate apportionment or copied game catalogue. If either released fix is absent, stop;
-the affected capability remains blocked.
+formula, aggregate apportionment or copied game catalogue. If either regression fails, stop.
 
 ## 2. Run focused automated tests
 
@@ -50,7 +48,8 @@ projects and accessibility scans.
 1. Open a package-backed build with generator, multiple boosters and shield reinforcement.
 2. Open Defence Profile from feature 003's defence headline.
 3. Confirm the shared default SYS-pip condition and compare `strength`, `generator`, `boosters`,
-   `reinforcement`, both multipliers and `systemsResistance` with `shieldMetrics({ systemsPips })`.
+   `reinforcement`, both multipliers and `systemsResistance` with the completed
+   `shieldMetricsResult({ systemsPips })` value.
 4. Compare all kinetic, thermal, explosive and caustic resistance/EHP pairs.
 5. Apply valid zero, fractional and four-pip allocations through feature 003 and repeat.
 
@@ -65,16 +64,15 @@ generator contexts.
 Expected:
 
 - missing and disabled are distinct where fitted state establishes them;
-- after #296, a shed generator has unavailable recovery while package-retained shield strength may
-  remain visible with shed context;
+- the released #296 behavior gives a shed generator unavailable shield/recovery with structured power context;
 - an unknown draw produces indeterminate/qualified state rather than a conclusive verdict;
 - a package null/unavailable result has no zero/catalogue substitute;
 - armour remains complete and usable in every shield state.
 
 ## 5. Validate recovery and non-finite meanings
 
-1. Compare `regenRate`, `brokenRegenRate`, `recoveryTime` and `regenTime` independently with
-   `shieldRecovery({ systemsPips })`.
+1. Compare `regenRate`, `brokenRegenRate`, `recoveryTime` and `regenTime` independently with the
+   completed `shieldRecoveryResult({ systemsPips })` value.
 2. Repeat across valid pip allocations.
 3. Exercise a phase that cannot reach the recovery threshold, one that cannot regenerate to full,
    and finite/zero fields.
@@ -106,13 +104,13 @@ action reveals the exact returned slot in one interaction.
 Expected: module armour/protection remain distinct from hull hit points; aggregate contributions are
 not divided among sources; exact actual fitted source slots open through feature 002.
 
-## 8. Validate unknown hull and semantic numeric states
+## 8. Validate unknown-hull rejection and semantic numeric states
 
-Rerun #297's unknown-hull reproductions after the package upgrade, then exercise negative resistance,
+Rerun #297's unknown-hull reproductions with pinned 0.1.1, then exercise negative resistance,
 finite/zero EHP and unbounded EHP presentation-boundary cases.
 
-Expected: the released package authorizes unavailable/diagnostic defence for the unknown hull. The
-application does not recognize/discard beta.12 zeros itself. Negative values stay signed; zero,
+Expected: the package rejects the unknown hull before active-build replacement. The application does
+not recognize/discard zeros itself. Negative values stay signed; zero,
 unavailable and unbounded remain separate.
 
 ## 9. Validate sources and exact-slot targeting

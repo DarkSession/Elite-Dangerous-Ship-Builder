@@ -39,11 +39,10 @@ true:
 - a non-release build has no permitted CI/commit identifier, or the identifier contains personal,
   path, branch, whitespace, URL or other unsafe content;
 - generated output would contain an absolute machine/workspace path;
-- beta.12 or another affected package still contains the #307 contradiction.
+- an installed package regresses to the #307 contradiction.
 
-The #307 assertion is a release gate tied to the issue's faulty statement, not a consumer rewrite.
-After the fixed package is pinned, retain a regression check that installed provenance references do
-not falsely claim the installed files are absent.
+The #307 assertion is a regression check tied to the package-owned statement, not a consumer rewrite.
+Retain a check that installed provenance references do not falsely claim the installed files are absent.
 
 ## Build identity
 
@@ -98,9 +97,9 @@ its non-relicensing statement.
 - Keep the generated module and temporary test outputs ignored; keep `legal/almanac/` tracked.
 - Do not use Angular's `3rdpartylicenses.txt` as a substitute for any required document.
 
-## Upstream gate
+## Released regression
 
-Implementation and shipping require a released Almanac fix for
-[#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307). Until then, exact generation
-would faithfully reproduce an inaccurate package-owned statement. The application may not edit that
-statement, apply a patch-package step, suppress the section or replace it with private copy.
+Almanac 0.1.1 includes the released
+[#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307) correction. Exact generation
+preserves it. The application may not edit the statement, apply a patch-package step, suppress the
+section or replace it with private copy.

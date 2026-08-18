@@ -36,7 +36,7 @@ The canvas is a visual/product reference, not source code, package data or a com
   Mercenary, tech-broker, community-goal and event-reward are not conflated.
 - Variant recognition comes only from `FittedModule.preEngineeredVariant`; purchase grade stays
   separate from current ordinary grade.
-- Design comparison arrows/colors are omitted because beta.12 does not provide trustworthy
+- Design comparison arrows/colors are omitted because 0.1.1 does not provide trustworthy
   better/worse direction. Exact package before/current values can still be shown.
 
 ### Normalization and engineering
@@ -46,8 +46,8 @@ The canvas is a visual/product reference, not source code, package data or a com
 - Fixed missing/unresolved mounts are repaired from package defaults before the workspace/calculations
   render, with slot and replaced identity disclosed.
 - The engineering surface has distinct effect-only and clear-all behavior. It cannot rewrite raw
-  modifier blocks or turn a fixed reward into an ordinary roll; the missing beta.12 operation is an
-  upstream release blocker.
+  modifier blocks or turn a fixed reward into an ordinary roll; it uses 0.1.1's structured
+  `setExperimentalEffect()` operation.
 - Material images cannot be fetched from the external source named in the canvas. Use package or
   repository same-origin assets where licensed/available, otherwise accessible text; never a runtime
   third-party request.
@@ -78,12 +78,11 @@ The canvas is a visual/product reference, not source code, package data or a com
 - Screen-reader order follows semantic content, not three-column visual placement. Expanded/RTL text,
   200% text, 400% zoom, both orientations and reduced motion are explicit acceptance states.
 
-## Upstream design gate
+## Released API constraint
 
-Visual implementation of the engineering surface cannot begin until the Almanac release gates in
-[../research.md](../research.md) are satisfied. Hiding effect-only actions for fixed rewards or
-merging modifiers in the screen would make a canvas appear complete while violating the accepted spec
-and constitution.
+Visual implementation consumes the released Almanac operations in
+[../research.md](../research.md). Hiding effect-only actions for supported fixed rewards or merging
+modifiers in the screen would violate the accepted spec and constitution.
 
 ## Acceptance
 

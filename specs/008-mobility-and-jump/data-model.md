@@ -104,7 +104,7 @@ mass result from presentation, although it prevents calls that require cargo.
 
 No numeric field exists on an unavailable projection. A fitted drive's `on` state may be shown as a
 source fact, but feature 008 does not override a package summary merely because `on === false`; the
-beta.12 jump contract is not documented as a power-readiness verdict.
+0.1.1 jump contract is not documented as a power-readiness verdict.
 
 ## JumpLoadProfile
 
@@ -232,7 +232,7 @@ Active build revision
 Viewing-condition revision
   ├──> selected standard load inputs
   └──> selected ENG pips
-             └─────────────────────────────> mobilityMetrics()
+             └─────────────────────────────> mobilityMetricsResult()
 
 All inputs/results ──atomic publication──> MobilityJumpSnapshot
 ```
@@ -243,7 +243,7 @@ All inputs/results ──atomic publication──> MobilityJumpSnapshot
 - Each diagnostic aggregate is read once and retains every ordered issue.
 - `jumpRangeSummary()` is called at most once and only after all required diagnostics and drive facts
   are complete.
-- `mobilityMetrics()` is called at most once with the exact shared fuel/cargo/ENG inputs.
+- `mobilityMetricsResult()` is called at most once with the exact shared fuel/cargo/ENG inputs.
 - Every returned jump and mobility field is copied unchanged.
 - No null, missing optional field or incomplete aggregate becomes numeric zero.
 - A non-null package zero mobility result never becomes unavailable.

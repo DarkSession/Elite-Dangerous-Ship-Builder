@@ -1,6 +1,6 @@
 # Research: Defence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, its public type
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, its public type
 contracts and runtime probes over detached `ShipLoadout` values. The visual reference was reviewed
 only for hierarchy. No application formula or private game datum was used.
 
@@ -8,7 +8,7 @@ only for hierarchy. No application formula or private game datum was used.
 
 **Decision**: A pure `DefenceProjector` receives one active `ShipLoadout`, its immutable application
 revision and feature 003's selected SYS-pip condition/revision. It calls
-`shieldMetrics({ systemsPips })`, `shieldRecovery({ systemsPips })`, `cellBanks()`,
+`shieldMetricsResult({ systemsPips })`, `shieldRecoveryResult({ systemsPips })`, `cellBanks()`,
 `armourMetrics()` and auxiliary `powerBudget()` once each, then reads the package hull and
 fitted-slot records needed for source identity. The budget supplies only qualified generator/bank
 power context; feature 006 does not reproduce its power presentation. One complete
@@ -33,24 +33,20 @@ same pips and every visible field must describe one settled build revision.
 `systemsResistance`, and the kinetic, thermal, explosive and caustic values in both `resistances`
 and `effectiveHitPoints`.
 
-Shield availability and generator observation are distinct. A missing or disabled generator remains
-observable from package fitted state. For a resolved known-draw generator, absent priority selects
-package default group one and a valid explicit zero-based priority selects the matching returned
-`PowerBudget` band; agreeing deployed/retracted verdicts establish powered or shed. An out-of-range
-raw priority is not locally clamped. A generator named by `unknownDraws`, mismatched band verdicts or
-an unresolved source stays indeterminate. A shed generator may retain a non-null
-`shieldMetrics()` strength,
-exactly as the specification permits; that strength is never presented as an online verdict. After
-the #296 release, recovery availability must agree with the package-owned shed behavior. Where
+Shield availability and generator observation are coordinated package results. A missing or disabled
+generator remains observable from package fitted state. Feature 005's projection uses the
+generator entry's normalized priority from `PowerBudget.consumers` together with the returned
+`powerBudget().bands` verdicts; it does not reconstruct priority or power arithmetic. An unresolved
+source stays indeterminate. A shed generator produces incomplete
+`shieldMetricsResult()` and `shieldRecoveryResult()` values with package-owned power issues. Where
 package/build state does not establish a reason, the view says only unavailable.
 
-**Rationale**: `shieldMetrics()` is a strength/resistance result, not a power-status calculation.
-Conflating non-null strength with online state would contradict both the package and the feature edge
-case.
+**Rationale**: The structured result is the authoritative availability boundary. Conflating a stale
+or prior strength with online state would contradict both the package and the feature edge case.
 
 **Alternatives considered**:
 
-- Nulling retained strength for a shed generator changes the package result.
+- Reusing stale strength for a shed generator contradicts the package result.
 - Treating every null as “no generator” loses disabled, shed and unresolved distinctions.
 - Recalculating SYS resistance or effective hit points duplicates Almanac formulas.
 
@@ -111,7 +107,8 @@ and hull hardness. Combining them would fabricate a defence total.
 - A combined “effective defence” score has no package source.
 - Comparing against locally selected or averaged weapon piercing belongs to offence and would add an
   unspecified calculation.
-- Falling back to catalogue hull data for an unknown build violates the unknown-hull edge case.
+- Falling back to catalogue hull data after a construction/invariant failure violates the
+  unknown-hull rejection boundary.
 
 ## Decision 6: source manifests identify modules but never apportion aggregates
 
@@ -182,20 +179,15 @@ boundary rather than negligible package-call time.
 - Hand-calculated expected values recreate Almanac logic.
 - Chromium-only, portrait-only or axe-only coverage does not satisfy the project gate.
 
-## Almanac dependencies and release gates
+## Almanac released dependencies
 
-The two unresolved dependencies were verified open on 2026-08-17 and are already raised in the
-Almanac repository with minimal reproductions:
+The two dependencies are released in 0.1.1 and retain minimal regression reproductions:
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296): beta.12
-   `shieldRecovery()` returns finite recovery for a generator shed after the power plant is disabled.
-   Feature 006 must not locally null that result. This gates recovery only; retained shield strength
-   remains valid package behavior.
-2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297): beta.12 turns an
-   unresolved hull into all-zero armour and non-null zero shield/recovery results. Feature 006 must
-   not reinterpret them as unavailable.
+1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296): disabled/shed
+   power makes shield and recovery results incomplete with structured package issues.
+2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297): unknown hulls
+   are rejected by `fromLoadout()`/`fromSlef()`; `armourMetrics()` remains non-nullable for active
+   known hulls.
 
-No additional Almanac defect or missing API was established. Implementation waits for released
-fixes, pins the released package, reruns both issue reproductions and updates the availability adapter
-to the released nullable/structured contract. The plan deliberately does not freeze an API shape
-that #297 may change.
+No additional Almanac defect or missing API was established. Implementation pins 0.1.1 and reruns
+both issue regressions against the released structured/construction contract.

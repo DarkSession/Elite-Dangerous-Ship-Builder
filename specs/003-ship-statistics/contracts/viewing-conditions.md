@@ -31,17 +31,16 @@ loses or gains a pip.
 | SYS pips     | Pass selected value to feature 006 shield/recovery/distributor package calls                             |
 | ENG pips     | Pass selected value to feature 008 mobility/distributor calls                                            |
 | WEP pips     | Pass selected value to feature 007 capacitor calls; it does not alter `weaponMetrics()` DPS              |
-| Unladen      | Jump `.unladen`; mobility `cargo: 0` with package default full main tank                                 |
-| Laden        | Jump `.laden`; mobility completed package cargo capacity with package default full main tank             |
-| Maximum jump | Jump `.max`; mobility `cargo: 0` with package `fuelPerJump(maxJumpRange())`                              |
+| Unladen      | Jump `.unladen`; mobility with completed `standardLoadResult('unladen')`                                 |
+| Laden        | Jump `.laden`; mobility with completed `standardLoadResult('laden')`                                     |
+| Maximum jump | Jump `.max`; mobility with completed `standardLoadResult('maximum')`                                     |
 
 Package diagnostic mass, main-fuel and cargo results must complete before dependent jump/mobility
 composition. Preserve their issues and do not substitute a value. A complete zero fuel capacity is
 passed as zero.
 
-[Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) requests a direct
-standard-load result. Until released, composing `maxJumpRange()` and `fuelPerJump()` is accepted
-because both calculation steps are package-owned; no local `min` or capacity formula is allowed.
+[Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) is released in 0.1.1
+as `standardLoadResult()`. No local `min`, fuel or capacity formula is allowed.
 
 ## Result scope
 

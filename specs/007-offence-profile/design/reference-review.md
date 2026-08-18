@@ -30,10 +30,10 @@ specs, the constitution and feature 011 override its sample values, interactions
 - “Alpha” and any combined volley metric are absent because `WeaponTotals` does not return one.
 - The sample weapon list omits most `WeaponMetrics`, damage types, ammunition details, continuous
   state, power/heat costs and missing-value states. The planned row/card details add every field.
-- The sample range/piercing numbers cannot be sourced from beta.12's `weaponMetrics()` result.
-  Implementation waits for Almanac #300; the mock values are never copied.
-- The reference visually orders weapons but beta.12 can return imported module order contrary to its
-  declaration. Preserve returned order and track Almanac #301 instead of silently sorting.
+- The sample range/piercing numbers are never copied; 0.1.1's `weaponMetrics()` result supplies the
+  authoritative sparse fields released for Almanac #300.
+- Preserve 0.1.1's returned hull-slot order and appended unknown-slot source order released for
+  Almanac #301; do not silently sort.
 - Capacitor bars imply locally normalized draw/recharge/duration. Show exact capacity, recharge,
   sustained draw, net drain and duration as semantic facts unless a future package scale exists.
 - “14 s fire” becomes field-specific package `timeToDrain` wording. Infinity distinguishes positive

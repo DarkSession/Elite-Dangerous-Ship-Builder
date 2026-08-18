@@ -4,7 +4,7 @@ This guide validates feature 005 end to end. It is not an implementation guide.
 The field and intent contracts are in [contracts/](./contracts/), and the state
 model is in [data-model.md](./data-model.md).
 
-## 1. Prerequisites and release gate
+## 1. Prerequisites and released-API check
 
 Use Node.js from `.nvmrc`, pnpm from `packageManager`, and the committed lockfile:
 
@@ -16,7 +16,7 @@ pnpm install --frozen-lockfile
 Before implementation or acceptance, confirm all gates:
 
 - [Elite-Dangerous-Almanac issue #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-  has been fixed in a released package;
+  is present in pinned 0.1.1 as `PowerBudget.consumers`;
 - [ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13)
   tracks consumption of that package;
 - this repository pins the fixed `@elite-dangerous-almanac/core` release;
@@ -27,9 +27,8 @@ Before implementation or acceptance, confirm all gates:
   and automated accessibility scans.
 
 Expected: no raw-modifier parser, aggregate subtraction, reduced-build probe or
-copied power-consumer rule exists in application code. If the released package
-does not expose the required module projection, stop; feature 005 remains
-blocked.
+copied power-consumer rule exists in application code. If `PowerBudget.consumers` does not expose
+the required projection, fail the dependency regression.
 
 ## 2. Run focused automated tests
 
@@ -65,7 +64,7 @@ retracted summary is calculated.
 
 Use package/repository fixtures covering a known engineered module, a disabled
 module, a deployed-only module, an unknown draw and the unresolved-modifier
-reproduction from [research.md](./research.md#per-module-power-projection--upstream-blocker).
+reproduction from [research.md](./research.md#per-module-power-projection--released-in-011).
 
 For each fixture:
 

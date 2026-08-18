@@ -19,7 +19,7 @@ memory-only presentation state and never enters the build fragment.
 | Requirement | Surface behavior                                                                                                                              |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | FR-001      | One immutable snapshot maps two `ShipLoadout` calls and shared package-backed context; visuals add no game result.                            |
-| FR-002      | Whole-build and per-weapon output comes from `weaponMetrics()`; the missing range/piercing projection is gated on Almanac #300.               |
+| FR-002      | Whole-build and per-weapon output, including sparse range/piercing, comes from 0.1.1 `weaponMetrics()`.                                       |
 | FR-003      | Burst/sustained conventional types and anti-xeno overlay are complete textual groups with no locally calculated shares or folded type.        |
 | FR-004      | Every returned weapon exposes identity, exact slot, enabled state, ammunition, all metrics, sparse range/piercing and one exact-slot action.  |
 | FR-005      | Disabled weapons remain in the collection; exact package totals remain separate and unresolved occupied hardpoints qualify empty results.     |
@@ -33,7 +33,7 @@ memory-only presentation state and never enters the build fragment.
   Feature 007 emits a slot intent; it never mutates a module.
 - Feature 003 owns WEP-pip conditions, condition revision, hardpoint viewing state and the offence
   headline/detail action. It does not recalculate offence values.
-- Feature 005 owns the shared package-backed distributor/power observation after Almanac #299.
+- Feature 005 owns the shared package-backed distributor/power observation from 0.1.1.
 - Feature 010 may visualize hardpoint locations, but anatomy cannot replace the complete textual
   weapon collection or its exact-slot actions.
 - Feature 011 owns layout primitives, tokens, controls, localization/formatting, live announcements,

@@ -47,9 +47,8 @@ jump-count calculation.
 ## Selected-load integration
 
 Feature 003 chooses which one of the three summary profiles supplies the status headline and shared
-load context. Feature 008 does not own a second selector. For mobility at maximum load, it reuses
-feature 003's package-only `fuelPerJump(maxJumpRange())` mapping tracked by Almanac #295; it never
-recreates `min(mainCapacity, maxFuel)`.
+load context. Feature 008 does not own a second selector. It reuses feature 003's released
+`standardLoadResult()` mapping and never recreates `min(mainCapacity, maxFuel)`.
 
 ## Revision and failure behavior
 

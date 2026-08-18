@@ -2,7 +2,7 @@
 
 Research used the accepted feature specifications, the project constitution, all existing plan-time
 screen definitions, `.design/Ship Builder.dc.html`, the installed Angular/Playwright toolchain,
-package-registry peer metadata and `@elite-dangerous-almanac/core@0.1.0-beta.12`. No production code
+package-registry peer metadata and `@elite-dangerous-almanac/core@0.1.1`. No production code
 was changed during research.
 
 ## Initial shipped application locales
@@ -12,7 +12,7 @@ LTR). Keep Arabic-like RTL and doubled-copy catalogues as development/test fixtu
 defines each selectable locale's canonical tag, direction, self-name message and asset path.
 
 **Rationale**: Story 3 requires a Commander to choose another shipped language and SC-006 requires a
-matching browser language, so English-only is insufficient. German has broad beta.12 Almanac coverage
+matching browser language, so English-only is insufficient. German has broad 0.1.1 Almanac coverage
 and usefully exercises longer application copy. Limiting the first release to one reviewed
 non-English catalogue makes completeness and terminology auditable; the registry prevents this
 choice from becoming an architectural ceiling.
@@ -76,17 +76,18 @@ ISO currency were rejected.
 
 ## Almanac localization boundary
 
-**Decision**: Call leaf helpers for module, blueprint, experimental-effect and material names. A
-known identity plus `null` means show the package canonical value with an application-localized,
-visible and programmatically associated untranslated disclosure. Hull/manufacturer, slot/restriction,
-reward-variant, engineering-group, effect-description and diagnostic text follow the same canonical
-disclosure until [Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309)
-lands in a release. Do not translate diagnostic codes/parameters locally.
+**Decision**: Call leaf helpers for module, blueprint, experimental-effect, material, ship,
+manufacturer, slot, restriction, pre-engineered variant, engineering-group, effect description and
+structured diagnostics. A known identity plus `null` means request canonical English/package text.
+When present, show it with an application-localized, visible and programmatically associated
+untranslated disclosure; when absent, show unavailable. Do not translate diagnostic codes/parameters
+locally.
 
-**Rationale**: Beta.12 helpers accept locale strings, normalize regional tags and return `null`
-instead of silent English fallback. Other user-facing package fields lack locale-result APIs. #309
-contains a minimal reproduction and precise scope; the feature specification explicitly defines the
-honest non-blocking interim.
+**Rationale**: 0.1.1 closes [#309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309).
+Helpers accept BCP 47 locale strings and return `null` when text is unavailable rather than silently
+falling back. Diagnostic helpers currently provide English results and explicitly return `null` for
+other locales. Some experimental effects have no source description even in English, so FR-020 must
+also preserve a true unavailable state.
 
 **Alternatives considered**: Private game/diagnostic tables, parsing English messages, treating
 canonical text as translated and replacing missing values with app text were rejected as forks of
@@ -206,4 +207,4 @@ reduced card set were rejected.
 ## Planning resolution
 
 No planning ambiguity remains. English and German are the accepted initial product locale set;
-changing it is a product-plan revision. Almanac #309 is open but non-blocking under FR-020.
+changing it is a product-plan revision. Almanac #309 is closed and consumed through its leaf APIs.

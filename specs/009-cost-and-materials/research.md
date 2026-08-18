@@ -1,7 +1,7 @@
 # Research: Cost and Materials
 
 Research used the accepted specifications, the project constitution, existing feature 001–007/011
-plans, `.design/Ship Builder.dc.html`, installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, and
+plans, `.design/Ship Builder.dc.html`, installed `@elite-dangerous-almanac/core@0.1.1`, and
 upstream `main` at `7fbb8054c569d8b0ab2b158e979f914e4916c7ae`. Runtime probes used detached
 package `ShipLoadout` values. No application formulas were used.
 
@@ -53,7 +53,7 @@ grades do not change variant `mercCoinCost`. Clearing engineering follows the pa
 recognition; the application does not remember a purchase after `preEngineeredVariant` becomes
 `null`.
 
-**Rationale**: Beta.12 owns both fitted recognition and total arithmetic. All 22 current Mercenary
+**Rationale**: 0.1.1 owns both fitted recognition and total arithmetic. All 22 current Mercenary
 rows carry a positive price, but the public field is optional and the spec requires honest future
 missing-price behavior.
 
@@ -86,24 +86,22 @@ is the only reliable fixed/purchase boundary.
 pre-engineering as free after a later grade, and using raw modifier signatures were rejected as local
 engineering rules.
 
-## Expanded Cargo Rack — upstream blocker
+## Expanded Cargo Rack regression
 
-**Decision**: Block implementation on
-[Elite-Dangerous-Almanac #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306).
-Consume a released fix and add a cross-package regression test before feature code proceeds.
+**Decision**: Consume Almanac 0.1.1's released
+[fix for #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306) and retain a
+cross-package regression test.
 
-**Evidence**: On beta.12 and current upstream `main`, a stock size-5 rack on a default Python reports:
+**Evidence**: On 0.1.1, a stock size-5 rack on a default Python reports:
 
 ```text
-availableBlueprints(slot) -> CargoRack_IncreasedCapacity, grades [5], route ordinary
-getBlueprintCost('CargoRack_IncreasedCapacity', 5) -> []
-applyBlueprint(...) -> capacity 32 to 43.007999, preEngineeredVariant null
+availableBlueprints(slot) -> no CargoRack_IncreasedCapacity route
+getBlueprintCost('CargoRack_IncreasedCapacity', 5) -> null
 ```
 
 The same identity belongs to two fixed `communityGoal` variants with authored modifier blocks.
-Package provenance says the upstream source has no components; absence of a recipe is therefore
-being exposed as a known zero-material ordinary craft. This is the only beta.12 cumulative blueprint
-cost returning `[]`.
+Package provenance says the upstream source has no components, so the reward remains available only
+through the authored fixed variants rather than as ordinary engineering.
 
 **Rationale**: Feature 009 requires that fixed pre-engineering add no craft cost and that ordinary
 engineering never silently becomes an empty list. A consumer cannot repair package engineering
@@ -207,10 +205,10 @@ states, Playwright transport timing and lowering coverage/budgets were rejected.
 
 ## Package coverage audit
 
-Beta.12 has 107 blueprint records with matching cost records and declared-grade coverage, 86 effects
+0.1.1 has 107 blueprint records and 106 cost records with declared-grade coverage for every offered
+ordinary route, 86 effects
 with matching cost records, 106 referenced material symbols all resolved by the material catalogue,
 and 22 Mercenary variants all currently priced. Mercenary recognition and price survive later grades;
-clearing engineering removes recognition. Aside from #306, no unresolved feature-009 Almanac
-dependency was found.
+clearing engineering removes recognition. No unresolved feature-009 Almanac dependency was found.
 
 No planning ambiguity remains.

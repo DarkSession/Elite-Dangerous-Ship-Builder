@@ -37,7 +37,8 @@ SLEF.
   copy/cache and online retry coordinator.
 - Feature 002 owns every package slot, exact selection, complete fallback ledger and all edits.
 - Feature 003 owns deployed/retracted viewing conditions and condition revision.
-- Feature 005 owns the package-backed per-module current-power observation after Almanac #299.
+- Feature 005 owns the package-backed per-module current-power observation from
+  `PowerBudget.consumers`.
 - Feature 011 owns tokens, layout primitives, tabs, notices, localization, formatters, live regions,
   previews and the dual-engine accessibility harness.
 - Feature 012 owns legal/provenance content and package-defect external navigation.

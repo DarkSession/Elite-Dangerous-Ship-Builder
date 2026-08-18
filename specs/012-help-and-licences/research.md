@@ -2,7 +2,7 @@
 
 Research used the accepted feature specifications, constitution, current Angular/build/test setup,
 the root `LICENSE` and `README.md`, `.design/Ship Builder.dc.html`, installed
-`@elite-dangerous-almanac/core@0.1.0-beta.12`, and the package's manifest, licence, notices and
+`@elite-dangerous-almanac/core@0.1.1`, and the package's manifest, licence, notices and
 provenance tree. No runtime network source or hand-maintained package text is planned.
 
 ## Installed-artifact boundary
@@ -46,31 +46,28 @@ to HTML, extracting and rewriting the Frontier paragraph, translating legal text
 hash, or letting the build silently refresh committed copies were rejected because each weakens
 verbatim/source-review guarantees.
 
-## Inaccurate Almanac notice — upstream blocker
+## Almanac notice regression
 
-**Decision**: Block implementation until
-[Elite-Dangerous-Almanac #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307) is
-fixed in a released package and that version is pinned here. Do not patch, annotate inside, omit or
-replace the installed notice.
+**Decision**: Consume Almanac 0.1.1's released
+[fix for #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307). Do not patch,
+annotate inside, omit or replace the installed notice.
 
-**Rationale**: Beta.12's `THIRD_PARTY_NOTICES.md` says its domain `SOURCES.md` records “live in the
-repository only” and are not present in the npm package. The same artifact contains non-empty
-`PROVENANCE/SNAPSHOTS.md` and six domain `SOURCES.md` files, its manifest includes `PROVENANCE`, and
-its README says the record travels with the installed version. Feature 012 must reproduce the notice
-verbatim and describe accepted current behavior; correcting package-owned wording locally violates
-both constraints.
+**Rationale**: 0.1.1's `THIRD_PARTY_NOTICES.md` states that the matching files ship under
+`PROVENANCE/`. The artifact contains non-empty `PROVENANCE/SNAPSHOTS.md` and six domain `SOURCES.md`
+files, its manifest includes `PROVENANCE`, and its README says the record travels with the installed
+version. Feature 012 reproduces the corrected notice verbatim.
 
 Minimal reproduction:
 
 ```bash
-pnpm add @elite-dangerous-almanac/core@0.1.0-beta.12
+pnpm add @elite-dangerous-almanac/core@0.1.1
 test -f node_modules/@elite-dangerous-almanac/core/PROVENANCE/SNAPSHOTS.md
 find node_modules/@elite-dangerous-almanac/core/PROVENANCE -type f
-rg -n 'repository only|where they are not present' \
+rg -n 'includes matching copies under `PROVENANCE/`' \
   node_modules/@elite-dangerous-almanac/core/THIRD_PARTY_NOTICES.md
 ```
 
-The test succeeds and `find` lists seven files while `rg` reports the contrary claim.
+The test succeeds, `find` lists seven files and `rg` reports the matching shipped-location claim.
 
 **Alternatives considered**: A downstream footnote, altered copy, hiding the provenance section and
 linking only to GitHub were rejected as package-text forks or incomplete offline disclosure.

@@ -32,7 +32,7 @@ The snapshot publishes only while both revision values and the hull remain curre
    removing its text item.
 6. A valid side with zero hardpoint occurrences is an available empty view, not an asset failure.
 
-The current beta.12 cross-side fixtures are mandatory regression cases:
+The current 0.1.1 cross-side fixtures are mandatory regression cases:
 
 - `Federation_Corvette`: `MediumHardpoint1`, `MediumHardpoint2`;
 - `MediumTransport01`: `MediumHardpoint1` through `MediumHardpoint4`.
@@ -77,7 +77,7 @@ Priority is package-effective one-based `1..5` or unavailable. No observation is
 revision pair differs from the anatomy input. Pending or mismatched power is unavailable rather than
 stale.
 
-This boundary is implementation-gated on Almanac #299 and feature 005's released-package adapter.
+This boundary consumes Almanac 0.1.1's released #299 result through feature 005's adapter.
 Anatomy does not read raw `on`/`priority`, effective-stat joins or aggregate bands as a substitute.
 
 ## State application

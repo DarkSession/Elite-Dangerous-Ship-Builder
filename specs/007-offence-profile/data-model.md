@@ -22,12 +22,11 @@ outside this model and is discarded on build replacement.
 
 ## WeaponProfile
 
-| Field                 | Type                            | Rules                                                                                    |
-| --------------------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| `total`               | `WeaponTotalsProjection`        | Exact package total across enabled returned weapons; never rebuilt from entries.         |
-| `weapons`             | `readonly WeaponProjection[]`   | Exact returned collection and order; disabled entries remain.                            |
-| `hardpointCoverage`   | `HardpointCoverage`             | Shared outfitting observation that prevents an empty result from becoming a false claim. |
-| `returnedOrderDefect` | package-version gate/diagnostic | Beta.12 order is preserved; Almanac #301 tracks the documented slot-order mismatch.      |
+| Field               | Type                          | Rules                                                                                    |
+| ------------------- | ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `total`             | `WeaponTotalsProjection`      | Exact package total across enabled returned weapons; never rebuilt from entries.         |
+| `weapons`           | `readonly WeaponProjection[]` | Exact returned collection and order; disabled entries remain.                            |
+| `hardpointCoverage` | `HardpointCoverage`           | Shared outfitting observation that prevents an empty result from becoming a false claim. |
 
 ### HardpointCoverage
 
@@ -68,17 +67,17 @@ the distinction between empty, disabled and genuine-zero cases.
 
 ## WeaponProjection
 
-One `FittedWeaponMetrics`, extended only by the sparse package result required from Almanac #300.
+One 0.1.1 `FittedWeaponMetrics`, including its sparse range and piercing members.
 
-| Field              | Type                         | Rules                                                                  |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------- |
-| `slot`             | string                       | Exact game slot key; identity and slot-navigation target.              |
-| `symbol`           | string                       | Exact module symbol.                                                   |
-| `name`             | package/localized game text  | Never privately translated.                                            |
-| `enabled`          | boolean                      | Exact returned state; disabled entry remains present.                  |
-| `metrics`          | `WeaponMetricsProjection`    | Every returned numeric/boolean result.                                 |
-| `ammunition`       | `AmmunitionState`            | Exact `null`/capacity semantics.                                       |
-| `rangeAndPiercing` | `RangeAndPiercingProjection` | Required future package-owned sparse result; implementation gate #300. |
+| Field              | Type                         | Rules                                                     |
+| ------------------ | ---------------------------- | --------------------------------------------------------- |
+| `slot`             | string                       | Exact game slot key; identity and slot-navigation target. |
+| `symbol`           | string                       | Exact module symbol.                                      |
+| `name`             | package/localized game text  | Never privately translated.                               |
+| `enabled`          | boolean                      | Exact returned state; disabled entry remains present.     |
+| `metrics`          | `WeaponMetricsProjection`    | Every returned numeric/boolean result.                    |
+| `ammunition`       | `AmmunitionState`            | Exact `null`/capacity semantics.                          |
+| `rangeAndPiercing` | `RangeAndPiercingProjection` | Projection of the package-owned sparse result.            |
 
 `slot` is unique within one returned build projection and is never replaced by an array index.
 
@@ -119,8 +118,7 @@ it is presented; no local share or combined damage member exists.
 
 ## RangeAndPiercingProjection
 
-This model cannot be implemented until Almanac #300 is released. It records the semantic contract
-the application will consume, not a beta.12 local adapter.
+This model maps the 0.1.1 fields released for Almanac #300.
 
 | Field                             | Presence                    | Rules                                                                     |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------------------- |
@@ -131,8 +129,7 @@ the application will consume, not a beta.12 local adapter.
 | `projectileRange.falloffBoundary` | required when parent exists | Boundary parameter; no invented unit.                                     |
 | `armourPiercing`                  | optional                    | Rating only; absence stays absent and no target factor is calculated.     |
 
-The final field location and type name follow the released package. Tasks must refresh this model if
-the upstream API shape differs while preserving these semantics.
+Tasks map the released fields exactly while preserving these semantics.
 
 ## AmmunitionState
 
@@ -181,7 +178,7 @@ capacity and rates.
 
 ## DistributorObservation
 
-Feature 005 supplies this shared, package-backed context after Almanac #299. It stays independent of
+Feature 005 supplies this shared, package-backed context from 0.1.1 `PowerBudget.consumers`. It stays independent of
 the capacitor result.
 
 - `present`: exact slot/symbol plus enabled and deployed powered state;
@@ -220,7 +217,7 @@ All four inputs ──atomic publication──> OffenceSnapshot
 - No optional range, piercing or unclassified field is converted to zero.
 - No numeric infinity crosses generic serialization or number-formatting boundaries.
 - Every weapon slot action carries the exact returned slot string.
-- Returned weapon order remains unchanged until Almanac #301 is released and consumed.
+- Returned weapon order remains the released #301 hull-slot order with appended unknown source order.
 
 ## State transitions
 

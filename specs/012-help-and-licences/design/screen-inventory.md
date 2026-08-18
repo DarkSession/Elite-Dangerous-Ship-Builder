@@ -28,7 +28,7 @@ requirement has an owner without duplicating legal content.
 | FR-002      | Every package artwork/value family composes the shared contextual provenance route; no feature keeps private legal copy.                       |
 | FR-003      | Coverage index and three complete exact documents distinguish application, Almanac, third-party and embedded Frontier terms.                   |
 | FR-004      | Root `LICENSE` scopes app MIT/non-relicensing; tracked byte-equal package mirrors travel in `legal/almanac/` and static output.                |
-| FR-005      | Build pipeline resolves installed artifacts, rejects missing/empty/invalid/drift and verifies generated/static hashes; #307 gates release.     |
+| FR-005      | Build pipeline resolves installed artifacts, rejects missing/empty/invalid/drift and verifies generated/static hashes plus #307 regression.    |
 | FR-006      | Legal text is raw English text with `lang=en`; only owner/scope/language/disclosure labels use localisation.                                   |
 | FR-007      | Generated manifest reads both shipped package versions; non-release builds visibly show a validated build ID.                                  |
 | FR-008      | Distinct labels say “Bundled Almanac”; provenance states supplier only and never claims live-game/catalogue currency.                          |

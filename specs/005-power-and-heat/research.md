@@ -20,26 +20,24 @@ application-assembled inputs was rejected because that would create a second
 build calculation path. Importing the broad `ships` barrel was rejected by the
 constitution's leaf-import rule.
 
-## Per-module power projection — upstream blocker
+## Per-module power projection — released in 0.1.1
 
-**Decision**: Gate implementation on a released Almanac API that exposes every
+**Decision**: Consume `ShipLoadout.powerBudget().consumers`, which exposes every participating
 fitted module's package-authored power projection, including exact slot and
 symbol, post-engineering draw or unavailable state, enabled state, effective
-one-based priority, and deployed-only state or unavailable state. The API must
-include disabled entries as well as the enabled unknown entries already exposed
+one-based priority, and deployed-only state or unavailable state. It includes disabled entries as
+well as the enabled unknown entries already exposed
 by `PowerBudget.unknownDraws`.
 
-**Rationale**: `powerBudget()` returns plant capacity, state totals, five bands
-and enabled unknown consumers, but not known consumers. Joining
+**Rationale**: `powerBudget()` returns plant capacity, state totals, five bands, enabled unknown
+consumers and normalized `consumers`. Joining
 `fittedModules()` to `effectiveStats.powerDraw` is insufficient. An unresolved
 module may carry a journal `PowerDraw` modifier that the package applies to the
 aggregate even though the fitted module's `effectiveStats` remains `null`.
-Known deployed-only classification and effective priority are also produced by
-the facade's private `powerConsumerFor` rules rather than returned publicly.
-Reconstructing those facts in the application would violate FR-001 and
-constitution principle II.
+Known deployed-only classification and effective priority are returned publicly, so the app does
+not reconstruct the facade's private rules.
 
-Minimal reproduction against `@elite-dangerous-almanac/core` 0.1.0-beta.12:
+Minimal reproduction against `@elite-dangerous-almanac/core` 0.1.1:
 
 ```ts
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
@@ -68,15 +66,17 @@ const build = ShipLoadout.fromLoadout({ ...source, Modules: modules });
 
 build.powerBudget().bands[4]?.deployed; // includes 1.5 MW
 build.powerBudget().unknownDraws; // []
+build.powerBudget().consumers.find(({ label }) => label === 'SmallHardpoint1');
+// { label, symbol, draw: 1.5, enabled: true, priority: 5, deployedOnly: true }
 build.fittedModuleAt('SmallHardpoint1')?.effectiveStats; // null
 ```
 
-The exact 1.5 MW contribution is therefore present in the aggregate but absent
-from every public per-module result. The package gap is filed as
+The exact 1.5 MW contribution is present in both aggregate and public per-module result. The released
+work is recorded as
 [Elite-Dangerous-Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
 and tracked downstream by
 [ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13).
-Feature 005 must consume the released fix.
+Feature 005 consumes `consumers` directly.
 
 **Alternatives considered**: Parsing journal modifiers, cloning builds with one
 module at a time, subtracting aggregates, copying `powerConsumerFor`, or deriving
@@ -109,7 +109,7 @@ rejected by the spec's explicit Almanac limit.
 
 **Decision**: When `unknownDraws` is non-empty, name every returned consumer and
 mark every total, band value and package boolean as a lower-bound or
-known-draw-only answer. Keep disabled entries in the future package per-module
+known-draw-only answer. Keep disabled entries in the package per-module
 projection, visibly disabled and outside the package totals exactly as returned.
 Place unknown entries in a separate group before any optional descending sort
 of known numeric draws.

@@ -43,7 +43,8 @@ specification, constitution and feature 011 override its sample values, interact
 
 The reference has no authoritative tablet, landscape, 200%-text, 400%-zoom, expanded-language, RTL,
 reduced-motion, shieldless, disabled/shed generator, no-bank, all-unpowered-bank, unknown-draw,
-negative-resistance, non-finite, unknown-hull, loading or failure composition. The screen definition
+negative-resistance, non-finite, loading or failure composition. Unknown-hull refusal belongs to the
+feature 001/004 construction boundary. The screen definition
 and component previews supply these states before tasks are generated; no omission reduces scope.
 
 ## Source-of-truth conclusion

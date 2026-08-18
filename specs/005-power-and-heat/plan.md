@@ -14,11 +14,10 @@ views. Feature 003 owns deployed/retracted and pip conditions; feature 002 owns
 exact-slot navigation and power edits; feature 011 supplies the responsive,
 accessible design system.
 
-Implementation is **blocked** on an Almanac release exposing authoritative
-per-module power projections. Beta.12 can include an unresolved module's raw
-`PowerDraw` modifier in aggregate power while exposing neither that exact draw
-nor its consumer classification through a public per-module result. Recreating
-the private logic locally is prohibited. The package gap is filed as
+Almanac 0.1.1 exposes authoritative per-module power projections through
+`PowerBudget.consumers`, including exact draw/unavailable, enabled, priority and deployed-only
+state. Feature 005 pairs each consumer with its corresponding returned `PowerBudget.bands` verdict
+for the selected hardpoint state; it never recreates shedding arithmetic. The released work is recorded as
 [Elite-Dangerous-Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
 and tracked in
 [ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13).
@@ -33,8 +32,8 @@ controls and non-package heat summaries are not adopted.
 per `.nvmrc` for tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular
-signals, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports
-(upgrade required for the blocker), feature 001 active-build/revision boundary,
+signals, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.1 leaf exports,
+feature 001 active-build/revision boundary,
 feature 002 slot-selection intent, feature 003 viewing conditions, and feature
 011 UI/localization infrastructure
 
@@ -75,34 +74,32 @@ hierarchy and required departures are recorded in
 
 ## Constitution Check
 
-_GATE: Passed for planning because the design waits for package truth and
-introduces no constitutional exception. Implementation is gated on the released
-Almanac dependency and prerequisite features below. Re-check after Phase 1 and
-after the package upgrade._
+_GATE: Passed. The design consumes package truth and introduces no constitutional exception. The
+Almanac dependency is satisfied; repository prerequisite features remain._
 
-| Principle                               | Design evidence                                                                                                                                                                | Status                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| I. Client-Side Only                     | All calculations and conditions run over the in-browser active build and installed static package; no new persistence or network boundary.                                     | PASS                       |
-| II. Almanac Source of Truth             | All aggregate results call the three `ShipLoadout` methods. The missing per-module output is an explicit upstream gate; raw modifiers and copied private rules are prohibited. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed signal facade coordinates revisions/conditions; components render inputs and emit intent.                          | PASS                       |
-| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, genuine zero and semantic infinity remain distinct. Feature 005 never mutates or repairs a build.                                      | PASS                       |
-| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and has no document overflow.                    | PASS                       |
-| VI. Commander's Language                | App labels, units, qualifications and sentinels use feature 011; module names use Almanac localization and disclosed canonical fallback.                                       | PASS                       |
-| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                                 | PASS; prerequisite 011     |
-| VIII. Tested Before It Ships            | Exact unit equality, dual-engine multi-viewport journeys and axe/screen-reader coverage are specified without relaxing the 80% gate.                                           | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contracts exist before tasks.                                                                                                         | PASS                       |
+| Principle                               | Design evidence                                                                                                                                                    | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| I. Client-Side Only                     | All calculations and conditions run over the in-browser active build and installed static package; no new persistence or network boundary.                         | PASS                   |
+| II. Almanac Source of Truth             | Aggregate results call the three `ShipLoadout` methods and per-module output reads `PowerBudget.consumers`; raw modifiers and copied private rules are prohibited. | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed signal facade coordinates revisions/conditions; components render inputs and emit intent.              | PASS                   |
+| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, genuine zero and semantic infinity remain distinct. Feature 005 never mutates or repairs a build.                          | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and has no document overflow.        | PASS                   |
+| VI. Commander's Language                | App labels, units, qualifications and sentinels use feature 011; module names use Almanac localization and disclosed canonical fallback.                           | PASS                   |
+| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                     | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact unit equality, dual-engine multi-viewport journeys and axe/screen-reader coverage are specified without relaxing the 80% gate.                               | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contracts exist before tasks.                                                                                             | PASS                   |
 
-### Required upstream and repository dependencies
+### Required released and repository dependencies
 
 1. [Almanac issue #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-   must land in a released package, and
+   is released in 0.1.1 as `PowerBudget.consumers`; the open
    [ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13)
-   tracks consuming it. The minimal reproduction and expected public fields are
-   in [research.md](./research.md#per-module-power-projection--upstream-blocker).
+   tracks downstream consumption. The minimal reproduction and public fields are
+   in [research.md](./research.md#per-module-power-projection--released-in-011).
 2. Feature 001 must supply the single active `ShipLoadout`, atomic build revision
    and `/build` workspace.
 3. Feature 002 must supply exact-slot selection and module enabled/priority
-   mutations; its own Almanac normalization blockers remain applicable to the
+   mutations; its released Almanac normalization behavior remains applicable to the
    builds feature 005 reads.
 4. Feature 003 must freeze and implement the shared condition/revision contract,
    deployed and 2/2/2 defaults, valid half-pip allocation and headline-to-detail
@@ -110,9 +107,8 @@ after the package upgrade._
 5. Feature 011 must supply the shared components/tokens, localization/formatting,
    Firefox/landscape project matrix and automated accessibility harness.
 
-Feature 005 may be tasked only after the exact dependency contracts are
-accepted. It cannot be considered implemented or shipped until all five gates
-are satisfied.
+Feature 005 may be tasked after the repository dependency contracts are accepted. It cannot be
+considered implemented or shipped until those prerequisite features are satisfied.
 
 ## Project Structure
 
@@ -180,14 +176,13 @@ intents. No top-level route, storage adapter, calculation service or second
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and the blocker are recorded in
+All decisions, package probes, alternatives and the released dependency are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
 - `powerBudget()` is selected field-for-field for one hardpoint state; deployed
   summaries never appear in retracted mode.
-- Beta.12 has no lossless public per-module power result. In particular, it can
-  count a raw modifier on an unresolved module while `effectiveStats` remains
-  null, so application-side reconstruction cannot satisfy FR-005/006.
+- `PowerBudget.consumers` is the lossless public per-module power result. It includes unresolved
+  modifier contributions even while `effectiveStats` is null.
 - Unknown power makes all aggregates lower bounds and booleans known-draw-only;
   heat unknowns make the whole profile a projection in neither direction.
 - Feature 003 owns valid six-pip state. Feature 005 passes those pips directly
@@ -198,13 +193,13 @@ All decisions, package probes, alternatives and the blocker are recorded in
 - The wide/narrow visual hierarchy is usable only after removing abbreviated,
   inferred, non-package, inaccessible and unlocalizable reference details.
 
-No planning clarification marker remains. The unresolved work is an explicit
-external dependency, not an ambiguity to solve by assumption.
+No planning clarification marker remains. Remaining work is repository implementation and accepted
+feature prerequisites, not an unresolved Almanac dependency.
 
 ## Phase 1: Design Outputs
 
 - [data-model.md](./data-model.md) defines the revision-stamped snapshot,
-  selected power/bands, required future module projection, distributor/heat
+  selected power/bands, released module projection, distributor/heat
   unions, qualification/sentinel states and viewing intents.
 - [contracts/power-budget.md](./contracts/power-budget.md) freezes direct
   selected-state mapping, deployed-only summaries, unknown qualification,
@@ -221,28 +216,25 @@ external dependency, not an ambiguity to solve by assumption.
   information order, wide/narrow composition, states and announcements.
 - [design/reference-review.md](./design/reference-review.md) records which 1c/1d
   hierarchy is adopted and which unsupported details are rejected.
-- [quickstart.md](./quickstart.md) supplies runnable release gates and end-to-end
+- [quickstart.md](./quickstart.md) supplies runnable released-API checks and end-to-end
   validation scenarios.
 
 ## Post-Design Constitution Re-check
 
 Phase 1 introduces no server, persisted metric, alternate build, private game
 catalogue, calculation formula, hard-coded display string or visual literal.
-The only potentially package-derived per-module logic is deliberately absent
-and blocked on a released Almanac result. All unavailable, unknown, lower-bound,
+Per-module logic reads the released Almanac result directly. All unavailable, unknown, lower-bound,
 projection, zero and infinite states remain distinguishable. Every FR has a
 surface owner and a dual-engine responsive/accessibility validation path.
 
-The planning gate remains **PASS with no exception**. Implementation remains
-**blocked upstream** by Almanac issue #299, tracked downstream by ship-builder
-issue #13, and sequenced behind features 001, 002, 003 and 011. After upgrading
-the pinned package and completing those prerequisites, rerun the minimal
-reproduction, confirm the public leaf contract, re-evaluate this constitution
-table and then generate or refresh tasks.
+The planning gate remains **PASS with no exception**. Almanac issue #299 is satisfied in 0.1.1 and
+remains tracked downstream by ship-builder issue #13; implementation is sequenced behind features
+001, 002, 003 and 011. Rerun the minimal reproduction, confirm the public leaf contract and
+re-evaluate this constitution table when generating tasks.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. The upstream dependency is not
+No constitutional exception is requested. The package dependency is not
 converted into an application-side workaround. The projector/facade split is
 the minimum structure that keeps package projection testable without rendering
 and guarantees revision coherence.

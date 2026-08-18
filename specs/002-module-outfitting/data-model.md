@@ -230,7 +230,7 @@ type BuildEditIntent =
 ```
 
 All identities are package/game keys. An intent never carries a locally computed module, modifier or
-cost. `setExperimental` requires the upstream package operation described in research for fixed
+cost. `setExperimental` binds directly to released `setExperimentalEffect()` for supported fixed
 reward articles; no app-side special case is allowed.
 
 ## BuildEditResult

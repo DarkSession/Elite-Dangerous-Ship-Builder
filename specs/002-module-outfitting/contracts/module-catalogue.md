@@ -108,4 +108,4 @@ visibly disclosed as untranslated. The app never maintains private game-name or 
 - Unique rewards are the final section; stock precedes variants inside a group.
 - Multi-term, case- and accent-insensitive search covers exactly the four required fields.
 - A candidate list rebuilt after a fit reflects new exclusive/count limits.
-- The 478-choice beta.12 fixture settles below 100 ms in browser measurement.
+- The 481-choice 0.1.1 fixture settles below 100 ms in browser measurement.

@@ -31,15 +31,15 @@ package material requirements. Draft changes do not mutate the active build unti
 
 ## Operations
 
-| Commander action                  | Required result                                                                                                      |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Apply/replace blueprint and grade | One package operation at explicit quality 1; optional selected effect included; one history step.                    |
-| Add/replace/remove only effect    | Released package effect-only operation; preserve current blueprint/grade and fixed article identity/stats; one step. |
-| Clear ordinary engineering        | `clearEngineering`; remove blueprint/effect together; follow package loss of Mercenary identity; one step.           |
-| Cancel/revert draft               | Active build and history unchanged.                                                                                  |
+| Commander action                  | Required result                                                                                                                     |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Apply/replace blueprint and grade | One package operation at explicit quality 1; optional selected effect included; one history step.                                   |
+| Add/replace/remove only effect    | Released operation preserves blueprint/grade, fixed identity and base modifiers while recomputing effect-dependent stats; one step. |
+| Clear ordinary engineering        | `clearEngineering`; remove blueprint/effect together; follow package loss of Mercenary identity; one step.                          |
+| Cancel/revert draft               | Active build and history unchanged.                                                                                                 |
 
-The editor does not ship until the fixed-reward effect-only upstream gate is satisfied. It never merges
-raw modifiers locally.
+The editor calls 0.1.1's `setExperimentalEffect()` for fixed-reward effect-only edits. It never
+merges raw modifiers locally.
 
 ## States
 

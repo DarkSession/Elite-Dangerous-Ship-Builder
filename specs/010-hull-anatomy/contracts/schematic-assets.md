@@ -19,9 +19,8 @@ assets/ships/<package-symbol>/schematic-bottom.svg
 Generated files are never checked into `public/` or edited. A package upgrade replaces build output
 through the normal clean build and service-worker manifest version.
 
-Implementation begins only after a released Almanac version satisfies
-[#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308). The released contract, not
-the beta.12 observations in research, governs accepted paths and markup.
+Almanac 0.1.1 satisfies [#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308).
+Its installed README and package tests govern accepted paths and markup.
 
 ## URL construction and fetch
 
@@ -56,7 +55,7 @@ not silently sanitize package art into a different document.
 For each annotation defined by #308:
 
 1. take the source journal key exactly as supplied;
-2. resolve it case-insensitively against the active `ShipLoadout.slots()` collection;
+2. resolve the exact key against the active `ShipLoadout.slots()` collection;
 3. require the annotation feature and resolved package kind to both be `hardpoint`;
 4. preserve the canonical `LoadoutSlot.key` in the occurrence;
 5. group every repeated occurrence according to the released duplicate semantics under the same

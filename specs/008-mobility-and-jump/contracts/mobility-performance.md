@@ -13,8 +13,8 @@ is called. Invalid feature 003 drafts trigger no projection.
 
 ## Package boundary
 
-Call `ShipLoadout.mobilityMetrics({ fuel, cargo, enginesPips })` exactly once per settled projection.
-A non-null result maps every field unchanged:
+Call `ShipLoadout.mobilityMetricsResult({ fuel, cargo, enginesPips })` exactly once per settled
+projection. A complete result maps every field unchanged:
 
 - `speed`;
 - `boost`;
@@ -31,7 +31,8 @@ or calculate a multiplier.
 
 - Non-null numeric values are ready, including exact zero in every field when mass is above the
   thruster maximum.
-- Package `null` is unavailable and never receives hull base speed/rotation as a fallback.
+- An incomplete result is unavailable, retains its ordered structured issues and never receives hull
+  base speed/rotation as a fallback.
 - Incomplete selected-load dependencies remain incomplete/unavailable with their package issues and
   prevent the call.
 - A handled package throw remains generic unavailable unless a direct package/source observation
@@ -40,8 +41,9 @@ or calculate a multiplier.
 ## Thruster source and state
 
 The package fitted snapshot provides exact slot, symbol, game text, enabled state and sparse
-post-engineering curve facts. Feature 005 provides the package-authored exact-slot power observation
-after Almanac #299. The presentation may name:
+post-engineering curve facts. Feature 005 provides an exact-slot power observation that combines the
+Almanac 0.1.1 `PowerBudget.consumers` entry with its matching returned band verdict. The presentation
+may name:
 
 - absent: no package-fitted thruster;
 - disabled: fitted snapshot explicitly disabled;
@@ -49,9 +51,8 @@ after Almanac #299. The presentation may name:
 - unresolved: occupied slot cannot supply effective facts or authoritative power state;
 - present: resolved enabled/powered source.
 
-Source state does not change the numeric method result. In particular, feature 008 must not locally
-null beta.12's incorrect finite value for a shed thruster; implementation waits for the released fix
-to Almanac #296.
+Source state does not change the numeric method result. The released result API itself withholds
+mobility for disabled or shed power and supplies the diagnostic context.
 
 ## Returned source facts
 
@@ -61,8 +62,8 @@ Only fields present in the fitted package record appear:
 - optional speed `min/opt/maxSpeedMultiplier`;
 - optional rotation `min/opt/maxRotationMultiplier`.
 
-The two actual selected-load multiplier fields come from `mobilityMetrics()`. No threshold is turned
-into percentage-of-optimal, headroom, bar length or application curve.
+The two actual selected-load multiplier fields come from the completed `mobilityMetricsResult()`.
+No threshold is turned into percentage-of-optimal, headroom, bar length or application curve.
 
 ## Revision and announcement behavior
 
@@ -76,4 +77,4 @@ into percentage-of-optimal, headroom, bar length or application curve.
 Tests compare every field directly with one live package call for maximum, unladen and laden loads and
 ENG 0, 0.5, 2 and 4. They distinguish null from above-supported-mass zero; cover absent, disabled,
 unpowered and unresolved thrusters; prove no hull fallback; verify sparse curve facts; and retain the
-#296 regression as blocked until a fixed release is consumed.
+released #296 regression for disabled and shed power.

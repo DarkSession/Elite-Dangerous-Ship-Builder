@@ -26,7 +26,7 @@ domain snapshot. Build changes invalidate the whole snapshot.
 | `absent`                       | The conditional concept does not apply; used only for no recognized Mercenary purchase |
 | `knownEmpty`                   | A package cost helper returned `[]`; never interchangeable with unavailable            |
 
-After the #306 fix, an ordinary selected blueprint returning `knownEmpty` is a regression and blocks
+Under the released #306 fix, an ordinary selected blueprint returning `knownEmpty` is a regression and blocks
 publication as a valid material requirement. Fixed/purchase baselines use explicit non-crafted
 states rather than `knownEmpty`.
 

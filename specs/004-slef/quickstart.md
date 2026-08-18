@@ -3,14 +3,15 @@
 Normative contracts: [import](./contracts/slef-import.md), [export](./contracts/slef-export.md) and
 [browser delivery](./contracts/browser-delivery.md).
 
-## Upstream prerequisite
+## Released-API prerequisite
 
-Do not implement until a released Almanac version satisfies
-[quality normalization #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292) and
-[fixed-mount repair #298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Include
-the related [cargo-hatch validation #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293)
-in the upgrade verification. Pin the release, rerun [research](./research.md) reproductions and the
-constitution gate. Beta.12 is expected to retain `Quality: 0.42` and lack immutable repair.
+Pin Almanac 0.1.1 and verify
+[quality normalization #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
+[fixed-mount repair #298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) and
+[cargo-hatch validation #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293).
+Import may initially retain `Quality: 0.42`; `completeEngineeringGrade()` must normalize it, and
+`fromLoadout()` must restore cargo while preserving a source/result notice, and
+`repairFixedMount()` must repair remaining immutable mounts without a local DTO rewrite.
 
 ## Setup
 

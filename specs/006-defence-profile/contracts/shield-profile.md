@@ -5,8 +5,8 @@
 For one active build revision and one valid feature 003 SYS-pip value, call each method exactly once:
 
 ```ts
-const shield = build.shieldMetrics({ systemsPips });
-const recovery = build.shieldRecovery({ systemsPips });
+const shield = build.shieldMetricsResult({ systemsPips });
+const recovery = build.shieldRecoveryResult({ systemsPips });
 const budget = build.powerBudget();
 ```
 
@@ -15,8 +15,8 @@ defence snapshot. The budget supplies auxiliary state context only; this capabil
 duplicate feature 005's power figures. Components never call the package. No standalone resistance,
 shield-strength, effective-hit-point or recovery function is called by application code.
 
-Implementation is gated on released fixes for Almanac #296 and #297. The projector must consume the
-released availability contract rather than suppressing beta.12 values locally.
+The projector consumes these 0.1.1 contracts, released for Almanac #296, without suppressing values
+or issues locally.
 
 ## Ready shield mapping
 
@@ -49,7 +49,7 @@ and the application does not assume which fields changed.
   `poweredDeployed`/`poweredRetracted` values may establish `powered` or `shed`; disagreement is
   indeterminate. The released recovery outcome must agree.
 - Any unresolved or ambiguous case maps to `indeterminate`, not a guessed reason.
-- A shed generator may retain package shield strength. State and strength remain separate.
+- A shed generator produces structured unavailable shield and recovery results.
 
 ## Recovery mapping
 
@@ -105,8 +105,8 @@ pip model or persist viewing state.
 
 - Exact equality for every `ShieldMetrics` field at zero, fractional and four SYS pips.
 - Exact equality for all four `ShieldRecovery` fields under the same selected pips.
-- Missing/disabled/shed/indeterminate states do not alter package strength.
-- #296's reproduction becomes recovery-unavailable while permitted shield strength remains intact.
-- #297's reproduction becomes package-authorized unavailable, not application-filtered zero.
+- Missing/disabled/shed/indeterminate states preserve the package result and its issues.
+- #296's reproduction makes both shield and recovery unavailable with power context.
+- #297's reproduction is rejected at construction, not application-filtered zero.
 - Zero, negative, unavailable and both non-finite meanings remain distinct.
 - Shield unavailability never suppresses armour.

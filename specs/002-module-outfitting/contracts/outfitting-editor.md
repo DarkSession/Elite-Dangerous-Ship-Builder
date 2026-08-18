@@ -19,17 +19,17 @@ the Almanac or retain a mutable build.
 
 ## Commands
 
-| Intent                               | Required operation                                         | Success                                                       |
-| ------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------- |
-| Fit stock                            | `setModule(slotKey, exactModule)`                          | Replacement carries no old module engineering                 |
-| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`           | Package fixed identity/stats retained                         |
-| Remove                               | `removeModule(slotKey)`                                    | Slot becomes empty only if package allows                     |
-| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })` | Package recomputes modifiers/results                          |
-| Change/remove only effect            | Package effect-only operation required by upstream gate    | Blueprint/grade and fixed article identity/stats preserved    |
-| Clear ordinary engineering           | `clearEngineering(slotKey)`                                | Package base state restored; Mercenary identity may disappear |
-| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                       | Package power-dependent results recompute                     |
-| Priority                             | `setModulePriority(slotKey, priority0to4)`                 | UI presents localized `1..5`                                  |
-| Name/ident                           | Update canonical snapshot and reconstruct                  | All other modelled fields exact                               |
+| Intent                               | Required operation                                         | Success                                                                                      |
+| ------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Fit stock                            | `setModule(slotKey, exactModule)`                          | Replacement carries no old module engineering                                                |
+| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`           | Package fixed identity/stats retained                                                        |
+| Remove                               | `removeModule(slotKey)`                                    | Slot becomes empty only if package allows                                                    |
+| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })` | Package recomputes modifiers/results                                                         |
+| Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`             | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute |
+| Clear ordinary engineering           | `clearEngineering(slotKey)`                                | Package base state restored; Mercenary identity may disappear                                |
+| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                       | Package power-dependent results recompute                                                    |
+| Priority                             | `setModulePriority(slotKey, priority0to4)`                 | UI presents localized `1..5`                                                                 |
+| Name/ident                           | Update canonical snapshot and reconstruct                  | All other modelled fields exact                                                              |
 
 Every successful changed command produces one active revision and one history decision. It also
 clears any feature 001 `fixedMountNormalisation` entry for the exact edited slot before autosave;
@@ -72,12 +72,13 @@ Merc Coin is presented separately.
 
 Before any active-build replacement is presented or any calculation is read:
 
-1. inspect package slots without reading calculations;
+1. record source fixed-mount identities, construct the package loadout and reject an unknown hull;
+   construction may already restore the cargo hatch;
 2. find missing/unresolved mounts whose package reason is `requiredSlot` or `cargoHatch`;
-3. replace/insert the exact case-insensitively matched package default identity in a detached DTO;
-4. reconstruct through `ShipLoadout.fromLoadout()` (required for immutable cargo hatch);
-5. use the released Almanac normalization operation to complete every partial engineering grade;
-6. return candidate plus slot/identity/source-quality notices;
+3. call `repairFixedMount(slotKey)` and preserve its structured outcome;
+4. call `completeEngineeringGrade(slotKey)` for each engineered module;
+5. preserve every package normalization result, including `unsupported`;
+6. compare source and result, then return candidate plus slot/identity/source-quality notices;
 7. commit before history starts.
 
 `moduleLimit` is not a fixed-mount reason. No package default means no substitute; retain the source
@@ -90,17 +91,16 @@ An enabled/priority command always leaves the module fitted. Mass and purchase c
 in the build. All affected power and downstream figures are re-read from the new `ShipLoadout`; the
 application does not add/remove contributions itself.
 
-## Upstream acceptance gate
+## Released API acceptance
 
-Implementation may proceed only after a released Almanac version:
+Implementation pins 0.1.1 and proves that it:
 
-1. changes/removes an experimental effect on re-engineerable fixed rewards while preserving fixed
-   stats and `preEngineeredVariant`;
+1. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
+   fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
 2. normalizes supported imported partial-quality states losslessly and returns a stable structured
    result for unsupported identities.
 
-Cross-package tests must pin both minimal reproductions before UI implementation is considered
-unblocked.
+Cross-package tests must pin both minimal reproductions before UI implementation proceeds.
 
 ## Persistence and publication
 

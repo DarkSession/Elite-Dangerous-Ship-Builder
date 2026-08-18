@@ -1,6 +1,6 @@
 # Research: Ship Statistics and Status
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, the accepted feature
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted feature
 specifications, feature 001/002 planning boundaries and `.design/Ship Builder.dc.html` canvases 1c
 and 1d. Runtime probes used detached package `ShipLoadout` values; no application formulas were used.
 
@@ -55,7 +55,7 @@ Each area adapter returns an immutable union, never a nullable number:
 For unknown power draws, deployed/retracted draw and utilisation are lower bounds. Headroom is
 optimistic rather than a lower bound, and true budget/powered booleans are provisional; these receive
 a generic qualification. False budget/powered states remain conclusive. Retracted power exposes no
-locally derived headroom, utilisation or budget verdict because beta.12 supplies those for deployed
+locally derived headroom, utilisation or budget verdict because 0.1.1 supplies those for deployed
 only.
 
 **Alternatives rejected**: truthiness collapses zero; one `null` state loses structured calculation
@@ -65,39 +65,35 @@ issues; formatting `Infinity` without meaning violates the owning area contracts
 
 Use leaf package imports and the owning feature contracts:
 
-| Presentation        | Package-owned source                                               | Conditions and honesty rule                                                                             |
-| ------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| Power draw/capacity | `powerBudget()` selected `.deployed`/`.retracted` and `.available` | MW; no plant may be genuine zero/Infinity, not generic unavailable; unknown draws qualify results       |
-| Shield strength     | `shieldMetrics({ systemsPips })?.strength`                         | MJ; SYS pips are stated even though raw strength is pip-invariant; null is unavailable                  |
-| Armour              | `armourMetrics().hitPoints`                                        | Hull points; no view-condition input; unresolved-hull zero is blocked by #297                           |
-| Sustained DPS       | `weaponMetrics().total.sustainedDamagePerSecond`                   | damage/s; enabled weapons and reload cycle are package-owned; no/all-disabled weapons can be exact zero |
-| Selected jump       | `jumpRangeSummary().max`, `.unladen` or `.laden`                   | LY; guard with diagnostic mass/fuel/cargo results and retain a thrown unavailable state                 |
-| Top speed           | `mobilityMetrics({ fuel, cargo, enginesPips })?.speed`             | m/s; selected load and ENG pips; null is unavailable; shed-thruster finite result is blocked by #296    |
-| Unladen mass        | completed `unladenMassResult.value`                                | t; incomplete result retains all ordered `CalculationIssue` records                                     |
+| Presentation        | Package-owned source                                                        | Conditions and honesty rule                                                                             |
+| ------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Power draw/capacity | `powerBudget()` selected `.deployed`/`.retracted` and `.available`          | MW; no plant may be genuine zero/Infinity, not generic unavailable; unknown draws qualify results       |
+| Shield strength     | completed `shieldMetricsResult({ systemsPips }).value.strength`             | MJ; incomplete result preserves package power/shield issues                                             |
+| Armour              | `armourMetrics().hitPoints`                                                 | Hull points; unknown hulls are rejected during construction before an active build exists               |
+| Sustained DPS       | `weaponMetrics().total.sustainedDamagePerSecond`                            | damage/s; enabled weapons and reload cycle are package-owned; no/all-disabled weapons can be exact zero |
+| Selected jump       | `jumpRangeSummary().max`, `.unladen` or `.laden`                            | LY; guard with diagnostic mass/fuel/cargo results and retain a thrown unavailable state                 |
+| Top speed           | completed `mobilityMetricsResult({ fuel, cargo, enginesPips }).value.speed` | m/s; selected load and ENG pips; incomplete result preserves package power/thruster issues              |
+| Unladen mass        | completed `unladenMassResult.value`                                         | t; incomplete result retains all ordered `CalculationIssue` records                                     |
 
 Hardpoints directly select the package power state. `weaponMetrics()` has no retracted-state input and
 does not fold power shedding into DPS. With retracted hardpoints, the card therefore presents the
 observable nonnumeric condition rather than inventing zero; with deployed hardpoints it presents the
 package total. If a future area contract requires numeric retracted DPS, Almanac must first own it.
 
-Shield strength is not a power-availability verdict. Feature 006 keeps shield strength distinct from
-recovery/online state. The status capability does not locally combine those facts.
+Shield strength and recovery use their distinct package result objects. A disabled or shed generator
+makes each result incomplete with package power context; the status capability does not locally
+combine or reinterpret those facts.
 
 ## Decision 5: standard load mappings use only package results
 
 The load selection maps as follows:
 
-- `unladen`: package `jumpRangeSummary().unladen`; mobility with full-main-tank default and `cargo: 0`;
-- `laden`: package `jumpRangeSummary().laden`; mobility with full-main-tank default and completed
-  `cargoCapacityResult.value`;
-- `maximumJump`: package `jumpRangeSummary().max`; mobility with `cargo: 0` and package-derived fuel
-  `fuelPerJump(maxJumpRange())`.
+- `unladen`: package `jumpRangeSummary().unladen` and completed `standardLoadResult('unladen')`;
+- `laden`: package `jumpRangeSummary().laden` and completed `standardLoadResult('laden')`;
+- `maximumJump`: package `jumpRangeSummary().max` and completed `standardLoadResult('maximum')`.
 
-The maximum mapping is awkward but exact: `fuelPerJump()` owns the cap used by `maxJumpRange()`.
-Runtime probes over Sidewinder, Krait Mk II, Anaconda and a zero-fuel build matched the package's
-one-jump fuel. [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295)
-requests a first-class standard-load result so consumers need not compose these calls; current
-composition is not a local formula and is not a release blocker.
+Almanac 0.1.1 closes [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) with
+the first-class standard-load result, so consumers no longer compose maximum-jump fuel.
 
 Before jump or load-sensitive mobility reads, inspect the package diagnostic mass, main-fuel and cargo
 capacity results. Preserve every issue when incomplete. Do not substitute zero. A complete package
@@ -174,22 +170,21 @@ owned by features 005–010.
 No external `edassets.org` imagery is used. Components use feature 011 primitives/tokens, same-origin
 package assets where available, localized formatting and text in addition to every colour/icon state.
 
-## Confirmed Almanac defects and dependencies
+## Released Almanac dependencies
 
-- [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296): disabled-power-plant
-  Sidewinder has zero available power and shed thrusters/generator, but `mobilityMetrics()` and
-  `shieldRecovery()` return finite results. Top speed is blocked until a released fix.
-- [#297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297): unresolved hull defence
-  façades turn missing hull facts into numeric zeroes. Armour/shield presentation is blocked until a
-  released fix.
-- [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295): first-class standard-load
-  inputs/results would replace the currently valid package-method composition.
+- [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is released: mobility,
+  shield and recovery nullable façades respect power shedding, and their result companions preserve
+  structured reasons.
+- [#297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) is released by rejecting
+  unknown hulls during construction; `armourMetrics()` remains non-nullable for active known hulls.
+- [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) is released as
+  `standardLoadResult()`.
 - [#291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291) and
   [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292): feature 002 must supply
   the normalised active state and provenance before feature 003 can complete that integration.
 
-The package's nullable/throwing metric APIs without structured diagnostics are a known limitation, not
-a blocker for this spec: the accepted behavior is generic unavailable plus directly observable facts.
+Remaining nullable/throwing APIs without structured diagnostics use generic unavailable plus directly
+observable facts; they are not blockers for this spec.
 
 ## Test strategy
 
@@ -204,7 +199,7 @@ Unit tests use injected area ports and fixed package fixtures:
 - valid and invalid half-pip drafts, defaults, reset and exclusion boundaries;
 - one tuple reaches every port and stale results never publish;
 - exact target authorization, provenance lifecycle and settled announcement coalescing;
-- package regression fixtures for #296/#297 once a fixed release is consumed.
+- package regression fixtures for the released #296/#297 behavior in pinned 0.1.1.
 
 Playwright covers status, conditions, issues, requirements, targets, provenance and rapid-edit
 journeys in Chromium and Firefox at all required viewports with automated accessibility scans. A

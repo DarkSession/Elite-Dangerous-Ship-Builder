@@ -1,6 +1,6 @@
 # Research: SLEF Import and Export
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, the accepted spec,
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted spec,
 constitution, feature 001 active-build/build-link contracts, feature 002 normalization research and
 `.design/Ship Builder.dc.html`. Runtime probes used detached package values only.
 
@@ -57,34 +57,34 @@ special cases were rejected.
 
 ## Decision 5: fixed mounts use package defaults before calculations
 
-**Decision**: Share one ingress normalizer. Inspect only `slots()`/`fittedModules()` first. A fixed slot
-is package `immovableReason: 'requiredSlot' | 'cargoHatch'`, never `moduleLimit`. Missing modules or
-`stats === null` use the exact case-insensitively matched `getDefaultLoadout(shipSymbol)` slot. Report
-original/replacement identity. If no package default exists, leave it and surface incompleteness.
+**Decision**: Share one ingress normalizer. Before construction, capture missing/unresolved fixed
+identities from the inspected source DTO, including `CargoHatch`. Construct with `fromLoadout()`;
+unknown hull is a refusal and the package automatically restores a missing/unresolved cargo hatch.
+Compare source and constructed identities so that restoration remains visible in the report.
 
-For core/armour, package edits can apply the default and preserve package purchase invalidation.
-Beta.12 cannot replace immutable cargo hatch with `setModule()`. Rebuilding raw data would force the
-app to decide which captured module/top-level credits to invalidate, so a package operation is needed.
+On the detached constructed loadout, inspect `slots()`/`fittedModules()`. A fixed slot is package
+`immovableReason: 'requiredSlot' | 'cargoHatch'`, never `moduleLimit`. For every remaining missing or
+unresolved core/armour mount, call `repairFixedMount()` and preserve its `repaired`, `unchanged`,
+`defaultUnavailable` or `refused` outcome. A later cargo-hatch repair normally reports `unchanged`.
+No application code looks up or fits a default.
 
 **Rationale**: The constitution mandates package-default fill and FR-005 mandates package source
-semantics. A probe showed replacing unknown core via `setModule()` drops the old `Value`,
-`ModulesValue` and `Rebuy`; raw cargo-hatch reconstruction falsely retains them unless app code
-rewrites provenance.
+semantics. The package owns both automatic cargo restoration and explicit repair source-purchase
+invalidation; the pre-construction comparison preserves the only evidence of a replaced cargo
+identity without reconstructing provenance.
 
 **Alternatives considered**: Local fixed-slot lists/default derivation, retaining the old price or
 app-authored credit invalidation were rejected.
 
 ## Decision 6: iterating modules cannot universally normalize quality
 
-**Decision**: Use the released Almanac normalization requested by #292. It must normalize ordinary
+**Decision**: Use 0.1.1's `completeEngineeringGrade()` released for #292. It normalizes ordinary
 and package-identified pre-engineering, supported later effects and return structured outcomes for
 states it cannot normalize. No supported partial candidate reaches active state before it succeeds.
 
-**Rationale**: Beta.12 imports and re-exports `Quality: 0.42`. Fitted snapshots are frozen and have no
-quality setter. Calling `applyBlueprint(..., { quality: 1 })` is correct for a recognized ordinary
-recipe, but an application loop cannot safely cover fixed rewards, later effect-only states,
-ambiguous/unresolved identities or hand-authored modifier blocks. Changing only `Quality` leaves
-partial effective modifiers under a false 100% label; mixing app-side branches violates package truth.
+**Rationale**: Import intentionally preserves `Quality: 0.42` until the product requests
+normalization. Fitted snapshots stay frozen; `completeEngineeringGrade()` performs the supported
+recomputation and reports unsupported identities without an application loop or scalar rewrite.
 
 **Alternatives considered**: Scalar mutation, universal `applyBlueprint` iteration, dropping unknown
 engineering and app-side modifier merging were rejected.
@@ -180,15 +180,15 @@ behavior. Current probes found 48 hulls and a maximum 39 slots.
 **Alternatives considered**: Hand-maintained values, Playwright transport timing, Chromium-only and
 axe-only accessibility claims were rejected.
 
-## Dependencies and blockers
+## Dependencies and released gates
 
 - Feature 001 supplies active build, replacement, persistence and canonical link state.
 - Feature 011 supplies localization, shared UI and complete Playwright/axe matrix.
 - Feature 002 consumes the same normalized ingress and resets history; it must not add a second loop.
-- [Almanac #292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292) and
-  [Almanac #298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) are implementation
-  blockers. [Almanac #293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) tracks
-  the related missing-cargo-hatch validation gap.
+- Almanac 0.1.1 closes [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
+  [#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298) and
+  [#293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293). Regression tests pin
+  quality normalization, fixed-mount repair and cargo-hatch validation.
 
-No product clarification remains. These are explicit upstream release gates, not permission for an
-application workaround.
+No product clarification or upstream gate remains. The released boundaries are not permission for
+an application workaround.

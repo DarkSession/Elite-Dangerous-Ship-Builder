@@ -16,8 +16,8 @@ unavailable, incomplete, qualified, infinite and absent states cannot collapse i
 
 **Language/Version**: TypeScript 6.0, Angular 22.1 standalone and zoneless
 
-**Primary Dependencies**: `@elite-dangerous-almanac/core@0.1.0-beta.12` leaf exports (upgrade to
-released fixes for the upstream gates below), Angular signals, feature 001 active-build boundary,
+**Primary Dependencies**: `@elite-dangerous-almanac/core@0.1.1` leaf exports, Angular signals,
+feature 001 active-build boundary,
 feature 002 exact-slot coordinator, feature 005–009 result ports and feature 011 UI/i18n foundation
 
 **Storage**: Viewing conditions are memory-only. Fixed-mount normalisation provenance is local
@@ -47,30 +47,27 @@ credit/Merc Coin/material summaries within the existing `/build` workspace
 
 _GATE: Passed before Phase 0 research and re-checked after Phase 1 design._
 
-| Principle                               | Evidence                                                                                                                           | Result                     |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Projection, conditions and coordination run in the browser; only approved local record metadata persists.                          | PASS                       |
-| II. Almanac Source of Truth             | Area ports and package validation own every game fact and verdict. Defects are upstream issues, never local gates or corrections.  | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure result adapters, snapshot assembler, condition store, target coordinator and announcer precede components.                    | PASS                       |
-| IV. Lossless, Honest Builds             | Discriminated states preserve zero, absence, qualification and package failure; one revision tuple is published atomically.        | PASS; implementation gated |
-| V. Desktop, Tablet and Mobile           | The wide rail, tablet outlet and narrow Status capability preserve all actions and information at 400% zoom.                       | PASS                       |
-| VI. Commander's Language                | Application labels and formatting use feature 011 localization; package text is neither parsed nor privately translated.           | PASS                       |
-| VII. One Design System                  | The status surfaces compose feature 011 tokens/primitives; `.design` supplies hierarchy, not values or a parallel visual language. | PASS                       |
-| VIII. Tested Before It Ships            | Domain/integration tests plus dual-engine, multi-viewport Playwright, axe and a throttled performance assertion are specified.     | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | [screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-022 before task breakdown.                                      | PASS                       |
+| Principle                               | Evidence                                                                                                                           | Result                 |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Projection, conditions and coordination run in the browser; only approved local record metadata persists.                          | PASS                   |
+| II. Almanac Source of Truth             | Area ports, structured metric results and package validation own every game fact and verdict.                                      | PASS                   |
+| III. Domain Logic Outside UI            | Pure result adapters, snapshot assembler, condition store, target coordinator and announcer precede components.                    | PASS                   |
+| IV. Lossless, Honest Builds             | Discriminated states preserve zero, absence, qualification and package failure; one revision tuple is published atomically.        | PASS                   |
+| V. Desktop, Tablet and Mobile           | The wide rail, tablet outlet and narrow Status capability preserve all actions and information at 400% zoom.                       | PASS                   |
+| VI. Commander's Language                | Application labels and formatting use feature 011 localization; package text is neither parsed nor privately translated.           | PASS                   |
+| VII. One Design System                  | The status surfaces compose feature 011 tokens/primitives; `.design` supplies hierarchy, not values or a parallel visual language. | PASS                   |
+| VIII. Tested Before It Ships            | Domain/integration tests plus dual-engine, multi-viewport Playwright, axe and a throttled performance assertion are specified.     | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | [screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-022 before task breakdown.                                      | PASS                   |
 
-Upstream dependencies:
+Released Almanac dependencies:
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) must make
-   `mobilityMetrics()` and `shieldRecovery()` respect package power shedding. Feature 003 cannot
-   present the top-speed headline from the current incorrect finite result.
-2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) must make
-   hull-dependent defence façades represent an unresolved hull as unavailable rather than an
-   apparently authoritative zero. Feature 003 cannot reinterpret the current numeric result.
-3. [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) tracks a
-   first-class standard-load input/result API. Beta.12 can reproduce the maximum-jump fuel through
-   `fuelPerJump(maxJumpRange())`, so this is an API improvement rather than a blocker.
-4. Feature 002's normalised-state integration remains gated by
+1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) ships structured
+   mobility/shield/recovery unavailable results that respect power shedding.
+2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) rejects unknown
+   hulls at construction, before an active build can expose false defence figures.
+3. [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) ships
+   `standardLoadResult()`.
+4. Feature 002's normalised-state integration pins regressions for
    [Almanac #291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291) and
    [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292). Feature 003 may consume
    fixed-mount provenance only after that ingress path is available.
@@ -155,8 +152,8 @@ All decisions, runtime probes, alternatives and upstream defects are recorded in
   build data and edit history; a successful Commander edit to the exact mount clears it.
 - The `.design` status rail/card hierarchy is adopted. Mock calculations, warnings, comparisons,
   locally summed totals and external imagery are not.
-- Beta.12 produces incorrect authoritative-looking performance in two required states. The feature
-  waits for #296 and #297 rather than correcting those results locally.
+- 0.1.1 returns structured unavailable performance for shed power and rejects unknown hulls at
+  construction. Regression tests pin #296 and #297 without local correction.
 
 ## Phase 1: Design Outputs
 
@@ -172,7 +169,7 @@ All decisions, runtime probes, alternatives and upstream defects are recorded in
   workspace surfaces; [status-overview.md](./design/status-overview.md) specifies responsive states.
 - [design/reference-review.md](./design/reference-review.md) records the accepted 1c/1d hierarchy and
   every package, scope, localization and accessibility adaptation.
-- [quickstart.md](./quickstart.md) provides acceptance journeys, upstream gates and performance/a11y
+- [quickstart.md](./quickstart.md) provides acceptance journeys, released regressions and performance/a11y
   verification.
 
 ## Post-Design Constitution Re-check
@@ -184,12 +181,11 @@ from `BuildSnapshotV1`, history, link and SLEF. The design reference contributes
 all displayed values and qualifications remain package/area owned. Every FR has a surface owner and a
 dual-engine accessibility path.
 
-The planning gate remains **PASS** with no exception. Implementation is **blocked upstream** on
-released fixes for #296 and #297, and its normalisation-provenance path additionally depends on the
-feature 002 release gates #291/#292. After package upgrade, rerun all minimal reproductions and the
-post-design constitution check before task generation or implementation.
+The planning gate remains **PASS** with no exception. Almanac 0.1.1 satisfies #295–#297 and feature
+002's #291/#292 package dependencies. Implementation remains sequenced behind features 001, 002 and
+005–011; rerun all regressions and the post-design constitution check during task generation.
 
 ## Complexity Tracking
 
 No constitutional exception is requested. Cross-feature ports prevent duplicate calculations, and
-upstream gaps remain blockers instead of application-side workarounds.
+released package boundaries remain authoritative instead of application-side workarounds.

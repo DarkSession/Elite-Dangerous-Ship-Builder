@@ -1,6 +1,6 @@
 # Research: Offence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.0-beta.12`, the accepted feature
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted feature
 specifications, feature 002/003/005 planning boundaries and `.design/Ship Builder.dc.html` canvases
 1c and 1d. Runtime probes used detached package `ShipLoadout` values; no application formula was
 used.
@@ -35,18 +35,19 @@ they could display mixed revisions.
 
 Each `FittedWeaponMetrics` preserves `slot`, `symbol`, `name`, `enabled`, `ammunition` and every field
 of its nested `metrics`: the total fields above plus `damagePerShot`, `rateOfFire`,
-`sustainedRateOfFire` and `continuous`. Returned order is preserved as-is. A slot action emits the
+`sustainedRateOfFire`, `continuous`, sparse range/projectile-boundary fields and armour piercing.
+Returned order is preserved as-is. A slot action emits the
 exact returned `slot` without parsing or positional mapping.
 
-**Rationale**: These are the complete beta.12 public result types and directly satisfy the
-whole-build/per-weapon requirements. Exact slot and symbol identities are authoritative. Beta.12
-does not reliably fulfill its documented slot-order promise, so presentation does not strengthen the
-returned order into a claim the package has not met.
+**Rationale**: These are the complete 0.1.1 public result types and directly satisfy the
+whole-build/per-weapon requirements. Exact slot and symbol identities are authoritative. 0.1.1
+fulfills its documented slot-order promise for known slots and preserves source order for appended
+unknown/unmapped slots.
 
 **Alternatives considered**: A DPS-only summary was rejected because it drops returned output and
 operating-cost fields. Re-summing per-weapon values was rejected because disabled-state behavior and
-future package semantics belong to the package. Any local canonical or DPS sort was rejected while
-the package's own documented ordering defect remains unresolved.
+future package semantics belong to the package. Any local canonical or DPS sort is rejected because
+the released #301 package order is authoritative.
 
 ## Empty, disabled and genuine zero
 
@@ -57,7 +58,7 @@ hardpoint omitted by `weaponMetrics()` receives a separate qualification and no 
 result. A non-empty list with a zero total is a fitted-zero state; disabled entries remain visible
 with their exact `enabled` value. The projector does not infer why a numeric weapon metric is zero.
 
-**Rationale**: Beta.12 deliberately includes disabled resolved weapons in `weapons` but filters them
+**Rationale**: 0.1.1 deliberately includes disabled resolved weapons in `weapons` but filters them
 from `total`. It also omits an occupied hardpoint whose catalogue/effective stats cannot be resolved.
 Therefore an empty result, an unresolved occupied mount and an all-disabled build can all carry zero
 totals but remain distinguishable using package-backed state. Some package records can also have
@@ -67,17 +68,15 @@ genuine zero damage, so zero cannot mean disabled or unavailable.
 total as truly empty, inserting unresolved modules into the result, or deriving an enabled subtotal
 locally were rejected. Each loses or fabricates a package-authored distinction.
 
-## Returned weapon ordering defect
+## Returned weapon ordering
 
-**Decision**: Preserve beta.12's returned weapon order without claiming it is canonical. Track
-[Elite-Dangerous-Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301) and
-consume the released fix; this defect does not block feature 007 because the specification requires
-exact identity, not a particular order.
+**Decision**: Preserve 0.1.1's returned order: known weapons in hull-slot order, then unknown or
+unmapped slots in original source order. This is the contract released for
+[Elite-Dangerous-Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301).
 
-**Rationale**: `BuildWeaponMetrics.weapons` is documented as slot order, but reversing only an
-imported Sidewinder's `Modules[]` reverses the returned weapon order while `slots('hardpoint')`
-remains canonical. A local sort would hide a package contract defect and would need to invent
-placement for unknown original slots.
+**Rationale**: Reversed Sidewinder input still returns `SmallHardpoint1` before
+`SmallHardpoint2`; unknown original slots keep source order at the end. A local sort would duplicate
+the released contract and risk inventing placement.
 
 **Alternatives considered**: Sorting by package slot layout, parsing slot names, or ignoring the
 contract mismatch were rejected. The first two are local repairs; the last violates the project's
@@ -99,20 +98,20 @@ explicitly prohibits folding the overlay into another type or calculating shares
 resistance simulation were rejected because each derives a value the package result does not return.
 Color-only damage categories were rejected because they are inaccessible and unnecessary.
 
-## Fitted-weapon range and piercing — upstream blocker
+## Fitted-weapon range and piercing — released in 0.1.1
 
-**Decision**: Gate implementation on a released Almanac fitted-weapon result that includes the
+**Decision**: Consume the 0.1.1 fitted-weapon result, which includes the
 authoritative post-engineering `maximumRange`, `falloffRange`, `projectileRange` and
 `armourPiercing` values, preserving every absent member as absent. Effective distances retain metre
 units; projectile boundary parameters remain separately named and unitless. The gap is filed as
 [Elite-Dangerous-Almanac #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300).
 
-**Rationale**: Beta.12 returns only `{ slot, symbol, name, enabled, metrics, ammunition }` for each
+**Rationale**: Earlier releases returned only `{ slot, symbol, name, enabled, metrics, ammunition }`; 0.1.1 also returns sparse `maximumRange`, `falloffRange`, `projectileRange` and `armourPiercing` for each
 fitted weapon. A second `fittedModuleAt(slot).effectiveStats` view can carry range and piercing, but
 FR-002 requires per-weapon values from `weaponMetrics()`. Joining two separately obtained projections
 in the application would weaken the one-call revision boundary and violate the accepted spec.
 
-Minimal reproduction against beta.12:
+Minimal reproduction against 0.1.1:
 
 ```ts
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
@@ -134,7 +133,8 @@ console.log({
 // { maximumRange: 6000, falloffRange: 1000, armourPiercing: 44 }
 
 console.log(Object.keys(weapon));
-// [ 'slot', 'symbol', 'name', 'enabled', 'metrics', 'ammunition' ]
+// [ 'slot', 'symbol', 'name', 'enabled', 'metrics', 'ammunition',
+//   'maximumRange', 'falloffRange', 'armourPiercing' ]
 ```
 
 The release contract must also retain cases where effective range or piercing is absent. Projectile
@@ -195,12 +195,11 @@ capacitor's `sustainedEnergyPerSecond` as the powered deployed firing load. Neve
 energy fields to match. Compose feature 005's package-backed module power observation beside a
 zero-capacity or shed state; do not reconstruct per-module power attribution in feature 007.
 
-**Rationale**: Beta.12 intentionally filters disabled weapons from weapon totals, but it does not
+**Rationale**: 0.1.1 intentionally filters disabled weapons from weapon totals, but it does not
 filter enabled weapons by deployed power shedding there. The capacitor facade does apply shedding.
-The scopes are different package results. Beta.12 also lacks an authoritative public per-module
-power projection, tracked by
-[Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299), so feature 005 owns
-that shared result after release.
+The scopes are different package results. 0.1.1 supplies the authoritative `PowerBudget.consumers`
+projection released for [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299),
+and feature 005 owns the shared presentation of that result.
 
 **Alternatives considered**: Zeroing weapon totals when hardpoints are retracted or shed, comparing
 the two EPS fields as an error, or mapping priority bands to modules independently inside feature 007
@@ -240,7 +239,6 @@ tables, hover tooltips and one-browser snapshots were rejected by principles V, 
 
 ## Research conclusion
 
-No planning ambiguity remains. Feature behavior, result semantics, responsive composition and
-verification are resolved. Almanac #300 is a release blocker, and the shared
-distributor power context remains sequenced through feature 005 and Almanac #299 rather than being
-reimplemented locally.
+No planning ambiguity or Almanac release blocker remains. Feature behavior, result semantics,
+responsive composition and verification are resolved. The shared distributor power context remains
+sequenced through feature 005 rather than being reimplemented locally.

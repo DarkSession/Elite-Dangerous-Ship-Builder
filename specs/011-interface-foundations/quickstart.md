@@ -62,15 +62,17 @@ currency; collator/search helpers use the effective locale.
 
 ## Almanac game text
 
-Use beta.12 examples with:
+Use 0.1.1 examples with:
 
 - one German-localized module/effect/material name;
 - one known identity whose helper returns `null` for German;
-- a hull, slot/restriction/reward label or diagnostic without a locale helper.
+- one known experimental effect with no description even in English;
+- a hull, slot/restriction/reward label and structured diagnostic queried through the 0.1.1 leaves.
 
-Expected: localized package text appears without disclosure; an explicit miss and a no-helper family
-show canonical package text with correct canonical `lang` plus the shared German untranslated
-disclosure. No application catalogue contains game text or a diagnostic translation. Re-run the
+Expected: localized package text appears without disclosure; an explicit locale miss with canonical
+text shows that text with the correct canonical `lang` plus the shared German untranslated
+disclosure; absent canonical text shows unavailable. No application catalogue contains game text or
+a diagnostic translation. Re-run the
 minimal reproduction linked from
 [Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309) after any package
 upgrade.

@@ -9,23 +9,16 @@
 Add one Mobility, Mass and Jump capability inside the active `/build` workspace. A pure,
 revision-stamped projector first preserves `unladenMassResult`, `fuelCapacityResult` and
 `cargoCapacityResult`, calls `jumpRangeSummary()` only when those dependencies and a usable fitted
-drive are established, and calls `mobilityMetrics()` once with feature 003's selected package-owned
+drive are established, and calls `mobilityMetricsResult()` once with feature 003's selected package-owned
 load inputs and ENG pips. The immutable snapshot also carries fitted drive/thruster records and every
 fitted module's post-engineering mass by exact slot; it never re-sums, derives or repairs a package
 value.
 
-Implementation is **blocked** on released Almanac work already raised upstream:
-
-- [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) must make
-  `mobilityMetrics()` return `null` for power-shed thrusters instead of finite performance.
-- [#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299), consumed through feature
-  005's shared exact-slot power observation, must authoritatively distinguish an unpowered thruster
-  from an absent, disabled or unresolved one without application inference.
-
-[Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) tracks a direct
-standard-load result. It is not a functional blocker because feature 003's accepted contract uses
-only package methods (`maxJumpRange()` and `fuelPerJump()`) to obtain maximum-jump fuel, with no local
-formula.
+Almanac 0.1.1 closes the three package dependencies raised during planning:
+`standardLoadResult()` supplies each standard fuel/cargo input (#295), `mobilityMetricsResult()`
+withholds performance and reports structured issues for disabled or shed power (#296), and
+`PowerBudget.consumers` plus the returned bands supply feature 005's exact-slot power observation
+(#299). No local composition, power arithmetic or corrective gate remains.
 
 The `.design/Ship Builder.dc.html` wide and narrow Drives & Mass hierarchy informs composition. Its
 mass decomposition, percentages, arbitrary bars, deltas, headroom and mock figures are excluded.
@@ -36,7 +29,7 @@ mass decomposition, percentages, arbitrary bars, deltas, headroom and mock figur
 tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required for the blockers),
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports,
 feature 001's active-build/revision boundary, feature 002's exact-slot intent, feature 003's shared
 load/ENG conditions, feature 005's package-backed module power observation, and feature 011's
 UI/localization/test infrastructure
@@ -75,45 +68,37 @@ mass entry for every fitted module
 
 ## Constitution Check
 
-_GATE: Passed for planning because every value remains package-owned and the design waits for
-released dependencies rather than introducing a workaround. Re-check after Phase 1 and after the
-Almanac upgrade._
+_GATE: Passed. Every value remains package-owned and the previously required package contracts are
+present in the pinned Almanac 0.1.1 release. Re-check after Phase 1._
 
-| Principle                               | Design evidence                                                                                                                                               | Status                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | All projections run over the in-browser active build and installed static package; no persistence or network boundary is added.                               | PASS                       |
-| II. Almanac Source of Truth             | Aggregate calls, standard-load composition, source facts and module mass are package outputs. #296/#299 remain release gates; no local correction is planned. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed facade coordinates revisions/conditions; components render inputs and emit intents.               | PASS                       |
-| IV. Lossless, Honest Builds             | Package zero, null, incomplete results, ordered issues, missing optional facts and unknown module masses remain distinct.                                     | PASS                       |
-| V. Desktop, Tablet and Mobile           | One complete surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow.            | PASS                       |
-| VI. Commander's Language                | Application labels, units and sentinels use feature 011; game names/diagnostics use Almanac localization with disclosed canonical fallback.                   | PASS                       |
-| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                | PASS; prerequisite 011     |
-| VIII. Tested Before It Ships            | Exact package equality, call guards, dual-engine multi-viewport journeys and automated/manual accessibility coverage retain the 80% gate.                     | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to the plan-time Mobility, Mass and Jump surface and contracts exist before task breakdown.                                                     | PASS                       |
+| Principle                               | Design evidence                                                                                                                                    | Status                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All projections run over the in-browser active build and installed static package; no persistence or network boundary is added.                    | PASS                   |
+| II. Almanac Source of Truth             | Aggregate calls, standard-load inputs, result diagnostics, source facts and module mass are package outputs from Almanac 0.1.1.                    | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed facade coordinates revisions/conditions; components render inputs and emit intents.    | PASS                   |
+| IV. Lossless, Honest Builds             | Package zero, null, incomplete results, ordered issues, missing optional facts and unknown module masses remain distinct.                          | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow. | PASS                   |
+| VI. Commander's Language                | Application labels, units and sentinels use feature 011; game names/diagnostics use Almanac localization with disclosed canonical fallback.        | PASS                   |
+| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                     | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact package equality, call guards, dual-engine multi-viewport journeys and automated/manual accessibility coverage retain the 80% gate.          | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to the plan-time Mobility, Mass and Jump surface and contracts exist before task breakdown.                                          | PASS                   |
 
-### Required upstream and repository dependencies
+### Required released and repository dependencies
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) must land in a
-   released package. Its minimal reproduction proves beta.12 returns finite mobility when the power
-   budget has shed the thrusters. Feature 008 must not null or reinterpret that result locally.
-2. [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) must land in a
-   released package and feature 005 must expose its shared exact-slot power observation. Feature 008
-   consumes that observation only to name unpowered thrusters; it does not reconstruct power bands.
-3. [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) remains open as
-   a non-blocking API improvement. Until released, the accepted feature 003 package-method
-   composition is used without local `min`, fuel-cap or load arithmetic.
-4. Feature 001 must supply the single active `ShipLoadout`, atomic build revision and `/build`
+1. Almanac 0.1.1 supplies the released #295/#296/#299 contracts. Regression tests pin
+   `standardLoadResult()`, `mobilityMetricsResult()` and `PowerBudget.consumers` directly.
+2. Feature 001 must supply the single active `ShipLoadout`, atomic build revision and `/build`
    workspace.
-5. Feature 002 must supply exact-slot selection and the authoritative fitted-module editor; its own
+3. Feature 002 must supply exact-slot selection and the authoritative fitted-module editor; its own
    Almanac normalization gates remain applicable to builds feature 008 reads.
-6. Feature 003 must supply the shared valid load/ENG-pip condition and revision contracts, the
+4. Feature 003 must supply the shared valid load/ENG-pip condition and revision contracts, the
    Mobility headline port and detail intent.
-7. Feature 011 must supply shared components/tokens, localization/formatting, Firefox/landscape
+5. Feature 005 must expose its projection of the package-owned consumer result.
+6. Feature 011 must supply shared components/tokens, localization/formatting, Firefox/landscape
    projects and the automated accessibility harness.
 
-Feature 008 may be tasked only after these contracts are accepted. It cannot be considered
-implemented or shipped until #296 and #299 are released and consumed. All unresolved Almanac work
-identified during planning is represented by an upstream issue; no new unfiled package gap remains.
+Feature 008 may be tasked after these repository contracts are accepted. No unresolved Almanac
+dependency or unfiled package gap remains.
 
 ## Project Structure
 
@@ -185,14 +170,13 @@ All decisions, package probes, alternatives and upstream dependencies are record
 
 - `jumpRangeSummary()` is called once only after mass, fuel and cargo diagnostics complete and the
   fitted drive record is usable; every single range, total range and jump count is preserved.
-- Feature 003's maximum/unladen/laden mapping is reused. Maximum-load fuel remains the package-only
-  `fuelPerJump(maxJumpRange())` composition tracked by non-blocking #295.
-- `mobilityMetrics({ fuel, cargo, enginesPips })` is called once for the selected settled conditions;
+- Feature 003's maximum/unladen/laden mapping is reused from `standardLoadResult()`.
+- `mobilityMetricsResult({ fuel, cargo, enginesPips })` is called once for the selected settled conditions;
   all seven fields are copied. `null` and above-supported-mass zero performance remain distinct.
-- Beta.12 violates its documented powered-thruster contract. #296 blocks mobility presentation; no
-  local power gate is allowed.
-- Unpowered attribution comes from feature 005 after #299; absence, disabled state and unresolved
-  fitted stats come directly from fitted package snapshots.
+- Disabled and shed power produce structured incomplete results; no local power gate is allowed.
+- Unpowered attribution comes from feature 005's shared projection of each `PowerBudget.consumers`
+  entry with its matching returned band verdict; absence, disabled state and unresolved fitted stats
+  come directly from fitted package snapshots.
 - Aggregate result issues retain order and structured fields. Every fitted module receives one exact
   slot-keyed mass projection from `effectiveStats.mass`; the application never re-sums it.
 - FSD/thruster thresholds, factors and multipliers appear only when their fitted package records or
@@ -200,8 +184,7 @@ All decisions, package probes, alternatives and upstream dependencies are record
 - The reference's paired hierarchy is useful only after removing authored mass totals, percentage
   bars, comparisons, headroom, unsupported facts and narrow-layout omissions.
 
-No planning clarification marker remains. The unresolved work is represented by upstream release
-gates, not ambiguity to solve by assumption.
+No planning clarification marker or unresolved Almanac release gate remains.
 
 ## Phase 1: Design Outputs
 
@@ -228,18 +211,16 @@ gates, not ambiguity to solve by assumption.
 
 Phase 1 introduces no server, persisted metric, alternate build, private game catalogue, local jump,
 mass, capacity, curve, standard-load or power formula, hard-coded display string or visual literal.
-The incorrect beta.12 powered-thruster result and missing module power projection remain explicit
-released-package gates. Every package zero, null, incomplete result, diagnostic issue, absent optional
+The released structured mobility and module-consumer results remain the only calculation and power
+sources. Every package zero, null, incomplete result, diagnostic issue, absent optional
 fact and unresolved module mass remains distinguishable. Every FR has a surface owner and a
 dual-engine responsive/accessibility validation path.
 
-The planning gate remains **PASS with no exception**. Implementation remains **blocked upstream** by
-Almanac #296 and #299 and is sequenced behind features 001, 002, 003, 005 and 011. After upgrading
-the pinned package and completing those prerequisites, rerun the minimal reproductions, confirm the
-public leaf contracts, re-evaluate this constitution table and then generate or refresh tasks.
+The planning gate remains **PASS with no exception**. The Almanac gate is satisfied; implementation
+is sequenced behind features 001, 002, 003, 005 and 011. After completing those prerequisites,
+generate or refresh tasks.
 
 ## Complexity Tracking
 
 No constitutional exception is requested. The projector/facade split is the minimum structure that
-keeps package projection testable without rendering and guarantees revision coherence. Upstream gaps
-remain blockers rather than application-side verdicts, joins or calculations.
+keeps package projection testable without rendering and guarantees revision coherence.

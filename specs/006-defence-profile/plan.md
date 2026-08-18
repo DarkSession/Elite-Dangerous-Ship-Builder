@@ -18,8 +18,8 @@ or aggregate apportionment.
 
 **Language/Version**: TypeScript 6.0, Angular 22.1 standalone and zoneless
 
-**Primary Dependencies**: `@elite-dangerous-almanac/core@0.1.0-beta.12` leaf exports (upgrade to
-released fixes for #296/#297), Angular signals, feature 001 active-build boundary, feature 002
+**Primary Dependencies**: `@elite-dangerous-almanac/core@0.1.1` leaf exports, Angular signals,
+feature 001 active-build boundary, feature 002
 exact-slot coordinator, feature 003 viewing conditions/headlines and feature 011 UI/i18n/test
 foundation
 
@@ -50,29 +50,26 @@ workspace
 
 _GATE: Passed before Phase 0 research and re-checked after Phase 1 design._
 
-| Principle                               | Evidence                                                                                                                                                     | Result                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| I. Client-Side Only                     | Projection, conditions and slot intents run entirely in the browser and persist no derived defence state.                                                    | PASS                       |
-| II. Almanac Source of Truth             | Four defence methods, auxiliary `powerBudget()` and package hull/fitted records own every value/state; defects are upstream issues, never local corrections. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure projector/semantic adapters and a signal presenter precede input/output-only components.                                                                | PASS                       |
-| IV. Lossless, Honest Builds             | Discriminated states preserve absence, zero, negative, qualification and non-finite meaning; one revision tuple publishes atomically.                        | PASS; implementation gated |
-| V. Desktop, Tablet and Mobile           | One complete semantic order adapts across the ten browser/viewport/orientation projects through 400% zoom.                                                   | PASS                       |
-| VI. Commander's Language                | Owned labels/formatting use feature 011; package hull/module text is neither parsed nor privately translated.                                                | PASS                       |
-| VII. One Design System                  | Defence surfaces compose feature 011 tokens/primitives; `.design` contributes hierarchy only.                                                                | PASS                       |
-| VIII. Tested Before It Ships            | Exact package-equality unit tests plus dual-engine multi-viewport Playwright, axe, manual SR checks and throttled timing are specified.                      | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | [screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-009 before task breakdown.                                                                | PASS                       |
+| Principle                               | Evidence                                                                                                                                | Result                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Projection, conditions and slot intents run entirely in the browser and persist no derived defence state.                               | PASS                   |
+| II. Almanac Source of Truth             | Four defence methods, structured result companions, auxiliary `powerBudget()` and package hull/fitted records own every value/state.    | PASS                   |
+| III. Domain Logic Outside UI            | Pure projector/semantic adapters and a signal presenter precede input/output-only components.                                           | PASS                   |
+| IV. Lossless, Honest Builds             | Discriminated states preserve absence, zero, negative, qualification and non-finite meaning; one revision tuple publishes atomically.   | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete semantic order adapts across the ten browser/viewport/orientation projects through 400% zoom.                              | PASS                   |
+| VI. Commander's Language                | Owned labels/formatting use feature 011; package hull/module text is neither parsed nor privately translated.                           | PASS                   |
+| VII. One Design System                  | Defence surfaces compose feature 011 tokens/primitives; `.design` contributes hierarchy only.                                           | PASS                   |
+| VIII. Tested Before It Ships            | Exact package-equality unit tests plus dual-engine multi-viewport Playwright, axe, manual SR checks and throttled timing are specified. | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | [screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-009 before task breakdown.                                           | PASS                   |
 
-Upstream dependencies:
+Released Almanac dependencies:
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) must make
-   `shieldRecovery()` respect package power shedding. This gates recovery only; package-retained
-   shield strength for a shed generator remains valid and visible with separate state.
-2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) must make
-   hull-dependent defence façades represent unresolved hull facts as unavailable/diagnostic rather
-   than apparently authoritative numeric zeroes.
+1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) makes shield and
+   recovery respect power shedding and supplies structured result companions.
+2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) rejects unknown
+   hulls at construction before hull-dependent defence can be read.
 
-Both dependencies were verified open and already contain minimal reproductions in the Almanac repo,
-satisfying the upstream-issue requirement. Research established no additional unresolved Almanac
+Both dependencies are released in 0.1.1. Research established no additional unresolved Almanac
 dependency.
 
 ## Project Structure
@@ -136,15 +133,15 @@ persisted.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package contracts, alternatives, runtime probes and upstream gates are recorded in
+All decisions, package contracts, alternatives and runtime probes are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
-- One projector calls `shieldMetrics`, `shieldRecovery`, `cellBanks`, `armourMetrics` and auxiliary
+- One projector calls `shieldMetricsResult`, `shieldRecoveryResult`, `cellBanks`, `armourMetrics` and auxiliary
   `powerBudget()` exactly once for one build/condition revision and publishes atomically.
 - Every shield/armour/recovery/bank field is copied directly. Zero and negative remain numeric;
   effective-pool and recovery infinities receive separate semantic discriminants.
-- Generator availability/power context is separate from shield strength. A shed generator may retain
-  package strength; #296 must make recovery unavailable without an application override.
+- Generator availability/power context accompanies the structured results. A shed generator makes
+  shield and recovery unavailable without an application override.
 - Cell-bank list length distinguishes none fitted from fitted/all-unpowered zero totals. Returned
   slot/symbol/power and totals are authoritative.
 - Hardness is the exact hull record rating. Module armour/protection remain separate from hull hit
@@ -153,8 +150,8 @@ All decisions, package contracts, alternatives, runtime probes and upstream gate
   aggregate and are never allocated to sources.
 - The `.design` two-panel/damage-row hierarchy is adopted, while mock calculations, abbreviated
   narrow content and derived visuals are rejected.
-- Beta.12 produces incorrect authoritative-looking results in two required states. The affected
-  implementation waits for released fixes for #296/#297.
+- 0.1.1 supplies structured unavailable results for shed power and rejects unknown hulls at
+  construction; regressions pin #296/#297.
 
 ## Phase 1: Design Outputs
 
@@ -171,7 +168,7 @@ All decisions, package contracts, alternatives, runtime probes and upstream gate
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every requirement to the existing
   workspace surfaces; [defence-profile.md](./design/defence-profile.md) specifies complete responsive
   states; [reference-review.md](./design/reference-review.md) records adopted hierarchy/departures.
-- [quickstart.md](./quickstart.md) provides release-gate checks, exact-equality journeys and the full
+- [quickstart.md](./quickstart.md) provides released-regression checks, exact-equality journeys and the full
   performance/accessibility validation matrix.
 
 ## Post-Design Constitution Re-check
@@ -182,11 +179,9 @@ Semantic wrappers preserve package values and meanings; source manifests contain
 state only, never derived contribution shares. The visual reference supplies hierarchy without
 becoming a second design system. Every FR has a surface owner and a dual-engine accessible path.
 
-The planning gate remains **PASS** with no exception. Implementation is **blocked upstream** for the
-affected states until released fixes for #296 and #297 are pinned. It is also dependent on feature
-011 completing the constitution-required Firefox/landscape/accessibility harness. After package
-upgrade, rerun both minimal reproductions and re-check the released availability types before task
-generation or implementation.
+The planning gate remains **PASS** with no exception. Almanac 0.1.1 satisfies #296 and #297;
+implementation remains dependent on feature 011's Firefox/landscape/accessibility harness and other
+repository prerequisites. Rerun both regressions before task generation or implementation.
 
 ## Complexity Tracking
 

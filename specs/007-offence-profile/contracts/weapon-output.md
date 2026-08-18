@@ -9,7 +9,7 @@ projection and exact-slot navigation. This contract owns no weapon calculation a
 
 - one active `ShipLoadout` captured with feature 001's opaque `buildRevision`;
 - feature 002's package-backed hardpoint occupancy/unresolved projection for the same build revision;
-- a package version whose fitted-weapon result satisfies Almanac #300.
+- pinned 0.1.1, whose fitted-weapon result satisfies Almanac #300.
 
 WEP pips and hardpoint viewing state do not alter `weaponMetrics()`. They are shown as surrounding
 conditions only where relevant and never passed to this call.
@@ -61,10 +61,9 @@ Preserve every returned entry and its exact returned order. Each entry exposes:
 
 No entry is collapsed into a count. Identical symbols in different slots remain separate.
 
-Beta.12 violates its declaration's promised slot order for reversed imports. Almanac
-[#301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301) is non-blocking for feature
-behavior because no requirement specifies an order. Until a released fix is consumed, preserve the
-returned order; do not sort locally to make it look canonical.
+0.1.1 satisfies [#301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301): known
+weapons use hull-slot order and unknown/unmapped slots follow in source order. Preserve the returned
+order; do not sort locally.
 
 ## Damage types
 
@@ -107,8 +106,8 @@ zero substitution is prohibited.
   `armourPiercingFactor`.
 - No range attenuation, range-band aggregation, target simulation or comparison verdict is allowed.
 
-Almanac #300 is a hard gate. A task must not implement a temporary `fittedModuleAt(slot)` join while
-waiting for the released field.
+Almanac #300 is satisfied by the returned fields. A task must not implement a
+`fittedModuleAt(slot)` join.
 
 ## Ammunition semantics
 
@@ -152,6 +151,6 @@ entries came from `weaponMetrics()`.
 - Cover truly empty, unresolved-only, mixed unresolved/resolved, genuine-zero and all-disabled states.
 - Cover burst/sustained type splits with optional unclassified and anti-xeno overlay text.
 - Cover no ammunition, finite, zero-reserve and unlimited capacities.
-- After #300, cover Focused effective range/piercing plus absent range/piercing/projectile members.
-- Retain the reverse-import regression for #301 and assert no local corrective sort.
+- Cover Focused effective range/piercing plus absent range/piercing/projectile members.
+- Retain the reverse-import regression for #301, assert canonical known-slot order and no local sort.
 - Assert every action sends the exact original slot key once.

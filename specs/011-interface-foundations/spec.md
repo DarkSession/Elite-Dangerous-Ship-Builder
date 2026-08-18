@@ -30,7 +30,8 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 3. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
    active locale.
 4. Missing application translation falls back to bundled English text.
-5. Game text unavailable in the active locale uses the package text and is identified as untranslated.
+5. Game text unavailable in the active locale uses canonical package text and is identified as
+   untranslated when that text exists; otherwise it is explicitly unavailable.
 
 ## Requirements
 
@@ -76,8 +77,9 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 - **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
   MUST be available without a network. Raw keys, empty strings and placeholders MUST not appear.
 - **FR-020**: Game text MUST come from the Almanac. If the package cannot supply the active locale,
-  its canonical text MUST be shown and identified as untranslated; the application MUST NOT keep a
-  private game-text translation.
+  its canonical text MUST be requested and, when present, shown and identified as untranslated. If
+  the package supplies no canonical text, the value MUST be unavailable. The application MUST NOT
+  keep a private game-text translation.
 
 ### Verification
 
@@ -95,12 +97,14 @@ The package supplies game names for supported locales and an explicit missing-tr
 It does not own application messages, locale selection, formatting, accessibility or the design
 system.
 
-## Current Almanac Limit
+## Current Almanac Boundary
 
-Package localisation covers modules, blueprints, experimental effects and materials, but not hull
-names or diagnostic messages. Those remain in the package's canonical language and MUST be
-identified as untranslated. The application MUST NOT fill the gap with private game-text or
-diagnostic translations.
+Package localisation covers modules, blueprints, experimental effects, materials, hull/manufacturer,
+slot/restriction, pre-engineered variant, engineering-group, effect-description and structured
+diagnostic families. A helper can explicitly return `null` when the requested locale or text itself
+is unavailable. Canonical package text is disclosed as untranslated when present; otherwise the
+value is unavailable. The application MUST NOT fill either miss with private game-text or diagnostic
+translations.
 
 ## Success Criteria
 

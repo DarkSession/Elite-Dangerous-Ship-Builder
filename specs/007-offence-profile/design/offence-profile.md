@@ -63,7 +63,7 @@ content is shortened or moved to hover.
   firing load.
 - Show feature 005's distributor presence/enabled/powered observation separately, especially beside
   zero capacity. Neither fact is inferred from the other.
-- A bar may appear only if a future package result supplies its exact scale. Beta.12's values do not
+- A bar may appear only if a future package result supplies its exact scale. 0.1.1's values do not
   authorize a local capacity/drain percentage, so the initial design is textual.
 
 ## Weapon collection
@@ -85,8 +85,8 @@ narrow widths they are labelled card details. Disclosure controls and slot actio
 44 CSS-pixel targets; activating the card itself does not silently navigate. Expanded state never
 hides the only route to the slot.
 
-The collection preserves the package-returned order while Almanac #301 is unresolved. It neither
-claims the beta.12 order is canonical nor adds a local corrective sort.
+The collection preserves 0.1.1's package-returned hull-slot order, with unknown/unmapped slots
+appended in source order, and adds no local corrective sort.
 
 ## Unresolved hardpoints and empty states
 

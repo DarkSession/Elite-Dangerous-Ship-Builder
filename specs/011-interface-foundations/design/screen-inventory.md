@@ -15,32 +15,32 @@ development/test target and never appears in the production router or bundle.
 
 ## Requirement coverage
 
-| Requirement | Surface/contract coverage                                                                                                  |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | All product surfaces compose `src/app/ui/`; preview manifest and static check reject unregistered shared components.       |
-| FR-002      | Token layers exclusively own color/type/spacing/radius/elevation/border/motion literals.                                   |
-| FR-003      | One dark semantic token set; no frame control, media preference or stored theme.                                           |
-| FR-004      | Preview catalogue accounts for every component's populated/empty/loading/error/disabled states at all three width classes. |
-| FR-005      | Design-system contract requires a shared extension before capability use.                                                  |
-| FR-006      | Native/shared controls work by pointer and single touch; no essential hover/multipointer interaction.                      |
-| FR-007      | Component semantic contracts own visible/matching names, roles, states, labels and errors.                                 |
-| FR-008      | Frame owns banner/navigation/main boundaries; route content owns one visible h1 and ordered headings.                      |
-| FR-009      | Frame announcement outlets and feedback contract separate assertive blocking errors from coalesced polite changes.         |
-| FR-010      | Shared text-equivalence/game-text patterns accompany every color/shape/position/motion carrier.                            |
-| FR-011      | Shared responsive patterns and ten-project matrix preserve complete capability content without document overflow.          |
-| FR-012      | Token contrast/target records and automated/manual verification gate shared components and screens.                        |
-| FR-013      | Reduced-motion fixtures remove nonessential motion without removing state.                                                 |
-| FR-014      | Logical CSS, doubled-copy and RTL fixtures cover expansion and bidi content.                                               |
-| FR-015      | Shared conformance copy/policy includes all seven excluded criteria and rejects an unqualified claim.                      |
-| FR-016      | Localization/static policy covers every frame, component, template, formatter and document title string.                   |
-| FR-017      | Embedded chooser and locale store implement browser/default/saved/explicit precedence and persistence.                     |
-| FR-018      | Named formatter registry serves every product value.                                                                       |
-| FR-019      | Canonical catalogues, bundled English and build/runtime fallback prevent keys/blanks/placeholders.                         |
-| FR-020      | Shared game-text presenter uses Almanac leaf results and canonical untranslated disclosure; #309 tracks gaps.              |
-| FR-021      | Every journey runs in the ten Chromium/Firefox size-orientation projects.                                                  |
-| FR-022      | Shared axe helper scans every product and preview state and fails the build.                                               |
-| FR-023      | Versioned desktop/mobile/tablet-as-needed screen-reader scripts supplement automation.                                     |
-| FR-024      | Parser-backed policy checks display strings, token values and preview completeness.                                        |
+| Requirement | Surface/contract coverage                                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | All product surfaces compose `src/app/ui/`; preview manifest and static check reject unregistered shared components.               |
+| FR-002      | Token layers exclusively own color/type/spacing/radius/elevation/border/motion literals.                                           |
+| FR-003      | One dark semantic token set; no frame control, media preference or stored theme.                                                   |
+| FR-004      | Preview catalogue accounts for every component's populated/empty/loading/error/disabled states at all three width classes.         |
+| FR-005      | Design-system contract requires a shared extension before capability use.                                                          |
+| FR-006      | Native/shared controls work by pointer and single touch; no essential hover/multipointer interaction.                              |
+| FR-007      | Component semantic contracts own visible/matching names, roles, states, labels and errors.                                         |
+| FR-008      | Frame owns banner/navigation/main boundaries; route content owns one visible h1 and ordered headings.                              |
+| FR-009      | Frame announcement outlets and feedback contract separate assertive blocking errors from coalesced polite changes.                 |
+| FR-010      | Shared text-equivalence/game-text patterns accompany every color/shape/position/motion carrier.                                    |
+| FR-011      | Shared responsive patterns and ten-project matrix preserve complete capability content without document overflow.                  |
+| FR-012      | Token contrast/target records and automated/manual verification gate shared components and screens.                                |
+| FR-013      | Reduced-motion fixtures remove nonessential motion without removing state.                                                         |
+| FR-014      | Logical CSS, doubled-copy and RTL fixtures cover expansion and bidi content.                                                       |
+| FR-015      | Shared conformance copy/policy includes all seven excluded criteria and rejects an unqualified claim.                              |
+| FR-016      | Localization/static policy covers every frame, component, template, formatter and document title string.                           |
+| FR-017      | Embedded chooser and locale store implement browser/default/saved/explicit precedence and persistence.                             |
+| FR-018      | Named formatter registry serves every product value.                                                                               |
+| FR-019      | Canonical catalogues, bundled English and build/runtime fallback prevent keys/blanks/placeholders.                                 |
+| FR-020      | Shared game-text presenter uses released Almanac leaf results; explicit null discloses available canonical text or is unavailable. |
+| FR-021      | Every journey runs in the ten Chromium/Firefox size-orientation projects.                                                          |
+| FR-022      | Shared axe helper scans every product and preview state and fails the build.                                                       |
+| FR-023      | Versioned desktop/mobile/tablet-as-needed screen-reader scripts supplement automation.                                             |
+| FR-024      | Parser-backed policy checks display strings, token values and preview completeness.                                                |
 
 ## Cross-feature ownership
 

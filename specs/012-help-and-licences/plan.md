@@ -15,11 +15,10 @@ checks committed source-distribution copies byte-for-byte, and generates an immu
 manifest for the initial browser bundle. Missing, empty, stale or ambiguous artifacts fail the build;
 the runtime has no legal-content loading fallback and makes no network request.
 
-Implementation is **blocked** on an Almanac release correcting the inaccurate provenance statement
-in beta.12's `THIRD_PARTY_NOTICES.md`. The installed notice says the provenance records are absent
-from the npm package even though all seven records are shipped. The defect is filed as
+Almanac 0.1.1 includes the correction filed as
 [Elite-Dangerous-Almanac #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307).
-The application will not rewrite the notice or hide the contradiction.
+Its installed `THIRD_PARTY_NOTICES.md` now truthfully states that matching records ship under
+`PROVENANCE/`. The application preserves the notice byte-for-byte.
 
 ## Technical Context
 
@@ -27,7 +26,7 @@ The application will not rewrite the notice or hide the contradiction.
 artifact generation and verification
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router and signals,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 artifacts (upgrade required for #307), Node standard
+`@elite-dangerous-almanac/core` 0.1.1 artifacts, Node standard
 library (`fs`, `crypto`, `child_process`) for build-time ingestion, feature 001's application shell
 and offline service worker, and feature 011's component/localisation/accessibility infrastructure
 
@@ -58,8 +57,8 @@ application framing is localised; touch/screen-reader operation; WCAG 2.2 AA exc
 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One `/help` route; seven accepted help topics; application and Almanac identity
-facts; root `LICENSE`; installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` (about 23 KiB of
-package legal text in beta.12); one external package-defect destination
+facts; root `LICENSE`; byte-exact installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md`; one
+external package-defect destination
 
 **Design Reference**: `.design/Ship Builder.dc.html` help/about controls and overlays in canvases
 1a–1d. Their global access, grouped information order and wide-to-narrow responsive intent are
@@ -69,27 +68,26 @@ and their invented versions and unsupported licence/asset claims are rejected in
 
 ## Constitution Check
 
-_GATE: Passed for planning because the design preserves installed artifacts and waits for the
-upstream correction. Implementation is gated on #307 and the repository prerequisites below.
-Re-check after Phase 1 and after the Almanac upgrade._
+_GATE: Passed for planning because the design preserves installed artifacts and the upstream
+correction is released. Repository prerequisites remain. Re-check after Phase 1._
 
-| Principle                               | Design evidence                                                                                                                                           | Status                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Build-time ingestion produces static same-origin output; runtime help performs no upload, API call, telemetry or automatic external navigation.           | PASS                       |
-| II. Almanac Source of Truth             | Version, licence, notices, issue URL and provenance statements originate in the installed package. #307 is a release gate; no downstream edit is planned. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure manifest validation and a read-only facade own identity/document invariants; components render view models and navigation intent.                    | PASS                       |
-| IV. Lossless, Honest Builds             | Missing/empty/drifted artifacts fail generation; release and non-release identities are explicit; no version or legal text is invented.                   | PASS                       |
-| V. Desktop, Tablet and Mobile           | One responsive semantic document covers all sizes/orientations, touch, screen reader, 200% text and 400% zoom without document overflow.                  | PASS                       |
-| VI. Commander's Language                | Help/framing is localised; exact English legal text is unchanged and programmatically identified as English/untranslated.                                 | PASS                       |
-| VII. One Design System                  | The route and shell/context entries compose feature 011 primitives and tokens; no screen-local visual language is introduced.                             | PASS; prerequisite 011     |
-| VIII. Tested Before It Ships            | Generator failure cases, exact-byte tests, dual-engine viewport journeys, axe and manual screen-reader checks are specified without relaxing coverage.    | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | Every requirement maps to a plan-time surface and contract before tasks are generated.                                                                    | PASS                       |
+| Principle                               | Design evidence                                                                                                                                        | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| I. Client-Side Only                     | Build-time ingestion produces static same-origin output; runtime help performs no upload, API call, telemetry or automatic external navigation.        | PASS                   |
+| II. Almanac Source of Truth             | Version, licence, notices, issue URL and provenance statements originate in the installed package; the released #307 wording is preserved exactly.     | PASS                   |
+| III. Domain Logic Outside UI            | Pure manifest validation and a read-only facade own identity/document invariants; components render view models and navigation intent.                 | PASS                   |
+| IV. Lossless, Honest Builds             | Missing/empty/drifted artifacts fail generation; release and non-release identities are explicit; no version or legal text is invented.                | PASS                   |
+| V. Desktop, Tablet and Mobile           | One responsive semantic document covers all sizes/orientations, touch, screen reader, 200% text and 400% zoom without document overflow.               | PASS                   |
+| VI. Commander's Language                | Help/framing is localised; exact English legal text is unchanged and programmatically identified as English/untranslated.                              | PASS                   |
+| VII. One Design System                  | The route and shell/context entries compose feature 011 primitives and tokens; no screen-local visual language is introduced.                          | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Generator failure cases, exact-byte tests, dual-engine viewport journeys, axe and manual screen-reader checks are specified without relaxing coverage. | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every requirement maps to a plan-time surface and contract before tasks are generated.                                                                 | PASS                   |
 
-### Required upstream and repository dependencies
+### Required released and repository dependencies
 
-1. [Almanac issue #307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307)
-   must be corrected in a release newer than beta.12. The package notice must remain verbatim in the
-   app; a local wording patch is prohibited.
+1. Almanac 0.1.1 supplies the corrected
+   [#307](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/307) notice. The package notice
+   remains verbatim in the app; a local wording patch is prohibited.
 2. Feature 001 must supply the persistent application shell, canonical `/build#b.…` behavior and
    production service-worker/app-shell caching used by the offline validation.
 3. Feature 011 must supply shared tokens/components, locale selection/messages, Firefox and
@@ -97,8 +95,7 @@ Re-check after Phase 1 and after the Almanac upgrade._
 4. The release pipeline must provide explicit version-matched release evidence. Every other build
    is non-release and must have a safe build identifier; ambiguous metadata fails generation.
 
-Feature 012 may be tasked after these contracts are accepted, but it cannot be implemented or
-shipped until #307 is released and consumed.
+Feature 012 may be tasked after these repository contracts are accepted. No Almanac release gate remains.
 
 ## Project Structure
 
@@ -165,7 +162,7 @@ Markdown/HTML interpretation, private legal copy or second navigation system is 
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and the upstream blocker are recorded in
+All decisions, package probes, alternatives and the released regression are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
 - Resolve an exported Almanac leaf and walk to the installed package root, matching the repository's
@@ -181,11 +178,10 @@ All decisions, package probes, alternatives and the upstream blocker are recorde
   active build/storage state is untouched.
 - Source the package-defect destination from `package.json#bugs.url`; permit only an explicit native
   external action with a visible leaving-app warning and no query, fragment or build state.
-- Beta.12's notice contradicts its installed provenance tree. #307 blocks implementation rather
-  than permitting a local correction.
+- 0.1.1's notice correctly identifies its installed `PROVENANCE/` tree; byte-equality remains a
+  regression requirement.
 
-No planning clarification marker remains. The unresolved item is an explicit upstream release
-dependency, not an ambiguity to resolve by assumption.
+No planning clarification marker or unresolved Almanac dependency remains.
 
 ## Phase 1: Design Outputs
 
@@ -212,10 +208,9 @@ full legal bytes and artifact identities remain traceable to shipped files; miss
 package content blocks release instead of degrading at runtime. Every FR has a surface owner and a
 dual-engine responsive/accessibility validation path.
 
-The planning gate remains **PASS with no exception**. Implementation remains **blocked upstream** by
-Almanac #307 and sequenced behind the relevant feature 001 and 011 foundations. After upgrading the
-pinned package, rerun the minimal reproduction, resynchronise committed legal copies, verify every
-hash/byte count and re-evaluate this constitution table before generating or refreshing tasks.
+The planning gate remains **PASS with no exception**. The Almanac gate is satisfied; implementation
+is sequenced behind the relevant feature 001 and 011 foundations. Before task generation,
+resynchronise the committed legal copies and verify every hash/byte count.
 
 ## Complexity Tracking
 

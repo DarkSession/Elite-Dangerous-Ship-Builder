@@ -12,9 +12,11 @@ do not parse, trim, measure, normalize or commit.
 5. Count valid entries plus rejected-entry diagnostics. Anything other than one returns cardinality
    failure with all diagnostics.
 6. A sole rejected entry returns its exact diagnostics.
-7. Construct detached `ShipLoadout` from inspected `entry.data` via `fromLoadout()`.
-8. Normalize fixed mounts before calculations, using package slot reasons/defaults and package-owned
-   source-purchase invalidation.
+7. Record missing/unresolved fixed identities from inspected `entry.data`, then construct a detached
+   `ShipLoadout` via `fromLoadout()`. Reject an unknown hull. Compare the source cargo identity with
+   the package-restored result so automatic cargo-hatch repair remains reportable.
+8. For remaining missing/unresolved fixed mounts, call `repairFixedMount()` and preserve its
+   structured result and package-owned source-purchase invalidation.
 9. Invoke the released Almanac quality normalizer; supported partial rolls become recomputed completed
    grades, structured refusal rejects import.
 10. Read final validation and create candidate/report.
@@ -36,8 +38,8 @@ Ordinary/pre-engineered identities, effects, enabled, priority, ship name/ident,
 modules and valid purchase provenance otherwise remain. Missing defaults stay incomplete. Reports are
 forbidden from build/persistence/link/SLEF payloads.
 
-An app loop may call `applyBlueprint(...quality: 1)` for a known ordinary recipe, but that is not a
-universal algorithm: fixed/reward/effect/unresolved cases require the package normalizer.
+Quality completion uses `completeEngineeringGrade()` for every engineered module; fixed, reward,
+effect and unresolved cases retain the package's structured outcome.
 
 ## Atomicity
 
@@ -45,7 +47,7 @@ Before/after every rejected/cancelled import, active snapshot/revision, provenan
 working/named bytes, fragment/history length and undo/redo tape compare equal. Accepted import is one
 replacement, resets edit history, and updates autosave/link only after commit.
 
-## Upstream gate
+## Released package boundary
 
 No implementation may alter only `Quality`, merge modifiers, decide cargo-hatch credit invalidation or
-add local validation issues. Tasks wait for the released APIs in [research.md](../research.md).
+add local validation issues. Tasks use the 0.1.1 APIs verified in [research.md](../research.md).

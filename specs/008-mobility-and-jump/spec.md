@@ -35,7 +35,7 @@ out of scope.
   laden single and total ranges and jump counts.
 - **FR-003**: The application MUST call package jump functions only after required diagnostic mass
   and capacity results are complete. Failure MUST remain unavailable without a guessed value.
-- **FR-004**: Mobility MUST use `ShipLoadout.mobilityMetrics()` for selected fuel, cargo and ENG pips
+- **FR-004**: Mobility MUST use `ShipLoadout.mobilityMetricsResult()` for selected fuel, cargo and ENG pips
   and show every returned speed, boost, rotation and multiplier field.
 - **FR-005**: A `null` mobility result MUST remain unavailable. Hull base values MUST NOT be
   substituted for it.
@@ -55,7 +55,7 @@ out of scope.
 
 ## Almanac Coverage
 
-`jumpRangeSummary()`, `mobilityMetrics()`, `unladenMassResult`, `fuelCapacityResult` and
+`jumpRangeSummary()`, `mobilityMetricsResult()`, `standardLoadResult()`, `unladenMassResult`, `fuelCapacityResult` and
 `cargoCapacityResult` provide every aggregate. Fitted modules provide their resolved mass.
 
 ## Success Criteria

@@ -2,21 +2,20 @@
 
 Research used the accepted specification, constitution, feature 001/002/003/005/007/011/012
 artifacts, `.design/Ship Builder.dc.html`, installed
-`@elite-dangerous-almanac/core@0.1.0-beta.12`, current upstream issues and direct audits of every
+`@elite-dangerous-almanac/core@0.1.1`, current upstream issues and direct audits of every
 installed package asset. No application geometry or game value was introduced.
 
-## Installed assets and upstream contract
+## Installed assets and released contract
 
-**Decision**: Treat the installed package as the sole source of ship artwork, but block
-implementation until [Almanac #308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308)
-lands in a release. That issue requests a public/tested asset path, annotation, duplicate and safe
-inline-content contract. After upgrading, rerun the full asset audit before consuming it.
+**Decision**: Treat the installed package as the sole source of ship artwork and consume Almanac
+0.1.1's released [#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308) contract
+for asset paths, annotations, duplicates and safe inline content.
 
-**Rationale**: Beta.12's README publishes
-`assets/ships/<symbol>/schematic-{top,bottom}.svg`, but no installed documentation or type defines
-`data-feature`, `data-journal-slot`, coverage, duplicate semantics or safe inline content. Feature
-010 must use those annotations and is constitutionally prohibited from making their current spelling
-an application-owned promise. The issue includes a minimal reproduction and requested contract.
+**Rationale**: 0.1.1's README publishes `assets/ships/<symbol>/schematic-{top,bottom}.svg` and defines
+stable interactive identity only on `<g data-feature="hardpoint|utility_mount"
+data-journal-slot="<exact slot key>">`. It promises complete hardpoint/utility coverage, at most one
+occurrence per side, cross-side repeats as the same slot, and static safe inline documents. IDs,
+coordinates, model sockets, colours and drawing order are not contracts.
 
 **Alternatives considered**: Depending on undocumented markup, maintaining a private manifest,
 reading drawing order/ids/labels and measuring geometry were rejected. Each would turn package
@@ -24,8 +23,7 @@ presentation details into application game data.
 
 ## Package coverage audit
 
-**Decision**: Pin the current observations as upgrade-validation evidence, not as a substitute for
-#308's public contract:
+**Decision**: Pin the current observations as regression evidence for #308's public contract:
 
 - `SHIPS` contains 48 hulls and the package has exactly 48 matching asset directories;
 - every directory has `illustration.svg`, `schematic-top.svg` and `schematic-bottom.svg`;
@@ -52,7 +50,7 @@ resolved slot has `kind === 'hardpoint'`. Package utility geometry remains nonin
 feature 002's complete ledger remains the route to utility and internal slots. The spec's stale claim
 that utility positions are absent was corrected without changing FR-002 behavior.
 
-**Rationale**: Beta.12 contains 195 utility occurrences, covering every package utility slot, in 81
+**Rationale**: 0.1.1 contains 195 utility occurrences, covering every package utility slot, in 81
 of 96 side files. `TinyHardpointN` is the game's utility key vocabulary, so classifying by name would
 be exactly the prohibited inference. FR-002 already limits interactive mounts to resolved
 hardpoints.
@@ -124,10 +122,9 @@ feature 005's revision-matched `HardpointPowerObservationPort` for effective pri
 disabled/inactive/powered/shed/qualified state under feature 003's deployed/retracted condition.
 Preserve every unavailable member.
 
-Implementation waits on [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-and a released per-module power projection. The existing issue's beta.12 reproduction still yields a
-known 1.5 MW aggregate contribution while the fitted module's effective stats are unresolved and no
-public consumer entry names that contribution.
+Almanac 0.1.1's released [#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
+projection includes a `PowerBudget.consumers` entry even when a participating module's draw is
+unresolved; the regression fixture retains its exact 1.5 MW consumer.
 
 **Rationale**: Raw `module.on` and zero-based `priority` may be absent, and aggregate band state alone
 does not expose the package's effective per-module defaults/classification. Feature 005 already owns
@@ -211,9 +208,5 @@ offline proof, visual snapshots and axe-only accessibility were rejected as inco
 
 ## Dependency conclusion
 
-No bad-key or missing-asset Almanac defect exists in beta.12. Two unresolved dependencies remain:
-
-1. newly filed Almanac #308 for the public/tested schematic annotation and inline-content contract;
-2. existing Almanac #299 for authoritative per-module power presentation.
-
-Both are implementation gates. All planning unknowns are resolved.
+No bad-key, missing-asset or unresolved Almanac dependency exists in 0.1.1. The released #308 and
+#299 contracts are pinned by regression tests. All planning unknowns are resolved.

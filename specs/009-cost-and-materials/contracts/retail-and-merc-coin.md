@@ -51,6 +51,6 @@ local clamp, fallback price or repair.
 ## Verification
 
 Contract tests spy on the captured loadout and prove one call per method. Fixtures cover fully priced,
-one/all unpriced, unknown hull, no Mercenary article, multiple recognized articles, future missing
+one/all unpriced, unknown-hull construction refusal, no Mercenary article, multiple recognized articles, future missing
 Merc price, later grade, clearing engineering, exact zero and source-purchase separation. Every numeric
 assertion deep-equals the package result.

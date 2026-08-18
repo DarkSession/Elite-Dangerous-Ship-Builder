@@ -16,7 +16,7 @@ One atomic view of one build revision under one set of conditions.
 | `hardpointState`     | `deployed \| retracted`          | Selected condition; defaults through feature 003 to deployed               |
 | `pips`               | `PipAllocation`                  | Feature 003 input; the distributor view also carries returned package pips |
 | `power`              | `PowerBudgetView`                | Always returned for an active build                                        |
-| `modules`            | `ModulePowerCollection`          | Requires the upstream package projection described in research             |
+| `modules`            | `ModulePowerCollection`          | Projects released 0.1.1 `PowerBudget.consumers`                            |
 | `distributor`        | `DistributorView`                | Package result or explicit unavailable state                               |
 | `heat`               | `HeatProfileView`                | Package result or explicit unavailable state                               |
 | `status`             | `ready \| unavailable \| failed` | Whole-snapshot presentation state; never carries stale prior values        |
@@ -97,9 +97,9 @@ No field is calculated from another. A zero-draw band remains present.
 
 ## ModulePowerCollection
 
-This collection cannot be implemented against beta.12 without violating the
-Almanac boundary. Its source must be the future released package projection, not
-a join over raw modifiers or aggregate subtraction.
+This collection projects 0.1.1's `PowerBudget.consumers` and selects the matching returned
+`PowerBudget.bands` verdict for the active hardpoint state. It does not join raw modifiers or use
+aggregate subtraction.
 
 ```ts
 interface ModulePowerCollection {
@@ -132,12 +132,28 @@ Rules:
 | `enabled`       | boolean                        | Package-effective state, including default behavior             |
 | `priority`      | `1..5`                         | Package-effective outfitting group                              |
 | `deployedOnly`  | `true \| false \| unavailable` | Package-authored state; unknown remains unknown                 |
+| `selectedPower` | `ModulePowerState`             | Consumer state plus the matching returned band verdict          |
 | `sourceOrdinal` | non-negative integer           | Stable package order, presentation only                         |
 
 `draw` is the module's package-rated contribution. The selected-state text may
 say disabled or inactive while retracted; the application does not replace the
 draw with a locally calculated zero. Aggregate selected draw continues to come
 only from `powerBudget()`.
+
+```ts
+type ModulePowerState =
+  | { kind: 'disabled' }
+  | { kind: 'inactiveRetracted' }
+  | { kind: 'verdict'; powered: QualifiedVerdict<boolean> }
+  | { kind: 'indeterminate' };
+```
+
+`disabled` comes directly from `consumer.enabled === false`; `inactiveRetracted` requires the
+retracted condition and `consumer.deployedOnly === true`. An enabled consumer with known draw and
+deployment classification receives the selected `poweredDeployed`/`poweredRetracted` value from the
+returned band matching its package priority, with the same known-draw qualification as that band.
+Missing draw, deployment classification or matching band is `indeterminate`. This is field
+selection over one package result, not locally reconstructed shedding arithmetic.
 
 ## DistributorView
 

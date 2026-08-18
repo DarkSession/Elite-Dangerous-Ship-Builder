@@ -77,17 +77,18 @@ localized game-unit label, not an ISO currency.
 
 ## Game Text Presentation
 
-| Field              | Type                                         | Rules                                                          |
-| ------------------ | -------------------------------------------- | -------------------------------------------------------------- |
-| `identity`         | package stable identity                      | Symbol, fdname, code/constraint or exact package slot identity |
-| `text`             | package-returned localized or canonical text | Never application-authored game translation                    |
-| `language`         | BCP 47 tag for displayed text                | Used on the textual boundary when it differs from root         |
-| `translationState` | `localized \| canonical \| unavailable`      | `canonical` in non-English UI requires disclosure              |
-| `disclosureKey`    | app key or `null`                            | Present for canonical/unavailable state                        |
+| Field              | Type                                    | Rules                                                            |
+| ------------------ | --------------------------------------- | ---------------------------------------------------------------- |
+| `identity`         | package stable identity                 | Symbol, fdname, code/constraint or exact package slot identity   |
+| `text`             | package-returned text or `null`         | Null only for explicit unavailable; never app-authored game text |
+| `language`         | BCP 47 tag or `null`                    | Null with unavailable; otherwise marks the textual boundary      |
+| `translationState` | `localized \| canonical \| unavailable` | `canonical` in non-English UI requires disclosure                |
+| `disclosureKey`    | app key or `null`                       | Present for canonical/unavailable state                          |
 
 An unknown identity and a known identity with no locale value are distinct. The presenter requests
 canonical English through the package helper where available; otherwise it uses the package's
-canonical field. No raw key or empty display text is emitted.
+canonical field. When neither exists, `text` is null and localized unavailable framing is rendered.
+No raw key or empty display text is emitted.
 
 ## Announcement Event
 

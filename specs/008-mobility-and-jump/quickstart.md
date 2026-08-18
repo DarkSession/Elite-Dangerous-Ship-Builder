@@ -23,21 +23,13 @@ pnpm install --frozen-lockfile
 If the environment supplies browser executables instead of Playwright's pinned downloads, set
 `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` to those exact executables.
 
-## Upstream release gates
+## Released Almanac contract checks
 
-1. Confirm [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is
-   closed by a released package where power-shed thrusters make `mobilityMetrics()` return `null`.
-2. Confirm [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) is
-   closed by a released exact-slot per-module power projection and feature 005 exposes the shared
-   observation required to name unpowered thrusters.
-3. Check [Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295). It is
-   non-blocking; until a direct standard-load contract ships, retain feature 003's package-only
-   `fuelPerJump(maxJumpRange())` composition and no local fuel-cap formula.
-4. Upgrade the exact dependency and lockfile through the normal dependency change, then rerun the
-   probes in [research.md](./research.md).
-
-Before #296/#299 are released and consumed, feature 008 must remain blocked; do not add a local
-power gate, infer an unpowered state, copy priority rules or null a package result.
+1. Pin Almanac 0.1.1 and confirm `standardLoadResult()` supplies all three standard loads.
+2. Confirm disabled/shed power makes `mobilityMetrics()` return `null` and
+   `mobilityMetricsResult()` return an ordered structured issue.
+3. Confirm `PowerBudget.consumers` exposes the exact-slot consumer used by feature 005.
+4. Rerun the probes in [research.md](./research.md); do not add local load or power calculations.
 
 Useful audit commands:
 
@@ -128,7 +120,7 @@ feature 003's shared controls.
 
 Expected:
 
-- `mobilityMetrics()` receives exact shared package inputs once per settled revision;
+- `mobilityMetricsResult()` receives exact shared package inputs once per settled revision;
 - all seven visible mobility fields equal that call;
 - Jump Performance always keeps all three profiles while the selected headline/context changes;
 - invalid drafts change no result and trigger no feature 008 projection.
@@ -153,7 +145,7 @@ curves plus absent optional fields.
 Expected:
 
 - only package-present thresholds, factors and multipliers appear;
-- selected-load multipliers equal `mobilityMetrics()` fields;
+- selected-load multipliers equal completed `mobilityMetricsResult()` fields;
 - sparse facts remain absent rather than zero;
 - no bar length, percentage-of-optimal, curve or headroom is calculated.
 

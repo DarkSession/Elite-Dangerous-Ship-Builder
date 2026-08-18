@@ -7,9 +7,8 @@ through the package ship catalogue using `build.shipSymbol`. Read the actual fit
 the build's package slot snapshot. No standalone armour/resistance function and no private hull or
 bulkhead catalogue is used.
 
-Implementation is gated on Almanac #297. Beta.12's all-zero result for an unresolved hull is not
-filtered, corrected or relabelled in the application; the released package must authorize an
-unavailable/diagnostic state.
+Almanac 0.1.1 closes #297 by rejecting an unknown hull during construction. An active known-hull
+loadout uses non-nullable `armourMetrics()` without local filtering, correction or relabelling.
 
 ## Ready mapping
 
@@ -39,13 +38,13 @@ score.
 
 ## Availability and fitted source
 
-- A package-authorized unresolved-hull result maps to `unavailable` and exposes no armour/hardness
-  placeholders.
-- `getShipBySymbol(build.shipSymbol) === null` never falls back to a similarly named or default hull.
+- Unknown hulls are rejected before active-build replacement and never reach this boundary.
+- An invariant failure resolving a known active hull is unavailable and never falls back to a
+  similarly named or default hull.
 - The source manifest shows a bulkhead only when an actual fitted package snapshot exists. The
   package's calculation fallback behavior does not authorize presenting a fabricated fitted module.
-- Missing/unresolved source identity may coexist with only the metric state the released package
-  authorizes.
+- Missing/unresolved source identity may coexist with the non-null aggregate metric state the
+  released package authorizes for a known active hull.
 
 ## Semantic values
 
@@ -70,6 +69,5 @@ zero. No clamp, absolute-value conversion or catalogue substitution is permitted
 - Module armour/protection never enter hull hit points or each other's format.
 - A non-stock fitted bulkhead is the exact source target.
 - Missing shields leave the complete armour view available.
-- #297's unknown-hull reproduction becomes package-authorized unavailable and never a local zero
-  suppression.
+- #297's unknown-hull reproduction is rejected at construction and never reaches this projector.
 - Negative, zero and infinite results retain distinct semantics.

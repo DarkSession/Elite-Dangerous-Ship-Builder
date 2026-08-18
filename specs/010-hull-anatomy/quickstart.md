@@ -1,7 +1,6 @@
 # Quickstart Validation: Hull Anatomy and Hardpoint Geometry
 
-This guide validates the planned capability after its upstream and project prerequisites are
-implemented. It does not authorize an application workaround while either Almanac gate remains open.
+This guide validates the planned capability after its project prerequisites are implemented.
 
 ## Prerequisites and gates
 
@@ -11,9 +10,8 @@ implemented. It does not authorize an application workaround while either Almana
    pnpm install --frozen-lockfile
    ```
 
-2. Confirm the pinned Almanac release includes fixes/contracts for
-   [#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308) and
-   [#299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299).
+2. Confirm Almanac 0.1.1 is pinned and rerun the released #308 schematic and #299 consumer
+   regressions.
 3. Confirm features 001, 002, 003, 005, 011 and 012 expose the boundaries named in
    [plan.md](./plan.md). Do not proceed with feature-specific replacements for a missing boundary.
 4. Run the full repository gate:

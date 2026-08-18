@@ -34,7 +34,7 @@ are not implementation inputs.
 
 ## Package fact correction
 
-The reference draws utilities, and beta.12's real SVGs also annotate all 195 package utility slots.
+The reference draws utilities, and 0.1.1's real SVGs also annotate all 195 package utility slots.
 The original feature-spec prose saying the package carries no utility positions was therefore stale
 and has been corrected. This does not expand scope: FR-002 explicitly admits only resolved
 hardpoints, so utilities remain noninteractive artwork and complete-ledger entries.

@@ -37,13 +37,13 @@ Every failure preserves active state, records, fragment and draft.
 
 ## FixedMountNormalization
 
-| Field            | Type                                       | Rule                                         |
-| ---------------- | ------------------------------------------ | -------------------------------------------- |
-| `slot`           | string                                     | Candidate spelling where present             |
-| `reason`         | `requiredSlot \| cargoHatch`               | Exact package `immovableReason`              |
-| `previousSymbol` | string or null                             | Null means absent                            |
-| `defaultSymbol`  | string or null                             | Exact package default; null when unavailable |
-| `outcome`        | `filled \| replaced \| defaultUnavailable` | No derived substitute                        |
+| Field            | Type                                                                     | Rule                                         |
+| ---------------- | ------------------------------------------------------------------------ | -------------------------------------------- |
+| `slot`           | string                                                                   | Candidate spelling where present             |
+| `reason`         | `requiredSlot \| cargoHatch`                                             | Exact package `immovableReason`              |
+| `previousSymbol` | string or null                                                           | Null means absent                            |
+| `defaultSymbol`  | string or null                                                           | Exact package default; null when unavailable |
+| `outcome`        | `autoRestored \| repaired \| unchanged \| defaultUnavailable \| refused` | Exact package/construction outcome           |
 
 Fills/replacements and purchase invalidation must be package-owned. Unavailable stays incomplete.
 

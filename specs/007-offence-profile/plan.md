@@ -14,11 +14,9 @@ returned field, optional member, zero and infinity in an immutable presentation 
 power/distributor observation, and feature 011 supplies the responsive, accessible design system and
 localization layer.
 
-Implementation is **blocked** on an Almanac release that exposes authoritative post-engineering
-range and armour-piercing values in the fitted-weapon projection returned by
-`ShipLoadout.weaponMetrics()`. Beta.12 exposes those fields only through a separate
-`fittedModuleAt(slot).effectiveStats` lookup, which cannot satisfy the feature's single per-weapon
-source boundary without an application-owned join. The gap is filed as
+Almanac 0.1.1 exposes authoritative post-engineering range, projectile-boundary and armour-piercing
+values directly in each fitted-weapon projection returned by `ShipLoadout.weaponMetrics()`. The
+released work is recorded as
 [Elite-Dangerous-Almanac #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300).
 No local join or copied projection is planned.
 
@@ -32,7 +30,7 @@ damage shares and inferred bar scales are excluded.
 tooling
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.0-beta.12 leaf exports (upgrade required for the blocker),
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports,
 feature 001's active-build/revision boundary, feature 002's exact-slot intent, feature 003's viewing
 conditions, feature 005's package-backed power observation, and feature 011's UI/localization
 infrastructure
@@ -61,7 +59,7 @@ zero, disabled, absent and infinite states remain distinct; no page horizontal s
 tokenized theme; all application text and figures localized; touch/screen-reader operation; WCAG 2.2
 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: 48 pinned hulls, at most 10 hardpoint slots on one hull, and 159 beta.12 hardpoint
+**Scale/Scope**: 48 pinned hulls, at most 10 hardpoint slots on one hull, and 159 0.1.1 hardpoint
 catalogue records; one whole-build total, up to 10 complete weapon entries and one WEP-capacitor
 result per active build
 
@@ -70,47 +68,44 @@ required departures are recorded in [design/reference-review.md](./design/refere
 
 ## Constitution Check
 
-_GATE: Passed for planning because the design waits for package truth and introduces no
-constitutional exception. Implementation is gated on the released Almanac dependency and
-prerequisite features below. Re-check after Phase 1 and after the package upgrade._
+_GATE: Passed. The design consumes package truth and introduces no constitutional exception. The
+Almanac dependency is satisfied; repository prerequisite features remain._
 
-| Principle                               | Design evidence                                                                                                                                               | Status                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | All projections run over the in-browser active build and installed static package; no persistence or network boundary is added.                               | PASS                       |
-| II. Almanac Source of Truth             | Both aggregate calls are package facades. Missing fitted-weapon range/piercing is an upstream release gate; no join, formula or fallback is planned.          | PASS; implementation gated |
-| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed signal facade coordinates revisions and conditions; components render inputs and emit intents.    | PASS                       |
-| IV. Lossless, Honest Builds             | Optional members, exact zero, no weapons, disabled weapons, no ammunition, unlimited ammunition, zero capacity and infinity retain distinct model states.     | PASS                       |
-| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow. | PASS                       |
-| VI. Commander's Language                | Application labels, units and semantic sentinels use feature 011; weapon names use Almanac localization with disclosed canonical fallback.                    | PASS                       |
-| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                | PASS; prerequisite 011     |
-| VIII. Tested Before It Ships            | Exact field equality, dual-engine multi-viewport journeys and automated/manual accessibility coverage are specified without relaxing the 80% gate.            | PASS; prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to the plan-time Offence Profile surface and contracts exist before task breakdown.                                                             | PASS                       |
+| Principle                               | Design evidence                                                                                                                                               | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All projections run over the in-browser active build and installed static package; no persistence or network boundary is added.                               | PASS                   |
+| II. Almanac Source of Truth             | Both aggregate calls are package facades. Fitted-weapon range/piercing and canonical order come directly from 0.1.1; no join, formula or fallback is planned. | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed signal facade coordinates revisions and conditions; components render inputs and emit intents.    | PASS                   |
+| IV. Lossless, Honest Builds             | Optional members, exact zero, no weapons, disabled weapons, no ammunition, unlimited ammunition, zero capacity and infinity retain distinct model states.     | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete responsive surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow. | PASS                   |
+| VI. Commander's Language                | Application labels, units and semantic sentinels use feature 011; weapon names use Almanac localization with disclosed canonical fallback.                    | PASS                   |
+| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                                | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact field equality, dual-engine multi-viewport journeys and automated/manual accessibility coverage are specified without relaxing the 80% gate.            | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to the plan-time Offence Profile surface and contracts exist before task breakdown.                                                             | PASS                   |
 
-### Required upstream and repository dependencies
+### Required released and repository dependencies
 
-1. [Almanac issue #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300) must land
-   in a released package. The minimal reproduction and required semantics are in
-   [research.md](./research.md#fitted-weapon-range-and-piercing--upstream-blocker).
+1. [Almanac issue #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300) is released
+   in 0.1.1. The regression and semantics are in
+   [research.md](./research.md#fitted-weapon-range-and-piercing--released-in-011).
 2. Feature 001 must supply the single active `ShipLoadout`, atomic build revision and `/build`
    workspace.
-3. Feature 002 must supply exact-slot selection and the authoritative fitted-module editor; its own
-   Almanac normalization blockers remain applicable to builds feature 007 reads.
+3. Feature 002 must supply exact-slot selection and the authoritative fitted-module editor; its
+   released Almanac normalization behavior remains applicable to builds feature 007 reads.
 4. Feature 003 must supply the shared valid six-pip condition/revision contract and WEP selection.
 5. Feature 005 must supply the package-backed distributor/power observation needed to distinguish a
    missing, disabled or power-shed distributor from the capacitor method's genuine zero-capacity
-   result. Its upstream dependency
-   [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299) remains
-   applicable.
+   result. Its dependency [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
+   is also released in 0.1.1.
 6. Feature 011 must supply shared components/tokens, localization/formatting, Firefox/landscape
    projects and the automated accessibility harness.
 
-[Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301) tracks a separate
-beta.12 defect in the documented fitted-weapon slot ordering. It is non-blocking because feature 007
-does not require canonical order; the application preserves returned order and never adds a local
-repair.
+[Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301) is released in
+0.1.1: known weapons use hull-slot order, followed by unknown/unmapped slots in source order. The
+application preserves that returned order and adds no local repair.
 
 Feature 007 may be tasked only after these contracts are accepted. It cannot be considered
-implemented or shipped until the upstream gates are released and consumed.
+implemented or shipped until the repository prerequisites are consumed.
 
 ## Project Structure
 
@@ -175,7 +170,7 @@ second `ShipLoadout` is added.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and the blocker are recorded in
+All decisions, package probes, alternatives and released regressions are recorded in
 [research.md](./research.md). The decisive outcomes are:
 
 - `weaponMetrics()` is the sole build/weapon output boundary. Every `WeaponTotals`,
@@ -187,18 +182,17 @@ All decisions, package probes, alternatives and the blocker are recorded in
   is labelled as an overlay. No share, percentage or partition is calculated.
 - Ammunition keeps `null`, finite capacity, zero reserve and `unlimited` distinct; numeric infinity
   is never passed through generic JSON or number formatting.
-- Beta.12's fitted-weapon projection omits effective range and piercing. Implementation waits for
-  #300 rather than joining `fittedModuleAt()` locally.
-- Beta.12 can return imported module order despite documenting slot order. #301 tracks the defect;
-  the initial presentation preserves returned order without claiming or repairing canonical order.
+- 0.1.1's fitted-weapon projection includes sparse effective range, projectile boundaries and
+  piercing, satisfying #300 without a `fittedModuleAt()` join.
+- 0.1.1 returns known weapons in hull-slot order and appends unknown/unmapped slots in source order,
+  satisfying #301; presentation preserves that package order.
 - `weaponsCapacitorMetrics({ weaponsPips })` receives the shared selected value and supplies all
   capacity, recharge, draw, drain and duration fields. Context changes only the semantic wording of
   zero/infinity; it never changes the returned value.
 - The reference's two-region information hierarchy is usable only after removing its calculated
   shares, range bands, target resistance, corrosion effects, convergence and inaccessible bars.
 
-No planning clarification marker remains. The unresolved work is an explicit external dependency,
-not an ambiguity to solve by assumption.
+No planning clarification marker or upstream dependency remains.
 
 ## Phase 1: Design Outputs
 
@@ -217,25 +211,22 @@ not an ambiguity to solve by assumption.
   composition, complete weapon details, states and announcements.
 - [design/reference-review.md](./design/reference-review.md) records which 1c/1d hierarchy is adopted
   and which unsupported details are rejected.
-- [quickstart.md](./quickstart.md) supplies runnable upstream, unit, end-to-end, responsive and
+- [quickstart.md](./quickstart.md) supplies runnable released-API, unit, end-to-end, responsive and
   accessibility validation scenarios.
 
 ## Post-Design Constitution Re-check
 
 Phase 1 introduces no server, persisted metric, alternate build, private game catalogue, local
-weapon or capacitor formula, hard-coded display string or visual literal. The only missing
-package-derived range/piercing projection is deliberately absent and blocked on a released Almanac
-result. Every optional, absent, zero, disabled, unlimited and infinite state remains distinguishable.
+weapon or capacitor formula, hard-coded display string or visual literal. Range/piercing comes from
+the released fitted-weapon projection. Every optional, absent, zero, disabled, unlimited and infinite state remains distinguishable.
 Every FR has a surface owner and a dual-engine responsive/accessibility validation path.
 
-The planning gate remains **PASS with no exception**. Implementation remains **blocked upstream** by
-Almanac #300 and by the shared power-state dependency in #299, and is sequenced behind features 001,
-002, 003, 005 and 011. After upgrading the pinned package and completing those prerequisites, rerun
-the minimal reproductions, confirm the public leaf contracts, re-evaluate this constitution table and
-then generate or refresh tasks.
+The planning gate remains **PASS with no exception**. Almanac 0.1.1 satisfies #299–#301;
+implementation is sequenced behind features 001, 002, 003, 005 and 011. Rerun the regressions,
+confirm the public leaf contracts and re-evaluate this constitution table when generating tasks.
 
 ## Complexity Tracking
 
 No constitutional exception is requested. The projector/facade split is the minimum structure that
 keeps package projection testable without rendering and guarantees revision coherence. Upstream gaps
-remain blockers rather than application-side joins or calculations.
+remain package-owned rather than application-side joins or calculations.

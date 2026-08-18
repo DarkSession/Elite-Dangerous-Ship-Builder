@@ -60,7 +60,9 @@ Any conformance statement uses: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1
 - Every application-owned string is a feature 011 message key with bundled English fallback.
 - Numbers, credits, units and record dates use named locale formatter functions backed by `Intl` and translated unit labels where `Intl` has no appropriate unit.
 - Search/order uses the active locale's collator and displayed values.
-- Package hull/manufacturer/diagnostic text remains package-owned. When the active locale is not supplied by beta.12, render canonical text with its language/disclosure marker; do not add private translations.
+- Package hull/manufacturer/diagnostic text remains package-owned. Query the 0.1.1 i18n leaves for
+  the active locale; on `null`, render canonical text with its language/disclosure marker. Do not add
+  private translations.
 - Missing application messages never expose a raw key, blank or placeholder.
 - Reference typefaces, if retained by feature 011, are self-hosted same-origin static assets with system fallbacks. The design document's Google Fonts requests are not part of the application.
 

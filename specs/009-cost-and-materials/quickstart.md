@@ -3,7 +3,7 @@
 This guide validates the completed capability end to end. It does not replace implementation tasks or
 the contracts in [contracts/](./contracts/).
 
-## Prerequisites and release gates
+## Prerequisites and released regression
 
 1. Use the repository's Node version and install the committed dependency graph:
 
@@ -13,11 +13,10 @@ the contracts in [contracts/](./contracts/).
    ```
 
 2. Confirm features 001, 002, 003 and 011 are implemented and their contracts accepted.
-3. Confirm [Almanac #306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306) is closed
-   by a release newer than beta.12, upgrade the pinned package and rerun the minimal reproduction in
-   [research.md](./research.md#expanded-cargo-rack--upstream-blocker).
+3. With Almanac 0.1.1 pinned, rerun the released [#306](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/306)
+   reproduction in [research.md](./research.md#expanded-cargo-rack-regression).
 
-Expected after the fixed release: a stock cargo rack no longer advertises/applies
+Expected: a stock cargo rack does not advertise/apply
 `CargoRack_IncreasedCapacity` as ordinary free engineering; the two fixed community-goal variants
 remain package-identifiable; the distinct Mercenary cargo-rack climbs remain available through their
 purchased articles. Stop if this does not hold. Do not add a consumer special case.

@@ -50,8 +50,8 @@ breakpoint. Narrow widths, landscape phones, expanded text and 400% zoom use one
   validation.
 - A ready shield shows total strength, all three package contribution fields, both multipliers, SYS
   resistance and all four resistance/EHP pairs.
-- Generator state sits beside availability. A retained strength for a shed generator remains visible
-  with explicit shed context and is never labelled online.
+- Generator state sits beside availability. A shed generator shows structured unavailable shield
+  and recovery results with explicit shed context.
 - Missing/null shield state is explicit and contains no zeros. It does not hide cell-bank fitted
   state or any armour content.
 - Recovery shows normal and broken MJ/s separately, followed by recovery threshold and full
@@ -79,27 +79,28 @@ breakpoint. Narrow widths, landscape phones, expanded text and 400% zoom use one
   piercing. No matchup, damage percentage or verdict is generated.
 - The source manifest shows only actual package-resolved fitted sources and never presents the
   package calculation's fallback bulkhead as though it were fitted.
-- A package-authorized unresolved-hull state is explicit unavailable with no catalogue substitute.
+- Unknown-hull construction refusal remains at the feature 001/004 import boundary and does not
+  create a defence state.
 
 ## State behavior
 
-| State                   | Presentation                                                                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| No active build         | Localized requirement notice plus feature 001 select/open/import actions; no package call     |
-| Recomputing revision    | Shared pending state for the whole snapshot; prior values are not mixed into current state    |
-| Ready                   | Exact values, states and source identities with no qualification notice                       |
-| Shield missing          | Explicit unavailable shield/recovery; armour and bank state continue independently            |
-| Generator disabled      | Disabled context; only package-authorized metrics remain                                      |
-| Generator shed          | Shed context; package-retained shield strength may remain, recovery is unavailable after #296 |
-| Generator indeterminate | Generic qualified context; no invented reason/power verdict                                   |
-| Recovery cannot finish  | Field-specific semantic text in the affected duration only                                    |
-| No banks                | Dedicated no-bank state                                                                       |
-| All banks unpowered     | Fitted list plus exact zero package totals and textual unpowered state                        |
-| Unknown bank draw       | Package values retained under explicit assumed/unknown qualification                          |
-| Negative resistance     | Signed percentage and exact EHP with textual weakness semantics                               |
-| Unbounded EHP           | Field-specific unbounded text; no clamped bar or substituted number                           |
-| Unknown hull            | Package-authorized unavailable armour/hardness; no guessed catalogue values                   |
-| Unexpected failure      | Shared alert with no fabricated or stale values; active build remains intact                  |
+| State                         | Presentation                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| No active build               | Localized requirement notice plus feature 001 select/open/import actions; no package call   |
+| Recomputing revision          | Shared pending state for the whole snapshot; prior values are not mixed into current state  |
+| Ready                         | Exact values, states and source identities with no qualification notice                     |
+| Shield missing                | Explicit unavailable shield/recovery; armour and bank state continue independently          |
+| Generator disabled            | Disabled context; only package-authorized metrics remain                                    |
+| Generator shed                | Shed context; shield and recovery are unavailable with package issues                       |
+| Generator indeterminate       | Generic qualified context; no invented reason/power verdict                                 |
+| Recovery cannot finish        | Field-specific semantic text in the affected duration only                                  |
+| No banks                      | Dedicated no-bank state                                                                     |
+| All banks unpowered           | Fitted list plus exact zero package totals and textual unpowered state                      |
+| Unknown bank draw             | Package values retained under explicit assumed/unknown qualification                        |
+| Negative resistance           | Signed percentage and exact EHP with textual weakness semantics                             |
+| Unbounded EHP                 | Field-specific unbounded text; no clamped bar or substituted number                         |
+| Unknown-hull ingress rejected | No defence snapshot is created; feature 001/004 presents the localized construction failure |
+| Unexpected failure            | Shared alert with no fabricated or stale values; active build remains intact                |
 
 ## Announcements
 
