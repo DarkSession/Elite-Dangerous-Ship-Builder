@@ -1,112 +1,96 @@
-# Shield Profile Contract
+# Shield and Recovery Contract
 
 ## Boundary
 
-For one active build revision and one valid feature 003 SYS-pip value, call each method exactly once:
+For one captured active-build/condition revision, derive the selected package value as
+`conditions.pips.systems / 2` and call:
 
 ```ts
-const shield = build.shieldMetricsResult({ systemsPips });
-const recovery = build.shieldRecoveryResult({ systemsPips });
-const budget = build.powerBudget();
+const shield = loadout.shieldMetricsResult({ systemsPips });
+const recovery = loadout.shieldRecoveryResult({ systemsPips });
 ```
 
-The shield calls receive the identical `systemsPips` value and all three calls belong to one atomic
-defence snapshot. The budget supplies auxiliary state context only; this capability does not
-duplicate feature 005's power figures. Components never call the package. No standalone resistance,
-shield-strength, effective-hit-point or recovery function is called by application code.
+Both calls receive the identical explicit pips. Components never call the package, and application
+code never calls standalone shield, resistance, EHP or recovery formulas.
 
-The projector consumes these 0.1.1 contracts, released for Almanac #296, without suppressing values
-or issues locally.
+## Calculation result contract
 
-## Ready shield mapping
+Each result remains independent:
 
-Copy every returned field without calculation:
+- `complete: true` copies the entire value and carries no issue;
+- `complete: false` carries no value and preserves every package issue in order;
+- each issue retains `field`, `reason`, optional `slot`/`symbol`, params and the original issue for
+  package-owned diagnostic localization;
+- an issue-provided slot authorizes that exact workspace slot target;
+- no issue is collapsed into a generic generator state or inferred from another package result.
 
-| View field                 | `ShieldMetrics` source                                 |
-| -------------------------- | ------------------------------------------------------ |
-| total strength             | `strength`                                             |
-| generator contribution     | `generator`                                            |
-| booster contribution       | `boosters`                                             |
-| reinforcement contribution | `reinforcement`                                        |
-| mass multiplier            | `massCurveMultiplier`                                  |
-| boost multiplier           | `boostMultiplier`                                      |
-| SYS resistance             | `systemsResistance`                                    |
-| four resistances           | `resistances.kinetic/thermal/explosive/caustic`        |
-| four effective pools       | `effectiveHitPoints.kinetic/thermal/explosive/caustic` |
+The authoritative reasons are `missing`, `unresolved`, `disabled`, `shed` and `invalid`. A
+`powerCapacity` or `powerDraw` issue remains that diagnosis and is not relabeled as a generator
+failure. Shield/recovery availability uses package hardpoints-retracted power semantics; deployed
+power is not compared or required to agree.
 
-The selected pips are stated beside the result. They do not become a local explanation of strength,
-and the application does not assume which fields changed.
+## Complete shield mapping
 
-## Availability and generator state
+| Presentation fact          | `ShieldMetrics` source                                 | Unit/meaning                |
+| -------------------------- | ------------------------------------------------------ | --------------------------- |
+| total strength             | `strength`                                             | MJ                          |
+| generator aggregate        | `generator`                                            | MJ                          |
+| booster aggregate          | `boosters`                                             | MJ                          |
+| reinforcement aggregate    | `reinforcement`                                        | MJ                          |
+| hull-mass curve multiplier | `massCurveMultiplier`                                  | multiplier                  |
+| combined boost multiplier  | `boostMultiplier`                                      | multiplier; `1` is baseline |
+| selected SYS resistance    | `systemsResistance`                                    | fraction                    |
+| damage resistances         | `resistances.kinetic/thermal/explosive/caustic`        | signed fraction             |
+| effective shield pools     | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | MJ of raw damage            |
 
-- A released package unavailable outcome maps to `ShieldProfileView.unavailable`; no zero or
-  catalogue fallback is displayed.
-- No resolved fitted generator maps to `missing`.
-- A resolved generator with `on === false` maps to `disabled`.
-- For a resolved generator not named by `budget.unknownDraws`, absent priority selects package
-  default group one and an explicit integer `0..4` selects the corresponding returned one-based band.
-  Any other raw priority is indeterminate rather than locally clamped. Agreeing
-  `poweredDeployed`/`poweredRetracted` values may establish `powered` or `shed`; disagreement is
-  indeterminate. The released recovery outcome must agree.
-- Any unresolved or ambiguous case maps to `indeterminate`, not a guessed reason.
-- A shed generator produces structured unavailable shield and recovery results.
+The selected SYS pips are visible beside the shield context. No application explanation claims
+which fields changed; the package result is the answer.
 
-## Recovery mapping
+## Complete recovery mapping
 
-Copy the rates and durations independently:
+| Presentation fact          | `ShieldRecovery` source | Unit/meaning                            |
+| -------------------------- | ----------------------- | --------------------------------------- |
+| raised regeneration rate   | `regenRate`             | MJ/s                                    |
+| broken regeneration rate   | `brokenRegenRate`       | MJ/s                                    |
+| collapse-to-raise duration | `recoveryTime`          | seconds to 50%, including package delay |
+| raise-to-full duration     | `regenTime`             | seconds from 50% to full                |
 
-| View field                     | `ShieldRecovery` source |
-| ------------------------------ | ----------------------- |
-| normal regeneration            | `regenRate`             |
-| broken regeneration            | `brokenRegenRate`       |
-| collapse-to-recovery threshold | `recoveryTime`          |
-| recovery threshold-to-full     | `regenTime`             |
+The two rates and two phases never merge, and recovery unavailability never hides a complete shield
+or any armour result.
 
-`null`/released unavailable remains unavailable. It never hides a reportable shield metric or any
-armour content.
+## Numeric semantics
 
-## Semantic non-finite and signed values
+| Package value                   | Presentation                                                |
+| ------------------------------- | ----------------------------------------------------------- |
+| finite number                   | exact locale-formatted value and correct unit               |
+| zero                            | numeric zero, never empty/unavailable                       |
+| negative resistance             | exact signed percentage plus visible weakness meaning       |
+| effective hit points `Infinity` | localized unbounded raw-damage meaning for that damage type |
+| `recoveryTime === Infinity`     | localized “cannot reach recovery threshold” meaning         |
+| `regenTime === Infinity`        | localized “cannot regenerate to full” meaning               |
 
-| Package outcome                 | Presentation state                                  |
-| ------------------------------- | --------------------------------------------------- |
-| finite effective hit points     | exact localized MJ value                            |
-| effective hit points `Infinity` | `unbounded` for that damage type                    |
-| finite recovery time            | exact localized duration                            |
-| recovery time `Infinity`        | `cannotRecover`                                     |
-| regeneration time `Infinity`    | `cannotRegenerateToFull`                            |
-| negative resistance             | exact signed localized percentage and weakness text |
-| zero                            | exact numeric zero                                  |
+No clamp, finite substitute, generic infinity label, truthiness check or misleading bar is allowed.
 
-No clamp, substitute, generic infinity label or inferred finite maximum is permitted.
+## Localization and accessibility
 
-## UI intent
+- Application headings, labels, units, sentinel meanings and explanations use feature 011 messages.
+- Package issues use `getCalculationIssueMessage()` from the diagnostics leaf and the shared
+  canonical-language fallback/disclosure; the English `message` is not parsed or translated locally.
+- Strength/contributions/multipliers and recovery use labelled definitions.
+- Damage values use a semantic table when roomy and equivalent complete labelled cards when stacked.
+- Missing, disabled, shed, unresolved, invalid, negative and unbounded meanings are visible text and
+  programmatic state, never color/bar alone.
+- A settled SYS or availability change emits one coalesced polite announcement.
 
-```ts
-setPips(allocation: PipAllocation)
-```
+## Verification
 
-Feature 006 delegates to feature 003's shared validated condition store. It does not create a second
-pip model or persist viewing state.
-
-## Accessibility and localization
-
-- Strength/contribution/multiplier facts use labelled definition structures.
-- Four damage types use a semantic table when space permits and equivalent complete labelled cards
-  when stacked.
-- Any bar is supplemental. Negative and unbounded values are never clipped into a misleading scale.
-- Missing, disabled, shed, indeterminate, negative and non-finite meanings are visible text and
-  programmatic state, not color/icon/fill alone.
-- MJ, MJ/s, percentages, multipliers and durations use feature 011 locale formatters. Application
-  labels and sentinel meanings use message keys.
-- A settled pip or availability change is announced once politely without reading every unchanged
-  value again.
-
-## Required verification
-
-- Exact equality for every `ShieldMetrics` field at zero, fractional and four SYS pips.
-- Exact equality for all four `ShieldRecovery` fields under the same selected pips.
-- Missing/disabled/shed/indeterminate states preserve the package result and its issues.
-- #296's reproduction makes both shield and recovery unavailable with power context.
-- #297's reproduction is rejected at construction, not application-filtered zero.
-- Zero, negative, unavailable and both non-finite meanings remain distinct.
-- Shield unavailability never suppresses armour.
+- Compare every complete field directly with the same real package result at 0, fractional, 2 and 4
+  SYS pips.
+- Compare incomplete issue arrays in exact order and with exact fields/identities.
+- Prove missing generator, disabled generator, shed generator, disabled plant and unresolved power
+  remain distinct package diagnoses.
+- Prove a retracted-powered/deployed-shed generator remains package-complete for shields.
+- Prove shield/recovery may differ without one result suppressing the other.
+- Prove zero, negative, unavailable, unbounded EHP and both non-finishing recovery phases remain
+  distinct.
+- Prove shield unavailability never suppresses armour.

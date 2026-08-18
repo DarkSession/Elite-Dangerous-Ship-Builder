@@ -1,76 +1,98 @@
 # Implementation Plan: Defence Profile
 
-**Branch**: `006-defence-profile` | **Date**: 2026-08-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `006-defence-profile` | **Date**: 2026-08-18 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/006-defence-profile/spec.md`
+**Input**: Feature specification from `specs/006-defence-profile/spec.md`
 
 ## Summary
 
-Present one revision-consistent, read-only defence projection for the active `ShipLoadout`: complete
-shield strength/contributions/multipliers/resistances/effective pools, separate recovery phases,
-every fitted cell bank, complete armour/module protection, hull hardness and exact-slot source
-navigation. A pure projector copies four defence façade results, auxiliary package power context and
-package fitted/hull records under feature 003's selected SYS pips; discriminated views preserve
-unavailable, zero, negative, qualified and field-specific infinite states without local calculation
-or aggregate apportionment.
+Add a complete Defence Profile capability to the existing `/build` workspace. One pure projection
+reads `shieldMetricsResult()`, `shieldRecoveryResult()`, `cellBanks()` and `armourMetrics()` from the
+active `ShipLoadout`, using feature 003's settled SYS pips and revision context. It preserves every
+returned number, ordered calculation issue, bank and package identity without local calculation,
+clamping or aggregate apportionment. The same projection exports the shield/armour summaries feature
+003 needs and exact-slot intents feature 002 can reveal.
+
+The composition follows `.design/Ship Builder.dc.html` canvases 1c and 1d: Defence remains a
+first-class mode inside outfitting, shield and armour are peers when space permits, and the complete
+content stacks on narrow or zoomed layouts. The mock's values, abbreviated mobile content, inferred
+bars, grouped contribution claims and ambiguous “integrity” label are not contracts.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0, Angular 22.1 standalone and zoneless
+**Language/Version**: TypeScript 6.0.2, Angular 22.1 standalone and zoneless, Angular HTML and SCSS;
+Node.js 24 for tooling. Full TypeScript/template strictness is a constitutional target not yet enabled
+by the current root configuration and remains a feature 011 prerequisite.
 
-**Primary Dependencies**: `@elite-dangerous-almanac/core@0.1.1` leaf exports, Angular signals,
-feature 001 active-build boundary, feature 002
-exact-slot coordinator, feature 003 viewing conditions/headlines and feature 011 UI/i18n/test
-foundation
+**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.1` leaf
+exports for loadout defence, ships and i18n; feature 001 active-build/revision ownership; feature 002
+exact-slot selection; feature 003 revision, viewing-condition, provider and workspace-target
+contracts; feature 011 design-system, localization, announcement, preview and test foundations
 
-**Storage**: N/A. Defence snapshots, source manifests and SYS-pip viewing state are memory-only and
-excluded from local records, edit history, URLs and SLEF.
+**Storage**: None. Defence projections, selected capability, SYS pips, source views and announcement
+state remain in memory and never enter local records, edit history, preferences, URLs or SLEF.
 
-**Testing**: Vitest beside source with enforced 80% coverage; Playwright in Chromium and Firefox at
-desktop, tablet/mobile portrait and landscape; automated accessibility checks over every state
+**Testing**: Vitest beside source with the existing 80% statement/branch/function/line thresholds;
+Playwright with `@axe-core/playwright` at desktop, tablet portrait/landscape and mobile
+portrait/landscape in Chromium and Firefox; manual screen-reader and actual 400% zoom protocols
 
-**Target Platform**: Static client-side browser application on current Chromium and Firefox;
-responsive pointer/touch presentation through 400% zoom
+**Target Platform**: Static client-side application for modern Chromium and Firefox on desktop,
+tablet and mobile; portrait and landscape; pointer, touch and screen reader; usable offline after
+first load
 
-**Project Type**: Single Angular web application with no backend
+**Project Type**: Single client-side Angular application producing static files only
 
-**Performance Goals**: Every affected defence snapshot reaches matching rendered build/condition
-revisions within 100 ms at the mobile viewport under Chromium 4x CPU slowdown
+**Performance Goals**: The feature specification sets no independent numeric target. Projection is
+synchronous and revision-coherent; the exported Status-provider summary must satisfy feature 003's
+100 ms settled-update criterion, and implementation must preserve the existing production bundle
+budgets.
 
-**Constraints**: Package-owned facts/calculations only; one active build; one shared pip condition; no
-mixed revisions, inferred power verdict, hull fallback, clamping, aggregate apportionment or hard-coded
-owned text/visual literal; no horizontal page scrolling; WCAG 2.2 AA except the constitution's named
-keyboard-operation exclusions
+**Constraints**: No server, account, telemetry or cross-origin runtime request; no local defence or
+power formula; no generator-state reconstruction, hull fallback, source-contribution inference,
+clamp or estimate; no stale mixed revision; all owned text and formatting localized; one tokenized
+dark theme; no document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
+2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: One active build up to the package hull's complete slot set; four damage types across
-shield/armour, all fitted cell banks and every recognized defence source inside the existing `/build`
-workspace
+**Scale/Scope**: One active package loadout and its complete slot set; four shield damage rows, four
+armour damage rows, two recovery rates, two recovery durations, every fitted bank, hull hardness,
+module protection and every resolved fitted defence-role record
+
+**Design Reference**: `.design/Ship Builder.dc.html` canvas 1c wide Defence Analysis and canvas 1d
+mobile Defence mode. Adoption and required departures are recorded in
+[design/reference-review.md](./design/reference-review.md).
 
 ## Constitution Check
 
-_GATE: Passed before Phase 0 research and re-checked after Phase 1 design._
+_GATE: PASS before Phase 0 research and after Phase 1 design. No constitutional exception is
+requested._
 
-| Principle                               | Evidence                                                                                                                                | Result                 |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | Projection, conditions and slot intents run entirely in the browser and persist no derived defence state.                               | PASS                   |
-| II. Almanac Source of Truth             | Four defence methods, structured result companions, auxiliary `powerBudget()` and package hull/fitted records own every value/state.    | PASS                   |
-| III. Domain Logic Outside UI            | Pure projector/semantic adapters and a signal presenter precede input/output-only components.                                           | PASS                   |
-| IV. Lossless, Honest Builds             | Discriminated states preserve absence, zero, negative, qualification and non-finite meaning; one revision tuple publishes atomically.   | PASS                   |
-| V. Desktop, Tablet and Mobile           | One complete semantic order adapts across the ten browser/viewport/orientation projects through 400% zoom.                              | PASS                   |
-| VI. Commander's Language                | Owned labels/formatting use feature 011; package hull/module text is neither parsed nor privately translated.                           | PASS                   |
-| VII. One Design System                  | Defence surfaces compose feature 011 tokens/primitives; `.design` contributes hierarchy only.                                           | PASS                   |
-| VIII. Tested Before It Ships            | Exact package-equality unit tests plus dual-engine multi-viewport Playwright, axe, manual SR checks and throttled timing are specified. | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | [screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-009 before task breakdown.                                           | PASS                   |
+| Principle                               | Design evidence                                                                                                                                                            | Status                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Projection uses only the in-memory loadout, installed package and memory-only viewing/navigation state.                                                                    | PASS                   |
+| II. Almanac Source of Truth             | Four facade results, structured issues, the package hull record and package fitted snapshots own every game value, state and identity; no package result is reconstructed. | PASS                   |
+| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only capability components.                                                             | PASS                   |
+| IV. Lossless, Honest Builds             | Null, zero, negative, infinity, ordered issues, unknown power and actual fitted identity remain distinct; the feature never mutates the build.                             | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen-reader, text-size, zoom, orientation and no-overflow verification.        | PASS; 011 prerequisite |
+| VI. Commander's Language                | Application labels/units use feature 011; module names and calculation diagnostics use Almanac locale helpers with disclosed canonical fallback.                           | PASS; 011 prerequisite |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only, and every new presentation component has a preview matrix.                               | PASS; 011 prerequisite |
+| VIII. Tested Before It Ships            | Exact package-equality tests, ordered-issue tests, ten browser projects, axe and manual assistive-technology protocols retain the 80% gate.                                | PASS; 011 prerequisite |
+| IX. Specification Before Implementation | [design/screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-009 and the adjacent design artifacts define all states before task generation.                  | PASS                   |
 
-Released Almanac dependencies:
+### Delivery prerequisites
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) makes shield and
-   recovery respect power shedding and supplies structured result companions.
-2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) rejects unknown
-   hulls at construction before hull-dependent defence can be read.
+There is no feature-006 Almanac blocker in pinned 0.1.1. Repository implementation still depends on:
 
-Both dependencies are released in 0.1.1. Research established no additional unresolved Almanac
-dependency.
+1. feature 001's active `ShipLoadout`, atomic `buildRevision` and `/build` workspace;
+2. feature 003's contract-first `StatusRevisionContext`, settled `ViewingConditions`, generic
+   provider envelope and `WorkspaceTarget` union;
+3. feature 002's exact-slot reveal boundary. Feature 002 is currently blocked on an upstream
+   lossless checkpoint/name-and-ident API; feature 006 adds no workaround;
+4. feature 011's strict compiler settings, tokens/components, Almanac text presentation,
+   localization, previews, Firefox/landscape projects and axe harness.
+
+The current source tree contains only the shell and build-link codec, and the current Playwright
+configuration has three Chromium-only projects with no axe integration. Tasks must preserve these
+dependencies; missing infrastructure does not authorize a partial private substitute.
 
 ## Project Structure
 
@@ -86,8 +108,9 @@ specs/006-defence-profile/
 │   ├── armour-profile.md
 │   ├── cell-banks.md
 │   ├── shield-profile.md
-│   └── source-targeting-and-announcements.md
+│   └── workspace-integration.md
 └── design/
+    ├── component-state-preview-matrix.md
     ├── defence-profile.md
     ├── reference-review.md
     └── screen-inventory.md
@@ -99,92 +122,93 @@ specs/006-defence-profile/
 
 ```text
 src/app/
-├── domain/
-│   └── defence/
-│       ├── defence-projector.ts
-│       ├── defence-snapshot.ts
-│       └── semantic-defence-value.ts
-├── application/
-│   └── defence/
-│       ├── defence.presenter.ts
-│       └── defence-source-projector.ts
-├── i18n/                                # supplied by feature 011
-├── ui/                                  # supplied/extended through feature 011
-└── features/
-    └── build-workspace/
-        └── defence/
-            ├── armour-profile/
-            ├── cell-banks/
-            ├── defence-profile/
-            ├── defence-sources/
-            ├── shield-profile/
-            └── shield-recovery/
+├── domain/defence/
+│   ├── defence-projector.ts
+│   ├── defence-projection.ts
+│   └── defence-source-role.ts
+├── application/defence/
+│   ├── defence.presenter.ts
+│   ├── defence-status.provider.ts
+│   └── defence-workspace.adapter.ts
+└── features/build-workspace/defence-profile/
+    ├── defence-profile.component.ts
+    ├── shield-profile.component.ts
+    ├── shield-recovery.component.ts
+    ├── cell-bank-list.component.ts
+    ├── armour-profile.component.ts
+    └── defence-source-list.component.ts
 
 e2e/
-├── accessibility.ts                    # supplied by feature 011
 └── defence-profile.spec.ts
 ```
 
-**Structure Decision**: Keep one Angular application and one active build. Feature 006 owns pure
-projection, semantic presentation types and capability composition only. Feature 001 stamps build
-revisions, feature 003 supplies the single pip revision, feature 002 owns exact-slot navigation and
-feature 011 supplies shared presentation infrastructure. No defence-derived value or condition is
-persisted.
+Unit tests live beside every projector, presenter, provider, adapter and component. Reusable metric,
+collection, notice and action patterns are added to `src/app/ui/` through feature 011 rather than
+implemented as screen-local visual primitives.
+
+**Structure Decision**: Keep one application, one active loadout, one settled condition store and
+one workspace target model. Feature 006 owns the defence projection, its Status-provider adapter and
+capability composition. Feature 003 owns capability/condition lifecycle, feature 002 owns editing and
+slot reveal, and feature 011 owns shared presentation infrastructure. No route or persistence model
+is added.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package contracts, alternatives and runtime probes are recorded in
-[research.md](./research.md). The decisive outcomes are:
+The full decisions and alternatives are in [research.md](./research.md). The decisive outcomes are:
 
-- One projector calls `shieldMetricsResult`, `shieldRecoveryResult`, `cellBanks`, `armourMetrics` and auxiliary
-  `powerBudget()` exactly once for one build/condition revision and publishes atomically.
-- Every shield/armour/recovery/bank field is copied directly. Zero and negative remain numeric;
-  effective-pool and recovery infinities receive separate semantic discriminants.
-- Generator availability/power context accompanies the structured results. A shed generator makes
-  shield and recovery unavailable without an application override.
-- Cell-bank list length distinguishes none fitted from fitted/all-unpowered zero totals. Returned
-  slot/symbol/power and totals are authoritative.
-- Hardness is the exact hull record rating. Module armour/protection remain separate from hull hit
-  points and no weapon matchup is invented.
-- Fitted package snapshots provide exact source identities/slots. Aggregate contributions remain
-  aggregate and are never allocated to sources.
-- The `.design` two-panel/damage-row hierarchy is adopted, while mock calculations, abbreviated
-  narrow content and derived visuals are rejected.
-- 0.1.1 supplies structured unavailable results for shed power and rejects unknown hulls at
-  construction; regressions pin #296/#297.
+- Preserve `CalculationResult` completeness and every ordered `CalculationIssue` separately for
+  shield strength and recovery. Their `field`, `reason`, `slot` and `symbol` are the authoritative
+  missing/unresolved/disabled/shed/invalid diagnosis.
+- Pass the same explicit SYS pips to both methods. Shield availability uses retracted power; no
+  application logic compares deployed and retracted bands.
+- Copy every shield/recovery field. Negative resistance, numeric zero, EHP infinity and each
+  recovery-phase infinity remain distinct.
+- Copy `cellBanks()` completely. No banks and fitted/all-unpowered banks are different states.
+  `bank.powered` is the package's deployed-power result. A non-empty `powerBudget().unknownDraws`
+  qualifies the bank collection without changing any bank or total.
+- `armourMetrics()` is non-nullable for an active known hull. Armour EHP is expressed in hull points
+  of raw damage capacity, while hardness is a separate hull rating from `getShipBySymbol()`.
+- Resolved fitted records may be shown as role records with exact slot actions. They are not claimed
+  as the facade's per-module contribution provenance, and aggregate contributions stay aggregate.
+- The `.design` peer-region hierarchy and stacked mobile order are adopted; its abbreviations,
+  sample arithmetic, fixed widths, visual literals and inaccessible controls are rejected.
+
+No `NEEDS CLARIFICATION` marker or new Almanac defect remains.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines the atomic snapshot, shield/recovery/bank/armour unions,
-  damage-row semantic values, generator state, source identity and transitions.
-- [contracts/shield-profile.md](./contracts/shield-profile.md) freezes exact method calls, complete
-  field mapping, availability/power separation and field-specific non-finite meanings.
-- [contracts/cell-banks.md](./contracts/cell-banks.md) freezes empty/fitted semantics, all returned
-  bank fields, exact totals, power qualification and slot identity.
-- [contracts/armour-profile.md](./contracts/armour-profile.md) freezes complete armour/hardness
-  mapping and hull/module/source separation.
-- [contracts/source-targeting-and-announcements.md](./contracts/source-targeting-and-announcements.md)
-  freezes source classification, the apportionment prohibition, exact-slot intent and announcements.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every requirement to the existing
-  workspace surfaces; [defence-profile.md](./design/defence-profile.md) specifies complete responsive
-  states; [reference-review.md](./design/reference-review.md) records adopted hierarchy/departures.
-- [quickstart.md](./quickstart.md) provides released-regression checks, exact-equality journeys and the full
-  performance/accessibility validation matrix.
+- [data-model.md](./data-model.md) defines revision context, complete/unavailable calculation views,
+  raw metric snapshots, bank power qualification, armour/hardness, fitted role records, display
+  sentinel states and the feature 003 summary.
+- [contracts/shield-profile.md](./contracts/shield-profile.md) freezes exact shield/recovery calls,
+  complete field mapping, ordered issue preservation and non-finite meanings.
+- [contracts/cell-banks.md](./contracts/cell-banks.md) freezes collection states, every returned bank
+  field, deployed-power semantics, unknown-draw qualification and exact-slot actions.
+- [contracts/armour-profile.md](./contracts/armour-profile.md) freezes every armour field, hull
+  hardness, correct units and separation from actual fitted role records.
+- [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes revision
+  composition, feature 003 Status output, feature 002 slot handoff, role boundaries and announcements.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps every requirement to the one
+  in-workspace capability and its collaborating surfaces.
+- [design/defence-profile.md](./design/defence-profile.md) specifies complete wide, tablet, narrow,
+  zoomed and state compositions; [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md)
+  records preview obligations.
+- [design/reference-review.md](./design/reference-review.md) records the exact `.design` adoption and
+  every required departure.
+- [quickstart.md](./quickstart.md) supplies runnable equality, state, navigation, localization,
+  responsive, accessibility and full-gate validation.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, persistence, private catalogue, alternate formula, local package-result
-correction, component-owned domain logic, second pip store, hard-coded display text or visual literal.
-Semantic wrappers preserve package values and meanings; source manifests contain package identity and
-state only, never derived contribution shares. The visual reference supplies hierarchy without
-becoming a second design system. Every FR has a surface owner and a dual-engine accessible path.
+Phase 1 introduces no server, persistence, second route, private game catalogue, calculation,
+generator-state inference, contribution apportionment, source-provenance claim, visual literal,
+hard-coded application text or reduced mobile data projection. Package issues remain ordered and
+addressable; source rows retain exact package identities without claiming a numeric share; armour
+remains available when shields do not. Every requirement has a surface, state and validation path.
 
-The planning gate remains **PASS** with no exception. Almanac 0.1.1 satisfies #296 and #297;
-implementation remains dependent on feature 011's Firefox/landscape/accessibility harness and other
-repository prerequisites. Rerun both regressions before task generation or implementation.
+The planning gate remains **PASS with no exception**. Delivery remains sequenced behind features
+001, 002, 003 and 011 as described above.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. Discriminated presentation states are the minimum needed
-to preserve package absence, qualification and non-finite meaning. Shared workspace/condition/slot/UI
-boundaries avoid duplicate state and calculations.
+No constitutional violation requires justification.

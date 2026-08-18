@@ -1,73 +1,73 @@
-# Armour and Hardness Contract
+# Armour, Hardness and Module Protection Contract
 
 ## Boundary
 
-For one active build revision call `ShipLoadout.armourMetrics()` exactly once and resolve the hull
-through the package ship catalogue using `build.shipSymbol`. Read the actual fitted bulkhead through
-the build's package slot snapshot. No standalone armour/resistance function and no private hull or
-bulkhead catalogue is used.
+For one captured active-build revision call `loadout.armourMetrics()` and resolve the exact active
+hull through `getShipBySymbol(loadout.shipSymbol)` from the ships leaf. Read actual fitted-role
+records from the loadout's package slot snapshots. Do not call standalone armour/resistance formulas
+or load a private hull/module catalogue.
 
-Almanac 0.1.1 closes #297 by rejecting an unknown hull during construction. An active known-hull
-loadout uses non-nullable `armourMetrics()` without local filtering, correction or relabelling.
+`armourMetrics()` is non-nullable for a successfully constructed known hull. A thrown call or failed
+exact hull lookup is a provider projection failure and an upstream/invariant defect; no fallback hull
+or invented armour-unavailable state is permitted.
 
-## Ready mapping
+## Complete mapping
 
-Copy every returned armour field:
+| Presentation fact       | Package source                                         | Unit/meaning                      |
+| ----------------------- | ------------------------------------------------------ | --------------------------------- |
+| total hull hit points   | `ArmourMetrics.hitPoints`                              | hull points                       |
+| bulkhead aggregate      | `ArmourMetrics.bulkheads`                              | hull points                       |
+| reinforcement aggregate | `ArmourMetrics.reinforcement`                          | hull points                       |
+| damage resistances      | `resistances.kinetic/thermal/explosive/caustic`        | signed fraction                   |
+| effective hull pools    | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | hull points of raw damage         |
+| module armour           | `moduleArmour`                                         | module-protection hit points      |
+| module protection       | `moduleProtection`                                     | fraction                          |
+| hull hardness           | `Ship.hardness`                                        | armour-piercing comparison rating |
 
-| View field                      | `ArmourMetrics` source                                 |
-| ------------------------------- | ------------------------------------------------------ |
-| total hull hit points           | `hitPoints`                                            |
-| bulkhead contribution           | `bulkheads`                                            |
-| hull reinforcement contribution | `reinforcement`                                        |
-| four resistances                | `resistances.kinetic/thermal/explosive/caustic`        |
-| four effective pools            | `effectiveHitPoints.kinetic/thermal/explosive/caustic` |
-| module armour                   | `moduleArmour`                                         |
-| module protection               | `moduleProtection`                                     |
+Armour effective hit points are never labeled MJ. Hardness receives adjacent text explaining that
+weapon armour piercing is compared with the rating. No weapon matchup, piercing factor, averaged
+attack, damage percentage or combined defence score is calculated.
 
-Copy `Ship.hardness` as hull hardness. Explain that weapon armour piercing is compared with this
-rating. Do not calculate a matchup, damage reduction, averaged piercing value or combined defence
-score.
+## Separation and fitted identity
 
-## Separation rules
+- Hull hit points, module armour, module protection and hardness remain four distinct facts.
+- Aggregate bulkhead/reinforcement/module values remain aggregate and are never divided among rows.
+- `armourMetrics()` may use the hull's stock lightweight alloy when no armour contributes. That
+  package calculation behavior does not create a fitted source.
+- The actual armour slot is shown only when its `LoadoutSlot.module` exists.
+- Other resolved fitted-role records use package `engineeringGroup` classification. Unresolved
+  records are not guessed from symbol/name.
+- A role record states what is fitted and where, not whether or how much the facade counted.
+- Direct `FittedModule.on` may be shown as enabled, disabled or unspecified; no local shedding verdict
+  is attached.
 
-- `hitPoints` is hull armour only.
-- `moduleArmour` is the package's module reinforcement pool and is not added to hull hit points.
-- `moduleProtection` is a fraction and is not formatted as hit points.
-- `hardness` is a rating and is not formatted as resistance or a percentage.
-- Bulkhead and reinforcement numbers remain aggregates; source rows carry no apportioned values.
+Every role action emits the exact package slot key to feature 002. Duplicate symbols remain separate.
 
-## Availability and fitted source
+## Numeric semantics
 
-- Unknown hulls are rejected before active-build replacement and never reach this boundary.
-- An invariant failure resolving a known active hull is unavailable and never falls back to a
-  similarly named or default hull.
-- The source manifest shows a bulkhead only when an actual fitted package snapshot exists. The
-  package's calculation fallback behavior does not authorize presenting a fabricated fitted module.
-- Missing/unresolved source identity may coexist with the non-null aggregate metric state the
-  released package authorizes for a known active hull.
+- Negative resistance remains a signed weakness.
+- Infinite effective hit points receive the field-specific unbounded hull-damage meaning.
+- Zero hull/module values remain ready numeric zeros.
+- No value is clamped, converted to an absolute value, relabeled with another unit or substituted.
 
-## Semantic values
+## Localization and accessibility
 
-Negative resistance remains a signed weakness. Infinite effective hit points maps to the same
-field-specific `unbounded` semantic used by shields. Zero hull/module values remain ready numeric
-zero. No clamp, absolute-value conversion or catalogue substitution is permitted.
+- Hull contributions, damage rows, hardness, module armour and module protection use distinct
+  labelled groups.
+- Damage values use a semantic table when roomy and complete labelled cards when stacked.
+- Hardness explanation and every negative/unbounded/zero state are visible text, not color-only.
+- Application labels/units use feature 011; module/hull/slot game text uses Almanac leaf helpers with
+  shared canonical-language disclosure.
+- A missing shield does not alter heading order, availability or actions in the armour region.
 
-## Accessibility and localization
+## Verification
 
-- Hull contributions and module protection use distinct labelled definition groups.
-- The resistance/effective-hit-point relationship is a semantic table or complete labelled cards.
-- Hardness receives adjacent explanatory text; no visual gauge is required.
-- Negative, unbounded, zero and unavailable states are explicit text, not color-only.
-- Hull points, MJ-like package effective pools, percentages and ratings use the correct feature 011
-  locale formatter/label; application text uses message keys.
-- Package hull/module names use Almanac localization or the shared canonical-language disclosure.
-
-## Required verification
-
-- Exact equality for every `ArmourMetrics` field and all four damage rows.
-- Exact equality with the resolved package hull hardness.
-- Module armour/protection never enter hull hit points or each other's format.
-- A non-stock fitted bulkhead is the exact source target.
-- Missing shields leave the complete armour view available.
-- #297's unknown-hull reproduction is rejected at construction and never reaches this projector.
-- Negative, zero and infinite results retain distinct semantics.
+- Compare every `ArmourMetrics` field and every damage row directly with the real package result.
+- Compare hardness directly with the exact package hull record.
+- Assert armour EHP formats as hull points, not MJ.
+- Assert module armour/protection never enter hull hit points or each other's format.
+- Assert the actual non-stock fitted bulkhead targets its exact slot.
+- Assert the stock calculation fallback never fabricates a fitted bulkhead row.
+- Assert missing/disabled/shed shields leave the complete armour region available.
+- Assert unknown hull ingress is rejected before projection; a lookup invariant failure has no local
+  hull fallback.

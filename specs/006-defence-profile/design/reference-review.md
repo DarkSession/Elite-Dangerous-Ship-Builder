@@ -2,54 +2,67 @@
 
 ## Reference
 
-`.design/Ship Builder.dc.html` contains wide and narrow defence compositions in canvases 1c/1d and
-related anatomy concepts. It is a hierarchy/composition reference only. Package outputs, the accepted
-specification, constitution and feature 011 override its sample values, interactions and CSS.
+`.design/Ship Builder.dc.html` contains the relevant compositions in canvas 1c (wide Outfitting,
+Defence Analysis selected) and canvas 1d (390px mobile Outfitting, Defence selected). It is a design
+hierarchy reference, not source code, package data, a responsive implementation or an accessibility
+contract.
+
+## Reference observations
+
+- Canvas 1c uses a fixed three-column shell: slot ledger, fluid analysis and Status rail. Defence
+  replaces the anatomy center with equal shield/armour cards.
+- Its shield card shows a headline, four damage rows, three recovery facts, grouped module bars and
+  one terse bank row. Armour mirrors the headline/damage/source pattern and adds hardness,
+  “module protection” and “integrity.”
+- Canvas 1d is separately authored fixed-width markup, not a responsive transformation of 1c. It
+  stacks shield then armour but removes resistance percentages, most recovery content, banks,
+  hardness and module-protection detail. Status becomes a separate capability.
 
 ## Adopted direction
 
-| Reference idea                                                           | Planned adaptation                                                                       |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Defence is a first-class capability beside power/offence/mobility/status | Compose one Defence Profile inside `/build`, reachable from feature 003.                 |
-| Shield and armour are parallel high-level regions                        | Retain two complete regions; allow fluid columns only when both remain legible.          |
-| Resistance and effective pool are read together by damage type           | Use exact package resistance/EHP pairs in semantic rows/cards.                           |
-| Recovery facts sit with shield strength                                  | Keep all four package recovery fields in the shield region.                              |
-| Source modules sit near their aggregate                                  | Keep exact-slot source manifests near shield/armour, without assigning aggregate shares. |
-| Narrow content becomes stacked cards                                     | Stack every required field at narrow widths and 400% zoom.                               |
+| Reference idea                                  | Planned adaptation                                                                     |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Defence is a first-class workspace mode         | Keep one `defenceProfile` capability inside `/build`; add no route.                    |
+| Shield and armour are visual peers              | Use two complete fluid regions only while both remain legible; otherwise stack.        |
+| Resistance and EHP read together by damage type | Pair exact same-type package values in semantic rows/cards.                            |
+| Recovery sits with shields                      | Keep both rates and both durations adjacent to the shield profile.                     |
+| Fitted modules sit near their aggregate         | Show exact-slot fitted-role records without a contribution value/provenance claim.     |
+| Narrow content stacks                           | Preserve the same complete semantic order and every field in one stack.                |
+| Wide workspace retains surrounding context      | Compose with feature 002's ledger and feature 003's Status surfaces when space allows. |
 
 ## Required departures
 
-- The reference's single “effective pool” and sample numbers are not package contracts. Show exact
-  total strength/hit points plus all four returned EHP values.
-- Its narrow view abbreviates contributions and recovery. FR-002, FR-004, FR-006 and FR-007 require
-  complete returned fields at every width.
-- Its module bars and grouped labels imply per-source contributions. Aggregate generator/booster/
-  reinforcement/bulkhead values remain aggregates and receive no invented slot shares.
-- “Integrity” is ambiguous between hull hit points and module armour. Use separate localized package
-  concepts.
-- The reference omits complete cell-bank fields, fitted-zero distinction, generator power state,
-  module armour/protection and hull-hardness explanation. Add all accepted-spec states.
-- Resistance/EHP bars cannot clamp negative or unbounded values and are omitted unless they add a
-  truthful supplemental comparison.
-- Anatomy overlays cannot replace textual metrics or exact-slot actions and remain feature 010's
-  concern.
-- Hover titles, color and fill cannot carry meaning. Every state and relationship receives visible
-  and programmatic text.
-- Tiny actions use shared touch-target tokens and native/shared semantic controls.
-- Inline visual literals, hard-coded English, truncated names, external font dependencies and ad hoc
-  breakpoints are not copied. Feature 011 tokens/messages/formatters define implementation.
+- The reference's “effective pool” headline is ambiguous. Show package total strength/hit points and
+  all four returned EHP values explicitly.
+- Add missing shield mass multiplier, boost multiplier, SYS resistance and visible selected SYS
+  pips.
+- Add broken regeneration rate and keep the two recovery durations separate.
+- Replace the single bank-reserve row with exact totals and every returned bank field/state/action.
+- Replace ambiguous armour “integrity” with distinct hull HP, module armour, module protection and
+  hardness concepts using correct units.
+- Explain hardness against weapon armour piercing without creating a matchup.
+- Keep mobile resistance values, all contributions, recovery, banks, hardness and protection; the
+  mock's compact footer is not a complete product.
+- Grouped booster/reinforcement bars cannot imply per-module aggregate shares. Numeric aggregates
+  remain separate from exact-slot fitted-role rows.
+- The signed negative resistance bar in the mock is misleading. Bars are supplemental only with a
+  truthful scale; signed/non-finite cases may use text alone.
+- Add missing/null, disabled, shed, unresolved, invalid, no-bank, all-unpowered, unknown-power,
+  zero, negative, infinity, pending and failure states.
+- Replace fixed 1560/390 widths, tiny/ellipsis text, ~30px tabs, clickable `div`s, hover/title
+  dependence and color-only meaning with feature 011 primitives/tokens.
+- Do not copy inline colors, spacing/type/motion literals, hard-coded English, `en-US` formatting,
+  external Google Fonts or cross-origin asset links.
 
-## Missing reference states
+## Responsive conclusion
 
-The reference has no authoritative tablet, landscape, 200%-text, 400%-zoom, expanded-language, RTL,
-reduced-motion, shieldless, disabled/shed generator, no-bank, all-unpowered-bank, unknown-draw,
-negative-resistance, non-finite, loading or failure composition. Unknown-hull refusal belongs to the
-feature 001/004 construction boundary. The screen definition
-and component previews supply these states before tasks are generated; no omission reduces scope.
+The canvases are two compositional endpoints, not breakpoints. Available inline size decides whether
+the two complete regions sit side by side. Tablet, landscape, text expansion and zoom are independent
+constraints. A separate abbreviated mobile data model is prohibited.
 
 ## Source-of-truth conclusion
 
-The reference's two-region hierarchy and damage-row relationship are accepted. Its numbers,
-abbreviations, derived visuals and incomplete states are rejected wherever they conflict with Almanac
-truth, FR-001–FR-009 or feature 011. The repository's design tokens and components remain the sole
-design-system source of truth.
+Adopt the reference's capability hierarchy, peer defence regions, damage relationship and stacked
+order. Reject its sample values, arithmetic implications, incomplete state set and implementation
+literals wherever they conflict with FR-001–FR-009, Almanac or the constitution. Repository tokens,
+components and these plan-time screen definitions remain authoritative.

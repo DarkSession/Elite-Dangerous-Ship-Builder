@@ -1,193 +1,210 @@
 # Research: Defence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.1`, its public type
-contracts and runtime probes over detached `ShipLoadout` values. The visual reference was reviewed
-only for hierarchy. No application formula or private game datum was used.
+Research used the accepted feature specs, constitution 5.0.0, `.design/Ship Builder.dc.html`, the
+current source/tooling configuration and the installed public contracts and runtime behavior of
+`@elite-dangerous-almanac/core@0.1.1`. Runtime probes covered ready, missing-generator,
+disabled-generator and disabled-plant results. No application formula or private game datum was
+used.
 
-## Decision 1: publish one revision-coherent defence projection
+## Decision 1: project one revision without owning its lifecycle
 
-**Decision**: A pure `DefenceProjector` receives one active `ShipLoadout`, its immutable application
-revision and feature 003's selected SYS-pip condition/revision. It calls
-`shieldMetricsResult({ systemsPips })`, `shieldRecoveryResult({ systemsPips })`, `cellBanks()`,
-`armourMetrics()` and auxiliary `powerBudget()` once each, then reads the package hull and
-fitted-slot records needed for source identity. The budget supplies only qualified generator/bank
-power context; feature 006 does not reproduce its power presentation. One complete
-`DefenceSnapshot` is published atomically.
+**Decision**: A pure `DefenceProjector` receives the active `ShipLoadout` and feature 003's
+`StatusRevisionContext`. It converts the integer SYS half-pips to the package value once, calls the
+four defence facade methods, reads the package hull and fitted snapshots, and returns one immutable
+`DefenceProjection`. Feature 003's provider envelope owns `noBuild`, `pending`, `ready` and `failure`;
+the domain projection does not duplicate those lifecycle states.
 
-Components consume only the snapshot and emit intents. A changed build or condition revision
-invalidates the entire previous snapshot; stale work is discarded rather than partially patched.
-
-**Rationale**: `ShipLoadout` is mutable and has no public revision. The two shield calls must use the
-same pips and every visible field must describe one settled build revision.
+**Rationale**: The mutable loadout has no public revision, while build and condition changes must not
+produce a mixed display. Reusing the accepted provider envelope avoids a second revision protocol.
 
 **Alternatives considered**:
 
-- Per-panel package calls can mix revisions and duplicate state.
-- Component-owned calculations violate the domain boundary.
-- Persisting defence figures or SYS pips creates stale derived data; both remain memory-only.
+- Component-level calls can mix revisions and put domain behavior in presentation.
+- Persisting projections or SYS pips creates stale derived state.
+- A feature-local loading/error union duplicates feature 003 and previously confused package
+  unavailability with application failure.
 
-## Decision 2: copy every shield field and keep availability separate from power
+## Decision 2: preserve shield and recovery results, including their issues
 
-**Decision**: A ready shield profile copies all `ShieldMetrics` fields unchanged:
-`strength`, `generator`, `boosters`, `reinforcement`, `massCurveMultiplier`, `boostMultiplier`,
-`systemsResistance`, and the kinetic, thermal, explosive and caustic values in both `resistances`
-and `effectiveHitPoints`.
+**Decision**: Call `shieldMetricsResult({ systemsPips })` and
+`shieldRecoveryResult({ systemsPips })` with the identical explicit value. For complete results copy
+every field. For incomplete results retain the complete ordered `CalculationIssue[]`, including
+`field`, `reason`, `slot`, `symbol` and params. Present issue text with the package's
+`getCalculationIssueMessage()` locale helper and feature 011's canonical-language disclosure.
 
-Shield availability and generator observation are coordinated package results. A missing or disabled
-generator remains observable from package fitted state. Feature 005's projection uses the
-generator entry's normalized priority from `PowerBudget.consumers` together with the returned
-`powerBudget().bands` verdicts; it does not reconstruct priority or power arithmetic. An unresolved
-source stays indeterminate. A shed generator produces incomplete
-`shieldMetricsResult()` and `shieldRecoveryResult()` values with package-owned power issues. Where
-package/build state does not establish a reason, the view says only unavailable.
+Missing, unresolved, disabled, shed and invalid meanings come directly from those issues. A shield
+or recovery issue concerning plant capacity/draw remains a plant/draw diagnosis and is never
+relabeled as a generator verdict.
 
-**Rationale**: The structured result is the authoritative availability boundary. Conflating a stale
-or prior strength with online state would contradict both the package and the feature edge case.
+**Rationale**: The structured result already owns the unavailable-state distinction required by
+FR-003. Runtime probes confirmed distinct `shieldGenerator/missing`, `shieldGenerator/disabled` and
+`powerCapacity/disabled` issues. Reconstructing the answer from `powerBudget()` loses information and
+can disagree with the facade.
 
-**Alternatives considered**:
-
-- Reusing stale strength for a shed generator contradicts the package result.
-- Treating every null as “no generator” loses disabled, shed and unresolved distinctions.
-- Recalculating SYS resistance or effective hit points duplicates Almanac formulas.
-
-## Decision 3: recovery phases and non-finite meanings remain field-specific
-
-**Decision**: A ready recovery profile copies `regenRate`, `brokenRegenRate`, `recoveryTime` and
-`regenTime`. Finite rates and durations remain numbers. `Infinity` is mapped only to a semantic
-presentation discriminant that preserves the owning field's package meaning: the collapsed shield
-cannot reach its recovery threshold, or the raised shield cannot regenerate to full.
-
-Effective hit-point `Infinity` is a different discriminant: no damage of that reported type passes
-the package resistance. Negative resistance remains a signed negative percentage and its effective
-hit points remain unchanged. Zero is always a ready numeric value.
-
-**Rationale**: Raw generic infinity, JSON serialization and truthiness all erase meaning. The
-semantic wrappers change no value and prevent unrelated infinite states from sharing one label.
+Shield availability is based on hardpoints-retracted power. A generator may be complete while
+deployed power would shed it, so deployed/retracted agreement is not required.
 
 **Alternatives considered**:
 
-- Clamping resistance or effective hit points is prohibited.
+- A locally inferred `GeneratorState` duplicated package shedding behavior and discarded
+  non-generator issues.
+- Mapping every incomplete result to generic unavailable loses the package reason and target.
+- Calling nullable convenience methods cannot satisfy the required distinctions.
+
+## Decision 3: keep field-specific numeric meaning
+
+**Decision**: Copy all `ShieldMetrics` fields: `strength`, `generator`, `boosters`, `reinforcement`,
+`massCurveMultiplier`, `boostMultiplier`, `systemsResistance`, four resistances and four effective
+hit-point values. Copy all `ShieldRecovery` fields: `regenRate`, `brokenRegenRate`, `recoveryTime`
+and `regenTime`.
+
+Raw snapshots retain JavaScript numbers unchanged. The presenter distinguishes finite values from
+positive infinity without serializing them. Infinite EHP means unbounded raw damage of that type;
+infinite `recoveryTime` means the collapsed shield cannot reach 50%; infinite `regenTime` means the
+raised shield cannot reach full. Negative resistance stays signed and zero stays numeric.
+
+**Rationale**: These infinities have different package meanings. A generic infinity/unavailable label
+or clamped bar would erase a valid result.
+
+**Alternatives considered**:
+
+- Clamping, absolute-value conversion and replacement maxima violate FR-001/FR-005.
 - One “infinite” label is ambiguous.
-- Formatting `Infinity` as unavailable collapses a valid package outcome into absence.
+- Treating zero as absence breaks SC-002.
 
-## Decision 4: cell-bank emptiness and power are package-authored
+## Decision 4: banks use returned deployed-power state with explicit qualification
 
-**Decision**: `CellBankSummary.banks.length === 0` maps to `noneFitted`. Otherwise a `fitted`
-collection copies `totalRestorable`, `totalCells` and every ordered bank field: `slot`, `symbol`,
-`reinforcement`, `cells`, `spinUp`, `duration`, `heat` and `powered`.
+**Decision**: Copy the complete `CellBankSummary`: ordered banks, `totalRestorable`, `totalCells` and
+every bank's `slot`, `symbol`, `reinforcement`, `cells`, `spinUp`, `duration`, `heat` and `powered`.
+An empty bank list is `noneFitted`; every non-empty list is `fitted`, even with zero totals.
 
-Totals are never summed locally. A fitted collection whose banks are all unpowered and whose totals
-are zero remains distinct from `noneFitted`. Cell-bank slot actions use the returned `slot` exactly.
+Call `powerBudget()` only to read `unknownDraws`. `CellBankMetrics.powered` is the package's
+hardpoints-deployed result. Because any unknown enabled draw is absent from power bands and may
+change downstream shedding, a non-empty `unknownDraws` qualifies the whole bank result as a package
+projection under incomplete power knowledge. Returned values and booleans are never corrected.
 
-**Rationale**: `cellBanks()` already preserves every bank and computes totals over powered banks.
-Its list discriminates absence from a genuine zero powered pool without inference.
+**Rationale**: `cellBanks()` owns both per-bank and total calculations, while `powerBudget()` documents
+the exact limitation of its known-draw power bands. Matching unknown draws only to a bank slot is too
+narrow: an unrelated unknown consumer can still change whether the bank's group remains powered.
 
 **Alternatives considered**:
 
-- Summing bank reinforcement by cells duplicates the package total.
+- Summing reinforcement or cells locally duplicates the package.
 - Filtering unpowered banks violates FR-006.
-- Grouping identical bank symbols loses slot identity.
+- Qualifying only matching slots overstates confidence in the remaining bands.
+- Treating fitted/all-unpowered as no banks loses a required state.
 
-## Decision 5: armour, hardness and module protection remain separate facts
+## Decision 5: armour is always a ready package value inside a successful projection
 
-**Decision**: A ready armour profile copies every `ArmourMetrics` field: `hitPoints`, `bulkheads`,
-`reinforcement`, all four `resistances`, all four `effectiveHitPoints`, `moduleArmour` and
-`moduleProtection`. Hull hardness is copied from the package `Ship` record resolved by the build's
-`shipSymbol`. The UI explains that weapons compare armour piercing with this rating; feature 006 does
-not calculate a weapon matchup.
+**Decision**: Call `armourMetrics()` once and copy `hitPoints`, `bulkheads`, `reinforcement`, all four
+resistances, all four effective-hit-point values, `moduleArmour` and `moduleProtection`. Resolve the
+active hull with `getShipBySymbol(build.shipSymbol)` and copy `hardness`.
 
-Module armour/protection is never added to or described as hull hit points. The fitted bulkhead is
-the package module at the armour slot; no catalogue substitute is used for an unresolved build.
+Armour effective hit points are hull points of raw damage capacity, not MJ. Module armour is a
+separate hit-point pool for modules; module protection is a fraction; hardness is a rating compared
+with weapon armour piercing. No combined defence or matchup is created.
 
-**Rationale**: These are three different package concepts: hull pool, module protection pool/fraction
-and hull hardness. Combining them would fabricate a defence total.
+`armourMetrics()` is non-nullable and uses the hull's stock lightweight alloy when no fitted armour
+contributes. The calculation fallback does not authorize presenting a fabricated fitted bulkhead.
+A failed known-hull lookup or thrown package call fails the whole projection and is reported as an
+invariant/upstream defect; it does not create a game-level “armour unavailable” state.
 
-**Alternatives considered**:
-
-- A combined “effective defence” score has no package source.
-- Comparing against locally selected or averaged weapon piercing belongs to offence and would add an
-  unspecified calculation.
-- Falling back to catalogue hull data after a construction/invariant failure violates the
-  unknown-hull rejection boundary.
-
-## Decision 6: source manifests identify modules but never apportion aggregates
-
-**Decision**: Source manifests are presentation projections of package-owned `LoadoutSlot` and
-`FittedModule` snapshots. A source entry carries role, exact slot key, module `symbol`, package game
-text, and directly observable enabled/power context. Generator and bulkhead are found through their
-package-declared capabilities/fixed slots; boosters and shield/hull/module reinforcements are
-classified only by their resolved package stats. Unresolved modules are not guessed from symbol or
-name.
-
-The shield manifest lists generator, boosters and shield reinforcements. The armour manifest lists
-bulkhead, hull reinforcements and module reinforcements. Aggregate `generator`, `boosters`,
-`reinforcement`, `bulkheads`, `moduleArmour` and `moduleProtection` values stay in their metric groups
-and are never divided among source entries. A cell bank may show its returned per-bank reinforcement
-because `cellBanks()` explicitly supplies it.
-
-**Rationale**: FR-009 requires exact targeting and prohibits apportionment. Package snapshots are
-enough to identify fitted sources without creating a second calculation system.
+**Rationale**: The method and hull catalogue own all four concepts and their units. Separating actual
+fitted identity from calculation fallback preserves honesty.
 
 **Alternatives considered**:
 
-- Dividing an aggregate evenly or by raw stat fabricates values.
-- Symbol-prefix/name matching is not a package identity contract.
-- A package API dedicated to source manifests is not required by the accepted spec because the
-  existing resolved fitted records already carry exact roles and identities.
+- A nullable armour view invents a package state.
+- Formatting armour EHP as MJ is dimensionally wrong.
+- Combining hull, module and hardness values fabricates a score.
+- A default or similarly named hull fallback violates the package construction boundary.
 
-## Decision 7: reuse workspace, conditions and design-system boundaries
+## Decision 6: show fitted role records, not contribution provenance
 
-**Decision**: Add no route. Defence Profile composes inside feature 001's `/build` workspace, opens
-from feature 003's defence headline/capability selector, consumes feature 003's shared pip state,
-emits exact-slot intents to feature 002, and uses feature 011's tokens, components, locale formatters,
-announcements and accessibility harness.
+**Decision**: Present resolved fitted defence-role records from `slots()` in package outfitting order.
+The actual armour slot identifies the bulkhead; resolved package `engineeringGroup` values identify
+shield generators, shield boosters, shield reinforcements, hull/Guardian hull reinforcements and
+module reinforcements. Each record retains exact slot key, module `symbol`, direct `on` state and
+resolved/unresolved presentation status. Cell banks come from `cellBanks()` instead of a duplicate
+role list.
 
-The `.design/Ship Builder.dc.html` shield/armour two-panel hierarchy and resistance rows are useful.
-Its mock values, single “effective pool,” grouped source contributions, abbreviated narrow layout,
-derived bar lengths, ambiguous “integrity,” and incomplete recovery/bank content are rejected.
+These rows are described as fitted role records adjacent to their aggregate. The package facade does
+not return per-source provenance for shield/armour aggregates, so no row is claimed to have
+contributed and no aggregate number is divided or attached to it. An incomplete shield issue may
+provide an exact generator slot even when the fitted stats are unresolved.
 
-**Rationale**: This keeps one active build, one condition store, one navigation model and one design
-system while preserving every required field at every width.
-
-**Alternatives considered**:
-
-- A defence route or persisted tab state would duplicate workspace navigation.
-- A second pip control/store can diverge from the status and power capabilities.
-- Copying the reference literally would omit required information and violate token/localization
-  rules.
-
-## Decision 8: validate exact package equality across the full product matrix
-
-**Decision**: Unit tests use real package-backed builds and compare every projection field directly
-with the four `ShipLoadout` results and hull record. Synthetic result-shape fixtures are permitted
-only at the presentation boundary for hard-to-reach sentinel rendering; they are never game data or
-calculation expectations. Store tests prove atomic revision publication and exact-slot intents.
-
-Playwright covers the three user stories and every meaningful state in ten projects: Chromium and
-Firefox at desktop, tablet portrait/landscape and mobile portrait/landscape. Every state receives an
-automated accessibility scan plus semantic, overflow, zoom, touch-target, expanded/RTL text,
-reduced-motion and announcement assertions. The settled revision reaches matching DOM within 100 ms
-at mobile Chromium under 4x CPU slowdown.
-
-**Rationale**: Exact result comparison catches package drift without hand-maintained golden game
-figures. The matrix is required by the constitution, and browser timing measures the user-visible
-boundary rather than negligible package-call time.
+**Rationale**: FR-009 requires a shown fitted source to reach its slot and prohibits apportionment;
+it does not require invented per-module contribution provenance. Public resolved classification is
+enough for honest role/navigation rows on package-backed builds.
 
 **Alternatives considered**:
 
-- Mock-only tests cannot prove SC-001.
-- Hand-calculated expected values recreate Almanac logic.
-- Chromium-only, portrait-only or axe-only coverage does not satisfy the project gate.
+- Symbol/name parsing and positional keys are not package contracts.
+- Stat-based arithmetic or even division fabricates provenance.
+- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.1 API supports.
+- An upstream source-manifest API is unnecessary unless a future requirement demands exact
+  per-source calculation provenance.
 
-## Almanac released dependencies
+## Decision 7: integrate through existing workspace contracts
 
-The two dependencies are released in 0.1.1 and retain minimal regression reproductions:
+**Decision**: Add no route. Defence is a capability inside `/build`. Feature 003 supplies settled SYS
+pips, revision context, capability selection and a `defenceProfile` detail target. Feature 006 exports
+the matching status provider for shield strength and armour. Feature 002 receives
+`{ kind: 'slot', slotKey }` intents. Feature 001 owns active-build replacement; feature 011 owns shared
+UI, game-text presentation, formatting and announcements.
 
-1. [Almanac #296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296): disabled/shed
-   power makes shield and recovery results incomplete with structured package issues.
-2. [Almanac #297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297): unknown hulls
-   are rejected by `fromLoadout()`/`fromSlef()`; `armourMetrics()` remains non-nullable for active
-   known hulls.
+**Rationale**: This matches the accepted cross-feature contracts and the `.design` workspace. It
+keeps one active build, one condition store and one selection model.
 
-No additional Almanac defect or missing API was established. Implementation pins 0.1.1 and reruns
-both issue regressions against the released structured/construction contract.
+**Alternatives considered**:
+
+- A `/defence` route duplicates workspace navigation.
+- A feature-local pip store can diverge from Status and other providers.
+- Importing feature 003 components into the provider reverses the contract-first dependency.
+- Depending on feature 005 for power data is unnecessary; the package call is a feature-006 read.
+
+## Decision 8: adapt the reference without copying its data reduction
+
+**Decision**: Keep the wide peer shield/armour regions, damage-type row relationship, recovery-near-
+shield grouping, adjacent fitted-role rows and mobile stacked order from canvases 1c/1d. Use a fluid
+container decision: two complete columns only while each remains legible, otherwise one complete
+semantic stack. Tables may become complete labelled cards. Supplemental bars are optional and must
+have a truthful scale and full text equivalent; signed and non-finite cases may omit them.
+
+**Rationale**: The reference communicates hierarchy well but is fixed-width, inaccessible and
+incomplete. The specification requires identical information on every form factor.
+
+**Alternatives considered**:
+
+- Literal canvas markup omits required fields/states and violates tokens, localization and touch
+  sizing.
+- A separate compact data projection for mobile makes mobile a degraded product.
+- Device-name breakpoints do not handle text expansion or 400% zoom.
+
+## Decision 9: validate package equality and semantic completeness
+
+**Decision**: Unit tests compare every projected field and ordered issue directly with real
+package-backed results. Presentation-only fixtures cover difficult finite/infinite/negative/empty
+combinations without pretending to be game expectations. Provider tests prove exact revision and
+detail targets; workspace tests prove exact slot keys. Playwright exercises every relevant state at
+five layouts in Chromium and Firefox with axe, semantic, target-size, overflow, localization and
+announcement checks, plus manual screen-reader and actual-zoom protocols.
+
+Only the Status-provider path inherits feature 003's 100 ms criterion; feature 006 adds no invented
+performance success criterion.
+
+**Rationale**: Direct equality catches drift without hand-maintained calculations. Presentation
+fixtures are appropriate for sentinel rendering but not for Almanac truth.
+
+**Alternatives considered**:
+
+- Mock-only or hand-calculated expectations cannot prove SC-001.
+- Chromium-only, portrait-only or axe-only coverage does not meet the constitution.
+- Timing the whole detail against an unspecified threshold creates a product requirement absent from
+  the spec.
+
+## Planning resolution
+
+No planning clarification or new upstream Almanac issue remains. Feature 006 can be tasked after the
+listed repository contracts are accepted, but it cannot be shipped until prerequisite features 001,
+002, 003 and 011 are implemented and their gates pass.
