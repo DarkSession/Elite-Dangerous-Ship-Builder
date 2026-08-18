@@ -1,232 +1,345 @@
-# Data Model: Hull Anatomy and Hardpoint Geometry
+# Data Model: Hull Anatomy and Mount Geometry
 
-Every game-bearing value is an immutable projection of one active
-`@elite-dangerous-almanac/core` loadout and feature 005's package-backed power observation. SVG
-geometry exists only in validated in-memory asset data. Nothing below enters a build snapshot,
-storage record, URL, SLEF or edit history.
+Every game-bearing field is an immutable projection of one active
+`@elite-dangerous-almanac/core` loadout, feature 002's exact slot views and feature 005's generalized
+mount-power observation. SVG data is validated in memory. Nothing here enters build state, storage,
+history, a URL, SLEF or edit history.
+
+## AnatomyState
+
+```ts
+type AnatomyState =
+  | { readonly state: 'noBuild' }
+  | {
+      readonly state: 'loading';
+      readonly hullSymbol: string;
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+      readonly sides: Readonly<Record<SchematicSide, SideAssetState>>;
+      readonly mounts: readonly MountItem[];
+    }
+  | { readonly state: 'ready'; readonly snapshot: AnatomySnapshot }
+  | {
+      readonly state: 'failure';
+      readonly hullSymbol: string;
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+      readonly messageKey: 'anatomyProjectionFailed';
+    };
+```
+
+`failure` is reserved for an unexpected projection/revision failure. Individual fetch, schema and
+annotation problems stay side-local in a usable snapshot. A ready snapshot may have neither side
+available.
 
 ## AnatomySnapshot
 
-One atomic view of one active hull/build/condition revision.
-
-| Field                | Type                                | Rule                                                                 |
-| -------------------- | ----------------------------------- | -------------------------------------------------------------------- |
-| `hullSymbol`         | string                              | Exact resolved package `Ship.symbol`; asset identity                 |
-| `buildRevision`      | non-negative integer                | Exact active-build revision used for slots/fitted state              |
-| `conditionsRevision` | non-negative integer                | Exact feature 003 revision used by the power observation             |
-| `hardpointState`     | `deployed \| retracted`             | Settled feature 003 viewing condition                                |
-| `selectedSlotKey`    | `string \| null`                    | Feature 002 selection; never a second anatomy-owned identity         |
-| `sides`              | `Readonly<Record<Side, SideState>>` | Independent top/bottom asset state                                   |
-| `hardpoints`         | `readonly HardpointItem[]`          | Every package hardpoint once, in package order                       |
-| `defects`            | `readonly PackageAssetDefect[]`     | Invalid annotations/content for the current assets only              |
-| `status`             | `loading \| ready \| partial`       | `partial` keeps all usable sides/items and names what is unavailable |
+| Field                | Type                                              | Rule                                                       |
+| -------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
+| `hullSymbol`         | string                                            | Exact resolved package `Ship.symbol`; asset identity       |
+| `buildRevision`      | non-negative integer                              | Feature 001 revision used for every slot/fitted fact       |
+| `conditionsRevision` | non-negative integer                              | Feature 003 revision used for every power observation      |
+| `hardpointState`     | `deployed \| retracted`                           | Exact settled viewing condition                            |
+| `selectedSlotKey`    | `string \| null`                                  | Feature 002's one selected identity                        |
+| `visibleSide`        | `top \| bottom`                                   | Narrow-only presentation choice; ignored by paired layout  |
+| `sides`              | `Readonly<Record<SchematicSide, SideAssetState>>` | Independent top/bottom lifecycles                          |
+| `mounts`             | `readonly MountItem[]`                            | Every package hardpoint and utility once, in package order |
+| `defects`            | `readonly SchematicDefect[]`                      | Exact package/asset contract failures without guesses      |
 
 Invariants:
 
-- Every `HardpointItem`, selected state and power observation carries this revision pair.
-- A newer hull/build/condition revision invalidates pending publication from an older one.
-- One unavailable side does not make the other side or canonical hardpoint list unavailable.
-- No active build means no `AnatomySnapshot`; the owning workspace renders its shared no-build state.
-- `hardpoints` contains no utility, core, optional, armour or cargo-hatch entry.
+- one snapshot contains one hull and one build/condition revision pair;
+- stale asset or observation completion is discarded rather than relabelled;
+- locale changes re-present text but do not alter either revision or mount identity;
+- `mounts` exists before assets settle and is never filtered by geometry availability;
+- a new hull clears prior SVG and reveal state before any result is published;
+- selection/side/scroll are presentation state only.
 
-## Side and asset state
+## SideAssetState
 
 ```ts
-type Side = 'top' | 'bottom';
+type SchematicSide = 'top' | 'bottom';
 
-type SideState =
-  | { kind: 'idle'; side: Side }
-  | { kind: 'loading'; side: Side; requestId: string }
-  | { kind: 'ready'; side: Side; document: ValidatedSchematic }
+type SideAssetState =
+  | { readonly state: 'notRequested' }
+  | { readonly state: 'loading'; readonly requestId: string }
+  | { readonly state: 'ready'; readonly document: SchematicDocument }
   | {
-      kind: 'temporarilyUnavailable';
-      side: Side;
-      reason: 'offline' | 'http' | 'invalid';
-      retry: 'available' | 'waitingForOnline';
-    };
-```
-
-`requestId` is browser workflow identity only. A response may publish only when its request, hull
-symbol and build revision remain current. `invalid` is still presented as unavailable while a
-structured defect is retained for verification and deliberate reporting.
-
-### ValidatedSchematic
-
-| Field         | Type                             | Rule                                                                     |
-| ------------- | -------------------------------- | ------------------------------------------------------------------------ |
-| `side`        | `Side`                           | Asset filename side                                                      |
-| `viewBox`     | readonly four-number tuple       | Exact validated package root value; presentation scale only              |
-| `nodes`       | `readonly SafeSvgNode[]`         | Inert allowlisted artwork tree                                           |
-| `occurrences` | `readonly HardpointOccurrence[]` | Only annotations accepted by the released package contract and slot join |
-
-The document contains no source URL, markup string or executable DOM. It is retained only for the
-active hull.
-
-### SafeSvgNode
-
-```ts
-type SafeSvgNode =
-  | {
-      kind: 'group';
-      hardpointSlotKey: string | null;
-      children: readonly SafeSvgNode[];
-    }
-  | { kind: 'path'; d: string; presentation: SafeSvgPresentation }
-  | { kind: 'circle'; cx: number; cy: number; r: number; presentation: SafeSvgPresentation };
-```
-
-The final allowlist follows the released #308 contract. `SafeSvgPresentation` carries only validated
-inert package presentation attributes. Source ids, Inkscape metadata, styles, links, events, URLs and
-foreign namespaces do not enter the type. Unexpected content rejects the side; the parser never
-silently returns altered artwork.
-
-## HardpointOccurrence
-
-One package-annotated geometry instance on one side.
-
-| Field     | Type    | Rule                                                                    |
-| --------- | ------- | ----------------------------------------------------------------------- |
-| `side`    | `Side`  | Containing schematic                                                    |
-| `slotKey` | string  | Canonical package `LoadoutSlot.key` after case-insensitive exact lookup |
-| `ordinal` | integer | In-memory renderer correlation only; never slot/order identity          |
-
-Validation:
-
-1. the released annotation contract classifies the source feature as `hardpoint`;
-2. its `data-journal-slot` resolves to one current loadout slot;
-3. the resolved slot's package kind is `hardpoint`;
-4. every repeat follows the released #308 duplicate semantics and still references the same
-   canonical item.
-
-A repeated annotation produces multiple occurrences referencing one `HardpointItem`, whether the
-released contract permits it across or within a side. `ordinal` may correlate a typed node with its
-rendered occurrence for one parsed document; it is regenerated, never persisted and never accepted
-by a slot intent.
-
-## HardpointItem
-
-One package hardpoint slot and the source for every visual occurrence and the always-present text
-equivalent.
-
-| Field         | Type                                      | Source/rule                                                |
-| ------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| `slotKey`     | string                                    | Exact canonical `LoadoutSlot.key`; sole identity           |
-| `size`        | `number \| unavailable`                   | Exact package hardpoint size                               |
-| `fitted`      | `HardpointFit`                            | Package slot/module projection                             |
-| `engineering` | `stock \| engineered \| unavailable`      | Package engineering presence; no modifier inference        |
-| `power`       | `HardpointPowerObservation`               | Shared feature 005 result for the same revision/conditions |
-| `selected`    | boolean                                   | Case-insensitive equality to feature 002 `selectedSlotKey` |
-| `location`    | `HardpointLocationState`                  | Geometry membership/availability without guessing          |
-| `occurrences` | `readonly HardpointOccurrenceReference[]` | Zero or more validated instances                           |
-
-The collection follows all of `ShipLoadout.slots('hardpoint')` in returned order. SVG group order,
-element id, label, physical position and key number never filter or order it.
-
-### HardpointLocationState
-
-```ts
-type HardpointLocationState =
-  | { kind: 'pending' }
-  | { kind: 'located'; sides: readonly Side[] }
-  | { kind: 'temporarilyUnavailable'; sides: readonly Side[] }
-  | { kind: 'packageDefect' };
-```
-
-`pending` applies while a side that might contain the key is loading. `temporarilyUnavailable`
-means one or both necessary asset results are absent, so the application makes no missing-geometry
-claim. `packageDefect` is possible only after the released #308 coverage contract can be evaluated
-against successfully validated assets. The text item and slot action exist in every state.
-
-### HardpointFit
-
-```ts
-type HardpointFit =
-  | { kind: 'empty' }
-  | {
-      kind: 'resolved';
-      symbol: string;
-      displayName: LocalizedGameText;
+      readonly state: 'temporarilyUnavailable';
+      readonly reason: 'offlineUncached' | 'httpFailure' | 'networkFailure';
+      readonly retry: 'manualAndOnline';
     }
   | {
-      kind: 'unresolved';
-      symbol: string;
-      displayName: 'unavailable';
+      readonly state: 'contractDefect';
+      readonly defectIds: readonly string[];
+      readonly retry: 'afterPackageUpdate';
     };
 ```
 
-Empty is exact package absence. An unresolved article keeps its package symbol and never receives a
-guessed class, name or power value. `LocalizedGameText` is an Almanac localized name or a canonical
-fallback carrying feature 011's untranslated disclosure.
+Top and bottom transition independently:
 
-## HardpointPowerObservation
+```text
+notRequested -> loading -> ready
+                       -> temporarilyUnavailable -> loading
+                       -> contractDefect
+```
 
-Feature 005 supplies this opaque, revision-stamped presentation port after a released #299 result.
-Feature 010 never reads raw modifiers, applies defaults or joins priority bands itself.
+An active failed side retries on explicit intent or once when connectivity returns. A package schema
+defect is not repeatedly fetched during the same package/app version. Changing hull aborts/discards
+both prior request identities.
+
+## SchematicDocument and inert SVG nodes
 
 ```ts
-type HardpointPowerObservation =
-  | { kind: 'notApplicable' } // empty hardpoint
-  | { kind: 'disabled'; priority: PriorityState }
-  | { kind: 'inactiveRetracted'; priority: PriorityState }
-  | { kind: 'powered'; priority: PriorityState }
-  | { kind: 'shed'; priority: PriorityState }
+interface SchematicDocument {
+  readonly side: SchematicSide;
+  readonly hullSymbol: string;
+  readonly viewBox: readonly [number, number, number, number];
+  readonly width: number | null;
+  readonly height: number | null;
+  readonly root: SvgGroupNode;
+  readonly occurrences: readonly MountOccurrence[];
+}
+
+type SafeSvgNode = SvgGroupNode | SvgPathNode | SvgCircleNode;
+
+interface SvgGroupNode {
+  readonly kind: 'group';
+  readonly presentation: SafeSvgPresentation;
+  readonly feature: string | null;
+  readonly journalSlot: string | null;
+  readonly children: readonly SafeSvgNode[];
+}
+
+interface SvgPathNode {
+  readonly kind: 'path';
+  readonly d: string;
+  readonly presentation: SafeSvgPresentation;
+}
+
+interface SvgCircleNode {
+  readonly kind: 'circle';
+  readonly cx: number;
+  readonly cy: number;
+  readonly r: number;
+  readonly presentation: SafeSvgPresentation;
+}
+```
+
+`SafeSvgPresentation` contains only validated static attributes required to reproduce the unmodified
+package drawing. It cannot contain script/style/event content, links, references, external resources
+or CSS URLs. Source ids, labels, sockets, coordinates and drawing order never become mount identity.
+
+## MountItem
+
+One canonical item exists for every package slot whose kind is `hardpoint` or `utility`.
+
+```ts
+type LocatedMountKind = 'hardpoint' | 'utility';
+
+interface MountItem {
+  readonly slotKey: string;
+  readonly kind: LocatedMountKind;
+  readonly size: MountSize;
+  readonly fitted: FittedMountState;
+  readonly engineering: EngineeringState;
+  readonly focused: boolean;
+  readonly priority: PriorityState;
+  readonly power: MountPowerState;
+  readonly occurrences: readonly MountOccurrence[];
+  readonly location: MountLocationState;
+}
+```
+
+The array follows the order of `ShipLoadout.slots()` filtered to hardpoint and utility. No consumer
+sort, SVG traversal or translated name changes it.
+
+### MountSize
+
+```ts
+type MountSize =
+  | { readonly kind: 'class'; readonly value: 1 | 2 | 3 | 4 }
+  | { readonly kind: 'notClassSized' }
+  | { readonly kind: 'unavailable' };
+```
+
+Hardpoint values are exact package sizes. `notClassSized` is the package-documented meaning of a
+utility slot's size-0 placeholder. No class zero or estimated size is displayed.
+
+### FittedMountState
+
+```ts
+type FittedMountState =
+  | { readonly kind: 'empty' }
   | {
-      kind: 'qualified';
-      priority: PriorityState;
-      reason: 'unknownDraw' | 'unresolvedModule' | 'packageUnavailable';
+      readonly kind: 'resolved';
+      readonly symbol: string;
+      readonly name: LocalizedGameText;
+    }
+  | {
+      readonly kind: 'unresolved';
+      readonly symbol: string;
+      readonly name: LocalizedGameText;
     };
-
-type PriorityState = { kind: 'available'; value: 1 | 2 | 3 | 4 | 5 } | { kind: 'unavailable' };
 ```
 
-`inactiveRetracted` is possible only under the shared retracted condition for a package-classified
-deployed-only consumer. `qualified` never carries a plausible verdict. The port's exact final shape
-may follow the released feature 005 contract; these semantic states are the anatomy requirement.
+`symbol` is the exact package fitted-module identity. Resolved/unresolved comes from the owner slot
+projection; a symbol is never looked up to hide unresolved package/build state.
 
-## RevealState
+### EngineeringState
 
-Ephemeral responsive presentation state.
-
-| Field                  | Type         | Rule                                                          |
-| ---------------------- | ------------ | ------------------------------------------------------------- |
-| `visibleSide`          | `Side`       | Used where only one side is presented; defaults to `top`      |
-| `pendingRevealSlotKey` | string/null  | Exact selected located key awaiting ready rendered occurrence |
-| `announcement`         | message/null | Localized semantic change; never package/game prose           |
-
-Reveal transition for a located selected slot:
-
-```text
-current side contains slot -> retain side
-else top contains slot      -> top
-else bottom contains slot   -> bottom
-else                        -> no anatomy reveal; ledger remains selected
+```ts
+type EngineeringState =
+  { readonly kind: 'stock' } | { readonly kind: 'engineered' } | { readonly kind: 'unavailable' };
 ```
 
-Once the chosen side is ready, `scrollIntoView(nearest)` targets its rendered occurrence without
-reading or storing coordinates. Every occurrence sharing the selected slot key renders selected.
+This is presence only, from the package/feature 002 fitted article. It does not re-read modifiers,
+quality, blueprint ids or effects.
 
-## PackageAssetDefect
+### PriorityState and MountPowerState
 
-| Field     | Type                                                                            | Rule                                     |
-| --------- | ------------------------------------------------------------------------------- | ---------------------------------------- |
-| `side`    | `Side`                                                                          | Asset containing the defect              |
-| `kind`    | `unsafeContent \| malformedSvg \| unknownSlot \| wrongKind \| contractMismatch` | Stable app diagnostic category           |
-| `slotKey` | string/null                                                                     | Exact source value when safely available |
+These are imported from feature 005's generalized located-mount observation contract:
 
-Defects are in-memory operational evidence, not build state or telemetry. The UI gives a localized
-summary and feature 012's deliberate package-defect link; no hull, slot, module or build data is
-placed in the URL.
+```ts
+type PriorityState =
+  | { readonly kind: 'available'; readonly value: 1 | 2 | 3 | 4 | 5 }
+  | { readonly kind: 'unavailable' };
 
-## State transitions
-
-```text
-no build --activate build--> load both sides + project ledger immediately
-loading --side success--> side ready; publish matching revision
-loading --side failure--> that side temporarily unavailable; ledger unchanged
-unavailable --retry/online--> loading
-any state --hull changes--> abort old requests; clear parsed tree; load new sides
-any state --build changes same hull--> reuse ready asset; reproject all unique slot state
-any state --conditions change--> reuse geometry; replace only matching power observations
-slot selected --located--> reveal deterministic side + synchronize all occurrences
-slot selected --no ready occurrence--> text item/feature 002 selection remain; no geometry reveal
+type MountPowerState =
+  | { readonly kind: 'notApplicable' }
+  | { readonly kind: 'disabled' }
+  | { readonly kind: 'inactiveRetracted' }
+  | { readonly kind: 'powered' }
+  | { readonly kind: 'shed' }
+  | {
+      readonly kind: 'qualified';
+      readonly reason:
+        'unknownDraw' | 'unknownDeployment' | 'knownDrawsOnlyVerdict' | 'packageUnavailable';
+    };
 ```
+
+Feature 010 copies these states and the observation's revision pair. It does not join consumers to
+bands or inspect raw `on`, zero-based `priority`, module stats or modifiers.
+
+## MountOccurrence
+
+```ts
+interface MountOccurrence {
+  readonly slotKey: string;
+  readonly kind: LocatedMountKind;
+  readonly side: SchematicSide;
+  readonly geometry: readonly (SvgPathNode | SvgCircleNode)[];
+}
+```
+
+Identity is `(canonical slotKey, side)`, which the package contract limits to one per side. A valid
+cross-side repeat creates two occurrences referencing one `MountItem`. Same-side repeats are a
+contract defect; ambiguous occurrences are omitted rather than selected by order. Geometry is copied
+unchanged into presentation plus an exact-shape hit clone; no bounds or centre are stored.
+
+## MountLocationState
+
+```ts
+type MountLocationState =
+  | { readonly kind: 'pending' }
+  | { readonly kind: 'located'; readonly sides: readonly SchematicSide[] }
+  | { readonly kind: 'temporarilyUnavailable'; readonly sides: readonly SchematicSide[] }
+  | { readonly kind: 'packageDefect'; readonly defectIds: readonly string[] };
+```
+
+Rules:
+
+- until both sides settle, absence from a ready side does not prove missing geometry;
+- one ready occurrence is immediately `located` even while the other side is pending;
+- a side failure preserves known ready-side locations and identifies unresolved side availability;
+- after both valid documents settle, a canonical hardpoint/utility with no occurrence is a package
+  defect because the published contract promises complete coverage;
+- location state never removes the item or feature 002 ledger row.
+
+## SelectedMountFacts
+
+```ts
+interface SelectedMountFacts {
+  readonly slotKey: string;
+  readonly kind: LocatedMountKind;
+  readonly size: MountSize;
+  readonly fitted: FittedMountState;
+  readonly engineering: EngineeringState;
+  readonly priority: PriorityState;
+  readonly power: MountPowerState;
+  readonly hardpointState: 'deployed' | 'retracted';
+  readonly location: MountLocationState;
+}
+```
+
+This is an exact view of the selected canonical item, not a second editor. It contains no weapon
+metric, mount direction, distance, convergence, coordinate or inferred placement.
+
+## SchematicDefect
+
+```ts
+type SchematicDefect =
+  | {
+      readonly id: string;
+      readonly kind: 'unsafeOrInvalidDocument';
+      readonly side: SchematicSide;
+    }
+  | {
+      readonly id: string;
+      readonly kind: 'unknownSlot' | 'wrongSlotKind' | 'sameSideDuplicate';
+      readonly side: SchematicSide;
+      readonly slotKey: string;
+      readonly feature: string;
+    }
+  | {
+      readonly id: string;
+      readonly kind: 'missingContractGeometry';
+      readonly slotKey: string;
+      readonly expectedKind: LocatedMountKind;
+    };
+```
+
+Defects retain language-neutral evidence for logs/tests. UI framing is localized and points to
+feature 012's data/provenance modal. No defect record includes build payload, module details or local
+storage data in an external URL.
+
+## RevealState and transitions
+
+```ts
+interface RevealState {
+  readonly selectedSlotKey: string | null;
+  readonly visibleSide: SchematicSide;
+  readonly source: 'geometry' | 'locatedList' | 'completeLedger' | null;
+}
+```
+
+Transitions:
+
+1. geometry or unique-list activation delegates the exact key to feature 002;
+2. feature 002 publishes that one selected key for ledger, editor and anatomy;
+3. on narrow layout, keep the visible side if it contains the selected slot; otherwise choose top,
+   then bottom; if no ready side contains it, keep the current side and expose location state;
+4. every occurrence for the selected key receives focused state and the nearest rendered instance
+   is revealed with native scrolling;
+5. selecting an internal/unlocated slot clears selected anatomy facts without changing the ledger
+   selection;
+6. active-build replacement resets side/reveal state and rejects all stale completions.
+
+No selection or reveal transition mutates the loadout or produces a build/history revision.
+
+## LocalizedGameText
+
+Feature 010 consumes feature 011's shared package-text presentation:
+
+```ts
+type LocalizedGameText =
+  | {
+      readonly kind: 'text';
+      readonly text: string;
+      readonly translation: 'localized' | 'canonicalFallback';
+    }
+  | { readonly kind: 'unavailable' };
+```
+
+Canonical fallback receives a visible localized disclosure. Missing package text remains
+unavailable; raw identities are not silently promoted into display names.

@@ -1,86 +1,114 @@
-# Anatomy and Outfitting Slot-Targeting Contract
+# Slot Targeting and Integration Contract
 
-## Shared identity
+## Shared slot identity
 
-Feature 002's `selectedSlotKey` is the only selected/focused slot state. Feature 010 neither persists
-a second focus nor uses DOM focus as build identity. Comparison is case-insensitive for package/
-journal interoperability; every emitted value is the canonical package key.
-
-## UI intents
+Feature 010 owns no editor selection. It consumes feature 002's generic exact slot selection and
+emits the same intent used by the complete ledger:
 
 ```ts
-openSlot(slotKey: string): void;
-selectAnatomySide(side: 'top' | 'bottom'): void;
-retrySchematic(side: 'top' | 'bottom'): void;
-openArtworkProvenance(): void;
-reportPackageDefect(): void;
+interface OpenSlotIntent {
+  readonly kind: 'openSlot';
+  readonly slotKey: string;
+  readonly source: 'anatomyGeometry' | 'anatomyList';
+}
 ```
 
-- `openSlot` accepts only a current `HardpointItem.slotKey`, delegates to feature 002 and reaches its
-  existing inline selected detail or narrow selected-slot layer in one interaction.
-- `selectAnatomySide` changes responsive presentation only; it never changes build, selection,
-  history, storage or URL.
-- `retrySchematic` delegates to the asset coordinator without changing slot state.
-- `openArtworkProvenance` uses feature 012's same-origin help/legal target.
-- `reportPackageDefect` uses feature 012's deliberate external navigation, visibly leaves the app
-  and carries no hull, slot, module or build data in the URL.
+Feature 002 validates/opens the exact package slot, selects the appropriate ledger category/row and
+opens its existing narrow exact-slot surface. Feature 010 never calls `ShipLoadout` mutation methods.
 
-## Outfitting-to-anatomy reveal
+## Geometry and list activation
 
-When feature 002 selects a slot:
+Activating a valid hardpoint or utility occurrence, or its unique text item, emits one
+`OpenSlotIntent`. The intent uses only the canonical item key. SVG ids, element order, module
+identity, node labels and coordinates never form a target.
 
-1. find the canonical anatomy item for the selected hardpoint key;
-2. if it has no ready occurrence, preserve feature 002/text selection and make no geometry claim;
-3. if the current visible side contains it, retain that side;
-4. otherwise choose top if it contains it, else bottom;
-5. mark every occurrence of the key selected;
-6. when the chosen side is rendered, call its occurrence's `scrollIntoView` with nearest alignment;
-7. use non-smooth behavior when reduced motion is requested.
+If feature 002 refuses a stale/missing key, anatomy refreshes from the current revision and presents
+the owner-localized failure. It never redirects to a similarly named slot.
 
-No `getBBox`, centre/coordinate calculation, pan matrix or stored scroll position identifies the
-slot. Wide composition reveals both sides and scrolls the containing side nearest without hiding the
-other occurrence.
+## Ledger-to-anatomy reveal
 
-## Anatomy-to-outfitting activation
+When feature 002 selects a hardpoint or utility that has a known occurrence:
 
-Both a geometry occurrence and its unique text item invoke the same `openSlot` intent. The renderer
-does not accept element id, occurrence ordinal, side index or visible label as a target. Duplicate
-instances therefore reach the same selected slot and selected detail.
+- wide composition identifies every top/bottom occurrence;
+- narrow composition keeps the current side when it contains the slot;
+- otherwise narrow composition chooses top, then bottom;
+- the nearest rendered occurrence uses native `scrollIntoView`; and
+- selected facts and the unique text item reference the same selected key.
 
-The complete feature 002 ledger remains the route to:
+If the selected slot is pending, temporarily unavailable or defective, keep the current side and
+state that location cannot currently be revealed. If an internal/unlocated slot is selected, no
+geometry is falsely selected; the complete ledger/editor remains active.
 
-- every unlocated utility/internal/fixed slot;
-- every slot while both assets are unavailable;
-- every nearby hardpoint through an independent 44-pixel text control;
-- all module editing operations.
+Side choice and internal scroll position are memory-only. They do not enter build state, storage,
+history, URL, SLEF or undo/redo.
 
-## Responsive behavior
+## Generalized mount-power observation
 
-- Wide layouts present both sides where space allows and the complete unique text equivalent.
-- Narrow layouts and 400% zoom present a labelled side selector, one bounded schematic container and
-  the same unique text equivalent.
-- Panning is native scrolling inside the container with visible affordance; the document does not
-  scroll horizontally.
-- Geometry interaction clones use exact package paths/circles and the shared non-scaling 44-pixel
-  hit-width token. They do not move or measure source geometry.
-- Target overlap never removes the independent canonical list control.
+Feature 005 must replace its hardpoint-only contribution with a generic located-mount boundary:
 
-## Announcements
+```ts
+interface MountPowerObservationRead {
+  readonly buildRevision: number;
+  readonly conditionsRevision: number;
+  readonly slotKey: string;
+  readonly observation: MountPowerObservation;
+}
 
-- Initial asset and selection state is not redundantly announced.
-- A settled slot selection announces the localized slot/module and visible side once through the
-  shared polite region.
-- A side failure/recovery announces only that side and does not re-announce the slot ledger.
-- A package schema failure uses shared alert behavior once and offers the fixed report action.
-- Power/build changes coalesce into one settled summary and never announce every geometry instance.
+interface MountPowerObservationPort {
+  observe(context: StatusRevisionContext, slotKey: string): MountPowerObservationRead;
+}
+```
+
+The owner accepts exact hardpoint and utility keys, derives state from one
+`ShipLoadout.powerBudget()` consumer/band result and returns normalized priority plus current state.
+Feature 010 requires exact revision equality and copies the observation unchanged. It does not
+inspect raw fitted `on`/`priority`, consumers, bands, modifiers or module families.
+
+This generalization is a blocking feature 005 contract update. Almanac 0.1.1 already supplies
+utility consumers; no local fallback or upstream fix is required.
+
+## Complete-ledger fallback
+
+Feature 002's complete slot ledger remains mounted and usable while:
+
+- either/both schematics load or fail;
+- a document is rejected as unsafe/invalid;
+- an annotation key is unknown, wrong-kind or duplicated;
+- package geometry is missing; or
+- anatomy projection reports an unexpected failure.
+
+Every core, optional, armour, cargo-hatch and unlocated/defective slot remains available only through
+the ledger. Feature 010 never invents geometry for it.
+
+## Provenance and package defects
+
+The anatomy heading exposes a contextual intent to feature 012's accepted in-place modal:
+
+```ts
+interface OpenAnatomyProvenanceIntent {
+  readonly kind: 'openHelpModal';
+  readonly context: 'packageArtworkAndData';
+}
+```
+
+It does not hard-code a `/help` route. The modal remains build-independent and preserves the current
+capability. Any package-defect issue-tracker navigation remains owned by feature 012, is deliberate,
+is labelled as leaving the app and contains no build/hull/slot/module/storage data.
+
+## Accessibility and feedback
+
+- SVG occurrences expose localized mount name, kind, selected state and complete current state;
+  each relates to the selected facts when selected.
+- The unique HTML list uses native semantic controls with independent 44 CSS-pixel targets.
+- Geometry and list activation produce one coalesced selected-slot announcement for the matching
+  revision; repeated occurrences do not announce twice.
+- Side failure/recovery and package defects use visible localized status plus one revision-keyed
+  announcement. Initial/unchanged state is silent.
+- Nothing essential depends on hover, smooth motion, custom drag or geometry alone.
 
 ## Verification
 
-- Every current geometry occurrence emits its canonical key and reaches the matching feature 002
-  slot in one interaction.
-- Selecting each located feature 002 slot reveals a containing side deterministically.
-- Both duplicate occurrences synchronize and reach one slot.
-- Utility and unlocated slots remain reachable only through the complete ledger.
-- Missing/malformed/offline assets leave slot inspection/editing unchanged.
-- Provenance and issue navigation carry no build data and are named as same-origin/external
-  respectively.
+Contract and E2E tests cover geometry-to-ledger and ledger-to-geometry movement for both mount kinds,
+cross-side repeats, narrow deterministic reveal, internal/unlocated selection, stale-key refusal,
+fragment/storage stability, missing-art fallback, generalized power observations and in-place modal
+provenance without data-bearing external URLs.

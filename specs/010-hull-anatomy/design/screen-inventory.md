@@ -1,90 +1,85 @@
 # Screen and Surface Inventory
 
 Feature 010 adds no route. Hull Anatomy composes inside feature 001's `/build` workspace beside
-feature 002's complete outfitting ledger. Responsive side choice, internal scroll position and list
-detail expansion are memory-only presentation state and never enter a build, local record, URL or
-SLEF.
+feature 002's complete outfitting ledger. Wide and narrow arrangements are responsive presentations
+of one capability, not separate screens. Side choice, pan and list disclosure are memory-only.
 
-| Surface                                | Wide/tablet presentation                                     | Narrow/zoomed presentation                                    | Requirements                                         |
-| -------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------- |
-| [Hull Anatomy](./hull-anatomy.md)      | Top and bottom schematic regions with shared selected state  | Labelled side selector and one bounded schematic region       | FR-001–FR-003, FR-005–FR-007, FR-009, FR-010, FR-012 |
-| Unique hardpoint text equivalent       | Every package hardpoint once beside/below geometry           | Same complete package-ordered list below the selected side    | FR-004–FR-008, FR-010, FR-012                        |
-| Selected hardpoint detail              | Shared selected-slot summary and feature 002 inline target   | Summary plus feature 002 selected-slot layer and named return | FR-005, FR-006, FR-008                               |
-| Complete slot ledger (feature 002)     | Persistent grouped ledger, independent of anatomy            | Existing complete category/card flow                          | FR-004, FR-006, FR-010, FR-012                       |
-| Side unavailable/package-defect notice | Side-local status with retry; other side/list remain present | Status replaces only the affected side region                 | FR-002, FR-010                                       |
-| Artwork/data provenance (feature 012)  | Same-origin help/legal action in anatomy heading/metadata    | Same named action in the compact heading/action region        | FR-011                                               |
+| Surface                                   | Wide/tablet presentation                                                | Narrow/zoomed presentation                                                | Requirements                                         |
+| ----------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [Hull Anatomy](./hull-anatomy.md)         | Labelled top and bottom schematic regions when space permits            | Labelled top/bottom selector and one bounded schematic                    | FR-001–FR-003, FR-005–FR-007, FR-009, FR-010, FR-012 |
+| Unique located-mount text equivalent      | Every hardpoint and utility once in package order beside/below geometry | Same complete list after selected facts; may group without changing order | FR-004–FR-008, FR-010, FR-012                        |
+| Selected mount facts                      | One shared hardpoint/utility summary near schematics and editor         | Summary before the list/editor; named return preserved                    | FR-005, FR-006, FR-008                               |
+| Complete slot ledger (feature 002)        | Persistent editor/navigation region independent of artwork              | Existing grouped list and exact-slot layer                                | FR-004, FR-006, FR-010, FR-012                       |
+| Side availability/defect status           | Replaces only the affected side; peer/list/ledger remain                | Replaces only selected side with selector/retry retained                  | FR-002, FR-010                                       |
+| Help/provenance modal entry (feature 012) | Context action in anatomy heading                                       | Same action in compact heading                                            | FR-011                                               |
 
 ## Requirement ownership
 
-| Requirement | Surface behavior                                                                                                                                    |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | Active build supplies exact hull symbol; top/bottom installed package files are the only artwork source.                                            |
-| FR-002      | The released annotation contract plus exact slot resolution admits only package hardpoints; utility geometry is inert.                              |
-| FR-003      | Slot key and path/circle geometry remain package data; no order, index, id, coordinate or measurement identifies a mount.                           |
-| FR-004      | Feature 002's complete ledger remains unchanged and is the route to utility, internal and every unlocated slot.                                     |
-| FR-005      | Geometry and the all-hardpoint canonical list expose fitted/empty, engineered/stock, selected and power state in visual and complete textual forms. |
-| FR-006      | Geometry/list activation targets feature 002; selected located slots deterministically reveal a containing side.                                    |
-| FR-007      | One item per canonical slot drives every top/bottom occurrence.                                                                                     |
-| FR-008      | Selected detail contains only package slot size/module and feature 005's package-backed effective priority/current power observation.               |
-| FR-009      | Angular copies from the installed package into output; no generated SVG is committed or fetched cross-origin.                                       |
-| FR-010      | Side-local loading/failure/retry never hides or disables the canonical list or feature 002 ledger.                                                  |
-| FR-011      | Feature 012 owns installed-package notices and deliberate external issue navigation.                                                                |
-| FR-012      | Exact-geometry non-scaling hit clones and independent list controls meet the shared target baseline; internal native pan is never the only route.   |
+| Requirement | Surface behavior                                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | Active build supplies exact hull symbol; only installed package top/bottom assets are requested.                                               |
+| FR-002      | `hardpoint` and `utility_mount` annotations become interactive only after exact key and matching package-kind resolution.                      |
+| FR-003      | Package group shapes and journal keys are retained; no position, order, id, number, prefix, coordinate or measurement identifies a mount.      |
+| FR-004      | The feature 002 complete ledger remains the route to all slots and is unaffected by anatomy state.                                             |
+| FR-005      | Geometry and unique items expose hardpoint/utility fitted, empty, engineered, focused and power states visually, programmatically and as text. |
+| FR-006      | Geometry/list targets the exact feature 002 slot; a selected located ledger item deterministically reveals a containing side.                  |
+| FR-007      | One canonical item drives every top/bottom occurrence for a key.                                                                               |
+| FR-008      | Selected facts contain only exact kind/key/size, fitted module, engineering presence, effective priority and owner current-power state.        |
+| FR-009      | Build copies installed schematics unchanged into same-origin output and audits their bytes/contracts.                                          |
+| FR-010      | Independent temporary-unavailable/retry states never remove unique list, complete ledger or editing.                                           |
+| FR-011      | Context action opens feature 012's in-place package artwork/data provenance modal.                                                             |
+| FR-012      | Exact-shape non-scaling hit clones and independent list controls meet the 44px baseline; bounded native pan is optional.                       |
 
 ## Cross-feature composition
 
-- Feature 001 owns the active build, opaque build revision, `/build` workspace, installed artwork
-  copy/cache and online retry coordinator.
-- Feature 002 owns every package slot, exact selection, complete fallback ledger and all edits.
-- Feature 003 owns deployed/retracted viewing conditions and condition revision.
-- Feature 005 owns the package-backed per-module current-power observation from
-  `PowerBudget.consumers`.
-- Feature 011 owns tokens, layout primitives, tabs, notices, localization, formatters, live regions,
-  previews and the dual-engine accessibility harness.
-- Feature 012 owns legal/provenance content and package-defect external navigation.
-- Feature 010 owns only validated schematic presentation, occurrence grouping, deterministic reveal
-  and the unique located-hardpoint text equivalent.
+- Feature 001 owns active build/hull/revision, `/build`, package artwork delivery, single service
+  worker and online recovery coordination.
+- Feature 002 owns all slot views, one selected key, complete ledger, exact-slot surface and editing.
+- Feature 003 owns deployed/retracted viewing state and condition revision.
+- Feature 005 owns generalized hardpoint/utility priority/current-power observations.
+- Feature 011 owns tokens, responsive primitives, controls, localization/game text, formatters,
+  announcements, previews and the ten-project axe-enabled harness.
+- Feature 012 owns the in-place help/provenance modal and external navigation.
+- Feature 010 owns validated schematic presentation, mount occurrence grouping, unique text
+  equivalence and deterministic reveal only.
 
-## Shared states
+## Shared state coverage
 
 Previews and tests cover:
 
 - no active build;
-- both sides loading, independently ready and fully ready;
-- a valid side with no hardpoints;
-- one side unavailable and both sides unavailable;
-- uncached offline failure, HTTP failure, invalid/active SVG and successful retry/reconnection;
-- unknown, wrong-kind and contract-valid/contract-invalid repeated annotations;
-- all hardpoints empty, all fitted and mixed fitted/empty;
-- resolved, unresolved, stock and engineered articles;
-- no selected slot, one selected occurrence and synchronized cross-side duplicates;
-- selected feature 002 slot with no admitted anatomy occurrence;
-- disabled, inactive while retracted, powered, priority-shed and qualified/unavailable power;
-- stale build/condition/asset completion refusal;
-- package localized name and disclosed canonical fallback;
-- long translated/RTL text and unexpected presentation failure.
+- both sides loading, one ready/one loading and both ready;
+- one or both sides temporarily unavailable, uncached offline, retry and reconnection;
+- invalid/unsafe document, unknown key, wrong-kind annotation, same-side duplicate and missing
+  contract geometry;
+- all empty, all fitted and mixed hardpoint/utility mounts;
+- resolved/unresolved modules and stock/engineered/unavailable engineering state;
+- no selection, hardpoint selection, utility selection and synchronized cross-side repeats;
+- selected internal/unlocated slot;
+- disabled, inactive-retracted, powered, shed, not-applicable and every qualified power state;
+- stale hull/build/condition/asset completion refusal;
+- localized package text, canonical fallback, unavailable game text and long RTL/expanded app text;
+- unexpected anatomy projection failure with complete ledger still usable.
 
 ## Accessibility, responsive and localization baseline
 
-- Anatomy participates in the workspace's one `main` and heading hierarchy; it adds no route-level
-  landmark or competing `h1`.
-- Side regions have localized headings and state descriptions. The inline SVG receives an image
-  description; hardpoint occurrence groups expose named button/selected/detail relationships.
-- The canonical hardpoint list uses semantic list and definition structures. Every item contains an
-  independent 44 CSS-pixel slot action and all state text once, regardless of duplicate geometry.
-- Filled/dashed/halo/power styling is supplementary. Empty, engineered, selected, disabled,
-  inactive, shed, qualified and unavailable are always text/programmatic state.
-- Wide visual columns do not change semantic reading order. At 200% text, 400% zoom, narrow widths
-  and landscape phones, groups stack and only each schematic viewport may scroll horizontally.
-- Native touch/trackpad/wheel scrolling uses visible affordance. No hover, multi-pointer gesture or
-  custom drag transform is required.
-- Reduced motion removes smooth reveal and nonessential transitions. RTL/expanded text does not
-  mirror package geometry or detach a label from its slot.
-- App text uses feature 011 messages. Module names use Almanac locale helpers with disclosed
-  canonical fallback; slot keys remain exact identifiers.
-- Automated coverage scans every meaningful state in Chromium and Firefox across desktop,
-  tablet/mobile portrait and landscape. Manual screen-reader journeys verify side/image/list/detail
-  relationships, duplicates, selection, announcements and failure fallback.
+- One workspace `main`/`h1`; anatomy uses a nested heading and named side/status/list/detail regions.
+- Each SVG has a localized image description. Interactive groups expose name, role, focused state
+  and detail relationship; unique list controls remain the primary stable semantic route.
+- Every state is text/programmatic as well as tokenized fill/stroke/dash/icon treatment.
+- Semantic order is heading/context/provenance, side selector/status, schematics/legend, selected
+  facts, unique list, then the existing complete ledger/editor context.
+- Available inline size—not device detection—chooses paired or single-side layout. At 200% text,
+  actual 400% zoom and landscape phones, content stacks with no document horizontal overflow;
+  only schematic containers may pan.
+- Native touch/trackpad/wheel scrolling has visible affordance. No hover, multipointer gesture or
+  custom drag is essential. Reduced motion removes smooth reveal/nonessential transitions.
+- RTL/expanded text never mirrors package geometry or changes exact slot identity.
+- Owned strings use feature 011. Package names use Almanac localization with canonical/unavailable
+  disclosure. Slot keys remain exact identifiers.
+- Automated checks cover all meaningful states in Chromium and Firefox at desktop, tablet portrait/
+  landscape and mobile portrait/landscape. Manual screen-reader checks verify geometry/list/detail,
+  duplicate, selection, status and recovery relationships.
 
 Where conformance is stated, use: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”

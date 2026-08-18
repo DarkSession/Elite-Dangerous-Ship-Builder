@@ -1,95 +1,97 @@
 # Schematic Asset Contract
 
-## Build-time source and output
+## Source and output paths
 
-The build copies only installed package files matching:
-
-```text
-node_modules/@elite-dangerous-almanac/core/assets/ships/**/schematic-*.svg
-```
-
-into:
+The only accepted source is the installed package:
 
 ```text
-assets/ships/<package-symbol>/schematic-top.svg
-assets/ships/<package-symbol>/schematic-bottom.svg
+node_modules/@elite-dangerous-almanac/core/assets/ships/<symbol>/schematic-top.svg
+node_modules/@elite-dangerous-almanac/core/assets/ships/<symbol>/schematic-bottom.svg
 ```
 
-`angular.json` uses a workspace-relative asset glob rooted at the top-level pnpm package symlink.
-Generated files are never checked into `public/` or edited. A package upgrade replaces build output
-through the normal clean build and service-worker manifest version.
+`<symbol>` is an exact resolved Almanac `Ship.symbol`. `angular.json` copies the installed schematic
+glob unchanged to:
 
-Almanac 0.1.1 satisfies [#308](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/308).
-Its installed README and package tests govern accepted paths and markup.
+```text
+assets/ships/<symbol>/schematic-top.svg
+assets/ships/<symbol>/schematic-bottom.svg
+```
 
-## URL construction and fetch
+No generated/package SVG is committed in `public/`, imported into JavaScript, renamed per hull or
+fetched from a package/CDN origin.
 
-1. Accept only the exact `symbol` of the already resolved active package hull.
-2. Construct the side URL relative to the application base; route/user text is never interpolated.
-3. Require the resolved URL origin to equal the application origin and its path to remain under the
-   configured ship-asset prefix.
-4. Refuse redirects and require a successful response with SVG content.
-5. Guard completion by request id, hull symbol and active build revision.
+## Build-time audit
 
-Top and bottom requests are concurrent and independent. A side success publishes without waiting
-for the other; a side failure changes no slot/build state.
+The installed-package audit fails before application build when any catalogued hull:
 
-## Inert parsing boundary
+- has no matching asset directory or either schematic;
+- resolves outside the package asset root;
+- has malformed XML or a root other than SVG in the SVG namespace;
+- violates the released `svg/g/path/circle` static-content guarantee;
+- carries an event, script/style, link/reference, media/foreign element or CSS URL;
+- has a `hardpoint`/`utility_mount` annotation without `data-journal-slot`;
+- has a journal key absent from the exact hull slot catalogue or resolving to the wrong kind;
+- repeats a key on one side; or
+- omits a package hardpoint or utility across both sides.
 
-The parser follows the released #308 safe-content contract. At minimum it rejects:
+The generated-output audit repeats path, file-count and content-hash comparisons against the
+installed input. It does not pin 48 hulls, 96 schematics or current occurrence counts as product
+constants; those are expected values only for the pinned 0.1.1 regression fixture.
 
-- malformed XML, doctypes, a wrong SVG root namespace or foreign elements;
-- scripts, links, images, objects, embedded documents and foreign content;
-- event, `style`, `href`/`xlink:href` and URL-bearing attributes/paint;
-- any element or attribute outside the explicit released allowlist.
+## Runtime request boundary
 
-Contracted non-rendering editor namespace declarations/attributes are validated and omitted from the
-render tree; current package Inkscape metadata is an example. It returns a typed
-`ValidatedSchematic`, never a markup string or foreign document. Raw HTML/SVG insertion,
-`[innerHTML]`, trusted-markup bypasses and `<object>`/`iframe` are prohibited. Unexpected rendering
-content rejects the whole side and creates a structured `PackageAssetDefect`; the application does
-not silently sanitize package art into a different document.
+The loader receives only a resolved hull symbol and side. It:
 
-## Annotation admission
+1. chooses the fixed side filename;
+2. URI-encodes the symbol as one path segment;
+3. resolves the relative asset URL against the application base;
+4. verifies the resolved origin equals the document origin; and
+5. fetches with ordinary same-origin credentials/referrer policy and an abort signal tied to the
+   hull request.
 
-For each annotation defined by #308:
+No user string, slot key, build name, module identity or URL parameter forms an asset path.
 
-1. take the source journal key exactly as supplied;
-2. resolve the exact key against the active `ShipLoadout.slots()` collection;
-3. require the annotation feature and resolved package kind to both be `hardpoint`;
-4. preserve the canonical `LoadoutSlot.key` in the occurrence;
-5. group every repeated occurrence according to the released duplicate semantics under the same
-   canonical slot identity, regardless of side.
+## Independent lifecycle and recovery
 
-Unknown keys and wrong kinds are omitted from interaction, recorded as package defects and never
-guessed. A duplicate that violates the released contract is a `contractMismatch`; all ambiguous
-occurrences for that key are omitted rather than choosing one by drawing order. Utility annotations
-remain inert artwork.
+Top and bottom start concurrently after an active build is available. Each publishes loading,
+ready, temporary-unavailable or contract-defect independently. A ready side renders without waiting
+for its peer. A failed side never hides selected facts, the unique located-mount list, feature 002's
+complete ledger or editing.
 
-## Cache and recovery
+On active hull change, abort pending requests and discard any completion whose hull/request identity
+no longer matches. An offline/network/HTTP failure is temporary and offers retry; retry also occurs
+once after the browser reports connectivity for the still-active side. Malformed/unsafe package
+content is a contract defect and is not retried continuously within the same app/package version.
 
-Feature 001's single Angular service worker owns a versioned lazy/lazy asset group for schematics.
-No second worker or direct Cache Storage implementation is added.
+## Parsing and rendering
 
-- A successfully opened schematic is expected to remain available offline for that application
-  version.
-- An uncached/offline or HTTP-failed side is presented as temporarily unavailable.
-- The user can retry explicitly.
-- The shared coordinator retries each active failed side once on the browser's `online` event.
-- Stale requests and retries cannot replace a newer hull's state.
-- Parsed data is retained only for the active hull; browser/service-worker caches own durable bytes.
+A successful response is parsed as XML and validated before live rendering. The parser emits only
+typed root/group/path/circle records and validated static presentation fields. It rejects rather than
+silently sanitizes a contract violation. Inkscape/editor metadata not needed to render or identify a
+mount is discarded.
 
-## Release verification
+Angular templates render the typed tree. Prohibited sinks include raw `innerHTML`,
+`bypassSecurityTrustHtml`, direct unvalidated DOM insertion, `<object>`, `<iframe>` and a second
+active SVG document. Application interaction/state markup is added by the renderer and uses design
+tokens only; source geometry remains unchanged.
 
-An installed-package contract test run by `pnpm run check` must, for every current `SHIPS` symbol:
+## Cache and offline behavior
 
-- locate both side assets under the released convention;
-- validate the released safe schema;
-- resolve every admitted annotation to the same hull's package hardpoint;
-- ensure every package hardpoint has at least one admitted occurrence;
-- verify every repeated key follows the released duplicate semantics and groups to one slot item;
-- prove utility/non-hardpoint annotations are excluded.
+Feature 001's one Angular service worker includes the copied schematic path in a versioned lazy asset
+group. No separate Cache API owner exists. An already opened side remains available offline after
+the worker has cached it. An uncached offline side reports temporary unavailability and loads after
+connectivity returns without a page reload.
 
-A generated-output test must verify exact relative copy paths. A production static-server Playwright
-scenario must install the real service worker, open a hull online, reload offline and obtain both
-previously opened sides. Development-server interception alone is not accepted as cache proof.
+Production validation uses the built static output and real generated service-worker manifest.
+Development request interception is not accepted as the only offline proof.
+
+## Verification
+
+- Audit every installed hull and both sides for path, schema, annotation key/kind, duplicates and
+  complete hardpoint/utility coverage.
+- Verify copied output bytes/hashes match installed files and no generated SVG is tracked in source.
+- Unit-test URL construction, same-origin refusal, parsing, abort/stale completion and side-local
+  retry.
+- Test malformed XML, doctype, every disallowed element/attribute/reference and contract-valid
+  static presentation attributes.
+- Production-test cached reload, uncached-offline fallback and automatic online recovery.

@@ -1,54 +1,65 @@
 # Design Reference Review: Hull Anatomy
 
-`.design/Ship Builder.dc.html` canvases 1c and 1d establish a useful dense desktop anatomy area and
-a compact mobile transformation. They are composition references only; their mock DOM, data and CSS
-are not implementation inputs.
+`.design/Ship Builder.dc.html` canvases 1c and 1d define the visual hierarchy for this plan. They are
+composition references only; their markup, CSS, data and assets are not implementation inputs.
 
 ## Adopted hierarchy
 
 - Hull Anatomy stays inside the active build workspace beside the complete outfitting ledger.
-- Wide layouts can compare top and bottom while sharing one selected-slot detail.
-- Narrow layouts use a clearly labelled top/bottom selector and retain the full hardpoint list.
-- A concise legend explains visible state supplements.
-- Selecting geometry and selecting a ledger item are synchronized.
-- Selected facts stay close to geometry without becoming a second editor.
-- Internal overflow may contain a larger schematic without creating page-level horizontal scroll.
+- Wide layout may show labelled top and bottom plates together with one shared selected mount.
+- Narrow/zoomed layout uses a labelled top/bottom selector and one bounded plate.
+- A concise legend explains visible mount state.
+- Geometry and ledger selection synchronize.
+- Selected facts remain close to the plates without becoming a second editor.
+- Native internal overflow may contain a large schematic without page horizontal scrolling.
+- Compact anatomy precedes the slot list/editor on narrow layouts.
 
-## Required corrections
+## Critical utility correction
 
-| Reference detail                                    | Planned correction                                                                                                                |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Percentage/absolute node coordinates                | Remove. Geometry and target clones come only from package SVG paths/circles; no coordinates are measured or stored.               |
-| Authored numeric hardpoint/node badges              | Remove. Exact package journal slot keys are identity; any short visual label remains derived text, never a map.                   |
-| Utility nodes presented as anatomy hardpoints       | Remove from interaction. Current package utility geometry stays inert under FR-002; feature 002 ledger remains the route.         |
-| Hard-coded Anaconda technical image paths           | Replace with exact active package symbol and installed `schematic-top/bottom.svg` build assets.                                   |
-| Mock fitted, engineering, priority and power values | Replace with one revision-coherent package/feature 005 projection, preserving unavailable and qualified states.                   |
-| Visual-only selected/empty/utility distinctions     | Add complete associated text/programmatic state and a unique package-ordered text equivalent.                                     |
-| Small markers and hover titles                      | Add exact-geometry non-scaling hit clones, visible matching names and independent 44-pixel list controls; hover remains optional. |
-| Mount/power/drives/defence/offence anatomy modes    | Keep feature 010 only as hardpoint anatomy. Other capability results remain in their owning feature surfaces.                     |
-| Unbounded desktop canvas                            | Use fluid regions and bounded native schematic scrolling; stack at narrow/zoomed sizes with no document overflow.                 |
-| Inline colors, type, spacing and motion             | Replace every application-owned visual value with feature 011 tokens and reduced-motion behavior.                                 |
-| Hard-coded English labels                           | Resolve through feature 011; package game names use Almanac localization/fallback disclosure.                                     |
-| No loading/offline/schema failure states            | Add independent side loading/unavailable/retry/defect states while preserving lists/editing.                                      |
-| No artwork terms route                              | Add feature 012's same-origin installed-package provenance/legal target.                                                          |
+The mock's utility presentation is not game data. Its private Anaconda bottom SVG labels the shapes as
+hardpoints; the HTML relabels numbered nodes 7/8 as utilities, and mobile code classifies utilities
+with `Number(hp) > 6`. The wide selection path still says “Hardpoint” for them.
 
-## Package fact correction
+The accepted spec requires utilities to receive the same interaction, state, detail and navigation
+as hardpoints. Production therefore ignores all mock classification and admits utilities only from
+Almanac `data-feature="utility_mount"` plus an exact resolved package `kind === 'utility'` slot.
 
-The reference draws utilities, and 0.1.1's real SVGs also annotate all 195 package utility slots.
-The original feature-spec prose saying the package carries no utility positions was therefore stale
-and has been corrected. This does not expand scope: FR-002 explicitly admits only resolved
-hardpoints, so utilities remain noninteractive artwork and complete-ledger entries.
+## Required adaptations
 
-## Accessibility and semantics absent from the mock
+| Reference detail                                    | Planned correction                                                                              |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Fixed 1560px and separate 390px canvases            | One container-responsive capability covering all five required layouts, zoom and text expansion |
+| Hard-coded Anaconda technical SVGs                  | Exact active package symbol and installed `schematic-top/bottom.svg` copied to build output     |
+| Percentage coordinates and numbered `data-hp` nodes | Exact package path/circle geometry and `data-journal-slot`; no measured/stored coordinates      |
+| `Number(hp) > 6` utility logic                      | Exact `utility_mount` annotation plus matching package utility slot                             |
+| Mock utility nodes on weapon geometry               | Discard; render all real Almanac utility occurrences                                            |
+| Mock fitted, engineering, priority and power values | Same-revision feature 002 slot view and generalized feature 005 observation                     |
+| Node-number/size badges                             | Exact package key/kind/size semantics; utility is not class zero                                |
+| Small 14–30px nodes and hover titles                | Exact-shape 44px hit clones plus independent 44px semantic list controls                        |
+| Color/dash/icon-only state                          | Complete visible/programmatic text, selected facts and unique text equivalent                   |
+| Hover scaling and unconditional transition          | Optional supplementary hover only; reduced-motion-aware tokenized motion                        |
+| `MOUNTS/POWER/DRIVES/DEFENCE/OFFENCE/STATUS` modes  | Feature 010 owns mounts only; other capability surfaces retain their data                       |
+| Fitting/engineering bench below anatomy             | Remains feature 002; feature 010 adds selected facts, not another editor                        |
+| Mock convergence/offset/direction measurements      | Remove; FR-008 permits no such facts and package geometry is not measured                       |
+| Inline colors/type/spacing/durations                | Shared feature 011 tokens/components only                                                       |
+| Google Fonts preconnect and remote font CSS         | No automatic cross-origin request; use shared same-origin/system typography                     |
+| Hard-coded English/title-only labels                | Feature 011 localization/game text and semantic names/relationships                             |
+| No loading/offline/schema/defect states             | Independent side lifecycle, retry/recovery and ledger-preserving defect surfaces                |
+| Generic/incomplete help licence overlay             | Context action opens feature 012's accepted in-place artwork/data provenance modal              |
 
-- One workspace `main`/`h1`; anatomy uses nested headings and named side regions.
-- Typed SVG has an image description; every interactive occurrence exposes button and selected/
-  detail relationships.
-- One canonical semantic list supplies every hardpoint and complete state exactly once.
-- Side availability, package defects and current viewing condition are text and announced once.
-- Touch, pointer, screen reader, 200% text, 400% zoom, portrait/landscape and RTL expansion are
-  explicit preview/test states.
-- Automated axe coverage and manual screen-reader journeys run across Chromium and Firefox.
+## Accessibility gaps corrected
 
-The result retains the reference's compact technical-instrument character while removing every
-mock-only game assertion and inaccessible interaction.
+- Clickable `div` nodes/tabs/rows become shared semantic controls or explicitly named SVG controls
+  with state and relationships.
+- Both sides have visible headings and accessible image descriptions.
+- One semantic list represents every hardpoint and utility exactly once in package order.
+- Side availability, selected state, current power and defects are text and announced once.
+- Geometry state is never conveyed by color/shape/position alone.
+- 44px direct and list targets, native pan and non-hover operation support touch/pointer.
+- Desktop, tablet/mobile portrait/landscape, 200% text, actual 400% zoom, RTL expansion and reduced
+  motion are explicit preview/test states.
+- Axe runs in Chromium and Firefox; manual screen-reader checks verify geometry/list/detail and
+  duplicate relationships.
+
+The result keeps the reference's dense technical-instrument character and wide/narrow hierarchy
+while removing every fabricated game assertion, private asset and inaccessible interaction.
