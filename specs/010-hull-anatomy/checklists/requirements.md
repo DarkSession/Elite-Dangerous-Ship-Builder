@@ -25,7 +25,8 @@
 ## Almanac Integrity
 
 - [x] Almanac-owned game data uses package identities and values
-- [x] Every required game number or calculation is available from the package
+- [x] Every required game number or calculation is available from the package — Almanac 0.1.2
+      supplies effective per-module power through `PowerBudget.consumers`
 - [x] No local game formula, correction, estimate or unsupported aggregate is required
 - [x] Missing package values remain unavailable rather than being fabricated
 

@@ -103,7 +103,7 @@ assembly requirements and viewing conditions. Detailed calculations remain defin
 
 ## Almanac Coverage
 
-`validation`, `powerBudget()`, the area metric methods, diagnostic mass and capacity accessors,
+`validation`, `powerBudget()`, the area metric/result methods, `standardLoadResult()`, diagnostic mass and capacity accessors,
 `retailCredits()`, `mercCoinCost()` and engineering cost functions provide every required game
 value, state and calculation. The application selects viewing conditions, consolidates returned
 facts and stores only its own normalisation provenance. It owns no game calculation or readiness
@@ -111,11 +111,11 @@ verdict.
 
 ## Current Almanac Limit
 
-Diagnostic result objects exist for mass, fuel capacity and cargo capacity. Heat, shield,
-shield-recovery, distributor and mobility methods return `null` for some unavailable states, and
-jump-summary methods throw when prerequisites are unavailable. Where the package supplies no
-structured reason, the application can state only that the result is unavailable and show directly
-observable build state. A more specific game diagnosis requires an upstream package result.
+Diagnostic result objects exist for mass, fuel capacity, cargo capacity, standard loads, mobility,
+shield strength and shield recovery. Heat and distributor methods still return `null` for some
+unavailable states, and jump-summary methods throw when prerequisites are unavailable. Where the
+package supplies no structured reason, the application can state only that the result is unavailable
+and show directly observable build state.
 
 ## Success Criteria
 

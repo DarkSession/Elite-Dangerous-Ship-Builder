@@ -5,6 +5,16 @@
 Commanders can export the active build as one SLEF entry and import exactly one SLEF entry or journal
 `Loadout` event. The Almanac owns inspection, parsing, construction and serialization.
 
+## Clarifications
+
+### Session 2026-08-18
+
+- Q: Should import/export preserve historical hull or module purchase values? → A: No. Export uses
+  current Almanac catalogue prices, and captured purchase values do not enter application build state.
+- Q: Should import/export preserve a module's captured `Health` snapshot? → A: No application
+  behavior depends on that transient snapshot. The build still preserves the fitted configuration
+  from which the Almanac supplies each module's engineered maximum integrity.
+
 ## User Scenarios
 
 ### Story 1 — Export a build (P1)
@@ -31,9 +41,9 @@ Commanders can export the active build as one SLEF entry and import exactly one 
   equivalent build link when one can be produced.
 - **FR-004**: Copy failure MUST leave selectable payload text and download available. Platform share
   MUST be offered only when the platform provides it.
-- **FR-005**: Export MUST use retained source-purchase values wherever the build retains valid source
-  provenance and MUST follow package invalidation semantics. Missing source values MUST NOT be
-  replaced with retail.
+- **FR-005**: Export credit figures MUST use the current catalogue-retail values supplied by the
+  Almanac. Captured or historical purchase values MUST NOT be retained, displayed or requested for
+  export.
 - **FR-006**: Fixed-mount normalisation MUST export the resulting build without exporting its
   provenance notice.
 - **FR-007**: Import MUST be available without an active build and accept pasted SLEF JSON or one
@@ -45,28 +55,39 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 - **FR-010**: Import MUST complete validation and normalisation before replacing the active build.
   Failure MUST leave active and stored builds unchanged.
 - **FR-011**: Package diagnostics MUST preserve entry index, path, code, constraint and parameters.
-- **FR-012**: Successful import MUST report partial quality normalised to 100%, fixed mounts filled
-  from package defaults, unresolved identities retained and fixed mounts left incomplete.
+- **FR-012**: Successful import MUST report partial quality normalised to 100%, unknown removable
+  modules emptied, unknown fixed modules replaced with package defaults, source-empty fixed mounts
+  filled and fixed mounts left incomplete when no default exists. Source unknown identities are
+  transient feedback only.
 - **FR-013**: Import followed by export MUST preserve every modelled field except the two
-  constitutional normalisations: completed engineering quality and fixed-mount stock fill.
+  constitutional ingress classes: completed engineering quality and package-owned identity/fixed-
+  mount normalization. No unknown module identity or attached engineering may enter the export.
 - **FR-014**: Import and export MUST run entirely in the browser and MUST transmit no payload.
 
 ## Edge Cases
 
-- Capture-only timestamps, health, ammunition state and engineer identity are not durable build state.
-- An unresolved non-fixed module remains unresolved in its slot.
+- Capture-only timestamps, per-module `Health` snapshots, ammunition state and engineer identity are
+  not application build state. Their presence or omission in package serialization MUST NOT affect
+  import acceptance, application behavior or round-trip success.
+- Post-engineering module integrity belongs to the fitted build configuration and remains available
+  through Almanac results; it MUST NOT be inferred from a captured `Health` snapshot.
+- An unknown non-fixed module becomes an empty slot; an unknown fixed module becomes the package
+  default or remains explicitly incomplete when no package default exists.
 - Clipboard and share permissions can fail without losing the generated payload.
 
 ## Almanac Coverage
 
 `inspectSlef()`, `ShipLoadout.fromSlef()`, `ShipLoadout.fromLoadout()`, `toLoadoutEvent()` and
-`toSlefString()` supply strict validation, construction, serialization and source-purchase behaviour.
-The application performs no format or game calculation.
+`toSlefString()` supply strict validation, construction, serialization and current catalogue-retail
+credit behaviour. The promised package ingress release additionally supplies unknown-hull refusal and
+structured unknown-module empty/default outcomes; pinned 0.1.2 does not yet satisfy that identity
+contract. The application performs no format or game calculation.
 
 ## Success Criteria
 
 - **SC-001**: Every reference export is accepted by the Almanac and independent SLEF consumers.
-- **SC-002**: Round trips preserve every modelled field under the two stated normalisations.
+- **SC-002**: Round trips preserve every modelled field after the stated quality and identity/fixed-
+  mount normalisations.
 - **SC-003**: Every rejected input leaves current work unchanged and exposes a structured location
   and reason.
 - **SC-004**: The package hull with the most slots, with every slot fitted and every supported modelled

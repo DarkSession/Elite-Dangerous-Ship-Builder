@@ -6,6 +6,12 @@ Every capability uses one design system, works with pointer, touch and screen re
 sizes, and resolves application text and formatting through one localisation layer. The target is
 WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 
+## Clarifications
+
+### Session 2026-08-18
+
+- Q: Which application-owned interface languages should ship initially? → A: English and German.
+
 ## User Scenarios
 
 ### Story 1 — Use every capability with assistive technology (P1)
@@ -30,7 +36,8 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 3. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
    active locale.
 4. Missing application translation falls back to bundled English text.
-5. Game text unavailable in the active locale uses the package text and is identified as untranslated.
+5. Game text unavailable in the active locale uses canonical package text and is identified as
+   untranslated when that text exists; otherwise it is explicitly unavailable.
 
 ## Requirements
 
@@ -70,14 +77,15 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
   hard-coded display text in components, templates and formatters is prohibited.
 - **FR-017**: When no saved language selection exists, the application MUST automatically select a
   shipped language matching the browser language setting and MUST fall back to English when none
-  matches. A Commander MUST be able to select another shipped language and persist that selection
-  in the browser.
+  matches. The initial shipped application languages MUST be English and German. A Commander MUST be
+  able to select either language and persist that selection in the browser.
 - **FR-018**: Numbers, percentages, credits, distances and dates MUST use the active locale.
 - **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
   MUST be available without a network. Raw keys, empty strings and placeholders MUST not appear.
 - **FR-020**: Game text MUST come from the Almanac. If the package cannot supply the active locale,
-  its canonical text MUST be shown and identified as untranslated; the application MUST NOT keep a
-  private game-text translation.
+  its canonical text MUST be requested and, when present, shown and identified as untranslated. If
+  the package supplies no canonical text, the value MUST be unavailable. The application MUST NOT
+  keep a private game-text translation.
 
 ### Verification
 
@@ -95,12 +103,14 @@ The package supplies game names for supported locales and an explicit missing-tr
 It does not own application messages, locale selection, formatting, accessibility or the design
 system.
 
-## Current Almanac Limit
+## Current Almanac Boundary
 
-Package localisation covers modules, blueprints, experimental effects and materials, but not hull
-names or diagnostic messages. Those remain in the package's canonical language and MUST be
-identified as untranslated. The application MUST NOT fill the gap with private game-text or
-diagnostic translations.
+Package localisation covers modules, blueprints, experimental effects, materials, hull/manufacturer,
+slot/restriction, pre-engineered variant, engineering-group, effect-description and structured
+diagnostic families. A helper can explicitly return `null` when the requested locale or text itself
+is unavailable. Canonical package text is disclosed as untranslated when present; otherwise the
+value is unavailable. The application MUST NOT fill either miss with private game-text or diagnostic
+translations.
 
 ## Success Criteria
 

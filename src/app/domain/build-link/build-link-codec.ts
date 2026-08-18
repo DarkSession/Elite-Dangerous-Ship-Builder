@@ -1,4 +1,5 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { FittedModule } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { getPreEngineeredJournalModifiers } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
@@ -494,7 +495,7 @@ function bytesEqual(left: Uint8Array, right: Uint8Array): boolean {
 type CodecShip = string;
 type PowerState = { on: boolean | undefined; priority: number | undefined };
 const EMPTY_POWER_STATE: PowerState = { on: undefined, priority: undefined };
-type CodecFittedModule = ReturnType<ShipLoadout['fittedModules']>[number];
+type CodecFittedModule = FittedModule;
 
 function moduleDrawsPower(codec: CodecContext, moduleIndex: number | null): boolean {
   return moduleIndex !== null && codec.poweredModuleSet.has(moduleIndex);

@@ -1,3 +1,25 @@
+<!--
+Sync Impact Report
+- Version change: 5.0.0 -> 6.0.0
+- Modified principles: IV. Lossless, Honest Builds (unknown hull refusal and unknown module
+  replacement)
+- Rationale: an unknown hull cannot define a build, and an unknown fitted module cannot describe a
+  reproducible current loadout; package-owned empty/default normalization keeps every accepted build
+  constructible without inventing game data in the application.
+- Added sections: None
+- Removed sections: None
+- Invalidated-spec review: completed across features 001–012. Features 001, 002 and 004 now define
+  package-owned empty/default ingress and transient feedback; downstream calculation and anatomy
+  capabilities accept no unknown module identity.
+- Follow-up TODOs:
+  - Consume the release tracked by
+    [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) before
+    implementing affected ingress, persistence, link and SLEF paths; do not reproduce its replacement
+    logic locally.
+  - Add migration and regression coverage for saved builds, links and SLEF carrying unknown hull or
+    module identities.
+-->
+
 # Elite Dangerous Ship Builder Constitution
 
 The Elite Dangerous Ship Builder is a browser application for planning ship
@@ -91,33 +113,58 @@ A build is round-trippable and never silently wrong.
 
 - Import → edit → export MUST preserve everything the application understands
   and MUST NOT invent values the source did not contain. Absent data stays
-  absent; it is never substituted with zero or a guess. The two bullets below
-  are the **only** exceptions. Each is a deliberate product rule rather than a
-  convenience, each is reported to the Commander rather than applied silently,
-  and each substitutes something a Commander could reproduce in the game — not a
-  plausible-looking value. A third exception requires amending this principle.
+  absent; it is never substituted with zero or a guess. The two normalization
+  bullets below are the **only** exceptions. Each is a deliberate product rule
+  rather than a convenience, each is reported to the Commander rather than
+  applied silently, and each substitutes something a Commander could reproduce
+  in the game — not a plausible-looking value. A third exception requires
+  amending this principle.
 - **Engineering quality is deliberately outside the application model.** A
   selected blueprint grade always represents a completed (100% quality) grade.
-  Imports carrying a partial engineering quality are normalised to 100%, and
-  exports report 100%; the application does not retain or present the source
-  roll's partial quality. A build is shared so that another Commander can build
-  it, and a partial roll cannot be reproduced at an engineer, so a plan quoting
-  one would describe a ship its reader cannot make.
-- **A fixed mount is never empty.** The seven core internals, armour and the
-  built-in cargo hatch are mounts every hull always carries and none can fly
-  without; outfitting offers a swap and no route to a ship missing one. A build
-  reaching the application with such a mount empty — or carrying a module symbol
-  the catalogue cannot resolve — MUST have that hull's stock module fitted
-  before the build is presented and before any figure is read from it, and the
-  Commander MUST be told which mounts were filled and what was replaced. The
-  stock module is the one `@elite-dangerous-almanac/core` records in the hull's
-  default loadout; the application MUST NOT derive a substitute of its own, and
-  where the package carries no stock module for that mount the mount stays empty
-  and the build is reported incomplete. The fill changes the build rather than
-  the display, so a later save, share or export carries it. Emptying a fixed
-  mount MUST NOT be offered at all, which the application MUST reach by
-  surfacing the package's own removability report rather than by a rule of its
-  own (principle II).
+  When `@elite-dangerous-almanac/core` resolves the fitted module and engineering
+  identity, imports carrying a partial engineering quality MUST be normalised
+  through the package to 100%, and exports report 100%. The source quality MAY be
+  shown in transient normalisation/refusal feedback, but MUST NOT remain build
+  state, an editable control or the represented active quality. When the package
+  cannot resolve that identity or cannot complete it losslessly, the incoming
+  build MUST be refused atomically before activation, the current build MUST
+  remain intact, and the Commander MUST be told which slot and identity could not
+  be normalised.
+  The application MUST NOT accept the candidate by changing only its quality
+  scalar, stripping its engineering, retaining the partial roll or fabricating
+  modifiers. This quality rule applies only after the package has resolved the
+  fitted module: an unknown module follows the identity-normalization rule below
+  instead of being preserved or refused because of engineering attached to it. A
+  build is shared so that another Commander can build it, and a partial roll
+  cannot be reproduced at an engineer, so a plan quoting one would describe a
+  ship its reader cannot make.
+- **Unknown catalogue identities are not build state, and a fixed mount is never
+  empty.** An incoming hull symbol that `@elite-dangerous-almanac/core` cannot
+  resolve MUST be refused atomically before activation. The current build MUST
+  remain intact, the Commander MUST be told which hull was refused, and the
+  application MUST NOT select a replacement hull. An incoming module symbol the
+  package cannot resolve MUST be removed from a removable mount or replaced with
+  that hull's package-defined stock module on a fixed mount. A fixed mount that
+  arrives empty receives the same package-defined stock module. The seven core
+  internals, armour and built-in cargo hatch are fixed mounts; outfitting offers
+  a swap and no route to a ship missing one.
+
+  Every ingress and reconstruction path MUST obtain these outcomes from the
+  package rather than detect catalogue misses, classify removability or choose a
+  default itself. Until the package release supplies the required unknown-module
+  replacement behavior, an affected application path waits on that release; a
+  local transitional rewrite is prohibited by principle II. Where the package
+  carries no stock module for a fixed mount, the mount stays empty and the build
+  is reported incomplete rather than receiving an invented substitute.
+
+  Module removal/defaulting changes the candidate build, so the source's unknown
+  symbol and attached fields do not enter active state, snapshots, edit history,
+  persistence, links or SLEF output. The normalized result is what later save,
+  share and export operations carry. Before any figure is read, the Commander
+  MUST be told which slots were emptied, which received defaults and what source
+  identities were replaced. Emptying a fixed mount MUST NOT be offered, which
+  the application MUST reach by surfacing the package's own removability result
+  rather than by a rule of its own (principle II).
 - Where the package reports a value as unavailable or a build as invalid or
   incomplete (`validation`, the nullable aggregates and their `*Result`
   counterparts), the application MUST surface that state rather than hide it
@@ -348,4 +395,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 4.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-17
+**Version**: 6.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-18

@@ -50,3 +50,5 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .pnpm-store/*
+
+.design/*

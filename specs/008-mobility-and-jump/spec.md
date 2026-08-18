@@ -12,19 +12,19 @@ out of scope.
 
 1. Maximum, unladen and laden single-jump range, total range and jump count are shown together.
 2. Each value identifies its load state and fitted Frame Shift Drive.
-3. No usable drive or unresolved input produces unavailable output; no fuel produces package zero.
+3. No usable drive or package-incomplete input produces unavailable output; no fuel produces package zero.
 
 ### Story 2 — Read mobility (P1)
 
 1. Speed, boost, pitch, roll, yaw and both mass-curve multipliers use selected load and ENG pips.
-2. Missing, disabled, unpowered or unresolved thrusters produce unavailable build mobility.
+2. Missing, disabled, unpowered or package-incomplete thrusters produce unavailable build mobility.
 3. Hull base values, when shown, are explicitly catalogue facts rather than build estimates.
 
 ### Story 3 — Read mass and capacity (P2)
 
 1. Unladen mass, main and reserve fuel capacity and cargo capacity retain package diagnostics.
 2. Every fitted module's package-resolved post-engineering mass is shown by slot.
-3. Unknown module mass makes dependent aggregates unavailable, never zero.
+3. A resolved module whose package mass is unavailable makes dependent aggregates unavailable, never zero.
 
 ## Requirements
 
@@ -35,7 +35,7 @@ out of scope.
   laden single and total ranges and jump counts.
 - **FR-003**: The application MUST call package jump functions only after required diagnostic mass
   and capacity results are complete. Failure MUST remain unavailable without a guessed value.
-- **FR-004**: Mobility MUST use `ShipLoadout.mobilityMetrics()` for selected fuel, cargo and ENG pips
+- **FR-004**: Mobility MUST use `ShipLoadout.mobilityMetricsResult()` for selected fuel, cargo and ENG pips
   and show every returned speed, boost, rotation and multiplier field.
 - **FR-005**: A `null` mobility result MUST remain unavailable. Hull base values MUST NOT be
   substituted for it.
@@ -55,7 +55,7 @@ out of scope.
 
 ## Almanac Coverage
 
-`jumpRangeSummary()`, `mobilityMetrics()`, `unladenMassResult`, `fuelCapacityResult` and
+`jumpRangeSummary()`, `mobilityMetricsResult()`, `standardLoadResult()`, `unladenMassResult`, `fuelCapacityResult` and
 `cargoCapacityResult` provide every aggregate. Fitted modules provide their resolved mass.
 
 ## Success Criteria

@@ -31,11 +31,11 @@ module protection for the active build.
 
 - **FR-001**: Every defence value MUST come from `@elite-dangerous-almanac/core` without local
   calculation, clamping or apportionment.
-- **FR-002**: Shields MUST use `ShipLoadout.shieldMetrics()` and show all returned strength,
+- **FR-002**: Shields MUST use `ShipLoadout.shieldMetricsResult()` and show all returned strength,
   contribution, multiplier, resistance and effective-hit-point fields for the selected SYS pips.
 - **FR-003**: A `null` shield result MUST remain unavailable. A missing, disabled and power-shed
   generator MUST remain distinguishable through package and build state.
-- **FR-004**: Recovery MUST use `ShipLoadout.shieldRecovery()` and keep normal rate, broken rate,
+- **FR-004**: Recovery MUST use `ShipLoadout.shieldRecoveryResult()` and keep normal rate, broken rate,
   recovery time and regeneration time separate.
 - **FR-005**: Infinite recovery and effective hit points MUST be expressed by their package meaning
   without changing the result.
@@ -51,12 +51,13 @@ module protection for the active build.
 
 - Negative resistance remains negative.
 - No banks and all banks unpowered are different states.
-- An unpowered generator may retain package shield strength while its power state remains visible.
-- An unknown hull withholds hull-dependent results rather than substituting catalogue guesses.
+- An unpowered generator produces package-structured unavailable shield and recovery results while
+  its power state remains visible.
+- An unknown hull is rejected by the package construction boundary before it can become active.
 
 ## Almanac Coverage
 
-`shieldMetrics()`, `shieldRecovery()`, `cellBanks()` and `armourMetrics()` provide all defence
+`shieldMetricsResult()`, `shieldRecoveryResult()`, `cellBanks()` and `armourMetrics()` provide all defence
 numbers and states. Hull hardness is package catalogue data.
 
 ## Success Criteria
