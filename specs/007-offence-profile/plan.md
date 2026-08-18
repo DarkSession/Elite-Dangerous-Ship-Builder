@@ -80,17 +80,17 @@ mobile Offence mode. Exact adoption and departures are in
 _GATE: The design passes with no constitutional exception. Delivery is blocked by missing shared
 strictness and prerequisite contracts listed below._
 
-| Principle                               | Design evidence                                                                                                                                                                            | Status                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
-| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                                            | PASS                   |
-| II. Almanac Source of Truth             | Exact package facade results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                                             | PASS                   |
-| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only components.                                                                                        | PASS                   |
-| IV. Lossless, Honest Builds             | Returned canonical names and identities are preserved; unresolved occupancy qualifies results; absent range/piercing, zero unclassified damage, unlimited ammo and infinity stay distinct. | PASS                   |
-| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen reader, text-size, zoom, orientation and overflow verification.                           | PASS; prerequisite 011 |
-| VI. Commander's Language                | Application labels/units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                                       | PASS; prerequisite 011 |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only and every new component has the required preview matrix.                                                  | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                                           | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every FR maps to the in-workspace capability, contracts and component-state previews before task generation.                                                                               | PASS                   |
+| Principle                               | Design evidence                                                                                                                                                         | Status                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                         | PASS                   |
+| II. Almanac Source of Truth             | Exact package facade results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                          | PASS                   |
+| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only components.                                                                     | PASS                   |
+| IV. Lossless, Honest Builds             | Returned package identities are preserved; unknown modules normalize before projection; unavailable coverage, sparse fields, unlimited ammo and infinity stay distinct. | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen reader, text-size, zoom, orientation and overflow verification.        | PASS; prerequisite 011 |
+| VI. Commander's Language                | Application labels/units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                    | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only and every new component has the required preview matrix.                               | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                        | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to the in-workspace capability, contracts and component-state previews before task generation.                                                            | PASS                   |
 
 ### Delivery prerequisites and blockers
 
@@ -184,7 +184,7 @@ decisive outcomes are:
   exact identity, enabled state, ammunition, 14-field `WeaponMetrics` and sparse range/piercing data.
 - Disabled weapons remain in the returned list and are omitted from totals exactly as the package
   specifies. Same-revision package slot coverage distinguishes confirmed empty hardpoints from
-  unresolved occupied entries omitted by the weapon facade.
+  unavailable hardpoint coverage omitted by the weapon facade.
 - Optional `unclassified` is absent when its amount is zero; it is omitted or described as no
   unclassified damage, not as unavailable. Missing range, projectile metadata or piercing remains
   not stated and is never zero-filled.
@@ -199,7 +199,7 @@ decisive outcomes are:
 - A feature-005 deployed power observation is required for honest distributor context; the currently
   accepted feature-005 ports do not supply it.
 - Feature 007 exports the missing `OffenceStatusProvider`, using exact sustained DPS and one owner
-  qualification identity when unresolved hardpoint coverage makes that Status summary incomplete.
+  qualification identity when unavailable hardpoint coverage makes that Status summary incomplete.
 - Canvas 1c and 1d provide only hierarchy. Mobile omits the desktop weapon summary and contradicts
   its sample DPS, so parity and all missing states come from the accepted feature design, not the mock.
 
@@ -231,7 +231,7 @@ No planning clarification marker remains.
 Phase 1 introduces no server, persistence, new route, private game catalogue, local game formula,
 power-shedding reconstruction, target model, visual literal, hard-coded application string or reduced
 mobile data set. Canonical package names remain preserved beside localized presentation. Structural
-absence, numeric zero, disabled entries, unresolved occupancy, unlimited ammunition and both infinity
+absence, numeric zero, disabled entries, unavailable coverage, unlimited ammunition and both infinity
 meanings remain distinct. Every requirement has a surface, preview state and dual-engine validation
 path.
 

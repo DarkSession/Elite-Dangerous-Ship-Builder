@@ -33,7 +33,11 @@ Both surfaces read one `StatusProjection` revision:
 - the wide rail shows independent structural facts, issue/qualification counts, power, compact
   headline/assembly summaries and one visible action to the complete Status capability;
 - the complete capability is the sole location for validation issue records, provenance entries,
-  full qualifications, viewing controls and all detail/slot actions;
+  full cross-provider qualifications and the complete set of detail/slot actions;
+- feature 003 owns one viewing-condition store and one shared control component. Status composes the
+  complete condition control, and an owning detail capability may compose the same control for the
+  conditions it uses; every instance reads and commits the same draft/Apply/Reset state rather than
+  creating another owner;
 - the rail never displays a “first issue” preview, preventing duplicate issue presentation;
 - a ready rail cannot coexist with a pending/failure capability for a different revision.
 

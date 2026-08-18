@@ -32,12 +32,12 @@ waiting on detail expansion or recalculating the build.
 ## Required feature-002 boundary
 
 Before tasks, feature 002 must accept a type-only read that supplies `HardpointCoverage` for one
-captured build revision and keeps unresolved exact slot/symbol identities. The read:
+captured build revision. The read:
 
 - uses package slot/fitted views rather than parsed names or array positions;
-- distinguishes all empty, complete, partial, unresolved-only and unavailable coverage;
-- provides no weapon metric and does not insert unresolved entries into `weaponMetrics()`;
-- emits feature 003's exact slot target for unresolved entries.
+- distinguishes empty, complete and unavailable coverage;
+- provides no weapon metric and never receives an unknown module identity because ingress has already
+  applied package empty/default normalization.
 
 This accepted boundary does not yet exist by name in feature 002 and is a delivery blocker.
 
@@ -45,7 +45,7 @@ This accepted boundary does not yet exist by name in feature 002 and is a delive
 
 Before tasks, feature 005 must accept a deployed distributor power-observation port backed by its
 authoritative `powerBudget()` interpretation and exact distributor slot state. The read returns the
-captured revisions and one of powered, disabled, shed, absent, unresolved or qualified.
+captured revisions and one of powered, disabled, shed, absent, unavailable or qualified.
 
 Feature 007 must not:
 
@@ -79,8 +79,7 @@ The provider:
    hardpoint coverage;
 3. returns the captured build and condition revisions;
 4. returns `detailTarget: { kind: 'detail', capability: 'offenceProfile' }`;
-5. returns `qualifiedSummaryIds: ['sustainedDps']` only for partial, unresolved-only or unavailable
-   coverage; otherwise `[]`.
+5. returns `qualifiedSummaryIds: ['sustainedDps']` only for unavailable coverage; otherwise `[]`.
 
 Numeric zero does not itself qualify the summary. Selected hardpoint state and WEP pips do not alter
 sustained DPS because `weaponMetrics()` accepts neither input. Feature 003 copies the value,
@@ -92,8 +91,7 @@ condition and qualification unchanged and performs no Almanac call.
 type OffenceSlotTarget = { kind: 'slot'; slotKey: string };
 ```
 
-Returned weapons use exact `FittedWeaponMetrics.slot`; unresolved notices use exact feature-002
-source slots. Feature 002 reveals/selects the slot in one interaction: inline in roomy workspace
+Returned weapons use exact `FittedWeaponMetrics.slot`. Feature 002 reveals/selects the slot in one interaction: inline in roomy workspace
 composition or in the existing selected-slot layer at narrow widths. Duplicate module symbols never
 target one another.
 
@@ -119,7 +117,7 @@ Slot/capability selection changes no build, revision, persistence, history, rout
 - Status sustained DPS deep-equals the package total and carries the required detail target.
 - Qualification identity appears once only for incomplete/unavailable coverage.
 - WEP/hardpoint selection does not alter the Status sustained-DPS number.
-- Every weapon/unresolved slot target carries the exact original key once at wide and narrow layouts.
+- Every returned-weapon slot target carries the exact original key once at wide and narrow layouts.
 - Mismatched revisions/ports never publish or target stale data.
 - Capability, expansion and slot selection never enter serialization.
 - Announcements are localized, deduplicated and state-specific.

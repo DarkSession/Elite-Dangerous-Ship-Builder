@@ -137,26 +137,13 @@ no offence metric.
 type HardpointCoverage =
   | { readonly kind: 'confirmedEmpty' }
   | { readonly kind: 'complete'; readonly occupiedSlots: readonly string[] }
-  | {
-      readonly kind: 'partial';
-      readonly occupiedSlots: readonly string[];
-      readonly unresolved: readonly UnresolvedHardpoint[];
-    }
-  | { readonly kind: 'unresolvedOnly'; readonly unresolved: readonly UnresolvedHardpoint[] }
   | { readonly kind: 'unavailable' };
-
-interface UnresolvedHardpoint {
-  readonly slotKey: string;
-  readonly symbol: string;
-}
 ```
 
 Rules:
 
-- every identity comes from feature 002's same-build-revision package slot/fitted views;
+- every identity comes from feature 002's same-build-revision package-resolved slot/fitted views;
 - `confirmedEmpty` is valid only when all package hardpoint slots are empty and `weapons` is empty;
-- unresolved entries are never inserted into `BuildWeaponMetrics` and receive no invented value;
-- each unresolved entry may emit the shared exact-slot target;
 - `unavailable` prevents a no-fitted-weapons claim.
 
 ## Capacitor result and semantic duration
@@ -204,7 +191,7 @@ type DeployedDistributorPowerObservation =
   | { readonly kind: 'disabled'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'shed'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'absent'; readonly slotKey: string }
-  | { readonly kind: 'unresolved'; readonly slotKey: string; readonly symbol: string }
+  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null }
   | {
       readonly kind: 'qualified';
       readonly slotKey: string;
@@ -237,7 +224,7 @@ The provider selects exact `weapons.total.sustainedDamagePerSecond`. It returns 
 revisions, `detailTarget: { kind: 'detail', capability: 'offenceProfile' }`, and:
 
 - `qualifiedSummaryIds: []` for complete populated, confirmed-empty and all-disabled results;
-- `qualifiedSummaryIds: ['sustainedDps']` for partial, unresolved-only or unavailable coverage.
+- `qualifiedSummaryIds: ['sustainedDps']` for unavailable coverage.
 
 Hardpoint deployment selection does not suppress or alter this number because `weaponMetrics()` has
 no hardpoint-state input. A numeric zero alone never qualifies the summary.
@@ -287,7 +274,7 @@ all current inputs ──atomic publication──> OffenceSnapshot
 - `weaponsCapacitorMetrics()` is called once per projected revision pair with WEP half-pips divided
   by two exactly once.
 - Every package result object, field, weapon and returned order remains intact.
-- No unresolved hardpoint enters package results or receives offence values.
+- Unknown-module identities never enter this boundary; feature 001/002 ingress normalized them first.
 - Optional unclassified absence means zero unclassified damage; optional range/piercing absence
   remains not stated.
 - No infinity reaches generic serialization/formatting.

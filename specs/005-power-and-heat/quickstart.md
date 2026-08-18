@@ -22,7 +22,9 @@ Confirm:
 
 ## 2. Verify the released Almanac correction
 
-Run against the currently pinned package:
+Run this historical fixture directly against the currently pinned package. It is not an application
+ingress fixture: constitution 6.0.0 requires its unknown module identity to normalize away before any
+power/heat capability can receive an active build.
 
 ```bash
 node --input-type=module <<'NODE'
@@ -68,7 +70,7 @@ NODE
 
 Pinned 0.1.2 reports the 0.2 MW consumer, empty `powerUnknowns` and `heatUnknowns`, and
 `unknownWeaponHeat: ['SmallHardpoint1']`. Repeat with a changed and absent `ThermalLoad` modifier;
-the firing values stay unchanged while the unresolved slot remains qualified. This verifies the fix
+the firing values stay unchanged while the package-only unresolved slot remains qualified. This verifies the fix
 released for [Almanac #329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329).
 
 No validation-based, slot-based or journal-modifier workaround is acceptable.
@@ -181,8 +183,8 @@ After the fixed package release:
 3. For each, compare all five `HeatState` fields.
 4. Repeat with no weapons.
 5. Repeat with non-settling and never-overheating fields.
-6. Repeat the blocking unresolved-weapon fixture and another package-reported
-   unknown contributor.
+6. Repeat the historical unresolved-weapon fixture directly at the package boundary and another
+   package-reported unknown contributor; assert the unknown identity cannot enter app state.
 7. Repeat with package null from absent/disabled/unavailable plant state.
 
 Expected: five scenarios remain whenever ready. Unknown power draws name and qualify the whole

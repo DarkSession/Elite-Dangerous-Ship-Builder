@@ -45,20 +45,20 @@ Every package slot shows:
 
 - package name and complete game slot key;
 - kind/size/restriction when available;
-- empty, resolved or unresolved state;
-- fitted package module name, symbol where needed to distinguish/unresolved, class/rating/mount;
+- empty or package-resolved state;
+- fitted package module name, symbol where needed to distinguish, class/rating/mount;
 - current ordinary engineering and experimental effect when identified;
 - current pre-engineered route/purchase grade separately from ordinary current grade;
 - all package acquisition and entitlement labels;
 - removability or package reason;
 - enabled and localized priority state where package operation exists.
 
-Unknown original slots from `fittedModules()` form an `Unresolved entries` group and expose no
-invented fitting operation. Unavailable facts have explicit localized text.
+Unknown identities never reach the workspace: ingress has already applied the package's empty/default
+outcome. Unavailable facts for resolved package entries have explicit localized text.
 
 ## Cargo hatch
 
-Show cargo-hatch facts, unresolved state if any, enabled switch and priority selector. Present the
+Show cargo-hatch facts, enabled switch and priority selector. Present the
 package immovable reason. Do not make the card open replacement or engineering and do not show remove.
 
 ## States
@@ -68,8 +68,7 @@ package immovable reason. Do not make the card open replacement or engineering a
 | No active build                   | Explain that outfitting requires a build. Compose feature 001 create/open/navigation and feature 004 import only when those owners supply them; feature 002 promises no action itself. |
 | Valid or invalid/incomplete build | Every available package slot remains inspectable/editable; validation stays visible.                                                                                                   |
 | Empty slot                        | Exact key, capacity facts and replace action; remove absent/no-op is not promoted.                                                                                                     |
-| Unresolved known slot             | Original symbol/key and unavailable facts; replace only from current package candidates.                                                                                               |
-| Unknown original slot             | Separate unresolved group; retained identity; no fabricated operation.                                                                                                                 |
+| Unknown module ingress            | Not rendered as active state; the owning ingress surface reports the package empty/default outcome.                                                                                    |
 | Non-removable                     | Localized package reason and no remove action.                                                                                                                                         |
 | Cargo hatch                       | Facts and power only.                                                                                                                                                                  |
 | Accepted normalized ingress       | Notice distinguishes quality completion, fixed replacement/fill and default unavailable; names exact slot/source/result; undo excludes it.                                             |
@@ -84,7 +83,7 @@ package immovable reason. Do not make the card open replacement or engineering a
   technology even if visually secondary.
 - Switch and priority select names include the slot/module. One-based priority labels include the word
   “priority”; enabled state is not a colored dot alone.
-- Selection, unresolved/invalid/disabled/engineered/acquisition state includes text and programmatic
+- Selection, invalid/incomplete/disabled/engineered/acquisition state includes text and programmatic
   state, never only color, opacity, icon or anatomy position.
 - Status/refusal/normalization announcements are coalesced; one Commander edit does not re-announce
   the entire ledger.

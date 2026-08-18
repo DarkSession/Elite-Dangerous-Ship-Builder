@@ -64,9 +64,9 @@ These states remain independent. The UI does not emit raw `Infinity`, an
 unexplained infinity glyph, `null`, a clamped percentage or generic
 unavailable text. Projection objects are not JSON-cloned or persisted.
 
-## Released regression acceptance
+## Historical released regression evidence
 
-Almanac 0.1.1 failed this required case:
+Almanac 0.1.1 failed this package-only case:
 
 1. Start with a SideWinder default loadout.
 2. Replace `SmallHardpoint1` with a catalogue-unknown item.
@@ -81,7 +81,8 @@ incorrectly appeared complete. Pinned 0.1.2 preserves the known power result, re
 `unknownDraws: []`, and returns `unknownWeaponHeat: ['SmallHardpoint1']`. Changing or removing the
 source thermal modifier does not change the calculated firing values or the qualification.
 
-The application must not inspect loadout validation, slot kind, module symbol or
+This fixture cannot enter active application state after constitution 6.0.0 identity normalization.
+It remains a package regression test. The application must not inspect loadout validation, slot kind, module symbol or
 journal modifiers to add its own qualification, and must not suppress all heat
 for every incomplete build.
 
@@ -112,5 +113,5 @@ exact package result.
 - Missing/disabled/unavailable plant package null remains unavailable.
 - No-weapons builds retain five scenarios.
 - Every package-reported unknown qualifies the entire profile, not as a bound.
-- The blocking unresolved-weapon regression passes on the pinned fixed release.
+- The historical package-only unresolved-weapon regression passes on the pinned fixed release.
 - Does-not-settle and never-overheats remain distinct and localized.

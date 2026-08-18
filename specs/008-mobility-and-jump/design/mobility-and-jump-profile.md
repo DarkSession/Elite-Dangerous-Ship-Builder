@@ -64,7 +64,7 @@ SCO state.
 
 Show exact thruster slot/source identity and the package result state. A complete result presents all
 seven fields. An incomplete result presents its exact issues, whose fields/reasons distinguish absent,
-disabled, shed, unresolved and power-input failures. Do not replace it with hull catalogue speed or
+disabled, shed, package-incomplete and power-input failures. Do not replace it with hull catalogue speed or
 rotation.
 
 Complete all-zero performance above supported mass remains visibly/programmatically a ready package

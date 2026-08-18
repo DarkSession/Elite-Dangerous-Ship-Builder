@@ -52,11 +52,11 @@ and the plan uses that same compact order.
 ### Normalization and engineering
 
 - The canvas/help statement that imported modules keep a partial roll contradicts the constitution.
-  Package-supported partials complete to 100% with notice; unresolved/unsupported partial candidates
-  are refused atomically before activation. Fully rolled or unengineered unresolved entries remain
-  supported.
-- Fixed missing/unresolved mounts are repaired from package defaults before the workspace/calculations
-  render, with slot and replaced identity disclosed.
+  Unknown modules are first package-normalized to empty/default regardless of engineering.
+  Package-supported partials on remaining resolved modules complete to 100% with notice;
+  unsupported partial candidates are refused atomically before activation.
+- Source-empty fixed mounts are repaired from package defaults before workspace/calculations render;
+  unknown fixed modules are defaulted by the package identity boundary. Both disclose exact outcomes.
 - The engineering surface has distinct effect-only and clear-all behavior. It cannot rewrite raw
   modifier blocks or turn a fixed reward into an ordinary roll; it uses 0.1.2's structured
   `setExperimentalEffect()` operation.
@@ -78,7 +78,7 @@ and the plan uses that same compact order.
   clear action.
 - Canvas 1d's weapon-family chips are omitted because neither the specification nor a required package
   grouping supplies that filter. The required four-field AND search remains.
-- Selected, engineered, disabled, invalid/unresolved and reward states gain text/programmatic state;
+- Selected, engineered, disabled, invalid/incomplete and reward states gain text/programmatic state;
   amber border, opacity, dots and icons are never the sole cue.
 
 ### Design system, localization and accessibility

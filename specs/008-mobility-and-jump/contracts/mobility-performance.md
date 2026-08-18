@@ -38,7 +38,7 @@ The package result directly supplies the required distinctions:
 | `thrusters/missing`                      | no fitted thrusters                                |
 | `thrusters/disabled`                     | fitted thrusters switched off                      |
 | `thrusters/shed`                         | thrusters not powered with hardpoints retracted    |
-| `thrusters/unresolved`                   | fitted performance facts unavailable               |
+| `thrusters/unresolved`                   | package-resolved fitted performance unavailable    |
 | `powerCapacity/*` or `powerDraw/invalid` | exact package power dependency unavailable/invalid |
 
 Feature 008 preserves those issue objects and performs no separate `powerBudget()` check or feature
@@ -72,6 +72,6 @@ bar width, curve, percentage-of-optimal or headroom value.
 ## Verification
 
 Tests compare all seven fields with one live package call at maximum, unladen and laden loads and ENG
-0, 0.5, 2 and 4. They prove the call guard, distinguish missing/disabled/shed/unresolved/power issues
+0, 0.5, 2 and 4. They prove the call guard, distinguish missing/disabled/shed/package-issue-unresolved/power issues
 from ready all-zero performance, verify no hull fallback or power reconstruction, retain exact issue
 order and test sparse source facts by exact slot key.

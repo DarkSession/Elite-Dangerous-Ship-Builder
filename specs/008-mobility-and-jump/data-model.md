@@ -160,12 +160,6 @@ type CoreModuleSource<TFacts> =
       readonly slotKey: string;
     }
   | {
-      readonly state: 'unresolved';
-      readonly slotKey: string;
-      readonly symbol: string;
-      readonly on: boolean | undefined;
-    }
-  | {
       readonly state: 'resolved';
       readonly slotKey: string;
       readonly symbol: string;
@@ -173,6 +167,8 @@ type CoreModuleSource<TFacts> =
       readonly facts: TFacts;
     };
 ```
+
+Unknown identities never reach this projection; package ingress has already emptied/defaulted them.
 
 The source slot is found through `slots('core')` and `slot.core`, then retains the package's exact
 `slot.key`. `on === false` is explicitly switched off; `undefined` remains unspecified and is not

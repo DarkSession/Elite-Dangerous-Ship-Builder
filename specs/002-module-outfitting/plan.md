@@ -70,28 +70,29 @@ chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); a
 
 ## Constitution Check
 
-_GATE: PASS after the clarified model boundary. Historical purchase values are intentionally outside
-the application model. Feature 001's `BuildSnapshotV1` therefore contains every field feature 002
-must restore, and pinned Almanac 0.1.2 can reconstruct a detached candidate and recompute current
-catalogue prices without an upstream clone/checkpoint API._
+_GATE: **BLOCKED after constitution 6.0.0 review**. Historical purchase values remain outside the
+model, but pinned Almanac 0.1.2 still retains unknown modules. Task generation and implementation
+must wait for the released structured empty/default normalization contract; no local substitute is
+permitted._
 
-| Principle                               | Plan evidence                                                                                                                                 | Status                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                              | PASS                       |
-| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned; the application snapshot contains identities and choices, never game calculations. | PASS                       |
-| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                         | PASS                       |
-| IV. Lossless, Honest Builds             | Every modelled field is restored; historical purchase values are explicitly outside build/history state and current cost is recalculated.     | PASS                       |
-| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.     | PASS; 011 prerequisite     |
-| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                    | PASS; 011 prerequisite     |
-| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                  | PASS; 011 prerequisite     |
-| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                | PASS; harness prerequisite |
-| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                           | PASS                       |
+| Principle                               | Plan evidence                                                                                                                                  | Status                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                               | PASS                       |
+| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned; unknown-module empty/default normalization waits for its released package contract. | BLOCKED upstream           |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                          | PASS                       |
+| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and unknown modules receive package empty/default outcomes with no retained identity.   | PASS after release         |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.      | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                     | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                   | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                 | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                            | PASS                       |
 
 Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, name/ident updates and
 modelled session checkpoints. Reconstruction goes back through `ShipLoadout`; raw-module overlays,
 local game rules and captured purchase fields remain prohibited. `completeEngineeringGrade()`
 returning `unsupported` triggers atomic ingress refusal;
-`repairFixedMount().status === 'defaultUnavailable'` is a nonblocking FR-010 outcome.
+The released package identity-normalization contract may report that a fixed default is unavailable;
+that remains a nonblocking FR-010 incomplete-build outcome.
 
 ## Delivery Prerequisites
 
@@ -187,7 +188,8 @@ The full decisions and alternatives are in [research.md](./research.md):
   is recomputed and historical purchase values never enter the snapshot.
 - Ingress records partial/fixed source identities before construction, correlates only validated
   qualities in `[0,1)`, rejects resolution/construction mismatch or `unsupported`, then repairs only
-  source-missing/unresolved fixed mounts and commits no history.
+  package-normalizes unknown modules first, then completes supported partials and repairs source-empty
+  fixed mounts; none of these automatic ingress outcomes commits history.
 - Package i18n leaves own module, variant, slot, restriction, blueprint, effect, engineering-group,
   material and diagnostic source text. App localization owns framing and controls only.
 - In-memory `BuildSnapshotV1` checkpoints implement undo/redo through package reconstruction; inverse

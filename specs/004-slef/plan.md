@@ -10,10 +10,10 @@
 Add one browser-only SLEF interchange boundary around feature 001's active `ShipLoadout`. Import
 keeps the Commander's exact text, rejects over-64-KiB and whitespace-only drafts before package work,
 passes the untouched string to Almanac `inspectSlef()`, accepts exactly one observed entry, and then
-runs the shared feature 002 ingress normalizer on a detached `ShipLoadout`. Partial-quality
-engineering is resolved and completed before any fixed-mount repair so a package construction repair
-cannot hide an unsupported partial roll. Feature 001's replacement coordinator is the only commit
-point.
+runs the shared feature 002 ingress normalizer. The package first refuses an unknown hull and applies
+empty/default outcomes to unknown modules; partial-quality engineering on remaining resolved modules
+is completed before any source-empty fixed-mount repair. Feature 001's replacement coordinator is
+the only commit point.
 
 Export asks the active `ShipLoadout` for one current-catalogue-retail SLEF entry, captures the exact
 string as an immutable active-revision artifact, and gives that same artifact to selectable text,
@@ -44,8 +44,8 @@ build-ingress normalizer; feature 011 localization, announcements, shared UI and
 foundations
 
 **Storage**: Draft, candidate, export artifact and delivery status are session memory only. Accepted
-imports become feature 001 tab-owned working records. Fixed-mount normalization provenance follows
-feature 001 local-record metadata, which also records the accepted revision's `valid`/`complete`
+imports become feature 001 tab-owned working records. Source-empty fixed-mount normalization
+provenance follows feature 001 local-record metadata, which also records the accepted revision's `valid`/`complete`
 booleans; detailed quality/issues/refusal/delivery state is never persisted. Feature 004 owns no
 storage key
 
@@ -80,17 +80,17 @@ import/export sheets and action-menu entry. Exact adoption and departures are re
 
 ## Constitution Check
 
-_GATE: PASS after clarification. Captured per-module `Health` is outside application behavior whether
-the package retains or omits it, while engineered module integrity remains package-derived build
-state. Default package export supplies current catalogue-retail credits. No local field rewrite or
-package exception is required._
+_GATE: **BLOCKED after constitution 6.0.0 review**. Captured per-module `Health` and historical prices
+remain outside application state, but pinned Almanac 0.1.2 still retains unknown modules. Ingress
+implementation waits for the promised released package-owned empty/default normalization contract;
+no local field rewrite or identity classification is permitted._
 
 | Principle                               | Design evidence                                                                                                                                                                     | Status                     |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | I. Client-Side Only                     | Inspection, normalization, serialization and delivery use installed code, memory and explicit browser APIs; unexpected requests fail tests.                                         | PASS                       |
-| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs; package output is not rewritten, and integrity remains derived from the fitted package configuration.                                  | PASS                       |
+| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs; required unknown-module normalization waits for a released package contract.                                                           | BLOCKED upstream           |
 | III. Domain Logic Outside UI            | Pure import/export coordinators and injected ports precede signal stores; components render immutable views and emit intent.                                                        | PASS                       |
-| IV. Lossless, Honest Builds             | Atomic normalization preserves every modelled field; historical prices and condition snapshots are explicitly outside the model.                                                    | PASS                       |
+| IV. Lossless, Honest Builds             | Unknown hulls refuse; unknown modules become package empty/default outcomes with no identity retained; other modelled fields round-trip.                                            | PASS after release         |
 | V. Desktop, Tablet and Mobile           | Identical capability reflows among dialog, sheet and full-height layer; touch, screen reader, zoom, orientation, RTL/expansion, reduced motion and no-overflow checks are required. | PASS; 011 prerequisite     |
 | VI. Commander's Language                | Application framing uses feature 011; package diagnostics use `getSlefDiagnosticMessage` with the standard canonical-language disclosure on locale miss.                            | PASS; 011 prerequisite     |
 | VII. One Design System                  | Every layer, notice, diagnostic, field, action and status composes or extends `src/app/ui/` and receives complete responsive state previews.                                        | PASS; 011 prerequisite     |
@@ -103,6 +103,8 @@ Almanac 0.1.2 supplies the feature-specific package operations requested by
 [#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 004 constructs a
 fresh detached import candidate and reuses feature 002's accepted ingress ordering and outcomes.
 Neither captured purchase provenance nor per-module condition snapshots create an upstream gate.
+The constitution 6.0.0 identity rule does: 0.1.2 retains unknown modules, so feature 004 ingress
+waits for the promised Almanac release and must not implement a local substitute.
 
 ## Delivery Prerequisites
 
@@ -192,11 +194,12 @@ See [research.md](./research.md). The decisive outcomes are:
 
 - Measure the untouched string with `TextEncoder`, pass it to `inspectSlef`, and accept only one
   observed top-level entry with zero package diagnostics.
-- Preflight source partial-quality and fixed-mount identities, construct a detached loadout, complete
-  every correlated source partial, then repair only source-missing/unresolved fixed mounts. Any
+- Apply package unknown-module empty/default outcomes, preflight remaining source partial-quality and
+  source-empty fixed-mount evidence, construct a detached loadout, complete every correlated source
+  partial, then repair only source-empty fixed mounts. Any
   unsupported partial refuses the whole import before fixed repair or activation.
 - Commit solely through feature 001; accepted imports become working provenance, reset edit history,
-  autosave after commit and carry fixed-mount provenance plus feature 001's ordinary
+  autosave after commit and carry source-empty fixed-mount provenance plus feature 001's ordinary
   `valid`/`complete` summary in local-record metadata.
 - Export through one default-retail `toSlefString` call with fitted order, sparse power fields,
   readable indentation, honest build-time metadata and an optional exact-revision canonical link.
@@ -206,7 +209,8 @@ See [research.md](./research.md). The decisive outcomes are:
   import layer, shared replacement state, post-layer import outcome, export-unavailable host state
   and active-build export layer.
 
-All planning questions are resolved and no feature-004 Almanac blocker remains.
+All planning questions are resolved. Implementation remains blocked on the promised Almanac
+unknown-module normalization release.
 
 ## Phase 1: Design Outputs
 
@@ -236,9 +240,10 @@ or fixed repair from hiding a partial state that must refuse. Exact diagnostics 
 defaults remain visible. Only the accepted candidate is committed; every other terminal state keeps
 active loadout, revision, dirty baseline, working/named bytes, fragment and edit history unchanged.
 
-Every FR has a route-preserving surface and validation path. The post-design feature gate is **PASS**;
-implementation remains sequenced behind planned 001/002/011 prerequisites. No constitutional
-exception or local workaround is accepted.
+Every FR has a route-preserving surface and validation path. The post-design feature gate is
+**BLOCKED upstream** on the promised Almanac identity-normalization release; implementation also
+remains sequenced behind planned 001/002/011 prerequisites. No constitutional exception or local
+workaround is accepted.
 
 ## Complexity Tracking
 

@@ -40,7 +40,7 @@ round-trips or changes the underlying numbers. Equal load profiles remain separa
 - Usable FSD plus complete zero main fuel yields package numeric zero range/count results; show zero.
 - Complete zero cargo may make laden and unladen values equal; show both identities.
 - Incomplete mass/fuel/cargo or maximum-load FSD validation yields no summary number.
-- A missing or unresolved FSD is represented by the exact incomplete maximum-load issue, including
+- A missing or package-incomplete FSD is represented by the exact incomplete maximum-load issue, including
   `field`, `reason`, optional slot/symbol, message and params.
 - Fitted `on` state is source provenance only. The jump facade does not document it as a power gate,
   so feature 008 does not add one.
@@ -67,6 +67,6 @@ Status headline and read-only context. Feature 008 creates no second selector.
 ## Verification
 
 Tests prove all six guards, no summary call when any guard is incomplete, one summary call when all
-complete, exact field equality, issue identity/order, missing/unresolved FSD, active booster, zero
+complete, exact field equality, issue identity/order, missing/package-incomplete FSD, active booster, zero
 fuel, zero cargo, equal profiles, exact slot identity and current-revision failure behavior. Tests
 contain no jump, fuel-cap or count formula.

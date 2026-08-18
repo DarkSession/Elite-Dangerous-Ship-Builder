@@ -107,9 +107,8 @@ for SYS, ENG and WEP. Package null remains unavailable without a cause-specific
 diagnosis or catalogue fallback; returned zero remains numeric zero.
 
 **Rationale**: Null can represent no recognized distributor, disabled state,
-missing capacitor facts or retracted priority shedding. Conversely, an
-unresolved catalogue entry can still return a ready result if its journal
-modifiers supply every required value. Only the returned null is authoritative.
+missing capacitor facts or retracted priority shedding. Only the returned null is authoritative;
+unknown catalogue identities were already package-normalized at application ingress.
 
 **Alternatives considered**: Local recharge scaling, catalogue figures,
 effective-stat fallback, symbol parsing and inferred null causes were rejected.
@@ -122,10 +121,9 @@ fields:
 - “Disabled modules remain visible” means every disabled power participant
   returned in `PowerBudget.consumers`. Passive and zero-draw fittings are
   intentionally absent from that package result and have no contribution row.
-- An “unresolved distributor” is unavailable when its required build metrics
-  remain unresolved and `distributorMetrics()` returns null. An unknown
-  catalogue identity whose journal data lets the package return a non-null
-  result is ready; the application does not override it.
+- A “package-incomplete distributor” is unavailable when its required build metrics remain
+  unavailable and `distributorMetrics()` returns null. Unknown catalogue identities do not reach the
+  calculation surface because the shared ingress boundary has already normalized them.
 
 **Rationale**: FR-001, FR-005, FR-008 and the Almanac Coverage section make
 returned facade fields the normative boundary. This interpretation preserves
@@ -133,8 +131,7 @@ every package result without inventing catalogue rows or replacing a ready
 build calculation with a diagnosis based on identity resolution.
 
 **Alternatives considered**: Adding every disabled fitted module to the power
-manifest or forcing every catalogue-unknown distributor to unavailable were
-rejected because both contradict the facade result.
+manifest or diagnosing package null locally were rejected because both contradict the facade result.
 
 ## Heat mapping and semantic values
 
@@ -168,8 +165,9 @@ equal scenarios were rejected.
 
 **Decision**: Consume Almanac 0.1.2's `HeatMetrics.unknownWeaponHeat` result, released for
 [Almanac #329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329). It truthfully
-qualifies a catalogue-unknown weapon whose power draw is recoverable but whose weapon heat is not.
-The application copies this package field and does not create a local detector.
+qualifies the historical package-only catalogue-unknown weapon fixture whose power draw is
+recoverable but weapon heat is not. The application copies this package field and does not create a
+local detector; accepted app ingress never retains the fixture's unknown identity.
 
 Historical minimal reproduction against 0.1.1:
 
@@ -215,8 +213,7 @@ empty because the power draw is known.
 the affected firing scenarios without qualifying the unaffected idle, thruster or FSD scenarios.
 
 **Alternatives considered**: Inspecting `validation`, hardpoint slot syntax or
-journal `ThermalLoad`/power modifiers locally; adding a warning for every
-unresolved module; or suppressing heat whenever validation is incomplete were
+journal `ThermalLoad`/power modifiers locally; adding an identity-based warning; or suppressing heat whenever validation is incomplete were
 rejected as application-side correction or fabricated diagnosis.
 
 ## Revision architecture and consumer ports

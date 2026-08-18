@@ -64,13 +64,14 @@ Counts validate the pinned fixture; application behavior must derive the next re
 ## Scenario 2: hardpoint and utility parity
 
 Open a build containing fitted, empty and engineered hardpoints and utilities. Inspect top, bottom,
-selected facts and the unique text list. Repeat with unresolved fitted identities.
+selected facts and the unique text list. Separately verify unknown fitted identities are
+package-normalized before anatomy receives the build.
 
 Expected:
 
 - both package mount kinds are interactive only through exact matching annotations;
 - every package hardpoint/utility appears once in the unique package-ordered list;
-- kind, exact key, size/not-class-sized, fitted/empty/unresolved, engineering, selected, priority and
+- kind, exact key, size/not-class-sized, fitted/empty, engineering, selected, priority and
   power state agree across geometry, selected facts and text;
 - utilities receive the same detail and navigation as hardpoints; and
 - no node number, name prefix or coordinate is used as identity.

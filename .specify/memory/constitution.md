@@ -3,11 +3,15 @@ Sync Impact Report
 - Version change: 5.0.0 -> 6.0.0
 - Modified principles: IV. Lossless, Honest Builds (unknown hull refusal and unknown module
   replacement)
+- Rationale: an unknown hull cannot define a build, and an unknown fitted module cannot describe a
+  reproducible current loadout; package-owned empty/default normalization keeps every accepted build
+  constructible without inventing game data in the application.
 - Added sections: None
 - Removed sections: None
+- Invalidated-spec review: completed across features 001–012. Features 001, 002 and 004 now define
+  package-owned empty/default ingress and transient feedback; downstream calculation and anatomy
+  capabilities accept no unknown module identity.
 - Follow-up TODOs:
-  - Audit specs 001, 002 and 004 plus every downstream capability contract to remove unknown-module
-    preservation from active build state and to define empty/default replacement feedback.
   - Consume the Almanac release that replaces unknown modules before implementing affected ingress,
     persistence, link and SLEF paths; do not reproduce its replacement logic locally.
   - Add migration and regression coverage for saved builds, links and SLEF carrying unknown hull or

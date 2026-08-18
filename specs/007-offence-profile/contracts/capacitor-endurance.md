@@ -56,7 +56,7 @@ feature-005-owned `DeployedDistributorPowerObservation`:
 - disabled;
 - power-shed;
 - absent;
-- unresolved;
+- unavailable;
 - qualified because package power facts cannot support an exact verdict.
 
 Feature 005 must accept and expose this port before feature 007 tasks. Its current
@@ -80,10 +80,10 @@ Label these scopes. Do not zero weapon totals for selected retracted hardpoints 
 replace capacitor draw with the aggregate or report the mismatch as an error. The capacitor facade
 always models deployed firing; selected hardpoint state remains separate feature-003 viewing context.
 
-## Empty, unresolved and disabled contexts
+## Empty, unavailable and disabled contexts
 
 - Confirmed-empty hardpoints retain the exact capacitor result and receive no-fitted-weapons context.
-- Unresolved occupied hardpoints qualify completeness; omitted draw is never estimated.
+- Unavailable hardpoint coverage qualifies completeness; omitted draw is never estimated.
 - All disabled returned weapons remain visible; zero capacitor draw and infinity receive
   no-draining-powered-load wording.
 - A genuine zero-energy weapon is not classified as disabled.

@@ -20,7 +20,7 @@ Read `ShipLoadout.slots()` once for the captured build revision. Keep entries wi
 slot key with:
 
 - exact kind and package size semantics;
-- feature 002's empty/resolved/unresolved fitted state;
+- feature 002's empty/resolved fitted state;
 - exact module symbol and feature 011 game-text presentation;
 - package/feature 002 engineering presence;
 - focused state from the one exact selected key; and
@@ -56,16 +56,16 @@ unavailable instead of being reported as permanent.
 
 ## State projection
 
-| State                   | Source and rule                                                          |
-| ----------------------- | ------------------------------------------------------------------------ |
-| Mount kind/key/size     | Exact package slot snapshot                                              |
-| Empty/fitted/unresolved | Feature 002 slot view from the same build revision                       |
-| Module identity         | Exact `FittedModule.symbol`; no recovery lookup                          |
-| Module name             | Feature 011 over Almanac i18n; canonical/unavailable disclosure retained |
-| Engineering             | Package/feature 002 presence only                                        |
-| Focused                 | Feature 002's one `selectedSlotKey`                                      |
-| Priority/current power  | Feature 005 located-mount observation, unchanged                         |
-| Geometry location       | Settled valid occurrences and side availability                          |
+| State                  | Source and rule                                                          |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Mount kind/key/size    | Exact package slot snapshot                                              |
+| Empty/fitted           | Feature 002 slot view from the same build revision                       |
+| Module identity        | Exact `FittedModule.symbol`; no recovery lookup                          |
+| Module name            | Feature 011 over Almanac i18n; canonical/unavailable disclosure retained |
+| Engineering            | Package/feature 002 presence only                                        |
+| Focused                | Feature 002's one `selectedSlotKey`                                      |
+| Priority/current power | Feature 005 located-mount observation, unchanged                         |
+| Geometry location      | Settled valid occurrences and side availability                          |
 
 An unavailable priority, power verdict, module name or geometry state stays unavailable. Empty does
 not imply disabled or zero draw. Missing power participation is `notApplicable`, not powered.
@@ -77,7 +77,7 @@ once, including pending/unavailable/defective geometry. Each item exposes as tex
 
 - mount kind and exact slot key;
 - class size or package-documented not-class-sized/unavailable state;
-- empty, resolved module name/symbol or unresolved identity state;
+- empty or resolved module name/symbol state;
 - engineered/stock/unavailable state;
 - focused state;
 - effective priority or unavailable;
@@ -101,7 +101,8 @@ never duplicates the semantic list item.
 
 ## Verification
 
-Tests cover both mount kinds, empty/resolved/unresolved articles, engineering presence, all power
+Tests cover both mount kinds, empty/resolved articles, package-normalized unknown-module ingress,
+engineering presence, all power
 states, every location state, package order, cross-side repeats, wrong-kind/unknown/same-side
 defects, partial side readiness, stale revisions and selection changes. Regression fixtures include
 the current Federal Corvette and Lynx cross-side duplicates and at least one utility with

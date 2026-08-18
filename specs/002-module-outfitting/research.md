@@ -95,24 +95,24 @@ while allowing application-owned control labels and framing to be translated loc
 diagnostic translations would fork package data. Rendering `LoadoutSlot.name` as localized would
 misrepresent its contract.
 
-## Decision 4: preserve every slot and unresolved entry
+## Decision 4: render every package slot after ingress normalization
 
-**Decision**: Render all package `slots()` in package order, including empty and unresolved known
-mounts. Append any `fittedModules()` record whose original slot is absent from `slots()` to a clearly
-unresolved group, keeping exact slot spelling, module symbol and raw record. Re-read all views after
-each commit.
+**Decision**: Render all package `slots()` in package order, including empty mounts, after the shared
+ingress boundary has refused an unknown hull and package-normalized unknown modules to empty/default
+outcomes. No unknown module record enters the active workspace. Re-read all views after each commit.
 
 Capability comes from current package evidence. Removal mirrors `LoadoutSlot.removable`; replacement
 queries `modulesForSlot()`; engineering comes from current menus/result state; power setters apply to
 fitted modules. Cargo hatch is visible and power-editable but package-empty menus plus its immutable
 slot state provide no replacement, removal or engineering action.
 
-**Rationale**: The package distinguishes hull mounts from extra imported entries and exposes missing
-facts as `null`/absence. Retaining both sets is lossless and gives no unknown slot a fabricated edit.
+**Rationale**: The package owns the hull layout and normalization. Once active, every fitted identity
+is package-resolved; missing facts can still remain `null`/absent without preserving an unknown
+module.
 
-**Alternatives considered**: Positional reconciliation, symbol inference and zero/default display
-would violate FR-002/003. A cargo-hatch symbol special case is unnecessary; package slot/menu results
-supply the capability.
+**Alternatives considered**: Preserving unknown records, positional reconciliation, symbol inference
+and application-selected defaults violate principles II/IV. A cargo-hatch symbol special case is
+unnecessary; package normalization and slot/menu results supply the behavior.
 
 ## Decision 5: expand candidates exactly, then project order and search
 
@@ -186,27 +186,23 @@ primarily mutate/throw. Treating them as one generic exception contract would lo
 **Alternatives considered**: Editing raw `Engineering.Modifiers`, passing local computed stats or
 using a null blueprint as clear-all would blur package semantics and violate FR-012.
 
-## Decision 8: preflight partial quality before construction, then normalize ingress
+## Decision 8: normalize identity before partial quality and candidate activation
 
 **Decision**: Every stock/open/link/SLEF/reload replacement uses one shared ingress pipeline:
 
 1. Decode to the source DTO without changing the active build. Reject malformed quality values
    through the owning decoder.
-2. Before `ShipLoadout.fromLoadout()`, retain each source record with finite quality in `[0, 1)` and
-   ask `getModuleBySymbol()` to resolve its identity. If the package cannot resolve it, refuse the
-   entire candidate with the exact source slot/module/engineering identity.
-3. Capture every source fixed-mount identity, then construct the detached loadout.
-4. Correlate every retained source partial with the constructed fitted record by case-insensitive
-   slot and exact source symbol. A missing/replaced/mismatched record (including the package's
-   automatic unresolved-cargo repair) refuses the candidate before activation. Otherwise call
-   `completeEngineeringGrade(slotKey)`. Accept only `normalized`; `unsupported` rejects the whole
-   candidate and `unchanged` for a source partial is a package-contract failure. Never call this
-   operation for absent quality or quality `1`: final/unknown fully rolled articles can legitimately
-   return `unsupported` and must remain preserved.
-5. Only after all partials succeed, repair fixed mounts that were missing or unresolved in the source.
-   Use `repairFixedMount()` and retain each result. `repaired` changes the candidate;
-   `defaultUnavailable` keeps the candidate incomplete; `refused` is an internal contract failure
-   because selection was package-derived. Source comparison reports automatic cargo repair.
+2. Pass the candidate through the released Almanac identity-normalization boundary. Refuse an unknown
+   hull; empty unknown removable modules; default unknown or empty fixed mounts. Retain its structured
+   outcomes only for transient feedback.
+3. Discard attached fields with each normalized unknown module. Retain finite quality in `[0, 1)` only
+   for package-resolved modules that remain fitted.
+4. Correlate every retained source partial with the normalized fitted record by exact package slot and
+   module symbol, then call `completeEngineeringGrade(slotKey)`. Accept only `normalized`;
+   `unsupported` rejects the whole candidate and an unexpected mismatch/`unchanged` is a
+   package-contract failure. Never call this operation for absent quality or quality `1`.
+5. Keep `defaultUnavailable` incomplete without inventing a substitute. Persist provenance only for
+   source-empty fixed mounts; unknown identity outcomes are transient.
 6. Commit the fully processed candidate atomically, publish notices, then start/reset history. Read
    validation/calculations only after commit.
 
@@ -214,13 +210,13 @@ Atomic refusal changes no active build, revision, working record, fragment or hi
 quality completion is transiently reported; fixed-mount provenance follows feature 001's local-record
 contract. Neither automatic operation enters edit history.
 
-**Rationale**: Constitution 5.0.0 resolves the prior contradiction by rejecting only partial states
-the package cannot complete. Preflight is package resolution, not a local module heuristic. Ordering
-prevents fixed repair from stripping evidence that must trigger refusal.
+**Rationale**: Constitution 6.0.0 makes package identity normalization precede quality completion.
+Unknown-module engineering disappears with its source module; partial-quality refusal applies only
+to a module the normalized candidate resolves.
 
-**Alternatives considered**: Changing only `Quality`, retaining partial modifiers, stripping
-engineering or accepting `unsupported` are prohibited. Repair-first loses unresolved-partial
-evidence. Rejecting `defaultUnavailable` would contradict FR-010.
+**Alternatives considered**: Preserving unknown modules, locally classifying/removing/defaulting
+them, changing only `Quality`, retaining partial modifiers or accepting `unsupported` are prohibited.
+Rejecting `defaultUnavailable` would contradict FR-010.
 
 ## Decision 9: package menus, candidate stats and cost functions own engineering
 
@@ -284,7 +280,7 @@ arrows or partial-roll help text violates the accepted requirements.
 
 **Decision**: Feature unit tests use real package records for membership/mutation and feature 001's
 snapshot/reconstruction/swap adapters for transactions/history. Cover every structured result,
-unresolved/empty states, partial
+empty/package-incomplete states, unknown-module empty/default ingress outcomes, partial
 preflight including cargo hatch, missing defaults, 481-choice search, `null` versus `[]`, route labels,
 101 edits and all history exclusions.
 
@@ -302,7 +298,7 @@ lowering coverage cannot prove the behavioral contract.
 
 ## Research status
 
-No product clarification or feature-002 Almanac release blocker remains. Historical purchase values
-are outside the model, and pinned 0.1.2 supports package reconstruction of the modelled snapshot.
-Features 001 and 011 remain repository prerequisites. The FR-013 atomic-refusal path is supported by
-the current package resolution/normalization outcomes.
+No product clarification remains. Historical purchase values are outside the model. Feature 002 is
+**BLOCKED** on the promised Almanac release that supplies structured unknown-module empty/default
+normalization; pinned 0.1.2 still retains unknown modules. Features 001 and 011 remain repository
+prerequisites. No application-side normalization is permitted.

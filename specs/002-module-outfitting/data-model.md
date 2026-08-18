@@ -57,10 +57,10 @@ empty and the mount is immutable.
 | Field              | Type                              | Source/rule                                          |
 | ------------------ | --------------------------------- | ---------------------------------------------------- |
 | `slotKey`          | string                            | `FittedModule.slot`, retained spelling               |
-| `symbol`           | string                            | Package or unresolved identity                       |
+| `symbol`           | string                            | Package-resolved identity                            |
 | `enabled`          | `boolean \| unspecified`          | `FittedModule.on`; absence is preserved              |
 | `priority`         | `0..4 \| unspecified`             | Package value; UI displays localized `1..5`          |
-| `raw`              | package `LoadoutModule`           | Frozen lossless record; never mutated                |
+| `raw`              | package `LoadoutModule`           | Frozen record for the resolved fitted module         |
 | `article`          | `OutfittingModule \| unavailable` | `FittedModule.stats`                                 |
 | `effectiveArticle` | `OutfittingModule \| unavailable` | `FittedModule.effectiveStats`                        |
 | `engineering`      | `EngineeringView \| null`         | Current raw/package-resolved engineering             |
@@ -69,22 +69,6 @@ empty and the mount is immutable.
 
 `stats === null` and missing fields remain unavailable. A fixed reward's `stats` is the resolved
 article, not necessarily stock. Variant purchase grade remains separate from current ordinary grade.
-
-## UnresolvedEntryView
-
-A `fittedModules()` record whose original slot is absent from `slots()`.
-
-| Field          | Type                                 | Rule                                          |
-| -------------- | ------------------------------------ | --------------------------------------------- |
-| `slotKey`      | string                               | Exact original spelling                       |
-| `symbol`       | string                               | Exact unresolved module identity              |
-| `raw`          | package `LoadoutModule`              | Preserved source record                       |
-| `packageIssue` | package validation issue/unavailable | Matching package issue when present           |
-| `capabilities` | none                                 | No operation is invented for an unknown mount |
-
-These entries appear after known slot groups and remain in feature 001/004 boundaries where those
-formats allow them. An unengineered or quality-1 unresolved entry is valid application state; a
-partial unresolved entry is refused before activation.
 
 ## ModuleChoice
 
@@ -275,13 +259,14 @@ type IngressResult =
 
 `IngressNotice` is one of:
 
+- `unknownModuleEmptied` or `unknownModuleDefaulted`: exact slot/source identity, package action and
+  optional resolved default identity; transient only;
 - `qualityCompleted`: exact slot/identity, source quality and result quality `1`;
-- `fixedMountFilled` or `fixedMountReplaced`: original/absent identity and package default;
-- `fixedMountDefaultUnavailable`: exact slot, optional unresolved default identity and incomplete
-  status.
+- `fixedMountFilled`: source-empty slot and package default;
+- `fixedMountDefaultUnavailable`: exact source-empty slot and incomplete status.
 
 `PartialEngineeringFailure` contains exact source slot/module/engineering identity and either package
-resolution/construction mismatch or `EngineeringNormalizationResult` code/params. It never contains a
+construction/correlation mismatch or `EngineeringNormalizationResult` code/params. It never contains a
 partially mutated candidate. If any partial fails, discard the whole candidate and publish the
 pre-activation refusal; successful earlier normalizations create no notice on the active build.
 

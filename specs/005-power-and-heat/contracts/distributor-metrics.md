@@ -51,9 +51,8 @@ does not compute or assert a capacity transformation.
 
 `null` maps to one `unavailable` result with no capacitor figures. Null alone
 does not authorize a cause-specific diagnosis: it may reflect an absent,
-disabled, unresolved-data or retracted-shed distributor. Conversely, a
-catalogue-unresolved journal entry can still return ready when the package
-resolves all required values.
+disabled, package-incomplete or retracted-shed distributor. Unknown catalogue identities have
+already been normalized at ingress and never reach this boundary.
 
 Prohibited fallbacks:
 

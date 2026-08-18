@@ -75,7 +75,7 @@ When a located hardpoint or utility is selected, show:
 
 - exact slot key and localized kind;
 - package class size, not-class-sized utility state or unavailable;
-- empty, resolved module name/symbol or unresolved identity;
+- empty or resolved module name/symbol;
 - engineered, stock or unavailable state;
 - focused state from the shared selected slot;
 - effective one-based priority or unavailable;

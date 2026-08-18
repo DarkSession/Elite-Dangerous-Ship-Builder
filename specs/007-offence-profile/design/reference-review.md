@@ -86,7 +86,7 @@ mock.
 
 ## Missing reference states
 
-Neither canvas defines no build, pending, failure, no weapons, unresolved occupied hardpoint, all
+Neither canvas defines no build, pending, failure, no weapons, unavailable hardpoint coverage, all
 disabled, genuine zero, unclassified absent/present, missing range/piercing, projectile boundary zero,
 no/finite/zero-reserve/unlimited ammunition, zero capacity, finite/immediate/infinite endurance,
 distributor power observations, expanded language, RTL, reduced motion or screen-reader behavior.

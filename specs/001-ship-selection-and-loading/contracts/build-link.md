@@ -13,7 +13,9 @@
 
 ## Payload boundary
 
-The codec allowlist is hull/module package identities, game slot keys, package-identified pre-engineered variant, later ordinary blueprint/effect identity and grade, module enabled state and priority, and nullable ship name/ident.
+The codec allowlist is package-resolved hull/module identities, game slot keys, package-identified
+pre-engineered variant, later ordinary blueprint/effect identity and grade, module enabled state and
+priority, and nullable ship name/ident. Unknown identities are never encoded.
 
 The payload forbids catalogue facts, calculations, prices, purchase provenance, validation snapshots, notes, record/tab IDs, timestamps, save name, revision and browsing state. A build that cannot cross this allowlist losslessly is refused rather than simplified.
 
@@ -25,7 +27,8 @@ Initial app start, address-bar paste, browser navigation and in-app fragment nav
 2. Reject a value longer than 500 characters before decoding.
 3. Verify envelope, encoding, CRC and supported table version.
 4. Decode/reconstruct a candidate `ShipLoadout` without touching active state.
-5. Complete package validation/normalization disclosures.
+5. Refuse an unknown hull. Through the released package boundary, empty unknown removable modules and
+   default unknown fixed modules, retaining only transient normalization feedback.
 6. If current work is unsaved, request replacement confirmation.
 7. On acceptance, commit the candidate as link/working provenance and autosave it only to this tab's working record.
 
@@ -43,7 +46,9 @@ Any parse, integrity, version, identity or reconstruction error, or cancellation
 
 Map stable `BuildLinkCodecError.code` and structured parameters to application localization keys. Do not render internal English exception messages. Required categories include invalid/truncated encoding, failed integrity, unsupported envelope/table version, invalid payload, unknown/unrepresentable identity and reconstruction failure.
 
-A newer version is never guessed. A missing compact identity is never replaced, removed or encoded from a display index.
+A newer version is never guessed. A missing compact identity in a current payload is refused; a
+supported older payload reaches the same package-owned empty/default normalization as every other
+ingress path and is never repaired from a display index.
 
 ## Network and history assertions
 

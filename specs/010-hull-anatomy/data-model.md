@@ -175,16 +175,11 @@ type FittedMountState =
       readonly kind: 'resolved';
       readonly symbol: string;
       readonly name: LocalizedGameText;
-    }
-  | {
-      readonly kind: 'unresolved';
-      readonly symbol: string;
-      readonly name: LocalizedGameText;
     };
 ```
 
-`symbol` is the exact package fitted-module identity. Resolved/unresolved comes from the owner slot
-projection; a symbol is never looked up to hide unresolved package/build state.
+`symbol` is the exact package-resolved fitted-module identity. Unknown module identities have already
+been package-normalized to empty/default before anatomy projection.
 
 ### EngineeringState
 

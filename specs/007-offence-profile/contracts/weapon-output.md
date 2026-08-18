@@ -96,18 +96,17 @@ Do not calculate current ammunition, reload count, synthesis requirements or fir
 
 Feature 002 supplies same-build-revision package-backed hardpoint coverage:
 
-| Package weapon result / coverage           | Required presentation                                      |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| Empty list + confirmed-empty hardpoints    | No fitted weapons                                          |
-| Empty list + unresolved occupied hardpoint | Qualified no-result state; unresolved exact-slot notice    |
-| Empty list + coverage unavailable          | No weapon result returned; no empty-build claim            |
-| Non-empty list + zero total                | Populated zero-output collection                           |
-| Non-empty list + all `enabled: false`      | Complete disabled entries and exact zero total             |
-| Real returned zero-damage weapon           | Complete entry with exact zero and all other returned data |
-| Optional range/piercing member absent      | Field not stated, never zero                               |
+| Package weapon result / coverage        | Required presentation                                      |
+| --------------------------------------- | ---------------------------------------------------------- |
+| Empty list + confirmed-empty hardpoints | No fitted weapons                                          |
+| Empty list + coverage unavailable       | No weapon result returned; no empty-build claim            |
+| Non-empty list + zero total             | Populated zero-output collection                           |
+| Non-empty list + all `enabled: false`   | Complete disabled entries and exact zero total             |
+| Real returned zero-damage weapon        | Complete entry with exact zero and all other returned data |
+| Optional range/piercing member absent   | Field not stated, never zero                               |
 
-An unresolved occupied hardpoint never becomes a fabricated `FittedWeaponMetrics` and never enters
-the package total.
+Unknown module identities never reach this boundary; ingress has already converted them to package
+empty/default outcomes.
 
 ## Exact-slot target
 
@@ -119,8 +118,7 @@ Every returned entry exposes one distinct localized action carrying feature 003'
 
 Feature 002 owns reveal/edit behavior. Wide layout selects the existing inline outfitting context;
 narrow layout opens the selected-slot layer with a named return. The action stays available for
-disabled and zero-output weapons and never uses an index. Unresolved notices use their own exact
-feature-002 source slot, not a weapon-result surrogate.
+disabled and zero-output weapons and never uses an index.
 
 ## Canonical and localized names
 
@@ -135,15 +133,15 @@ canonical package text; no private game translation is allowed.
 - Discard a pending result if the active build revision changes.
 - An unexpected package or integration exception publishes a current-revision application failure,
   not old figures or a game diagnosis.
-- Package validation/incompleteness and unresolved coverage remain visible qualifications; a
+- Package validation/incompleteness and unavailable coverage remain visible qualifications; a
   successful weapon result is not hidden merely because the build is incomplete.
 
 ## Verification
 
 - Deep-equal the retained total, every weapon and every nested field to one live package result.
 - Prove no local sum, sort, range/piercing join or positional identity exists.
-- Cover enabled, some-disabled, all-disabled, confirmed-empty, unresolved-only, mixed unresolved and
-  genuine-zero builds.
+- Cover enabled, some-disabled, all-disabled, confirmed-empty, unavailable-coverage and genuine-zero
+  builds.
 - Cover all damage types, optional-unclassified presence and absent-means-zero behavior.
 - Cover finite, zero-reserve, unlimited and no-ammunition cases.
 - Cover present/absent effective ranges, boundary value zero and absent piercing.

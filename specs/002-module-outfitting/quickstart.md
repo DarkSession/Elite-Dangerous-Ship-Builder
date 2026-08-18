@@ -1,7 +1,8 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
 This is an acceptance guide for the plan, not implementation code. Features 001 and 011 remain
-repository prerequisites; no feature-002 Almanac release gate remains.
+repository prerequisites. Identity ingress is blocked until a released Almanac replaces unknown
+removable modules with empty slots and unknown fixed modules with package defaults.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -15,15 +16,17 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
 
 ## 1. Prerequisites and package verification
 
-1. Confirm feature 001's canonical `BuildSnapshotV1` captures exact slot/item identity, sparse power
-   fields, unresolved records, name/ident, ordinary engineering and every identified pre-engineered
-   variant, then reconstructs them through `ShipLoadout` before atomic swap.
+1. Confirm feature 001's canonical `BuildSnapshotV1` captures exact package-resolved slot/item
+   identity, sparse power fields, name/ident, ordinary engineering and every identified
+   pre-engineered variant, then reconstructs them through `ShipLoadout` before atomic swap.
 2. Confirm reconstruction ignores captured purchase values and recalculates current catalogue retail.
 3. Confirm feature 001 supplies one active `ShipLoadout`, snapshot/reconstruction/swap, atomic
    replacement and autosave/fragment observers. The history tape remains session-only.
 4. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
 5. Confirm the pinned released Almanac provides:
+   - structured ingress outcomes that refuse an unknown hull, empty an unknown removable module and
+     restore an unknown fixed module from the package default without retaining its identity;
    - fixed-reward experimental-effect add/replace/remove that preserves the fixed base modifier
      block and variant identity while recomputing effect-dependent stats;
    - complete supported partial-quality normalization with a structured unsupported outcome.
@@ -32,44 +35,43 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
    removing it must return to 1785. Do not proceed if supported partial quality remains partial.
 7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected: all feature prerequisites are ready. Pinned 0.1.2 supports the required package operations;
-do not implement captured-event checkpoints, raw provenance overlays, inverse commands or intent
-replay.
+Expected after the required Almanac release: all feature prerequisites are ready. Pinned 0.1.2
+supports the engineering operations but not the required unknown-module normalization; do not
+implement a local substitute, captured-event checkpoints, inverse commands or intent replay.
 
 ## 2. Inspect every slot
 
 1. Open a default build with hardpoint, utility, core, optional, armour, planetary and cargo-hatch
    mounts.
 2. Compare the rendered groups/order/keys with `loadout.slots()`.
-3. Load fixtures with an empty known slot, unresolved module in a known slot and fitted record in an
-   original slot unknown to the hull layout.
+3. Load fixtures with empty known slots and package-reported incomplete/invalid states. Separately
+   send unknown known-slot and unknown-original-slot identities through the ingress boundary.
 4. Inspect invalid/incomplete package validation states.
 
 Expected:
 
 - every package slot appears by exact game key;
-- unresolved values and original identities remain visible and unavailable, never zero/guessed;
-- unknown original slots appear in a separate unresolved group and survive round-trip;
+- unavailable package facts remain explicit, never zero/guessed;
+- unknown module identities are emptied/defaulted before activation and never reach the ledger;
 - invalid/incomplete builds remain editable wherever the package offers an operation;
 - no component owns or mutates a duplicate fitted array.
 
 ## 3. Verify fixed-mount normalization
 
-1. Prepare imports with missing and unresolved armour/core/cargo-hatch entries and at least one
-   unresolved removable entry. Include unresolved partial-quality fixed-core, cargo-hatch, removable
-   and unknown-original-slot cases in the ingress suite.
+1. Prepare imports with missing armour/core/cargo-hatch entries plus unknown fixed, removable and
+   unknown-original-slot module identities, both with and without attached partial engineering.
 2. Run the candidate through the shared ingress pipeline.
 3. Observe the active build before any calculation presenter reads it.
 4. Inspect normalization notices and history controls.
 
 Expected:
 
-- raw partial evidence is captured/resolved before construction, correlated after construction and
-  completed/refused before fixed repair;
-- only slots whose package reason is `requiredSlot`/`cargoHatch` are normalized;
-- `fromLoadout()` restores cargo and `repairFixedMount()` repairs remaining fixed mounts from package defaults;
-- removable unresolved entry is untouched;
-- notices name slot, absent/replaced identity and default identity;
+- package identity normalization runs first, discards engineering attached to unknown modules, empties
+  unknown removable modules and defaults unknown fixed modules;
+- supported partial evidence is then completed before source-empty fixed repair;
+- `fromLoadout()` restores cargo and `repairFixedMount()` repairs source-empty fixed mounts from
+  package defaults;
+- notices name slot, source identity, empty/default action and replacement identity when applicable;
 - saved/shared/exported active state carries repairs;
 - undo is unavailable when normalization was the only change.
 
@@ -162,8 +164,8 @@ Expected:
 ## 9. Normalize imported quality
 
 1. Import known ordinary, Mercenary, fixed reward plus later effect, and package-supported uncommon
-   recipes at partial qualities. Add unresolved partial cargo-hatch, fixed-core, removable and
-   unknown-original-slot candidates, plus unresolved quality-1 and unengineered controls.
+   recipes at partial qualities. Add unknown partial, quality-1 and unengineered fixed, removable and
+   unknown-original-slot modules.
 2. Complete ingress and inspect active engineering/effective stats/notices before any calculations.
 3. Save/share/export and reload the result.
 
@@ -173,10 +175,11 @@ Expected:
 - notices name original quality/slot and the 100% result;
 - active/persisted/published/exported build represents quality 1;
 - normalization creates no undo step;
-- every unresolved/unsupported partial candidate is atomically refused before activation with exact
-  slot/source identity and package reason; the current build, revision, dirty state, storage,
-  fragment, notices and history remain unchanged;
-- unresolved quality-1 and unengineered controls remain accepted/visible;
+- every unknown module is package-normalized before quality processing regardless of attached
+  engineering; no source identity survives in active, persisted, published or exported state;
+- unsupported partial engineering on a remaining resolved module is atomically refused before
+  activation with exact package reason; current build, storage, fragment, notices and history remain
+  unchanged;
 - a structured unsupported package outcome never becomes fabricated modifiers or silent partial state.
 
 ## 10. Exercise 100-decision undo/redo

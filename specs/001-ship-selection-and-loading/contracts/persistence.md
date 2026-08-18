@@ -26,7 +26,11 @@ No operation writes an index plus a record. Delete calls one `removeItem` only a
 - `format` selects the record family; `version` selects a frozen decoder.
 - Version 1 is the first published version. No fictional version 0 migration exists.
 - Every supported older decoder produces a canonical intermediate model. Pure sequential migrations then produce the latest model.
-- A migrated record replaces its own key only after decode, migration, package reconstruction and latest-version serialization all succeed.
+- A migrated record replaces its own key only after decode, migration, package reconstruction,
+  package-owned unknown-module normalization and latest-version serialization all succeed. An
+  unknown hull refuses opening and leaves the original bytes unchanged. Unknown module source
+  identities may exist only in the transient migration candidate/outcome and are absent from the
+  latest stored form.
 - If migration persistence fails, the original old-version bytes remain authoritative and opening may continue from the in-memory candidate with a visible persistence warning.
 - A version greater than the latest supported value is listed as unsupported and left byte-for-byte unchanged.
 - Each future published version adds frozen lossless round-trip and failed-write fixtures; supported decoders are not silently removed.

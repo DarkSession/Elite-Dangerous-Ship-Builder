@@ -44,10 +44,10 @@ workspace target and feature 002 owns the reveal/edit action.
 Never sum, group, subtract or reconcile module rows. `unladenMassResult` is the only aggregate source.
 Raw journal modifiers and catalogue base mass are prohibited fallbacks.
 
-An imported build may carry a complete package-trusted `UnladenMass` while an unresolved fitted
-module has unavailable row mass. Preserve both package outcomes. “Unknown module mass makes a
-dependent aggregate unavailable” applies when the package reports that aggregate incomplete; the
-application does not override a package-supplied complete aggregate.
+An imported build may carry a complete package-trusted `UnladenMass` while a resolved fitted module
+has unavailable row mass. Preserve both package outcomes. Unknown module identities have already
+been package-normalized before this capability; the application never overrides a package-supplied
+complete aggregate.
 
 ## Relationship to dependent calls
 

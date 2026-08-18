@@ -110,15 +110,15 @@ Expected:
 - anti-xeno is described as an overlay;
 - color/position is never the sole type meaning.
 
-### 3. Distinguish empty, unresolved, disabled and zero
+### 3. Distinguish empty, unavailable, disabled and zero
 
-Exercise confirmed-empty hardpoints, unresolved-only occupancy, mixed resolved/unresolved occupancy,
-all returned weapons disabled and a genuine zero-damage weapon.
+Exercise confirmed-empty hardpoints, unavailable package coverage, all returned weapons disabled and
+a genuine zero-damage weapon. Verify separately that unknown modules normalize before this feature.
 
 Expected:
 
 - only confirmed-empty coverage says no fitted weapons;
-- unresolved entries have exact-slot notices and no invented weapon fields;
+- unavailable coverage has an explicit qualification and no invented weapon fields;
 - disabled/genuine-zero entries remain complete;
 - package totals are untouched and Status qualification appears only for incomplete/unavailable
   coverage.
@@ -137,8 +137,7 @@ Expected:
 
 ### 5. Reach exact hardpoints
 
-Activate every returned weapon action, including duplicate symbols, disabled/zero weapons and an
-unresolved notice.
+Activate every returned weapon action, including duplicate symbols and disabled/zero weapons.
 
 Expected:
 
@@ -183,7 +182,7 @@ Expected:
 
 ## Responsive, localization and accessibility acceptance
 
-For populated, empty, unresolved, disabled, genuine-zero, optional-field, ammunition, zero-capacity,
+For populated, empty, unavailable-coverage, disabled, genuine-zero, optional-field, ammunition, zero-capacity,
 infinite and failure states:
 
 - run the shared axe scan in every browser/layout project;

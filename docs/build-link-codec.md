@@ -477,7 +477,8 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.1`. Every future
+The current application dependency is exactly pinned to Almanac `0.1.2`. This release reproduces
+table 1, its content hash and the frozen literal-link reconstruction corpus unchanged. Every future
 Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
 fixtures and must never be regenerated merely to make an upgrade pass. The beta upgrades were
 checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for

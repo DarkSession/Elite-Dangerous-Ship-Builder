@@ -1,6 +1,6 @@
 # Research: SLEF Import and Export
 
-Research used the accepted feature spec, Constitution 5.0.0, feature 001/002/011 design contracts,
+Research used the accepted feature spec, Constitution 6.0.0, feature 001/002/011 design contracts,
 the current repository, `.design/Ship Builder.dc.html`, and the pinned
 `@elite-dangerous-almanac/core@0.1.2` source/tag. Package probes used generated or public fixture data
 only.
@@ -69,31 +69,33 @@ English in a non-English UI and extracting facts from exception messages were re
 
 **Decision**: Before construction, the shared feature 002 ingress boundary records:
 
-1. every source module with validated finite `Engineering.Quality` in `[0, 1)`;
-2. the source identity state of package slots whose fixed reason is `requiredSlot` or `cargoHatch`;
-3. the source hull and module identities needed for package lookups/correlation.
+1. the package's structured identity outcomes after it refuses an unknown hull, empties unknown
+   removable modules and defaults unknown fixed modules;
+2. every remaining resolved source module with validated finite `Engineering.Quality` in `[0, 1)`;
+3. the source-empty state of package slots whose fixed reason is `requiredSlot` or `cargoHatch`.
 
-Resolve each partial's module through the package before construction. An unresolved partial refuses
-the candidate. Construct with `ShipLoadout.fromLoadout(entry.data)`, correlate each retained partial
-to the constructed slot and symbol, and call `completeEngineeringGrade(slotKey)` only for those
-source partials. Every must return `normalized`; `unsupported` refuses atomically and `unchanged` for
-a source partial is a package-contract failure. Never call the method for absent quality or quality
-`1` because complete locked/final articles may correctly return `unsupported`.
+Package identity normalization is first and independent of attached engineering; attached fields are
+discarded with an unknown module. Construct through the package boundary, correlate each remaining
+partial to its constructed slot and symbol, and call `completeEngineeringGrade(slotKey)` only for
+those source partials. Every must return `normalized`; `unsupported` refuses atomically and
+`unchanged` for a source partial is a package-contract failure. Never call the method for absent
+quality or quality `1` because complete locked/final articles may correctly return `unsupported`.
 
-Only after all partials succeed, call `repairFixedMount()` for source-missing or package-unresolved
-fixed mounts. Accept `repaired`; retain incomplete state for `defaultUnavailable`; treat a
+Only after all partials succeed, call `repairFixedMount()` for source-empty fixed mounts. Accept
+`repaired`; retain incomplete state for `defaultUnavailable`; treat a
 package-derived `refused` as a package-contract failure. Construction's cargo-hatch restoration is
 detected by comparing the source evidence with the constructed result and reported as an
 application-owned `autoRestored` classification backed by exact source/result identities.
 
-**Rationale**: Quality-first ordering prevents fixed/cargo repair from replacing the evidence that
-must trigger partial-quality refusal. The two normalizations are the constitution's only sanctioned
-changes. A resolved but incompatible fixed module is not silently repaired: the accepted rule covers
-empty/unresolved identities, so other package-invalid state stays visible in final validation.
+**Rationale**: Identity-first ordering prevents unknown module data from entering candidate state;
+quality-before-empty-fixed repair preserves evidence that must trigger partial-quality refusal. A
+resolved but incompatible fixed module is not silently repaired, so other package-invalid state
+stays visible in final validation.
 
-**Alternatives considered**: A SLEF-only normalization loop, fixed-first ordering, normalizing every
-engineered module, scalar quality mutation, repairing every invalid fixed mount, application default
-lookup and accepting unsupported partials were rejected.
+**Alternatives considered**: Preserving unknown identities, local identity classification, a
+SLEF-only normalization loop, fixed-first ordering, normalizing every engineered module, scalar
+quality mutation, repairing every invalid fixed mount, application default lookup and accepting
+unsupported partials were rejected.
 
 ## Decision 6: feature 001 owns the only commit and persistence effects
 
@@ -114,9 +116,10 @@ rejected.
 
 ## Decision 7: split detailed outcome from feature 001 record metadata
 
-**Decision**: Bind the accepted import outcome to the committed active revision. Quality completion,
-unresolved issue details and full validation presentation are transient/dismissible workspace
-feedback. Successful fixed-mount fills/replacements are also handed to feature 001's
+**Decision**: Bind the accepted import outcome to the committed active revision. Package identity
+outcomes, quality completion, remaining validation issue details and full validation presentation
+are transient/dismissible workspace feedback. Successful source-empty fixed-mount fills are handed
+to feature 001's
 `FixedMountNormalisationProvenance[]` and persist as local-record metadata until that mount is edited.
 Feature 001 independently persists the accepted revision's `valid`/`complete` booleans as ordinary
 record-list metadata. Neither detailed outcome nor fixed provenance enters the modelled snapshot,
@@ -284,11 +287,13 @@ accessibility and claiming automated browser zoom coverage were rejected.
 ## Dependency and gate conclusion
 
 - Almanac 0.1.2 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
-  fixed repair, default current-retail export and package-derived integrity. Captured module `Health`
-  is outside application behavior and creates no feature gate.
+  fixed repair, default current-retail export and package-derived integrity, but still retains
+  unknown modules. Feature 004 ingress is blocked until the promised release supplies structured
+  empty/default identity normalization. Captured module `Health` remains outside application state.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
   contract is also required.
 - The current repository does not yet contain those planned foundations; feature 004 must not create
   temporary shells, locale logic, active-build storage or test-matrix substitutes.
 
-No additional design choice or feature-004 Almanac blocker remains unresolved.
+No design clarification remains. The only feature-specific blocker is the released package contract
+for unknown-module empty/default normalization; no application workaround is permitted.

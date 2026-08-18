@@ -34,14 +34,22 @@
 
 ## Lossless build snapshot
 
-**Decision**: Define an application-owned, versioned `BuildSnapshotV1` containing hull symbol, nullable ship name/ident, and fitted entries keyed by their original game slot. Each entry retains its module symbol/casing, presence of enabled/priority fields, package-identified pre-engineered tuple, ordinary blueprint grade/effect and unresolved raw identity. Construct it from `ShipLoadout` getters and `fittedModules().raw`, and reconstruct through `ShipLoadout.fromLoadout()` before accepting it.
+**Decision**: Define an application-owned, versioned `BuildSnapshotV1` containing a package-resolved
+hull symbol, nullable ship name/ident, and package-resolved fitted entries keyed by game slot. Each
+entry retains its module symbol/casing, presence of enabled/priority fields, package-identified
+pre-engineered tuple and ordinary blueprint grade/effect. Construct it from `ShipLoadout` getters
+after ingress normalization and reconstruct through the released package boundary before accepting
+it.
 
-**Rationale**: `fromLoadout()` rejects an unknown hull before it can become active, and retains
-unknown slot, module, blueprint and effect identities for a known hull. `fittedModules()` includes
-unresolved slots that `slots()` cannot enumerate. `toLoadoutEvent()` is unsuitable as the storage DTO
-because it lowercases identities and adds recomputed derived fields.
+**Rationale**: Almanac 0.1.2 already rejects an unknown hull. The promised package release must also
+empty unknown removable modules and default unknown fixed modules before the application reads a
+figure or creates the snapshot. `toLoadoutEvent()` remains unsuitable as the storage DTO because it
+lowercases identities and adds recomputed derived fields.
 
-**Alternatives considered**: `JSON.stringify(ShipLoadout)` was rejected because class internals are not a durable contract. Wholesale SLEF/loadout-event storage was rejected because it mixes modelled and derived/capture data. The build-link DTO was rejected because links intentionally refuse some unresolved state that storage must retain.
+**Alternatives considered**: `JSON.stringify(ShipLoadout)` was rejected because class internals are
+not a durable contract. Wholesale SLEF/loadout-event storage was rejected because it mixes modelled
+and derived/capture data. Preserving unknown identities or implementing package replacement rules in
+the storage adapter was rejected by constitution principles II and IV.
 
 ## Local record format and migrations
 

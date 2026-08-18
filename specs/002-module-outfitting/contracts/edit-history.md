@@ -3,10 +3,10 @@
 ## Model boundary
 
 Feature 001 exposes canonical `BuildSnapshotV1` capture, package reconstruction and atomic active
-swap operations. A history checkpoint retains every application-modelled field: exact slot/item
-identity, order and field absence, unresolved records, ordinary engineering, every identified
-pre-engineered variant, name and ident. Historical purchase values, capture condition and package
-calculations are not modelled and are not restored. Raw overlays and inverse commands are not
+swap operations. A history checkpoint retains every recognized application-modelled field: exact
+slot/item identity, order and field absence, ordinary engineering, every identified pre-engineered
+variant, name and ident. Unknown identities, historical purchase values, capture condition and
+package calculations are not modelled or restored. Raw overlays and inverse commands are not
 substitutes for package reconstruction.
 
 ## Scope
@@ -82,10 +82,10 @@ Clear both directions after every successful active-build replacement: stock/hul
 or named record open, URL load, SLEF import and reload restoration. A refused incoming candidate does
 not reset history because it never replaces the build.
 
-Fixed-mount repair and supported partial-quality completion occur on the detached incoming candidate
-before reset and are never undoable. Editing a normalized mount later is an ordinary Commander
-decision. That edit clears the slot's local fixed-normalization provenance; undo restores build state
-but does not recreate the disclosure metadata.
+Unknown-module empty/default normalization, source-empty fixed repair and supported partial-quality
+completion occur on the detached incoming candidate before reset and are never undoable. Editing a
+normalized mount later is an ordinary Commander decision. That edit clears any source-empty fixed
+provenance; undo restores build state but does not recreate transient disclosure metadata.
 
 ## Boundary isolation
 

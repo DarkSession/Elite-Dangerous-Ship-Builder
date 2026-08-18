@@ -17,16 +17,16 @@ exact-slot target; it owns no build mutation, condition control or persisted vie
 
 ## Requirement mapping
 
-| Requirement | Planned behavior                                                                                                                  |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One pure projector copies package results/records only; presentation adds no game calculation.                                    |
-| FR-002      | One guarded `jumpRangeSummary()` supplies all three single ranges, total ranges and counts.                                       |
-| FR-003      | All diagnostic aggregate and standard-load results must be complete before the summary call; exact blockers remain visible.       |
-| FR-004      | The selected feature 003 load and ENG pips feed one `mobilityMetricsResult()` call; all seven fields or exact issues appear.      |
-| FR-005      | Incomplete mobility receives no hull fallback; package issues distinguish missing, disabled, shed, unresolved and invalid inputs. |
-| FR-006      | Exact unladen mass, main/reserve fuel and cargo results retain every ordered package issue.                                       |
-| FR-007      | Every `fittedModules()` entry appears once by exact slot with `effectiveStats.mass` or unavailable; no subtotal exists.           |
-| FR-008      | Only present package FSD/thruster parameters and result multipliers appear; absent facts stay absent.                             |
+| Requirement | Planned behavior                                                                                                                          |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One pure projector copies package results/records only; presentation adds no game calculation.                                            |
+| FR-002      | One guarded `jumpRangeSummary()` supplies all three single ranges, total ranges and counts.                                               |
+| FR-003      | All diagnostic aggregate and standard-load results must be complete before the summary call; exact blockers remain visible.               |
+| FR-004      | The selected feature 003 load and ENG pips feed one `mobilityMetricsResult()` call; all seven fields or exact issues appear.              |
+| FR-005      | Incomplete mobility receives no hull fallback; package issues distinguish missing, disabled, shed, package-unresolved and invalid inputs. |
+| FR-006      | Exact unladen mass, main/reserve fuel and cargo results retain every ordered package issue.                                               |
+| FR-007      | Every `fittedModules()` entry appears once by exact slot with `effectiveStats.mass` or unavailable; no subtotal exists.                   |
+| FR-008      | Only present package FSD/thruster parameters and result multipliers appear; absent facts stay absent.                                     |
 
 ## Cross-feature ownership
 
@@ -47,9 +47,9 @@ The surface and previews cover:
 - no active build;
 - complete jump/mobility/aggregate/module values;
 - incomplete mass, fuel or cargo and each standard-load guard;
-- missing and unresolved FSD, with active-booster validation where applicable;
+- missing and package-incomplete FSD, with active-booster validation where applicable;
 - zero main fuel and zero cargo;
-- missing, disabled, shed and unresolved thrusters plus power-capacity/draw issues;
+- missing, disabled, shed and package-incomplete thrusters plus power-capacity/draw issues;
 - complete all-zero mobility above supported mass;
 - each sparse FSD/thruster parameter present and absent;
 - engineered, zero and unavailable module mass, including duplicate symbols and a package-trusted
@@ -69,7 +69,7 @@ component itself defines one.
   rather than hiding columns; internal table overflow is acceptable only when associations survive.
 - Any tab/action uses actual semantic controls with visible name/state and feature 011's minimum
   touch target. Nothing essential depends on hover or `title`.
-- Load, zero, unavailable, incomplete, disabled, shed, unresolved and failure meanings are explicit
+- Load, zero, unavailable, incomplete, disabled, shed, package-issue unresolved and failure meanings are explicit
   text/programmatic state—not colour, bar length, shape or position.
 - Package issues are associated with their owning result; a settled revision produces one concise
   polite update rather than one announcement per field.

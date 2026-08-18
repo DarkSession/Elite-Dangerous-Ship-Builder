@@ -59,7 +59,7 @@ Anatomy Mounts uses a top/bottom segmented switch rather than simultaneous plate
 and `Engineer` are mutually exclusive full-screen application layers, not routes. Each has an
 associated title/description, inert background, independent content scroll and safe-area-aware
 persistent cancel plus primary action. Selected actions are package-driven: engineer is absent or
-disabled for empty/unresolved/no-menu/cargo-hatch states; change/remove follows package capability and
+disabled for empty/package-incomplete/no-menu/cargo-hatch states; change/remove follows package capability and
 reason.
 
 Landscape may reduce decorative density but not facts, actions or feedback. The action bar must not

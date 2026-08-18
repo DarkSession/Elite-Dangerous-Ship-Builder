@@ -39,21 +39,21 @@ pinned release.
 `fittedModuleAt()`, local slot sorting and positional navigation were rejected because they discard or
 replace public facade behavior.
 
-## Empty, unresolved, disabled and genuine zero
+## Empty, unavailable, disabled and genuine zero
 
 **Decision**: Keep package totals and weapon entries unchanged, and pair them with feature 002's
 same-revision package slot coverage. Only an empty weapon list plus confirmed-empty hardpoints means
-no fitted weapons. An unresolved occupied hardpoint receives a separate qualification and exact-slot
-target but no invented weapon metrics. A non-empty zero-total list remains populated; disabled entries
+no fitted weapons. Unavailable coverage receives a separate qualification but no invented weapon
+metrics. A non-empty zero-total list remains populated; disabled entries
 remain visible.
 
 **Rationale**: Disabled Sidewinder weapons remain in the list with full metrics while all aggregate
-fields become zero. An occupied unresolved hardpoint is omitted from `weaponMetrics()` but remains
-visible through package fitted/validation views. A real zero-damage hardpoint record also exists, so
+fields become zero. Unknown module identities have already normalized to empty/default before this
+capability. A real zero-damage hardpoint record also exists, so
 zero cannot identify absence or disability.
 
 **Alternatives considered**: Treating `weapons.length === 0` as empty, hiding disabled weapons,
-inserting unresolved entries into the package result, and inferring state from aggregate zero were
+inserting non-package entries into the package result, and inferring state from aggregate zero were
 rejected as dishonest.
 
 ## Damage-type semantics
@@ -152,7 +152,7 @@ first three infer or duplicate power semantics; the last fails FR-007.
 **Decision**: Export `OffenceStatusProvider` under feature 003's generic envelope. It selects exact
 `total.sustainedDamagePerSecond`, supplies package-native firing condition, targets
 `offenceProfile`, repeats the captured revisions and returns `qualifiedSummaryIds: ['sustainedDps']`
-only when unresolved/unavailable hardpoint coverage qualifies completeness.
+only when hardpoint coverage is unavailable.
 
 **Rationale**: Feature 003's accepted provider bundle requires an owner-authored feature-007
 projection. Sharing the cached weapon projection prevents a second calculation model and leaves

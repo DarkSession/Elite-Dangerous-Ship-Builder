@@ -50,10 +50,9 @@ own their screens.
 - Feature 011 owns tokens, components, localization/formatting, package game
   text, announcements, previews and accessibility/browser harness.
 
-Feature 003's current “complete Status is the sole location for viewing
-controls” wording must be reconciled before task generation: the same shared
-control component/state appears in Status and Power and Heat, while feature 003
-remains the only state owner.
+Feature 003 owns the only viewing-condition store and shared control component. Status composes the
+complete control, while Power and Heat composes the same component for its hardpoint/pip conditions;
+both instances share one draft/Apply/Reset state and condition revision.
 
 ## Required states
 

@@ -21,15 +21,15 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 
 1. SYS, ENG and WEP each show capacity, rated recharge and actual recharge at the selected pips.
 2. Pip changes affect recharge but not capacity.
-3. A missing, disabled, unresolved or shed distributor produces an unavailable result.
+3. A missing, disabled, package-incomplete or shed distributor produces an unavailable result.
 
 ### Story 3 — Understand heat (P2)
 
 1. Plant efficiency and hull heat capacity and dissipation are identified.
 2. Idle, thruster, FSD-charging, sustained-fire and drained-capacitor scenarios show every package
    result.
-3. Unknown power contributors remain named and qualify the complete profile; unresolved weapon heat
-   contributors remain named and qualify the two firing scenarios.
+3. Package-reported unknown power contributors remain named and qualify the complete profile;
+   unknown weapon-heat contributors remain named and qualify the two firing scenarios.
 
 ## Requirements
 

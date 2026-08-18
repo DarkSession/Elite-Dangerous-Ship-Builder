@@ -100,7 +100,7 @@ duplicated occurrence state can split one build slot or depend on artwork implem
 ## Fitted and engineering state
 
 **Decision**: Consume feature 002's immutable exact-slot view over the same loadout revision. Preserve
-empty, resolved and unresolved fitted states. Module identity remains `FittedModule.symbol`; names
+empty and package-resolved fitted states. Module identity remains `FittedModule.symbol`; names
 use Almanac i18n helpers through feature 011. Engineering presence comes from the package fitted
 article/feature 002 projection and is never inferred from icon, module family or modifiers.
 
@@ -109,9 +109,9 @@ not-size-based placeholder and is presented as a localized “not class-sized”
 class zero or another size.
 
 **Rationale**: The exact slot snapshot is already feature 002's editing truth. Reusing it avoids a
-second module/engineering interpretation and preserves unresolved identities and unavailable text.
+second module/engineering interpretation; package ingress has already removed unknown identities.
 
-**Alternatives considered**: Looking up unresolved symbols, parsing module names, presenting utility
+**Alternatives considered**: Looking up unknown symbols, parsing module names, presenting utility
 class zero or copying the mock's size/node badges were rejected as invented meaning.
 
 ## Current priority and power state
@@ -134,7 +134,7 @@ as current power were rejected as duplicate or incomplete power logic.
 
 **Decision**: Present one semantic located-mount item for every package hardpoint and utility in the
 same package order, regardless of asset readiness. Each item contains kind, exact key, size, fitted/
-empty/unresolved, engineered/stock, selection, priority, current power and top/bottom/both/pending/
+empty/resolved, engineered/stock, selection, priority, current power and top/bottom/both/pending/
 unavailable/defect location text. Feature 002's separate complete ledger remains the route to every
 slot and the editor; activating either route uses the same exact selected key.
 

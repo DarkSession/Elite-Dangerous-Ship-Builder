@@ -22,12 +22,13 @@ heat and distributor. The design's sample numbers, four-band/mobile
 abbreviations, inferred charts, whole-pip controls and extra heat scenarios are
 not game-data contracts and are not copied.
 
-Planning exposed an Almanac 0.1.1 defect: a catalogue-unresolved hardpoint with a journal-resolved
+Planning exposed an Almanac 0.1.1 defect using a package-only catalogue-unresolved hardpoint with a journal-resolved
 `PowerDraw` contributed to the power budget while its unknown weapon heat was omitted and
 `HeatMetrics.unknownDraws` remained empty. Almanac 0.1.2 resolves
 [#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329) with the distinct
 `HeatMetrics.unknownWeaponHeat` slot list. The pinned release and reproduction now satisfy the
-feature contract without an application workaround.
+calculation contract without an application workaround. Constitution 6.0.0 prevents that fixture
+from becoming active application state; it remains historical package regression evidence only.
 
 ## Technical Context
 
@@ -84,21 +85,21 @@ Adopted hierarchy and required departures are recorded in
 ## Constitution Check
 
 _GATE: **PASS after the Almanac 0.1.2 verification**. The released
-`unknownWeaponHeat` field truthfully qualifies unresolved hardpoints without an application
-workaround. Repository implementation remains sequenced behind feature 011's strict-mode and shared
-foundation work._
+`unknownWeaponHeat` field truthfully qualifies package-reported weapon-heat omissions without an
+application workaround. Unknown module identities normalize at feature 001/002 ingress and never
+reach this surface. Repository implementation remains sequenced behind feature 011._
 
-| Principle                               | Design evidence                                                                                                                                            | Status                 |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary.                                 | PASS                   |
-| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods; 0.1.2 supplies `unknownWeaponHeat` for the reproduced unresolved-hardpoint case.             | PASS                   |
-| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.                                    | PASS                   |
-| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, zero and field-specific infinity states remain explicit; no stale or guessed heat result is presented as complete. | PASS                   |
-| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.                                         | PASS; prerequisite 011 |
-| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.                                              | PASS; prerequisite 011 |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                                                       | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage.                                 | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | The screen inventory maps every requirement; the released regression and remaining contract reconciliation are recorded explicitly.                        | PASS                   |
+| Principle                               | Design evidence                                                                                                                                                     | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary.                                          | PASS                   |
+| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods; 0.1.2 supplies `unknownWeaponHeat`; the unknown-identity fixture is historical package evidence only. | PASS                   |
+| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.                                             | PASS                   |
+| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, zero and field-specific infinity states remain explicit; no stale or guessed heat result is presented as complete.          | PASS                   |
+| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.                                                  | PASS; prerequisite 011 |
+| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.                                                       | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                                                                | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage.                                          | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | The screen inventory maps every requirement; the released regression and shared viewing-state ownership are recorded explicitly.                                    | PASS                   |
 
 **Technology prerequisite**: Feature 011 must enable `strict` in the shared TypeScript configuration
 and make the existing project pass under it before feature 005 implementation is complete.
@@ -107,18 +108,16 @@ and make the existing project pass under it before feature 005 implementation is
 
 1. Keep the verified Almanac 0.1.2 regression for
    [#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329):
-   `unknownWeaponHeat` names the unresolved slot while `unknownDraws` remains reserved for unknown
-   power contributions. This application does not inspect validation or journal heat modifiers to
-   reproduce either list.
+   `unknownWeaponHeat` names the affected slot while `unknownDraws` remains reserved for unknown
+   power contributions. This is package regression coverage, not an accepted application ingress
+   state; the application does not inspect identities or modifiers to reproduce either list.
 2. Enable the repository's required TypeScript strict mode.
 3. Feature 001 supplies one active `ShipLoadout`, numeric build revision,
    no-build state and `/build` workspace. Feature 002 supplies committed-edit
    revision advancement and exact-slot reveal/editing.
 4. Feature 003 supplies integer-half-pip viewing state, Apply/Reset behavior,
    condition revision, `StatusProvider<T, I>` and `powerAndHeat` target.
-   Its “complete Status is the sole location for viewing controls” wording must
-   be reconciled with feature 005 FR-003: feature 005 reuses the shared scoped
-   hardpoint/pip controls without owning parallel state.
+   Feature 005 composes the shared scoped hardpoint/pip controls without owning parallel state.
 5. Feature 005 exports the compact power provider required by feature 003 and
    the power-observation port required by feature 010. Feature 010 never joins
    consumers to bands itself.
@@ -212,14 +211,13 @@ Detailed decisions, evidence and rejected alternatives are in
   unavailability is exactly package null rather than catalogue identity alone.
 - Heat shows exactly the five package scenarios and all five fields. Null,
   non-settling and never-overheating are distinct.
-- The installed heat result can incorrectly appear complete for an unresolved
-  weapon with known journal power draw. That upstream defect blocks
-  implementation.
+- Almanac 0.1.1 could incorrectly report complete heat for a package-only unresolved-weapon fixture
+  with known journal power draw. Pinned 0.1.2 keeps that historical defect closed; normal application
+  ingress never preserves the fixture's unknown identity.
 - Canvas 1c/1d hierarchy is useful; its sample data, truncation and interaction
   markup are not authoritative.
 
-No planning ambiguity remains. The unresolved item is a concrete upstream
-dependency, not an unanswered product question.
+No planning ambiguity or Almanac dependency remains.
 
 ## Phase 1: Design Outputs
 
@@ -246,8 +244,8 @@ dependency, not an unanswered product question.
   defines required shared-component preview states and widths.
 - [design/reference-review.md](./design/reference-review.md) records the exact
   1c/1d ideas retained and every unsupported departure.
-- [quickstart.md](./quickstart.md) supplies the blocking package probe and
-  runnable acceptance scenarios for after the release.
+- [quickstart.md](./quickstart.md) supplies the released-package regression probe and runnable
+  acceptance scenarios.
 
 ## Post-Design Constitution Re-check
 
@@ -258,7 +256,7 @@ package sentinel remains distinguishable and all responsive/accessibility paths
 are explicit.
 
 The post-design gate is **PASS** after pinning Almanac 0.1.2 and verifying that
-`unknownWeaponHeat` names the unresolved hardpoint omitted from the firing scenarios. The plan
+`unknownWeaponHeat` names the affected slot in the historical package regression. The plan
 contains no validation-based or modifier-parsing workaround. Shared TypeScript strictness and the
 feature dependencies above remain implementation sequencing prerequisites and must be represented in
 the task graph.

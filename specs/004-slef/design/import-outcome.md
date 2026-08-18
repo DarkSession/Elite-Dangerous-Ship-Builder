@@ -10,14 +10,16 @@ longer matches.
 ## Composition
 
 - localized summary stating the build was imported and whether package validation is valid/complete;
+- grouped identity-normalization notices naming the source slot/identity and package empty/default
+  result without retaining that identity in the active build;
 - grouped quality-completion notices with exact slot/module/blueprint/effect identities and source to
   completed quality;
 - grouped fixed-mount notices distinguishing construction auto-restoration, explicit package repair
   and missing package default;
-- retained unresolved/invalid package issue list with package locale/canonical disclosure;
+- retained incomplete/invalid package issue list for resolved state with package locale/canonical disclosure;
 - Dismiss action that changes presentation only.
 
-Successful fixed fills also exist in feature 001's local-record fixed-mount provenance metadata so a
+Successful source-empty fixed fills also exist in feature 001's local-record fixed-mount provenance metadata so a
 restored record can disclose them until that mount is edited. Quality completion, the detailed issue
 list and full validation presentation are transient. Feature 001 independently persists the accepted
 revision's `valid`/`complete` booleans. None of the detailed outcome enters `BuildSnapshotV1`, link,
@@ -28,10 +30,11 @@ SLEF or edit history.
 | State                        | Presentation                                                                          |
 | ---------------------------- | ------------------------------------------------------------------------------------- |
 | No modeled normalization     | Concise import success/final validation; no empty groups                              |
+| Unknown module normalized    | Exact transient source identity plus package empty/default action; never active state |
 | Quality completed            | One row per source partial normalized by the package to quality 1                     |
 | Fixed auto-restored/repaired | Exact source/result slot identities and kind; never invent a default                  |
 | Default unavailable          | Text says the fixed mount remains incomplete; no replacement identity shown           |
-| Retained unresolved/invalid  | Package issue detail and final validation remain visible, not converted to zero/valid |
+| Retained incomplete/invalid  | Package issue detail and final validation remain visible, not converted to zero/valid |
 | Combined                     | Groups remain separately headed so causes are not collapsed into one color/status     |
 | Dismissed                    | Outcome removed; build/revision/dirty/history/persistence unchanged                   |
 | Revision changed             | Stale outcome removed and never announced against the new build                       |

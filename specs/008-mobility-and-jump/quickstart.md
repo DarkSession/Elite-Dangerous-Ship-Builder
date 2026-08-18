@@ -89,7 +89,7 @@ Expected:
 
 ### 2. Guard jump inputs and preserve zero
 
-Exercise incomplete mass, fuel and cargo; missing/unresolved FSD; active-booster failure; complete
+Exercise incomplete mass, fuel and cargo; missing/package-incomplete FSD; active-booster failure; complete
 zero main fuel; and complete zero cargo.
 
 Expected:
@@ -115,7 +115,7 @@ Expected:
 
 ### 4. Distinguish mobility unavailable states from ready zero
 
-Exercise missing, disabled, shed and unresolved thrusters, power-capacity/draw issues, and a resolved
+Exercise missing, disabled, shed and package-incomplete thrusters, power-capacity/draw issues, and a resolved
 build above supported thruster mass.
 
 Expected:
@@ -146,7 +146,7 @@ Expected:
 
 - every `fittedModules()` entry appears once in package order under its exact slot;
 - each ready value equals `effectiveStats.mass`;
-- unresolved mass is unavailable, never zero/base mass;
+- unavailable resolved-module mass is explicit, never zero/base mass;
 - slot actions target only the exact owning key; and
 - no module subtotal, decomposition or reconstructed unladen mass appears.
 

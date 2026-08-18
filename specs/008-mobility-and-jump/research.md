@@ -38,6 +38,9 @@ Issue order and the non-empty incomplete tuple are unchanged. Application presen
 `getCalculationIssueMessage(issue, locale)` through feature 011 and uses the established canonical
 fallback disclosure when that helper returns `null`; it never parses `message`.
 
+Here `unresolved` is an exact package calculation-issue reason for a package-resolved build input; it
+does not authorize retaining an unknown module identity. Ingress normalizes those identities first.
+
 **Rationale**: The old 008 artifacts incorrectly listed `hullMass` and `reserveFuelCapacity` and
 omitted `reason`. Preserving the package type eliminates that drift and keeps all unavailable-state
 evidence.
@@ -78,8 +81,8 @@ standard results are the package-owned definitions required by feature 003's loa
 
 **Alternatives considered**:
 
-- Guarding only with aggregate results misses a missing/unresolved FSD.
-- Guarding with fitted FSD fields can miss an unresolved active booster or invalid package input.
+- Guarding only with aggregate results misses a missing/package-incomplete FSD.
+- Guarding with fitted FSD fields can miss an incomplete active booster or invalid package input.
 - Calling individual range functions or counting jumps locally duplicates Almanac logic.
 
 ## Decision 4: use feature 003's selected load without redefining it
@@ -140,7 +143,7 @@ package answer for speed, rotation, curve and power readiness.
 | `field: thrusters, reason: missing`    | no fitted thrusters                                    |
 | `field: thrusters, reason: disabled`   | fitted thrusters switched off                          |
 | `field: thrusters, reason: shed`       | fitted thrusters not powered with hardpoints retracted |
-| `field: thrusters, reason: unresolved` | fitted thruster performance unavailable                |
+| `field: thrusters, reason: unresolved` | package-resolved thruster performance unavailable      |
 | `field: powerCapacity                  | powerDraw`                                             | the exact package power dependency is unavailable/invalid |
 
 Do not pre-gate the call with a power budget or reinterpret these issues. A complete all-zero
@@ -167,7 +170,8 @@ Module and slot display text is resolved in the presenter with Almanac locale he
 snapshot does not store `effectiveStats.name` as localized text.
 
 **Rationale**: `BuildSlot.core` is the package identity for a core function while `BuildSlot.key` is
-the exact journal-compatible target. This remains correct for empty or unresolved required mounts.
+the exact journal-compatible target. This remains correct for empty or package-incomplete required
+mounts; unknown identities were normalized before projection.
 
 **Alternatives considered**:
 

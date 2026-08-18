@@ -8,7 +8,8 @@ Normative contracts: [import](./contracts/slef-import.md),
 
 - The selected Almanac release exposes `inspectSlef`, `ShipLoadout.fromLoadout`,
   `completeEngineeringGrade`, `repairFixedMount`, `toSlefString` and
-  `getSlefDiagnosticMessage` through leaf exports.
+  `getSlefDiagnosticMessage` through leaf exports, and returns structured outcomes that refuse an
+  unknown hull, empty unknown removable modules and default unknown fixed modules.
 - Feature 011's strict compiler, localization/design-system, preview, ten-project Playwright and axe
   foundations are present.
 - Feature 001's active-build snapshot/replacement/persistence/current-revision-link boundaries are
@@ -33,15 +34,17 @@ remove/rename a project or browser to pass.
 2. Verify one envelope, one-element array and bare journal event each inspect as one valid entry;
    `[]` produces zero; mixed input produces a valid entry plus indexed diagnostic; malformed JSON
    throws `SyntaxError`.
-3. Verify a source `Quality: 0.42` is preserved by construction, then becomes package-recomputed
-   quality 1 only after `completeEngineeringGrade`. Verify an unresolved/unsupported partial returns
-   structured refusal without mutation. Do not call completion on quality-1 final/locked articles.
-4. Verify package construction's cargo behavior and `repairFixedMount` outcomes. Missing/unresolved
-   fixed state uses exact package defaults; `defaultUnavailable` remains incomplete; no app default
-   lookup or credit-field rewrite exists.
-5. Verify default credit export uses current package catalogue retail after engineering, symbol
+3. Verify unknown removable/fixed modules, with and without attached engineering, become package
+   empty/default outcomes before construction and leave no unknown identity in candidate state.
+4. Verify a resolved source `Quality: 0.42` is preserved by construction, then becomes package-
+   recomputed quality 1 only after `completeEngineeringGrade`. Verify an unsupported resolved partial
+   returns structured refusal without mutation. Do not call completion on quality-1 final articles.
+5. Verify package construction's cargo behavior and `repairFixedMount` outcomes. Source-empty fixed
+   state uses exact package defaults; `defaultUnavailable` remains incomplete; no app default lookup
+   or credit-field rewrite exists.
+6. Verify default credit export uses current package catalogue retail after engineering, symbol
    replacement/removal and fixed repair. Source purchase values must not be requested or retained.
-6. Import a fitted module carrying `Health`. Its presence or omission on package re-export must not
+7. Import a fitted module carrying `Health`. Its presence or omission on package re-export must not
    affect acceptance or round-trip equality. Separately verify the reconstructed fitted configuration
    returns the same package-derived engineered module integrity.
 
@@ -65,18 +68,19 @@ wait for a released fix.
 5. **Replacement**: Cancel a valid candidate over unsaved work, then accept it. Cancel changes
    nothing. Acceptance is one feature 001 replacement, one working autosave/link synchronization and
    one feature 002 history reset; feature 004 performs none directly.
-6. **Normalization order**: Cover ordinary/Mercenary/identified pre-engineering/effect partials,
-   unresolved partial, missing/unresolved fixed mounts, resolved-but-invalid fixed state and
-   unresolved non-fixed state. Partial completion occurs before fixed repair; unsupported partial
-   refuses whole; only source missing/unresolved fixed mounts receive stock fill; unavailable default
-   stays incomplete; unresolved non-fixed remains.
-7. **Outcome/persistence split**: After acceptance, the workspace reports quality, auto-restored/
-   repaired/default-unavailable fixed mounts, unresolved issues and final validation. Dismissal edits
+6. **Normalization order**: Cover unknown removable/fixed/original-slot identities with every quality
+   state, then ordinary/Mercenary/identified partials on resolved modules, source-empty fixed mounts
+   and resolved-but-invalid fixed state. Package identity normalization occurs first, partial
+   completion next, and source-empty fixed repair last. Unsupported resolved partials refuse whole;
+   unavailable fixed defaults stay incomplete.
+7. **Outcome/persistence split**: After acceptance, the workspace reports transient identity actions,
+   quality, auto-restored/repaired/default-unavailable fixed mounts and final validation. Dismissal edits
    nothing. Feature 001 persists fixed-fill provenance and the accepted revision's `valid`/`complete`
    booleans; the detailed quality/issue/outcome presentation does not persist, and none enters
    link/SLEF/history.
 8. **Stable package-model round trip**: Include false enabled, priority zero, name/ident, ordinary and
-   identified pre-engineering/effect and unresolved optional identity. Compare
+   identified pre-engineering/effect plus unknown optional/fixed source identities. Verify those
+   identities normalize away, then compare
    package-modelled state after export/import/export under completed quality, fixed fill, identity
    casing and package-derived-field recomputation/omission. Ensure capture-only per-module `Health`,
    timestamp, ammo, engineer identity and historical purchase values do not affect application-model

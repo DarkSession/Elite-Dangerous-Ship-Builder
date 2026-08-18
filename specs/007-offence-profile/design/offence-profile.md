@@ -18,7 +18,7 @@ leaving the active build.
   capability selector may also select it.
 - Selected capability and expanded weapon details are memory-only and never enter build data,
   storage, history, route state, links or SLEF.
-- Every weapon/unresolved action carries the shared exact-slot target to feature 002. Wide layouts
+- Every returned-weapon action carries the shared exact-slot target to feature 002. Wide layouts
   reveal/select inline outfitting; narrow layouts open the selected-slot layer with a named return.
 - Feature 003 owns viewing-condition editing. This surface may compose the shared control but never a
   WEP-only divergent store.
@@ -32,7 +32,7 @@ leaving the active build.
 3. complete enabled returned-weapon totals;
 4. complete burst and sustained damage-type groups with AX overlay explanation;
 5. six capacitor fields, semantic duration and owner-supplied distributor power observation;
-6. unresolved/coverage qualification, when present;
+6. coverage-unavailable qualification, when present;
 7. complete returned weapon collection and exact-slot actions.
 
 At roomy widths, items 3–5 may occupy two fluid regions and the weapon collection spans available
@@ -48,8 +48,8 @@ action is omitted, abbreviated into ambiguity or moved to hover.
 - Show burst/sustained WEP draw and heat, followed by thermal load and deployed plant draw.
 - Use complete label/value/unit relationships. Numeric zero remains numeric and is qualified only by
   adjacent coverage/weapon state.
-- Display the exact package total even when all weapons are disabled, a weapon is genuine zero or an
-  unresolved occupied hardpoint makes the overall build coverage incomplete.
+- Display the exact package total even when all weapons are disabled, a weapon is genuine zero or
+  hardpoint coverage is unavailable.
 
 ## Damage types
 
@@ -107,12 +107,9 @@ The collection preserves package order. It neither sorts nor merges identical mo
 ## Coverage, empty and qualification states
 
 - Empty returned weapons plus feature-002 confirmed-empty coverage yields no fitted weapons.
-- Unresolved occupied hardpoints appear in a separate exact-slot notice/list. They receive no weapon
-  values and never enter package totals.
-- Mixed resolved/unresolved coverage retains the complete returned collection and qualifies its
-  completeness.
 - Coverage unavailable says the package weapon result could not establish fitted coverage; it does
   not claim empty hardpoints.
+- Unknown modules never enter this surface because package ingress normalized them to empty/default.
 - A non-empty list with zero total remains populated. Disabled and genuine-zero meanings remain
   visible per entry.
 
@@ -124,7 +121,7 @@ The collection preserves package order. It neither sorts nor merges identical mo
 | Current revision pending                    | Shared pending state for this snapshot; old values are not relabelled                  |
 | Complete populated                          | Exact totals, types, capacitor, distributor observation and all returned weapon fields |
 | Confirmed no fitted weapons                 | Explicit empty meaning plus exact package zero/capacitor values where useful           |
-| Unresolved-only or partial coverage         | Separate exact-slot qualification; no fabricated output or false empty claim           |
+| Coverage unavailable                        | Explicit qualification; no fabricated output or false empty claim                      |
 | Some/all returned weapons disabled          | Full entries with exact enabled flags and package totals                               |
 | Genuine zero weapon                         | Complete entry including numeric zero and all other returned data                      |
 | Unclassified absent                         | Optional row omitted or no-unclassified-damage meaning, not unavailable                |
@@ -138,14 +135,14 @@ The collection preserves package order. It neither sorts nor merges identical mo
 ## Status contribution
 
 The feature-003 Status surface receives exact sustained DPS, native firing condition and the
-`offenceProfile` target from feature 007's provider. Partial/unresolved/unavailable hardpoint coverage
+`offenceProfile` target from feature 007's provider. Unavailable hardpoint coverage
 qualifies `sustainedDps` once; exact zero does not. Selecting retracted hardpoints or changing WEP
 pips does not change package sustained DPS.
 
 ## Announcements
 
 A settled build/condition/coverage revision produces at most one concise localized message about
-changed offence availability, returned/unresolved weapon count or duration meaning. Do not announce
+changed offence availability, returned weapon count or duration meaning. Do not announce
 every unchanged metric. Opening a slot uses feature 002's announcement once. A blocking integration
 or projection error is announced assertively once; initial and discarded stale projections are
 silent.

@@ -20,26 +20,26 @@ workspace or engineering state for the rejected candidate.
 
 ## Requirement ownership
 
-| Requirement | Surface behavior                                                                                                                                                                                                           |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | No-build state explains the dependency and composes only actions supplied by their owners: feature 001 create/open/navigation, feature 004 import when present. Feature 002 promises none itself.                          |
-| FR-002      | Workspace/editors re-read package slots, facts, effective attributes, compatibility, removability, mutation outcomes and calculations by exact game slot key.                                                              |
-| FR-003      | Empty, unresolved known-slot and unknown original-slot entries stay visible. Fully rolled/unengineered unresolved entries are preserved; fixed repair and rejected partial ingress are explicit exceptions.                |
-| FR-004      | Replacement contains exactly stock `modulesForSlot()` results plus every package variant.                                                                                                                                  |
-| FR-005      | Replacement owns name grouping, class-descending/rating-ascending/stock-first/unique-last order and four-field AND search with no-match/clear.                                                                             |
-| FR-006      | Workspace/replacement expose exact, stackable package acquisition and entitlement labels.                                                                                                                                  |
-| FR-007      | Purchase variant comes only from `preEngineeredVariant`; purchase and ordinary current grades stay separate.                                                                                                               |
-| FR-008      | Stock/variant/remove actions use package-backed atomic transactions and surface package refusal without mutation.                                                                                                          |
-| FR-009      | Cargo hatch exposes facts and package-supported power controls only; replace/remove/engineer are absent with reason.                                                                                                       |
-| FR-010      | Shared ingress first resolves supported partials, then repairs source-missing/unresolved fixed mounts; notices distinguish repaired, automatically repaired and default-unavailable outcomes.                              |
-| FR-011      | Normalization notice/provenance is not history; undo remains disabled if it was the only change.                                                                                                                           |
-| FR-012      | Engineering offers exact package menus and distinct apply, effect-only and clear-all semantics.                                                                                                                            |
-| FR-013      | Supported partial quality produces a 100% workspace notice; unresolved/unsupported partial candidates produce a pre-activation atomic refusal naming every affected slot/identity and leaving the current build unchanged. |
-| FR-014      | Editor distinguishes package material `null` from `[]`, does not price baked fixed engineering and keeps Merc Coin separate.                                                                                               |
-| FR-015      | Named power controls use package setters and localized one-based labels over zero-based values.                                                                                                                            |
-| FR-016      | Modelled snapshots reconstruct every application build field through the package; current catalogue costs and derived results are recomputed, and feature 001 name/ident controls dispatch history-recorded decisions.     |
-| FR-017      | A 100-decision session tape resets only after accepted active-build replacement and never enters persistence/export/navigation.                                                                                            |
-| FR-018      | Slot selection, category/anatomy/status mode, query, open/close/cancel and draft changes never enable undo; automatic ingress changes/refusals also create no history.                                                     |
+| Requirement | Surface behavior                                                                                                                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | No-build state explains the dependency and composes only actions supplied by their owners: feature 001 create/open/navigation, feature 004 import when present. Feature 002 promises none itself.                      |
+| FR-002      | Workspace/editors re-read package slots, facts, effective attributes, compatibility, removability, mutation outcomes and calculations by exact game slot key.                                                          |
+| FR-003      | Empty and package-resolved slots stay visible. Unknown module identities are package-normalized to empty/default before activation and never render as workspace entries.                                              |
+| FR-004      | Replacement contains exactly stock `modulesForSlot()` results plus every package variant.                                                                                                                              |
+| FR-005      | Replacement owns name grouping, class-descending/rating-ascending/stock-first/unique-last order and four-field AND search with no-match/clear.                                                                         |
+| FR-006      | Workspace/replacement expose exact, stackable package acquisition and entitlement labels.                                                                                                                              |
+| FR-007      | Purchase variant comes only from `preEngineeredVariant`; purchase and ordinary current grades stay separate.                                                                                                           |
+| FR-008      | Stock/variant/remove actions use package-backed atomic transactions and surface package refusal without mutation.                                                                                                      |
+| FR-009      | Cargo hatch exposes facts and package-supported power controls only; replace/remove/engineer are absent with reason.                                                                                                   |
+| FR-010      | Shared ingress first applies package unknown-module empty/default outcomes, then completes supported partials and repairs source-empty fixed mounts; notices distinguish every outcome.                                |
+| FR-011      | Normalization notice/provenance is not history; undo remains disabled if it was the only change.                                                                                                                       |
+| FR-012      | Engineering offers exact package menus and distinct apply, effect-only and clear-all semantics.                                                                                                                        |
+| FR-013      | Supported partial quality on remaining resolved modules produces a 100% notice; unsupported partial candidates produce a pre-activation atomic refusal leaving the current build unchanged.                            |
+| FR-014      | Editor distinguishes package material `null` from `[]`, does not price baked fixed engineering and keeps Merc Coin separate.                                                                                           |
+| FR-015      | Named power controls use package setters and localized one-based labels over zero-based values.                                                                                                                        |
+| FR-016      | Modelled snapshots reconstruct every application build field through the package; current catalogue costs and derived results are recomputed, and feature 001 name/ident controls dispatch history-recorded decisions. |
+| FR-017      | A 100-decision session tape resets only after accepted active-build replacement and never enters persistence/export/navigation.                                                                                        |
+| FR-018      | Slot selection, category/anatomy/status mode, query, open/close/cancel and draft changes never enable undo; automatic ingress changes/refusals also create no history.                                                 |
 
 ## Cross-feature composition
 
@@ -58,8 +58,8 @@ feature's mock values as placeholders.
 
 ## Shared component additions
 
-Feature 002 extends `src/app/ui/` through feature 011 with slot groups/cards, unresolved entries,
-module identity/acquisition badges, unavailable facts, named power controls, candidate search/list,
+Feature 002 extends `src/app/ui/` through feature 011 with slot groups/cards, identity-normalization
+notices, module identity/acquisition badges, unavailable facts, named power controls, candidate search/list,
 engineering choices/material costs, undo/redo actions, accepted-normalization notices and ingress/edit
 refusal notices. Previews cover default/populated, selected, empty, unavailable, disabled, loading,
 stale and refusal states at wide, tablet and compact widths with expanded/RTL text.

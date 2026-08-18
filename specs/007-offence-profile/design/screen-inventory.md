@@ -11,26 +11,27 @@ slot targets to feature 002. Feature 003 also consumes feature 007's compact Sta
 | Burst/sustained damage types                          | Two labelled textual groups with AX overlay explanation                     | Same complete groups; no type omitted for space                | FR-001–FR-003          |
 | Weapon-capacitor endurance                            | Shared WEP context, six exact fields and deployed distributor observation   | Same fields stacked before weapon collection                   | FR-001, FR-006, FR-007 |
 | Complete returned weapon collection                   | Scannable summaries with row-owned details and exact-slot action            | Labelled cards/details with the same fields and action         | FR-001–FR-005          |
-| Unresolved hardpoint qualification (feature 002)      | Separate exact-slot notice/list; never inserted into package weapon results | Same notices before the returned collection/empty explanation  | FR-001, FR-004, FR-005 |
+| Coverage-unavailable qualification (feature 002)      | Explicit qualification; never inserts data into package weapon results      | Same notice before returned collection/empty explanation       | FR-001, FR-004, FR-005 |
 | Compact sustained-DPS Status contribution (feature 3) | Package value, native firing condition and qualification in shared Status   | Same owner value/condition in feature 003's Status composition | FR-001, FR-002, FR-005 |
 | Exact outfitting slot (feature 002)                   | Reveal/select matching inline slot/editor                                   | Open existing selected-slot layer with a named return          | FR-004                 |
 
 ## Requirement ownership
 
-| Requirement | Planned behavior                                                                                                                                |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One revision-coherent snapshot retains two `ShipLoadout` results and owner-supplied context; presentation creates no game value.                |
-| FR-002      | Whole-build/per-weapon output and compact Status sustained DPS select exact `weaponMetrics()` fields.                                           |
-| FR-003      | Both exact damage splits show all package members, absent-means-zero unclassified semantics and explicit AX overlay with no shares/folding.     |
-| FR-004      | Every returned weapon exposes exact identity/slot/enabled/ammunition, all metrics, sparse range/piercing and one shared exact-slot target.      |
-| FR-005      | Disabled entries remain; package totals remain untouched; feature-002 coverage distinguishes confirmed empty from omitted unresolved occupancy. |
-| FR-006      | Feature-003 WEP half-pips divide by two at one boundary; all six exact capacitor fields and returned pips are shown.                            |
-| FR-007      | Field-specific zero/infinity wording appears beside the feature-005-owned deployed distributor observation without inferring a cause.           |
+| Requirement | Planned behavior                                                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One revision-coherent snapshot retains two `ShipLoadout` results and owner-supplied context; presentation creates no game value.            |
+| FR-002      | Whole-build/per-weapon output and compact Status sustained DPS select exact `weaponMetrics()` fields.                                       |
+| FR-003      | Both exact damage splits show all package members, absent-means-zero unclassified semantics and explicit AX overlay with no shares/folding. |
+| FR-004      | Every returned weapon exposes exact identity/slot/enabled/ammunition, all metrics, sparse range/piercing and one shared exact-slot target.  |
+| FR-005      | Disabled entries remain; package totals remain untouched; feature-002 coverage distinguishes confirmed empty from unavailable coverage.     |
+| FR-006      | Feature-003 WEP half-pips divide by two at one boundary; all six exact capacitor fields and returned pips are shown.                        |
+| FR-007      | Field-specific zero/infinity wording appears beside the feature-005-owned deployed distributor observation without inferring a cause.       |
 
 ## Cross-feature composition
 
 - Feature 001 owns active build/revision, no-build behavior and `/build`.
-- Feature 002 owns package slot coverage, unresolved identities, exact-slot selection and editing.
+- Feature 002 owns package slot coverage and exact-slot selection/editing; its ingress prevents
+  unknown identities from reaching this capability.
   Its named cross-feature coverage port must be accepted before tasks.
 - Feature 003 owns viewing-condition draft/Apply/Reset, integer half-pips, revisions, workspace
   capability targets, Status composition and the generic provider envelope.
@@ -48,13 +49,13 @@ slot targets to feature 002. Feature 003 also consumes feature 007's compact Sta
 - current revision pending and stale-result refusal;
 - missing integration port and unexpected projection failure;
 - confirmed no fitted hardpoints;
-- unresolved-only and mixed resolved/unresolved hardpoints;
+- unavailable hardpoint coverage and package-normalized unknown-module ingress;
 - positive output, genuine-zero weapon, some disabled and all disabled;
 - every damage type, unclassified present and absent-means-zero, positive anti-xeno overlay;
 - no ammunition, finite ammunition, zero reserve and unlimited ammunition;
 - effective range/piercing/projectile members present, individually absent and boundary value zero;
 - finite endurance, immediate drain, sustaining positive draw and infinite zero-draw result;
-- zero capacity with powered/disabled/shed/absent/unresolved/qualified distributor observation.
+- zero capacity with powered/disabled/shed/absent/unavailable/qualified distributor observation.
 
 The exact component/state obligations are in
 [component-state-preview-matrix.md](./component-state-preview-matrix.md).
@@ -70,7 +71,7 @@ The exact component/state obligations are in
   relationships.
 - Every disclosure and exact-slot action is a distinct semantic control, works by pointer/touch and
   uses feature 011's target-size token. A card click never silently navigates.
-- Disabled, unresolved, absent, not-stated, no-unclassified, unlimited, overlay, zero-capacity,
+- Disabled, unavailable, absent, not-stated, no-unclassified, unlimited, overlay, zero-capacity,
   immediate and no-net-drain states use visible/programmatic text, not color, fill or position alone.
 - No damage-share, range, convergence or capacitor bar appears without a package-authored scale;
   initial feature 007 uses complete text.

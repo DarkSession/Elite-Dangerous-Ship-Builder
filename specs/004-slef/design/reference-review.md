@@ -31,7 +31,7 @@ The source is a visual/interaction reference, not executable behavior or authori
 - Add visible labels/instructions, exact UTF-8 usage/limit, over-limit, inspecting, cardinality,
   semantic diagnostics, candidate/replacement and normalization-refusal states to import.
 - Keep import exact and atomic. The workspace owns the post-commit outcome so normalization and
-  unresolved/incomplete state survive the input layer transition.
+  identity-normalization feedback and remaining incomplete state survive the input layer transition.
 - Add true package validation/incomplete warnings, exact-revision artifact/link behavior and real
   localized metadata to SLEF export.
 - Desktop Download and mobile Share File are not equivalent reference actions: Download is always

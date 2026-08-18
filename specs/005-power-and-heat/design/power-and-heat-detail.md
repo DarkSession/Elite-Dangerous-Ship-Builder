@@ -87,8 +87,8 @@ single-column order with no shortened content.
   bounds without qualifying the three non-firing scenarios.
 - “Does not settle” appears only for affected heat/gauge fields; “never
   overheats” appears only for affected time fields.
-- The pinned Almanac release passes the unresolved-weapon regression; this region uses the two
-  returned qualification lists directly.
+- The pinned Almanac release passes the historical package-only unresolved-weapon regression; this
+  region uses the two returned qualification lists directly and never receives its unknown identity.
 
 ## Distributor region
 

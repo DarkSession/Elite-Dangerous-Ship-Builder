@@ -12,19 +12,19 @@ out of scope.
 
 1. Maximum, unladen and laden single-jump range, total range and jump count are shown together.
 2. Each value identifies its load state and fitted Frame Shift Drive.
-3. No usable drive or unresolved input produces unavailable output; no fuel produces package zero.
+3. No usable drive or package-incomplete input produces unavailable output; no fuel produces package zero.
 
 ### Story 2 — Read mobility (P1)
 
 1. Speed, boost, pitch, roll, yaw and both mass-curve multipliers use selected load and ENG pips.
-2. Missing, disabled, unpowered or unresolved thrusters produce unavailable build mobility.
+2. Missing, disabled, unpowered or package-incomplete thrusters produce unavailable build mobility.
 3. Hull base values, when shown, are explicitly catalogue facts rather than build estimates.
 
 ### Story 3 — Read mass and capacity (P2)
 
 1. Unladen mass, main and reserve fuel capacity and cargo capacity retain package diagnostics.
 2. Every fitted module's package-resolved post-engineering mass is shown by slot.
-3. Unknown module mass makes dependent aggregates unavailable, never zero.
+3. A resolved module whose package mass is unavailable makes dependent aggregates unavailable, never zero.
 
 ## Requirements
 

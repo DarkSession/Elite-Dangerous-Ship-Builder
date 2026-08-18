@@ -10,7 +10,6 @@ atomically installs it only on success. Components cannot call the Almanac or re
 ## Slot and module reads
 
 - Enumerate known mounts with `ShipLoadout.slots()` and identify them by `LoadoutSlot.key`.
-- Append unresolved original-slot fitted records from `fittedModules()`; never infer their placement.
 - Read base/resolved article facts from `FittedModule.stats` and current post-engineering facts from
   `effectiveStats`.
 - Read compatibility from `modulesForSlot`, removability/reason from `LoadoutSlot`, engineering menus
@@ -77,26 +76,24 @@ Merc Coin is presented separately.
 
 Before any active-build replacement is presented or any calculation is read:
 
-1. decode without changing the active build; capture every source module whose validated finite
-   `Engineering.Quality` is in `[0,1)`, plus source fixed-mount identities;
-2. resolve each captured partial identity through `getModuleBySymbol()`; any unresolved identity
-   refuses the whole incoming candidate with exact slot/module/engineering context;
-3. construct the detached `ShipLoadout`, then correlate every captured partial by case-insensitive
-   source slot and exact module symbol; missing/replaced/mismatched records (including automatic cargo
-   repair) refuse the candidate;
-4. call `completeEngineeringGrade(slotKey)` only for those correlated source partials; accept
-   `normalized`, atomically refuse `unsupported`, and treat `unchanged` as a package-contract failure;
-5. only after all partials succeed, call `repairFixedMount()` for mounts that were missing/unresolved
-   in the source and whose package reason is `requiredSlot` or `cargoHatch`;
-6. retain `repaired` notices; retain an incomplete candidate for `defaultUnavailable`; treat
-   package-derived `refused` as an internal/package failure;
-7. commit once before history starts or resets, then allow validation/calculation reads.
+1. decode without changing the active build and retain only the transient source evidence needed to
+   present package normalization/refusal outcomes;
+2. pass the complete candidate through the released Almanac ingress boundary. An unknown hull
+   refuses; an unknown removable module becomes empty; an unknown fixed module and an empty fixed
+   mount receive the hull's package default. Accept only the package's structured outcomes and do not
+   classify a slot or choose a replacement locally;
+3. discard each normalized unknown module's engineering with that source module. Capture finite
+   source quality in `[0,1)` only for modules the normalized candidate still resolves;
+4. correlate those remaining partials by exact package slot/module identity and call
+   `completeEngineeringGrade(slotKey)`. Accept `normalized`, atomically refuse `unsupported`, and
+   treat unexpected missing/mismatched/`unchanged` results as package-contract failures;
+5. retain transient unknown-module emptied/defaulted and quality-completed notices. Persist fixed
+   provenance only when the source fixed mount was empty; no unknown source identity persists;
+6. commit once before history starts or resets, then allow validation/calculation reads.
 
-Never call `completeEngineeringGrade()` for absent quality or quality `1`; fully rolled or
-unengineered unresolved entries remain supported. `moduleLimit` is not a fixed-mount reason. No
-package default means no substitute; retain package incompleteness. Atomic partial-quality refusal is
-an expected ingress outcome. Refusal leaves the current
-build, revision, dirty state, autosave, fragment, notices and history untouched.
+Never call `completeEngineeringGrade()` for absent quality or quality `1`. No package default means
+no substitute; retain package incompleteness. Refusal leaves the current build, revision, dirty
+state, autosave, fragment, notices and history untouched.
 
 ## Power and recalculation
 
@@ -108,12 +105,12 @@ are re-read; the application does not add/remove contributions itself.
 
 Cross-package tests must prove that the pinned Almanac version:
 
-1. reconstructs every application-modelled field from the canonical snapshot, including ship
-   name/ident, unresolved entries, engineering and identified variants, while recomputing retail cost;
+1. reconstructs every recognized application-modelled field from the canonical snapshot, including
+   ship name/ident, engineering and identified variants, while recomputing retail cost;
 2. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
    fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
-3. normalizes supported imported partial-quality states losslessly and returns a stable structured
-   result for unsupported identities.
+3. refuses unknown hulls, returns structured empty/default outcomes for unknown modules, and
+   normalizes supported imported partial-quality states losslessly with a stable unsupported result.
 
 Historical purchase values are not acceptance inputs and are never restored.
 

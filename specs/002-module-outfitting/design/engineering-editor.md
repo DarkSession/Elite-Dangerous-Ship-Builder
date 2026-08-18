@@ -51,7 +51,7 @@ remain distinct outcomes.
 | Mercenary article                    | Purchase grade/route separate from current grade; later costs start above purchase grade; clear consequence disclosed. |
 | Fixed re-engineerable reward         | Fixed route/stats retained; only package-supported later operations.                                                   |
 | Final article                        | Package restriction and current fixed state visible; no apply/clear actions.                                           |
-| Empty/unresolved/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                          |
+| Empty/incomplete/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                          |
 | Known zero cost                      | Explicit zero remaining cost from `[]`; not presented as unavailable.                                                  |
 | Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                       |
 | Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                  |

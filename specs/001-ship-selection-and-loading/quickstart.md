@@ -92,9 +92,14 @@ Expected: supported fixtures reconstruct identical modelled state and migrate lo
 3. Edit repeatedly and verify browser history does not gain an entry per edit.
 4. Load the link in another tab; verify an equivalent modelled build appears as working/link provenance without a named save.
 5. Navigate/paste malformed, truncated, over-limit and unsupported-version fragments while another dirty build is active.
-6. Load a build with an unresolved/unrepresentable identity.
+6. Load an older build with an unknown hull, then builds with an unknown removable and unknown fixed
+   module.
 
-Expected: initial and navigated hashes use identical validation/replacement rules; failures and cancel leave work unchanged; an unrepresentable build clears the stale fragment, names its slot/reason and retains SLEF export; local name/note/IDs, catalogue facts, calculations and prices are absent from payloads.
+Expected: initial and navigated hashes use identical validation/replacement rules; failures and
+cancel leave work unchanged; the unknown hull is refused; the released package empties the unknown
+removable module and defaults the unknown fixed module before activation, with transient slot/source
+feedback. The normalized link contains neither unknown identity. Local name/note/IDs, catalogue
+facts, calculations and prices are absent from payloads.
 
 ## Scenario 8: Network, offline and privacy
 

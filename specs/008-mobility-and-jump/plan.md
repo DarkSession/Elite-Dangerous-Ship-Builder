@@ -94,7 +94,7 @@ gates listed below must be satisfied before feature 008 can ship._
 Almanac 0.1.2 already supplies `standardLoadResult()`, structured powered-thruster diagnostics from
 `mobilityMetricsResult()`, and every other calculation required here. Feature 008 has no dependency
 on feature 005's power projection: the mobility result itself distinguishes `missing`, `disabled`,
-`shed`, `unresolved` and `invalid` inputs.
+`shed`, package-issue `unresolved` and `invalid` inputs; no unknown identity reaches the capability.
 
 ## Project Structure
 
@@ -172,12 +172,13 @@ outcomes are:
 - Resolve the selected load only through `standardLoadResult(load)`. When unladen mass and that load
   are complete, call `mobilityMetricsResult({ ...load.value, enginesPips })` once and preserve all
   seven returned fields or its exact structured issues.
-- The diagnostic mobility facade directly distinguishes missing, disabled, shed, unresolved and
-  invalid inputs. A complete all-zero result above thruster maximum mass remains ready zero; no
+- The diagnostic mobility facade directly distinguishes missing, disabled, shed, package-issue
+  `unresolved` and invalid inputs. Unknown module identities were normalized at ingress. A complete
+  all-zero result above thruster maximum mass remains ready zero; no
   feature 005 join or local power inference is needed.
 - Locate core sources through `ShipLoadout.slots('core')` and each slot's package `core`
   discriminator, retaining its exact `key`. This avoids the incorrect `Thrusters` key—the game's
-  thruster slot key is `MainEngines`—and still represents empty/unresolved mounts.
+  thruster slot key is `MainEngines`—and still represents empty/package-incomplete mounts.
 - Show FSD/thruster parameters only from the fitted module's post-engineering `effectiveStats`, and
   selected-load multipliers only from `MobilityMetrics`. Do not calculate bars, percentages,
   headroom, decomposition or curves.

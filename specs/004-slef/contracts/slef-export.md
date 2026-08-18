@@ -30,7 +30,7 @@ mock version is allowed.
 
 Package output is exactly one SLEF entry. Preserve/package-normalize the modelled fields it owns:
 
-- hull, fitted/unresolved slots and module identity/order;
+- hull, empty/fitted package-resolved slots and module identity/order;
 - ordinary and package-identified pre-engineering, completed grade and optional effect;
 - explicitly present enabled state and zero-based priority;
 - ship name and ident;
