@@ -72,6 +72,6 @@ fit after another tab/component edit; the detached transaction remains final aut
   text/programmatic, not border/icon/color only.
 - Candidate action names include module form and class/rating context needed to distinguish choices.
 - Targets are at least 44 CSS px. Long package/canonical names and tokens wrap.
-- Browser input-to-result DOM update stays below 100 ms for the 481-choice 0.1.1 maximum.
+- Browser input-to-result DOM update stays below 100 ms for the 481-choice 0.1.2 maximum.
 - Axe/semantic/no-overflow tests cover full, searched, no-match, empty, stale and refusal states at all
   browser/viewport combinations.

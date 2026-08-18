@@ -3,10 +3,9 @@
 ## Boundary
 
 The editor receives feature 001's immutable active-loadout projection, revision and package-backed
-transaction capability. For every intent the active-build boundary creates a lossless detached
-package clone, invokes package operations, and atomically installs it only on success. Components
-cannot call the Almanac or retain a mutable build. This boundary is upstream-blocked until Almanac
-releases the clone/checkpoint API defined in [edit-history.md](./edit-history.md).
+transaction capability. For every intent the active-build boundary captures the canonical modelled
+snapshot, reconstructs a detached candidate through the package, invokes package operations, and
+atomically installs it only on success. Components cannot call the Almanac or retain a mutable build.
 
 ## Slot and module reads
 
@@ -20,17 +19,17 @@ releases the clone/checkpoint API defined in [edit-history.md](./edit-history.md
 
 ## Commands
 
-| Intent                               | Required operation                                         | Success                                                                                      |
-| ------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Fit stock                            | `setModule(slotKey, exactModule)`                          | Replacement carries no old module engineering                                                |
-| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`           | Package fixed identity/stats retained                                                        |
-| Remove                               | `removeModule(slotKey)`                                    | Slot becomes empty only if package allows                                                    |
-| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })` | Package recomputes modifiers/results                                                         |
-| Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`             | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute |
-| Clear ordinary engineering           | `clearEngineering(slotKey)`                                | Package base state restored; Mercenary identity may disappear                                |
-| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                       | Package power-dependent results recompute                                                    |
-| Priority                             | `setModulePriority(slotKey, priority0to4)`                 | UI presents localized `1..5`                                                                 |
-| Name/ident                           | Package-backed clone/update through feature 001 boundary   | All other package-owned state/provenance exact                                               |
+| Intent                               | Required operation                                             | Success                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Fit stock                            | `setModule(slotKey, exactModule)`                              | Replacement carries no old module engineering                                                |
+| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`               | Package fixed identity/stats retained                                                        |
+| Remove                               | `removeModule(slotKey)`                                        | Slot becomes empty only if package allows                                                    |
+| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })`     | Package recomputes modifiers/results                                                         |
+| Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`                 | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute |
+| Clear ordinary engineering           | `clearEngineering(slotKey)`                                    | Package base state restored; Mercenary identity may disappear                                |
+| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                           | Package power-dependent results recompute                                                    |
+| Priority                             | `setModulePriority(slotKey, priority0to4)`                     | UI presents localized `1..5`                                                                 |
+| Name/ident                           | Snapshot update and package reconstruction through feature 001 | All other modelled state exact; package results recomputed                                   |
 
 Every successful changed command produces one active revision and one history decision. It also
 clears any feature 001 `fixedMountNormalisation` entry for the exact edited slot before autosave;
@@ -96,27 +95,27 @@ Before any active-build replacement is presented or any calculation is read:
 Never call `completeEngineeringGrade()` for absent quality or quality `1`; fully rolled or
 unengineered unresolved entries remain supported. `moduleLimit` is not a fixed-mount reason. No
 package default means no substitute; retain package incompleteness. Atomic partial-quality refusal is
-an expected ingress outcome, not the clone/checkpoint release blocker. Refusal leaves the current
+an expected ingress outcome. Refusal leaves the current
 build, revision, dirty state, autosave, fragment, notices and history untouched.
 
 ## Power and recalculation
 
-An enabled/priority command always leaves the module fitted. Mass and purchase cost therefore remain
-in the build. All affected power and downstream figures are re-read from the new `ShipLoadout`; the
-application does not add/remove contributions itself.
+An enabled/priority command always leaves the module fitted. Mass remains in the build and current
+catalogue cost is recomputed from the new `ShipLoadout`. All affected power and downstream figures
+are re-read; the application does not add/remove contributions itself.
 
-## Released API acceptance
+## Package acceptance
 
-Before feature implementation, a released Almanac version must prove that it:
+Cross-package tests must prove that the pinned Almanac version:
 
-1. losslessly clones/checkpoints a loadout after source-credit provenance becomes temporarily invalid
-   and restores it when later valid again, including provenance-preserving ship name/ident edits;
+1. reconstructs every application-modelled field from the canonical snapshot, including ship
+   name/ident, unresolved entries, engineering and identified variants, while recomputing retail cost;
 2. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
    fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
 3. normalizes supported imported partial-quality states losslessly and returns a stable structured
    result for unsupported identities.
 
-Cross-package tests must pin all three minimal reproductions before UI implementation proceeds.
+Historical purchase values are not acceptance inputs and are never restored.
 
 ## Persistence and publication
 

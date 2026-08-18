@@ -15,7 +15,7 @@ Ephemeral application state layered over feature 001's active build.
 | `surface`          | `workspace \| replacement \| engineering` | In-document view state; never route/browser history                        |
 | `candidateQuery`   | `CandidateQueryState \| null`             | Current chooser state for the selected exact revision                      |
 | `engineeringDraft` | `EngineeringDraft \| null`                | Uncommitted selection state                                                |
-| `history`          | `SessionHistoryState`                     | In-memory checkpoints only                                                 |
+| `history`          | `SessionHistoryState`                     | In-memory modelled snapshots only                                          |
 | `lastEditFailure`  | `EditFailure \| null`                     | Latest package/application workflow refusal                                |
 
 Invariants:
@@ -200,29 +200,22 @@ creates an editor draft.
 current completed grade; a replacement recipe starts from zero. Names/numbers use package i18n and
 active-locale formatters.
 
-## ActiveLoadoutCheckpoint
+## ModeledBuildCheckpoint
 
-An opaque, package-owned, in-memory-only checkpoint used by detached transactions and history after
-the required Almanac clone/checkpoint and provenance-preserving ship-name/ident update APIs are
-released. The application cannot inspect, construct or serialize its private aggregate state.
+An in-memory-only checkpoint containing feature 001's canonical `BuildSnapshotV1`. It records every
+application-modelled identity and choice needed to reconstruct a detached `ShipLoadout`, including
+ship name/ident, but contains no historical purchase price, package calculation or capture snapshot.
 
 ```ts
-declare const activeLoadoutCheckpointBrand: unique symbol;
-
-interface ActiveLoadoutCheckpoint {
-  readonly [activeLoadoutCheckpointBrand]: true;
+interface ModeledBuildCheckpoint {
+  readonly snapshot: BuildSnapshotV1;
 }
 ```
 
-Feature 001's active-build boundary alone may create a detached working clone, take ownership of a
-prior active instance/checkpoint, or atomically swap one into the active slot. Components and feature
-002 services receive only immutable projections and capability methods.
-
-Pinned Almanac 0.1.1 cannot implement this type losslessly: `BuildSnapshotV1` omits package-private
-source-purchase provenance, and `toLoadoutEvent({ credits: 'source' })` omits currently invalid source
-values. Raw overlays or app-owned provenance fields are prohibited. `BuildSnapshotV1` remains only
-the durable/publication model. No implementation task beyond the upstream gate may begin until this
-opaque boundary is backed by a released package API.
+Feature 001's active-build boundary alone may capture a checkpoint, reconstruct a detached candidate
+through `ShipLoadout`, or atomically install one in the active slot. Components and feature 002
+services receive only immutable projections and capability methods. Raw overlays, captured purchase
+fields and application-owned game calculations are prohibited.
 
 ## BuildEditIntent and BuildEditResult
 
@@ -299,7 +292,7 @@ refusal records are workflow feedback, never build, history, link or SLEF state.
 
 ```ts
 interface HistoryFrame {
-  checkpoint: ActiveLoadoutCheckpoint;
+  checkpoint: ModeledBuildCheckpoint;
   intent: HistoryIntentSummary; // unformatted message key + scalar params
 }
 
@@ -314,25 +307,26 @@ Transitions:
 
 ```text
 changed Commander edit:
-  candidate = packageClone(current)
+  previous = captureModeledCheckpoint(current)
+  candidate = reconstructThroughPackage(previous)
   apply intent to candidate
-  past = newest100(past + takeOwnership(current))
+  past = newest100(past + previous)
   future = []
   current = committed candidate
 
 undo:
-  future = [takeOwnership(current)] + future
-  current = restoreOwned(last(past)); past = past without last
+  future = [captureModeledCheckpoint(current)] + future
+  current = reconstructThroughPackage(last(past)); past = past without last
 
 redo:
-  past = newest100(past + takeOwnership(current))
-  current = restoreOwned(first(future)); future = future without first
+  past = newest100(past + captureModeledCheckpoint(current))
+  current = reconstructThroughPackage(first(future)); future = future without first
 
 successful active-build replacement:
   past = []; future = []; current = accepted candidate
 ```
 
-Restore/swap is package-owned and atomic; it never reconstructs from an application DTO. A package
-checkpoint failure leaves current/history unchanged and reports a blocking internal/package failure.
-Storage, fragment, SLEF and browser-navigation APIs accept no `SessionHistoryState` or
-`ActiveLoadoutCheckpoint`.
+Reconstruction and validation are package-owned and the active swap is atomic. A reconstruction
+failure leaves current/history unchanged and reports a blocking internal/package failure. Current
+catalogue cost is recomputed; no historical purchase value is restored. Storage, fragment, SLEF and
+browser-navigation APIs accept no `SessionHistoryState` or `ModeledBuildCheckpoint`.

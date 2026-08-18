@@ -11,7 +11,7 @@ run/acceptance guide, not implementation code.
    pnpm install --frozen-lockfile
    ```
 
-2. Confirm the resolved Almanac is 0.1.1 or the subsequently accepted release and rerun the full
+2. Confirm the resolved Almanac is 0.1.2 or the subsequently accepted release and rerun the full
    installed-asset audit after any upgrade.
 3. Confirm features 001, 002 and 003 provide the active build/workspace, complete exact-slot ledger
    and settled deployed/retracted revision context.
@@ -22,8 +22,9 @@ run/acceptance guide, not implementation code.
    localization layers, ten Chromium/Firefox Playwright projects and axe checks.
 6. Confirm feature 012 opens its planned in-place help/provenance modal through the shared contextual
    intent.
-7. Confirm feature 002's upstream clone/checkpoint gate and feature 005's upstream heat-qualification
-   gate are resolved before declaring the complete dependency chain shippable.
+7. Confirm feature 002's modelled-snapshot reconstruction contract is delivered and rerun feature
+   005's resolved 0.1.2 heat-qualification regression before declaring the complete dependency chain
+   shippable.
 
 If any gate is absent, stop rather than introducing a feature-local editor, power calculation,
 style/localization layer, cache, test-matrix reduction or provenance route.
@@ -46,7 +47,7 @@ and lines; no project/browser/layout is skipped.
 
 Run the package audit before and after the production build.
 
-Expected for the pinned 0.1.1 regression:
+Expected for the pinned 0.1.2 regression:
 
 - 48 package hulls and matching asset directories;
 - top and bottom schematics for every hull;

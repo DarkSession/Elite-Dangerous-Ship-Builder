@@ -57,7 +57,7 @@ and SLEF ingress. Feature 004 supplies inspected source evidence; it does not im
 - Only source-missing/unresolved fixed mounts receive the constitutional stock-fill exception. A
   resolved but otherwise invalid module remains package-invalid; no third normalization is invented.
 - Missing package defaults remain incomplete. The application never selects/fits a substitute or
-  rewrites source-credit fields.
+  reads or rewrites captured purchase fields.
 - Unresolved non-fixed modules without partial quality remain in their original slots.
 
 ## Report and persistence split
@@ -84,9 +84,8 @@ Draft text also remains exact. A successful import is one replacement; persisten
 effects occur only after commit. A stale token cannot commit after close, new submit, route change or
 newer replacement decision.
 
-## Released package boundary
+## Package boundary
 
-The import semantics of the 0.1.1 leaf APIs are verified in [research.md](../research.md). The
-separate export-health gate still blocks the feature as a whole. Raw package exception text, manual
-modifier merging, scalar quality edits, fixed default lookup and source-credit invalidation are
-forbidden application behavior.
+The import semantics of the 0.1.2 leaf APIs are verified in [research.md](../research.md). Raw package
+exception text, manual modifier merging, scalar quality edits, fixed default lookup, captured-price
+retention and health-to-integrity inference are forbidden application behavior.

@@ -24,7 +24,7 @@ bars, grouped contribution claims and ambiguous “integrity” label are not co
 Node.js 24 for tooling. Full TypeScript/template strictness is a constitutional target not yet enabled
 by the current root configuration and remains a feature 011 prerequisite.
 
-**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.1` leaf
+**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.2` leaf
 exports for loadout defence, ships and i18n; feature 001 active-build/revision ownership; feature 002
 exact-slot selection; feature 003 revision, viewing-condition, provider and workspace-target
 contracts; feature 011 design-system, localization, announcement, preview and test foundations
@@ -80,13 +80,12 @@ requested._
 
 ### Delivery prerequisites
 
-There is no feature-006 Almanac blocker in pinned 0.1.1. Repository implementation still depends on:
+There is no feature-006 Almanac blocker in pinned 0.1.2. Repository implementation still depends on:
 
 1. feature 001's active `ShipLoadout`, atomic `buildRevision` and `/build` workspace;
 2. feature 003's contract-first `StatusRevisionContext`, settled `ViewingConditions`, generic
    provider envelope and `WorkspaceTarget` union;
-3. feature 002's exact-slot reveal boundary. Feature 002 is currently blocked on an upstream
-   lossless checkpoint/name-and-ident API; feature 006 adds no workaround;
+3. feature 002's exact-slot reveal boundary;
 4. feature 011's strict compiler settings, tokens/components, Almanac text presentation,
    localization, previews, Firefox/landscape projects and axe harness.
 

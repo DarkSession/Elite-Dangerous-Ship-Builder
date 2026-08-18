@@ -12,6 +12,9 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 - Q: What happens when an incoming build contains an unresolved module with partial-quality
   engineering? → A: Reject the incoming build atomically and keep the current build intact; fully
   rolled or unengineered unresolved modules remain supported.
+- Q: Must edits and history preserve what a Commander originally paid for the hull or modules? →
+  A: No. Historical purchase values are not build state. Cost presentation always uses the current
+  catalogue values supplied by the Almanac.
 
 ## User Scenarios
 
@@ -91,7 +94,8 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
   MUST use the Commander's one-based priority labels.
 - **FR-016**: Undo and redo MUST restore all modelled fields exactly, recompute package results and
-  cover module, engineering, power, ship name and ident edits.
+  cover module, engineering, power, ship name and ident edits. Captured purchase values MUST NOT be
+  retained as modelled fields or history state.
 - **FR-017**: History MUST retain at least the 100 most recent Commander decisions, remain
   session-only and be discarded when the active build is replaced. It MUST NOT enter storage, links,
   SLEF or browser navigation.
@@ -103,6 +107,8 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 - An unresolved module remains preservable and visible when it is unengineered or already reports
   completed quality; only unresolved partial-quality engineering causes atomic ingress refusal.
 - Replacing a module does not inherit the previous module's engineering.
+- Loading, editing, undoing or redoing a build never restores a historical purchase price; current
+  cost is recalculated from the Almanac catalogue.
 - A module appearing through multiple acquisition routes remains one package variant per route.
 - Clearing Mercenary engineering can remove the package's ability to identify the purchased variant;
   the application follows the resulting package state.

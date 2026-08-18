@@ -1,14 +1,17 @@
 <!--
 Sync Impact Report
-- Version change: 4.0.0 -> 5.0.0
-- Modified principles: IV. Lossless, Honest Builds (partial-quality import refusal)
+- Version change: 5.0.0 -> 6.0.0
+- Modified principles: IV. Lossless, Honest Builds (unknown hull refusal and unknown module
+  replacement)
 - Added sections: None
 - Removed sections: None
 - Follow-up TODOs:
-  - specs/004-slef/contracts/slef-import.md must limit quality completion to validated source
-    qualities below 1 and preserve fully rolled/unengineered unresolved entries.
-  - Raise the feature-002 lossless ShipLoadout clone/checkpoint and name/ident-update gaps upstream
-    with the minimal source-provenance reproduction, then consume the released fix.
+  - Audit specs 001, 002 and 004 plus every downstream capability contract to remove unknown-module
+    preservation from active build state and to define empty/default replacement feedback.
+  - Consume the Almanac release that replaces unknown modules before implementing affected ingress,
+    persistence, link and SLEF paths; do not reproduce its replacement logic locally.
+  - Add migration and regression coverage for saved builds, links and SLEF carrying unknown hull or
+    module identities.
 -->
 
 # Elite Dangerous Ship Builder Constitution
@@ -104,11 +107,12 @@ A build is round-trippable and never silently wrong.
 
 - Import → edit → export MUST preserve everything the application understands
   and MUST NOT invent values the source did not contain. Absent data stays
-  absent; it is never substituted with zero or a guess. The two bullets below
-  are the **only** exceptions. Each is a deliberate product rule rather than a
-  convenience, each is reported to the Commander rather than applied silently,
-  and each substitutes something a Commander could reproduce in the game — not a
-  plausible-looking value. A third exception requires amending this principle.
+  absent; it is never substituted with zero or a guess. The two normalization
+  bullets below are the **only** exceptions. Each is a deliberate product rule
+  rather than a convenience, each is reported to the Commander rather than
+  applied silently, and each substitutes something a Commander could reproduce
+  in the game — not a plausible-looking value. A third exception requires
+  amending this principle.
 - **Engineering quality is deliberately outside the application model.** A
   selected blueprint grade always represents a completed (100% quality) grade.
   When `@elite-dangerous-almanac/core` resolves the fitted module and engineering
@@ -122,25 +126,39 @@ A build is round-trippable and never silently wrong.
   be normalised.
   The application MUST NOT accept the candidate by changing only its quality
   scalar, stripping its engineering, retaining the partial roll or fabricating
-  modifiers. An unresolved module that does not carry partial-quality engineering
-  remains subject to the ordinary preservation rules above. A build is shared so
-  that another Commander can build it, and a partial roll cannot be reproduced at
-  an engineer, so a plan quoting one would describe a ship its reader cannot make.
-- **A fixed mount is never empty.** The seven core internals, armour and the
-  built-in cargo hatch are mounts every hull always carries and none can fly
-  without; outfitting offers a swap and no route to a ship missing one. A build
-  reaching the application with such a mount empty — or carrying a module symbol
-  the catalogue cannot resolve — MUST have that hull's stock module fitted
-  before the build is presented and before any figure is read from it, and the
-  Commander MUST be told which mounts were filled and what was replaced. The
-  stock module is the one `@elite-dangerous-almanac/core` records in the hull's
-  default loadout; the application MUST NOT derive a substitute of its own, and
-  where the package carries no stock module for that mount the mount stays empty
-  and the build is reported incomplete. The fill changes the build rather than
-  the display, so a later save, share or export carries it. Emptying a fixed
-  mount MUST NOT be offered at all, which the application MUST reach by
-  surfacing the package's own removability report rather than by a rule of its
-  own (principle II).
+  modifiers. This quality rule applies only after the package has resolved the
+  fitted module: an unknown module follows the identity-normalization rule below
+  instead of being preserved or refused because of engineering attached to it. A
+  build is shared so that another Commander can build it, and a partial roll
+  cannot be reproduced at an engineer, so a plan quoting one would describe a
+  ship its reader cannot make.
+- **Unknown catalogue identities are not build state, and a fixed mount is never
+  empty.** An incoming hull symbol that `@elite-dangerous-almanac/core` cannot
+  resolve MUST be refused atomically before activation. The current build MUST
+  remain intact, the Commander MUST be told which hull was refused, and the
+  application MUST NOT select a replacement hull. An incoming module symbol the
+  package cannot resolve MUST be removed from a removable mount or replaced with
+  that hull's package-defined stock module on a fixed mount. A fixed mount that
+  arrives empty receives the same package-defined stock module. The seven core
+  internals, armour and built-in cargo hatch are fixed mounts; outfitting offers
+  a swap and no route to a ship missing one.
+
+  Every ingress and reconstruction path MUST obtain these outcomes from the
+  package rather than detect catalogue misses, classify removability or choose a
+  default itself. Until the package release supplies the required unknown-module
+  replacement behavior, an affected application path waits on that release; a
+  local transitional rewrite is prohibited by principle II. Where the package
+  carries no stock module for a fixed mount, the mount stays empty and the build
+  is reported incomplete rather than receiving an invented substitute.
+
+  Module removal/defaulting changes the candidate build, so the source's unknown
+  symbol and attached fields do not enter active state, snapshots, edit history,
+  persistence, links or SLEF output. The normalized result is what later save,
+  share and export operations carry. Before any figure is read, the Commander
+  MUST be told which slots were emptied, which received defaults and what source
+  identities were replaced. Emptying a fixed mount MUST NOT be offered, which
+  the application MUST reach by surfacing the package's own removability result
+  rather than by a rule of its own (principle II).
 - Where the package reports a value as unavailable or a build as invalid or
   incomplete (`validation`, the nullable aggregates and their `*Result`
   counterparts), the application MUST surface that state rather than hide it
@@ -371,4 +389,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 5.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-18
+**Version**: 6.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-18

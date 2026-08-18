@@ -1,16 +1,16 @@
 # Research: Module Outfitting and Engineering
 
 Research was rerun on 2026-08-18 against the amended Constitution 5.0.0, the clarified feature spec,
-the installed `@elite-dangerous-almanac/core@0.1.1`, planned feature 001/011 contracts, the actual
+the installed `@elite-dangerous-almanac/core@0.1.2`, planned feature 001/011 contracts, the actual
 repository baseline and `.design/Ship Builder.dc.html`. Package probes used detached loadouts only.
 
 ## Decision 1: treat 001 and 011 as prerequisites, not existing code
 
-**Decision**: Feature 002 extends feature 001's planned `/build`, `ActiveBuildState` and package-owned
-active-loadout clone/checkpoint/swap boundary, and feature 011's planned strict, localization,
-design-system and test foundations. `BuildSnapshotV1` is only the persistence/publication DTO. Tasks
-must depend on those deliveries. Feature 002 does not create a substitute shell or local UI
-foundation.
+**Decision**: Feature 002 extends feature 001's planned `/build`, `ActiveBuildState` and canonical
+`BuildSnapshotV1` capture/package-reconstruction/swap boundary, and feature 011's planned strict,
+localization, design-system and test foundations. The snapshot is also the modelled checkpoint shape
+for session history; the history tape itself is never persisted or published. Tasks must depend on
+those deliveries. Feature 002 does not create a substitute shell or local UI foundation.
 
 **Rationale**: The current source tree contains only the application shell and build-link codec. The
 current `tsconfig` is not fully strict, and Playwright defines only three Chromium projects with no
@@ -20,37 +20,35 @@ axe integration. Describing planned contracts as present would hide real deliver
 would violate the one-build and one-design-system principles. Weakening tests until feature 011 lands
 would violate the build gate.
 
-## Decision 2: require a package-owned lossless clone before detached atomic edits
+## Decision 2: reconstruct detached atomic edits from the modelled snapshot
 
 **Decision**: Keep exactly one observable committed `ShipLoadout` in application state. Every
-Commander edit must follow this flow after an upstream package release supplies a lossless clone:
+Commander edit follows this flow:
 
 ```text
 current package aggregate
-  -> package-owned lossless detached clone
+  -> capture feature 001 BuildSnapshotV1
+  -> reconstruct detached ShipLoadout through the package
   -> invoke one logical package-backed command
   -> refusal/no-op: discard candidate; change nothing
-  -> changed: retain prior aggregate as opaque history frame; atomically install candidate
+  -> changed: retain prior modelled snapshot as history frame; atomically install candidate
 ```
 
 The transaction may briefly hold active and candidate aggregates, but only one is observable. The
 active-build boundary exclusively owns mutable instances and exposes frozen projections. Ship
-name/ident also require released provenance-preserving update methods or copy options because
-`ShipLoadout` exposes getters but no setters.
-
-Pinned 0.1.1 has no clone/checkpoint API. `BuildSnapshotV1` omits private source-purchase provenance.
-`toLoadoutEvent({ credits: 'source' })` also loses a source module value once an edit makes it
-temporarily invalid, even though the original aggregate can restore that value if the module is
-later fitted again. Reconstructing a candidate from either public shape therefore is not lossless.
+name/ident edits update the modelled snapshot before package reconstruction because `ShipLoadout`
+exposes getters but no setters. Historical purchase values are intentionally not modelled; package
+reconstruction recomputes current catalogue retail.
 
 **Rationale**: `ShipLoadout` is mutable while its returned views are frozen snapshots. Candidate-first
 editing prevents thrown operations from leaking partial state and gives history/autosave/link
-observers one revision boundary, but only the package can copy its private provenance exactly.
+observers one revision boundary. Feature 001's snapshot already defines the complete application
+model, while package reconstruction remains authoritative for game state and calculations.
 
 **Alternatives considered**: Direct component/active mutation risks partial commits. Raw-module
-overlays, private source-purchase mirrors, event reconstruction and unbounded intent replay would
-reimplement package ownership. Inverse commands cannot guarantee exact restoration. All are rejected
-under Constitution II and IV; implementation waits for the upstream API.
+overlays, private source-purchase mirrors and unbounded intent replay would reimplement package
+ownership. Inverse commands cannot guarantee exact restoration. Captured `LoadoutEvent` values are
+not history because they contain non-modelled snapshots and purchase figures.
 
 ## Decision 3: use exact package leaves for slots, edits and display text
 
@@ -132,7 +130,7 @@ Index only the displayed name, decimal class, rating and mount. Fold values/quer
 remove combining marks, locale-lowercase, split on Unicode whitespace and require every non-empty
 term to match at least one of those four fields. Rebuild on slot, build revision or locale change.
 
-The 0.1.1 probe found 48 hulls, 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
+The 0.1.2 probe found 48 hulls, 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
 event-reward), and a maximum 481 choices for empty `PantherMkII` `Slot01_Size8` (473 + 8).
 
 **Rationale**: Membership stays package-owned while FR-005 permits deterministic presentation. An
@@ -243,28 +241,25 @@ encode grade progression and missing data.
 **Alternatives considered**: Reimplementing modifiers, trusting `LessIsGood`, summing unavailable
 lists or charging from the current grade after switching recipes would fabricate results.
 
-## Decision 10: opaque package-owned bounded checkpoint history is an upstream gate
+## Decision 10: bounded modelled-snapshot history
 
-**Decision**: After the required Almanac API lands, store `past` and `future` frames containing opaque,
-package-owned loadout instances/checkpoints plus an unformatted intent-summary key and scalar params.
-On one successful changed Commander decision, move the pre-edit aggregate into `past`, keep the newest
-100 and clear `future`. Undo/redo atomically swap owned package checkpoints; no serializer or app DTO
-reconstructs them.
+**Decision**: Store `past` and `future` frames containing feature 001 `BuildSnapshotV1` values plus an
+unformatted intent-summary key and scalar params. On one successful changed Commander decision, move
+the pre-edit snapshot into `past`, keep the newest 100 and clear `future`. Undo/redo reconstruct each
+candidate through the package and atomically swap it into the active boundary.
 
 Include fit, remove, engineering, effect-only, clear, power, priority, ship name and ident. Exclude
 selection, category/anatomy/status mode, query, draft, open/close/cancel, failed/no-op/refused edits,
 automatic normalization, autosave and fragment publication. Every active-build replacement resets
 both stacks.
 
-**Rationale**: `ShipLoadout` 0.1.1 has no clone/history primitive. `BuildSnapshotV1` omits private
-source-purchase provenance. `toLoadoutEvent()` changes identity spelling and exports only currently
-valid source values, so an event round trip can permanently lose provenance that the original
-aggregate retains. Only a package-owned copy/checkpoint can meet FR-016 without duplicating Almanac
-state.
+**Rationale**: `BuildSnapshotV1` contains every application-modelled field required by FR-016 and
+deliberately omits historical purchase values and capture condition. Package reconstruction restores
+game state and recomputes current catalogue prices and all derived results.
 
-**Alternatives considered**: Persistence snapshots, event round trips, inverse operations, intent
-replay and browser history cannot meet exact restoration/session boundaries. App-owned preservation
-of hidden provenance is constitutionally forbidden.
+**Alternatives considered**: Captured event round trips would reintroduce excluded purchase/condition
+state. Inverse operations, intent replay and browser history cannot meet exact restoration/session
+boundaries.
 
 ## Decision 11: adapt both design canvases and define the missing tablet state
 
@@ -287,9 +282,9 @@ arrows or partial-roll help text violates the accepted requirements.
 
 ## Decision 12: verification measures behavior, not screenshots alone
 
-**Decision**: Upstream acceptance tests first prove the released package clone/checkpoint regression.
-Feature unit tests then use real package records for membership/mutation and package-owned clone/swap
-adapters for transactions/history. Cover every structured result, unresolved/empty states, partial
+**Decision**: Feature unit tests use real package records for membership/mutation and feature 001's
+snapshot/reconstruction/swap adapters for transactions/history. Cover every structured result,
+unresolved/empty states, partial
 preflight including cargo hatch, missing defaults, 481-choice search, `null` versus `[]`, route labels,
 101 edits and all history exclusions.
 
@@ -307,8 +302,7 @@ lowering coverage cannot prove the behavioral contract.
 
 ## Research status
 
-No product clarification remains. Planning is complete, but implementation is **upstream-blocked**:
-`@elite-dangerous-almanac/core@0.1.1` cannot losslessly clone/checkpoint the aggregate after source
-provenance becomes temporarily invalid. The required package API and minimal regression are specified
-above. Features 001 and 011 are additional repository prerequisites. The FR-013 atomic-refusal path
-itself is supported by the current package resolution/normalization outcomes.
+No product clarification or feature-002 Almanac release blocker remains. Historical purchase values
+are outside the model, and pinned 0.1.2 supports package reconstruction of the modelled snapshot.
+Features 001 and 011 remain repository prerequisites. The FR-013 atomic-refusal path is supported by
+the current package resolution/normalization outcomes.

@@ -36,7 +36,7 @@ The installed-package audit fails before application build when any catalogued h
 
 The generated-output audit repeats path, file-count and content-hash comparisons against the
 installed input. It does not pin 48 hulls, 96 schematics or current occurrence counts as product
-constants; those are expected values only for the pinned 0.1.1 regression fixture.
+constants; those are expected values only for the pinned 0.1.2 regression fixture.
 
 ## Runtime request boundary
 

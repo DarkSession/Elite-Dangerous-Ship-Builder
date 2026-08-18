@@ -15,7 +15,6 @@ loadout.toSlefString({
     appVersion: <root package.json release version>,
     appURL: <same-origin canonical link certified for this active revision, when available>
   },
-  credits: 'source',
   moduleOrder: 'fitted',
   explicitPower: false,
   indent: 2
@@ -35,33 +34,33 @@ Package output is exactly one SLEF entry. Preserve/package-normalize the modelle
 - ordinary and package-identified pre-engineering, completed grade and optional effect;
 - explicitly present enabled state and zero-based priority;
 - ship name and ident;
-- package-valid source purchase values.
+- current package catalogue-retail credit values.
 
-The package owns casing, omissions and derived export values. Capture-only `timestamp`, `ShipID`, all
-health state, `Hot`, ammunition, `Engineer`, `EngineerID` and `BlueprintID` do not enter the durable
-result. Local record/name/note/revision, report, diagnostics, normalization provenance and substitute
-values are forbidden. Fixed fill exports only the resulting package module.
+The package owns casing, omissions and derived export values. The application does not model
+capture-only `timestamp`, `ShipID`, per-module `Health`, `Hot`, ammunition, `Engineer`, `EngineerID`
+or `BlueprintID`. Their presence or omission in package serialization does not affect application
+acceptance or round-trip equality. Local record/name/note/revision, report, diagnostics,
+normalization provenance and substitute values are forbidden. Fixed fill exports only the resulting
+package module.
 
-The released package must own that omission. Almanac 0.1.1 retains/re-exports fitted module `Health`,
-so implementation is blocked until a released package export path satisfies the accepted boundary or
-the feature spec deliberately changes. The application must not parse or delete fields from package
-output.
+Module integrity is not a condition snapshot. It remains package-derived from the fitted and
+engineered configuration, and round-trip tests compare the package's current integrity values/results.
+The application must not parse or delete fields from package output.
 
 `UnladenMass`, `CargoCapacity`, `FuelCapacity` and `MaxJumpRange` are package recomputed or omitted,
 not source claims echoed by the application. Unavailable remains absent; it is never zero.
 
-## Source purchase
+## Current catalogue retail
 
-`credits: 'source'` is mandatory:
+Default package credit export is mandatory:
 
-- an untouched valid capture re-exports the package-retained values;
-- engineering quality completion retains applicable source credits because module identity is
-  unchanged;
-- symbol replacement/removal and fixed repair narrow values/totals according to package rules;
-- an assembled build or absent source figure emits no credit field;
-- retail is never fallback.
+- hull and fitted-module credits use current package catalogue list prices;
+- rebuy and totals follow the package's retail calculation;
+- engineering, symbol replacement/removal and fixed repair use the current resulting build;
+- unpriced package entries remain absent/lower-bound exactly as the package reports;
+- captured or historical purchase figures are never requested or retained.
 
-No app code removes, preserves, recalculates or compares purchase amounts to decide validity.
+No app code removes, preserves, recalculates or compares credit amounts to decide validity.
 
 ## Artifact lifecycle
 
@@ -87,7 +86,8 @@ constitutional normalizations plus documented package output normalization:
 - completed engineering quality and fixed stock fill may differ from the original input;
 - identity casing/header/whitespace may be normalized;
 - derived top-level figures may be recomputed or omitted;
-- capture-only fields are outside durable state.
+- capture-only fields are outside application-model equality;
+- current package-derived module integrity remains equal after reconstruction.
 
 Static producer/consumer fixtures supplement this test but do not prove independent acceptance of new
 exports. Release validation generates a hashed reference-export corpus and records every artifact's

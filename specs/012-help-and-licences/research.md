@@ -2,7 +2,7 @@
 
 Research used the accepted feature specs and contracts, constitution 5.0.0, root `LICENSE`, root
 `package.json`, `.design/Ship Builder.dc.html`, the current Angular/build/test configuration and the
-installed `@elite-dangerous-almanac/core@0.1.1` manifest/legal artifacts. No runtime network source
+installed `@elite-dangerous-almanac/core@0.1.2` manifest/legal artifacts. No runtime network source
 or hand-maintained package wording is planned.
 
 ## Shared modal rather than a help route

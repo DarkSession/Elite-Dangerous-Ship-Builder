@@ -20,10 +20,11 @@ Compose shared section, fact-list/value and qualification primitives. Show hull,
 rebuy as three independent package facts. Never show the reference's combined `TOTAL` or derive
 `REBUY 5%`.
 
-Hull is always exact for a successful 0.1.1 retail projection. When `unpriced` is non-empty, mark
+Hull is always exact for a successful 0.1.2 retail projection. When `unpriced` is non-empty, mark
 modules and rebuy as lower bounds and associate the complete returned-order evidence list with both.
 Each evidence item keeps exact slot/module identity and offers a feature-002 slot action. Missing
-package display text falls back visibly to raw identity; captured purchase values never fill retail.
+package display text falls back visibly to raw identity; captured purchase values are ignored and
+never fill retail.
 
 ## Mercenary purchases
 

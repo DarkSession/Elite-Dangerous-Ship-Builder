@@ -15,11 +15,11 @@ pnpm install --frozen-lockfile
 
 Before feature acceptance, confirm:
 
-- pinned `@elite-dangerous-almanac/core@0.1.1` exposes the four defence facade methods, structured
+- pinned `@elite-dangerous-almanac/core@0.1.2` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
 - feature 001 supplies `/build` and one active loadout/revision;
 - feature 003 supplies settled SYS half-pips, revision/provider envelopes and `defenceProfile` target;
-- feature 002 supplies exact-slot reveal without a feature-006 workaround for its upstream blocker;
+- feature 002 supplies exact-slot reveal through its accepted modelled-snapshot boundary;
 - feature 011 enables strict compilation, shared UI/i18n/previews, five layouts in Chromium and
   Firefox and automated axe scans.
 

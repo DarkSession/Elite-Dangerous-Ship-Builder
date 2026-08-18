@@ -19,22 +19,22 @@ shared coordinator commits. Open/close/failure/cancel preserves the current host
 
 ## Requirement coverage
 
-| Requirement | Surface/state                                                | Contract evidence                                                                                                          |
-| ----------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | Export-unavailable host; Export layer generating/ready       | Active snapshot required; package one-entry serializer only                                                                |
-| FR-002      | Import candidate/outcome; Export ready and round trip        | Package-modelled hull/module/engineering/power/name/ident state plus completed quality; health exclusion is gated upstream |
-| FR-003      | Export ready link included/omitted                           | Build-time producer metadata; only feature 001 exact-revision canonical link qualifies                                     |
-| FR-004      | Export copy/download/share states                            | Selectable payload and Download always remain; Share capability-gated; failure preserves artifact                          |
-| FR-005      | Import source-credit candidate; Export ready                 | Mandatory package `credits: 'source'`; no application invalidation or retail fallback                                      |
-| FR-006      | Import Outcome and Export ready                              | Fixed provenance is visible/local metadata but excluded from modelled snapshot/link/SLEF                                   |
-| FR-007      | Import layer in no-build ship/workspace hosts                | Raw SLEF or bare journal accepted without hull selection/active build                                                      |
-| FR-008      | Import over-limit and cardinality states                     | UTF-8 byte-first gate; exactly one observed top-level entry                                                                |
-| FR-009      | Import inspecting/syntax/diagnostic states                   | Exact string enters `inspectSlef`; no app parser/repair/heuristic                                                          |
-| FR-010      | Import candidate, shared confirmation, refusal/cancel/commit | Full detached ingress before feature 001's only replacement transition                                                     |
-| FR-011      | Import diagnostic list                                       | Exact index/path/code/constraint/params retained; package locale presenter owns text                                       |
-| FR-012      | Import Outcome                                               | Quality/fixed/default-unavailable/unresolved/final validation disclosed after commit                                       |
-| FR-013      | Import candidate/outcome; Export round-trip states           | Package model comparison under only quality and fixed-fill product normalizations plus package output normalization        |
-| FR-014      | Both layers and mocked delivery states                       | Installed/browser-only processing; unexpected requests fail; share only explicit user handoff                              |
+| Requirement | Surface/state                                                | Contract evidence                                                                                                    |
+| ----------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | Export-unavailable host; Export layer generating/ready       | Active snapshot required; package one-entry serializer only                                                          |
+| FR-002      | Import candidate/outcome; Export ready and round trip        | Package-modelled hull/module/engineering/power/name/ident state plus completed quality and package-derived integrity |
+| FR-003      | Export ready link included/omitted                           | Build-time producer metadata; only feature 001 exact-revision canonical link qualifies                               |
+| FR-004      | Export copy/download/share states                            | Selectable payload and Download always remain; Share capability-gated; failure preserves artifact                    |
+| FR-005      | Import candidate; Export ready                               | Default package current-retail export; captured purchase values are not application state                            |
+| FR-006      | Import Outcome and Export ready                              | Fixed provenance is visible/local metadata but excluded from modelled snapshot/link/SLEF                             |
+| FR-007      | Import layer in no-build ship/workspace hosts                | Raw SLEF or bare journal accepted without hull selection/active build                                                |
+| FR-008      | Import over-limit and cardinality states                     | UTF-8 byte-first gate; exactly one observed top-level entry                                                          |
+| FR-009      | Import inspecting/syntax/diagnostic states                   | Exact string enters `inspectSlef`; no app parser/repair/heuristic                                                    |
+| FR-010      | Import candidate, shared confirmation, refusal/cancel/commit | Full detached ingress before feature 001's only replacement transition                                               |
+| FR-011      | Import diagnostic list                                       | Exact index/path/code/constraint/params retained; package locale presenter owns text                                 |
+| FR-012      | Import Outcome                                               | Quality/fixed/default-unavailable/unresolved/final validation disclosed after commit                                 |
+| FR-013      | Import candidate/outcome; Export round-trip states           | Package model comparison under only quality and fixed-fill product normalizations plus package output normalization  |
+| FR-014      | Both layers and mocked delivery states                       | Installed/browser-only processing; unexpected requests fail; share only explicit user handoff                        |
 
 ## Capability flow
 

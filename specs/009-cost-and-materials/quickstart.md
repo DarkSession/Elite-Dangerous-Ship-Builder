@@ -15,7 +15,7 @@ implementation code or replace [contracts/](./contracts/) and later `tasks.md`.
 2. Confirm features 001, 002, 003 and 011 are implemented against their accepted contracts:
    active-build revision capture, shared engineering-cost classification/exact-slot actions,
    `AssemblyRequirementsPort`, and shared localization/UI/dual-engine accessibility infrastructure.
-3. Confirm the package remains pinned to Almanac 0.1.1 or deliberately re-run every package
+3. Confirm the package remains pinned to Almanac 0.1.2 or deliberately re-run every package
    regression before accepting a later release.
 4. Confirm `pnpm exec playwright test --list` contains Chromium and Firefox projects for desktop,
    tablet portrait/landscape and mobile portrait/landscape, and the shared axe helper is active.
@@ -45,7 +45,8 @@ Expected:
 
 - hull, fitted modules and rebuy equal the package's numeric fields after locale parsing;
 - all three are separately labelled; no combined hull-plus-modules value is present;
-- source-purchase provenance does not appear as retail or fill a missing catalogue price.
+- historical purchase values do not enter state, appear in the interface or fill a missing catalogue
+  price.
 
 Repeat with injected/representative builds whose package result contains one and then multiple
 `unpriced` records.
@@ -65,7 +66,7 @@ Expected:
 - each shows exact slot, variant purchase grade and optional variant `mercCoinCost`;
 - the total equals one `mercCoinCost()` result;
 - credits and craft materials remain separate with no conversion/comparison;
-- later purchase-route grades retain the purchase price;
+- later purchase-route grades retain the package's current catalogue Merc Coin cost;
 - clearing/replacing engineering follows current package recognition;
 - no recognized entry omits the whole Mercenary region and Status summary.
 

@@ -6,6 +6,12 @@ Every capability uses one design system, works with pointer, touch and screen re
 sizes, and resolves application text and formatting through one localisation layer. The target is
 WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 
+## Clarifications
+
+### Session 2026-08-18
+
+- Q: Which application-owned interface languages should ship initially? → A: English and German.
+
 ## User Scenarios
 
 ### Story 1 — Use every capability with assistive technology (P1)
@@ -71,8 +77,8 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
   hard-coded display text in components, templates and formatters is prohibited.
 - **FR-017**: When no saved language selection exists, the application MUST automatically select a
   shipped language matching the browser language setting and MUST fall back to English when none
-  matches. A Commander MUST be able to select another shipped language and persist that selection
-  in the browser.
+  matches. The initial shipped application languages MUST be English and German. A Commander MUST be
+  able to select either language and persist that selection in the browser.
 - **FR-018**: Numbers, percentages, credits, distances and dates MUST use the active locale.
 - **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
   MUST be available without a network. Raw keys, empty strings and placeholders MUST not appear.

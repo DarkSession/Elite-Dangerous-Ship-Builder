@@ -20,7 +20,7 @@ Confirm:
 - TypeScript strict mode is enabled before feature work;
 - prerequisite feature contracts 001, 002, 003 and 011 are implemented.
 
-## 2. Reproduce the blocking Almanac defect
+## 2. Verify the released Almanac correction
 
 Run against the currently pinned package:
 
@@ -60,24 +60,16 @@ console.log({
   ),
   powerUnknowns: budget.unknownDraws,
   heatUnknowns: heat?.unknownDraws,
+  unknownWeaponHeat: heat?.unknownWeaponHeat,
   firing: heat?.firingSustained,
 });
 NODE
 ```
 
-Installed 0.1.1 currently reports a 0.2 MW consumer, no power unknown and no
-heat unknown, while ignoring the unresolved weapon's supplied thermal
-information. This is the blocking defect.
-
-Do not start implementation or generate feature tasks until:
-
-1. the reproduction is raised against Elite-Dangerous-Almanac;
-2. an upstream fix is released;
-3. this repository pins that release;
-4. the reproduction returns a structured qualification naming the unresolved
-   heat contributor;
-5. [contracts/heat-profile.md](./contracts/heat-profile.md) is aligned to the
-   exact released field.
+Pinned 0.1.2 reports the 0.2 MW consumer, empty `powerUnknowns` and `heatUnknowns`, and
+`unknownWeaponHeat: ['SmallHardpoint1']`. Repeat with a changed and absent `ThermalLoad` modifier;
+the firing values stay unchanged while the unresolved slot remains qualified. This verifies the fix
+released for [Almanac #329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329).
 
 No validation-based, slot-based or journal-modifier workaround is acceptable.
 
@@ -193,10 +185,10 @@ After the fixed package release:
    unknown contributor.
 7. Repeat with package null from absent/disabled/unavailable plant state.
 
-Expected: five scenarios remain whenever ready. Unknown contributors name and
-qualify the whole profile as a non-directional projection. Non-settling and
-never-overheating are distinct. Null remains unavailable. No reference-only
-heat summary appears.
+Expected: five scenarios remain whenever ready. Unknown power draws name and qualify the whole
+profile as a non-directional projection. Unknown weapon heat names and qualifies only the two firing
+scenarios; their thermal loads are lower bounds when power draws are otherwise known. Non-settling
+and never-overheating are distinct. Null remains unavailable. No reference-only heat summary appears.
 
 ## 10. Validate feature 003 and 010 ports
 

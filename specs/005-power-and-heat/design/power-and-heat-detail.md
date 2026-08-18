@@ -81,13 +81,14 @@ single-column order with no shortened content.
   drained-capacitor fire. Each exposes thermal load, heat level, cockpit gauge,
   overheat and time to overheat.
 - Package null produces one unavailable group with no catalogue/hull fallback.
-- The released fixed package's unknown-contributor list appears in one
-  projection notice applying to every fact/scenario/verdict. The notice states
-  that the result is not a bound.
+- `unknownDraws` appears in a named non-directional projection notice applying to the complete heat
+  profile. `unknownWeaponHeat` appears in a separate named notice applying only to sustained and
+  drained firing; when power draws are otherwise known, it identifies their thermal loads as lower
+  bounds without qualifying the three non-firing scenarios.
 - “Does not settle” appears only for affected heat/gauge fields; “never
   overheats” appears only for affected time fields.
-- Until the blocking Almanac release passes the unresolved-weapon regression,
-  this region is not implementation-ready.
+- The pinned Almanac release passes the unresolved-weapon regression; this region uses the two
+  returned qualification lists directly.
 
 ## Distributor region
 
@@ -101,19 +102,19 @@ single-column order with no shortened content.
 
 ## State behavior
 
-| State                   | Presentation                                                                                              |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- |
-| No build                | Localized need-build notice and feature 001 actions; no package call                                      |
-| Pending                 | One whole-capability pending state for the current revision; no stale mixed values                        |
-| Complete                | Exact values/states without qualification notice                                                          |
-| Unknown power           | Named enabled unknowns plus field-specific lower-bound/known-draw-only text                               |
-| Disabled null draw      | Consumer remains visible/unavailable; aggregate remains unqualified unless another enabled unknown exists |
-| Retracted               | Retracted total/bands only; deployed summaries omitted with explanation                                   |
-| Zero output             | Capacity/draw remain exact; infinite utilisation receives semantic text                                   |
-| Distributor unavailable | One unavailable group; other sections and shared conditions remain usable                                 |
-| Heat unavailable        | One unavailable group; power/distributor remain usable                                                    |
-| Heat projection         | Every returned result remains visible under one named non-directional qualification                       |
-| Unexpected failure      | Shared alert, no stale prior figures; active build remains intact                                         |
+| State                   | Presentation                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| No build                | Localized need-build notice and feature 001 actions; no package call                                               |
+| Pending                 | One whole-capability pending state for the current revision; no stale mixed values                                 |
+| Complete                | Exact values/states without qualification notice                                                                   |
+| Unknown power           | Named enabled unknowns plus field-specific lower-bound/known-draw-only text                                        |
+| Disabled null draw      | Consumer remains visible/unavailable; aggregate remains unqualified unless another enabled unknown exists          |
+| Retracted               | Retracted total/bands only; deployed summaries omitted with explanation                                            |
+| Zero output             | Capacity/draw remain exact; infinite utilisation receives semantic text                                            |
+| Distributor unavailable | One unavailable group; other sections and shared conditions remain usable                                          |
+| Heat unavailable        | One unavailable group; power/distributor remain usable                                                             |
+| Heat projection         | Every result remains visible; notices distinguish whole-profile unknown power from firing-only unknown weapon heat |
+| Unexpected failure      | Shared alert, no stale prior figures; active build remains intact                                                  |
 
 ## Announcements
 

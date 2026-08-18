@@ -17,7 +17,8 @@ Copy these profile facts:
 - `heatEfficiency`;
 - `hullHeatCapacity`;
 - `hullHeatDissipation`;
-- the released structured unknown-contributor qualification.
+- `unknownDraws`;
+- `unknownWeaponHeat`.
 
 Render exactly these scenario objects in order:
 
@@ -44,8 +45,10 @@ quantity as heat level.
 
 - `heatMetrics() === null` maps to one unavailable profile with no hull,
   catalogue or inferred fallback.
-- A non-empty released unknown-contributor list makes the whole ready profile a
-  projection, neither upper nor lower bound.
+- Non-empty `unknownDraws` makes the whole ready profile a non-directional projection.
+- Non-empty `unknownWeaponHeat` qualifies only `firingSustained` and `firingDrained`. Taken alone,
+  their thermal loads are lower bounds; their heat levels, verdicts and times are incomplete answers.
+- When both lists are non-empty, no directional bound holds for the firing scenarios.
 - Every returned contributor identity remains visible.
 - With no weapons, all five scenarios remain present even when values coincide.
 
@@ -61,9 +64,9 @@ These states remain independent. The UI does not emit raw `Infinity`, an
 unexplained infinity glyph, `null`, a clamped percentage or generic
 unavailable text. Projection objects are not JSON-cloned or persisted.
 
-## Blocking release acceptance
+## Released regression acceptance
 
-Installed 0.1.1 fails this required case:
+Almanac 0.1.1 failed this required case:
 
 1. Start with a SideWinder default loadout.
 2. Replace `SmallHardpoint1` with a catalogue-unknown item.
@@ -73,14 +76,10 @@ Installed 0.1.1 fails this required case:
    `powerBudget().unknownDraws` is empty.
 5. Change the supplied thermal modifier.
 
-In 0.1.1, firing heat does not change and `heatMetrics().unknownDraws` remains
-empty, so the profile incorrectly appears complete. Before implementation:
-
-- raise this minimal reproduction upstream;
-- consume a released package correction;
-- verify the result names/qualifies the unresolved heat contributor;
-- update this contract to the exact released structured field if its public
-  shape changes.
+In 0.1.1, firing heat did not change and `heatMetrics().unknownDraws` remained empty, so the profile
+incorrectly appeared complete. Pinned 0.1.2 preserves the known power result, returns
+`unknownDraws: []`, and returns `unknownWeaponHeat: ['SmallHardpoint1']`. Changing or removing the
+source thermal modifier does not change the calculated firing values or the qualification.
 
 The application must not inspect loadout validation, slot kind, module symbol or
 journal modifiers to add its own qualification, and must not suppress all heat

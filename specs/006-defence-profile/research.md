@@ -2,7 +2,7 @@
 
 Research used the accepted feature specs, constitution 5.0.0, `.design/Ship Builder.dc.html`, the
 current source/tooling configuration and the installed public contracts and runtime behavior of
-`@elite-dangerous-almanac/core@0.1.1`. Runtime probes covered ready, missing-generator,
+`@elite-dangerous-almanac/core@0.1.2`. Runtime probes covered ready, missing-generator,
 disabled-generator and disabled-plant results. No application formula or private game datum was
 used.
 
@@ -141,7 +141,7 @@ enough for honest role/navigation rows on package-backed builds.
 
 - Symbol/name parsing and positional keys are not package contracts.
 - Stat-based arithmetic or even division fabricates provenance.
-- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.1 API supports.
+- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.2 API supports.
 - An upstream source-manifest API is unnecessary unless a future requirement demands exact
   per-source calculation provenance.
 

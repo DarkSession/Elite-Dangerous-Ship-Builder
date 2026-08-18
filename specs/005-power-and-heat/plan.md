@@ -22,12 +22,12 @@ heat and distributor. The design's sample numbers, four-band/mobile
 abbreviations, inferred charts, whole-pip controls and extra heat scenarios are
 not game-data contracts and are not copied.
 
-Planning exposed an Almanac 0.1.1 defect: a catalogue-unresolved hardpoint with
-a journal-resolved `PowerDraw` contributes to the power budget while its
-unknown weapon heat is omitted and `HeatMetrics.unknownDraws` remains empty.
-The constitution prohibits detecting or correcting that gap in this
-application. Implementation and task generation are therefore **blocked** until
-the defect is raised upstream, fixed, released and consumed.
+Planning exposed an Almanac 0.1.1 defect: a catalogue-unresolved hardpoint with a journal-resolved
+`PowerDraw` contributed to the power budget while its unknown weapon heat was omitted and
+`HeatMetrics.unknownDraws` remained empty. Almanac 0.1.2 resolves
+[#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329) with the distinct
+`HeatMetrics.unknownWeaponHeat` slot list. The pinned release and reproduction now satisfy the
+feature contract without an application workaround.
 
 ## Technical Context
 
@@ -37,7 +37,7 @@ enabled in the current repository configuration; that repository gap must close
 before implementation
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular
-signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.1` leaf exports, feature
+signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.2` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
 feature 003's viewing-condition and status-provider contracts, feature 010's
 hardpoint observation port, and feature 011's design/localization/accessibility
@@ -83,34 +83,33 @@ Adopted hierarchy and required departures are recorded in
 
 ## Constitution Check
 
-_GATE: **BLOCKED**. The planned design introduces no exception, but installed
-Almanac 0.1.1 cannot truthfully qualify every heat profile required by the
-accepted spec, and the repository has not enabled its constitutionally required
-TypeScript strict mode. No implementation or task breakdown may proceed
-until both gates are resolved._
+_GATE: **PASS after the Almanac 0.1.2 verification**. The released
+`unknownWeaponHeat` field truthfully qualifies unresolved hardpoints without an application
+workaround. Repository implementation remains sequenced behind feature 011's strict-mode and shared
+foundation work._
 
-| Principle                               | Design evidence                                                                                                                                                      | Status                       |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary.                                           | PASS                         |
-| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods, but the reproduced heat-qualification defect must be fixed upstream. No local workaround is permitted. | **BLOCKED**                  |
-| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.                                              | PASS                         |
-| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, zero and field-specific infinity states remain explicit; no stale or guessed heat result may be presented as complete.       | PASS only after upstream fix |
-| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.                                                   | PASS; prerequisite 011       |
-| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.                                                        | PASS; prerequisite 011       |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                                                                 | PASS; prerequisite 011       |
-| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage.                                           | PASS; prerequisite 011       |
-| IX. Specification Before Implementation | The screen inventory maps every requirement and the blocker is recorded rather than silently assumed away.                                                           | PASS                         |
+| Principle                               | Design evidence                                                                                                                                            | Status                 |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary.                                 | PASS                   |
+| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods; 0.1.2 supplies `unknownWeaponHeat` for the reproduced unresolved-hardpoint case.             | PASS                   |
+| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.                                    | PASS                   |
+| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, zero and field-specific infinity states remain explicit; no stale or guessed heat result is presented as complete. | PASS                   |
+| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.                                         | PASS; prerequisite 011 |
+| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.                                              | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                                                       | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage.                                 | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | The screen inventory maps every requirement; the released regression and remaining contract reconciliation are recorded explicitly.                        | PASS                   |
 
-**Technology gate**: **BLOCKED** until `strict` is enabled in the shared
-TypeScript configuration and the existing project passes under it.
+**Technology prerequisite**: Feature 011 must enable `strict` in the shared TypeScript configuration
+and make the existing project pass under it before feature 005 implementation is complete.
 
 ### Blocking and sequencing dependencies
 
-1. Raise the heat-qualification reproduction in
-   [research.md](./research.md#blocking-almanac-heat-qualification-defect), land
-   the correction in Elite-Dangerous-Almanac, consume its release and rerun the
-   regression. The final field/API is accepted from that release; this
-   application will not inspect validation or journal heat modifiers to patch it.
+1. Keep the verified Almanac 0.1.2 regression for
+   [#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329):
+   `unknownWeaponHeat` names the unresolved slot while `unknownDraws` remains reserved for unknown
+   power contributions. This application does not inspect validation or journal heat modifiers to
+   reproduce either list.
 2. Enable the repository's required TypeScript strict mode.
 3. Feature 001 supplies one active `ShipLoadout`, numeric build revision,
    no-build state and `/build` workspace. Feature 002 supplies committed-edit
@@ -149,8 +148,8 @@ specs/005-power-and-heat/
     └── screen-inventory.md
 ```
 
-`tasks.md` is Phase 2 output and is intentionally not created while the
-Almanac gate is blocked.
+`tasks.md` is Phase 2 output and has not yet been generated. Its dependency graph must retain the
+feature 001/002/003/011 sequencing and the viewing-control contract reconciliation above.
 
 ### Source Code (repository root)
 
@@ -258,13 +257,11 @@ or visual literal. Every required surface and consumer port has an owner, every
 package sentinel remains distinguishable and all responsive/accessibility paths
 are explicit.
 
-The post-design gate nevertheless remains **BLOCKED** because installed Almanac
-0.1.1 can omit an unresolved weapon's heat contribution without qualifying the
-profile and shared TypeScript strict mode is disabled. The plan
-deliberately contains no validation-based or modifier-parsing workaround. After
-a fixed release is pinned and strictness is enabled, rerun the regression,
-update the exact released heat qualification field if necessary, re-evaluate
-this gate and only then generate tasks.
+The post-design gate is **PASS** after pinning Almanac 0.1.2 and verifying that
+`unknownWeaponHeat` names the unresolved hardpoint omitted from the firing scenarios. The plan
+contains no validation-based or modifier-parsing workaround. Shared TypeScript strictness and the
+feature dependencies above remain implementation sequencing prerequisites and must be represented in
+the task graph.
 
 ## Complexity Tracking
 

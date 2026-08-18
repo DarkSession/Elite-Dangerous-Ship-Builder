@@ -4,10 +4,8 @@ Every game-bearing value is an immutable projection of one
 `@elite-dangerous-almanac/core` `ShipLoadout`. Feature 005 owns no build,
 viewing-condition persistence, game formula or catalogue fallback.
 
-The types below describe the target contract after the blocking Almanac heat
-qualification fix is released. If that release changes the package's structured
-qualification field, update only the exact package-to-view mapping before
-tasks; do not add a local detector.
+The types below map the Almanac 0.1.2 heat qualification fields exactly. They do not add a local
+detector.
 
 ## PowerHeatProjectionState
 
@@ -246,19 +244,19 @@ type HeatProfileView =
   | { readonly kind: 'unavailable' }
   | {
       readonly kind: 'ready';
-      readonly qualification: 'complete' | 'projection';
       readonly heatEfficiency: number;
       readonly hullHeatCapacity: number;
       readonly hullHeatDissipation: number;
       readonly scenarios: readonly HeatScenarioView[];
-      readonly unknownContributors: readonly string[];
+      readonly unknownDraws: readonly string[];
+      readonly unknownWeaponHeat: readonly string[];
     };
 ```
 
-`unavailable` maps exactly from `heatMetrics() === null`. A ready result is a
-projection exactly when the fixed released package result says it has unknown
-contributors. The current 0.1.1 field is `unknownDraws`, but implementation
-does not proceed until its known qualification defect is corrected.
+`unavailable` maps exactly from `heatMetrics() === null`. For a ready result, non-empty
+`unknownDraws` qualifies every scenario as a non-directional projection. Non-empty
+`unknownWeaponHeat` qualifies only `firingSustained` and `firingDrained`; taken alone, their thermal
+loads are lower bounds. Both arrays preserve the package's returned slot order and identities.
 
 ### HeatScenarioView
 

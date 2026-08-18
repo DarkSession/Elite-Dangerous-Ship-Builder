@@ -14,7 +14,7 @@ Implementation of the shared design system, localization runtime and complete br
 
 **Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for tooling
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router, Angular service worker, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.1 leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
+**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router, Angular service worker, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.2 leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
 
 **Storage**: In-memory `ShipLoadout` state; versioned, independently keyed JSON records in `localStorage`; tab identity and catalogue session state in `sessionStorage`; build payload only in the URL fragment; no backend or IndexedDB
 

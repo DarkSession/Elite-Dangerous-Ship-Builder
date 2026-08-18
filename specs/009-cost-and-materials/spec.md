@@ -2,8 +2,8 @@
 
 ## Scope
 
-This capability presents catalogue-retail credits, Merc Coin purchases and engineering materials.
-Captured purchase provenance belongs to [004](../004-slef/spec.md).
+This capability presents current catalogue-retail credits, current Merc Coin costs and engineering
+materials. Historical purchase values are outside the application model.
 
 ## User Scenarios
 
@@ -31,8 +31,8 @@ Captured purchase provenance belongs to [004](../004-slef/spec.md).
   material totals.
 - **FR-002**: Credits MUST use `ShipLoadout.retailCredits()` for hull, modules, rebuy and unpriced
   slots. Non-empty `unpriced` MUST qualify module and rebuy totals as lower bounds.
-- **FR-003**: Source-purchase values MUST remain separate from catalogue retail and retain their
-  source meaning.
+- **FR-003**: Captured or historical purchase values MUST NOT enter build state or cost presentation.
+  Catalogue retail MUST remain the sole credits estimate for the current fitted build.
 - **FR-004**: A Mercenary purchase MUST be recognized only when
   `FittedModule.preEngineeredVariant` reports acquisition `mercenary`.
 - **FR-005**: Per-slot Merc Coin price MUST use the resolved variant's `mercCoinCost`; build total
@@ -40,7 +40,8 @@ Captured purchase provenance belongs to [004](../004-slef/spec.md).
   with credits or rebuy. A recognized article without `mercCoinCost` MUST be unavailable rather than
   free; the package total MUST be labelled a lower bound and MUST name every unpriced slot.
 - **FR-006**: Merc Coin presentation MUST appear only while at least one fitted module is recognized
-  as a Mercenary article. Current ordinary grade MUST NOT change the package purchase price.
+  as a Mercenary article. Current ordinary grade MUST NOT change the package's current catalogue Merc
+  Coin cost for that article.
 - **FR-007**: Blueprint costs MUST use `getBlueprintCost()` through the selected grade; effect costs
   MUST use `getExperimentalEffectCost()`; consolidation MUST use `sumMaterials()`.
 - **FR-008**: Missing blueprint or effect cost MUST be named and MUST NOT become an empty list.

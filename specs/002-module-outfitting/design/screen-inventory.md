@@ -37,7 +37,7 @@ workspace or engineering state for the rejected candidate.
 | FR-013      | Supported partial quality produces a 100% workspace notice; unresolved/unsupported partial candidates produce a pre-activation atomic refusal naming every affected slot/identity and leaving the current build unchanged. |
 | FR-014      | Editor distinguishes package material `null` from `[]`, does not price baked fixed engineering and keeps Merc Coin separate.                                                                                               |
 | FR-015      | Named power controls use package setters and localized one-based labels over zero-based values.                                                                                                                            |
-| FR-016      | Package-owned checkpoints restore all modeled/private aggregate state; feature 001 name/ident controls dispatch history-recorded Commander decisions. Implementation waits for the Almanac clone/checkpoint gate.          |
+| FR-016      | Modelled snapshots reconstruct every application build field through the package; current catalogue costs and derived results are recomputed, and feature 001 name/ident controls dispatch history-recorded decisions.     |
 | FR-017      | A 100-decision session tape resets only after accepted active-build replacement and never enters persistence/export/navigation.                                                                                            |
 | FR-018      | Slot selection, category/anatomy/status mode, query, open/close/cancel and draft changes never enable undo; automatic ingress changes/refusals also create no history.                                                     |
 

@@ -5,6 +5,16 @@
 Commanders can export the active build as one SLEF entry and import exactly one SLEF entry or journal
 `Loadout` event. The Almanac owns inspection, parsing, construction and serialization.
 
+## Clarifications
+
+### Session 2026-08-18
+
+- Q: Should import/export preserve historical hull or module purchase values? → A: No. Export uses
+  current Almanac catalogue prices, and captured purchase values do not enter application build state.
+- Q: Should import/export preserve a module's captured `Health` snapshot? → A: No application
+  behavior depends on that transient snapshot. The build still preserves the fitted configuration
+  from which the Almanac supplies each module's engineered maximum integrity.
+
 ## User Scenarios
 
 ### Story 1 — Export a build (P1)
@@ -31,9 +41,9 @@ Commanders can export the active build as one SLEF entry and import exactly one 
   equivalent build link when one can be produced.
 - **FR-004**: Copy failure MUST leave selectable payload text and download available. Platform share
   MUST be offered only when the platform provides it.
-- **FR-005**: Export MUST use retained source-purchase values wherever the build retains valid source
-  provenance and MUST follow package invalidation semantics. Missing source values MUST NOT be
-  replaced with retail.
+- **FR-005**: Export credit figures MUST use the current catalogue-retail values supplied by the
+  Almanac. Captured or historical purchase values MUST NOT be retained, displayed or requested for
+  export.
 - **FR-006**: Fixed-mount normalisation MUST export the resulting build without exporting its
   provenance notice.
 - **FR-007**: Import MUST be available without an active build and accept pasted SLEF JSON or one
@@ -53,15 +63,19 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 
 ## Edge Cases
 
-- Capture-only timestamps, health, ammunition state and engineer identity are not durable build state.
+- Capture-only timestamps, per-module `Health` snapshots, ammunition state and engineer identity are
+  not application build state. Their presence or omission in package serialization MUST NOT affect
+  import acceptance, application behavior or round-trip success.
+- Post-engineering module integrity belongs to the fitted build configuration and remains available
+  through Almanac results; it MUST NOT be inferred from a captured `Health` snapshot.
 - An unresolved non-fixed module remains unresolved in its slot.
 - Clipboard and share permissions can fail without losing the generated payload.
 
 ## Almanac Coverage
 
 `inspectSlef()`, `ShipLoadout.fromSlef()`, `ShipLoadout.fromLoadout()`, `toLoadoutEvent()` and
-`toSlefString()` supply strict validation, construction, serialization and source-purchase behaviour.
-The application performs no format or game calculation.
+`toSlefString()` supply strict validation, construction, serialization and current catalogue-retail
+credit behaviour. The application performs no format or game calculation.
 
 ## Success Criteria
 

@@ -19,13 +19,14 @@ Components never call the Almanac or calculate a price.
    prices to repair the result.
 
 A thrown/integration failure is a whole-projection failure, not a nullable hull/rebuy state. A valid
-0.1.1 `RetailCredits` result contains no nullable numeric field.
+0.1.2 `RetailCredits` result contains no nullable numeric field.
 
 For presentation, join each exact slot key to the captured `loadout.slots()` record before using
 the package slot-name helper. Resolve module names through the package helper. If either lookup fails,
 keep the exact raw slot/symbol visible and disclose unavailable game text; never invent a label.
 
-`ShipLoadout.sourcePurchase` and fitted captured `value` fields are not retail inputs or fallbacks.
+`ShipLoadout.sourcePurchase` and fitted captured `value` fields are not application inputs, retail
+fallbacks or presentation values.
 
 ## Mercenary transaction
 
@@ -57,5 +58,5 @@ purchase history.
 Contract tests spy on the captured loadout and prove one retail call, one fitted-module enumeration,
 and at most one Merc total call. Fixtures cover fully priced retail, one/all unpriced entries,
 returned evidence order, no Mercenary article, one/multiple articles, future missing Merc price,
-later purchase-route grade, clearing engineering, exact zero and source-purchase separation. Every
+later purchase-route grade, clearing engineering, exact zero and historical-price exclusion. Every
 numeric expected value is the package result, not a hand-computed fixture.

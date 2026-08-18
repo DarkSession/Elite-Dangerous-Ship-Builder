@@ -7,8 +7,8 @@ planned `AssemblyRequirementsPort` with that exact projection type. Feature 003 
 fields and preserve their semantic states; it may not re-call price/material functions, add totals,
 reclassify evidence or turn Mercenary absence into zero.
 
-Feature 002 owns editor drafts, the shared cost classifier and exact-slot navigation. Feature 004
-owns source-purchase provenance. Feature 011 owns shared components, locale/formatting,
+Feature 002 owns editor drafts, the shared cost classifier and exact-slot navigation. No feature owns
+or presents historical purchase provenance. Feature 011 owns shared components, locale/formatting,
 announcements and accessibility infrastructure.
 
 ## Revision transaction

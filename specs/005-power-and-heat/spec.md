@@ -28,7 +28,8 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 1. Plant efficiency and hull heat capacity and dissipation are identified.
 2. Idle, thruster, FSD-charging, sustained-fire and drained-capacitor scenarios show every package
    result.
-3. Unknown contributors remain named and the profile is identified as a projection.
+3. Unknown power contributors remain named and qualify the complete profile; unresolved weapon heat
+   contributors remain named and qualify the two firing scenarios.
 
 ## Requirements
 
@@ -53,7 +54,9 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 - **FR-009**: Heat MUST use `ShipLoadout.heatMetrics()` and show the five returned scenarios, their
   thermal load, heat level, gauge level, overheat state and time to overheat.
 - **FR-010**: `null` heat MUST remain unavailable. `unknownDraws` MUST remain visible and qualify the
-  complete heat profile as a projection.
+  complete heat profile as a non-directional projection. `unknownWeaponHeat` MUST remain visible and
+  qualify `firingSustained` and `firingDrained`; their thermal loads are lower bounds unless
+  `unknownDraws` is also non-empty, while non-firing scenarios remain unaffected.
 - **FR-011**: Infinity MUST be expressed by its package meaning, such as never settling or never
   overheating, rather than as an unexplained number.
 

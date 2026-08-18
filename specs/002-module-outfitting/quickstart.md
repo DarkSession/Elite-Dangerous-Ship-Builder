@@ -1,8 +1,7 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
-This is an acceptance guide for the plan, not implementation code. Feature implementation is blocked
-until Almanac releases a lossless `ShipLoadout` clone/checkpoint API. Features 001 and 011 remain
-additional repository prerequisites.
+This is an acceptance guide for the plan, not implementation code. Features 001 and 011 remain
+repository prerequisites; no feature-002 Almanac release gate remains.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -14,19 +13,14 @@ pnpm start
 Run focused unit or Playwright files during development, then use `pnpm run check` for the mandatory
 complete gate. The scenarios below define the fixtures and expected outcomes those tests must cover.
 
-## 1. Prerequisites and released-API verification
+## 1. Prerequisites and package verification
 
-1. Upgrade from Almanac 0.1.1 to a released version supplying package-owned lossless detached-copy or
-   checkpoint/restore and provenance-preserving ship name/ident update APIs. Reproduce this gate:
-   - import a module with a source `Value`;
-   - fit another module so the source value becomes invalid;
-   - clone/checkpoint that away-state;
-   - restore/edit the original module back;
-   - confirm the original source value and provenance return exactly.
-2. Confirm the same package copy retains exact slot/item spelling, sparse power fields, unresolved
-   records, name/ident, ordinary engineering and every pre-engineered variant.
-3. Confirm feature 001 supplies one active `ShipLoadout`, package-backed clone/checkpoint/swap,
-   atomic replacement and autosave/fragment observers. `BuildSnapshotV1` is persistence only.
+1. Confirm feature 001's canonical `BuildSnapshotV1` captures exact slot/item identity, sparse power
+   fields, unresolved records, name/ident, ordinary engineering and every identified pre-engineered
+   variant, then reconstructs them through `ShipLoadout` before atomic swap.
+2. Confirm reconstruction ignores captured purchase values and recalculates current catalogue retail.
+3. Confirm feature 001 supplies one active `ShipLoadout`, snapshot/reconstruction/swap, atomic
+   replacement and autosave/fragment observers. The history tape remains session-only.
 4. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
 5. Confirm the pinned released Almanac provides:
@@ -38,9 +32,9 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
    removing it must return to 1785. Do not proceed if supported partial quality remains partial.
 7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected: all upstream and feature prerequisites are ready. With 0.1.1, stop here and report the
-clone/checkpoint blocker; do not implement event reconstruction, raw provenance overlays, inverse
-commands or intent replay.
+Expected: all feature prerequisites are ready. Pinned 0.1.2 supports the required package operations;
+do not implement captured-event checkpoints, raw provenance overlays, inverse commands or intent
+replay.
 
 ## 2. Inspect every slot
 
@@ -100,7 +94,7 @@ Expected:
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
-- result rendering settles under 100 ms for the 481-choice 0.1.1 maximum (or a later package's
+- result rendering settles under 100 ms for the 481-choice 0.1.2 maximum (or a later package's
   newly measured maximum).
 
 ## 5. Fit, replace, remove and refuse
@@ -188,7 +182,7 @@ Expected:
 ## 10. Exercise 100-decision undo/redo
 
 1. Mix fits, remove, engineering, effect, power, name and ident edits.
-2. Undo and redo each intermediate state, comparing package-owned state, provenance and results.
+2. Undo and redo each intermediate state, comparing modelled state and recomputed package results.
 3. Undo several, make a new edit and check redo.
 4. Execute 101 decisions and traverse the retained history.
 5. Open/create/import/restore a replacement build.
@@ -197,7 +191,7 @@ Expected:
 
 - one successful decision equals one checkpoint; draft/no-op/cancel/refusal/viewing/normalization equals
   none;
-- every restored package checkpoint is exact, including source-purchase provenance;
+- every restored modelled checkpoint is exact, and historical purchase values never reappear;
 - new edit clears redo;
 - newest 100 decisions remain after 101;
 - replacement resets both directions;
@@ -227,5 +221,5 @@ project/axe scan runs, and no test/browser is skipped. Search production source 
 barrels, color/spacing literals outside tokens, hard-coded application strings, history serialization,
 raw modifier rewrites and local fit/variant rules.
 
-Expected: the released Almanac clone and engineering regressions pass and the full suite is green
+Expected: the snapshot reconstruction and engineering regressions pass and the full suite is green
 once feature 001/011 prerequisites are present. A green subset is not feature completion.

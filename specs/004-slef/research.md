@@ -2,7 +2,7 @@
 
 Research used the accepted feature spec, Constitution 5.0.0, feature 001/002/011 design contracts,
 the current repository, `.design/Ship Builder.dc.html`, and the pinned
-`@elite-dangerous-almanac/core@0.1.1` source/tag. Package probes used generated or public fixture data
+`@elite-dangerous-almanac/core@0.1.2` source/tag. Package probes used generated or public fixture data
 only.
 
 ## Decision 1: the Almanac owns SLEF inspection, construction and serialization
@@ -42,7 +42,7 @@ Accept only observed count one, one valid entry and zero diagnostics. Zero, mult
 valid/invalid arrays are refused whole; all returned diagnostics remain available beside a
 cardinality failure.
 
-**Rationale**: In 0.1.1 every top-level array item yields exactly one valid entry or one diagnostic;
+**Rationale**: In 0.1.2 every top-level array item yields exactly one valid entry or one diagnostic;
 non-arrays are one candidate item and `[]` yields zero. This preserves top-level input cardinality and
 never selects the first usable build silently.
 
@@ -129,14 +129,13 @@ non-persisted would contradict the accepted persistence contract.
 **Alternatives considered**: SLEF custom properties, putting reports in the build snapshot, dropping
 the report when the layer closes and excluding fixed provenance from local records were rejected.
 
-## Decision 8: export one sparse source-credit artifact
+## Decision 8: export one sparse current-retail artifact
 
 **Decision**: Call exactly:
 
 ```text
 loadout.toSlefString({
   header,
-  credits: 'source',
   moduleOrder: 'fitted',
   explicitPower: false,
   indent: 2
@@ -144,39 +143,39 @@ loadout.toSlefString({
 ```
 
 Read package validation for disclosure only; invalid or incomplete builds remain exportable.
-`credits: 'source'` emits captured values only while the package still considers their identity
-provenance valid and emits nothing when no source value exists. Engineering quality completion keeps
-the module identity and therefore retains applicable source credits; symbol replacement/removal and
-fixed repair follow the package's own narrowing rules. Retail is never fallback.
+Default export emits current catalogue-retail values. Historical source values do not enter the
+application model and are never requested. Engineering, symbol replacement/removal and fixed repair
+are reflected by the package's current fitted-build pricing.
 
 **Rationale**: Fitted order and sparse power preserve absence/order; readable indentation supports
-selection; source mode satisfies FR-005 without application price logic. Explicitly captured
+selection; default retail mode satisfies FR-005 without application price logic. Explicitly captured
 `On: true` and `Priority: 0` still survive. The package recomputes or omits derived top-level figures.
 
-**Alternatives considered**: `JSON.stringify(toLoadoutEvent())`, retail credits, forced power fields,
-application invalidation rules and blocking invalid builds were rejected.
+**Alternatives considered**: `JSON.stringify(toLoadoutEvent())`, source credits, forced power fields,
+application pricing/invalidation rules and blocking invalid builds were rejected.
 
-## Decision 9: capture-only health creates an upstream/spec gate
+## Decision 9: separate condition snapshots from engineered integrity
 
-**Decision**: Follow the accepted spec: health is capture-only and does not enter durable build/SLEF
-state. Almanac 0.1.1 nevertheless retains and re-exports fitted module `Health`. Feature 004 is
-blocked until a released package-owned omission option/fix exists or the spec is deliberately
-clarified/amended to retain module health. The application must not post-process `toSlefString()` or
-rewrite the inspected event.
+**Decision**: Captured per-module `Health` is transient condition, not application build state. The
+application neither reads nor rewrites that field, and its presence or omission in package-owned SLEF
+serialization does not affect acceptance or round-trip success. Module integrity is different: it is
+the package-derived maximum integrity of the current fitted and engineered configuration, so
+integrity values/results remain in build presentation and round-trip verification.
 
-After that gate, compare hull, slot/module identity/order, ordinary and identified pre-engineering,
-completed grade/effect, enabled state, priority, ship name/ident and source purchase behavior. Permit
+Compare hull, slot/module identity/order, ordinary and identified pre-engineering, completed
+grade/effect, enabled state, priority, ship name/ident, current retail and package-derived integrity.
+Permit
 package identity casing normalization and recomputation/omission of derived top-level `UnladenMass`,
-`CargoCapacity`, `FuelCapacity` and `MaxJumpRange`. Drop capture-only `timestamp`, `ShipID`, health,
-`Hot`, ammunition and engineer/blueprint numeric provenance.
+`CargoCapacity`, `FuelCapacity` and `MaxJumpRange`. Ignore capture-only `timestamp`, `ShipID`,
+per-module `Health`, `Hot`, ammunition and engineer/blueprint numeric provenance.
 
-**Rationale**: Constitution II makes the package authoritative but also forbids a local correction
-when its output cannot meet the accepted application boundary. Waiting on a released fix or
-deliberately changing the spec is the only honest resolution.
+**Rationale**: A ship builder models the configured maximum capability, not battle damage at capture
+time. Treating `Health` as opaque package serialization avoids a local format rewrite while retaining
+the integrity characteristic the Commander needs to evaluate the build.
 
-**Alternatives considered**: Silently narrowing “health” to `HullHealth`, locally deleting module
-`Health`, mutating raw input, byte equality, echoing source aggregates and retaining other
-capture/engineer instance fields were rejected.
+**Alternatives considered**: Locally deleting module `Health`, using it to scale integrity, mutating
+raw input, byte equality, echoing source aggregates and presenting other capture/engineer instance
+fields were rejected.
 
 ## Decision 10: honest build metadata and exact-revision optional link
 
@@ -284,14 +283,12 @@ accessibility and claiming automated browser zoom coverage were rejected.
 
 ## Dependency and gate conclusion
 
-- Almanac 0.1.1 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
-  fixed repair and source-credit behavior, but its module-`Health` retention/export conflicts with
-  the accepted durable-state boundary. Feature 004 is blocked pending upstream/spec alignment.
+- Almanac 0.1.2 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
+  fixed repair, default current-retail export and package-derived integrity. Captured module `Health`
+  is outside application behavior and creates no feature gate.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
-  contract is also required, but its separate clone/checkpoint blocker for editing/history is not
-  needed to construct a fresh SLEF candidate.
+  contract is also required.
 - The current repository does not yet contain those planned foundations; feature 004 must not create
   temporary shells, locale logic, active-build storage or test-matrix substitutes.
 
-No additional design choice remains unresolved. The named package/spec health conflict is an explicit
-implementation blocker, not a silent planning assumption.
+No additional design choice or feature-004 Almanac blocker remains unresolved.

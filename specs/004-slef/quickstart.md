@@ -6,9 +6,6 @@ Normative contracts: [import](./contracts/slef-import.md),
 
 ## Prerequisites
 
-- A released `@elite-dangerous-almanac/core` export path omits capture-only module `Health`, or the
-  accepted feature spec is deliberately clarified to retain it. Version 0.1.1 retains/re-exports
-  module `Health`, so implementation is blocked; an app-side payload rewrite is forbidden.
 - The selected Almanac release exposes `inspectSlef`, `ShipLoadout.fromLoadout`,
   `completeEngineeringGrade`, `repairFixedMount`, `toSlefString` and
   `getSlefDiagnosticMessage` through leaf exports.
@@ -17,9 +14,6 @@ Normative contracts: [import](./contracts/slef-import.md),
 - Feature 001's active-build snapshot/replacement/persistence/current-revision-link boundaries are
   present.
 - The shared feature 002 ingress normalizer implements source-partial completion before fixed repair.
-
-Feature 002's separate lossless clone/checkpoint blocker applies to editing/history, not construction
-of a fresh detached SLEF candidate.
 
 ## Setup
 
@@ -45,13 +39,14 @@ remove/rename a project or browser to pass.
 4. Verify package construction's cargo behavior and `repairFixedMount` outcomes. Missing/unresolved
    fixed state uses exact package defaults; `defaultUnavailable` remains incomplete; no app default
    lookup or credit-field rewrite exists.
-5. Verify `credits: 'source'`: untouched values remain, engineering-only quality completion retains
-   applicable values, symbol replacement/removal/fixed repair narrows them by package rules, and
-   source-absent/assembled builds emit none rather than retail.
-6. Reproduce the health boundary with a fitted module carrying `Health`; the released serializer must
-   omit it under the accepted spec. Version 0.1.1 fails this check and remains an upstream/spec gate.
+5. Verify default credit export uses current package catalogue retail after engineering, symbol
+   replacement/removal and fixed repair. Source purchase values must not be requested or retained.
+6. Import a fitted module carrying `Health`. Its presence or omission on package re-export must not
+   affect acceptance or round-trip equality. Separately verify the reconstructed fitted configuration
+   returns the same package-derived engineered module integrity.
 
-Do not proceed on a regression; raise it against the Almanac and wait for a released fix.
+Do not proceed on a package-owned calculation or model regression; raise it against the Almanac and
+wait for a released fix.
 
 ## Acceptance scenarios
 
@@ -81,10 +76,11 @@ Do not proceed on a regression; raise it against the Almanac and wait for a rele
    booleans; the detailed quality/issue/outcome presentation does not persist, and none enters
    link/SLEF/history.
 8. **Stable package-model round trip**: Include false enabled, priority zero, name/ident, ordinary and
-   identified pre-engineering/effect, unresolved optional identity and source purchases. Compare
+   identified pre-engineering/effect and unresolved optional identity. Compare
    package-modelled state after export/import/export under completed quality, fixed fill, identity
-   casing and package-derived-field recomputation/omission. Ensure all capture-only health,
-   timestamp, ammo and engineer identity do not become durable state.
+   casing and package-derived-field recomputation/omission. Ensure capture-only per-module `Health`,
+   timestamp, ammo, engineer identity and historical purchase values do not affect application-model
+   equality, while package-derived module integrity remains equal.
 9. **Export validation/link**: Export valid, invalid and incomplete active builds. Warnings show but
    delivery stays available. Include `appURL` only for an atomic same-revision certified canonical
    link; pending/refused/stale link is omitted without codec invocation or export failure.

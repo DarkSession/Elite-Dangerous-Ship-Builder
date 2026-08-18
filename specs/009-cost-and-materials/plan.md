@@ -27,13 +27,13 @@ template strictness is a constitutional/feature-011 target and is not yet enable
 shell repository
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless target APIs; Angular signals; RxJS
-7.8; pinned `@elite-dangerous-almanac/core` 0.1.1 leaf exports; planned feature 001 active-build
+7.8; pinned `@elite-dangerous-almanac/core` 0.1.2 leaf exports; planned feature 001 active-build
 revision boundary, feature 002 shared engineering-cost classifier and exact-slot actions, feature
 003 `AssemblyRequirementsPort`, and feature 011 localization/UI/accessibility contracts
 
 **Storage**: None. Cost projections, material traces and disclosure state are derived and must not
 enter `localStorage`, history, build links, URLs or SLEF. `ShipLoadout.sourcePurchase` and fitted
-captured `value` remain source-purchase provenance owned elsewhere and never backfill retail prices
+captured `value` are ignored historical inputs and never enter application state or backfill retail
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% thresholds; Playwright
 and axe across desktop, tablet portrait/landscape and mobile portrait/landscape in Chromium and
@@ -66,30 +66,29 @@ recorded in [design/reference-review.md](./design/reference-review.md)
 _GATE before Phase 0: PASS. The design introduces no constitutional exception. Implementation of
 the integrated capability remains sequenced behind repository prerequisites listed below._
 
-| Principle                               | Planning evidence                                                                                                                    | Status                         |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| I. Client-Side Only                     | All inputs are the in-browser active loadout and static package/catalogue data; no persistence or network boundary is added.         | PASS                           |
-| II. Almanac Source of Truth             | Named package methods own every number and Mercenary decision; no fdname exception or consumer formula is planned.                   | PASS                           |
-| III. Domain Logic Outside UI            | A framework-agnostic projector/classifier creates immutable semantic results; components only render and emit intents.               | PASS                           |
-| IV. Lossless, Honest Builds             | Exact, lower-bound, absent, unavailable, known-empty and non-crafted states stay distinct; source purchase is not relabelled retail. | PASS                           |
-| V. Desktop, Tablet and Mobile           | Complete content reflows for all orientations/zoom, uses touch and screen-reader semantics, and never relies on hover or colour.     | PASS; feature 011 prerequisite |
-| VI. Commander's Language                | App framing/figures use feature 011; game names use package locale helpers with disclosed canonical fallback.                        | PASS; feature 011 prerequisite |
-| VII. One Design System                  | The surfaces compose or extend `src/app/ui/`; `.design` supplies hierarchy only and no literal CSS/assets are copied blindly.        | PASS; feature 011 prerequisite |
-| VIII. Tested Before It Ships            | Package equality, traceability, dual-engine viewport journeys and axe/manual checks retain all existing gates.                       | PASS; feature 011 prerequisite |
-| IX. Specification Before Implementation | Every FR maps to a planned surface and contract before task generation.                                                              | PASS                           |
+| Principle                               | Planning evidence                                                                                                                      | Status                         |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| I. Client-Side Only                     | All inputs are the in-browser active loadout and static package/catalogue data; no persistence or network boundary is added.           | PASS                           |
+| II. Almanac Source of Truth             | Named package methods own every number and Mercenary decision; no fdname exception or consumer formula is planned.                     | PASS                           |
+| III. Domain Logic Outside UI            | A framework-agnostic projector/classifier creates immutable semantic results; components only render and emit intents.                 | PASS                           |
+| IV. Lossless, Honest Builds             | Exact, lower-bound, absent, unavailable, known-empty and non-crafted states stay distinct; historical prices remain outside the model. | PASS                           |
+| V. Desktop, Tablet and Mobile           | Complete content reflows for all orientations/zoom, uses touch and screen-reader semantics, and never relies on hover or colour.       | PASS; feature 011 prerequisite |
+| VI. Commander's Language                | App framing/figures use feature 011; game names use package locale helpers with disclosed canonical fallback.                          | PASS; feature 011 prerequisite |
+| VII. One Design System                  | The surfaces compose or extend `src/app/ui/`; `.design` supplies hierarchy only and no literal CSS/assets are copied blindly.          | PASS; feature 011 prerequisite |
+| VIII. Tested Before It Ships            | Package equality, traceability, dual-engine viewport journeys and axe/manual checks retain all existing gates.                         | PASS; feature 011 prerequisite |
+| IX. Specification Before Implementation | Every FR maps to a planned surface and contract before task generation.                                                                | PASS                           |
 
 ### Implementation prerequisites
 
 1. Feature 001 must implement the active `/build` workspace and an atomic `{ loadout,
 buildRevision }` read boundary.
 2. Feature 002 must expose its framework-agnostic engineering-cost classification and exact-slot
-   target handling. Its documented Almanac clone/checkpoint gate blocks editing, although this
-   feature's read-only projector itself needs no clone.
+   target handling.
 3. Feature 003 must accept feature 009's exact projection type through its planned
    `AssemblyRequirementsPort` without recomputing or reclassifying it.
 4. Feature 011 must implement the shared UI, localization/formatting, announcements, Firefox,
    landscape and automated accessibility infrastructure currently absent from the repository.
-5. Almanac 0.1.1 already supplies feature 009's required data APIs and the Expanded Cargo Rack
+5. Almanac 0.1.2 already supplies feature 009's required data APIs and the Expanded Cargo Rack
    regression fix; no direct Almanac blocker remains.
 
 ## Project Structure
@@ -157,7 +156,7 @@ quantities. No route, serializer, storage adapter, private catalogue or second `
 
 [research.md](./research.md) records the decisions and rejected alternatives. In summary:
 
-- `RetailCredits` is fully numeric in 0.1.1. Hull is exact; modules and rebuy become lower bounds
+- `RetailCredits` is fully numeric in 0.1.2. Hull is exact; modules and rebuy become lower bounds
   only when the returned ordered `unpriced` list is non-empty. No combined credit total is created.
 - Merc Coin is absent when no fitted variant is package-recognized. Otherwise per-slot optional
   prices and the literal `mercCoinCost()` result are shown; missing prices qualify that result as a

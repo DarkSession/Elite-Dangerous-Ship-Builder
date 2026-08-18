@@ -26,7 +26,7 @@ once in the complete Status capability.
 SCSS; Node.js 24 per `.nvmrc` for tooling
 
 **Primary Dependencies**: Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core@0.1.1` leaf exports, feature 001 atomic active-build/revision and
+`@elite-dangerous-almanac/core@0.1.2` leaf exports, feature 001 atomic active-build/revision and
 local-record contracts, feature 002 committed-edit revision advancement and exact-slot editing,
 feature 005–009 status-provider implementations, and feature 011 UI/localization/accessibility
 infrastructure

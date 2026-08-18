@@ -1,7 +1,7 @@
 # Research: Ship Statistics and Status
 
 Research used the accepted specifications and plans for features 001, 002 and 005–011, the exact
-installed `@elite-dangerous-almanac/core@0.1.1` declarations, and rendered inspection of
+installed `@elite-dangerous-almanac/core@0.1.2` declarations, and rendered inspection of
 `.design/Ship Builder.dc.html` canvases 1c and 1d. The installed package is ESM-only,
 side-effect-free and pre-1.0; implementation must use leaf exports and pin regression behavior.
 
@@ -69,7 +69,7 @@ friendly label for each issue code would create application-owned game diagnosti
 the package's canonical fallback with its standard untranslated-game-text disclosure. Application
 framing, generic severity labels, units and counts remain localized normally.
 
-**Rationale**: Almanac 0.1.1 deliberately returns canonical English only for English locales. The
+**Rationale**: Almanac 0.1.2 deliberately returns canonical English only for English locales. The
 application may disclose that boundary but may not own a German or other private diagnostic table.
 
 **Alternatives considered**:
@@ -227,7 +227,7 @@ produces one coalesced polite localized message; stale/pending projections never
 
 ## Package/repository readiness
 
-Almanac 0.1.1 contains the required structured validation/calculation results, standard-load result,
+Almanac 0.1.2 contains the required structured validation/calculation results, standard-load result,
 powered mobility/shield diagnostics, power consumers, unknown-hull rejection, cost/material APIs and
 diagnostic locale helpers. There is no unresolved package release blocker.
 

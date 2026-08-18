@@ -21,25 +21,25 @@ not alter the canonical `b.…` build fragment.
 
 ## Requirement mapping
 
-| Requirement | Planned surface behavior                                                                                                             |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-001      | Detail and Status share one revision snapshot containing only package-returned quantities.                                           |
-| FR-002      | Retail preserves numeric hull/modules/rebuy and returned-order unpriced evidence; modules/rebuy alone become lower bounds.           |
-| FR-003      | Source-purchase provenance stays outside retail groups and the 009 snapshot.                                                         |
-| FR-004      | Mercenary entries exist only from fitted package variants whose acquisition is `mercenary`.                                          |
-| FR-005      | Each optional variant price and the package total remain separate from credits; missing prices qualify and name affected slots.      |
-| FR-006      | No recognized entry omits the Mercenary region/summary; later grades retain purchase price; clearing follows package recognition.    |
-| FR-007      | Shared selection and committed projections use only cumulative blueprint, one-application effect and package consolidation helpers.  |
-| FR-008      | Missing recipe sources remain named/unavailable; known rows are visibly incomplete, never relabelled complete or empty.              |
-| FR-009      | Fixed and Mercenary purchase baselines are explicitly non-crafted; later Mercenary grades and separate effects retain package costs. |
-| FR-010      | Material identity/name/grade use package helpers; locale miss shows canonical package text plus untranslated disclosure.             |
+| Requirement | Planned surface behavior                                                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | Detail and Status share one revision snapshot containing only package-returned quantities.                                                          |
+| FR-002      | Retail preserves numeric hull/modules/rebuy and returned-order unpriced evidence; modules/rebuy alone become lower bounds.                          |
+| FR-003      | Historical purchase values are absent from application state and presentation; current catalogue retail is the sole credits estimate.               |
+| FR-004      | Mercenary entries exist only from fitted package variants whose acquisition is `mercenary`.                                                         |
+| FR-005      | Each optional variant price and the package total remain separate from credits; missing prices qualify and name affected slots.                     |
+| FR-006      | No recognized entry omits the Mercenary region/summary; later grades retain current catalogue Merc Coin cost; clearing follows package recognition. |
+| FR-007      | Shared selection and committed projections use only cumulative blueprint, one-application effect and package consolidation helpers.                 |
+| FR-008      | Missing recipe sources remain named/unavailable; known rows are visibly incomplete, never relabelled complete or empty.                             |
+| FR-009      | Fixed and Mercenary purchase baselines are explicitly non-crafted; later Mercenary grades and separate effects retain package costs.                |
+| FR-010      | Material identity/name/grade use package helpers; locale miss shows canonical package text plus untranslated disclosure.                            |
 
 ## Cross-feature ownership
 
 - Feature 001 supplies the active build/revision, `/build` workspace and no-build state.
 - Feature 002 supplies the Engineer surface, shared classifier, committed edits and exact-slot target.
 - Feature 003 consumes the compact summary adapter and reveals the detail capability.
-- Feature 004 retains source-purchase provenance.
+- No feature retains or presents historical purchase provenance.
 - Feature 011 supplies tokens/components, localization/formatting, announcements and the complete
   test/accessibility matrix.
 

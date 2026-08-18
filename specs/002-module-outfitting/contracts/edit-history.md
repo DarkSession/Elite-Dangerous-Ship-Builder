@@ -1,23 +1,19 @@
 # Edit History Contract
 
-## Upstream gate
+## Model boundary
 
-This contract cannot be implemented with `@elite-dangerous-almanac/core@0.1.1`. Feature 001 must
-first expose a package-backed, lossless `ActiveLoadoutCheckpoint` boundary using released Almanac
-clone/checkpoint and ship-name/ident update APIs. `BuildSnapshotV1` is a persistence/publication DTO
-and is not an active-session checkpoint.
-
-The release gate must prove that cloning while a source purchase value is temporarily invalid does
-not erase the private provenance needed to restore that value after a later edit. It must also retain
-exact slot/item spelling, order and field absence, unresolved records, ordinary engineering, every
-pre-engineered variant, name, ident and package calculation state. Public event reconstruction, raw
-overlays, inverse commands and app-owned provenance are not substitutes.
+Feature 001 exposes canonical `BuildSnapshotV1` capture, package reconstruction and atomic active
+swap operations. A history checkpoint retains every application-modelled field: exact slot/item
+identity, order and field absence, unresolved records, ordinary engineering, every identified
+pre-engineered variant, name and ident. Historical purchase values, capture condition and package
+calculations are not modelled and are not restored. Raw overlays and inverse commands are not
+substitutes for package reconstruction.
 
 ## Scope
 
-`SessionEditHistory<ActiveLoadoutCheckpoint>` is a framework-agnostic, in-memory tape attached to the
-current active-build session. Only feature 001's active-build boundary can create, own or restore its
-opaque frames. It is not browser history and has no persistence/export codec.
+`SessionEditHistory<ModeledBuildCheckpoint>` is a framework-agnostic, in-memory tape attached to the
+current active-build session. Only feature 001's active-build boundary can capture or reconstruct its
+frames. It is not browser history and has no persistence/export codec.
 
 ## Included decisions
 
@@ -49,21 +45,22 @@ Capacity is exactly 100 retained decisions.
 
 ```text
 successful changed edit:
-  edit a lossless package clone
-  append ownership of the prior active loadout to past
+  capture the prior modelled snapshot
+  reconstruct and edit a detached package candidate
+  append the prior snapshot to past
   drop oldest while past.length > 100
   future = []
   atomically install candidate
 
 undo:
   if past empty -> unchanged
-  move ownership of current loadout to front of future
-  atomically install newest past checkpoint
+  capture current modelled snapshot at front of future
+  reconstruct and atomically install newest past checkpoint
 
 redo:
   if future empty -> unchanged
-  move ownership of current loadout to past
-  atomically install first future checkpoint
+  capture current modelled snapshot in past
+  reconstruct and atomically install first future checkpoint
 ```
 
 Undo followed by a new successful edit clears the future branch. Moving frames does not increase the
@@ -71,9 +68,10 @@ retained decision path beyond 100.
 
 ## Restoration
 
-Undo/redo swaps a package-owned aggregate/checkpoint into the one active slot; it does not reconstruct
-through `BuildSnapshotV1` or `LoadoutEvent`. All projections, validation and calculations are re-read
-after one active-build revision. Restoration reproduces every package-owned field and provenance.
+Undo/redo reconstructs a detached `ShipLoadout` from the checkpoint through the package and swaps it
+into the one active slot. All projections, validation, current catalogue cost and calculations are
+re-read after one active-build revision. Restoration reproduces every application-modelled field and
+does not restore historical purchase values.
 
 An impossible restore is a blocking package/internal failure. Do not partially restore, skip a field
 or consume either frame; current loadout and tape remain unchanged.
@@ -99,7 +97,7 @@ These types/APIs accept no history or checkpoint value:
 - Angular Router/History synchronization.
 
 Autosave and fragment publication observe the active build after undo/redo just as after a normal
-edit. They never serialize the tape, opaque checkpoints or summaries.
+edit. They never serialize the tape, modelled checkpoints or summaries.
 
 ## UI and verification
 
@@ -109,10 +107,9 @@ actions in its named accessible overflow region.
 
 Tests must prove:
 
-- the upstream provenance regression before feature implementation;
 - 101 successful decisions retain decisions 2–101 and restore all 100;
-- every included edit restores exact package state/provenance;
+- every included edit restores exact modelled build state and recomputed package results;
 - undo then new edit discards redo;
 - no-op, refusal, cancel, viewing and normalization create no frame;
 - accepted replacement clears both directions while refused ingress preserves them;
-- no checkpoint/history data reaches JSON, fragments, SLEF or browser navigation.
+- no history tape reaches JSON, fragments, SLEF or browser navigation.

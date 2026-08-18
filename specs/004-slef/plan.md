@@ -15,11 +15,13 @@ engineering is resolved and completed before any fixed-mount repair so a package
 cannot hide an unsupported partial roll. Feature 001's replacement coordinator is the only commit
 point.
 
-Export asks the active `ShipLoadout` for one source-credit SLEF entry, captures the exact string as an
-immutable active-revision artifact, and gives that same artifact to selectable text, download, async
-clipboard and capability-gated Web Share adapters. Invalid or incomplete builds remain exportable
-after package validation is disclosed. An unavailable or refused feature 001 link only omits the
-optional SLEF `appURL`.
+Export asks the active `ShipLoadout` for one current-catalogue-retail SLEF entry, captures the exact
+string as an immutable active-revision artifact, and gives that same artifact to selectable text,
+download, async clipboard and capability-gated Web Share adapters. Historical purchase values and
+captured module-health snapshots are not application state. Package-derived engineered module
+integrity remains part of the current build. Invalid or incomplete builds remain exportable after
+package validation is disclosed. An unavailable or refused feature 001 link only omits the optional
+SLEF `appURL`.
 
 The `.design` import/export hierarchy is retained: focused wide dialogs, ordinary narrow bottom
 sheets, monospaced payload fields and a clear action hierarchy. Its fixed widths, mock parser,
@@ -35,9 +37,9 @@ environment. Full TypeScript and Angular template strictness is a feature 011 pr
 the current root configuration does not yet enable both
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; currently
-verified `@elite-dangerous-almanac/core` 0.1.1 leaf imports from `ships/slef`,
-`ships/ship-loadout`, `ships/modules` and `i18n/diagnostics`, with a later released export-health fix
-required; feature 001 active-build/replacement/link/persistence boundaries; feature 002 shared
+verified `@elite-dangerous-almanac/core` 0.1.2 leaf imports from `ships/slef`,
+`ships/ship-loadout`, `ships/modules` and `i18n/diagnostics`; feature 001
+active-build/replacement/link/persistence boundaries; feature 002 shared
 build-ingress normalizer; feature 011 localization, announcements, shared UI and browser-test
 foundations
 
@@ -62,7 +64,7 @@ package-discovered maximum-slot, fully fitted/all-supported-fields fixture in un
 generate/deliver without an application network request
 
 **Constraints**: Exactly one observed entry; 65,536 original UTF-8 bytes maximum; no private parser,
-schema, game-data copy, calculation, default-module lookup or source-credit invalidation; no server,
+schema, game-data copy, calculation, default-module lookup or historical-price retention; no server,
 telemetry or automatic payload transmission; failed/cancelled/superseded import leaves active,
 stored, URL and history state unchanged; one tokenized dark theme; all app text translatable; WCAG
 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
@@ -78,51 +80,44 @@ import/export sheets and action-menu entry. Exact adoption and departures are re
 
 ## Constitution Check
 
-_GATE: Blocked for implementation after Phase 0/1. Almanac 0.1.1 retains and re-exports module
-`Health`, while the accepted feature spec excludes health from durable build state. Constitution II
-forbids feature 004 from stripping it locally. A released package-owned omission option/fix, or a
-deliberate spec clarification/amendment, is required. No exception or workaround is proposed._
+_GATE: PASS after clarification. Captured per-module `Health` is outside application behavior whether
+the package retains or omits it, while engineered module integrity remains package-derived build
+state. Default package export supplies current catalogue-retail credits. No local field rewrite or
+package exception is required._
 
-| Principle                               | Design evidence                                                                                                                                                                     | Status                               |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| I. Client-Side Only                     | Inspection, normalization, serialization and delivery use installed code, memory and explicit browser APIs; unexpected requests fail tests.                                         | PASS                                 |
-| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs, but 0.1.1 offers no package-owned export path that omits capture-only module `Health`.                                                 | **BLOCKED: upstream/spec alignment** |
-| III. Domain Logic Outside UI            | Pure import/export coordinators and injected ports precede signal stores; components render immutable views and emit intent.                                                        | PASS                                 |
-| IV. Lossless, Honest Builds             | Atomic normalization/source-credit design passes; module `Health` cannot meet the accepted durable-field boundary without a forbidden local rewrite.                                | **BLOCKED: upstream/spec alignment** |
-| V. Desktop, Tablet and Mobile           | Identical capability reflows among dialog, sheet and full-height layer; touch, screen reader, zoom, orientation, RTL/expansion, reduced motion and no-overflow checks are required. | PASS; 011 prerequisite               |
-| VI. Commander's Language                | Application framing uses feature 011; package diagnostics use `getSlefDiagnosticMessage` with the standard canonical-language disclosure on locale miss.                            | PASS; 011 prerequisite               |
-| VII. One Design System                  | Every layer, notice, diagnostic, field, action and status composes or extends `src/app/ui/` and receives complete responsive state previews.                                        | PASS; 011 prerequisite               |
-| VIII. Tested Before It Ships            | Unit/contract tests, ten Chromium/Firefox viewport-orientation projects, axe and manual screen-reader/zoom scripts are specified without weakening coverage.                        | PASS; harness prerequisite           |
-| IX. Specification Before Implementation | Every FR maps to a named plan-time surface/state; the one package/spec incompatibility is explicitly gated rather than silently resolved.                                           | PASS                                 |
+| Principle                               | Design evidence                                                                                                                                                                     | Status                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Inspection, normalization, serialization and delivery use installed code, memory and explicit browser APIs; unexpected requests fail tests.                                         | PASS                       |
+| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs; package output is not rewritten, and integrity remains derived from the fitted package configuration.                                  | PASS                       |
+| III. Domain Logic Outside UI            | Pure import/export coordinators and injected ports precede signal stores; components render immutable views and emit intent.                                                        | PASS                       |
+| IV. Lossless, Honest Builds             | Atomic normalization preserves every modelled field; historical prices and condition snapshots are explicitly outside the model.                                                    | PASS                       |
+| V. Desktop, Tablet and Mobile           | Identical capability reflows among dialog, sheet and full-height layer; touch, screen reader, zoom, orientation, RTL/expansion, reduced motion and no-overflow checks are required. | PASS; 011 prerequisite     |
+| VI. Commander's Language                | Application framing uses feature 011; package diagnostics use `getSlefDiagnosticMessage` with the standard canonical-language disclosure on locale miss.                            | PASS; 011 prerequisite     |
+| VII. One Design System                  | Every layer, notice, diagnostic, field, action and status composes or extends `src/app/ui/` and receives complete responsive state previews.                                        | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Unit/contract tests, ten Chromium/Firefox viewport-orientation projects, axe and manual screen-reader/zoom scripts are specified without weakening coverage.                        | PASS; harness prerequisite |
+| IX. Specification Before Implementation | Every FR maps to a named plan-time surface/state; the clarified price, health-snapshot and integrity boundaries are explicit.                                                       | PASS                       |
 
-Almanac 0.1.1 supplies the feature-specific package operations requested by
+Almanac 0.1.2 supplies the feature-specific package operations requested by
 [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
 [#293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) and
-[#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 002 remains
-separately blocked on a lossless clone/checkpoint API for editing and history; feature 004 does not
-clone an active loadout because package construction creates its detached import candidate. It does
-reuse feature 002's accepted ingress ordering and outcomes.
-
-No upstream issue for the module-`Health` mismatch is linked from the repository artifacts. One must
-be raised with a minimal 0.1.1 reproduction before implementation.
+[#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 004 constructs a
+fresh detached import candidate and reuses feature 002's accepted ingress ordering and outcomes.
+Neither captured purchase provenance nor per-module condition snapshots create an upstream gate.
 
 ## Delivery Prerequisites
 
 The source tree currently contains only the application shell and build-link codec. Feature 004
 implementation depends on these planned boundaries rather than creating temporary substitutes:
 
-1. **Almanac/spec gate**: either release a package-owned SLEF export option/fix that excludes module
-   `Health` as the accepted spec requires, or deliberately clarify/amend the spec to retain it. Do not
-   strip or patch package output in this application.
-2. Feature 011: strict compiler/template settings, token/localization/announcement layers, shared
+1. Feature 011: strict compiler/template settings, token/localization/announcement layers, shared
    modal/sheet/field/notice/diagnostic/actions, complete previews, Firefox/landscape projects and axe.
-3. Feature 001: `/ships`, `/ships/:symbol` and `/build` hosts; one `ActiveBuildState`; current-revision
+2. Feature 001: `/ships`, `/ships/:symbol` and `/build` hosts; one `ActiveBuildState`; current-revision
    link publication; replacement confirmation/coordinator; working-record autosave and fixed-mount
    provenance metadata.
-4. Feature 002 shared ingress: source partial/fixed preflight, quality-first normalization,
+3. Feature 002 shared ingress: source partial/fixed preflight, quality-first normalization,
    package-owned fixed repair and history-reset notification. Feature 004 calls this boundary once;
    it does not add a SLEF-specific normalization loop.
-5. The pinned Almanac remains 0.1.1 until the relevant plans deliberately update and re-probe the
+4. The pinned Almanac remains 0.1.2 until the relevant plans deliberately update and re-probe the
    package contract. No implementation may compensate for a package regression locally.
 
 ## Project Structure
@@ -203,7 +198,7 @@ See [research.md](./research.md). The decisive outcomes are:
 - Commit solely through feature 001; accepted imports become working provenance, reset edit history,
   autosave after commit and carry fixed-mount provenance plus feature 001's ordinary
   `valid`/`complete` summary in local-record metadata.
-- Export through one `toSlefString` call with `credits: 'source'`, fitted order, sparse power fields,
+- Export through one default-retail `toSlefString` call with fitted order, sparse power fields,
   readable indentation, honest build-time metadata and an optional exact-revision canonical link.
 - Preserve one immutable artifact for selectable text, download, clipboard and capability-gated
   share. Download reports dispatch/setup, not an unverifiable disk-save success.
@@ -211,7 +206,7 @@ See [research.md](./research.md). The decisive outcomes are:
   import layer, shared replacement state, post-layer import outcome, export-unavailable host state
   and active-build export layer.
 
-All planning questions are resolved; the named health mismatch is an implementation gate.
+All planning questions are resolved and no feature-004 Almanac blocker remains.
 
 ## Phase 1: Design Outputs
 
@@ -219,7 +214,7 @@ All planning questions are resolved; the named health mismatch is an implementat
   candidates, revision-bound reports/artifacts and delivery outcomes.
 - [contracts/slef-import.md](./contracts/slef-import.md) freezes the byte, cardinality, package,
   normalization-order and atomic replacement pipeline.
-- [contracts/slef-export.md](./contracts/slef-export.md) freezes serialization options, source-credit
+- [contracts/slef-export.md](./contracts/slef-export.md) freezes serialization options, current-retail
   and exact-link boundaries, artifact invalidation and round-trip checks.
 - [contracts/browser-delivery.md](./contracts/browser-delivery.md) freezes copy/download/share
   capability, transient-activation and honest-result behavior.
@@ -235,15 +230,15 @@ All planning questions are resolved; the named health mismatch is an implementat
 ## Post-Design Constitution Re-check
 
 Phase 1 introduces no server, cross-origin request, private format schema, local game calculation,
-component-owned build, source-credit rewrite, hidden normalization, retail fallback, hard-coded
+component-owned build, historical-price retention, hidden normalization, hard-coded
 display string, visual literal or reduced mobile capability. The shared ingress order prevents cargo
 or fixed repair from hiding a partial state that must refuse. Exact diagnostics and unavailable
 defaults remain visible. Only the accepted candidate is committed; every other terminal state keeps
 active loadout, revision, dirty baseline, working/named bytes, fragment and edit history unchanged.
 
-Every FR has a route-preserving surface and validation path. The post-design gate remains **BLOCKED
-FOR IMPLEMENTATION** solely on the module-`Health` package/spec mismatch plus planned 001/002/011
-prerequisites. No constitutional exception or local workaround is accepted.
+Every FR has a route-preserving surface and validation path. The post-design feature gate is **PASS**;
+implementation remains sequenced behind planned 001/002/011 prerequisites. No constitutional
+exception or local workaround is accepted.
 
 ## Complexity Tracking
 
