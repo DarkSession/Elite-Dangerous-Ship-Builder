@@ -1,5 +1,6 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
+import { makeFullyEngineeredAnaconda, minimalState } from './build-link-codec.spec-helpers';
 import { createBuildLinkCodec } from './build-link-codec';
 import type { BuildLinkSymbolModels } from './build-link-codec';
 import codecTable1 from './codec-table-1.json';
@@ -8,8 +9,11 @@ import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture
 /**
  * Proof-of-concept model weights. The boolean and power skews are defensible priors for real
  * builds (grades are usually maximal, engineered modules usually carry an experimental effect,
- * identities are almost always contextual, explicit enabled states are usually `on`). The
- * character weights approximate English-plus-callsign text over the compact alphabet. The
+ * identities are almost always contextual, explicit enabled states are usually `on`). Names get
+ * English-like character weights while idents get callsign-like ones (uppercase, digits, dash).
+ * Back-reference indexes use per-run adaptive contexts, so a record or module referenced
+ * repeatedly within one build gets cheaper as the stream progresses; candidate-set literals stay
+ * static because the grammar's own back-referencing leaves them repetition-poor. The static
  * context-index decay is pinned uniform: table 1's candidate sets are catalogue-ordered, which
  * carries no popularity signal (measured decays help one reference build and hurt another), so a
  * production table would pin popularity-ordered sets or per-set weights instead of one decay.
@@ -21,7 +25,8 @@ const POC_MODELS: BuildLinkSymbolModels = {
   POWER_ON: [2, 1, 5],
   POWER_PRIORITY: [4, 4, 8, 5, 3, 2],
   CONTEXT_INDEX_DECAY: [1, 1],
-  COMPACT_CHARACTERS: [
+  CONTEXT_ADAPTATION: 8,
+  NAME_CHARACTERS: [
     // A-Z
     41, 8, 14, 22, 64, 11, 10, 31, 35, 2, 4, 20, 12, 34, 38, 10, 2, 30, 32, 46, 14, 5, 12, 2, 10, 2,
     // a-z
@@ -31,6 +36,17 @@ const POC_MODELS: BuildLinkSymbolModels = {
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
     // space, dash
     40, 12,
+  ],
+  IDENT_CHARACTERS: [
+    // A-Z
+    30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+    30, 30,
+    // a-z
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    // 0-9
+    40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
+    // space, dash
+    2, 60,
   ],
 };
 
@@ -137,6 +153,8 @@ describe('build-link codec pinned symbol models (proof of concept)', () => {
   });
 
   it('round-trips canonically under a non-uniform context-index decay', () => {
+    // The decay models candidate-set positions and composes with the reference-stream
+    // adaptation; both are active here.
     const decayCodec = createBuildLinkCodec(2, {
       ...modelledTable,
       MODELS: { ...POC_MODELS, CONTEXT_INDEX_DECAY: [63, 64] },
@@ -148,6 +166,44 @@ describe('build-link codec pinned symbol models (proof of concept)', () => {
 
     expect(minimalState(decoded)).toEqual(minimalState(source));
     expect(decayCodec.encodeBuildLinkFragment(decoded)).toBe(fragment);
+  });
+
+  it('adaptation cheapens repetition-heavy builds beyond the static priors', () => {
+    // The Anaconda reference repeats a handful of engineering records across many mounts, so its
+    // back-reference stream is where adaptation pays. The Corvette's references are diverse and
+    // must not regress; the corpus test above holds it at the static-prior length.
+    const staticCodec = createBuildLinkCodec(2, {
+      ...modelledTable,
+      MODELS: { ...POC_MODELS, CONTEXT_ADAPTATION: 0 },
+    });
+    const anaconda = makeFullyEngineeredAnaconda();
+
+    const adaptiveFragment = modelledCodec.encodeBuildLinkFragment(anaconda);
+
+    expect(adaptiveFragment.length).toBeLessThan(
+      staticCodec.encodeBuildLinkFragment(anaconda).length,
+    );
+    const decoded = modelledCodec.decodeBuildLinkFragment(adaptiveFragment);
+    expect(minimalState(decoded)).toEqual(minimalState(anaconda));
+    expect(modelledCodec.encodeBuildLinkFragment(decoded)).toBe(adaptiveFragment);
+  });
+
+  it('shrinks a callsign ident under the ident character model', () => {
+    // A short ident like TST-42 saves a handful of bits, which byte padding can absorb; the
+    // bound-length callsign makes the model's saving visible in whole characters.
+    const named = makeNamedBuild(null, 'REG-0042-ALPHA-NINER-XRAY-04-TST');
+
+    const baselineFragment = baselineCodec.encodeBuildLinkFragment(named);
+    const modelledFragment = modelledCodec.encodeBuildLinkFragment(named);
+
+    expect(modelledFragment.length).toBeLessThan(baselineFragment.length);
+    const decoded = modelledCodec.decodeBuildLinkFragment(modelledFragment);
+    expect(decoded.shipName).toBeNull();
+    expect(decoded.shipIdent).toBe('REG-0042-ALPHA-NINER-XRAY-04-TST');
+    const shortIdent = makeNamedBuild(null, 'TST-42');
+    expect(modelledCodec.encodeBuildLinkFragment(shortIdent).length).toBeLessThanOrEqual(
+      baselineCodec.encodeBuildLinkFragment(shortIdent).length,
+    );
   });
 
   it('rejects malformed model weight tables', () => {
@@ -168,7 +224,11 @@ describe('build-link codec pinned symbol models (proof of concept)', () => {
       expectedError,
     );
     expect(withModels({ ...POC_MODELS, CONTEXT_INDEX_DECAY: [1] })).toThrowError(expectedError);
-    expect(withModels({ ...POC_MODELS, COMPACT_CHARACTERS: [1] })).toThrowError(expectedError);
+    expect(withModels({ ...POC_MODELS, CONTEXT_ADAPTATION: -1 })).toThrowError(expectedError);
+    expect(withModels({ ...POC_MODELS, CONTEXT_ADAPTATION: 1.5 })).toThrowError(expectedError);
+    expect(withModels({ ...POC_MODELS, CONTEXT_ADAPTATION: 2 ** 17 })).toThrowError(expectedError);
+    expect(withModels({ ...POC_MODELS, NAME_CHARACTERS: [1] })).toThrowError(expectedError);
+    expect(withModels({ ...POC_MODELS, IDENT_CHARACTERS: [1] })).toThrowError(expectedError);
   });
 });
 
@@ -197,157 +257,11 @@ function referenceCorpus(): readonly CorpusEntry[] {
   ];
 }
 
-function makeNamedBuild(name: string, ident: string): ShipLoadout {
+function makeNamedBuild(name: string | null, ident: string): ShipLoadout {
   const stock = ShipLoadout.default('Krait_MkII').toLoadoutEvent({ moduleOrder: 'slots' });
   return ShipLoadout.fromLoadout({
     ...stock,
-    ShipName: name,
+    ...(name === null ? {} : { ShipName: name }),
     ShipIdent: ident,
   });
-}
-
-/** Mirrors the reference build pinned in `build-link-codec.spec.ts`. */
-function makeFullyEngineeredAnaconda(): ShipLoadout {
-  const loadout = ShipLoadout.default('Anaconda');
-  const moduleForEmptySlot = (slot: string): string => {
-    if (slot.startsWith('TinyHardpoint')) return 'Hpt_ChaffLauncher_Tiny';
-    if (slot.includes('Hardpoint')) return 'Hpt_PulseLaser_Fixed_Small';
-    if (slot.startsWith('Military')) return 'Int_ShieldCellBank_Size1_Class1';
-    return 'Int_FuelTank_Size1_Class3';
-  };
-  for (const slot of loadout.slots()) {
-    if (slot.module || !slot.removable) continue;
-    const symbol = moduleForEmptySlot(slot.key);
-    const candidate = loadout
-      .modulesForSlot(slot.key)
-      .find((module) => module.symbol.toLowerCase() === symbol.toLowerCase());
-    expect(candidate, `a module for ${slot.key}`).toBeDefined();
-    loadout.setModule(slot.key, candidate!);
-  }
-
-  const engineeringByModule: Readonly<
-    Record<string, { blueprint: string; grade: number; experimental?: string }>
-  > = {
-    hpt_pulselaser_fixed_small: {
-      blueprint: 'Weapon_Sturdy',
-      grade: 5,
-      experimental: 'special_weapon_toughened',
-    },
-    anaconda_armour_grade1: {
-      blueprint: 'Armour_Thermic',
-      grade: 5,
-      experimental: 'special_armour_thermic',
-    },
-    int_powerplant_size8_class1: {
-      blueprint: 'PowerPlant_Stealth',
-      grade: 5,
-      experimental: 'special_powerplant_toughened',
-    },
-    int_engine_size7_class1: {
-      blueprint: 'Engine_Tuned',
-      grade: 5,
-      experimental: 'special_engine_toughened',
-    },
-    int_hyperdrive_size6_class1: {
-      blueprint: 'FSD_Shielded',
-      grade: 5,
-      experimental: 'special_fsd_toughened',
-    },
-    int_lifesupport_size5_class1: { blueprint: 'LifeSupport_Shielded', grade: 5 },
-    int_powerdistributor_size8_class1: {
-      blueprint: 'PowerDistributor_Shielded',
-      grade: 5,
-      experimental: 'special_powerdistributor_toughened',
-    },
-    int_sensors_size8_class1: { blueprint: 'Sensor_WideAngle', grade: 5 },
-    int_shieldgenerator_size6_class1: {
-      blueprint: 'ShieldGenerator_Thermic',
-      grade: 5,
-      experimental: 'special_shield_toughened',
-    },
-    hpt_chafflauncher_tiny: { blueprint: 'Misc_Shielded', grade: 5 },
-    int_shieldcellbank_size1_class1: {
-      blueprint: 'ShieldCellBank_Specialised',
-      grade: 4,
-      experimental: 'special_shieldcell_toughened',
-    },
-  };
-  const powerBySlot: Readonly<Record<string, readonly [on: boolean, priority: number]>> = {
-    smallhardpoint1: [false, 0],
-    smallhardpoint2: [true, 1],
-    mainengines: [true, 4],
-    frameshiftdrive: [true, 0],
-    lifesupport: [true, 1],
-    powerdistributor: [false, 2],
-    radar: [true, 3],
-    slot03_size6: [true, 2],
-    slot14_size1: [true, 0],
-    hugehardpoint1: [true, 3],
-    largehardpoint1: [true, 4],
-    largehardpoint2: [true, 0],
-    largehardpoint3: [false, 1],
-    mediumhardpoint1: [true, 2],
-    mediumhardpoint2: [true, 3],
-    tinyhardpoint1: [true, 4],
-    tinyhardpoint2: [true, 0],
-    tinyhardpoint3: [true, 1],
-    tinyhardpoint4: [true, 2],
-    tinyhardpoint5: [false, 3],
-    tinyhardpoint6: [true, 4],
-    tinyhardpoint7: [true, 0],
-    tinyhardpoint8: [true, 1],
-    military01: [false, 0],
-    cargohatch: [true, 2],
-  };
-  for (const module of loadout.fittedModules()) {
-    const power = powerBySlot[module.slot.toLowerCase()];
-    if (power) {
-      loadout.setModuleEnabled(module.slot, power[0]);
-      loadout.setModulePriority(module.slot, power[1]);
-    }
-    const engineering = engineeringByModule[module.symbol.toLowerCase()];
-    if (!engineering) continue;
-    loadout.applyBlueprint(module.slot, engineering.blueprint, {
-      grade: engineering.grade,
-      quality: 1,
-      ...(engineering.experimental ? { experimental: engineering.experimental } : {}),
-    });
-  }
-  return loadout;
-}
-
-/** Mirrors the observable-state projection used by `build-link-codec.spec.ts`. */
-function minimalState(loadout: ShipLoadout, assumeFullQuality = false): unknown {
-  const cargoHatch = loadout.fittedModuleAt('CargoHatch');
-  const hasCargoHatchPower = cargoHatch?.on !== undefined || cargoHatch?.priority !== undefined;
-  return {
-    shipSymbol: loadout.shipSymbol.toLowerCase(),
-    shipName: loadout.shipName,
-    shipIdent: loadout.shipIdent,
-    ...(hasCargoHatchPower
-      ? { cargoHatchPower: { on: cargoHatch?.on, priority: cargoHatch?.priority } }
-      : {}),
-    modules: loadout
-      .fittedModules()
-      .filter((module) => module.slot.toLowerCase() !== 'cargohatch')
-      .map((module) => {
-        const drawsPower = (module.effectiveStats?.powerDraw ?? 0) > 0;
-        return {
-          slot: module.slot.toLowerCase(),
-          symbol: module.symbol.toLowerCase(),
-          on: drawsPower ? module.on : undefined,
-          priority: drawsPower ? module.priority : undefined,
-          engineering:
-            module.engineering === undefined
-              ? undefined
-              : {
-                  blueprint: module.engineering.BlueprintName.toLowerCase(),
-                  grade: module.engineering.Level,
-                  quality: assumeFullQuality ? 1 : module.engineering.Quality,
-                  experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
-                },
-        };
-      })
-      .sort((left, right) => left.slot.localeCompare(right.slot)),
-  };
 }
