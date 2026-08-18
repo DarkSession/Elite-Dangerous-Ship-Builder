@@ -2,26 +2,29 @@
 
 ## Ownership
 
-Feature 009 owns the detailed cost/material snapshot and implements feature 003's
-`AssemblyRequirementsPort` over that snapshot. Feature 003 may select compact fields and preserve
-their semantic states; it cannot re-call package methods, add totals, reclassify a qualification or
-collapse Merc Coin absence to zero.
+Feature 009 owns the committed whole-build cost/material snapshot and implements feature 003's
+planned `AssemblyRequirementsPort` with that exact projection type. Feature 003 may select compact
+fields and preserve their semantic states; it may not re-call price/material functions, add totals,
+reclassify evidence or turn Mercenary absence into zero.
 
-Feature 002 owns fitted-module editing and exact-slot navigation. Feature 011 owns shared components,
-locale state, formatting and accessibility infrastructure.
+Feature 002 owns editor drafts, the shared cost classifier and exact-slot navigation. Feature 004
+owns source-purchase provenance. Feature 011 owns shared components, locale/formatting,
+announcements and accessibility infrastructure.
 
 ## Revision transaction
 
 1. Capture feature 001's `{ loadout, buildRevision }` atomically.
-2. Project all retail, Merc Coin, engineering-source and consolidated material records from that
-   exact tuple.
-3. Confirm the active build revision still matches.
-4. Publish one complete snapshot, or discard it as stale.
-5. Adapt feature 003 summary and detailed presentation from that same snapshot.
+2. Project retail, fitted recognition, engineering sources and consolidated material rows from that
+   captured loadout.
+3. Cache/publish the immutable result under that exact revision.
+4. Return it only for a matching feature-003 requested context; a mismatched result is never
+   restamped or shown as current.
+5. Build detail and Assembly Requirements summary from the same snapshot.
 
-Locale changes only rebuild presentation. Viewing conditions from feature 003 do not affect this
-capability. A current-context pending/error state may replace stale figures; old values cannot receive
-the new revision stamp.
+The package projection is synchronous. Locale-only changes rebuild presentation, not domain
+quantities. Feature 003 viewing conditions do not affect this capability. If the owning integration
+boundary exposes pending/failure, stale figures are replaced rather than labelled with the requested
+revision.
 
 ## Targets
 
@@ -32,36 +35,45 @@ CostMaterialsTarget =
   | { kind: 'materialTrace'; materialSymbol: string }
 ```
 
-- `slot` targets exist only from exact package slot keys on unpriced, Mercenary or engineering-source
-  records and are dispatched to feature 002.
-- `detail` opens/reveals the full build-workspace capability without adding a route or fragment.
-- `materialTrace` expands a presentation disclosure and performs no build mutation/navigation.
-- No target is inferred from list position, module/material name, symbol-only search or message text.
+- `slot` exists only from an exact package key on unpriced, Mercenary or engineering-source
+  records and dispatches to feature 002.
+- `detail` reveals the complete build-workspace capability; it adds no route or URL fragment.
+- `materialTrace` expands/collapses local presentation evidence and mutates no build.
+- No target is inferred from list position, localized text or approximate identity.
 
-Target/disclosure selection is memory-only. It is excluded from active build snapshots, undo/redo,
-local storage, links, URLs and SLEF.
+Target/disclosure state is memory-only and excluded from build state, edit history, storage, links,
+URLs and SLEF.
 
-## Summary contract
+## Assembly Requirements summary
 
-The feature 003 adapter may expose:
+The adapter may expose:
 
-- hull/modules/rebuy semantic values and unpriced count/targets;
-- Merc Coin `absent` or present total with its lower-bound evidence;
-- materials `none`, complete count/list summary, incomplete evidence or unavailable;
-- one detail target and exact actionable records.
+- retail hull/modules/rebuy semantic values plus unpriced evidence count/targets;
+- Mercenary `absent` or present package total with lower-bound evidence;
+- materials `none`, complete, incomplete or failure state plus detail target;
+- qualified summary ids exactly from feature 003's accepted
+  `retailCredits | mercCoin | materials` vocabulary.
 
-It may not calculate a combined credit total, total material units, blueprint count, currency
-comparison or readiness judgment.
+It may not expose a combined credit total, total material units, blueprint count, exchange/comparison
+or readiness judgement. `mercCoin` is omitted from qualified ids while the owner state is absent.
+
+## Contextual editor integration
+
+Canvas 1c/1d places current-selection recipe facts near the Engineer action. Feature 002 presents that
+draft/selection view through the same shared package-cost boundary, while feature 009 reads only the
+committed active build. An uncommitted draft never changes the whole-build snapshot, Status summary,
+storage or URL.
 
 ## Announcements and failure
 
-After a matching revision settles, compare the prior announced semantic summary with the new one and
-coalesce rapid changes into one polite localized announcement. Initial content, unchanged results and
-discarded stale work are silent. A projection error uses feature 011's prompt error treatment without
-destroying the active build or presenting stale figures as current.
+After a matching revision settles, compare the prior announced semantic summary and use feature 011
+to coalesce meaningful qualification/requirement changes into one polite localized announcement.
+Initial content, unchanged results, locale-only representation and discarded stale work are silent.
+A projection failure uses one prompt error treatment and leaves the active build intact.
 
 ## Verification
 
-Contract tests prove the same snapshot/revision reaches detail and summary, stale work is discarded,
-locale-only changes do not reproject, all targets retain exact identities, and no storage/URL/export
-boundary includes derived or disclosure state.
+Contract tests prove one shared snapshot/revision reaches detail and summary, mismatched contexts
+cannot publish, locale-only changes do not reproject, editor drafts do not alter committed totals,
+targets retain exact identities, summary ids follow owner states, and no derived/disclosure value
+crosses a storage, URL or export boundary.

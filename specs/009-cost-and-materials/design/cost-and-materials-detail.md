@@ -1,105 +1,108 @@
-# Cost and Materials Detail Surface
+# Cost and Materials Detail
 
-**Parent state**: active `/build` workspace
+**Parent**: active `/build` workspace
 **Requirements**: FR-001–FR-010
 
-## Purpose and order
+## Purpose and semantic order
 
-Explain the catalogue credits, conditional Merc Coin purchases and engineering materials needed for
-the current package build without combining currencies or hiding missing package facts. The semantic
-reading order is always:
+Explain current catalogue retail, applicable Mercenary purchases and committed engineering
+requirements without inventing totals or hiding missing package facts. DOM/read order is always:
 
 1. catalogue retail credits;
-2. Merc Coin purchases, only when package-recognized;
-3. engineering material requirements and their fitted-selection traces.
+2. Mercenary purchases, only when package-recognized;
+3. consolidated engineering materials and fitted-selection traces.
 
-Visual columns may change, but DOM/read order does not.
+Visual columns may change; semantic order and content do not.
 
-## Composition
+## Retail credits
 
-### Retail credits
+Compose shared section, fact-list/value and qualification primitives. Show hull, fitted modules and
+rebuy as three independent package facts. Never show the reference's combined `TOTAL` or derive
+`REBUY 5%`.
 
-Use shared section, definition-list/value and qualification components. Show hull, fitted modules and
-rebuy as independent rows. Do not show a combined total. A lower-bound marker is textual and
-programmatically associated with modules and rebuy; the evidence list names every exact slot and
-module/symbol and offers a feature 002 slot action. Hull unavailability remains independent.
+Hull is always exact for a successful 0.1.1 retail projection. When `unpriced` is non-empty, mark
+modules and rebuy as lower bounds and associate the complete returned-order evidence list with both.
+Each evidence item keeps exact slot/module identity and offers a feature-002 slot action. Missing
+package display text falls back visibly to raw identity; captured purchase values never fill retail.
 
-Source-purchase values never appear as fallback retail. If feature 004 presents provenance nearby,
-its own heading and wording keep it distinct.
+## Mercenary purchases
 
-### Merc Coin
+Render a separate region only for `present`. Each entry exposes visible package-recognized
+acquisition, module/variant, exact slot, purchase grade, current grade when different, and package
+price or unavailable. The region total is the literal `mercCoinCost()` value. Missing entry prices
+qualify it as a lower bound and associate every affected slot.
 
-Render a separate region only when the snapshot is `present`. Each entry exposes module/variant,
-exact slot, purchase grade, current grade when different, and price or unavailable text. The region's
-total is the literal package total; missing entry prices attach a lower-bound qualification and full
-evidence. No copy, placement, icon or color implies a credit conversion.
+Do not place Merc Coin in the retail or material section, abbreviate it as `Mcr`, or imply exchange,
+comparison or favourable value. An approved same-origin glyph may supplement the explicit localized
+currency label but cannot carry meaning alone.
 
-### Materials
+## Engineering materials
 
-For complete requirements, render every consolidated package row—never only a top subset. Each row
-contains material identity, localized/canonical-disclosed name, textual grade, locale-formatted
-quantity and a named trace disclosure. Grade icons or category ornament may supplement but never
-replace text.
+Render every consolidated package row in `sumMaterials()` order. Each row includes symbol-aware
+package-localized/canonical-disclosed name, textual package grade, locale-formatted quantity and a
+named trace disclosure. Category/line or a same-origin ornament may supplement these facts but never
+replace them.
 
-The trace lists every exact fitted source with module/slot, blueprint or effect package name/id,
-selected grade where applicable and that source list's package count. Expanding a trace does not
-navigate; a separate exact-slot control targets feature 002.
+Each expanded trace lists every matching source: package-localized module and exact slot, blueprint or
+effect identity, selected/current grade where relevant, and that exact source-list item's package
+count. A separate slot action navigates to feature 002; expanding/collapsing a trace changes no build.
 
-For incomplete requirements, present the known consolidated rows only as a named lower bound and list
-every missing recipe source. For no crafted requirements, explain that there is no ordinary craft
-cost; recognized fixed/purchase baseline explanations may appear without empty material rows. Missing
-material metadata produces an unavailable row/state and no inferred grade.
+For `incomplete`, identify known rows as a lower bound and list every missing blueprint/effect
+source. For `none`, state that no ordinary craft requirement applies and optionally explain fixed or
+purchase baselines without fabricated zero rows. A metadata gap retains package symbol, quantity and
+trace while name/grade are unavailable. A whole projection failure shows no stale current figures.
 
-## Responsive layout
+## Contextual Engineer composition
 
-- Wide: a fluid costs region may place retail and Merc Coin beside each other when both retain full
-  labels/evidence; materials then uses the full available width.
-- Tablet: at most two columns; any qualification or trace that would be compressed forces a stack.
-- Mobile, landscape and 400% zoom: one column, complete rows/cards and inline disclosures. Nothing is
-  omitted, ellipsized into ambiguity or moved to hover.
-- Wide lists may use a responsive table primitive only if it transforms to labelled rows/cards rather
-  than causing document-level horizontal scrolling.
-- Exact-slot/disclosure controls use feature 011's minimum 44 CSS-pixel touch target token and work by
-  touch and pointer.
+The shared feature-002 Engineer view uses the same cost classification for the currently selected
+blueprint/grade/effect before Apply. A Mercenary purchase baseline is shown as a purchase, not inside
+`MATERIALS · G1`; later purchase-route grades show only the package climb above that baseline. A
+baked fixed effect is non-crafted; a newly selected different effect shows its one-application cost.
+Draft changes do not alter committed detail/Status values until Apply succeeds.
 
-## States
+## Responsive composition
 
-| State                              | Required presentation                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| No active build                    | Existing workspace actions; no empty cost cards                                             |
-| Pending new revision               | Current-context pending state; old facts keep old revision and are not presented as current |
-| Exact retail                       | Three independent exact rows                                                                |
-| One/all modules unpriced           | Useful package lower bounds plus complete named evidence                                    |
-| Hull unknown                       | Hull/rebuy unavailable; useful module subtotal retains its own state                        |
-| No Mercenary article               | Entire Merc Coin region absent                                                              |
-| Complete Mercenary set             | Every entry and exact package total                                                         |
-| Missing Merc price                 | Entry unavailable; total lower bound naming every missing slot                              |
-| No crafted/fixed-only engineering  | No ordinary craft requirement; fixed/purchase explanation, no fabricated zero rows          |
-| Complete repeated-source materials | Consolidated package list; traces retain repeated selections                                |
-| Missing recipe                     | Known list visibly incomplete plus every missing blueprint/effect source                    |
-| Untranslated material              | Canonical English package name and shared untranslated disclosure                           |
-| Missing material metadata          | Identity remains; name/grade unavailable and upstream dependency visible                    |
-| Projection failure                 | Prompt localized error; active build remains intact; no stale current facts                 |
+- Wide desktop follows canvas 1c's intent: a compact Status rail and contextual Engineer area coexist
+  with outfitting; complete material detail uses the available central/full width.
+- Tablet portrait/landscape uses fluid one/two-column composition only while full labels and evidence
+  fit. There is no source tablet canvas, so breakpoint behavior is defined by content rather than
+  copied measurements.
+- Mobile follows canvas 1d's stacked Status and full-screen/in-document Engineer hierarchy. Detail is
+  one column; no row, qualification or trace is truncated.
+- Mobile landscape, 200% text and 400% zoom use the same complete semantic stack. A wide list may
+  scroll only within a labelled container; the document never scrolls horizontally.
+- All actions use feature 011's shared AA target-size primitive, work by touch/pointer and require no
+  hover.
 
-## Accessibility and announcements
+## Required states
 
-- Regions have localized headings; label/value relationships use semantic lists/table structures.
-- Qualifiers and unavailable text are referenced from their affected values, not conveyed by color,
-  icon, shape or placement alone.
-- Trace controls expose expanded state and are named for the material. Slot controls name their exact
-  visible destination.
-- Localized package fallback disclosure is programmatically associated with the game name.
-- After a settled revision, one polite localized announcement summarizes changed qualification and
-  requirement states. Initial, unchanged and discarded work is silent. Prompt projection failure is
-  not repeated by every card.
-- Text survives 200% text size, 400% zoom, expanded/RTL fixtures and reduced motion. Automated axe is
-  a floor; manual screen-reader reading/order/action checks cover both primary stories.
-- Any conformance statement names the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7
-  and 2.4.11.
+| State                                           | Presentation                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| No active build                                 | Existing workspace state; no empty cost cards                             |
+| Matching projection                             | Exact package facts for the active revision                               |
+| Mismatched/pending integration context          | No stale facts labelled as current                                        |
+| One/all modules unpriced                        | Package lower bounds plus complete returned evidence                      |
+| No Mercenary article                            | Mercenary region and summary absent                                       |
+| Complete Mercenary set                          | Every recognized entry and exact package total                            |
+| Missing Merc price                              | Entry unavailable and total lower bound with all affected slots           |
+| No crafted/fixed-only/purchase-only engineering | Non-crafted explanation; no fabricated material rows                      |
+| Complete/repeated materials                     | Full package list; traces retain repeated selections                      |
+| Missing recipe                                  | Known list visibly incomplete plus all missing sources                    |
+| Untranslated game text                          | Canonical package text plus shared untranslated disclosure                |
+| Missing material metadata                       | Symbol/quantity/trace retained; name/grade unavailable                    |
+| Projection failure                              | One localized prompt; active build remains intact; no stale current facts |
 
-## Component-system impact
+## Accessibility, localization and component impact
 
-Compose feature 011 section, fact-list, status/qualification, disclosure, action and responsive-list
-primitives. If no shared disclosure can associate one aggregate row with several source records,
-extend `src/app/ui/` with a reusable trace/disclosure primitive and preview all states at the three
-width families. No screen-local token, color literal, spacing value or animation is permitted.
+Regions have localized headings. Semantic lists/tables preserve label/value and qualifier/evidence
+relationships. Lower-bound, unavailable, acquisition, grade and expansion state are exposed in text
+and programmatically, never by colour/icon/placement alone. Trace controls name the material and
+expose expanded state; slot actions name their visible destination.
+
+Use feature 011's localized messages, package game-name presenters and named number/unit formatters.
+Content survives text expansion, RTL fixtures and reduced motion. Settled semantic changes produce at
+most one polite localized announcement; initial, unchanged, locale-only and stale work is silent.
+
+Compose existing shared section, fact, qualification, disclosure, action and responsive-list
+primitives. If a row-to-many-sources trace is missing, extend `src/app/ui/` and preview all states;
+do not add screen-local colours, sizes, spacing, radii, elevation or motion.

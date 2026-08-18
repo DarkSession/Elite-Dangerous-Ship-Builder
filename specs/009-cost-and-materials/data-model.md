@@ -1,127 +1,159 @@
 # Data Model: Cost and Materials
 
-All records are immutable projections of one package `ShipLoadout`. They are not persistence schemas.
-Game identities use exact package slot keys, module `symbol`, blueprint/effect `fdname` and material
-`symbol`. Application display text and formatted figures are deliberately absent.
+These are immutable, in-memory projections of one package `ShipLoadout`, not persistence schemas.
+Game identities remain exact package slot keys, module/material `symbol` values and blueprint/effect
+`fdname` values. Formatted numbers and localized application text are presentation-only.
 
 ## CostAndMaterialsSnapshot
 
-| Field           | Type                                | Rule                                                          |
-| --------------- | ----------------------------------- | ------------------------------------------------------------- |
-| `buildRevision` | opaque monotonic revision           | Must match the captured active build for every child result   |
-| `retail`        | `RetailCreditsProjection`           | One literal `retailCredits()` result, semantically classified |
-| `mercCoin`      | `MercCoinProjection`                | `absent` or recognized purchase collection                    |
-| `engineering`   | `EngineeringRequirementsProjection` | Exact source costs, consolidation and traces                  |
+| Field           | Type                                | Rule                                                    |
+| --------------- | ----------------------------------- | ------------------------------------------------------- |
+| `buildRevision` | opaque active-build revision        | Matches the captured loadout for every child value      |
+| `retail`        | `RetailCreditsProjection`           | One literal `retailCredits()` result plus qualification |
+| `mercenary`     | `MercenaryProjection`               | Conditional recognized purchases and package total      |
+| `engineering`   | `EngineeringRequirementsProjection` | Exact sources, package consolidation and traces         |
 
-The snapshot is published in one assignment. Locale changes re-present it and do not produce a new
-domain snapshot. Build changes invalidate the whole snapshot.
+The whole snapshot is published atomically. A build revision invalidates the whole value. A locale
+change re-presents the same domain snapshot and does not trigger package quantity calls.
 
-## Semantic value states
+## Shared semantic states
 
-| State                          | Meaning                                                                                |
-| ------------------------------ | -------------------------------------------------------------------------------------- |
-| `exact(value)`                 | Complete package value; numeric zero remains exact                                     |
-| `lowerBound(value, missing[])` | Package value excludes named unavailable contributions                                 |
-| `unavailable(evidence)`        | Package returned `null`, metadata was unresolved, or a package call failed             |
-| `absent`                       | The conditional concept does not apply; used only for no recognized Mercenary purchase |
-| `knownEmpty`                   | A package cost helper returned `[]`; never interchangeable with unavailable            |
+```text
+Exact<T>      = { kind: 'exact'; value: T }
+LowerBound<T, E> = { kind: 'lowerBound'; value: T; missing: readonly E[] }
+Unavailable<E>  = { kind: 'unavailable'; evidence: E }
+```
 
-Under the released #306 fix, an ordinary selected blueprint returning `knownEmpty` is a regression and blocks
-publication as a valid material requirement. Fixed/purchase baselines use explicit non-crafted
-states rather than `knownEmpty`.
+Numeric zero remains an exact value. `unavailable` represents a package `null` or unresolved package
+metadata, not zero or an empty list. Conditional `absent` is used only where the concept does not
+apply. Package-returned `[]` is a known empty list and remains distinct from `null`.
 
 ## RetailCreditsProjection
 
-| Field      | Type                                                                        | Validation                                                                                          |
-| ---------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `hull`     | `exact(number) \| unavailable`                                              | Literal package `hull`; no substitute when `null`                                                   |
-| `modules`  | `exact(number) \| lowerBound(number, UnpricedCreditEntry[])`                | Literal package `modules`; lower bound iff `unpriced` is non-empty                                  |
-| `rebuy`    | `exact(number) \| lowerBound(number, UnpricedCreditEntry[]) \| unavailable` | Literal package `rebuy`; unavailable when `null`; otherwise qualified with the same module evidence |
-| `unpriced` | ordered `UnpricedCreditEntry[]`                                             | Exact package order and cardinality                                                                 |
+| Field      | Type                                                       | Validation                                            |
+| ---------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| `hull`     | `Exact<number>`                                            | Literal non-null package `hull`                       |
+| `modules`  | `Exact<number> \| LowerBound<number, UnpricedCreditEntry>` | Lower bound iff `unpriced` is non-empty               |
+| `rebuy`    | `Exact<number> \| LowerBound<number, UnpricedCreditEntry>` | Literal package `rebuy`; same missing-module evidence |
+| `unpriced` | ordered `UnpricedCreditEntry[]`                            | Exact returned order and cardinality                  |
 
-No field represents hull plus modules. `UnpricedCreditEntry` preserves exact `slot` and `symbol` and
-may carry resolved package module/slot facts for presentation. Captured purchase value is not a field.
+`UnpricedCreditEntry` preserves package `slot` and module `symbol`. It may reference a matching
+captured `LoadoutSlot`/module record for later package-name presentation, but the raw identities are
+always retained. There is no nullable retail hull/rebuy field, combined credit total, captured
+purchase value or consumer-derived percentage.
 
-## MercCoinProjection
+## MercenaryProjection
 
 ```text
-absent
-present {
-  entries: MercenaryPurchaseEntry[]
-  total: exact(number) | lowerBound(number, MercenaryPurchaseEntry[])
-}
+{ kind: 'absent' }
+
+{ kind: 'present';
+  entries: readonly MercenaryPurchaseEntry[]; // non-empty
+  total: Exact<number> | LowerBound<number, MercenaryPurchaseEntry> }
 ```
 
-`MercenaryPurchaseEntry` contains exact `slot`, module `symbol`, variant `blueprint`, purchase
-`grade`, current grade where present, and `price: exact(number) | unavailable`. It exists only from a
-fitted `preEngineeredVariant` whose acquisition is `mercenary`. `present.entries` is never empty.
+`MercenaryPurchaseEntry` exists only for a fitted module whose package
+`preEngineeredVariant.acquisition` is `mercenary`.
 
-Transitions:
+| Field           | Type                                                  | Rule                                     |
+| --------------- | ----------------------------------------------------- | ---------------------------------------- |
+| `slot`          | package slot key                                      | Exact action identity                    |
+| `moduleSymbol`  | package module symbol                                 | Exact fitted identity                    |
+| `variant`       | package `PreEngineeredVariant` identity               | Source of recognition and purchase facts |
+| `purchaseGrade` | number                                                | Package variant grade                    |
+| `currentGrade`  | number                                                | Fitted engineering level                 |
+| `price`         | `Exact<number> \| Unavailable<'missingPackagePrice'>` | Optional variant `mercCoinCost`          |
 
-- no recognized entries → `absent`, regardless of `mercCoinCost() === 0`;
-- first recognized entry → `present`; call the package total once;
-- any missing entry price → total becomes `lowerBound` with every missing entry;
-- later ordinary grade → purchase identity/price unchanged when the package retains recognition;
-- clearing/replacing engineering → follow the new package recognition, possibly returning to absent.
+Transitions follow the current package snapshot:
 
-## EngineeringSelectionCost
+- zero recognized entries → `absent`, regardless of `mercCoinCost() === 0`;
+- first recognized entry → `present` and one package total call;
+- any missing entry price → the literal package total is a lower bound naming all missing entries;
+- a later purchase-route grade retains the original variant price;
+- clearing/replacing engineering may remove recognition and return to `absent`.
 
-One fitted selection that can explain a material requirement.
+## EngineeringSelectionSource
 
-| Field           | Type                                                                           | Rule                                                   |
-| --------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| `sourceId`      | composite of exact slot + kind + fdname                                        | Stable only within the snapshot; never persisted       |
-| `slot`          | package slot key                                                               | Exact action target                                    |
-| `moduleSymbol`  | package symbol                                                                 | Never inferred from position                           |
-| `kind`          | `blueprint \| experimental`                                                    | Which package helper owns the cost                     |
-| `fdname`        | package id                                                                     | Blueprint/effect identity                              |
-| `selectedGrade` | `number \| null`                                                               | Blueprint grade; effect uses null                      |
-| `baselineGrade` | `number \| null`                                                               | Mercenary purchase grade skipped by the package helper |
-| `cost`          | `known(list) \| unavailable \| fixedNotCrafted \| mercenaryPurchaseNotCrafted` | Exact semantic source state                            |
+One committed fitted selection that either contributes a package cost list or explains why it does
+not.
 
-`known(list)` retains the exact package-returned list, including a genuine `[]`. Fixed states do not
-manufacture a zero list. Repeated selections remain separate source records.
+| Field           | Type                        | Rule                                     |
+| --------------- | --------------------------- | ---------------------------------------- |
+| `sourceId`      | exact slot + kind + fdname  | Snapshot-local stable identity           |
+| `slot`          | package slot key            | Exact feature-002 target                 |
+| `moduleSymbol`  | package symbol              | Never inferred from position             |
+| `kind`          | `blueprint \| experimental` | Package helper ownership                 |
+| `fdname`        | package id                  | Blueprint/effect identity                |
+| `selectedGrade` | `number \| null`            | Blueprint current grade; null for effect |
+| `baselineGrade` | `number \| null`            | Mercenary purchase grade only            |
+| `cost`          | `EngineeringSourceCost`     | Classification below                     |
+
+```text
+EngineeringSourceCost =
+  | { kind: 'known'; materials: readonly EngineeringMaterial[] }
+  | { kind: 'unavailable'; reason: 'missingBlueprintCost' | 'missingEffectCost' }
+  | { kind: 'fixedNotCrafted' }
+  | { kind: 'mercenaryPurchaseNotCrafted' }
+```
+
+`known.materials` retains the exact helper list, including `[]`. Repeated selections remain separate
+records. A Mercenary source at purchase grade is classified before any blueprint lookup; later grades
+use `baselineGrade`. A current effect matching a variant's baked effect is fixed, while a different
+current effect is a separately costed source.
 
 ## EngineeringRequirementsProjection
 
 ```text
-none { nonCraftedSources[] }
-complete { sources[], materials[] }
-incomplete { sources[], knownMaterials[], missingSources[] }
-unavailable { sources[], evidence[] }
+{ kind: 'none'; nonCraftedSources: readonly EngineeringSelectionSource[] }
+
+{ kind: 'complete';
+  sources: readonly EngineeringSelectionSource[];
+  materials: readonly MaterialRequirement[];
+  metadataGaps: readonly MaterialMetadataGap[] }
+
+{ kind: 'incomplete';
+  sources: readonly EngineeringSelectionSource[];
+  knownMaterials: readonly MaterialRequirement[];
+  missingSources: readonly EngineeringSelectionSource[];
+  metadataGaps: readonly MaterialMetadataGap[] }
+
+{ kind: 'failure'; evidence: ProjectionFailure }
 ```
 
-- `none`: no crafted blueprint/effect source exists; fixed/purchase sources may explain why.
-- `complete`: every crafted source returned a known list; `materials` is the literal `sumMaterials`
-  result enriched with metadata and traces.
-- `incomplete`: one or more source costs are unavailable; `knownMaterials` is the explicitly
-  lower-bound result of `sumMaterials` over only known lists and `missingSources` names every gap.
-- `unavailable`: package material metadata or an unexpected package failure prevents an honest row.
+- `none`: no crafted source exists; fixed/purchase sources may explain why.
+- `complete`: every crafted cost is known; rows preserve literal `sumMaterials()` order/quantity.
+- `incomplete`: one or more source costs are unavailable; `knownMaterials` is visibly a lower bound
+  obtained by passing only known lists to `sumMaterials()`.
+- `failure`: an unexpected package/integration failure prevents a current-revision projection; stale
+  data is not relabelled current.
+
+`metadataGaps` qualify affected rows without discarding their known package quantity, symbol or
+trace.
 
 ## MaterialRequirement
 
-| Field           | Type                               | Rule                                                       |
-| --------------- | ---------------------------------- | ---------------------------------------------------------- |
-| `symbol`        | package material symbol            | Identity from `sumMaterials()` and `getMaterialBySymbol()` |
-| `canonicalName` | package English name               | Never an application translation                           |
-| `grade`         | package `MaterialGrade`            | Never derived from icon, category or source recipe         |
-| `category`      | package category                   | Optional presentation grouping only; not needed for totals |
-| `quantity`      | package `sumMaterials()` count     | Never re-summed locally                                    |
-| `contributors`  | non-empty `MaterialContribution[]` | Every known source list containing this symbol             |
+| Field          | Type                                | Rule                                    |
+| -------------- | ----------------------------------- | --------------------------------------- |
+| `symbol`       | package material symbol             | Literal `sumMaterials()` identity/order |
+| `quantity`     | number                              | Literal `sumMaterials()` count          |
+| `metadata`     | `resolved(Material) \| unavailable` | Only `getMaterialBySymbol()`            |
+| `contributors` | non-empty `MaterialContribution[]`  | Every source list containing the symbol |
 
-`MaterialContribution` retains `sourceId`, slot/module, kind/fdname/grade and the count on that exact
-package source-list item. It does not contain a derived percentage or share. Multiple equal selections
-remain multiple contributors.
+Resolved package `Material` supplies canonical name, canonical symbol, grade, category and line.
+`MaterialContribution` retains source id, exact slot/module, kind/fdname/grade and the count on that
+source-list item. Contributor matching is case-insensitive like `sumMaterials`; contributors are a
+relational trace, not an arithmetic breakdown or percentage.
 
 ## Presentation-only models
 
 The presenter adds:
 
-- active-locale material/module/blueprint/effect names from Almanac helpers;
-- canonical fallback plus an explicit untranslated marker when a helper returns `null`;
-- localized application labels, qualifiers, grades, quantities, credits and Merc Coin unit labels;
-- accessible action names and associations;
-- disclosure state keyed by material symbol.
+- package-localized module, slot, variant, blueprint, effect and material names;
+- canonical package English plus explicit untranslated disclosure on locale miss;
+- localized application headings, state/evidence wording and accessible action names;
+- active-locale number, credit, Merc Coin, quantity and grade/unit formatting;
+- expanded/collapsed material trace state keyed by material symbol.
 
-Formatting never changes domain numbers. Disclosure state is memory-only and omitted from history,
-storage, links and exports.
+Slot labels require joining the exact key back to the captured package `LoadoutSlot`; if it cannot be
+joined, the raw key remains visible. Formatting never changes numbers. Presentation/disclosure state
+is memory-only and excluded from history, persistence, URLs, links and exports.
