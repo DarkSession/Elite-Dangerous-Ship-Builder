@@ -1,80 +1,77 @@
 # Mobility Performance Contract
 
-## Inputs
+## Inputs and call guard
 
-One projection uses feature 003's settled condition revision:
+Consume the captured feature 003 condition exactly:
 
-- exact selected load identity and package-produced fuel/cargo inputs;
-- exact selected ENG pips in `[0, 4]`, including half steps;
-- the same active build revision used by jump, mass and source projections.
+- map `maximumJump` to package load `maximum`; map `unladen`/`laden` verbatim;
+- read the cached `standardLoadResult(mappedLoad)`;
+- read `unladenMassResult`; and
+- divide the settled ENG integer half-pips by two once.
 
-Mass/fuel/cargo diagnostic results required by the selected load must be complete before the method
-is called. Invalid feature 003 drafts trigger no projection.
+Call `mobilityMetricsResult({ ...standardLoad.value, enginesPips })` exactly once only when the
+selected standard load and unladen mass are complete. Invalid feature 003 drafts do not settle a
+revision and therefore invoke nothing.
 
-## Package boundary
+If either guard is incomplete, do not call mobility; retain the exact owning result/issues. A throw
+after complete package inputs is an application failure, not an unavailable game value.
 
-Call `ShipLoadout.mobilityMetricsResult({ fuel, cargo, enginesPips })` exactly once per settled
-projection. A complete result maps every field unchanged:
+## Exact result mapping
 
-- `speed`;
-- `boost`;
-- `pitch`;
-- `roll`;
-- `yaw`;
-- `massCurveMultiplier`;
+A complete package result retains every field unchanged:
+
+- `speed` and `boost` in metres per second;
+- `pitch`, `roll` and `yaw` in degrees per second;
+- `massCurveMultiplier`; and
 - `rotationMassCurveMultiplier`.
 
-The application does not call the data-free mobility/curve functions, interpolate pips, combine mass
-or calculate a multiplier.
+An incomplete result retains `value: null` and its exact ordered issues. This contract uses the
+diagnostic result facade; it does not describe the result object itself as nullable. The separate
+`mobilityMetrics()` convenience method is nullable but is not used.
 
-## Result semantics
+## Thruster and power meanings
 
-- Non-null numeric values are ready, including exact zero in every field when mass is above the
-  thruster maximum.
-- An incomplete result is unavailable, retains its ordered structured issues and never receives hull
-  base speed/rotation as a fallback.
-- Incomplete selected-load dependencies remain incomplete/unavailable with their package issues and
-  prevent the call.
-- A handled package throw remains generic unavailable unless a direct package/source observation
-  establishes a narrower reason.
+The package result directly supplies the required distinctions:
 
-## Thruster source and state
+| Issue field/reason                       | Meaning                                            |
+| ---------------------------------------- | -------------------------------------------------- |
+| `thrusters/missing`                      | no fitted thrusters                                |
+| `thrusters/disabled`                     | fitted thrusters switched off                      |
+| `thrusters/shed`                         | thrusters not powered with hardpoints retracted    |
+| `thrusters/unresolved`                   | fitted performance facts unavailable               |
+| `powerCapacity/*` or `powerDraw/invalid` | exact package power dependency unavailable/invalid |
 
-The package fitted snapshot provides exact slot, symbol, game text, enabled state and sparse
-post-engineering curve facts. Feature 005 provides an exact-slot power observation that combines the
-Almanac 0.1.1 `PowerBudget.consumers` entry with its matching returned band verdict. The presentation
-may name:
+Feature 008 preserves those issue objects and performs no separate `powerBudget()` check or feature
+005 join. Source provenance and package calculation availability stay separate.
 
-- absent: no package-fitted thruster;
-- disabled: fitted snapshot explicitly disabled;
-- unpowered: feature 005 observation explicitly reports shed/unpowered;
-- unresolved: occupied slot cannot supply effective facts or authoritative power state;
-- present: resolved enabled/powered source.
+A complete all-zero result above the thruster maximum supported mass is ready zero, including both
+multipliers. It is never converted to incomplete. This capability does not show hull base mobility
+as a fallback; if another capability shows hull base values, it must label them as catalogue facts.
 
-Source state does not change the numeric method result. The released result API itself withholds
-mobility for disabled or shed power and supplies the diagnostic context.
+## Thruster identity and sparse parameters
 
-## Returned source facts
-
-Only fields present in the fitted package record appear:
+Locate the source through `slots('core')` where `core === 'thrusters'`; retain the exact game key
+(`MainEngines` in current layouts), symbol and optional `on`. Only present post-engineering
+`effectiveStats` fields may be shown:
 
 - shared `minMass`, `optMass`, `maxMass`, `minMultiplier`, `optMultiplier`, `maxMultiplier`;
-- optional speed `min/opt/maxSpeedMultiplier`;
+- optional speed `min/opt/maxSpeedMultiplier`; and
 - optional rotation `min/opt/maxRotationMultiplier`.
 
-The two actual selected-load multiplier fields come from the completed `mobilityMetricsResult()`.
-No threshold is turned into percentage-of-optimal, headroom, bar length or application curve.
+The two selected-load multipliers come from the complete mobility result. No threshold becomes a
+bar width, curve, percentage-of-optimal or headroom value.
 
-## Revision and announcement behavior
+## Viewing and revision behavior
 
-- Load and ENG pips shown beside mobility are those passed to the package call.
-- Build/condition changes invalidate the whole prior result.
-- Rapid edits publish only the latest matching revision and create one concise settled announcement.
-- An unexpected current-revision error contains no stale mobility figures.
+- Drives & Mass shows the settled load and ENG pips as read-only context.
+- Apply/Reset controls remain solely in feature 003's Status capability.
+- Build or accepted condition changes create a new captured revision pair.
+- The detailed capability and Status adapter use the same projector/context.
+- An old snapshot is never relabelled with new load/pip text.
 
 ## Verification
 
-Tests compare every field directly with one live package call for maximum, unladen and laden loads and
-ENG 0, 0.5, 2 and 4. They distinguish null from above-supported-mass zero; cover absent, disabled,
-unpowered and unresolved thrusters; prove no hull fallback; verify sparse curve facts; and retain the
-released #296 regression for disabled and shed power.
+Tests compare all seven fields with one live package call at maximum, unladen and laden loads and ENG
+0, 0.5, 2 and 4. They prove the call guard, distinguish missing/disabled/shed/unresolved/power issues
+from ready all-zero performance, verify no hull fallback or power reconstruction, retain exact issue
+order and test sparse source facts by exact slot key.

@@ -1,91 +1,83 @@
 # Screen and Surface Inventory
 
-Feature 008 adds no top-level route. Its Mobility, Mass and Jump capability composes inside feature
-001's `/build` workspace, opens from feature 003's Mobility headline/capability navigation and may
-target feature 002's exact fitted slot. Capability/disclosure state remains memory-only presentation
-state.
+Feature 008 adds no route. Drives & Mass is one capability surface inside feature 001's `/build`
+workspace and the detail target for feature 003's mobility summaries. It may emit the existing shared
+exact-slot target; it owns no build mutation, condition control or persisted view state.
 
-| Surface                                                           | Wide/tablet presentation                                                       | Narrow/zoomed presentation                       | Requirements           |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------ | ---------------------- |
-| [Mobility, Mass and Jump Profile](./mobility-and-jump-profile.md) | Jump and mobility regions may form fluid columns followed by mass/module facts | One complete semantic stack; no field removed    | FR-001–FR-008          |
-| Shared load and ENG conditions                                    | Feature 003 control/context beside affected results                            | Full-width shared controls before results        | FR-004                 |
-| Jump performance                                                  | FSD identity plus three complete load groups                                   | Maximum, unladen and laden cards with all values | FR-002, FR-003, FR-008 |
-| Mobility performance                                              | Thruster state plus seven exact returned fields                                | Same seven labelled facts in one stack           | FR-004, FR-005, FR-008 |
-| Source parameters                                                 | Sparse returned FSD/thruster thresholds, factors and multipliers               | Complete wrapping definition groups              | FR-008                 |
-| Mass and capacity                                                 | Three aggregate result groups with adjacent diagnostics                        | Complete stacked results/issues                  | FR-003, FR-006         |
-| Per-module mass                                                   | Complete exact-slot table/list                                                 | Complete labelled module cards                   | FR-007                 |
-| Outfitting slot target (feature 002, if exposed)                  | Reveal exact slot in inline editor context                                     | Open existing selected-slot layer                | FR-007 support         |
+| Surface                                         | Wide/tablet landscape                                                                     | Narrow/tablet portrait/zoomed                                      | Requirements           |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------- |
+| [Drives & Mass](./mobility-and-jump-profile.md) | Fluid jump/mobility cards followed by mass/capacity and module mass                       | Same complete semantic stack without omissions                     | FR-001–FR-008          |
+| Selected condition context                      | Read-only selected load and ENG pips near affected values                                 | Full-width read-only context before results                        | FR-004                 |
+| Jump performance                                | Exact FSD identity, guard issues, three single/total/count profiles and sparse parameters | Three complete labelled profile groups and wrapping parameter list | FR-002, FR-003, FR-008 |
+| Mobility performance                            | Exact thruster identity, package issues, seven fields and sparse parameters               | Same seven fields/issues/parameters in one stack                   | FR-004, FR-005, FR-008 |
+| Mass and capacity                               | Three independent aggregate result groups with owning diagnostics                         | Complete stacked result/issue groups                               | FR-003, FR-006         |
+| Per-module mass                                 | Accessible exact-slot list/table                                                          | Exact-slot cards or wrapping list; no field removed                | FR-007                 |
+| Status summaries (feature 003)                  | Selected jump, top speed and unladen mass from the 008 provider                           | Same three owner-authored semantic values                          | FR-001–FR-006          |
+| Slot reveal (features 002/003, if exposed)      | Shared exact-slot target opens owning editor context                                      | Same target opens existing narrow slot layer                       | FR-007 support         |
 
-## Requirement ownership
+## Requirement mapping
 
-| Requirement | Surface behavior                                                                                                                       |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One immutable projection copies only package results, fitted facts and shared package-backed observations; visuals add no game result. |
-| FR-002      | Three jump groups map the complete single/total/count `jumpRangeSummary()` fields and identify one exact fitted FSD.                   |
-| FR-003      | Diagnostic mass/fuel/cargo results gate jump calls; incomplete issues remain adjacent and zero fuel remains numeric zero.              |
-| FR-004      | Shared feature 003 load/ENG conditions feed one `mobilityMetricsResult()` call; all seven returned fields or package issues appear.    |
-| FR-005      | Null mobility has no hull fallback; absent, disabled, unpowered and unresolved thruster observations remain textual and distinct.      |
-| FR-006      | Unladen mass, main/reserve fuel and cargo show exact diagnostic results with all ordered issues.                                       |
-| FR-007      | Every fitted package snapshot has one exact-slot post-engineering mass entry; no list subtotal is created.                             |
-| FR-008      | Only present package FSD/thruster thresholds, factors and multipliers appear; absent facts stay absent.                                |
+| Requirement | Planned behavior                                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One pure projector copies package results/records only; presentation adds no game calculation.                                    |
+| FR-002      | One guarded `jumpRangeSummary()` supplies all three single ranges, total ranges and counts.                                       |
+| FR-003      | All diagnostic aggregate and standard-load results must be complete before the summary call; exact blockers remain visible.       |
+| FR-004      | The selected feature 003 load and ENG pips feed one `mobilityMetricsResult()` call; all seven fields or exact issues appear.      |
+| FR-005      | Incomplete mobility receives no hull fallback; package issues distinguish missing, disabled, shed, unresolved and invalid inputs. |
+| FR-006      | Exact unladen mass, main/reserve fuel and cargo results retain every ordered package issue.                                       |
+| FR-007      | Every `fittedModules()` entry appears once by exact slot with `effectiveStats.mass` or unavailable; no subtotal exists.           |
+| FR-008      | Only present package FSD/thruster parameters and result multipliers appear; absent facts stay absent.                             |
 
-## Cross-feature composition
+## Cross-feature ownership
 
-- Feature 001 owns the active build, build revision and `/build` workspace.
-- Feature 002 owns fitted-module editing and exact-slot selection. Feature 008 may emit a slot intent;
-  it never mutates a module.
-- Feature 003 owns the shared maximum/unladen/laden and ENG-pip state, condition revision, Mobility
-  headline and detail navigation.
-- Feature 005 owns the shared package-backed exact-slot power observation from
-  `PowerBudget.consumers` plus the matching returned band verdict.
-- Feature 010 may visualize module locations, but anatomy cannot replace complete textual metrics or
-  module mass entries.
-- Feature 011 owns layout primitives, tokens, controls, localization/formatting, announcements,
-  responsive behavior and the automated accessibility harness.
+- Feature 001 owns the active build/revision and `/build` workspace.
+- Feature 002 owns fixed-mount normalization before calculations, committed-edit revision changes and
+  exact-slot reveal/edit behavior.
+- Feature 003 owns viewing-condition draft/Apply/Reset, read-only condition identity, generic status
+  envelope and workspace targets. Feature 008 owns its concrete three-summary provider.
+- Feature 005 is not a dependency; package mobility diagnostics already own thruster power meaning.
+- Feature 010 keeps anatomy hardpoint-only and does not host Drives & Mass overlays.
+- Feature 011 owns tokens, shared components, locale/game-text/diagnostic presentation, previews,
+  announcements and the test/accessibility matrix.
 
-## Shared states
+## Required states
 
-The surface and component previews cover:
+The surface and previews cover:
 
 - no active build;
-- projecting a new revision without mixed stale values;
-- complete jump, mobility, mass and capacity;
-- no fitted or unresolved FSD;
-- complete zero main fuel and complete zero cargo;
-- incomplete mass, fuel, cargo and combined package issues;
-- absent, disabled, unpowered and unresolved thrusters;
-- mobility null versus non-null zero performance above supported mass;
-- each optional FSD/thruster parameter present and absent;
-- post-engineering module masses, duplicate symbols in separate slots and unknown module mass;
-- unexpected projection failure with no stale figures.
+- complete jump/mobility/aggregate/module values;
+- incomplete mass, fuel or cargo and each standard-load guard;
+- missing and unresolved FSD, with active-booster validation where applicable;
+- zero main fuel and zero cargo;
+- missing, disabled, shed and unresolved thrusters plus power-capacity/draw issues;
+- complete all-zero mobility above supported mass;
+- each sparse FSD/thruster parameter present and absent;
+- engineered, zero and unavailable module mass, including duplicate symbols and a package-trusted
+  complete aggregate beside unavailable row mass; and
+- unexpected current-revision failure with no stale numeric result.
 
-Component previews include default, populated, empty, loading, error and disabled states where
-meaningful at desktop, tablet and mobile widths, plus portrait/landscape, expanded-text and RTL
-fixtures.
+Components receive populated, empty, error and disabled previews where those states are meaningful,
+at desktop, tablet and mobile widths with portrait/landscape, expanded text, RTL and reduced motion.
+There is no asynchronous loading state in the synchronous projector unless an owning shared
+component itself defines one.
 
 ## Accessibility, responsive and localization baseline
 
-- The capability participates in the workspace's one `main` and heading hierarchy; it adds no
-  competing page landmark or `h1`.
-- Visual columns never change semantic reading order. At 200% text, 400% zoom and narrow/landscape
-  widths all groups stack without document horizontal scrolling.
-- Definition groups and labelled cards are preferred. A wide module table may own internal overflow
-  only if every cell/diagnostic remains programmatically associated; narrow presentation uses cards.
-- Every disclosure/exact-slot action works by pointer and touch, has matching visible/accessibility
-  names/state and uses at least the shared 44 CSS-pixel target token.
-- Maximum/unladen/laden, zero, unavailable, incomplete, disabled, unpowered, unresolved and
-  supported-mass-zero meanings are text/programmatic state, never colour, shape or bar length alone.
-- Settled build/condition changes create one coalesced polite announcement; blocking application
-  failures use shared alert behavior.
-- Reduced motion removes nonessential transitions. Expanded text and RTL never separate a source,
-  load identity, result, issue or exact-slot action.
-- Application labels/sentinels use feature 011 messages. Light-years, m/s, degrees/s, tonnes,
-  multipliers and integer counts use active-locale formatters.
-- Ship/module game text and package diagnostics come from Almanac and receive the shared canonical-
-  language disclosure when the requested locale is unavailable.
-- Automated coverage scans every meaningful state in Chromium and Firefox over desktop,
-  tablet/mobile portrait and landscape. Manual screen-reader journeys verify group relationships,
-  diagnostics, source states and announcements.
+- Use the workspace's single `main`/`h1`; Drives & Mass uses nested headings and named regions.
+- Keep one DOM/assistive order at every width. Grid placement must not change reading order.
+- Use labelled definition groups, lists or accessible tables. At narrow/400% zoom use wrapping cards
+  rather than hiding columns; internal table overflow is acceptable only when associations survive.
+- Any tab/action uses actual semantic controls with visible name/state and feature 011's minimum
+  touch target. Nothing essential depends on hover or `title`.
+- Load, zero, unavailable, incomplete, disabled, shed, unresolved and failure meanings are explicit
+  text/programmatic state—not colour, bar length, shape or position.
+- Package issues are associated with their owning result; a settled revision produces one concise
+  polite update rather than one announcement per field.
+- All application labels, state text, units and announcements are localized and all numbers use the
+  active locale. Module/slot names and diagnostics use Almanac locale helpers plus the shared
+  canonical fallback disclosure.
+- Test every meaningful state with axe across Chromium and Firefox at all five layout projects;
+  retain manual screen-reader, 200% text and actual 400% zoom protocols.
 
-Where conformance is stated, use: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
-2.4.7 and 2.4.11.”
+Where conformance is stated, name the exclusion: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
+2.4.1, 2.4.3, 2.4.7 and 2.4.11.

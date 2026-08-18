@@ -6,99 +6,95 @@
 
 ## Summary
 
-Add one Mobility, Mass and Jump capability inside the active `/build` workspace. A pure,
-revision-stamped projector first preserves `unladenMassResult`, `fuelCapacityResult` and
-`cargoCapacityResult`, calls `jumpRangeSummary()` only when those dependencies and a usable fitted
-drive are established, and calls `mobilityMetricsResult()` once with feature 003's selected package-owned
-load inputs and ENG pips. The immutable snapshot also carries fitted drive/thruster records and every
-fitted module's post-engineering mass by exact slot; it never re-sums, derives or repairs a package
-value.
+Add a Drives & Mass capability to the active `/build` workspace. A framework-agnostic projector
+reads one revision of the active `ShipLoadout`, preserves the three diagnostic aggregate results,
+uses package-produced standard loads, guards the throwing jump facade, calls the diagnostic mobility
+facade once for the selected load and ENG pips, and copies every returned value unchanged. It also
+projects every fitted module's post-engineering mass by the package's exact slot key. A signal-based
+application store publishes one immutable revision; presentation components only format it and emit
+shared viewing-condition or exact-slot intents.
 
-Almanac 0.1.1 closes the three package dependencies raised during planning:
-`standardLoadResult()` supplies each standard fuel/cargo input (#295), `mobilityMetricsResult()`
-withholds performance and reports structured issues for disabled or shed power (#296), and
-`PowerBudget.consumers` plus the returned bands supply feature 005's exact-slot power observation
-(#299). No local composition, power arithmetic or corrective gate remains.
-
-The `.design/Ship Builder.dc.html` wide and narrow Drives & Mass hierarchy informs composition. Its
-mass decomposition, percentages, arbitrary bars, deltas, headroom and mock figures are excluded.
+The implementation follows the wide and narrow Drives & Mass hierarchy in
+`.design/Ship Builder.dc.html`: mobility and jump remain adjacent at wide widths and become one
+complete stack at narrow widths. The mock's authored totals, percentage bars, comparisons, headroom,
+mass-lock value, “current” load, and shortened mobile content are excluded because they are not
+package results or accepted requirements.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for
-tooling
+**Language/Version**: TypeScript 6.0, Angular HTML and SCSS; Node.js 24 for tooling. The constitution
+requires TypeScript strict mode, but the current shared `tsconfig.json` does not yet enable `strict`
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core` 0.1.1 leaf exports,
-feature 001's active-build/revision boundary, feature 002's exact-slot intent, feature 003's shared
-load/ENG conditions, feature 005's package-backed module power observation, and feature 011's
-UI/localization/test infrastructure
+**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs; Angular signals; RxJS 7.8;
+`@elite-dangerous-almanac/core` 0.1.1 leaf exports; feature 001's active-build/revision and `/build`
+workspace; feature 002's exact-slot selection; feature 003's viewing conditions, revision envelope,
+status-provider contract and `mobilityAndJump` target; feature 011's design-system, localization and
+test foundations
 
-**Storage**: None owned by feature 008. The active `ShipLoadout` remains in feature 001; selected load
-and ENG pips remain in feature 003's memory-only conditions. Projected metrics, issues, source facts
-and capability selection never enter local storage, edit history, build links or SLEF
+**Storage**: None. Results, selected capability and disclosure state are derived or memory-only and
+must not enter local storage, build history, URLs, compact links or SLEF
 
-**Testing**: Vitest through Angular's unit-test builder with 80% minimum statements, branches,
-functions and lines; Playwright with `@axe-core/playwright` over desktop, tablet/mobile portrait and
-landscape in Chromium and Firefox. The current suite lacks Firefox, landscape projects and automated
-accessibility checks, which feature 011 must supply
+**Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
+function and line gates; Playwright plus axe in Chromium and Firefox at desktop, tablet portrait and
+landscape, and mobile portrait and landscape; manual screen-reader and actual-zoom checks
 
-**Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; static client
-application usable offline after first load
+**Target Platform**: Static client-side application for modern Chromium and Firefox on desktop,
+tablet and mobile; touch, pointer and screen reader; portrait and landscape; offline after first load
 
-**Project Type**: Client-side Angular single-page application producing static files only
+**Project Type**: One client-side Angular single-page application with static output and no backend
 
-**Performance Goals**: One projection per settled build/condition revision; every visible jump,
-mobility, mass and capacity fact shares one revision; settled changes render within 100 ms at the
-mobile viewport under Chromium 4x CPU slowdown
+**Performance Goals**: Recompute synchronously once per settled build/condition revision; publish
+all visible mobility, jump, mass and capacity values atomically before the next rendered frame; add
+no network request or persisted derived cache
 
-**Constraints**: No server, account, telemetry or cross-origin request; no local jump, range, mass,
-capacity, curve, power or standard-load formula; package zero, null, incomplete and diagnostic states
-remain distinct; no document horizontal scrolling; one dark tokenized theme; all application text
-and figures localized; touch/screen-reader operation; WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
-2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+**Constraints**: No local jump, total-range, jump-count, mass, capacity, standard-load, thruster
+curve or power calculation; no truthiness conversion of zero; no hull-stat fallback for unavailable
+mobility; exact package issue order and identities; no document horizontal scrolling; one tokenized
+dark theme; all application text and numeric/unit formatting localized; WCAG 2.2 AA except criteria
+2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: One active build across 48 pinned hulls, each hull's full package slot set, three
-standard jump/load states, seven mobility result fields, three diagnostic aggregate results and one
-mass entry for every fitted module
+**Scale/Scope**: One active build across the 48 hulls in Almanac 0.1.1; three standard jump profiles;
+seven mobility fields; three aggregate result groups; sparse FSD/thruster parameters; one mass row
+for every fitted module
 
-**Design Reference**: `.design/Ship Builder.dc.html` wide `data-anat-detail="mass"` and narrow
-`data-m-mode="mass"` regions. Adopted hierarchy and required departures are recorded in
-[design/reference-review.md](./design/reference-review.md)
+**Design Reference**: `.design/Ship Builder.dc.html`, wide `data-anat-detail="mass"` and narrow
+`data-m-mode="mass"` regions. See [design/reference-review.md](./design/reference-review.md)
 
 ## Constitution Check
 
-_GATE: Passed. Every value remains package-owned and the previously required package contracts are
-present in the pinned Almanac 0.1.1 release. Re-check after Phase 1._
+_Planning gate: PASS. The design requests no constitutional exception. Repository-wide delivery
+gates listed below must be satisfied before feature 008 can ship._
 
-| Principle                               | Design evidence                                                                                                                                    | Status                 |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All projections run over the in-browser active build and installed static package; no persistence or network boundary is added.                    | PASS                   |
-| II. Almanac Source of Truth             | Aggregate calls, standard-load inputs, result diagnostics, source facts and module mass are package outputs from Almanac 0.1.1.                    | PASS                   |
-| III. Domain Logic Outside UI            | A pure projector creates one immutable snapshot; a computed facade coordinates revisions/conditions; components render inputs and emit intents.    | PASS                   |
-| IV. Lossless, Honest Builds             | Package zero, null, incomplete results, ordered issues, missing optional facts and unknown module masses remain distinct.                          | PASS                   |
-| V. Desktop, Tablet and Mobile           | One complete surface stacks at narrow/zoomed widths, supports touch/screen reader/200% text/400% zoom/orientations and prevents document overflow. | PASS                   |
-| VI. Commander's Language                | Application labels, units and sentinels use feature 011; game names/diagnostics use Almanac localization with disclosed canonical fallback.        | PASS                   |
-| VII. One Design System                  | The surface composes/extends feature 011 primitives and tokens; the HTML reference contributes hierarchy only.                                     | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact package equality, call guards, dual-engine multi-viewport journeys and automated/manual accessibility coverage retain the 80% gate.          | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every FR maps to the plan-time Mobility, Mass and Jump surface and contracts exist before task breakdown.                                          | PASS                   |
+| Principle                               | Design evidence                                                                                                                     | Status                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Every projection uses the in-memory active build and installed package; no storage or network boundary is added.                    | PASS                   |
+| II. Almanac Source of Truth             | All game values come from named `ShipLoadout` results or fitted package records; no package calculation is reproduced.              | PASS                   |
+| III. Domain Logic Outside UI            | A pure projector and typed status adapter precede the signal store and presentation-only components.                                | PASS                   |
+| IV. Lossless, Honest Builds             | Exact zero, incomplete results, structured issues, missing optional fields and application failures remain separate.                | PASS                   |
+| V. Desktop, Tablet and Mobile           | The full capability stacks without omission and is covered at five layouts in both required engines, with axe and manual protocols. | PASS; prerequisite 011 |
+| VI. Commander's Language                | Owned labels/units use feature 011; game names and diagnostics use Almanac localization with canonical fallback disclosure.         | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes and, where necessary, extends `src/app/ui/`; `.design` contributes hierarchy, not copied literals.          | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Direct package-equality unit tests and dual-engine responsive/accessibility journeys retain the 80% gate.                           | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to the plan-time capability surface and contracts below before task generation.                                       | PASS                   |
 
-### Required released and repository dependencies
+### Delivery gates and dependency order
 
-1. Almanac 0.1.1 supplies the released #295/#296/#299 contracts. Regression tests pin
-   `standardLoadResult()`, `mobilityMetricsResult()` and `PowerBudget.consumers` directly.
-2. Feature 001 must supply the single active `ShipLoadout`, atomic build revision and `/build`
-   workspace.
-3. Feature 002 must supply exact-slot selection and the authoritative fitted-module editor; its own
-   Almanac normalization gates remain applicable to builds feature 008 reads.
-4. Feature 003 must supply the shared valid load/ENG-pip condition and revision contracts, the
-   Mobility headline port and detail intent.
-5. Feature 005 must expose its projection of the package-owned consumer result.
-6. Feature 011 must supply shared components/tokens, localization/formatting, Firefox/landscape
-   projects and the automated accessibility harness.
+1. Enable TypeScript `strict` in the shared configuration and make the existing project pass. This
+   is a constitution technology constraint, not optional feature cleanup.
+2. Feature 001 supplies one atomic `{ loadout, buildRevision }` and the `/build` workspace. Feature
+   002 advances that revision for committed edits and owns exact-slot reveal/edit behavior.
+3. Feature 003 supplies settled maximum-jump/unladen/laden and integer-half-pip conditions,
+   `conditionsRevision`, the generic status-provider envelope and `mobilityAndJump` target. Feature
+   008 divides ENG half-pips by two only at the Almanac call boundary.
+4. Feature 011 supplies shared tokens/components, locale services, game-text/diagnostic presenters,
+   component previews, Firefox/landscape projects and the automated accessibility harness.
+5. Feature 008 exports its concrete synchronous mobility status provider; feature 003 can then
+   assemble the final five-provider Status capability without a circular completion dependency.
 
-Feature 008 may be tasked after these repository contracts are accepted. No unresolved Almanac
-dependency or unfiled package gap remains.
+Almanac 0.1.1 already supplies `standardLoadResult()`, structured powered-thruster diagnostics from
+`mobilityMetricsResult()`, and every other calculation required here. Feature 008 has no dependency
+on feature 005's power projection: the mobility result itself distinguishes `missing`, `disabled`,
+`shed`, `unresolved` and `invalid` inputs.
 
 ## Project Structure
 
@@ -113,7 +109,8 @@ specs/008-mobility-and-jump/
 ├── contracts/
 │   ├── jump-performance.md
 │   ├── mass-and-capacity.md
-│   └── mobility-performance.md
+│   ├── mobility-performance.md
+│   └── status-integration.md
 └── design/
     ├── mobility-and-jump-profile.md
     ├── reference-review.md
@@ -127,100 +124,106 @@ specs/008-mobility-and-jump/
 ```text
 src/app/
 ├── domain/
-│   ├── build/                              # feature 001 active-build revision boundary
-│   └── mobility/
-│       ├── mobility-projector.ts           # pure guarded package-result projection
-│       ├── mobility-snapshot.ts            # immutable semantic result types
-│       └── semantic-mobility-value.ts      # zero/null/incomplete discriminants only
+│   └── mobility-jump/
+│       ├── mobility-jump-projector.ts
+│       ├── mobility-jump-snapshot.ts
+│       └── mobility-status-projection.ts
 ├── application/
-│   ├── viewing-conditions/                 # feature 003 shared load/ENG conditions
-│   └── mobility/
-│       ├── mobility.facade.ts              # revision-coherent computed snapshot
-│       └── mobility.presenter.ts           # localized component view models
-├── i18n/                                   # feature 011 messages and formatters
-├── ui/                                     # feature 011 shared/extended components
+│   └── mobility-jump/
+│       ├── mobility-jump.presenter.ts
+│       ├── mobility-jump.store.ts
+│       ├── mobility-status.provider.ts
+│       └── mobility-workspace.adapter.ts
+├── i18n/                                  # feature 011 messages and formatters
+├── ui/                                    # feature 011 primitives/previews
 └── features/
     └── build-workspace/
         └── mobility-and-jump/
-            ├── mobility-and-jump-profile/
+            ├── drives-and-mass-capability/
             ├── jump-performance/
             ├── mobility-performance/
             ├── mass-and-capacity/
             └── module-mass-list/
 
 e2e/
-├── accessibility.ts                       # feature 011 shared helper
+├── accessibility.ts                      # feature 011 shared helper
 └── mobility-and-jump.spec.ts
 ```
 
-Tests live beside each domain/application/component source. The checked-in application is still a
-shell, so these are target paths sequenced behind features 001, 003 and 011 rather than temporary
-parallel infrastructure.
+Tests live beside their source. Shared conditions, slot selection, status composition, formatting
+and visual primitives remain in their owning features rather than being duplicated here.
 
-**Structure Decision**: Keep one Angular application and one active build. A framework-agnostic
-projector guards and copies package results without changing numeric values. One computed facade
-combines active-build and shared-condition revisions with feature 005's power observation atomically.
-Workspace components receive localized views and emit only exact-slot intents. No route, storage
-adapter, calculation service, second `ShipLoadout`, separate load selector or ENG-pip store is added.
+**Structure Decision**: Keep one Angular application and one active `ShipLoadout`. The pure
+projector takes a captured build/condition revision and returns a frozen semantic snapshot. One
+computed store publishes `noBuild`, `ready` or `failure`; the feature 003 status adapter projects the
+selected jump, top speed and fixed unladen mass from that same synchronous projector. No second
+loadout, worker, route, power observer, persistence adapter or calculation service is introduced.
 
 ## Phase 0: Research Conclusions
 
-All decisions, package probes, alternatives and upstream dependencies are recorded in
-[research.md](./research.md). The decisive outcomes are:
+Detailed decisions and primary-source evidence are in [research.md](./research.md). The decisive
+outcomes are:
 
-- `jumpRangeSummary()` is called once only after mass, fuel and cargo diagnostics complete and the
-  fitted drive record is usable; every single range, total range and jump count is preserved.
-- Feature 003's maximum/unladen/laden mapping is reused from `standardLoadResult()`.
-- `mobilityMetricsResult({ fuel, cargo, enginesPips })` is called once for the selected settled conditions;
-  all seven fields are copied. `null` and above-supported-mass zero performance remain distinct.
-- Disabled and shed power produce structured incomplete results; no local power gate is allowed.
-- Unpowered attribution comes from feature 005's shared projection of each `PowerBudget.consumers`
-  entry with its matching returned band verdict; absence, disabled state and unresolved fitted stats
-  come directly from fitted package snapshots.
-- Aggregate result issues retain order and structured fields. Every fitted module receives one exact
-  slot-keyed mass projection from `effectiveStats.mass`; the application never re-sums it.
-- FSD/thruster thresholds, factors and multipliers appear only when their fitted package records or
-  mobility result contain them. Missing fields remain absent.
-- The reference's paired hierarchy is useful only after removing authored mass totals, percentage
-  bars, comparisons, headroom, unsupported facts and narrow-layout omissions.
+- Preserve `unladenMassResult`, `fuelCapacityResult` and `cargoCapacityResult` as exact
+  `CalculationResult` values, including `reason`, slot, symbol, message, params and package order.
+- Cache all three `standardLoadResult()` values as the FSD-aware/load-aware guard. Call
+  `jumpRangeSummary()` once only when all three aggregate and all three standard-load results are
+  complete; then retain all six range fields and all three package jump counts.
+- Resolve the selected load only through `standardLoadResult(load)`. When unladen mass and that load
+  are complete, call `mobilityMetricsResult({ ...load.value, enginesPips })` once and preserve all
+  seven returned fields or its exact structured issues.
+- The diagnostic mobility facade directly distinguishes missing, disabled, shed, unresolved and
+  invalid inputs. A complete all-zero result above thruster maximum mass remains ready zero; no
+  feature 005 join or local power inference is needed.
+- Locate core sources through `ShipLoadout.slots('core')` and each slot's package `core`
+  discriminator, retaining its exact `key`. This avoids the incorrect `Thrusters` key—the game's
+  thruster slot key is `MainEngines`—and still represents empty/unresolved mounts.
+- Show FSD/thruster parameters only from the fitted module's post-engineering `effectiveStats`, and
+  selected-load multipliers only from `MobilityMetrics`. Do not calculate bars, percentages,
+  headroom, decomposition or curves.
+- Project every `fittedModules()` entry by exact slot with `effectiveStats.mass` or unavailable;
+  never re-sum the list or inspect raw engineering modifiers.
+- Reuse feature 003 conditions/status contracts and feature 011 interface foundations. No route,
+  persisted condition or feature-owned visual language is added.
 
-No planning clarification marker or unresolved Almanac release gate remains.
+All planning questions are resolved and no Almanac release blocker was found. The shared strict-mode
+and feature 011 repository gates remain prerequisites to implementation completion.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines the revision-stamped snapshot, diagnostic aggregate
-  results, standard jump profiles, selected mobility result, fitted source facts, exact-slot module
-  masses and semantic unavailable/zero states.
-- [contracts/jump-performance.md](./contracts/jump-performance.md) freezes diagnostic call guards,
-  the one-call summary boundary, all six range results/jump counts, drive identity and zero-fuel
-  meaning.
-- [contracts/mobility-performance.md](./contracts/mobility-performance.md) freezes shared load/ENG
-  inputs, every returned mobility field, source/power-state boundaries and null-versus-zero meaning.
-- [contracts/mass-and-capacity.md](./contracts/mass-and-capacity.md) freezes all three diagnostic
-  aggregates, ordered package issues and per-module post-engineering mass by exact slot.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the `/build` capability
-  surface and records cross-feature ownership.
+- [data-model.md](./data-model.md) defines the revision-stamped snapshot, exact diagnostic results,
+  guarded jump result, selected-load mobility result, sparse source facts, fitted-module masses and
+  lifecycle states.
+- [contracts/jump-performance.md](./contracts/jump-performance.md) freezes the complete-result guard,
+  one-call summary mapping, zero semantics and FSD provenance.
+- [contracts/mobility-performance.md](./contracts/mobility-performance.md) freezes standard-load/ENG
+  inputs, all seven fields, structured thruster issues and null-versus-zero behavior.
+- [contracts/mass-and-capacity.md](./contracts/mass-and-capacity.md) freezes the three aggregate
+  results and every exact-slot post-engineering module mass.
+- [contracts/status-integration.md](./contracts/status-integration.md) freezes feature 003's selected
+  jump/top-speed/unladen-mass adapter and qualification ownership.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the in-workspace
+  capability and its shared integration surfaces.
 - [design/mobility-and-jump-profile.md](./design/mobility-and-jump-profile.md) defines semantic order,
-  wide/narrow composition, states and announcements.
-- [design/reference-review.md](./design/reference-review.md) records which Drives & Mass hierarchy is
-  adopted and which unsupported values/visuals are rejected.
-- [quickstart.md](./quickstart.md) supplies runnable upstream, unit, end-to-end, responsive and
+  responsive composition, states and announcements.
+- [design/reference-review.md](./design/reference-review.md) records the exact `.design` regions and
+  accepted/rejected elements.
+- [quickstart.md](./quickstart.md) provides runnable package, unit, E2E, responsive, localization and
   accessibility validation scenarios.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, persisted metric, alternate build, private game catalogue, local jump,
-mass, capacity, curve, standard-load or power formula, hard-coded display string or visual literal.
-The released structured mobility and module-consumer results remain the only calculation and power
-sources. Every package zero, null, incomplete result, diagnostic issue, absent optional
-fact and unresolved module mass remains distinguishable. Every FR has a surface owner and a
-dual-engine responsive/accessibility validation path.
+Phase 1 introduces no backend, persistence, private game catalogue, local game formula, second
+condition store, private power classification, hard-coded display string or one-off visual literal.
+Every package value remains exact; every incomplete result retains the package issue object and
+order; every absent optional parameter remains absent; every complete zero remains numeric zero.
+The full content is present at every layout and every FR has a surface and verification owner.
 
-The planning gate remains **PASS with no exception**. The Almanac gate is satisfied; implementation
-is sequenced behind features 001, 002, 003, 005 and 011. After completing those prerequisites,
-generate or refresh tasks.
+The design gate remains **PASS with no exception**. Shipping remains blocked until shared strict
+mode and feature 011's dual-engine responsive/accessibility foundation are present; these are
+dependencies to satisfy, not grounds for relaxing the constitution.
 
 ## Complexity Tracking
 
-No constitutional exception is requested. The projector/facade split is the minimum structure that
-keeps package projection testable without rendering and guarantees revision coherence.
+No constitutional violation is proposed. The projector/store/presenter split is the minimum needed
+to keep package reads render-free, revision-coherent and presentation-only at the component layer.

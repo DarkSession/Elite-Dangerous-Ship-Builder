@@ -4,44 +4,46 @@
 
 Reviewed `.design/Ship Builder.dc.html`:
 
-- the wide `data-anat-detail="mass"` Drives & Mass region; and
-- the narrow `data-m-mode="mass"` region.
+- wide Drives tab, `data-anat-layer="mass"` and `data-anat-detail="mass"` (especially the paired
+  Thruster Load and Frame Shift Drive cards); and
+- narrow Drives tab, `data-m-mode="mass"`.
 
-The reference is a hierarchy/composition input only. Package contracts, the accepted specification,
-constitution and repository design system override every sample value and inline style.
+The reference supplies information hierarchy only. The accepted specification, Almanac contracts,
+constitution and repository design system override its sample values, labels, interactions and
+inline styles.
 
 ## Adopted direction
 
-- Keep thruster/mobility and FSD/jump facts in adjacent logical regions on wide layouts.
-- Keep the source module identity beside the results it qualifies.
-- Make selected load context prominent before performance figures.
-- Use a wide-to-stacked responsive direction with stable semantic order.
-- Keep numeric values compact while retaining explicit labels and units.
+- Keep the workspace mode label “Drives” and capability heading “Drives & Mass”.
+- Keep mobility/thruster and jump/FSD as adjacent logical cards at wide widths.
+- Keep source module identity beside the values/issues it qualifies.
+- Put selected load and ENG-pip context before selected mobility values.
+- Stack the same complete semantic content at narrow and zoomed widths.
+- Prefer compact labelled value/unit rows and definition groups.
 
 ## Required departures
 
-| Reference element                                       | Decision                  | Reason                                                                                                                 |
-| ------------------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Hull/modules/fuel mass bar                              | Reject                    | The package supplies no feature-008 decomposition result or percentage widths; local composition/re-sum is prohibited. |
-| “91% of optimal mass” and headroom                      | Reject                    | Both are derived comparisons absent from required package results.                                                     |
-| Speed, rotation and jump bars                           | Reject                    | Arbitrary scales and widths are not package output and colour/length cannot carry meaning.                             |
-| Saved-build deltas/arrows                               | Reject                    | Comparison is outside feature scope and the reference values are authored.                                             |
-| “Fuelled/current/full cargo” labels                     | Replace                   | Use exact maximum/unladen/laden identities and feature 003 selected-load wording.                                      |
-| Mass lock                                               | Omit                      | Outside the accepted feature scope.                                                                                    |
-| SCO badge                                               | Conditional only          | It may appear only if a relevant package record returns the capability; never infer from name/symbol.                  |
-| Optimal mass/max fuel                                   | Conditional only          | Show exact returned FSD facts with no headroom/fuel calculation.                                                       |
-| “Fuel per jump”                                         | Omit                      | Not required by the summary contract; do not add a separate calculation.                                               |
-| Narrow omission of roll/multipliers/totals/counts       | Reject                    | Mobile must retain every required field.                                                                               |
-| Narrow omission of capacities/diagnostics/module masses | Reject                    | All form factors have full information parity.                                                                         |
-| Hover titles                                            | Reject as sole disclosure | Essential meaning must be visible/programmatic and work by touch.                                                      |
-| Inline colours/sizes/breakpoints/English                | Reject                    | Feature 011 tokens, components and localization are the only sources.                                                  |
+| Reference element                                                      | Decision                | Reason                                                                                                     |
+| ---------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `1,142 t` labelled “Hull Mass” / “Thruster Load”                       | Replace                 | It is neither hull mass nor the required `unladenMassResult`; use exact package values with exact meaning. |
+| Hull/modules/fuel stacked bar and `Modules 662`                        | Remove                  | The package exposes no feature-008 decomposition/subtotal contract; local summing is prohibited.           |
+| “91% of optimal”, optimal marker and headroom                          | Remove                  | These are locally derived comparisons, not returned results.                                               |
+| Speed/rotation/jump bar widths                                         | Remove                  | Their scales are arbitrary and cannot carry exact/accessibility meaning.                                   |
+| Saved-build deltas/arrows                                              | Remove                  | Build comparison is outside scope and values are authored.                                                 |
+| “Fuelled”, “Current”, “Full Cargo”                                     | Replace                 | Use exact maximum/unladen/laden identities; selected context never replaces one summary profile.           |
+| `MASS LOCK`                                                            | Remove                  | Outside feature 008's accepted scope.                                                                      |
+| `Fuel per jump`                                                        | Remove as a calculation | `maxFuel` may appear only as the returned FSD maximum-fuel parameter.                                      |
+| `SCO` badge                                                            | Omit                    | No accepted requirement needs it; never infer capability from module name/symbol.                          |
+| Mass-sized anatomy nodes and centre of mass                            | Remove                  | No package slot-coordinate/mass-placement result supports them; feature 010 remains hardpoint-only.        |
+| Hover `title` disclosures and clickable `div` tabs                     | Replace                 | Use visible text and semantic tab/button relationships that work by touch and screen reader.               |
+| Inline colours, fixed sizes, nowrap, English and external fonts/assets | Replace                 | Feature 011 tokens/components/localization are the only implementation source.                             |
 
-## Resulting composition
+## Missing reference content restored by the plan
 
-The implemented surface preserves the reference's paired information architecture without its
-invented values or visual scales. Jump becomes a complete three-load definition group; mobility
-becomes all seven exact fields; source facts remain sparse; mass/capacity preserve structured issues;
-and module mass is a complete exact-slot collection. Narrow/zoomed layouts stack the same content
-rather than presenting an abbreviated card.
+The wide mock lacks both mobility multipliers, complete three-by-three jump results, aggregate
+diagnostics and every module mass. The narrow mock additionally omits roll, ENG context, thruster
+identity/issues/curve facts, true maximum/total/count jump results, FSD facts, all capacity results,
+all diagnostics and the module list. Both are incomplete examples.
 
-No reference artwork or external asset is required for this capability.
+[mobility-and-jump-profile.md](./mobility-and-jump-profile.md) restores every required field and state
+at every width. No anatomy artwork or other `.design` asset is needed for feature 008.

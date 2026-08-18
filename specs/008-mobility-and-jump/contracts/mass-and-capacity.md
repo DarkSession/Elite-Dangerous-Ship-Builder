@@ -2,77 +2,63 @@
 
 ## Aggregate package boundary
 
-Read these properties exactly once per build revision:
+Read these package properties exactly once per captured build revision:
 
-| Projection     | Package source        | Complete value                   |
-| -------------- | --------------------- | -------------------------------- |
-| unladen mass   | `unladenMassResult`   | tonnes                           |
-| fuel capacity  | `fuelCapacityResult`  | exact `{ main, reserve }` tonnes |
-| cargo capacity | `cargoCapacityResult` | tonnes                           |
+| Capability value | Package source        | Complete value                   |
+| ---------------- | --------------------- | -------------------------------- |
+| unladen mass     | `unladenMassResult`   | tonnes                           |
+| fuel capacity    | `fuelCapacityResult`  | exact `{ main, reserve }` tonnes |
+| cargo capacity   | `cargoCapacityResult` | tonnes                           |
 
-Each property remains its own `CalculationResult`; one incomplete aggregate does not erase another
-complete result.
+Keep each exact `CalculationResult` independently. One incomplete result does not hide another
+complete result. Complete numeric zero remains numeric zero.
 
 ## Diagnostic preservation
 
-An incomplete result retains every issue in package order with exact:
+Every incomplete result retains the complete package issue object and order: required `field`,
+`reason`, `message`, optional `slot`, `symbol` and `params`. The presenter requests Almanac's locale
+message and uses feature 011's canonical fallback disclosure; it never parses, merges, deduplicates
+or privately translates diagnostic prose.
 
-- `field`;
-- optional `slot`;
-- optional `symbol`;
-- canonical `message`;
-- optional `params`.
-
-The presenter does not parse, merge, deduplicate or privately translate diagnostics. It requests
-Almanac localization through feature 011 and shows the shared canonical-language disclosure when the
-active locale is unavailable.
-
-Complete zero is never treated as missing:
-
-- no cargo rack is complete zero cargo;
-- no main tank is complete zero main capacity when the reserve is known;
-- a zero-mass fitted article is ready zero module mass.
+Examples of valid complete zero include no cargo rack (`cargoCapacity: 0`), no main tank with known
+hull reserve (`main: 0`) and a zero-mass fitted article.
 
 ## Per-module mass boundary
 
-Enumerate package fitted snapshots once. Every fitted module creates one projection with:
+Map `fittedModules()` once. Every fitted snapshot creates one entry containing:
 
-- exact original slot key;
-- exact symbol;
-- package game name;
-- exact post-engineering `effectiveStats.mass`, or unavailable when it is absent/unresolved.
+- exact original `slot` key;
+- exact module `symbol`; and
+- exact post-engineering `effectiveStats.mass`, or explicit unavailable when effective stats/mass
+  are absent.
 
-Duplicate module symbols in separate slots remain separate entries. Presentation may order entries,
-but it must not drop, group, add, subtract or re-sum them. `unladenMassResult` is the only aggregate
-mass source.
+Resolve module and slot display text through Almanac locale helpers in the presenter. Do not treat
+`effectiveStats.name` as localized text.
 
-Raw journal modifiers and catalogue base mass are prohibited fallbacks. An unknown module mass stays
-unavailable and any package aggregate dependency stays incomplete.
+Duplicate symbols in different slots remain distinct. Package order is the default presentation
+order. If a module row exposes navigation, it emits the unchanged slot key through the shared
+workspace target and feature 002 owns the reveal/edit action.
 
-## Relationship to jump and mobility
+## Aggregate/row independence
 
-- All three aggregate results are collected before dependent jump/mobility calls.
-- Jump summary requires complete mass, fuel and cargo results.
-- Mobility requires complete mass and the capacities used by the selected standard load.
-- Issues remain visible in the mass/capacity region even when another independent package result is
-  ready.
-- No diagnostic result is mutated to make a dependent method callable.
+Never sum, group, subtract or reconcile module rows. `unladenMassResult` is the only aggregate source.
+Raw journal modifiers and catalogue base mass are prohibited fallbacks.
 
-## Exact-slot integration
+An imported build may carry a complete package-trusted `UnladenMass` while an unresolved fitted
+module has unavailable row mass. Preserve both package outcomes. “Unknown module mass makes a
+dependent aggregate unavailable” applies when the package reports that aggregate incomplete; the
+application does not override a package-supplied complete aggregate.
 
-If a module row exposes a navigation action, it emits the original slot key to feature 002. The
-action changes no build value and does not imply that the module row contributed a locally calculated
-subtotal.
+## Relationship to dependent calls
 
-## Revision and failure behavior
-
-Aggregate and module entries belong to one captured build revision. A build edit, engineering change,
-undo/redo or replacement invalidates the entire old collection. A stale projection is discarded;
-unexpected current-revision failure shows no relabelled old values.
+- All aggregate results remain visible whether or not another calculation can run.
+- Jump is called only when all three aggregate and all three standard-load results are complete.
+- Mobility is called only when unladen mass and its selected standard-load result are complete.
+- No issue/result is changed to make a dependent method callable.
 
 ## Verification
 
-Contract tests deep-compare all complete results and structured issues with the package, prove unknown
-mass prevents dependent calls, verify engineered mass changes through `effectiveStats`, cover zero
-mass/fuel/cargo and duplicate symbols in distinct slots, and statically reject any module-mass sum or
-raw modifier resolution in feature 008.
+Tests deep-compare the three package results and every issue/order, cover complete zero and incomplete
+states, verify engineered/zero/unavailable row mass, duplicate symbols in distinct slots, package-
+trusted aggregate plus unavailable row, and exact-slot intent. Static review rejects any module-mass
+sum or raw modifier resolution in feature 008.

@@ -1,65 +1,72 @@
 # Jump Performance Contract
 
-## Inputs and call guard
+## Inputs and complete-result guard
 
-The projector receives one captured active `ShipLoadout` and build revision. Before calling a jump
-method it reads:
+For one captured `ShipLoadout`, read exactly once:
 
 1. `unladenMassResult`;
 2. `fuelCapacityResult`;
 3. `cargoCapacityResult`;
-4. the package fitted Frame Shift Drive source and its effective jump parameters.
+4. `standardLoadResult('maximum')`;
+5. `standardLoadResult('unladen')`; and
+6. `standardLoadResult('laden')`.
 
-`jumpRangeSummary()` is invoked exactly once only when all required diagnostics are complete and the
-package source can supply a usable drive. A failed diagnostic result remains `incomplete` with all
-ordered issues. Missing/unresolved drive state or a safely handled package throw remains
-`unavailable`; no fallback value is passed.
+Call `jumpRangeSummary()` exactly once only when every aggregate and standard-load result is
+complete. This explicitly satisfies the diagnostic mass/capacity gate and uses the package's
+FSD-aware maximum-load validation, including any active Guardian booster. Never use fitted-record
+inspection as the call guard.
 
-## Ready result mapping
+When any guard is incomplete, do not call the summary. Keep each exact `CalculationResult` and its
+ordered issues; identify the blocking result(s) without flattening, parsing or deduplicating issues.
 
-| Application load identity | Single range source | Total range source           | Jump-count source            |
-| ------------------------- | ------------------- | ---------------------------- | ---------------------------- |
-| maximum                   | `summary.max`       | `summary.totalMax.range`     | `summary.totalMax.jumps`     |
-| unladen                   | `summary.unladen`   | `summary.totalUnladen.range` | `summary.totalUnladen.jumps` |
-| laden                     | `summary.laden`     | `summary.totalLaden.range`   | `summary.totalLaden.jumps`   |
+An exception after all guards complete is an unexpected application/package failure. It supplies no
+local game diagnosis and exposes no prior numeric result under the new revision.
 
-The complete `JumpRangeSummary` is projected at once. Every number is copied exactly and associated
-with the exact fitted drive slot/symbol. Light-years and integer counts are formatted only in the
-presenter for the active locale.
+## Ready mapping
+
+The whole `JumpRangeSummary` is retained and displayed as:
+
+| Load identity | Single range | Total range          | Jump count           |
+| ------------- | ------------ | -------------------- | -------------------- |
+| maximum       | `max`        | `totalMax.range`     | `totalMax.jumps`     |
+| unladen       | `unladen`    | `totalUnladen.range` | `totalUnladen.jumps` |
+| laden         | `laden`      | `totalLaden.range`   | `totalLaden.jumps`   |
+
+All range fields are light-years; counts are package integers. Presentation formats but never
+round-trips or changes the underlying numbers. Equal load profiles remain separately labelled.
 
 ## Zero and unavailable semantics
 
-- Complete zero main fuel remains a valid package input. Six zero range/count results remain ready
-  numeric zero.
-- Complete zero cargo capacity may make unladen and laden values equal. Both labelled profiles remain.
-- Incomplete mass, fuel or cargo never becomes zero and prevents the summary call.
-- No fitted or unresolved drive produces no numeric jump result.
-- Drive enabled state is shown as a fitted fact when supplied, but feature 008 does not invent a
-  power-readiness gate absent from the package jump contract.
+- Usable FSD plus complete zero main fuel yields package numeric zero range/count results; show zero.
+- Complete zero cargo may make laden and unladen values equal; show both identities.
+- Incomplete mass/fuel/cargo or maximum-load FSD validation yields no summary number.
+- A missing or unresolved FSD is represented by the exact incomplete maximum-load issue, including
+  `field`, `reason`, optional slot/symbol, message and params.
+- Fitted `on` state is source provenance only. The jump facade does not document it as a power gate,
+  so feature 008 does not add one.
 
-## Fitted drive facts
+## FSD identity and parameters
 
-The source projection may show only package-returned post-engineering facts relevant to the feature:
-`optMass`, `maxFuel`, `fuelMul`, `fuelPower` and optional `jumpBoost`. Missing facts remain absent.
-There is no application-owned optimal-mass headroom, fuel cap, mass factor, range, fuel-per-jump or
-jump-count calculation.
+Locate the fitted source through `slots('core')` where `core === 'frameShiftDrive'`, retaining the
+exact `key`, symbol and optional `on`. Only present post-engineering `effectiveStats` fields may be
+shown: `optMass`, `maxFuel`, `fuelMul` and `fuelPower`.
+
+After the standard-load guards complete, `ShipLoadout.frameShiftDrive` may supply the combined
+effective parameter record. Its `jumpBoost` is an active-booster/build parameter, not a field of the
+fitted FSD record. Label it accordingly and preserve zero when no booster contributes.
+
+Do not calculate or display optimal-mass percentage, headroom, mass factor, per-jump fuel, range,
+total or count outside the package facades. Do not infer SCO from a symbol/name.
 
 ## Selected-load integration
 
-Feature 003 chooses which one of the three summary profiles supplies the status headline and shared
-load context. Feature 008 does not own a second selector. It reuses feature 003's released
-`standardLoadResult()` mapping and never recreates `min(mainCapacity, maxFuel)`.
-
-## Revision and failure behavior
-
-- The summary and drive source belong to the same captured build revision.
-- A stale projection is discarded in full.
-- An unexpected package exception produces a current-revision nonnumeric failure; prior figures
-  remain associated only with their old revision.
-- One settled result change contributes to the capability's single coalesced polite announcement.
+Feature 003 state maps `maximumJump -> maximum`, `unladen -> unladen`, `laden -> laden`. The Drives &
+Mass capability always shows all three jump profiles; the selected profile supplies feature 003's
+Status headline and read-only context. Feature 008 creates no second selector.
 
 ## Verification
 
-Contract tests prove call count/guards, exact field equality, ordered diagnostics, drive identity,
-zero fuel, zero cargo, missing/unresolved drive, package failure and stale-revision rejection. Tests
-must not contain a local jump, total-range, fuel-cap or count formula.
+Tests prove all six guards, no summary call when any guard is incomplete, one summary call when all
+complete, exact field equality, issue identity/order, missing/unresolved FSD, active booster, zero
+fuel, zero cargo, equal profiles, exact slot identity and current-revision failure behavior. Tests
+contain no jump, fuel-cap or count formula.

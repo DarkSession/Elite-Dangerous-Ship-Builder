@@ -1,273 +1,315 @@
 # Data Model: Mobility, Mass and Jump
 
-This model is an immutable presentation projection over one active `ShipLoadout` and one settled
-viewing-condition revision. It stores no build data and defines no game calculation.
+Feature 008 owns immutable projections only. The active build, build revision, viewing conditions,
+condition revision, selection and persistence remain in their owning features. Package result and
+issue types are retained rather than redefined.
+
+## Package types retained verbatim
+
+```ts
+import type {
+  CalculationIssue,
+  CalculationResult,
+  FuelCapacity,
+} from '@elite-dangerous-almanac/core/ships/loadout-calculations';
+import type { MobilityMetrics } from '@elite-dangerous-almanac/core/ships/mobility';
+import type { FrameShiftDriveParams } from '@elite-dangerous-almanac/core/ships/jump-range';
+import type {
+  JumpRangeSummary,
+  StandardLoadInputs,
+} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+```
+
+`CalculationIssue` is not narrowed or copied. In Almanac 0.1.1 it contains required `field`,
+`reason` and `message`, optional `slot`, `symbol` and `params`, and package ordering. A complete
+`CalculationResult` may contain numeric zero; an incomplete result contains `value: null` and a
+non-empty issue tuple.
 
 ## MobilityJumpSnapshot
 
-One atomically published capability result.
+One synchronous projector call returns:
 
-| Field                | Type                              | Rules                                                            |
-| -------------------- | --------------------------------- | ---------------------------------------------------------------- |
-| `buildRevision`      | integer                           | Exact feature 001 revision captured with the loadout.            |
-| `conditionsRevision` | integer                           | Exact feature 003 revision captured with selected load/ENG pips. |
-| `conditions`         | `MobilityConditions`              | Settled package inputs; never a component draft.                 |
-| `massAndCapacity`    | `MassAndCapacityProfile`          | Three exact diagnostic aggregate projections.                    |
-| `jump`               | `JumpProjection`                  | Complete package summary or explicit unavailable state.          |
-| `mobility`           | `MobilityProjection`              | Complete seven-field result or explicit unavailable state.       |
-| `driveSource`        | `DriveSourceObservation`          | Exact fitted source and sparse package facts.                    |
-| `thrusterSource`     | `ThrusterSourceObservation`       | Exact fitted/power state and sparse package facts.               |
-| `moduleMasses`       | readonly `ModuleMassProjection[]` | One entry per fitted package snapshot.                           |
+```ts
+interface MobilityJumpSnapshot {
+  readonly buildRevision: number;
+  readonly conditionsRevision: number;
+  readonly selectedCondition: SelectedMobilityCondition;
+  readonly aggregates: AggregateResults;
+  readonly standardLoads: StandardLoadResults;
+  readonly jump: GuardedJumpResult;
+  readonly mobility: GuardedMobilityResult;
+  readonly frameShiftDrive: CoreModuleSource<FrameShiftDriveFacts>;
+  readonly thrusters: CoreModuleSource<ThrusterFacts>;
+  readonly moduleMasses: readonly ModuleMass[];
+}
+```
 
-The object and nested collections are immutable. No region publishes independently.
+The object and every nested collection are frozen. All fields describe the same captured revision
+pair.
 
-## MobilityConditions
+## SelectedMobilityCondition
 
-Feature 003 owns and validates this state.
+Feature 003 owns the source `ViewingConditions`; feature 008 records only the exact context used:
 
-| Field         | Type                          | Rules                                                                       |
-| ------------- | ----------------------------- | --------------------------------------------------------------------------- |
-| `load`        | `maximum \| unladen \| laden` | Shared semantic load identity.                                              |
-| `fuel`        | number                        | Exact package-produced/diagnosed tonnes supplied to mobility when explicit. |
-| `cargo`       | number                        | Exact package-produced/diagnosed tonnes.                                    |
-| `enginesPips` | number                        | Settled package argument in `[0, 4]`, including half steps.                 |
+```ts
+interface SelectedMobilityCondition {
+  readonly load: 'maximumJump' | 'unladen' | 'laden';
+  readonly almanacLoad: 'maximum' | 'unladen' | 'laden';
+  readonly enginesHalfPips: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  readonly enginesPips: number; // enginesHalfPips / 2 at the package boundary
+}
+```
 
-For unladen/laden full main fuel may remain an omitted package argument rather than a duplicated
-number. The projection records enough condition meaning to label the result but never creates a
-second stored preference.
+The mapping is fixed: `maximumJump -> maximum`; other identities map verbatim. `enginesPips` is in
+`[0, 4]` by the feature 003 contract. This is not another editable or persisted condition.
 
-## DiagnosticResult
+## AggregateResults
 
-Generic projection of `CalculationResult<T>`.
+```ts
+interface AggregateResults {
+  readonly unladenMass: CalculationResult<number>;
+  readonly fuelCapacity: CalculationResult<FuelCapacity>;
+  readonly cargoCapacity: CalculationResult<number>;
+}
+```
 
-### `complete`
+Each value is the exact package getter result for the captured build. Results are independent: one
+incomplete aggregate does not erase another complete result. A complete imported aggregate stays
+complete even if a per-module mass row is unavailable, because the package may trust the supplied
+aggregate rather than recompute it.
 
-| Field    | Rules                                       |
-| -------- | ------------------------------------------- |
-| `kind`   | Literal `complete`.                         |
-| `value`  | Exact package value; numeric zero is valid. |
-| `issues` | Empty readonly tuple.                       |
+## StandardLoadResults
 
-### `incomplete`
+```ts
+type StandardLoad = 'maximum' | 'unladen' | 'laden';
 
-| Field    | Rules                                                      |
-| -------- | ---------------------------------------------------------- |
-| `kind`   | Literal `incomplete`.                                      |
-| `value`  | Always `null`.                                             |
-| `issues` | Non-empty ordered `CalculationIssueProjection` collection. |
+type StandardLoadResults = Readonly<Record<StandardLoad, CalculationResult<StandardLoadInputs>>>;
+```
 
-## CalculationIssueProjection
+All three are captured exactly once. They are both the package definitions of the load identities
+and the complete guard for `jumpRangeSummary()`.
 
-| Field     | Type/rules                                                                                            |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| `field`   | Exact package identity: `hullMass`, `mass`, `cargoCapacity`, `fuelCapacity` or `reserveFuelCapacity`. |
-| `slot`    | Exact package slot when present; absence stays absent.                                                |
-| `symbol`  | Exact module symbol when present; absence stays absent.                                               |
-| `message` | Canonical package diagnostic; never parsed.                                                           |
-| `params`  | Exact readonly package params when present.                                                           |
+## GuardedJumpResult
 
-## MassAndCapacityProfile
+```ts
+type GuardedJumpResult =
+  | {
+      readonly state: 'ready';
+      readonly value: JumpRangeSummary;
+      readonly effectiveDrive: FrameShiftDriveParams;
+    }
+  | {
+      readonly state: 'blocked';
+      readonly blockedAggregates: readonly (keyof AggregateResults)[];
+      readonly blockedLoads: readonly StandardLoad[];
+    };
+```
 
-| Field           | Type                                       | Meaning                                                        |
-| --------------- | ------------------------------------------ | -------------------------------------------------------------- |
-| `unladenMass`   | `DiagnosticResult<number>`                 | Hull and fitted modules, empty main tank and no cargo, tonnes. |
-| `fuelCapacity`  | `DiagnosticResult<FuelCapacityProjection>` | Main and reserve capacities, tonnes.                           |
-| `cargoCapacity` | `DiagnosticResult<number>`                 | Total fitted cargo capacity, tonnes.                           |
+Rules:
 
-### FuelCapacityProjection
+- `ready` exists only after all three aggregates and all three `standardLoads` are complete.
+- `value` is the whole exact `JumpRangeSummary`; no range or count is recomputed.
+- `effectiveDrive` is the package's guarded post-engineering FSD parameter record. Its optional
+  `jumpBoost` is the combined active-booster contribution and is not attributed to the fitted FSD.
+- `blockedAggregates` and `blockedLoads` name each incomplete result in fixed presentation order.
+  Exact issues live on the owning package results; there is no reduced or deduplicated collection.
+- An unexpected throw after complete guards produces the outer store's `failure`, not another game
+  result variant.
 
-| Field     | Rules                                                                    |
-| --------- | ------------------------------------------------------------------------ |
-| `main`    | Exact package main capacity; zero remains complete zero.                 |
-| `reserve` | Exact package reserve capacity; never folded into main or mobility mass. |
+Presentation maps the complete summary without changing it:
 
-The three aggregate results are independent. An incomplete cargo result does not erase a complete
-mass result from presentation, although it prevents calls that require cargo.
+| Profile | Single    | Total                | Count                |
+| ------- | --------- | -------------------- | -------------------- |
+| maximum | `max`     | `totalMax.range`     | `totalMax.jumps`     |
+| unladen | `unladen` | `totalUnladen.range` | `totalUnladen.jumps` |
+| laden   | `laden`   | `totalLaden.range`   | `totalLaden.jumps`   |
 
-## JumpProjection
+Every number may be zero; equal profiles remain separate.
 
-### `ready`
+## GuardedMobilityResult
 
-| Field       | Type                          | Rules                                     |
-| ----------- | ----------------------------- | ----------------------------------------- |
-| `kind`      | Literal `ready`.              |
-| `profiles`  | Fixed `JumpLoadProfile` tuple | Exactly maximum, unladen and laden.       |
-| `driveSlot` | string                        | Exact fitted source slot; never an index. |
+```ts
+type MobilityBlocker = 'unladenMass' | 'selectedStandardLoad';
 
-### `unavailable`
+type GuardedMobilityResult =
+  | {
+      readonly state: 'result';
+      readonly value: CalculationResult<MobilityMetrics>;
+    }
+  | {
+      readonly state: 'blocked';
+      readonly blockedBy: readonly MobilityBlocker[];
+    };
+```
 
-| Field    | Type                                                                           | Rules                                                                     |
-| -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `kind`   | Literal `unavailable`.                                                         |
-| `reason` | `dependencyIncomplete \| driveAbsent \| driveUnresolved \| packageUnavailable` | Used only when directly established.                                      |
-| `issues` | readonly `CalculationIssueProjection[]`                                        | Ordered union of owning failed diagnostic results, without deduplication. |
+`result` means the package method was called with the selected standard load and exact ENG pips. Its
+complete value contains all seven package fields; its incomplete value contains package power/
+thruster issues. `blocked` means the method was intentionally not called because mass or selected
+standard-load input was incomplete; the exact owning results remain in `aggregates` and
+`standardLoads`.
 
-No numeric field exists on an unavailable projection. A fitted drive's `on` state may be shown as a
-source fact, but feature 008 does not override a package summary merely because `on === false`; the
-0.1.1 jump contract is not documented as a power-readiness verdict.
+A complete result whose seven fields are zero is ready zero above supported mass. It never becomes
+`blocked` or incomplete.
 
-## JumpLoadProfile
+## CoreModuleSource
 
-| Field         | Type                          | Rules                                                          |
-| ------------- | ----------------------------- | -------------------------------------------------------------- |
-| `load`        | `maximum \| unladen \| laden` | Fixed semantic identity.                                       |
-| `singleRange` | number                        | Exact `max`, `unladen` or `laden`, light-years.                |
-| `totalRange`  | number                        | Exact owning `TotalRangeDetails.range`, light-years.           |
-| `jumps`       | number                        | Exact owning `TotalRangeDetails.jumps`; never locally counted. |
+```ts
+type CoreModuleSource<TFacts> =
+  | {
+      readonly state: 'empty';
+      readonly slotKey: string;
+    }
+  | {
+      readonly state: 'unresolved';
+      readonly slotKey: string;
+      readonly symbol: string;
+      readonly on: boolean | undefined;
+    }
+  | {
+      readonly state: 'resolved';
+      readonly slotKey: string;
+      readonly symbol: string;
+      readonly on: boolean | undefined;
+      readonly facts: TFacts;
+    };
+```
 
-All values may be zero. Equal load profiles remain separate entries.
+The source slot is found through `slots('core')` and `slot.core`, then retains the package's exact
+`slot.key`. `on === false` is explicitly switched off; `undefined` remains unspecified and is not
+relabeled disabled. Display names are not domain fields: the presenter requests module/slot text
+from Almanac for the active locale.
 
-## MobilityProjection
+Source state supplies identity/provenance only. Numeric availability comes from the guarded package
+result and its issues; the source does not override it.
 
-### `ready`
+## FrameShiftDriveFacts
 
-| Field                         | Type             | Meaning                                     |
-| ----------------------------- | ---------------- | ------------------------------------------- |
-| `kind`                        | Literal `ready`. |                                             |
-| `speed`                       | number           | Exact package m/s.                          |
-| `boost`                       | number           | Exact package m/s.                          |
-| `pitch`                       | number           | Exact package degrees/s.                    |
-| `roll`                        | number           | Exact package degrees/s.                    |
-| `yaw`                         | number           | Exact package degrees/s.                    |
-| `massCurveMultiplier`         | number           | Exact selected-load speed-curve multiplier. |
-| `rotationMassCurveMultiplier` | number           | Exact selected-load rotation multiplier.    |
+Sparse fields copied from the fitted FSD's post-engineering `effectiveStats` only when present:
 
-A ready projection containing zeroes is the package's supported semantic result for mass above the
-thruster maximum; it is not unavailable.
+```ts
+interface FrameShiftDriveFacts {
+  readonly optMass?: number;
+  readonly maxFuel?: number;
+  readonly fuelMul?: number;
+  readonly fuelPower?: number;
+}
+```
 
-### `unavailable`
-
-| Field    | Type                                                                                                                              | Rules                                                   |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `kind`   | Literal `unavailable`.                                                                                                            |
-| `reason` | `dependencyIncomplete \| thrustersAbsent \| thrustersDisabled \| thrustersUnpowered \| thrustersUnresolved \| packageUnavailable` | Only directly observed package/shared states are named. |
-| `issues` | readonly `CalculationIssueProjection[]`                                                                                           | Owning diagnostic issues, if any.                       |
-
-### `failure`
-
-An unexpected current-revision package/presenter failure with no numeric values. Localized display
-text is created outside the domain model.
-
-## DriveSourceObservation
-
-### `absent`
-
-The package slot collection establishes no fitted Frame Shift Drive.
-
-### `unresolved`
-
-An occupied package drive slot has no post-engineering effective stats or lacks the jump parameters
-needed by the facade. It carries exact slot and symbol but no invented facts.
-
-### `present`
-
-| Field    | Type/rules                                         |
-| -------- | -------------------------------------------------- |
-| `slot`   | Exact game slot key.                               |
-| `symbol` | Exact module symbol.                               |
-| `name`   | Package/localized game text.                       |
-| `on`     | Exact optional fitted enabled flag.                |
-| `facts`  | Sparse `DriveFacts`; only package-present members. |
-
-## DriveFacts
-
-Sparse post-engineering package facts:
-
-- `optMass` in tonnes;
-- `maxFuel` in tonnes;
-- `fuelMul` and `fuelPower` package factors;
-- optional `jumpBoost` in light-years.
-
-No headroom, percentage, derived factor or fuel-per-jump value is added. If a released package result
-directly returns another FR-008 drive fact, the model may add that sparse field without deriving it.
-
-## ThrusterSourceObservation
-
-Discriminated states:
-
-- `absent`: package slots establish no fitted thrusters;
-- `disabled`: fitted snapshot explicitly has `on === false`;
-- `unpowered`: feature 005's package-authored exact-slot observation establishes shedding;
-- `unresolved`: the slot is occupied but effective thruster facts/power state are incomplete;
-- `present`: resolved enabled/powered source with exact identity and sparse `ThrusterFacts`.
-
-Every non-absent state carrying a module uses exact slot and symbol. Source state and
-`MobilityProjection` are separate: the source explains observed context but never replaces or
-changes the package mobility value.
+`jumpBoost` is deliberately absent here. When shown, it comes from
+`GuardedJumpResult.effectiveDrive.jumpBoost` and is labelled as a combined build/booster parameter.
+No mass factor, headroom, percentage, fuel use or SCO capability is inferred.
 
 ## ThrusterFacts
 
-Sparse post-engineering record fields:
+Sparse fields copied from the fitted thruster's post-engineering `effectiveStats` only when present:
 
-| Group          | Fields                                                                             |
-| -------------- | ---------------------------------------------------------------------------------- |
-| Shared curve   | `minMass`, `optMass`, `maxMass`, `minMultiplier`, `optMultiplier`, `maxMultiplier` |
-| Speed curve    | optional `minSpeedMultiplier`, `optSpeedMultiplier`, `maxSpeedMultiplier`          |
-| Rotation curve | optional `minRotationMultiplier`, `optRotationMultiplier`, `maxRotationMultiplier` |
-
-Missing optional fields remain absent. Values are not converted into percentages or bars.
-
-## ModuleMassProjection
-
-| Field    | Type/rules                                                                  |
-| -------- | --------------------------------------------------------------------------- |
-| `slot`   | Exact game slot key; unique identity within one build.                      |
-| `symbol` | Exact module symbol; duplicates across slots are permitted.                 |
-| `name`   | Package/localized game text.                                                |
-| `mass`   | `ready(number)` from `effectiveStats.mass` or `unavailable`; zero is ready. |
-
-The collection may be presentation-ordered without changing entries. It is never summed, grouped
-into an invented subtotal or used to reconstruct unladen mass.
-
-## Relationships
-
-```text
-Active build revision
-  ├──> aggregate *Result getters ──guards──> jumpRangeSummary()
-  ├──> fitted drive record ────────────────> drive identity/facts
-  ├──> fitted thruster record ─────────────> thruster identity/facts
-  ├──> fitted module snapshots ────────────> exact-slot module masses
-  └──> feature 005 power observation ──────> thruster source state
-
-Viewing-condition revision
-  ├──> selected standard load inputs
-  └──> selected ENG pips
-             └─────────────────────────────> mobilityMetricsResult()
-
-All inputs/results ──atomic publication──> MobilityJumpSnapshot
+```ts
+interface ThrusterFacts {
+  readonly minMass?: number;
+  readonly optMass?: number;
+  readonly maxMass?: number;
+  readonly minMultiplier?: number;
+  readonly optMultiplier?: number;
+  readonly maxMultiplier?: number;
+  readonly minSpeedMultiplier?: number;
+  readonly optSpeedMultiplier?: number;
+  readonly maxSpeedMultiplier?: number;
+  readonly minRotationMultiplier?: number;
+  readonly optRotationMultiplier?: number;
+  readonly maxRotationMultiplier?: number;
+}
 ```
 
-## Validation invariants
+Missing optional fields remain absent. The selected-load `massCurveMultiplier` and
+`rotationMassCurveMultiplier` remain on the package mobility result, not this source record.
 
-- Snapshot build and condition revisions match the active contexts at publication.
-- Each diagnostic aggregate is read once and retains every ordered issue.
-- `jumpRangeSummary()` is called at most once and only after all required diagnostics and drive facts
-  are complete.
-- `mobilityMetricsResult()` is called at most once with the exact shared fuel/cargo/ENG inputs.
-- Every returned jump and mobility field is copied unchanged.
-- No null, missing optional field or incomplete aggregate becomes numeric zero.
-- A non-null package zero mobility result never becomes unavailable.
-- Every fitted module appears once by exact slot; mass is never re-summed.
-- Source identities never use positional indices or symbol/name matching.
-- No source observation changes a package numeric result.
+## ModuleMass
 
-## State transitions
-
-```text
-no active build
-  └─ activate/replace build ─> projecting(current build revision, current conditions revision)
-
-current snapshot
-  ├─ module edit/undo/redo ─> projecting(new build revision, same conditions revision)
-  ├─ accepted load/pip change ─> projecting(same build revision, new conditions revision)
-  └─ build removed ─> no active build
-
-projecting
-  ├─ dependencies incomplete ─> publish incomplete/unavailable snapshot with issues
-  ├─ revisions still current ─> publish complete immutable snapshot once
-  ├─ either revision stale ─> discard without rendering
-  └─ unexpected package error ─> publish failure for current revisions, no stale figures
+```ts
+interface ModuleMass {
+  readonly slotKey: string;
+  readonly symbol: string;
+  readonly mass:
+    { readonly state: 'ready'; readonly value: number } | { readonly state: 'unavailable' };
+}
 ```
 
-Capability selection and disclosure expansion are presentation state. They do not enter storage,
-links, SLEF or edit history.
+There is exactly one entry per `fittedModules()` snapshot in package order. `ready.value` is exactly
+`effectiveStats.mass`, including zero. Missing effective stats or mass is unavailable. Duplicate
+symbols remain separate by exact slot key. The collection is never summed or used to validate the
+aggregate.
+
+## MobilityStatusProjection
+
+Feature 008 implements feature 003's generic provider contract:
+
+```ts
+type SemanticNumber =
+  | { readonly state: 'ready'; readonly value: number }
+  | { readonly state: 'unavailable'; readonly issues: readonly CalculationIssue[] };
+
+interface MobilityStatusProjection {
+  readonly selectedLoad: 'maximumJump' | 'unladen' | 'laden';
+  readonly jumpRange: SemanticNumber;
+  readonly topSpeed: SemanticNumber;
+  readonly unladenMass: SemanticNumber;
+}
+
+type MobilityStatusSummaryId = 'jumpRange' | 'topSpeed' | 'unladenMass';
+```
+
+Mapping:
+
+- `jumpRange` selects the matching single-jump field from the ready summary; otherwise it is
+  unavailable with the exact issues from incomplete standard-load guards.
+- `topSpeed` uses the same selected-load/ENG `mobility.speed`; a blocked/incomplete result is
+  unavailable with its exact owning issues.
+- `unladenMass` maps the exact aggregate and never changes meaning with selected load.
+- Ready zero remains ready and does not qualify the summary.
+- Each unavailable summary contributes only its own ID once to feature 003's qualification list.
+
+The provider stamps the input revisions and returns `{ kind: 'detail', capability:
+'mobilityAndJump' }`. It is synchronously ready even when package values are unavailable; only an
+unexpected exception propagates to feature 003's `projectionFailed` handling.
+
+## Store lifecycle
+
+```ts
+type MobilityJumpStoreState =
+  | { readonly state: 'noBuild' }
+  | { readonly state: 'ready'; readonly snapshot: MobilityJumpSnapshot }
+  | {
+      readonly state: 'failure';
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+    };
+```
+
+Transitions:
+
+```text
+noBuild
+  └─ activate build ─> synchronous project ─> ready | failure
+
+ready
+  ├─ committed edit/undo/redo/replacement ─> project new build revision
+  ├─ accepted load/pip Apply or Reset ─> project new condition revision
+  └─ remove build ─> noBuild
+```
+
+Locale, disclosure and capability selection changes do not change either domain revision. Invalid
+feature 003 drafts do not invoke the projector. Old snapshots are never relabelled with new context.
+
+## Invariants
+
+- Snapshot revisions equal the captured input revisions.
+- Each aggregate and each standard load is read once per projection.
+- `jumpRangeSummary()` and `frameShiftDrive` are read only after all three aggregates and all three
+  standard loads complete.
+- `mobilityMetricsResult()` is called at most once, only after unladen mass and selected load
+  complete, with exact package load values and ENG half-pips divided once.
+- Every jump/mobility field and issue remains package-equal.
+- No `null`, missing field or unavailable row becomes zero; no ready zero becomes unavailable.
+- Core sources use `BuildSlot.core` for function and exact `BuildSlot.key` for identity.
+- Every fitted module appears once; per-module masses are never re-summed.
+- No localized string, formatted number or presentation token enters the domain snapshot.

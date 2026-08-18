@@ -1,160 +1,128 @@
-# Mobility, Mass and Jump Profile
+# Drives & Mass Capability
 
 ## Purpose and placement
 
-This logical surface presents complete package jump, flight mobility, aggregate capacity and fitted
-module mass facts for the active build. It lives inside `/build` and is reached through feature 003's
-Mobility headline/capability navigation. It owns no route, build mutation or viewing-condition store.
+Drives & Mass presents the active build's complete package jump summary, selected-load mobility,
+mass/capacity diagnostics and per-module mass. It is a capability mode inside `/build`, reached by
+the shared `mobilityAndJump` detail target. It owns no route, build editor or viewing-condition
+control.
 
-## Semantic order
+## Stable semantic order
 
-DOM and screen-reader order is fixed even when wide layouts form columns:
+The DOM and screen-reader order is fixed:
 
-1. capability heading and active-build identity;
-2. shared selected load and ENG-pip context/control from feature 003;
-3. fitted FSD identity and jump availability;
-4. maximum, unladen and laden jump profiles, each with single range, total range and jump count;
-5. sparse returned FSD parameters;
-6. fitted thruster identity, enabled/power/resolution observation and mobility availability;
+1. Drives & Mass heading and active-build identity;
+2. read-only selected load and ENG-pip context from feature 003;
+3. Jump Performance heading, exact fitted FSD identity/state and availability;
+4. maximum, unladen and laden groups, each with single range, total range and jump count;
+5. sparse fitted-FSD facts and, when shown, separately labelled combined boost parameter;
+6. Mobility Performance heading, exact fitted thruster identity/state and availability;
 7. speed, boost, pitch, roll, yaw and both selected-load multipliers;
-8. sparse returned thruster curve facts;
-9. unladen mass, main fuel, reserve fuel and cargo capacity with owning issues;
-10. complete exact-slot fitted-module mass collection.
+8. sparse fitted-thruster curve facts;
+9. independent unladen mass, main fuel, reserve fuel and cargo results with owning issues; and
+10. every exact-slot fitted-module mass row.
 
-The condition context precedes every affected result. Jump groups remain together and always identify
-their load. Equal numeric values do not merge.
+Wide grid placement does not alter that semantic order. Jump values are not duplicated into a
+separate summary block.
 
-## Wide and tablet composition
+## Responsive composition
 
-- A fluid upper region may place Jump Performance and Mobility Performance side by side when both
-  remain comfortably legible.
-- Each region keeps its source identity adjacent to the values it qualifies.
-- Mass and Capacity follows as complete diagnostic groups. Per-module Mass follows as a semantic
-  list/table that can use its own internal overflow if labels cannot wrap safely.
-- Wide visual placement never reorders heading or accessibility relationships.
+At desktop and tablet landscape widths, Jump Performance and Mobility Performance may sit in two
+fluid columns when source identity, labels, values and issues remain readable. Mass and Capacity
+then spans the available width, followed by the complete module-mass collection.
 
-Tablet portrait may stack the two performance regions; tablet landscape may retain columns. No
-breakpoint removes source parameters, issues, multipliers or module rows.
+At tablet portrait, mobile portrait/landscape, 200% text and 400% zoom, the same regions stack in the
+order above. Every field, issue, sparse fact and module row remains present. A module table becomes
+exact-slot cards/definition rows if that avoids horizontal overflow; no page-level horizontal
+scrolling is allowed.
 
-## Narrow, landscape and zoomed composition
+## Selected condition context
 
-- Shared conditions occupy the first full-width block.
-- Jump profiles become three labelled cards in maximum/unladen/laden order.
-- Mobility fields and sparse source facts use wrapping definition groups.
-- Mass/capacity issues sit immediately after the result they qualify.
-- Module masses become exact-slot cards; no wide-only column disappears.
-- At 400% zoom the same stack is used, without document-level horizontal scrolling.
+Show the settled load identity and ENG pips used by the package call before affected results. This is
+read-only context. Feature 003's complete Status capability is the sole home of load/pip draft,
+Apply and Reset controls, so Drives & Mass does not embed or clone them.
 
-Mobile landscape is a complete surface, not a shortened summary. Roll, both multipliers, total ranges,
-jump counts, capacities, diagnostics and every module mass remain present.
+## Jump Performance
 
-## Jump Performance region
+Show the core FSD slot's exact package key, localized module/slot text and source state adjacent to
+the result it qualifies. A ready summary contains exactly three labelled groups:
 
-The region begins with the exact fitted drive name/slot and optional enabled state. A ready summary
-contains three load groups:
+- maximum: one-jump fuel, empty hold;
+- unladen: full main tank, empty hold; and
+- laden: full main tank, full hold.
 
-- maximum: best one-jump load and its one-load total/count;
-- unladen: full-main-tank, empty-hold single/total/count;
-- laden: full-main-tank, full-hold single/total/count.
+Each group visibly names single range, total range and jump count with units. Equal values remain
+separate. Zero fuel is a numeric zero result, not an empty card.
 
-Every range is labelled light-years and every count is labelled jumps; proximity alone never
-communicates which is which. Zero fuel shows numeric zero with explanatory load wording, not an empty
-state. Missing/incomplete dependencies show no numeric placeholder and retain their issues.
+If any aggregate or standard-load guard is incomplete, show no summary number and associate the
+exact owning package issues. Sparse FSD parameters follow in a definition group. Combined
+`jumpBoost`, when included, is labelled as an active-booster/build parameter rather than an FSD
+record field. Do not show mass factor, percentage, headroom, fuel-per-jump calculation or inferred
+SCO state.
 
-Sparse drive facts form a separate “returned drive parameters” definition group. The group does not
-calculate headroom, fuel-per-jump or percentage of optimal mass.
+## Mobility Performance
 
-## Mobility Performance region
+Show exact thruster slot/source identity and the package result state. A complete result presents all
+seven fields. An incomplete result presents its exact issues, whose fields/reasons distinguish absent,
+disabled, shed, unresolved and power-input failures. Do not replace it with hull catalogue speed or
+rotation.
 
-The region begins with exact thruster source identity and a textual state: present, absent, disabled,
-unpowered or unresolved only when directly established. The shared selected load and ENG pips are
-repeated as context, not stored again.
+Complete all-zero performance above supported mass remains visibly/programmatically a ready package
+zero. Sparse curve facts are a separate definition group with no arbitrary bar scale or locally
+drawn curve.
 
-A ready result presents all seven package fields. Zero performance above maximum supported mass is
-explicitly described as a package zero result and remains visually/programmatically different from
-unavailable mobility. Null mobility never shows catalogue hull speeds as an estimate.
+## Mass and Capacity
 
-Sparse thruster thresholds/multipliers appear in a separate returned-parameters group. No bars or
-percentage labels imply a local curve scale.
-
-## Mass and Capacity region
-
-Three independent result groups present:
+Present three independent result groups:
 
 - unladen mass;
-- main and reserve fuel capacity as separate fields;
+- main and reserve fuel capacity as separately labelled values; and
 - cargo capacity.
 
-Each incomplete group has its complete ordered package issue collection attached with semantic list
-relationships. A complete zero stays numeric zero. One failed group does not hide independent ready
-groups.
+Each incomplete group owns its full ordered issue list. A complete zero stays numeric. An incomplete
+group does not hide independent complete groups.
 
-## Per-module Mass collection
+## Per-module Mass
 
-Every fitted module has one entry containing package game name, symbol where useful for diagnosis,
-exact slot and post-engineering mass or explicit unavailable state. Duplicate symbols remain
-distinguishable by slot. Optional exact-slot actions hand feature 002 the original key.
+Every fitted module appears once with localized package module/slot text, exact slot key where useful
+for diagnosis, symbol where useful, and post-engineering mass or explicit unavailable. Duplicate
+symbols remain distinct by slot. Optional reveal actions emit the shared exact-slot target.
 
-No module subtotal, hull/module/fuel decomposition or reconciliation difference is displayed because
-the package provides the authoritative aggregate separately.
+Do not show a module subtotal, hull/modules/fuel decomposition, reconciliation delta, spatial mass
+bubble or centre of mass. A package-trusted aggregate may remain complete beside an unavailable row.
 
-## State behavior
+## Surface states and feedback
 
 ### No active build
 
-Use the shared workspace empty state and existing hull-selection intent. Render no fabricated zeros.
+Use the workspace's shared no-build state and hull-selection intent. Render no zero placeholders.
 
-### Projecting
+### Package blockers/incomplete result
 
-Retain the previous snapshot only in its old revision context or replace the affected surface with
-the shared updating state. Never show old numbers under new load/pip/source labels.
-
-### Incomplete dependency
-
-Keep all available independent results. Hide only numeric dependents that the package could not
-answer and show all owning issues.
-
-### Unavailable jump or mobility
-
-State the directly observed source context. Do not infer cause from a generic throw/null, and do not
-substitute hull catalogue facts.
+Keep independent available sections. Replace only the dependent numeric group with localized
+unavailable framing and its exact issue relationships.
 
 ### Package zero
 
-Show locale-formatted zero plus semantic text for zero fuel or above-supported-mass performance.
-Colour/icon may supplement but never carry the distinction.
+Show locale-formatted zero and text that preserves the load/result meaning. Colour may supplement
+but cannot carry the distinction.
 
-### Failure
+### Unexpected failure
 
-Use feature 011's shared alert for unexpected current-revision failure. Offer no stale or estimated
-numeric value.
+The detailed store shows feature 011's shared current-revision alert and no stale/estimated numeric
+value. Feature 003's synchronous status transaction handles the same throw as `projectionFailed`.
 
-## Interaction and announcements
+### Announcements
 
-Feature 003 owns load/pip drafting and Apply behavior. Invalid drafts do not update this surface.
-Feature 008 may expose disclosure controls and exact-slot actions only. Touch/pointer targets use the
-shared minimum size and do not depend on hover.
+One settled build/condition revision produces one concise polite announcement summarizing changed
+availability and selected context. Diagnostics remain ordinary readable content rather than a burst
+of live-region messages.
 
-One accepted condition or settled build revision produces one concise polite announcement naming the
-new load/ENG context and result availability changes. Ordered diagnostics remain readable content;
-they are not each announced in a noisy sequence.
+## Localization and component previews
 
-## Localization and formatting
+Every owned heading, label, load identity, state, unit and announcement resolves through feature 011. Numbers use named locale formatters for light-years, m/s, degrees/s, tonnes, multipliers and
+integer counts. Almanac owns module/slot names and diagnostics; canonical fallback is disclosed.
 
-Every owned heading, label, load identity, source state, unit, sentinel and announcement resolves
-through feature 011. Number formatting covers light-years, m/s, degrees/s, tonnes, multipliers and
-integer jump counts. Game names and diagnostic text remain Almanac-owned and use the shared
-untranslated disclosure when needed.
-
-## Component previews
-
-Previews cover populated, empty, loading, error and disabled states where meaningful, plus:
-
-- zero fuel and zero cargo;
-- each incomplete aggregate and combined issues;
-- absent/unresolved FSD;
-- absent/disabled/unpowered/unresolved thrusters;
-- mobility null and ready all-zero performance;
-- optional source facts present/absent;
-- engineered/zero/unknown module mass and duplicate symbols;
-- desktop, tablet and mobile widths, portrait/landscape, expanded text, RTL and reduced motion.
+Preview the meaningful states from [screen-inventory.md](./screen-inventory.md) at desktop, tablet
+and mobile widths, portrait/landscape, expanded text, RTL and reduced motion. Source identity,
+result, unit and issue association must survive every variant.

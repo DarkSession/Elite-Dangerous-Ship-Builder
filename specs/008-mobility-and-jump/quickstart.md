@@ -1,218 +1,193 @@
 # Quickstart: Mobility, Mass and Jump Validation
 
-This guide validates feature 008 after its upstream and repository prerequisites are available. It
-is an acceptance/run guide, not an implementation recipe.
+This is the runnable acceptance guide for feature 008 after its shared prerequisites are present. It
+does not contain implementation code or hand-calculated game figures.
 
 ## Prerequisites
 
-- Node.js 24 (`.nvmrc`)
+- Node.js 24 from `.nvmrc`
 - pnpm 10.33.0 from `packageManager`
+- `@elite-dangerous-almanac/core` 0.1.1 from the committed lockfile
+- TypeScript strict mode enabled in the shared configuration
+- feature 001 active build/revision and `/build` workspace
+- feature 002 fixed-mount normalization, revision advancement and exact-slot targeting
+- feature 003 stage-one viewing-condition/context/provider/target contracts
+- feature 011 token, component, localization, preview and dual-engine accessibility foundations
 - Chromium and Firefox versions compatible with Playwright 1.62.1
-- implemented feature 001 active build/workspace
-- implemented feature 002 package slot targeting and unresolved-state boundary
-- implemented feature 003 shared standard-load/ENG conditions and Mobility headline
-- implemented feature 005 package-backed exact-slot power observation
-- implemented feature 011 tokens, components, localization and accessibility harness
 
-Install without changing the lockfile:
+Install exactly the committed dependencies:
 
 ```bash
 pnpm install --frozen-lockfile
 ```
 
-If the environment supplies browser executables instead of Playwright's pinned downloads, set
-`E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` to those exact executables.
+If the environment supplies browsers rather than Playwright downloads, set `E2E_CHROMIUM_PATH` and
+`E2E_FIREFOX_PATH` to their exact executables.
 
-## Released Almanac contract checks
+## Verify the package boundary first
 
-1. Pin Almanac 0.1.1 and confirm `standardLoadResult()` supplies all three standard loads.
-2. Confirm disabled/shed power makes `mobilityMetrics()` return `null` and
-   `mobilityMetricsResult()` return an ordered structured issue.
-3. Confirm `PowerBudget.consumers` exposes the exact-slot consumer used by feature 005.
-4. Rerun the probes in [research.md](./research.md); do not add local load or power calculations.
+Use small direct package tests/probes, then preserve them as feature unit tests:
 
-Useful audit commands:
+1. Confirm all three `standardLoadResult()` calls are complete for a stock build and
+   `jumpRangeSummary()` returns the three single/total/count groups.
+2. Confirm an empty build has complete zero mass/fuel/cargo where the package says so, an incomplete
+   maximum standard load with `frameShiftDrive/missing`, and a throwing summary.
+3. Disable `MainEngines` and confirm `mobilityMetricsResult()` is incomplete with
+   `thrusters/disabled`.
+4. Use an undersized plant/high thruster priority fixture and confirm the result reports
+   `thrusters/shed` without a local power-budget classification.
+5. Confirm a load above the thruster maximum yields a complete seven-field all-zero mobility value.
+6. Confirm `slots('core')` identifies thrusters by `core: 'thrusters'` and exact key `MainEngines`.
+7. Confirm a fitted engineered module's displayed row mass equals `effectiveStats.mass`.
 
-```bash
-pnpm why @elite-dangerous-almanac/core
-gh issue view 295 --repo DarkSession/Elite-Dangerous-Almanac
-gh issue view 296 --repo DarkSession/Elite-Dangerous-Almanac
-gh issue view 299 --repo DarkSession/Elite-Dangerous-Almanac
-```
+Do not add copied expected game values. Compare the projector with live package results from the same
+fixture/revision.
 
-## Static and unit validation
+## Focused static and unit checks
 
-Run focused unit tests while developing:
-
-```bash
-pnpm exec ng test --include='src/app/**/*mobility*.spec.ts'
-```
-
-Then run formatting, type and production-build checks:
+During implementation run:
 
 ```bash
-pnpm run format:check
+pnpm exec ng test --include='src/app/**/*mobility-jump*.spec.ts'
 pnpm run typecheck
 pnpm run build
+pnpm run format:check
 ```
 
-Expected outcomes:
+Expected:
 
-- package imports use leaf exports;
-- no local jump, range, jump-count, mass, capacity, standard-load, thruster-curve or power formula
-  exists;
-- each projector test compares exact fields with live package results/snapshots;
-- incomplete diagnostics prevent dependent calls and retain every ordered issue;
-- zero, null, incomplete, unavailable and unknown module mass use discriminated states rather than
-  truthiness;
-- unit coverage remains at or above 80% for statements, branches, functions and lines.
+- imports use Almanac leaf subpaths;
+- all three aggregate and all three standard-load results guard the single summary call;
+- selected standard load plus unladen mass guard one mobility call;
+- all seven mobility and all nine jump summary fields are package-equal;
+- exact `CalculationIssue` structures/order survive without a reduced local issue type;
+- zero, incomplete, unavailable row and unexpected failure are separate discriminated states;
+- no local jump/range/count, standard-load, mass/capacity, curve or power formula exists;
+- no feature 005 dependency or second viewing-condition store/control exists;
+- source slots use `BuildSlot.core` and retain `BuildSlot.key`; and
+- coverage remains at least 80% for statements, branches, functions and lines.
 
-## End-to-end acceptance scenarios
+## End-to-end acceptance
 
-Each scenario runs for desktop, tablet, mobile portrait and mobile landscape in Chromium and Firefox.
-Run the feature journey with:
+Run the feature journey across the feature 011 Chromium/Firefox projects:
 
 ```bash
 pnpm exec playwright test e2e/mobility-and-jump.spec.ts
 ```
 
-### 1. Read all standard jump results
+### 1. Read the complete jump summary
 
-1. Open a complete build with a resolved fitted FSD, fuel and cargo capacity.
-2. Open Mobility from the status headline/capability navigation.
-3. Compare all three load groups with the same build revision's `jumpRangeSummary()`.
+Open a complete build and navigate from the Status mobility summary to Drives & Mass.
 
 Expected:
 
 - maximum, unladen and laden each show single range, total range and jump count exactly once;
-- every number equals its package field after locale parsing;
-- every group identifies its load and the exact fitted FSD;
-- only present returned FSD parameters appear;
-- no local range, count, headroom, mass-factor or comparison figure appears.
+- every value equals the same build revision's `jumpRangeSummary()` field;
+- the exact fitted FSD/slot and only present package parameters are adjacent;
+- combined `jumpBoost`, if shown, is labelled as a build/booster parameter; and
+- no mass factor, headroom, percentage, delta, bar-derived value or inferred SCO badge appears.
 
-### 2. Distinguish no drive, incomplete inputs and zero fuel
+### 2. Guard jump inputs and preserve zero
 
-Exercise builds with no usable FSD, an unresolved drive, incomplete mass, incomplete fuel capacity,
-incomplete cargo capacity and complete zero main fuel.
-
-Expected:
-
-- dependent jump methods are never called while diagnostic prerequisites are incomplete;
-- all package issues retain field/slot/symbol/params/order;
-- missing/unresolved drive has no fabricated number;
-- complete zero fuel shows package numeric zero for all range/count results;
-- prior revision values never remain under the new source state.
-
-### 3. Preserve zero-cargo load identities
-
-Open a complete build with zero cargo capacity.
+Exercise incomplete mass, fuel and cargo; missing/unresolved FSD; active-booster failure; complete
+zero main fuel; and complete zero cargo.
 
 Expected:
 
-- cargo capacity is complete numeric zero;
-- unladen and laden profiles remain separately labelled even when package values are equal;
-- no presentation deduplication or inferred difference appears.
+- any incomplete aggregate or standard load prevents the summary call;
+- all exact package issues retain field/reason/slot/symbol/message/params/order;
+- no usable FSD produces no numeric summary;
+- zero fuel remains package numeric zero; and
+- equal unladen/laden results remain separate labelled profiles.
 
-### 4. Change selected load and ENG pips
+### 3. Read selected-load mobility
 
-Apply maximum, unladen and laden loads and valid ENG allocations including 0, 0.5, 2 and 4 through
-feature 003's shared controls.
-
-Expected:
-
-- `mobilityMetricsResult()` receives exact shared package inputs once per settled revision;
-- all seven visible mobility fields equal that call;
-- Jump Performance always keeps all three profiles while the selected headline/context changes;
-- invalid drafts change no result and trigger no feature 008 projection.
-
-### 5. Distinguish null and package zero mobility
-
-Exercise absent, disabled, power-shed and unresolved thrusters, then a resolved build above its
-thruster maximum supported mass.
+In feature 003's Status capability, Apply each load and valid ENG allocations including 0, 0.5, 2
+and 4; then return to/read Drives & Mass.
 
 Expected:
 
-- absent, disabled, unpowered and unresolved source states are textually/programmatically distinct;
-- package null has no hull base-value fallback;
-- power-shed regression passes only with the released #296 fix and #299-backed observation;
-- above-supported-mass result remains ready numeric zero for all seven fields, not unavailable.
+- the detail shows read-only selected load/ENG context and does not duplicate Apply/Reset controls;
+- `maximumJump` maps to `standardLoadResult('maximum')`;
+- the diagnostic mobility method receives exact package fuel/cargo and selected ENG pips once;
+- speed, boost, pitch, roll, yaw and both multipliers equal the package result; and
+- invalid feature 003 drafts change no revision or feature 008 result.
 
-### 6. Inspect returned source parameters
+### 4. Distinguish mobility unavailable states from ready zero
 
-Use stock and engineered FSD/thruster fixtures covering shared, enhanced speed and enhanced rotation
-curves plus absent optional fields.
-
-Expected:
-
-- only package-present thresholds, factors and multipliers appear;
-- selected-load multipliers equal completed `mobilityMetricsResult()` fields;
-- sparse facts remain absent rather than zero;
-- no bar length, percentage-of-optimal, curve or headroom is calculated.
-
-### 7. Read mass and capacity diagnostics
-
-Exercise complete aggregates, each incomplete aggregate independently and combined package issues.
+Exercise missing, disabled, shed and unresolved thrusters, power-capacity/draw issues, and a resolved
+build above supported thruster mass.
 
 Expected:
 
-- unladen mass, main fuel, reserve fuel and cargo equal the three package results;
-- one incomplete group does not hide an independent complete group;
-- all issues remain attached to their owning result in package order;
-- zero mass/capacity values remain numeric zero.
+- the package field/reason and source identity distinguish each unavailable state;
+- there is no feature 005 join or hull catalogue fallback;
+- incomplete `mobilityMetricsResult().value` remains null; and
+- above-supported-mass result remains complete numeric zero for all seven fields.
 
-### 8. Inspect every fitted module mass
+### 5. Read mass and capacity diagnostics
 
-Use a build containing duplicate module symbols in different slots, a package-resolved engineered
-mass, a zero-mass module and an unresolved module.
-
-Expected:
-
-- every fitted package snapshot appears exactly once under its original slot;
-- each ready value equals `effectiveStats.mass` after locale parsing;
-- unresolved mass is unavailable, never zero;
-- exact-slot actions target only the owning slot;
-- no displayed module subtotal or locally reconstructed unladen mass exists.
-
-### 9. Preserve one revision
-
-Rapidly alternate a module edit, engineering change, undo/redo, load change and valid ENG-pip change
-while the capability is open.
+Exercise complete zero values, each incomplete aggregate independently, combined issues, and an
+import whose package-supplied aggregate remains complete while a module row mass is unavailable.
 
 Expected:
 
-- all visible jump, mobility, mass, capacity, source and module facts share the latest build/condition
-  revision;
-- stale projections never appear beneath new context;
-- one settled change produces one concise polite announcement;
-- matching DOM appears within 100 ms at mobile Chromium under 4x CPU slowdown.
+- unladen mass, main fuel, reserve fuel and cargo equal the exact three package results;
+- each issue stays attached to its owning result in package order;
+- one incomplete group does not hide another complete group; and
+- feature 008 does not override either the trusted aggregate or unavailable module row.
+
+### 6. Inspect every fitted module mass
+
+Use duplicate module symbols in separate slots, engineered mass, zero-mass and unavailable-mass
+entries.
+
+Expected:
+
+- every `fittedModules()` entry appears once in package order under its exact slot;
+- each ready value equals `effectiveStats.mass`;
+- unresolved mass is unavailable, never zero/base mass;
+- slot actions target only the exact owning key; and
+- no module subtotal, decomposition or reconstructed unladen mass appears.
+
+### 7. Verify Status integration and revision coherence
+
+Compare the selected jump, top speed and unladen mass in feature 003 Status with Drives & Mass, then
+rapidly edit/undo/redo and Apply a new condition.
+
+Expected:
+
+- all three Status values come from feature 008's synchronous provider and exact context pair;
+- selected jump follows maximumJump/unladen/laden; unladen mass keeps fixed meaning;
+- each unavailable summary contributes its qualification ID once; ready zero contributes none;
+- the detail target is `mobilityAndJump` and module actions use exact shared slot targets; and
+- old figures never appear under new context; one settled revision produces one polite update.
 
 ## Responsive, localization and accessibility validation
 
-For populated, zero-fuel, zero-cargo, incomplete, absent/unresolved drive, each thruster state,
-ready-zero mobility, missing optional fact, unknown module mass and failure states:
+For complete, zero, each incomplete/unavailable source state, sparse-parameter variants, unavailable
+module mass, trusted aggregate and failure:
 
-- run the shared automated accessibility scan;
-- verify no document-level horizontal scroll at every project viewport and 400% zoom;
-- verify full content/action parity in portrait and landscape;
-- verify every disclosure/slot action has at least the shared 44 CSS-pixel target and works by touch;
-- verify headings, definition groups, issue lists, source states and actions are understandable by
-  screen reader;
-- verify no state/load/result relies only on colour, bar length, shape or position;
-- switch to expanded-text and RTL fixtures and confirm wrapping/order;
-- enable reduced motion and confirm no result or announcement is lost;
-- switch locales and confirm labels, load names, numbers and units change while package game text and
-  diagnostics use the shared untranslated disclosure when required.
+- run the shared axe scan in Chromium and Firefox at desktop, tablet portrait/landscape and mobile
+  portrait/landscape;
+- verify no document horizontal scrolling at each viewport, 200% text and actual 400% zoom;
+- verify all fields/issues/rows remain present in portrait and landscape;
+- verify semantic heading/region, definition-list or table relationships by screen reader;
+- verify tabs/disclosures/slot actions have visible names/states, shared touch target size and work by
+  touch without hover;
+- verify no meaning relies on colour, bar length, arrows, shape or position;
+- verify expanded text, RTL and reduced motion preserve reading order and associations; and
+- switch locales and verify application labels/numbers/units update while Almanac game text and
+  diagnostics follow the shared locale/canonical-disclosure contract.
 
 Any conformance statement must say: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1,
 2.4.3, 2.4.7 and 2.4.11.”
 
 ## Full release gate
 
-Run the repository gate:
-
 ```bash
 pnpm run check
 ```
 
-Expected: format, typecheck, production build, script tests, unit coverage and every Playwright
-project pass. Do not skip a browser, viewport, accessibility scan or failing test.
+Expected: format, typecheck, production build, script tests, unit coverage and all ten Playwright
+projects pass. Do not skip a browser, layout, accessibility scan or failing test.
