@@ -25,7 +25,8 @@
 ## Almanac Integrity
 
 - [x] Almanac-owned game data uses package identities and values
-- [x] Every required game number or calculation is available from the package
+- [ ] Every required game number or calculation is available from the package — effective per-module
+      power presentation is gated on Almanac #299
 - [x] No local game formula, correction, estimate or unsupported aggregate is required
 - [x] Missing package values remain unavailable rather than being fabricated
 

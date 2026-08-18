@@ -30,9 +30,10 @@ There are no format tabs; feature 004 exports SLEF only.
 | Share cancelled/failed        | Cancellation neutral, failure textual, alternatives remain            |
 | Revision changed              | Old artifact invalidated before any delivery                          |
 
-Wide layout uses a contained dialog; narrow/landscape/400% zoom uses a vertical full-screen layer.
-Actions wrap without disappearing and JSON owns overflow. Do not announce full JSON; announce a ready
-summary. Status is textual, share explains the platform chooser, technical content is direction
-isolated and all app copy/counts use feature 011 localization.
+Wide layout uses a contained dialog. Ordinary narrow layout uses the reference's bottom sheet; short
+landscape viewports, text expansion and 400% zoom may promote it to a vertical full-height layer.
+Actions wrap without disappearing and JSON owns overflow. Do not announce full JSON; announce a
+ready summary. Status is textual, share explains the platform chooser, technical content is
+direction isolated and all app copy/counts use feature 011 localization.
 
 Requirements: FR-001–FR-006 and FR-013–FR-014.

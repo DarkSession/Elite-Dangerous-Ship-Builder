@@ -49,8 +49,10 @@ except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 **Scale/Scope**: One active build and one SLEF entry; 48 beta.12 hulls; largest observed layouts are
 39 slots (`Anaconda`, `Type9_Military`); input bounded at 64 KiB
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a/1b and 1c/1d import/export layers;
-reconciliation is in [design/reference-review.md](./design/reference-review.md)
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a/1b provide shipyard import, canvas
+1c provides wide workspace export, and canvas 1d provides narrow workspace import/export bottom
+sheets. Reconciliation and the responsive escalation for constrained/zoomed viewports are in
+[design/reference-review.md](./design/reference-review.md).
 
 ## Constitution Check
 
@@ -58,17 +60,17 @@ _GATE: Passed for planning because format/build behavior remains package-owned a
 exception is proposed. Implementation cannot begin until released package APIs close both
 normalization gaps. Re-check after Phase 1 and the package upgrade._
 
-| Principle                               | Evidence                                                                                                       | Status                     |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | In-memory processing and user-triggered browser delivery make no request.                                      | PASS                       |
-| II. Almanac Source of Truth             | Package inspection, construction, normalization and serialization only; missing operations are upstream gates. | PASS; implementation gated |
-| III. Domain Logic Outside UI            | Pure coordinators and browser ports precede the signal store.                                                  | PASS                       |
-| IV. Lossless, Honest Builds             | Candidate-first replacement, exact diagnostics/source credits and visible normalization prevent silent loss.   | PASS; implementation gated |
-| V. Desktop, Tablet and Mobile           | Wide dialogs become narrow full-screen layers with identical touch/screen-reader capability.                   | PASS                       |
-| VI. Commander's Language                | App text uses feature 011; package diagnostics retain package ownership/disclosure.                            | PASS                       |
-| VII. One Design System                  | Screens compose feature 011 fields, notices, diagnostics, buttons and layers.                                  | PASS                       |
-| VIII. Tested Before It Ships            | Dual-engine/multi-viewport unit, Playwright and axe coverage is specified.                                     | PASS, prerequisite 011     |
-| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contract.                                                             | PASS                       |
+| Principle                               | Evidence                                                                                                                                            | Status                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | In-memory processing and user-triggered browser delivery make no request.                                                                           | PASS                       |
+| II. Almanac Source of Truth             | Package inspection, construction, normalization and serialization only; missing operations are upstream gates.                                      | PASS; implementation gated |
+| III. Domain Logic Outside UI            | Pure coordinators and browser ports precede the signal store.                                                                                       | PASS                       |
+| IV. Lossless, Honest Builds             | Candidate-first replacement, exact diagnostics/source credits and visible normalization prevent silent loss.                                        | PASS; implementation gated |
+| V. Desktop, Tablet and Mobile           | Wide dialogs become narrow bottom sheets, escalating to full-height layers when space/zoom requires, with identical touch/screen-reader capability. | PASS                       |
+| VI. Commander's Language                | App text uses feature 011; package diagnostics retain package ownership/disclosure.                                                                 | PASS                       |
+| VII. One Design System                  | Screens compose feature 011 fields, notices, diagnostics, buttons and layers.                                                                       | PASS                       |
+| VIII. Tested Before It Ships            | Dual-engine/multi-viewport unit, Playwright and axe coverage is specified.                                                                          | PASS, prerequisite 011     |
+| IX. Specification Before Implementation | Every FR maps to a plan-time surface and contract.                                                                                                  | PASS                       |
 
 Required upstream work:
 

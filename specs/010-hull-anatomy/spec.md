@@ -3,9 +3,9 @@
 ## Scope
 
 Commanders can locate hardpoints on the Almanac top and bottom hull schematics and move between a
-located hardpoint and its outfitting slot. The package schematics do not locate utility or internal
-mounts; those remain available through the complete slot list in
-[002](../002-module-outfitting/spec.md).
+located hardpoint and its outfitting slot. The package schematics also annotate utility mounts, but
+this capability deliberately admits only hardpoints as interactive geometry. Utility and internal
+mounts remain available through the complete slot list in [002](../002-module-outfitting/spec.md).
 
 ## User Scenarios
 
@@ -62,8 +62,9 @@ mounts; those remain available through the complete slot list in
 ## Almanac Coverage
 
 The package ships three SVG assets for every hull. The two schematics carry journal slot keys on
-hardpoint features; they do not carry utility-mount positions. The application consumes those assets
-without deriving physical measurements or maintaining geometry.
+hardpoint and utility-mount features. The application consumes only the hardpoint annotations for
+this capability, without deriving physical measurements or maintaining geometry; utility and
+internal mounts remain represented by the complete slot list.
 
 ## Success Criteria
 

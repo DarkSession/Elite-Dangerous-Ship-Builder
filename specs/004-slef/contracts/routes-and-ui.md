@@ -9,8 +9,10 @@ Feature 004 adds no route. Import/export layers preserve host route/history.
 | `/build`, active       | Available; replacement rules apply | Available                                               |
 | `/builds`              | Shell action                       | Current active build only, never merely selected record |
 
-Wide layouts use a modal; narrow/400% zoom use the same logical content full-screen. Open/close is not
-build, browser or edit history.
+Wide layouts use a contained dialog. Ordinary narrow layouts use the reference's bottom sheet; short
+landscape viewports, text expansion and 400% zoom may promote the same logical content to a
+full-height layer so no action or diagnostic is clipped. Open/close is not build, browser or edit
+history.
 
 ## Intent boundary
 

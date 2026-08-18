@@ -15,7 +15,7 @@ This feature defines the active-build shell and persistence/share behavior. Modu
 - Persistent `InlineNotice`/`ErrorSummary` for storage unavailable/quota, externally deleted working record, invalid incoming link and unsupported version.
 - `ConfirmDialog` for candidate replacement.
 
-Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF/journal export choices.
+Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF export choice; the mock's journal and Markdown export choices are not implemented.
 
 ## States
 

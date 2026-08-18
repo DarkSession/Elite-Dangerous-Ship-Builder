@@ -1,12 +1,12 @@
 # Design Reference Review
 
-Reference: `.design/Ship Builder.dc.html` import layers in canvases 1a/1b and import/export layers in
-1c/1d.
+Reference: `.design/Ship Builder.dc.html` shipyard import in canvases 1a/1b, wide workspace export in
+canvas 1c, and narrow workspace import/export in canvas 1d.
 
 ## Adopt
 
-- Import from ship selection and outfitting, so no active build is required.
-- Focused wide dialog and narrow full-width layer with identical content/actions.
+- Import from ship selection without requiring an active build.
+- Focused wide dialogs and narrow bottom sheets with identical content/actions.
 - Import explanation, editable monospaced text and adjacent status.
 - Export readonly monospaced payload, metadata and clear delivery hierarchy.
 - Copy primary, download always available, platform share on capable devices.
@@ -15,6 +15,10 @@ Reference: `.design/Ship Builder.dc.html` import layers in canvases 1a/1b and im
 ## Adapt
 
 - Semantic feature 011 controls/layers/tokens and 44 CSS px targets replace clickable `div`s/literals.
+- The shared shell exposes import consistently in ship-selection and outfitting contexts at every
+  width; this restores viewport capability parity absent from the wide 1c mock.
+- A narrow bottom sheet becomes full-height only when landscape height, text expansion or 400% zoom
+  cannot preserve complete content and actions.
 - Semantic diagnostics preserve entry/path/code/constraint/params; draft survives failure.
 - Success goes through atomic replacement and then displays normalization/unresolved report.
 - Invalid/incomplete builds show warning but remain exportable.

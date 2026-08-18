@@ -2,10 +2,10 @@
 
 Two logical route-preserving layers use wide/narrow variants of the same capability.
 
-| Screen                            | Host/reference                              | Purpose                                                              | States                                                                                                        |
-| --------------------------------- | ------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [Import build](./import-build.md) | Shell/build; 1a/1c dialog, 1b/1d full layer | Inspect one input, normalize detached candidate, request replacement | empty/editing/limit/checking, syntax/cardinality/diagnostic/normalization error, confirmation, success report |
-| [Export build](./export-build.md) | Active build; 1c dialog, 1d full layer      | Generate/deliver one package SLEF artifact independent of link       | no build/generating, valid, invalid/incomplete, link omitted, copy/download/share outcomes                    |
+| Screen                            | Host/reference                             | Purpose                                                              | States                                                                                                        |
+| --------------------------------- | ------------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [Import build](./import-build.md) | Shell/build; 1a dialog, 1b/1d bottom sheet | Inspect one input, normalize detached candidate, request replacement | empty/editing/limit/checking, syntax/cardinality/diagnostic/normalization error, confirmation, success report |
+| [Export build](./export-build.md) | Active build; 1c dialog, 1d bottom sheet   | Generate/deliver one package SLEF artifact independent of link       | no build/generating, valid, invalid/incomplete, link omitted, copy/download/share outcomes                    |
 
 ## Requirement coverage
 

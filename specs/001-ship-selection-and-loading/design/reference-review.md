@@ -52,7 +52,8 @@ The design file is a product visual reference. It is not application source, a g
 
 - The mock sample `https://shipbuilder.local/b/pacifier#h=...` is noncanonical. Generated links are same-origin `/build#b.<versioned-payload>`; local save names never enter the path and build data never enters path/query.
 - The share value is selectable after copy/share failure. Encode refusal clears a stale fragment, explains the structured slot/reason and preserves feature 004's SLEF fallback.
-- The design's other export formats belong to feature 004 or later plans and do not expand feature 001's ownership.
+- SLEF export belongs to feature 004. The mock's journal and Markdown export formats are rejected by
+  that accepted plan and do not expand feature 001's ownership.
 
 ### Design system, localization and accessibility
 

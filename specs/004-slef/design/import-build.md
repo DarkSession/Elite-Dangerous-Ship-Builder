@@ -33,9 +33,11 @@ The screen owns no `ShipLoadout`; it emits draft and submit intent.
 | Cancelled             | Current build and draft remain; one concise announcement                |
 | Imported              | Close after commit; workspace shows quality/fixed/unresolved report     |
 
-Wide layouts constrain a modal within viewport; narrow/landscape/400% zoom use a vertical full-screen
-layer. The field may scroll internally, never the document horizontally. Labels/instructions/errors
-are associated, paths direction-isolated, updates concise, targets at least 44 CSS px and all app copy
-localized. Package text follows the standard untranslated disclosure.
+Wide layouts constrain a modal within the viewport. Ordinary narrow layouts use the reference's
+bottom sheet; short landscape viewports, text expansion and 400% zoom may promote it to a vertical
+full-height layer. The field may scroll internally, never the document horizontally.
+Labels/instructions/errors are associated, paths direction-isolated, updates concise, targets at
+least 44 CSS px and all app copy localized. Package text follows the standard untranslated
+disclosure.
 
 Requirements: FR-007–FR-014 plus import aspects of FR-002, FR-005 and FR-006.

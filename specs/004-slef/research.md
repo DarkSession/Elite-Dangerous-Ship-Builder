@@ -151,9 +151,11 @@ unavailable share buttons were rejected.
 
 ## Decision 11: adapt the reference, not its mock behavior
 
-**Decision**: Adopt wide dialog/narrow full-screen hierarchy, monospaced field, metadata and action
-weight. Import keeps editable text plus diagnostics; export has one SLEF format only. Replace mock
-controls/literals with feature 011 primitives/tokens and 44 CSS px targets.
+**Decision**: Adopt the reference's wide dialogs and ordinary narrow bottom sheets, escalating the
+same logical content to a full-height layer in constrained landscape or at 400% zoom. Retain the
+monospaced field, metadata and action weight. Import keeps editable text plus diagnostics; export
+has one SLEF format only. Replace mock controls/literals with feature 011 primitives/tokens and 44
+CSS px targets.
 
 **Rationale**: The visual hierarchy is useful, but the mock uses heuristic parsing, fake delivery,
 invented links/versions, no limit/cardinality/atomicity and says partial rolls remain partial.
