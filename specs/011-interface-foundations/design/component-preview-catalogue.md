@@ -2,50 +2,57 @@
 
 ## Boundary
 
-The catalogue is a development/test Angular target, not a Commander screen. It imports the production
-UI library, tokens, localization runtime and zoneless configuration and adds only fixture selection
-and stable preview addressing.
+The catalogue is a separate development/test Angular application, not a Commander route. It imports
+production `src/app/ui/`, the single token/font entry and localization providers. It adds only fixture
+selection, stable addressing and semantic expectation display. Product navigation and production
+output contain no preview route/chunk.
 
-## Inventory behavior
+## Inventory
 
-Each exported component id lists its declared states. Selecting one state renders a single bounded
-fixture plus its semantic expectations. The test URL/state mechanism is tool-owned and carries no
-build. Product links and production output contain no preview route/chunk.
+Each exported component id exposes its declared states. Selecting one state renders one bounded
+fixture and its expectation ids. The URL/state mechanism carries no build or user data.
 
-## Required matrix
+The manifest accounts for default/populated, empty, loading, error and disabled. An N/A entry is
+allowed only when the component contract cannot represent that state and includes a nonempty stable
+rationale. It is not a way to avoid a difficult fixture.
 
-For each component, account for default/populated, empty, loading, error and disabled. Render every
-applicable state at:
+The global Playwright projects supply:
 
-- desktop width;
-- tablet width (both orientations through Playwright);
-- mobile width (both orientations through Playwright).
+- desktop;
+- tablet portrait and landscape;
+- mobile portrait and landscape;
+- Chromium and Firefox.
 
-Then apply relevant cross-cutting variants:
+Declarations therefore identify state/variant, not duplicate five viewport copies.
 
-- doubled/long English;
-- RTL pseudo-content and root direction;
+## Cross-cutting variants
+
+Every relevant declaration adds:
+
+- doubled/long application copy;
+- RTL direction and pseudo-content;
 - reduced motion;
-- localized German numbers/units/dates;
-- package canonical text plus untranslated disclosure;
-- package text unavailable because no canonical source exists;
-- long unbroken identity and nested label/error relationships.
+- German number/unit/date presentation;
+- canonical package text with untranslated disclosure;
+- unavailable package text where no canonical source exists;
+- long unbroken identity and mixed-direction technical content;
+- nested visible label, description, unit and error relationships;
+- pointer/touch-visible state that does not require hover.
 
-An N/A declaration is acceptable only when the component contract cannot represent that state (for
-example, a purely structural divider cannot be loading). It is not a route to avoid a difficult
-fixture.
+## Initial foundation inventory
+
+Preview the shell/context heading/navigation; visible-name actions/menu; labelled input/select/search/
+textarea; segmented/choice/tab controls; panel/card; semantic list/table shells; definition/metric
+groups; status/notice/error/unavailable; disclosure; dialog/sheet/full-height layer; language
+selector; game-text provenance; and announcement outlets. Later capability components join the same
+manifest before use.
 
 ## Inspection
 
-Automated checks run axe, semantic/name/state/error assertions, target sizing and document overflow
-on every declaration. Interaction previews use pointer and touch. Screenshots are review evidence,
-not pass criteria. Human review inspects text expansion, bidi flow, contrast, reduced motion and
-visible equivalence; screen-reader scripts use product journeys rather than claiming previews alone
-prove usability.
+For every applicable declaration, automated tests run axe and named role/name/state/relationship,
+target-size, text-equivalence and document-overflow assertions. Interaction fixtures run through
+click on desktop and tap in touch profiles. The manifest/exports/coverage ledger must reconcile.
 
-## Initial foundation previews
-
-Preview the frame/heading/navigation, actions/links, labelled fields/select/search, toggles and choice
-groups, panels/cards, definition/metric groups, statuses/notices/errors/unavailable values,
-disclosures, responsive collections, dialogs/layers, language selector, game-text disclosure and
-announcement outlets. Capability-specific components join the same manifest when introduced.
+Screenshots support visual review but are not pass criteria. Human review inspects design fidelity,
+contrast evidence, text expansion, bidi flow and reduced motion. Screen-reader protocols exercise
+complete product journeys; preview success alone never claims product usability.

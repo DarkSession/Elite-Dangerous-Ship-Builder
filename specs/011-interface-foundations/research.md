@@ -1,210 +1,253 @@
 # Research: Interface Foundations
 
-Research used the accepted feature specifications, the project constitution, all existing plan-time
-screen definitions, `.design/Ship Builder.dc.html`, the installed Angular/Playwright toolchain,
-package-registry peer metadata and `@elite-dangerous-almanac/core@0.1.1`. No production code
-was changed during research.
+Research covered the accepted feature specification and constitution, the current Angular workspace,
+the installed Almanac 0.1.1 declarations, existing feature plans and all four canvases in
+`.design/Ship Builder.dc.html`. The design was also rendered and inspected. No production code was
+changed during research.
 
-## Initial shipped application locales
+## Reference design boundary
 
-**Decision**: Ship complete application-owned catalogues for English (`en`, LTR) and German (`de`,
-LTR). Keep Arabic-like RTL and doubled-copy catalogues as development/test fixtures only. A registry
-defines each selectable locale's canonical tag, direction, self-name message and asset path.
+**Decision**: Use canvases 1a–1d as the visual hierarchy and responsive-composition source. Canvas 1a
+defines wide Shipyard composition, 1b compact Shipyard, 1c wide Outfitting and 1d compact Outfitting.
+Decompose their repeating shell, action, collection, field, tab, status, metric and adaptive-layer
+patterns into feature 011 components. Domain composites and routes remain with features 001–010 and 012.
 
-**Rationale**: Story 3 requires a Commander to choose another shipped language and SC-006 requires a
-matching browser language, so English-only is insufficient. German has broad 0.1.1 Almanac coverage
-and usefully exercises longer application copy. Limiting the first release to one reviewed
-non-English catalogue makes completeness and terminology auditable; the registry prevents this
-choice from becoming an architectural ceiling.
+**Rationale**: The supplied design is the only finished product visual direction. It consistently
+uses a dense dark surface, restrained amber emphasis, condensed headings, monospaced metrics and
+wide-to-compact rearrangement. It contains no tablet, landscape, zoom or RTL canvas, so those cases
+must be derived rather than guessed during implementation.
 
-**Alternatives considered**: English-only was rejected because no “another” language could be
-selected. A pseudo-locale was rejected as a Commander-facing language. Shipping every Almanac locale
-was rejected because Almanac game-name coverage is sparse and does not supply translations for
-application-owned messages.
+**Alternatives considered**: Ignoring `.design` would discard accepted hierarchy. Copying the HTML
+would copy fixed 1320/1560/390 pixel canvases, mock game facts, hard-coded English, inline literals,
+remote requests and nonsemantic interaction markup.
 
-## Runtime message layer and atomic locale state
+## Responsive modes and adaptive layers
 
-**Decision**: Use `@jsverse/transloco` 8.4 with a custom static-asset loader, wrapped by a signal-based
-`LocaleStore`. A saved supported tag wins; otherwise inspect `navigator.languages` in order using
-canonical exact then language matching; otherwise use `en`. Publish messages, formatter cache, root
-`lang`, root `dir` and localized document title together. A locale change affects presentation only.
+**Decision**: Treat the reference widths as examples, not breakpoints. Define content-driven wide,
+medium and compact composition modes. Synthesize medium/tablet behavior from the wide master-detail
+and compact drill-in patterns. A simple task adapts from centered dialog to bottom sheet; a complex
+collection/editor adapts to a full-height compact layer. Short landscape and 400% zoom may select the
+compact composition without changing semantic order or capability.
 
-**Rationale**: Transloco's Angular 22-compatible peer range, runtime switching, interpolation and
-fallback avoid building a message engine. The store keeps browser selection/persistence and atomic
-document effects outside components. Angular `LOCALE_ID` and compile-time locale builds are static
-and do not satisfy an in-session persisted selector.
+**Rationale**: The constitution makes tablet, both mobile/tablet orientations, 200% text and 400%
+zoom first-class. Stable DOM order, logical CSS properties and container/media queries allow the
+same semantics to recompose without separate feature implementations.
 
-**Alternatives considered**: Angular compile-time i18n was rejected for runtime switching. A custom
-JSON interpolation/plural engine was rejected as unnecessary infrastructure. Binding components
-directly to `navigator`, `document`, `localStorage` or Transloco mutable state was rejected as
-untestable and non-atomic.
+**Alternatives considered**: Scaling/cropping a canvas, using fixed device breakpoints alone, hiding
+wide panels on narrow screens and making mobile a reduced feature set all violate FR-011/014.
 
-## Catalogue delivery, completeness and fallback
+## Visual tokens, fonts and assets
 
-**Decision**: Keep canonical JSON sources under `src/app/i18n/locales/`. Import `en.json` into the
-application bundle and copy the same directory to `/i18n/` as same-origin assets. The service worker
-eagerly caches English/app-shell content and caches shipped catalogues under a versioned data group.
-Build checks require all English keys and all selectable German keys to be present, nonblank and free
-of placeholder markers. Unknown keys, blank values, invalid assets or failed loads never display;
-the effective locale becomes bundled English and reports a localized fallback status once.
+**Decision**: Derive a compact primitive scale and one semantic dark token set from the reference,
+then audit every intended text/background and meaningful non-text pair before accepting it. Retain
+Barlow Condensed for headings, Barlow for body copy and JetBrains Mono for metrics by shipping
+licensed WOFF2 subsets and their licence material from the fonts' upstream releases as same-origin
+assets. Always declare complete system fallbacks and verify shipped-locale glyph coverage.
 
-**Rationale**: English stays readable without a network and has one source. Same-origin assets permit
-runtime selection without a server. Treating a failed catalogue as one atomic fallback avoids a
-mixed-language document whose root `lang` would be wrong. Per-key fallback remains a defensive API,
-but catalogue completeness makes it unreachable in accepted production assets.
+**Rationale**: The reference defines color variables but leaves spacing, type, radius, elevation and
+motion in hundreds of inline values. Several small-text alpha combinations are below 4.5:1 and many
+meaningful borders below 3:1; its tokens therefore cannot be copied. Runtime Google Fonts and remote
+material icons also violate the outbound-request boundary. The type hierarchy is nevertheless a
+recognizable part of the supplied design and can be retained locally under the fonts' OFL terms.
 
-**Alternatives considered**: Fetching English before bootstrap was rejected because first-run offline
-must remain readable. Duplicating English in TypeScript and JSON was rejected as two sources.
-Silently retaining a partially loaded requested locale was rejected for language semantics and raw
-key risk.
+**Alternatives considered**: Runtime font CDNs and `edassets.org` icons were rejected. A system-only
+stack was acceptable technically but needlessly discarded a strong design decision. Copying the
+reference's many near-duplicate alpha tokens was rejected in favor of semantic state tokens.
 
-## Locale-aware values and search helpers
+## Initial shipped locales
 
-**Decision**: Provide cached named helpers over `Intl.NumberFormat`, `Intl.DateTimeFormat`,
-`Intl.PluralRules`, `Intl.DisplayNames` where supported and `Intl.Collator`. Named formatters cover
-decimal/integer, percentage, credits, metres/kilometres/light years and dates. Credits and game units
-without an appropriate `Intl` unit use localized message labels; no fictitious currency code is
-introduced. Formatter caches are invalidated only by effective locale.
+**Decision**: Ship complete application-owned English (`en`) and German (`de`) catalogues. English is
+the fallback. German becomes selectable only after every application message and interpolation has
+reviewed wording. Expanded-copy and RTL pseudo-catalogues remain test fixtures and are never shipped
+or persisted as Commander choices.
 
-**Rationale**: Named functions make unit, rounding and availability semantics reviewable and avoid
-Angular pipes bound to a static locale. `formatToParts` supports semantic tests without pinning whole
-CLDR strings.
+**Rationale**: The accepted story requires choosing another shipped language and SC-006 requires a
+browser-language match, so one product locale does not satisfy this feature. Existing feature 007
+preview planning already depends on English/German expansion fixtures. German is useful for text
+expansion and for exercising canonical-game-text disclosure; it is not selected because Almanac has
+complete German text. Local 0.1.1 probes found German for 0/48 ship names, 1120/1199 modules,
+128/146 materials, 55/107 blueprints and 84/86 experimental effects. Those gaps are expected package
+misses, not permission for application translations.
 
-**Alternatives considered**: Implicit `toLocaleString()` was rejected because it can use the host
-default rather than active locale. String concatenation inside components and treating credits as an
-ISO currency were rejected.
+**Alternatives considered**: English-only conflicts with the accepted feature. Spanish has better
+Almanac ship/material coverage and is a reasonable future locale, but changing the already referenced
+English/German product set would require coordinated plan updates. A pseudo-locale cannot be offered
+as a human language.
+
+## Runtime localization and locale state
+
+**Decision**: Add `@jsverse/transloco` 8.4 as the runtime message engine behind an application-owned
+signal `LocaleStore` and message facade. Use Angular's app initializer to resolve the valid startup
+snapshot before root content renders. Saved supported preference wins; otherwise match
+`navigator.languages` by canonical exact tag then base language; otherwise use English. The store is
+the only code that changes active messages, document title, root `lang`/`dir` and formatter locale.
+
+**Rationale**: Transloco supports Angular 22/RxJS 7, runtime loading/switching and fallback without a
+zone peer. A facade prevents components from coupling to library mutable state and lets publication
+be one testable revision. Angular compile-time localized builds do not satisfy a persisted in-session
+switch. See the official [Transloco configuration](https://jsverse.gitbook.io/transloco/getting-started/config-options)
+and [language API](https://jsverse.gitbook.io/transloco/core-concepts/language-api).
+
+**Alternatives considered**: Angular compile-time-only i18n cannot switch in session. A custom
+interpolation/plural engine would reimplement solved message behavior. Transloco's persistence plugin
+does not provide the required versioned, injected, failure-tolerant storage boundary.
+
+## Catalogue delivery, completeness and offline behavior
+
+**Decision**: Keep canonical JSON catalogues under `src/app/i18n/locales/`. Import English into the
+initial JavaScript bundle and copy all catalogues to same-origin `/i18n/`. Add the version-matched
+Angular service worker: eager asset groups cache shell/fonts/English; a lazy asset group caches a
+secondary locale after first request. Preload and validate a requested catalogue before publishing
+it. A load, shape, blank-value or interpolation mismatch atomically publishes bundled English and
+one localized fallback status.
+
+**Rationale**: English must be readable without a network and the application must work offline after
+its first controlled load. A previously opened locale must also remain available offline. Angular's
+asset groups are versioned build assets, not a data/API cache. Build checks can enforce exact key and
+placeholder parity; runtime validation protects against a stale/corrupt asset. See Angular's
+[service-worker setup](https://angular.dev/ecosystem/service-workers/getting-started) and
+[configuration](https://angular.dev/ecosystem/service-workers/config).
+
+**Alternatives considered**: Fetching English before rendering risks a raw/blank first frame.
+Duplicating English in TypeScript and JSON creates two sources. Publishing a partial secondary
+catalogue creates a mixed-language document with a false root language.
+
+## Locale-aware formatting
+
+**Decision**: Provide cached named operations over `Intl.NumberFormat`, `Intl.DateTimeFormat`,
+`Intl.PluralRules`, `Intl.DisplayNames` and `Intl.Collator`. Define fraction input for percentages and
+explicit timezone/precision per date/number contract. Use `Intl` units for metres/kilometres. Credits
+and light years use a localized whole-message/unit pattern around an `Intl`-formatted number because
+credits are not ISO currency and `light-year` is not a supported `Intl.NumberFormat` unit.
+
+**Rationale**: Named operations make rounding, units and null handling reviewable and follow the
+effective runtime locale. `formatToParts` supports stable semantic tests without pinning an entire
+CLDR string.
+
+**Alternatives considered**: Angular pipes bound to a static `LOCALE_ID`, implicit
+`toLocaleString()`, component string concatenation and a fictitious credit currency were rejected.
 
 ## Almanac localization boundary
 
-**Decision**: Call leaf helpers for module, blueprint, experimental-effect, material, ship,
-manufacturer, slot, restriction, pre-engineered variant, engineering-group, effect description and
-structured diagnostics. A known identity plus `null` means request canonical English/package text.
-When present, show it with an application-localized, visible and programmatically associated
-untranslated disclosure; when absent, show unavailable. Do not translate diagnostic codes/parameters
-locally.
+**Decision**: Import the relevant 0.1.1 leaf helper for module, blueprint, effect, effect description,
+engineering group, material, micro-resource, ship/manufacturer, slot/restriction, pre-engineered
+variant and structured diagnostic text. A request carries a known package identity and any canonical
+package field. Query the active locale first; on `null`, query canonical English or use the package's
+canonical field. Render found canonical text with associated untranslated disclosure and an accurate
+`lang`; render no canonical value as unavailable.
 
-**Rationale**: 0.1.1 closes [#309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309).
-Helpers accept BCP 47 locale strings and return `null` when text is unavailable rather than silently
-falling back. Diagnostic helpers currently provide English results and explicitly return `null` for
-other locales. Some experimental effects have no source description even in English, so FR-020 must
-also preserve a true unavailable state.
+**Rationale**: The helper contracts return `string | null`; `null` can mean an unsupported locale,
+unknown identity or absent source text. The presenter therefore needs identity provenance from the
+calling package projection rather than guessing from null. Diagnostics, slots, manufacturers and
+effect descriptions are currently English-only or sparse. This is exactly the FR-020 boundary.
 
-**Alternatives considered**: Private game/diagnostic tables, parsing English messages, treating
-canonical text as translated and replacing missing values with app text were rejected as forks of
-package truth.
+**Alternatives considered**: A local game/diagnostic table, parsing canonical English, displaying raw
+identities and presenting canonical text as translated would all fork or misrepresent package data.
 
-## Token architecture and dark theme
+## Component and token architecture
 
-**Decision**: Define primitives and semantic CSS custom properties in `src/styles/tokens/`, with
-Sass-only breakpoint/container constants there. All other styles consume tokens. Ship one dark token
-set; no preference, media-selected light theme or theme storage exists. Use logical properties and
-fluid/container layouts; preserve the existing component-style budget.
+**Decision**: Put primitive and semantic tokens under `src/styles/tokens/`; every other stylesheet
+uses semantic variables and named layout primitives. Put reusable presentation components under
+`src/app/ui/`. Feature 011 initially supplies shell/heading/action, labelled fields, choice/tab
+groups, panel/card, semantic collection, metric/status/unavailable, dialog/sheet/layer, language,
+game-text disclosure and announcement primitives. Capability-specific composites extend this same
+library before use.
 
-**Rationale**: CSS variables let the production and preview targets share exactly one source while
-Sass constants cover compile-time media queries. Semantic tokens keep a component independent of a
-raw palette. Logical properties serve RTL without a second layout.
+**Rationale**: These are the patterns actually repeated in canvases 1a–1d and required by accepted
+feature designs. Immutable inputs and typed intents keep domain state outside components. One library
+also makes semantics, target size, contrast and preview states enforceable.
 
-**Alternatives considered**: Per-component Sass variables, copied canvas CSS, utility classes with
-literal values and a light-theme scaffold were rejected because they create alternate visual
-sources or unsupported preferences.
+**Alternatives considered**: Screen-local visual primitives, domain services inside shared UI, a
+speculative full component suite and a second theme were rejected.
 
-## Shared components and extension rule
+## Component preview catalogue
 
-**Decision**: Start `src/app/ui/` with application frame/heading/navigation, action/link, labelled
-field/select/search, toggle/radio/segmented control, panel/card, definition/metric group,
-status/notice/error/unavailable, disclosure, responsive collection, dialog/layer, language selector,
-game-text disclosure and announcement outlet primitives. Components accept immutable presentation
-inputs and emit typed intents. Capability work adds a reusable primitive here before consuming it.
+**Decision**: Add a second, tooling-only Angular application that imports the production UI library,
+tokens and localization providers. A typed manifest gives every exported component stable component/
+state ids and accounts for populated/default, empty, loading, error and disabled with a fixture or
+nonempty N/A rationale. Cross-cutting fixtures cover expanded text, RTL, reduced motion, localized
+formats, canonical-untranslated, unavailable and long unbroken content.
 
-**Rationale**: Existing feature designs already depend on these patterns. Centralizing semantics,
-touch size, localization and states prevents every capability from rebuilding them. Presentation
-inputs keep build/domain state out of the component library.
+**Rationale**: The host renders the exact zoneless Angular components in both Playwright engines and
+keeps FR-004/024 machine-auditable. Angular 22 is zoneless by default. Storybook's Angular runtime
+would add zone, platform-dynamic, animation and alternate build configuration dependencies that this
+repository otherwise does not need. See Angular's [zoneless guide](https://angular.dev/guide/zoneless).
 
-**Alternatives considered**: A complete speculative component suite was rejected in favor of the
-patterns already required by accepted designs. Screen-local components and services injected into
-shared UI were rejected.
+**Alternatives considered**: A production `/design-system` route expands product surface. Static
+screenshots cannot prove semantics or interactions. Storybook adds a second runtime for no required
+capability.
 
-## Component previews
+## Feedback and announcements
 
-**Decision**: Add a development/test-only zoneless Angular target that renders typed preview
-declarations from `src/app/ui/previews/`. Every exported component declares each applicable
-populated, empty, loading, error and disabled state (or an explicit inapplicable rationale), at
-desktop, tablet and mobile widths. Cross-cutting doubled-copy, RTL, reduced-motion and long-token
-fixtures apply to every relevant declaration. The preview target is absent from production routes
-and output.
+**Decision**: Render visible feedback as ordinary semantic content and maintain one hidden assertive
+outlet and one polite outlet in the application frame. Blocking errors publish one assertive bounded
+summary. Other settled changes coalesce to one polite summary. Stable event kind and source revision
+deduplicate re-renders, stale outcomes and unaffected values. Locale changes clear old outlet text
+without replaying events.
 
-**Rationale**: A first-party target runs the exact providers, signals, tokens and Playwright checks
-used by the application. Storybook 10.5.8 currently accepts Angular 22 but requires `zone.js`; this
-application is zoneless. A typed manifest also gives FR-024 a complete machine-readable inventory.
+**Rationale**: Making entire panels live repeats unrelated statistics and interrupts current speech.
+Visible feedback must remain available to every user, while a small event record makes urgency and
+deduplication independently testable.
 
-**Alternatives considered**: Storybook was rejected because it adds a zone-based runtime and a
-second viewport/accessibility configuration. Screenshot-only fixtures were rejected because they do
-not expose semantics and interactions. A production `/design-system` route was rejected as product
-surface and bundle leakage.
+**Alternatives considered**: Whole-panel live regions, announcing each signal update and feedback
+that exists only in a hidden outlet were rejected.
 
-## Announcements and semantic feedback
+## Browser, accessibility and responsive verification
 
-**Decision**: Keep visible feedback in ordinary semantic content and use one visually hidden
-assertive outlet plus one polite outlet. A blocking error is announced assertively once. Other
-settled changes are coalesced into one polite localized summary keyed by event kind and revision.
-Initial, unchanged, stale and unaffected content is silent. Components supply stable event identity;
-the announcement service owns deduplication.
+**Decision**: Generate five profiles—1440×900 desktop, 834×1112 tablet portrait, 1112×834 tablet
+landscape, 390×844 mobile portrait and 844×390 mobile landscape—for Chromium and Firefox. Every
+primary journey runs in all ten projects; desktop uses click and the eight touch profiles use tap.
+Every relevant product state and preview declaration runs axe plus explicit landmark, heading, name,
+state, relationship, text-equivalence, target-size, locale and document-overflow assertions.
 
-**Rationale**: Re-rendering visible regions as live content repeats unaffected values. Separate
-outlets preserve urgency without interrupting ordinary changes. Stable revision keys make behavior
-unit-testable.
+Automate 200% root text and a 320 CSS-pixel reflow proxy in both engines. Emulate RTL, expanded copy
+and reduced motion. Keep actual 400% browser zoom and NVDA/Firefox, TalkBack/Chromium, and materially
+different tablet screen-reader runs as versioned manual records. Axe remains a floor, as the official
+[Playwright accessibility guide](https://playwright.dev/docs/accessibility-testing) states.
 
-**Alternatives considered**: Making whole panels live, announcing every signal update and hiding all
-feedback exclusively in a live region were rejected.
+**Rationale**: Ten projects close the current Firefox and orientation gaps without inventing a
+desktop orientation pair. A 390-pixel mobile viewport is not the WCAG 400%-reflow proxy. CSS zoom is
+not equivalent to actual browser zoom, and Playwright cannot automate real assistive-technology
+speech. The 320-pixel relationship follows WCAG 2.2
+[Reflow](https://www.w3.org/TR/WCAG22/#reflow).
 
-## Responsive, accessible and browser verification
-
-**Decision**: Configure five explicit profiles—1440×900 desktop, 834×1112 tablet portrait,
-1112×834 tablet landscape, 390×844 mobile portrait and 844×390 mobile landscape—in Chromium and
-Firefox. Add `@axe-core/playwright`; scan every product screen/relevant state and every preview state.
-Also assert document overflow, landmarks/headings, names/states/errors, text alternatives, target
-size and `lang`/`dir`. Exercise 200% text, equivalent narrow layouts, RTL, doubled copy and reduced
-motion in both engines. Keep actual 400% browser zoom and screen-reader scripts as recorded manual
-gates, including NVDA/Firefox desktop and TalkBack/Chromium mobile.
-
-**Rationale**: Ten projects close the current Firefox and orientation gaps. Axe is a floor, not a
-screen-reader proof, and browser zoom cannot be faithfully emulated cross-engine by CSS zoom.
-Environment variables may point each engine to a compatible installed executable.
-
-**Alternatives considered**: Chromium-only, portrait-only, axe-only, CSS `zoom` as browser zoom,
-snapshot-only checks and disabling broad WCAG tag sets were rejected.
+**Alternatives considered**: Chromium-only, portrait-only, axe-only, screenshot-only, CSS zoom and
+removing a project to control suite time were rejected. CI may shard the unchanged matrix.
 
 ## Repository policy enforcement
 
-**Decision**: Add `scripts/check-interface-foundations.mjs` with fixture-backed Node tests. Use the
-installed Angular and TypeScript parsers to reject owned template/metadata display literals and
-inline component styles; parse SCSS/CSS to reject colors and token-governed visual values outside
-`src/styles/tokens/`; compare exported UI components with typed preview declarations and required
-states/widths. Add catalogue completeness/placeholder checks. Run the checker and its tests inside
-`pnpm run check`.
+**Decision**: Add a fixture-tested Node checker. Use TypeScript ASTs and Angular `parseTemplate` for
+owned literal text, visible/accessibility attributes, inline templates and formatter display paths.
+Add direct PostCSS and `postcss-scss` dependencies for property-aware checks of color, typography,
+spacing, radius, elevation, border and motion values outside token sources. Reconcile exported UI
+components with the typed preview manifest and required state rationale. Validate catalogue key,
+blank and interpolation parity and reject skipped/focused tests.
 
-**Rationale**: FR-024 spans Angular templates, TypeScript metadata, styles and a preview manifest.
-One repository-aware checker can name exact violations and test false-positive/negative fixtures.
+**Rationale**: FR-024 spans several syntaxes. The current workspace has TypeScript/Angular parsers but
+no direct SCSS parser; claiming otherwise would make the plan non-runnable. AST scopes can allow
+tests, catalogues, package text bindings, structural punctuation and documented geometry without a
+blanket path exclusion.
 
-**Alternatives considered**: Review-only enforcement was rejected as non-automated. Generic ESLint
-or Stylelint alone was rejected because neither can join all four repository contracts. Regex-only
-source scanning was rejected for parser-backed checks.
+**Alternatives considered**: Review-only and regex-only checks are weak. Generic lint packages alone
+cannot reconcile exported components with preview declarations. Detecting visual-pattern duplication
+automatically is not credible; FR-005 remains a documented architecture/review gate.
 
-## Reference adaptation
+## Performance validation
 
-**Decision**: Retain the reference's dense dark hierarchy, clear section grouping, wide-to-stacked
-composition and restrained accent through semantic tokens. Replace inline literals, Google Font
-requests, fixed pixel canvases, hover-only behavior, clickable `div`s, icon-only meaning, hard-coded
-English and mobile omissions. Use system font stacks unless licensed same-origin font assets are
-added and attributed through feature 012.
+**Decision**: Gate structural behavior: existing bundle/style budgets remain, English makes zero
+locale requests, a cold secondary locale makes at most one same-origin request, a warm switch makes
+none, formatter construction is cached by locale/options and each switch produces one committed
+snapshot. Do not add a wall-clock threshold.
 
-**Rationale**: The canvas is a hierarchy reference, not source code or a contrast/interaction
-contract. Same-origin assets and tokens preserve the constitutional boundaries.
+**Rationale**: The specification supplies no latency SLO. The previous 100 ms/4×-CPU target was an
+invented, environment-sensitive requirement. Request counts, cache construction and atomic revision
+behavior are deterministic and directly protect the intended experience.
 
-**Alternatives considered**: Copying canvas CSS/assets, runtime font CDNs and treating mobile as a
-reduced card set were rejected.
+**Alternatives considered**: A cross-browser stopwatch gate was rejected as flaky until product
+requirements define a measurable latency target.
 
 ## Planning resolution
 
-No planning ambiguity remains. English and German are the accepted initial product locale set;
-changing it is a product-plan revision. Almanac #309 is closed and consumed through its leaf APIs.
+All dependency, locale, design, offline, responsive, preview, accessibility and enforcement choices
+are resolved. English/German is the initial application locale set; changing it is a coordinated
+product-plan revision, not an implementation-time choice.

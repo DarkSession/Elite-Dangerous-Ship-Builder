@@ -2,93 +2,113 @@
 
 ## Ownership boundary
 
-- Application-owned text resolves through message keys and the active catalogue.
-- Game text and package diagnostics come from Almanac leaf APIs/fields and never from application
-  catalogues.
-- Raw message keys, blank values, interpolation placeholders and raw internal exceptions never reach
-  a Commander.
+- Application-owned display text resolves through the typed message facade and active catalogue.
+- Game nouns, descriptions and package diagnostics come from Almanac leaf helpers/records and never
+  from application catalogues.
+- Raw keys, blank values, unmatched interpolation placeholders, internal exceptions and raw package
+  identities never become display fallback.
+- Message values are plain text. Components do not treat catalogue values as trusted HTML.
 
-## Shipped registry
+## Production locale registry
 
-The initial production registry contains complete `en` and `de` catalogues. Each entry owns a
-canonical tag, language, direction, self-name key and same-origin asset path. Test-only expanded and
-RTL catalogues are excluded from selection and persistence.
+The initial registry contains complete `en` and `de` catalogues. Each entry supplies canonical tag,
+base language, direction, self-name key and same-origin asset path. English is the only fallback and
+is imported into the initial bundle. German is selectable only when build-time key, nonblank,
+placeholder and reviewed-wording gates pass.
 
-Adding a shipped locale requires:
+Test-only expanded-copy and RTL providers are not production registry entries and cannot be stored.
 
-1. a complete reviewed catalogue matching every English key and parameter;
-2. a registry entry and self-name in both English and the new locale;
-3. browser-match, explicit-selection, persistence, offline and fallback tests;
-4. responsive/RTL tests when its direction or expansion characteristics add a new case.
+Adding a locale requires:
 
-## Selection precedence
+1. reviewed application wording for every English key and matching interpolation set;
+2. registry/self-name entries without a private game-text table;
+3. browser match, explicit selection, persistence, cold/warm request, offline and fallback tests;
+4. responsive, glyph and RTL coverage for any new direction/script/expansion behavior.
 
-1. Read the versioned preference through the storage adapter. A supported saved tag wins.
-2. Otherwise inspect `navigator.languages` in order. Canonicalize each tag; match exact shipped tag,
-   then its base language.
-3. If none matches, select `en`.
-4. An explicit selection becomes the requested tag and is persisted only after the candidate
-   catalogue has resolved to a valid effective state.
+## Selection precedence and persistence
 
-Malformed/unsupported saved data is ignored safely. Storage/fetch failure does not block the app.
+1. Read the versioned preference through the storage adapter. A current supported tag wins.
+2. Otherwise inspect `navigator.languages` in order, canonicalizing each entry and matching exact
+   shipped tag before base language.
+3. Otherwise use bundled English.
+4. An explicit selection creates a candidate. Persist its requested tag only after a complete ready
+   snapshot commits with `effectiveLocale === requestedLocale`. A fallback retains the prior stored
+   preference and offers retry. A failed write keeps the ready in-memory choice and reports
+   non-persistence once.
 
-## Atomic publication
+Malformed JSON, unknown versions, removed locales, denied storage and failed reads/writes remain
+bounded adapter outcomes. The full browser language list is never persisted or uploaded.
 
-Commit the effective catalogue, formatter registry, translated document title, `<html lang>` and
-`dir` together. Do not publish a partial catalogue or relabel old values with a new locale.
-Presentation/search projections may refresh; build state, revision, URL, SLEF and persistence do not.
+## Candidate validation and atomic publication
 
-If a requested non-English asset fails validation/load, commit bundled English as the effective
-locale, retain enough local state to explain the fallback once, and never show a mixed-language raw
-catalogue. A later explicit retry may load the requested locale.
+The locale store loads a candidate without changing the current snapshot. It validates locale
+identity, catalogue shape, exact English key set, nonblank values and interpolation parameters. One
+commit then publishes messages, effective locale, formatter cache, translated document title,
+`<html lang>` and `dir` together.
+
+If a secondary catalogue cannot load or validate, one commit publishes bundled English as the
+effective fallback and a stable localized reason. It never publishes a partial/mixed catalogue.
+English requires no runtime request. A cold secondary locale makes at most one same-origin request;
+a warm/service-worker-cached switch makes none.
+
+Locale publication may rebuild presentation/search projections. It cannot mutate an active build,
+build revision, URL, SLEF, saved record or undo history.
 
 ## Message resolution
 
-- English is imported from its canonical JSON source into the initial bundle.
-- Every shipped production catalogue is complete at build time.
-- Defensive missing-key/blank/parameter mismatch handling resolves the English entry.
-- If the English key itself is absent/invalid, return a bounded localized generic application error
-  from a separately compiled invariant, never the key or placeholder.
-- Message values are text, not trusted HTML.
+- English JSON defines the typed key and parameter schema.
+- Production builds fail for missing, extra, blank or placeholder-incompatible German values.
+- A runtime unknown key is an application defect and resolves to the bundled English generic
+  unavailable message; it never echoes the key. The generic key is part of the same validated English
+  schema, not a hard-coded component literal.
+- Application-owned document title, metadata exposed to users and service-worker/offline messages use
+  the same catalogue boundary.
 
 ## Named formatters
 
-Components request named formatting operations rather than constructing `Intl` objects or calling
-implicit `toLocaleString()`:
+Components request named formatting operations and never construct `Intl` objects or call implicit
+`toLocaleString()`:
 
-- decimal/integer/count with contract-specific precision;
-- percentage from a documented fraction/percentage input contract;
-- credits as locale number plus localized credit unit;
-- distance with metres, kilometres or light years selected by the calling capability contract, not
-  guessed by the formatter;
-- dates/instants with named absolute formats; relative dates only when explicitly required;
-- collator/display-name/plural helpers for locale-aware ordering and grammar.
+- integer/count and decimal with declared precision;
+- percentage whose input contract is a fraction;
+- metres and kilometres with appropriate `Intl` unit formatting;
+- credits and light years as localized whole-message/unit patterns containing an `Intl`-formatted
+  number;
+- named absolute date/time formats with an explicit timezone contract;
+- collator, display-name and plural operations where a capability needs them.
 
-Null, unavailable, incomplete and semantic-infinity states are passed to localized state components,
-not coerced into formatted numbers.
+The registry caches by effective locale, operation and options. Tests inspect parts and semantic
+units rather than pinning complete environment-specific strings. Null, invalid, incomplete,
+unavailable and semantic infinity states go to state components instead of numeric formatters.
 
 ## Almanac names and diagnostics
 
-Call the relevant 0.1.1 leaf helper by stable package identity:
+Use stable package identity and the matching 0.1.1 leaf export:
 
-- existing module, blueprint, experimental-effect and material name helpers;
-- `i18n/ships` for ship name/manufacturer;
-- `i18n/slots` for loadout slot/restriction;
-- `i18n/pre-engineered`, `i18n/engineering-groups` and
-  `i18n/experimental-effect-descriptions` for those identities;
-- `i18n/diagnostics` for structured loadout, calculation, SLEF and edit diagnostics.
+- `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`;
+- `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`;
+- `i18n/materials`, `i18n/micro-resources`;
+- `i18n/ships`, `i18n/slots`, `i18n/pre-engineered`;
+- `i18n/diagnostics` for loadout, calculation, SLEF and edit diagnostics.
 
-A non-null result is localized for the requested locale. For a `null` result, request canonical
-English through the package helper and then the record's package-owned canonical field when that
-family has one. Present found text at its canonical language boundary with the shared
-visible/programmatic untranslated disclosure. If no canonical text exists, return the explicit
-unavailable state and its localized application framing—never a raw identity or invented game text.
-Do not map diagnostic codes/params to private application translations. The released
-[#309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309) contract retains these
-explicit-miss semantics.
+The caller must establish whether the identity/diagnostic is known from package data and pass any
+package-owned canonical field. The presenter follows this order:
 
-## Persistence and privacy
+1. Query the helper with the effective locale.
+2. If non-null, present it as localized package text.
+3. If null for a known identity, query canonical English and then use a package-owned canonical field
+   where that family defines one.
+4. If canonical text exists, present it with its accurate `lang` plus visible and programmatically
+   associated untranslated disclosure in the application locale.
+5. If no canonical text exists—or the identity is unknown—present localized unavailable framing.
 
-Only `{ version: 1, locale }` is stored under the namespaced locale-preference key. No browser
-language list, translated text, game data, preview state or announcement history is persisted or
-uploaded.
+Do not translate diagnostic codes/parameters privately, parse English messages, expose raw symbols as
+names or label canonical package text as localized.
+
+## Offline and privacy boundary
+
+The service worker eagerly versions the application shell, same-origin fonts and bundled English. It
+lazily versions secondary `/i18n/*.json` assets after use. A production-mode offline test waits for a
+controlling worker, opens German once, takes the context offline and verifies shell/English/German
+reload. No catalogue, browser-language list, translated text, formatter cache or announcement history
+is stored as user data or uploaded.

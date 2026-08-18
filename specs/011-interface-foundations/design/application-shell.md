@@ -1,56 +1,79 @@
-# Application Frame and Language Control
+# Application Shell and Global Utilities
 
 ## Purpose
 
-Provide stable product landmarks, navigation, locale selection and feedback outlets around every
-route without owning capability/domain state.
+Provide the stable product identity, landmarks, route context/actions, language entry and feedback
+outlets around every capability without owning build/domain state. The shell adapts the title/action
+bars repeated across canvases 1a–1d.
 
 ## Semantic composition
 
-1. application header/banner containing localized product identity;
-2. primary navigation when the current product route set provides it;
-3. always-visible labelled language select;
-4. route-owned `main`, one visible `h1` and ordered capability headings;
-5. visible route feedback in reading order;
-6. global hidden assertive and polite announcement outlets.
+1. banner/header containing localized product identity;
+2. route context group containing visible localized screen/build identity supplied by the route;
+3. primary navigation when the route set provides it;
+4. contextual and global utility actions, including a visible Language entry;
+5. one route-owned `main`, one visible `h1` and ordered capability headings;
+6. visible route/global status and error content in ordinary reading order;
+7. hidden assertive and polite announcement outlets.
 
-Dialog/layer portals remain inside the application boundary, are named/described, and make background
-content inert while open. The frame does not generate a duplicate route heading.
+The shell never synthesizes a duplicate route heading. Route context is immutable presentation input;
+the shell emits action/navigation/language intent and does not reach into a build store.
 
-## Responsive composition
+## Wide composition
 
-- Wide layouts keep brand/navigation/language actions in a wrapping header and leave route content a
-  fluid central region.
-- Tablet and mobile stack/wrap the same named actions. No language/navigation capability becomes
-  hover-only or disappears behind an unlabeled icon.
-- Mobile landscape preserves content height by compact spacing tokens, not by omitting controls.
-- At 200% text, 400% zoom, doubled copy and RTL, semantic DOM/reading order stays stable; no fixed
-  header may cover content and the document does not scroll horizontally.
+- Keep route/product identity at the inline start and a wrapping named action group at the inline end,
+  matching the reference hierarchy.
+- Primary actions remain visible. Secondary utilities may use a named menu only when every menu item
+  repeats a visible text label.
+- Language is a visible labelled control or Language action opening the shared selector layer. It is
+  never represented only by a globe/icon.
+- Route content receives a fluid central region; the shell does not impose the reference's fixed
+  canvas width.
+
+## Medium/tablet composition
+
+- Identity and actions wrap into separate rows before labels truncate or targets shrink.
+- Preserve direct access to the primary route action and Language; lower-priority actions may move to
+  the named action layer without changing availability.
+- Portrait and landscape use the same semantic DOM order even when the visible rows change.
+
+## Compact/zoom composition
+
+- Show the route/build identity and one visibly named Menu/Actions control, replacing the prototype's
+  unlabeled ellipsis. The opened layer lists every action with visible localized text, including
+  Language and Help.
+- The action layer is a sheet when its contents are simple and a full-height layer when content/
+  expansion/short landscape requires it.
+- Fixed/sticky shell regions reserve their space and never cover route content at 200% text or 400%
+  zoom.
 
 ## Language behavior
 
-The visible language label and option self-names come from catalogues. Initial selection follows the
-locale contract. Selecting German loads/validates a candidate, then atomically changes messages,
-formats, title, `lang` and `dir`; selecting English uses the bundled catalogue. A failed candidate
-leaves a readable English frame and shows one non-blocking fallback status. Storage failure leaves
-the selection active for the tab/session and reports that it will not persist.
+The selector shows self-names through the locale catalogue. Startup follows saved → browser → English
+precedence. Selecting German loads and validates a candidate, then atomically changes messages,
+formats, title, `lang` and `dir`. Selecting English uses the bundled catalogue. A failed candidate
+publishes readable English and one nonblocking fallback status. A storage write failure keeps the
+choice for the session and reports that it will not persist.
 
-Locale changes never announce or recompute an unchanged build. The visible language/status text
-changes in ordinary reading order; only a new fallback/persistence outcome generates a polite event.
+Locale changes do not announce/recompute an unchanged build. The visible language labels change in
+ordinary reading order; only a new fallback or persistence outcome creates a polite event.
 
-## States
+## Shell states
 
-| State                          | Frame behavior                                                                         |
-| ------------------------------ | -------------------------------------------------------------------------------------- |
-| Initializing                   | Bundled English frame available; route loading state named, no raw key flash           |
-| Browser-matched German         | German catalogue/root metadata committed before localized route render                 |
-| Unsupported browser locale     | English selected and presented as ordinary default                                     |
-| Restored explicit choice       | Saved supported tag wins without rewriting build/navigation state                      |
-| Locale asset invalid/offline   | Atomic English fallback plus bounded status/retry intent                               |
-| Preference storage unavailable | Active choice remains in memory; nonblocking non-persistence notice                    |
-| Route blocking error           | Visible named error and one assertive announcement; frame navigation remains available |
+| State                           | Presentation/behavior                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                   |
+| Browser-matched German          | Complete catalogue/root metadata commit before German route render                      |
+| Unsupported browser language    | English appears as the ordinary default                                                 |
+| Restored saved choice           | Supported saved tag wins without altering route/build state                             |
+| Locale candidate loading        | Current complete snapshot remains; selector exposes busy state                          |
+| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                 |
+| Preference storage unavailable  | Active locale remains in memory plus one nonblocking non-persistence notice             |
+| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable               |
+| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable |
 
-## Design-system composition
+## Component composition
 
-Compose frame, primary navigation, page heading, field/select, status/error, dialog/layer and
-announcement primitives. The shell stylesheet contains no visual literal or owned display text.
+Compose shared frame, product/route heading, navigation, visible-name actions/menu, labelled locale
+field/selector, status/error, adaptive layer and announcement outlet primitives. Shell styles contain
+no governed literal and shell templates contain no application-owned display literal.

@@ -2,82 +2,86 @@
 
 **Branch**: `011-interface-foundations` | **Date**: 2026-08-18 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `specs/011-interface-foundations/spec.md`
+**Input**: Feature specification from `specs/011-interface-foundations/spec.md` and the four product
+reference canvases in `.design/Ship Builder.dc.html`
 
 ## Summary
 
-Establish the one shared interface foundation every capability composes: a token-only dark design
-system, presentation-only Angular components, a runtime locale store with complete bundled English
-fallback and initial English/German catalogues, named `Intl` formatters, package-game-text
-presentation, deduplicated live announcements, and a zoneless component-preview target. Extend the
-build gate with policy checks, ten Chromium/Firefox viewport-orientation projects, axe scans and
-screen-reader protocols. The product gains no new content route; the language selector is part of
-the application frame and the preview catalogue is tooling-only.
+Build the shared interface layer every capability must use: the dark amber visual language shown in
+the supplied Shipyard and Outfitting designs, rebuilt as contrast-audited design tokens and
+presentation-only Angular components; a runtime English/German localization boundary with bundled
+English fallback, locale-aware formatting and explicit Almanac text provenance; responsive shell,
+layer and feedback semantics; and a development-only component catalogue that exercises every
+component state.
 
-Almanac 0.1.1 includes the locale-result APIs filed as
-[Elite-Dangerous-Almanac #309](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/309):
-ship/manufacturer, slot/restriction, pre-engineered variant, engineering-group,
-experimental-description and structured diagnostic helpers. An explicit `null` requests canonical
-package text and disclosure; if the package has no canonical text, FR-020 presents unavailable.
+The verification gate becomes an enforceable part of the foundation: strict TypeScript/templates,
+AST-backed checks for untranslated application text and visual literals, preview-manifest coverage,
+axe scans, and every primary journey in five viewport/orientation profiles in both Chromium and
+Firefox. The product remains a static, zoneless, client-only application. Feature 011 adds no domain
+route and no build state.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in full strict mode; Angular HTML and SCSS; Node.js 24 per
-`.nvmrc` for tooling
+**Language/Version**: TypeScript 6.0 with `strict: true`; Angular 22.1 standalone templates with
+`strictTemplates: true`; SCSS; Node.js 24 from `.nvmrc`
 
-**Primary Dependencies**: Angular 22.1 standalone, explicitly zoneless APIs; Angular Router and
-service worker; RxJS 7.8; `@jsverse/transloco` 8.4 runtime localization; browser `Intl` APIs;
-`@elite-dangerous-almanac/core` 0.1.1 leaf i18n and catalogue exports;
-`@axe-core/playwright` 4.13 and Playwright 1.62 for verification
+**Primary Dependencies**: Angular 22.1 and Router (zoneless by default), Angular service worker
+22.1, RxJS 7.8, new `@jsverse/transloco` 8.4 runtime localization, browser `Intl`,
+`@elite-dangerous-almanac/core` 0.1.1 leaf i18n exports; new test/tooling dependencies
+`@axe-core/playwright` 4.13, PostCSS 8 and `postcss-scss` 4
 
-**Storage**: One versioned locale-preference record in `localStorage` through an injected adapter;
-message catalogues, preview state, announcement state and formatter caches are not persisted and
-never enter build links, SLEF or saved builds
+**Storage**: One versioned locale-preference record in `localStorage` behind an injected adapter.
+Catalogues, formatter caches, preview fixtures and announcement history remain memory/static-asset
+state and never enter builds, saved records, SLEF or build links.
 
-**Testing**: Vitest through Angular's unit-test builder with the existing 80% thresholds; Node script
-tests for repository policy checks; Playwright/axe over desktop, tablet portrait/landscape and mobile
-portrait/landscape in Chromium and Firefox; recorded manual screen-reader and actual-browser-zoom
-protocols
+**Testing**: Vitest through Angular's unit-test builder with the existing 80% statement/branch/
+function/line thresholds; Node tests for repository policy checks; Playwright and axe across five
+profiles in Chromium and Firefox; recorded screen-reader and actual-browser-zoom protocols
 
-**Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; static client
-application usable offline after first load; pointer, touch and screen reader; LTR and RTL-safe
+**Target Platform**: Modern evergreen desktop, tablet and mobile browsers; pointer, single touch and
+screen reader; tablet/mobile portrait and landscape; LTR and RTL-safe layouts; same-origin static
+deployment usable offline after first controlled load
 
-**Project Type**: Client-side Angular single-page application plus a development/test-only zoneless
-Angular component-preview target; static output only
+**Project Type**: One production Angular SPA plus one development/test-only Angular component-preview
+application. Both consume the same tokens, UI components and localization providers; the preview is
+not a production route or output.
 
-**Performance Goals**: Locale selection publishes messages, root language/direction and formatters as
-one state before the next rendered frame; a warm locale switch and a settled live announcement each
-complete within 100 ms on the mobile viewport under Chromium 4x CPU slowdown; preserve current
-production bundle budgets
+**Performance Goals**: Preserve the current 500 kB/1 MB initial and 4 kB/8 kB component-style
+warning/error budgets; require no runtime request for English, at most one same-origin request for a
+cold secondary locale and none for a warm switch; cache each named `Intl` formatter once per locale
+and options; publish each locale change as one committed revision with no mixed-language frame
 
-**Constraints**: No backend, account, telemetry, third-party request, private game-text translation,
-second theme or production preview route; English fallback must be readable with no network; German
-catalogue must be complete before it is selectable; no document horizontal scrolling at 200% text or
-400% zoom; 44 CSS-pixel target baseline; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1,
-2.4.3, 2.4.7 and 2.4.11
+**Constraints**: No backend, accounts, telemetry, automatic cross-origin request, private game-text
+translation, second theme, production preview surface or domain state inside UI components. English
+must remain readable without a network. Every action and datum remains available at 200% text and
+400% zoom without document horizontal scrolling. Touch targets use a 44 CSS-pixel design baseline.
+Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
-**Scale/Scope**: One global locale state and application frame; initial shipped locales `en` and
-`de`; every exported `src/app/ui/` component and applicable populated, empty, loading, error and
-disabled state; every product screen/relevant state; ten browser/viewport-orientation projects
+**Scale/Scope**: One application frame, locale store, formatter registry and announcement service;
+initial complete application catalogues `en` and `de`; every exported `src/app/ui/` component and
+applicable populated/default, empty, loading, error and disabled state; every product screen and
+relevant state; ten browser/profile projects
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. Adopted hierarchy and required
-departures are recorded in [design/reference-review.md](./design/reference-review.md)
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. Canvas decomposition, retained
+visual decisions and required constitutional departures are recorded in
+[design/reference-review.md](./design/reference-review.md); synthesized tablet/zoom behavior is in
+[design/responsive-composition.md](./design/responsive-composition.md).
 
 ## Constitution Check
 
-_GATE: Passed before research. Re-check after Phase 1. No constitutional exception is requested._
+_GATE: Passed before Phase 0 research. No exception or justified violation is required._
 
-| Principle                               | Design evidence                                                                                                                                         | Status |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| I. Client-Side Only                     | Locale assets and preview output are static; only a local preference is persisted; no cross-origin runtime dependency is introduced.                    | PASS   |
-| II. Almanac Source of Truth             | Game names and diagnostics use named leaf helpers; unavailable locale results remain canonical and disclosed, with no local translation table.          | PASS   |
-| III. Domain Logic Outside UI            | Locale, formatting, announcements and browser persistence sit in stores/services/adapters; components accept presentation state and emit intent.        | PASS   |
-| IV. Lossless, Honest Builds             | Interface state never enters or changes a build; unavailable and untranslated values remain explicit instead of becoming empty text or estimates.       | PASS   |
-| V. Desktop, Tablet and Mobile           | Fluid components, five size/orientation profiles per browser, axe, touch, zoom, text expansion, reduced motion and screen-reader protocols are planned. | PASS   |
-| VI. Commander's Language                | Runtime selection, complete `en`/`de` catalogues, bundled English fallback, named formatters and root `lang`/`dir` publication are defined.             | PASS   |
-| VII. One Design System                  | One token set and one shared UI library feed product and preview targets; the single dark theme has no control or stored preference.                    | PASS   |
-| VIII. Tested Before It Ships            | Existing 80% gates remain; Firefox, landscape, axe, preview coverage and static policy checks join `pnpm run check`.                                    | PASS   |
-| IX. Specification Before Implementation | Every FR maps to a plan-time surface/contract and all research questions are resolved before task generation.                                           | PASS   |
+| Principle                               | Design evidence                                                                                                                                                                         | Status |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| I. Client-Side Only                     | Locale/font assets and both Angular outputs are static; the preview is tooling-only; one local preference is stored; service-worker requests are same-origin only.                      | PASS   |
+| II. Almanac Source of Truth             | Game nouns and diagnostics use 0.1.1 leaf helpers; a locale miss becomes disclosed canonical package text or unavailable, never an application translation.                             | PASS   |
+| III. Domain Logic Outside UI            | Locale selection, persistence, formatting and announcement policy live in stores/services/adapters; UI components accept immutable view state and emit typed intent.                    | PASS   |
+| IV. Lossless, Honest Builds             | Interface state never mutates a build; null/unavailable and untranslated boundaries stay explicit, and locale state is excluded from every build serialization.                         | PASS   |
+| V. Desktop, Tablet and Mobile           | Wide, synthesized medium and compact compositions; ten browser/profile projects; axe, touch, reflow, text-size, reduced-motion and screen-reader/zoom protocols are specified.          | PASS   |
+| VI. Commander's Language                | Runtime choice and persistence, complete `en`/`de` assets, bundled English, atomic `lang`/`dir`, named `Intl` formatting and package-text disclosure are contracted.                    | PASS   |
+| VII. One Design System                  | One audited dark token set and one `src/app/ui/` library supply product and preview; canvases inform hierarchy but none of their inline literals become production sources.             | PASS   |
+| VIII. Tested Before It Ships            | Existing coverage thresholds remain; strict compilation, policy checks, ten Playwright projects, axe and versioned manual accessibility records join `pnpm run check`.                  | PASS   |
+| IX. Specification Before Implementation | Every FR maps to a feature-owned surface or cross-feature contract; Phase 0 decisions resolve the locale, dependency, offline, preview, design and verification questions before tasks. | PASS   |
 
 ## Project Structure
 
@@ -98,6 +102,7 @@ specs/011-interface-foundations/
     ├── application-shell.md
     ├── component-preview-catalogue.md
     ├── reference-review.md
+    ├── responsive-composition.md
     └── screen-inventory.md
 ```
 
@@ -107,118 +112,141 @@ specs/011-interface-foundations/
 
 ```text
 src/
-├── styles.scss                         # imports the token and base layers only
+├── styles.scss
 ├── styles/
 │   ├── tokens/
-│   │   ├── _primitives.scss            # only permitted visual literals
-│   │   └── _semantic.scss              # one dark semantic token set
-│   ├── _base.scss                      # token-consuming document defaults
-│   └── _responsive.scss                # named size/orientation/container tokens
+│   │   ├── _primitives.scss          # sole owner of governed visual literals
+│   │   └── _semantic.scss            # one contrast-audited dark semantic set
+│   ├── _fonts.scss                   # same-origin Barlow/JetBrains declarations and fallbacks
+│   ├── _base.scss
+│   └── _responsive.scss              # named layout/container primitives
 └── app/
     ├── i18n/
-    │   ├── formatters/                  # cached named Intl formatters
-    │   ├── locales/                     # canonical en.json and de.json sources
-    │   ├── game-text.presenter.ts       # Almanac locale/canonical disclosure
-    │   ├── locale-registry.ts           # shipped tags/direction/asset metadata
-    │   └── locale.store.ts              # atomic requested/effective locale state
+    │   ├── locales/                   # canonical en.json and de.json
+    │   ├── formatters/                # cached named Intl operations
+    │   ├── game-text.presenter.ts
+    │   ├── locale-registry.ts
+    │   ├── locale.store.ts
+    │   └── message.service.ts         # application facade over Transloco
     ├── platform/
-    │   ├── browser/                     # navigator/document adapters
+    │   ├── browser/                   # document/navigator adapters
     │   └── storage/locale-preference.repository.ts
     └── ui/
-        ├── announcements/               # assertive/polite deduplicated outlet
-        ├── components/                  # shared presentation primitives
-        └── previews/                    # typed preview declarations and manifest
+        ├── announcements/
+        ├── components/
+        └── previews/                  # typed manifest; imported by preview app only
 
-projects/ui-preview/                     # dev/test-only zoneless Angular host
+public/
+└── fonts/                             # licensed WOFF2 subsets and licence material
+
+projects/ui-preview/                   # tooling-only Angular application
 ├── src/
 └── tsconfig.app.json
 
+e2e/
+├── accessibility/                     # axe, semantics, target and overflow helpers
+├── manual/                            # screen-reader and actual-zoom protocols/results
+├── interface-foundations.spec.ts
+└── ui-preview.spec.ts
+
 scripts/
-├── check-interface-foundations.mjs      # text/token/preview policy gate
+├── check-interface-foundations.mjs
 └── check-interface-foundations.test.mjs
 
-e2e/
-├── accessibility.ts                     # shared axe/semantic/overflow assertions
-├── interface-foundations.spec.ts
-└── ui-previews.spec.ts
+ngsw-config.json
 ```
 
-Tests live beside their TypeScript/component source where possible. Preview-host code imports the
-same `src/app/ui/`, tokens, localization providers and zoneless configuration; it contains no second
-component implementation.
-
-**Structure Decision**: Keep one production Angular application. Add one Angular workspace target
-solely to render typed shared-component previews under Playwright; it is not a product route and is
-not built into production. Cross-cutting state remains in application services/adapters, while
-`src/app/ui/` stays presentation-only. Locale JSON has one source under `src/app/i18n/locales/`: the
-English file is imported into the fallback bundle and the asset rule copies all catalogues to the
-same-origin `/i18n/` path.
+**Structure Decision**: Keep a single product application. A second Angular application renders
+shared component fixtures only during development and testing, avoiding a production design-system
+route and Storybook's zone-based runtime. Canonical locale JSON remains under `src/app/i18n/locales/`:
+English is imported into the initial bundle, while Angular asset configuration copies all catalogues
+to same-origin `/i18n/`. The service worker eagerly caches the shell and English and lazily caches a
+secondary locale once requested. Product and preview applications import the same UI source and
+token entry point.
 
 ## Phase 0: Research Conclusions
 
-All decisions, dependency probes, alternatives and the upstream reproduction are recorded in
-[research.md](./research.md). The decisive outcomes are:
+The complete decision records and alternatives are in [research.md](./research.md). The decisive
+outcomes are:
 
-- Ship complete English and German application catalogues. A real second language is required by
-  Story 3/SC-006; a pseudo-locale is test-only. Registry-driven tags keep later additions ordinary.
-- Use Transloco for runtime message lookup/fallback and an application-owned signal store for locale
-  selection/publication. Angular compile-time i18n cannot satisfy an in-session persisted switch.
-- Eagerly bundle English from the canonical JSON source; serve/cache all catalogues as same-origin
-  static assets. Failed or invalid non-English loads resolve atomically to English.
-- Use cached named `Intl` formatters rather than static `LOCALE_ID` pipes. Credits and unsupported
-  game units use translated unit labels around locale-formatted numbers.
-- Use a first-party zoneless Angular preview target. Storybook 10.5.8 supports Angular 22 but requires
-  `zone.js` and a second runtime/configuration, neither needed for this repository.
-- Expand Playwright to five size/orientation profiles in each of Chromium and Firefox; scan every
-  product and preview state with axe and retain manual screen-reader/actual-400%-zoom protocols.
-- Add one repository policy checker for application text, visual literals and preview completeness;
-  generic lint configuration cannot prove all three FR-024 boundaries.
-- Released game-text helpers return `null` on a locale or source-text miss. The presenter uses a
-  canonical package value with disclosure when present and unavailable otherwise; it never
-  substitutes a private translation.
+- Treat canvases 1a/1c as wide and 1b/1d as compact composition evidence, not breakpoints. Add a
+  synthesized medium/tablet mode and content-driven reflow while retaining every action and fact.
+- Preserve the reference's dark amber hierarchy, condensed headings, body face and monospaced
+  metrics through audited semantic tokens and same-origin licensed font subsets. Do not copy its
+  inline CSS, fixed dimensions, remote requests, mock values or interaction markup.
+- Retain complete English and German application catalogues. German stresses expansion and the
+  canonical-game-text disclosure path; it is not claimed to have complete Almanac coverage. Every
+  German application message must have reviewed wording before it becomes selectable.
+- Add Transloco as a runtime message engine behind an application-owned signal store/facade. Saved
+  preference wins over browser-language match, which wins over bundled English. Locale publication
+  is atomic and presentation-only.
+- Add the Angular service worker: shell and English are eager assets, while another shipped locale is
+  a lazy versioned asset available offline after it has been opened. Runtime never requests another
+  origin.
+- Centralize named `Intl` formatters. Credits and light years use localized whole-message/unit
+  patterns because neither is an appropriate ISO currency/standard `Intl` unit.
+- Use Almanac 0.1.1 leaf locale helpers. A known identity returning `null` is retried at the canonical
+  package language and visibly disclosed; no canonical text becomes unavailable.
+- Build a first-party tooling-only Angular preview app and typed manifest. Every exported component
+  accounts for required states and profiles; expanded, RTL, reduced-motion, untranslated and
+  unavailable variants are first-class fixtures.
+- Use one assertive and one polite announcement outlet with stable event/revision deduplication.
+  Visible feedback remains ordinary semantic content.
+- Generate ten Playwright projects from five profiles and two engines. Add axe and explicit semantic,
+  touch-target, overflow, text-equivalence and locale assertions. Automate 200% text and a 320 CSS-px
+  reflow proxy; record actual 400% zoom and screen-reader runs as manual gates.
+- Add an AST-backed repository policy checker. Angular/TypeScript parsers inspect display text and
+  template metadata; direct PostCSS dependencies inspect SCSS; a typed ledger reconciles UI exports
+  and preview states. Duplicated visual patterns remain an architecture/review gate, not a claim the
+  static checker can infer.
+- Preserve structural performance guarantees and existing bundle budgets instead of inventing a
+  wall-clock threshold absent from the specification.
 
 No planning clarification marker remains.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines locale/catalogue/preference state, formatted values,
-  package-text presentation, announcements, component previews and token-policy records.
+- [data-model.md](./data-model.md) defines locale/catalogue/preference state, formatter requests,
+  package-text presentation, announcements, tokens, component previews and verification coverage.
 - [contracts/localization-and-formatting.md](./contracts/localization-and-formatting.md) freezes
-  locale precedence, atomic publication, fallback, persistence, formatter and Almanac boundaries.
+  selection precedence, atomic fallback/persistence, `Intl` boundaries and exact Almanac behavior.
 - [contracts/design-system-and-previews.md](./contracts/design-system-and-previews.md) freezes token
-  ownership, presentation-only components, extension rules and complete preview declarations.
-- [contracts/feedback-and-semantics.md](./contracts/feedback-and-semantics.md) freezes names,
-  relationships, landmarks, text equivalence and deduplicated announcement behavior.
+  ownership, reference adaptation, component boundaries and complete preview declarations.
+- [contracts/feedback-and-semantics.md](./contracts/feedback-and-semantics.md) freezes landmarks,
+  visible/matching names, relationships, text equivalence and deduplicated announcements.
 - [contracts/responsive-accessibility-verification.md](./contracts/responsive-accessibility-verification.md)
-  freezes the ten-project matrix, axe/static gates, responsive cases and manual protocols.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application frame,
-  embedded language chooser, product capability surfaces and tooling-only preview catalogue.
-- [design/application-shell.md](./design/application-shell.md) defines semantic order, responsive
-  composition, locale control and feedback outlets.
-- [design/component-preview-catalogue.md](./design/component-preview-catalogue.md) defines the state,
-  viewport, expansion, RTL and reduced-motion preview matrix.
-- [design/reference-review.md](./design/reference-review.md) records which hierarchy is retained from
-  canvases 1a–1d and which literals, external assets and inaccessible interactions are rejected.
-- [quickstart.md](./quickstart.md) supplies runnable locale, fallback, offline, token, preview,
-  responsive, dual-engine, axe and screen-reader validation scenarios.
+  freezes the ten-project matrix, axe/static gates, 200%/320px automation and manual 400%/AT records.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps all FRs to the embedded application
+  frame, product surfaces that consume the foundation and the tooling-only preview catalogue.
+- [design/application-shell.md](./design/application-shell.md) defines semantic order, language entry,
+  contextual actions, feedback outlets and adaptive layer composition.
+- [design/responsive-composition.md](./design/responsive-composition.md) derives wide, medium and
+  compact rules from the four reference canvases and defines tablet, landscape, zoom and RTL cases.
+- [design/component-preview-catalogue.md](./design/component-preview-catalogue.md) defines stable
+  fixture addressing and the required state/profile/variant ledger.
+- [design/reference-review.md](./design/reference-review.md) records the exact 1a–1d patterns retained
+  and the fixed-layout, remote-asset, contrast, target, semantics and localization mechanics rejected.
+- [quickstart.md](./quickstart.md) provides runnable validation scenarios for strict compilation,
+  catalogues, offline fallback, formatting, package text, previews, policy checks, browsers, axe,
+  screen readers and zoom.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, account, cross-origin runtime request, build persistence field, local
-game-text translation, second theme, production preview surface or component-owned domain state.
-Every requirement has a surface owner and validation path. English remains readable without a
-network; the German catalogue is selectable only while complete; locale changes cannot mutate a
-build. Product and preview targets consume the same tokens/components/providers. The released #309
-helpers preserve explicit null: disclose canonical package text when it exists and present
-unavailable when it does not.
+Phase 1 introduces no server, account, external runtime service, build-persistence field, private
+game-data table, light theme, production preview route or component-owned domain rule. Locale changes
+cannot alter the active build. Bundled English keeps the application readable; a validated German
+catalogue is published only as a complete snapshot. Almanac text remains package-owned. The four
+reference canvases are decomposed into shared semantics and adaptive layouts rather than copied.
 
-The post-design gate remains **PASS with no exception**. Before task generation, retain `en` and `de`
-as the accepted initial locale set; changing that product set requires a deliberate spec/plan update,
-not an implementation-time substitution.
+Every requirement has a surface owner and verification path. Product and preview applications share
+the exact token, component and localization sources. The post-design gate remains **PASS with no
+constitutional exception**.
 
 ## Complexity Tracking
 
-No constitutional violation requires justification. The tooling-only preview target is the minimum
-reliable way to render every component/state under both browser engines without adding a production
-route or Storybook's zone-based runtime. Transloco replaces a custom message engine; the small locale
-store owns only selection, persistence and atomic document publication that the library does not.
+No constitutional violation requires justification. The tooling-only Angular preview application is
+the minimum reliable way to render the real zoneless component library in both browser engines
+without adding product surface or a separate zone-based component runtime. Transloco supplies the
+message engine; the application store owns only selection, persistence and atomic document state
+that the library cannot own. The service worker supplies the constitutional offline boundary for
+static locale assets.

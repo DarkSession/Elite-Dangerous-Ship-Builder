@@ -2,64 +2,102 @@
 
 ## Browser/profile matrix
 
-Every primary journey and relevant state runs in both Chromium and Firefox at:
+Generate these five profiles for each engine, producing ten explicitly named projects:
 
-| Profile          | Viewport | Input/orientation |
-| ---------------- | -------- | ----------------- |
-| Desktop          | 1440×900 | pointer           |
-| Tablet portrait  | 834×1112 | touch, portrait   |
-| Tablet landscape | 1112×834 | touch, landscape  |
-| Mobile portrait  | 390×844  | touch, portrait   |
-| Mobile landscape | 844×390  | touch, landscape  |
+| Profile          | Viewport | Primary input |
+| ---------------- | -------- | ------------- |
+| Desktop          | 1440×900 | pointer/click |
+| Tablet portrait  | 834×1112 | touch/tap     |
+| Tablet landscape | 1112×834 | touch/tap     |
+| Mobile portrait  | 390×844  | touch/tap     |
+| Mobile landscape | 844×390  | touch/tap     |
 
-`E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` may select compatible preinstalled executables without
-removing or renaming projects.
+Engine descriptors set `browserName` and engine-appropriate defaults explicitly; Firefox projects
+must not inherit Desktop Chrome device settings. `hasTouch: true` applies to the four touch profiles.
+`E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` may point to compatible installed executables without
+renaming or removing projects.
 
-## Automated coverage
+Every primary journey runs in all ten projects. CI may shard the same matrix; it may not reduce it.
+Retries remain diagnostic only and `failOnFlakyTests` is enabled in CI.
 
-For every product screen/relevant state and every UI preview declaration:
+## Product and preview coverage ledger
 
-- run `@axe-core/playwright` against in-scope WCAG A/AA rules;
-- assert expected landmarks, heading structure, visible/matching names, state and label/error/unit
-  relationships;
-- assert document `scrollWidth <= clientWidth` and that any component-owned overflow is labelled,
-  bounded and does not create document-level overflow;
-- verify interactive targets meet the shared 44 CSS-pixel baseline except a documented WCAG 2.2
-  target-size exception;
-- verify visible text alternatives for visual states and game-text language disclosure;
-- verify root `lang`/`dir`, locale-formatted outputs and no raw keys/placeholders;
-- emulate reduced motion and confirm nonessential animation is absent without lost meaning;
-- exercise doubled copy, RTL fixtures and 200% text sizing.
+Maintain a machine-readable ledger joining:
 
-Do not suppress a broad WCAG tag. Disable an axe rule only when its sole criterion is one of the seven
-constitutional exclusions, document the rule-to-criterion mapping and retain semantic assertions
-required by the feature spec.
+- every product route and stable relevant state;
+- every primary journey and owning requirements;
+- every exported UI component and applicable preview state;
+- required axe and named semantic/responsive assertions;
+- manual screen-reader/actual-zoom protocol ids for primary capabilities.
 
-## Manual gates
+Static tests compare the ledger with route/UI exports, preview declarations and Playwright project
+names. A new screen, state or component cannot silently avoid the suite.
 
-Automation is supplemented by versioned scripts/results for each primary capability:
+## Automated checks
+
+For every rendered product/relevant state and applicable preview declaration:
+
+- run `@axe-core/playwright` after the state settles with WCAG A/AA tags through WCAG 2.2 AA;
+- assert the expected banner/navigation/main/headings, visible/matching names, roles, state and
+  label/description/error/unit relationships;
+- assert each visual information carrier has its visible/programmatic text equivalent;
+- assert meaningful targets meet the shared 44 CSS-pixel baseline, or record and verify every
+  condition of a genuine WCAG 2.2 Target Size exception;
+- assert `documentElement.scrollWidth <= clientWidth`; any necessary component-owned overflow is
+  labelled, bounded and does not hide the only copy of an action or meaning;
+- assert root `lang`/`dir`, localized formatting, bidi isolation and absence of raw keys/placeholders;
+- exercise pointer/click in desktop and touch/tap in touch projects with no prerequisite hover or
+  multipointer gesture;
+- emulate `prefers-reduced-motion: reduce` and confirm state/feedback equivalence while nonessential
+  animation/transition disappears;
+- render doubled/long copy and RTL providers in both engines and assert stable semantic order and no
+  truncation of required meaning.
+
+Automate 200% text using a test-only root text-scale provider before application render. Also run a
+320 CSS-pixel reflow variant in both engines; this is a variant, not an eleventh/twelfth project. A
+390-pixel mobile project alone is not the WCAG 400%-reflow proxy.
+
+## Axe scope and constitutional exclusions
+
+Start with no disabled axe rules and never suppress a whole WCAG tag or page region. If an axe rule
+maps solely to one of the constitutionally excluded keyboard criteria, a future exception requires:
+
+1. a versioned rule-to-criterion record using the installed axe rule metadata;
+2. an automated assertion that every mapped criterion is in the seven-item exclusion set;
+3. retained feature-specific semantic assertions;
+4. no suppression of any in-scope criterion also covered by that rule.
+
+Attach the full axe JSON result to a failure. Automated results are a floor and cannot replace manual
+meaning/screen-reader evaluation.
+
+## Manual accessibility gates
+
+Store versioned protocol and result records for every primary capability:
 
 - NVDA with Firefox on desktop;
 - TalkBack with Chromium on mobile;
-- a tablet screen reader when composition/interaction differs materially;
-- actual 400% browser zoom, because CSS zoom/page-scale emulation is not a faithful cross-engine
-  substitute;
-- pointer and single-touch completion in both orientations.
+- a tablet screen reader whenever composition or interaction differs materially;
+- actual 400% browser zoom in Chromium and Firefox;
+- pointer and single-touch completion in portrait and landscape.
 
-Scripts verify landmark/heading navigation, visible/matching control names, state/error
-relationships, visual text equivalents, announcement urgency/deduplication, language selection and
-canonical-game-text disclosure. The repository states the keyboard exclusions in the recorded
-conformance scope.
+Each record names OS, browser, assistive-technology versions, viewport/orientation, capability/state,
+steps, expected speech/behavior, actual result, date and pass/fail. Protocols cover landmark/heading
+discovery, matching names, states/errors, dialog/layer isolation, text equivalents, assertive/polite
+urgency and deduplication, language switching and canonical-game-text disclosure. Screen-reader
+quick navigation/gestures remain required even though the named keyboard-operation criteria are
+excluded.
 
 ## Static/build gates
 
-`pnpm run check` retains format, full typecheck, production build, script tests, 80% unit coverage and
-Playwright, and adds:
+`pnpm run check` keeps formatting, production build, unit coverage and E2E, and adds:
 
-- explicit TypeScript `strict` and Angular strict-template checks;
-- design-token/display-text/preview-manifest policy validation;
-- English/German catalogue completeness and interpolation validation;
-- production-output assertion that the preview host is absent;
-- service-worker/offline validation for bundled English and loaded locale assets.
+- TypeScript `strict` and Angular `strictTemplates` compilation;
+- fixture-tested Angular/TypeScript/PostCSS interface policy checks;
+- catalogue key/blank/interpolation and reviewed-secondary-locale validation;
+- UI export/preview/coverage-ledger reconciliation;
+- production-output assertion that no preview route/chunk exists;
+- production-service-worker offline validation for shell/English and a previously opened German
+  asset;
+- all ten projects, all applicable axe scans and no skipped/focused/quarantined tests.
 
-No browser, state, axe violation or policy error may be skipped/quarantined to pass.
+The current 80% statement, branch, function and line thresholds remain unchanged.

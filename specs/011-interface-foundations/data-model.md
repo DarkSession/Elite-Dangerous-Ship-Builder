@@ -1,139 +1,180 @@
 # Data Model: Interface Foundations
 
-These records are application/interface state, not Elite Dangerous build data. None enters a build,
-URL fragment, SLEF payload or saved-build record.
+These are interface/application records, not Elite Dangerous build data. None is serialized into a
+build link, SLEF payload, active build or saved-build record.
 
-## Locale Definition
+## Shipped Locale
 
-| Field         | Type                    | Rules                                                            |
-| ------------- | ----------------------- | ---------------------------------------------------------------- |
-| `tag`         | canonical BCP 47 tag    | Unique shipped identity; initially `en` or `de`                  |
-| `language`    | base language tag       | Used only after exact browser-tag matching                       |
-| `direction`   | `ltr \| rtl`            | Published to the root document with the catalogue                |
-| `assetPath`   | same-origin path        | Must be under the static `/i18n/` boundary                       |
-| `selfNameKey` | application message key | Resolves in the locale itself; never a hard-coded selector label |
-| `fallback`    | boolean                 | Exactly one definition (`en`) is true                            |
+| Field         | Type                    | Rules                                                                    |
+| ------------- | ----------------------- | ------------------------------------------------------------------------ |
+| `tag`         | canonical BCP 47 tag    | Unique production identity; initially `en` or `de`                       |
+| `language`    | base language tag       | Used only after exact browser-tag matching                               |
+| `direction`   | `ltr \| rtl`            | Published with the effective catalogue                                   |
+| `assetPath`   | same-origin path        | Under `/i18n/`; English is additionally imported into the initial bundle |
+| `selfNameKey` | application message key | Resolves through the catalogue, never component text                     |
+| `fallback`    | boolean                 | Exactly one production locale (`en`)                                     |
 
-Test-only expanded/RTL definitions are not selectable, persisted or included in the production
-registry.
+Expanded-copy and RTL pseudo-locales are test providers, not shipped locale records. They cannot be
+selected or persisted.
 
-## Locale Preference
+## Locale Preference V1
 
-| Field     | Type        | Rules                                                  |
-| --------- | ----------- | ------------------------------------------------------ |
-| `version` | literal `1` | Unknown versions are ignored, not migrated by guessing |
-| `locale`  | locale tag  | Must resolve through the current shipped registry      |
+| Field     | Type        | Rules                                                |
+| --------- | ----------- | ---------------------------------------------------- |
+| `version` | literal `1` | Unknown versions are ignored rather than guessed     |
+| `locale`  | locale tag  | Must resolve to a current `ShippedLocale` before use |
 
-The record uses one namespaced key. Storage unavailable, malformed JSON, a removed locale or a write
-failure leaves the application usable and reports a non-blocking localized status once.
+One namespaced `localStorage` key owns the record. Storage access, parsing and writes are behind an
+adapter and exception boundary. Invalid data, denied storage or a failed write never blocks the app.
 
 ## Message Catalogue
 
-| Field      | Type                         | Rules                                      |
-| ---------- | ---------------------------- | ------------------------------------------ |
-| `locale`   | shipped locale tag           | Agrees with the registry/asset identity    |
-| `messages` | readonly key/string tree     | English defines the complete key schema    |
-| `revision` | build-generated content hash | Prevents stale service-worker/cache mixing |
+| Field      | Type                         | Rules                                                                      |
+| ---------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `locale`   | shipped locale tag           | Must match registry and asset identity                                     |
+| `messages` | immutable key/string tree    | English defines the complete typed key and interpolation schema            |
+| `revision` | build-generated content hash | Prevents a service-worker asset from mixing with another application build |
 
-Values must be nonblank, contain no raw placeholder markers and match the expected interpolation
-parameter names. Application messages contain no game-data translations.
+Every production value is nonblank, plain text and placeholder-compatible with English. Application
+catalogues contain no game noun or package diagnostic translation.
 
-## Locale State
+## Locale Candidate
 
-| Field             | Type                                      | Rules                                              |
-| ----------------- | ----------------------------------------- | -------------------------------------------------- |
-| `requestedLocale` | shipped locale tag                        | Saved selection or matched browser/default choice  |
-| `effectiveLocale` | shipped locale tag                        | Requested tag after valid load, otherwise `en`     |
-| `source`          | `saved \| browser \| default \| explicit` | Explains selection without exposing browser values |
-| `direction`       | `ltr \| rtl`                              | From the effective locale definition               |
-| `catalogue`       | immutable resolved catalogue              | Never partially published                          |
-| `status`          | `initializing \| ready \| fallback`       | `fallback` remains readable English                |
-| `fallbackReason`  | stable application code or `null`         | No raw fetch/parser exception reaches UI           |
+| Field       | Type                          | Rules                                                       |
+| ----------- | ----------------------------- | ----------------------------------------------------------- |
+| `requested` | shipped locale tag            | Selected by startup precedence or explicit Commander intent |
+| `catalogue` | validated catalogue or `null` | Never exposed before full validation                        |
+| `source`    | `bundle \| asset \| cache`    | Diagnostic/test provenance only                             |
+| `failure`   | stable failure code or `null` | No fetch/parser exception or URL becomes display text       |
 
-### State transitions
+A candidate is transient. It cannot partially update current messages, formatters, title, `lang` or
+`dir`.
+
+## Locale Snapshot
+
+| Field             | Type                                      | Rules                                                    |
+| ----------------- | ----------------------------------------- | -------------------------------------------------------- |
+| `revision`        | monotonic integer                         | Increments once per committed startup/switch/fallback    |
+| `requestedLocale` | shipped locale tag                        | The saved/browser/default/explicit intent                |
+| `effectiveLocale` | shipped locale tag                        | Valid candidate tag or bundled `en` fallback             |
+| `selectionSource` | `saved \| browser \| default \| explicit` | Does not retain the full browser language list           |
+| `catalogue`       | immutable message catalogue               | Complete and consistent with the effective locale        |
+| `direction`       | `ltr \| rtl`                              | From the effective locale                                |
+| `status`          | `ready \| fallback`                       | Both states are readable and usable                      |
+| `fallbackReason`  | stable code or `null`                     | Present only when the requested locale could not be used |
+
+### Locale transitions
 
 ```text
-startup -> valid saved tag -> load -> ready | English fallback
-startup -> no valid save -> first browser match -> load -> ready | English fallback
-startup -> no match -> bundled English -> ready
-ready/fallback -> explicit shipped tag -> load candidate -> atomic ready/fallback -> persist intent
+startup
+  -> valid saved tag
+  -> first exact/base navigator.languages match
+  -> bundled English default
+candidate(en) -> validate bundled catalogue -> commit ready snapshot
+candidate(non-en) -> load and validate -> commit ready snapshot
+candidate(non-en) -> fail -> commit bundled-English fallback snapshot
+ready/fallback -> explicit tag -> candidate -> one ready/fallback commit
+ready -> effective tag equals explicit request -> persist the accepted request
+fallback -> retain the previous stored preference and offer retry
 ```
 
-The previous presentation may remain visible while a candidate catalogue loads, but messages,
-formatters, title, `lang` and `dir` switch only as one committed state. Domain/build state is never
-recomputed solely because locale changed; presenters/search indexes may refresh.
+The prior snapshot may stay visible during a secondary-locale load. No new root `lang` or translated
+label appears until the whole candidate commits. Domain/build revision, URL and persistence are not
+effects of a locale transition.
 
-## Formatter Registry
+## Formatter Request
 
-| Field       | Type                            | Rules                                                             |
-| ----------- | ------------------------------- | ----------------------------------------------------------------- |
-| `locale`    | effective locale tag            | Cache identity                                                    |
-| `kind`      | named formatter id              | Decimal, integer, percent, credits, distance/unit, date, collator |
-| `options`   | frozen Intl options             | Owned centrally, not supplied ad hoc by components                |
-| `formatter` | matching cached `Intl` instance | Recreated on effective-locale change                              |
+| Field     | Type                    | Rules                                                                      |
+| --------- | ----------------------- | -------------------------------------------------------------------------- |
+| `locale`  | effective locale tag    | Supplied by the committed snapshot                                         |
+| `kind`    | named formatter id      | Integer, decimal, fraction-percent, date, unit, display name or collator   |
+| `options` | immutable named options | Precision/timezone/unit behavior is declared centrally, not by a component |
+| `value`   | compatible scalar/date  | Null/unavailable never reaches a numeric formatter                         |
 
-Formatted output never substitutes zero for null/unavailable input. Credits are numbers plus a
-localized game-unit label, not an ISO currency.
+The formatter registry caches one `Intl` instance per `(locale, kind, options)`. Credits and light
+years resolve through a localized message pattern containing an already formatted number; they are
+not fabricated `Intl` currencies/units.
+
+## Game Text Request
+
+| Field           | Type                           | Rules                                                              |
+| --------------- | ------------------------------ | ------------------------------------------------------------------ |
+| `family`        | Almanac i18n helper family     | Selects one leaf import                                            |
+| `identity`      | package stable identity/record | `symbol`, `fdname`, slot key or structured diagnostic              |
+| `known`         | boolean                        | Established from package projection, not inferred from helper null |
+| `canonicalText` | package-owned string or `null` | Optional canonical field; never application-authored               |
 
 ## Game Text Presentation
 
-| Field              | Type                                    | Rules                                                            |
-| ------------------ | --------------------------------------- | ---------------------------------------------------------------- |
-| `identity`         | package stable identity                 | Symbol, fdname, code/constraint or exact package slot identity   |
-| `text`             | package-returned text or `null`         | Null only for explicit unavailable; never app-authored game text |
-| `language`         | BCP 47 tag or `null`                    | Null with unavailable; otherwise marks the textual boundary      |
-| `translationState` | `localized \| canonical \| unavailable` | `canonical` in non-English UI requires disclosure                |
-| `disclosureKey`    | app key or `null`                       | Present for canonical/unavailable state                          |
+| Field              | Type                                    | Rules                                                              |
+| ------------------ | --------------------------------------- | ------------------------------------------------------------------ |
+| `text`             | package-returned string or `null`       | Null only in the explicit unavailable state                        |
+| `language`         | BCP 47 tag or `null`                    | Accurate language for presented text                               |
+| `translationState` | `localized \| canonical \| unavailable` | Canonical in non-English UI always has associated disclosure       |
+| `disclosureKey`    | application key or `null`               | Frames provenance/unavailability without translating the game noun |
 
-An unknown identity and a known identity with no locale value are distinct. The presenter requests
-canonical English through the package helper where available; otherwise it uses the package's
-canonical field. When neither exists, `text` is null and localized unavailable framing is rendered.
-No raw key or empty display text is emitted.
+Unknown identity, active-locale miss and absent canonical source are distinct inputs even when a
+helper returns `null`. A raw identity is not display fallback.
 
 ## Announcement Event
 
-| Field        | Type                             | Rules                                                   |
-| ------------ | -------------------------------- | ------------------------------------------------------- |
-| `kind`       | stable application event id      | Never derived from translated text                      |
-| `revision`   | stable source/context revision   | Prevents stale or repeated announcements                |
-| `urgency`    | `assertive \| polite`            | Blocking errors assertive; other settled changes polite |
-| `messageKey` | application message key          | Resolved at publication in effective locale             |
-| `params`     | language-neutral readonly record | Contains no preformatted locale-sensitive number        |
+| Field        | Type                             | Rules                                             |
+| ------------ | -------------------------------- | ------------------------------------------------- |
+| `kind`       | stable application event id      | Never derived from translated text                |
+| `revision`   | source/context revision          | Used to reject unchanged or stale events          |
+| `urgency`    | `assertive \| polite`            | Blocking errors assertive; settled changes polite |
+| `messageKey` | application message key          | Resolved against the current effective snapshot   |
+| `params`     | language-neutral readonly record | Contains no preformatted locale-sensitive value   |
 
-Derived dedupe identity is `(kind, revision, urgency)`. Initial content, unchanged identity and a
-stale revision produce no outlet update. Visible feedback is stored/rendered separately.
+The dedupe identity is `(kind, revision, urgency)`. Initial content, unchanged identity, stale
+revision and unaffected values produce no outlet update. Visible feedback is separate state.
+
+## Design Token
+
+| Field       | Type                                                            | Rules                                                  |
+| ----------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| `name`      | namespaced CSS custom property/Sass symbol                      | Unique within its category                             |
+| `category`  | color/type/spacing/radius/elevation/border/motion/target/layout | Determines policy and preview checks                   |
+| `primitive` | literal                                                         | Appears only in primitive token/font sources           |
+| `semantic`  | one or more use aliases                                         | Components consume semantic aliases, never raw palette |
+| `evidence`  | contrast/size/motion record or N/A                              | Required where the token conveys meaning               |
+
+There is one semantic dark set and no theme preference/state.
 
 ## UI Component Contract
 
-| Field         | Type                                  | Rules                                                                |
-| ------------- | ------------------------------------- | -------------------------------------------------------------------- |
-| `componentId` | stable UI-library id                  | One per exported `src/app/ui/` component                             |
-| `inputs`      | immutable presentation model          | No domain service or build-store reach-through                       |
-| `intents`     | typed outputs                         | Describe user intent; component does not mutate domain state         |
-| `semantics`   | role/name/state/relationship contract | Native semantics preferred                                           |
-| `states`      | applicable state set                  | Populated, empty, loading, error, disabled; default where meaningful |
+| Field         | Type                                  | Rules                                                         |
+| ------------- | ------------------------------------- | ------------------------------------------------------------- |
+| `componentId` | stable UI-library id                  | One per exported `src/app/ui/` component                      |
+| `inputs`      | immutable presentation model          | No domain store/catalogue reach-through                       |
+| `intents`     | typed outputs                         | Components request work; they do not mutate domain state      |
+| `semantics`   | role/name/state/relationship contract | Native semantics preferred; visible/accessibility names match |
+| `states`      | required/applicable state set         | Populated/default, empty, loading, error, disabled            |
 
 ## Component Preview Declaration
 
-| Field          | Type                                     | Rules                                                    |
-| -------------- | ---------------------------------------- | -------------------------------------------------------- |
-| `componentId`  | UI component id                          | Must join exactly one exported component contract        |
-| `state`        | supported state or explicit N/A record   | Every required state accounted for                       |
-| `fixture`      | immutable presentation inputs            | Contains no game facts presented as authoritative        |
-| `profiles`     | desktop/tablet/mobile set                | All three required; orientations exercised by Playwright |
-| `variants`     | normal/expanded/RTL/reduced-motion flags | Cross-cutting variants applied where relevant            |
-| `expectations` | semantic/visual behavior ids             | Reused by preview policy and Playwright                  |
+| Field          | Type                                        | Rules                                                      |
+| -------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| `componentId`  | UI component id                             | Exactly one declaration for each exported component        |
+| `state`        | fixture or explicit N/A                     | Every required state accounted for                         |
+| `fixture`      | immutable presentation inputs or `null`     | No mock game datum is presented as authoritative           |
+| `naReason`     | stable nonblank reason or `null`            | Allowed only when the contract cannot represent that state |
+| `variants`     | normal/expanded/RTL/reduced-motion/etc. set | Required where the component can expose the behavior       |
+| `expectations` | semantic/visual behavior ids                | Shared by policy and Playwright                            |
 
-An exported component without a declaration, a missing state rationale or a missing profile fails
-the static gate.
+Viewport/orientation comes from the global Playwright profile, so declarations do not duplicate five
+copies of the same state.
 
-## Design Token Record
+## Verification Coverage Entry
 
-| Field          | Type                                                            | Rules                                               |
-| -------------- | --------------------------------------------------------------- | --------------------------------------------------- |
-| `name`         | namespaced custom property/Sass token                           | Unique and category-specific                        |
-| `category`     | color/type/spacing/radius/elevation/border/motion/target/layout | Determines policy checks                            |
-| `primitive`    | literal value                                                   | May appear only in the primitive token layer        |
-| `semanticUses` | one or more semantic aliases                                    | Components consume semantic aliases, not primitives |
+| Field          | Type                               | Rules                                         |
+| -------------- | ---------------------------------- | --------------------------------------------- |
+| `surfaceId`    | product screen/state or preview id | Stable address                                |
+| `requirements` | feature requirement ids            | Nonempty traceability set                     |
+| `journey`      | primary/relevant-state id          | Primary journeys run in all ten projects      |
+| `axe`          | boolean                            | True for every rendered product/preview state |
+| `assertions`   | named semantic/responsive checks   | Names expected meaning beyond axe             |
+| `manualRecord` | protocol id or `null`              | Required for primary AT/actual-zoom coverage  |
 
-There is one semantic dark set. No state, storage field or selector represents theme choice.
+The coverage ledger is compared with routes, preview exports and project names so “every” cannot
+silently drift as components and capabilities are added.

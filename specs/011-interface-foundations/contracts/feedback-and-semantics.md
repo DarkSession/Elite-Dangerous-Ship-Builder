@@ -2,52 +2,67 @@
 
 ## Application structure
 
-- Every product route composes one application frame with a header/banner, primary navigation where
-  relevant, exactly one route-owned `main`, one visible `h1` and ordered descendant headings.
-- Repeated collections use lists, tables or grouped controls according to their relationships; a
-  clickable container never wraps independent nested controls.
-- Dialogs/layers have associated visible title/description and make background content inert and
-  absent from the accessibility tree while active.
+- Every product route appears within one application frame with a banner/header, primary navigation
+  where present, one route-owned `main`, one visible `h1` and ordered descendant headings.
+- Context actions retain visible text in wide layouts. Compact overflow opens a named action layer in
+  which every action again has visible text; an ellipsis or question mark is not the sole name.
+- Repeated data uses a semantic list, table or grouped control matching its relationships. A
+  clickable container never swallows independent nested controls.
+- A meaningful visualization has a named text equivalent and correlation to the underlying values.
+  The anatomy image, bars and nodes in the reference are redundant views, never sole information.
+- Dialogs/sheets/full-height layers have a visible associated title and description where needed.
+  While active, background content is inert and excluded from the accessibility tree; dismissal
+  restores the invoking context.
 
-## Controls and relationships
+Keyboard-operation criteria are constitutionally excluded, but that exclusion does not weaken
+screen-reader names, roles, state, relationships, reading order or native semantics.
 
-- A control's accessible name matches its visible name. Iconography may supplement but not replace
-  the visible name.
-- Prefer native button, link, select, input, radio, checkbox/switch, disclosure and dialog semantics.
-- Labels, descriptions, units, selected/expanded/disabled state and validation errors are
-  programmatically related to their control/value.
-- Blocking validation prevents only the affected action and leaves the error visible until resolved;
-  it does not erase unrelated content.
+## Controls and value relationships
+
+- Prefer native button, link, input, select, textarea, radio, checkbox/switch, disclosure and dialog
+  semantics. Tabs, listboxes and custom choices use shared audited components only when native
+  elements cannot express the relationship.
+- Each visible label is programmatically related to its control; placeholders and `title` are never
+  labels. Accessible name normalizes to the visible name.
+- Selected, expanded, pressed, checked, invalid, busy, disabled and current state is exposed whenever
+  the component contract can hold it.
+- Descriptions, errors, units, viewing conditions, unavailable reasons and untranslated disclosure
+  are programmatically related to the relevant control/value.
+- Blocking validation prevents only the affected commit. It leaves the error and unrelated content
+  present until the Commander resolves or dismisses the operation.
 
 ## Text equivalence
 
-Color, icon, shape, location, order, bar length and animation never carry sole meaning. Every visual
-information carrier has adjacent or programmatically associated text naming the state and value.
-Decorative images are hidden; meaningful images have complete alternatives. Locale/untranslated
-state is conveyed in text, not styling alone.
+Color, icon, shape, location, order, line style, bar length and animation cannot carry sole meaning.
+Every carrier has visible or associated text naming the state and value. Decorative graphics are
+hidden from assistive technology. Informative images have a complete alternative or point to the
+equivalent semantic data. Technical identifiers and directional punctuation are bidi-isolated
+without changing their content.
 
 ## Visible feedback and announcements
 
-Visible status/error/notice content is ordinary semantic content, not a live copy of the whole
-screen. The global frame owns one assertive and one polite visually hidden outlet.
+Visible status, notice and error content remains ordinary semantic content. The frame owns one hidden
+assertive outlet and one hidden polite outlet. It never makes a whole metrics panel live.
 
-| Event                      | Outlet    | Behavior                                                         |
-| -------------------------- | --------- | ---------------------------------------------------------------- |
-| New blocking error         | assertive | Announce one localized bounded summary promptly                  |
-| Settled nonblocking change | polite    | Coalesce into one localized summary for the matching revision    |
-| Initial render             | none      | Content is available in reading order, not announced as a change |
-| Unchanged/replayed event   | none      | Stable event/revision identity deduplicates it                   |
-| Stale revision             | none      | Never announce a result no longer presented                      |
-| Unaffected values          | none      | Do not repeat surrounding content                                |
+| Event                      | Outlet    | Contract                                                            |
+| -------------------------- | --------- | ------------------------------------------------------------------- |
+| New blocking error         | assertive | Publish one localized bounded summary promptly                      |
+| Settled nonblocking change | polite    | Coalesce to one localized summary for the committed source revision |
+| Initial render             | none      | Content is discoverable in reading order, not announced as a change |
+| Unchanged/replayed event   | none      | Stable `(kind, revision, urgency)` identity deduplicates it         |
+| Stale async outcome        | none      | Never announce a result that no longer owns the presented revision  |
+| Unaffected values          | none      | Do not repeat surrounding content                                   |
 
-Changing locale clears translated outlet text without replaying old events. A genuinely new event
-after the switch resolves in the new effective locale.
+Visible feedback and announcement events are separate projections. Removing translated outlet text
+during a locale switch does not replay old events. A genuinely new event afterward resolves with the
+new effective locale. Auto-dismiss timing cannot be the only route to reading or acting on feedback.
 
 ## Conformance wording
 
-Any interface, documentation or report that states conformance must say WCAG 2.2 AA **except**
-criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11. An unqualified AA statement fails the
-repository policy check.
+One canonical localized application message owns any conformance statement:
 
-The exclusion does not permit replacing correct native semantics with custom nonsemantic controls.
-Screen-reader naming, relationships and state remain required.
+> WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+
+An unqualified product/documentation claim fails the policy check. The checker scopes claims to
+application/documentation statements and does not flag the constitution/spec passages that define
+the rule itself.
