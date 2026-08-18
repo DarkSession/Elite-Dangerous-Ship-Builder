@@ -17,6 +17,7 @@ import {
 } from './build-link-radix';
 import codecTable1Json from './codec-table-1.json';
 import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture.json';
+import { makeFullyEngineeredAnaconda, minimalState } from './build-link-codec.spec-helpers';
 
 const codecTable1 = codecTable1Json;
 const { decodeBuildLinkFragment, encodeBuildLinkFragment } = createBuildLinkCodec(1, codecTable1);
@@ -60,10 +61,10 @@ describe('build-link codec', () => {
 
   it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
     const cases = [
-      { name: 'Astraea', ident: 'TST-42', length: 27 },
-      { name: 'Astraea 星', ident: 'TST-42', length: 35 },
+      { name: 'Astraea', ident: 'TST-42', length: 25 },
+      { name: 'Astraea 星', ident: 'TST-42', length: 34 },
       { name: '星', ident: null, length: 17 },
-      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 40 },
+      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 39 },
     ];
     for (const { name, ident, length } of cases) {
       const source = ShipLoadout.fromLoadout({
@@ -279,9 +280,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623',
+      'b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(131);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(120);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -646,11 +647,12 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished. Once released, a changed hash belongs under the next table number.
+    // unpublished, most recently to pin its symbol models. Once released, a changed hash
+    // belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d');
+    expect(contentHash).toBe('511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -826,9 +828,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
-      'b.2@IuThA23pZ8gLACxkX-QZq3nTYaU83myRNcX75/5MHeqAp5weDpxt74HbVN,.dp.Ehr8DZ5!L',
+      'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 99]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 88]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -984,10 +986,7 @@ describe('build-link codec', () => {
     for (let length = 0; length < body.length; length += 1) {
       const truncated = new Uint8Array(length + 4);
       truncated.set(body.subarray(0, length));
-      expectCodecError(
-        () => decodeBuildLinkFragment(encodePayload(truncated)),
-        ['invalidPayload', 'unknownIdentity'],
-      );
+      expectCodecError(() => decodeBuildLinkFragment(encodePayload(truncated)), 'invalidPayload');
     }
     for (const suffix of [[0], [0xff], [0, 0], [0xff, 0x55]]) {
       const extended = new Uint8Array(body.length + suffix.length + 4);
@@ -1171,115 +1170,6 @@ function makeImportedEngineeredBuild(includeCredits = true, quality = 1): ShipLo
   ]);
 }
 
-function makeFullyEngineeredAnaconda(): ShipLoadout {
-  const loadout = ShipLoadout.default('Anaconda');
-  const moduleForEmptySlot = (slot: string): string => {
-    if (slot.startsWith('TinyHardpoint')) return 'Hpt_ChaffLauncher_Tiny';
-    if (slot.includes('Hardpoint')) return 'Hpt_PulseLaser_Fixed_Small';
-    if (slot.startsWith('Military')) return 'Int_ShieldCellBank_Size1_Class1';
-    return 'Int_FuelTank_Size1_Class3';
-  };
-  for (const slot of loadout.slots()) {
-    if (slot.module || !slot.removable) continue;
-    const symbol = moduleForEmptySlot(slot.key);
-    const candidate = loadout
-      .modulesForSlot(slot.key)
-      .find((module) => module.symbol.toLowerCase() === symbol.toLowerCase());
-    expect(candidate, `a module for ${slot.key}`).toBeDefined();
-    loadout.setModule(slot.key, candidate!);
-  }
-
-  const engineeringByModule: Readonly<
-    Record<string, { blueprint: string; grade: number; experimental?: string }>
-  > = {
-    hpt_pulselaser_fixed_small: {
-      blueprint: 'Weapon_Sturdy',
-      grade: 5,
-      experimental: 'special_weapon_toughened',
-    },
-    anaconda_armour_grade1: {
-      blueprint: 'Armour_Thermic',
-      grade: 5,
-      experimental: 'special_armour_thermic',
-    },
-    int_powerplant_size8_class1: {
-      blueprint: 'PowerPlant_Stealth',
-      grade: 5,
-      experimental: 'special_powerplant_toughened',
-    },
-    int_engine_size7_class1: {
-      blueprint: 'Engine_Tuned',
-      grade: 5,
-      experimental: 'special_engine_toughened',
-    },
-    int_hyperdrive_size6_class1: {
-      blueprint: 'FSD_Shielded',
-      grade: 5,
-      experimental: 'special_fsd_toughened',
-    },
-    int_lifesupport_size5_class1: { blueprint: 'LifeSupport_Shielded', grade: 5 },
-    int_powerdistributor_size8_class1: {
-      blueprint: 'PowerDistributor_Shielded',
-      grade: 5,
-      experimental: 'special_powerdistributor_toughened',
-    },
-    int_sensors_size8_class1: { blueprint: 'Sensor_WideAngle', grade: 5 },
-    int_shieldgenerator_size6_class1: {
-      blueprint: 'ShieldGenerator_Thermic',
-      grade: 5,
-      experimental: 'special_shield_toughened',
-    },
-    hpt_chafflauncher_tiny: { blueprint: 'Misc_Shielded', grade: 5 },
-    int_shieldcellbank_size1_class1: {
-      blueprint: 'ShieldCellBank_Specialised',
-      grade: 4,
-      experimental: 'special_shieldcell_toughened',
-    },
-  };
-  const powerBySlot: Readonly<Record<string, readonly [on: boolean, priority: number]>> = {
-    smallhardpoint1: [false, 0],
-    smallhardpoint2: [true, 1],
-    mainengines: [true, 4],
-    frameshiftdrive: [true, 0],
-    lifesupport: [true, 1],
-    powerdistributor: [false, 2],
-    radar: [true, 3],
-    slot03_size6: [true, 2],
-    slot14_size1: [true, 0],
-    hugehardpoint1: [true, 3],
-    largehardpoint1: [true, 4],
-    largehardpoint2: [true, 0],
-    largehardpoint3: [false, 1],
-    mediumhardpoint1: [true, 2],
-    mediumhardpoint2: [true, 3],
-    tinyhardpoint1: [true, 4],
-    tinyhardpoint2: [true, 0],
-    tinyhardpoint3: [true, 1],
-    tinyhardpoint4: [true, 2],
-    tinyhardpoint5: [false, 3],
-    tinyhardpoint6: [true, 4],
-    tinyhardpoint7: [true, 0],
-    tinyhardpoint8: [true, 1],
-    military01: [false, 0],
-    cargohatch: [true, 2],
-  };
-  for (const module of loadout.fittedModules()) {
-    const power = powerBySlot[module.slot.toLowerCase()];
-    if (power) {
-      loadout.setModuleEnabled(module.slot, power[0]);
-      loadout.setModulePriority(module.slot, power[1]);
-    }
-    const engineering = engineeringByModule[module.symbol.toLowerCase()];
-    if (!engineering) continue;
-    loadout.applyBlueprint(module.slot, engineering.blueprint, {
-      grade: engineering.grade,
-      quality: 1,
-      ...(engineering.experimental ? { experimental: engineering.experimental } : {}),
-    });
-  }
-  return loadout;
-}
-
 function blueprintGrades(fdname: string): readonly number[] {
   const index = codecTable1.BLUEPRINTS.indexOf(fdname);
   const grades = codecTable1.BLUEPRINT_GRADES[index] as readonly number[] | undefined;
@@ -1331,41 +1221,6 @@ function mercenaryBuild(
       },
     ],
   });
-}
-
-function minimalState(loadout: ShipLoadout, assumeFullQuality = false): unknown {
-  const cargoHatch = loadout.fittedModuleAt('CargoHatch');
-  const hasCargoHatchPower = cargoHatch?.on !== undefined || cargoHatch?.priority !== undefined;
-  return {
-    shipSymbol: loadout.shipSymbol.toLowerCase(),
-    shipName: loadout.shipName,
-    shipIdent: loadout.shipIdent,
-    ...(hasCargoHatchPower
-      ? { cargoHatchPower: { on: cargoHatch?.on, priority: cargoHatch?.priority } }
-      : {}),
-    modules: loadout
-      .fittedModules()
-      .filter((module) => module.slot.toLowerCase() !== 'cargohatch')
-      .map((module) => {
-        const drawsPower = (module.effectiveStats?.powerDraw ?? 0) > 0;
-        return {
-          slot: module.slot.toLowerCase(),
-          symbol: module.symbol.toLowerCase(),
-          on: drawsPower ? module.on : undefined,
-          priority: drawsPower ? module.priority : undefined,
-          engineering:
-            module.engineering === undefined
-              ? undefined
-              : {
-                  blueprint: module.engineering.BlueprintName.toLowerCase(),
-                  grade: module.engineering.Level,
-                  quality: assumeFullQuality ? 1 : module.engineering.Quality,
-                  experimental: module.engineering.ExperimentalEffect?.toLowerCase(),
-                },
-        };
-      })
-      .sort((left, right) => left.slot.localeCompare(right.slot)),
-  };
 }
 
 function decodePayload(fragment: string): Uint8Array {

@@ -50,13 +50,59 @@ describe('build-link arithmetic coding', () => {
     expect(decode(bits, [3, 3, 3])).toEqual([0, 1, 2]);
   });
 
+  it('round-trips weighted symbols mixed with uniform symbols', () => {
+    const cumulative = [0, 1, 9, 12];
+    for (let first = 0; first < 3; first += 1) {
+      for (let second = 0; second < 5; second += 1) {
+        for (let third = 0; third < 3; third += 1) {
+          const bits: number[] = [];
+          const encoder = new ArithmeticEncoder((bit) => bits.push(bit));
+          encoder.writeWeighted(first, cumulative);
+          encoder.write(second, 5);
+          encoder.writeWeighted(third, cumulative);
+          encoder.finish();
+          let offset = 0;
+          const decoder = new ArithmeticDecoder(() => bits[offset++] ?? 0);
+          expect([
+            decoder.readWeighted(cumulative),
+            decoder.read(5),
+            decoder.readWeighted(cumulative),
+          ]).toEqual([first, second, third]);
+        }
+      }
+    }
+  });
+
+  it('makes a heavily weighted symbol cheaper than uniform coding', () => {
+    const skewed = [0, 63, 64];
+    const weightedBits: number[] = [];
+    const weighted = new ArithmeticEncoder((bit) => weightedBits.push(bit));
+    const uniformBits: number[] = [];
+    const uniform = new ArithmeticEncoder((bit) => uniformBits.push(bit));
+    for (let index = 0; index < 64; index += 1) {
+      weighted.writeWeighted(0, skewed);
+      uniform.write(0, 2);
+    }
+    weighted.finish();
+    uniform.finish();
+
+    expect(uniformBits.length).toBeGreaterThanOrEqual(64);
+    expect(weightedBits.length).toBeLessThan(8);
+  });
+
   it('rejects invalid symbols and ranges', () => {
     const encoder = new ArithmeticEncoder(() => undefined);
     expect(() => encoder.write(-1, 3)).toThrowError(BuildLinkCodecError);
     expect(() => encoder.write(3, 3)).toThrowError(BuildLinkCodecError);
     expect(() => encoder.write(0, 1)).toThrowError(BuildLinkCodecError);
+    expect(() => encoder.writeWeighted(0, [0, 1])).toThrowError(BuildLinkCodecError);
+    expect(() => encoder.writeWeighted(2, [0, 1, 2])).toThrowError(BuildLinkCodecError);
+    expect(() => encoder.writeWeighted(1, [0, 2, 1])).toThrowError(BuildLinkCodecError);
+    expect(() => encoder.writeWeighted(0, [0, 1.5, 3])).toThrowError(BuildLinkCodecError);
     const decoder = new ArithmeticDecoder(() => 0);
     expect(() => decoder.read(1)).toThrowError(BuildLinkCodecError);
+    expect(() => decoder.readWeighted([0, 1])).toThrowError(BuildLinkCodecError);
+    expect(() => decoder.readWeighted([0, 1.5, 3])).toThrowError(BuildLinkCodecError);
   });
 });
 
