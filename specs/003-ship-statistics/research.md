@@ -1,207 +1,248 @@
 # Research: Ship Statistics and Status
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted feature
-specifications, feature 001/002 planning boundaries and `.design/Ship Builder.dc.html` canvases 1c
-and 1d. Runtime probes used detached package `ShipLoadout` values; no application formulas were used.
+Research used the accepted specifications and plans for features 001, 002 and 005–011, the exact
+installed `@elite-dangerous-almanac/core@0.1.1` declarations, and rendered inspection of
+`.design/Ship Builder.dc.html` canvases 1c and 1d. The installed package is ESM-only,
+side-effect-free and pre-1.0; implementation must use leaf exports and pin regression behavior.
 
-## Decision 1: publish one atomic status projection
+## Decision 1: stage shared contracts before area providers
 
-**Decision**: `StatusSnapshotAssembler` captures one `{ loadout, buildRevision }` and one immutable
-`{ conditions, conditionsRevision }`, requests every area-owned result from that same tuple and
-publishes one complete `StatusSnapshot` assignment. Components never call Almanac methods.
+**Decision**: Feature 003 first defines `ViewingConditions`, revision context, the generic provider
+envelope, fixed summary identities, the shared workspace target union and feature 009's already
+accepted generic `AssemblyRequirementsPort`. Features 005–009 then update their owning contracts to
+export exact status projection types and adapters. Only then does feature 003 define the concrete
+five-provider bundle and land final composition/UI.
 
-If a port becomes asynchronous, the assembler gives the request a token, waits for all ports, then
-discards it unless both revisions still match. The current-context surface may say it is updating; it
-must not display an older figure under a newer revision label.
+**Rationale**: Treating all of 005–009 as prerequisites creates a cycle because those plans already
+consume feature 003 conditions and navigation. Contract-first staging lets area owners implement
+against stable types without moving their calculations into feature 003.
 
-**Rationale**: `ShipLoadout` is mutable and has no public revision. Package validation object identity
-can remain unchanged after an enabled/priority edit even while calculated results change.
+**Alternatives considered**:
 
-**Alternatives rejected**:
+- Implement 003 after all area features: circular and leaves each area to invent conditions.
+- Implement calculations temporarily in 003: violates the accepted area ownership and Almanac rule.
+- Let each area own a separate condition store: risks divergent visible states and persisted drift.
 
-- Per-card calculation subscriptions can expose mixed revisions.
-- Deep equality of package objects cannot establish the active-build transaction boundary.
-- Locally recomputing area summaries duplicates features 005–009.
+## Decision 2: compose synchronously from one immutable context
 
-A Node probe over a large engineered build measured the package reads well below 1 ms. Browser layout,
-localization and announcements are the material risks for the 100 ms requirement.
+**Decision**: A pure `composeStatusProjection(context, providers)` invokes all five ports
+synchronously with the same `{ loadout, buildRevision, conditions, conditionsRevision }`. Every port
+returns a revision-stamped projection. An explicitly pending provider produces `pending`. A ready
+envelope stamped for another context, or an unexpected thrown application error, produces
+`failure`; only a complete matching tuple becomes `ready`.
 
-## Decision 2: structural status is the literal package validation pair
+**Rationale**: All installed package calculations are local and synchronous. This avoids speculative
+request tokens while making mixed revisions structurally impossible. It also lets an area reuse its
+pure projector beneath both its detail store and the feature 003 adapter.
 
-Read `loadout.validation` once. Present `valid` and `complete` independently with bounded statements
-about structural errors and required/classified loadout completeness. Never translate them into
-flyable, ready, working, good or optimal.
+**Alternatives considered**:
 
-Project every returned issue in package order and preserve `code`, `severity`, optional `slot`,
-optional `symbol`, `params` and canonical `message`. `incompatibleModule` currently supplies its
-constraint in `params.constraint`; the application preserves but does not promote or parse it.
-Repeated package issues remain repeated. Only `issue.slot` authorizes an exact-slot action.
+- Subscribe to five independently settled stores: can combine old and new area snapshots.
+- Deep-compare the mutable `ShipLoadout`: object identity and cached package objects are not a
+  revision boundary.
+- Add asynchronous orchestration now: unnecessary complexity for local synchronous providers.
 
-There is no package diagnostic localization helper. In non-English UI, canonical package text uses
-feature 011's untranslated disclosure; application labels, severity framing and availability text
-are localized normally.
+## Decision 3: retain package validation rather than remodelling it
 
-## Decision 3: headline result states are discriminated
+**Decision**: `StructuralProjection` retains the complete `LoadoutValidation` returned by
+`loadout.validation` and a positionally aligned target list. The UI renders one item for each issue,
+in package order, without grouping or deduplication. `valid` and `complete` remain independent facts.
 
-Each area adapter returns an immutable union, never a nullable number:
+Issue presentation includes the stable `code` as textual kind, exact package `severity`, optional
+slot/symbol, the full `LoadoutIssueParams` value shape (including string arrays) and diagnostic text.
+Only `issue.slot` authorizes an exact-slot target.
 
-- `available`: exact package value, unit, conditions and target; numeric zero remains available;
-- `lowerBound`: usable numeric value plus package evidence that omitted unknown contributions;
-- `incomplete`: structured package calculation issues prevent the value;
-- `unavailable`: package `null`/throw or an observable prerequisite, with no invented diagnosis;
-- `infinite`: package infinity plus its owning area's semantic meaning;
-- `absent`: a conditionally irrelevant summary, specifically no recognized Mercenary article.
+**Rationale**: Copying selected fields risks dropping future structured context. Rendering a private
+friendly label for each issue code would create application-owned game diagnostic text.
 
-For unknown power draws, deployed/retracted draw and utilisation are lower bounds. Headroom is
-optimistic rather than a lower bound, and true budget/powered booleans are provisional; these receive
-a generic qualification. False budget/powered states remain conclusive. Retracted power exposes no
-locally derived headroom, utilisation or budget verdict because 0.1.1 supplies those for deployed
-only.
+**Alternatives considered**:
 
-**Alternatives rejected**: truthiness collapses zero; one `null` state loses structured calculation
-issues; formatting `Infinity` without meaning violates the owning area contracts.
+- Map codes to local issue names: forbidden private diagnostic translation.
+- Parse `message` for slot/constraint: locale-fragile and invents targets.
+- Collapse repeated issues: violates the exact package report.
 
-## Decision 4: area adapters own headline calculations
+## Decision 4: use released diagnostic locale helpers
 
-Use leaf package imports and the owning feature contracts:
+**Decision**: Presentation calls feature 011's adapter over
+`getLoadoutIssueMessage(issue, activeLocale)` and
+`getCalculationIssueMessage(issue, activeLocale)`. When the package returns `null`, feature 011 shows
+the package's canonical fallback with its standard untranslated-game-text disclosure. Application
+framing, generic severity labels, units and counts remain localized normally.
 
-| Presentation        | Package-owned source                                                        | Conditions and honesty rule                                                                             |
-| ------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Power draw/capacity | `powerBudget()` selected `.deployed`/`.retracted` and `.available`          | MW; no plant may be genuine zero/Infinity, not generic unavailable; unknown draws qualify results       |
-| Shield strength     | completed `shieldMetricsResult({ systemsPips }).value.strength`             | MJ; incomplete result preserves package power/shield issues                                             |
-| Armour              | `armourMetrics().hitPoints`                                                 | Hull points; unknown hulls are rejected during construction before an active build exists               |
-| Sustained DPS       | `weaponMetrics().total.sustainedDamagePerSecond`                            | damage/s; enabled weapons and reload cycle are package-owned; no/all-disabled weapons can be exact zero |
-| Selected jump       | `jumpRangeSummary().max`, `.unladen` or `.laden`                            | LY; guard with diagnostic mass/fuel/cargo results and retain a thrown unavailable state                 |
-| Top speed           | completed `mobilityMetricsResult({ fuel, cargo, enginesPips }).value.speed` | m/s; selected load and ENG pips; incomplete result preserves package power/thruster issues              |
-| Unladen mass        | completed `unladenMassResult.value`                                         | t; incomplete result retains all ordered `CalculationIssue` records                                     |
+**Rationale**: Almanac 0.1.1 deliberately returns canonical English only for English locales. The
+application may disclose that boundary but may not own a German or other private diagnostic table.
 
-Hardpoints directly select the package power state. `weaponMetrics()` has no retracted-state input and
-does not fold power shedding into DPS. With retracted hardpoints, the card therefore presents the
-observable nonnumeric condition rather than inventing zero; with deployed hardpoints it presents the
-package total. If a future area contract requires numeric retracted DPS, Almanac must first own it.
+**Alternatives considered**:
 
-Shield strength and recovery use their distinct package result objects. A disabled or shed generator
-makes each result incomplete with package power context; the status capability does not locally
-combine or reinterpret those facts.
+- Read `issue.message` directly for every locale: misses the package locale contract.
+- Hide prose outside English: loses required diagnostics.
+- Translate package codes/messages locally: violates the package source-of-truth boundary.
 
-## Decision 5: standard load mappings use only package results
+## Decision 5: area providers own headline semantics
 
-The load selection maps as follows:
+Feature 003 fixes the seven headline slots and their targets, not their calculation unions. Each
+provider returns its accepted owner-authored semantic value, conditions and qualifications unchanged.
 
-- `unladen`: package `jumpRangeSummary().unladen` and completed `standardLoadResult('unladen')`;
-- `laden`: package `jumpRangeSummary().laden` and completed `standardLoadResult('laden')`;
-- `maximumJump`: package `jumpRangeSummary().max` and completed `standardLoadResult('maximum')`.
+| Headline            | Owner | Exact package source owned by provider                                                                           | Conditions that actually apply                           | Unit/detail target             |
+| ------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------ |
+| Power draw/capacity | 005   | `powerBudget()` selected `.deployed` or `.retracted`, plus `.available`; deployed-only fields only when deployed | hardpoints                                               | MW / `powerAndHeat`            |
+| Shield strength     | 006   | completed `shieldMetricsResult({ systemsPips }).value.strength`                                                  | SYS pips are passed; strength remains the returned field | MJ / `defenceProfile`          |
+| Armour              | 006   | `armourMetrics().hitPoints`                                                                                      | none                                                     | hull points / `defenceProfile` |
+| Sustained DPS       | 007   | `weaponMetrics().total.sustainedDamagePerSecond`                                                                 | package firing output; no hardpoint or pip input         | damage/s / `offenceProfile`    |
+| Selected jump       | 008   | guarded `jumpRangeSummary().max`, `.unladen` or `.laden`                                                         | selected load                                            | LY / `mobilityAndJump`         |
+| Top speed           | 008   | completed `mobilityMetricsResult({ fuel, cargo, enginesPips }).value.speed`                                      | selected standard load and ENG pips                      | m/s / `mobilityAndJump`        |
+| Unladen mass        | 008   | completed `unladenMassResult.value`                                                                              | fixed unladen meaning; independent of selected load      | t / `mobilityAndJump`          |
 
-Almanac 0.1.1 closes [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) with
-the first-class standard-load result, so consumers no longer compose maximum-jump fuel.
+Assembly requirements come through feature 009's accepted `AssemblyRequirementsPort` over its one
+immutable cost/material snapshot and target `costAndMaterials`. Feature 003 never re-calls
+price/material functions or reclassifies its states.
 
-Before jump or load-sensitive mobility reads, inspect the package diagnostic mass, main-fuel and cargo
-capacity results. Preserve every issue when incomplete. Do not substitute zero. A complete package
-zero fuel capacity remains zero.
+**Rationale**: One generic feature 003 result union would flatten meaningful distinctions owned by
+the area specs. It would also put Merc Coin absence beside numeric headline states where it does not
+belong.
 
-## Decision 6: viewing conditions are explicit, valid and ephemeral
+## Decision 6: preserve unknown-power semantics verbatim
 
-`ViewingConditionsStore` defaults to unladen, `2/2/2` SYS/ENG/WEP and deployed. Pips are represented
-internally as integer half-pips (`0..8`) and only a total of 12 may settle. The presenter divides each
-accepted value by two when calling package APIs.
+**Decision**: The power provider exposes feature 005's exact classification for every displayed
+field. While `PowerBudget.unknownDraws` is non-empty, the installed declaration states that every
+other figure is a lower-bound answer over known draws and that its boolean verdicts answer only for
+known draws. Feature 003 copies the provider projection and qualification without trying to improve
+the wording or mathematical direction.
 
-Keep input drafts separate. An explicit Apply accepts only three half-step values, no value above
-four and an exact total of six. This avoids inventing an automatic redistribution rule. Accepted
-conditions increment `conditionsRevision`; invalid drafts do not change results.
+Retracted presentation never derives deployed-only `headroom`, `utilisation` or `withinBudget`.
 
-Conditions reset on reload and every active-build replacement. They are excluded by type from build
-snapshots, local records, history, preferences, URLs, links and SLEF.
+**Rationale**: The previous plan independently classified headroom and booleans, disagreeing with
+the package declaration and feature 005 contract. Area ownership removes that drift.
 
-## Decision 7: assembly requirements are feature 009 projections
+**Alternatives considered**:
 
-Feature 003 consumes `AssemblyRequirementsPort`; it never resums raw items.
+- Reclassify headroom as an upper bound: mathematically tempting but contradicts the package's
+  public semantics and is not consumer-owned.
+- Withhold all known power values: loses useful package output.
 
-- Credits use `retailCredits()` fields. Null price stays unpriced and an affected package subtotal is
-  qualified. No hull-plus-module total is invented because the package does not return one.
-- Merc Coin appears only for a package-recognized `preEngineeredVariant.acquisition === 'mercenary'`.
-  It remains separate from credits. Missing per-variant price qualifies the package total.
-- Materials use feature 009's package calls (`getBlueprintCost`, `getExperimentalEffectCost`,
-  `sumMaterials`) and package names. Null recipe cost is unavailable; a true empty requirement stays
-  empty. Fixed reward engineering adds no fabricated craft cost.
+## Decision 7: never invent a retracted DPS state
 
-## Decision 8: targets never infer package identity
+**Decision**: Hardpoint selection changes only outputs for which the package exposes state-specific
+results. `weaponMetrics()` exposes one enabled-weapon firing result and no hardpoint parameter.
+Therefore sustained DPS always shows that returned value and identifies its native firing condition;
+it is not zeroed, suppressed or marked unavailable when the selected power view is retracted.
 
-A `WorkspaceTarget` is either an exact package `slotKey` or an area-owned detail capability/anchor.
-Issue actions exist only when `issue.slot` exists. Headline and assembly cards receive targets from
-their owning ports. No slot is inferred from a symbol, message, params, list position or visual group.
+**Rationale**: FR-002 prohibits reinterpretation, and FR-007 permits unavailable only when the
+package returns null/throws. Feature 007 likewise requires the whole-build total exactly as returned.
 
-The coordinator selects/reveals the slot in wide layouts and opens the same exact-slot outfitting
-surface in narrow layouts. Detailed capability selection is memory-only; `/build` fragments remain
-reserved for `b.…` payloads.
+**Alternatives considered**:
 
-## Decision 9: count announcements follow settled snapshots
+- Show zero when retracted: fabricated game result.
+- Replace it with a nonnumeric “retracted” state: hides an available package value.
+- Request a new Almanac method: unnecessary unless product requirements later demand retracted
+  damage rather than the existing firing metric.
 
-Visible status is not a live region. After one snapshot settles, compare its issue and qualified-result
-counts with the last announced settled pair. If either differs, coalesce rapid changes and emit one
-polite localized announcement containing both current counts. Initial content, unchanged counts and
-discarded stale snapshots announce nothing. Ordinary package issues never use `role="alert"`.
+## Decision 8: standard loads and pips are exact, explicit viewing state
 
-A qualified-result count counts each qualified summary once, not every sentence explaining it.
-Mercenary absence is not a qualification.
+**Decision**: `LoadState` maps to `standardLoadResult('maximum'|'unladen'|'laden')`; jump selection
+maps to `.max`, `.unladen` and `.laden`. Feature 008 owns guards for the throwing jump summary and all
+mass/fuel/cargo diagnostics.
 
-## Decision 10: fixed-mount provenance is local record metadata
+Pips are stored as integer half-pips `0..8`, total `12`, and divided by two only at a provider call.
+The settled default is `4/4/4` half-pips (displayed 2/2/2). Three explicit draft controls plus Apply
+accept only in-range half steps totalling six. Invalid drafts leave the prior settled tuple intact.
 
-Feature 001's planned `LocalRecordV1` gains `fixedMountNormalisation`, separate from
-`BuildSnapshotV1`. Feature 002 creates entries during sanctioned ingress normalisation. They autosave
-with working records, copy to named saves/duplicates, load with an opened record and disappear when
-the record is deleted.
+**Rationale**: Integer representation avoids floating-point invalidity. A draft/Apply interaction
+allows every valid tuple without silently selecting which bank should lose a half-pip.
 
-A successful Commander-authored edit to the exact slot clears its entry: fit/replace/remove,
-engineering, enabled state or priority all count. Refused, cancelled, search, selection and viewing
-changes do not. Undo restores only modelled `BuildSnapshotV1` and does not recreate cleared
-provenance. Link/SLEF ingress carries no provenance but may create new entries when it is normalised.
+**Alternatives considered**:
 
-Version 1 has not shipped, so its planned schema is revised directly rather than creating a fictional
-migration.
+- Immediate independent steppers: can expose an invalid total between interactions.
+- Automatic redistribution: requires an unspecified donor priority.
+- Coupled transfer control: valid but less familiar and harder to name clearly for screen readers.
 
-## Decision 11: adapt the design canvas rather than copying its facts
+## Decision 9: viewing state is ephemeral and replacement-scoped
 
-Adopt the wide status rail, compact headline hierarchy, responsive cards and mobile 1d Status
-capability. Replace the mock's authored warnings, comparison arrows, thresholds, percentages and
-favourable/unfavourable colours with exact result states. Optional empty slots are not package
-validation issues. Detailed power/heat, defence, offence, mobility, cost and anatomy content remains
-owned by features 005–010.
+**Decision**: Conditions default to unladen, 2/2/2 and deployed on a new document and every active
+build replacement. Ordinary edits, undo/redo and saving the same active build do not reset them.
+They are absent by type from build snapshots, local records, history, preferences, routes/fragments,
+compact links and SLEF.
 
-No external `edassets.org` imagery is used. Components use feature 011 primitives/tokens, same-origin
-package assets where available, localized formatting and text in addition to every colour/icon state.
+**Rationale**: The spec defines viewing conditions, not Commander preferences or build data.
 
-## Released Almanac dependencies
+## Decision 10: one compatible workspace target union
 
-- [#296](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/296) is released: mobility,
-  shield and recovery nullable façades respect power shedding, and their result companions preserve
-  structured reasons.
-- [#297](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/297) is released by rejecting
-  unknown hulls during construction; `armourMetrics()` remains non-nullable for active known hulls.
-- [#295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) is released as
-  `standardLoadResult()`.
-- [#291](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/291) and
-  [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292): feature 002 must supply
-  the normalised active state and provenance before feature 003 can complete that integration.
+**Decision**:
 
-Remaining nullable/throwing APIs without structured diagnostics use generic unavailable plus directly
-observable facts; they are not blockers for this spec.
+```ts
+type WorkspaceTarget =
+  | { kind: 'slot'; slotKey: string }
+  | {
+      kind: 'detail';
+      capability:
+        | 'powerAndHeat'
+        | 'defenceProfile'
+        | 'offenceProfile'
+        | 'mobilityAndJump'
+        | 'costAndMaterials';
+    };
+```
+
+Headline and assembly cards always have a detail target. Validation issues have a slot target only
+when the package supplies `slot`. Feature 009's internal `materialTrace` disclosure remains local to
+its detail capability and is not a workspace navigation target.
+
+**Rationale**: This matches accepted capability names, removes the prior `cost`/`costAndMaterials`
+conflict and avoids arbitrary anchors that no owner contract guarantees.
+
+## Decision 11: adapt the actual 1c/1d reference honestly
+
+Rendered design inspection found:
+
+- 1c is a three-column workspace with a 306px persistent rail ordered as status warning, power,
+  six metrics, cost and materials/Merc Coin. Its central mode selector has no Status item.
+- 1d has Status as a peer in-memory capability mode. Its Status content repeats figures again in a
+  compact dock before the slot ledger.
+- Neither canvas contains load, pip or hardpoint controls.
+
+Adopt the rail, power-first hierarchy, six-card set, assembly order and mobile in-workspace Status
+mode. Add a desktop Status peer mode and a labeled rail action to it. The rail mirrors facts and
+counts but never repeats issue records. On narrow/zoomed layouts, active Status suppresses the
+duplicate compact dock and slot ledger until the Commander leaves Status or follows an exact-slot
+action.
+
+Reject authored warning sentences, optional-empty warnings, reverse-engineered power bars,
+comparison arrows, combined credit totals, unowned blueprint/material totals, remote material
+images, Google Fonts requests, and the unproven local Merc Coin artwork. Use the repository design
+system, same-origin licensed assets where established, or complete text.
+
+## Decision 12: announcements follow settled summary identities
+
+**Decision**: The visible Status capability is not a live region. After a `ready` projection settles,
+compare its issue count and unique provider-qualified summary IDs with the previous settled pair.
+The fixed identities are `power`; `shieldStrength`, `armour`; `sustainedDps`; `jumpRange`,
+`topSpeed`, `unladenMass`; and `retailCredits`, `mercCoin`, `materials`, partitioned respectively
+across features 005–009. A provider includes an identity once exactly when that visible summary is
+qualified, incomplete or unavailable under its owner contract; an absent Merc Coin summary does not
+count. Feature 003 validates identity ownership/uniqueness and derives the count without
+reclassifying an owner state. Initial content and unchanged counts are silent. A changed pair
+produces one coalesced polite localized message; stale/pending projections never announce.
+
+**Rationale**: This satisfies FR-021 without repeatedly reading every updated number or diagnostic.
+
+## Package/repository readiness
+
+Almanac 0.1.1 contains the required structured validation/calculation results, standard-load result,
+powered mobility/shield diagnostics, power consumers, unknown-hull rejection, cost/material APIs and
+diagnostic locale helpers. There is no unresolved package release blocker.
+
+The application source currently contains only the shell and build-link domain. Features 001, 002,
+005–009 and 011 are repository implementation prerequisites. Their absence is a delivery dependency,
+not permission to add a fallback calculator, private translation or provisional target.
 
 ## Test strategy
 
-Unit tests use injected area ports and fixed package fixtures:
+Unit/contract tests cover exact validation identity/order, diagnostic helper/fallback behavior,
+defaults and every valid/invalid pip boundary, reset/exclusion rules, one context passed to every
+provider, revision mismatch/pending/failure handling, provider-state identity, exact targets,
+provenance references and coalesced announcements.
 
-- all independent valid/complete combinations and exact ordered issue preservation;
-- genuine zero, unavailable, structured incomplete, lower-bound, qualified boolean, infinity and
-  absence remain distinct;
-- exact deployed/retracted power selection and unknown-draw qualification semantics;
-- jump guards and all three package standard-load mappings, including zero fuel;
-- mobility null versus package zero above maximum thruster mass;
-- valid and invalid half-pip drafts, defaults, reset and exclusion boundaries;
-- one tuple reaches every port and stale results never publish;
-- exact target authorization, provenance lifecycle and settled announcement coalescing;
-- package regression fixtures for the released #296/#297 behavior in pinned 0.1.1.
-
-Playwright covers status, conditions, issues, requirements, targets, provenance and rapid-edit
-journeys in Chromium and Firefox at all required viewports with automated accessibility scans. A
-mobile Chromium run uses CDP 4x CPU slowdown and in-page revision/render timestamps to enforce the
-100 ms outcome without including automation transport latency.
+Playwright covers the four user stories in both engines at desktop, tablet portrait/landscape and
+mobile portrait/landscape, including axe scans, touch actions, locale switch/fallback, offline reload,
+expanded/RTL text, actual 400% zoom, reduced motion and a manual screen-reader script. Chromium CDP
+4x throttling measures committed revision to matching rendered revision within 100 ms.

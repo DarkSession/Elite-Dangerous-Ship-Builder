@@ -1,58 +1,76 @@
 # Design Reference Review: Ship Statistics and Status
 
-Reviewed `.design/Ship Builder.dc.html` canvases 1c (wide builder) and 1d (mobile builder). These
-references establish hierarchy and responsive intent; the repository design system and accepted
-specifications remain authoritative.
+Reviewed the rendered `.design/Ship Builder.dc.html` canvases 1c (wide outfitting) and 1d (mobile
+outfitting). The reference establishes visual hierarchy and workspace relationships; the accepted
+specification, constitution and repository design system remain authoritative.
 
-## Adopted
+## Canvas trace
 
-- A glanceable wide status/requirements rail paired with richer central capability content.
-- A mobile Status capability rather than squeezing the wide rail beside the slot workspace.
-- Compact power-first hierarchy followed by headline cards and assembly requirements.
-- Cards that reflow from a grid into stacked mobile content.
-- Viewing context adjacent to the values it controls.
+### 1c — wide
 
-## Required adaptations
+- Three columns: slot ledger, fluid anatomy/detail outlet and a persistent 306px status rail.
+- Central capability choices are Mounts, Power, Drives, Defence and Offence. There is no Status mode.
+- Rail order is one authored Build Status warning, power, six headline cells, cost, then
+  materials/Merc Coin.
+- Rail headline cells omit some units/conditions; the warning list is incomplete compared with 1d.
+- No load, pip or hardpoint viewing controls exist.
 
-### Package authority
+### 1d — narrow
 
-- Replace mock “build status” sentences with exact `ShipLoadout.validation` issues or an owning
-  feature's explicit qualification. The mock's optional-empty count is not a package issue.
-- Remove authored over-budget/heat interpretations unless feature 005 returns them.
-- Remove comparison arrows, percentages, thresholds and favorable/unfavorable judgments without an
-  authoritative package result.
-- Do not add a hull-plus-modules credit total; `retailCredits()` supplies separate fields.
-- Do not infer material-unit totals or blueprint counts outside feature 009.
-- Power bars may use package utilisation only in the deployed state that supplies it.
+- Status is one of six peer in-memory capability tabs and replaces the anatomy/detail region.
+- Status order is three authored warnings, power, six headline cells, cost and materials/Merc Coin.
+- A second DPS/shield/jump/power dock and the slot ledger remain below Status, duplicating values.
+- The single-row six-tab control and compact cards do not meet touch, zoom or text-expansion needs.
+- No load, pip or hardpoint viewing controls exist.
 
-### Scope
+Tablet, both landscape arrangements and 200%/400% zoom are not shown by the reference. Their behavior
+below is a planned responsive adaptation.
 
-- Detailed power/heat, defence, offence, mobility/jump and cost/material content links to features
-  005–009. Anatomy remains feature 010.
-- Feature 003 adds no route and does not place capability state in the build fragment.
-- Structural validation remains distinct from readiness or flyability.
+## Adopted reference elements
 
-### Presentation and assets
+- Persistent glanceable status/requirements rail at wide desktop.
+- Power-first summary followed by shield, armour, DPS, jump, speed and mass.
+- Cost/material requirements after headline results, with Merc Coin visually separate from credits.
+- Status as an in-workspace capability on narrow layouts rather than a new route.
+- Existing build identity/header and capability-navigation relationship.
 
-- Replace inline visual literals with feature 011 tokens and components.
-- Do not load material imagery from `edassets.org`; use same-origin package assets where available or
-  complete text presentation.
-- Every number carries locale-aware formatting, unit, condition and availability state.
-- Issue kind, severity and result status are textual, never carried only by colour, border or icon.
+## Spec-driven extensions
 
-### Responsive/accessibility behavior
+- Add Status as a peer desktop capability and a clear rail action to reach it. The complete Status
+  capability is the sole diagnostic/provenance record location.
+- Add load, pip and hardpoint controls before affected results.
+- Add independent validity/completeness facts, complete ordered issues, fixed-mount provenance,
+  qualifications, exact targets and no-issue/no-qualification states.
+- Add visible units/conditions and exact-zero, lower-bound, incomplete, unavailable, infinite,
+  pending and application-failure states.
+- Reflow/wrap capability navigation and cards; do not copy the fixed single-row tabs or 3-column
+  mobile grid.
+- Suppress the duplicate narrow summary dock and slot ledger while Status is active. Exact-slot
+  actions switch to the existing slot surface.
 
-- Preserve every issue, qualification, condition and target on desktop, tablet, mobile, portrait,
-  landscape, 200% text and 400% zoom.
-- Use semantic lists/definition lists and native actions with 44 CSS px touch targets.
-- Allow canonical package diagnostics, long identities, expanded translations and RTL text to wrap
-  without document horizontal scrolling.
-- Use one coalesced polite live-region message for settled count changes, not a live status panel.
-- Honor reduced motion and retain the constitution's keyboard-operation exclusions in any conformance
-  statement.
+## Rejected mock content
+
+- Authored power/heat warnings and optional-empty warnings; they are not structural package issues.
+- Reverse-engineered power bars, favorable/unfavorable colors, comparison arrows and thresholds.
+- Hull-plus-modules `TOTAL`, a locally explained “rebuy 5%,” and unowned blueprint/material totals.
+- Truncated/ellipsized material names and desktop/mobile diagnostic asymmetry.
+- Cross-origin `edassets.org` material images and Google Fonts runtime requests.
+- `.design/assets/merc-coin.png` until its provenance and reuse terms are established; text remains
+  complete without it.
+- Raw color literals or icon-only currency/status meaning.
+
+## Accessibility and localization adaptation
+
+- Shared semantic controls and 44 CSS-pixel targets replace styled `div` controls.
+- Issue kind/severity and every result state are textual; color/icon remain supplemental.
+- Long canonical diagnostics, exact identities, expanded translations and RTL text wrap without
+  document overflow.
+- Units and conditions remain visible at every width. Material names are never forced to one line.
+- One polite hidden region announces settled count changes; visible content is not live.
+- Components use feature 011 tokens, local/static font assets and message/formatting services.
 
 ## Conclusion
 
-The 1c/1d composition is compatible after replacing mock facts and bespoke styling with the atomic
-package-backed status model and feature 011 primitives. No visual reference value is treated as a
-calculation, validation rule or product requirement.
+The reference's hierarchy is compatible after the additions above. The plan does not claim that the
+mock contains a desktop Status capability, viewing controls or responsive/accessibility states that
+it does not actually show.

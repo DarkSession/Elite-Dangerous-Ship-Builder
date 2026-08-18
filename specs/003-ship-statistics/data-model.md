@@ -1,8 +1,8 @@
 # Data Model: Ship Statistics and Status
 
-All game-bearing values are immutable projections of one `ShipLoadout` revision or of a feature
-005–009 area result. Application types add only viewing, coordination, presentation and local
-provenance state.
+Feature 003 owns viewing, composition and feedback state. Game calculations and their semantic
+result unions remain owned by features 005–009; fixed-mount provenance remains owned by features
+001/002. The types below reference those contracts instead of copying their fields.
 
 ## ViewingConditions
 
@@ -11,217 +11,292 @@ type HalfPips = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 type LoadState = 'maximumJump' | 'unladen' | 'laden';
 
 interface ViewingConditions {
-  load: LoadState;
-  pips: {
-    systems: HalfPips;
-    engines: HalfPips;
-    weapons: HalfPips;
+  readonly load: LoadState;
+  readonly pips: {
+    readonly systems: HalfPips;
+    readonly engines: HalfPips;
+    readonly weapons: HalfPips;
   };
-  hardpoints: 'deployed' | 'retracted';
+  readonly hardpoints: 'deployed' | 'retracted';
 }
 ```
 
-Invariant: the three half-pip values total 12. Defaults are `unladen`, `4/4/4` half-pips and
-`deployed`. Package adapters divide accepted half-pips by two. The type is absent from all persisted,
-history, URL and exchange models.
+Validation and lifecycle:
 
-`ViewingConditionsDraft` carries localized input/control state separately. It becomes settled only
-when all three values are half-step values from zero through four and total six; invalid drafts do not
-increment the condition revision.
+- `systems + engines + weapons === 12` half-pips.
+- Defaults are `unladen`, `4/4/4` half-pips and `deployed`.
+- Providers receive pip values divided by two; no other conversion or redistribution occurs.
+- The type is absent from every persistence, history, preference, route, link and SLEF model.
 
-## RevisionContext
+## ViewingConditionsDraft
 
 ```ts
-interface RevisionContext {
-  loadout: ShipLoadout;
-  buildRevision: number;
-  conditions: ViewingConditions;
-  conditionsRevision: number;
+interface ViewingConditionsDraft {
+  readonly load: LoadState;
+  readonly systemsText: string;
+  readonly enginesText: string;
+  readonly weaponsText: string;
+  readonly hardpoints: 'deployed' | 'retracted';
+  readonly errors: readonly ConditionDraftError[];
+}
+
+type ConditionDraftError =
+  | { readonly kind: 'notHalfStep'; readonly bank: 'systems' | 'engines' | 'weapons' }
+  | { readonly kind: 'outOfRange'; readonly bank: 'systems' | 'engines' | 'weapons' }
+  | { readonly kind: 'wrongTotal'; readonly displayedTotal: number | null };
+```
+
+The draft is presentation input, not a partial settled condition. Apply creates a complete immutable
+`ViewingConditions` only when each displayed value is `0..4` in 0.5 steps and the total is six.
+Invalid Apply retains the prior settled tuple and condition revision.
+
+## StatusRevisionContext
+
+```ts
+interface StatusRevisionContext {
+  readonly loadout: ShipLoadout;
+  readonly buildRevision: number;
+  readonly conditions: ViewingConditions;
+  readonly conditionsRevision: number;
 }
 ```
 
-The assembler captures this record once. `buildRevision` increments for every committed edit,
-undo/redo and active-build replacement. `conditionsRevision` increments for every accepted condition
-change. Neither package-object identity nor timestamps substitute for a revision.
+`buildRevision` comes from feature 001's atomic active-build boundary. Feature 002 advances that
+revision once for a committed edit or undo/redo; feature 001 advances it for active-build
+replacement. It is not the persisted local-record UUID.
+`conditionsRevision` increments once for each changed, valid settled condition tuple. Locale and
+surface selection change neither revision.
 
-## StructuralStatus
-
-| Field      | Type                             | Rule                                                   |
-| ---------- | -------------------------------- | ------------------------------------------------------ |
-| `valid`    | boolean                          | Exact `ShipLoadout.validation.valid`                   |
-| `complete` | boolean                          | Exact `ShipLoadout.validation.complete`                |
-| `issues`   | readonly `ValidationIssueView[]` | One view per returned package issue, in returned order |
-
-`valid` and `complete` are independent. Presentation keys state only whether structural errors were
-reported and whether the required/classified loadout is complete.
-
-### ValidationIssueView
-
-| Field      | Type                          | Rule                                                               |
-| ---------- | ----------------------------- | ------------------------------------------------------------------ |
-| `code`     | package issue code            | Preserved without regrouping                                       |
-| `severity` | package severity              | Preserved; also rendered as localized text                         |
-| `slot`     | string or null                | Exact package slot; sole authorization for a slot target           |
-| `symbol`   | string or null                | Preserved package identity, not used to infer a slot               |
-| `params`   | readonly language-neutral map | Preserved, including a package constraint when supplied            |
-| `message`  | string                        | Canonical package diagnostic; never parsed or privately translated |
-| `target`   | `WorkspaceTarget \| null`     | Exact slot target only when `slot` exists                          |
-
-## ResultCondition
-
-A localized presentation descriptor whose identity is application-owned but whose values come from
-the settled `ViewingConditions`. Examples identify selected load, SYS/ENG/WEP pips and deployed or
-retracted hardpoints. It never changes the underlying package result.
-
-## ResultQualification
-
-Structured evidence that an owning area says a result is bounded or provisional.
-
-| Field     | Type                  | Rule                                                                 |
-| --------- | --------------------- | -------------------------------------------------------------------- |
-| `kind`    | stable area-owned key | Examples: unknown contribution, unpriced article, unavailable recipe |
-| `slot`    | string or null        | Only when supplied by the package/area result                        |
-| `symbol`  | string or null        | Preserved package identity                                           |
-| `params`  | readonly map          | Structured values; never parsed from prose                           |
-| `message` | string or null        | Package diagnostic when one exists                                   |
-
-## HeadlineResult
+## StructuralProjection
 
 ```ts
-type HeadlineResult<T> =
-  | {
-      state: 'available';
-      value: T;
-      unit: UnitIdentity;
-      conditions: readonly ResultCondition[];
-      target: WorkspaceTarget;
-    }
-  | {
-      state: 'lowerBound';
-      value: T;
-      unit: UnitIdentity;
-      conditions: readonly ResultCondition[];
-      qualifications: readonly ResultQualification[];
-      target: WorkspaceTarget;
-    }
-  | {
-      state: 'incomplete';
-      issues: readonly CalculationIssue[];
-      conditions: readonly ResultCondition[];
-      target: WorkspaceTarget;
-    }
-  | {
-      state: 'unavailable';
-      observableState: ObservableState | null;
-      conditions: readonly ResultCondition[];
-      target: WorkspaceTarget;
-    }
-  | {
-      state: 'infinite';
-      meaning: InfiniteMeaning;
-      conditions: readonly ResultCondition[];
-      target: WorkspaceTarget;
-    }
-  | { state: 'absent' };
-```
-
-`UnitIdentity`, `ObservableState` and `InfiniteMeaning` are stable localization/formatting identities,
-not game formulas. Exact numeric zero uses `available`. `unavailable` never receives a fabricated
-number. `absent` is for a summary that does not apply, not a failed result.
-
-## HeadlineSet
-
-```ts
-interface HeadlineSet {
-  power: PowerHeadline;
-  shieldStrength: HeadlineResult<number>;
-  armour: HeadlineResult<number>;
-  sustainedDps: HeadlineResult<number>;
-  jumpRange: HeadlineResult<number>;
-  topSpeed: HeadlineResult<number>;
-  unladenMass: HeadlineResult<number>;
+interface StructuralProjection {
+  readonly validation: LoadoutValidation;
+  readonly issueTargets: readonly (SlotTarget | null)[];
 }
 ```
 
-`PowerHeadline` keeps selected draw and capacity in one area-owned presentation because their meaning
-depends on their relationship. It does not synthesize a retracted utilisation/headroom verdict that
-the package does not supply.
+Rules:
 
-## AssemblyRequirementsSummary
-
-Feature 009 owns this projection. Feature 003 treats it as opaque except for standard result-state,
-target and count metadata.
-
-| Field       | Type                           | Rule                                                                |
-| ----------- | ------------------------------ | ------------------------------------------------------------------- |
-| `retail`    | area-owned credit summary      | Hull, module and rebuy package fields; unpriced identities retained |
-| `mercCoin`  | area-owned result or `absent`  | Separate and present only for package-recognized Mercenary articles |
-| `materials` | area-owned requirement summary | Exact package recipe aggregation and unavailable entries            |
-| `targets`   | readonly `WorkspaceTarget[]`   | Supplied by feature 009, never inferred here                        |
-
-## FixedMountNormalisationProvenance
-
-Local workflow metadata defined with feature 001 persistence:
-
-| Field                 | Type             | Rule                                                      |
-| --------------------- | ---------------- | --------------------------------------------------------- |
-| `slotKey`             | string           | Exact affected game slot key                              |
-| `originalIdentity`    | string or null   | Original missing/unresolved module identity               |
-| `replacementIdentity` | string           | Package default identity used by sanctioned normalisation |
-| `normalisedAt`        | ISO-8601 instant | Display metadata only; never revision/ordering authority  |
-
-The entry is outside `BuildSnapshotV1`. It is created by feature 002 ingress normalisation and removed
-after a successful Commander edit to that slot. It is not restored by undo and cannot be serialized
-by link or SLEF codecs.
+- `validation` is the exact immutable object returned by `loadout.validation` for the context.
+- `issueTargets.length === validation.issues.length`.
+- Entry `i` is `{ kind: 'slot', slotKey: issue.slot }` only when issue `i` supplies `slot`; otherwise
+  it is `null`.
+- The package issue is rendered directly, preserving `code`, `severity`, optional `slot`, optional
+  `symbol`, optional `LoadoutIssueParams`, canonical message and package order.
+- No local issue identifier, grouping, deduplication or readiness verdict is added.
 
 ## WorkspaceTarget
 
 ```ts
-type WorkspaceTarget =
-  | { kind: 'slot'; slotKey: string }
-  | {
-      kind: 'detail';
-      capability: 'power' | 'defence' | 'offence' | 'mobility' | 'cost';
-      anchor: string;
-    }
-  | null;
+interface SlotTarget {
+  readonly kind: 'slot';
+  readonly slotKey: string;
+}
+
+interface DetailTarget {
+  readonly kind: 'detail';
+  readonly capability:
+    'powerAndHeat' | 'defenceProfile' | 'offenceProfile' | 'mobilityAndJump' | 'costAndMaterials';
+}
+
+type WorkspaceTarget = SlotTarget | DetailTarget;
 ```
 
-Targets are package/area supplied. `anchor` is an application identity exposed by the owning detailed
-capability, not a URL fragment and not an inferred game location.
+Exact package/build slot spelling is retained. A detail target names one accepted in-workspace
+capability; it is not a route, fragment or free-form anchor. Headline and assembly summaries always
+provide a detail target. An untargeted issue uses `null` outside this union and has no false action.
 
-## StatusSnapshot
+## StatusProviderRead
+
+Feature 003 defines the envelope while each area owns `T`:
 
 ```ts
-interface StatusSnapshot {
-  buildRevision: number;
-  conditionsRevision: number;
-  conditions: ViewingConditions;
-  structural: StructuralStatus;
-  normalisationProvenance: readonly FixedMountNormalisationProvenance[];
-  headlines: HeadlineSet;
-  assembly: AssemblyRequirementsSummary;
-  issueCount: number;
-  qualificationCount: number;
+type StatusSummaryId =
+  | 'power'
+  | 'shieldStrength'
+  | 'armour'
+  | 'sustainedDps'
+  | 'jumpRange'
+  | 'topSpeed'
+  | 'unladenMass'
+  | 'retailCredits'
+  | 'mercCoin'
+  | 'materials';
+
+type StatusProviderRead<T, I extends StatusSummaryId> =
+  | {
+      readonly state: 'ready';
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+      readonly value: T;
+      readonly qualifiedSummaryIds: readonly I[];
+      readonly detailTarget: DetailTarget;
+    }
+  | {
+      readonly state: 'pending';
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+    };
+
+interface StatusProvider<T, I extends StatusSummaryId> {
+  project(context: StatusRevisionContext): StatusProviderRead<T, I>;
+}
+
+type AssemblyRequirementsSummaryId = 'retailCredits' | 'mercCoin' | 'materials';
+
+interface AssemblyRequirementsPort<T> extends StatusProvider<T, AssemblyRequirementsSummaryId> {}
+```
+
+Each owner includes an identity once when that visible Status summary is qualified, incomplete or
+unavailable under its accepted contract. Nested issues do not add entries. Feature 003 validates
+identity ownership and uniqueness, concatenates IDs in fixed provider/summary order and derives the
+count without deciding which area state qualifies. Feature 009 omits `mercCoin` when its owner state
+is `absent`.
+
+### Provider bundle
+
+```ts
+interface StatusProviders<P, D, O, M, A> {
+  readonly power: StatusProvider<P, 'power'>;
+  readonly defence: StatusProvider<D, 'shieldStrength' | 'armour'>;
+  readonly offence: StatusProvider<O, 'sustainedDps'>;
+  readonly mobility: StatusProvider<M, 'jumpRange' | 'topSpeed' | 'unladenMass'>;
+  readonly assembly: AssemblyRequirementsPort<A>;
 }
 ```
 
-Validation:
+This generic bundle is defined only in the final feature 003 integration stage, after features
+005–009 update their owning contracts to export exact adapter/projection types. The accepted feature
+009 adapter name remains `AssemblyRequirementsPort`; feature 003 does not replace it with a second
+assembly interface.
 
-- every field comes from one captured `RevisionContext` and the active record metadata associated
-  with its build revision;
-- `issueCount` equals the visible package validation issue count;
-- `qualificationCount` counts each visible qualified/incomplete summary once, not each phrase or
-  package issue inside it;
-- no snapshot is published if either revision has become stale;
-- no active build means no `StatusSnapshot`.
+Owner exports provide exactly these status fields:
+
+| Owner export | Status content                                              | Required detail target |
+| ------------ | ----------------------------------------------------------- | ---------------------- |
+| feature 005  | selected power draw/capacity and owner qualifications       | `powerAndHeat`         |
+| feature 006  | shield strength and armour                                  | `defenceProfile`       |
+| feature 007  | package sustained DPS and native firing condition           | `offenceProfile`       |
+| feature 008  | selected jump, selected-load/ENG top speed and unladen mass | `mobilityAndJump`      |
+| feature 009  | retail fields, conditional Merc Coin and materials          | `costAndMaterials`     |
+
+Each owner type retains its own exact/zero/lower-bound/incomplete/unavailable/infinite/absent states.
+Feature 003 has no parallel generic `HeadlineResult` union.
+
+## StatusProjection
+
+```ts
+interface StatusProjection<P, D, O, M, A> {
+  readonly buildRevision: number;
+  readonly conditionsRevision: number;
+  readonly conditions: ViewingConditions;
+  readonly structural: StructuralProjection;
+  readonly normalisationProvenance: readonly FixedMountNormalisationProvenance[];
+  readonly power: P;
+  readonly defence: D;
+  readonly offence: O;
+  readonly mobility: M;
+  readonly assembly: A;
+  readonly issueCount: number;
+  readonly qualifiedSummaryIds: readonly StatusSummaryId[];
+  readonly qualifiedSummaryCount: number;
+}
+```
+
+`FixedMountNormalisationProvenance` is the feature 001 record type; feature 003 neither redefines nor
+persists it. Projection invariants:
+
+- all five ready provider envelopes match the captured build and condition revisions;
+- provenance belongs to the active working record at the captured build revision;
+- `issueCount === structural.validation.issues.length`;
+- `qualifiedSummaryIds` contains only unique owner-allocated identities in fixed provider/summary
+  order;
+- `qualifiedSummaryCount === qualifiedSummaryIds.length`;
+- validation, provider values and provenance are published in one assignment;
+- no active build means no `StatusProjection`.
+
+## StatusProjectionState
+
+```ts
+type StatusProjectionState<P, D, O, M, A> =
+  | { readonly state: 'noBuild' }
+  | {
+      readonly state: 'pending';
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+    }
+  | { readonly state: 'ready'; readonly projection: StatusProjection<P, D, O, M, A> }
+  | {
+      readonly state: 'failure';
+      readonly buildRevision: number;
+      readonly conditionsRevision: number;
+      readonly messageKey: StatusFailureMessageKey;
+    };
+
+type StatusFailureMessageKey = 'providerUnavailable' | 'projectionFailed';
+```
+
+`pending` identifies the requested current context and displays no stale values under its revision.
+`failure` is an application integration failure, not a package calculation unavailable state and not
+a game diagnosis. The active build remains intact.
+
+State transitions:
+
+```text
+no active build -> noBuild
+active/replaced/edited build or settled conditions -> evaluate one context
+    any provider explicitly pending for the captured pair -> pending
+    ready envelope with mismatched revision or invalid summary identity -> failure
+    all providers ready and matching -> ready (one atomic publication)
+    unexpected composition/provider failure -> failure
+newer context during evaluation -> discard older outcome and evaluate newer context
+```
+
+## StatusRailView
+
+The rail is a presentation-only compact selection from one ready `StatusProjection`:
+
+```ts
+interface StatusRailView {
+  readonly revision: { readonly build: number; readonly conditions: number };
+  readonly structuralFacts: StructuralFactView;
+  readonly issueCount: number;
+  readonly qualifiedSummaryCount: number;
+  readonly power: PowerHeadlineCompactView;
+  readonly headlineCards: readonly HeadlineCompactView[];
+  readonly assembly: AssemblyCompactView;
+  readonly openStatusTarget: { readonly kind: 'statusCapability' };
+}
+```
+
+This view formats and selects owner-provided fields; it calculates no game value and contains no
+validation issue record. The complete capability is the sole issue/provenance record location.
 
 ## AnnouncementState
 
-| Field               | Type                                 | Rule                                                |
-| ------------------- | ------------------------------------ | --------------------------------------------------- |
-| `lastSettledCounts` | `{ issues; qualifications } \| null` | Initial null suppresses redundant load announcement |
-| `pendingRevision`   | revision pair or null                | Replaced/coalesced by a newer pending snapshot      |
-| `message`           | localized message identity or null   | Contains both current counts after a settled change |
+```ts
+interface AnnouncementState {
+  readonly lastSettledCounts: {
+    readonly issues: number;
+    readonly qualifiedSummaries: number;
+  } | null;
+  readonly pendingRevision: {
+    readonly build: number;
+    readonly conditions: number;
+  } | null;
+  readonly messageKey: StatusAnnouncementMessageKey | null;
+}
 
-The state carries no diagnostic prose and is not persisted.
+type StatusAnnouncementMessageKey = 'statusCountsChanged';
+```
+
+Initial `null` suppresses a load announcement. Only a ready projection can update the state. One
+coalesced localized message contains both current counts after either changes; pending, failure,
+unchanged and discarded projections are silent.
+
+## Non-persisted presentation state
+
+The selected workspace capability, rail expansion, issue disclosure, focused detail, draft
+conditions and announcement state are memory only. None enters `BuildSnapshotV1`, `LocalRecordV1`,
+history, preferences, route/query/fragment, compact link or SLEF.

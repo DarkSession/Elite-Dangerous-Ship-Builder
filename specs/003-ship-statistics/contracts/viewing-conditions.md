@@ -1,8 +1,8 @@
 # Viewing Conditions Contract
 
-## Defaults and validation
+## Defaults
 
-A fresh workspace uses:
+A new top-level document or active-build replacement settles:
 
 ```text
 load: unladen
@@ -10,79 +10,82 @@ pips: SYS 2, ENG 2, WEP 2
 hardpoints: deployed
 ```
 
-Each capacitor accepts `0..4` in half-pip steps. A settled allocation always totals six. The domain
-model stores integer half-pips and the package adapter divides by two.
+The domain stores pips as `4/4/4` integer half-pips. This is viewing state only; it neither edits the
+loadout nor creates an active build.
 
-Controls maintain a draft independently. Apply succeeds only when all three values are in range, are
-half steps and total six. Invalid Apply:
+## Draft and Apply
 
-- leaves the settled conditions and results unchanged;
-- exposes localized field/total guidance;
-- does not increment `conditionsRevision` or announce result-count changes.
+The three pip controls form one draft tuple. Apply succeeds only when every value:
 
-No automatic redistribution is permitted because the specification does not choose which capacitor
-loses or gains a pip.
+- parses to a finite number;
+- lies from zero through four inclusive;
+- is a multiple of one half;
+- and the three values total exactly six.
+
+Successful Apply converts each value to integer half-pips, settles the complete tuple and increments
+`conditionsRevision` only if the tuple changed. Invalid Apply exposes localized field/total guidance,
+retains the previous settled tuple/results and changes no revision or announcement counts.
+
+Load and hardpoint controls are part of the same draft. They settle on Apply so one user decision
+produces one condition revision and one atomic recomputation. Reset restores all defaults in one
+settled revision.
+
+No automatic pip redistribution is allowed because no requirement chooses which capacitor donates a
+half-pip.
 
 ## Package mappings
 
-| Condition    | Package use                                                                                              |
-| ------------ | -------------------------------------------------------------------------------------------------------- |
-| Hardpoints   | Select `powerBudget().deployed` or `.retracted`; retracted does not receive derived deployed-only fields |
-| SYS pips     | Pass selected value to feature 006 shield/recovery/distributor package calls                             |
-| ENG pips     | Pass selected value to feature 008 mobility/distributor calls                                            |
-| WEP pips     | Pass selected value to feature 007 capacitor calls; it does not alter `weaponMetrics()` DPS              |
-| Unladen      | Jump `.unladen`; mobility with completed `standardLoadResult('unladen')`                                 |
-| Laden        | Jump `.laden`; mobility with completed `standardLoadResult('laden')`                                     |
-| Maximum jump | Jump `.max`; mobility with completed `standardLoadResult('maximum')`                                     |
+| Condition    | Owner use                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| Hardpoints   | 005 selects `powerBudget().deployed` or `.retracted`; deployed-only fields stay deployed-only       |
+| SYS          | 006 passes `systemsPips` to its package defence calls                                               |
+| ENG          | 008 passes `enginesPips` to selected-load mobility                                                  |
+| WEP          | 005/007 pass `weaponsPips` to distributor/capacitor calls; it does not modify `weaponMetrics()` DPS |
+| Maximum jump | 008 uses `standardLoadResult('maximum')` and jump summary `.max`                                    |
+| Unladen      | 008 uses `standardLoadResult('unladen')` and jump summary `.unladen`                                |
+| Laden        | 008 uses `standardLoadResult('laden')` and jump summary `.laden`                                    |
 
-Package diagnostic mass, main-fuel and cargo results must complete before dependent jump/mobility
-composition. Preserve their issues and do not substitute a value. A complete zero fuel capacity is
-passed as zero.
+Only providers divide integer half-pips by two at their call boundary. Feature 003 does not compose
+standard-load fuel/cargo or guard throwing jump methods; feature 008 owns those package operations.
 
-[Almanac #295](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/295) is released in 0.1.1
-as `standardLoadResult()`. No local `min`, fuel or capacity formula is allowed.
+## Meaning and scope
 
-## Result scope
+- Selected hardpoints affect only returned fields with package state-specific semantics.
+- `weaponMetrics()` DPS remains the package firing result under either selected power state and is
+  labeled with that native meaning.
+- Unladen mass remains unladen mass under every load selection.
+- A condition appears on a card only when it affects the package call or is necessary to distinguish
+  the metric's fixed/native meaning.
 
-- The selected hardpoint state controls hardpoint-sensitive presentation. Package methods without a
-  hardpoint argument do not receive a fabricated alternate numeric value.
-- Under retracted hardpoints, sustained DPS exposes the observable retracted condition rather than a
-  locally invented zero. Deployed uses the package result.
-- Shield strength names the selected SYS condition but remains the raw package strength; feature 003
-  does not apply pip resistance or power availability to it.
-- Unladen mass remains unladen mass for every load selection and labels that fixed meaning.
+## Reset and exclusion
 
-## Lifecycle and exclusion
-
-Accepted conditions live only in `ViewingConditionsStore` for the current active build session.
-They reset to defaults on:
+Conditions reset on:
 
 - browser reload/new top-level document;
-- active build replacement by catalogue creation, stored record, link or SLEF import;
-- transition from an active build to no build and back.
+- replacement by catalogue creation, named/working open, build link or SLEF import;
+- transition to no active build and later activation.
 
-They do not reset for ordinary module edits, undo/redo or saving the same active build.
+They do not reset for module edits, engineering, enabled/priority changes, undo/redo, autosave or
+explicit save of the same active build.
 
-`ViewingConditions` is prohibited from:
+`ViewingConditions`, its draft and `conditionsRevision` are prohibited from:
 
-- `BuildSnapshotV1` and `LocalRecordV1`;
-- edit history and undo/redo checkpoints;
-- user preferences;
-- URL route/query/fragment and compact build links;
-- SLEF import/export;
-- local record note, provenance or validation metadata.
+- `BuildSnapshotV1`, `LocalRecordV1` and fixed-mount provenance;
+- undo/redo history and preferences;
+- route, query, fragment and compact-link payloads;
+- SLEF import/export.
 
-Serialization types use explicit allowlists so this exclusion is structural, not a cleanup pass.
+Serialization uses explicit allowlists so exclusion is structural.
 
-## Accessibility and responsiveness
+## Accessible presentation
 
-Controls expose visible localized labels, current values, the six-pip total, constraints and Apply
-outcome. Touch targets are at least 44 CSS px. At narrow width/400% zoom the controls stack before the
-results; expanded text and RTL content wrap without document overflow. Reduced motion changes no
-settling or publication timing.
+Controls expose visible localized group/field labels, current draft values, six-pip total, errors and
+Apply/Reset outcome. They use feature 011 semantic controls with at least 44 CSS-pixel targets. At
+narrow widths and 400% zoom the group stacks before results; expanded/RTL text wraps. Reduced motion
+changes no settlement timing or state.
 
 ## Verification
 
-Tests enumerate valid boundary allocations, invalid range/step/total drafts, exact fractional package
-arguments, all three load mappings, reset triggers and every exclusion boundary. Reload, named-open,
-link and SLEF journeys prove conditions never travel with a build.
+Tests enumerate every boundary, fractional mapping, invalid parse/range/step/total case, unchanged
+Apply, all three standard loads, hardpoint choices, reset triggers and serialization exclusion.
+Playwright verifies pointer/touch operation and localized error semantics at all five layouts.
