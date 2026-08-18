@@ -1,264 +1,273 @@
 # Research: Power and Heat
 
-## Package calculation boundary
+## Package boundary and leaf imports
 
-**Decision**: Read the active build through
-`ShipLoadout.powerBudget()`, `ShipLoadout.distributorMetrics()` and
-`ShipLoadout.heatMetrics()` from the leaf
-`@elite-dangerous-almanac/core/ships/ship-loadout` export. Preserve their
-returned values and discriminants in one immutable, revision-stamped
-presentation snapshot. Import result types from the `ships/power`,
-`ships/distributor` and `ships/heat` leaves.
+**Decision**: Pin implementation to the installed
+`@elite-dangerous-almanac/core@0.1.1` facade methods:
+`ShipLoadout.powerBudget()`, `distributorMetrics()` and `heatMetrics()`.
+Import `ShipLoadout` and `DistributorOptions` from
+`@elite-dangerous-almanac/core/ships/ship-loadout`; result types from
+`ships/power`, `ships/distributor` and `ships/heat`; and game-text helpers
+through feature 011 from the package's `i18n/modules` and `i18n/slots`
+leaves.
 
-**Rationale**: The three build methods already resolve fitted articles,
-engineering, enabled state, priorities and shedding. A single snapshot prevents
-an edit or condition change from combining results from different revisions.
-The installed package is ESM-only and exposes all three leaves.
+**Rationale**: The facade already resolves the active loadout, engineering,
+module state, priority shedding and fixed heat scenarios. The package is
+ESM-only and exposes all required leaf paths.
 
-**Alternatives considered**: Calling the data-free calculation functions with
-application-assembled inputs was rejected because that would create a second
-build calculation path. Importing the broad `ships` barrel was rejected by the
-constitution's leaf-import rule.
+**Alternatives considered**: Standalone `powerBudget`,
+`distributorMetrics` or `heatMetrics` calls with application-assembled
+inputs were rejected because they would create a second calculation path. The
+broad `ships` barrel was rejected by the constitution's leaf-import rule.
 
-## Per-module power projection — released in 0.1.1
+## Selected power fields
 
-**Decision**: Consume `ShipLoadout.powerBudget().consumers`, which exposes every participating
-fitted module's package-authored power projection, including exact slot and
-symbol, post-engineering draw or unavailable state, enabled state, effective
-one-based priority, and deployed-only state or unavailable state. It includes disabled entries as
-well as the enabled unknown entries already exposed
-by `PowerBudget.unknownDraws`.
+**Decision**: Select fields without arithmetic:
 
-**Rationale**: `powerBudget()` returns plant capacity, state totals, five bands, enabled unknown
-consumers and normalized `consumers`. Joining
-`fittedModules()` to `effectiveStats.powerDraw` is insufficient. An unresolved
-module may carry a journal `PowerDraw` modifier that the package applies to the
-aggregate even though the fitted module's `effectiveStats` remains `null`.
-Known deployed-only classification and effective priority are returned publicly, so the app does
-not reconstruct the facade's private rules.
+| Selected state | Total              | Band draw        | Cumulative draw       | Band verdict            |
+| -------------- | ------------------ | ---------------- | --------------------- | ----------------------- |
+| deployed       | `budget.deployed`  | `band.deployed`  | `band.deployedTotal`  | `band.poweredDeployed`  |
+| retracted      | `budget.retracted` | `band.retracted` | `band.retractedTotal` | `band.poweredRetracted` |
 
-Minimal reproduction against `@elite-dangerous-almanac/core` 0.1.1:
+Always copy `available`. Show `headroom`, `utilisation` and
+`withinBudget` only for deployed.
+
+**Rationale**: Those three summary fields describe deployed hardpoints. The
+package exposes no retracted equivalents, while all five bands expose both
+states.
+
+**Alternatives considered**: Showing both states simultaneously conflicts with
+FR-003. Subtracting or dividing to create retracted summaries conflicts with
+FR-001/FR-002 and the current Almanac limit.
+
+## Field-specific unknown qualification
+
+**Decision**: Treat `budget.unknownDraws` as the sole aggregate
+qualification source:
+
+- `available` remains exact;
+- selected draw, band draw/cumulative draw and deployed utilisation are lower
+  bounds;
+- deployed headroom is labelled as headroom for known draws, not as a complete
+  value or lower bound;
+- `withinBudget` and band powered states are known-draw-only verdicts;
+- every returned unknown label remains visible.
+
+**Rationale**: Enabled unknown draws are omitted from all package totals.
+Consequently draw/utilisation read low, headroom reads too favourably and
+booleans answer only for known consumers. A single generic “lower bound” badge
+would misdescribe headroom and verdicts.
+
+**Alternatives considered**: Treating unknown as zero, qualifying plant
+capacity, calling headroom a lower bound or replacing package booleans with
+locally calculated uncertainty were rejected.
+
+## Per-module power projection
+
+**Decision**: Project `PowerBudget.consumers` directly. One
+`PowerConsumerResult` becomes one module row with its returned slot label,
+symbol, post-engineering draw or null, enabled state, normalized one-based
+priority and deployed-only state. Place null draws outside optional descending
+numeric ordering. Preserve source order as the stable tie break. Test the
+`ShipLoadout` invariant that every participating consumer supplies label and
+symbol; a missing exact slot is a package-contract failure, never an inferred
+target.
+
+**Rationale**: The result includes positive or unknown participating modules,
+including disabled ones; passive and zero-draw fittings are intentionally
+absent. A disabled null-draw consumer remains visible but is not in
+`unknownDraws`, so it does not qualify totals. The exact returned label is the
+only safe slot action identity.
+
+**Alternatives considered**: Joining `fittedModules()` to effective stats,
+reading journal modifiers, subtracting aggregate budgets, grouping identical
+symbols, parsing display names or targeting by position were rejected.
+
+## Shared viewing conditions and pip conversion
+
+**Decision**: Consume feature 003's settled `ViewingConditions` and
+`conditionsRevision`. It stores each capacitor as integer half-pips
+`0..8`, totals 12 and defaults to `4/4/4`. Divide each by two exactly once at
+the `ShipLoadout.distributorMetrics()` call boundary. Reuse feature 003's
+draft/Apply/Reset controls; feature 005 owns no parallel state or validation.
+
+**Rationale**: The Almanac accepts independent fractional values from zero
+through four and does not enforce the game's six-pip total. Feature 003 owns
+that product invariant and the atomic condition revision.
+
+**Alternatives considered**: Storing pips as application floats, calling the
+package with its independent four-pip defaults, automatically redistributing
+pips or persisting conditions were rejected.
+
+## Distributor availability and zero
+
+**Decision**: Model `distributorMetrics()` as `ready | unavailable`. A ready
+result copies returned pips plus capacity, rated recharge and actual recharge
+for SYS, ENG and WEP. Package null remains unavailable without a cause-specific
+diagnosis or catalogue fallback; returned zero remains numeric zero.
+
+**Rationale**: Null can represent no recognized distributor, disabled state,
+missing capacitor facts or retracted priority shedding. Conversely, an
+unresolved catalogue entry can still return a ready result if its journal
+modifiers supply every required value. Only the returned null is authoritative.
+
+**Alternatives considered**: Local recharge scaling, catalogue figures,
+effective-stat fallback, symbol parsing and inferred null causes were rejected.
+
+## Specification terminology at package boundaries
+
+**Decision**: Resolve two scenario phrases through their normative package
+fields:
+
+- “Disabled modules remain visible” means every disabled power participant
+  returned in `PowerBudget.consumers`. Passive and zero-draw fittings are
+  intentionally absent from that package result and have no contribution row.
+- An “unresolved distributor” is unavailable when its required build metrics
+  remain unresolved and `distributorMetrics()` returns null. An unknown
+  catalogue identity whose journal data lets the package return a non-null
+  result is ready; the application does not override it.
+
+**Rationale**: FR-001, FR-005, FR-008 and the Almanac Coverage section make
+returned facade fields the normative boundary. This interpretation preserves
+every package result without inventing catalogue rows or replacing a ready
+build calculation with a diagnosis based on identity resolution.
+
+**Alternatives considered**: Adding every disabled fitted module to the power
+manifest or forcing every catalogue-unknown distributor to unavailable were
+rejected because both contradict the facade result.
+
+## Heat mapping and semantic values
+
+**Decision**: A ready `heatMetrics()` result copies plant efficiency, hull
+heat capacity/dissipation and exactly these five scenarios in order:
+`idle`, `thrusters`, `fsdCharging`, `firingSustained`,
+`firingDrained`. Each preserves `thermalLoad`, `heatLevel`, `gauge`,
+`overheats` and `secondsToOverheat`. Package null is unavailable. A
+non-empty qualification list makes the complete profile a non-directional
+projection. Convert only sentinel meaning for presentation:
+
+- infinite heat level or gauge → does not settle;
+- null seconds to overheat → never overheats;
+- infinite deployed utilisation → draw with zero available plant output.
+
+**Rationale**: The build facade already applies plant efficiency, powered
+priority bands, thruster/FSD heat, sustained weapon heat and capacitor state.
+Heat accepts no viewing-condition options. A no-weapons build still returns all
+five scenarios.
+
+**Alternatives considered**: Peaks, shield-cell, heat-sink or alpha summaries
+from `.design`; clamping infinity; generic “N/A”; JSON cloning; or hiding
+equal scenarios were rejected.
+
+## Blocking Almanac heat-qualification defect
+
+**Decision**: Block feature 005 implementation until an upstream issue is
+raised and a released Almanac version truthfully qualifies a catalogue-unknown
+weapon whose power draw is recoverable but whose weapon heat is not. Consume
+the released structured result; do not preselect an application workaround or
+guess the eventual package field.
+
+Minimal reproduction against installed 0.1.1:
 
 ```ts
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 
 const source = ShipLoadout.default('SideWinder').toLoadoutEvent();
-const modules = source.Modules.map((module) =>
-  module.Slot === 'SmallHardpoint1'
-    ? {
-        ...module,
-        Item: 'Unresolved_Test_Module',
-        On: true,
-        Priority: 4,
-        Engineering: {
-          Engineer: 'Unknown',
-          EngineerID: 0,
-          BlueprintID: 0,
-          BlueprintName: 'Unknown',
-          Level: 1,
-          Quality: 1,
-          Modifiers: [{ Label: 'PowerDraw', Value: 1.5 }],
-        },
-      }
-    : module,
-);
-const build = ShipLoadout.fromLoadout({ ...source, Modules: modules });
+const build = ShipLoadout.fromLoadout({
+  ...source,
+  Modules: source.Modules.map((module) =>
+    module.Slot === 'SmallHardpoint1'
+      ? {
+          ...module,
+          Item: 'Unresolved_Test_Weapon',
+          Engineering: {
+            BlueprintName: 'Unknown',
+            Level: 1,
+            Quality: 1,
+            Modifiers: [
+              { Label: 'PowerDraw', Value: 0.2 },
+              { Label: 'ThermalLoad', Value: 20 },
+              { Label: 'DistributorDraw', Value: 2 },
+            ],
+          },
+        }
+      : module,
+  ),
+});
 
-build.powerBudget().bands[4]?.deployed; // includes 1.5 MW
-build.powerBudget().unknownDraws; // []
 build.powerBudget().consumers.find(({ label }) => label === 'SmallHardpoint1');
-// { label, symbol, draw: 1.5, enabled: true, priority: 5, deployedOnly: true }
-build.fittedModuleAt('SmallHardpoint1')?.effectiveStats; // null
+// draw: 0.2, deployedOnly: true
+
+build.powerBudget().unknownDraws; // []
+build.heatMetrics()?.unknownDraws; // [] — incorrectly appears complete
 ```
 
-The exact 1.5 MW contribution is present in both aggregate and public per-module result. The released
-work is recorded as
-[Elite-Dangerous-Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-and tracked downstream by
-[ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13).
-Feature 005 consumes `consumers` directly.
+Changing or removing the supplied thermal modifier leaves the returned firing
+heat unchanged because the unresolved article is omitted as a weapon.
 
-**Alternatives considered**: Parsing journal modifiers, cloning builds with one
-module at a time, subtracting aggregates, copying `powerConsumerFor`, or deriving
-deployment from category/slot/`alwaysPowered` were rejected. Each duplicates or
-reverse-engineers package logic and fails for at least one unresolved or
-future-package case.
+**Rationale**: This contradicts the package's own `ShipLoadout.heatMetrics()`
+documentation and the spec's unknown-contributor guarantee. Presenting the
+result as complete would violate constitutional principles II and IV.
 
-## Selected power state
+**Alternatives considered**: Inspecting `validation`, hardpoint slot syntax or
+journal `ThermalLoad`/power modifiers locally; adding a warning for every
+unresolved module; or suppressing heat whenever validation is incomplete were
+rejected as application-side correction or fabricated diagnosis.
 
-**Decision**: Select fields directly from `PowerBudget`:
+## Revision architecture and consumer ports
 
-| Selected state | Total       | Band draw        | Cumulative draw       | Powered                 |
-| -------------- | ----------- | ---------------- | --------------------- | ----------------------- |
-| deployed       | `deployed`  | `band.deployed`  | `band.deployedTotal`  | `band.poweredDeployed`  |
-| retracted      | `retracted` | `band.retracted` | `band.retractedTotal` | `band.poweredRetracted` |
+**Decision**: Build a pure projection from feature 003's
+`StatusRevisionContext`, then expose:
 
-Render `headroom`, `utilisation` and `withinBudget` only when deployed is
-selected.
+1. a detailed `PowerHeatSnapshot`;
+2. `PowerStatusProvider` with selected draw/capacity and exact owner
+   qualification for feature 003; and
+3. `HardpointPowerObservationPort` that selects returned consumer/band fields
+   for feature 010.
 
-**Rationale**: The package's three summary fields describe deployed hardpoints.
-Selecting the named state fields is presentation, while calculating retracted
-equivalents would invent unsupported results. All five bands remain visible,
-including zero-draw bands.
+Use computed signals/memoization keyed by build and condition revision. Outer
+detail lifecycle is `noBuild | pending | ready | failure`; distributor/heat
+unavailability remains data inside a ready snapshot.
 
-**Alternatives considered**: Showing both states simultaneously was rejected by
-FR-003. Calculating retracted headroom, utilisation or budget verdicts was
-rejected by the spec's explicit Almanac limit.
+**Rationale**: This keeps calculations render-free, prevents mixed revisions
+and gives cross-feature consumers owner-authored power semantics. Feature 003
+requires a synchronous revision-stamped provider; feature 010 must not
+reconstruct shedding.
 
-## Unknown and disabled power consumers
+**Alternatives considered**: Component calls, independently settled unversioned
+stores, a second loadout, persisted metric caches or duplicated feature
+003/010 calculations were rejected.
 
-**Decision**: When `unknownDraws` is non-empty, name every returned consumer and
-mark every total, band value and package boolean as a lower-bound or
-known-draw-only answer. Keep disabled entries in the package per-module
-projection, visibly disabled and outside the package totals exactly as returned.
-Place unknown entries in a separate group before any optional descending sort
-of known numeric draws.
+## Design, responsive, accessibility and localization
 
-**Rationale**: Enabled unknown draws are omitted from every package aggregate;
-disabled unknowns are skipped before qualification. Sorting an unknown among
-numbers claims an ordering the package does not know. Keeping exact slot keys
-also supplies the required action target.
-
-**Alternatives considered**: Treating unknown as zero, suppressing disabled
-entries, applying an arbitrary sort position, or aggregating modules with the
-same display name were rejected as dishonest or incompatible with exact-slot
-navigation.
-
-## Shared viewing conditions
-
-**Decision**: Consume feature 003's in-memory `ViewingConditions` as the only
-owner of hardpoint state and pip allocation. Its defaults are deployed and two
-pips each; pips move in half steps, total six and never exceed four. Pass the
-three values directly to `distributorMetrics()` and present the returned `pips`.
-
-**Rationale**: These conditions affect several capabilities but are not build
-state. The package accepts arbitrary fractional pips independently and does not
-enforce the game's six-pip allocation, so feature 003 owns that input invariant;
-feature 005 still presents only package-scaled recharge.
-
-**Alternatives considered**: A second local selector, passing no options (which
-defaults every capacitor independently to four), or persisting conditions in a
-record, URL, SLEF or edit history were rejected as conflicting with feature 003.
-
-## Distributor availability and zero
-
-**Decision**: Model `distributorMetrics()` as `ready | unavailable`. In the ready
-case, display capacity, rated four-pip recharge, actual recharge and returned
-allocation for SYS, ENG and WEP. Preserve `null` as unavailable and zero recharge
-as a real numeric zero.
-
-**Rationale**: The package returns `null` when the distributor is missing,
-disabled, unresolved or shed in the retracted budget. It supplies no structured
-reason discriminator. Catalogue values would describe an article, not the
-current powered build.
-
-**Alternatives considered**: Falling back to catalogue capacities/recharge,
-scaling rated recharge locally, or diagnosing a specific null cause from text
-were rejected.
-
-## Heat scenarios and qualifications
-
-**Decision**: Display exactly the five returned scenarios in semantic order:
-`idle`, `thrusters`, `fsdCharging`, `firingSustained`, `firingDrained`. For each,
-preserve `thermalLoad`, `heatLevel`, `gauge`, `overheats` and
-`secondsToOverheat`. Display plant efficiency, hull heat capacity and hull heat
-dissipation from the same result. A non-empty `unknownDraws` list qualifies the
-entire profile as a projection, neither an upper nor a lower bound.
-
-**Rationale**: `heatMetrics()` already applies powered priority bands, plant
-efficiency, thruster/FSD heat, weapon sustained heat and capacitor state. No
-weapons still produces all five scenarios. Unknown power draws can make the
-heat answer err in either direction because they affect both direct heat and
-shedding.
-
-**Alternatives considered**: Deriving a peak, hiding equal weapon scenarios,
-adding shield-cell or heat-sink scenarios from the visual reference, or treating
-projected heat as a lower bound were rejected because no such package result
-exists.
-
-## Null and infinite semantics
-
-**Decision**: Convert package discriminants to field-specific semantic states
-before localization. `heatMetrics() === null` and
-`distributorMetrics() === null` mean the whole result is unavailable.
-`HeatState.heatLevel` or `.gauge` equal to `Infinity` means the scenario does not
-settle. `secondsToOverheat === null` means it never overheats. Infinite deployed
-power utilisation means the build draws power with no available plant output.
-
-**Rationale**: These are distinct package meanings. Generic `N/A`, a JSON
-round-trip (which turns numeric infinity into `null`), or an unexplained infinity
-glyph would lose them.
-
-**Alternatives considered**: Clamping heat gauges, showing infinity as a large
-percentage, formatting every null as unavailable, or serializing the
-presentation snapshot were rejected.
-
-## Exact-slot navigation
-
-**Decision**: Emit `openSlot(slotKey)` with the original package/game key and
-delegate to feature 002's selected-slot intent inside `/build`. Match a returned
-unknown label to a known slot case-insensitively while retaining its original
-spelling; unresolved original slots target feature 002's unresolved group.
-
-**Rationale**: Package imports retain producer casing, and slot identity is not
-positional. Feature 002 already owns the editable destination and selection
-state; feature 005 should not add a route or duplicate the outfitting ledger.
-
-**Alternatives considered**: Positional indices, parsing display names, or a
-new module-detail route were rejected.
-
-## Architecture and recomputation
-
-**Decision**: Put package projection and semantic discriminants in a pure
-`domain/power-heat` projector; combine active-build revision and shared
-conditions in a computed signal facade under `application/power-heat`; keep all
-components input/output only. Recompute the three methods once per relevant
-settled revision or condition change.
-
-**Rationale**: This preserves one active `ShipLoadout`, keeps logic render-free,
-and satisfies feature 003's atomic-revision contract. The pinned corpus has 48
-hulls and at most 39 package slots; a stock default has at most 21 fitted
-modules. Local Node probes showed the package calls are far below the 100 ms
-product target, though browser tests remain authoritative.
-
-**Alternatives considered**: Component-owned calculations, a second build,
-cached serialized metric results, and asynchronous workers were rejected as
-unnecessary or state-duplicating.
-
-## Responsive, accessible and localized presentation
-
-**Decision**: Adapt the wide and narrow power hierarchy from `.design/Ship
-Builder.dc.html` through feature 011 components and tokens. Wide layouts may use
-fluid columns; narrow, 400%-zoom and expanded-text layouts stack the complete
-priority, module, heat and distributor content. Every chart is supplementary to
-semantic text. All application labels, qualifications and infinity phrases use
-message keys; all numbers and units use active-locale formatters; game names use
+**Decision**: Adapt only the hierarchy of `.design` canvases 1c/1d through
+feature 011. Wide layouts may use fluid columns; tablet, narrow, landscape phone
+and 400%-zoom layouts stack every complete field. Charts remain optional
+supplements to semantic text. All owned strings and sentinel phrases use
+messages; numbers/units use active-locale formatters; module/slot text uses
 Almanac localization with disclosed canonical fallback.
 
-**Rationale**: The reference supplies useful hierarchy but abbreviates mobile
-module draw to a top list, shows non-package heat summaries, uses whole-pip
-blocks and carries meaning through color and hover. Those details conflict with
-the spec and constitution. Feature 011 owns the shared components, dark tokens,
-44 CSS-pixel touch targets, text expansion, RTL, reduced motion and accessibility
-test harness.
+**Rationale**: The reference contains useful adjacency and dark-theme direction
+but only desktop/mobile samples, hard-coded English/literals, tiny div controls,
+hover meanings, four power groups, incomplete mobile data and unsupported heat
+content.
 
-**Alternatives considered**: Copying the reference markup/literals, using
-bars without text, horizontal page scrolling, private game translations, or a
-desktop-only table were rejected.
+**Alternatives considered**: Copying the HTML/CSS, truncating mobile content,
+color-only bars, remote fonts/assets, page overflow, a feature-local theme or
+private game translations were rejected.
 
-## Verification matrix
+## Verification
 
-**Decision**: Unit-test exact projection equality and every discriminant; add
-Playwright journeys for the three stories in Chromium and Firefox over desktop,
-tablet/mobile portrait and landscape, with automated accessibility scans and
-screen-reader semantic assertions. Retain the 80% thresholds and the 100 ms
-settled-update target under mobile 4x CPU slowdown.
+**Decision**: Unit-test exact package field equality, all qualification and
+sentinel unions, revision matching and both integration ports. After the
+upstream release, add Playwright journeys for all three stories in feature 011's
+ten-project matrix with automated axe checks and manual screen-reader/zoom
+protocols.
 
-**Rationale**: Current `playwright.config.ts` has only three Chromium projects
-and no automated accessibility scan, so feature 011 must close that repository
-gap before feature 005 can ship. Tests must cover within/over budget, both
-hardpoint states, unknown and disabled consumers, missing plant, distributor
-null/zero pips, all heat scenarios, projection, infinity and exact-slot actions.
+**Rationale**: The current repository has only three Chromium projects and no
+axe harness. Feature 011 must close that shared gap; feature 005 must not create
+a smaller local matrix.
 
-**Alternatives considered**: Chromium-only coverage, component snapshots alone,
-skipped browser cases, or relaxing coverage thresholds were rejected.
+**Alternatives considered**: Chromium-only coverage, component snapshots
+without package equality, skipped blocker cases or relaxed coverage gates were
+rejected.

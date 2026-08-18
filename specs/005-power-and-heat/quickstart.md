@@ -1,190 +1,247 @@
 # Quickstart: Validate Power and Heat
 
-This guide validates feature 005 end to end. It is not an implementation guide.
-The field and intent contracts are in [contracts/](./contracts/), and the state
-model is in [data-model.md](./data-model.md).
+This is a validation guide, not an implementation guide. Contracts are under
+[contracts/](./contracts/), the state model is in
+[data-model.md](./data-model.md), and responsive composition is in
+[design/](./design/).
 
-## 1. Prerequisites and released-API check
-
-Use Node.js from `.nvmrc`, pnpm from `packageManager`, and the committed lockfile:
+## 1. Establish the toolchain
 
 ```bash
 nvm use
 pnpm install --frozen-lockfile
 ```
 
-Before implementation or acceptance, confirm all gates:
+Confirm:
 
-- [Elite-Dangerous-Almanac issue #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-  is present in pinned 0.1.1 as `PowerBudget.consumers`;
-- [ship-builder issue #13](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/issues/13)
-  tracks consumption of that package;
-- this repository pins the fixed `@elite-dangerous-almanac/core` release;
-- feature 001 supplies the active build/revision and `/build` workspace;
-- feature 002 supplies exact-slot selection and power editing controls;
-- feature 003 supplies atomic deployed/retracted and valid pip conditions;
-- feature 011 supplies tokens/components, localization, dual-engine projects
-  and automated accessibility scans.
+- Node resolves version 24;
+- `package.json` and the lockfile agree on the Almanac release;
+- production imports use leaf paths;
+- TypeScript strict mode is enabled before feature work;
+- prerequisite feature contracts 001, 002, 003 and 011 are implemented.
 
-Expected: no raw-modifier parser, aggregate subtraction, reduced-build probe or
-copied power-consumer rule exists in application code. If `PowerBudget.consumers` does not expose
-the required projection, fail the dependency regression.
+## 2. Reproduce the blocking Almanac defect
 
-## 2. Run focused automated tests
-
-During development, run the relevant unit and browser journeys:
+Run against the currently pinned package:
 
 ```bash
-pnpm test -- --include 'src/app/domain/power-heat/**/*.spec.ts' --include 'src/app/application/power-heat/**/*.spec.ts'
+node --input-type=module <<'NODE'
+import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+
+const source = ShipLoadout.default('SideWinder').toLoadoutEvent();
+const build = ShipLoadout.fromLoadout({
+  ...source,
+  Modules: source.Modules.map((module) =>
+    module.Slot === 'SmallHardpoint1'
+      ? {
+          ...module,
+          Item: 'Unresolved_Test_Weapon',
+          Engineering: {
+            BlueprintName: 'Unknown',
+            Level: 1,
+            Quality: 1,
+            Modifiers: [
+              { Label: 'PowerDraw', Value: 0.2 },
+              { Label: 'ThermalLoad', Value: 20 },
+              { Label: 'DistributorDraw', Value: 2 },
+            ],
+          },
+        }
+      : module,
+  ),
+});
+
+const budget = build.powerBudget();
+const heat = build.heatMetrics();
+
+console.log({
+  consumer: budget.consumers.find(
+    ({ label }) => label === 'SmallHardpoint1',
+  ),
+  powerUnknowns: budget.unknownDraws,
+  heatUnknowns: heat?.unknownDraws,
+  firing: heat?.firingSustained,
+});
+NODE
+```
+
+Installed 0.1.1 currently reports a 0.2 MW consumer, no power unknown and no
+heat unknown, while ignoring the unresolved weapon's supplied thermal
+information. This is the blocking defect.
+
+Do not start implementation or generate feature tasks until:
+
+1. the reproduction is raised against Elite-Dangerous-Almanac;
+2. an upstream fix is released;
+3. this repository pins that release;
+4. the reproduction returns a structured qualification naming the unresolved
+   heat contributor;
+5. [contracts/heat-profile.md](./contracts/heat-profile.md) is aligned to the
+   exact released field.
+
+No validation-based, slot-based or journal-modifier workaround is acceptable.
+
+## 3. Verify prerequisite integration contracts
+
+Before implementation acceptance, confirm:
+
+- feature 001 exposes one active `ShipLoadout`, numeric build revision,
+  no-build state and `/build`;
+- feature 002 advances that revision on committed edits and reveals an exact
+  slot target;
+- feature 003 exposes integer-half-pip `ViewingConditions`, draft/Apply/Reset,
+  condition revision, `StatusProvider<T, I>` and `powerAndHeat`;
+- feature 003 permits reuse of the same scoped condition controls inside Power
+  and Heat as required by FR-003;
+- feature 010 consumes feature 005's
+  `HardpointPowerObservationPort` rather than power fields directly;
+- feature 011 supplies shared UI, localized formatting/game text, previews,
+  ten Playwright projects and axe helpers.
+
+Expected: no feature 005 state duplicates a prerequisite.
+
+## 4. Run focused automated tests
+
+After the blocker and prerequisites are resolved:
+
+```bash
+pnpm test -- --include='src/app/**/power-heat/**/*.spec.ts'
 pnpm exec playwright test e2e/power-and-heat.spec.ts
 ```
 
-Expected: every projection asserts equality with one package result for one
-build/condition revision. Browser tests execute all configured Chromium and
-Firefox viewport/orientation projects and their accessibility scans.
+Expected: unit tests compare views/ports field-for-field with the package result
+for one revision context. Browser tests run every configured Chromium/Firefox
+size/orientation project with the shared accessibility helper.
 
-## 3. Validate selected power state
+## 5. Validate selected power state
 
-1. Open a known active build whose deployed draw sheds at least one lower
-   priority band while retracted draw does not.
-2. Open Power and Heat from the power headline.
-3. Confirm deployed is selected by default.
-4. Compare plant capacity, total draw and every band's draw, cumulative draw and
-   powered state with `ShipLoadout.powerBudget()` deployed fields.
-5. Confirm headroom, utilisation and within-budget equal the package result.
-6. Select retracted.
-7. Compare total/band fields with the retracted package fields.
-8. Confirm headroom, utilisation and within-budget are omitted and a localized
-   explanation identifies them as deployed-only package summaries.
+Use a build whose deployed draw sheds a lower priority band while retracted
+draw does not:
 
-Expected: exactly one hardpoint state is shown, every band is present and no
-retracted summary is calculated.
+1. Open Power and Heat from feature 003's compact power summary.
+2. Confirm the shared conditions default to deployed and `2/2/2`.
+3. Compare capacity, selected total and all five band draw/cumulative/verdict
+   fields with the deployed `powerBudget()` result.
+4. Compare deployed headroom, utilisation and within-budget.
+5. Select retracted in the shared draft and Apply.
+6. Compare all selected fields with the retracted package fields.
+7. Confirm headroom, utilisation and within-budget are absent with a localized
+   deployed-only explanation.
 
-## 4. Validate module contributions and slot actions
+Expected: exactly one settled state appears; no retracted result is derived.
 
-Use package/repository fixtures covering a known engineered module, a disabled
-module, a deployed-only module, an unknown draw and the unresolved-modifier
-reproduction from [research.md](./research.md#per-module-power-projection--released-in-011).
+## 6. Validate unknown, disabled and zero-output power
 
-For each fixture:
+Use fixtures for:
 
-1. Compare every displayed module entry with the released Almanac per-module
-   projection.
-2. Confirm exact draw/unavailable, enabled, priority and deployed-only state.
-3. Switch to retracted and confirm deployed-only entries stay visible and are
-   labelled inactive without an application-calculated zero.
-4. Confirm unknown entries form a separate group before numerically ordered
-   known entries.
-5. Activate every entry's slot action once.
-
-Expected: one entry per exact slot, no grouping by module name, no unknown in
-numeric ordering, and feature 002 reveals the matching original game slot key.
-The unresolved-modifier fixture displays the package's exact 1.5 MW contribution
-without reading raw modifiers in application code.
-
-## 5. Validate unknown and no-plant power
-
-1. Load a build whose package budget returns at least one `unknownDraws` entry.
-2. Confirm every returned unknown is named.
-3. Confirm total and band numbers are labelled lower bounds and package booleans
-   are identified as known-draw-only verdicts.
-4. Load a build with no enabled power plant but reportable module draw.
-
-Expected: draw remains visible, capacity remains package zero and deployed
-utilisation infinity is expressed as draw with no plant output. The interface
-does not show an unexplained infinity symbol or claim that zero-draw bands prove
-fitted modules are powered.
-
-## 6. Validate distributor performance
-
-1. Start with the default 2/2/2 allocation.
-2. Compare SYS, ENG and WEP capacity, rated recharge, actual recharge and pips
-   used with `distributorMetrics({ systemsPips: 2, enginesPips: 2,
-weaponsPips: 2 })`.
-3. Move pips through valid half-step allocations, including zero on each
-   capacitor in turn.
-4. Confirm feature 003 prevents a total other than six or a capacitor above
-   four.
-5. Test missing, disabled, unresolved and retracted-shed distributor fixtures.
-
-Expected: capacity and all recharge fields equal the package result. Zero-pip
-actual recharge is genuine zero. Every package `null` produces unavailable with
-no catalogue fallback or inferred diagnostic. Pip changes do not enter edit
-history, storage, URL, link or SLEF.
-
-## 7. Validate heat profile
-
-1. Load a build with a ready finite heat result.
-2. Compare plant efficiency, hull capacity and dissipation with the package.
-3. In order, compare idle, thrusters, FSD charging, sustained fire and
-   drained-capacitor fire.
-4. For each scenario compare thermal load, heat level, gauge, overheat state and
-   time to overheat.
-5. Repeat with no weapons.
-6. Repeat with a non-settling scenario and a never-overheating scenario.
-7. Repeat with `unknownDraws`, then with `heatMetrics() === null`.
-
-Expected: all five scenarios remain present whenever the result is ready. A
-non-settling heat/gauge field and a never-overheating time use different
-localized meanings. Unknown contributors qualify the entire profile as a
-projection, not a bound. Null remains unavailable and no reference-only heat
-sink, cell-bank, peak or WEP-drain result appears.
-
-## 8. Validate revision coherence and performance
-
-1. Trigger rapid module edits through feature 002 while alternating hardpoint
-   and valid pip conditions.
-2. Observe the revision identifiers used by the presenter test seam.
-3. Measure the settled update at the mobile viewport under Playwright 4x CPU
-   slowdown.
-
-Expected: every visible snapshot uses one build revision and one condition
-revision, with no stale partial patch. The settled result updates within 100 ms.
-Viewing-condition changes never create undo entries.
-
-## 9. Validate responsive and accessible behavior
-
-Run the primary journeys at desktop, tablet and mobile portrait/landscape in
-Chromium and Firefox. For every complete, lower-bound, projection, unavailable,
-zero and error state:
-
-- run `@axe-core/playwright` and fail on every in-scope violation;
-- verify semantic headings, definitions/tables/cards and named conditions;
-- verify textual equivalents for every bar, gauge, powered and overheat state;
-- verify slot-action names include module and slot context;
-- verify touch targets meet the shared 44 CSS-pixel token;
-- verify 200% text and 400% zoom with no document horizontal scrolling;
-- verify expanded and RTL text, reduced motion and both orientations;
-- verify polite updates announce changed condition/qualification once without
-  repeating unchanged figures;
-- complete the three primary stories with a screen reader.
-
-Expected: the same complete capability works at every size and in both engines.
-If conformance is described, the wording names the exclusions: WCAG 2.2 AA
-except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
-
-## 10. Validate localization and source boundaries
-
-Switch between every shipped locale and use expanded/RTL fixtures.
+- enabled unknown draw;
+- disabled null draw with no enabled unknown;
+- zero capacity and zero draw;
+- zero capacity and positive draw;
+- all five bands including a zero-draw group.
 
 Expected:
 
-- every application label, unavailable/qualification notice and non-finite
-  phrase comes from feature 011 messages with bundled English fallback;
-- MW, MJ, MJ/s, percentage, pip and duration formatting follows the active
-  locale;
-- module game text comes from the Almanac with canonical-language disclosure
-  when needed;
-- no raw key, blank placeholder, private game translation, hard-coded display
-  text or application-owned diagnostic reaches the screen;
-- production imports use package leaf paths.
+- enabled unknowns name exact returned slots;
+- draw/band/utilisation fields are lower bounds, headroom is known-draw-only and
+  booleans are known-draw-only;
+- disabled null draw remains visible but does not qualify aggregates;
+- plant capacity is always exact;
+- zero/zero utilisation is numeric zero;
+- positive draw/zero capacity uses “draw with zero available plant output.”
 
-## 11. Run the complete gate
+## 7. Validate module contributions and slot actions
+
+For every returned `PowerBudget.consumers` entry:
+
+1. Compare exact label, symbol, draw/null, enabled, priority and deployed-only.
+2. Confirm null draws precede numeric ordering.
+3. Confirm numeric ties retain package source order.
+4. Confirm identical module symbols remain separate exact-slot rows.
+5. Activate the row's slot action once.
+
+Expected: feature 002 reveals the original returned slot label. Passive and
+zero-draw fittings absent from consumers are not invented. A missing facade
+label/symbol produces projection failure and an upstream regression, not an
+inferred identity.
+
+## 8. Validate distributor performance
+
+1. Compare SYS/ENG/WEP capacity, rated recharge, actual recharge and returned
+   pips at default `4/4/4` half-pips.
+2. Apply valid half-pip allocations including zero for each capacitor.
+3. Confirm only the package-call adapter divides integer half-pips by two.
+4. Attempt invalid range, step and total drafts.
+5. Exercise package ready-zero and null results, including a null
+   retracted-shed distributor.
+
+Expected: every ready field equals `distributorMetrics()`; zero remains zero;
+invalid drafts retain prior settled results; null has no catalogue fallback or
+inferred cause.
+
+## 9. Validate heat
+
+After the fixed package release:
+
+1. Compare plant efficiency, hull capacity and dissipation.
+2. In order, compare idle, thrusters, FSD charging, sustained fire and
+   drained-capacitor fire.
+3. For each, compare all five `HeatState` fields.
+4. Repeat with no weapons.
+5. Repeat with non-settling and never-overheating fields.
+6. Repeat the blocking unresolved-weapon fixture and another package-reported
+   unknown contributor.
+7. Repeat with package null from absent/disabled/unavailable plant state.
+
+Expected: five scenarios remain whenever ready. Unknown contributors name and
+qualify the whole profile as a non-directional projection. Non-settling and
+never-overheating are distinct. Null remains unavailable. No reference-only
+heat summary appears.
+
+## 10. Validate feature 003 and 010 ports
+
+For one captured context:
+
+1. Compare `PowerStatusProjection.available`,
+   `hardpointState` and `selectedDraw` with the detail projection.
+2. Confirm `qualifiedSummaryIds` is exactly `['power']` for enabled unknown
+   draw and empty otherwise.
+3. Confirm target is exactly `powerAndHeat`.
+4. Query hardpoint observations covering not applicable, disabled, inactive
+   retracted, powered, shed and every qualified reason.
+5. Advance build and condition revisions during projection.
+
+Expected: both ports return the captured revision pair; stale results do not
+publish; feature 003/010 do not calculate, join or reinterpret power.
+
+## 11. Validate responsive, accessibility and localization behavior
+
+Exercise complete, lower-bound, projection, unavailable, zero and error states
+at desktop, tablet/mobile portrait and landscape in Chromium and Firefox:
+
+- run axe and fail every in-scope violation;
+- verify headings, definitions, table/card relationships and visible/matching
+  control names;
+- verify complete text equivalents for every bar/gauge/state;
+- verify distinct module+slot action names and shared touch-target sizing;
+- verify 200% text and actual 400% zoom without document horizontal scrolling;
+- verify expanded and RTL text, reduced motion and both orientations;
+- verify one polite settled announcement and one prompt blocking alert;
+- complete the three user stories with a screen reader.
+
+Switch through every shipped locale. Confirm owned text/sentinels use messages,
+numbers/units use active-locale formatting and game text comes from the Almanac
+with disclosed canonical fallback or unavailable state.
+
+If conformance is stated, name the exclusions: WCAG 2.2 AA except criteria
+2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+
+## 12. Run the complete gate
 
 ```bash
 pnpm run check
 ```
 
-Expected: formatting, type checking, static build, script tests, unit tests with
-at least 80% statements/branches/functions/lines, and the full dual-engine
-Playwright/accessibility matrix pass with no skipped or quarantined case.
+Expected: format check, all typechecks, static build, script tests, unit
+coverage at or above 80% for every threshold, and the complete dual-engine
+Playwright/accessibility matrix pass without skipped or quarantined cases.

@@ -1,63 +1,94 @@
 # Visual Reference Review
 
-## Reference
+## Reference scope
 
-`.design/Ship Builder.dc.html` contains the relevant wide power detail in canvas
-1c and the narrow power mode in canvas 1d. It is a hierarchy/composition
-reference only. Package outputs, accepted specs, the constitution and feature
-011 override its sample values, interactions and CSS.
+`.design/Ship Builder.dc.html` is a local, ignored visual reference, not a
+runtime asset or source of game values. Feature 005 appears in:
+
+- canvas `#1c` (“Outfitting … live stats”), beginning around line 621;
+  its Power tab is part of the central analysis area and reveals
+  `data-anat-detail="power"` around lines 966–1184;
+- canvas `#1d` (“Mobile — full outfitting …”), beginning around line 1745;
+  its stacked `data-m-mode="power"` appears around lines 2083–2155.
+
+The package, accepted specs, constitution and implemented feature 011 design
+system override every sample number, label, interaction and CSS literal.
 
 ## Adopted direction
 
-| Reference idea                                                    | Planned adaptation                                                                                              |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Power is a first-class build capability beside other metric areas | Compose one Power and Heat detail inside `/build`, reachable from feature 003's headline/capability navigation. |
-| Plant capacity, priority bands and module draw are adjacent       | Retain that comparison using exact selected-state package fields and complete semantic labels.                  |
-| Wide panels use fluid columns                                     | Allow two-column composition when inline size supports it while keeping one semantic order.                     |
-| Narrow power content becomes stacked cards                        | Use the stack at narrow widths and 400% zoom, but retain every module and field.                                |
-| Heat and distributor follow power                                 | Preserve the broad hierarchy with the exact five heat scenarios and three complete capacitors.                  |
-| Power marks can target fitted locations                           | Route every complete module entry to feature 002 by exact package slot key. A diagram remains supplemental.     |
+| Reference idea                                         | Planned adaptation                                                                                                                    |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Power and Thermals is a peer build-analysis capability | Compose one `powerAndHeat` capability inside `/build`, reachable from feature 003's power summary and workspace capability selection. |
+| Selected hardpoint state precedes power analysis       | Reuse feature 003's shared condition group and present one selected package state, default deployed.                                  |
+| Capacity, priority bands and module draw are adjacent  | Keep this comparison with all five bands, exact package fields, complete qualifications and one row per returned consumer.            |
+| Heat follows power, then distributor                   | Preserve that semantic/narrow order with the exact five heat scenarios and all three complete capacitors.                             |
+| Wide panels form a compact dashboard                   | Use fluid design-system regions where inline space supports them without changing semantic order.                                     |
+| Mobile analysis becomes stacked cards                  | Stack complete content at narrow widths, landscape phones, expanded text and 400% zoom.                                               |
+| Power warnings also appear in build status             | Supply feature 003's compact revision-stamped power projection; feature 003 owns its rail/capability placement.                       |
+| Power facts can augment hardpoint geometry             | Supply feature 010's exact-slot observation port; diagrams remain supplemental to complete text.                                      |
 
 ## Required departures
 
-- The reference aggregates identical modules at wide widths and truncates narrow
-  content to “Top draw.” FR-006 requires one complete exact-slot entry per
-  contribution, so neither behavior is retained.
-- Its power charts imply locally scaled percentages and powered/unpowered
-  subtraction. Only package fields are shown; visual lengths are optional and
-  never presented as new values.
-- Its retracted behavior does not enforce the package limitation. Retracted mode
-  omits headroom, utilisation and within-budget rather than calculating them.
-- Its heat rows use “cruise,” weapon alpha, shield-cell-bank and other sample
-  concepts and omit required fields. Replace them with exactly `idle`,
-  `thrusters`, `fsdCharging`, `firingSustained` and `firingDrained`, each with
-  all five `HeatState` fields.
-- “Resting heat,” “peak sustained,” heat-sink count, WEP drain/net and “100%
-  module damage” reference summaries are absent unless another accepted feature
-  owns an exact package result. Feature 005 does not derive them.
-- Whole-pip visual blocks conflict with feature 003's half-pip allocation. The
-  shared allocator supplies accessible half-step controls and feature 005 shows
-  the package-returned pips.
-- Hover titles, color, bar fill and pattern carry too much meaning in the
-  reference. Every state, qualification and relationship receives visible and
-  programmatic text.
-- Tiny reference actions are enlarged through shared touch-target tokens and use
-  native/shared semantic controls.
-- Inline visual literals, hard-coded English, truncated names, external font
-  dependencies and ad hoc breakpoints are not copied. Feature 011 tokens,
-  messages, locale formatters and same-origin assets define the implementation.
+### Power
+
+- Both mock variants show only groups 1–4 although the package has five. All
+  five bands remain present, including zero draw.
+- Desktop module rows aggregate identical weapons; mobile truncates to “TOP
+  DRAW.” FR-005/FR-006 require one complete package consumer per exact slot.
+- Module rows omit exact slot, enabled, priority and deployed-only state. The
+  implementation includes each and a named slot action.
+- Mock bars/percentages imply local scaling and “powered draw/unpowered”
+  subtraction. Only returned fields are values; any bar is supplemental.
+- Retracted mode must omit package deployed-only headroom, utilisation and
+  within-budget fields instead of adapting the mock summary tiles.
+- Unknown/lower-bound, disabled-null and zero-capacity states are absent from
+  the mock and are explicit in the implementation.
+- Ledger priority/enabled controls around lines 759–870 remain feature 002
+  editing; feature 005 displays and links only.
+
+### Distributor
+
+- Desktop shows capacity, max recharge, pips and recharge, but mobile omits
+  capacity/rated recharge. Every size presents all fields.
+- Pip blocks are visual-only and whole-pip. Feature 003's accessible half-pip
+  draft/Apply control is reused.
+- The mobile filled blocks and its “3 · 1 · 2 PIPS” footer are internally
+  inconsistent. Neither is acceptance data.
+- Package null and genuine zero receive distinct states missing from the mock.
+
+### Heat
+
+- Desktop uses six non-contract scenarios; mobile uses four. Replace them with
+  exactly `idle`, `thrusters`, `fsdCharging`, `firingSustained` and
+  `firingDrained`.
+- Every scenario must show thermal load, heat level, gauge, overheat and time
+  to overheat. The mock omits most of those fields.
+- Plant efficiency, hull heat capacity and projection/unavailable/non-finite
+  states are added.
+- Cruise, weapons alpha, shield-cell bank, heat-sink count, resting/peak heat,
+  WEP net and “100% module damage” are not inferred by feature 005.
+
+### Interaction and implementation
+
+- Clickable `div` tabs/state choices, title-only meaning and tiny targets
+  become shared semantic controls with visible matching names/states.
+- Color, fill, pattern, position and hover never carry a state without text.
+- Fixed widths, ellipsis, tiny type, hard-coded English, number formatting,
+  Google Fonts and remote asset references are not copied.
+- Feature 011 tokens, bundled messages/formatters, same-origin assets and shared
+  target sizes govern implementation.
 
 ## Missing reference states
 
-The reference provides no authoritative tablet, landscape, 200%-text,
-400%-zoom, expanded-language, RTL, reduced-motion, unknown-draw, projected-heat,
-unavailable-distributor, unavailable-heat or non-finite-value composition. The
-screen definition and component previews supply these states before tasks are
-generated; no reference omission reduces the feature.
+The reference has no authoritative tablet, landscape, 200%-text, 400%-zoom,
+expanded-language, RTL, reduced-motion, no-build, pending, error, group-5,
+unknown-draw, heat-projection, unavailable-distributor/heat or semantic
+infinity state. The screen and preview definitions supply them; no design
+omission reduces the accepted requirements.
 
 ## Source-of-truth conclusion
 
-The reference's section hierarchy is accepted. Its calculations, abbreviations,
-labels and interaction details are rejected wherever they conflict with package
-truth, FR-001–FR-011 or feature 011. The repository's implemented tokens and
-components remain the design-system source of truth.
+Adopt the Power and Thermals hierarchy and dark dashboard density. Reject every
+sample calculation, abbreviation and unsupported scenario. The repository's
+feature 011 tokens/components are the visual source of truth, while the fixed
+Almanac release is the sole game-result source.

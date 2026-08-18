@@ -2,15 +2,24 @@
 
 ## Boundary
 
-The pure projector receives one active `ShipLoadout`, its immutable application
-revision, and feature 003's selected hardpoint state. It calls
-`ShipLoadout.powerBudget()` exactly once for that projection. Components never
-call the package or retain a second budget.
+For one captured build revision, the feature 005 projector calls
+`ShipLoadout.powerBudget()` once and retains that immutable result while
+selecting the settled hardpoint state. Components, feature 003 and feature 010
+do not call the package or reconstruct a second budget.
 
-The per-module portion consumes 0.1.1's `budget.consumers`, released for
-[Elite-Dangerous-Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299),
-and maps it to the package-authored projections defined in
-[data-model.md](../data-model.md#modulepowerview).
+Production imports:
+
+```ts
+import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type {
+  PowerBand,
+  PowerBudget,
+  PowerConsumerResult,
+} from '@elite-dangerous-almanac/core/ships/power';
+```
+
+The standalone `powerBudget` calculator is not an application calculation
+boundary.
 
 ## Selected-state mapping
 
@@ -24,76 +33,95 @@ and maps it to the package-authored projections defined in
 | utilisation     | `budget.utilisation`   | omitted                 |
 | within budget   | `budget.withinBudget`  | omitted                 |
 
-Plant capacity is always `budget.available`. No subtraction, division, sum,
-clamp or alternate verdict is permitted in the projector.
+`budget.available` is always the exact plant capacity returned by the
+package. No sum, subtraction, division, clamp or alternate verdict is permitted
+in the projector.
 
-## Qualifications
+## Unknown qualification
 
-- When `budget.unknownDraws` is empty, returned power values are complete.
-- When it is non-empty, total and band numeric values are lower bounds, and
-  powered/within-budget booleans describe known draws only.
-- Every unknown consumer is named by the returned label. Missing labels remain
-  visibly unnamed package entries rather than receiving an invented slot.
-- A missing plant is not a missing power result: capacity remains package zero,
-  module draw and bands remain visible, and package utilisation infinity uses
-  its “draw with no plant output” meaning.
-- A zero-draw band remains visible; the UI does not claim that a fitted module is
-  powered merely because cumulative zero fits capacity zero.
+When `budget.unknownDraws` is empty:
+
+- selected/band/cumulative values and deployed summary fields are exact;
+- package powered and within-budget verdicts are exact.
+
+When it is non-empty:
+
+- selected/band/cumulative draw and utilisation are lower bounds;
+- headroom is labelled “for known draws” and is not called complete or a lower
+  bound;
+- powered and within-budget are known-draw-only verdicts;
+- capacity remains exact;
+- every returned unknown label is visible in source order.
+
+The numeric and boolean package values are unchanged. A missing unknown label
+from `ShipLoadout.powerBudget()` fails the projection contract; the
+application does not invent a slot.
+
+## No or unavailable plant output
+
+The power result remains present when the package returns zero capacity. Draw,
+bands and consumers remain visible. Infinite utilisation receives the
+field-specific text “draw with zero available plant output”; it does not claim
+whether the plant is absent, disabled or unresolved. If draw and capacity are
+both zero, package utilisation remains numeric zero.
 
 ## Module collection
 
-`budget.consumers` supplies one entry per fitted module participating in
-power presentation, including disabled and unavailable contributions. The UI:
+`budget.consumers` is the sole per-module source:
 
-1. keeps unavailable entries in a separate group;
-2. optionally sorts known draws descending with source ordinal as tie break;
-3. never merges identical symbols or names;
-4. displays exact draw/unavailable, enabled, priority and deployed-only state;
-5. labels a disabled entry from `consumer.enabled` and a deployed-only entry inactive while
-   retracted without calculating a replacement draw;
-6. for an otherwise active known-draw entry, selects the matching returned band's
-   `poweredDeployed`/`poweredRetracted` verdict by the consumer's package priority and preserves its
-   qualification; missing inputs remain indeterminate;
-7. emits `openSlot` with the exact returned slot key.
+1. require the exact returned `label` and `symbol` from the
+   `ShipLoadout` facade contract;
+2. preserve one row per returned consumer and its source ordinal;
+3. show exact draw/null, enabled, normalized one-based priority and
+   deployed-only/null;
+4. place null draws outside numeric ordering;
+5. optionally sort known draws descending with source ordinal as the tie break;
+6. retain disabled positive/unknown consumers;
+7. never add passive or zero-draw fittings omitted by the package;
+8. never merge identical module symbols or names;
+9. emit `openSlot` with the exact returned label.
 
-Raw engineering modifiers, symbol prefixes, display names and aggregate differences are prohibited
-inputs to this collection. The returned consumer and band records are its only power-state inputs.
+Only enabled `budget.unknownDraws` qualify totals. A disabled consumer whose
+`draw` is null remains visible but does not create an aggregate
+qualification.
+
+Raw journal modifiers, effective-stat joins, symbol/slot parsing, aggregate
+differences and positional indices are prohibited inputs.
 
 ## UI intents
 
 ```ts
-selectHardpointState('deployed' | 'retracted')
-openSlot(slotKey: string)
+type PowerBudgetIntent =
+  | { readonly kind: 'editViewingConditions' }
+  | { readonly kind: 'applyViewingConditions' }
+  | { readonly kind: 'resetViewingConditions' }
+  | { readonly kind: 'openSlot'; readonly slotKey: string };
 ```
 
-The first delegates to feature 003 and creates only a condition revision. The
-second delegates to feature 002 and reveals the exact slot in one interaction.
-Neither mutates the build or edit history.
+Viewing intents delegate to feature 003. Slot intent delegates to feature 002.
+None mutates the loadout directly or enters edit history.
 
 ## Accessibility and localization
 
-- The selector has a visible localized group label, two named choices and a
-  programmatically exposed selected state; deployed is the shared default.
-- Capacity and selected draw are a definition group. Bands use a semantic table
-  at widths that support it and equivalent labelled cards when stacked.
-- Draw, cumulative draw and powered state are text for every band. Bars, color
-  and patterns are supplementary only.
-- Lower-bound and known-draw-only qualifications are adjacent in reading order
-  and included in accessible descriptions.
-- Each slot action's visible and accessible name distinguishes both module and
-  slot and meets the shared touch-target token.
-- MW and percentages use feature 011 locale formatters. Application labels use
-  message keys; module names use package localization with fallback disclosure.
-- A settled state/qualification change is announced once politely without
-  re-announcing the complete module collection.
+- The shared condition group exposes visible localized hardpoint state, pip
+  drafts, errors and Apply/Reset state.
+- Capacity and selected draw form a semantic definition group.
+- All five bands use a semantic table where it fits and equivalent labelled
+  cards when stacked.
+- Every numeric/bar relationship has nearby text. Powered, shed, disabled,
+  deployed-only and qualifications do not depend on color, pattern or position.
+- Every slot action's visible and accessible name distinguishes module and
+  exact slot and uses the shared target-size token.
+- MW/percentages use active-locale formatters. Application text uses messages;
+  module/slot text uses Almanac localization and canonical fallback disclosure.
 
 ## Required verification
 
-- Exact field equality for both hardpoint states and all five bands.
-- Retracted mode has no headroom, utilisation or within-budget field.
-- Unknown consumers qualify all affected values/verdicts and never enter numeric
-  ordering.
-- Disabled and deployed-only module entries remain present.
-- No-plant infinity has semantic text and no JSON-based loss.
-- Every module action delivers its exact original slot key.
-- Rapid build/condition changes never mix revisions.
+- Exact field equality for both states and all five bands.
+- No retracted headroom, utilisation or within-budget field.
+- Field-specific qualification under every enabled unknown consumer.
+- Disabled null draw does not qualify totals.
+- No/zero plant output preserves exact numbers and semantic infinity.
+- Every consumer row and action preserves original package identities.
+- Missing label/symbol, unexpected exception and stale revision publish failure,
+  never partial/stale figures.

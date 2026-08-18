@@ -2,23 +2,40 @@
 
 ## Boundary
 
-For one active build revision and one valid feature 003 `PipAllocation`, call:
+Feature 003 owns settled pips as integer half-pips. For one captured revision
+pair, feature 005 divides each by two exactly once and calls:
 
 ```ts
-build.distributorMetrics({
-  systemsPips: allocation.systems,
-  enginesPips: allocation.engines,
-  weaponsPips: allocation.weapons,
-});
+const options: DistributorOptions = {
+  systemsPips: conditions.pips.systems / 2,
+  enginesPips: conditions.pips.engines / 2,
+  weaponsPips: conditions.pips.weapons / 2,
+};
+
+const result = loadout.distributorMetrics(options);
 ```
 
-The application never calls the standalone scaler and never calculates a
-recharge rate.
+Use `DistributorOptions` from
+`@elite-dangerous-almanac/core/ships/ship-loadout` and result types from
+`@elite-dangerous-almanac/core/ships/distributor`. The application never
+calls the standalone calculator or recharge scaler.
 
-## Result mapping
+## Input ownership
 
-When the method returns a result, present three labelled capacitor groups in
-SYS, ENG, WEP order. Each group copies:
+Feature 003 validates and settles one complete draft:
+
+- integer half-pips `0..8` for SYS, ENG and WEP;
+- total exactly 12 half-pips;
+- default `4/4/4` half-pips (displayed as `2/2/2`);
+- one condition revision for one changed Apply;
+- no automatic redistribution.
+
+Feature 005 accepts only settled state. It does not validate a second tuple or
+persist pips.
+
+## Ready mapping
+
+When the package returns a result, present SYS, ENG and WEP in that order:
 
 | View field      | Package source                      |
 | --------------- | ----------------------------------- |
@@ -27,71 +44,52 @@ SYS, ENG, WEP order. Each group copies:
 | actual recharge | matching capacitor `.rechargeRate`  |
 | allocation used | matching `result.pips` field        |
 
-The presentation must demonstrate that a pip change can alter actual recharge
-while capacity remains the value returned by the package. It must not assert
-that capacity changed or stayed equal by locally comparing/calculating it.
+All figures are copied. A pip change may alter actual recharge; the application
+does not compute or assert a capacity transformation.
 
-## Input invariant
+## Availability and zero
 
-Feature 003, not the Almanac call and not a feature 005 component, validates:
-
-- finite half-pip steps;
-- each allocation from zero through four;
-- exactly six pips in total;
-- default two each.
-
-Feature 005 consumes only valid shared state. It does not persist, serialize or
-add the state to edit history.
-
-## Availability
-
-`null` maps to one `unavailable` result with no capacitor figures. This covers
-the package cases of a missing, disabled, unresolved or shed distributor, but
-the UI does not claim a specific cause unless a separate structured package
-result supplies it. Directly observable fitted-slot state may be shown as
-separate context.
+`null` maps to one `unavailable` result with no capacitor figures. Null alone
+does not authorize a cause-specific diagnosis: it may reflect an absent,
+disabled, unresolved-data or retracted-shed distributor. Conversely, a
+catalogue-unresolved journal entry can still return ready when the package
+resolves all required values.
 
 Prohibited fallbacks:
 
 - catalogue capacity or recharge;
-- fitted `effectiveStats` presented as a build result;
+- fitted effective stats presented as the build result;
 - local pip scaling;
-- parsing a package diagnostic or module symbol;
-- substituting zeros.
+- symbol/diagnostic parsing;
+- substituted zeros.
 
-A returned zero capacity or recharge is a genuine numeric zero and remains
-distinct from `null`.
+A returned zero capacity or recharge is genuine ready data.
 
 ## UI intent
 
-```ts
-setPips(allocation: PipAllocation)
-```
-
-The intent delegates to feature 003. One accepted allocation produces one
-condition revision and one new atomic power/heat snapshot. It is not an
-outfitting decision.
+Feature 005 reuses feature 003's
+`editViewingConditions | applyViewingConditions | resetViewingConditions`
+intents. Invalid draft Apply retains the previous settled result and revision.
+No condition enters persistence, history, URL, link or SLEF.
 
 ## Accessibility and localization
 
-- The shared pip allocator exposes its visible label, each capacitor name,
-  current value, constraints and validation relationship with native/shared
-  control semantics and 44 CSS-pixel targets.
-- Capacitor groups use headings or a definition structure; capacity, rated
-  recharge, actual recharge and pips never depend on bar length or color.
-- MJ, MJ/s and pip values use feature 011 locale formatters and translated unit
-  labels.
-- Unavailable and zero have distinct text and programmatic meaning.
-- A settled allocation update is announced once; unchanged values are not
-  redundantly announced.
+- The shared controls expose capacitor names, draft values, six-pip total,
+  errors and Apply/Reset relationships with shared semantic controls and
+  target-size tokens.
+- Capacitor groups expose capacity, rated recharge, actual recharge and
+  returned pips as labelled text at every size.
+- MJ, MJ/s and pip values use active-locale formatters.
+- Zero and unavailable have distinct visual and programmatic meaning.
+- One accepted change receives one coalesced polite announcement; unchanged
+  values are not repeated.
 
 ## Required verification
 
-- Exact equality with package SYS/ENG/WEP values and returned pips at zero,
-  half and whole allocations.
-- Genuine zero-pip recharge remains zero.
-- Capacity is not replaced or transformed when pips change.
-- Every package `null` context renders unavailable with no catalogue number.
-- Invalid total/step/range states are rejected at the shared feature 003
-  boundary before the package call.
-- Viewing changes enter no storage, history, URL or export.
+- Exact SYS/ENG/WEP equality at zero, half and whole displayed pip values.
+- Integer half-pips divide by two only at the package boundary.
+- Zero-pip recharge remains numeric zero.
+- Every package null renders unavailable without catalogue values or inferred
+  cause.
+- Invalid draft values never call the package or advance conditions revision.
+- Rapid revision changes never publish stale returned pips or capacitor values.

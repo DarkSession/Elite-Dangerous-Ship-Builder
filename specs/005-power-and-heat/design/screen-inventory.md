@@ -1,100 +1,100 @@
 # Screen and Surface Inventory
 
-Feature 005 adds no top-level route. Its logical detail surface composes inside
-feature 001's `/build` workspace, is reached from feature 003's power headline,
-and targets feature 002's exact-slot selection in one interaction. Capability
-selection and viewing conditions are in-memory presentation state, not browser
-navigation or build state.
+Feature 005 adds no top-level route. Its complete Power and Heat capability
+composes inside feature 001's `/build` workspace. It also supplies typed data
+to feature 003's Status surfaces and feature 010's Hull Anatomy; those features
+own their screens.
 
-| Surface                                             | Wide/tablet presentation                                                              | Narrow/zoomed presentation                                                                | Requirements          |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
-| [Power and Heat detail](./power-and-heat-detail.md) | Shared conditions followed by fluid power/module columns and heat/distributor regions | Complete stacked conditions, power summary, bands, modules, heat scenarios and capacitors | FR-001–FR-011         |
-| Power budget and priority bands                     | Summary definition group plus semantic five-band table/list                           | Labelled band cards; no field removed                                                     | FR-002–FR-004, FR-011 |
-| Per-module power                                    | Complete exact-slot manifest; unavailable group before optionally ranked known rows   | Complete labelled cards, never the reference's abbreviated “Top draw”                     | FR-004–FR-006         |
-| Distributor performance                             | Three capacitor definition groups beside shared pip allocator where space permits     | Allocator then SYS/ENG/WEP groups, all fields retained                                    | FR-007, FR-008        |
-| Heat profile                                        | Plant/hull facts plus five scenario rows/cards                                        | Same five complete scenario cards in semantic order                                       | FR-009–FR-011         |
-| Outfitting slot target (feature 002)                | Selected exact slot is revealed in the inline ledger/editor context                   | Existing full-screen selected-slot layer is revealed                                      | FR-006                |
+| Surface                                                 | Wide/tablet presentation                                                            | Narrow/zoomed presentation                             | Requirements          |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------- |
+| [Power and Heat capability](./power-and-heat-detail.md) | Shared conditions; fluid power/band/module regions followed by heat and distributor | One complete semantic stack; no abbreviated “Top draw” | FR-001–FR-011         |
+| Power summary and priority bands                        | Capacity/selected draw plus five-band table/list and deployed-only summaries        | Labelled cards with every field retained               | FR-002–FR-004, FR-011 |
+| Per-module power                                        | Complete returned consumer manifest and exact-slot actions                          | Same complete card collection                          | FR-004–FR-006         |
+| Heat profile                                            | Plant/hull facts and five complete scenario groups                                  | Same five complete groups in semantic order            | FR-009–FR-011         |
+| Distributor performance                                 | Shared condition control beside/before SYS/ENG/WEP definitions where space permits  | Condition control then three complete capacitor groups | FR-007, FR-008        |
+| Compact power status contribution (feature 003)         | Selected draw/capacity and owner qualification in rail/Status                       | Same owner value in feature 003's Status capability    | FR-001–FR-004         |
+| Hardpoint power observation (feature 010)               | Supplemental geometry/text state                                                    | Same complete textual state in anatomy list/detail     | FR-001, FR-004–FR-006 |
+| Exact outfitting slot (feature 002)                     | Reveal/select matching inline slot                                                  | Open existing selected-slot surface with return action | FR-006                |
 
 ## Requirement ownership
 
-| Requirement | Surface behavior                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-001      | The owning detail receives one revision-stamped immutable projection of the three `ShipLoadout` methods; visuals add no game result. |
-| FR-002      | Power summary and bands use the exact selected package fields; deployed summary fields are absent in retracted mode.                 |
-| FR-003      | The shared hardpoint selector shows one state, defaults to deployed and labels the current condition.                                |
-| FR-004      | Power qualification notice, named unknown list and disabled module entries remain visible.                                           |
-| FR-005      | The complete package-authored per-module collection uses post-engineering draw; unknown entries remain outside numeric ordering.     |
-| FR-006      | Every module card/row includes exact slot, enabled, priority and deployed-only state and a distinguished exact-slot action.          |
-| FR-007      | Shared pips feed `distributorMetrics()`; SYS/ENG/WEP groups show exact capacity, rated/actual recharge and returned allocation.      |
-| FR-008      | The distributor surface owns a whole-result unavailable state and never displays catalogue fallback values.                          |
-| FR-009      | The heat surface shows five fixed package scenarios and every returned field.                                                        |
-| FR-010      | The heat surface owns whole-result unavailable and projection states and names every returned unknown contributor.                   |
-| FR-011      | Field-specific semantic formatting distinguishes no-plant utilisation, non-settling heat and never-overheating time.                 |
+| Requirement | Planned behavior                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One feature-owned projection calls only the three `ShipLoadout` methods; adapters select that owner data without recalculation. |
+| FR-002      | Selected total/bands map directly to named package fields; deployed summaries are absent while retracted.                       |
+| FR-003      | Feature 005 composes feature 003's shared condition control, defaults deployed and displays one settled hardpoint state.        |
+| FR-004      | Enabled package unknowns name/qualify affected results; disabled returned consumers remain visible exactly as reported.         |
+| FR-005      | Every returned power consumer uses package post-engineering draw/null; null remains outside numeric ordering.                   |
+| FR-006      | Every row exposes exact slot, enabled, priority and deployed-only state plus one exact-slot action.                             |
+| FR-007      | Integer half-pips divide by two only at the package call; all returned SYS/ENG/WEP fields and pips are displayed.               |
+| FR-008      | Package distributor null is unavailable and receives no catalogue substitute or inferred cause.                                 |
+| FR-009      | Ready heat shows three profile facts, exactly five scenarios and every one of their five fields.                                |
+| FR-010      | Package heat null is unavailable; the fixed released structured unknown list qualifies/names the whole profile as a projection. |
+| FR-011      | Field-specific presentation distinguishes zero-output utilisation, non-settling heat and never-overheating time.                |
 
 ## Cross-feature composition
 
-- Feature 001 owns the active build, its revision and the `/build` workspace.
-- Feature 002 owns module enabled/priority edits and exact-slot selection. Feature
-  005 emits a slot intent; it does not mutate a module.
-- Feature 003 owns deployed/retracted and pip viewing conditions, their defaults
-  and atomic condition revision. It also owns the power headline/detail action.
-- Feature 011 owns layout primitives, tokens, controls, localization/formatting,
-  live announcements, responsive behavior and the accessibility harness.
-- Feature 010 may later visualize package power facts on hull anatomy. Its
-  diagram cannot replace the complete textual feature 005 surfaces.
+- Feature 001 owns the active build, numeric build revision, no-build behavior
+  and `/build` workspace.
+- Feature 002 owns enabled/priority mutations, exact-slot selection and all
+  editing UI. Feature 005 emits a slot target only.
+- Feature 003 owns settled viewing conditions, integer half-pips, draft/Apply/
+  Reset, condition revision, Status composition and detail target. Feature 005
+  reuses its controls within this capability to satisfy FR-003; it does not
+  duplicate state.
+- Feature 005 owns every power/heat/distributor projection and qualification,
+  including the compact `PowerStatusProvider` and
+  `HardpointPowerObservationPort`.
+- Feature 010 consumes the observation port and owns geometry. It does not join
+  consumers to bands or infer power.
+- Feature 011 owns tokens, components, localization/formatting, package game
+  text, announcements, previews and accessibility/browser harness.
 
-Feature 003's completed plan and design contract own the shared viewing-condition
-state; the relevant features are not implemented in the current shell. Tasks must
-preserve these boundaries rather than inventing parallel controls while
-prerequisites are being built.
+Feature 003's current “complete Status is the sole location for viewing
+controls” wording must be reconciled before task generation: the same shared
+control component/state appears in Status and Power and Heat, while feature 003
+remains the only state owner.
 
-## Shared states
-
-The screen and its components require previews and tests for:
+## Required states
 
 - no active build;
-- projection pending for a new revision, without stale mixed values;
-- within budget and over-budget/shedding builds;
-- deployed and retracted selection, including omitted retracted summaries;
-- known complete power and unknown/lower-bound power;
-- enabled, disabled, deployed-only and unavailable module contributions;
-- missing/disabled plant: zero capacity, reportable draw, heat unavailable;
-- distributor ready, unavailable and genuine zero-pip recharge;
-- heat ready, unavailable and projected;
-- finite, does-not-settle and never-overheats field semantics;
-- no weapons with all five returned heat scenarios;
-- unexpected package/presenter failure with no stale prior figures.
+- pending current revision and stale-result refusal;
+- unexpected projection failure;
+- deployed and retracted, including omitted retracted summaries;
+- within budget, exact over-budget shedding and all five bands;
+- enabled unknown draw/lower-bound power;
+- disabled null draw that does not qualify totals;
+- zero capacity with zero draw and with positive draw/infinite utilisation;
+- participating enabled/disabled/deployed-only/null module consumers;
+- distributor ready, package unavailable and genuine zero-pip recharge;
+- heat ready, package unavailable, fixed-release projection and no weapons;
+- finite, does-not-settle and never-overheats fields;
+- missing required returned consumer identity as a package-contract failure.
 
-Component previews cover default/populated, empty, loading, error and disabled
-states where meaningful at desktop, tablet and mobile widths, plus expanded and
-right-to-left text fixtures.
+## Responsive, accessibility and localization baseline
 
-## Accessibility, responsive and localization baseline
+- The owning workspace supplies one `main` and one `h1`; feature sections
+  nest under the capability heading.
+- Wide columns never alter semantic order. At narrow widths, both landscape
+  orientations, 200% text and 400% zoom, sections stack without document
+  horizontal scrolling.
+- A semantic table may scroll only inside a labelled container when labelled
+  cards cannot express the relationship more clearly.
+- Controls work by pointer and touch and use shared target-size tokens. Nothing
+  required depends on hover.
+- Powered, disabled, deployed-only, shed, unknown, lower-bound, projection,
+  unavailable and overheat states are visible/programmatic text.
+- Charts are omitted when they do not materially aid comparison; any retained
+  bar/gauge has a complete nearby text equivalent.
+- One settled build/condition/qualification update receives one coalesced
+  polite announcement. Blocking application failure uses shared alert behavior.
+- Owned strings and semantic sentinels use messages; MW, MJ, MJ/s,
+  percentages, pips and durations use active-locale formatters.
+- Game module/slot text uses Almanac localization or disclosed canonical
+  fallback; missing canonical text is unavailable.
+- Every meaningful state is exercised in Chromium and Firefox across desktop,
+  tablet/mobile portrait and landscape with axe plus manual screen-reader and
+  zoom protocols.
 
-- The surface participates in the workspace's one `main` and heading hierarchy;
-  it does not add a competing page landmark or `h1`.
-- Wide visual columns never alter semantic reading order. At 200% text, 400%
-  zoom and narrow widths they stack without document horizontal scrolling.
-- Semantic tables may own internal overflow only where labelled cards cannot
-  preserve the relationships more clearly.
-- Every control works with pointer and touch, exposes visible/matching names and
-  state, and uses at least the shared 44 CSS-pixel target token.
-- Values include meaning and unit. Powered, disabled, deployed-only, overheat,
-  lower-bound, projection and unavailable states are text, not color/shape/fill
-  alone.
-- Charts and gauges have complete nearby textual equivalents and are omitted
-  when they do not materially aid comparison.
-- Condition and qualification changes use one coalesced polite announcement;
-  blocking projection errors use the shared alert behavior.
-- Reduced motion removes nonessential transitions. Text expansion and RTL do
-  not reverse data semantics or separate labels from values.
-- Application text and semantic sentinel phrases use feature 011 message keys;
-  MW, MJ, MJ/s, percentages and durations use active-locale formatters.
-- Game module text comes from the Almanac and receives the shared untranslated
-  disclosure when a requested locale is unavailable.
-- Automated coverage scans every meaningful state in Chromium and Firefox over
-  desktop, tablet/mobile portrait and landscape. Manual screen-reader journeys
-  verify relationships and announcements.
-
-Where conformance is stated, use: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
+Where conformance is stated, use “WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
