@@ -48,11 +48,11 @@ convenience.
 generic radix layer, the asynchronous loader reads the first ten bits of the payload and dynamically
 imports the matching immutable JSON table. The binary codec is shared by every table snapshot.
 
-The table-version field has 1,024 values. Table `0` is reserved and table `1` is the sole snapshot
-defined before release. A catalogue update keeps the `b.` prefix and binary layout, publishes a new
-immutable numbered JSON table, and makes that number current for new links. Older table files remain
-available for existing links. Two or three new table snapshots per year do not require cloned codec
-implementations.
+The table-version field has 1,024 values. Table `0` is reserved and table `1` — the catalogue plus
+the pinned symbol models described below — is the sole snapshot defined before release. A catalogue
+update keeps the `b.` prefix and binary layout, publishes a new immutable numbered JSON table, and
+makes that number current for new links. Older table files remain available for existing links. Two
+or three new table snapshots per year do not require cloned codec implementations.
 
 A future prefix such as `c.` is appropriate for an incompatible binary layout or outer envelope.
 Prefixes identify codecs, while the embedded field identifies data tables; neither is a release
@@ -124,8 +124,13 @@ trailing data.
 
 The arithmetic branch is a 64-bit integer Witten–Neal–Cleary coder with inclusive `low` and `high`
 intervals and deterministic E1/E2/E3 renormalisation. Every logical value is encoded against its
-actual uniform cardinality: booleans use `2`, bytes use `256`, contextual identities use the size of
-their candidate set, and an eligible combination rank uses its exact combination count.
+actual cardinality: booleans use `2`, bytes use `256`, contextual identities use the size of
+their candidate set, and an eligible combination rank uses its exact combination count. A table
+without pinned symbol models prices every symbol uniformly; a table that pins models gives the
+symbols named in its `MODELS` block non-uniform interval shares, as described under
+[Pinned symbol models](#pinned-symbol-models). For a weighted symbol the `s` and `s + 1` terms in
+the update below become the symbol's cumulative frequency bounds and `N` its weight total; the
+uniform case is the special case where every weight is one.
 
 The immutable arithmetic constants are:
 
@@ -355,6 +360,115 @@ The encoder rejects ill-formed UTF-16 such as lone surrogates, and the decoder r
 malformed UTF-8 rather than replacing it with U+FFFD. It also rejects a UTF-8 spelling when every
 decoded character belongs to the compact alphabet, because that spelling is non-canonical.
 
+## Pinned symbol models
+
+Real builds are heavily skewed: grades are usually maximal, engineered modules usually carry an
+experimental effect, identities almost always resolve through their contextual candidate set, and
+explicit enabled states are usually `on`. A table may therefore pin an optional `MODELS` block of
+integer frequency weights, and the arithmetic renderer prices each modelled symbol by its weight's
+share of the list total instead of uniformly. Table 1 pins the block below alongside its
+catalogue; the models change nothing about the binary grammar, only how the arithmetic rendering
+prices its symbols.
+
+Because the weights are data in the versioned, immutable table, canonicality is untouched: encoder
+and decoder read the same frozen numbers, and the decoder's exact reserialization check works
+exactly as before. Three design constraints keep the mechanism safe:
+
+- **Bit packing ignores models entirely.** Packed bodies are unchanged, and the packed-bit cost
+  proxy that selects every adaptive layout (index-set modes, baseline-versus-absolute, references)
+  is model-independent. Layout choices are therefore identical with and without models.
+- **The canonical body is still the shorter of the packed and arithmetic renderings.** A model that
+  mispredicts a build can only push that build back to its packed rendering; it can never produce a
+  link longer than bit packing.
+- **Models are optional table data.** A table without a `MODELS` block behaves exactly as before
+  models existed. A table that pins different weights is a new table number like any other
+  catalogue change, covered by the existing content-hash discipline.
+
+### Modelled symbols
+
+| Model                  | Symbol                                                          |
+| ---------------------- | --------------------------------------------------------------- |
+| `GRADE_IS_MAX`         | The ordinary record's maximum-grade boolean                     |
+| `EXPERIMENTAL_PRESENT` | The ordinary record's experimental-effect presence boolean      |
+| `CONTEXT_HIT`          | Contextual-set membership of module/blueprint/effect identities |
+| `POWER_ON`             | Explicit enabled states (absent / off / on)                     |
+| `POWER_PRIORITY`       | Explicit priorities (absent / 0–4)                              |
+| `CONTEXT_INDEX_DECAY`  | Geometric prior over contextual-set positions                   |
+| `CONTEXT_ADAPTATION`   | Per-run adaptive contexts over back-reference indexes           |
+| `NAME_CHARACTERS`      | Per-character weights for the ship name (English-like)          |
+| `IDENT_CHARACTERS`     | Per-character weights for the ship ident (callsign-like)        |
+
+The weight lists are integers; a symbol's interval is its weight's share of the list total. The
+coder's 64-bit state keeps floor-division exact for totals far above the enforced weight-total
+cap. The ship name and ident use separate character models because they are written in different
+languages: names read like English while idents read like callsigns (uppercase, digits, dash), and
+a single English-weighted model measurably penalised idents.
+
+### Adaptive contexts
+
+`CONTEXT_ADAPTATION` adds deterministic within-stream learning: a back-reference index is coded
+against a per-run frequency context that starts uniform and bumps the coded symbol's weight by the
+pinned increment after each use, so a target referenced repeatedly in one build gets cheaper each
+time. Encoder, decoder, and canonical reserialization replay the identical symbol sequence, which
+is all the mechanism needs — no new canonicality machinery. Adaptation lives only in the two
+renderers and the arithmetic reader, never at symbol-capture or cost-model time, so the packed
+render and every packed-cost layout decision stay model-independent. Contexts are keyed by the
+identity of their dictionary array, so per-run back-reference dictionaries key their own context
+on both sides.
+
+Two measured findings shaped the design:
+
+- **Candidate-set literals must not adapt.** A draft that adapted every contextual-set index made
+  the reference Corvette grow from 97 to 102 characters: the grammar's back-referencing already
+  dedupes repeats out of the literal streams, so what remains is repetition-poor, and each new
+  distinct value paid for the counts accumulated by earlier ones. The insight generalises:
+  adaptive models fight explicit dictionary coding unless they are confined to the streams where
+  repetition survives — the reference indexes themselves.
+- **A small increment saturates the win.** With adaptation confined to reference streams, an
+  increment of 8 already captures the full Anaconda saving (65 characters) while leaving the
+  diverse-reference Corvette exactly at its static-prior length (97); increments of 32, 128, and
+  1,024 progressively hand the Corvette's gain back (98, 99, 102) by penalising each new
+  reference target. The table pins 8.
+
+### What the pinned models deliberately leave open
+
+- **Identity weights are uniform.** The candidate sets are catalogue-ordered, so
+  `CONTEXT_INDEX_DECAY` has no popularity signal to exploit, and measurement confirms it: a 63/64
+  decay leaves the Anaconda at 71 but costs the Corvette two characters, and a 7/8 decay gains the
+  Anaconda two more while pushing the Corvette past its arithmetic rendering entirely. The table
+  therefore pins the decay uniform. A future table with usage data behind it would pin
+  popularity-ordered candidate sets (free — ordering is already table data) or explicit per-set
+  weights, which is where most of the remaining win lives; that requires a usage corpus and is
+  table-generation work, not codec work.
+- **Weights are hand-estimated.** The pinned skews are defensible priors validated against the
+  reference corpus, not corpus-derived measurements. Better-measured weights belong under the next
+  table number, like any other table change.
+- **Grammar-conditional models** (for example, conditioning an experimental effect on its
+  blueprint) are out of scope; the mechanism supports them by pinning more weight tables, at more
+  table bytes.
+
+### Measured results
+
+`build-link-codec-models.spec.ts` prints the comparison on every run and asserts that no reference
+or hull link lengthens while the engineered references shrink. The comparison baseline is the same
+table with its `MODELS` block removed: bit packing ignores models, so the baseline reproduces
+every packed body — and with it every empty and stock reference — byte for byte.
+
+| Reference build              | Without models | With models | Saving |
+| ---------------------------- | -------------: | ----------: | -----: |
+| Empty Sidewinder             |             12 |          12 |      — |
+| Stock Krait Mk II            |             10 |          10 |      — |
+| Engineered Anaconda          |             76 |          65 | −14.5% |
+| Supplied engineered Corvette |            108 |          97 | −10.2% |
+| Named stock Krait Mk II      |             38 |          34 | −10.5% |
+
+The win concentrates exactly where links are longest — dense engineered builds — while empty and
+stock links keep their packed rendering unchanged. The static priors carry the Corvette (whose
+engineering is diverse), adaptation carries the Anaconda (whose few records repeat across many
+mounts), and the split character models carry the labels: a single English model saved the named
+build one character because the callsign-style ident paid for rare letters and digits;
+ident-specific weights recover the rest.
+
 ## Reconstruction and validation
 
 The decoder creates the minimal loadout event, then reconstructs ordinary engineering through
@@ -401,7 +515,8 @@ limit: 1,023 snapshots, one of them spent.
 What growth actually costs is link length, and links are bounded. Five hundred characters, two of
 them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
 reference builds use a fraction of it — the current engineered Anaconda remains well below the
-supplied Corvette's 624 bits, about 17 bits for each of its 37 represented outfittable modules.
+supplied Corvette's unmodelled cost of 624 bits, about 17 bits for each of its 37 represented
+outfittable modules — and the pinned symbol models price the same Corvette lower still.
 
 The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
@@ -449,12 +564,13 @@ capacity back without touching a published link's decoder.
 Table 1 is the pre-release `codec-table-1.json`, generated from
 `@elite-dangerous-almanac/core@0.1.1`. It pins hulls, hull-specific outfittable slots,
 fixed components, stock modules, module identities, blueprints and their grades, experimental
-effects, contextual candidate sets, power-drawing module identities, and pre-engineered identities.
-Stable game identities originate from the package; indexes exist only
-inside the selected table. Before the first application/link-format release, table 1 may be
-explicitly regenerated with `--overwrite`; normal `pnpm run codec:tables` still refuses an in-place
-content change. After release, a catalogue change publishes the next numbered JSON table while
-retaining every earlier table unchanged; it does not duplicate or version the codec logic.
+effects, contextual candidate sets, power-drawing module identities, pre-engineered identities,
+and the `MODELS` block of pinned symbol weights. Stable game identities originate from the
+package; indexes exist only inside the selected table. Before the first application/link-format
+release, the table may be explicitly regenerated with `--overwrite`; normal
+`pnpm run codec:tables` still refuses an in-place content change. After release, a catalogue
+change publishes the next numbered JSON table while retaining every earlier table unchanged; it
+does not duplicate or version the codec logic.
 
 The public asynchronous loader initially imports only the generic envelope, radix, and CRC code.
 It radix-decodes the envelope and verifies CRC-32 once before using the table-version field, then
@@ -490,8 +606,12 @@ and `0.1.0-beta.11` to `0.1.0-beta.12` likewise reproduced the table exactly, at
 and the `assets/ships` tree is byte-identical across all five releases. Almanac 0.1.1 then changed
 contextual blueprint and fixed-variant sets. Because the application remains `0.0.0` and no link
 format has shipped, table 1 was deliberately regenerated under the repository's pre-release rule at
-content hash `257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d`. After the first release this
-exception closes: changed content must use the next table number.
+content hash `257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d`, then regenerated
+once more under the same rule to pin the symbol models, at
+`511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be` — the arithmetic spellings of
+the engineered references changed with it, and the frozen corpus literals were re-pinned in the
+same change. After the first release this exception closes: changed content must use the next
+table number.
 
 beta.12 changed no catalogue, but it did change an answer the encoder reads. Mercenary articles now
 resolve to their variant, so a module the encoder used to see as ordinarily engineered — a Rail Gun
@@ -531,16 +651,18 @@ path for the affected table version.
 
 ## Reference corpus
 
-The fixed corpus currently produces these encoded data lengths. Each value and length includes the
-`b.` protocol prefix:
+The fixed corpus currently produces these encoded data lengths. Each value and length includes
+the `b.` protocol prefix. Packed spellings are untouched by the symbol models; the two engineered
+references, whose canonical body is arithmetic, were re-pinned when the models landed under the
+pre-release regeneration rule:
 
-| Reference build               | Base70 encoded data                                                                                            | Data length |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------: |
-| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                                 |          12 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                                   |          10 |
-| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                               |          14 |
-| Full engineered Anaconda*     | `b.2@IuThA23pZ8gLACxkX-QZq3nTYaU83myRNcX75/5MHeqAp5weDpxt74HbVN,.dp.Ehr8DZ5!L`                                 |          76 |
-| Supplied engineered Corvette† | `b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623` |         108 |
+| Reference build               | Base70 encoded data                                                                                 | Data length |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- | ----------: |
+| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                      |          12 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                        |          10 |
+| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                    |          14 |
+| Full engineered Anaconda*     | `b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe`                                 |          65 |
+| Supplied engineered Corvette† | `b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV` |          97 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
 the fixed cargo hatch has an explicit power state. Cargo racks remain stock because 0.1.1 correctly
@@ -555,14 +677,14 @@ The every-hull baseline corpus covers empty and stock configurations for all 48 
 Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
 festive literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
 package-owned green flak-launcher variant. The sanitised real engineered Federal Corvette produces
-108 characters of encoded data. Its source capture records a partial quality on one small
-hardpoint even though its modifier values match the completed grade-5 roll. The codec deliberately
-normalises that field to quality `1`; the fixture is not treated as an independent oracle for
-effective-stat reconstruction.
+97 characters of encoded data, 108 without the symbol models. Its source capture records a partial
+quality on one small hardpoint even though its modifier values match the completed grade-5 roll.
+The codec deliberately normalises that field to quality `1`; the fixture is not treated as an
+independent oracle for effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
-Anaconda produced about 1,167 characters of encoded data; the current specialised codec produces 76,
-including its `b.` prefix.
+Anaconda produced about 1,167 characters of encoded data; the current specialised codec produces
+65 under the pinned symbol models, including its `b.` prefix.
 
 ## Complete reference build definitions
 
@@ -741,7 +863,9 @@ selected only when its final padded body is smaller. In table 1's then-valid fix
 quality-free grammar reduced the Anaconda body from 56 to 55 bytes and produced 78 encoded characters
 including `b.`. The Corvette
 body falls from 82 to 78 bytes and produces 108 characters. Empty, stock, festive, and every other
-build where bit packing wins retain the packed form without a representation-bit penalty. Base70
+build where bit packing wins retain the packed form without a representation-bit penalty. The
+pinned symbol models then take the same two engineered references to 65 and 97 characters, as
+measured under [Pinned symbol models](#pinned-symbol-models). Base70
 still needs interoperability testing in the actual sharing applications. Its radix conversion uses
 bounded byte/digit arithmetic rather than a whole-payload `BigInt`.
 
@@ -783,7 +907,7 @@ diagnostics. Those responsibilities belong to the sharing feature which consumes
 FR-021's other half is among them: SLEF has to be used when a build cannot meet the limit, and
 making that offer belongs to the sharing feature rather than the codec, which can only refuse. The
 same feature owns whatever its deployed origin costs on top of a codec value — 23 characters on the
-`https://ships.example/#` origin the tests use, against which the largest reference build spends 108
+`https://ships.example/#` origin the tests use, against which the largest reference build spends 97
 of its 500.
 
 Almanac 0.1.1 models festive modules as fixed pre-engineered variants and exposes journal-shaped

@@ -16,7 +16,7 @@ export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
 /**
- * Pinned non-uniform symbol models (proof of concept). Every entry is an integer weight list; a
+ * Pinned non-uniform symbol models, carried as table data. Every entry is an integer weight list; a
  * symbol's arithmetic interval is its weight's share of the list's total, so a table that pins
  * these weights makes skewed values cheaper than uniform coding while remaining canonical: both
  * renderers read the same frozen numbers. Bit packing ignores models entirely, which keeps every
@@ -35,9 +35,10 @@ export interface BuildLinkSymbolModels {
   readonly POWER_PRIORITY: readonly number[];
   /**
    * Geometric decay [numerator, denominator] over contextual-set positions; equal terms mean
-   * uniform. This is a placeholder knob: table 1's candidate sets are catalogue-ordered, so a
-   * real deployment would pin per-set popularity orderings or weights instead. It is independent
-   * of `CONTEXT_ADAPTATION`, which models the back-reference streams rather than candidate sets.
+   * uniform, which is what the shipped table pins: its candidate sets are catalogue-ordered, so
+   * a table with usage data behind it would pin per-set popularity orderings or weights
+   * instead. It is independent of `CONTEXT_ADAPTATION`, which models the back-reference
+   * streams rather than candidate sets.
    */
   readonly CONTEXT_INDEX_DECAY: readonly number[];
   /**
@@ -63,7 +64,7 @@ export interface BuildLinkCodecTables {
     /** SHA-256 over the table's content; a table whose hash moves is a new encoding. */
     readonly contentHash: string;
   };
-  /** Optional pinned symbol models; absent from table 1, so its links are byte-identical. */
+  /** Optional pinned symbol models; a table without them prices every symbol uniformly. */
   readonly MODELS?: BuildLinkSymbolModels;
   readonly SHIPS: readonly string[];
   readonly MODULES: readonly string[];
