@@ -41,11 +41,39 @@ exactly as before.
 | `POWER_ON`             | Explicit enabled states (absent / off / on)                     |
 | `POWER_PRIORITY`       | Explicit priorities (absent / 0–4)                              |
 | `CONTEXT_INDEX_DECAY`  | Geometric prior over contextual-set positions (placeholder)     |
-| `COMPACT_CHARACTERS`   | Per-character weights over the compact string alphabet          |
+| `CONTEXT_ADAPTATION`   | Per-run adaptive contexts over back-reference indexes           |
+| `NAME_CHARACTERS`      | Per-character weights for the ship name (English-like)          |
+| `IDENT_CHARACTERS`     | Per-character weights for the ship ident (callsign-like)        |
 
 The weight lists are integers; a symbol's interval is its weight's share of the list total. The
 coder's 64-bit state keeps floor-division exact for totals far above the enforced
 `MAX_MODEL_WEIGHT_TOTAL` cap.
+
+## Adaptive contexts
+
+`CONTEXT_ADAPTATION` adds deterministic within-stream learning: a back-reference index is coded
+against a per-run frequency context that starts uniform and bumps the coded symbol's weight by the
+pinned increment after each use, so a target referenced repeatedly in one build gets cheaper each
+time. Encoder, decoder, and canonical reserialization replay the identical symbol sequence, which
+is all the mechanism needs — no new canonicality machinery. Adaptation lives only in the two
+renderers and the arithmetic reader, never at symbol-capture or cost-model time, so the packed
+render and every packed-cost layout decision stay model-independent. Contexts are keyed by the
+identity of their dictionary array, so per-run back-reference dictionaries key their own context
+on both sides.
+
+Two measured findings shaped the design:
+
+- **Candidate-set literals must not adapt.** A first draft adapted every contextual-set index and
+  the Corvette grew from 97 to 102 characters: the grammar's back-referencing already dedupes
+  repeats out of the literal streams, so what remains is repetition-poor, and each new distinct
+  value paid for the counts accumulated by earlier ones. The insight generalises: adaptive models
+  fight explicit dictionary coding unless they are confined to the streams where repetition
+  survives — the reference indexes themselves.
+- **A small increment saturates the win.** With adaptation confined to reference streams, an
+  increment of 8 already captures the full Anaconda saving (65 characters) while leaving the
+  diverse-reference Corvette exactly at its static-prior length (97); increments of 32, 128, and
+  1,024 progressively hand the Corvette's gain back (98, 99, 102) by penalising each new
+  reference target. The POC pins 8.
 
 ## What is deliberately not solved here
 
@@ -73,17 +101,20 @@ table without models: comparing across table versions would fold in an unrelated
 artifact, because the version value changes the payload bytes and CRC and can move the Base70
 digit count on its own.
 
-With the POC weights (semantic priors only, identity indexes uniform):
+With the POC weights (semantic priors, per-field character models, reference-stream adaptation at
+increment 8, identity indexes uniform):
 
 | Reference build              | Unmodelled | Modelled | Saving |
 | ---------------------------- | ---------: | -------: | -----: |
 | Empty Sidewinder             |         12 |       12 |      — |
 | Stock Krait Mk II            |         11 |       11 |      — |
-| Engineered Anaconda          |         76 |       71 |  −6.6% |
+| Engineered Anaconda          |         76 |       65 | −14.5% |
 | Supplied engineered Corvette |        108 |       97 | −10.2% |
-| Named stock Krait Mk II      |         38 |       37 |  −2.6% |
+| Named stock Krait Mk II      |         38 |       34 | −10.5% |
 
 The win concentrates exactly where links are longest — dense engineered builds — while empty and
-stock links keep their packed rendering unchanged. The named build shows the character model's
-limit: the English-weighted name gets cheaper while the callsign-style ident (`IX-01`) pays for
-rare letters and digits, netting one character; ident-specific weights would do better.
+stock links keep their packed rendering unchanged. The static priors carry the Corvette (whose
+engineering is diverse), adaptation carries the Anaconda (whose few records repeat across many
+mounts), and the split character models carry the labels: the earlier single English model saved
+the named build one character because the callsign-style ident paid for rare letters and digits;
+ident-specific weights recover the rest.

@@ -36,11 +36,25 @@ export interface BuildLinkSymbolModels {
   /**
    * Geometric decay [numerator, denominator] over contextual-set positions; equal terms mean
    * uniform. This is a placeholder knob: table 1's candidate sets are catalogue-ordered, so a
-   * real deployment would pin per-set popularity orderings or weights instead.
+   * real deployment would pin per-set popularity orderings or weights instead. It is independent
+   * of `CONTEXT_ADAPTATION`, which models the back-reference streams rather than candidate sets.
    */
   readonly CONTEXT_INDEX_DECAY: readonly number[];
-  /** One weight per compact-alphabet character, in exact alphabet order. */
-  readonly COMPACT_CHARACTERS: readonly number[];
+  /**
+   * Adaptive-context increment; zero disables adaptation. When positive, back-reference indexes
+   * — engineering-record references and repeated-module dictionary indexes — are coded against a
+   * per-run frequency context seeded uniformly and bumped by this amount after each coded
+   * symbol, so a target referenced repeatedly in one build gets cheaper each time. Adaptation is
+   * deliberately confined to reference streams: the grammar's back-referencing already dedupes
+   * repeats out of the candidate-set literal streams, so adapting those penalises every new
+   * distinct value instead (measured on the reference Corvette). Both sides replay the identical
+   * symbol sequence, which is what keeps the adaptation canonical.
+   */
+  readonly CONTEXT_ADAPTATION: number;
+  /** One weight per compact-alphabet character for the ship name, in exact alphabet order. */
+  readonly NAME_CHARACTERS: readonly number[];
+  /** One weight per compact-alphabet character for the ship ident, in exact alphabet order. */
+  readonly IDENT_CHARACTERS: readonly number[];
 }
 
 export interface BuildLinkCodecTables {
@@ -84,6 +98,19 @@ export interface BuildLinkCodec {
   decodeVerifiedBuildLinkBody(body: VerifiedBuildLinkBody): ShipLoadout;
 }
 
+/**
+ * A bounded symbol's model: pinned cumulative frequencies, or an adaptive per-run context keyed
+ * by the identity of `adaptOver`. Only back-reference dictionaries key adaptive contexts — the
+ * module repeat dictionary and the engineering reference stream — never candidate-set literals,
+ * whose repeats the grammar already dedupes into those dictionaries.
+ */
+type BoundedSymbolModel = readonly number[] | AdaptiveSymbolModel;
+type AdaptiveSymbolModel = { readonly adaptOver: readonly number[] };
+
+function isAdaptiveModel(model: BoundedSymbolModel): model is AdaptiveSymbolModel {
+  return !Array.isArray(model);
+}
+
 /** Runtime form of the pinned models: cumulative frequencies ready for the arithmetic coder. */
 interface SymbolModels {
   readonly gradeIsMax: readonly number[];
@@ -91,8 +118,13 @@ interface SymbolModels {
   readonly contextHit: readonly number[];
   readonly powerOn: readonly number[];
   readonly powerPriority: readonly number[];
-  readonly compactCharacters: readonly number[];
-  contextIndex(valueCount: number): readonly number[] | undefined;
+  readonly nameCharacters: readonly number[];
+  readonly identCharacters: readonly number[];
+  readonly adaptationIncrement: number;
+  /** The static positional model for an index into a candidate set. */
+  contextModel(context: readonly number[]): BoundedSymbolModel | undefined;
+  /** The adaptive model for a back-reference index, keyed by the per-run dictionary `key`. */
+  adaptiveModel(key: readonly number[]): BoundedSymbolModel | undefined;
 }
 
 interface CodecContext {
@@ -126,6 +158,62 @@ const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
 const MAX_MODEL_WEIGHT_TOTAL = 2 ** 24;
 const CONTEXT_INDEX_FIRST_WEIGHT = 2 ** 16;
 const MAX_CONTEXT_INDEX_DECAY_DENOMINATOR = 64;
+const MAX_CONTEXT_ADAPTATION_INCREMENT = 2 ** 16;
+
+/**
+ * Deterministic per-run adaptive frequency contexts. Every context starts uniform (weight one per
+ * candidate) and the coded symbol's weight grows by the pinned increment after each use, so a
+ * value repeated anywhere in one build gets a shorter interval on its later occurrences. Contexts
+ * are keyed by the identity of their dictionary array: encoder, decoder, and reserialization
+ * each build the same per-run dictionaries, so the same key resolves the same context.
+ *
+ * Adaptation lives only here, in the renderers and the arithmetic reader — never at
+ * symbol-capture or cost-model time — so the packed render, the packed-bit cost proxy, and every
+ * adaptive layout decision remain model-independent, and canonical reserialization replays the
+ * identical count evolution.
+ */
+class AdaptiveContexts {
+  private readonly stateByKey = new Map<readonly number[], { counts: number[]; total: number }>();
+
+  constructor(private readonly increment: number) {}
+
+  cumulativeFor(key: readonly number[], valueCount: number): number[] {
+    const state = this.stateFor(key, valueCount);
+    let total = 0;
+    const cumulative = [0];
+    for (let index = 0; index < valueCount; index += 1) {
+      total += state.counts[index]!;
+      cumulative.push(total);
+    }
+    return cumulative;
+  }
+
+  recordUse(key: readonly number[], valueCount: number, value: number): void {
+    const state = this.stateFor(key, valueCount);
+    // Freezing the counts near the cap is deterministic on both sides and keeps totals far
+    // below the coder's exactness bound.
+    if (state.total + this.increment > MAX_MODEL_WEIGHT_TOTAL) return;
+    state.counts[value]! += this.increment;
+    state.total += this.increment;
+  }
+
+  private stateFor(
+    key: readonly number[],
+    valueCount: number,
+  ): { counts: number[]; total: number } {
+    let state = this.stateByKey.get(key);
+    if (state === undefined) {
+      state = { counts: [], total: 0 };
+      this.stateByKey.set(key, state);
+    }
+    // A back-reference dictionary grows between uses; later symbols see the wider context.
+    while (state.counts.length < valueCount) {
+      state.counts.push(1);
+      state.total += 1;
+    }
+    return state;
+  }
+}
 
 export function createBuildLinkCodec(
   tableVersion: number,
@@ -165,7 +253,7 @@ function encodeWithTable(codec: CodecContext, loadout: ShipLoadout): string {
 }
 
 function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter {
-  const writer = new SymbolWriter(codec.models);
+  const writer = new SymbolWriter();
   const shipIndex = requireIdentity(codec, codec.shipIndex, loadout.shipSymbol, 'ship');
   const canonicalShip = codec.tables.SHIPS[shipIndex];
   const slots = codec.tables.SLOTS_BY_SHIP[canonicalShip];
@@ -179,8 +267,9 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
   writer.writeBounded(shipIndex, codec.tables.SHIPS.length);
   writer.writeBoolean(loadout.shipName !== null);
   writer.writeBoolean(loadout.shipIdent !== null);
-  if (loadout.shipName !== null) writer.writeString(loadout.shipName);
-  if (loadout.shipIdent !== null) writer.writeString(loadout.shipIdent);
+  if (loadout.shipName !== null) writer.writeString(loadout.shipName, codec.models?.nameCharacters);
+  if (loadout.shipIdent !== null)
+    writer.writeString(loadout.shipIdent, codec.models?.identCharacters);
 
   const modules = loadout.fittedModules();
   const modulesBySlot = new Map<string, (typeof modules)[number]>();
@@ -307,7 +396,7 @@ function decodeBodyWithTable(codec: CodecContext, body: Uint8Array): ShipLoadout
     const arithmetic = representationTag >= shipCount;
     const reader: CodecReader = arithmetic
       ? new ArithmeticSymbolReader(source, codec.models)
-      : new PackedSymbolReader(source, codec.models);
+      : new PackedSymbolReader(source);
     let shipIndex = representationTag;
     if (arithmetic) {
       const markerCount = 2 ** shipTagWidth - shipCount;
@@ -383,8 +472,8 @@ function readCodecState(
 
   const hasShipName = reader.readBoolean();
   const hasShipIdent = reader.readBoolean();
-  const shipName = hasShipName ? reader.readString() : undefined;
-  const shipIdent = hasShipIdent ? reader.readString() : undefined;
+  const shipName = hasShipName ? reader.readString(codec.models?.nameCharacters) : undefined;
+  const shipIdent = hasShipIdent ? reader.readString(codec.models?.identCharacters) : undefined;
   const pristine = reader.readBoolean();
   const moduleIndexes = pristine
     ? [...codec.tables.DEFAULT_MODULES_BY_SHIP[ship]]
@@ -417,12 +506,14 @@ function readCodecState(
 }
 
 function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
-  const writer = new SymbolWriter(codec.models);
+  const writer = new SymbolWriter();
   writer.writeBounded(state.shipIndex, codec.tables.SHIPS.length);
   writer.writeBoolean(state.shipName !== undefined);
   writer.writeBoolean(state.shipIdent !== undefined);
-  if (state.shipName !== undefined) writer.writeString(state.shipName);
-  if (state.shipIdent !== undefined) writer.writeString(state.shipIdent);
+  if (state.shipName !== undefined)
+    writer.writeString(state.shipName, codec.models?.nameCharacters);
+  if (state.shipIdent !== undefined)
+    writer.writeString(state.shipIdent, codec.models?.identCharacters);
   writer.writeBoolean(state.pristine);
   if (!state.pristine) {
     const ship = codec.tables.SHIPS[state.shipIndex] as CodecShip;
@@ -739,7 +830,7 @@ function writeModuleIdentitySequence(
       const repeated = distinct.includes(entry.moduleIndex);
       writer.writeBoolean(repeated);
       if (repeated) {
-        writeIndexInSet(codec.models, writer, entry.moduleIndex, distinct);
+        writeIndexInSet(codec.models?.adaptiveModel(distinct), writer, entry.moduleIndex, distinct);
         previous = entry.moduleIndex;
         return;
       }
@@ -765,7 +856,13 @@ function readModuleIdentitySequence(
     if (useReferences && index > 0 && reader.readBoolean()) {
       moduleIndex = previous!;
     } else if (useReferences && index > 0 && reader.readBoolean()) {
-      moduleIndex = readIndexFromSet(codec, reader, distinct, 'module back-reference');
+      moduleIndex = readIndexFromSet(
+        codec,
+        reader,
+        distinct,
+        'module back-reference',
+        codec.models?.adaptiveModel(distinct),
+      );
       if (moduleIndex === previous) {
         throw new BuildLinkCodecError(
           'invalidPayload',
@@ -1219,17 +1316,28 @@ function writeEngineeringStates(
   const useReferences = records.length > 1 && referenceCost < plainCost;
   if (records.length > 1) writer.writeBoolean(useReferences);
 
+  const referenceModel = referenceAdaptationModel(codec);
   for (const [index, { moduleIndex, engineering }] of records.entries()) {
     if (useReferences) {
       const reference = references[index];
       writer.writeBoolean(reference !== null);
       if (reference !== null) {
-        writer.writeBounded(reference, records.length);
+        writer.writeBounded(reference, records.length, referenceModel);
         continue;
       }
     }
     writeEngineering(codec, writer, moduleIndex, engineering);
   }
+}
+
+/**
+ * Repeated engineering back-references target the same few records, so they share one adaptive
+ * context per state group. Counts are already scoped to a single pass because every render and
+ * every arithmetic read owns a fresh `AdaptiveContexts`; the fresh key array only keeps this
+ * stream's context distinct from the module repeat dictionary's within that pass.
+ */
+function referenceAdaptationModel(codec: CodecContext): BoundedSymbolModel | undefined {
+  return codec.models?.adaptiveModel([]);
 }
 
 function readEngineeringStates(
@@ -1249,10 +1357,11 @@ function readEngineeringStates(
   const useReferences = engineered.length > 1 && reader.readBoolean();
   const decodedRecords: CodecEngineeringState[] = [];
   const firstRecordByKey = new Map<string, number>();
+  const referenceModel = referenceAdaptationModel(codec);
   for (const [recordIndex, occupiedIndex] of engineered.entries()) {
     const moduleIndex = moduleIndexes[occupiedSlots[occupiedIndex]!]!;
     if (useReferences && reader.readBoolean()) {
-      const reference = reader.readBounded(engineered.length);
+      const reference = reader.readBounded(engineered.length, referenceModel);
       const referenced = decodedRecords[reference];
       if (
         referenced === undefined ||
@@ -1308,7 +1417,7 @@ function engineeringReferences(records: readonly EngineeringRecord[]): Array<num
 }
 
 function engineeringRecordBitCost(codec: CodecContext, record: EngineeringRecord): number {
-  const writer = new SymbolWriter(codec.models);
+  const writer = new SymbolWriter();
   writeEngineering(codec, writer, record.moduleIndex, record.engineering);
   return writer.length;
 }
@@ -1509,7 +1618,7 @@ function writeContextualIndex(
   writer.writeBoolean(contextualIndex !== -1, models?.contextHit);
   if (contextualIndex === -1) writer.writeBounded(value, globalValueCount);
   else if (context.length > 1) {
-    writer.writeBounded(contextualIndex, context.length, models?.contextIndex(context.length));
+    writer.writeBounded(contextualIndex, context.length, models?.contextModel(context));
   }
 }
 
@@ -1521,7 +1630,13 @@ function readContextualIndex(
 ): number {
   if (context.length === 0) return reader.readBounded(globalValueCount);
   if (reader.readBoolean(codec.models?.contextHit)) {
-    return readIndexFromSet(codec, reader, context, 'contextual identity');
+    return readIndexFromSet(
+      codec,
+      reader,
+      context,
+      'contextual identity',
+      codec.models?.contextModel(context),
+    );
   }
   const value = reader.readBounded(globalValueCount);
   if (context.includes(value)) {
@@ -1535,19 +1650,17 @@ function readIndexFromSet(
   reader: CodecReader,
   context: readonly number[],
   kind: string,
+  model?: BoundedSymbolModel,
 ): number {
   const width = contextualIndexBits(context.length);
-  const contextualIndex =
-    width === 0
-      ? 0
-      : reader.readBounded(context.length, codec.models?.contextIndex(context.length));
+  const contextualIndex = width === 0 ? 0 : reader.readBounded(context.length, model);
   const value = context[contextualIndex];
   if (value === undefined) throw unknownTableIndex(codec, kind, contextualIndex);
   return value;
 }
 
 function writeIndexInSet(
-  models: SymbolModels | null,
+  model: BoundedSymbolModel | undefined,
   writer: CodecWriter,
   value: number,
   context: readonly number[],
@@ -1560,9 +1673,7 @@ function writeIndexInSet(
     );
   }
   const width = contextualIndexBits(context.length);
-  if (width > 0) {
-    writer.writeBounded(contextualIndex, context.length, models?.contextIndex(context.length));
-  }
+  if (width > 0) writer.writeBounded(contextualIndex, context.length, model);
 }
 
 function contextualIndexBits(valueCount: number): number {
@@ -1836,11 +1947,12 @@ function writeEngineering(
         'The pre-engineered variant is unavailable for its fitted module.',
       );
     }
+    const preEngineeredSet = preEngineeredSetForModule(codec, moduleIndex);
     writeIndexInSet(
-      codec.models,
+      codec.models?.contextModel(preEngineeredSet),
       writer,
       engineering.variant,
-      preEngineeredSetForModule(codec, moduleIndex),
+      preEngineeredSet,
     );
     writeExperimentalWithDefault(
       codec,
@@ -1885,11 +1997,13 @@ function readEngineering(
   const preEngineeredAvailable = preEngineeredSetForModule(codec, moduleIndex).length > 0;
   const special = preEngineeredAvailable && (!ordinaryAvailable || reader.readBoolean());
   if (special) {
+    const preEngineeredSet = preEngineeredSetForModule(codec, moduleIndex);
     const variantIndex = readIndexFromSet(
       codec,
       reader,
-      preEngineeredSetForModule(codec, moduleIndex),
+      preEngineeredSet,
       'pre-engineered variant',
+      codec.models?.contextModel(preEngineeredSet),
     );
     const experimental = readExperimentalWithDefault(
       codec,
@@ -2059,29 +2173,27 @@ function normalise(value: string): string {
 type EncodedSymbol = {
   readonly value: number;
   readonly valueCount: number;
-  /** Pinned cumulative model frequencies; only the arithmetic renderer reads them. */
-  readonly cumulative?: readonly number[];
+  /** The symbol's model, if any; only the arithmetic renderer reads it. */
+  readonly model?: BoundedSymbolModel;
 };
 
 interface CodecWriter {
   writeBoolean(value: boolean, cumulative?: readonly number[]): void;
   writeBits(value: number, width: number): void;
-  writeBounded(value: number, valueCount: number, cumulative?: readonly number[]): void;
-  writeString(value: string): void;
+  writeBounded(value: number, valueCount: number, model?: BoundedSymbolModel): void;
+  writeString(value: string, characters?: readonly number[]): void;
 }
 
 interface CodecReader {
   readBoolean(cumulative?: readonly number[]): boolean;
   readBits(width: number): number;
-  readBounded(valueCount: number, cumulative?: readonly number[]): number;
-  readString(): string;
+  readBounded(valueCount: number, model?: BoundedSymbolModel): number;
+  readString(characters?: readonly number[]): string;
 }
 
 class SymbolWriter implements CodecWriter {
   readonly symbols: EncodedSymbol[] = [];
   private bitLength = 0;
-
-  constructor(private readonly models: SymbolModels | null = null) {}
 
   get length(): number {
     return this.bitLength;
@@ -2098,11 +2210,11 @@ class SymbolWriter implements CodecWriter {
     this.writeSymbol(value, 2 ** width);
   }
 
-  writeBounded(value: number, valueCount: number, cumulative?: readonly number[]): void {
-    this.writeSymbol(value, valueCount, cumulative);
+  writeBounded(value: number, valueCount: number, model?: BoundedSymbolModel): void {
+    this.writeSymbol(value, valueCount, model);
   }
 
-  writeString(value: string): void {
+  writeString(value: string, characters?: readonly number[]): void {
     if (!isWellFormedUnicode(value)) {
       throw new BuildLinkCodecError('invalidPayload', 'A build-link string is not valid Unicode.');
     }
@@ -2113,11 +2225,7 @@ class SymbolWriter implements CodecWriter {
       }
       this.writeVarUint(value.length * 2 + 1);
       for (const character of value) {
-        this.writeBounded(
-          COMPACT_STRING_ALPHABET.indexOf(character),
-          64,
-          this.models?.compactCharacters,
-        );
+        this.writeBounded(COMPACT_STRING_ALPHABET.indexOf(character), 64, characters);
       }
       return;
     }
@@ -2141,7 +2249,7 @@ class SymbolWriter implements CodecWriter {
     } while (remaining > 0);
   }
 
-  private writeSymbol(value: number, valueCount: number, cumulative?: readonly number[]): void {
+  private writeSymbol(value: number, valueCount: number, model?: BoundedSymbolModel): void {
     if (
       !Number.isSafeInteger(value) ||
       value < 0 ||
@@ -2149,11 +2257,11 @@ class SymbolWriter implements CodecWriter {
       valueCount < 2 ||
       bitsRequired(valueCount) > 31 ||
       value >= valueCount ||
-      (cumulative !== undefined && cumulative.length !== valueCount + 1)
+      (Array.isArray(model) && model.length !== valueCount + 1)
     ) {
       throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
     }
-    this.symbols.push({ value, valueCount, ...(cumulative === undefined ? {} : { cumulative }) });
+    this.symbols.push({ value, valueCount, ...(model === undefined ? {} : { model }) });
     // Adaptive layout decisions deliberately use packed-bit cost as the stable canonical proxy,
     // even when arithmetic rendering ultimately produces the shorter link. Models change only
     // the arithmetic interval widths, never this proxy, so layout choices are model-independent.
@@ -2185,11 +2293,18 @@ function renderBody(
   writer.writeBits(arithmetic ? shipCount + remainder : ship.value, shipTagWidth);
   if (arithmetic) {
     const encoder = new ArithmeticEncoder((bit) => writer.writeBoolean(bit === 1));
+    const adaptive = new AdaptiveContexts(codec.models?.adaptationIncrement ?? 0);
     const groupCount = arithmeticShipGroupCount(shipCount, markerCount, remainder);
     if (groupCount > 1) encoder.write(Math.floor(ship.value / markerCount), groupCount);
-    for (const { value, valueCount, cumulative } of remaining) {
-      if (cumulative === undefined) encoder.write(value, valueCount);
-      else encoder.writeWeighted(value, cumulative);
+    for (const { value, valueCount, model } of remaining) {
+      if (model === undefined) {
+        encoder.write(value, valueCount);
+      } else if (isAdaptiveModel(model)) {
+        encoder.writeWeighted(value, adaptive.cumulativeFor(model.adaptOver, valueCount));
+        adaptive.recordUse(model.adaptOver, valueCount, value);
+      } else {
+        encoder.writeWeighted(value, model);
+      }
     }
     encoder.finish();
   } else {
@@ -2284,16 +2399,14 @@ class RawBitReader {
 }
 
 abstract class SymbolReader implements CodecReader {
-  constructor(protected readonly models: SymbolModels | null) {}
-
   abstract readBits(width: number): number;
-  abstract readBounded(valueCount: number, cumulative?: readonly number[]): number;
+  abstract readBounded(valueCount: number, model?: BoundedSymbolModel): number;
 
   readBoolean(cumulative?: readonly number[]): boolean {
     return this.readBounded(2, cumulative) === 1;
   }
 
-  readString(): string {
+  readString(characters?: readonly number[]): string {
     const header = this.readVarUint();
     const compact = header % 2 === 1;
     const length = Math.floor(header / 2);
@@ -2303,7 +2416,7 @@ abstract class SymbolReader implements CodecReader {
     if (compact) {
       return Array.from(
         { length },
-        () => COMPACT_STRING_ALPHABET[this.readBounded(64, this.models?.compactCharacters)]!,
+        () => COMPACT_STRING_ALPHABET[this.readBounded(64, characters)]!,
       ).join('');
     }
     const encoded = Uint8Array.from({ length }, () => this.readBits(8));
@@ -2327,18 +2440,15 @@ abstract class SymbolReader implements CodecReader {
 }
 
 class PackedSymbolReader extends SymbolReader {
-  constructor(
-    private readonly source: RawBitReader,
-    models: SymbolModels | null,
-  ) {
-    super(models);
+  constructor(private readonly source: RawBitReader) {
+    super();
   }
 
   readBits(width: number): number {
     return this.source.readBits(width);
   }
 
-  readBounded(valueCount: number, _cumulative?: readonly number[]): number {
+  readBounded(valueCount: number, _model?: BoundedSymbolModel): number {
     const value = this.source.readBits(bitsRequired(valueCount));
     if (value >= valueCount) {
       throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
@@ -2349,10 +2459,12 @@ class PackedSymbolReader extends SymbolReader {
 
 class ArithmeticSymbolReader extends SymbolReader {
   private readonly decoder: ArithmeticDecoder;
+  private readonly adaptive: AdaptiveContexts;
 
   constructor(source: RawBitReader, models: SymbolModels | null) {
-    super(models);
+    super();
     this.decoder = new ArithmeticDecoder(() => source.readBitOrZero());
+    this.adaptive = new AdaptiveContexts(models?.adaptationIncrement ?? 0);
   }
 
   readBits(width: number): number {
@@ -2362,12 +2474,19 @@ class ArithmeticSymbolReader extends SymbolReader {
     return this.decoder.read(2 ** width);
   }
 
-  readBounded(valueCount: number, cumulative?: readonly number[]): number {
-    if (cumulative === undefined) return this.decoder.read(valueCount);
-    if (cumulative.length !== valueCount + 1) {
-      throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
+  readBounded(valueCount: number, model?: BoundedSymbolModel): number {
+    if (model === undefined) return this.decoder.read(valueCount);
+    if (!isAdaptiveModel(model)) {
+      if (model.length !== valueCount + 1) {
+        throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
+      }
+      return this.decoder.readWeighted(model);
     }
-    return this.decoder.readWeighted(cumulative);
+    const value = this.decoder.readWeighted(
+      this.adaptive.cumulativeFor(model.adaptOver, valueCount),
+    );
+    this.adaptive.recordUse(model.adaptOver, valueCount, value);
+    return value;
   }
 }
 
@@ -2424,33 +2543,49 @@ function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolMo
   ) {
     throw invalidModels();
   }
+  const adaptationIncrement = models.CONTEXT_ADAPTATION;
+  if (
+    !Number.isSafeInteger(adaptationIncrement) ||
+    adaptationIncrement < 0 ||
+    adaptationIncrement > MAX_CONTEXT_ADAPTATION_INCREMENT
+  ) {
+    throw invalidModels();
+  }
   const contextCumulativeBySize = new Map<number, readonly number[]>();
+  const contextIndex = (valueCount: number): readonly number[] | undefined => {
+    if (valueCount < 2 || decayNumerator === decayDenominator) return undefined;
+    let cumulative = contextCumulativeBySize.get(valueCount);
+    if (cumulative === undefined) {
+      let weight = CONTEXT_INDEX_FIRST_WEIGHT;
+      let total = 0;
+      const built = [0];
+      for (let index = 0; index < valueCount; index += 1) {
+        total += weight;
+        built.push(total);
+        weight = Math.max(1, Math.floor((weight * decayNumerator) / decayDenominator));
+      }
+      // The geometric head is bounded by the decay constants, but the unit-weight tail grows
+      // with the candidate set, so the pinned-model cap is enforced here as well.
+      if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
+      cumulative = built;
+      contextCumulativeBySize.set(valueCount, cumulative);
+    }
+    return cumulative;
+  };
   return {
     gradeIsMax: cumulativeFrom(models.GRADE_IS_MAX, 2),
     experimentalPresent: cumulativeFrom(models.EXPERIMENTAL_PRESENT, 2),
     contextHit: cumulativeFrom(models.CONTEXT_HIT, 2),
     powerOn: cumulativeFrom(models.POWER_ON, 3),
     powerPriority: cumulativeFrom(models.POWER_PRIORITY, 6),
-    compactCharacters: cumulativeFrom(models.COMPACT_CHARACTERS, COMPACT_STRING_ALPHABET.length),
-    contextIndex(valueCount: number): readonly number[] | undefined {
-      if (valueCount < 2 || decayNumerator === decayDenominator) return undefined;
-      let cumulative = contextCumulativeBySize.get(valueCount);
-      if (cumulative === undefined) {
-        let weight = CONTEXT_INDEX_FIRST_WEIGHT;
-        let total = 0;
-        const built = [0];
-        for (let index = 0; index < valueCount; index += 1) {
-          total += weight;
-          built.push(total);
-          weight = Math.max(1, Math.floor((weight * decayNumerator) / decayDenominator));
-        }
-        // The geometric head is bounded by the decay constants, but the unit-weight tail grows
-        // with the candidate set, so the pinned-model cap is enforced here as well.
-        if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
-        cumulative = built;
-        contextCumulativeBySize.set(valueCount, cumulative);
-      }
-      return cumulative;
+    nameCharacters: cumulativeFrom(models.NAME_CHARACTERS, COMPACT_STRING_ALPHABET.length),
+    identCharacters: cumulativeFrom(models.IDENT_CHARACTERS, COMPACT_STRING_ALPHABET.length),
+    adaptationIncrement,
+    contextModel(context: readonly number[]): BoundedSymbolModel | undefined {
+      return contextIndex(context.length);
+    },
+    adaptiveModel(key: readonly number[]): BoundedSymbolModel | undefined {
+      return adaptationIncrement > 0 ? { adaptOver: key } : undefined;
     },
   };
 }
