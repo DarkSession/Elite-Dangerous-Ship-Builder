@@ -330,13 +330,109 @@ const payload = {
   PRE_ENGINEERED_SET_BY_MODULE: preEngineeredSetByModule,
 };
 
+/**
+ * Pinned symbol models, mirrored against the codec's own validation bounds. The weights are
+ * hand-estimated priors for real builds — grades are usually maximal, engineered modules
+ * usually carry an experimental effect, identities almost always resolve contextually,
+ * explicit enabled states are usually on, names read like English while idents read like
+ * callsigns — validated against the reference corpus in `build-link-codec-models.spec.ts`.
+ * Back-reference streams adapt at increment 8, which the corpus measurements saturate at; the
+ * static candidate-set decay stays uniform because catalogue-ordered sets carry no popularity
+ * signal. Like every other pinned array, these numbers are frozen once the table is published:
+ * better-measured weights belong to the next table version.
+ */
+const MAX_MODEL_WEIGHT_TOTAL = 2 ** 24;
+const MAX_CONTEXT_INDEX_DECAY_DENOMINATOR = 64;
+const MAX_CONTEXT_ADAPTATION_INCREMENT = 2 ** 16;
+const COMPACT_STRING_ALPHABET_LENGTH = 64;
+const PINNED_SYMBOL_MODELS = {
+  GRADE_IS_MAX: [1, 7],
+  EXPERIMENTAL_PRESENT: [1, 3],
+  CONTEXT_HIT: [1, 31],
+  POWER_ON: [2, 1, 5],
+  POWER_PRIORITY: [4, 4, 8, 5, 3, 2],
+  CONTEXT_INDEX_DECAY: [1, 1],
+  CONTEXT_ADAPTATION: 8,
+  NAME_CHARACTERS: [
+    // A-Z
+    41, 8, 14, 22, 64, 11, 10, 31, 35, 2, 4, 20, 12, 34, 38, 10, 2, 30, 32, 46, 14, 5, 12, 2, 10, 2,
+    // a-z
+    82, 15, 28, 43, 127, 22, 20, 61, 70, 2, 8, 40, 24, 67, 75, 19, 1, 60, 63, 91, 28, 10, 24, 2, 20,
+    1,
+    // 0-9
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    // space, dash
+    40, 12,
+  ],
+  IDENT_CHARACTERS: [
+    // A-Z
+    30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+    30, 30,
+    // a-z
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    // 0-9
+    40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
+    // space, dash
+    2, 60,
+  ],
+};
+
+// The codec's `createSymbolModels` is the authoritative validator and the unit specs run it
+// against the committed JSON; this mirror only fails generation before a bad table is written.
+const assertModelWeights = (weights, expectedLength, kind) => {
+  if (!Array.isArray(weights) || weights.length !== expectedLength) {
+    throw new Error(`${kind} must pin exactly ${expectedLength} weights.`);
+  }
+  if (weights.some((weight) => !Number.isSafeInteger(weight) || weight < 1)) {
+    throw new Error(`${kind} weights must be positive integers.`);
+  }
+  if (weights.reduce((total, weight) => total + weight, 0) > MAX_MODEL_WEIGHT_TOTAL) {
+    throw new Error(`${kind} weights exceed the model weight-total cap.`);
+  }
+};
+const assertSymbolModels = (models) => {
+  assertModelWeights(models.GRADE_IS_MAX, 2, 'GRADE_IS_MAX');
+  assertModelWeights(models.EXPERIMENTAL_PRESENT, 2, 'EXPERIMENTAL_PRESENT');
+  assertModelWeights(models.CONTEXT_HIT, 2, 'CONTEXT_HIT');
+  assertModelWeights(models.POWER_ON, 3, 'POWER_ON');
+  assertModelWeights(models.POWER_PRIORITY, 6, 'POWER_PRIORITY');
+  assertModelWeights(models.NAME_CHARACTERS, COMPACT_STRING_ALPHABET_LENGTH, 'NAME_CHARACTERS');
+  assertModelWeights(models.IDENT_CHARACTERS, COMPACT_STRING_ALPHABET_LENGTH, 'IDENT_CHARACTERS');
+  const [decayNumerator, decayDenominator, ...decayRest] = models.CONTEXT_INDEX_DECAY;
+  if (
+    decayRest.length > 0 ||
+    !Number.isSafeInteger(decayNumerator) ||
+    !Number.isSafeInteger(decayDenominator) ||
+    decayNumerator < 1 ||
+    decayDenominator < decayNumerator ||
+    decayDenominator > MAX_CONTEXT_INDEX_DECAY_DENOMINATOR
+  ) {
+    throw new Error('CONTEXT_INDEX_DECAY must be a valid [numerator, denominator] pair.');
+  }
+  if (
+    !Number.isSafeInteger(models.CONTEXT_ADAPTATION) ||
+    models.CONTEXT_ADAPTATION < 0 ||
+    models.CONTEXT_ADAPTATION > MAX_CONTEXT_ADAPTATION_INCREMENT
+  ) {
+    throw new Error('CONTEXT_ADAPTATION must be a bounded non-negative integer.');
+  }
+};
+assertSymbolModels(PINNED_SYMBOL_MODELS);
+
+/**
+ * The models ride in the same pre-release table as the catalogue: the format has not shipped,
+ * so table 1 is regenerated in place under the repository's `--overwrite` exception rather
+ * than minting a second table number for the same catalogue.
+ */
+const tablePayload = { ...payload, MODELS: PINNED_SYMBOL_MODELS };
+
 const codecConstants = await readCodecConstants();
 assertCapacityWithinCodecLimits();
 const budgeted = assertCapacityFitsEnvelope(codecConstants);
-assertTableWithinCapacity(payload);
-const envelope = assertTableFitsEnvelope(payload, codecConstants);
+assertTableWithinCapacity(tablePayload);
+const envelope = assertTableFitsEnvelope(tablePayload, codecConstants);
 
-const contentHash = contentHashOf(payload);
+const contentHash = contentHashOf(tablePayload);
 const previous = JSON.parse(await readFile(outputPath, 'utf8').catch(() => 'null'));
 // A table committed before this script recorded a hash is still comparable: re-hash its own
 // payload the same way, so the first run after the hash landed proves the content held.
@@ -381,7 +477,7 @@ await writeFile(
         tableVersion: TABLE_VERSION,
         contentHash,
       },
-      ...payload,
+      ...tablePayload,
     },
     null,
     2,

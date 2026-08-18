@@ -61,10 +61,10 @@ describe('build-link codec', () => {
 
   it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
     const cases = [
-      { name: 'Astraea', ident: 'TST-42', length: 27 },
-      { name: 'Astraea 星', ident: 'TST-42', length: 35 },
+      { name: 'Astraea', ident: 'TST-42', length: 25 },
+      { name: 'Astraea 星', ident: 'TST-42', length: 34 },
       { name: '星', ident: null, length: 17 },
-      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 40 },
+      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 39 },
     ];
     for (const { name, ident, length } of cases) {
       const source = ShipLoadout.fromLoadout({
@@ -280,9 +280,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.hfy5atU9-z7gB1fvx3TiSKQFgEHdz3i1IBStLuSV17_GAM1L@5/prYCrg3:WS/.z,h,g8h6:qrjxukg03UFrNC65Bb68Ny2TBmPMc5k623',
+      'b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(131);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(120);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -647,11 +647,12 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished. Once released, a changed hash belongs under the next table number.
+    // unpublished, most recently to pin its symbol models. Once released, a changed hash
+    // belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d');
+    expect(contentHash).toBe('511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -827,9 +828,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.21B7zk:1Zz',
       'b.vz,jdQ_4',
-      'b.2@IuThA23pZ8gLACxkX-QZq3nTYaU83myRNcX75/5MHeqAp5weDpxt74HbVN,.dp.Ehr8DZ5!L',
+      'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 99]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 88]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);

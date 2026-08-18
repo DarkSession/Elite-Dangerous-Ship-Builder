@@ -46,6 +46,20 @@ test('refuses to overwrite a table whose payload does not match its declared has
   assert.equal(await readFile(tamperedTablePath, 'utf8'), tamperedContent);
 });
 
+test('the committed table pins a symbol-model block the generator validates', async () => {
+  const { MODELS: models } = JSON.parse(await readFile(committedTablePath, 'utf8'));
+
+  assert.ok(models, 'the committed table must pin a MODELS block');
+  // Shape mirrors the codec's own validation; the unit specs run the authoritative validator.
+  assert.equal(models.GRADE_IS_MAX.length, 2);
+  assert.equal(models.POWER_ON.length, 3);
+  assert.equal(models.POWER_PRIORITY.length, 6);
+  assert.equal(models.NAME_CHARACTERS.length, 64);
+  assert.equal(models.IDENT_CHARACTERS.length, 64);
+  assert.equal(models.CONTEXT_INDEX_DECAY.length, 2);
+  assert.ok(Number.isSafeInteger(models.CONTEXT_ADAPTATION) && models.CONTEXT_ADAPTATION >= 0);
+});
+
 test('the committed table stays within the capacity its link budget is sized for', async () => {
   const table = JSON.parse(await readFile(committedTablePath, 'utf8'));
 
