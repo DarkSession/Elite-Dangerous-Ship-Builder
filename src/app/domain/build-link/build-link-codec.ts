@@ -15,12 +15,42 @@ import type { VerifiedBuildLinkBody } from './build-link-payload';
 export { BuildLinkCodecError } from './build-link-codec-error';
 export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
 
+/**
+ * Pinned non-uniform symbol models (proof of concept). Every entry is an integer weight list; a
+ * symbol's arithmetic interval is its weight's share of the list's total, so a table that pins
+ * these weights makes skewed values cheaper than uniform coding while remaining canonical: both
+ * renderers read the same frozen numbers. Bit packing ignores models entirely, which keeps every
+ * adaptive cost decision and every packed body identical with or without them.
+ */
+export interface BuildLinkSymbolModels {
+  /** Weights for an ordinary record's grade: [below maximum, maximum]. */
+  readonly GRADE_IS_MAX: readonly number[];
+  /** Weights for an ordinary record's experimental effect: [absent, present]. */
+  readonly EXPERIMENTAL_PRESENT: readonly number[];
+  /** Weights for an identity's contextual-set membership: [global fallback, in context]. */
+  readonly CONTEXT_HIT: readonly number[];
+  /** Weights for an explicit enabled state: [absent, off, on]. */
+  readonly POWER_ON: readonly number[];
+  /** Weights for an explicit priority: [absent, 0, 1, 2, 3, 4]. */
+  readonly POWER_PRIORITY: readonly number[];
+  /**
+   * Geometric decay [numerator, denominator] over contextual-set positions; equal terms mean
+   * uniform. This is a placeholder knob: table 1's candidate sets are catalogue-ordered, so a
+   * real deployment would pin per-set popularity orderings or weights instead.
+   */
+  readonly CONTEXT_INDEX_DECAY: readonly number[];
+  /** One weight per compact-alphabet character, in exact alphabet order. */
+  readonly COMPACT_CHARACTERS: readonly number[];
+}
+
 export interface BuildLinkCodecTables {
   readonly $generated: {
     readonly tableVersion: number;
     /** SHA-256 over the table's content; a table whose hash moves is a new encoding. */
     readonly contentHash: string;
   };
+  /** Optional pinned symbol models; absent from table 1, so its links are byte-identical. */
+  readonly MODELS?: BuildLinkSymbolModels;
   readonly SHIPS: readonly string[];
   readonly MODULES: readonly string[];
   readonly POWERED_MODULES: readonly number[];
@@ -54,9 +84,21 @@ export interface BuildLinkCodec {
   decodeVerifiedBuildLinkBody(body: VerifiedBuildLinkBody): ShipLoadout;
 }
 
+/** Runtime form of the pinned models: cumulative frequencies ready for the arithmetic coder. */
+interface SymbolModels {
+  readonly gradeIsMax: readonly number[];
+  readonly experimentalPresent: readonly number[];
+  readonly contextHit: readonly number[];
+  readonly powerOn: readonly number[];
+  readonly powerPriority: readonly number[];
+  readonly compactCharacters: readonly number[];
+  contextIndex(valueCount: number): readonly number[] | undefined;
+}
+
 interface CodecContext {
   readonly tableVersion: number;
   readonly tables: BuildLinkCodecTables;
+  readonly models: SymbolModels | null;
   readonly moduleBits: number;
   readonly poweredModuleSet: ReadonlySet<number>;
   readonly shipIndex: ReadonlyMap<string, number>;
@@ -77,6 +119,13 @@ const TABLE_VERSION_BITS = 10;
 const MAX_STRING_UNITS = 32;
 const COMPACT_STRING_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -';
 const COMPACT_STRING_CHARACTERS = new Set(COMPACT_STRING_ALPHABET);
+/**
+ * Model weight totals stay far below the coder's 2^62 exactness bound; the cap only keeps a
+ * table from pinning something absurd.
+ */
+const MAX_MODEL_WEIGHT_TOTAL = 2 ** 24;
+const CONTEXT_INDEX_FIRST_WEIGHT = 2 ** 16;
+const MAX_CONTEXT_INDEX_DECAY_DENOMINATOR = 64;
 
 export function createBuildLinkCodec(
   tableVersion: number,
@@ -116,7 +165,7 @@ function encodeWithTable(codec: CodecContext, loadout: ShipLoadout): string {
 }
 
 function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter {
-  const writer = new SymbolWriter();
+  const writer = new SymbolWriter(codec.models);
   const shipIndex = requireIdentity(codec, codec.shipIndex, loadout.shipSymbol, 'ship');
   const canonicalShip = codec.tables.SHIPS[shipIndex];
   const slots = codec.tables.SLOTS_BY_SHIP[canonicalShip];
@@ -219,7 +268,7 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
         return [{ on: module?.on, priority: module?.priority }];
       }),
     ];
-    writePowerStates(writer, powerStates);
+    writePowerStates(codec.models, writer, powerStates);
     writeEngineeringStates(
       codec,
       writer,
@@ -257,8 +306,8 @@ function decodeBodyWithTable(codec: CodecContext, body: Uint8Array): ShipLoadout
     const representationTag = source.readBits(shipTagWidth);
     const arithmetic = representationTag >= shipCount;
     const reader: CodecReader = arithmetic
-      ? new ArithmeticSymbolReader(source)
-      : new PackedSymbolReader(source);
+      ? new ArithmeticSymbolReader(source, codec.models)
+      : new PackedSymbolReader(source, codec.models);
     let shipIndex = representationTag;
     if (arithmetic) {
       const markerCount = 2 ** shipTagWidth - shipCount;
@@ -345,7 +394,7 @@ function readCodecState(
   const powerStateCount = powerLayout.occupied.length + powerLayout.fixed.length;
   const powerStates = pristine
     ? Array.from({ length: powerStateCount }, () => ({ on: undefined, priority: undefined }))
-    : readPowerStates(reader, powerStateCount);
+    : readPowerStates(codec.models, reader, powerStateCount);
   const engineeringStates = pristine
     ? occupiedSlots.map(() => undefined)
     : readEngineeringStates(codec, reader, moduleIndexes, occupiedSlots);
@@ -368,7 +417,7 @@ function readCodecState(
 }
 
 function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
-  const writer = new SymbolWriter();
+  const writer = new SymbolWriter(codec.models);
   writer.writeBounded(state.shipIndex, codec.tables.SHIPS.length);
   writer.writeBoolean(state.shipName !== undefined);
   writer.writeBoolean(state.shipIdent !== undefined);
@@ -381,7 +430,7 @@ function writeCodecState(codec: CodecContext, state: CodecState): Uint8Array {
     const defaults = codec.tables.DEFAULT_MODULES_BY_SHIP[ship];
     const occupiedSlots = indexesWhere(state.moduleIndexes, (moduleIndex) => moduleIndex !== null);
     writeModuleIdentities(codec, writer, ship, slots, defaults, state.moduleIndexes);
-    writePowerStates(writer, state.powerStates);
+    writePowerStates(codec.models, writer, state.powerStates);
     writeEngineeringStates(
       codec,
       writer,
@@ -690,7 +739,7 @@ function writeModuleIdentitySequence(
       const repeated = distinct.includes(entry.moduleIndex);
       writer.writeBoolean(repeated);
       if (repeated) {
-        writeIndexInSet(writer, entry.moduleIndex, distinct);
+        writeIndexInSet(codec.models, writer, entry.moduleIndex, distinct);
         previous = entry.moduleIndex;
         return;
       }
@@ -815,7 +864,7 @@ function writeModuleIdentity(
     writer.writeBoolean(moduleIndex === defaultIndex);
     if (moduleIndex === defaultIndex) return;
   }
-  writeContextualIndex(writer, moduleIndex, context, codec.tables.MODULES.length);
+  writeContextualIndex(codec.models, writer, moduleIndex, context, codec.tables.MODULES.length);
 }
 
 function readModuleIdentity(
@@ -830,7 +879,11 @@ function readModuleIdentity(
   return moduleIndex;
 }
 
-function writePowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
+function writePowerStates(
+  models: SymbolModels | null,
+  writer: CodecWriter,
+  modules: readonly PowerState[],
+): void {
   const overrides = indexesWhere(
     modules,
     ({ on, priority }) => on !== undefined || priority !== undefined,
@@ -841,20 +894,24 @@ function writePowerStates(writer: CodecWriter, modules: readonly PowerState[]): 
   const mode = powerMode(modules, overrides);
   writer.writeBounded(mode, 3);
   if (mode === 0) {
-    writeFixedPowerStates(writer, modules);
+    writeFixedPowerStates(models, writer, modules);
   } else if (mode === 1) {
     writeIndexSet(writer, modules.length, overrides);
     for (const index of overrides) {
       const module = modules[index]!;
-      writer.writeBounded(encodeOn(module.on), 3);
-      writer.writeBounded(encodePriority(module.priority), 6);
+      writer.writeBounded(encodeOn(module.on), 3, models?.powerOn);
+      writer.writeBounded(encodePriority(module.priority), 6, models?.powerPriority);
     }
   } else {
-    writeBaselinePowerStates(writer, modules);
+    writeBaselinePowerStates(models, writer, modules);
   }
 }
 
-function readPowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
+function readPowerStates(
+  models: SymbolModels | null,
+  reader: CodecReader,
+  moduleCount: number,
+): PowerState[] {
   const states: PowerState[] = Array.from({ length: moduleCount }, () => ({
     on: undefined,
     priority: undefined,
@@ -865,19 +922,19 @@ function readPowerStates(reader: CodecReader, moduleCount: number): PowerState[]
   let decoded: PowerState[];
   switch (mode) {
     case 0:
-      decoded = readFixedPowerStates(reader, moduleCount);
+      decoded = readFixedPowerStates(models, reader, moduleCount);
       break;
     case 1:
       for (const index of readIndexSet(reader, moduleCount)) {
         states[index] = {
-          on: decodeOn(reader.readBounded(3)),
-          priority: decodePriority(reader.readBounded(6)),
+          on: decodeOn(reader.readBounded(3, models?.powerOn)),
+          priority: decodePriority(reader.readBounded(6, models?.powerPriority)),
         };
       }
       decoded = states;
       break;
     case 2:
-      decoded = readBaselinePowerStates(reader, moduleCount);
+      decoded = readBaselinePowerStates(models, reader, moduleCount);
       break;
     default:
       throw new BuildLinkCodecError('invalidPayload', 'A power-state mode is invalid.');
@@ -922,7 +979,11 @@ function baselinePowerBitCost(modules: readonly PowerState[]): number {
   );
 }
 
-function writeBaselinePowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
+function writeBaselinePowerStates(
+  models: SymbolModels | null,
+  writer: CodecWriter,
+  modules: readonly PowerState[],
+): void {
   const onChanges = indexesWhere(modules, ({ on }) => on !== true);
   writer.writeBoolean(onChanges.length > 0);
   if (onChanges.length > 0) {
@@ -942,12 +1003,16 @@ function writeBaselinePowerStates(writer: CodecWriter, modules: readonly PowerSt
     for (const index of priorityChanges) {
       const priority = modules[index]!.priority;
       if (allDefined) writer.writeBits(encodeDefinedPriorityDeviation(priority!), 2);
-      else writer.writeBounded(encodePriority(priority), 6);
+      else writer.writeBounded(encodePriority(priority), 6, models?.powerPriority);
     }
   }
 }
 
-function readBaselinePowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
+function readBaselinePowerStates(
+  models: SymbolModels | null,
+  reader: CodecReader,
+  moduleCount: number,
+): PowerState[] {
   const states: PowerState[] = Array.from({ length: moduleCount }, () => ({
     on: true,
     priority: 1,
@@ -984,7 +1049,7 @@ function readBaselinePowerStates(reader: CodecReader, moduleCount: number): Powe
     for (const index of priorityChanges) {
       const priority = allDefined
         ? decodeDefinedPriorityDeviation(reader.readBits(2))
-        : decodePriority(reader.readBounded(6));
+        : decodePriority(reader.readBounded(6, models?.powerPriority));
       if (priority === 1) {
         throw new BuildLinkCodecError(
           'invalidPayload',
@@ -1026,7 +1091,11 @@ function fixedPowerBitCost(modules: readonly PowerState[]): number {
   return onCost + (allPrioritiesSame ? 4 : 1 + modules.length * 3);
 }
 
-function writeFixedPowerStates(writer: CodecWriter, modules: readonly PowerState[]): void {
+function writeFixedPowerStates(
+  models: SymbolModels | null,
+  writer: CodecWriter,
+  modules: readonly PowerState[],
+): void {
   const on = modules.map((module) => module.on);
   const onMode = on.every((value) => value === undefined)
     ? 0
@@ -1041,18 +1110,26 @@ function writeFixedPowerStates(writer: CodecWriter, modules: readonly PowerState
     writer.writeBoolean(allDefined);
     for (const value of on) {
       if (allDefined) writer.writeBoolean(value!);
-      else writer.writeBounded(encodeOn(value), 3);
+      else writer.writeBounded(encodeOn(value), 3, models?.powerOn);
     }
   }
 
   const priorities = modules.map((module) => module.priority);
   const uniform = priorities.every((value) => value === priorities[0]);
   writer.writeBoolean(uniform);
-  if (uniform) writer.writeBounded(encodePriority(priorities[0]), 6);
-  else for (const priority of priorities) writer.writeBounded(encodePriority(priority), 6);
+  if (uniform) writer.writeBounded(encodePriority(priorities[0]), 6, models?.powerPriority);
+  else {
+    for (const priority of priorities) {
+      writer.writeBounded(encodePriority(priority), 6, models?.powerPriority);
+    }
+  }
 }
 
-function readFixedPowerStates(reader: CodecReader, moduleCount: number): PowerState[] {
+function readFixedPowerStates(
+  models: SymbolModels | null,
+  reader: CodecReader,
+  moduleCount: number,
+): PowerState[] {
   const onMode = reader.readBits(2);
   let on: Array<boolean | undefined>;
   if (onMode === 0) on = Array<boolean | undefined>(moduleCount).fill(undefined);
@@ -1062,7 +1139,7 @@ function readFixedPowerStates(reader: CodecReader, moduleCount: number): PowerSt
     const allDefined = reader.readBoolean();
     on = allDefined
       ? Array.from({ length: moduleCount }, () => reader.readBoolean())
-      : Array.from({ length: moduleCount }, () => decodeOn(reader.readBounded(3)));
+      : Array.from({ length: moduleCount }, () => decodeOn(reader.readBounded(3, models?.powerOn)));
     if (allDefined !== on.every((value) => value !== undefined)) {
       throw new BuildLinkCodecError(
         'invalidPayload',
@@ -1078,8 +1155,12 @@ function readFixedPowerStates(reader: CodecReader, moduleCount: number): PowerSt
   }
   const uniformPriority = reader.readBoolean();
   const priority = uniformPriority
-    ? Array<number | undefined>(moduleCount).fill(decodePriority(reader.readBounded(6)))
-    : Array.from({ length: moduleCount }, () => decodePriority(reader.readBounded(6)));
+    ? Array<number | undefined>(moduleCount).fill(
+        decodePriority(reader.readBounded(6, models?.powerPriority)),
+      )
+    : Array.from({ length: moduleCount }, () =>
+        decodePriority(reader.readBounded(6, models?.powerPriority)),
+      );
   if (uniformPriority !== priority.every((value) => value === priority[0])) {
     throw new BuildLinkCodecError('invalidPayload', 'A fixed priority mode is not canonical.');
   }
@@ -1227,7 +1308,7 @@ function engineeringReferences(records: readonly EngineeringRecord[]): Array<num
 }
 
 function engineeringRecordBitCost(codec: CodecContext, record: EngineeringRecord): number {
-  const writer = new SymbolWriter();
+  const writer = new SymbolWriter(codec.models);
   writeEngineering(codec, writer, record.moduleIndex, record.engineering);
   return writer.length;
 }
@@ -1414,6 +1495,7 @@ function readSparseIndexes(reader: CodecReader, valueCount: number): number[] {
 }
 
 function writeContextualIndex(
+  models: SymbolModels | null,
   writer: CodecWriter,
   value: number,
   context: readonly number[],
@@ -1424,9 +1506,11 @@ function writeContextualIndex(
     return;
   }
   const contextualIndex = context.indexOf(value);
-  writer.writeBoolean(contextualIndex !== -1);
+  writer.writeBoolean(contextualIndex !== -1, models?.contextHit);
   if (contextualIndex === -1) writer.writeBounded(value, globalValueCount);
-  else if (context.length > 1) writer.writeBounded(contextualIndex, context.length);
+  else if (context.length > 1) {
+    writer.writeBounded(contextualIndex, context.length, models?.contextIndex(context.length));
+  }
 }
 
 function readContextualIndex(
@@ -1436,7 +1520,9 @@ function readContextualIndex(
   globalValueCount: number,
 ): number {
   if (context.length === 0) return reader.readBounded(globalValueCount);
-  if (reader.readBoolean()) return readIndexFromSet(codec, reader, context, 'contextual identity');
+  if (reader.readBoolean(codec.models?.contextHit)) {
+    return readIndexFromSet(codec, reader, context, 'contextual identity');
+  }
   const value = reader.readBounded(globalValueCount);
   if (context.includes(value)) {
     throw new BuildLinkCodecError('invalidPayload', 'A contextual identity is not canonical.');
@@ -1451,13 +1537,21 @@ function readIndexFromSet(
   kind: string,
 ): number {
   const width = contextualIndexBits(context.length);
-  const contextualIndex = width === 0 ? 0 : reader.readBounded(context.length);
+  const contextualIndex =
+    width === 0
+      ? 0
+      : reader.readBounded(context.length, codec.models?.contextIndex(context.length));
   const value = context[contextualIndex];
   if (value === undefined) throw unknownTableIndex(codec, kind, contextualIndex);
   return value;
 }
 
-function writeIndexInSet(writer: CodecWriter, value: number, context: readonly number[]): void {
+function writeIndexInSet(
+  models: SymbolModels | null,
+  writer: CodecWriter,
+  value: number,
+  context: readonly number[],
+): void {
   const contextualIndex = context.indexOf(value);
   if (contextualIndex === -1) {
     throw new BuildLinkCodecError(
@@ -1466,7 +1560,9 @@ function writeIndexInSet(writer: CodecWriter, value: number, context: readonly n
     );
   }
   const width = contextualIndexBits(context.length);
-  if (width > 0) writer.writeBounded(contextualIndex, context.length);
+  if (width > 0) {
+    writer.writeBounded(contextualIndex, context.length, models?.contextIndex(context.length));
+  }
 }
 
 function contextualIndexBits(valueCount: number): number {
@@ -1740,7 +1836,12 @@ function writeEngineering(
         'The pre-engineered variant is unavailable for its fitted module.',
       );
     }
-    writeIndexInSet(writer, engineering.variant, preEngineeredSetForModule(codec, moduleIndex));
+    writeIndexInSet(
+      codec.models,
+      writer,
+      engineering.variant,
+      preEngineeredSetForModule(codec, moduleIndex),
+    );
     writeExperimentalWithDefault(
       codec,
       writer,
@@ -1760,13 +1861,14 @@ function writeEngineering(
     );
   }
   writeContextualIndex(
+    codec.models,
     writer,
     engineering.blueprint,
     blueprintSetForModule(codec, moduleIndex),
     codec.tables.BLUEPRINTS.length,
   );
   if (grades.length > 1) {
-    writer.writeBoolean(engineering.level === maximumGrade);
+    writer.writeBoolean(engineering.level === maximumGrade, codec.models?.gradeIsMax);
     if (engineering.level !== maximumGrade && grades.length > 2) {
       writer.writeBounded(grades.indexOf(engineering.level), grades.length - 1);
     }
@@ -1814,7 +1916,7 @@ function readEngineering(
   const grades = codec.tables.BLUEPRINT_GRADES[blueprintIndex] as readonly number[];
   const maximumGrade = grades.at(-1)!;
   let level = maximumGrade;
-  if (grades.length > 1 && !reader.readBoolean()) {
+  if (grades.length > 1 && !reader.readBoolean(codec.models?.gradeIsMax)) {
     const gradeIndex = grades.length === 2 ? 0 : reader.readBounded(grades.length - 1);
     if (gradeIndex >= grades.length - 1) {
       throw new BuildLinkCodecError(
@@ -1841,9 +1943,10 @@ function writeExperimental(
   moduleIndex: number,
   experimental: number | null,
 ): void {
-  writer.writeBoolean(experimental !== null);
+  writer.writeBoolean(experimental !== null, codec.models?.experimentalPresent);
   if (experimental === null) return;
   writeContextualIndex(
+    codec.models,
     writer,
     experimental,
     experimentalSetForModule(codec, moduleIndex),
@@ -1856,7 +1959,7 @@ function readExperimental(
   reader: CodecReader,
   moduleIndex: number,
 ): number | null {
-  if (!reader.readBoolean()) return null;
+  if (!reader.readBoolean(codec.models?.experimentalPresent)) return null;
   const experimentalIndex = readContextualIndex(
     codec,
     reader,
@@ -1953,19 +2056,24 @@ function normalise(value: string): string {
   return value.toLowerCase();
 }
 
-type EncodedSymbol = { readonly value: number; readonly valueCount: number };
+type EncodedSymbol = {
+  readonly value: number;
+  readonly valueCount: number;
+  /** Pinned cumulative model frequencies; only the arithmetic renderer reads them. */
+  readonly cumulative?: readonly number[];
+};
 
 interface CodecWriter {
-  writeBoolean(value: boolean): void;
+  writeBoolean(value: boolean, cumulative?: readonly number[]): void;
   writeBits(value: number, width: number): void;
-  writeBounded(value: number, valueCount: number): void;
+  writeBounded(value: number, valueCount: number, cumulative?: readonly number[]): void;
   writeString(value: string): void;
 }
 
 interface CodecReader {
-  readBoolean(): boolean;
+  readBoolean(cumulative?: readonly number[]): boolean;
   readBits(width: number): number;
-  readBounded(valueCount: number): number;
+  readBounded(valueCount: number, cumulative?: readonly number[]): number;
   readString(): string;
 }
 
@@ -1973,12 +2081,14 @@ class SymbolWriter implements CodecWriter {
   readonly symbols: EncodedSymbol[] = [];
   private bitLength = 0;
 
+  constructor(private readonly models: SymbolModels | null = null) {}
+
   get length(): number {
     return this.bitLength;
   }
 
-  writeBoolean(value: boolean): void {
-    this.writeBits(value ? 1 : 0, 1);
+  writeBoolean(value: boolean, cumulative?: readonly number[]): void {
+    this.writeSymbol(value ? 1 : 0, 2, cumulative);
   }
 
   writeBits(value: number, width: number): void {
@@ -1988,8 +2098,8 @@ class SymbolWriter implements CodecWriter {
     this.writeSymbol(value, 2 ** width);
   }
 
-  writeBounded(value: number, valueCount: number): void {
-    this.writeSymbol(value, valueCount);
+  writeBounded(value: number, valueCount: number, cumulative?: readonly number[]): void {
+    this.writeSymbol(value, valueCount, cumulative);
   }
 
   writeString(value: string): void {
@@ -2003,7 +2113,11 @@ class SymbolWriter implements CodecWriter {
       }
       this.writeVarUint(value.length * 2 + 1);
       for (const character of value) {
-        this.writeBounded(COMPACT_STRING_ALPHABET.indexOf(character), 64);
+        this.writeBounded(
+          COMPACT_STRING_ALPHABET.indexOf(character),
+          64,
+          this.models?.compactCharacters,
+        );
       }
       return;
     }
@@ -2027,20 +2141,22 @@ class SymbolWriter implements CodecWriter {
     } while (remaining > 0);
   }
 
-  private writeSymbol(value: number, valueCount: number): void {
+  private writeSymbol(value: number, valueCount: number, cumulative?: readonly number[]): void {
     if (
       !Number.isSafeInteger(value) ||
       value < 0 ||
       !Number.isSafeInteger(valueCount) ||
       valueCount < 2 ||
       bitsRequired(valueCount) > 31 ||
-      value >= valueCount
+      value >= valueCount ||
+      (cumulative !== undefined && cumulative.length !== valueCount + 1)
     ) {
       throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
     }
-    this.symbols.push({ value, valueCount });
+    this.symbols.push({ value, valueCount, ...(cumulative === undefined ? {} : { cumulative }) });
     // Adaptive layout decisions deliberately use packed-bit cost as the stable canonical proxy,
-    // even when arithmetic rendering ultimately produces the shorter link.
+    // even when arithmetic rendering ultimately produces the shorter link. Models change only
+    // the arithmetic interval widths, never this proxy, so layout choices are model-independent.
     this.bitLength += bitsRequired(valueCount);
   }
 }
@@ -2071,7 +2187,10 @@ function renderBody(
     const encoder = new ArithmeticEncoder((bit) => writer.writeBoolean(bit === 1));
     const groupCount = arithmeticShipGroupCount(shipCount, markerCount, remainder);
     if (groupCount > 1) encoder.write(Math.floor(ship.value / markerCount), groupCount);
-    for (const { value, valueCount } of remaining) encoder.write(value, valueCount);
+    for (const { value, valueCount, cumulative } of remaining) {
+      if (cumulative === undefined) encoder.write(value, valueCount);
+      else encoder.writeWeighted(value, cumulative);
+    }
     encoder.finish();
   } else {
     for (const { value, valueCount } of remaining) {
@@ -2165,11 +2284,13 @@ class RawBitReader {
 }
 
 abstract class SymbolReader implements CodecReader {
-  abstract readBits(width: number): number;
-  abstract readBounded(valueCount: number): number;
+  constructor(protected readonly models: SymbolModels | null) {}
 
-  readBoolean(): boolean {
-    return this.readBits(1) === 1;
+  abstract readBits(width: number): number;
+  abstract readBounded(valueCount: number, cumulative?: readonly number[]): number;
+
+  readBoolean(cumulative?: readonly number[]): boolean {
+    return this.readBounded(2, cumulative) === 1;
   }
 
   readString(): string {
@@ -2180,7 +2301,10 @@ abstract class SymbolReader implements CodecReader {
       throw new BuildLinkCodecError('invalidPayload', 'A build-link string is too long.');
     }
     if (compact) {
-      return Array.from({ length }, () => COMPACT_STRING_ALPHABET[this.readBits(6)]!).join('');
+      return Array.from(
+        { length },
+        () => COMPACT_STRING_ALPHABET[this.readBounded(64, this.models?.compactCharacters)]!,
+      ).join('');
     }
     const encoded = Uint8Array.from({ length }, () => this.readBits(8));
     return new TextDecoder('utf-8', { fatal: true }).decode(encoded);
@@ -2203,15 +2327,18 @@ abstract class SymbolReader implements CodecReader {
 }
 
 class PackedSymbolReader extends SymbolReader {
-  constructor(private readonly source: RawBitReader) {
-    super();
+  constructor(
+    private readonly source: RawBitReader,
+    models: SymbolModels | null,
+  ) {
+    super(models);
   }
 
   readBits(width: number): number {
     return this.source.readBits(width);
   }
 
-  readBounded(valueCount: number): number {
+  readBounded(valueCount: number, _cumulative?: readonly number[]): number {
     const value = this.source.readBits(bitsRequired(valueCount));
     if (value >= valueCount) {
       throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
@@ -2223,8 +2350,8 @@ class PackedSymbolReader extends SymbolReader {
 class ArithmeticSymbolReader extends SymbolReader {
   private readonly decoder: ArithmeticDecoder;
 
-  constructor(source: RawBitReader) {
-    super();
+  constructor(source: RawBitReader, models: SymbolModels | null) {
+    super(models);
     this.decoder = new ArithmeticDecoder(() => source.readBitOrZero());
   }
 
@@ -2235,8 +2362,12 @@ class ArithmeticSymbolReader extends SymbolReader {
     return this.decoder.read(2 ** width);
   }
 
-  readBounded(valueCount: number): number {
-    return this.decoder.read(valueCount);
+  readBounded(valueCount: number, cumulative?: readonly number[]): number {
+    if (cumulative === undefined) return this.decoder.read(valueCount);
+    if (cumulative.length !== valueCount + 1) {
+      throw new BuildLinkCodecError('invalidPayload', 'A bounded integer is invalid.');
+    }
+    return this.decoder.readWeighted(cumulative);
   }
 }
 
@@ -2265,10 +2396,70 @@ function isWellFormedUnicode(value: string): boolean {
   return true;
 }
 
+function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolModels | null {
+  if (models === undefined) return null;
+  const invalidModels = () => new Error('The build-link codec table models are invalid.');
+  const cumulativeFrom = (weights: readonly number[], expectedLength: number): number[] => {
+    if (!Array.isArray(weights) || weights.length !== expectedLength) throw invalidModels();
+    let total = 0;
+    const cumulative = [0];
+    for (const weight of weights) {
+      if (!Number.isSafeInteger(weight) || weight < 1) throw invalidModels();
+      total += weight;
+      cumulative.push(total);
+    }
+    if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
+    return cumulative;
+  };
+  const decay = models.CONTEXT_INDEX_DECAY;
+  if (!Array.isArray(decay) || decay.length !== 2) throw invalidModels();
+  const decayNumerator = decay[0]!;
+  const decayDenominator = decay[1]!;
+  if (
+    !Number.isSafeInteger(decayNumerator) ||
+    !Number.isSafeInteger(decayDenominator) ||
+    decayNumerator < 1 ||
+    decayDenominator < decayNumerator ||
+    decayDenominator > MAX_CONTEXT_INDEX_DECAY_DENOMINATOR
+  ) {
+    throw invalidModels();
+  }
+  const contextCumulativeBySize = new Map<number, readonly number[]>();
+  return {
+    gradeIsMax: cumulativeFrom(models.GRADE_IS_MAX, 2),
+    experimentalPresent: cumulativeFrom(models.EXPERIMENTAL_PRESENT, 2),
+    contextHit: cumulativeFrom(models.CONTEXT_HIT, 2),
+    powerOn: cumulativeFrom(models.POWER_ON, 3),
+    powerPriority: cumulativeFrom(models.POWER_PRIORITY, 6),
+    compactCharacters: cumulativeFrom(models.COMPACT_CHARACTERS, COMPACT_STRING_ALPHABET.length),
+    contextIndex(valueCount: number): readonly number[] | undefined {
+      if (valueCount < 2 || decayNumerator === decayDenominator) return undefined;
+      let cumulative = contextCumulativeBySize.get(valueCount);
+      if (cumulative === undefined) {
+        let weight = CONTEXT_INDEX_FIRST_WEIGHT;
+        let total = 0;
+        const built = [0];
+        for (let index = 0; index < valueCount; index += 1) {
+          total += weight;
+          built.push(total);
+          weight = Math.max(1, Math.floor((weight * decayNumerator) / decayDenominator));
+        }
+        // The geometric head is bounded by the decay constants, but the unit-weight tail grows
+        // with the candidate set, so the pinned-model cap is enforced here as well.
+        if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
+        cumulative = built;
+        contextCumulativeBySize.set(valueCount, cumulative);
+      }
+      return cumulative;
+    },
+  };
+}
+
 function createCodecContext(tableVersion: number, tables: BuildLinkCodecTables): CodecContext {
   return {
     tableVersion,
     tables,
+    models: createSymbolModels(tables.MODELS),
     moduleBits: bitsRequired(tables.MODULES.length),
     poweredModuleSet: new Set(tables.POWERED_MODULES),
     shipIndex: createIndex(tables.SHIPS),

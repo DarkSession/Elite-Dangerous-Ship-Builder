@@ -19,10 +19,25 @@ export class ArithmeticEncoder {
     validateSymbol(value, valueCount);
     const symbol = BigInt(value);
     const total = BigInt(valueCount);
+    this.narrow(symbol, symbol + 1n, total);
+  }
+
+  /**
+   * Encode `value` against a pinned non-uniform model. `cumulative` holds the model's cumulative
+   * integer frequencies: `cumulative[s]` to `cumulative[s + 1]` is symbol `s`'s share of
+   * `cumulative.at(-1)`. The table that pins the weights is what keeps this canonical.
+   */
+  writeWeighted(value: number, cumulative: readonly number[]): void {
+    validateSymbol(value, cumulative.length - 1);
+    const interval = validateInterval(cumulative[value]!, cumulative[value + 1]!, cumulative);
+    this.narrow(...interval);
+  }
+
+  private narrow(cumulativeLow: bigint, cumulativeHigh: bigint, total: bigint): void {
     const range = this.high - this.low + 1n;
     const previousLow = this.low;
-    this.high = previousLow + (range * (symbol + 1n)) / total - 1n;
-    this.low = previousLow + (range * symbol) / total;
+    this.high = previousLow + (range * cumulativeHigh) / total - 1n;
+    this.low = previousLow + (range * cumulativeLow) / total;
     this.renormalise();
   }
 
@@ -76,16 +91,50 @@ export class ArithmeticDecoder {
   read(valueCount: number): number {
     validateValueCount(valueCount);
     const total = BigInt(valueCount);
+    const symbol = this.target(total);
+    this.widenAndRenormalise(symbol, symbol + 1n, total);
+    return Number(symbol);
+  }
+
+  /** Decode a symbol against the same pinned cumulative frequencies the encoder used. */
+  readWeighted(cumulative: readonly number[]): number {
+    validateValueCount(cumulative.length - 1);
+    if (!Number.isSafeInteger(cumulative.at(-1))) {
+      throw new BuildLinkCodecError('invalidPayload', 'An arithmetic-coded range is invalid.');
+    }
+    const total = BigInt(cumulative.at(-1)!);
+    const target = this.target(total);
+    let lowIndex = 0;
+    let highIndex = cumulative.length - 1;
+    while (highIndex - lowIndex > 1) {
+      const middle = (lowIndex + highIndex) >> 1;
+      const middleValue = cumulative[middle]!;
+      if (!Number.isSafeInteger(middleValue)) {
+        throw new BuildLinkCodecError('invalidPayload', 'An arithmetic-coded range is invalid.');
+      }
+      if (BigInt(middleValue) <= target) lowIndex = middle;
+      else highIndex = middle;
+    }
+    const interval = validateInterval(cumulative[lowIndex]!, cumulative[lowIndex + 1]!, cumulative);
+    this.widenAndRenormalise(...interval);
+    return lowIndex;
+  }
+
+  private target(total: bigint): bigint {
     const range = this.high - this.low + 1n;
-    const symbol = ((this.code - this.low + 1n) * total - 1n) / range;
-    if (symbol < 0n || symbol >= total) {
+    const target = ((this.code - this.low + 1n) * total - 1n) / range;
+    if (target < 0n || target >= total) {
       throw new BuildLinkCodecError('invalidPayload', 'An arithmetic-coded integer is invalid.');
     }
+    return target;
+  }
+
+  private widenAndRenormalise(cumulativeLow: bigint, cumulativeHigh: bigint, total: bigint): void {
+    const range = this.high - this.low + 1n;
     const previousLow = this.low;
-    this.high = previousLow + (range * (symbol + 1n)) / total - 1n;
-    this.low = previousLow + (range * symbol) / total;
+    this.high = previousLow + (range * cumulativeHigh) / total - 1n;
+    this.low = previousLow + (range * cumulativeLow) / total;
     this.renormalise();
-    return Number(symbol);
   }
 
   private renormalise(): void {
@@ -121,4 +170,27 @@ function validateValueCount(valueCount: number): void {
   if (!Number.isSafeInteger(valueCount) || valueCount < 2) {
     throw new BuildLinkCodecError('invalidPayload', 'An arithmetic-coded range is invalid.');
   }
+}
+
+/**
+ * Guard the entries a weighted symbol actually uses so that a malformed cumulative table fails
+ * with this module's typed error instead of corrupting the interval silently.
+ */
+function validateInterval(
+  cumulativeLow: number,
+  cumulativeHigh: number,
+  cumulative: readonly number[],
+): [bigint, bigint, bigint] {
+  const total = cumulative.at(-1)!;
+  if (
+    !Number.isSafeInteger(cumulativeLow) ||
+    !Number.isSafeInteger(cumulativeHigh) ||
+    !Number.isSafeInteger(total) ||
+    cumulativeLow < 0 ||
+    cumulativeLow >= cumulativeHigh ||
+    cumulativeHigh > total
+  ) {
+    throw new BuildLinkCodecError('invalidPayload', 'An arithmetic-coded range is invalid.');
+  }
+  return [BigInt(cumulativeLow), BigInt(cumulativeHigh), BigInt(total)];
 }
