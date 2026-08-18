@@ -1,124 +1,119 @@
 # Capacitor Endurance Contract
 
-## Purpose
+## Boundary and input ownership
 
-Define the selected-WEP-pip input, exact `weaponsCapacitorMetrics()` result mapping and semantic
-presentation of finite, zero and infinite endurance. This contract never calculates recharge, drain
-or duration.
+Feature 003 supplies one settled `StatusRevisionContext`. Its `ViewingConditions` stores SYS/ENG/WEP
+as integer half-pips `0..8`, totalling 12. For the captured revision pair, feature 007 converts WEP
+exactly once:
 
-## Inputs
-
-- one active `ShipLoadout` with feature 001 `buildRevision`;
-- one settled feature 003 `ViewingConditions` value and `conditionsRevision`;
-- feature 007's same-revision weapon profile;
-- feature 005's same-revision package-backed distributor/power observation.
-
-Feature 003 stores valid half-pip state and supplies the numeric WEP value accepted by the package.
-Feature 007 neither validates nor redistributes pips.
-
-## Package call
-
-Call exactly once for a projection:
-
-```text
-loadout.weaponsCapacitorMetrics({ weaponsPips: settledWeaponsPips })
+```ts
+const result = loadout.weaponsCapacitorMetrics({
+  weaponsPips: context.conditions.pips.weapons / 2,
+});
 ```
 
-Do not call the data-free calculator. Copy all returned fields:
+Use `WeaponsOptions` from `@elite-dangerous-almanac/core/ships/ship-loadout` and
+`WeaponsCapacitorMetrics` from
+`@elite-dangerous-almanac/core/ships/weapons-capacitor`. Do not call the standalone calculator.
 
-| Package field              | Presentation meaning                            |
-| -------------------------- | ----------------------------------------------- |
-| `weaponsPips`              | Pips actually used by the package               |
-| `capacity`                 | WEP capacity in MJ                              |
-| `rechargeRate`             | Actual recharge at returned pips in MJ/s        |
-| `sustainedEnergyPerSecond` | Powered deployed sustained firing draw in MJ/s  |
-| `netDrainRate`             | Package net loss after recharge in MJ/s         |
-| `timeToDrain`              | Seconds from full to empty, or package infinity |
+Feature 007 neither validates a second tuple nor persists pips. Invalid feature-003 drafts do not
+advance `conditionsRevision` and never call this boundary.
 
-The displayed pip value comes from the result, not an unverified echo of the draft control.
+## Exact result
+
+Retain and present all six returned fields:
+
+| Package field              | Required meaning                                        |
+| -------------------------- | ------------------------------------------------------- |
+| `weaponsPips`              | Allocation actually used by the package                 |
+| `capacity`                 | Powered deployed WEP capacity in MJ                     |
+| `rechargeRate`             | Actual selected-pip recharge in MJ/s                    |
+| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw        |
+| `netDrainRate`             | Package net loss after recharge, floored at zero        |
+| `timeToDrain`              | Seconds from full to empty or package positive infinity |
+
+Display returned `weaponsPips`, not an unchecked echo of the draft or integer half-pip value. No
+field is calculated from another.
 
 ## Duration semantics
 
-The presenter selects wording from returned values and context; it never computes a replacement
-number.
+| Returned state                                   | Required semantic wording                                  |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| finite `timeToDrain > 0`                         | Localized finite duration                                  |
+| `timeToDrain === 0`                              | Drains immediately                                         |
+| infinite time + positive returned sustained draw | Powered firing load can be sustained; no net drain         |
+| infinite time + zero returned sustained draw     | No draining powered firing load; no claim weapons can fire |
 
-| Returned/context state                             | Required wording category                                                   |
-| -------------------------------------------------- | --------------------------------------------------------------------------- |
-| finite `timeToDrain > 0`                           | Localized finite duration                                                   |
-| `timeToDrain === 0`                                | Drains immediately                                                          |
-| infinite time and positive returned sustained draw | Powered firing load can be sustained indefinitely/no net drain              |
-| infinite time and zero returned sustained draw     | No draining powered firing load; do not claim weapons can fire indefinitely |
+No generic number formatter, JSON boundary or visual label receives `Infinity`. The semantic phrase
+is visible and programmatically associated with the field.
 
-No generic formatter receives `Infinity`. A screen-reader value includes the semantic phrase, not
-the token “Infinity.”
+## Zero capacity and deployed distributor context
 
-## Zero capacity and distributor context
+Capacity/recharge zero are genuine package numbers. They appear beside a separate, same-revision,
+feature-005-owned `DeployedDistributorPowerObservation`:
 
-Capacity and recharge zero remain valid numeric package results. Show them alongside the separate
-feature 005 `DistributorObservation`:
-
-- fitted/enabled/powered;
-- fitted but disabled;
-- fitted but power-shed;
+- powered;
+- disabled;
+- power-shed;
 - absent;
-- unresolved/unavailable.
+- unresolved;
+- qualified because package power facts cannot support an exact verdict.
 
-The observation is not derived from zero capacity. Likewise, the capacitor result is not replaced by
-a catalogue distributor value. The UI may say “capacity 0 MJ; distributor is power-shed” when both
-facts are independently available, but it does not state an inferred causal diagnosis.
+Feature 005 must accept and expose this port before feature 007 tasks. Its current
+`DistributorView.ready | unavailable` and feature-010-only hardpoint port do not satisfy this
+boundary. Feature 007 must not infer any cause from zero capacity, `distributorMetrics() === null`, a
+symbol prefix, module priority or consumer/band joins.
 
-Feature 005 and [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299)
-own the authoritative per-module power projection. Feature 007 must not parse priority, subtract
-power bands or copy package shedding rules.
+When both independent facts are available the UI may state them together, for example “capacity 0
+MJ” and “distributor is power-shed.” It must not say the observation caused the capacitor result
+unless a future package contract says so.
 
 ## Scope separation
 
-`weaponMetrics().total.sustainedEnergyPerSecond` and capacitor
-`sustainedEnergyPerSecond` are not required to match:
+`weaponMetrics().total.sustainedEnergyPerSecond` and the capacitor's
+`sustainedEnergyPerSecond` need not match:
 
 - weapon totals include enabled returned weapons;
-- capacitor draw includes powered, enabled, deployed weapons.
+- capacitor draw includes powered, enabled and deployed firing weapons.
 
-Label both scopes explicitly. Do not zero weapon totals for retracted/shed hardpoints or replace the
-capacitor draw with the weapon total. Feature 003's hardpoint state remains an observable viewing
-condition; `weaponsCapacitorMetrics()` models the deployed firing load and receives no fabricated
-retracted option.
+Label these scopes. Do not zero weapon totals for selected retracted hardpoints or plant shedding,
+replace capacitor draw with the aggregate or report the mismatch as an error. The capacitor facade
+always models deployed firing; selected hardpoint state remains separate feature-003 viewing context.
 
-## Empty and disabled weapon contexts
+## Empty, unresolved and disabled contexts
 
-- A truly empty hardpoint set retains the package capacitor result and receives no-fitted-weapons
-  context.
-- Occupied unresolved hardpoints receive a qualification; no missing draw is estimated.
-- All disabled returned weapons remain visible in the weapon profile; zero capacitor draw and
-  infinite time keep their package values and receive no-powered-firing-load wording.
-- A genuine zero-energy weapon is not treated as disabled.
+- Confirmed-empty hardpoints retain the exact capacitor result and receive no-fitted-weapons context.
+- Unresolved occupied hardpoints qualify completeness; omitted draw is never estimated.
+- All disabled returned weapons remain visible; zero capacitor draw and infinity receive
+  no-draining-powered-load wording.
+- A genuine zero-energy weapon is not classified as disabled.
+- Zero-capacity positive draw and zero-capacity zero draw remain different package outcomes.
 
-## Revision and failure behavior
+## Revision and failures
 
 - Capture build and settled conditions together.
-- Publish weapon, capacitor and distributor sections only when build/condition revisions still
-  match.
-- Discard stale results rather than combining an old weapon total with a new pip result.
-- Invalid pip drafts remain in feature 003 and never trigger this package call.
-- A thrown package error publishes one current-context failure with no stale prior capacitor values.
+- Publish weapon, coverage, capacitor and deployed-power facts only when their revision stamps match.
+- Discard stale results instead of combining old weapon totals or power context with new pips.
+- A missing required feature-005 port produces `integrationUnavailable`; a thrown package/projection
+  error produces `projectionFailed`. Neither state changes the active build.
+- Package zero or infinity remains ready data and never selects failure.
 
 ## Localization and accessibility
 
-- MJ, MJ/s, pips and seconds use active-locale number/unit formatting.
-- Semantic zero/infinity and distributor-state phrases are application message keys.
-- The shared pip allocator exposes its total, constraints and Apply result; feature 007 does not add
-  a second control.
-- Text states accompany any capacity/drain visual. Bars do not calculate a local percentage.
-- A settled pip/build change produces one coalesced polite announcement, not one announcement per
-  metric.
+- MJ, MJ/s, pips and seconds use feature 011 active-locale formatters.
+- Immediate, sustaining, no-load and distributor-state phrases use application message keys.
+- Feature 007 composes feature 003's shared condition control where required; it adds no WEP-only
+  state.
+- Every text value remains available at narrow widths and 400% zoom. A bar may supplement only a
+  future package-authored scale and must retain nearby complete text.
+- One accepted build/pip/context revision produces one coalesced localized announcement.
 
 ## Verification
 
-- Deep-equal all six fields at WEP 0, 0.5, 2 and 4 pips.
-- Cover finite duration, immediate drain and both infinity wording categories.
-- Cover powered, disabled, shed, absent and unresolved distributor observations without changing
-  package numbers.
-- Cover no returned weapons, truly empty hardpoints, unresolved-only hardpoints, all disabled and
-  genuine zero draw.
-- Prove weapon total EPS and capacitor sustained draw are independently mapped.
-- Prove rapid build/pip changes never publish a mixed revision.
+- Deep-equal all six fields at displayed WEP 0, 0.5, 2 and 4.
+- Prove integer half-pips divide by two once and invalid drafts never call the package.
+- Cover finite duration, immediate drain and both infinity meanings.
+- Cover positive-draw/zero-capacity and zero-draw/zero-capacity results.
+- Cover each owner-supplied distributor observation without changing capacitor values.
+- Prove aggregate weapon EPS and powered capacitor draw remain independent.
+- Prove stale or mismatched revision/port reads never publish.

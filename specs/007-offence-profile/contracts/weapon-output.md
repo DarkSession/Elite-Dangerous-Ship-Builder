@@ -1,156 +1,151 @@
 # Weapon Output Contract
 
-## Purpose
+## Boundary
 
-Define the read-only boundary between one active `ShipLoadout` revision, the Offence Profile domain
-projection and exact-slot navigation. This contract owns no weapon calculation and no build mutation.
+For one feature 001 active `{ loadout, buildRevision }`, call exactly once:
 
-## Inputs
-
-- one active `ShipLoadout` captured with feature 001's opaque `buildRevision`;
-- feature 002's package-backed hardpoint occupancy/unresolved projection for the same build revision;
-- pinned 0.1.1, whose fitted-weapon result satisfies Almanac #300.
-
-WEP pips and hardpoint viewing state do not alter `weaponMetrics()`. They are shown as surrounding
-conditions only where relevant and never passed to this call.
-
-## Package call
-
-Call exactly once for a projection:
-
-```text
-loadout.weaponMetrics()
+```ts
+const result = loadout.weaponMetrics();
 ```
 
-Retain the returned object until the complete revision-stamped snapshot is published. Do not call
-the data-free weapon functions, read catalogue values, or join `fittedModuleAt()` to fill missing
-offence fields.
+Retain the exact `BuildWeaponMetrics` object. Feature 007 must not call the data-free weapon
+functions, rebuild totals, join catalogue/fitted-module data to fill optional offence fields or sort
+the returned collection. A cache keyed by build revision may supply both detail and Status.
 
-## Whole-build mapping
+## Leaf imports
 
-Copy `total` field-for-field:
+- `ShipLoadout`, `BuildWeaponMetrics`, `FittedWeaponMetrics`:
+  `@elite-dangerous-almanac/core/ships/ship-loadout`
+- `WeaponMetrics`, `WeaponTotals`, `DamageSplit`:
+  `@elite-dangerous-almanac/core/ships/weapons`
+- `AmmunitionCapacity`: `@elite-dangerous-almanac/core/ships/ammunition`
+- `ProjectileRangeBoundaries`: `@elite-dangerous-almanac/core/ships/modules`
 
-| Package field              | Presentation meaning                        |
-| -------------------------- | ------------------------------------------- |
-| `damagePerSecond`          | Damage per second while firing              |
-| `sustainedDamagePerSecond` | Damage per second averaged over reloads     |
-| `energyPerSecond`          | WEP draw per second while firing            |
-| `sustainedEnergyPerSecond` | WEP draw per second averaged over reloads   |
-| `heatPerSecond`            | Heat per second while firing                |
-| `sustainedHeatPerSecond`   | Heat per second averaged over reloads       |
-| `thermalLoad`              | Sum of returned weapon thermal-load stats   |
-| `powerDraw`                | Deployed plant draw                         |
-| `damageByType`             | Burst damage-per-second amounts by type     |
-| `sustainedDamageByType`    | Sustained damage-per-second amounts by type |
+No broad `ships` barrel is used.
 
-No total is recalculated from `weapons`. The package total is explicitly scoped to enabled returned
-weapons and must not be relabelled as powered firing output.
+## Whole-build output
 
-## Per-weapon mapping
+Present every `result.total` field with its package scope:
 
-Preserve every returned entry and its exact returned order. Each entry exposes:
+| Field                      | Required meaning                                |
+| -------------------------- | ----------------------------------------------- |
+| `damagePerSecond`          | Enabled returned weapons, reloads ignored       |
+| `sustainedDamagePerSecond` | Enabled returned weapons, reload averaged       |
+| `energyPerSecond`          | Enabled returned weapons' burst WEP draw        |
+| `sustainedEnergyPerSecond` | Enabled returned weapons' sustained WEP draw    |
+| `heatPerSecond`            | Enabled returned weapons' burst heat            |
+| `sustainedHeatPerSecond`   | Enabled returned weapons' sustained heat        |
+| `thermalLoad`              | Sum of included package thermal-load stats      |
+| `powerDraw`                | Enabled returned weapons' deployed plant demand |
+| `damageByType`             | Exact burst damage split                        |
+| `sustainedDamageByType`    | Exact sustained damage split                    |
 
-- exact `slot`, `symbol`, package/localized `name` and `enabled` state;
-- exact `ammunition` state;
-- `damagePerShot`, `rateOfFire`, `sustainedRateOfFire` and `continuous`;
-- burst/sustained damage, WEP draw and heat per second;
-- `thermalLoad` and `powerDraw`;
-- burst and sustained damage-type values;
-- the released package's sparse effective maximum range, falloff range, projectile-boundary metadata
-  and armour-piercing rating required by Almanac #300.
+The total is package-authored and never re-summed from `result.weapons`. It is not relabelled as
+powered firing output; capacitor powered draw has a different package scope.
 
-No entry is collapsed into a count. Identical symbols in different slots remain separate.
+## Per-weapon output
 
-0.1.1 satisfies [#301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301): known
-weapons use hull-slot order and unknown/unmapped slots follow in source order. Preserve the returned
-order; do not sort locally.
+Every returned weapon remains a separate entry in returned order. Preserve:
+
+- exact `slot`, `symbol`, canonical returned `name` and `enabled`;
+- every required `WeaponMetrics` field: damage per shot; burst/sustained rates of fire; burst/
+  sustained damage, WEP draw and heat; thermal load; plant draw; both damage splits; continuous-fire
+  state;
+- exact `AmmunitionCapacity | null`;
+- optional effective maximum range, falloff range, projectile boundaries and armour piercing.
+
+Known weapons arrive in hull-slot order; unknown/unmapped slots follow in source order. Do not parse
+slot numbers, sort locally, merge duplicate symbols or collapse weapons into counts.
 
 ## Damage types
 
-For both burst and sustained splits:
+For burst and sustained damage:
 
-- show kinetic, thermal, explosive, absolute and anti-xeno exact numbers;
-- show unclassified when the member is present and an explicit not-returned state when the complete
-  field inventory is expanded;
-- state that anti-xeno is an overlay on conventional damage;
-- never calculate percentages, shares, combined conventional-plus-AX damage, or target-adjusted
-  damage;
-- never let color, position or a bar segment be the only type label.
+- show exact kinetic, thermal, explosive, absolute and anti-xeno numbers;
+- show optional unclassified when present; when absent, omit it or state no unclassified damage,
+  because 0.1.1 omits the member exactly when zero;
+- state that anti-xeno overlays conventional damage;
+- create no share, percentage, conventional-plus-AX total, resistance result or color-only meaning.
 
-## Missing and zero semantics
+Unclassified absence is not an unavailable result. Optional range/piercing absence is not-stated data
+and remains distinct.
 
-| Source state                                      | Required projection/presentation                              |
-| ------------------------------------------------- | ------------------------------------------------------------- |
-| Numeric zero returned                             | Exact zero with its unit/meaning                              |
-| Optional `unclassified` absent                    | Absent/not returned, not zero                                 |
-| Range or piercing field absent after #300         | Unavailable/not returned for that field, not zero             |
-| Package returns a genuine zero-damage weapon      | Weapon remains visible with every other returned field        |
-| Occupied unresolved hardpoint omitted from result | Separate shared unresolved notice; no invented weapon or zero |
-| No occupied hardpoints and empty returned list    | Explicit no-fitted-weapons state                              |
-| Non-empty returned list and all totals zero       | Fitted-zero state; retain enabled/disabled text per entry     |
-| All returned weapons disabled                     | Retain complete list; package total remains exact zero        |
+## Range and piercing
 
-The application must not claim “no fitted weapons” from `weapons.length === 0` alone. Feature 002's
-same-revision hardpoint state distinguishes truly empty mounts from occupied unresolved entries that
-the calculation cannot represent.
+- `maximumRange` and `falloffRange` use localized metre formatting only when returned.
+- `projectileRange.maximumBoundary` and `falloffBoundary` are separately named boundary parameters
+  with no invented unit; numeric zero remains present.
+- `armourPiercing` is a rating. There is no target hardness input or piercing factor.
+- No range attenuation, range-band aggregation, target simulation or convergence result is allowed.
 
-If a future package result makes damage itself optional, the projection must carry that absence;
-zero substitution is prohibited.
+Almanac 0.1.1 contains the fitted projection tracked by issue #300. Do not implement a
+`fittedModuleAt()` join or catalogue fallback.
 
-## Range and piercing semantics
+## Ammunition
 
-- `maximumRange` and `falloffRange` are locale-formatted metres only when returned.
-- `projectileRange.maximumBoundary` and `.falloffBoundary` are separately labelled boundary
-  parameters with no invented unit.
-- `armourPiercing` is a rating. Feature 007 does not accept a target hardness and never calls
-  `armourPiercingFactor`.
-- No range attenuation, range-band aggregation, target simulation or comparison verdict is allowed.
+| Package value                                | Presentation meaning                       |
+| -------------------------------------------- | ------------------------------------------ |
+| `null`                                       | Weapon carries no ammunition               |
+| finite capacity                              | Exact clip, hopper and total at full rearm |
+| `unlimited: true` with infinite hopper/total | Localized unlimited wording                |
+| `unlimited: false` with hopper `0`           | Exact zero reserve, not unlimited          |
 
-Almanac #300 is satisfied by the returned fields. A task must not implement a
-`fittedModuleAt(slot)` join.
+Do not calculate current ammunition, reload count, synthesis requirements or firing duration.
 
-## Ammunition semantics
+## Coverage and zero states
 
-| Package value                  | Required meaning                        |
-| ------------------------------ | --------------------------------------- |
-| `null`                         | Module carries no ammunition            |
-| finite capacity                | Exact clip, hopper and total            |
-| `unlimited: true`              | Hopper and total described as unlimited |
-| `unlimited: false`, hopper `0` | Exact zero reserve, not unlimited       |
+Feature 002 supplies same-build-revision package-backed hardpoint coverage:
 
-This is fully rearmed capacity, not current imported ammunition state. Do not calculate firing time,
-reload count or synthesis requirements from it.
+| Package weapon result / coverage           | Required presentation                                      |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| Empty list + confirmed-empty hardpoints    | No fitted weapons                                          |
+| Empty list + unresolved occupied hardpoint | Qualified no-result state; unresolved exact-slot notice    |
+| Empty list + coverage unavailable          | No weapon result returned; no empty-build claim            |
+| Non-empty list + zero total                | Populated zero-output collection                           |
+| Non-empty list + all `enabled: false`      | Complete disabled entries and exact zero total             |
+| Real returned zero-damage weapon           | Complete entry with exact zero and all other returned data |
+| Optional range/piercing member absent      | Field not stated, never zero                               |
 
-## Exact-slot intent
+An unresolved occupied hardpoint never becomes a fabricated `FittedWeaponMetrics` and never enters
+the package total.
 
-Each returned weapon exposes one distinct localized action whose payload is exactly:
+## Exact-slot target
 
-```text
-{ slot: fittedWeapon.slot }
+Every returned entry exposes one distinct localized action carrying feature 003's shared target:
+
+```ts
+{ kind: 'slot', slotKey: weapon.slot }
 ```
 
-Feature 002 receives the intent. Wide composition reveals/selects the inline slot; narrow composition
-opens the existing selected-slot layer. The action is one interaction from the weapon entry, uses no
-parsed number and remains available for disabled/zero-damage weapons.
+Feature 002 owns reveal/edit behavior. Wide layout selects the existing inline outfitting context;
+narrow layout opens the selected-slot layer with a named return. The action stays available for
+disabled and zero-output weapons and never uses an index. Unresolved notices use their own exact
+feature-002 source slot, not a weapon-result surrogate.
 
-Unresolved hardpoint notices use feature 002's own exact-slot actions rather than pretending those
-entries came from `weaponMetrics()`.
+## Canonical and localized names
+
+Preserve returned `name` and `symbol` in the snapshot. Presentation separately requests the module
+name by symbol through feature 011's Almanac game-text presenter. A locale miss uses visibly disclosed
+canonical package text; no private game translation is allowed.
 
 ## Revision and failure behavior
 
-- Capture the active build and revision together.
-- Discard a projection if the build revision changes before atomic publication.
-- An unexpected method failure publishes one current-revision failure state and no previous numbers.
-- An invalid/incomplete build does not suppress a successful package weapon result.
-- Package validation and unresolved-slot notices remain separate from offence values.
+- Capture loadout and revision together.
+- Reuse the exact cached object for detailed capability and Status projection.
+- Discard a pending result if the active build revision changes.
+- An unexpected package or integration exception publishes a current-revision application failure,
+  not old figures or a game diagnosis.
+- Package validation/incompleteness and unresolved coverage remain visible qualifications; a
+  successful weapon result is not hidden merely because the build is incomplete.
 
 ## Verification
 
-- Deep-equal every total and per-weapon field to one live package result.
-- Prove disabled weapons remain and totals equal the package result without local summation.
-- Cover truly empty, unresolved-only, mixed unresolved/resolved, genuine-zero and all-disabled states.
-- Cover burst/sustained type splits with optional unclassified and anti-xeno overlay text.
-- Cover no ammunition, finite, zero-reserve and unlimited capacities.
-- Cover Focused effective range/piercing plus absent range/piercing/projectile members.
-- Retain the reverse-import regression for #301, assert canonical known-slot order and no local sort.
-- Assert every action sends the exact original slot key once.
+- Deep-equal the retained total, every weapon and every nested field to one live package result.
+- Prove no local sum, sort, range/piercing join or positional identity exists.
+- Cover enabled, some-disabled, all-disabled, confirmed-empty, unresolved-only, mixed unresolved and
+  genuine-zero builds.
+- Cover all damage types, optional-unclassified presence and absent-means-zero behavior.
+- Cover finite, zero-reserve, unlimited and no-ammunition cases.
+- Cover present/absent effective ranges, boundary value zero and absent piercing.
+- Retain reverse-input and unknown-slot ordering regressions from Almanac #301.
+- Assert every slot action emits the exact original key once.

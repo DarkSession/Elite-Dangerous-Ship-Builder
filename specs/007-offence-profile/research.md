@@ -1,244 +1,209 @@
 # Research: Offence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.1`, the accepted feature
-specifications, feature 002/003/005 planning boundaries and `.design/Ship Builder.dc.html` canvases
-1c and 1d. Runtime probes used detached package `ShipLoadout` values; no application formula was
-used.
+Research used the installed `@elite-dangerous-almanac/core@0.1.1`, its public declarations and live
+leaf-import probes; the accepted feature 001/002/003/005/011 artifacts; the current repository
+configuration; and `.design/Ship Builder.dc.html` canvases 1c and 1d. No application formula was used.
 
-## Package projection boundary
+## Package boundaries and exact types
 
-**Decision**: Read the active build through one call to `ShipLoadout.weaponMetrics()` and one call to
-`ShipLoadout.weaponsCapacitorMetrics({ weaponsPips })` for each settled build/condition revision.
-Import the facade from `@elite-dangerous-almanac/core/ships/ship-loadout` and result types from the
-`ships/weapons` and `ships/weapons-capacitor` leaves. Preserve the returned structures in one
-immutable `OffenceSnapshot` before creating localized view models.
+**Decision**: Retain one exact `BuildWeaponMetrics` from `loadout.weaponMetrics()` for each active
+build revision and one exact `WeaponsCapacitorMetrics` from
+`loadout.weaponsCapacitorMetrics({ weaponsPips })` for each build/condition revision. Import
+`ShipLoadout`, `WeaponsOptions`, `BuildWeaponMetrics` and `FittedWeaponMetrics` from
+`@elite-dangerous-almanac/core/ships/ship-loadout`; weapon result types from `/ships/weapons`;
+capacitor types from `/ships/weapons-capacitor`; ammunition from `/ships/ammunition`; and projectile
+boundaries from `/ships/modules`.
 
-**Rationale**: The two build methods already resolve fitted articles, engineering, enabled state,
-ammunition, deployed power shedding for capacitor inputs and pip scaling. One snapshot prevents a
-module edit or pip change from combining results from different revisions.
+**Rationale**: These are the public leaf contracts. Retaining the package objects avoids a parallel
+numeric model and lets detail and Status select the same build projection.
 
-**Alternatives considered**: Calling the data-free `weaponMetrics`, `sumWeaponMetrics` or
-`weaponsCapacitorMetrics` functions with application-assembled inputs was rejected because it would
-create a second build-calculation path. Importing the broad `ships` barrel was rejected by the
-constitution's leaf-import rule. Components calling the package independently were rejected because
-they could display mixed revisions.
+**Alternatives considered**: Calling data-free weapon/capacitor functions with application-assembled
+inputs, importing a broad barrel, component-owned calls and copying every package result into a
+second mutable model were rejected as duplicate calculation paths, bundle expansion or mixed-revision
+risk.
 
-## Complete weapon and total fields
+## Complete weapon output
 
-**Decision**: Preserve all fields exactly. `BuildWeaponMetrics.total` carries:
+**Decision**: Preserve the ten total fields and every returned fitted entry exactly. Each entry keeps
+`slot`, `symbol`, canonical returned `name`, `enabled`, `ammunition`, optional
+`maximumRange`/`falloffRange`/`projectileRange`/`armourPiercing`, and all 14 required
+`WeaponMetrics` fields. Preserve returned order and use the exact `slot` for navigation.
 
-- `damagePerSecond` and `sustainedDamagePerSecond`;
-- `energyPerSecond` and `sustainedEnergyPerSecond`;
-- `heatPerSecond` and `sustainedHeatPerSecond`;
-- `thermalLoad` and `powerDraw`;
-- `damageByType` and `sustainedDamageByType`.
+**Rationale**: Runtime probes and declarations agree. Almanac 0.1.1 returns known weapons in hull-slot
+order and appends unknown/unmapped slots in source order. Reversed Sidewinder input returns
+`SmallHardpoint1` then `SmallHardpoint2`; unknown slots retain their source order after the known set.
+The fitted range/piercing projection and ordering work tracked by Almanac #300/#301 is present in the
+pinned release.
 
-Each `FittedWeaponMetrics` preserves `slot`, `symbol`, `name`, `enabled`, `ammunition` and every field
-of its nested `metrics`: the total fields above plus `damagePerShot`, `rateOfFire`,
-`sustainedRateOfFire`, `continuous`, sparse range/projectile-boundary fields and armour piercing.
-Returned order is preserved as-is. A slot action emits the
-exact returned `slot` without parsing or positional mapping.
+**Alternatives considered**: DPS-only summaries, local re-summing, catalogue joins through
+`fittedModuleAt()`, local slot sorting and positional navigation were rejected because they discard or
+replace public facade behavior.
 
-**Rationale**: These are the complete 0.1.1 public result types and directly satisfy the
-whole-build/per-weapon requirements. Exact slot and symbol identities are authoritative. 0.1.1
-fulfills its documented slot-order promise for known slots and preserves source order for appended
-unknown/unmapped slots.
+## Empty, unresolved, disabled and genuine zero
 
-**Alternatives considered**: A DPS-only summary was rejected because it drops returned output and
-operating-cost fields. Re-summing per-weapon values was rejected because disabled-state behavior and
-future package semantics belong to the package. Any local canonical or DPS sort is rejected because
-the released #301 package order is authoritative.
+**Decision**: Keep package totals and weapon entries unchanged, and pair them with feature 002's
+same-revision package slot coverage. Only an empty weapon list plus confirmed-empty hardpoints means
+no fitted weapons. An unresolved occupied hardpoint receives a separate qualification and exact-slot
+target but no invented weapon metrics. A non-empty zero-total list remains populated; disabled entries
+remain visible.
 
-## Empty, disabled and genuine zero
+**Rationale**: Disabled Sidewinder weapons remain in the list with full metrics while all aggregate
+fields become zero. An occupied unresolved hardpoint is omitted from `weaponMetrics()` but remains
+visible through package fitted/validation views. A real zero-damage hardpoint record also exists, so
+zero cannot identify absence or disability.
 
-**Decision**: Carry the weapon list and package total independently, together with feature 002's
-same-revision hardpoint occupancy/unresolved projection. An empty `weapons` array is called
-no-fitted-weapons only when every package hardpoint is confirmed empty. An occupied unresolved
-hardpoint omitted by `weaponMetrics()` receives a separate qualification and no invented weapon
-result. A non-empty list with a zero total is a fitted-zero state; disabled entries remain visible
-with their exact `enabled` value. The projector does not infer why a numeric weapon metric is zero.
-
-**Rationale**: 0.1.1 deliberately includes disabled resolved weapons in `weapons` but filters them
-from `total`. It also omits an occupied hardpoint whose catalogue/effective stats cannot be resolved.
-Therefore an empty result, an unresolved occupied mount and an all-disabled build can all carry zero
-totals but remain distinguishable using package-backed state. Some package records can also have
-genuine zero damage, so zero cannot mean disabled or unavailable.
-
-**Alternatives considered**: Hiding disabled entries, treating an empty returned list or every zero
-total as truly empty, inserting unresolved modules into the result, or deriving an enabled subtotal
-locally were rejected. Each loses or fabricates a package-authored distinction.
-
-## Returned weapon ordering
-
-**Decision**: Preserve 0.1.1's returned order: known weapons in hull-slot order, then unknown or
-unmapped slots in original source order. This is the contract released for
-[Elite-Dangerous-Almanac #301](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/301).
-
-**Rationale**: Reversed Sidewinder input still returns `SmallHardpoint1` before
-`SmallHardpoint2`; unknown original slots keep source order at the end. A local sort would duplicate
-the released contract and risk inventing placement.
-
-**Alternatives considered**: Sorting by package slot layout, parsing slot names, or ignoring the
-contract mismatch were rejected. The first two are local repairs; the last violates the project's
-requirement to raise library defects upstream.
+**Alternatives considered**: Treating `weapons.length === 0` as empty, hiding disabled weapons,
+inserting unresolved entries into the package result, and inferring state from aggregate zero were
+rejected as dishonest.
 
 ## Damage-type semantics
 
-**Decision**: Render both burst and sustained `DamageSplit` values field-for-field. Kinetic, thermal,
-explosive, absolute and anti-xeno are always numeric package results. `unclassified` remains optional
-and is described as not returned when absent; it is never defaulted to zero. Anti-xeno receives
-explicit overlay wording adjacent to each applicable damage group. No percentage, share, resistance
-adjustment or conventional-plus-anti-xeno total is created.
+**Decision**: Present burst and sustained kinetic, thermal, explosive, absolute and anti-xeno values
+field-for-field. Optional `unclassified` is present only for non-zero unclassified damage; structural
+absence means no unclassified damage and may be omitted or stated as none. Anti-xeno is labelled as an
+overlay on conventional damage. Calculate no share, percentage, combined total or target result.
 
-**Rationale**: The package defines kinetic/thermal/explosive/absolute/unclassified as the
-conventional partition and anti-xeno as an overlay relative to conventional damage. The spec
-explicitly prohibits folding the overlay into another type or calculating shares.
+**Rationale**: `DamageSplit` documents unclassified as absent when zero, while anti-xeno overlays the
+conventional partition. Guardian Gauss demonstrates an anti-xeno overlay; a Plasma Shock Accelerator
+variant demonstrates unclassified conventional output. Calling absent unclassified “unavailable”
+would misstate the package contract.
 
-**Alternatives considered**: The reference's stacked percentage bars, a combined total and target
-resistance simulation were rejected because each derives a value the package result does not return.
-Color-only damage categories were rejected because they are inaccessible and unnecessary.
+**Alternatives considered**: Zero-filling optional structure, labelling it unknown, copying the
+reference's percentage bar, combining conventional and anti-xeno, and target resistance simulation
+were rejected.
 
-## Fitted-weapon range and piercing — released in 0.1.1
+## Range, projectile boundaries and piercing
 
-**Decision**: Consume the 0.1.1 fitted-weapon result, which includes the
-authoritative post-engineering `maximumRange`, `falloffRange`, `projectileRange` and
-`armourPiercing` values, preserving every absent member as absent. Effective distances retain metre
-units; projectile boundary parameters remain separately named and unitless. The gap is filed as
-[Elite-Dangerous-Almanac #300](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/300).
+**Decision**: Present effective `maximumRange` and `falloffRange` in metres when returned;
+`ProjectileRangeBoundaries` as separately named unitless package parameters; and `armourPiercing` as
+a rating. Preserve every absent optional member as not stated. Boundary value zero remains present.
 
-**Rationale**: Earlier releases returned only `{ slot, symbol, name, enabled, metrics, ammunition }`; 0.1.1 also returns sparse `maximumRange`, `falloffRange`, `projectileRange` and `armourPiercing` for each
-fitted weapon. A second `fittedModuleAt(slot).effectiveStats` view can carry range and piercing, but
-FR-002 requires per-weapon values from `weaponMetrics()`. Joining two separately obtained projections
-in the application would weaken the one-call revision boundary and violate the accepted spec.
+**Rationale**: A subsurface-displacement missile returns projectile boundaries while omitting
+effective distances. Other records omit range or piercing entirely. The package explicitly says
+projectile boundaries are not effective distances and cannot drive attenuation.
 
-Minimal reproduction against 0.1.1:
-
-```ts
-import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-
-const build = ShipLoadout.default('SideWinder').applyBlueprint(
-  'SmallHardpoint1',
-  'Weapon_Focused',
-  { grade: 5, quality: 1 },
-);
-
-const fitted = build.fittedModuleAt('SmallHardpoint1')!;
-const weapon = build.weaponMetrics().weapons[0]!;
-
-console.log({
-  maximumRange: fitted.effectiveStats?.maximumRange,
-  falloffRange: fitted.effectiveStats?.falloffRange,
-  armourPiercing: fitted.effectiveStats?.armourPiercing,
-});
-// { maximumRange: 6000, falloffRange: 1000, armourPiercing: 44 }
-
-console.log(Object.keys(weapon));
-// [ 'slot', 'symbol', 'name', 'enabled', 'metrics', 'ammunition',
-//   'maximumRange', 'falloffRange', 'armourPiercing' ]
-```
-
-The release contract must also retain cases where effective range or piercing is absent. Projectile
-boundary metadata is not an effective distance and must not be presented in metres.
-
-**Alternatives considered**: Joining `fittedModuleAt`, reading a hardpoint catalogue record, applying
-engineering modifiers, using `damageFalloff`, or calculating `armourPiercingFactor` were rejected.
-Only the first is package data, but it still contradicts the specified facade boundary; the others
-add forbidden local reconstruction or out-of-scope target simulation.
+**Alternatives considered**: `fittedModuleAt()` joins, catalogue fallback, `damageFalloff()`,
+`armourPiercingFactor()`, target hardness and range-band aggregation were rejected as duplicate or
+out-of-scope calculations.
 
 ## Ammunition semantics
 
-**Decision**: Model ammunition as either `none` for package `null` or `capacity` carrying the exact
-`clipSize`, `hopper`, `total` and `unlimited` values. When `unlimited` is true, present the reserve and
-total semantically as unlimited rather than passing `Infinity` to an ordinary number formatter. A
-zero hopper remains numeric zero and is not called unlimited.
+**Decision**: Keep package `null` as carries no ammunition. A capacity keeps exact `clipSize`,
+`hopper`, `total` and `unlimited`. Infinite hopper/total with `unlimited: true` receives localized
+unlimited wording; finite zero reserve remains numeric zero.
 
-**Rationale**: Package `null` means the module carries no ammunition, not that its ammunition is
-unknown. The Abrasion Blaster uses `unlimited: true` with infinite hopper/total. A zero reserve has a
-different package meaning, including Plasma Slug weapons that reload from fuel outside this model.
+**Rationale**: Probes distinguish laser `null`, finite multicannon capacity, Abrasion Blaster
+infinity/unlimited and an 18-round magazine with zero reserve. These are full-rearm capacities, not
+current journal ammunition.
 
-**Alternatives considered**: Treating `null` as unavailable, substituting zero, formatting infinity
-as a number, or inferring reload duration from capacity was rejected because each changes the
-package meaning.
+**Alternatives considered**: Treating null as unknown, passing infinity through number formatting,
+calling zero reserve unlimited, or calculating shots/reloads/firing time were rejected.
 
-## Capacitor and WEP-pip semantics
+## WEP half-pips and capacitor semantics
 
-**Decision**: Pass feature 003's settled WEP-pip value directly to
-`weaponsCapacitorMetrics({ weaponsPips })` and preserve all six returned fields:
-`weaponsPips`, `capacity`, `rechargeRate`, `sustainedEnergyPerSecond`, `netDrainRate` and
-`timeToDrain`. Use `timeToDrain` only as the package endurance result. A finite value is formatted as
-a localized duration, zero is immediate drain, and infinity is described according to the returned
-draw and observable weapon/power context.
+**Decision**: Accept feature 003's settled integer half-pips and pass
+`conditions.pips.weapons / 2` exactly once to `weaponsCapacitorMetrics()`. Retain all six returned
+fields and display the returned `weaponsPips`. Map finite positive time, zero time, infinite time with
+positive draw and infinite time with zero draw to field-specific wording without replacing the
+number.
 
-**Rationale**: The method always returns a result and accepts finite values from zero through four.
-It applies deployed power shedding to the distributor and weapons. Runtime probes show why infinity
-needs context:
+**Rationale**: The package accepts any finite pips from zero to four; feature 003 deliberately narrows
+product input to half steps summing to six. Stock Sidewinder at WEP 2 returns capacity 10, recharge
+0.5598197949…, draw 2.48, net drain 1.920180205… and time 5.207844541… seconds. Distributor disabled
+with powered lasers returns zero capacity and positive draw with zero seconds. Plant off or all
+weapons disabled returns zero draw and infinity. Infinity therefore means no net drain, not by itself
+that firing is possible.
 
-| Observable state                      | Capacity | Sustained draw | Net drain | Time to drain |
-| ------------------------------------- | -------- | -------------- | --------- | ------------- |
-| Powered stock Sidewinder at two WEP   | 10       | 2.48           | 1.920…    | 5.207…        |
-| Distributor disabled, lasers powered  | 0        | 2.48           | 2.48      | 0             |
-| Plant disabled and all consumers shed | 0        | 0              | 0         | `Infinity`    |
-| Weapons disabled, distributor powered | 10       | 0              | 0         | `Infinity`    |
-
-`Infinity` therefore means no net drain in the returned firing load; it does not by itself prove
-that a weapon can fire. Positive returned draw with infinite time can be described as sustained
-indefinitely. Zero draw is instead described as no draining powered firing load.
-
-**Alternatives considered**: Recalculating pip recharge, subtracting recharge from draw, calculating
-capacity divided by drain, or describing every infinity as indefinite firing were rejected. The
-first three duplicate package calculations; the last misstates shed/disabled/no-weapon cases.
+**Alternatives considered**: Passing integer half-pips directly, a second pip validator/store,
+recalculating recharge/net drain/time, or describing every infinity as indefinite firing were
+rejected.
 
 ## Weapon totals versus powered firing load
 
-**Decision**: Label `weaponMetrics().total` as the total across enabled fitted weapons and the
-capacitor's `sustainedEnergyPerSecond` as the powered deployed firing load. Never force the two
-energy fields to match. Compose feature 005's package-backed module power observation beside a
-zero-capacity or shed state; do not reconstruct per-module power attribution in feature 007.
+**Decision**: Label `weaponMetrics().total` as enabled returned-weapon output and capacitor
+`sustainedEnergyPerSecond` as powered, enabled, deployed firing draw. Never force them to match.
 
-**Rationale**: 0.1.1 intentionally filters disabled weapons from weapon totals, but it does not
-filter enabled weapons by deployed power shedding there. The capacitor facade does apply shedding.
-The scopes are different package results. 0.1.1 supplies the authoritative `PowerBudget.consumers`
-projection released for [Almanac #299](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/299),
-and feature 005 owns the shared presentation of that result.
+**Rationale**: Weapon totals do not apply plant shedding; capacitor input does. Probes show shed Gauss
+weapons with positive aggregate EPS but zero capacitor draw, and a shed distributor with positive
+weapon/capacitor draw but zero capacity/immediate drain.
 
-**Alternatives considered**: Zeroing weapon totals when hardpoints are retracted or shed, comparing
-the two EPS fields as an error, or mapping priority bands to modules independently inside feature 007
-were rejected. Each would replace or duplicate package semantics.
+**Alternatives considered**: Zeroing weapon totals from power state, comparing the two EPS values as
+an error, or substituting one for the other were rejected because they change package scope.
+
+## Distributor and hardpoint context ownership
+
+**Decision**: Consume two explicit same-revision boundaries: feature 002 supplies package-backed
+hardpoint coverage and shared exact-slot targets; feature 005 supplies a deployed distributor
+power-observation port backed by its owner-authored `powerBudget()` interpretation. Until those
+type-only contracts are accepted, feature 007 delivery is blocked.
+
+**Rationale**: Current feature 002 artifacts contain the source slot views but no named cross-feature
+coverage port. Current feature 005 exports Status power and feature-010 hardpoint observation only;
+its distributor view is `ready | unavailable` and explicitly forbids inferring a cause from null.
+Feature 007 cannot truthfully claim a present/disabled/shed/absent port already exists, nor can it
+reconstruct priority shedding.
+
+**Alternatives considered**: Diagnosing from capacitor zero, calling `distributorMetrics()` and
+parsing null, joining feature-005 consumers/bands locally, or hiding power context were rejected. The
+first three infer or duplicate power semantics; the last fails FR-007.
+
+## Status-provider integration
+
+**Decision**: Export `OffenceStatusProvider` under feature 003's generic envelope. It selects exact
+`total.sustainedDamagePerSecond`, supplies package-native firing condition, targets
+`offenceProfile`, repeats the captured revisions and returns `qualifiedSummaryIds: ['sustainedDps']`
+only when unresolved/unavailable hardpoint coverage qualifies completeness.
+
+**Rationale**: Feature 003's accepted provider bundle requires an owner-authored feature-007
+projection. Sharing the cached weapon projection prevents a second calculation model and leaves
+feature 003 responsible only for composition.
+
+**Alternatives considered**: Feature 003 calling Almanac itself, a second unversioned status store,
+qualifying every numeric zero, and suppressing retracted output were rejected by ownership and the
+package-native firing contract.
+
+## Canonical and localized game text
+
+**Decision**: Preserve `FittedWeaponMetrics.name` as exact canonical package output. Presentation
+requests `getModuleName(symbol, locale)` through feature 011's game-text presenter; canonical fallback
+is visibly disclosed and missing text remains unavailable.
+
+**Rationale**: The fitted result name is canonical English, not active-locale text. Conflating it
+with localized presentation loses the exact source and violates the shared localization boundary.
+
+**Alternatives considered**: Treating `name` as localized, privately translating module names or
+overwriting the snapshot's canonical field were rejected.
 
 ## Design-reference adaptation
 
-**Decision**: Adopt the reference's prominent whole-build output, adjacent damage/capacitor facts,
-complete fitted-weapon identity and wide-to-stacked responsive direction. Replace visual bars with
-semantic value groups unless a visual can use a package-returned scale without calculation. Remove
-damage-at-range bands, convergence, target resistance, target hull/shield output, corrosion bonus and
-weapon-alpha summaries.
+**Decision**: Use canvas 1c's first-class Offence mode, prominent burst/sustained total and scannable
+weapon identity/DPS/piercing/range adjacency. Use canvas 1d only for vertical-card and selected-slot
+layer direction. Extend both with complete field parity, exact-slot actions and all required states.
 
-**Rationale**: The retained hierarchy supports scanning and drill-through. The removed regions are
-explicitly out of scope or would require local calculations. The reference also omits many required
-package fields and states, so the planned complete detail groups must extend it.
+**Rationale**: Canvas 1c nests damage/range/capacitor beside the weapon summary; canvas 1d omits that
+weapon summary, reduces capacitor data, adds target/convergence calculations and contradicts the
+desktop sample's burst/sustained labels. The mock is not a responsive data contract.
 
-**Alternatives considered**: Copying the canvas literally was rejected because its sample values,
-inline style literals, hard-coded English, hover-only titles and derived visuals conflict with the
-specification and constitution.
+**Alternatives considered**: Literal HTML/CSS reuse, copying mobile omissions, inferred bars,
+convergence, range bands, target resistance, alpha/corrosion values, hover meanings, external assets
+and fixed breakpoints were rejected by the spec and constitution.
 
-## Localization, accessibility and verification
+## Repository and verification readiness
 
-**Decision**: Use feature 011 messages and active-locale formatters for labels, rates, MW, MJ,
-seconds and metre distances. Resolve module names through the Almanac localization helper and show
-the shared canonical-language disclosure when unavailable. Complete semantic text accompanies every
-state and any visual. Unit tests assert exact package equality and discriminants; Playwright covers
-desktop, tablet/mobile portrait and landscape in Chromium and Firefox with automated accessibility
-checks and manual screen-reader journeys.
+**Decision**: Keep the 80% coverage gates and target five layouts per engine with axe plus manual
+screen-reader/actual-zoom protocols. Block implementation until feature 011 enables full strictness
+and supplies that harness.
 
-**Rationale**: These are constitutional gates, not a later polish pass. Dense weapon output especially
-needs explicit label/value relationships, wrapping, expandable regions with named state and
-coalesced announcements.
+**Rationale**: The repository currently has only an application shell and build-link codec. Root
+TypeScript does not enable `strict`; Angular template strictness is absent. Playwright has desktop,
+tablet portrait and mobile portrait in Chromium only, with no Firefox, landscape or axe dependency.
+Planning cannot describe those obligations as already implemented.
 
-**Alternatives considered**: Hard-coded labels, manually translated module names, unlabelled data
-tables, hover tooltips and one-browser snapshots were rejected by principles V, VI, VII and VIII.
+**Alternatives considered**: Calling the current config compliant, reducing the matrix, skipping
+accessibility states or implementing private feature-local foundations were rejected.
 
 ## Research conclusion
 
-No planning ambiguity or Almanac release blocker remains. Feature behavior, result semantics,
-responsive composition and verification are resolved. The shared distributor power context remains
-sequenced through feature 005 rather than being reimplemented locally.
+All feature semantics and design choices are resolved, and pinned Almanac 0.1.1 has no feature-007
+API blocker. Implementation remains blocked on shared strictness and features 001/002/003/005/011,
+including the two missing same-revision integration ports. No planning clarification remains.
