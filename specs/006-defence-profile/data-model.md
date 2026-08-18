@@ -59,6 +59,8 @@ interface CalculationIssueView {
 
 Rules:
 
+- `reason: 'unresolved'` is an exact package calculation-issue reason for package-resolved build
+  input; it never carries or authorizes an unknown module identity;
 - `packageIssue` is retained for `getCalculationIssueMessage()`; application code does not parse its
   English `message`.
 - `slot` and `symbol` remain exact package identities and may authorize a workspace slot target.
@@ -225,9 +227,10 @@ interface FittedDefenceRole {
 }
 ```
 
-Classification uses the actual armour slot or resolved package `engineeringGroup`. Unresolved
-records are never guessed through symbol/name parsing. These are fitted-role/navigation records, not
-facade-input provenance:
+Classification uses the actual armour slot or a package-resolved `engineeringGroup`. Only resolved
+modules enter this role list; unavailable role or stat data produces no guessed record. Exact package
+calculation issues may separately use reason `unresolved`, but that is not a fitted identity state.
+These are fitted-role/navigation records, not facade-input provenance:
 
 - they carry no allocated contribution, resistance share or local power verdict;
 - duplicate symbols remain distinct by `slotKey`;

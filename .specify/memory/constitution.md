@@ -12,8 +12,10 @@ Sync Impact Report
   package-owned empty/default ingress and transient feedback; downstream calculation and anatomy
   capabilities accept no unknown module identity.
 - Follow-up TODOs:
-  - Consume the Almanac release that replaces unknown modules before implementing affected ingress,
-    persistence, link and SLEF paths; do not reproduce its replacement logic locally.
+  - Consume the release tracked by
+    [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) before
+    implementing affected ingress, persistence, link and SLEF paths; do not reproduce its replacement
+    logic locally.
   - Add migration and regression coverage for saved builds, links and SLEF carrying unknown hull or
     module identities.
 -->

@@ -34,9 +34,10 @@ Implementation of the shared design system, localization runtime and complete br
 
 ## Constitution Check
 
-_GATE: **BLOCKED after constitution 6.0.0 review** until an Almanac release supplies structured
-unknown-module empty/default normalization for every reconstruction path. Unknown hull refusal is
-already available in 0.1.2. No local replacement implementation is permitted._
+_GATE: **BLOCKED after constitution 6.0.0 review** on
+[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332), which requests
+structured unknown-module empty/default normalization for every reconstruction path. Unknown hull
+refusal is already available in 0.1.2. No local replacement implementation is permitted._
 
 | Principle                               | Design evidence                                                                                                                                                             | Status             |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |

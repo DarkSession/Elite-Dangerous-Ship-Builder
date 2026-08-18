@@ -70,10 +70,11 @@ chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); a
 
 ## Constitution Check
 
-_GATE: **BLOCKED after constitution 6.0.0 review**. Historical purchase values remain outside the
-model, but pinned Almanac 0.1.2 still retains unknown modules. Task generation and implementation
-must wait for the released structured empty/default normalization contract; no local substitute is
-permitted._
+_GATE: **BLOCKED after constitution 6.0.0 review** on
+[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332). Historical purchase
+values remain outside the model, but pinned Almanac 0.1.2 still retains unknown modules. Task
+generation and implementation must wait for the released structured empty/default normalization
+contract; no local substitute is permitted._
 
 | Principle                               | Plan evidence                                                                                                                                  | Status                     |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |

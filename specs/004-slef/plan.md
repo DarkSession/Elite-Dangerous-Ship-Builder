@@ -80,10 +80,11 @@ import/export sheets and action-menu entry. Exact adoption and departures are re
 
 ## Constitution Check
 
-_GATE: **BLOCKED after constitution 6.0.0 review**. Captured per-module `Health` and historical prices
-remain outside application state, but pinned Almanac 0.1.2 still retains unknown modules. Ingress
-implementation waits for the promised released package-owned empty/default normalization contract;
-no local field rewrite or identity classification is permitted._
+_GATE: **BLOCKED after constitution 6.0.0 review** on
+[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332). Captured per-module
+`Health` and historical prices remain outside application state, but pinned Almanac 0.1.2 still
+retains unknown modules. Ingress implementation waits for the released package-owned empty/default
+normalization contract; no local field rewrite or identity classification is permitted._
 
 | Principle                               | Design evidence                                                                                                                                                                     | Status                     |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |

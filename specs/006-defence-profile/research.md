@@ -32,9 +32,10 @@ every field. For incomplete results retain the complete ordered `CalculationIssu
 `field`, `reason`, `slot`, `symbol` and params. Present issue text with the package's
 `getCalculationIssueMessage()` locale helper and feature 011's canonical-language disclosure.
 
-Missing, unresolved, disabled, shed and invalid meanings come directly from those issues. A shield
-or recovery issue concerning plant capacity/draw remains a plant/draw diagnosis and is never
-relabeled as a generator verdict.
+Missing, unresolved, disabled, shed and invalid meanings come directly from those issues. Here
+`unresolved` describes unavailable package calculation data for package-resolved build input; unknown
+module identities were normalized before this capability. A shield or recovery issue concerning
+plant capacity/draw remains a plant/draw diagnosis and is never relabeled as a generator verdict.
 
 **Rationale**: The structured result already owns the unavailable-state distinction required by
 FR-003. Runtime probes confirmed distinct `shieldGenerator/missing`, `shieldGenerator/disabled` and
@@ -124,8 +125,9 @@ fitted identity from calculation fallback preserves honesty.
 **Decision**: Present resolved fitted defence-role records from `slots()` in package outfitting order.
 The actual armour slot identifies the bulkhead; resolved package `engineeringGroup` values identify
 shield generators, shield boosters, shield reinforcements, hull/Guardian hull reinforcements and
-module reinforcements. Each record retains exact slot key, module `symbol`, direct `on` state and
-resolved/unresolved presentation status. Cell banks come from `cellBanks()` instead of a duplicate
+module reinforcements. Each record retains exact slot key, package-resolved module `symbol` and direct
+`on` state. A module whose role or stats are unavailable produces no role record; it may still have a
+separate exact package calculation issue. Cell banks come from `cellBanks()` instead of a duplicate
 role list.
 
 These rows are described as fitted role records adjacent to their aggregate. The package facade does
@@ -135,7 +137,8 @@ provide an exact generator slot even when the fitted stats are unresolved.
 
 **Rationale**: FR-009 requires a shown fitted source to reach its slot and prohibits apportionment;
 it does not require invented per-module contribution provenance. Public resolved classification is
-enough for honest role/navigation rows on package-backed builds.
+enough for honest role/navigation rows on package-backed builds, and unknown identities never enter
+the list.
 
 **Alternatives considered**:
 

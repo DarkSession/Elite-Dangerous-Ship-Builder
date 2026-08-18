@@ -35,8 +35,9 @@ attack, damage percentage or combined defence score is calculated.
 - `armourMetrics()` may use the hull's stock lightweight alloy when no armour contributes. That
   package calculation behavior does not create a fitted source.
 - The actual armour slot is shown only when its `LoadoutSlot.module` exists.
-- Other resolved fitted-role records use package `engineeringGroup` classification. Unresolved
-  records are not guessed from symbol/name.
+- Other fitted-role records use a package-resolved `engineeringGroup` classification. A module with
+  unavailable role/stat data yields no guessed record; unknown module identities never reach this
+  boundary because ingress normalized them first.
 - A role record states what is fitted and where, not whether or how much the facade counted.
 - Direct `FittedModule.on` may be shown as enabled, disabled or unspecified; no local shedding verdict
   is attached.

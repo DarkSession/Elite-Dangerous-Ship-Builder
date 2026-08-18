@@ -102,9 +102,11 @@ Validation:
 
 - Decode JSON as untrusted input and validate every discriminant, scalar and collection bound before package construction.
 - Reconstruct with `ShipLoadout.fromLoadout()` and package pre-engineered helpers already used by the codec.
-- Duplicate slots or an unknown hull/module identity make a current snapshot malformed. A supported
-  older decoder may expose an unknown module only to the package reconstruction boundary, which
-  emits transient empty/default normalization before the latest snapshot is serialized.
+- Duplicate slots and structurally invalid identity fields make a snapshot malformed. Any
+  syntactically valid module symbol—including one unknown after tampering or catalogue churn—must
+  reach the released package normalization boundary, regardless of snapshot version. An unknown hull
+  refuses reconstruction; unknown modules produce transient empty/default outcomes before the latest
+  snapshot is serialized.
 - Calculated values, catalogue facts, local note/name, record IDs, validation snapshots and timestamps are forbidden.
 
 ## LocalRecordV1

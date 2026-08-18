@@ -299,6 +299,7 @@ lowering coverage cannot prove the behavioral contract.
 ## Research status
 
 No product clarification remains. Historical purchase values are outside the model. Feature 002 is
-**BLOCKED** on the promised Almanac release that supplies structured unknown-module empty/default
-normalization; pinned 0.1.2 still retains unknown modules. Features 001 and 011 remain repository
-prerequisites. No application-side normalization is permitted.
+**BLOCKED** on [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332),
+which tracks the package release supplying structured unknown-module empty/default normalization;
+pinned 0.1.2 still retains unknown modules. Features 001 and 011 remain repository prerequisites. No
+application-side normalization is permitted.

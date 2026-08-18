@@ -52,7 +52,8 @@ resolved package engineering group.
 - They carry only directly observed fitted/enabled state.
 - They never carry an apportioned contribution, inferred resistance share or local power verdict.
 - They are described as fitted role records, not authoritative facade-input provenance.
-- Unresolved records are not classified by symbol, display name, slot position or modifiers.
+- Only package-resolved role records are classified. Unavailable role/stat data is not recovered from
+  symbol, display name, slot position or modifiers, and no unknown module identity is accepted.
 - Cell banks are not duplicated; their returned entries already own exact slot actions.
 
 ## Slot intent
@@ -70,7 +71,8 @@ context. The intent changes no build, conditions, revision, persistence, history
 
 - A settled build/condition revision emits at most one concise localized summary of changed defence
   availability, totals or qualifications.
-- Missing, unresolved, disabled, shed and invalid issue reasons remain package-authored distinctions.
+- Missing, unresolved, disabled, shed and invalid issue reasons remain package-authored calculation
+  distinctions; `unresolved` never means an unknown fitted identity is retained.
 - No-banks, fitted banks, all-unpowered banks and unknown-power qualification use distinct messages.
 - Opening a slot delegates to feature 002's selection announcement and is not announced twice.
 - A provider projection failure uses feature 011's assertive blocking-error channel once.

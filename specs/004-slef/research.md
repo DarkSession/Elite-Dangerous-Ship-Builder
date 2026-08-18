@@ -288,8 +288,10 @@ accessibility and claiming automated browser zoom coverage were rejected.
 
 - Almanac 0.1.2 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
   fixed repair, default current-retail export and package-derived integrity, but still retains
-  unknown modules. Feature 004 ingress is blocked until the promised release supplies structured
-  empty/default identity normalization. Captured module `Health` remains outside application state.
+  unknown modules. Feature 004 ingress is blocked on
+  [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) until its release
+  supplies structured empty/default identity normalization. Captured module `Health` remains outside
+  application state.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
   contract is also required.
 - The current repository does not yet contain those planned foundations; feature 004 must not create

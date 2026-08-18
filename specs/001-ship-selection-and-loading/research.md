@@ -41,10 +41,11 @@ pre-engineered tuple and ordinary blueprint grade/effect. Construct it from `Shi
 after ingress normalization and reconstruct through the released package boundary before accepting
 it.
 
-**Rationale**: Almanac 0.1.2 already rejects an unknown hull. The promised package release must also
-empty unknown removable modules and default unknown fixed modules before the application reads a
-figure or creates the snapshot. `toLoadoutEvent()` remains unsuitable as the storage DTO because it
-lowercases identities and adds recomputed derived fields.
+**Rationale**: Almanac 0.1.2 already rejects an unknown hull.
+[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) tracks the required
+package release that must empty unknown removable modules and default unknown fixed modules before
+the application reads a figure or creates the snapshot. `toLoadoutEvent()` remains unsuitable as the
+storage DTO because it lowercases identities and adds recomputed derived fields.
 
 **Alternatives considered**: `JSON.stringify(ShipLoadout)` was rejected because class internals are
 not a durable contract. Wholesale SLEF/loadout-event storage was rejected because it mixes modelled

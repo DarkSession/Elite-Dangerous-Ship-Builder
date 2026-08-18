@@ -148,7 +148,7 @@ specs/005-power-and-heat/
 ```
 
 `tasks.md` is Phase 2 output and has not yet been generated. Its dependency graph must retain the
-feature 001/002/003/011 sequencing and the viewing-control contract reconciliation above.
+feature 001/002/003/011 sequencing and the settled shared viewing-store/control ownership above.
 
 ### Source Code (repository root)
 

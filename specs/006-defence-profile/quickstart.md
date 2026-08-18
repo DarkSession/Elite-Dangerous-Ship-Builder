@@ -110,9 +110,10 @@ Expected:
 
 Use duplicate boosters/reinforcements plus generator, actual bulkhead and slot-bearing issues.
 
-Expected: package-resolved roles appear in package slot order; unresolved records are not guessed by
-symbol/name; duplicate symbols retain independent exact-slot actions; wide and narrow actions deliver
-the original key; no role row claims numeric facade provenance.
+Expected: package-resolved roles appear in package slot order; unavailable role/stat data produces no
+guessed record and no unknown module identity; duplicate symbols retain independent exact-slot
+actions; wide and narrow actions deliver the original key; no role row claims numeric facade
+provenance. Any package issue reason `unresolved` remains calculation feedback only.
 
 ## 9. Validate revision and Status integration
 
