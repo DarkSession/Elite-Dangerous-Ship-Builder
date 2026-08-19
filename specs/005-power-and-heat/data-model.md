@@ -264,17 +264,19 @@ The provider envelope is ready for the captured revision pair, targets
 `powerAndHeat` and returns an empty `qualifiedSummaryIds`, because every figure
 `powerBudget()` returns is exact. Feature 003 does not reinterpret the value.
 
-## HardpointPowerObservation
+## MountPowerObservation
 
-Feature 005's feature 010 contribution:
+Feature 005's contribution to features 007 and 010, defined once over any
+package slot key — hardpoint, utility or core internal:
 
 ```ts
-type HardpointPowerObservation =
+type MountPowerObservation =
   | { readonly kind: 'notApplicable' }
   | { readonly kind: 'disabled'; readonly priority: PowerPriority }
   | { readonly kind: 'inactiveRetracted'; readonly priority: PowerPriority }
   | { readonly kind: 'powered'; readonly priority: PowerPriority }
-  | { readonly kind: 'shed'; readonly priority: PowerPriority };
+  | { readonly kind: 'shed'; readonly priority: PowerPriority }
+  | { readonly kind: 'unavailable' };
 ```
 
 Selection rules use only one budget:
@@ -282,10 +284,16 @@ Selection rules use only one budget:
 1. no returned power consumer for the exact slot → `notApplicable`;
 2. disabled consumer → `disabled`;
 3. retracted plus `deployedOnly === true` → `inactiveRetracted`;
-4. otherwise select the matching package band's selected powered boolean.
+4. otherwise select the matching package band's selected powered boolean;
+5. the budget cannot answer for the requested key → `unavailable`.
+
+`inactiveRetracted` is reachable only for a mount the package reports as
+`deployedOnly`, so a core internal never selects it. Consumers state their own
+vocabulary over this union — feature 007 presents `notApplicable` as absent —
+and none widens or narrows it.
 
 The port stamps every observation with build and condition revisions outside
-this union. Feature 010 accepts no stale pair.
+this union. Consumers accept no stale pair.
 
 ## LocalizedGameText
 

@@ -79,8 +79,8 @@ replacement coordinator and the shared dialog primitives that all three stories 
 - [ ] T018 [P] Define the `BuildSnapshotV1`, `SnapshotModuleV1`, `PreEngineeredIdentityV1` and `EngineeringSnapshotV1` types with their literal discriminators in `src/app/domain/build/build-snapshot.ts`
 - [ ] T019 Implement `toBuildSnapshotV1(loadout)` reading hull symbol, nullable ship name/ident and per-slot module symbol, absent-vs-false `enabled`, nullable zero-based `priority`, `FittedModule.preEngineeredVariant` identity tuple and ordinary engineering from `ShipLoadout` getters in `src/app/domain/build/build-snapshot.serializer.ts` with unit tests asserting no derived, calculated or lowercased field is emitted (depends on T018)
 - [ ] T020 Implement `parseBuildSnapshotV1(value: unknown)` validating every discriminant, scalar, bound and case-insensitive slot uniqueness as untrusted input in `src/app/domain/build/build-snapshot.parser.ts` with unit tests for malformed, duplicate-slot and out-of-range fixtures (depends on T018)
-- [ ] T021 Implement `reconstructFromSnapshot(snapshot)` calling `ShipLoadout.fromLoadout()` and the package pre-engineered helpers, refusing an unknown hull and returning the package empty/default outcome for unknown modules in `src/app/domain/build/build-snapshot.reconstructor.ts` with unit tests (depends on T020)
-- [ ] T022 [P] Define `IngressIdentityNormalisationOutcome` and the mapper from the released package normalization result to `{ slotKey, sourceIdentity, action, replacementIdentity }` in `src/app/domain/build/ingress-normalisation.ts` with unit tests asserting the collection is never attached to a snapshot
+- [ ] T021 Implement `reconstructFromSnapshot(snapshot)` calling `ShipLoadout.fromLoadout()` and the package pre-engineered helpers, refusing an unknown hull, reading `ShipLoadout.importOutcomes` for the package unknown-module empty/default results, then calling `repairFixedMount(slotKey)` for every armour, core-internal and cargo-hatch mount the snapshot left empty and retaining a `defaultUnavailable` result as an incomplete build, in `src/app/domain/build/build-snapshot.reconstructor.ts` with unit tests covering `emptied`, `defaulted`, source-empty `repaired`, `defaultUnavailable` and `refused` outcomes (depends on T020)
+- [ ] T022 [P] Define `IngressIdentityNormalisationOutcome` and the mapper from the package `LoadoutImportOutcome` entries and `FixedMountRepairResult` values to `{ slotKey, sourceIdentity, action, replacementIdentity }`, where `action` covers `emptied`, `defaulted`, `repaired` and `defaultUnavailable`, in `src/app/domain/build/ingress-normalisation.ts` with unit tests asserting the collection is never attached to a snapshot
 - [ ] T023 [P] Implement the modelled-state `baselineFingerprint` derived only from a serialized snapshot, plus the `dirty` predicate, in `src/app/domain/build/replacement-policy.ts` with unit tests covering new-unnamed, equal-to-baseline and diverged states
 
 ### Active build and replacement coordination
@@ -235,7 +235,7 @@ dirty build is active.
 
 - [ ] T085 [US3] Implement the fragment recognizer that accepts only a `b.` value, leaves unrelated fragments uninterpreted and rejects a value longer than 500 characters before any decoding in `src/app/application/build-link/fragment-recognizer.ts` with unit tests (depends on T011)
 - [ ] T086 [US3] Implement the single ingress coordinator invoked identically by initial app start, address-bar paste, browser navigation and in-app `hashchange`, decoding to a detached candidate through `decodeBuildLinkFragment` behind an async request token so a late decode cannot replace a newer navigation, in `src/app/application/build-link/build-link.coordinator.ts` with unit tests (depends on T026, T085)
-- [ ] T087 [US3] Route the decoded candidate through the released package normalization boundary — refusing an unknown hull, emptying an unknown removable module, defaulting an unknown fixed module and retaining only transient `IngressIdentityNormalisationOutcome` feedback — in `src/app/application/build-link/build-link.coordinator.ts` with unit tests asserting no unknown identity survives into the accepted build (depends on T022, T086)
+- [ ] T087 [US3] Route the decoded candidate through the released package normalization boundary — refusing an unknown hull, emptying an unknown removable module, defaulting an unknown fixed module, repairing a fixed mount the payload left empty through `repairFixedMount(slotKey)` and retaining only transient `IngressIdentityNormalisationOutcome` feedback — in `src/app/application/build-link/build-link.coordinator.ts` with unit tests asserting no unknown identity survives into the accepted build (depends on T022, T086)
 - [ ] T088 [US3] Implement fragment publication encoding the latest active build after each modelled edit and replacing only the fragment with `history.replaceState`, preserving origin, base path and query and adding no history entry per edit, in `src/app/application/build-link/fragment-publisher.ts` with unit tests (depends on T011, T025)
 - [ ] T089 [US3] Implement encode refusal that clears a stale `b.` fragment with `replaceState`, retains the active build, and exposes the structured code with the affected slot and reason in `src/app/application/build-link/fragment-publisher.ts` with unit tests (depends on T088)
 - [ ] T090 [US3] Ensure note, name, record and tab metadata edits neither enter nor perturb the payload by routing publication solely through the modelled snapshot allowlist in `src/app/application/build-link/link-payload.allowlist.ts` with unit tests naming every forbidden field (depends on T088)
@@ -253,7 +253,7 @@ dirty build is active.
 
 - [ ] T097 [US3] Add the link suite covering publication shape, the 500-character bound including `b.`, no build data in path or query, no history growth per edit, cross-tab restoration as working/link provenance without a named save, and malformed, truncated, over-limit and unsupported-version fragments arriving while a dirty build is active in `e2e/build-link.spec.ts`
 - [ ] T098 [US3] Assert in the link suite that no request URL contains `b.` build data and no automatic cross-origin request occurs during catalogue, detail, storage and share flows in `e2e/build-link.spec.ts` (depends on T097)
-- [ ] T099 [US3] Add unknown-hull, unknown-removable-module and unknown-fixed-module link fixtures asserting refusal, emptying and defaulting with transient slot/source feedback and a normalized link containing neither unknown identity in `e2e/build-link.spec.ts` (depends on T087, T097)
+- [ ] T099 [US3] Add unknown-hull, unknown-removable-module, unknown-fixed-module and source-empty-fixed-mount link fixtures asserting refusal, emptying, defaulting and repair with transient slot/source feedback and a normalized link containing neither unknown identity in `e2e/build-link.spec.ts` (depends on T087, T097)
 
 **Checkpoint**: All three user stories are independently functional.
 
@@ -283,7 +283,9 @@ integration closure and the documented validation run.
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies beyond feature 011 having landed; can start immediately
-- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all three user stories
+- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all three user stories. T021's package
+  fixed-mount repair step and T022's `IngressIdentityNormalisationOutcome` are contract-first for
+  feature 002 T009, which composes them rather than re-implementing the rule
 - **User Story 1 (Phase 3)**: Depends on Foundational only
 - **User Story 2 (Phase 4)**: Depends on Foundational only; shares the workspace shell with US1 and US3 but adds no requirement to US1
 - **User Story 3 (Phase 5)**: Depends on Foundational only; T095 touches the same workspace startup file as T081, so sequence those two if US2 and US3 run concurrently
@@ -364,4 +366,5 @@ Task: "Implement SlotLayout in src/app/ui/hull/slot-layout.ts"
 - Every browser API is reached through an injected port so domain behavior stays render-free and testable
 - Candidate-first is absolute: no loader mutates active state before its candidate has parsed, constructed and validated
 - No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action
+- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

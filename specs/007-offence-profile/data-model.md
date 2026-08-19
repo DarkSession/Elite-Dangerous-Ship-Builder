@@ -36,7 +36,7 @@ interface OffenceSnapshot {
   readonly weapons: BuildWeaponMetrics;
   readonly hardpointCoverage: HardpointCoverage;
   readonly capacitor: WeaponsCapacitorMetrics;
-  readonly distributorPower: DeployedDistributorPowerObservation;
+  readonly distributorPower: MountPowerObservation;
 }
 ```
 
@@ -180,24 +180,32 @@ The presenter selects:
 This classification does not recalculate drain or replace the package result. No generic formatter or
 serializer receives infinity.
 
-## DeployedDistributorPowerObservation
+## MountPowerObservation (distributor reading)
 
-Feature 005 must own and export this accepted deployed-state observation before feature 007 tasks.
-The final type name may follow feature 005 naming, but its semantics must remain:
+Feature 005 owns and exports the shared `MountPowerObservation` union (see feature 005 data-model).
+Feature 007 reads it through `MountPowerObservationPort.observe(context, slotKey)` at the power
+distributor's exact core slot key and adds no union of its own:
 
 ```ts
-type DeployedDistributorPowerObservation =
-  | { readonly kind: 'powered'; readonly slotKey: string; readonly symbol: string }
-  | { readonly kind: 'disabled'; readonly slotKey: string; readonly symbol: string }
-  | { readonly kind: 'shed'; readonly slotKey: string; readonly symbol: string }
-  | { readonly kind: 'absent'; readonly slotKey: string }
-  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null };
+// owned by feature 005
+type MountPowerObservation =
+  | { readonly kind: 'notApplicable' }
+  | { readonly kind: 'disabled'; readonly priority: PowerPriority }
+  | { readonly kind: 'inactiveRetracted'; readonly priority: PowerPriority }
+  | { readonly kind: 'powered'; readonly priority: PowerPriority }
+  | { readonly kind: 'shed'; readonly priority: PowerPriority }
+  | { readonly kind: 'unavailable' };
 ```
 
-Feature 005 derives this only from exact slot/fitted state and its package-owned deployed power-budget
-semantics. Feature 007 displays it adjacent to capacitor zero/unavailability but never states that one
-fact caused the other. Until feature 005 accepts the port, this is a delivery blocker rather than an
-implemented contract.
+The exact `slotKey` and both revisions arrive on the `MountPowerObservationRead` wrapper rather than
+inside the union. Feature 007 resolves the distributor's module `symbol` from its own fitted-module
+view, which is an identity read rather than a power semantic.
+
+Feature 007 presents `notApplicable` as _absent_; `inactiveRetracted` is unreachable for a core
+internal because the package never reports one as `deployedOnly`. Feature 005 derives every variant
+only from exact slot/fitted state and its package-owned deployed power-budget semantics. Feature 007
+displays the result adjacent to capacitor zero/unavailability but never states that one fact caused
+the other.
 
 ## OffenceStatusProjection
 

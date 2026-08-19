@@ -50,12 +50,12 @@ is visible and programmatically associated with the field.
 ## Zero capacity and deployed distributor context
 
 Capacity/recharge zero are genuine package numbers. They appear beside a separate, same-revision,
-feature-005-owned `DeployedDistributorPowerObservation`:
+feature-005-owned `MountPowerObservation`, read at the power distributor's exact core slot key:
 
 - powered;
 - disabled;
 - power-shed;
-- absent;
+- absent (the owner's `notApplicable`);
 - unavailable.
 
 Feature 005 must accept and expose this port before feature 007 tasks. Its current

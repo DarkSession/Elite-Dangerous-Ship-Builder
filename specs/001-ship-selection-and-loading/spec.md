@@ -69,10 +69,13 @@ browser and share builds by URL. SLEF import and export are specified in
   records to discard while the active in-memory build remains usable.
 - **FR-014**: Browser persistence MUST use a versioned format and migrate every supported older
   version without losing recognized modelled state. During reconstruction, an unknown hull MUST
-  leave the record stored but unopened; an unknown removable module MUST become an empty slot and an
-  unknown fixed module MUST become the hull's package default, with transient feedback before the
-  normalized build becomes active. Unsupported newer versions MUST remain stored but unopened.
-  Storage failure MUST disable only persistence.
+  leave the record stored but unopened; an unknown removable module MUST become an empty slot, an
+  unknown fixed module MUST become the hull's package default, and a fixed mount reconstructed
+  empty MUST receive that same package default, remaining empty with the build reported incomplete
+  when the package supplies none — all with transient feedback before the normalized build becomes
+  active. [002](../002-module-outfitting/spec.md) FR-010 states that normalisation rule
+  canonically; this requirement applies it to reconstruction from storage. Unsupported newer
+  versions MUST remain stored but unopened. Storage failure MUST disable only persistence.
 - **FR-015**: A build link MUST keep its payload entirely in the URL fragment and MUST cause no
   transmission of build data.
 - **FR-016**: The payload MUST contain only non-derived modelled state: package-resolved identities,

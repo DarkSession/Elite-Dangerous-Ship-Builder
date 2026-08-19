@@ -33,7 +33,7 @@ Before implementation acceptance, confirm:
 - feature 003 permits reuse of the same scoped condition controls inside Power
   and Heat as required by FR-003;
 - feature 010 consumes feature 005's
-  `HardpointPowerObservationPort` rather than power fields directly;
+  `MountPowerObservationPort` rather than power fields directly;
 - feature 011 supplies shared UI, localized formatting/game text, previews,
   ten Playwright projects and axe helpers.
 

@@ -48,20 +48,23 @@ An unexpected package/projection exception is allowed to propagate to feature
 003's `projectionFailed` boundary. Package unavailable heat/distributor states
 do not affect this power provider.
 
-## Feature 010 HardpointPowerObservationPort
+## Features 007 and 010 MountPowerObservationPort
 
 ```ts
-interface HardpointPowerObservationRead {
+interface MountPowerObservationRead {
   readonly buildRevision: number;
   readonly conditionsRevision: number;
   readonly slotKey: string;
-  readonly observation: HardpointPowerObservation;
+  readonly observation: MountPowerObservation;
 }
 
-interface HardpointPowerObservationPort {
-  observe(context: StatusRevisionContext, slotKey: string): HardpointPowerObservationRead;
+interface MountPowerObservationPort {
+  observe(context: StatusRevisionContext, slotKey: string): MountPowerObservationRead;
 }
 ```
+
+`slotKey` is any exact package slot key. Feature 010 observes hardpoint and
+utility mounts; feature 007 observes the power distributor's core slot.
 
 The adapter uses the exact `PowerBudget.consumers` label and matching returned
 band:
@@ -70,13 +73,15 @@ band:
 - disabled → `disabled`;
 - selected retracted plus package `deployedOnly: true` →
   `inactiveRetracted`;
-- otherwise the matching selected package band becomes `powered` or `shed`.
+- otherwise the matching selected package band becomes `powered` or `shed`;
+- the budget cannot answer for the requested key → `unavailable`.
 
 Priority is the package-normalized one-based value.
 
-Feature 010 owns empty/fitted/engineering state and geometry. It passes an exact
-package slot and renders this observation; it does not read raw `On`,
-`Priority`, modifiers or bands.
+Consumers own their own subject matter and pass an exact package slot key.
+Feature 010 owns empty/fitted/engineering state and geometry; feature 007 owns
+capacitor endurance. Neither reads raw `On`, `Priority`, modifiers or bands, and
+neither infers a power cause from a capacitor or distributor value.
 
 ## Identity rules
 
@@ -94,8 +99,10 @@ package slot and renders this observation; it does not read raw `On`,
 - Feature 003's final provider bundle imports only feature 005's exported
   `PowerStatusProjection`/provider type, not components or internal
   projectors.
-- Feature 010 imports only `HardpointPowerObservationPort` and observation
+- Features 007 and 010 import only `MountPowerObservationPort` and observation
   types.
+- Feature 007 additionally imports feature 002's type-only `HardpointCoverage`
+  leaf; feature 002 owns and derives that value.
 - Runtime instances are supplied through application composition/injection so
   no domain module forms a runtime circular dependency.
 

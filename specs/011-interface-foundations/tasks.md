@@ -54,7 +54,7 @@ verification harness that every user story composes.
 
 ### Design tokens and global styles
 
-- [ ] T007 [P] Define the primitive colour, type, spacing, radius, elevation, border, motion and target literals derived from `.design/Ship Builder.dc.html` in `src/styles/tokens/_primitives.scss`
+- [ ] T007 [P] Define the primitive token literals in `src/styles/tokens/_primitives.scss`: take the colour primitives from the 55 named custom properties in `.design/Ship Builder.dc.html` (`--amber-*`, `--ink-*`, `--panel-*`, `--bg-*`, `--hot`, `--good`, `--cool`, `--hair`), and author the type scale, spacing, radius, elevation, border, motion and target primitives here as bounded named step scales with the canvas as visual reference only — this repository is the record and the design tool is a preview (principle VII). The canvas `font-size` values of 8px and 9px are artboard-thumbnail artifacts and MUST NOT become a type scale, and its 78 `padding`, 18 `gap` and 15 `letter-spacing` literals MUST NOT be imported as a spacing system
 - [ ] T008 Define the one contrast-audited semantic dark set consuming only primitives in `src/styles/tokens/_semantic.scss` (depends on T007)
 - [ ] T009 [P] Record AA text and non-text contrast evidence for every intended semantic pair in `specs/011-interface-foundations/design/token-evidence.md`
 - [ ] T010 [P] Declare the same-origin `@font-face` rules and complete fallback stacks in `src/styles/_fonts.scss`
@@ -80,14 +80,14 @@ verification harness that every user story composes.
 - [ ] T021 [P] Define the shared component contract types (immutable inputs, typed intents, semantics, required state set) in `src/app/ui/component-contract.ts`
 - [ ] T022 Define the typed preview declaration, required-state and N/A rationale rules and the manifest registry in `src/app/ui/previews/preview-manifest.ts` (depends on T021)
 - [ ] T023 Render every manifest declaration at a stable component/state address in `projects/ui-preview/src/app/`, importing the production tokens, UI exports and localization providers (depends on T005, T013, T019, T022)
-- [ ] T024 [P] Create the machine-readable coverage ledger joining surfaces, requirement ids, journeys, axe flags, named assertions and manual protocol ids in `e2e/coverage-ledger.ts`
+- [ ] T024 [P] Create the machine-readable coverage ledger joining surfaces, requirement ids, journeys, axe flags, named assertions and manual protocol ids, seeded with this feature's cross-cutting design-system (FR-001–FR-005) and verification (FR-021–FR-024) entries that no user story owns, in `e2e/coverage-ledger.ts`
 
 ### Verification harness
 
 - [ ] T025 Generate the ten named projects (desktop, tablet portrait, tablet landscape, mobile portrait, mobile landscape × Chromium and Firefox) with explicit engine descriptors, `hasTouch` on the four touch profiles and `E2E_CHROMIUM_PATH`/`E2E_FIREFOX_PATH` escape hatches in `playwright.config.ts`
 - [ ] T026 [P] Add the shared axe helper that scans WCAG A/AA through 2.2 with no disabled rules and attaches the full JSON result on failure in `e2e/accessibility/axe.ts`
 - [ ] T027 [P] Add the landmark, heading, matching-name, state, relationship, text-equivalence, target-size and document-overflow assertion helpers in `e2e/accessibility/assertions.ts`
-- [ ] T028 Implement the AST- and PostCSS-backed policy checker for owned literal display text, literal visible/accessibility attributes, governed visual literals outside token sources, uninspectable inline styles, missing preview declarations and skipped or focused interface tests in `scripts/check-interface-foundations.mjs`
+- [ ] T028 Implement the AST- and PostCSS-backed policy checker for owned literal display text, literal visible/accessibility attributes, governed visual literals outside token sources, uninspectable inline styles, missing preview declarations, skipped or focused interface tests, and every `FR-` id declared in any `specs/*/spec.md` appearing at least once in `e2e/coverage-ledger.ts` with the unregistered ids named on failure, in `scripts/check-interface-foundations.mjs`
 - [ ] T029 Add positive and negative fixture tests for every checker rule in `scripts/check-interface-foundations.test.mjs` (depends on T028)
 - [ ] T030 Invoke the policy checker, preview and offline targets from the `check` script in `package.json` so a violation fails the build (depends on T003, T028)
 
@@ -224,7 +224,7 @@ and a previously opened German catalogue still loads offline.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T093 [P] Add the canonical qualified conformance message naming criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11 to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, and reject unqualified application claims in `scripts/check-interface-foundations.mjs`
+- [ ] T093 [P] Add the canonical qualified conformance message naming criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11 to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, register the FR-015 id with those assertions in `e2e/coverage-ledger.ts`, and reject unqualified application claims in `scripts/check-interface-foundations.mjs`
 - [ ] T094 Reconcile the coverage ledger with the route table, exported `src/app/ui/` components, preview declarations and Playwright project names in `scripts/check-interface-foundations.mjs` (depends on T024, T054, T070, T092)
 - [ ] T095 Assert the production output contains no preview route or chunk and emits no cross-origin request in `scripts/check-interface-foundations.mjs`
 - [ ] T096 [P] Write and run the versioned NVDA/Firefox desktop, TalkBack/Chromium mobile and tablet screen-reader protocols with their result records in `e2e/manual/screen-reader.protocol.md` and `e2e/manual/results/`

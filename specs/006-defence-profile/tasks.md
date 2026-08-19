@@ -246,7 +246,7 @@ gates across every delivered story.
 - [ ] T075 [P] Add the stale-revision journey proving rapid accepted module edits and settled SYS changes never publish or target a stale projection and never display an old payload under a new condition label, in `e2e/defence-profile.spec.ts`
 - [ ] T076 Complete the `e2e/coverage-ledger.ts` entries joining every Defence surface and state to FR-001–FR-009, its journey, its axe flag, its named assertions and the manual NVDA/Firefox desktop and TalkBack/Chromium mobile protocol ids
 - [ ] T077 Record the manual screen-reader and actual 400% zoom protocol results for the three stories and the qualified conformance statement “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11” in `specs/006-defence-profile/quickstart.md`
-- [ ] T078 Verify unit coverage stays at or above the 80% statement, branch, function and line thresholds for `src/app/domain/defence/`, `src/app/application/defence/` and `src/app/features/build-workspace/defence-profile/` in `vitest.config.ts`
+- [ ] T078 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/defence/`, `src/app/application/defence/` and `src/app/features/build-workspace/defence-profile/` under the thresholds in `angular.json`
 - [ ] T079 Execute the full [quickstart.md](./quickstart.md) validation, sections 3–12, against the delivered feature
 - [ ] T080 Run `pnpm run check` and resolve every format, strict type, build, script-test, unit-test, coverage, Playwright and axe failure with no skipped, quarantined or deleted test
 

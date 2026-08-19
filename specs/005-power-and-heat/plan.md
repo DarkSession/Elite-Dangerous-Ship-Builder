@@ -144,14 +144,14 @@ src/app/
 │   └── power-heat/
 │       ├── power-heat-projection.ts
 │       ├── power-status-projection.ts
-│       ├── hardpoint-power-observation.ts
+│       ├── mount-power-observation.ts
 │       └── semantic-metric-value.ts
 ├── application/
 │   └── power-heat/
 │       ├── power-heat.store.ts
 │       ├── power-heat.presenter.ts
 │       ├── power-status.adapter.ts
-│       └── hardpoint-power-observation.adapter.ts
+│       └── mount-power-observation.adapter.ts
 ├── i18n/                                  # feature 011 messages/formatters
 ├── ui/                                    # feature 011 primitives/previews
 └── features/
@@ -215,7 +215,7 @@ No planning ambiguity or Almanac dependency remains.
   scenarios, all returned fields and the null/non-finite meanings.
 - [contracts/integration-ports.md](./contracts/integration-ports.md) freezes
   feature 003's `PowerStatusProvider` and feature 010's
-  `HardpointPowerObservationPort`.
+  `MountPowerObservationPort`.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to
   the Power and Heat capability and its cross-feature contributions.
 - [design/power-and-heat-detail.md](./design/power-and-heat-detail.md) defines

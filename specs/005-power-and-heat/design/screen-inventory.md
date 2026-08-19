@@ -44,7 +44,7 @@ own their screens.
   duplicate state.
 - Feature 005 owns every power/heat/distributor projection,
   including the compact `PowerStatusProvider` and
-  `HardpointPowerObservationPort`.
+  `MountPowerObservationPort`.
 - Feature 010 consumes the observation port and owns geometry. It does not join
   consumers to bands or infer power.
 - Feature 011 owns tokens, components, localization/formatting, package game

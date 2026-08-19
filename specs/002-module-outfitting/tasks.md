@@ -45,7 +45,7 @@ against. Feature 002 adds no dependency to `package.json`.
 
 - [ ] T001 Record the prerequisite gate — feature 011 tokens, localization, shared components, preview catalogue, ten Playwright projects with `@axe-core/playwright`, and feature 001 `/build`, `ActiveBuildState`, canonical `BuildSnapshotV1` capture/reconstruct/atomic swap, replacement notification and autosave/fragment observers — in `specs/002-module-outfitting/design/prerequisite-gate.md`
 - [ ] T002 [P] Add the shared outfitting fixtures (default builds covering hardpoint, utility, core, optional, armour, planetary and cargo-hatch mounts; the 481-choice `PantherMkII` `Slot01_Size8` chooser; the tech-broker FSD Mass Manager regression; route-distinct variants; unknown removable, unknown fixed, unknown-original-slot and source-empty fixed payloads; supported and unsupported partial-quality payloads) in `src/app/domain/outfitting/outfitting.fixtures.ts`
-- [ ] T003 [P] Assert the pinned `@elite-dangerous-almanac/core@0.1.3` acceptance contract — snapshot reconstruction of every modelled field including name/ident with recomputed retail cost, fixed-reward effect add/replace/remove preserving the fixed modifier block and `preEngineeredVariant` (optimal mass 1785 → 1856.399902 → 1785), unknown-hull refusal with structured empty/default outcomes for unknown modules, and lossless partial-quality normalization with a stable `unsupported` result — in `src/app/domain/outfitting/almanac-acceptance.spec.ts`
+- [ ] T003 [P] Assert the pinned `@elite-dangerous-almanac/core@0.1.3` acceptance contract — snapshot reconstruction of every modelled field including name/ident with recomputed retail cost, fixed-reward effect add/replace/remove preserving the fixed modifier block and `preEngineeredVariant` (optimal mass 1785 → 1856.399902 → 1785), unknown-hull refusal, `ShipLoadout.importOutcomes` returning a frozen source-ordered `LoadoutImportOutcome[]` whose `emptied` entries carry `slot`/`sourceSymbol` and whose `defaulted` entries carry `slot`/`sourceSymbol | null`/`replacementSymbol`, and lossless partial-quality normalization with a stable `unsupported` result — in `src/app/domain/outfitting/almanac-acceptance.spec.ts`
 
 ---
 
@@ -58,7 +58,7 @@ diagnostic text and signal store that every user story composes.
 
 ### Application state types
 
-- [ ] T004 [P] Define `OutfittingState`, `surface`, `SlotCapabilities` and the selection/draft/failure field types in `src/app/application/outfitting/outfitting-state.ts`
+- [ ] T004 [P] Define `OutfittingState`, `surface`, `SlotCapabilities` and the selection/draft/failure field types in `src/app/application/outfitting/outfitting-state.ts`, and define the type-only `HardpointCoverage` contract leaf (`{ kind: 'confirmedEmpty' }`, `{ kind: 'complete'; occupiedSlots: readonly string[] }`, `{ kind: 'unavailable' }`) in `src/app/domain/outfitting/hardpoint-coverage.ts` (contract-first export: unblocks feature 007 T006)
 - [ ] T005 [P] Define `BuildEditIntent`, `BuildEditResult` and `EditFailure` with its five categories in `src/app/application/outfitting/build-edit-intent.ts`
 
 ### Checkpoint and ingress domain
@@ -66,7 +66,7 @@ diagnostic text and signal store that every user story composes.
 - [ ] T006 Implement `ModeledBuildCheckpoint` capture, package reconstruction and atomic install delegating to feature 001's `BuildSnapshotV1` boundary, retaining no purchase value, capture condition or package calculation, in `src/app/domain/build/modeled-build-checkpoint.ts`
 - [ ] T007 Add unit tests proving exact modelled round trip including sparse power fields, name, ident, ordinary engineering and identified variants, recomputed current catalogue cost and a blocking failure on impossible restore, in `src/app/domain/build/modeled-build-checkpoint.spec.ts` (depends on T006)
 - [ ] T008 [P] Define `SourcePartialEngineering`, the four `IngressNotice` shapes, `PartialEngineeringFailure` and `IngressResult` in `src/app/domain/build/build-ingress-result.ts`
-- [ ] T009 Implement the six-step shared ingress pipeline — decode without touching the active build, run the package identity boundary, discard fields belonging to normalized unknown modules, correlate remaining `[0,1)` qualities by exact slot and symbol and call `completeEngineeringGrade`, repair source-empty fixed mounts and retain `defaultUnavailable` incompleteness, then commit once — in `src/app/domain/build/build-ingress-normalizer.ts` (depends on T006, T008)
+- [ ] T009 Implement the six-step shared ingress pipeline — decode without touching the active build, run the package identity boundary, discard fields belonging to normalized unknown modules, correlate remaining `[0,1)` qualities by exact slot and symbol and call `completeEngineeringGrade`, repair source-empty fixed mounts through feature 001's `reconstructFromSnapshot` fixed-mount step rather than a second implementation and retain `defaultUnavailable` incompleteness, then commit once — in `src/app/domain/build/build-ingress-normalizer.ts` (depends on T006, T008)
 - [ ] T010 Add unit tests covering unknown-hull refusal, unknown removable emptying, unknown fixed and source-empty defaulting, engineering discarded with its unknown source module, `normalized` acceptance, atomic whole-candidate refusal on `unsupported`, package-contract failure on missing/mismatched/`unchanged`, never calling `completeEngineeringGrade` for absent quality or quality `1`, and the unchanged active build, revision, autosave, fragment and history after refusal, in `src/app/domain/build/build-ingress-normalizer.spec.ts` (depends on T009)
 
 ### Candidate-first transaction
@@ -113,7 +113,7 @@ remove.
 
 - [ ] T023 [P] [US1] Implement the `SlotView` projection — exact key, canonical and localized name, kind, size, restriction, removability and `immovableReason` — from `ShipLoadout.slots()` in `src/app/application/outfitting/slot-view.ts`
 - [ ] T024 [P] [US1] Implement the `FittedModuleView` projection reading `FittedModule.stats`, `effectiveStats`, `on`, `priority`, engineering and `preEngineeredVariant` while preserving field absence in `src/app/application/outfitting/fitted-module-view.ts`
-- [ ] T025 [US1] Derive `SlotCapabilities` from current package operation and query evidence only, keeping `packageEmpty` distinct from a fit capability and granting the cargo hatch power controls alone, in `src/app/application/outfitting/slot-capabilities.ts` (depends on T023, T024)
+- [ ] T025 [US1] Derive `SlotCapabilities` from current package operation and query evidence only, keeping `packageEmpty` distinct from a fit capability and granting the cargo hatch power controls alone, and derive `HardpointCoverage` from the same-build-revision package-resolved slot views — `confirmedEmpty` only when every package hardpoint slot is empty, `unavailable` whenever the views cannot answer, and never inferred from `weapons.length` — in `src/app/application/outfitting/slot-capabilities.ts` and `src/app/application/outfitting/hardpoint-coverage.adapter.ts` (depends on T023, T024)
 - [ ] T026 [US1] Implement exact candidate membership — one `modulesForSlot(slotKey)` call per source revision, one stock choice per record, every `getPreEngineeredVariants(symbol)` record emitted immediately after its stock choice, no `ALL_MODULES` query, no deduplication and no candidate retained across revisions — in `src/app/application/outfitting/candidate-membership.ts`
 - [ ] T027 [US1] Add unit tests proving choice count equals stock results plus every package variant for representative core, optional, weapon, utility and cargo-hatch slots, and that a stale revision discards retained choices, in `src/app/application/outfitting/candidate-membership.spec.ts` (depends on T026)
 - [ ] T028 [US1] Add unit tests proving empty and package-resolved slots stay visible, unknown identities never reach a view, unavailable facts never become zero, and cargo hatch reports `immovableReason: 'cargoHatch'`, in `src/app/application/outfitting/slot-view.spec.ts` (depends on T023, T024, T025)
@@ -307,7 +307,9 @@ proof, coverage registration and the documented validation run.
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: Depends on features 011 and 001 having landed; can start immediately after that
-- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all four user stories
+- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all four user stories. T009 composes
+  feature 001 T021's fixed-mount repair step, so that task must land first; T004 is contract-first
+  and unblocks feature 007 T006
 - **User Story 1 (Phase 3)**: Depends on Foundational only
 - **User Story 2 (Phase 4)**: Depends on Foundational and on US1's candidate membership (T026) and replacement surface (T037)
 - **User Story 3 (Phase 5)**: Depends on Foundational only; T072 edits the same slot card as T032, so sequence those two if US1 and US3 run concurrently
@@ -328,11 +330,19 @@ proof, coverage registration and the documented validation run.
 - Preview states land with the component they cover
 - Unit tests accompany the file they cover; the end-to-end suite closes each story
 
+### Cross-Feature Contracts
+
+- **Consumed**: feature 001 T021 (`reconstructFromSnapshot` fixed-mount repair) and T022
+  (`IngressIdentityNormalisationOutcome`) → this feature's T009 shared ingress pipeline
+- **Exported**: T004 defines the type-only `HardpointCoverage` leaf and T025 derives it → feature
+  007 T006. T004 must land before feature 007's Phase 2 can compile
+
 ### Shared-File Sequencing
 
 - `src/app/application/outfitting/outfitting.store.ts`: T016 → T029 (US1) → T061, T062 (US3) → T082, T083, T086 (US4)
 - `src/app/i18n/locales/en.json`: T015 → T052, T074, T089
 - `src/app/ui/outfitting/slot-card.ts`: T032 → T072
+- `HardpointCoverage`: T004 (type) → T025 (adapter)
 - `src/app/features/.../outfitting-workspace/outfitting-workspace.ts`: T036 → T073 → T088
 - `src/app/features/.../module-replacement/module-replacement.ts`: T037 → T051
 - `e2e/module-outfitting.spec.ts`: T039 → T040, T054, T055, T079, T096
@@ -405,4 +415,5 @@ Task: "Implement the structured edit-refusal notice in src/app/ui/outfitting/edi
 - Package identity normalization always precedes partial-quality completion, and both precede any calculation read
 - `null` remains unavailable and `[]` remains known zero everywhere a package result is presented
 - Historical purchase values are never modelled, restored or displayed; current catalogue cost is recomputed after every revision
+- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

@@ -153,7 +153,7 @@ equal scenarios were rejected.
 
 1. a detailed `PowerHeatSnapshot`;
 2. `PowerStatusProvider` with selected draw and capacity for feature 003; and
-3. `HardpointPowerObservationPort` that selects returned consumer/band fields
+3. `MountPowerObservationPort` that selects returned consumer/band fields
    for feature 010.
 
 Use computed signals/memoization keyed by build and condition revision. Outer

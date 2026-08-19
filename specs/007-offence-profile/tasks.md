@@ -47,10 +47,11 @@ calculation of its own. Four gates apply and are named on the tasks they block:
   `WorkspaceTarget` union, the `offenceProfile` detail target and the shared condition control) and
   feature 011 (tokens, components, localization, formatters, game-text presenter, announcement
   primitives, preview manifest, ten Playwright projects, axe helpers).
-- **Missing integration ports (blocking)**: feature 002 must accept and export the type-only
-  same-revision `HardpointCoverage` read, and feature 005 must accept and export the
-  `DeployedDistributorPowerObservation` port backed by its owner-authored `powerBudget()` semantics.
-  Neither exists by name today. Feature 007 must not substitute feature 005's current
+- **Owner-held integration ports (scheduled)**: feature 002 T004 exports the type-only
+  same-revision `HardpointCoverage` read and T025 derives it; feature 005 T006 exports the
+  generalized `MountPowerObservationPort` accepting any package slot key and T034 implements it over
+  its owner-authored `powerBudget()` semantics. Feature 007 reads the latter at the power
+  distributor's exact core slot key. Feature 007 must not substitute feature 005's
   `DistributorView.ready | unavailable`, infer coverage from `weapons.length`, or infer a power cause
   from capacitor zero, `distributorMetrics() === null`, a symbol prefix, a priority band or a slot
   name. An absent port is a sequencing dependency, never a licence for a feature-local substitute.
@@ -86,7 +87,7 @@ integration ports, then build the pure revision-stamped projection and the store
 
 - [ ] T004 [P] Define the semantic discriminants `AmmunitionMeaning` (`none`, `finite`, `unlimited`), `DurationMeaning` (`finite`, `immediate`, `sustainingPoweredLoad`, `noDrainingPoweredLoad`) and `NativeFiringCondition` (`enabledReturnedWeapons`, `noEnabledReturnedWeapons`, `noFittedWeapons`, `qualifiedCoverage`) as pure constructors over retained package members, with unit tests proving `null` ammunition, finite capacity, `unlimited: true` with infinite hopper/total and `unlimited: false` with hopper zero stay four distinct outcomes, that finite positive, zero and both infinite `timeToDrain` meanings are selected only from the returned duration and the returned sustained draw, and that no constructor recomputes or rounds a package number, in `src/app/domain/offence/offence-semantics.ts` and `src/app/domain/offence/offence-semantics.spec.ts`
 - [ ] T005 [P] Define `OffenceStatusProjection` (`sustainedDamagePerSecond`, `firingCondition`) and `OffenceStatusProvider extends StatusProvider<OffenceStatusProjection, 'sustainedDps'>` over feature 003's type-only domain leaf, documenting the fixed `detailTarget: { kind: 'detail', capability: 'offenceProfile' }` and that `qualifiedSummaryIds` carries `'sustainedDps'` only for unavailable hardpoint coverage, in `src/app/domain/offence/offence-status-projection.ts` (contract-first export: unblocks feature 003's provider bundle)
-- [ ] T006 [P] Bind the two owner-held integration ports as revision-stamped read tokens — feature 002's `HardpointCoverage` (`confirmedEmpty`, `complete` with `occupiedSlots`, `unavailable`) and feature 005's `DeployedDistributorPowerObservation` (`powered`, `disabled`, `shed`, `absent`, `unavailable`) — importing the owner leaves and declaring no local copy of either union, with type-level conformance tests that fail compilation if an owner contract drifts or if feature 007 widens either union, in `src/app/domain/offence/offence-integration-ports.ts` and `src/app/domain/offence/offence-integration-ports.spec.ts` (blocked by the missing feature 002 and feature 005 ports named in Delivery gates)
+- [ ] T006 [P] Bind the two owner-held integration ports as revision-stamped read tokens — feature 002's `HardpointCoverage` (`confirmedEmpty`, `complete` with `occupiedSlots`, `unavailable`) from `src/app/domain/outfitting/hardpoint-coverage.ts` and feature 005's `MountPowerObservation` (`notApplicable`, `disabled`, `inactiveRetracted`, `powered`, `shed`, `unavailable`) from `src/app/domain/power-heat/mount-power-observation.ts`, read at the power distributor's exact core slot key and presented as absent where the owner returns `notApplicable` — importing the owner leaves and declaring no local copy of either union, with type-level conformance tests that fail compilation if an owner contract drifts or if feature 007 widens either union, in `src/app/domain/offence/offence-integration-ports.ts` and `src/app/domain/offence/offence-integration-ports.spec.ts` (depends on feature 002 T004 and feature 005 T006)
 
 ### Pure projection
 
@@ -253,10 +254,11 @@ one settled revision.
 
 ### Phase dependencies
 
-- **Setup (Phase 1)**: starts once the feature prerequisites and both missing integration ports in
-  Delivery gates are available
+- **Setup (Phase 1)**: starts once the feature prerequisites in Delivery gates are available; the
+  two owner-held integration ports are scheduled as feature 002 T004 and feature 005 T006
 - **Foundational (Phase 2)**: depends on Phase 1 and blocks every user story; T005 also unblocks
-  feature 003's provider bundle, and T006 cannot land before features 002 and 005 export their ports
+  feature 003's provider bundle, and T006 cannot land before feature 002 T004 exports
+  `HardpointCoverage` and feature 005 T006 exports `MountPowerObservationPort`
 - **User stories (Phases 3–5)**: all depend on Phase 2 and can then proceed in parallel or in
   priority order US1 → US2 → US3
 - **Polish (Phase 6)**: depends on every delivered story
