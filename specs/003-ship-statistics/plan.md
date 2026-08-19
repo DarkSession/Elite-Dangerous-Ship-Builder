@@ -175,7 +175,7 @@ Detailed evidence and alternatives are in [research.md](./research.md). The deci
 - Keep the full `LoadoutValidation` object and package issue order. Render stable issue code and
   severity as text; use package diagnostic locale helpers and disclosed canonical fallback.
 - Feature 003 defines provider envelopes and targets, while 005–009 own and return their exact
-  result semantics. In particular, feature 003 does not reinterpret unknown power fields.
+  result semantics. In particular, feature 003 does not reinterpret an owner's power fields.
 - Selected hardpoint state chooses only package state-specific results. `weaponMetrics()` sustained
   DPS remains the package firing value under both selections with its native firing condition
   stated; it is never replaced with zero, unavailable or a locally invented retracted result.

@@ -138,13 +138,13 @@ package answer for speed, rotation, curve and power readiness.
 
 **Decision**: Treat the incomplete `mobilityMetricsResult()` issues as authoritative:
 
-| Observed issue                         | Presented meaning                                      |
-| -------------------------------------- | ------------------------------------------------------ |
-| `field: thrusters, reason: missing`    | no fitted thrusters                                    |
-| `field: thrusters, reason: disabled`   | fitted thrusters switched off                          |
-| `field: thrusters, reason: shed`       | fitted thrusters not powered with hardpoints retracted |
-| `field: thrusters, reason: unresolved` | package-resolved thruster performance unavailable      |
-| `field: powerCapacity                  | powerDraw`                                             | the exact package power dependency is unavailable/invalid |
+| Observed issue                         | Presented meaning                                         |
+| -------------------------------------- | --------------------------------------------------------- |
+| `field: thrusters, reason: missing`    | no fitted thrusters                                       |
+| `field: thrusters, reason: disabled`   | fitted thrusters switched off                             |
+| `field: thrusters, reason: shed`       | fitted thrusters not powered with hardpoints retracted    |
+| `field: thrusters, reason: unresolved` | package-resolved thruster performance unavailable         |
+| `field: powerCapacity \| powerDraw`    | the exact package power dependency is unavailable/invalid |
 
 Do not pre-gate the call with a power budget or reinterpret these issues. A complete all-zero
 `MobilityMetrics` above maximum supported thruster mass remains ready zero.

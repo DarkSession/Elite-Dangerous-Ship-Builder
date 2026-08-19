@@ -28,7 +28,7 @@ interface PowerStatusProjection {
   readonly selectedDraw: number;
 }
 
-interface PowerStatusProvider extends StatusProvider<PowerStatusProjection, 'power'> {}
+interface PowerStatusProvider extends StatusProvider<PowerStatusProjection, never> {}
 ```
 
 The adapter:

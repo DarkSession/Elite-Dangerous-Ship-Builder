@@ -56,8 +56,7 @@ feature-005-owned `DeployedDistributorPowerObservation`:
 - disabled;
 - power-shed;
 - absent;
-- unavailable;
-- qualified because package power facts cannot support an exact verdict.
+- unavailable.
 
 Feature 005 must accept and expose this port before feature 007 tasks. Its current
 `DistributorView.ready | unavailable` and feature-010-only hardpoint port do not satisfy this

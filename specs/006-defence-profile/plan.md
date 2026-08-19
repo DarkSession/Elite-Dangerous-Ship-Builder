@@ -71,7 +71,7 @@ requested._
 | I. Client-Side Only                     | Projection uses only the in-memory loadout, installed package and memory-only viewing/navigation state.                                                                    | PASS                   |
 | II. Almanac Source of Truth             | Four facade results, structured issues, the package hull record and package fitted snapshots own every game value, state and identity; no package result is reconstructed. | PASS                   |
 | III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only capability components.                                                             | PASS                   |
-| IV. Lossless, Honest Builds             | Null, zero, negative, infinity, ordered issues, unknown power and actual fitted identity remain distinct; the feature never mutates the build.                             | PASS                   |
+| IV. Lossless, Honest Builds             | Null, zero, negative, infinity, ordered issues and actual fitted identity remain distinct; the feature never mutates the build.                                            | PASS                   |
 | V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen-reader, text-size, zoom, orientation and no-overflow verification.        | PASS; 011 prerequisite |
 | VI. Commander's Language                | Application labels/units use feature 011; module names and calculation diagnostics use Almanac locale helpers with disclosed canonical fallback.                           | PASS; 011 prerequisite |
 | VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only, and every new presentation component has a preview matrix.                               | PASS; 011 prerequisite |
@@ -176,12 +176,12 @@ No `NEEDS CLARIFICATION` marker or new Almanac defect remains.
 ## Phase 1: Design Outputs
 
 - [data-model.md](./data-model.md) defines revision context, complete/unavailable calculation views,
-  raw metric snapshots, bank power qualification, armour/hardness, fitted role records, display
+  raw metric snapshots, armour/hardness, fitted role records, display
   sentinel states and the feature 003 summary.
 - [contracts/shield-profile.md](./contracts/shield-profile.md) freezes exact shield/recovery calls,
   complete field mapping, ordered issue preservation and non-finite meanings.
 - [contracts/cell-banks.md](./contracts/cell-banks.md) freezes collection states, every returned bank
-  field, deployed-power semantics, unknown-draw qualification and exact-slot actions.
+  field, deployed-power semantics and exact-slot actions.
 - [contracts/armour-profile.md](./contracts/armour-profile.md) freezes every armour field, hull
   hardness, correct units and separation from actual fitted role records.
 - [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes revision

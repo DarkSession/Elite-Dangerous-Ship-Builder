@@ -231,13 +231,14 @@ interface DefenceStatusProjection {
     | { kind: 'unavailable'; issues: readonly CalculationIssueView[] };
   readonly armour: { kind: 'ready'; value: number };
   readonly detailTarget: { kind: 'detail'; capability: 'defenceProfile' };
-  readonly qualifiedSummaryIds: readonly never[];
+  readonly qualifiedSummaryIds: readonly 'shieldStrength'[];
 }
 ```
 
-The enclosing feature 003 provider adds the captured build/condition revisions. Feature 006 owns no
-qualification identity: every defence figure is either the package's exact value or an explicit
-unavailable result carrying the package's own issues.
+The enclosing feature 003 provider adds the captured build/condition revisions. `shieldStrength` is
+included exactly when its own value is `unavailable`, which is feature 003's rule for an unavailable
+summary. `armour` is never included because the package armour result is non-nullable. Feature 006
+adds no qualification of its own to an exact package value.
 
 ## State transitions
 
@@ -256,9 +257,6 @@ complete shield/recovery
 no banks
   <-> fitted banks
   <-> fitted/all-unpowered with zero totals
-
-complete bank power context
-  <-> unknown-draw-qualified package projection
 ```
 
 Changing locale or selected surface re-presents the same projection and changes no build/condition

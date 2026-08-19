@@ -63,8 +63,8 @@ system override every sample number, label, interaction and CSS literal.
   `firingDrained`.
 - Every scenario must show thermal load, heat level, gauge, overheat and time
   to overheat. The mock omits most of those fields.
-- Plant efficiency, hull heat capacity and projection/unavailable/non-finite
-  states are added.
+- Plant efficiency, hull heat capacity and unavailable/non-finite states are
+  added.
 - Cruise, weapons alpha, shield-cell bank, heat-sink count, resting/peak heat,
   WEP net and “100% module damage” are not inferred by feature 005.
 
@@ -82,8 +82,7 @@ system override every sample number, label, interaction and CSS literal.
 
 The reference has no authoritative tablet, landscape, 200%-text, 400%-zoom,
 expanded-language, RTL, reduced-motion, no-build, pending, error, group-5,
-unknown-draw, heat-projection, unavailable-distributor/heat or semantic
-infinity state. The screen and preview definitions supply them; no design
+unavailable-distributor/heat or semantic infinity state. The screen and preview definitions supply them; no design
 omission reduces the accepted requirements.
 
 ## Source-of-truth conclusion

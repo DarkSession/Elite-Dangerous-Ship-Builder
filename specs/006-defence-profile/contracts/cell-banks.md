@@ -6,7 +6,6 @@ For the captured active-build revision call:
 
 ```ts
 const summary = loadout.cellBanks();
-const power = loadout.powerBudget();
 ```
 
 `cellBanks()` owns every bank value, bank ordering, powered verdict and total. No band, draw or
@@ -50,8 +49,7 @@ or reconstructed spelling may target a bank.
 - Totals use labelled definitions and banks form a complete semantic collection.
 - Each action's visible and accessible name distinguishes module and slot and uses the feature 011
   target-size token.
-- Powered/unpowered and unknown-power meanings are text and programmatic state; color/icon is
-  supplemental.
+- Powered/unpowered meanings are text and programmatic state; color/icon is supplemental.
 - MJ, seconds, counts and heat use the active locale and application-localized unit labels.
 - Module and slot game text use Almanac leaf i18n helpers with shared fallback disclosure.
 - `noneFitted` and fitted-zero have different text, structure and announcements.
@@ -62,6 +60,5 @@ or reconstructed spelling may target a bank.
 - A non-empty all-unpowered list remains `fitted` with exact zero totals.
 - Every field, order and both totals equal `cellBanks()` exactly.
 - Disabled and shed banks remain present with their returned `powered` state.
-- Any unknown enabled draw qualifies the collection but changes no returned value.
 - Duplicate symbols keep independent exact-slot actions.
 - No bank is filtered, grouped, summed or locally apportioned.

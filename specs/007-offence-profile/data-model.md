@@ -191,14 +191,7 @@ type DeployedDistributorPowerObservation =
   | { readonly kind: 'disabled'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'shed'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'absent'; readonly slotKey: string }
-  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null }
-  | {
-      readonly kind: 'qualified';
-      readonly slotKey: string;
-      readonly symbol: string | null;
-      readonly reason:
-        'unknownDraw' | 'unknownDeployment' | 'knownDrawsOnlyVerdict' | 'packageUnavailable';
-    };
+  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null };
 ```
 
 Feature 005 derives this only from exact slot/fitted state and its package-owned deployed power-budget

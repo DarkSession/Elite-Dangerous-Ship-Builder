@@ -57,7 +57,7 @@ Previews and tests cover:
   engineering state;
 - no selection, hardpoint selection, utility selection and synchronized cross-side repeats;
 - selected internal/unlocated slot;
-- disabled, inactive-retracted, powered, shed, not-applicable and every qualified power state;
+- disabled, inactive-retracted, powered, shed and not-applicable power states;
 - stale hull/build/condition/asset completion refusal;
 - localized package text, canonical fallback, unavailable game text and long RTL/expanded app text;
 - unexpected anatomy projection failure with complete ledger still usable.

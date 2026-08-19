@@ -92,12 +92,12 @@ Expected:
 ## Scenario 4: current power states
 
 Under deployed and retracted viewing conditions, cover always-powered and deployed-only utilities,
-weapons, disabled modules, shed priority bands and unknown draw/deployment cases.
+weapons, disabled modules and shed priority bands.
 
 Expected:
 
 - feature 005's normalized one-based priority and current state are copied unchanged;
-- disabled, inactive-retracted, powered, shed, not-applicable and qualified remain distinct;
+- disabled, inactive-retracted, powered, shed and not-applicable remain distinct;
 - any changed condition publishes one coherent conditions revision; and
 - feature 010 reads no raw `on`/`priority`, modifiers, consumers or bands.
 

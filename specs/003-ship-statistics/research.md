@@ -212,9 +212,9 @@ system, same-origin licensed assets where established, or complete text.
 
 **Decision**: The visible Status capability is not a live region. After a `ready` projection settles,
 compare its issue count and unique provider-qualified summary IDs with the previous settled pair.
-The fixed identities are `power`; `shieldStrength`, `armour`; `sustainedDps`; `jumpRange`,
-`topSpeed`, `unladenMass`; and `retailCredits`, `mercCoin`, `materials`, partitioned respectively
-across features 005–009. A provider includes an identity once exactly when that visible summary is
+The fixed identities are `shieldStrength`; `sustainedDps`; `jumpRange`, `topSpeed`, `unladenMass`; and `retailCredits`, `mercCoin`, `materials`, partitioned respectively across features
+006–009. Feature 005 owns no identity because every figure `powerBudget()` returns is exact, and `armour` is
+not an identity because the package armour result is non-nullable. A provider includes an identity once exactly when that visible summary is
 qualified, incomplete or unavailable under its owner contract; an absent Merc Coin summary does not
 count. Feature 003 validates identity ownership/uniqueness and derives the count without
 reclassifying an owner state. Initial content and unchanged counts are silent. A changed pair

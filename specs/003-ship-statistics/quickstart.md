@@ -24,7 +24,7 @@ Confirm:
 
 The package contract tests must directly pin validation issue shape/order, diagnostic helper null
 outside English, complete zero capacities, `standardLoadResult()` definitions, structured
-mobility/shield unavailable results, power unknown-draw semantics and Merc Coin absent-versus-zero
+mobility/shield unavailable results, exact power draw semantics and Merc Coin absent-versus-zero
 recognition. A failure is an upstream/package-version issue; do not add a local correction.
 
 ## 2. Validate structural status
@@ -52,7 +52,7 @@ numbers use the active locale. No private issue-code translation appears.
 
 ## 4. Validate provider values and conditions
 
-Use reference builds that cover exact positive/zero, power unknown draws, structured incomplete,
+Use reference builds that cover exact positive/zero, structured incomplete,
 package null/throw guarded by its owner, infinity, unpriced entries, missing recipe costs and no
 recognized Mercenary article.
 

@@ -73,7 +73,7 @@ or clamped bar would erase a valid result.
 - One “infinite” label is ambiguous.
 - Treating zero as absence breaks SC-002.
 
-## Decision 4: banks use returned deployed-power state with explicit qualification
+## Decision 4: banks use the returned deployed-power state unchanged
 
 **Decision**: Copy the complete `CellBankSummary`: ordered banks, `totalRestorable`, `totalCells` and
 every bank's `slot`, `symbol`, `reinforcement`, `cells`, `spinUp`, `duration`, `heat` and `powered`.

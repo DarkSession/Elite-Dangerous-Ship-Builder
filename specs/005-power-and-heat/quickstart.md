@@ -41,7 +41,7 @@ Expected: no feature 005 state duplicates a prerequisite.
 
 ## 3. Run focused automated tests
 
-After the blocker and prerequisites are resolved:
+After the prerequisites are resolved:
 
 ```bash
 pnpm test -- --include='src/app/**/power-heat/**/*.spec.ts'
@@ -89,11 +89,10 @@ Expected:
 
 For every returned `PowerBudget.consumers` entry:
 
-1. Compare exact label, symbol, draw/null, enabled, priority and deployed-only.
-2. Confirm null draws precede numeric ordering.
-3. Confirm numeric ties retain package source order.
-4. Confirm identical module symbols remain separate exact-slot rows.
-5. Activate the row's slot action once.
+1. Compare exact label, symbol, draw, enabled, priority and deployed-only.
+2. Confirm numeric ties retain package source order.
+3. Confirm identical module symbols remain separate exact-slot rows.
+4. Activate the row's slot action once.
 
 Expected: feature 002 reveals the original returned slot label. Passive and
 zero-draw fittings absent from consumers are not invented. A missing facade
@@ -116,7 +115,7 @@ inferred cause.
 
 ## 8. Validate heat
 
-After the fixed package release:
+For the ready heat profile:
 
 1. Compare plant efficiency, hull capacity and dissipation.
 2. In order, compare idle, thrusters, FSD charging, sustained fire and

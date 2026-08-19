@@ -120,8 +120,8 @@ provenance. Any package issue reason `unresolved` remains calculation feedback o
 3. Open Defence through feature 003's headline/detail target.
 
 Expected: no stale projection is published under a newer context; shield/recovery share pips; Status
-shield/armour equals the detail projection; the target is exactly `defenceProfile`; no qualification
-identity is exported. The Status-provider update meets feature 003's 100 ms mobile-throttled
+shield/armour equals the detail projection; the target is exactly `defenceProfile`; the
+`shieldStrength` identity is exported exactly when that summary is unavailable and never for armour. The Status-provider update meets feature 003's 100 ms mobile-throttled
 criterion.
 
 ## 10. Validate `.design` composition responsively
@@ -150,7 +150,7 @@ the exclusions: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2
 
 ## 12. Validate localization boundaries
 
-Switch every shipped locale and repeat unavailable, unknown-power, negative and non-finite states.
+Switch every shipped locale and repeat unavailable, negative and non-finite states.
 
 Expected:
 

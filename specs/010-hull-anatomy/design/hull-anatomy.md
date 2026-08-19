@@ -64,10 +64,10 @@ The shared legend explains supplementary treatments for:
 - fitted and empty;
 - engineered and stock;
 - focused (the shared selected slot);
-- disabled, inactive while retracted, powered, priority-shed and qualified/unavailable power.
+- disabled, inactive while retracted, powered, priority-shed and not-applicable power.
 
 Each entry uses the same localized text as items. No color, fill, stroke, dash, opacity, shape, icon
-or animation carries meaning alone. Qualified/unknown power never receives powered or shed styling.
+or animation carries meaning alone. A not-applicable mount never receives powered or shed styling.
 
 ## Selected mount facts
 
@@ -79,7 +79,7 @@ When a located hardpoint or utility is selected, show:
 - engineered, stock or unavailable state;
 - focused state from the shared selected slot;
 - effective one-based priority or unavailable;
-- current disabled/inactive/powered/shed/not-applicable/qualified state under the named deployed or
+- current disabled/inactive/powered/shed/not-applicable state under the named deployed or
   retracted condition;
 - top, bottom, both or unavailable/defect location; and
 - one exact feature 002 slot action only when the surrounding ledger/editor does not already expose

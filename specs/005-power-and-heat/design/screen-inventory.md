@@ -18,19 +18,19 @@ own their screens.
 
 ## Requirement ownership
 
-| Requirement | Planned behavior                                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One feature-owned projection calls only the three `ShipLoadout` methods; adapters select that owner data without recalculation. |
-| FR-002      | Selected total/bands map directly to named package fields; deployed summaries are absent while retracted.                       |
-| FR-003      | Feature 005 composes feature 003's shared condition control, defaults deployed and displays one settled hardpoint state.        |
-| FR-004      | Disabled returned consumers remain visible and contribute exactly as the package reports.                                       |
-| FR-005      | Every returned power consumer uses package post-engineering draw/null; null remains outside numeric ordering.                   |
-| FR-006      | Every row exposes exact slot, enabled, priority and deployed-only state plus one exact-slot action.                             |
-| FR-007      | Integer half-pips divide by two only at the package call; all returned SYS/ENG/WEP fields and pips are displayed.               |
-| FR-008      | Package distributor null is unavailable and receives no catalogue substitute or inferred cause.                                 |
-| FR-009      | Ready heat shows three profile facts, exactly five scenarios and every one of their five fields.                                |
-| FR-010      | Package heat null is unavailable and receives no catalogue substitute.                                                          |
-| FR-011      | Field-specific presentation distinguishes zero-output utilisation, non-settling heat and never-overheating time.                |
+| Requirement | Planned behavior                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-001      | One feature-owned projection calls only the three `ShipLoadout` methods; adapters select that owner data without recalculation.      |
+| FR-002      | Selected total/bands map directly to named package fields; deployed summaries are absent while retracted.                            |
+| FR-003      | Feature 005 composes feature 003's shared condition control, defaults deployed and displays one settled hardpoint state.             |
+| FR-004      | Disabled returned consumers remain visible and contribute exactly as the package reports.                                            |
+| FR-005      | Every returned power consumer uses package post-engineering draw; rows may sort by draw descending with source ordinal as tie break. |
+| FR-006      | Every row exposes exact slot, enabled, priority and deployed-only state plus one exact-slot action.                                  |
+| FR-007      | Integer half-pips divide by two only at the package call; all returned SYS/ENG/WEP fields and pips are displayed.                    |
+| FR-008      | Package distributor null is unavailable and receives no catalogue substitute or inferred cause.                                      |
+| FR-009      | Ready heat shows three profile facts, exactly five scenarios and every one of their five fields.                                     |
+| FR-010      | Package heat null is unavailable and receives no catalogue substitute.                                                               |
+| FR-011      | Field-specific presentation distinguishes zero-output utilisation, non-settling heat and never-overheating time.                     |
 
 ## Cross-feature composition
 
@@ -63,9 +63,9 @@ both instances share one draft/Apply/Reset state and condition revision.
 - within budget, exact over-budget shedding and all five bands;
 - disabled consumers that stay visible;
 - zero capacity with zero draw and with positive draw/infinite utilisation;
-- participating enabled/disabled/deployed-only/null module consumers;
+- participating enabled/disabled/deployed-only module consumers;
 - distributor ready, package unavailable and genuine zero-pip recharge;
-- heat ready, package unavailable, unknown-power projection, unknown-weapon firing projection and no weapons;
+- heat ready, package unavailable and no weapons;
 - finite, does-not-settle and never-overheats fields;
 - missing required returned consumer identity as a package-contract failure.
 

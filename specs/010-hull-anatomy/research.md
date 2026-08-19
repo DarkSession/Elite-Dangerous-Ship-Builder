@@ -118,8 +118,8 @@ class zero or copying the mock's size/node badges were rejected as invented mean
 
 **Decision**: Require feature 005 to generalize its hardpoint observation port into a located-mount
 port accepting exact hardpoint and utility keys. Consume its build/condition-revision-stamped result
-unchanged: not applicable, disabled, inactive while retracted, powered, priority-shed or qualified,
-with normalized one-based priority or unavailable.
+unchanged: not applicable, disabled, inactive while retracted, powered or priority-shed, with
+normalized one-based priority or unavailable.
 
 **Rationale**: `ShipLoadout.powerBudget().consumers` already includes utility consumers and owns
 post-engineering draw, enabled defaults, effective priority and deployment classification. Matching

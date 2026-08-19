@@ -66,7 +66,7 @@ owned text/numbers/units; touch and screen-reader operation; WCAG 2.2 AA except
 criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active loadout; five priority bands; one entry per
-package-returned positive or unknown power consumer; three distributor
+package-returned power consumer; three distributor
 capacitors; five heat scenarios; one compact status projection and
 per-hardpoint observations derived from the same package result
 
@@ -224,8 +224,8 @@ No planning ambiguity or Almanac dependency remains.
   defines required shared-component preview states and widths.
 - [design/reference-review.md](./design/reference-review.md) records the exact
   1c/1d ideas retained and every unsupported departure.
-- [quickstart.md](./quickstart.md) supplies the released-package regression probe and runnable
-  acceptance scenarios.
+- [quickstart.md](./quickstart.md) supplies the runnable acceptance
+  scenarios.
 
 ## Post-Design Constitution Re-check
 
