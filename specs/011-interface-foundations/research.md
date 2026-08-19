@@ -1,7 +1,7 @@
 # Research: Interface Foundations
 
 Research covered the accepted feature specification and constitution, the current Angular workspace,
-the installed Almanac 0.1.2 declarations, existing feature plans and all four canvases in
+the installed Almanac 0.1.3 declarations, existing feature plans and all four canvases in
 `.design/Ship Builder.dc.html`. The design was also rendered and inspected. No production code was
 changed during research.
 
@@ -65,7 +65,7 @@ or persisted as Commander choices.
 browser-language match, so one product locale does not satisfy this feature. Existing feature 007
 preview planning already depends on English/German expansion fixtures. German is useful for text
 expansion and for exercising canonical-game-text disclosure; it is not selected because Almanac has
-complete German text. Local 0.1.2 probes found German for 0/48 ship names, 1120/1199 modules,
+complete German text. Local 0.1.3 probes found German for 0/48 ship names, 1120/1199 modules,
 128/146 materials, 55/107 blueprints and 84/86 experimental effects. Those gaps are expected package
 misses, not permission for application translations.
 
@@ -129,7 +129,7 @@ CLDR string.
 
 ## Almanac localization boundary
 
-**Decision**: Import the relevant 0.1.2 leaf helper for module, blueprint, effect, effect description,
+**Decision**: Import the relevant 0.1.3 leaf helper for module, blueprint, effect, effect description,
 engineering group, material, micro-resource, ship/manufacturer, slot/restriction, pre-engineered
 variant and structured diagnostic text. A request carries a known package identity and any canonical
 package field. Query the active locale first; on `null`, query canonical English or use the package's

@@ -6,7 +6,7 @@ an end-to-end acceptance guide, not an implementation recipe.
 ## Prerequisites
 
 - Node.js 24 and pnpm 10.33.0
-- `@elite-dangerous-almanac/core@0.1.2`
+- `@elite-dangerous-almanac/core@0.1.3`
 - full TypeScript and Angular-template strictness enabled with the repository passing
 - feature 001 active build/revision and `/build` workspace
 - feature 002 accepted same-revision hardpoint coverage and exact-slot reveal boundary

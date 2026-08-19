@@ -1,7 +1,7 @@
 # Research: Ship Statistics and Status
 
 Research used the accepted specifications and plans for features 001, 002 and 005–011, the exact
-installed `@elite-dangerous-almanac/core@0.1.2` declarations, and rendered inspection of
+installed `@elite-dangerous-almanac/core@0.1.3` declarations, and rendered inspection of
 `.design/Ship Builder.dc.html` canvases 1c and 1d. The installed package is ESM-only,
 side-effect-free and pre-1.0; implementation must use leaf exports and pin regression behavior.
 
@@ -69,7 +69,7 @@ friendly label for each issue code would create application-owned game diagnosti
 the package's canonical fallback with its standard untranslated-game-text disclosure. Application
 framing, generic severity labels, units and counts remain localized normally.
 
-**Rationale**: Almanac 0.1.2 deliberately returns canonical English only for English locales. The
+**Rationale**: Almanac 0.1.3 deliberately returns canonical English only for English locales. The
 application may disclose that boundary but may not own a German or other private diagnostic table.
 
 **Alternatives considered**:
@@ -101,13 +101,10 @@ price/material functions or reclassifies its states.
 the area specs. It would also put Merc Coin absence beside numeric headline states where it does not
 belong.
 
-## Decision 6: preserve unknown-power semantics verbatim
+## Decision 6: preserve owner power semantics verbatim
 
-**Decision**: The power provider exposes feature 005's exact classification for every displayed
-field. While `PowerBudget.unknownDraws` is non-empty, the installed declaration states that every
-other figure is a lower-bound answer over known draws and that its boolean verdicts answer only for
-known draws. Feature 003 copies the provider projection and qualification without trying to improve
-the wording or mathematical direction.
+**Decision**: The power provider exposes feature 005's exact figures for every displayed field.
+Feature 003 copies the provider projection without restating, rounding or reinterpreting it.
 
 Retracted presentation never derives deployed-only `headroom`, `utilisation` or `withinBudget`.
 
@@ -227,7 +224,7 @@ produces one coalesced polite localized message; stale/pending projections never
 
 ## Package/repository readiness
 
-Almanac 0.1.2 contains the required structured validation/calculation results, standard-load result,
+Almanac 0.1.3 contains the required structured validation/calculation results, standard-load result,
 powered mobility/shield diagnostics, power consumers, unknown-hull rejection, cost/material APIs and
 diagnostic locale helpers. There is no unresolved package release blocker.
 

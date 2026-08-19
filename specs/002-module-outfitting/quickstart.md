@@ -1,8 +1,8 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
 This is an acceptance guide for the plan, not implementation code. Features 001 and 011 remain
-repository prerequisites. Identity ingress is blocked until a released Almanac replaces unknown
-removable modules with empty slots and unknown fixed modules with package defaults.
+repository prerequisites. Identity ingress relies on the package replacing unresolved removable
+modules with empty slots and unresolved fixed modules with hull defaults.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -35,9 +35,9 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
    removing it must return to 1785. Do not proceed if supported partial quality remains partial.
 7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected after the required Almanac release: all feature prerequisites are ready. Pinned 0.1.2
-supports the engineering operations but not the required unknown-module normalization; do not
-implement a local substitute, captured-event checkpoints, inverse commands or intent replay.
+Expected: all package prerequisites are ready — the engineering operations and the empty/default
+normalization of unresolved modules alike. Do not implement a local substitute, captured-event
+checkpoints, inverse commands or intent replay.
 
 ## 2. Inspect every slot
 
@@ -96,7 +96,7 @@ Expected:
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
-- result rendering settles under 100 ms for the 481-choice 0.1.2 maximum (or a later package's
+- result rendering settles under 100 ms for the 481-choice maximum (or a later package's
   newly measured maximum).
 
 ## 5. Fit, replace, remove and refuse

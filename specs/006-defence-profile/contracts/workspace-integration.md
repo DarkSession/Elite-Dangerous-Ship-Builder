@@ -34,12 +34,12 @@ interface DefenceStatusProjection {
     | { kind: 'unavailable'; issues: readonly CalculationIssueView[] };
   readonly armour: { kind: 'ready'; value: number };
   readonly detailTarget: { kind: 'detail'; capability: 'defenceProfile' };
-  readonly qualifiedSummaryIds: readonly 'defence.cellBanks.unknownPowerDraws'[];
+  readonly qualifiedSummaryIds: readonly never[];
 }
 ```
 
 The enclosing feature 003 `StatusProvider` adds exact revisions and lifecycle. Feature 006 owns all
-value/qualification semantics; feature 003 does not call its package methods or reinterpret issues.
+value semantics; feature 003 does not call its package methods or reinterpret issues.
 The detail target selects the complete Defence capability in one activation.
 
 ## Fitted role boundary

@@ -14,8 +14,7 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 1. Plant capacity and draw for the selected hardpoint state are shown together.
 2. Deployed is selected by default, and the Commander can switch between deployed and retracted.
 3. Every priority band shows its draw, cumulative draw and powered state for the selected state.
-4. Unknown draws remain named and qualify package totals as lower bounds.
-5. Each module's contribution reaches the corresponding slot.
+4. Each module's contribution reaches the corresponding slot.
 
 ### Story 2 — Read distributor performance (P2)
 
@@ -28,23 +27,19 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 1. Plant efficiency and hull heat capacity and dissipation are identified.
 2. Idle, thruster, FSD-charging, sustained-fire and drained-capacitor scenarios show every package
    result.
-3. Package-reported unknown power contributors remain named and qualify the complete profile;
-   unknown weapon-heat contributors remain named and qualify the two firing scenarios.
 
 ## Requirements
 
 - **FR-001**: Every numeric value and calculation MUST come from
   `@elite-dangerous-almanac/core` without local recomputation.
 - **FR-002**: Power MUST use `ShipLoadout.powerBudget()` for plant capacity, the selected hardpoint
-  state's total draw, its per-band draw, cumulative draw and powered state, and unknown draws.
-  Package `headroom`, `utilisation` and `withinBudget` MUST appear only for deployed hardpoints,
+  state's total draw, its per-band draw, cumulative draw and powered state. Package `headroom`, `utilisation` and `withinBudget` MUST appear only for deployed hardpoints,
   whose state those fields describe; the application MUST NOT derive retracted equivalents.
 - **FR-003**: The power budget MUST show only one hardpoint state at a time, default to deployed and
   allow the Commander to switch between deployed and retracted.
-- **FR-004**: Unknown draws MUST remain visible and every affected total MUST be labeled a lower
-  bound. Disabled modules MUST remain visible and contribute exactly as the package reports.
-- **FR-005**: A per-module breakdown MUST use package-resolved post-engineering draw and MAY sort
-  known values by contribution. Unknown values MUST remain outside numeric ordering.
+- **FR-004**: Disabled modules MUST remain visible and contribute exactly as the package reports.
+- **FR-005**: A per-module breakdown MUST use package-resolved post-engineering draw and MAY sort by
+  contribution.
 - **FR-006**: Each module entry MUST show slot, enabled state, priority and deployed-only state and
   MUST reach that slot in one interaction.
 - **FR-007**: Distributor values MUST use `ShipLoadout.distributorMetrics()` for capacity, rated
@@ -53,10 +48,8 @@ the heat scenarios returned by the Almanac. Module power edits belong to
   a build result.
 - **FR-009**: Heat MUST use `ShipLoadout.heatMetrics()` and show the five returned scenarios, their
   thermal load, heat level, gauge level, overheat state and time to overheat.
-- **FR-010**: `null` heat MUST remain unavailable. `unknownDraws` MUST remain visible and qualify the
-  complete heat profile as a non-directional projection. `unknownWeaponHeat` MUST remain visible and
-  qualify `firingSustained` and `firingDrained`; their thermal loads are lower bounds unless
-  `unknownDraws` is also non-empty, while non-firing scenarios remain unaffected.
+- **FR-010**: `null` heat MUST remain unavailable; catalogue figures MUST NOT replace a build
+  result.
 - **FR-011**: Infinity MUST be expressed by its package meaning, such as never settling or never
   overheating, rather than as an unexplained number.
 
@@ -69,8 +62,8 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 
 ## Almanac Coverage
 
-`powerBudget()`, `distributorMetrics()` and `heatMetrics()` provide every value, state and
-qualification required here. The application only formats, orders and links returned data.
+`powerBudget()`, `distributorMetrics()` and `heatMetrics()` provide every value and state required
+here. The application only formats, orders and links returned data.
 
 ## Current Almanac Limit
 
@@ -84,4 +77,5 @@ application MUST NOT calculate them.
 - **SC-001**: Every displayed value and state equals the corresponding Almanac field.
 - **SC-002**: A Commander can switch hardpoint state and identify deployment-dependent power
   shedding without leaving the capability.
-- **SC-003**: Every unknown contribution remains visible and correctly qualifies its result.
+- **SC-003**: Every package result reported as unavailable is presented as unavailable, with no
+  catalogue figure or inferred cause in its place.

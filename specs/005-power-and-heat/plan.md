@@ -11,8 +11,8 @@ responsive visual reference in `.design/Ship Builder.dc.html`.
 Add a Power and Heat capability inside the shared `/build` workspace. A pure,
 revision-stamped projector reads `ShipLoadout.powerBudget()`,
 `distributorMetrics()` and `heatMetrics()`; selects only package fields for
-the settled viewing conditions; and preserves null, unknown, lower-bound,
-projection, zero and non-finite meanings. Thin adapters supply the detailed
+the settled viewing conditions; and preserves null, zero and non-finite
+meanings. Thin adapters supply the detailed
 capability, feature 003's compact power status provider and feature 010's
 per-hardpoint power observation without creating a second calculation model.
 
@@ -22,14 +22,6 @@ heat and distributor. The design's sample numbers, four-band/mobile
 abbreviations, inferred charts, whole-pip controls and extra heat scenarios are
 not game-data contracts and are not copied.
 
-Planning exposed an Almanac 0.1.1 defect using a package-only catalogue-unresolved hardpoint with a journal-resolved
-`PowerDraw` contributed to the power budget while its unknown weapon heat was omitted and
-`HeatMetrics.unknownDraws` remained empty. Almanac 0.1.2 resolves
-[#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329) with the distinct
-`HeatMetrics.unknownWeaponHeat` slot list. The pinned release and reproduction now satisfy the
-calculation contract without an application workaround. Constitution 6.0.0 prevents that fixture
-from becoming active application state; it remains historical package regression evidence only.
-
 ## Technical Context
 
 **Language/Version**: TypeScript 6.0.2, Angular HTML and SCSS; Node.js 24 for
@@ -38,7 +30,7 @@ enabled in the current repository configuration; that repository gap must close
 before implementation
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular
-signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.2` leaf exports, feature
+signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.3` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
 feature 003's viewing-condition and status-provider contracts, feature 010's
 hardpoint observation port, and feature 011's design/localization/accessibility
@@ -84,44 +76,38 @@ Adopted hierarchy and required departures are recorded in
 
 ## Constitution Check
 
-_GATE: **PASS after the Almanac 0.1.2 verification**. The released
-`unknownWeaponHeat` field truthfully qualifies package-reported weapon-heat omissions without an
-application workaround. Unknown module identities normalize at feature 001/002 ingress and never
-reach this surface. Repository implementation remains sequenced behind feature 011._
+_GATE: **PASS with no exception**. Every figure the three `ShipLoadout` methods return is exact,
+and no application workaround stands between the package and the screen. Repository implementation
+remains sequenced behind feature 011._
 
-| Principle                               | Design evidence                                                                                                                                                     | Status                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary.                                          | PASS                   |
-| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods; 0.1.2 supplies `unknownWeaponHeat`; the unknown-identity fixture is historical package evidence only. | PASS                   |
-| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.                                             | PASS                   |
-| IV. Lossless, Honest Builds             | Null, unknown, lower-bound, projection, zero and field-specific infinity states remain explicit; no stale or guessed heat result is presented as complete.          | PASS                   |
-| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.                                                  | PASS; prerequisite 011 |
-| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.                                                       | PASS; prerequisite 011 |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                                                                | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage.                                          | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | The screen inventory maps every requirement; the released regression and shared viewing-state ownership are recorded explicitly.                                    | PASS                   |
+| Principle                               | Design evidence                                                                                                            | Status                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All results use the in-browser active build and installed static package; feature 005 adds no storage or network boundary. | PASS                   |
+| II. Almanac Source of Truth             | All planned values come from the three `ShipLoadout` methods, with no local recomputation, clamp or alternate verdict.     | PASS                   |
+| III. Domain Logic Outside UI            | Pure projectors and typed integration adapters precede signal orchestration; components render inputs and emit intents.    | PASS                   |
+| IV. Lossless, Honest Builds             | Null, zero and field-specific infinity states remain explicit; no stale or guessed heat result is presented as complete.   | PASS                   |
+| V. Desktop, Tablet and Mobile           | Complete content is defined for five viewport/orientation profiles, touch, screen reader, 200% text and 400% zoom.         | PASS; prerequisite 011 |
+| VI. Commander's Language                | Owned text/units use feature 011; module and slot text use Almanac helpers with disclosed canonical fallback.              | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` contributes hierarchy only.                                       | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact projection tests, two engines, five layouts, axe and manual assistive checks are retained without lowering coverage. | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | The screen inventory maps every requirement, and shared viewing-state ownership is recorded explicitly.                    | PASS                   |
 
 **Technology prerequisite**: Feature 011 must enable `strict` in the shared TypeScript configuration
 and make the existing project pass under it before feature 005 implementation is complete.
 
 ### Blocking and sequencing dependencies
 
-1. Keep the verified Almanac 0.1.2 regression for
-   [#329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329):
-   `unknownWeaponHeat` names the affected slot while `unknownDraws` remains reserved for unknown
-   power contributions. This is package regression coverage, not an accepted application ingress
-   state; the application does not inspect identities or modifiers to reproduce either list.
-2. Enable the repository's required TypeScript strict mode.
-3. Feature 001 supplies one active `ShipLoadout`, numeric build revision,
+1. Enable the repository's required TypeScript strict mode.
+2. Feature 001 supplies one active `ShipLoadout`, numeric build revision,
    no-build state and `/build` workspace. Feature 002 supplies committed-edit
    revision advancement and exact-slot reveal/editing.
-4. Feature 003 supplies integer-half-pip viewing state, Apply/Reset behavior,
+3. Feature 003 supplies integer-half-pip viewing state, Apply/Reset behavior,
    condition revision, `StatusProvider<T, I>` and `powerAndHeat` target.
    Feature 005 composes the shared scoped hardpoint/pip controls without owning parallel state.
-5. Feature 005 exports the compact power provider required by feature 003 and
+4. Feature 005 exports the compact power provider required by feature 003 and
    the power-observation port required by feature 010. Feature 010 never joins
    consumers to bands itself.
-6. Feature 011 supplies the shared controls, tokens, localized messages and
+5. Feature 011 supplies the shared controls, tokens, localized messages and
    formatters, game-text presenter, previews, ten-project browser matrix and axe
    harness.
 
@@ -201,9 +187,8 @@ Detailed decisions, evidence and rejected alternatives are in
 - Use only the three `ShipLoadout` facade methods and their leaf result types.
 - Select deployed/retracted fields directly. Retracted omits
   `headroom`, `utilisation` and `withinBudget`.
-- `PowerBudget.consumers` is the complete package power-participant list;
-  disabled unavailable draws remain visible, while only enabled
-  `unknownDraws` qualify aggregate results.
+- `PowerBudget.consumers` is the complete package power-participant list; every entry carries a
+  resolved draw and disabled entries remain visible.
 - Feature 003 stores pips as integer half-pips. Feature 005 divides each by two
   only at the `distributorMetrics()` call boundary and displays returned pips.
 - Scenario terminology follows normative results: disabled power participants
@@ -211,9 +196,6 @@ Detailed decisions, evidence and rejected alternatives are in
   unavailability is exactly package null rather than catalogue identity alone.
 - Heat shows exactly the five package scenarios and all five fields. Null,
   non-settling and never-overheating are distinct.
-- Almanac 0.1.1 could incorrectly report complete heat for a package-only unresolved-weapon fixture
-  with known journal power draw. Pinned 0.1.2 keeps that historical defect closed; normal application
-  ingress never preserves the fixture's unknown identity.
 - Canvas 1c/1d hierarchy is useful; its sample data, truncation and interaction
   markup are not authoritative.
 
@@ -222,17 +204,15 @@ No planning ambiguity or Almanac dependency remains.
 ## Phase 1: Design Outputs
 
 - [data-model.md](./data-model.md) defines the outer lifecycle, revision-stamped
-  detail snapshot, qualified power fields, returned consumer identities,
+  detail snapshot, exact power fields, returned consumer identities,
   distributor/heat unions, status summary and hardpoint observations.
 - [contracts/power-budget.md](./contracts/power-budget.md) freezes
-  selected-state mapping, field-specific unknown qualification, module
-  ordering and exact-slot intent.
+  selected-state mapping, module ordering and exact-slot intent.
 - [contracts/distributor-metrics.md](./contracts/distributor-metrics.md) freezes
   half-pip conversion at the package boundary, exact result mapping and null/
   zero behavior.
 - [contracts/heat-profile.md](./contracts/heat-profile.md) freezes the five
-  scenarios, all returned fields, projection/null/non-finite meanings and the
-  upstream acceptance regression.
+  scenarios, all returned fields and the null/non-finite meanings.
 - [contracts/integration-ports.md](./contracts/integration-ports.md) freezes
   feature 003's `PowerStatusProvider` and feature 010's
   `HardpointPowerObservationPort`.
@@ -255,11 +235,9 @@ or visual literal. Every required surface and consumer port has an owner, every
 package sentinel remains distinguishable and all responsive/accessibility paths
 are explicit.
 
-The post-design gate is **PASS** after pinning Almanac 0.1.2 and verifying that
-`unknownWeaponHeat` names the affected slot in the historical package regression. The plan
-contains no validation-based or modifier-parsing workaround. Shared TypeScript strictness and the
-feature dependencies above remain implementation sequencing prerequisites and must be represented in
-the task graph.
+The post-design gate is **PASS with no exception**. The plan contains no validation-based or
+modifier-parsing workaround. Shared TypeScript strictness and the feature dependencies above remain
+implementation sequencing prerequisites and must be represented in the task graph.
 
 ## Complexity Tracking
 

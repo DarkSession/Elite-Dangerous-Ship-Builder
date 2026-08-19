@@ -16,9 +16,7 @@ Copy these profile facts:
 
 - `heatEfficiency`;
 - `hullHeatCapacity`;
-- `hullHeatDissipation`;
-- `unknownDraws`;
-- `unknownWeaponHeat`.
+- `hullHeatDissipation`.
 
 Render exactly these scenario objects in order:
 
@@ -41,15 +39,12 @@ Every scenario exposes:
 Finite gauge is a fraction formatted as a percentage. It is not the same
 quantity as heat level.
 
-## Availability and projection
+## Availability
 
 - `heatMetrics() === null` maps to one unavailable profile with no hull,
   catalogue or inferred fallback.
-- Non-empty `unknownDraws` makes the whole ready profile a non-directional projection.
-- Non-empty `unknownWeaponHeat` qualifies only `firingSustained` and `firingDrained`. Taken alone,
-  their thermal loads are lower bounds; their heat levels, verdicts and times are incomplete answers.
-- When both lists are non-empty, no directional bound holds for the firing scenarios.
-- Every returned contributor identity remains visible.
+- A ready profile is a complete answer for the build. Every scenario carries the package's own
+  figures, and the application adds no bound, projection or qualification of its own.
 - With no weapons, all five scenarios remain present even when values coincide.
 
 ## Semantic non-finite values
@@ -64,27 +59,9 @@ These states remain independent. The UI does not emit raw `Infinity`, an
 unexplained infinity glyph, `null`, a clamped percentage or generic
 unavailable text. Projection objects are not JSON-cloned or persisted.
 
-## Historical released regression evidence
-
-Almanac 0.1.1 failed this package-only case:
-
-1. Start with a SideWinder default loadout.
-2. Replace `SmallHardpoint1` with a catalogue-unknown item.
-3. Supply journal modifiers for `PowerDraw`, `ThermalLoad` and
-   `DistributorDraw`.
-4. Confirm power consumers contain the exact recovered draw and
-   `powerBudget().unknownDraws` is empty.
-5. Change the supplied thermal modifier.
-
-In 0.1.1, firing heat did not change and `heatMetrics().unknownDraws` remained empty, so the profile
-incorrectly appeared complete. Pinned 0.1.2 preserves the known power result, returns
-`unknownDraws: []`, and returns `unknownWeaponHeat: ['SmallHardpoint1']`. Changing or removing the
-source thermal modifier does not change the calculated firing values or the qualification.
-
-This fixture cannot enter active application state after constitution 6.0.0 identity normalization.
-It remains a package regression test. The application must not inspect loadout validation, slot kind, module symbol or
-journal modifiers to add its own qualification, and must not suppress all heat
-for every incomplete build.
+Every module in a build resolves, because import normalization admits no other kind. The application
+must not inspect loadout validation, slot kind, module symbol or journal modifiers to add a
+qualification of its own, and must not suppress heat for an incomplete build.
 
 ## Unsupported design-reference content
 
@@ -98,20 +75,14 @@ exact package result.
 - Plant/hull facts use a definition structure.
 - Scenario content uses semantic labelled rows/cards and gives every field and
   state a textual value.
-- Projection and overheat never depend on bar length, fill, icon, color or
-  position.
+- Overheat state never depends on bar length, fill, icon, color or position.
 - Thermal load, heat level, percentage and duration use active-locale
-  formatters. Scenario labels, qualifications and sentinels use application
-  message keys.
-- Unknown game identities stay package-owned and use feature 011's canonical
-  fallback disclosure.
-- A settled unavailable/projection transition is announced once.
+  formatters. Scenario labels and sentinels use application message keys.
+- A settled unavailable transition is announced once.
 
 ## Required verification
 
 - Exact equality for all profile facts and all 25 scenario fields.
 - Missing/disabled/unavailable plant package null remains unavailable.
 - No-weapons builds retain five scenarios.
-- Every package-reported unknown qualifies the entire profile, not as a bound.
-- The historical package-only unresolved-weapon regression passes on the pinned fixed release.
 - Does-not-settle and never-overheats remain distinct and localized.

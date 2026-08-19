@@ -31,7 +31,7 @@ normalized capacitor bars are rejected.
 Node.js 24 for tooling. Full TypeScript and Angular-template strictness is required but is not enabled
 in the current root configuration
 
-**Primary Dependencies**: Angular signals; RxJS 7.8; `@elite-dangerous-almanac/core@0.1.2` leaf
+**Primary Dependencies**: Angular signals; RxJS 7.8; `@elite-dangerous-almanac/core@0.1.3` leaf
 exports for loadout weapon results, weapon types, capacitor results, ammunition, projectile metadata
 and game-text localization; feature 001 active-build revisions; feature 002 same-revision hardpoint
 coverage and exact-slot reveal; feature 003 viewing conditions, Status-provider envelope and
@@ -104,7 +104,6 @@ strictness and prerequisite contracts listed below._
 5. Accept a feature-005-owned deployed distributor power-observation port backed by the same
    `powerBudget()` semantics feature 005 owns. Existing feature 005 contracts do not expose it;
    feature 007 must not infer a cause from capacitor zero/null or reconstruct priority shedding.
-   Almanac 0.1.2 has resolved feature 005's separate heat-qualification gate.
 6. Implement feature 011's tokens/components, game-text presenter, localization/formatters,
    component previews, ten-project Chromium/Firefox matrix and axe harness.
 
@@ -112,7 +111,7 @@ The current source contains only the shell and build-link codec. The current Pla
 has three Chromium-only projects and no axe integration. Missing prerequisites block implementation;
 they do not authorize feature-local substitutes.
 
-The pinned Almanac 0.1.2 already exposes fitted maximum/falloff range, projectile boundaries,
+The pinned Almanac 0.1.3 already exposes fitted maximum/falloff range, projectile boundaries,
 armour piercing and documented weapon ordering. The installed behavior satisfies the work tracked by
 Almanac issues #300 and #301; feature 007 has no remaining package blocker.
 

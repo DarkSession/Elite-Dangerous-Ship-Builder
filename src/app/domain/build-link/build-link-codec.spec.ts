@@ -866,7 +866,9 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedEnvelope');
   });
 
-  it('refuses identities absent from the pinned table', () => {
+  it('never sees an ingress identity the pinned table cannot spell', () => {
+    // Import empties an unresolved module out of an unrecognised slot and out of a hardpoint
+    // alike, so no such identity survives to reach the codec.
     const unresolvedSlot = ShipLoadout.fromLoadout({
       Ship: 'SideWinder',
       Modules: [{ Slot: 'ImpossibleSlot', Item: 'UnknownModule' }],
@@ -876,8 +878,16 @@ describe('build-link codec', () => {
       Modules: [{ Slot: 'SmallHardpoint1', Item: 'UnknownModule' }],
     });
 
-    expectCodecError(() => encodeBuildLinkFragment(unresolvedSlot), 'unknownIdentity');
-    expectCodecError(() => encodeBuildLinkFragment(unresolvedModule), 'unknownIdentity');
+    for (const source of [unresolvedSlot, unresolvedModule]) {
+      expect(
+        source.importOutcomes.filter(({ sourceSymbol }) => sourceSymbol === 'UnknownModule'),
+      ).toHaveLength(1);
+      expect(source.fittedModules().map(({ symbol }) => symbol)).not.toContain('UnknownModule');
+
+      const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+      expect(decoded.shipSymbol).toBe(source.shipSymbol);
+      expect(fittedSlotSymbols(decoded)).toEqual(fittedSlotSymbols(source));
+    }
   });
 
   it('refuses truncated and malformed encodings', () => {
@@ -1526,6 +1536,13 @@ function nonCanonicalAllDefinedEnabledState(): string {
 
 function powerDrawingModules(source: ShipLoadout): readonly FittedModule[] {
   return source.fittedModules().filter((module) => (module.effectiveStats?.powerDraw ?? 0) > 0);
+}
+
+function fittedSlotSymbols(source: ShipLoadout): readonly string[] {
+  return source
+    .fittedModules()
+    .map(({ slot, symbol }) => `${slot}=${symbol}`)
+    .sort();
 }
 
 /** Mirrors the canonicalisation in `scripts/generate-build-link-codec-tables.mjs`. */

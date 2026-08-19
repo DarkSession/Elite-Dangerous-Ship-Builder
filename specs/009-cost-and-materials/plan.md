@@ -27,7 +27,7 @@ template strictness is a constitutional/feature-011 target and is not yet enable
 shell repository
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless target APIs; Angular signals; RxJS
-7.8; pinned `@elite-dangerous-almanac/core` 0.1.2 leaf exports; planned feature 001 active-build
+7.8; pinned `@elite-dangerous-almanac/core` 0.1.3 leaf exports; planned feature 001 active-build
 revision boundary, feature 002 shared engineering-cost classifier and exact-slot actions, feature
 003 `AssemblyRequirementsPort`, and feature 011 localization/UI/accessibility contracts
 
@@ -88,7 +88,7 @@ buildRevision }` read boundary.
    `AssemblyRequirementsPort` without recomputing or reclassifying it.
 4. Feature 011 must implement the shared UI, localization/formatting, announcements, Firefox,
    landscape and automated accessibility infrastructure currently absent from the repository.
-5. Almanac 0.1.2 already supplies feature 009's required data APIs and the Expanded Cargo Rack
+5. Almanac 0.1.3 already supplies feature 009's required data APIs and the Expanded Cargo Rack
    regression fix; no direct Almanac blocker remains.
 
 ## Project Structure
@@ -156,7 +156,7 @@ quantities. No route, serializer, storage adapter, private catalogue or second `
 
 [research.md](./research.md) records the decisions and rejected alternatives. In summary:
 
-- `RetailCredits` is fully numeric in 0.1.2. Hull is exact; modules and rebuy become lower bounds
+- `RetailCredits` is fully numeric in 0.1.3. Hull is exact; modules and rebuy become lower bounds
   only when the returned ordered `unpriced` list is non-empty. No combined credit total is created.
 - Merc Coin is absent when no fitted variant is package-recognized. Otherwise per-slot optional
   prices and the literal `mercCoinCost()` result are shown; missing prices qualify that result as a

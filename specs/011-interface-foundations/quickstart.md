@@ -88,7 +88,7 @@ unit.
 
 ## Almanac text boundary
 
-Use 0.1.2 fixtures for:
+Use 0.1.3 fixtures for:
 
 - a German-localized module/material/effect;
 - a known hull/manufacturer/slot/diagnostic returning `null` for German but canonical English text;

@@ -46,7 +46,7 @@ and the plan uses that same compact order.
   Mercenary, tech-broker, community-goal and event-reward are not conflated.
 - Variant recognition comes only from `FittedModule.preEngineeredVariant`; purchase grade stays
   separate from current ordinary grade.
-- Design comparison arrows/colors are omitted because 0.1.2 does not provide trustworthy
+- Design comparison arrows/colors are omitted because the package provides no trustworthy
   better/worse direction. Exact package before/current values can still be shown.
 
 ### Normalization and engineering
@@ -58,7 +58,7 @@ and the plan uses that same compact order.
 - Source-empty fixed mounts are repaired from package defaults before workspace/calculations render;
   unknown fixed modules are defaulted by the package identity boundary. Both disclose exact outcomes.
 - The engineering surface has distinct effect-only and clear-all behavior. It cannot rewrite raw
-  modifier blocks or turn a fixed reward into an ordinary roll; it uses 0.1.2's structured
+  modifier blocks or turn a fixed reward into an ordinary roll; it uses the package's structured
   `setExperimentalEffect()` operation.
 - Material images cannot be fetched from the external source named in the canvas. Use package or
   repository same-origin assets where licensed/available, otherwise accessible text; never a runtime

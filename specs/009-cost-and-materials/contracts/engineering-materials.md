@@ -76,7 +76,7 @@ application localization and named formatters.
 
 ## Pinned package regression
 
-Almanac 0.1.2 reports no ordinary stock cargo-rack route for
+Almanac 0.1.3 reports no ordinary stock cargo-rack route for
 `CargoRack_IncreasedCapacity` and `getBlueprintCost(..., 5)` returns `null`, while the authored
 fixed variants remain package-identifiable. Cross-package tests pin that boundary. The application
 must not special-case the fdname, call it free, or substitute another recipe.

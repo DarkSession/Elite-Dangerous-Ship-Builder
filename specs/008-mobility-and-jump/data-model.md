@@ -20,7 +20,7 @@ import type {
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 ```
 
-`CalculationIssue` is not narrowed or copied. In Almanac 0.1.2 it contains required `field`,
+`CalculationIssue` is not narrowed or copied. In Almanac 0.1.3 it contains required `field`,
 `reason` and `message`, optional `slot`, `symbol` and `params`, and package ordering. A complete
 `CalculationResult` may contain numeric zero; an incomplete result contains `value: null` and a
 non-empty issue tuple.

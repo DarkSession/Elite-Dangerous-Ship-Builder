@@ -95,7 +95,6 @@ the complete stacked composition.
 | non-finishing recovery phase     | Field-specific semantic phrase only for the affected duration                             |
 | no banks                         | Dedicated empty collection state                                                          |
 | all banks unpowered              | Fitted list, textual unpowered states and exact zero totals                               |
-| unknown power draws              | One visible/programmatic qualification; returned bank values unchanged                    |
 | negative resistance              | Signed percentage, exact EHP and visible weakness meaning                                 |
 | unbounded EHP                    | Field-specific unbounded text with no clamped/substituted number                          |
 | projection failure               | Shared blocking error for current revision; no fabricated/stale payload                   |

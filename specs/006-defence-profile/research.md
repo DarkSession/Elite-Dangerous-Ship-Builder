@@ -2,7 +2,7 @@
 
 Research used the accepted feature specs, constitution 5.0.0, `.design/Ship Builder.dc.html`, the
 current source/tooling configuration and the installed public contracts and runtime behavior of
-`@elite-dangerous-almanac/core@0.1.2`. Runtime probes covered ready, missing-generator,
+`@elite-dangerous-almanac/core@0.1.3`. Runtime probes covered ready, missing-generator,
 disabled-generator and disabled-plant results. No application formula or private game datum was
 used.
 
@@ -79,14 +79,11 @@ or clamped bar would erase a valid result.
 every bank's `slot`, `symbol`, `reinforcement`, `cells`, `spinUp`, `duration`, `heat` and `powered`.
 An empty bank list is `noneFitted`; every non-empty list is `fitted`, even with zero totals.
 
-Call `powerBudget()` only to read `unknownDraws`. `CellBankMetrics.powered` is the package's
-hardpoints-deployed result. Because any unknown enabled draw is absent from power bands and may
-change downstream shedding, a non-empty `unknownDraws` qualifies the whole bank result as a package
-projection under incomplete power knowledge. Returned values and booleans are never corrected.
+`CellBankMetrics.powered` is the package's hardpoints-deployed result. Returned values and booleans
+are never corrected or qualified.
 
-**Rationale**: `cellBanks()` owns both per-bank and total calculations, while `powerBudget()` documents
-the exact limitation of its known-draw power bands. Matching unknown draws only to a bank slot is too
-narrow: an unrelated unknown consumer can still change whether the bank's group remains powered.
+**Rationale**: `cellBanks()` owns both per-bank and total calculations, so the application reproduces
+no band, draw or shedding arithmetic of its own.
 
 **Alternatives considered**:
 
@@ -144,7 +141,7 @@ the list.
 
 - Symbol/name parsing and positional keys are not package contracts.
 - Stat-based arithmetic or even division fabricates provenance.
-- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.2 API supports.
+- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.3 API supports.
 - An upstream source-manifest API is unnecessary unless a future requirement demands exact
   per-source calculation provenance.
 

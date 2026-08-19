@@ -92,8 +92,8 @@ newer replacement decision.
 
 ## Package boundary
 
-The 0.1.2 leaf APIs cover SLEF inspection and the engineering/fixed operations verified in
-[research.md](../research.md), but its construction still retains unknown modules. Implementation is
-blocked until a release supplies the required structured identity outcomes. Raw exception text,
+The leaf APIs cover SLEF inspection, the engineering/fixed operations verified in
+[research.md](../research.md), and the structured empty/default outcomes construction returns for
+unresolved modules. Raw exception text,
 local identity classification, manual modifier merging, scalar quality edits, fixed default lookup,
 captured-price retention and health-to-integrity inference are forbidden application behavior.
