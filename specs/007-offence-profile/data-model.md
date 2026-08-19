@@ -94,7 +94,7 @@ array index.
 ### `DamageSplit`
 
 `kinetic`, `thermal`, `explosive`, `absolute` and `antiXeno` are required numeric values.
-`unclassified` is optional and absent exactly when zero under the 0.1.2 contract. Presentation may
+`unclassified` is optional and absent exactly when zero under the 0.1.3 contract. Presentation may
 omit the optional row or state that no unclassified damage exists; it must not call the absence
 unknown. Anti-xeno remains an overlay on conventional damage and is not included in a locally created
 partition or total.
@@ -191,14 +191,7 @@ type DeployedDistributorPowerObservation =
   | { readonly kind: 'disabled'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'shed'; readonly slotKey: string; readonly symbol: string }
   | { readonly kind: 'absent'; readonly slotKey: string }
-  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null }
-  | {
-      readonly kind: 'qualified';
-      readonly slotKey: string;
-      readonly symbol: string | null;
-      readonly reason:
-        'unknownDraw' | 'unknownDeployment' | 'knownDrawsOnlyVerdict' | 'packageUnavailable';
-    };
+  | { readonly kind: 'unavailable'; readonly slotKey: string; readonly symbol: string | null };
 ```
 
 Feature 005 derives this only from exact slot/fitted state and its package-owned deployed power-budget

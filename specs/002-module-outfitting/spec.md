@@ -124,8 +124,7 @@ engineering choices and calculations, costs, variants, acquisition and entitleme
 identity ingress refuses unknown hulls and returns empty/default outcomes for unknown modules before
 construction. Package construction outcomes and the structured engineering-normalisation result then
 decide whether a remaining resolved partial grade is completed or the incoming candidate is refused.
-No game rule, value or variant-recognition heuristic is application-owned. This identity contract
-requires the promised post-0.1.2 release.
+No game rule, value or variant-recognition heuristic is application-owned.
 
 ## Success Criteria
 

@@ -26,7 +26,7 @@ once in the complete Status capability.
 SCSS; Node.js 24 per `.nvmrc` for tooling
 
 **Primary Dependencies**: Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core@0.1.2` leaf exports, feature 001 atomic active-build/revision and
+`@elite-dangerous-almanac/core@0.1.3` leaf exports, feature 001 atomic active-build/revision and
 local-record contracts, feature 002 committed-edit revision advancement and exact-slot editing,
 feature 005–009 status-provider implementations, and feature 011 UI/localization/accessibility
 infrastructure
@@ -175,7 +175,7 @@ Detailed evidence and alternatives are in [research.md](./research.md). The deci
 - Keep the full `LoadoutValidation` object and package issue order. Render stable issue code and
   severity as text; use package diagnostic locale helpers and disclosed canonical fallback.
 - Feature 003 defines provider envelopes and targets, while 005–009 own and return their exact
-  result semantics. In particular, feature 003 does not reinterpret unknown power fields.
+  result semantics. In particular, feature 003 does not reinterpret an owner's power fields.
 - Selected hardpoint state chooses only package state-specific results. `weaponMetrics()` sustained
   DPS remains the package firing value under both selections with its native firing condition
   stated; it is never replaced with zero, unavailable or a locally invented retracted result.

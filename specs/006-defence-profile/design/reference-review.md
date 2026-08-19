@@ -47,8 +47,8 @@ contract.
   remain separate from exact-slot fitted-role rows.
 - The signed negative resistance bar in the mock is misleading. Bars are supplemental only with a
   truthful scale; signed/non-finite cases may use text alone.
-- Add missing/null, disabled, shed, unresolved, invalid, no-bank, all-unpowered, unknown-power,
-  zero, negative, infinity, pending and failure states.
+- Add missing/null, disabled, shed, unresolved, invalid, no-bank, all-unpowered, zero, negative,
+  infinity, pending and failure states.
 - Replace fixed 1560/390 widths, tiny/ellipsis text, ~30px tabs, clickable `div`s, hover/title
   dependence and color-only meaning with feature 011 primitives/tokens.
 - Do not copy inline colors, spacing/type/motion literals, hard-coded English, `en-US` formatting,

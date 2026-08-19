@@ -33,7 +33,7 @@ build.
 4. four shield resistance/effective-MJ relationships;
 5. raised/broken regeneration rates and collapse-to-raise/raise-to-full durations;
 6. calculation issues and resolved fitted shield-role actions;
-7. cell-bank state, totals, power qualification and every fitted bank;
+7. cell-bank state, totals and every fitted bank;
 8. armour total and aggregate contributions;
 9. four armour resistance/effective-hull-point relationships;
 10. hull hardness with armour-piercing explanation, module armour and module protection;
@@ -68,8 +68,6 @@ the complete stacked composition.
 - Each bank shows module/slot context, one-activation reinforcement, cells, spin-up, duration, heat
   and powered state, and the entire action meets the shared target-size token.
 - All-unpowered banks retain the complete list beside exact zero totals.
-- Any unknown enabled power draw produces one adjacent qualification for the collection and Status;
-  returned totals/booleans remain unchanged.
 
 ## Armour and protection
 
@@ -95,7 +93,6 @@ the complete stacked composition.
 | non-finishing recovery phase     | Field-specific semantic phrase only for the affected duration                             |
 | no banks                         | Dedicated empty collection state                                                          |
 | all banks unpowered              | Fitted list, textual unpowered states and exact zero totals                               |
-| unknown power draws              | One visible/programmatic qualification; returned bank values unchanged                    |
 | negative resistance              | Signed percentage, exact EHP and visible weakness meaning                                 |
 | unbounded EHP                    | Field-specific unbounded text with no clamped/substituted number                          |
 | projection failure               | Shared blocking error for current revision; no fabricated/stale payload                   |

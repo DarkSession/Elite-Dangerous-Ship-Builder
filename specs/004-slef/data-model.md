@@ -84,12 +84,12 @@ enters build, record body, URL, SLEF or edit history.
 
 Transient package-owned feedback produced before candidate construction.
 
-| Field          | Type                   | Rules                                                                     |
-| -------------- | ---------------------- | ------------------------------------------------------------------------- |
-| `slot`         | string                 | Exact source game slot key                                                |
-| `sourceSymbol` | string                 | Unknown source identity; feedback only and never persisted or re-exported |
-| `action`       | `emptied \| defaulted` | `emptied` for removable; `defaulted` for fixed                            |
-| `resultSymbol` | package symbol or null | Present only for a package default; null for an empty result              |
+| Field          | Type                   | Rules                                                                       |
+| -------------- | ---------------------- | --------------------------------------------------------------------------- |
+| `slot`         | string                 | Exact source game slot key                                                  |
+| `sourceSymbol` | `string \| null`       | Unknown source identity, or null for an absent cargo hatch; never persisted |
+| `action`       | `emptied \| defaulted` | `emptied` for removable; `defaulted` for fixed                              |
+| `resultSymbol` | package symbol or null | Present only for a package default; null for an empty result                |
 
 Attached engineering and power fields are discarded with the unknown source module. The application
 does not derive this outcome or put its source identity in a build snapshot, URL, SLEF or history.

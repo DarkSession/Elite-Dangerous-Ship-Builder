@@ -151,12 +151,12 @@ adapters cannot accept either provenance type.
 Transient feedback produced from the released package normalization result before candidate
 activation.
 
-| Field                 | Type                   | Rule                                                     |
-| --------------------- | ---------------------- | -------------------------------------------------------- |
-| `slotKey`             | string                 | Exact package slot key                                   |
-| `sourceIdentity`      | string                 | Unknown source module identity; presentation only        |
-| `action`              | `emptied \| defaulted` | Exact package outcome                                    |
-| `replacementIdentity` | `string \| null`       | Null for emptied; package default identity for defaulted |
+| Field                 | Type                   | Rule                                                         |
+| --------------------- | ---------------------- | ------------------------------------------------------------ |
+| `slotKey`             | string                 | Exact package slot key                                       |
+| `sourceIdentity`      | `string \| null`       | Unknown source identity; null only for an absent cargo hatch |
+| `action`              | `emptied \| defaulted` | Exact package outcome                                        |
+| `replacementIdentity` | `string \| null`       | Null for emptied; package default identity for defaulted     |
 
 The collection is discarded after refusal or after its one activation notice. It never enters a
 snapshot, local record, history checkpoint, link or SLEF payload.

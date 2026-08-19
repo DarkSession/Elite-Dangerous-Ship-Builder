@@ -55,7 +55,7 @@ slot targets to feature 002. Feature 003 also consumes feature 007's compact Sta
 - no ammunition, finite ammunition, zero reserve and unlimited ammunition;
 - effective range/piercing/projectile members present, individually absent and boundary value zero;
 - finite endurance, immediate drain, sustaining positive draw and infinite zero-draw result;
-- zero capacity with powered/disabled/shed/absent/unavailable/qualified distributor observation.
+- zero capacity with powered/disabled/shed/absent/unavailable distributor observation.
 
 The exact component/state obligations are in
 [component-state-preview-matrix.md](./component-state-preview-matrix.md).

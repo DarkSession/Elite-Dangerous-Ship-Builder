@@ -16,7 +16,6 @@ One successful same-revision package read.
 | `shield`            | `CalculationView<ShieldSnapshot>`   | Complete value or all ordered package issues                          |
 | `recovery`          | `CalculationView<RecoverySnapshot>` | Independent complete value or all ordered package issues              |
 | `cellBanks`         | `CellBankCollection`                | Exact package collection and explicit empty/fitted distinction        |
-| `bankPowerContext`  | `BankPowerContext`                  | Exact or globally qualified by package `unknownDraws`                 |
 | `armour`            | `ArmourSnapshot`                    | Non-nullable package result copied exactly                            |
 | `hardness`          | number                              | Active package hull's exact hardness rating                           |
 | `shieldRoleRecords` | readonly `FittedDefenceRole[]`      | Resolved fitted shield-role/navigation records; no contribution claim |
@@ -167,22 +166,6 @@ Rules:
 - `reinforcement` is MJ from one complete activation, not a rate.
 - `powered` is the package's enabled-and-fed verdict with hardpoints deployed.
 
-## BankPowerContext
-
-```ts
-type BankPowerContext =
-  | { kind: 'complete' }
-  | {
-      kind: 'unknownDraws';
-      slots: readonly string[];
-    };
-```
-
-A non-empty `powerBudget().unknownDraws` selects `unknownDraws`. Its slots are package labels only;
-they do not target a bank unless they are an exact bank slot. The qualification applies to the whole
-bank result because any omitted enabled draw may change which lower-priority bands are powered. The
-application does not change the returned bank booleans or totals.
-
 ## ArmourSnapshot
 
 ```ts
@@ -248,15 +231,14 @@ interface DefenceStatusProjection {
     | { kind: 'unavailable'; issues: readonly CalculationIssueView[] };
   readonly armour: { kind: 'ready'; value: number };
   readonly detailTarget: { kind: 'detail'; capability: 'defenceProfile' };
-  readonly qualifiedSummaryIds: readonly DefenceQualificationId[];
+  readonly qualifiedSummaryIds: readonly 'shieldStrength'[];
 }
-
-type DefenceQualificationId = 'defence.cellBanks.unknownPowerDraws';
 ```
 
-The enclosing feature 003 provider adds the captured build/condition revisions. The qualification ID
-is present only when the bank result is power-qualified; it is stable application identity, not a
-translated message or package diagnosis.
+The enclosing feature 003 provider adds the captured build/condition revisions. `shieldStrength` is
+included exactly when its own value is `unavailable`, which is feature 003's rule for an unavailable
+summary. `armour` is never included because the package armour result is non-nullable. Feature 006
+adds no qualification of its own to an exact package value.
 
 ## State transitions
 
@@ -275,9 +257,6 @@ complete shield/recovery
 no banks
   <-> fitted banks
   <-> fitted/all-unpowered with zero totals
-
-complete bank power context
-  <-> unknown-draw-qualified package projection
 ```
 
 Changing locale or selected surface re-presents the same projection and changes no build/condition

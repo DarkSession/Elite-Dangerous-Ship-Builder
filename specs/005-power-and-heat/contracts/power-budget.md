@@ -37,25 +37,11 @@ boundary.
 package. No sum, subtraction, division, clamp or alternate verdict is permitted
 in the projector.
 
-## Unknown qualification
+## Exactness
 
-When `budget.unknownDraws` is empty:
-
-- selected/band/cumulative values and deployed summary fields are exact;
-- package powered and within-budget verdicts are exact.
-
-When it is non-empty:
-
-- selected/band/cumulative draw and utilisation are lower bounds;
-- headroom is labelled “for known draws” and is not called complete or a lower
-  bound;
-- powered and within-budget are known-draw-only verdicts;
-- capacity remains exact;
-- every returned unknown label is visible in source order.
-
-The numeric and boolean package values are unchanged. A missing unknown label
-from `ShipLoadout.powerBudget()` fails the projection contract; the
-application does not invent a slot.
+Every consumer the package returns carries a resolved draw, so selected, band and cumulative values,
+the deployed summary fields, and the powered and within-budget verdicts are all exact. The
+application attaches no bound, projection or qualification to any of them.
 
 ## No or unavailable plant output
 
@@ -72,18 +58,12 @@ both zero, package utilisation remains numeric zero.
 1. require the exact returned `label` and `symbol` from the
    `ShipLoadout` facade contract;
 2. preserve one row per returned consumer and its source ordinal;
-3. show exact draw/null, enabled, normalized one-based priority and
-   deployed-only/null;
-4. place null draws outside numeric ordering;
-5. optionally sort known draws descending with source ordinal as the tie break;
-6. retain disabled positive/unknown consumers;
-7. never add passive or zero-draw fittings omitted by the package;
-8. never merge identical module symbols or names;
-9. emit `openSlot` with the exact returned label.
-
-Only enabled `budget.unknownDraws` qualify totals. A disabled consumer whose
-`draw` is null remains visible but does not create an aggregate
-qualification.
+3. show exact draw, enabled, normalized one-based priority and deployed-only;
+4. optionally sort by draw descending with source ordinal as the tie break;
+5. retain disabled consumers;
+6. never add passive or zero-draw fittings omitted by the package;
+7. never merge identical module symbols or names;
+8. emit `openSlot` with the exact returned label.
 
 Raw journal modifiers, effective-stat joins, symbol/slot parsing, aggregate
 differences and positional indices are prohibited inputs.
@@ -108,8 +88,8 @@ None mutates the loadout directly or enters edit history.
 - Capacity and selected draw form a semantic definition group.
 - All five bands use a semantic table where it fits and equivalent labelled
   cards when stacked.
-- Every numeric/bar relationship has nearby text. Powered, shed, disabled,
-  deployed-only and qualifications do not depend on color, pattern or position.
+- Every numeric/bar relationship has nearby text. Powered, shed, disabled and
+  deployed-only do not depend on color, pattern or position.
 - Every slot action's visible and accessible name distinguishes module and
   exact slot and uses the shared target-size token.
 - MW/percentages use active-locale formatters. Application text uses messages;
@@ -119,8 +99,7 @@ None mutates the loadout directly or enters edit history.
 
 - Exact field equality for both states and all five bands.
 - No retracted headroom, utilisation or within-budget field.
-- Field-specific qualification under every enabled unknown consumer.
-- Disabled null draw does not qualify totals.
+- Disabled consumers stay visible and contribute exactly as the package reports.
 - No/zero plant output preserves exact numbers and semantic infinity.
 - Every consumer row and action preserves original package identities.
 - Missing label/symbol, unexpected exception and stale revision publish failure,

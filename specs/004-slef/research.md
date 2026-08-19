@@ -2,7 +2,7 @@
 
 Research used the accepted feature spec, Constitution 6.0.0, feature 001/002/011 design contracts,
 the current repository, `.design/Ship Builder.dc.html`, and the pinned
-`@elite-dangerous-almanac/core@0.1.2` source/tag. Package probes used generated or public fixture data
+`@elite-dangerous-almanac/core@0.1.3` source/tag. Package probes used generated or public fixture data
 only.
 
 ## Decision 1: the Almanac owns SLEF inspection, construction and serialization
@@ -42,7 +42,7 @@ Accept only observed count one, one valid entry and zero diagnostics. Zero, mult
 valid/invalid arrays are refused whole; all returned diagnostics remain available beside a
 cardinality failure.
 
-**Rationale**: In 0.1.2 every top-level array item yields exactly one valid entry or one diagnostic;
+**Rationale**: Every top-level array item yields exactly one valid entry or one diagnostic;
 non-arrays are one candidate item and `[]` yields zero. This preserves top-level input cardinality and
 never selects the first usable build silently.
 
@@ -286,16 +286,14 @@ accessibility and claiming automated browser zoom coverage were rejected.
 
 ## Dependency and gate conclusion
 
-- Almanac 0.1.2 satisfies inspection, structured diagnostics, quality completion, cargo restoration,
-  fixed repair, default current-retail export and package-derived integrity, but still retains
-  unknown modules. Feature 004 ingress is blocked on
-  [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) until its release
-  supplies structured empty/default identity normalization. Captured module `Health` remains outside
-  application state.
+- The Almanac satisfies inspection, structured diagnostics, quality completion, cargo restoration,
+  fixed repair, default current-retail export, package-derived integrity and the structured
+  empty/default normalization of unresolved modules at import. Captured module `Health` remains
+  outside application state.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
   contract is also required.
 - The current repository does not yet contain those planned foundations; feature 004 must not create
   temporary shells, locale logic, active-build storage or test-matrix substitutes.
 
-No design clarification remains. The only feature-specific blocker is the released package contract
-for unknown-module empty/default normalization; no application workaround is permitted.
+No design clarification remains and no feature-specific package blocker is open; the package owns
+empty/default normalization for unresolved modules. No application workaround is permitted.

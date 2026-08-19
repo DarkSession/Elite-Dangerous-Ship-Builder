@@ -113,9 +113,7 @@ Feature 003 defines the envelope while each area owns `T`:
 
 ```ts
 type StatusSummaryId =
-  | 'power'
   | 'shieldStrength'
-  | 'armour'
   | 'sustainedDps'
   | 'jumpRange'
   | 'topSpeed'
@@ -158,8 +156,8 @@ is `absent`.
 
 ```ts
 interface StatusProviders<P, D, O, M, A> {
-  readonly power: StatusProvider<P, 'power'>;
-  readonly defence: StatusProvider<D, 'shieldStrength' | 'armour'>;
+  readonly power: StatusProvider<P, never>;
+  readonly defence: StatusProvider<D, 'shieldStrength'>;
   readonly offence: StatusProvider<O, 'sustainedDps'>;
   readonly mobility: StatusProvider<M, 'jumpRange' | 'topSpeed' | 'unladenMass'>;
   readonly assembly: AssemblyRequirementsPort<A>;
@@ -175,7 +173,7 @@ Owner exports provide exactly these status fields:
 
 | Owner export | Status content                                              | Required detail target |
 | ------------ | ----------------------------------------------------------- | ---------------------- |
-| feature 005  | selected power draw/capacity and owner qualifications       | `powerAndHeat`         |
+| feature 005  | selected power draw and capacity                            | `powerAndHeat`         |
 | feature 006  | shield strength and armour                                  | `defenceProfile`       |
 | feature 007  | package sustained DPS and native firing condition           | `offenceProfile`       |
 | feature 008  | selected jump, selected-load/ENG top speed and unladen mass | `mobilityAndJump`      |

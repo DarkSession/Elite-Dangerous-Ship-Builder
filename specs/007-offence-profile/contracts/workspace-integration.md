@@ -45,7 +45,7 @@ This accepted boundary does not yet exist by name in feature 002 and is a delive
 
 Before tasks, feature 005 must accept a deployed distributor power-observation port backed by its
 authoritative `powerBudget()` interpretation and exact distributor slot state. The read returns the
-captured revisions and one of powered, disabled, shed, absent, unavailable or qualified.
+captured revisions and one of powered, disabled, shed, absent or unavailable.
 
 Feature 007 must not:
 

@@ -15,7 +15,7 @@ pnpm install --frozen-lockfile
 
 Before feature acceptance, confirm:
 
-- pinned `@elite-dangerous-almanac/core@0.1.2` exposes the four defence facade methods, structured
+- pinned `@elite-dangerous-almanac/core@0.1.3` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
 - feature 001 supplies `/build` and one active loadout/revision;
 - feature 003 supplies settled SYS half-pips, revision/provider envelopes and `defenceProfile` target;
@@ -73,10 +73,10 @@ Expected: both rates and both durations remain separate. The two infinite durati
 receive three different localized meanings; finite zero stays numeric and no raw/clamped infinity is
 shown.
 
-## 6. Validate cell banks and incomplete power knowledge
+## 6. Validate cell banks
 
-Use builds for no banks, powered banks, mixed power, all banks unpowered, duplicate bank symbols and
-an enabled module with unknown power draw.
+Use builds for no banks, powered banks, mixed power, all banks unpowered and duplicate bank
+symbols.
 
 For every bank compare slot, symbol, reinforcement, cells, spin-up, duration, heat and powered state
 with `cellBanks().banks`; compare both totals directly.
@@ -86,8 +86,6 @@ Expected:
 - no banks has a dedicated empty state;
 - fitted/all-unpowered retains every bank beside exact zero totals;
 - powered means the returned hardpoints-deployed verdict;
-- any non-empty `powerBudget().unknownDraws` qualifies the bank collection and Status without
-  changing a bank or total;
 - each action reveals the exact returned slot in one interaction.
 
 ## 7. Validate armour, hardness and module protection
@@ -122,9 +120,9 @@ provenance. Any package issue reason `unresolved` remains calculation feedback o
 3. Open Defence through feature 003's headline/detail target.
 
 Expected: no stale projection is published under a newer context; shield/recovery share pips; Status
-shield/armour equals the detail projection; the target is exactly `defenceProfile`; only unknown bank
-power exports `defence.cellBanks.unknownPowerDraws`. The Status-provider update meets feature 003's
-100 ms mobile-throttled criterion.
+shield/armour equals the detail projection; the target is exactly `defenceProfile`; the
+`shieldStrength` identity is exported exactly when that summary is unavailable and never for armour. The Status-provider update meets feature 003's 100 ms mobile-throttled
+criterion.
 
 ## 10. Validate `.design` composition responsively
 
@@ -152,7 +150,7 @@ the exclusions: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2
 
 ## 12. Validate localization boundaries
 
-Switch every shipped locale and repeat unavailable, unknown-power, negative and non-finite states.
+Switch every shipped locale and repeat unavailable, negative and non-finite states.
 
 Expected:
 

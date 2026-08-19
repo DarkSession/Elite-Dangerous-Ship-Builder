@@ -403,7 +403,7 @@ describe('build-link codec', () => {
   it('refuses a Mercenary purchase whose capture states modifiers the record cannot restore', () => {
     // The package publishes no modifier block for a Mercenary purchase, so the pre-engineered
     // record restores none. A capture that states them would decode as a stock module, which is
-    // why this is refused rather than encoded. beta.11 refused it too, for want of the identity.
+    // why this is refused rather than encoded.
     for (const variant of mercenaryVariants()) {
       const source = mercenaryBuild(variant, variant.grade, [
         { Label: 'Mass', Value: 3, OriginalValue: 2 },
@@ -868,18 +868,69 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedEnvelope');
   });
 
-  it('refuses identities absent from the pinned table', () => {
-    const unresolvedSlot = ShipLoadout.fromLoadout({
-      Ship: 'SideWinder',
-      Modules: [{ Slot: 'ImpossibleSlot', Item: 'UnknownModule' }],
-    });
-    const unresolvedModule = ShipLoadout.fromLoadout({
-      Ship: 'SideWinder',
-      Modules: [{ Slot: 'SmallHardpoint1', Item: 'UnknownModule' }],
-    });
+  it('empties an unresolved ingress identity before the codec ever sees it', () => {
+    // An unrecognised slot and a real hardpoint both lose the module, so no identity the table
+    // cannot spell survives import. Both builds normalise to the bare hull, whose frozen
+    // encoding is pinned by the link-length test above.
+    for (const slot of ['ImpossibleSlot', 'SmallHardpoint1']) {
+      const source = ShipLoadout.fromLoadout({
+        Ship: 'SideWinder',
+        Modules: [{ Slot: slot, Item: 'UnknownModule' }],
+      });
 
-    expectCodecError(() => encodeBuildLinkFragment(unresolvedSlot), 'unknownIdentity');
-    expectCodecError(() => encodeBuildLinkFragment(unresolvedModule), 'unknownIdentity');
+      expect(source.importOutcomes).toEqual([
+        { action: 'emptied', slot, sourceSymbol: 'UnknownModule' },
+        // The capture named no cargo hatch, the one mount import fills unasked.
+        {
+          action: 'defaulted',
+          slot: 'CargoHatch',
+          sourceSymbol: null,
+          replacementSymbol: 'ModularCargoBayDoor',
+        },
+      ]);
+      expect(source.fittedModules().map(({ symbol }) => symbol)).not.toContain('UnknownModule');
+      expect(encodeBuildLinkFragment(source)).toBe('b.21B7zk:1Zz');
+    }
+  });
+
+  it('refuses a slot the pinned table cannot spell', () => {
+    // The table is frozen at its version while the Almanac keeps moving, so a hull that gains a
+    // mount the table never recorded must be refused rather than encoded into a published link.
+    const pruned = {
+      ...codecTable1,
+      $generated: { ...codecTable1.$generated, tableVersion: 2 },
+      SLOTS_BY_SHIP: {
+        ...codecTable1.SLOTS_BY_SHIP,
+        SideWinder: codecTable1.SLOTS_BY_SHIP.SideWinder.filter(
+          (slot) => slot !== 'SmallHardpoint1',
+        ),
+      },
+    };
+    const codec2 = createBuildLinkCodec(2, pruned);
+
+    const error = expectCodecError(
+      () => codec2.encodeBuildLinkFragment(ShipLoadout.default('SideWinder')),
+      'unknownIdentity',
+    );
+    expect(error.message).toContain('SmallHardpoint1');
+  });
+
+  it('refuses a module identity the pinned table cannot spell', () => {
+    const source = ShipLoadout.default('SideWinder');
+    const symbol = source.fittedModules().find(({ slot }) => slot === 'SmallHardpoint1')!.symbol;
+    const index = codecTable1.MODULES.findIndex(
+      (entry) => entry.toLowerCase() === symbol.toLowerCase(),
+    );
+    expect(index).toBeGreaterThanOrEqual(0);
+    const pruned = {
+      ...codecTable1,
+      $generated: { ...codecTable1.$generated, tableVersion: 2 },
+      MODULES: codecTable1.MODULES.map((entry, at) => (at === index ? 'Absent_Module' : entry)),
+    };
+    const codec2 = createBuildLinkCodec(2, pruned);
+
+    const error = expectCodecError(() => codec2.encodeBuildLinkFragment(source), 'unknownIdentity');
+    expect(error.message).toContain(symbol);
   });
 
   it('refuses truncated and malformed encodings', () => {

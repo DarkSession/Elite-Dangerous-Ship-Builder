@@ -33,7 +33,7 @@ the current root configuration; enabling it through the shared foundation is an 
 prerequisite
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; pinned
-`@elite-dangerous-almanac/core@0.1.2`; feature 001's planned active-build snapshot/reconstruction/swap
+`@elite-dangerous-almanac/core@0.1.3`; feature 001's planned active-build snapshot/reconstruction/swap
 boundary; feature 011's planned UI, localization, announcement and verification foundations
 
 **Storage**: One observable committed `ShipLoadout`; modelled `BuildSnapshotV1` checkpoints in session
@@ -70,23 +70,21 @@ chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); a
 
 ## Constitution Check
 
-_GATE: **BLOCKED after constitution 6.0.0 review** on
-[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332). Historical purchase
-values remain outside the model, but pinned Almanac 0.1.2 still retains unknown modules. Task
-generation and implementation must wait for the released structured empty/default normalization
-contract; no local substitute is permitted._
+_GATE: **PASS with no exception**. Historical purchase values remain outside the model, and the
+package supplies structured empty/default normalization for unresolved modules at import, so no
+local substitute is required. Implementation remains sequenced behind features 001 and 011._
 
-| Principle                               | Plan evidence                                                                                                                                  | Status                     |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                               | PASS                       |
-| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned; unknown-module empty/default normalization waits for its released package contract. | BLOCKED upstream           |
-| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                          | PASS                       |
-| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and unknown modules receive package empty/default outcomes with no retained identity.   | PASS after release         |
-| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.      | PASS; 011 prerequisite     |
-| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                     | PASS; 011 prerequisite     |
-| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                   | PASS; 011 prerequisite     |
-| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                 | PASS; harness prerequisite |
-| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                            | PASS                       |
+| Principle                               | Plan evidence                                                                                                                                   | Status                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                                | PASS                       |
+| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including the empty/default normalization of unresolved modules at import.           | PASS                       |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                           | PASS                       |
+| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and unresolved modules receive package empty/default outcomes with no retained identity. | PASS                       |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.       | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                      | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                    | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                  | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                             | PASS                       |
 
 Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, name/ident updates and
 modelled session checkpoints. Reconstruction goes back through `ShipLoadout`; raw-module overlays,

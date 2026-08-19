@@ -20,7 +20,7 @@ system override every sample number, label, interaction and CSS literal.
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Power and Thermals is a peer build-analysis capability | Compose one `powerAndHeat` capability inside `/build`, reachable from feature 003's power summary and workspace capability selection. |
 | Selected hardpoint state precedes power analysis       | Reuse feature 003's shared condition group and present one selected package state, default deployed.                                  |
-| Capacity, priority bands and module draw are adjacent  | Keep this comparison with all five bands, exact package fields, complete qualifications and one row per returned consumer.            |
+| Capacity, priority bands and module draw are adjacent  | Keep this comparison with all five bands, exact package fields and one row per returned consumer.                                     |
 | Heat follows power, then distributor                   | Preserve that semantic/narrow order with the exact five heat scenarios and all three complete capacitors.                             |
 | Wide panels form a compact dashboard                   | Use fluid design-system regions where inline space supports them without changing semantic order.                                     |
 | Mobile analysis becomes stacked cards                  | Stack complete content at narrow widths, landscape phones, expanded text and 400% zoom.                                               |
@@ -41,8 +41,8 @@ system override every sample number, label, interaction and CSS literal.
   subtraction. Only returned fields are values; any bar is supplemental.
 - Retracted mode must omit package deployed-only headroom, utilisation and
   within-budget fields instead of adapting the mock summary tiles.
-- Unknown/lower-bound, disabled-null and zero-capacity states are absent from
-  the mock and are explicit in the implementation.
+- Disabled-consumer and zero-capacity states are absent from the mock and are
+  explicit in the implementation.
 - Ledger priority/enabled controls around lines 759–870 remain feature 002
   editing; feature 005 displays and links only.
 
@@ -63,8 +63,8 @@ system override every sample number, label, interaction and CSS literal.
   `firingDrained`.
 - Every scenario must show thermal load, heat level, gauge, overheat and time
   to overheat. The mock omits most of those fields.
-- Plant efficiency, hull heat capacity and projection/unavailable/non-finite
-  states are added.
+- Plant efficiency, hull heat capacity and unavailable/non-finite states are
+  added.
 - Cruise, weapons alpha, shield-cell bank, heat-sink count, resting/peak heat,
   WEP net and “100% module damage” are not inferred by feature 005.
 
@@ -82,8 +82,7 @@ system override every sample number, label, interaction and CSS literal.
 
 The reference has no authoritative tablet, landscape, 200%-text, 400%-zoom,
 expanded-language, RTL, reduced-motion, no-build, pending, error, group-5,
-unknown-draw, heat-projection, unavailable-distributor/heat or semantic
-infinity state. The screen and preview definitions supply them; no design
+unavailable-distributor/heat or semantic infinity state. The screen and preview definitions supply them; no design
 omission reduces the accepted requirements.
 
 ## Source-of-truth conclusion

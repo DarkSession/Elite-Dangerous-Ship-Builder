@@ -3,7 +3,7 @@
 ## Package boundary and leaf imports
 
 **Decision**: Pin implementation to the installed
-`@elite-dangerous-almanac/core@0.1.2` facade methods:
+`@elite-dangerous-almanac/core@0.1.3` facade methods:
 `ShipLoadout.powerBudget()`, `distributorMetrics()` and `heatMetrics()`.
 Import `ShipLoadout` and `DistributorOptions` from
 `@elite-dangerous-almanac/core/ships/ship-loadout`; result types from
@@ -40,44 +40,33 @@ states.
 FR-003. Subtracting or dividing to create retracted summaries conflicts with
 FR-001/FR-002 and the current Almanac limit.
 
-## Field-specific unknown qualification
+## Exact power figures
 
-**Decision**: Treat `budget.unknownDraws` as the sole aggregate
-qualification source:
+**Decision**: Present every `powerBudget()` figure — capacity, selected draw, band draw and
+cumulative draw, headroom, utilisation, `withinBudget` and the band powered states — as the exact
+package value, with no bound, projection or qualification attached.
 
-- `available` remains exact;
-- selected draw, band draw/cumulative draw and deployed utilisation are lower
-  bounds;
-- deployed headroom is labelled as headroom for known draws, not as a complete
-  value or lower bound;
-- `withinBudget` and band powered states are known-draw-only verdicts;
-- every returned unknown label remains visible.
+**Rationale**: Every consumer the package returns carries a resolved draw, so each total answers for
+the whole build. A badge qualifying an exact figure would misdescribe it.
 
-**Rationale**: Enabled unknown draws are omitted from all package totals.
-Consequently draw/utilisation read low, headroom reads too favourably and
-booleans answer only for known consumers. A single generic “lower bound” badge
-would misdescribe headroom and verdicts.
-
-**Alternatives considered**: Treating unknown as zero, qualifying plant
-capacity, calling headroom a lower bound or replacing package booleans with
-locally calculated uncertainty were rejected.
+**Alternatives considered**: Attaching a defensive qualification label to an exact figure, or
+replacing package booleans with locally calculated uncertainty, were rejected.
 
 ## Per-module power projection
 
 **Decision**: Project `PowerBudget.consumers` directly. One
 `PowerConsumerResult` becomes one module row with its returned slot label,
-symbol, post-engineering draw or null, enabled state, normalized one-based
-priority and deployed-only state. Place null draws outside optional descending
-numeric ordering. Preserve source order as the stable tie break. Test the
+symbol, post-engineering draw, enabled state, normalized one-based
+priority and deployed-only state. Ordering by draw descending is optional, with
+source order as the stable tie break. Test the
 `ShipLoadout` invariant that every participating consumer supplies label and
 symbol; a missing exact slot is a package-contract failure, never an inferred
 target.
 
-**Rationale**: The result includes positive or unknown participating modules,
+**Rationale**: The result includes every participating module with a positive draw,
 including disabled ones; passive and zero-draw fittings are intentionally
-absent. A disabled null-draw consumer remains visible but is not in
-`unknownDraws`, so it does not qualify totals. The exact returned label is the
-only safe slot action identity.
+absent. A disabled consumer remains visible and contributes exactly as reported.
+The exact returned label is the only safe slot action identity.
 
 **Alternatives considered**: Joining `fittedModules()` to effective stats,
 reading journal modifiers, subtracting aggregate budgets, grouping identical
@@ -139,12 +128,8 @@ manifest or diagnosing package null locally were rejected because both contradic
 heat capacity/dissipation and exactly these five scenarios in order:
 `idle`, `thrusters`, `fsdCharging`, `firingSustained`,
 `firingDrained`. Each preserves `thermalLoad`, `heatLevel`, `gauge`,
-`overheats` and `secondsToOverheat`. Package null is unavailable. Copy both qualification lists:
-
-- non-empty `unknownDraws` makes the complete profile a non-directional projection;
-- non-empty `unknownWeaponHeat` qualifies only `firingSustained` and `firingDrained`; taken alone,
-  their thermal loads are lower bounds, but their other results are incomplete rather than bounded;
-- when both lists are non-empty, no directional bound holds for the firing scenarios.
+`overheats` and `secondsToOverheat`. Package null is unavailable; a ready profile is a complete
+answer for the build.
 
 Convert only sentinel meaning for presentation:
 
@@ -161,69 +146,13 @@ five scenarios.
 from `.design`; clamping infinity; generic “N/A”; JSON cloning; or hiding
 equal scenarios were rejected.
 
-## Released Almanac heat qualification
-
-**Decision**: Consume Almanac 0.1.2's `HeatMetrics.unknownWeaponHeat` result, released for
-[Almanac #329](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/329). It truthfully
-qualifies the historical package-only catalogue-unknown weapon fixture whose power draw is
-recoverable but weapon heat is not. The application copies this package field and does not create a
-local detector; accepted app ingress never retains the fixture's unknown identity.
-
-Historical minimal reproduction against 0.1.1:
-
-```ts
-import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-
-const source = ShipLoadout.default('SideWinder').toLoadoutEvent();
-const build = ShipLoadout.fromLoadout({
-  ...source,
-  Modules: source.Modules.map((module) =>
-    module.Slot === 'SmallHardpoint1'
-      ? {
-          ...module,
-          Item: 'Unresolved_Test_Weapon',
-          Engineering: {
-            BlueprintName: 'Unknown',
-            Level: 1,
-            Quality: 1,
-            Modifiers: [
-              { Label: 'PowerDraw', Value: 0.2 },
-              { Label: 'ThermalLoad', Value: 20 },
-              { Label: 'DistributorDraw', Value: 2 },
-            ],
-          },
-        }
-      : module,
-  ),
-});
-
-build.powerBudget().consumers.find(({ label }) => label === 'SmallHardpoint1');
-// draw: 0.2, deployedOnly: true
-
-build.powerBudget().unknownDraws; // []
-build.heatMetrics()?.unknownDraws; // [] — incorrectly appears complete
-```
-
-Against pinned 0.1.2, changing or removing the supplied thermal modifier still leaves the returned
-firing heat unchanged because the unresolved article is omitted as a weapon, but
-`heatMetrics()?.unknownWeaponHeat` is now `['SmallHardpoint1']`. `unknownDraws` correctly remains
-empty because the power draw is known.
-
-**Rationale**: The new field distinguishes unknown weapon heat from unknown power draw and identifies
-the affected firing scenarios without qualifying the unaffected idle, thruster or FSD scenarios.
-
-**Alternatives considered**: Inspecting `validation`, hardpoint slot syntax or
-journal `ThermalLoad`/power modifiers locally; adding an identity-based warning; or suppressing heat whenever validation is incomplete were
-rejected as application-side correction or fabricated diagnosis.
-
 ## Revision architecture and consumer ports
 
 **Decision**: Build a pure projection from feature 003's
 `StatusRevisionContext`, then expose:
 
 1. a detailed `PowerHeatSnapshot`;
-2. `PowerStatusProvider` with selected draw/capacity and exact owner
-   qualification for feature 003; and
+2. `PowerStatusProvider` with selected draw and capacity for feature 003; and
 3. `HardpointPowerObservationPort` that selects returned consumer/band fields
    for feature 010.
 
@@ -260,8 +189,8 @@ private game translations were rejected.
 
 ## Verification
 
-**Decision**: Unit-test exact package field equality, all qualification and
-sentinel unions, revision matching and both integration ports. Add Playwright journeys for all three stories in feature 011's
+**Decision**: Unit-test exact package field equality, every sentinel union,
+revision matching and both integration ports. Add Playwright journeys for all three stories in feature 011's
 ten-project matrix with automated axe checks and manual screen-reader/zoom
 protocols.
 

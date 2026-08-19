@@ -2,12 +2,12 @@
 
 Research used the accepted specification, constitution, current repository, feature
 001/002/003/005/011/012 artifacts, `.design/Ship Builder.dc.html`, and the installed
-`@elite-dangerous-almanac/core@0.1.2`. All package observations below are regression evidence, not
+`@elite-dangerous-almanac/core@0.1.3`. All package observations below are regression evidence, not
 application-owned game data.
 
 ## Installed schematic contract
 
-**Decision**: Consume Almanac 0.1.2's published asset and annotation contract for both hardpoints and
+**Decision**: Consume Almanac 0.1.3's published asset and annotation contract for both hardpoints and
 utility mounts. Load `assets/ships/<Ship.symbol>/schematic-{top,bottom}.svg`; admit only a group with
 `data-feature="hardpoint"` or `data-feature="utility_mount"` whose exact `data-journal-slot` resolves
 to the matching active-hull package slot kind.
@@ -26,7 +26,7 @@ unstable presentation details or application-owned game data.
 **Decision**: Add an installed-package regression audit over every hull and both sides, without
 encoding the current counts as runtime constants.
 
-Current 0.1.2 observations:
+Current 0.1.3 observations:
 
 | Evidence                                                        |                     Result |
 | --------------------------------------------------------------- | -------------------------: |
@@ -118,8 +118,8 @@ class zero or copying the mock's size/node badges were rejected as invented mean
 
 **Decision**: Require feature 005 to generalize its hardpoint observation port into a located-mount
 port accepting exact hardpoint and utility keys. Consume its build/condition-revision-stamped result
-unchanged: not applicable, disabled, inactive while retracted, powered, priority-shed or qualified,
-with normalized one-based priority or unavailable.
+unchanged: not applicable, disabled, inactive while retracted, powered or priority-shed, with
+normalized one-based priority or unavailable.
 
 **Rationale**: `ShipLoadout.powerBudget().consumers` already includes utility consumers and owns
 post-engineering draw, enabled defaults, effective priority and deployment classification. Matching
@@ -231,7 +231,7 @@ blocked on features 001, 002, 003, 005, 011 and 012. The required feature 005 ut
 generalization is project contract work, not an upstream defect.
 
 **Rationale**: Almanac issues #308 (schematic contract) and #299 (per-consumer power projection) are
-released in 0.1.2. Exact-slot editing, owner-authored power presentation, strict/shared UI and modal
+released in 0.1.3. Exact-slot editing, owner-authored power presentation, strict/shared UI and modal
 provenance boundaries are not implemented, and their owners retain unresolved gates.
 
 **Alternatives considered**: Reimplementing editing, power, localization, cache or legal behavior

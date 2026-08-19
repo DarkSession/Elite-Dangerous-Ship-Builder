@@ -1,7 +1,7 @@
 # Research: Module Outfitting and Engineering
 
 Research was rerun on 2026-08-18 against the amended Constitution 5.0.0, the clarified feature spec,
-the installed `@elite-dangerous-almanac/core@0.1.2`, planned feature 001/011 contracts, the actual
+the installed `@elite-dangerous-almanac/core@0.1.3`, planned feature 001/011 contracts, the actual
 repository baseline and `.design/Ship Builder.dc.html`. Package probes used detached loadouts only.
 
 ## Decision 1: treat 001 and 011 as prerequisites, not existing code
@@ -130,8 +130,8 @@ Index only the displayed name, decimal class, rating and mount. Fold values/quer
 remove combining marks, locale-lowercase, split on Unicode whitespace and require every non-empty
 term to match at least one of those four fields. Rebuild on slot, build revision or locale change.
 
-The 0.1.2 probe found 48 hulls, 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
-event-reward), and a maximum 481 choices for empty `PantherMkII` `Slot01_Size8` (473 + 8).
+The package holds 48 hulls and 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
+event-reward), with a maximum 481 choices for empty `PantherMkII` `Slot01_Size8` (473 + 8).
 
 **Rationale**: Membership stays package-owned while FR-005 permits deterministic presentation. An
 immutable index makes the 100 ms target straightforward without caching stale candidates.
@@ -298,8 +298,7 @@ lowering coverage cannot prove the behavioral contract.
 
 ## Research status
 
-No product clarification remains. Historical purchase values are outside the model. Feature 002 is
-**BLOCKED** on [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332),
-which tracks the package release supplying structured unknown-module empty/default normalization;
-pinned 0.1.2 still retains unknown modules. Features 001 and 011 remain repository prerequisites. No
-application-side normalization is permitted.
+No product clarification remains. Historical purchase values are outside the model. The package
+supplies structured empty/default normalization for unresolved modules at import, so every
+identity requirement here has a package owner. Features 001 and 011 remain repository
+prerequisites. No application-side normalization is permitted.

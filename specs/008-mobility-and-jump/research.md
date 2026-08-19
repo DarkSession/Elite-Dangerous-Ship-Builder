@@ -1,6 +1,6 @@
 # Research: Mobility, Mass and Jump
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.2` declaration/runtime contracts,
+Research used the installed `@elite-dangerous-almanac/core@0.1.3` declaration/runtime contracts,
 the accepted feature 001/002/003/011 plans, and the wide/narrow Drives & Mass regions in
 `.design/Ship Builder.dc.html`. No game value was independently calculated.
 
@@ -138,18 +138,18 @@ package answer for speed, rotation, curve and power readiness.
 
 **Decision**: Treat the incomplete `mobilityMetricsResult()` issues as authoritative:
 
-| Observed issue                         | Presented meaning                                      |
-| -------------------------------------- | ------------------------------------------------------ |
-| `field: thrusters, reason: missing`    | no fitted thrusters                                    |
-| `field: thrusters, reason: disabled`   | fitted thrusters switched off                          |
-| `field: thrusters, reason: shed`       | fitted thrusters not powered with hardpoints retracted |
-| `field: thrusters, reason: unresolved` | package-resolved thruster performance unavailable      |
-| `field: powerCapacity                  | powerDraw`                                             | the exact package power dependency is unavailable/invalid |
+| Observed issue                         | Presented meaning                                         |
+| -------------------------------------- | --------------------------------------------------------- |
+| `field: thrusters, reason: missing`    | no fitted thrusters                                       |
+| `field: thrusters, reason: disabled`   | fitted thrusters switched off                             |
+| `field: thrusters, reason: shed`       | fitted thrusters not powered with hardpoints retracted    |
+| `field: thrusters, reason: unresolved` | package-resolved thruster performance unavailable         |
+| `field: powerCapacity \| powerDraw`    | the exact package power dependency is unavailable/invalid |
 
 Do not pre-gate the call with a power budget or reinterpret these issues. A complete all-zero
 `MobilityMetrics` above maximum supported thruster mass remains ready zero.
 
-**Rationale**: Almanac 0.1.2 directly returns every distinction required by the spec. Feature 005's
+**Rationale**: Almanac 0.1.3 directly returns every distinction required by the spec. Feature 005's
 accepted observation contract is hardpoint-specific and is not a core-thruster API. Removing the old
 feature 005 dependency avoids duplicate power classification and an integration cycle.
 
@@ -276,7 +276,7 @@ complete responsive/accessibility matrix is a constitutional release gate.
 ## Resolved questions and delivery blockers
 
 All planning questions are resolved and no missing Almanac API or defect blocks this feature.
-Almanac 0.1.2 supplies all required standard-load, jump, mobility, aggregate, fitted-slot and
+Almanac 0.1.3 supplies all required standard-load, jump, mobility, aggregate, fitted-slot and
 effective-stat contracts.
 
 Repository delivery still requires the shared TypeScript strict-mode migration and feature 011's

@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 
 Confirm:
 
-- the dependency is exactly `@elite-dangerous-almanac/core@0.1.2`;
+- the dependency is exactly `@elite-dangerous-almanac/core@0.1.3`;
 - feature 001 exposes the atomic active `{ loadout, buildRevision }` boundary and fixed-mount
   provenance; feature 002 advances that revision for committed edits and exposes exact-slot actions;
 - feature 011 supplies tokens/components, locale/formatting/fallback disclosure, ten Playwright
@@ -24,7 +24,7 @@ Confirm:
 
 The package contract tests must directly pin validation issue shape/order, diagnostic helper null
 outside English, complete zero capacities, `standardLoadResult()` definitions, structured
-mobility/shield unavailable results, power unknown-draw semantics and Merc Coin absent-versus-zero
+mobility/shield unavailable results, exact power draw semantics and Merc Coin absent-versus-zero
 recognition. A failure is an upstream/package-version issue; do not add a local correction.
 
 ## 2. Validate structural status
@@ -52,7 +52,7 @@ numbers use the active locale. No private issue-code translation appears.
 
 ## 4. Validate provider values and conditions
 
-Use reference builds that cover exact positive/zero, power unknown draws, structured incomplete,
+Use reference builds that cover exact positive/zero, structured incomplete,
 package null/throw guarded by its owner, infinity, unpriced entries, missing recipe costs and no
 recognized Mercenary article.
 

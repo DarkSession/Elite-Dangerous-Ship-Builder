@@ -79,9 +79,8 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 
 `inspectSlef()`, `ShipLoadout.fromSlef()`, `ShipLoadout.fromLoadout()`, `toLoadoutEvent()` and
 `toSlefString()` supply strict validation, construction, serialization and current catalogue-retail
-credit behaviour. The promised package ingress release additionally supplies unknown-hull refusal and
-structured unknown-module empty/default outcomes; pinned 0.1.2 does not yet satisfy that identity
-contract. The application performs no format or game calculation.
+credit behaviour, together with unknown-hull refusal and structured empty/default outcomes for
+unresolved modules. The application performs no format or game calculation.
 
 ## Success Criteria
 

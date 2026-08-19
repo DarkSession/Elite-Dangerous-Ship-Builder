@@ -13,7 +13,7 @@ actions for one build/condition revision.
 3. Independent structural validity and completeness facts.
 4. Ordered package issue list or explicit none-reported statement.
 5. Separate fixed-mount normalisation provenance list when present.
-6. Power draw/capacity and its owner qualifications.
+6. Power draw and capacity.
 7. Six headline cards: shield, armour, sustained DPS, selected jump, top speed, unladen mass.
 8. Qualification summary or explicit none-reported statement.
 9. Assembly requirements: retail fields, conditional Merc Coin and materials.

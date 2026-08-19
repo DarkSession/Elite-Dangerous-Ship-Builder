@@ -4,8 +4,7 @@ Every game-bearing value is an immutable projection of one
 `@elite-dangerous-almanac/core` `ShipLoadout`. Feature 005 owns no build,
 viewing-condition persistence, game formula or catalogue fallback.
 
-The types below map the Almanac 0.1.2 heat qualification fields exactly. They do not add a local
-detector.
+The types below map the Almanac 0.1.3 result fields exactly. They do not add a local detector.
 
 ## PowerHeatProjectionState
 
@@ -27,7 +26,7 @@ type PowerHeatProjectionState =
 ```
 
 Package nulls are not application failures. A ready snapshot may contain an
-unavailable distributor, unavailable heat or qualified power. `failure` is
+unavailable distributor or unavailable heat. `failure` is
 reserved for an unexpected exception, missing required `ShipLoadout` consumer
 identity or revision-contract violation.
 
@@ -76,28 +75,15 @@ Feature 005 divides them by two only while constructing
 `load` is retained in the shared revision context but does not affect feature
 005 package calls.
 
-## Qualified values
+## Utilisation
 
 ```ts
-type Qualification = 'exact' | 'lowerBound' | 'knownDrawsOnly';
-
-interface QualifiedValue<T> {
-  readonly value: T;
-  readonly qualification: Qualification;
-}
-
 type UtilisationValue =
   | { readonly kind: 'finite'; readonly value: number }
   | { readonly kind: 'drawWithZeroAvailableOutput' };
 ```
 
-Allowed qualifications are field-specific:
-
-- selected/band/cumulative draw and finite utilisation:
-  `exact | lowerBound`;
-- headroom and powered/within-budget verdicts:
-  `exact | knownDrawsOnly`;
-- plant capacity: always exact and therefore unwrapped.
+Every figure `powerBudget()` returns is exact, so no power value carries a qualification.
 
 `drawWithZeroAvailableOutput` is the package meaning of infinite utilisation.
 It does not assert why capacity is zero.
@@ -108,28 +94,26 @@ It does not assert why capacity is zero.
 interface PowerBudgetView {
   readonly selectedState: 'deployed' | 'retracted';
   readonly available: number;
-  readonly selectedDraw: QualifiedValue<number>;
+  readonly selectedDraw: number;
   readonly deployedSummary: DeployedPowerSummary | null;
   readonly bands: readonly PowerBandView[];
-  readonly unknownDraws: readonly UnknownPowerConsumerView[];
 }
 ```
 
 | Field             | Package source/rule                                                  |
 | ----------------- | -------------------------------------------------------------------- |
 | `available`       | Exact `PowerBudget.available`                                        |
-| `selectedDraw`    | Exact selected `deployed` or `retracted` value plus qualification    |
+| `selectedDraw`    | Exact selected `deployed` or `retracted` value                       |
 | `deployedSummary` | Package `headroom`, `utilisation`, `withinBudget` only when deployed |
 | `bands`           | All five package bands in returned order                             |
-| `unknownDraws`    | Every enabled `PowerBudget.unknownDraws` entry in returned order     |
 
 ### DeployedPowerSummary
 
-| Field          | Type                               | Rule                                                                  |
-| -------------- | ---------------------------------- | --------------------------------------------------------------------- |
-| `headroom`     | `QualifiedValue<number>`           | Exact package number; `knownDrawsOnly` when unknown draws exist       |
-| `utilisation`  | `QualifiedValue<UtilisationValue>` | Exact package fraction/sentinel; lower bound when unknown draws exist |
-| `withinBudget` | `QualifiedValue<boolean>`          | Exact or known-draw-only package verdict                              |
+| Field          | Type               | Rule                            |
+| -------------- | ------------------ | ------------------------------- |
+| `headroom`     | number             | Exact package number            |
+| `utilisation`  | `UtilisationValue` | Exact package fraction/sentinel |
+| `withinBudget` | boolean            | Exact package verdict           |
 
 This type has no retracted variant.
 
@@ -139,36 +123,27 @@ This type has no retracted variant.
 type PowerPriority = 1 | 2 | 3 | 4 | 5;
 ```
 
-| Field            | Type                      | Source                    |
-| ---------------- | ------------------------- | ------------------------- |
-| `priority`       | `PowerPriority`           | `PowerBand.priority`      |
-| `draw`           | `QualifiedValue<number>`  | Selected own-band field   |
-| `cumulativeDraw` | `QualifiedValue<number>`  | Selected cumulative field |
-| `powered`        | `QualifiedValue<boolean>` | Selected package verdict  |
+| Field            | Type            | Source                    |
+| ---------------- | --------------- | ------------------------- |
+| `priority`       | `PowerPriority` | `PowerBand.priority`      |
+| `draw`           | number          | Selected own-band field   |
+| `cumulativeDraw` | number          | Selected cumulative field |
+| `powered`        | boolean         | Selected package verdict  |
 
 No field is calculated from another. Zero-draw bands remain present.
-
-### UnknownPowerConsumerView
-
-| Field     | Type        | Rule                                                                            |
-| --------- | ----------- | ------------------------------------------------------------------------------- |
-| `slotKey` | string      | Exact returned label; missing label fails the `ShipLoadout` projection contract |
-| `symbol`  | string/null | Exact returned symbol when supplied; never inferred                             |
 
 ## ModulePowerCollection
 
 ```ts
 interface ModulePowerCollection {
-  readonly unavailableDraw: readonly ModulePowerView[];
-  readonly knownDraw: readonly ModulePowerView[];
+  readonly rows: readonly ModulePowerView[];
 }
 ```
 
 Rules:
 
 - one row corresponds to one `PowerConsumerResult`;
-- null draws precede the numeric group and retain source order;
-- known draws may sort descending with source ordinal as the stable tie break;
+- rows may sort by draw descending with source ordinal as the stable tie break;
 - disabled consumers remain visible;
 - identical modules in different slots never merge;
 - passive and zero-draw fittings absent from `budget.consumers` are not
@@ -178,9 +153,7 @@ Rules:
 ### ModulePowerView
 
 ```ts
-type ModuleDraw =
-  { readonly kind: 'known'; readonly value: number } | { readonly kind: 'unavailable' };
-type DeploymentState = 'deployedOnly' | 'always' | 'unavailable';
+type DeploymentState = 'deployedOnly' | 'always';
 ```
 
 | Field           | Type                 | Source/rule                                                  |
@@ -188,7 +161,7 @@ type DeploymentState = 'deployedOnly' | 'always' | 'unavailable';
 | `slotKey`       | string               | Exact `consumer.label`; required for this facade projection  |
 | `symbol`        | string               | Exact `consumer.symbol`; required for game-text presentation |
 | `displayName`   | `LocalizedGameText`  | Feature 011 Almanac module-name presentation                 |
-| `draw`          | `ModuleDraw`         | Exact `consumer.draw`                                        |
+| `draw`          | number               | Exact `consumer.draw`                                        |
 | `enabled`       | boolean              | Exact `consumer.enabled`                                     |
 | `priority`      | `PowerPriority`      | Exact normalized package priority                            |
 | `deployedOnly`  | `DeploymentState`    | Exact package state                                          |
@@ -248,15 +221,11 @@ type HeatProfileView =
       readonly hullHeatCapacity: number;
       readonly hullHeatDissipation: number;
       readonly scenarios: readonly HeatScenarioView[];
-      readonly unknownDraws: readonly string[];
-      readonly unknownWeaponHeat: readonly string[];
     };
 ```
 
-`unavailable` maps exactly from `heatMetrics() === null`. For a ready result, non-empty
-`unknownDraws` qualifies every scenario as a non-directional projection. Non-empty
-`unknownWeaponHeat` qualifies only `firingSustained` and `firingDrained`; taken alone, their thermal
-loads are lower bounds. Both arrays preserve the package's returned slot order and identities.
+`unavailable` maps exactly from `heatMetrics() === null`. A ready profile is a complete answer for
+the build: every scenario carries the package's own figures, and none is a bound or a projection.
 
 ### HeatScenarioView
 
@@ -287,36 +256,25 @@ Feature 005's feature 003 contribution:
 interface PowerStatusProjection {
   readonly hardpointState: 'deployed' | 'retracted';
   readonly available: number;
-  readonly selectedDraw: QualifiedValue<number>;
+  readonly selectedDraw: number;
 }
 ```
 
 The provider envelope is ready for the captured revision pair, targets
-`powerAndHeat` and returns `qualifiedSummaryIds: ['power']` exactly when
-`selectedDraw.qualification !== 'exact'`; otherwise it returns an empty list.
-Feature 003 does not reinterpret the value.
+`powerAndHeat` and returns an empty `qualifiedSummaryIds`, because every figure
+`powerBudget()` returns is exact. Feature 003 does not reinterpret the value.
 
 ## HardpointPowerObservation
 
 Feature 005's feature 010 contribution:
 
 ```ts
-type PriorityState =
-  | { readonly kind: 'available'; readonly value: 1 | 2 | 3 | 4 | 5 }
-  | { readonly kind: 'unavailable' };
-
 type HardpointPowerObservation =
   | { readonly kind: 'notApplicable' }
-  | { readonly kind: 'disabled'; readonly priority: PriorityState }
-  | { readonly kind: 'inactiveRetracted'; readonly priority: PriorityState }
-  | { readonly kind: 'powered'; readonly priority: PriorityState }
-  | { readonly kind: 'shed'; readonly priority: PriorityState }
-  | {
-      readonly kind: 'qualified';
-      readonly priority: PriorityState;
-      readonly reason:
-        'unknownDraw' | 'unknownDeployment' | 'knownDrawsOnlyVerdict' | 'packageUnavailable';
-    };
+  | { readonly kind: 'disabled'; readonly priority: PowerPriority }
+  | { readonly kind: 'inactiveRetracted'; readonly priority: PowerPriority }
+  | { readonly kind: 'powered'; readonly priority: PowerPriority }
+  | { readonly kind: 'shed'; readonly priority: PowerPriority };
 ```
 
 Selection rules use only one budget:
@@ -324,11 +282,7 @@ Selection rules use only one budget:
 1. no returned power consumer for the exact slot → `notApplicable`;
 2. disabled consumer → `disabled`;
 3. retracted plus `deployedOnly === true` → `inactiveRetracted`;
-4. null draw/deployment, a missing matching band or enabled unknown draw →
-   `qualified`;
-5. any global unknown draw makes an otherwise active band verdict
-   `knownDrawsOnlyVerdict`, not powered/shed;
-6. otherwise select the matching package band's selected powered boolean.
+4. otherwise select the matching package band's selected powered boolean.
 
 The port stamps every observation with build and condition revisions outside
 this union. Feature 010 accepts no stale pair.

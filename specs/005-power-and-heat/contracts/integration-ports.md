@@ -25,26 +25,24 @@ mismatched results rather than relabel them.
 interface PowerStatusProjection {
   readonly hardpointState: 'deployed' | 'retracted';
   readonly available: number;
-  readonly selectedDraw: QualifiedValue<number>;
+  readonly selectedDraw: number;
 }
 
-interface PowerStatusProvider extends StatusProvider<PowerStatusProjection, 'power'> {}
+interface PowerStatusProvider extends StatusProvider<PowerStatusProjection, never> {}
 ```
 
 The adapter:
 
 1. calls/selects feature 005's power projection for the exact context;
-2. returns selected state, exact `budget.available` and exact selected package
-   draw plus owner qualification;
+2. returns selected state, exact `budget.available` and the exact selected package draw;
 3. stamps `buildRevision` and `conditionsRevision`;
 4. always returns
    `detailTarget: { kind: 'detail', capability: 'powerAndHeat' }`;
-5. returns `qualifiedSummaryIds: ['power']` exactly when enabled package
-   unknown draws make the selected total a lower bound; otherwise `[]`.
+5. returns an empty `qualifiedSummaryIds`, because every figure `powerBudget()` returns is exact.
 
 Zero capacity/draw remains an exact numeric summary. Retracted selection does
 not create or require deployed-only summary fields. Feature 003 copies this
-value and qualification unchanged.
+value unchanged.
 
 An unexpected package/projection exception is allowed to propagate to feature
 003's `projectionFailed` boundary. Package unavailable heat/distributor states
@@ -72,16 +70,9 @@ band:
 - disabled → `disabled`;
 - selected retracted plus package `deployedOnly: true` →
   `inactiveRetracted`;
-- null draw/deployment or missing band → `qualified`;
-- enabled unknown draw → `qualified: unknownDraw`;
-- another enabled unknown anywhere in the budget means an otherwise active
-  band's verdict is `qualified: knownDrawsOnlyVerdict`;
-- only a complete matching selected package band becomes `powered` or
-  `shed`.
+- otherwise the matching selected package band becomes `powered` or `shed`.
 
-Priority is the package-normalized one-based value when valid; otherwise it is
-unavailable. A qualified observation never carries a plausible powered/shed
-verdict.
+Priority is the package-normalized one-based value.
 
 Feature 010 owns empty/fitted/engineering state and geometry. It passes an exact
 package slot and renders this observation; it does not read raw `On`,
@@ -111,10 +102,7 @@ package slot and renders this observation; it does not read raw `On`,
 ## Required verification
 
 - Both ports receive and return the identical revision pair.
-- Status selected draw/capacity/qualification exactly equal the detailed power
-  projection.
-- Status qualification identity is present once only when owner-qualified.
+- Status selected draw and capacity exactly equal the detailed power projection.
 - Every exact hardpoint slot reaches the corresponding consumer observation.
-- Disabled, inactive, powered, shed, unknown draw, unknown deployment,
-  known-draw-only and missing consumer states remain distinct.
+- Disabled, inactive, powered, shed and missing consumer states remain distinct.
 - Feature 003/010 tests prove they do not recalculate or reinterpret power.

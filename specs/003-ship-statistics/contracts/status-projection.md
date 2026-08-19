@@ -5,13 +5,13 @@
 Feature 003 owns the provider envelope and atomic composition. It does not own the five provider
 values:
 
-| Adapter                    | Implementer | Status contribution                                   |
-| -------------------------- | ----------- | ----------------------------------------------------- |
-| power status adapter       | 005         | selected draw/capacity and exact owner qualifications |
-| defence status adapter     | 006         | shield strength and armour                            |
-| offence status adapter     | 007         | sustained DPS with package-native firing meaning      |
-| mobility status adapter    | 008         | selected jump, selected top speed and unladen mass    |
-| `AssemblyRequirementsPort` | 009         | credits, conditional Merc Coin and materials          |
+| Adapter                    | Implementer | Status contribution                                |
+| -------------------------- | ----------- | -------------------------------------------------- |
+| power status adapter       | 005         | selected draw and capacity                         |
+| defence status adapter     | 006         | shield strength and armour                         |
+| offence status adapter     | 007         | sustained DPS with package-native firing meaning   |
+| mobility status adapter    | 008         | selected jump, selected top speed and unladen mass |
+| `AssemblyRequirementsPort` | 009         | credits, conditional Merc Coin and materials       |
 
 Contract-first delivery is explicit:
 
@@ -69,8 +69,7 @@ All implementation imports use leaf subpaths.
 - A provider-returned numeric zero remains its owner-authored exact zero.
 - Package incomplete/unavailable results retain their full ordered structured issues.
 - Package infinity retains the field-specific meaning defined by the owner capability.
-- Power with unknown draws retains feature 005's qualification for every affected returned field;
-  003 does not independently label headroom or booleans.
+- 003 does not independently label power headroom or booleans.
 - Retracted power omits deployed-only summaries rather than deriving replacements.
 - Sustained DPS is the package firing result because `weaponMetrics()` has no hardpoint-state input.
 - Merc Coin absence remains feature 009's `absent` state and is never converted to numeric zero.
@@ -103,8 +102,7 @@ number or diagnostic.
 
 | Owner | Allowed identity or identities           |
 | ----- | ---------------------------------------- |
-| 005   | `power`                                  |
-| 006   | `shieldStrength`, `armour`               |
+| 006   | `shieldStrength`                         |
 | 007   | `sustainedDps`                           |
 | 008   | `jumpRange`, `topSpeed`, `unladenMass`   |
 | 009   | `retailCredits`, `mercCoin`, `materials` |

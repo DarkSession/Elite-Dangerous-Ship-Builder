@@ -205,12 +205,7 @@ type MountPowerState =
   | { readonly kind: 'disabled' }
   | { readonly kind: 'inactiveRetracted' }
   | { readonly kind: 'powered' }
-  | { readonly kind: 'shed' }
-  | {
-      readonly kind: 'qualified';
-      readonly reason:
-        'unknownDraw' | 'unknownDeployment' | 'knownDrawsOnlyVerdict' | 'packageUnavailable';
-    };
+  | { readonly kind: 'shed' };
 ```
 
 Feature 010 copies these states and the observation's revision pair. It does not join consumers to

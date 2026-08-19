@@ -24,7 +24,7 @@ bars, grouped contribution claims and ambiguous “integrity” label are not co
 Node.js 24 for tooling. Full TypeScript/template strictness is a constitutional target not yet enabled
 by the current root configuration and remains a feature 011 prerequisite.
 
-**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.2` leaf
+**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.3` leaf
 exports for loadout defence, ships and i18n; feature 001 active-build/revision ownership; feature 002
 exact-slot selection; feature 003 revision, viewing-condition, provider and workspace-target
 contracts; feature 011 design-system, localization, announcement, preview and test foundations
@@ -71,7 +71,7 @@ requested._
 | I. Client-Side Only                     | Projection uses only the in-memory loadout, installed package and memory-only viewing/navigation state.                                                                    | PASS                   |
 | II. Almanac Source of Truth             | Four facade results, structured issues, the package hull record and package fitted snapshots own every game value, state and identity; no package result is reconstructed. | PASS                   |
 | III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only capability components.                                                             | PASS                   |
-| IV. Lossless, Honest Builds             | Null, zero, negative, infinity, ordered issues, unknown power and actual fitted identity remain distinct; the feature never mutates the build.                             | PASS                   |
+| IV. Lossless, Honest Builds             | Null, zero, negative, infinity, ordered issues and actual fitted identity remain distinct; the feature never mutates the build.                                            | PASS                   |
 | V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen-reader, text-size, zoom, orientation and no-overflow verification.        | PASS; 011 prerequisite |
 | VI. Commander's Language                | Application labels/units use feature 011; module names and calculation diagnostics use Almanac locale helpers with disclosed canonical fallback.                           | PASS; 011 prerequisite |
 | VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only, and every new presentation component has a preview matrix.                               | PASS; 011 prerequisite |
@@ -80,7 +80,7 @@ requested._
 
 ### Delivery prerequisites
 
-There is no feature-006 Almanac blocker in pinned 0.1.2. Repository implementation still depends on:
+There is no feature-006 Almanac blocker in pinned 0.1.3. Repository implementation still depends on:
 
 1. feature 001's active `ShipLoadout`, atomic `buildRevision` and `/build` workspace;
 2. feature 003's contract-first `StatusRevisionContext`, settled `ViewingConditions`, generic
@@ -163,8 +163,7 @@ The full decisions and alternatives are in [research.md](./research.md). The dec
 - Copy every shield/recovery field. Negative resistance, numeric zero, EHP infinity and each
   recovery-phase infinity remain distinct.
 - Copy `cellBanks()` completely. No banks and fitted/all-unpowered banks are different states.
-  `bank.powered` is the package's deployed-power result. A non-empty `powerBudget().unknownDraws`
-  qualifies the bank collection without changing any bank or total.
+  `bank.powered` is the package's deployed-power result.
 - `armourMetrics()` is non-nullable for an active known hull. Armour EHP is expressed in hull points
   of raw damage capacity, while hardness is a separate hull rating from `getShipBySymbol()`.
 - Resolved fitted records may be shown as role records with exact slot actions. They are not claimed
@@ -177,12 +176,12 @@ No `NEEDS CLARIFICATION` marker or new Almanac defect remains.
 ## Phase 1: Design Outputs
 
 - [data-model.md](./data-model.md) defines revision context, complete/unavailable calculation views,
-  raw metric snapshots, bank power qualification, armour/hardness, fitted role records, display
+  raw metric snapshots, armour/hardness, fitted role records, display
   sentinel states and the feature 003 summary.
 - [contracts/shield-profile.md](./contracts/shield-profile.md) freezes exact shield/recovery calls,
   complete field mapping, ordered issue preservation and non-finite meanings.
 - [contracts/cell-banks.md](./contracts/cell-banks.md) freezes collection states, every returned bank
-  field, deployed-power semantics, unknown-draw qualification and exact-slot actions.
+  field, deployed-power semantics and exact-slot actions.
 - [contracts/armour-profile.md](./contracts/armour-profile.md) freezes every armour field, hull
   hardness, correct units and separation from actual fitted role records.
 - [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes revision

@@ -37,7 +37,7 @@ environment. Full TypeScript and Angular template strictness is a feature 011 pr
 the current root configuration does not yet enable both
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; currently
-verified `@elite-dangerous-almanac/core` 0.1.2 leaf imports from `ships/slef`,
+verified `@elite-dangerous-almanac/core` 0.1.3 leaf imports from `ships/slef`,
 `ships/ship-loadout`, `ships/modules` and `i18n/diagnostics`; feature 001
 active-build/replacement/link/persistence boundaries; feature 002 shared
 build-ingress normalizer; feature 011 localization, announcements, shared UI and browser-test
@@ -80,32 +80,30 @@ import/export sheets and action-menu entry. Exact adoption and departures are re
 
 ## Constitution Check
 
-_GATE: **BLOCKED after constitution 6.0.0 review** on
-[Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332). Captured per-module
-`Health` and historical prices remain outside application state, but pinned Almanac 0.1.2 still
-retains unknown modules. Ingress implementation waits for the released package-owned empty/default
-normalization contract; no local field rewrite or identity classification is permitted._
+_GATE: **PASS with no exception**. Captured per-module `Health` and historical prices remain outside
+application state, and the package owns the empty/default normalization of unresolved modules at
+import. No local field rewrite or identity classification is permitted._
 
 | Principle                               | Design evidence                                                                                                                                                                     | Status                     |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | I. Client-Side Only                     | Inspection, normalization, serialization and delivery use installed code, memory and explicit browser APIs; unexpected requests fail tests.                                         | PASS                       |
-| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs; required unknown-module normalization waits for a released package contract.                                                           | BLOCKED upstream           |
+| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs, including the empty/default normalization of unresolved modules at import.                                                             | PASS                       |
 | III. Domain Logic Outside UI            | Pure import/export coordinators and injected ports precede signal stores; components render immutable views and emit intent.                                                        | PASS                       |
-| IV. Lossless, Honest Builds             | Unknown hulls refuse; unknown modules become package empty/default outcomes with no identity retained; other modelled fields round-trip.                                            | PASS after release         |
+| IV. Lossless, Honest Builds             | Unknown hulls refuse; unresolved modules become package empty/default outcomes with no identity retained; other modelled fields round-trip.                                         | PASS                       |
 | V. Desktop, Tablet and Mobile           | Identical capability reflows among dialog, sheet and full-height layer; touch, screen reader, zoom, orientation, RTL/expansion, reduced motion and no-overflow checks are required. | PASS; 011 prerequisite     |
 | VI. Commander's Language                | Application framing uses feature 011; package diagnostics use `getSlefDiagnosticMessage` with the standard canonical-language disclosure on locale miss.                            | PASS; 011 prerequisite     |
 | VII. One Design System                  | Every layer, notice, diagnostic, field, action and status composes or extends `src/app/ui/` and receives complete responsive state previews.                                        | PASS; 011 prerequisite     |
 | VIII. Tested Before It Ships            | Unit/contract tests, ten Chromium/Firefox viewport-orientation projects, axe and manual screen-reader/zoom scripts are specified without weakening coverage.                        | PASS; harness prerequisite |
 | IX. Specification Before Implementation | Every FR maps to a named plan-time surface/state; the clarified price, health-snapshot and integrity boundaries are explicit.                                                       | PASS                       |
 
-Almanac 0.1.2 supplies the feature-specific package operations requested by
+The Almanac supplies the feature-specific package operations requested by
 [#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
 [#293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) and
 [#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 004 constructs a
 fresh detached import candidate and reuses feature 002's accepted ingress ordering and outcomes.
-Neither captured purchase provenance nor per-module condition snapshots create an upstream gate.
-The constitution 6.0.0 identity rule does: 0.1.2 retains unknown modules, so feature 004 ingress
-waits for the promised Almanac release and must not implement a local substitute.
+Neither captured purchase provenance nor per-module condition snapshots create an upstream gate, and
+the constitution 6.0.0 identity rule is satisfied by the package's own normalization. Feature 004
+must not implement a local substitute.
 
 ## Delivery Prerequisites
 
@@ -120,7 +118,7 @@ implementation depends on these planned boundaries rather than creating temporar
 3. Feature 002 shared ingress: source partial/fixed preflight, quality-first normalization,
    package-owned fixed repair and history-reset notification. Feature 004 calls this boundary once;
    it does not add a SLEF-specific normalization loop.
-4. The pinned Almanac remains 0.1.2 until the relevant plans deliberately update and re-probe the
+4. The pinned Almanac changes only when the relevant plans deliberately update and re-probe the
    package contract. No implementation may compensate for a package regression locally.
 
 ## Project Structure
@@ -210,8 +208,8 @@ See [research.md](./research.md). The decisive outcomes are:
   import layer, shared replacement state, post-layer import outcome, export-unavailable host state
   and active-build export layer.
 
-All planning questions are resolved. Implementation remains blocked on the promised Almanac
-unknown-module normalization release.
+All planning questions are resolved. Implementation remains sequenced behind the planned 001, 002
+and 011 boundaries.
 
 ## Phase 1: Design Outputs
 
@@ -242,9 +240,8 @@ defaults remain visible. Only the accepted candidate is committed; every other t
 active loadout, revision, dirty baseline, working/named bytes, fragment and edit history unchanged.
 
 Every FR has a route-preserving surface and validation path. The post-design feature gate is
-**BLOCKED upstream** on the promised Almanac identity-normalization release; implementation also
-remains sequenced behind planned 001/002/011 prerequisites. No constitutional exception or local
-workaround is accepted.
+**PASS with no exception**; implementation remains sequenced behind planned 001/002/011
+prerequisites. No constitutional exception or local workaround is accepted.
 
 ## Complexity Tracking
 

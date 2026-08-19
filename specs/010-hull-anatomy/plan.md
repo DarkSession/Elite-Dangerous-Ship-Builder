@@ -31,7 +31,7 @@ values, cross-capability modes and inline visual literals are rejected.
 `strictTemplates` are not yet enabled and are an implementation prerequisite
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8;
-`@elite-dangerous-almanac/core@0.1.2` leaf exports; feature 001's active build, workspace, asset
+`@elite-dangerous-almanac/core@0.1.3` leaf exports; feature 001's active build, workspace, asset
 coordinator and service worker; feature 002's complete ledger and exact-slot selection; feature
 003's settled deployed/retracted condition and revision; a generalized feature 005 located-mount
 power observation; feature 011's tokens, components, localization and verification harness; feature
@@ -63,7 +63,7 @@ reimplemented power verdict or persisted anatomy state; no page horizontal scrol
 dark theme; translatable owned text and locale formatting; shared 44 CSS-pixel target baseline;
 WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: Almanac 0.1.2 has 48 hulls and 96 side schematics totalling 9,026,731 bytes. They
+**Scale/Scope**: Almanac 0.1.3 has 48 hulls and 96 side schematics totalling 8,987,603 bytes. They
 contain 240 hardpoint occurrences for 234 unique hardpoints and 195 utility occurrences for 195
 unique utilities. Six hardpoints intentionally repeat across sides; future utility repeats are
 allowed by the package contract. Counts are regression evidence, never runtime constants
@@ -101,14 +101,14 @@ after Phase 1 with the same result._
 4. **Feature 005** must generalize `HardpointPowerObservationPort` to a located-mount port covering
    exact hardpoint and utility keys. Almanac `PowerBudget.consumers` already supports both; this is an
    application-contract correction, not an Almanac defect. Feature 005's Almanac gate is resolved in
-   0.1.2; the shared strictness and application-contract prerequisites remain.
+   0.1.3; the shared strictness and application-contract prerequisites remain.
 5. **Feature 011** must deliver strict configuration, one design system, localization/game-text
    presentation, announcements, component previews, ten Playwright projects and the axe harness.
 6. **Feature 012** must deliver its planned in-place modal contract. Feature 010 emits its contextual
    provenance/help intent rather than owning legal content or targeting a route.
 
 The current repository implements only the Angular shell and feature 001's build-link codec. These
-dependencies are explicit sequencing gates, not unresolved planning questions. Almanac 0.1.2's
+dependencies are explicit sequencing gates, not unresolved planning questions. Almanac 0.1.3's
 direct schematic and per-consumer power contracts are present and need no upstream anatomy fix.
 
 ## Project Structure
@@ -181,7 +181,7 @@ owner and feature 012 remains the provenance/legal owner.
 Detailed decisions, rationale and rejected alternatives are in [research.md](./research.md). The
 decisive results are:
 
-- Almanac 0.1.2 publicly contracts both `hardpoint` and `utility_mount` annotations, exact journal
+- Almanac 0.1.3 publicly contracts both `hardpoint` and `utility_mount` annotations, exact journal
   keys, complete coverage, cross-side duplicate identity and safe static inline SVG content.
 - An exhaustive audit found all 429 current package mounts represented correctly by 435 occurrences,
   with no missing, wrong-kind, bad-key or same-side duplicate annotations.

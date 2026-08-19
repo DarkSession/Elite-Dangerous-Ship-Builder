@@ -46,7 +46,6 @@ overflow; the document never does.
 | complete or unavailable shield    | Shield Profile                                               |
 | complete or unavailable recovery  | Shield Recovery                                              |
 | no/fitted/all-unpowered banks     | Cell Banks                                                   |
-| unknown power draws               | Bank qualification notice and Status owner qualification     |
 | armour/hardness/module protection | Armour Profile; ready inside every successful projection     |
 | source/issue/bank slot activation | feature 002 exact-slot selection                             |
 | unknown hull ingress              | feature 001/004 construction boundary; no Defence projection |
