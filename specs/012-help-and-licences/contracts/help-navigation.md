@@ -74,15 +74,15 @@ translations and the reference's retained-partial-roll wording are prohibited.
 Exactly one definition exists for each topic ID, with the following non-empty governing-reference
 set. References are build/review evidence only and are not displayed or bundled.
 
-| Topic ID                     | Governing accepted source                            |
-| ---------------------------- | ---------------------------------------------------- |
-| `buildLinkPrivacy`           | Feature 001 FR-015                                   |
-| `accountsUploadsTelemetry`   | Constitution Principle I                             |
-| `browserPersistence`         | Feature 001 FR-008, FR-013 and FR-014                |
-| `offlineAssets`              | Constitution Principle I and Feature 001 FR-006      |
-| `completedEngineeringGrades` | Constitution Principle IV and Feature 002 FR-013     |
-| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 003 FR-006 and FR-009 |
-| `almanacOwnership`           | Constitution Principle II and Feature 003 FR-002     |
+| Topic ID                     | Governing accepted source                                          |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `buildLinkPrivacy`           | Feature 001 FR-015                                                 |
+| `accountsUploadsTelemetry`   | Constitution Principle I                                           |
+| `browserPersistence`         | Constitution Principle I and Feature 001 FR-008, FR-013 and FR-014 |
+| `offlineAssets`              | Constitution Principle I and Feature 001 FR-006                    |
+| `completedEngineeringGrades` | Constitution Principle IV and Feature 002 FR-013                   |
+| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 003 FR-006 and FR-009               |
+| `almanacOwnership`           | Constitution Principle II and Feature 003 FR-002                   |
 
 Build validation resolves every reference against the accepted repository artifacts and verifies
 the exact seven-ID set, uniqueness and non-empty shipped-locale messages. Required content review

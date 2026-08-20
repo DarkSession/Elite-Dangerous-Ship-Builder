@@ -21,7 +21,8 @@ demonstrated independently.
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (US1, US2, US3)
-- Every task names the exact file it changes
+- Every task names every file it changes. A task that spans several files names all of them; it is
+  never left to the implementer to infer an unnamed file
 
 ## Path Conventions
 
@@ -37,6 +38,26 @@ Feature 011 supplies the sole service-worker/base app-shell caching, shared dial
 complete English/German localisation, the preview catalogue and the ten-project Chromium/Firefox axe
 harness. Tasks below extend those owning paths rather than duplicating them; a task that names an
 011-owned file assumes that file exists.
+
+**These are hard gates, not soft assumptions.** Before starting Phase 2, confirm each of the
+following exists; none of them is created by a task in this feature, and a task that names one
+cannot start until its owner has shipped it:
+
+| Prerequisite                                                                 | Owner       | Tasks gated on it            |
+| ---------------------------------------------------------------------------- | ----------- | ---------------------------- |
+| `src/app/ui/components/app-frame/` — frame with wide and narrow action bar   | Feature 011 | T020, T024, T025             |
+| `src/app/i18n/locales/en.json` and `de.json` — localisation with fallback    | Feature 011 | T016, T031, T041, T047       |
+| `src/app/ui/previews/preview-manifest.ts` — component preview catalogue      | Feature 011 | T024, T032, T042, T052       |
+| Shared dialog/layer primitives and tokens under `src/app/ui/`                | Feature 011 | T019, T021, T023, T028, T038 |
+| Ten Chromium/Firefox viewport-orientation projects in `playwright.config.ts` | Feature 011 | T054, T055, T056, T057, T065 |
+| Capability pages and layers named by `design/screen-inventory.md`            | 001–010     | T022, T025, T063             |
+
+Phase 1 (T001–T005), the manifest contract and generator (T006–T015) and the ephemeral dialog store
+(T017) depend on none of the above and can proceed while feature 011 is still in flight. T016 and
+everything downstream of it is blocked until the rows it depends on are satisfied. The ten-project
+matrix in particular is the minimum constitution principle VIII accepts: a suite that runs fewer
+projects has not covered this feature's journeys, so T054–T057 and T065 fail rather than pass on a
+narrower matrix.
 
 ---
 
@@ -88,7 +109,7 @@ owns its own failure fixtures, presenter projection, section rendering and journ
 - [ ] T021 [P] Implement the `ContextHelpLink` presentation component with a visible localised label, shared token-backed 44 CSS-pixel target and open-intent output, plus its focused co-located unit spec, in `src/app/ui/components/context-help-link/`
 - [ ] T022 Wire `ContextHelpLink` into every package-backed artwork/value region and every full-screen layer enumerated by `specs/012-help-and-licences/design/screen-inventory.md`, including `src/app/features/hull-detail/hull-detail.page.html`, `src/app/features/build-workspace/build-workspace.page.html` and `src/app/ui/components/layer/layer.html`, so every surface required by FR-002 and FR-011 dispatches the shared open intent instead of embedding help copy (depends on T021)
 - [ ] T023 [P] Implement the shared `WarnedExternalLink` presentation component in `src/app/ui/components/warned-external-link/` as a native anchor that is inert until activation, carries `rel="noreferrer noopener"`, states its destination purpose plus the leaving-application and possible-network warnings in visible and accessible text, meets the shared token-backed 44 CSS-pixel target and has a focused co-located unit spec
-- [ ] T024 Register the closed-frame-entry, closed-contextual-entry and open-shell states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` at desktop, tablet and mobile widths (depends on T016, T020, T021, T022)
+- [ ] T024 Register the closed-frame-entry, closed-contextual-entry and open-shell states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` at desktop centered, tablet and mobile portrait, and tablet and mobile landscape sheet treatments, plus the shell-level reduced-motion and 400%-zoom reflow states required by [contracts/help-navigation.md](./contracts/help-navigation.md)'s component-preview list (depends on T016, T020, T021, T022)
 - [ ] T025 Create the exhaustive FR-011 coverage set in `e2e/coverage-ledger.ts` and the journey harness in `e2e/help-and-licences.spec.ts`: enumerate and open help from every current capability, applicable package-backed artwork/value surface and obscuring layer in `specs/012-help-and-licences/design/screen-inventory.md`, including at least the wide frame action from a no-build capability, narrow menu action from an active workspace, package artwork entry and package value entry; assert exactly one dialog instance, unchanged pathname/query/fragment/history length/build revision/selected slot/stored records, no route chunk or cross-origin request on open, and an unchanged underlying capability after close (depends on T020, T022, T024)
 
 **Checkpoint**: The shared modal opens and closes from every required surface over verified build artifacts. Story sections can now be added independently.
@@ -140,7 +161,7 @@ currency, and the issue action targets the Almanac issues page under a narrower,
 - [ ] T041 [P] [US2] Add the localised version labels, release and non-release wording, bounded provenance statement — the bundled Almanac supplies catalogue data, validation and calculations, and Frontier owns the covered game data and imagery — and the narrow package-defect action wording to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, with no live-game or live-catalogue currency claim
 - [ ] T042 [US2] Register the open-release, open-non-release-with-build-ID and long-application/build/package-identifier preview states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` (depends on T040, T041)
 - [ ] T043 [US2] Unit test in `src/app/application/help/help.presenter.spec.ts` and `src/app/features/help/help-dialog.component.spec.ts` that the two versions are distinct labelled facts, that a non-release view model always carries a visible build ID, that release state is only shown for generator-classified release evidence, that provenance stays within its bounded statement and that the issue action is not described as legal detail (depends on T040)
-- [ ] T044 [US2] Extend `e2e/help-and-licences.spec.ts` with the identity journey asserting the displayed application and Almanac versions equal the shipped root and installed manifests, that the current build shows Non-release plus its build ID, and that neither value is labelled live game or live catalogue (depends on T040)
+- [ ] T044 [US2] Extend `e2e/help-and-licences.spec.ts` with the identity journey in two legs. Online: the displayed application and Almanac versions equal the shipped root and installed manifests, the current build shows Non-release plus its build ID, and neither value is labelled live game or live catalogue. Offline, completing SC-004's identity half: after one completed online production-app load, disable the network, reload a no-build capability and assert the same version facts, non-release state, build ID and bounded provenance are present and unchanged, with no request and no loading, missing or stale state (depends on T040)
 - [ ] T045 [US2] Extend `e2e/help-and-licences.spec.ts` with the package-defect navigation assertion: no request before activation, then activation targeting exactly `https://github.com/DarkSession/Elite-Dangerous-Almanac/issues` with `rel="noreferrer noopener"`, the visible leaving-application and network warnings, and no query, fragment or build data (depends on T040)
 
 **Checkpoint**: User Stories 1 and 2 are both independently demonstrable over the same shared modal.
@@ -179,15 +200,15 @@ story.
 - [ ] T054 Extend `e2e/help-and-licences.spec.ts` with the axe, semantic and no-overflow sweep over the closed background and every open state — release, non-release, global, contextual, alternate locale and long text — across feature 011's ten Chromium and Firefox viewport and orientation projects (depends on T053)
 - [ ] T055 Assert the 200%-text and actual-400%-zoom reflow states in `e2e/help-and-licences.spec.ts`: every section and action stays reachable, the title and close stay available, the disclaimer is not clipped and the document has no horizontal overflow (depends on T054)
 - [ ] T056 Assert in `e2e/help-and-licences.spec.ts` that open and closed state remains immediate and textual under `prefers-reduced-motion` and that no meaning depends on motion, colour, icon, shape, dimming or placement (depends on T055)
-- [ ] T057 Assert in `e2e/help-and-licences.spec.ts` that opening the already-loaded modal presents its first complete frame within 100 ms under the shared mobile 4x-CPU profile with no route load, same-origin asset request or cross-origin request (depends on T056)
+- [ ] T057 Assert in `e2e/help-and-licences.spec.ts` that opening the already-loaded modal presents its first complete frame within 100 ms under the shared mobile 4x-CPU profile with no route load, same-origin asset request or cross-origin request. The no-request half enforces FR-001; the 100 ms budget is a [plan.md](./plan.md) Performance Goals constraint rather than an accepted spec requirement, so a regression against it is a defect in this feature's plan compliance, not an FR failure (depends on T056)
 - [ ] T058 [P] Confirm the eagerly imported manifest and bundled English help catalogue stay within the existing production initial-bundle error budget in `angular.json`; record a defect if the ceiling is exceeded and do not raise the budget within this feature
 - [ ] T059 Add the generated-output purity test to `scripts/generate-help-manifest.test.mjs` asserting the emitted module contains no absolute workspace path, personal, account, machine or environment identifier, timestamp, random value, build payload or unrequested complete legal document (depends on T037)
 - [ ] T060 Record the completed manual screen-reader protocol — entry discovery from a no-build and an active capability, single labelled dialog, background isolation, heading and topic order, version distinctions, disclaimer source and language, external warnings and the unchanged capability after close — in `specs/012-help-and-licences/design/screen-reader-record.md` (depends on T057)
 - [ ] T061 [P] State the qualified conformance wording naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11 wherever this feature's accessibility conformance is reported in `specs/012-help-and-licences/design/help-and-licences.md`
-- [ ] T062 [P] Document the `pnpm run legal:sync` maintainer path, its review requirement after an Almanac upgrade, and the rule that ordinary builds never rewrite tracked mirrors, in `AGENTS.md`
+- [ ] T062 [P] Document in `AGENTS.md` the `pnpm run legal:sync` maintainer path, its review requirement after an Almanac upgrade, the rule that ordinary builds never rewrite tracked mirrors, and the two distinct generated-artifact conventions now in the repository — the build-link codec table is committed and regenerated on demand, while `help-manifest.generated.ts` and `help-topics.generated.ts` are ignored and regenerated ahead of every Angular command — so a contributor is not left inferring which rule applies
 - [ ] T063 Audit and complete this feature's exhaustive capability/surface rows plus frame-entry, contextual-entry, modal, legal, identity and topic mappings with FR-001–FR-011 requirement IDs in `e2e/coverage-ledger.ts`; fail review if any current capability, applicable package-backed surface or obscuring layer from `specs/012-help-and-licences/design/screen-inventory.md` is absent
-- [ ] T064 Walk [quickstart.md](./quickstart.md) sections 1 through 8 against the built application and record any divergence as a defect rather than a documentation edit (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063)
-- [ ] T065 Run the `pnpm run check` pipeline declared in `package.json` to green — format, typecheck, production build, generator tests, unit coverage at or above the 80% thresholds and the complete Playwright and axe matrix — with no skipped browser, viewport, accessibility rule or test (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T064)
+- [ ] T064 Walk [quickstart.md](./quickstart.md) sections 1 through 8 against the built application and record any divergence as a defect rather than a documentation edit; quickstart section 9 is T065's gate, so the two tasks together cover the document (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063)
+- [ ] T065 Run the `pnpm run check` pipeline declared in `package.json` to green — quickstart section 9 — covering format, typecheck, production build, generator tests, unit coverage at or above the 80% thresholds and the complete Playwright and axe matrix, with no skipped browser, viewport, accessibility rule or test (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T064)
 
 ---
 
@@ -225,7 +246,14 @@ story.
 - `src/app/application/help/help.presenter.ts`: T018 → T029, T039, T049
 - `src/app/features/help/help-dialog.component.html`: T019 → T030, T040, T050
 - `src/app/ui/previews/preview-manifest.ts`: T024 → T032 → T042 → T052
+- `src/app/i18n/locales/en.json` and `de.json`: T016 → T031, T041, T047
 - `e2e/help-and-licences.spec.ts`: T025 → T034–T036, T044, T045, T053–T057
+
+Six of these chains cross story boundaries: the presenter, the modal template, the preview
+catalogue, the two locale files, the generator test suite and the E2E spec are each touched by US1,
+US2 and US3. `[P]` on T031, T041 and T047 means they are parallel-safe **within their own phase**,
+where each is the only task touching the locale files — it does not make them safe to run
+concurrently with each other.
 
 ## Parallel Opportunities
 
@@ -235,7 +263,7 @@ story.
 - Phase 4: T038, T039 and T041 run together after Foundational; T042 follows the rendered section and messages
 - Phase 5: T046 and T047 run together; T048–T053 then follow their declared dependencies
 - Phase 6: T058, T061 and T062 can run together after the story phases; same-file E2E tasks T054–T057 remain sequential
-- Across teams: once Phase 2 completes, one developer can take US1, another US2 and a third US3; all shared primitives are already foundational
+- Across teams: once Phase 2 completes, one developer can take US1, another US2 and a third US3 — all shared primitives are already foundational. This is story-level independence, not conflict-free concurrency: the six chains named under [Sequential Files](#sequential-files) each pass through all three stories, so the presenter projection, the template section, the preview registration, the locale entries, the generator fixtures and the E2E additions merge one story at a time. Sequence those six by story priority (US1 → US2 → US3) and the rest of each story runs genuinely in parallel
 
 ## Parallel Example: User Story 1
 
@@ -264,7 +292,7 @@ Task: "Licence framing messages in src/app/i18n/locales/en.json and de.json"
 
 1. Setup + Foundational → verified manifest, one shared modal, every entry surface
 2. Add US1 → exact terms and attribution (MVP, SC-001)
-3. Add US2 → shipped identities and bounded provenance (SC-002)
+3. Add US2 → shipped identities and bounded provenance (SC-002, and SC-004's identity half)
 4. Add US3 → the seven accepted behaviour answers (SC-003)
 5. Polish → complete axe, reflow, performance, purity and manual gates, then a green `pnpm run check`
 
@@ -281,7 +309,8 @@ Task: "Licence framing messages in src/app/i18n/locales/en.json and de.json"
 
 ## Notes
 
-- [P] tasks touch different files and have no incomplete dependency
+- [P] tasks touch different files and have no incomplete dependency **within their own phase**; see
+  [Sequential Files](#sequential-files) for the chains that serialise across stories
 - Every new presentation component is implemented with a focused co-located unit spec; shared locale
   and preview-catalogue edits are separate, explicitly sequenced tasks
 - The generated module is rebuilt, never committed; the `legal/almanac/` mirrors are committed, never
