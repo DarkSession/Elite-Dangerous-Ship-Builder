@@ -128,7 +128,7 @@ For the ready heat profile:
 Expected: five scenarios remain whenever ready, each carrying the package's own figures. Non-settling
 and never-overheating are distinct. Null remains unavailable. No reference-only heat summary appears.
 
-## 9. Validate feature 003 and 010 ports
+## 9. Validate feature 003, 007 and 010 ports
 
 For one captured context:
 
@@ -144,7 +144,9 @@ For one captured context:
 Expected: both ports return the captured revision pair; stale results do not
 publish; feature 010 receives the selected state while feature 007 receives the
 deployed state even under a retracted context; features 003, 007 and 010 do not
-calculate, join or reinterpret power.
+calculate, join or reinterpret power; the selected detail, Status read and both
+mount observations share one `powerBudget()` call and its owner-private
+dual-band index.
 
 ## 10. Validate responsive, accessibility and localization behavior
 

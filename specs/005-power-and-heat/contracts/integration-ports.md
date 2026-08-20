@@ -74,8 +74,9 @@ feature 007 observes the power distributor's core slot and always passes
 `deployed`, independently of the selected viewing state. The read repeats the
 requested `deploymentState` so consumers can reject a mismatched observation.
 
-The adapter uses the exact `PowerBudget.consumers` label and matching returned
-band:
+The adapter uses the owner-private revision-keyed observation index projected
+from the same `PowerBudget` call as the detail view. That index retains the exact
+`PowerBudget.consumers` label and both verdicts from its matching returned band:
 
 - absent consumer → `notApplicable`;
 - disabled → `disabled`;

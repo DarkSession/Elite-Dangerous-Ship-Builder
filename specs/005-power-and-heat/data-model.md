@@ -53,6 +53,39 @@ Invariants:
   viewing options;
 - no snapshot is serialized, persisted or placed in history, a URL or SLEF.
 
+## Owner-private power observation index
+
+The pure projection transaction retains one owner-private index beside the
+published snapshot so the shared observation adapter can answer either state
+without another package call:
+
+```ts
+interface PowerHeatProjection {
+  readonly snapshot: PowerHeatSnapshot;
+  readonly mountPowerIndex: MountPowerObservationIndex;
+}
+
+type MountPowerObservationIndex = ReadonlyMap<string, MountPowerObservationIndexEntry>;
+
+interface MountPowerObservationIndexEntry {
+  readonly slotKey: string;
+  readonly symbol: string;
+  readonly enabled: boolean;
+  readonly priority: PowerPriority;
+  readonly deployedOnly: boolean;
+  readonly poweredDeployed: boolean;
+  readonly poweredRetracted: boolean;
+}
+```
+
+The index is built from the same immutable `PowerBudget` used for
+`PowerBudgetView`: its exact consumer labels key the entries, and each entry
+retains the matching package band's two powered verdicts. It is memoized by the
+captured revision pair but is not part of `PowerHeatSnapshot`, presentation
+state or any feature 003/007/010 contract. Only feature 005's
+`MountPowerObservationAdapter` can read it. It is never serialized, cloned or
+exposed as a second calculation boundary.
+
 ## Shared ViewingConditions input
 
 Feature 005 imports feature 003's type instead of redefining it:

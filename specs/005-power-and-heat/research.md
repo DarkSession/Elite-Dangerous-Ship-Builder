@@ -161,7 +161,11 @@ equal scenarios were rejected.
 
 Use computed signals/memoization keyed by build and condition revision. Outer
 detail lifecycle is `noBuild | pending | ready | failure`; distributor/heat
-unavailability remains data inside a ready snapshot.
+unavailability remains data inside a ready snapshot. The same single
+`powerBudget()` result also produces an owner-private exact-slot observation
+index retaining both band verdicts; the public snapshot keeps only its selected
+view, while both consumer adapters read the private index without a second
+package call.
 
 **Rationale**: This keeps calculations render-free, prevents mixed revisions
 and gives cross-feature consumers owner-authored power semantics. Feature 003
@@ -170,7 +174,7 @@ reconstruct power applicability, priority or shedding.
 
 **Alternatives considered**: Component calls, independently settled unversioned
 stores, a second loadout, persisted metric caches or duplicated feature
-003/010 calculations were rejected.
+003/007/010 calculations were rejected.
 
 ## Design, responsive, accessibility and localization
 

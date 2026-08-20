@@ -13,9 +13,9 @@ revision-stamped projector reads `ShipLoadout.powerBudget()`,
 `distributorMetrics()` and `heatMetrics()`; selects only package fields for
 the settled viewing conditions; and preserves null, zero and non-finite
 meanings. Thin adapters supply the detailed
-capability, feature 003's compact power status provider and feature 010's
-located-mount power observation (also used by feature 007 for the distributor's
-core slot) without creating a second calculation model.
+capability, feature 003's compact power status provider, feature 007's deployed
+distributor observation and feature 010's selected-state located-mount
+observations without creating a second calculation model.
 
 The visual hierarchy follows the Power and Thermals areas in `.design`
 canvases 1c and 1d: selected power state, priority bands, module contributions,
@@ -177,8 +177,9 @@ than duplicate components.
 **Structure Decision**: Keep one Angular application and one active loadout. A
 pure projector maps one immutable revision context to package-authored values.
 One feature store exposes a no-build/pending/ready/failure lifecycle for the
-detail surface. Type-only contracts and thin synchronous adapters expose the
-same owner-authored power semantics to features 003 and 010. No second
+detail surface and privately retains the same projection's dual-band mount
+observation index. Type-only contracts and thin synchronous adapters expose the
+same owner-authored power semantics to features 003, 007 and 010. No second
 `ShipLoadout`, persisted cache, worker, calculation service or route is added.
 
 ## Phase 0: Research Conclusions
