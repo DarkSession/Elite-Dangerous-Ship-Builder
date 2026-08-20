@@ -50,10 +50,10 @@ the tasks they block:
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Pin the package behaviour this feature depends on and create the source and test
+**Purpose**: Characterize the package contract this feature depends on and create the source and test
 locations before any contract lands.
 
-- [ ] T001 Pin the Almanac 0.1.4 status behaviour this feature composes — `ShipLoadout.validation` issue shape, order and `LoadoutIssueParams` including string arrays; `getLoadoutIssueMessage`/`getCalculationIssueMessage` returning canonical English and `null` outside English; `standardLoadResult('maximum'|'unladen'|'laden')`; the throwing `jumpRangeSummary()` prerequisite; `powerBudget()` deployed/retracted field sets; complete zero capacities; and `mercCoinCost()` absent versus zero — using leaf subpath imports in `src/app/domain/statistics/almanac-status-contract.spec.ts`
+- [ ] T001 Characterize the installed Almanac status contract this feature composes — `ShipLoadout.validation` issue shape, order and `LoadoutIssueParams` including string arrays; `getLoadoutIssueMessage`/`getCalculationIssueMessage` returning canonical English and `null` outside English; `standardLoadResult('maximum'|'unladen'|'laden')`; the throwing `jumpRangeSummary()` prerequisite; `powerBudget()` deployed/retracted field sets; complete zero capacities; and `mercCoinCost()` absent versus zero — using leaf subpath imports in `src/app/domain/statistics/almanac-status-contract.spec.ts`
 - [ ] T002 [P] Create the feature source skeleton `src/app/domain/statistics/`, `src/app/application/statistics/` and the `src/app/features/build-workspace/status/` subdirectories `assembly-requirements/`, `headline-set/`, `issue-list/`, `status-capability/`, `status-rail/` and `viewing-conditions/` per plan.md
 - [ ] T003 [P] Create the three feature suites `e2e/ship-status.spec.ts`, `e2e/status-fixed-defaults.spec.ts` and `e2e/viewing-conditions.spec.ts` importing the feature 011 axe and assertion helpers, and register their surfaces in `e2e/coverage-ledger.ts`
 

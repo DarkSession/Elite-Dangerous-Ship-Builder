@@ -1,7 +1,7 @@
 # Research: Interface Foundations
 
 Research covered the accepted feature specification and constitution, the current Angular workspace,
-the installed Almanac 0.1.4 declarations, existing feature plans and all four canvases in
+the installed Almanac declarations, existing feature plans and all four canvases in
 `.design/Ship Builder.dc.html`. The design was also rendered and inspected. No production code was
 changed during research.
 
@@ -65,9 +65,8 @@ or persisted as Commander choices.
 browser-language match, so one product locale does not satisfy this feature. Existing feature 007
 preview planning already depends on English/German expansion fixtures. German is useful for text
 expansion and for exercising canonical-game-text disclosure; it is not selected because Almanac has
-complete German text. Local 0.1.4 probes found German for 0/48 ship names, 1120/1199 modules,
-128/146 materials, 55/107 blueprints and 84/86 experimental effects. Those gaps are expected package
-misses, not permission for application translations.
+complete German text. Installed-package probes find partial German coverage across game-text
+catalogues. Those gaps are expected package misses, not permission for application translations.
 
 **Alternatives considered**: English-only conflicts with the accepted feature. Spanish has better
 Almanac ship/material coverage and is a reasonable future locale, but changing the already referenced
@@ -76,13 +75,13 @@ as a human language.
 
 ## Runtime localization and locale state
 
-**Decision**: Add `@jsverse/transloco` 8.4 as the runtime message engine behind an application-owned
+**Decision**: Add `@jsverse/transloco` as the runtime message engine behind an application-owned
 signal `LocaleStore` and message facade. Use Angular's app initializer to resolve the valid startup
 snapshot before root content renders. Saved supported preference wins; otherwise match
 `navigator.languages` by canonical exact tag then base language; otherwise use English. The store is
 the only code that changes active messages, document title, root `lang`/`dir` and formatter locale.
 
-**Rationale**: Transloco supports Angular 22/RxJS 7, runtime loading/switching and fallback without a
+**Rationale**: Transloco supports the repository's Angular/RxJS versions, runtime loading/switching and fallback without a
 zone peer. A facade prevents components from coupling to library mutable state and lets publication
 be one testable revision. Angular compile-time localized builds do not satisfy a persisted in-session
 switch. See the official [Transloco configuration](https://jsverse.gitbook.io/transloco/getting-started/config-options)
@@ -129,7 +128,7 @@ CLDR string.
 
 ## Almanac localization boundary
 
-**Decision**: Import the relevant 0.1.4 leaf helper for module, blueprint, effect, effect description,
+**Decision**: Import the relevant installed-package leaf helper for module, blueprint, effect, effect description,
 engineering group, material, micro-resource, ship/manufacturer, slot/restriction, pre-engineered
 variant and structured diagnostic text. A request carries a known package identity and any canonical
 package field. Query the active locale first; on `null`, query canonical English or use the package's
@@ -169,7 +168,7 @@ nonempty N/A rationale. Cross-cutting fixtures cover expanded text, RTL, reduced
 formats, canonical-untranslated, unavailable and long unbroken content.
 
 **Rationale**: The host renders the exact zoneless Angular components in both Playwright engines and
-keeps FR-004/024 machine-auditable. Angular 22 is zoneless by default. Storybook's Angular runtime
+keeps FR-004/024 machine-auditable. Angular is configured zoneless. Storybook's Angular runtime
 would add zone, platform-dynamic, animation and alternate build configuration dependencies that this
 repository otherwise does not need. See Angular's [zoneless guide](https://angular.dev/guide/zoneless).
 
@@ -223,8 +222,8 @@ spacing, radius, elevation, border and motion values outside token sources. Reco
 components with the typed preview manifest and required state rationale. Validate catalogue key,
 blank and interpolation parity and reject skipped/focused tests.
 
-**Rationale**: FR-024 spans several syntaxes. The current workspace has TypeScript/Angular parsers but
-no direct SCSS parser; claiming otherwise would make the plan non-runnable. AST scopes can allow
+**Rationale**: FR-024 spans several syntaxes. TypeScript/Angular parsers cover code and templates;
+a direct SCSS parser is required for stylesheet policy. AST scopes can allow
 tests, catalogues, package text bindings, structural punctuation and documented geometry without a
 blanket path exclusion.
 

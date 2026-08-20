@@ -36,7 +36,7 @@ application in `projects/ui-preview/`, end-to-end suite in `e2e/`, repository po
 **Purpose**: Add the dependencies, compiler strictness, assets and second Angular application the
 foundation needs before any source lands.
 
-- [ ] T001 Add `@jsverse/transloco` ^8.4.0 and `@angular/service-worker` ^22.1.0 to `dependencies` and `@axe-core/playwright` ^4.13.0, `postcss` ^8.5.0 and `postcss-scss` ^4.0.9 to `devDependencies` in `package.json`, then install and commit the updated `pnpm-lock.yaml`
+- [ ] T001 Add lockfile-compatible `@jsverse/transloco` and `@angular/service-worker` dependencies and `@axe-core/playwright`, `postcss` and `postcss-scss` development dependencies in `package.json`, then install and commit the updated `pnpm-lock.yaml`
 - [ ] T002 Enable `"strict": true` in `compilerOptions` and `"strictTemplates": true` in `angularCompilerOptions` in `tsconfig.json`, and repair every resulting error in `src/`, `e2e/` and `playwright.config.ts`
 - [ ] T003 [P] Add the `ui:preview`, `e2e:preview`, `e2e:offline` and `policy` script entries to `package.json` so the new preview, offline and policy targets are runnable
 - [ ] T004 [P] Vendor licensed Barlow, Barlow Condensed and JetBrains Mono WOFF2 subsets with their OFL licence files under `public/fonts/`
@@ -197,7 +197,7 @@ and a previously opened German catalogue still loads offline.
 - [ ] T073 [P] [US3] Add startup precedence unit tests (saved supported tag, exact then base `navigator.languages` match, bundled English default) in `src/app/i18n/locale.store.spec.ts`
 - [ ] T074 [P] [US3] Add candidate validation and atomic fallback unit tests (shape, key set, blank value, interpolation mismatch, single commit, no mixed frame) in `src/app/i18n/catalogue-loader.spec.ts`
 - [ ] T075 [P] [US3] Add `formatToParts`-based English and German formatter tests for integers, decimals, fraction-percent, metres, kilometres, credits, light years, dates and collation in `src/app/i18n/formatters/formatters.spec.ts`
-- [ ] T076 [P] [US3] Add game-text presenter tests over Almanac 0.1.4 fixtures (localized text, known identity with canonical-only text, known identity with no canonical source, unknown identity) in `src/app/i18n/game-text.presenter.spec.ts`
+- [ ] T076 [P] [US3] Add game-text presenter tests over installed Almanac fixtures (localized text, known identity with canonical-only text, known identity with no canonical source, unknown identity) in `src/app/i18n/game-text.presenter.spec.ts`
 - [ ] T077 [P] [US3] Add the locale journey asserting browser match, explicit selection, persistence across reload, atomic `lang`/`dir`/title change, no raw-key flash and the zero/one/zero request counts in `e2e/locale.spec.ts`
 - [ ] T078 [P] [US3] Add the production offline journey (controlled worker, open German once, go offline, reload shell, English and German) in `e2e/offline.spec.ts`
 
@@ -209,7 +209,7 @@ and a previously opened German catalogue still loads offline.
 - [ ] T082 [US3] Implement the persistence policy — persist only when a ready snapshot commits with `effectiveLocale === requestedLocale`, retain the prior preference on fallback and report non-persistence once — in `src/app/i18n/locale.store.ts` (depends on T081)
 - [ ] T083 [US3] Add the complete reviewed German catalogue with matching keys and interpolation sets in `src/app/i18n/locales/de.json`
 - [ ] T084 [US3] Add the catalogue key, blank-value, interpolation-parity and reviewed-secondary-locale gate to `scripts/check-interface-foundations.mjs` with fixtures in `scripts/check-interface-foundations.test.mjs` (depends on T028, T083)
-- [ ] T085 [P] [US3] Implement the Almanac leaf presenter (active locale → canonical package text → unavailable) over the 0.1.4 `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`, `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`, `i18n/materials`, `i18n/micro-resources`, `i18n/ships`, `i18n/slots`, `i18n/pre-engineered` and `i18n/diagnostics` exports in `src/app/i18n/game-text.presenter.ts`
+- [ ] T085 [P] [US3] Implement the Almanac leaf presenter (active locale → canonical package text → unavailable) over the installed package's `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`, `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`, `i18n/materials`, `i18n/micro-resources`, `i18n/ships`, `i18n/slots`, `i18n/pre-engineered` and `i18n/diagnostics` exports in `src/app/i18n/game-text.presenter.ts`
 - [ ] T086 [P] [US3] Implement the game-text component that renders package text with its accurate `lang` and a programmatically associated untranslated disclosure or unavailable framing in `src/app/ui/components/game-text/`
 - [ ] T087 [US3] Implement the labelled language selector showing catalogue self-names with busy state, and the shell Language action opening it, in `src/app/ui/components/language-selector/` and `src/app/ui/components/app-frame/` (depends on T079–T082)
 - [ ] T088 [US3] Add the service worker with eager shell, font and English asset groups and a lazy `/i18n/*.json` group in `ngsw-config.json`, and register it in `src/app/app.config.ts` and the production configuration in `angular.json`

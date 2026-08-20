@@ -1,6 +1,6 @@
 # Research: Offence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.4`, its public declarations and live
+Research used the installed `@elite-dangerous-almanac/core`, its public declarations and live
 leaf-import probes; the accepted feature 001/002/003/005/011 artifacts; the current repository
 configuration; and `.design/Ship Builder.dc.html` canvases 1c and 1d. No application formula was used.
 
@@ -29,11 +29,10 @@ risk.
 `maximumRange`/`falloffRange`/`projectileRange`/`armourPiercing`, and all 14 required
 `WeaponMetrics` fields. Preserve returned order and use the exact `slot` for navigation.
 
-**Rationale**: Runtime probes and declarations agree. Almanac 0.1.4 returns known weapons in hull-slot
+**Rationale**: Runtime probes and declarations agree. The installed package returns known weapons in hull-slot
 order and appends unknown/unmapped slots in source order. Reversed Sidewinder input returns
 `SmallHardpoint1` then `SmallHardpoint2`; unknown slots retain their source order after the known set.
-The fitted range/piercing projection and ordering work tracked by Almanac #300/#301 is present in the
-pinned release.
+The required fitted range/piercing projection and ordering are present in the installed package.
 
 **Alternatives considered**: DPS-only summaries, local re-summing, catalogue joins through
 `fittedModuleAt()`, local slot sorting and positional navigation were rejected because they discard or
@@ -194,16 +193,14 @@ and fixed breakpoints were rejected by the spec and constitution.
 screen-reader/actual-zoom protocols. Block implementation until feature 011 enables full strictness
 and supplies that harness.
 
-**Rationale**: The repository currently has only an application shell and build-link codec. Root
-TypeScript does not enable `strict`; Angular template strictness is absent. Playwright has desktop,
-tablet portrait and mobile portrait in Chromium only, with no Firefox, landscape or axe dependency.
-Planning cannot describe those obligations as already implemented.
+**Rationale**: Full strictness and the complete browser/accessibility harness are delivery gates;
+planning cannot treat those obligations as optional or replace them locally.
 
 **Alternatives considered**: Calling the current config compliant, reducing the matrix, skipping
 accessibility states or implementing private feature-local foundations were rejected.
 
 ## Research conclusion
 
-All feature semantics and design choices are resolved, and pinned Almanac 0.1.4 has no feature-007
+All feature semantics and design choices are resolved, and the installed Almanac has no known feature-007
 API blocker. Implementation remains blocked on shared strictness and features 001/002/003/005/011,
 including the two missing same-revision integration ports. No planning clarification remains.

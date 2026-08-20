@@ -38,7 +38,7 @@ package material requirements. Draft changes do not mutate the active build unti
 | Clear ordinary engineering        | `clearEngineering`; remove blueprint/effect together; follow package loss of Mercenary identity; one step.                          |
 | Cancel/revert draft               | Active build and history unchanged.                                                                                                 |
 
-The editor calls the pinned released package's structured `setExperimentalEffect()` for fixed-reward
+The editor calls the installed package's structured `setExperimentalEffect()` for fixed-reward
 effect-only edits. It never merges raw modifiers locally. `updated`, `unchanged` and `unsupported`
 remain distinct outcomes.
 

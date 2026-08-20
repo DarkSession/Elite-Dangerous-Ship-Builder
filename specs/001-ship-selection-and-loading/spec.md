@@ -78,13 +78,13 @@ browser and share builds by URL. SLEF import and export are specified in
   transmission of build data.
 - **FR-016**: The payload MUST contain only non-derived modelled state: package-resolved identities,
   game slot keys, ordinary and package-identified pre-engineering, grade, enabled state, priority,
-  ship name and ident. Every encoded identity MUST resolve in the pinned package. A module's package
+  ship name and ident. Every encoded identity MUST resolve in the installed package. A module's package
   variant and later ordinary engineering MUST both survive. Package-defaulted fixed modules MAY be
   implicit in a payload because reconstruction always restores them.
 - **FR-017**: Calculated values, catalogue facts, prices, purchase provenance, notes and storage
   identities MUST NOT enter the payload.
 - **FR-018**: The application-owned codec MUST be versioned, use package identities and preserve all
-  published versions. Any compact identifier table MUST be generated from the pinned package release
+  published versions. Any compact identifier table MUST be generated from the installed package
   and used only to encode or decode identities; it MUST NOT supply game facts or calculations.
 - **FR-019**: A build the codec cannot represent losslessly MUST be refused with the affected slot
   and reason, and SLEF MUST remain available.
@@ -113,7 +113,7 @@ storage and the versioned URL codec; none calculates an Elite Dangerous value.
 
 ## Success Criteria
 
-- **SC-001**: Every hull fact and stock build matches the pinned Almanac release.
+- **SC-001**: Every hull fact and stock build matches the installed Almanac package.
 - **SC-002**: Stored and linked builds preserve every recognized modelled field, always reconstruct
   fixed mounts with package defaults, and never allow one tab to silently overwrite another tab's
   work.

@@ -52,7 +52,7 @@ The source is a visual/interaction reference, not executable behavior or authori
   fabricated share behavior in `wireExport`.
 - Fabricated app/library versions, module counts, build links and sample game values.
 - The FAQ claim that imported partial rolls remain partial. Supported partials are package-normalized
-  to completed quality; unsupported partials refuse atomically under Constitution 7.0.0.
+  to completed quality; unsupported partials refuse atomically under the constitution.
 - Journal Loadout, Markdown and invented share-link export payloads; feature 001 owns canonical link.
 - Cross-origin Google fonts/runtime assets, hard-coded visual values, fixed canvas widths, hover-only
   meaning and color-only status.

@@ -2,8 +2,8 @@
 
 ## Package boundary and leaf imports
 
-**Decision**: Pin implementation to the installed
-`@elite-dangerous-almanac/core@0.1.4` facade methods:
+**Decision**: Consume and characterize the installed
+`@elite-dangerous-almanac/core` facade methods:
 `ShipLoadout.powerBudget()`, `distributorMetrics()` and `heatMetrics()`.
 Import `ShipLoadout` and `DistributorOptions` from
 `@elite-dangerous-almanac/core/ships/ship-loadout`; result types from
@@ -194,9 +194,8 @@ revision matching and both integration ports. Add Playwright journeys for all th
 ten-project matrix with automated axe checks and manual screen-reader/zoom
 protocols.
 
-**Rationale**: The current repository has only three Chromium projects and no
-axe harness. Feature 011 must close that shared gap; feature 005 must not create
-a smaller local matrix.
+**Rationale**: Feature 011 owns the shared browser/accessibility harness; feature 005 must consume
+the complete matrix rather than create a smaller local one.
 
 **Alternatives considered**: Chromium-only coverage, component snapshots
 without package equality, skipped blocker cases or relaxed coverage gates were

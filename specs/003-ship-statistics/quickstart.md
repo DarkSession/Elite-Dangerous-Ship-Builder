@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 
 Confirm:
 
-- the dependency is exactly `@elite-dangerous-almanac/core@0.1.4`;
+- `@elite-dangerous-almanac/core` resolves from the committed lockfile;
 - feature 001 exposes the atomic active `{ loadout, buildRevision }` boundary; feature 002 advances
   that revision for committed edits and exposes exact-slot actions;
 - feature 011 supplies tokens/components, locale/formatting/fallback disclosure, ten Playwright

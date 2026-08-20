@@ -23,11 +23,11 @@ or linked as additional legal documents in the modal.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; Angular HTML and SCSS; Node.js 24 per `.nvmrc`
-for artifact generation and verification
+**Language/Version**: TypeScript in strict mode; Angular HTML and SCSS; Node.js per the repository
+tooling configuration for artifact generation and verification
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals,
-`@elite-dangerous-almanac/core` 0.1.4 installed artifacts, Node standard library (`fs`, `crypto`,
+**Primary Dependencies**: Angular standalone and zoneless APIs, Angular signals,
+`@elite-dangerous-almanac/core` installed artifacts, Node standard library (`fs`, `crypto`,
 `child_process`, `url`) for build-time generation, feature 001's application frame and offline app
 shell, and feature 011's dialog, localisation, token and accessibility infrastructure
 
@@ -37,9 +37,7 @@ remains owned by feature 011
 
 **Testing**: Node test runner for extraction, source-distribution equality and release metadata;
 Vitest through Angular's unit-test builder with the existing 80% thresholds; Playwright with
-`@axe-core/playwright` over desktop, tablet/mobile portrait and landscape in Chromium and Firefox.
-The current repository still depends on feature 011 to add Firefox, landscape and automated axe
-coverage
+`@axe-core/playwright` over desktop, tablet/mobile portrait and landscape in Chromium and Firefox
 
 **Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; static client
 application with modal content usable from the initial app shell without a network
@@ -95,7 +93,7 @@ requested._
    fallback, component previews, Firefox/landscape projects and the automated accessibility harness.
 3. Release automation supplies explicit version-matched release evidence. Every other build is
    classified as non-release and must have a safe immutable build identifier.
-4. No Almanac defect blocks this feature. The installed 0.1.4 manifest and legal artifacts are
+4. No Almanac defect blocks this feature. The installed package manifest and legal artifacts are
    sufficient inputs and are consumed without local correction.
 
 ## Project Structure

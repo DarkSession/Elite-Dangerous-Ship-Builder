@@ -5,8 +5,8 @@ an end-to-end acceptance guide, not an implementation recipe.
 
 ## Prerequisites
 
-- Node.js 24 and pnpm 10.33.0
-- `@elite-dangerous-almanac/core@0.1.4`
+- Node.js and pnpm versions from the repository configuration
+- `@elite-dangerous-almanac/core` from the committed lockfile
 - full TypeScript and Angular-template strictness enabled with the repository passing
 - feature 001 active build/revision and `/build` workspace
 - feature 002 accepted same-revision hardpoint coverage and exact-slot reveal boundary
@@ -14,9 +14,8 @@ an end-to-end acceptance guide, not an implementation recipe.
 - feature 005 accepted deployed distributor power-observation port
 - feature 011 tokens/components, localization/game text, previews, axe and ten-project browser matrix
 
-The current repository does not yet satisfy these prerequisites. In particular, its root config is
-not fully strict and its Playwright config has three Chromium portrait projects with no axe. Do not
-run feature 007 tasks by substituting private local infrastructure.
+Do not run feature 007 tasks by substituting private local infrastructure for any missing
+prerequisite.
 
 Install without changing the lockfile:
 
@@ -30,7 +29,7 @@ the Chromium variable.
 
 ## Package and contract audit
 
-Confirm the pinned package and public leaves:
+Confirm the installed package and public leaves:
 
 ```bash
 pnpm why @elite-dangerous-almanac/core

@@ -4,8 +4,8 @@ This guide validates the completed feature end to end. It is not an implementati
 
 ## Prerequisites
 
-- Node.js 24 (the `.nvmrc` reference version)
-- pnpm 10.33 or the Corepack-resolved package-manager version
+- Node.js from `.nvmrc` / `package.json#engines`
+- pnpm from `package.json#packageManager`
 - Playwright Chromium and Firefox, or compatible executables supplied through `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH`
 - Feature 011's design-system/localization/accessibility foundations
 - Feature 004's SLEF export action for the link-refusal fallback

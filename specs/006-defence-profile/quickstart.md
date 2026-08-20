@@ -15,7 +15,7 @@ pnpm install --frozen-lockfile
 
 Before feature acceptance, confirm:
 
-- pinned `@elite-dangerous-almanac/core@0.1.4` exposes the four defence facade methods, structured
+- the installed `@elite-dangerous-almanac/core` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
 - feature 001 supplies `/build` and one active loadout/revision;
 - feature 003 supplies settled SYS half-pips, revision/provider envelopes and `defenceProfile` target;

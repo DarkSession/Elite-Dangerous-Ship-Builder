@@ -29,7 +29,7 @@ The design file is a product visual reference. It is not application source, a g
 ### Almanac data and assets
 
 - All row/detail values in the design are illustrative. Runtime reads `SHIPS`, exact package symbols, package units and package validation; it does not copy the HTML's hard-coded arrays or labels.
-- The reference PNGs and “27 of 48 covered” copy are stale mock assets/state. 0.1.4 provides an `illustration.svg` for every current hull. Runtime copies those package files to a same-origin asset path and retains defensive loading/missing states for later releases/offline conditions.
+- The reference PNGs and partial-coverage copy are stale mock assets/state. The installed package provides an `illustration.svg` for every catalogued hull. Runtime copies those package files to a same-origin asset path and retains defensive loading/missing states for package drift and offline conditions.
 - The reference detail summary omits hardness, mass-lock factor, crew, heat capacity/dissipation, reserve fuel, rotation endpoints, complete slot layout and the hull-only/retail cost distinction. The planned inspector/full-screen view adds every FR-004 fact without reducing the reference's initial hierarchy.
 - Missing package values render as unavailable, never as the mock's zero, blank cell or guessed value.
 

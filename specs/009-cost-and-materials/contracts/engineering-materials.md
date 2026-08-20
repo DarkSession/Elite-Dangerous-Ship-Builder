@@ -74,9 +74,9 @@ The presenter requests `getMaterialName(symbol, activeLocale)`. On `null`, it fo
 disclosure. Owned headings, source-kind labels, qualifications, quantities and accessible names use
 application localization and named formatters.
 
-## Pinned package regression
+## Package regression
 
-Almanac 0.1.4 reports no ordinary stock cargo-rack route for
+The installed Almanac reports no ordinary stock cargo-rack route for
 `CargoRack_IncreasedCapacity` and `getBlueprintCost(..., 5)` returns `null`, while the authored
 fixed variants remain package-identifiable. Cross-package tests pin that boundary. The application
 must not special-case the fdname, call it free, or substitute another recipe.

@@ -35,8 +35,8 @@ The installed-package audit fails before application build when any catalogued h
 - omits a package hardpoint or utility across both sides.
 
 The generated-output audit repeats path, file-count and content-hash comparisons against the
-installed input. It does not pin 48 hulls, 96 schematics or current occurrence counts as product
-constants; those are expected values only for the pinned 0.1.4 regression fixture.
+installed input. It does not pin catalogue or occurrence counts as product constants; the audit
+derives its expectations from the installed package.
 
 ## Runtime request boundary
 

@@ -22,13 +22,12 @@ route and no build state.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 with `strict: true`; Angular 22.1 standalone templates with
-`strictTemplates: true`; SCSS; Node.js 24 from `.nvmrc`
+**Language/Version**: TypeScript with `strict: true`; Angular standalone templates with
+`strictTemplates: true`; SCSS; Node.js per the repository tooling configuration
 
-**Primary Dependencies**: Angular 22.1 and Router (zoneless by default), Angular service worker
-22.1, RxJS 7.8, new `@jsverse/transloco` 8.4 runtime localization, browser `Intl`,
-`@elite-dangerous-almanac/core` 0.1.4 leaf i18n exports; new test/tooling dependencies
-`@axe-core/playwright` 4.13, PostCSS 8 and `postcss-scss` 4
+**Primary Dependencies**: Angular and Router (zoneless), Angular service worker, RxJS,
+`@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n
+exports, `@axe-core/playwright`, PostCSS and `postcss-scss`
 
 **Storage**: One versioned locale-preference record in `localStorage` behind an injected adapter.
 Catalogues, formatter caches, preview fixtures and announcement history remain memory/static-asset
@@ -74,7 +73,7 @@ _GATE: Passed before Phase 0 research. No exception or justified violation is re
 | Principle                               | Design evidence                                                                                                                                                                         | Status |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | I. Client-Side Only                     | Locale/font assets and both Angular outputs are static; the preview is tooling-only; one local preference is stored; service-worker requests are same-origin only.                      | PASS   |
-| II. Almanac Source of Truth             | Game nouns and diagnostics use 0.1.4 leaf helpers; a locale miss becomes disclosed canonical package text or unavailable, never an application translation.                             | PASS   |
+| II. Almanac Source of Truth             | Game nouns and diagnostics use installed-package leaf helpers; a locale miss becomes disclosed canonical package text or unavailable, never an application translation.                 | PASS   |
 | III. Domain Logic Outside UI            | Locale selection, persistence, formatting and announcement policy live in stores/services/adapters; UI components accept immutable view state and emit typed intent.                    | PASS   |
 | IV. Lossless, Honest Builds             | Interface state never mutates a build; null/unavailable and untranslated boundaries stay explicit, and locale state is excluded from every build serialization.                         | PASS   |
 | V. Desktop, Tablet and Mobile           | Wide, synthesized medium and compact compositions; ten browser/profile projects; axe, touch, reflow, text-size, reduced-motion and screen-reader/zoom protocols are specified.          | PASS   |
@@ -185,7 +184,7 @@ outcomes are:
   origin.
 - Centralize named `Intl` formatters. Credits and light years use localized whole-message/unit
   patterns because neither is an appropriate ISO currency/standard `Intl` unit.
-- Use Almanac 0.1.4 leaf locale helpers. A known identity returning `null` is retried at the canonical
+- Use the installed Almanac leaf locale helpers. A known identity returning `null` is retried at the canonical
   package language and visibly disclosed; no canonical text becomes unavailable.
 - Build a first-party tooling-only Angular preview app and typed manifest. Every exported component
   accounts for required states and profiles; expanded, RTL, reduced-motion, untranslated and

@@ -5,14 +5,14 @@ run/acceptance guide, not implementation code.
 
 ## Prerequisites and blocking gates
 
-1. Use Node 24 and install the committed dependency graph:
+1. Use the repository-configured Node version and install the committed dependency graph:
 
    ```bash
    pnpm install --frozen-lockfile
    ```
 
-2. Confirm the resolved Almanac is 0.1.4 or the subsequently accepted release and rerun the full
-   installed-asset audit after any upgrade.
+2. Confirm the Almanac resolves from the committed lockfile and rerun the full installed-asset audit
+   after any upgrade.
 3. Confirm features 001, 002 and 003 provide the active build/workspace, complete exact-slot ledger
    and settled deployed/retracted revision context.
 4. Confirm feature 005 exports a generalized located-mount power observation for both hardpoint and
@@ -46,19 +46,18 @@ and lines; no project/browser/layout is skipped.
 
 Run the package audit before and after the production build.
 
-Expected for the pinned 0.1.4 regression:
+Expected for the installed-package regression:
 
-- 48 package hulls and matching asset directories;
+- every package hull has a matching asset directory;
 - top and bottom schematics for every hull;
-- all 234 hardpoints and 195 utilities represented across both sides;
-- 240 hardpoint and 195 utility occurrences;
-- six accepted cross-side hardpoint repeats and no same-side repeat;
+- every hardpoint and utility is represented across both sides;
+- documented cross-side repeats are accepted and same-side repeats fail;
 - every annotation key resolves to the matching package kind;
 - only the released static SVG content contract is present;
 - generated schematic bytes/hashes match installed package files; and
 - no generated package SVG is tracked under application source/public files.
 
-Counts validate the pinned fixture; application behavior must derive the next release dynamically.
+The audit derives its expected catalogue and mount set from the installed package.
 
 ## Scenario 2: hardpoint and utility parity
 

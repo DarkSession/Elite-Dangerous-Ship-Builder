@@ -81,7 +81,7 @@ private synonym. Empty query returns the ordered full collection. Non-empty/no-m
 Clearing resets the query and restores all choices without changing selection or build.
 
 The immutable index is rebuilt on slot, build revision or locale change. The browser-visible result
-must settle within 100 ms for the largest pinned-package choice list.
+must settle within 100 ms for the installed package's largest choice list.
 
 ## Candidate facts
 
@@ -120,4 +120,4 @@ visibly disclosed as untranslated. The app never maintains private game-name or 
 - Unique rewards are the final section; stock precedes variants inside a group.
 - Multi-term, case- and accent-insensitive search covers exactly the four required fields.
 - A candidate list rebuilt after a fit reflects new exclusive/count limits.
-- The 481-choice fixture settles below 100 ms in browser measurement.
+- The installed package's largest-choice fixture settles below 100 ms in browser measurement.

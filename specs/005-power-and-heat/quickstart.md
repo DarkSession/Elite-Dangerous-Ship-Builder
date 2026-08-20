@@ -14,8 +14,8 @@ pnpm install --frozen-lockfile
 
 Confirm:
 
-- Node resolves version 24;
-- `package.json` and the lockfile agree on the Almanac release;
+- Node satisfies `.nvmrc` / `package.json#engines`;
+- the Almanac resolves from the committed lockfile;
 - production imports use leaf paths;
 - TypeScript strict mode is enabled before feature work;
 - prerequisite feature contracts 001, 002, 003 and 011 are implemented.

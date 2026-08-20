@@ -2,12 +2,12 @@
 
 Research used the accepted specification, constitution, current repository, feature
 001/002/003/005/011/012 artifacts, `.design/Ship Builder.dc.html`, and the installed
-`@elite-dangerous-almanac/core@0.1.4`. All package observations below are regression evidence, not
+`@elite-dangerous-almanac/core`. All package observations below are regression evidence, not
 application-owned game data.
 
 ## Installed schematic contract
 
-**Decision**: Consume Almanac 0.1.4's published asset and annotation contract for both hardpoints and
+**Decision**: Consume the installed Almanac package's published asset and annotation contract for both hardpoints and
 utility mounts. Load `assets/ships/<Ship.symbol>/schematic-{top,bottom}.svg`; admit only a group with
 `data-feature="hardpoint"` or `data-feature="utility_mount"` whose exact `data-journal-slot` resolves
 to the matching active-hull package slot kind.
@@ -26,20 +26,11 @@ unstable presentation details or application-owned game data.
 **Decision**: Add an installed-package regression audit over every hull and both sides, without
 encoding the current counts as runtime constants.
 
-Current 0.1.4 observations:
-
-| Evidence                                                        |                     Result |
-| --------------------------------------------------------------- | -------------------------: |
-| Package hulls / matching asset directories                      |                    48 / 48 |
-| Side schematics                                                 |                         96 |
-| Schematic bytes                                                 | 8,989,045 (about 8.57 MiB) |
-| Unique hardpoints / occurrences                                 |                  234 / 240 |
-| Unique utilities / occurrences                                  |                  195 / 195 |
-| Missing, bad-key, wrong-kind or same-side duplicate annotations |                          0 |
-
-The six intentional cross-side repeats are `MediumHardpoint1/2` on `Federation_Corvette` and
-`MediumHardpoint1`–`4` on `MediumTransport01`. No utility currently repeats, but the contract allows
-future utilities to do so.
+The audit derives its expected hulls, sides and mount identities from the installed package. It
+requires a matching asset directory and both side schematics for every hull, complete representation
+of every hardpoint and utility, and no missing, bad-key, wrong-kind or same-side duplicate
+annotations. Cross-side repeats are treated as multiple views of one package slot and do not become
+application-owned exceptions.
 
 **Rationale**: Catalogue-wide checking catches irregular exact keys, wrong-kind joins and duplicate
 semantics that a sampled hull misses. It also proves the clarified utility scope has no direct
@@ -230,8 +221,8 @@ visual snapshots and axe-only accessibility were rejected as incomplete.
 blocked on features 001, 002, 003, 005, 011 and 012. The required feature 005 utility-port
 generalization is project contract work, not an upstream defect.
 
-**Rationale**: Almanac issues #308 (schematic contract) and #299 (per-consumer power projection) are
-available in 0.1.4. Exact-slot editing, owner-authored power presentation, strict/shared UI and modal
+**Rationale**: The installed Almanac package includes the schematic and per-consumer power
+contracts. Exact-slot editing, owner-authored power presentation, strict/shared UI and modal
 provenance boundaries are not implemented, and their owners retain unresolved gates.
 
 **Alternatives considered**: Reimplementing editing, power, localization, cache or legal behavior

@@ -22,38 +22,36 @@ copied.
 
 Ingress runs before activation and before any calculation is read. Package-resolved partial grades
 are completed through `completeEngineeringGrade()`. Any partial grade returning `unsupported`
-rejects the whole candidate and leaves the current build intact, as required by Constitution 7.0.0
+rejects the whole candidate and leaves the current build intact, as required by the constitution
 and clarified FR-013. Package construction returns every fixed mount populated with its hull default
 under FR-010; unknown module identities are outside the supported contract.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0.3, Angular HTML and SCSS; Node.js 24.18.0 in the reference
-environment. Full TypeScript/template strictness is the constitutional target but is not enabled in
-the current root configuration; enabling it through the shared foundation is an implementation
-prerequisite
+**Language/Version**: TypeScript, Angular HTML and SCSS; Node.js per the repository tooling
+configuration. Full TypeScript/template strictness through the shared foundation is an
+implementation prerequisite
 
-**Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; pinned
-`@elite-dangerous-almanac/core@0.1.4`; feature 001's planned active-build snapshot/reconstruction/swap
-boundary; feature 011's planned UI, localization, announcement and verification foundations
+**Primary Dependencies**: Angular standalone/zoneless APIs and signals; RxJS;
+`@elite-dangerous-almanac/core`; feature 001's active-build snapshot/reconstruction/swap
+boundary; feature 011's UI, localization, announcement and verification foundations
 
 **Storage**: One observable committed `ShipLoadout`; modelled `BuildSnapshotV1` checkpoints in session
 memory only. Selection, queries, editor drafts, refusals and history are never serialized. Historical
 purchase values are neither modelled nor retained
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
-function and line thresholds; Playwright 1.62 with planned `@axe-core/playwright` scans across
-desktop, tablet portrait/landscape and mobile portrait/landscape in Chromium and Firefox. The current
-repository has only three Chromium projects and no axe integration; feature 011 must close that gap
-before feature 002 can pass its gate
+function and line thresholds; Playwright with `@axe-core/playwright` scans across desktop, tablet
+portrait/landscape and mobile portrait/landscape in Chromium and Firefox through feature 011's
+shared harness
 
 **Target Platform**: Modern evergreen desktop, tablet and mobile browsers; touch, pointer and screen
 reader; portrait and landscape; static same-origin deployment usable offline after first load
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
-**Performance Goals**: Search input to settled candidate results below 100 ms for the largest pinned
-package list; one active-build revision and one result refresh per accepted decision; exact
+**Performance Goals**: Search input to settled candidate results below 100 ms for the installed
+package's largest list; one active-build revision and one result refresh per accepted decision; exact
 modelled-checkpoint restoration without cumulative mutation or stale catalogue cost
 
 **Constraints**: No backend, account, telemetry or cross-origin runtime request; no private fitting,
@@ -61,9 +59,9 @@ variant, engineering or calculation rules; no page horizontal scrolling; one tok
 all application text translatable; all package game text/diagnostics remain package-owned; WCAG 2.2
 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: 48 package hulls and every package slot; 76 pre-engineered variants; largest probed
-chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); at least the newest
-100 Commander decisions; three product surfaces composed within `/build`
+**Scale/Scope**: Every hull, slot and pre-engineered variant supplied by the installed package; the
+package's largest discovered chooser; at least the newest 100 Commander decisions; three product
+surfaces composed within `/build`
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c (1560px wide reference) and 1d
 (390px, minimum 844px-high mobile reference). Adoption and intentional departures are recorded in
@@ -95,8 +93,7 @@ mounts populated with their hull defaults; feature 002 adds no missing-default o
 
 ## Delivery Prerequisites
 
-The source tree currently contains only the application shell and build-link codec. These planned
-contracts must exist before feature 002 UI implementation is complete:
+These contracts must exist before feature 002 UI implementation is complete:
 
 1. Feature 011: strict TypeScript/templates, token and localization layers, shared components and
    announcements, preview catalogue, Firefox/landscape projects and axe scans.

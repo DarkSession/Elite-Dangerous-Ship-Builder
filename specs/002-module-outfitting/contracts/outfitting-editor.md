@@ -99,7 +99,7 @@ are re-read; the application does not add/remove contributions itself.
 
 ## Package acceptance
 
-Cross-package tests must prove that the pinned Almanac version:
+Cross-package tests must prove that the installed Almanac package:
 
 1. reconstructs every recognized application-modelled field from the canonical snapshot, including
    ship name/ident, engineering and identified variants, while recomputing retail cost;

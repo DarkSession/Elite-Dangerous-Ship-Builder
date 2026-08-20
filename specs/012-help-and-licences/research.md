@@ -1,8 +1,8 @@
 # Research: Help, Licences and Provenance
 
-Research used the accepted feature specs and contracts, constitution 5.0.0, root `LICENSE`, root
+Research used the accepted feature specs and contracts, constitution, root `LICENSE`, root
 `package.json`, `.design/Ship Builder.dc.html`, the current Angular/build/test configuration and the
-installed `@elite-dangerous-almanac/core@0.1.4` manifest/legal artifacts. No runtime network source
+installed `@elite-dangerous-almanac/core` manifest/legal artifacts. No runtime network source
 or hand-maintained package wording is planned.
 
 ## Shared modal rather than a help route
@@ -48,7 +48,7 @@ support ordered rendering, completeness tests and localisation without putting p
 component.
 
 **Alternatives considered**: Copying the reference FAQ was rejected. Its import answer is outside
-FR-010 and its statement that partial rolls are retained conflicts with constitution 5.0.0 and
+FR-010 and its statement that partial rolls are retained conflicts with the constitution and
 feature 002. Free-form Markdown, remote help and package-owned translations were rejected because
 they weaken review, offline delivery or ownership boundaries.
 

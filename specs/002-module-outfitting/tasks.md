@@ -44,8 +44,8 @@ absence is not permission to weaken this design.
 against. Feature 002 adds no dependency to `package.json`.
 
 - [ ] T001 Record the prerequisite gate — feature 011 tokens, localization, shared components, preview catalogue, ten Playwright projects with `@axe-core/playwright`, and feature 001 `/build`, `ActiveBuildState`, canonical `BuildSnapshotV1` capture/reconstruct/atomic swap, replacement notification and autosave/fragment observers — in `specs/002-module-outfitting/design/prerequisite-gate.md`
-- [ ] T002 [P] Add the shared outfitting fixtures (default builds covering hardpoint, utility, core, optional, armour, planetary and cargo-hatch mounts; the 481-choice `PantherMkII` `Slot01_Size8` chooser; the tech-broker FSD Mass Manager regression; route-distinct variants; omitted and unusable fixed-mount payloads; supported and unsupported partial-quality payloads) in `src/app/domain/outfitting/outfitting.fixtures.ts`
-- [ ] T003 [P] Assert the pinned `@elite-dangerous-almanac/core@0.1.4` acceptance contract — snapshot reconstruction of every modelled field including name/ident with recomputed retail cost, fixed-reward effect add/replace/remove preserving the fixed modifier block and `preEngineeredVariant` (optimal mass 1785 → 1856.399902 → 1785), unknown-hull refusal, every absent or unusable fixed mount populated from the hull default, and lossless partial-quality normalization with a stable `unsupported` result — in `src/app/domain/outfitting/almanac-acceptance.spec.ts`
+- [ ] T002 [P] Add shared outfitting fixtures: default builds covering every mount kind; the installed package's largest slot-choice set; a package-identified fixed-reward engineering regression; route-distinct variants; omitted and unusable fixed-mount payloads; and supported and unsupported partial-quality payloads, in `src/app/domain/outfitting/outfitting.fixtures.ts`
+- [ ] T003 [P] Characterize the installed `@elite-dangerous-almanac/core` acceptance contract — snapshot reconstruction of every modelled field including name/ident with recomputed retail cost, fixed-reward effect add/replace/remove preserving the package-reported fixed modifier block and `preEngineeredVariant`, unknown-hull refusal, every absent or unusable fixed mount populated from the hull default, and lossless partial-quality normalization with a stable `unsupported` result — in `src/app/domain/outfitting/almanac-acceptance.spec.ts`
 
 ---
 
@@ -156,7 +156,7 @@ acquisition and entitlement labels stay visible before and after fitting.
 **Independent Test**: Open the largest chooser, confirm grouping, ordering and the final unique-reward
 section against the package records, search with mixed case, accents and multiple terms spanning name,
 class, rating and mount, confirm symbol and stats never match, clear a no-match query, and measure
-input-to-rendered-result below 100 ms for the 481-choice fixture.
+input-to-rendered-result below 100 ms for the installed package's largest slot-choice fixture.
 
 ### Ordering, search and labels
 
@@ -183,7 +183,7 @@ input-to-rendered-result below 100 ms for the 481-choice fixture.
 ### Verification
 
 - [ ] T054 [US2] Add replacement scenarios covering membership parity with `modulesForSlot` plus every variant, section and group order, multi-term accent-insensitive search, no-match with clear restoring all choices, and a candidate list rebuilt after a fit reflecting new exclusive and count limits, in `e2e/module-outfitting.spec.ts` (depends on T051)
-- [ ] T055 [US2] Add the browser `performance.now()` and result-settle measurement proving input-to-rendered-result stays under 100 ms for the 481-choice `PantherMkII` `Slot01_Size8` fixture, excluding automation transport, in `e2e/module-outfitting.spec.ts` (depends on T002, T054)
+- [ ] T055 [US2] Add the browser `performance.now()` and result-settle measurement proving input-to-rendered-result stays under 100 ms for the installed package's largest slot-choice fixture, excluding automation transport, in `e2e/module-outfitting.spec.ts` (depends on T002, T054)
 
 **Checkpoint**: User Stories 1 and 2 both work independently.
 

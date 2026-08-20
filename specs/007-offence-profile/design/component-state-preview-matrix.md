@@ -39,7 +39,7 @@ The catalogue also includes:
 
 ## Data fixtures
 
-Fixtures are produced from live pinned Almanac results or typed feature-owned presentation states.
+Fixtures are produced from live installed Almanac results or typed feature-owned presentation states.
 They cover:
 
 - enabled and all-disabled Sidewinder weapons;

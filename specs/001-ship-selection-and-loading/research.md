@@ -116,7 +116,8 @@ without a private game-text table.
 
 **Decision**: Define four screens—catalogue, hull detail, active build workspace and build library—using feature 011's tokens and components. Add `@axe-core/playwright`, ten explicit projects (five viewport/orientation profiles times Chromium and Firefox), automated checks for every meaningful screen/dialog/error state, semantic assertions, no-overflow checks, expanded/RTL fixtures, reduced motion and 200%/400% tests.
 
-**Rationale**: The current repository has only three Chromium projects and no automated accessibility scan. Closing that known gap is mandatory before feature 001 can ship.
+**Rationale**: The complete browser matrix and automated accessibility scan are mandatory delivery
+gates for feature 001.
 
 **Alternatives considered**: Desktop-first layouts, Chromium-only coverage, broad accessibility-rule suppression and feature-local component styling were rejected as constitutional violations.
 
