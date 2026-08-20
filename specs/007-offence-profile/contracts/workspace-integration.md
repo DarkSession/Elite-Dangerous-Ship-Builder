@@ -22,7 +22,9 @@ For one projection:
 2. Obtain or compute the build-revision-cached `BuildWeaponMetrics` once.
 3. Read feature 002's hardpoint coverage stamped with the same `buildRevision`.
 4. Divide settled WEP half-pips by two once and call `weaponsCapacitorMetrics()`.
-5. Read feature 005's deployed distributor power observation stamped with the captured context.
+5. Call feature 005's `MountPowerObservationPort.observe(context,
+distributorSlotKey, 'deployed')` and require a deployed observation stamped
+   with the captured context.
 6. Confirm all revisions remain current and publish one immutable `OffenceSnapshot`.
 
 A newer build/condition discards the older transaction. A mismatched read fails the current
@@ -31,21 +33,24 @@ waiting on detail expansion or recalculating the build.
 
 ## Required feature-002 boundary
 
-Before tasks, feature 002 must accept a type-only read that supplies `HardpointCoverage` for one
-captured build revision. The read:
+Feature 002 T004 accepts a type-only read that supplies `HardpointCoverage` for one captured build
+revision. The read:
 
 - uses package slot/fitted views rather than parsed names or array positions;
 - distinguishes empty, complete and unavailable coverage;
 - provides no weapon metric and receives only package-resolved module identities from supported
   ingress; fixed mounts already contain their package defaults.
 
-This accepted boundary does not yet exist by name in feature 002 and is a delivery blocker.
+Feature 002 T025 derives the accepted read before feature 007 composition. That implementation is a
+sequencing dependency, not a missing or feature-local boundary.
 
 ## Required feature-005 boundary
 
-Before tasks, feature 005 must accept a deployed distributor power-observation port backed by its
-authoritative `powerBudget()` interpretation and exact distributor slot state. The read returns the
-captured revisions and one of powered, disabled, shed, absent or unavailable.
+Feature 005 T006 accepts the generalized `MountPowerObservationPort` contract-first. Feature 007
+passes the exact distributor core slot key and explicit `deployed` state even when
+`context.conditions.hardpoints` is `retracted`. The owner read repeats `deploymentState: 'deployed'`,
+the captured revisions and one of powered, disabled, shed, absent or unavailable; feature 005 T034
+implements the adapter and T035 wires the shared instance before feature 007 composition runs.
 
 Feature 007 must not:
 
@@ -55,8 +60,8 @@ Feature 007 must not:
 - parse a symbol, priority, validation message or slot name;
 - substitute feature 005's current `DistributorView.ready | unavailable` for a cause-specific port.
 
-The accepted feature-005 contracts currently expose no feature-007 observation, so the plan records
-this as missing rather than pretending the dependency is delivered.
+The owner contract is accepted and scheduled contract-first; its implementation and wiring remain a
+sequencing dependency, not a missing or feature-local boundary.
 
 ## Offence Status provider
 
@@ -113,6 +118,8 @@ Slot/capability selection changes no build, revision, persistence, history, rout
 ## Verification
 
 - One identical context reaches weapon, coverage, capacitor and deployed-power boundaries.
+- A retracted selected context with divergent deployed/retracted distributor band verdicts still
+  requests `deployed`, receives the deployed verdict and rejects a read stamped `retracted`.
 - Detail and Status use the same cached `BuildWeaponMetrics` object.
 - Status sustained DPS deep-equals the package total and carries the required detail target.
 - Qualification identity appears once only for incomplete/unavailable coverage.

@@ -27,7 +27,10 @@ demonstrated independently.
 
 Single Angular workspace at the repository root: product source in `src/`, tooling-only preview
 application in `projects/ui-preview/`, end-to-end suite in `e2e/`, repository policy checks in
-`scripts/`. Unit tests live beside their source as `*.spec.ts`.
+`scripts/`. Unit tests live beside their source as `*.spec.ts`. Feature 011 owns the application's
+sole service-worker dependency, registration and base configuration; downstream capabilities may
+only extend its static asset groups. It also owns the repository-wide invariant that every
+application message change updates the complete English and German catalogues together.
 
 ---
 
@@ -70,7 +73,7 @@ verification harness that every user story composes.
 ### Localization core (bundled English)
 
 - [ ] T016 [P] Define the `ShippedLocale`, `LocaleCandidate` and `LocaleSnapshot` types and the `en`/`de` registry entries in `src/app/i18n/locale-registry.ts`
-- [ ] T017 Seed the canonical English catalogue with shell, action, status, error, unavailable, disclosure and generic-unknown-key messages in `src/app/i18n/locales/en.json`
+- [ ] T017 Seed the canonical English and German catalogues with reviewed shell, action, status, error, unavailable, disclosure and generic-unknown-key messages using identical key and interpolation-variable sets in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T018 Implement the signal `LocaleStore` that commits exactly one bundled-English ready snapshot per revision in `src/app/i18n/locale.store.ts` with unit tests (depends on T016, T017)
 - [ ] T019 Implement the typed message facade over Transloco in `src/app/i18n/message.service.ts` and register the localization providers in `src/app/app.config.ts` (depends on T016–T018)
 - [ ] T020 [P] Implement the cached named `Intl` formatter registry (integer, decimal, fraction-percent, metre/kilometre unit, named date, collator, display name, and credit/light-year message patterns) in `src/app/i18n/formatters/` with unit tests
@@ -195,7 +198,7 @@ and a previously opened German catalogue still loads offline.
 ### Tests for User Story 3
 
 - [ ] T073 [P] [US3] Add startup precedence unit tests (saved supported tag, exact then base `navigator.languages` match, bundled English default) in `src/app/i18n/locale.store.spec.ts`
-- [ ] T074 [P] [US3] Add candidate validation and atomic fallback unit tests (shape, key set, blank value, interpolation mismatch, single commit, no mixed frame) in `src/app/i18n/catalogue-loader.spec.ts`
+- [ ] T074 [P] [US3] Add candidate validation and atomic fallback unit tests covering locale identity, shape, missing and extra keys, blank values, interpolation-variable mismatch, one complete commit, retained prior snapshot during loading and no partial or mixed-language frame in `src/app/i18n/catalogue-loader.spec.ts`
 - [ ] T075 [P] [US3] Add `formatToParts`-based English and German formatter tests for integers, decimals, fraction-percent, metres, kilometres, credits, light years, dates and collation in `src/app/i18n/formatters/formatters.spec.ts`
 - [ ] T076 [P] [US3] Add game-text presenter tests over installed Almanac fixtures (localized text, known identity with canonical-only text, known identity with no canonical source, unknown identity) in `src/app/i18n/game-text.presenter.spec.ts`
 - [ ] T077 [P] [US3] Add the locale journey asserting browser match, explicit selection, persistence across reload, atomic `lang`/`dir`/title change, no raw-key flash and the zero/one/zero request counts in `e2e/locale.spec.ts`
@@ -207,12 +210,12 @@ and a previously opened German catalogue still loads offline.
 - [ ] T080 [US3] Implement the candidate loader and validator for locale identity, catalogue shape, exact English key set, nonblank values and interpolation parity in `src/app/i18n/catalogue-loader.ts`
 - [ ] T081 [US3] Implement the single atomic commit that publishes messages, effective locale, formatter locale, document title, `<html lang>` and `dir` together in `src/app/i18n/locale.store.ts` (depends on T080)
 - [ ] T082 [US3] Implement the persistence policy — persist only when a ready snapshot commits with `effectiveLocale === requestedLocale`, retain the prior preference on fallback and report non-persistence once — in `src/app/i18n/locale.store.ts` (depends on T081)
-- [ ] T083 [US3] Add the complete reviewed German catalogue with matching keys and interpolation sets in `src/app/i18n/locales/de.json`
-- [ ] T084 [US3] Add the catalogue key, blank-value, interpolation-parity and reviewed-secondary-locale gate to `scripts/check-interface-foundations.mjs` with fixtures in `scripts/check-interface-foundations.test.mjs` (depends on T028, T083)
+- [ ] T083 [US3] Complete the reviewed English and German catalogues for every application-owned message currently present in the repository, preserving identical non-empty key sets and interpolation variables in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [ ] T084 [US3] Add the repository-wide English/German exact-key, nonblank-value, interpolation-variable and reviewed-wording gate to `scripts/check-interface-foundations.mjs`, requiring every downstream capability message change to update both catalogues in the same change and naming every mismatch in positive and negative fixtures in `scripts/check-interface-foundations.test.mjs` (depends on T028, T083)
 - [ ] T085 [P] [US3] Implement the Almanac leaf presenter (active locale → canonical package text → unavailable) over the installed package's `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`, `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`, `i18n/materials`, `i18n/micro-resources`, `i18n/ships`, `i18n/slots`, `i18n/pre-engineered` and `i18n/diagnostics` exports in `src/app/i18n/game-text.presenter.ts`
 - [ ] T086 [P] [US3] Implement the game-text component that renders package text with its accurate `lang` and a programmatically associated untranslated disclosure or unavailable framing in `src/app/ui/components/game-text/`
 - [ ] T087 [US3] Implement the labelled language selector showing catalogue self-names with busy state, and the shell Language action opening it, in `src/app/ui/components/language-selector/` and `src/app/ui/components/app-frame/` (depends on T079–T082)
-- [ ] T088 [US3] Add the service worker with eager shell, font and English asset groups and a lazy `/i18n/*.json` group in `ngsw-config.json`, and register it in `src/app/app.config.ts` and the production configuration in `angular.json`
+- [ ] T088 [US3] Install and register the application's sole service worker with eager shell, font and bundled-English asset groups plus a lazy `/i18n/*.json` group in `ngsw-config.json`, `src/app/app.config.ts` and `angular.json`; add ownership fixtures to `scripts/check-interface-foundations.test.mjs` proving downstream features may extend static asset groups but cannot add another registration, worker dependency or cache owner
 - [ ] T089 [US3] Surface the locale fallback reason and non-persistence outcome as visible status plus one polite announcement in `src/app/ui/components/app-frame/app-frame.ts` (depends on T034, T082)
 - [ ] T090 [US3] Resolve the application-owned document title through the message facade on every committed snapshot in `src/app/i18n/message.service.ts`
 - [ ] T091 [US3] Add the language selector, game-text disclosure and unavailable declarations with German format, canonical-untranslated and absent-canonical fixtures in `src/app/ui/previews/preview-manifest.ts`
@@ -231,7 +234,7 @@ and a previously opened German catalogue still loads offline.
 - [ ] T097 [P] Update the Playwright matrix and accessibility-gate statements in `AGENTS.md` and `README.md` to record the ten configured projects and the axe gate
 - [ ] T098 Restore unit coverage to at least 80% statements, branches, functions and lines under the thresholds in `angular.json`
 - [ ] T099 Execute every scenario in `specs/011-interface-foundations/quickstart.md` and fix each divergence
-- [ ] T100 Run `pnpm run check` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
+- [ ] T100 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 
 ---
 

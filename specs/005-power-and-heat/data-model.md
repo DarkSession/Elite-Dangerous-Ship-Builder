@@ -28,7 +28,7 @@ type PowerHeatProjectionState =
 Package nulls are not application failures. A ready snapshot may contain an
 unavailable distributor or unavailable heat. `failure` is
 reserved for an unexpected exception, missing required `ShipLoadout` consumer
-identity or revision-contract violation.
+identity, missing required priority-band match or revision-contract violation.
 
 ## PowerHeatSnapshot
 
@@ -52,6 +52,39 @@ Invariants:
 - heat depends only on the build revision because `heatMetrics()` accepts no
   viewing options;
 - no snapshot is serialized, persisted or placed in history, a URL or SLEF.
+
+## Owner-private power observation index
+
+The pure projection transaction retains one owner-private index beside the
+published snapshot so the shared observation adapter can answer either state
+without another package call:
+
+```ts
+interface PowerHeatProjection {
+  readonly snapshot: PowerHeatSnapshot;
+  readonly mountPowerIndex: MountPowerObservationIndex;
+}
+
+type MountPowerObservationIndex = ReadonlyMap<string, MountPowerObservationIndexEntry>;
+
+interface MountPowerObservationIndexEntry {
+  readonly slotKey: string;
+  readonly symbol: string;
+  readonly enabled: boolean;
+  readonly priority: PowerPriority;
+  readonly deployedOnly: boolean;
+  readonly poweredDeployed: boolean;
+  readonly poweredRetracted: boolean;
+}
+```
+
+The index is built from the same immutable `PowerBudget` used for
+`PowerBudgetView`: its exact consumer labels key the entries, and each entry
+retains the matching package band's two powered verdicts. It is memoized by the
+captured revision pair but is not part of `PowerHeatSnapshot`, presentation
+state or any feature 003/007/010 contract. Only feature 005's
+`MountPowerObservationAdapter` can read it. It is never serialized, cloned or
+exposed as a second calculation boundary.
 
 ## Shared ViewingConditions input
 
@@ -279,21 +312,28 @@ type MountPowerObservation =
   | { readonly kind: 'unavailable' };
 ```
 
-Selection rules use only one budget:
+Selection rules use one revision-keyed projection:
 
-1. no returned power consumer for the exact slot → `notApplicable`;
-2. disabled consumer → `disabled`;
-3. retracted plus `deployedOnly === true` → `inactiveRetracted`;
-4. otherwise select the matching package band's selected powered boolean;
-5. the budget cannot answer for the requested key → `unavailable`.
+1. the current projection is pending and its index is not ready → `unavailable`;
+2. a ready index has no returned consumer for the exact slot → `notApplicable`;
+3. disabled consumer → `disabled`;
+4. requested retracted plus `deployedOnly === true` → `inactiveRetracted`;
+5. otherwise select the matching package band's requested-state powered boolean.
+
+A failed projection is propagated as failure, not converted to `unavailable`.
+Missing required package identities or priority bands therefore never enter
+the observation union.
 
 `inactiveRetracted` is reachable only for a mount the package reports as
 `deployedOnly`, so a core internal never selects it. Consumers state their own
 vocabulary over this union — feature 007 presents `notApplicable` as absent —
 and none widens or narrows it.
 
-The port stamps every observation with build and condition revisions outside
-this union. Consumers accept no stale pair.
+The port accepts an explicit `deploymentState: 'deployed' | 'retracted'` and
+stamps that state plus the build and condition revisions outside this union.
+Feature 010 passes the selected `context.conditions.hardpoints`; feature 007
+passes `deployed` regardless of selected viewing state. Consumers accept no
+stale or state-mismatched read.
 
 ## LocalizedGameText
 

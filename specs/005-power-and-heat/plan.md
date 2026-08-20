@@ -13,8 +13,9 @@ revision-stamped projector reads `ShipLoadout.powerBudget()`,
 `distributorMetrics()` and `heatMetrics()`; selects only package fields for
 the settled viewing conditions; and preserves null, zero and non-finite
 meanings. Thin adapters supply the detailed
-capability, feature 003's compact power status provider and feature 010's
-per-hardpoint power observation without creating a second calculation model.
+capability, feature 003's compact power status provider, feature 007's deployed
+distributor observation and feature 010's selected-state located-mount
+observations without creating a second calculation model.
 
 The visual hierarchy follows the Power and Thermals areas in `.design`
 canvases 1c and 1d: selected power state, priority bands, module contributions,
@@ -30,9 +31,10 @@ configuration. TypeScript strict mode is required before implementation
 **Primary Dependencies**: Angular standalone and zoneless APIs, Angular
 signals, RxJS, `@elite-dangerous-almanac/core` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
-feature 003's viewing-condition and status-provider contracts, feature 010's
-hardpoint observation port, and feature 011's design/localization/accessibility
-foundation
+feature 003's viewing-condition and status-provider contracts, and feature
+011's design/localization/accessibility foundation. Feature 005 exports its own
+generalized exact-slot, explicit-deployment-state `MountPowerObservationPort`
+to features 007 and 010
 
 **Storage**: None. Feature 005 projections, selected capability and viewing
 conditions are in memory only; no metric or condition enters local storage,
@@ -64,8 +66,8 @@ criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active loadout; five priority bands; one entry per
 package-returned power consumer; three distributor
-capacitors; five heat scenarios; one compact status projection and
-per-hardpoint observations derived from the same package result
+capacitors; five heat scenarios; one compact status projection and exact-slot
+mount observations derived from the same package result
 
 **Design Reference**: `.design/Ship Builder.dc.html`, canvases 1c and 1d.
 Adopted hierarchy and required departures are recorded in
@@ -101,9 +103,12 @@ and make the existing project pass under it before feature 005 implementation is
 3. Feature 003 supplies integer-half-pip viewing state, Apply/Reset behavior,
    condition revision, `StatusProvider<T, I>` and `powerAndHeat` target.
    Feature 005 composes the shared scoped hardpoint/pip controls without owning parallel state.
-4. Feature 005 exports the compact power provider required by feature 003 and
-   the power-observation port required by feature 010. Feature 010 never joins
-   consumers to bands itself.
+4. Feature 005 defines and exports the generalized exact-slot
+   `MountPowerObservationPort` with an explicit deployed/retracted request from inception, plus the
+   compact power provider required by feature 003. Feature 010 consumes the port for hardpoints and
+   utilities in the selected state, and feature 007 consumes it for the distributor core slot in
+   the deployed state;
+   neither consumer joins power consumers to bands itself.
 5. Feature 011 supplies the shared controls, tokens, localized messages and
    formatters, game-text presenter, previews, ten-project browser matrix and axe
    harness.
@@ -172,8 +177,9 @@ than duplicate components.
 **Structure Decision**: Keep one Angular application and one active loadout. A
 pure projector maps one immutable revision context to package-authored values.
 One feature store exposes a no-build/pending/ready/failure lifecycle for the
-detail surface. Type-only contracts and thin synchronous adapters expose the
-same owner-authored power semantics to features 003 and 010. No second
+detail surface and privately retains the same projection's dual-band mount
+observation index. Type-only contracts and thin synchronous adapters expose the
+same owner-authored power semantics to features 003, 007 and 010. No second
 `ShipLoadout`, persisted cache, worker, calculation service or route is added.
 
 ## Phase 0: Research Conclusions
@@ -202,7 +208,8 @@ No planning ambiguity or Almanac dependency remains.
 
 - [data-model.md](./data-model.md) defines the outer lifecycle, revision-stamped
   detail snapshot, exact power fields, returned consumer identities,
-  distributor/heat unions, status summary and hardpoint observations.
+  distributor/heat unions, status summary and generalized exact-slot mount
+  observations.
 - [contracts/power-budget.md](./contracts/power-budget.md) freezes
   selected-state mapping, module ordering and exact-slot intent.
 - [contracts/distributor-metrics.md](./contracts/distributor-metrics.md) freezes
@@ -211,8 +218,8 @@ No planning ambiguity or Almanac dependency remains.
 - [contracts/heat-profile.md](./contracts/heat-profile.md) freezes the five
   scenarios, all returned fields and the null/non-finite meanings.
 - [contracts/integration-ports.md](./contracts/integration-ports.md) freezes
-  feature 003's `PowerStatusProvider` and feature 010's
-  `MountPowerObservationPort`.
+  feature 003's `PowerStatusProvider` and feature 005's generalized
+  `MountPowerObservationPort` consumed by features 007 and 010.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to
   the Power and Heat capability and its cross-feature contributions.
 - [design/power-and-heat-detail.md](./design/power-and-heat-detail.md) defines

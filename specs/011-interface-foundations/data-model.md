@@ -35,8 +35,11 @@ adapter and exception boundary. Invalid data, denied storage or a failed write n
 | `messages` | immutable key/string tree    | English defines the complete typed key and interpolation schema            |
 | `revision` | build-generated content hash | Prevents a service-worker asset from mixing with another application build |
 
-Every production value is nonblank, plain text and placeholder-compatible with English. Application
-catalogues contain no game noun or package diagnostic translation.
+Both shipped catalogues have exactly the same key set and interpolation variables. Every production
+value is nonblank, plain text and placeholder-compatible with English. Adding or changing an
+application-owned message in any capability updates and validates both catalogues in the same
+change; an incomplete candidate is never partially published. Application catalogues contain no
+game noun or package diagnostic translation.
 
 ## Locale Candidate
 

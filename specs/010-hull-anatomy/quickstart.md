@@ -15,11 +15,13 @@ run/acceptance guide, not implementation code.
    after any upgrade.
 3. Confirm features 001, 002 and 003 provide the active build/workspace, complete exact-slot ledger
    and settled deployed/retracted revision context.
-4. Confirm feature 005 exports a generalized located-mount power observation for both hardpoint and
-   utility keys. Do not implement a feature-010 consumer/band join while its hardpoint-only port is
-   still present.
-5. Confirm feature 011 has enabled TypeScript `strict`, Angular `strictTemplates`, the shared design/
-   localization layers, ten Chromium/Firefox Playwright projects and axe checks.
+4. Confirm feature 005 exports its generalized exact-slot mount-power observation for both hardpoint
+   and utility keys. Feature 010 consumes that owner contract and never implements a consumer/band
+   join.
+5. Confirm feature 011 has enabled TypeScript `strict`, Angular `strictTemplates`, the application's
+   sole service-worker registration/base configuration, the shared design/localization layers, ten
+   Chromium/Firefox Playwright projects and axe checks; feature 001 only extends that worker's static
+   asset configuration.
 6. Confirm feature 012 opens its planned in-place help/provenance modal through the shared contextual
    intent.
 7. Confirm feature 002's modelled-snapshot reconstruction contract is delivered before declaring the

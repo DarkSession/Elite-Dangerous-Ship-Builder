@@ -31,12 +31,12 @@ slot targets to feature 002. Feature 003 also consumes feature 007's compact Sta
 
 - Feature 001 owns active build/revision, no-build behavior and `/build`.
 - Feature 002 owns package slot coverage and exact-slot selection/editing; its ingress prevents
-  unknown identities from reaching this capability.
-  Its named cross-feature coverage port must be accepted before tasks.
+  unknown identities from reaching this capability. Its accepted coverage implementation must land
+  before feature 007 composition.
 - Feature 003 owns viewing-condition draft/Apply/Reset, integer half-pips, revisions, workspace
   capability targets, Status composition and the generic provider envelope.
-- Feature 005 owns deployed distributor power meaning. Its feature-007 observation port must be
-  accepted before tasks; feature 007 never joins power consumers/bands.
+- Feature 005 owns deployed distributor power meaning. Its accepted generalized observation port
+  takes an explicit state; feature 007 requests `deployed` and never joins power consumers/bands.
 - Feature 007 owns exact weapon/capacitor result retention, offence semantic projection, compact
   Status contribution and this capability.
 - Feature 010 may visualize hardpoint positions but cannot replace the complete textual weapon list.

@@ -51,7 +51,7 @@ CPU slowdown; locale-only changes re-present without repeating package quantity 
 arithmetic; no currency conversion/comparison; package `null`, `[]`, zero and conditional absence
 remain distinct; exact game slot/symbol/fdname identities; leaf imports only; no cross-origin
 requests; no document horizontal scrolling; token-only dark design system; all owned text and
-figures localized; WCAG 2.2 AA except the constitution's named keyboard criteria
+figures localized; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active build and every blueprint, effect, material and priced pre-engineered
 variant supplied by the installed package. Catalogue counts are discovered by contract tests, never
@@ -198,6 +198,10 @@ formula, cross-origin asset, hard-coded application string or screen-local visua
 spec requirement has a surface owner and validation path. Numeric zero, conditional absence,
 package `null`, `[]`, lower bounds and non-crafted baselines remain distinguishable; credits and Merc
 Coin never share a total.
+
+Any feature-owned or repository conformance statement uses the qualified form: WCAG 2.2 AA except
+criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11. Neither automated nor manual evidence
+may shorten that exclusion list.
 
 The post-design gate remains **PASS with no exception**. Integrated implementation is blocked only
 by the repository prerequisites above, not by an unresolved feature-009 design or Almanac gap.

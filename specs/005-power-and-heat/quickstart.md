@@ -32,8 +32,8 @@ Before implementation acceptance, confirm:
   condition revision, `StatusProvider<T, I>` and `powerAndHeat`;
 - feature 003 permits reuse of the same scoped condition controls inside Power
   and Heat as required by FR-003;
-- feature 010 consumes feature 005's
-  `MountPowerObservationPort` rather than power fields directly;
+- features 007 and 010 consume feature 005's generalized exact-slot,
+  explicit-deployment-state `MountPowerObservationPort` rather than power fields directly;
 - feature 011 supplies shared UI, localized formatting/game text, previews,
   ten Playwright projects and axe helpers.
 
@@ -128,7 +128,7 @@ For the ready heat profile:
 Expected: five scenarios remain whenever ready, each carrying the package's own figures. Non-settling
 and never-overheating are distinct. Null remains unavailable. No reference-only heat summary appears.
 
-## 9. Validate feature 003 and 010 ports
+## 9. Validate feature 003, 007 and 010 ports
 
 For one captured context:
 
@@ -136,12 +136,19 @@ For one captured context:
    `hardpointState` and `selectedDraw` with the detail projection.
 2. Confirm `qualifiedSummaryIds` is empty.
 3. Confirm target is exactly `powerAndHeat`.
-4. Query hardpoint observations covering not applicable, disabled, inactive
-   retracted, powered and shed.
-5. Advance build and condition revisions during projection.
+4. Query hardpoint, utility and distributor-core observations covering not
+   applicable, disabled, inactive retracted, powered and shed, including a band
+   whose deployed and retracted verdicts differ.
+5. Query while the exact current index is pending, then inject a projection
+   failure and distinguish `unavailable` from propagated failure.
+6. Advance build and condition revisions during projection.
 
 Expected: both ports return the captured revision pair; stale results do not
-publish; feature 003/010 do not calculate, join or reinterpret power.
+publish; feature 010 receives the selected state while feature 007 receives the
+deployed state even under a retracted context; features 003, 007 and 010 do not
+calculate, join or reinterpret power; the selected detail, Status read and both
+mount observations share one `powerBudget()` call and its owner-private
+dual-band index.
 
 ## 10. Validate responsive, accessibility and localization behavior
 

@@ -15,9 +15,9 @@ share, range attenuation, target result, capacitor drain or endurance value is r
 
 The same package projection supplies feature 003's sustained-DPS Status provider and feature 002's
 exact-slot navigation. Same-revision hardpoint coverage qualifies an empty package weapon list
-without fabricating weapon output. Zero-capacity context consumes a feature-005-owned deployed
-distributor power observation; that port does not exist yet and is an explicit delivery prerequisite,
-not a capability feature 007 recreates.
+without fabricating weapon output. Zero-capacity context consumes feature 005's accepted generalized
+power-observation contract with an explicit deployed request. Its owner implementation and wiring
+remain delivery prerequisites, not a capability feature 007 recreates.
 
 The visual hierarchy comes from `.design/Ship Builder.dc.html` canvases 1c and 1d. The wide canvas's
 prominent burst/sustained headline and scannable weapon list, and the narrow canvas's vertical-card
@@ -76,8 +76,8 @@ mobile Offence mode. Exact adoption and departures are in
 
 ## Constitution Check
 
-_GATE: The design passes with no constitutional exception. Delivery is blocked by missing shared
-strictness and prerequisite contracts listed below._
+_GATE: The design passes with no constitutional exception. Delivery is blocked by shared strictness
+and prerequisite implementations listed below._
 
 | Principle                               | Design evidence                                                                                                                                                        | Status                 |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -97,12 +97,14 @@ strictness and prerequisite contracts listed below._
    and make the existing project pass. The current root configuration has neither `strict` nor
    `strictTemplates`.
 2. Implement feature 001's active `{ loadout, buildRevision }` boundary and `/build` workspace.
-3. Accept feature 002's same-revision hardpoint coverage and shared exact-slot target boundary.
+3. Implement feature 002's accepted same-revision hardpoint coverage and shared exact-slot target
+   boundary through its owner tasks T004 and T025.
 4. Implement feature 003's integer-half-pip conditions, `StatusRevisionContext`, generic
    `StatusProvider<T, I>` and `WorkspaceTarget` contracts.
-5. Accept a feature-005-owned deployed distributor power-observation port backed by the same
-   `powerBudget()` semantics feature 005 owns. Existing feature 005 contracts do not expose it;
-   feature 007 must not infer a cause from capacitor zero/null or reconstruct priority shedding.
+5. Implement and wire feature 005's accepted `MountPowerObservationPort`, whose explicit
+   deployed/retracted request is independent of selected viewing state. Feature 007 passes the exact
+   distributor core slot and `deployed`; it must not infer a cause from capacitor zero/null or
+   reconstruct priority shedding. Feature 005 T006 defines the contract and T034/T035 deliver it.
 6. Implement feature 011's tokens/components, game-text presenter, localization/formatters,
    component previews, ten-project Chromium/Firefox matrix and axe harness.
 
@@ -191,8 +193,9 @@ decisive outcomes are:
   changes wording for zero/infinity but never changes a package number.
 - `weaponMetrics()` totals and capacitor firing draw have deliberately different enabled-versus-
   powered scopes and are never forced to match.
-- A feature-005 deployed power observation is required for honest distributor context; the currently
-  accepted feature-005 ports do not supply it.
+- Feature 005's accepted explicit-state power-observation port supplies honest distributor context;
+  feature 007 always requests `deployed` and waits for the owner adapter/wiring tasks rather than
+  supplying a substitute.
 - Feature 007 exports the missing `OffenceStatusProvider`, using exact sustained DPS and one owner
   qualification identity when unavailable hardpoint coverage makes that Status summary incomplete.
 - Canvas 1c and 1d provide only hierarchy. Mobile omits the desktop weapon summary and contradicts

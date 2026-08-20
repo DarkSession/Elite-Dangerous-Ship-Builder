@@ -46,7 +46,8 @@ installed `**/schematic-top.svg` and `**/schematic-bottom.svg` files into
 `assets/ships/<symbol>/`. The loader constructs a relative URL from an already resolved exact hull
 symbol, verifies same origin, loads top and bottom independently, aborts stale hull requests and
 retries a failed active side on explicit intent or once after connectivity returns. Feature 001's
-single versioned service worker owns lazy response caching.
+asset boundary extends feature 011's single versioned service-worker configuration with the lazy
+ship-schematic asset group; feature 011 retains registration and cache ownership.
 
 **Rationale**: The full schematic set is too large to charge to first load. Per-side loading renders
 available artwork promptly and keeps an opened side available offline while the complete ledger
@@ -107,10 +108,11 @@ class zero or copying the mock's size/node badges were rejected as invented mean
 
 ## Current priority and power state
 
-**Decision**: Require feature 005 to generalize its hardpoint observation port into a located-mount
-port accepting exact hardpoint and utility keys. Consume its build/condition-revision-stamped result
-unchanged: not applicable, disabled, inactive while retracted, powered or priority-shed, with
-normalized one-based priority or unavailable.
+**Decision**: Consume feature 005's generalized exact-slot `MountPowerObservationPort`, defined by
+feature 005 from inception, for hardpoint and utility keys, passing the selected
+`context.conditions.hardpoints` as the explicit observation state. Consume its
+build/condition-revision-stamped result unchanged: not applicable, disabled, inactive while
+retracted, powered or priority-shed, with normalized one-based priority or unavailable.
 
 **Rationale**: `ShipLoadout.powerBudget().consumers` already includes utility consumers and owns
 post-engineering draw, enabled defaults, effective priority and deployment classification. Matching

@@ -183,8 +183,8 @@ serializer receives infinity.
 ## MountPowerObservation (distributor reading)
 
 Feature 005 owns and exports the shared `MountPowerObservation` union (see feature 005 data-model).
-Feature 007 reads it through `MountPowerObservationPort.observe(context, slotKey)` at the power
-distributor's exact core slot key and adds no union of its own:
+Feature 007 reads it through `MountPowerObservationPort.observe(context, slotKey, 'deployed')` at the
+power distributor's exact core slot key and adds no union of its own:
 
 ```ts
 // owned by feature 005
@@ -197,9 +197,10 @@ type MountPowerObservation =
   | { readonly kind: 'unavailable' };
 ```
 
-The exact `slotKey` and both revisions arrive on the `MountPowerObservationRead` wrapper rather than
-inside the union. Feature 007 resolves the distributor's module `symbol` from its own fitted-module
-view, which is an identity read rather than a power semantic.
+The exact `slotKey`, `deploymentState: 'deployed'` and both revisions arrive on the
+`MountPowerObservationRead` wrapper rather than inside the union. Feature 007 rejects a mismatched
+state or revision. It resolves the distributor's module `symbol` from its own fitted-module view,
+which is an identity read rather than a power semantic.
 
 Feature 007 presents `notApplicable` as _absent_; `inactiveRetracted` is unreachable for a core
 internal because the package never reports one as `deployedOnly`. Feature 005 derives every variant

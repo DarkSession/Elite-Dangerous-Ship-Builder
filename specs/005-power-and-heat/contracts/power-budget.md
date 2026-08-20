@@ -4,8 +4,11 @@
 
 For one captured build revision, the feature 005 projector calls
 `ShipLoadout.powerBudget()` once and retains that immutable result while
-selecting the settled hardpoint state. Components, feature 003 and feature 010
-do not call the package or reconstruct a second budget.
+selecting the settled hardpoint state and building an owner-private
+revision-keyed observation index that retains both powered verdicts for every
+exact consumer slot. Components and features 003, 007 and 010 do not call the
+package or reconstruct a second budget; both mount-power consumers use the
+owner observation port.
 
 Production imports:
 
@@ -102,5 +105,10 @@ None mutates the loadout directly or enters edit history.
 - Disabled consumers stay visible and contribute exactly as the package reports.
 - No/zero plant output preserves exact numbers and semantic infinity.
 - Every consumer row and action preserves original package identities.
+- The selected view and owner-private observation index come from one identical
+  `PowerBudget` object; opposite-state observations cause no second package
+  call.
+- Feature 007's deployed distributor and feature 010's selected-state mount
+  reads both resolve from that index, including a divergent-band fixture.
 - Missing label/symbol, unexpected exception and stale revision publish failure,
   never partial/stale figures.

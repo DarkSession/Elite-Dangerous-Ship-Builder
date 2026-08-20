@@ -153,21 +153,28 @@ equal scenarios were rejected.
 
 1. a detailed `PowerHeatSnapshot`;
 2. `PowerStatusProvider` with selected draw and capacity for feature 003; and
-3. `MountPowerObservationPort` that selects returned consumer/band fields
-   for feature 010.
+3. a feature-005-owned generalized `MountPowerObservationPort` that accepts any
+   exact package slot key plus an explicit deployed/retracted observation state
+   and selects the matching returned consumer/band fields. Feature 010 requests
+   its selected viewing state for hardpoints/utilities; feature 007 always
+   requests deployed for the distributor core slot.
 
 Use computed signals/memoization keyed by build and condition revision. Outer
 detail lifecycle is `noBuild | pending | ready | failure`; distributor/heat
-unavailability remains data inside a ready snapshot.
+unavailability remains data inside a ready snapshot. The same single
+`powerBudget()` result also produces an owner-private exact-slot observation
+index retaining both band verdicts; the public snapshot keeps only its selected
+view, while both consumer adapters read the private index without a second
+package call.
 
 **Rationale**: This keeps calculations render-free, prevents mixed revisions
 and gives cross-feature consumers owner-authored power semantics. Feature 003
-requires a synchronous revision-stamped provider; feature 010 must not
-reconstruct shedding.
+requires a synchronous revision-stamped provider; features 007 and 010 must not
+reconstruct power applicability, priority or shedding.
 
 **Alternatives considered**: Component calls, independently settled unversioned
 stores, a second loadout, persisted metric caches or duplicated feature
-003/010 calculations were rejected.
+003/007/010 calculations were rejected.
 
 ## Design, responsive, accessibility and localization
 

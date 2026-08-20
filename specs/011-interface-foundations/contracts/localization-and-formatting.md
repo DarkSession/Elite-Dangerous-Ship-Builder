@@ -16,6 +16,11 @@ base language, direction, self-name key and same-origin asset path. English is t
 is imported into the initial bundle. German is selectable only when build-time key, nonblank,
 placeholder and reviewed-wording gates pass.
 
+Completeness is repository-wide and continuous, not a one-time bootstrap condition. Any downstream
+capability that adds or changes an application-owned message must update both shipped catalogues in
+the same change. The build accepts only identical non-empty key sets and matching interpolation
+variables; an invalid candidate never replaces any part of the current snapshot.
+
 Test-only expanded-copy and RTL providers are not production registry entries and cannot be stored.
 
 Adding a locale requires:
@@ -107,8 +112,10 @@ names or label canonical package text as localized.
 
 ## Offline and privacy boundary
 
-The service worker eagerly versions the application shell, same-origin fonts and bundled English. It
-lazily versions secondary `/i18n/*.json` assets after use. A production-mode offline test waits for a
-controlling worker, opens German once, takes the context offline and verifies shell/English/German
-reload. No catalogue, browser-language list, translated text, formatter cache or announcement history
-is stored as user data or uploaded.
+Feature 011 owns the application's sole service-worker dependency, registration and base
+configuration. The worker eagerly versions the application shell, same-origin fonts and bundled
+English, and lazily versions secondary `/i18n/*.json` assets after use. Downstream features may add
+static asset groups to this configuration but cannot register another worker or create another cache
+owner. A production-mode offline test waits for a controlling worker, opens German once, takes the
+context offline and verifies shell/English/German reload. No catalogue, browser-language list,
+translated text, formatter cache or announcement history is stored as user data or uploaded.

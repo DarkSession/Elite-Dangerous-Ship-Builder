@@ -133,14 +133,16 @@ an error, or substituting one for the other were rejected because they change pa
 
 **Decision**: Consume two explicit same-revision boundaries: feature 002 supplies package-backed
 hardpoint coverage and shared exact-slot targets; feature 005 supplies a deployed distributor
-power-observation port backed by its owner-authored `powerBudget()` interpretation. Until those
-type-only contracts are accepted, feature 007 delivery is blocked.
+observation through its accepted generalized `MountPowerObservationPort`, backed by its owner-authored
+`powerBudget()` interpretation. Feature 007 passes the distributor core slot and explicit `deployed`
+state independently of the selected viewing state. Delivery waits on the owner implementations and
+wiring, not on a missing type-only contract.
 
-**Rationale**: Current feature 002 artifacts contain the source slot views but no named cross-feature
-coverage port. Current feature 005 exports Status power and feature-010 hardpoint observation only;
-its distributor view is `ready | unavailable` and explicitly forbids inferring a cause from null.
-Feature 007 cannot truthfully claim a present/disabled/shed/absent port already exists, nor can it
-reconstruct priority shedding.
+**Rationale**: Feature 002's accepted coverage implementation remains a sequencing dependency.
+Feature 005 now owns one exact-slot port for feature 007's core distributor and feature 010's
+hardpoint/utility reads, with the observation state explicit so a retracted viewing context cannot
+alter feature 007's deployed request. Feature 007 still cannot reconstruct priority shedding or infer
+a cause from null.
 
 **Alternatives considered**: Diagnosing from capacitor zero, calling `distributorMetrics()` and
 parsing null, joining feature-005 consumers/bands locally, or hiding power context were rejected. The
@@ -203,4 +205,5 @@ accessibility states or implementing private feature-local foundations were reje
 
 All feature semantics and design choices are resolved, and the installed Almanac has no known feature-007
 API blocker. Implementation remains blocked on shared strictness and features 001/002/003/005/011,
-including the two missing same-revision integration ports. No planning clarification remains.
+including implementation and wiring of the two accepted same-revision integration ports. No planning
+clarification remains.

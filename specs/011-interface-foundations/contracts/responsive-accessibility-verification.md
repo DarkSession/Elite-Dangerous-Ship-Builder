@@ -93,7 +93,8 @@ excluded.
 
 - TypeScript `strict` and Angular `strictTemplates` compilation;
 - fixture-tested Angular/TypeScript/PostCSS interface policy checks;
-- catalogue key/blank/interpolation and reviewed-secondary-locale validation;
+- repository-wide English/German exact-key, nonblank-value, interpolation-variable and
+  reviewed-wording validation after every capability change;
 - UI export/preview/coverage-ledger reconciliation;
 - production-output assertion that no preview route/chunk exists;
 - production-service-worker offline validation for shell/English and a previously opened German
