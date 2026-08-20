@@ -132,7 +132,12 @@ create extra legal destinations, trigger network activity or risk leaking build 
 ## Source-distribution terms
 
 **Decision**: Commit exact mirrors of the installed Almanac `LICENSE` and
-`THIRD_PARTY_NOTICES.md` under `legal/almanac/`. The generator verifies strict UTF-8, non-empty
+`THIRD_PARTY_NOTICES.md` under `legal/almanac/`. Two is the derived count, not an assumed one: the
+installed package root was inspected and carries no other terms-bearing file. Its `PROVENANCE/` tree
+(`SNAPSHOTS.md` and the per-catalogue `SOURCES.md` files) documents where values were derived from,
+not terms under which they are redistributed, so it is deliberately outside the mirror set. So the
+conclusion cannot expire silently on an Almanac upgrade, generation fails when the package root gains
+an unmirrored top-level `LICENSE*`, `LICENCE*`, `COPYING*`, `NOTICE*` or `*THIRD_PARTY*` file. The generator verifies strict UTF-8, non-empty
 content and byte-for-byte equality with the installed package on every checked build. Root `LICENSE`
 continues to distinguish the application's MIT grant from Frontier/package material and points
 readers to the applicable bundled terms. Package upgrades require an explicit sync command and

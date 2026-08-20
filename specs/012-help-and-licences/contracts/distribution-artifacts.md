@@ -67,17 +67,68 @@ generation so a package/repository change receives review rather than silently w
 
 - `applicationVersion` is copied exactly from root `package.json#version`.
 - `almanac.version` is copied exactly from the resolved installed `package.json#version`.
-- Only explicit release-workflow input whose version/ref equals `applicationVersion` emits
-  `kind: release`; `0.0.0` cannot be a release.
-- A build outside a declared release workflow has no release evidence and normally emits
-  `kind: nonRelease` with a required safe immutable `buildId`.
-- Once a release workflow is declared, missing, mismatched or placeholder evidence is contradictory
-  and fails generation rather than silently downgrading the build to `nonRelease`.
-- CI may provide a bounded run/artifact identifier. A repository build may use an abbreviated commit
-  plus optional `dirty` marker.
+
+### Release declaration
+
+A release workflow is declared by exactly one input, and the generator reads no other environment
+variable for this decision:
+
+| Variable                   | Meaning                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| `SHIP_BUILDER_RELEASE_TAG` | Non-empty after trimming: a release workflow is declared, and this is its evidence |
+| `GITHUB_RUN_ID`            | Optional bounded CI run identifier used as the non-release `buildId`               |
+
+Classification is total; there is no fourth outcome:
+
+1. `SHIP_BUILDER_RELEASE_TAG` unset or empty after trimming → **no release workflow is declared** →
+   `kind: nonRelease`, with a required safe immutable `buildId`.
+2. Declared, the trimmed value equals `v${applicationVersion}` exactly, and `applicationVersion` is
+   not `0.0.0` → `kind: release`.
+3. Declared and anything else — value not equal to `v${applicationVersion}`, `applicationVersion` of
+   `0.0.0`, or a placeholder such as `v0.0.0`, `latest`, `HEAD` or `undefined` → **generation fails**.
+   The build is never silently downgraded to `nonRelease`.
+
+Worked example — root `package.json#version` of `1.0.0`:
+
+| `SHIP_BUILDER_RELEASE_TAG` | Outcome                                        |
+| -------------------------- | ---------------------------------------------- |
+| unset or `""`              | `nonRelease` with a `buildId`                  |
+| `v1.0.0`                   | `release`                                      |
+| `1.0.0`                    | fails — the `v` prefix is required             |
+| `V1.0.0`                   | fails — no case folding                        |
+| `v1.0.0 `                  | `release` — surrounding whitespace is trimmed  |
+| `v1.0`, `v1.0.0-rc.1`      | fails — no semver range or prerelease matching |
+| `v0.9.0`                   | fails — does not match the shipped version     |
+| `latest`, `HEAD`, `v0.0.0` | fails — placeholder                            |
+
+Comparison is byte-exact after trimming surrounding whitespace: no `v`-prefix tolerance beyond the
+one required character, no semver range matching, no case folding.
+
+The non-release `buildId` resolves in this order, and generation fails if none of them yields an
+accepted identifier: `GITHUB_RUN_ID` when it is 1–32 ASCII digits; otherwise `git rev-parse --short
+HEAD` yielding 7–12 lowercase hex characters, suffixed `-dirty` when the working tree is dirty.
+
+- Production optimisation, branch name, workflow name and `CI=true` are **not** release evidence and
+  are never read for this decision.
 - The accepted identifier format excludes whitespace, URLs, slashes, backslashes, colon-separated
   paths, branch names, user/email/host/runner/account names, timestamps and random values.
-- Production optimisation is not release evidence.
+
+Because the decision is env-driven, both the release and the failure branches are exercised by
+setting `SHIP_BUILDER_RELEASE_TAG` in a generator fixture. No workflow needs to exist for them to be
+tested.
+
+**Current repository state**: no workflow sets `SHIP_BUILDER_RELEASE_TAG`. `ci.yml` gates `main` and
+pull requests, and `deploy.yml` publishes `main` to Pages; neither declares a release. Root
+`package.json#version` is `0.0.0`, which rule 3 forbids from ever being a release. Every build the
+repository produces today is therefore `nonRelease` with a `buildId`, and that is the correct
+outcome, not a gap.
+
+**When release automation lands**, it needs one thing from this contract: export
+`SHIP_BUILDER_RELEASE_TAG` as `v` plus the shipped `package.json#version` (so `v1.0.0` for version
+`1.0.0`) in the environment the build runs in, and raise the root version above `0.0.0`. Nothing in
+this feature changes. A tag-triggered workflow can take it straight from the tag ref, provided the
+tag and the shipped version agree — if they disagree, generation fails by rule 3, which is the
+intended behaviour rather than something to work around.
 
 The UI receives separate application and Almanac values and may never label either as a live-game or
 live-catalogue version.
@@ -87,6 +138,15 @@ live-catalogue version.
 Both installed Almanac legal inputs must be valid UTF-8, non-empty and non-whitespace. Their tracked
 counterparts under `legal/almanac/` must be byte-for-byte identical. Normal generation/check commands
 are read-only with respect to tracked mirrors and fail on any drift.
+
+The two mirrored artifacts are `LICENSE` and `THIRD_PARTY_NOTICES.md`, and that count is derived
+rather than assumed: the installed package root was inspected and carries no other terms-bearing
+file. Its `PROVENANCE/` tree holds derivation records (`SOURCES.md`, `SNAPSHOTS.md`) that document
+where values came from, not terms under which they are redistributed, so it is deliberately not
+mirrored. To keep that conclusion from silently expiring, generation fails when the installed package
+root gains an unmirrored top-level file whose name matches a terms-bearing pattern — `LICENSE*`,
+`LICENCE*`, `COPYING*`, `NOTICE*` or `*THIRD_PARTY*` — so an Almanac upgrade that adds one receives
+review instead of dropping it from the source distribution.
 
 A separate explicit maintainer sync command may copy current installed artifacts after a dependency
 upgrade. The resulting legal diff is reviewed alongside the package update. Root `LICENSE` remains

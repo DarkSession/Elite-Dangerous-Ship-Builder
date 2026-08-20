@@ -55,8 +55,9 @@ to the repository's `LICENSE` on GitHub.
   build and stored records unchanged. Help, versions and the Frontier disclaimer MUST ship in the
   initial application load and, after that load has completed once, remain available without a
   network.
-- **FR-002**: Wherever package artwork or values appear, relevant provenance and legal information
-  MUST be reachable through the common help capability.
+- **FR-002**: Wherever package artwork or values appear, their provenance and legal information MUST
+  be content of the common help capability. A surface MUST NOT embed a private copy of that
+  information, and MUST NOT present it through a second help or legal destination of its own.
 - **FR-003**: Help MUST reproduce only the exact project-specific Frontier disclaimer from the
   repository `LICENSE` as its embedded legal excerpt. It MUST provide one link to that `LICENSE` on
   GitHub for all remaining licence information. The link MUST require a deliberate action, MUST be
@@ -84,10 +85,12 @@ to the repository's `LICENSE` on GitHub.
   in the interface. Each answer MUST agree with its cited sources and MUST NOT add an unsupported
   behavioural claim. A missing or duplicate topic, a missing governing reference, a contradiction or
   an unsupported additional claim MUST fail the release.
-- **FR-011**: Every capability that raises one of those questions MUST provide a route to help; the
-  route need not open a specific answer. Release validation MUST enumerate every current capability,
-  package-backed artwork or value surface and state that makes the common help route unavailable to
-  which FR-001, FR-002 or this requirement applies; any missing required route MUST fail the release.
+- **FR-011**: Where a capability, a package-backed surface or a state that obscures the application
+  frame leaves FR-001's common route unavailable, an equivalent route to help MUST be provided in its
+  place; neither route need open a specific answer. Release validation MUST enumerate every current
+  capability, package-backed artwork or value surface and obscuring state to which FR-001, FR-002 or
+  this requirement applies, and MUST record for each whether the common route is available or which
+  route substitutes for it. Any missing required route MUST fail the release.
 
 ## Edge Cases
 
@@ -117,3 +120,6 @@ GitHub location is the single destination for complete legal terms.
 - **SC-004**: After one completed online load, help, version information and the Frontier disclaimer
   work on the first subsequent offline visit; help clearly identifies the complete licence as an
   external GitHub destination.
+- **SC-005**: Opening the already-loaded help capability presents its first complete frame within
+  100 ms at the mobile viewport under 4× CPU slowdown, and performs no route load, same-origin asset
+  request or cross-origin request.

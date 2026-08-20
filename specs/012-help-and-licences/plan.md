@@ -49,10 +49,12 @@ application with modal content usable without a network after one completed onli
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
-**Performance Goals**: Opening the already-loaded modal performs no route load, same-origin asset
-request or cross-origin request and presents its first complete frame within 100 ms under the shared
-mobile 4x-CPU test profile; preserve the existing production initial-bundle error budget without
-raising its error ceiling within this feature
+**Performance Goals**: Spec SC-005 — opening the already-loaded modal performs no route load,
+same-origin asset request or cross-origin request and presents its first complete frame within 100 ms
+at the mobile viewport under 4× CPU slowdown, the same shared baseline features 003, 005, 009 and 010
+measure against, supplied by feature 011's Playwright matrix; preserve the existing production
+initial-bundle error budget (`angular.json`, `initial` `maximumError: 1MB`) without raising its error
+ceiling within this feature
 
 **Constraints**: No backend, account, telemetry, runtime legal fetch, runtime environment
 configuration or automatic external navigation; only the exact project-specific Frontier disclaimer
@@ -99,10 +101,15 @@ requested._
 2. Feature 011 supplies the application's sole service-worker registration/base app-shell caching,
    shared dialog/layer primitives, tokens, localisation with bundled English fallback, component
    previews, Firefox/landscape projects and the automated accessibility harness.
-3. Release automation declares release workflows and supplies explicit version-matched evidence.
-   Builds outside a declared release workflow are non-release and must have a safe immutable build
-   identifier; incomplete or contradictory evidence inside a declared release workflow blocks the
-   build.
+3. Release automation, when it exists, declares a release by setting `SHIP_BUILDER_RELEASE_TAG` to
+   `v${applicationVersion}`, per [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md)'s
+   Release declaration. **No current workflow sets it**: `ci.yml` gates `main` and pull requests and
+   `deploy.yml` publishes `main` to Pages, and root `package.json#version` is `0.0.0`, which the
+   contract forbids from ever being a release. Every build the repository produces today is therefore
+   non-release with a safe immutable build identifier, which is the correct outcome rather than a gap.
+   This feature does not add a release workflow; it implements and tests the classification. Because
+   the decision is environment-driven, the release and failure branches are exercised by generator
+   fixtures without a workflow existing, so no task here is blocked on one.
 4. No Almanac defect blocks this feature. The installed package manifest and legal artifacts are
    sufficient inputs and are consumed without local correction.
 
@@ -234,8 +241,10 @@ No planning clarification marker or unresolved upstream dependency remains.
   surfaces, information order, the exact seven accepted help records and governing-reference map,
   legal/provenance framing, external navigation and state preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
-  entry, contextual provenance entry and shared Help · About modal, and owns the exhaustive current
-  capability/package-surface coverage set required by FR-011.
+  entry, contextual provenance entry and shared Help · About modal; owns the exhaustive Release
+  coverage ledger required by FR-011, which `e2e/coverage-ledger.ts` transcribes rather than
+  re-derives; and records the inherited accessibility, responsive and localisation baseline that
+  feature 011's FR-011, FR-012, FR-015 and FR-021 govern.
 - [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
   semantic order, modal states, responsive behavior and component-system impact.
 - [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`
