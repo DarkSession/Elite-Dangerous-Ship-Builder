@@ -238,12 +238,8 @@ No planning clarification marker or unresolved upstream dependency remains.
   capability/package-surface coverage set required by FR-011.
 - [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
   semantic order, modal states, responsive behavior and component-system impact.
-- [design/help-topic-review.md](./design/help-topic-review.md) records the release-blocking semantic
-  review of every accepted answer against its governing sources.
 - [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`
   and why mock facts, obsolete behavior and literal styling are excluded.
-- [design/screen-reader-record.md](./design/screen-reader-record.md) records the completed manual
-  assistive-technology protocol required before release.
 - [quickstart.md](./quickstart.md) supplies runnable artifact, modal-state, offline, responsive,
   localisation, external-navigation and accessibility validation scenarios.
 
