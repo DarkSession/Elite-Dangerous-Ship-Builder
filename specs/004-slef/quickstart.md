@@ -6,7 +6,7 @@ Normative contracts: [import](./contracts/slef-import.md),
 
 ## Prerequisites
 
-- The selected Almanac release exposes `inspectSlef`, `ShipLoadout.fromLoadout`,
+- The installed Almanac package exposes `inspectSlef`, `ShipLoadout.fromLoadout`,
   `completeEngineeringGrade`, `toSlefString` and `getSlefDiagnosticMessage` through leaf exports,
   refuses an unknown hull and returns every fixed mount populated.
 - Feature 011's strict compiler, localization/design-system, preview, ten-project Playwright and axe
@@ -94,7 +94,7 @@ wait for a released fix.
     fixtures from those consumers remain supplemental, not substitutes for accepting new output.
     Runtime and automated tests reject every unexpected application request and never invoke a real
     clipboard/share target or remote consumer.
-12. **Performance**: Discover the maximum-slot hull from the pinned package at test time, create a
+12. **Performance**: Discover the maximum-slot hull from the installed package at test time, create a
     fully fitted/all-supported-fields fixture using package APIs and measure domain import/export
     with browser `performance.now()`. Each completes below 500 ms.
 13. **Responsive/accessibility**: Exercise all inventory states in both engines across desktop,

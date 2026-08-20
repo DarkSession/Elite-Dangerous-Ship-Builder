@@ -24,13 +24,11 @@ not game-data contracts and are not copied.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0.2, Angular HTML and SCSS; Node.js 24 for
-tooling. TypeScript strict mode is required by the constitution but is not
-enabled in the current repository configuration; that repository gap must close
-before implementation
+**Language/Version**: TypeScript, Angular HTML and SCSS; Node.js per the repository tooling
+configuration. TypeScript strict mode is required before implementation
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular
-signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.4` leaf exports, feature
+**Primary Dependencies**: Angular standalone and zoneless APIs, Angular
+signals, RxJS, `@elite-dangerous-almanac/core` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
 feature 003's viewing-condition and status-provider contracts, feature 010's
 hardpoint observation port, and feature 011's design/localization/accessibility
@@ -44,8 +42,7 @@ history, a URL, a saved build or SLEF
 statement/branch/function/line gates; Playwright in the feature 011 ten-project
 Chromium/Firefox desktop, tablet portrait/landscape and mobile
 portrait/landscape matrix; `@axe-core/playwright` plus manual screen-reader,
-200%-text and actual 400%-zoom protocols. The current repository has only three
-Chromium projects and no axe harness
+200%-text and actual 400%-zoom protocols
 
 **Target Platform**: Static client-side application for current Chromium and
 Firefox on desktop, tablet and mobile, pointer and touch, portrait and
@@ -133,8 +130,8 @@ specs/005-power-and-heat/
     └── screen-inventory.md
 ```
 
-`tasks.md` is Phase 2 output and has not yet been generated. Its dependency graph must retain the
-feature 001/002/003/011 sequencing and the settled shared viewing-store/control ownership above.
+The task dependency graph retains the feature 001/002/003/011 sequencing and the settled shared
+viewing-store/control ownership above.
 
 ### Source Code (repository root)
 

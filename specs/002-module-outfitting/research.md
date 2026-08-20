@@ -1,7 +1,7 @@
 # Research: Module Outfitting and Engineering
 
-Research was rerun on 2026-08-18 against the amended Constitution 7.0.0, the clarified feature spec,
-the installed `@elite-dangerous-almanac/core@0.1.4`, planned feature 001/011 contracts, the actual
+Research used the constitution, the clarified feature spec,
+the installed `@elite-dangerous-almanac/core`, feature 001/011 contracts, the actual
 repository baseline and `.design/Ship Builder.dc.html`. Package probes used detached loadouts only.
 
 ## Decision 1: treat 001 and 011 as prerequisites, not existing code
@@ -12,9 +12,8 @@ localization, design-system and test foundations. The snapshot is also the model
 for session history; the history tape itself is never persisted or published. Tasks must depend on
 those deliveries. Feature 002 does not create a substitute shell or local UI foundation.
 
-**Rationale**: The current source tree contains only the application shell and build-link codec. The
-current `tsconfig` is not fully strict, and Playwright defines only three Chromium projects with no
-axe integration. Describing planned contracts as present would hide real delivery blockers.
+**Rationale**: These shared contracts are delivery prerequisites. Feature 002 must consume them
+rather than duplicate or weaken them locally.
 
 **Alternatives considered**: Duplicating active-build, localization or components inside outfitting
 would violate the one-build and one-design-system principles. Weakening tests until feature 011 lands
@@ -129,8 +128,8 @@ Index only the displayed name, decimal class, rating and mount. Fold values/quer
 remove combining marks, locale-lowercase, split on Unicode whitespace and require every non-empty
 term to match at least one of those four fields. Rebuild on slot, build revision or locale change.
 
-The package holds 48 hulls and 76 variants (22 Mercenary, 30 community-goal, 21 tech-broker and 3
-event-reward), with a maximum 481 choices for empty `PantherMkII` `Slot01_Size8` (473 + 8).
+The package audit covers the complete installed hull and pre-engineered-variant catalogues and
+discovers the largest slot-choice set for performance testing.
 
 **Rationale**: Membership stays package-owned while FR-005 permits deterministic presentation. An
 immutable index makes the 100 ms target straightforward without caching stale candidates.
@@ -207,7 +206,7 @@ Atomic refusal changes no active build, revision, working record, fragment or hi
 quality completion is transiently reported. Neither package construction nor quality completion
 enters edit history.
 
-**Rationale**: Constitution 7.0.0 makes package construction establish the fixed-mount invariant
+**Rationale**: The constitution makes package construction establish the fixed-mount invariant
 before quality completion. Partial-quality refusal applies only to a supported module the candidate
 resolves.
 
@@ -277,7 +276,7 @@ arrows or partial-roll help text violates the accepted requirements.
 **Decision**: Feature unit tests use real package records for membership/mutation and feature 001's
 snapshot/reconstruction/swap adapters for transactions/history. Cover every structured result,
 empty removable-slot states, package-defaulted fixed mounts, partial
-preflight including cargo hatch, package-defaulted fixed mounts, 481-choice search, `null` versus `[]`, route labels,
+preflight including cargo hatch, package-defaulted fixed mounts, maximum-choice search, `null` versus `[]`, route labels,
 101 edits and all history exclusions.
 
 Playwright runs each primary story at 1440×900, 834×1112, 1112×834, 390×844 and 844×390 in Chromium

@@ -20,11 +20,11 @@ bars, grouped contribution claims and ambiguous “integrity” label are not co
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0.2, Angular 22.1 standalone and zoneless, Angular HTML and SCSS;
-Node.js 24 for tooling. Full TypeScript/template strictness is a constitutional target not yet enabled
-by the current root configuration and remains a feature 011 prerequisite.
+**Language/Version**: TypeScript, Angular standalone and zoneless, Angular HTML and SCSS; Node.js per
+the repository tooling configuration. Full TypeScript/template strictness remains a feature 011
+prerequisite.
 
-**Primary Dependencies**: Angular signals and RxJS 7.8; `@elite-dangerous-almanac/core@0.1.4` leaf
+**Primary Dependencies**: Angular signals and RxJS; `@elite-dangerous-almanac/core` leaf
 exports for loadout defence, ships and i18n; feature 001 active-build/revision ownership; feature 002
 exact-slot selection; feature 003 revision, viewing-condition, provider and workspace-target
 contracts; feature 011 design-system, localization, announcement, preview and test foundations
@@ -80,7 +80,7 @@ requested._
 
 ### Delivery prerequisites
 
-There is no feature-006 Almanac blocker in pinned 0.1.4. Repository implementation still depends on:
+There is no known feature-006 Almanac blocker. Repository implementation still depends on:
 
 1. feature 001's active `ShipLoadout`, atomic `buildRevision` and `/build` workspace;
 2. feature 003's contract-first `StatusRevisionContext`, settled `ViewingConditions`, generic
@@ -89,9 +89,8 @@ There is no feature-006 Almanac blocker in pinned 0.1.4. Repository implementati
 4. feature 011's strict compiler settings, tokens/components, Almanac text presentation,
    localization, previews, Firefox/landscape projects and axe harness.
 
-The current source tree contains only the shell and build-link codec, and the current Playwright
-configuration has three Chromium-only projects with no axe integration. Tasks must preserve these
-dependencies; missing infrastructure does not authorize a partial private substitute.
+Tasks must preserve these dependencies; missing infrastructure does not authorize a partial private
+substitute.
 
 ## Project Structure
 

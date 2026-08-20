@@ -26,12 +26,12 @@ values, cross-capability modes and inline visual literals are rejected.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0.3 resolved in the current lockfile; Angular HTML and SCSS; Node
-24 for tooling per `.nvmrc`. Constitution-required TypeScript `strict` and Angular
-`strictTemplates` are not yet enabled and are an implementation prerequisite
+**Language/Version**: TypeScript resolved by the lockfile; Angular HTML and SCSS; Node for tooling
+per the repository configuration. Constitution-required TypeScript `strict` and Angular
+`strictTemplates` are implementation prerequisites
 
-**Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8;
-`@elite-dangerous-almanac/core@0.1.4` leaf exports; feature 001's active build, workspace, asset
+**Primary Dependencies**: Angular standalone/zoneless APIs and signals; RxJS;
+`@elite-dangerous-almanac/core` leaf exports; feature 001's active build, workspace, asset
 coordinator and service worker; feature 002's complete ledger and exact-slot selection; feature
 003's settled deployed/retracted condition and revision; a generalized feature 005 located-mount
 power observation; feature 011's tokens, components, localization and verification harness; feature
@@ -63,10 +63,9 @@ reimplemented power verdict or persisted anatomy state; no page horizontal scrol
 dark theme; translatable owned text and locale formatting; shared 44 CSS-pixel target baseline;
 WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: Almanac 0.1.4 has 48 hulls and 96 side schematics totalling 8,989,045 bytes. They
-contain 240 hardpoint occurrences for 234 unique hardpoints and 195 utility occurrences for 195
-unique utilities. Six hardpoints intentionally repeat across sides; future utility repeats are
-allowed by the package contract. Counts are regression evidence, never runtime constants
+**Scale/Scope**: Every hull, side schematic, hardpoint and utility mount supplied by the installed
+package. Catalogue counts and asset sizes are discovered during the package audit and are never
+application limits
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d. Adopted hierarchy and every
 required correction are recorded in [design/reference-review.md](./design/reference-review.md)
@@ -101,16 +100,15 @@ after Phase 1 with the same result._
 4. **Feature 005** owns `MountPowerObservationPort`, which accepts any exact package slot key;
    feature 010 consumes it for hardpoint and utility mounts and defines no port of its own. Almanac
    `PowerBudget.consumers` already supports every mount kind, so this is an application-contract
-   boundary rather than an Almanac defect. Feature 005's Almanac gate is resolved in
-   0.1.4; the shared strictness and application-contract prerequisites remain.
+   boundary rather than an Almanac defect. Feature 005's Almanac gate is resolved; the shared
+   strictness and application-contract prerequisites remain.
 5. **Feature 011** must deliver strict configuration, one design system, localization/game-text
    presentation, announcements, component previews, ten Playwright projects and the axe harness.
 6. **Feature 012** must deliver its planned in-place modal contract. Feature 010 emits its contextual
    provenance/help intent rather than owning legal content or targeting a route.
 
-The current repository implements only the Angular shell and feature 001's build-link codec. These
-dependencies are explicit sequencing gates, not unresolved planning questions. Almanac 0.1.4's
-direct schematic and per-consumer power contracts are present and need no upstream anatomy fix.
+These dependencies are explicit sequencing gates, not unresolved planning questions. The installed
+Almanac package's direct schematic and per-consumer power contracts need no upstream anatomy fix.
 
 ## Project Structure
 
@@ -182,10 +180,10 @@ owner and feature 012 remains the provenance/legal owner.
 Detailed decisions, rationale and rejected alternatives are in [research.md](./research.md). The
 decisive results are:
 
-- Almanac 0.1.4 publicly contracts both `hardpoint` and `utility_mount` annotations, exact journal
+- The installed Almanac package contracts both `hardpoint` and `utility_mount` annotations, exact journal
   keys, complete coverage, cross-side duplicate identity and safe static inline SVG content.
-- An exhaustive audit found all 429 current package mounts represented correctly by 435 occurrences,
-  with no missing, wrong-kind, bad-key or same-side duplicate annotations.
+- The exhaustive audit requires every installed package mount to be represented, with no missing,
+  wrong-kind, bad-key or same-side duplicate annotations.
 - Schematics are copied from the installed package, fetched per hull/side, parsed into a strict inert
   `svg/g/path/circle` tree and cached only by feature 001's service worker.
 - One package-ordered item per hardpoint or utility owns all state; top/bottom occurrences are

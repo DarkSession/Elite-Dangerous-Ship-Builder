@@ -1,9 +1,9 @@
 # Research: Ship Statistics and Status
 
 Research used the accepted specifications and plans for features 001, 002 and 005–011, the exact
-installed `@elite-dangerous-almanac/core@0.1.4` declarations, and rendered inspection of
+installed `@elite-dangerous-almanac/core` declarations, and rendered inspection of
 `.design/Ship Builder.dc.html` canvases 1c and 1d. The installed package is ESM-only,
-side-effect-free and pre-1.0; implementation must use leaf exports and pin regression behavior.
+side-effect-free; implementation must use leaf exports and characterize the required behavior.
 
 ## Decision 1: stage shared contracts before area providers
 
@@ -69,7 +69,7 @@ friendly label for each issue code would create application-owned game diagnosti
 the package's canonical fallback with its standard untranslated-game-text disclosure. Application
 framing, generic severity labels, units and counts remain localized normally.
 
-**Rationale**: Almanac 0.1.4 deliberately returns canonical English only for English locales. The
+**Rationale**: The installed Almanac package returns canonical English only for English locales. The
 application may disclose that boundary but may not own a German or other private diagnostic table.
 
 **Alternatives considered**:
@@ -224,13 +224,12 @@ produces one coalesced polite localized message; stale/pending projections never
 
 ## Package/repository readiness
 
-Almanac 0.1.4 contains the required structured validation/calculation results, standard-load result,
+The installed Almanac package contains the required structured validation/calculation results, standard-load result,
 powered mobility/shield diagnostics, power consumers, unknown-hull rejection, cost/material APIs and
 diagnostic locale helpers. There is no unresolved package release blocker.
 
-The application source currently contains only the shell and build-link domain. Features 001, 002,
-005–009 and 011 are repository implementation prerequisites. Their absence is a delivery dependency,
-not permission to add a fallback calculator, private translation or provisional target.
+Features 001, 002, 005–009 and 011 are implementation prerequisites. Their absence is a delivery
+dependency, not permission to add a fallback calculator, private translation or provisional target.
 
 ## Test strategy
 

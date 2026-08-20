@@ -1,8 +1,8 @@
 # Research: SLEF Import and Export
 
-Research used the accepted feature spec, Constitution 7.0.0, feature 001/002/011 design contracts,
-the current repository, `.design/Ship Builder.dc.html`, and the pinned
-`@elite-dangerous-almanac/core@0.1.4` source/tag. Package probes used generated or public fixture data
+Research used the accepted feature spec, constitution, feature 001/002/011 design contracts,
+the current repository, `.design/Ship Builder.dc.html`, and the installed
+`@elite-dangerous-almanac/core` source. Package probes used generated or public fixture data
 only.
 
 ## Decision 1: the Almanac owns SLEF inspection, construction and serialization
@@ -278,8 +278,8 @@ accessibility and claiming automated browser zoom coverage were rejected.
   remains outside application state.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
   contract is also required.
-- The current repository does not yet contain those planned foundations; feature 004 must not create
-  temporary shells, locale logic, active-build storage or test-matrix substitutes.
+- Feature 004 must consume those foundations rather than create temporary shells, locale logic,
+  active-build storage or test-matrix substitutes.
 
 No design clarification remains and no feature-specific package blocker is open; the package owns
 fixed-mount construction. No application workaround is permitted.

@@ -24,14 +24,14 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
    replacement and autosave/fragment observers. The history tape remains session-only.
 4. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
-5. Confirm the pinned released Almanac provides:
+5. Confirm the installed Almanac provides:
    - package construction that refuses an unknown hull and returns every fixed mount populated;
    - fixed-reward experimental-effect add/replace/remove that preserves the fixed base modifier
      block and variant identity while recomputing effect-dependent stats;
    - complete supported partial-quality normalization with a structured unsupported outcome.
 6. Run the engineering reproductions in [research.md](./research.md). Mass Manager must change the
-   tech-broker FSD's optimal mass from 1785 to 1856.399902 while preserving `preEngineeredVariant`;
-   removing it must return to 1785. Do not proceed if supported partial quality remains partial.
+   package-reported effective optimal mass while preserving `preEngineeredVariant`; removing it must
+   restore the package-reported baseline. Do not proceed if supported partial quality remains partial.
 7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
 Expected: all package prerequisites are ready — including engineering operations and fixed defaults.
@@ -90,8 +90,7 @@ Expected:
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
-- result rendering settles under 100 ms for the 481-choice maximum (or a later package's
-  newly measured maximum).
+- result rendering settles under 100 ms for the installed package's measured maximum choice set.
 
 ## 5. Fit, replace, remove and refuse
 

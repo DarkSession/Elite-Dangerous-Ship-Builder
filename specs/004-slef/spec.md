@@ -62,7 +62,7 @@ Commanders can export the active build as one SLEF entry and import exactly one 
   contract.
 - **FR-013**: Import followed by export MUST preserve every modelled field except completed
   engineering quality and package-defaulted fixed mounts. Every exported identity MUST resolve in
-  the pinned package.
+  the installed package.
 - **FR-014**: Import and export MUST run entirely in the browser and MUST transmit no payload.
 
 ## Edge Cases

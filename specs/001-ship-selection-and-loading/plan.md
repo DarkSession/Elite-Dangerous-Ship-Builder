@@ -12,9 +12,9 @@ Implementation of the shared design system, localization runtime and complete br
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for tooling
+**Language/Version**: TypeScript in strict mode; HTML and SCSS; Node.js per the repository tooling configuration
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router, Angular service worker, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.4 leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
+**Primary Dependencies**: Angular standalone and zoneless APIs, Angular Router, Angular service worker, RxJS, `@elite-dangerous-almanac/core` leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
 
 **Storage**: In-memory `ShipLoadout` state; versioned, independently keyed JSON records in `localStorage`; tab identity and catalogue session state in `sessionStorage`; build payload only in the URL fragment; no backend or IndexedDB
 
@@ -24,11 +24,11 @@ Implementation of the shared design system, localization runtime and complete br
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
-**Performance Goals**: Search/filter/sort all 48 pinned hulls without perceptible delay; restore the working build before the workspace becomes interactive; coalesce autosaves without blocking interaction; retain the existing codec's sub-50 ms encode/decode target; import/export performance remains owned by feature 004
+**Performance Goals**: Search/filter/sort the complete installed hull catalogue without perceptible delay; restore the working build before the workspace becomes interactive; coalesce autosaves without blocking interaction; retain the existing codec's sub-50 ms encode/decode target; import/export performance remains owned by feature 004
 
 **Constraints**: No server, account, telemetry or cross-origin request; no game-data duplication or calculation; no page-level horizontal scrolling; 500-character codec value including `b.`; lossless storage of recognized modelled state after package reconstruction; no automatic working-record deletion; one dark tokenized theme; all application text translatable; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: 48 hulls in the pinned Almanac release; four routes; 20 recoverable working records before explicit management is required; named records limited only by browser storage quota; codec tables generated from and pinned to each supported Almanac release
+**Scale/Scope**: The complete installed hull catalogue; four routes; 20 recoverable working records before explicit management is required; named records limited only by browser storage quota; codec tables generated from each supported Almanac release
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. The established dark/amber visual hierarchy and responsive composition are adopted through the shared design system, subject to the specification, Almanac and accessibility adaptations recorded in [design/reference-review.md](./design/reference-review.md).
 

@@ -57,7 +57,7 @@ legal content and no geometry of its own. Four gates apply and are named on the 
   `MountPowerObservationPort` accepting any package slot key, which feature 010 consumes (T012). No feature-010 task
   may join `PowerBudget.consumers` to bands, read raw `FittedModule.on` or zero-based `priority`, or
   reconstruct a power verdict while that port is still hardpoint-only.
-- **Package pin**: `@elite-dangerous-almanac/core@0.1.4` already contracts both `hardpoint` and
+- **Package boundary**: `@elite-dangerous-almanac/core` contracts both `hardpoint` and
   `utility_mount` annotations, exact journal keys, complete top/bottom coverage, cross-side duplicate
   identity, the static inline `svg/g/path/circle` guarantee and per-consumer utility power. No
   upstream anatomy fix is outstanding; the audits in Phase 2 gate every later package upgrade.
@@ -66,10 +66,10 @@ legal content and no geometry of its own. Four gates apply and are named on the 
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Pin the package behaviour this feature projects and create the asset pipeline, source
+**Purpose**: Characterize the package contract this feature projects and create the asset pipeline, source
 locations and test suites before any contract lands.
 
-- [ ] T001 Pin the Almanac 0.1.4 anatomy behaviour this feature consumes — `assets/ships/<Ship.symbol>/schematic-top.svg` and `schematic-bottom.svg` present for every catalogued hull; only `svg`, `g`, `path` and `circle` elements in unmodified files; `data-feature="hardpoint"` and `data-feature="utility_mount"` groups each carrying an exact journal-compatible `data-journal-slot`; `ShipLoadout.slots()` reporting package kinds `hardpoint` and `utility` with hardpoint class sizes and the documented size-`0` utility placeholder; and `powerBudget().consumers` containing both always-powered and deployed-only utility consumers — using leaf subpath imports in `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts`
+- [ ] T001 Characterize the installed Almanac anatomy contract this feature consumes — `assets/ships/<Ship.symbol>/schematic-top.svg` and `schematic-bottom.svg` present for every catalogued hull; only `svg`, `g`, `path` and `circle` elements in unmodified files; `data-feature="hardpoint"` and `data-feature="utility_mount"` groups each carrying an exact journal-compatible `data-journal-slot`; `ShipLoadout.slots()` reporting package kinds `hardpoint` and `utility` with hardpoint class sizes and the documented size-`0` utility placeholder; and `powerBudget().consumers` containing both always-powered and deployed-only utility consumers — using leaf subpath imports in `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts`
 - [ ] T002 [P] Add an `assets` entry copying `node_modules/@elite-dangerous-almanac/core/assets/ships/**/schematic-top.svg` and `**/schematic-bottom.svg` unchanged to the same-origin output path `assets/ships/` in the build target options in `angular.json`
 - [ ] T003 [P] Extend feature 001's lazy `assets/ships/**` performance cache group so both schematic filenames are cached by the single versioned service worker with no second cache owner, in `ngsw-config.json`
 - [ ] T004 [P] Create the feature source skeleton `src/app/domain/anatomy/`, `src/app/application/anatomy/`, `src/app/ui/hull-schematic/` and `src/app/features/build-workspace/hull-anatomy/` per plan.md
@@ -88,7 +88,7 @@ projector, revision-keyed store and presentation boundary every surface reads.
 ### Package and output audits
 
 - [ ] T006 Implement the installed-package schematic audit — enumerate every catalogued hull, resolve both asset paths inside the package asset root and refuse a path escaping it, parse XML, reject a non-SVG root or wrong namespace, enforce the released `svg`/`g`/`path`/`circle` static-content guarantee, reject every event, script, style, link, reference, media, foreign element and CSS `url()` value, require `data-journal-slot` on every `hardpoint` and `utility_mount` feature, resolve each key against the exact hull slot catalogue and matching package kind, reject a key repeated on one side, and report any package hardpoint or utility with no occurrence across both sides — in `scripts/check-almanac-schematics.mjs`
-- [ ] T007 [P] Add the audit regression suite pinning the 0.1.4 fixture evidence — 48 hulls with 48 matching asset directories, 96 side schematics, 234 unique hardpoints across 240 occurrences, 195 unique utilities across 195 occurrences, the six accepted cross-side repeats `MediumHardpoint1`/`MediumHardpoint2` on `Federation_Corvette` and `MediumHardpoint1`–`MediumHardpoint4` on `MediumTransport01`, and zero missing, unknown-key, wrong-kind or same-side-duplicate annotations — as fixture expectations that are never encoded as runtime constants or upper bounds for a future release, in `scripts/check-almanac-schematics.test.mjs`
+- [ ] T007 [P] Add the audit regression suite over the complete installed package — every catalogued hull has both side schematics, every hardpoint and utility is represented, documented cross-side repeats are accepted, and missing, unknown-key, wrong-kind or same-side-duplicate annotations fail — without encoding catalogue counts as runtime constants or future limits, in `scripts/check-almanac-schematics.test.mjs`
 - [ ] T008 Extend the audit with the generated-output pass comparing built asset paths, file counts and content hashes byte for byte against the installed package files and asserting that no generated package SVG is tracked under `public/` or `src/`, in `scripts/check-almanac-schematics.mjs` (depends on T006)
 
 ### Shared contract types
@@ -356,6 +356,5 @@ Task: "Locate journey in e2e/hull-anatomy.spec.ts"
 - [P] tasks touch different files and have no incomplete dependency
 - Every component task includes its unit test, its required-state preview declarations and its
   message keys; none of the three is a follow-up
-- Current package counts are regression fixtures for the pinned 0.1.4 release, never runtime
-  constants or limits on a future release
+- Package counts are discovered regression evidence, never runtime constants or future limits
 - Commit after each task or logical group; stop at a checkpoint to validate a story independently

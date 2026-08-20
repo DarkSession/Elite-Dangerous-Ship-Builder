@@ -89,5 +89,5 @@ omission reduces the accepted requirements.
 
 Adopt the Power and Thermals hierarchy and dark dashboard density. Reject every
 sample calculation, abbreviation and unsupported scenario. The repository's
-feature 011 tokens/components are the visual source of truth, while the fixed
-Almanac release is the sole game-result source.
+feature 011 tokens/components are the visual source of truth, while the installed
+Almanac package is the sole game-result source.

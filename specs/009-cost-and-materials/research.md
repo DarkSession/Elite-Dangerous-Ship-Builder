@@ -1,9 +1,9 @@
 # Research: Cost and Materials
 
-Research re-read the accepted feature spec and constitution, the planned feature 001/002/003/011
+Research re-read the accepted feature spec and constitution, the feature 001/002/003/011
 interfaces, the current source/configuration, `.design/Ship Builder.dc.html`, and the installed
-`@elite-dangerous-almanac/core@0.1.4` declarations and runtime data. Package counts below are
-regression evidence only; no application rule depends on them.
+`@elite-dangerous-almanac/core` declarations and runtime data. Package probes are regression
+evidence only; no application rule depends on catalogue counts.
 
 ## Decision 1: preserve the numeric `RetailCredits` contract
 
@@ -12,7 +12,7 @@ regression evidence only; no application rule depends on them.
 `unpriced` is empty and lower bounds naming every returned entry otherwise. Do not create a combined
 hull-plus-modules value or repeat the package's rebuy calculation.
 
-**Rationale**: In 0.1.4 all three fields are non-nullable numbers. The earlier plan's nullable hull
+**Rationale**: In the installed package all three fields are non-nullable numbers. The earlier plan's nullable hull
 and rebuy states contradicted the installed public API. A valid `ShipLoadout` already has a known
 catalogue hull; construction/projection failure is separate from retail-field semantics.
 
@@ -60,8 +60,8 @@ entry otherwise.
 
 **Rationale**: `mercCoinCost()` returns zero both for no recognized article and, prospectively, for a
 recognized article whose optional price is missing from the variant. Entry recognition is therefore
-the applicability boundary. Current 0.1.4 data has 22 Mercenary variants and all are priced, but the
-public optional field and FR-005 require the future missing-price state.
+the applicability boundary. All installed Mercenary variants are priced, but the public optional
+field and FR-005 require the missing-price state.
 
 **Alternatives considered**: Symbol/blueprint allowlists, total-nonzero recognition, summing variant
 prices, remembering purchase identity after the package loses it, and converting/comparing Merc Coin
@@ -174,14 +174,13 @@ PNG without a provenance decision were rejected.
 **Decision**: Unit/contract tests compare every quantity to direct package results and cover priced
 and unpriced retail, Merc absence/presence/missing price, purchase baseline/later grades, baked and
 separate effects, repeated sources, `null` versus `[]`, metadata miss and stale-revision rejection.
-Cross-package regression tests pin the 0.1.4 Expanded Cargo Rack behavior without a consumer
+Cross-package regression tests characterize the installed package's Expanded Cargo Rack behavior without a consumer
 special-case. Playwright covers both stories and all meaningful states across the feature-011
 ten-project Chromium/Firefox matrix with axe, manual screen-reader/zoom/text-expansion checks,
 offline request monitoring and the 100 ms in-page performance measure.
 
-**Rationale**: The current repository has only three Chromium portrait projects, no axe dependency,
-and no implemented active-build/UI/localization foundations. Those are explicit prerequisites, not
-reasons to weaken the required gate.
+**Rationale**: The active-build, UI, localization and complete browser/accessibility foundations are
+explicit prerequisites, not reasons to weaken the required gate.
 
 **Alternatives considered**: Hand-computed expected quantities, snapshots alone, Chromium-only or
 portrait-only coverage, axe as a complete accessibility proof, and lowering/skipping existing gates
@@ -189,10 +188,10 @@ were rejected.
 
 ## Package audit and resolved unknowns
 
-Pinned 0.1.4 contains 107 blueprint mechanics identities and 106 cost keys; the costless Expanded
-Cargo Rack identity returns `null` and is not an ordinary stock-module route. It also contains 86
-effect identities with 86 cost keys, 106 distinct recipe-referenced material symbols that all resolve
-within the 146-material catalogue, and 22 Mercenary variants whose prices are currently present.
+The package audit covers every installed blueprint mechanic, cost key, effect, recipe-referenced
+material and Mercenary variant. The costless Expanded Cargo Rack identity returns `null` and is not
+an ordinary stock-module route; every recipe-referenced material resolves, and every installed
+Mercenary variant currently has a price.
 
 No planning clarification or direct feature-009 Almanac blocker remains. Repository implementation
 still depends on features 001, 002, 003 and 011 as recorded in [plan.md](./plan.md).

@@ -32,12 +32,11 @@ without changing capability.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0, Angular HTML and SCSS; Node.js 24.18.0 in the current reference
-environment. Full TypeScript and Angular template strictness is a feature 011 prerequisite because
-the current root configuration does not yet enable both
+**Language/Version**: TypeScript, Angular HTML and SCSS; Node.js per the repository tooling
+configuration. Full TypeScript and Angular template strictness is a feature 011 prerequisite
 
-**Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; currently
-verified `@elite-dangerous-almanac/core` 0.1.4 leaf imports from `ships/slef`,
+**Primary Dependencies**: Angular standalone/zoneless APIs and signals; RxJS; verified
+`@elite-dangerous-almanac/core` leaf imports from `ships/slef`,
 `ships/ship-loadout`, `ships/modules` and `i18n/diagnostics`; feature 001
 active-build/replacement/link/persistence boundaries; feature 002 shared
 build-ingress normalizer; feature 011 localization, announcements, shared UI and browser-test
@@ -49,7 +48,7 @@ imports become feature 001 tab-owned working records, whose metadata records the
 quality/issues/refusal/delivery state is never persisted. Feature 004 owns no storage key
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
-function and line thresholds; Playwright 1.62 plus planned `@axe-core/playwright` over desktop,
+function and line thresholds; Playwright plus `@axe-core/playwright` over desktop,
 tablet portrait/landscape and mobile portrait/landscape in Chromium and Firefox; package-generated
 fixtures plus a hashed reference-export corpus and recorded Coriolis/EDSY acceptance protocol
 
@@ -95,19 +94,15 @@ repair or identity classification is permitted._
 | VIII. Tested Before It Ships            | Unit/contract tests, ten Chromium/Firefox viewport-orientation projects, axe and manual screen-reader/zoom scripts are specified without weakening coverage.                        | PASS; harness prerequisite |
 | IX. Specification Before Implementation | Every FR maps to a named plan-time surface/state; the clarified price, health-snapshot and integrity boundaries are explicit.                                                       | PASS                       |
 
-The Almanac supplies the feature-specific package operations requested by
-[#292](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/292),
-[#293](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/293) and
-[#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 004 constructs a
+The Almanac supplies the feature-specific package operations this capability needs. Feature 004 constructs a
 fresh detached import candidate and reuses feature 002's accepted ingress ordering and outcomes.
 Neither captured purchase provenance nor per-module condition snapshots create an upstream gate, and
-the constitution 7.0.0 identity rule is satisfied by the package's own normalization. Feature 004
+the constitution's identity rule is satisfied by the package's own normalization. Feature 004
 must not implement a local substitute.
 
 ## Delivery Prerequisites
 
-The source tree currently contains only the application shell and build-link codec. Feature 004
-implementation depends on these planned boundaries rather than creating temporary substitutes:
+Feature 004 implementation depends on these boundaries:
 
 1. Feature 011: strict compiler/template settings, token/localization/announcement layers, shared
    modal/sheet/field/notice/diagnostic/actions, complete previews, Firefox/landscape projects and axe.
@@ -116,8 +111,9 @@ implementation depends on these planned boundaries rather than creating temporar
 3. Feature 002 shared ingress: source partial-quality preflight, package construction with populated
    fixed mounts, quality completion and history-reset notification. Feature 004 calls this boundary
    once; it does not add a SLEF-specific normalization loop.
-4. The pinned Almanac changes only when the relevant plans deliberately update and re-probe the
-   package contract. No implementation may compensate for a package regression locally.
+4. An Almanac upgrade requires the relevant package-contract tests to be rerun and any deliberate
+   contract change to be reflected in the affected artifacts. No implementation may compensate for
+   a package regression locally.
 
 ## Project Structure
 

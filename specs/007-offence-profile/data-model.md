@@ -94,7 +94,7 @@ array index.
 ### `DamageSplit`
 
 `kinetic`, `thermal`, `explosive`, `absolute` and `antiXeno` are required numeric values.
-`unclassified` is optional and absent exactly when zero under the 0.1.4 contract. Presentation may
+`unclassified` is optional and absent exactly when zero under the installed package contract. Presentation may
 omit the optional row or state that no unclassified damage exists; it must not call the absence
 unknown. Anti-xeno remains an overlay on conventional damage and is not included in a locally created
 partition or total.

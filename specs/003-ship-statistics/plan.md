@@ -22,11 +22,11 @@ once in the complete Status capability.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0 in strict mode; Angular 22.1 standalone and zoneless; HTML and
-SCSS; Node.js 24 per `.nvmrc` for tooling
+**Language/Version**: TypeScript in strict mode; Angular standalone and zoneless; HTML and SCSS;
+Node.js per the repository tooling configuration
 
-**Primary Dependencies**: Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core@0.1.4` leaf exports, feature 001 atomic active-build/revision and
+**Primary Dependencies**: Angular signals, RxJS,
+`@elite-dangerous-almanac/core` leaf exports, feature 001 atomic active-build/revision and
 local-record contracts, feature 002 committed-edit revision advancement and exact-slot editing,
 feature 005–009 status-provider implementations, and feature 011 UI/localization/accessibility
 infrastructure

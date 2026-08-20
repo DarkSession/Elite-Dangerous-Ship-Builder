@@ -83,7 +83,7 @@ unavailable and semantic infinity states go to state components instead of numer
 
 ## Almanac names and diagnostics
 
-Use stable package identity and the matching 0.1.4 leaf export:
+Use stable package identity and the matching installed-package leaf export:
 
 - `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`;
 - `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`;

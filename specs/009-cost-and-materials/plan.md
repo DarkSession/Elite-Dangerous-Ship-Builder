@@ -22,12 +22,11 @@ cross-origin icons and inaccessible interaction patterns.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0; Angular HTML and SCSS; Node.js 24 tooling. Full TypeScript and
-template strictness is a constitutional/feature-011 target and is not yet enabled in the current
-shell repository
+**Language/Version**: TypeScript; Angular HTML and SCSS; Node.js per the repository tooling
+configuration. Full TypeScript and template strictness is a constitutional/feature-011 prerequisite
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless target APIs; Angular signals; RxJS
-7.8; pinned `@elite-dangerous-almanac/core` 0.1.4 leaf exports; planned feature 001 active-build
+**Primary Dependencies**: Angular standalone and zoneless target APIs; Angular signals; RxJS;
+`@elite-dangerous-almanac/core` leaf exports; feature 001 active-build
 revision boundary, feature 002 shared engineering-cost classifier and exact-slot actions, feature
 003 `AssemblyRequirementsPort`, and feature 011 localization/UI/accessibility contracts
 
@@ -54,9 +53,9 @@ remain distinct; exact game slot/symbol/fdname identities; leaf imports only; no
 requests; no document horizontal scrolling; token-only dark design system; all owned text and
 figures localized; WCAG 2.2 AA except the constitution's named keyboard criteria
 
-**Scale/Scope**: One active build. Pinned-package regression scope is 107 blueprint mechanics
-records/106 cost records, 86 effect/cost records, 146 material records, and 22 currently priced
-Mercenary variants; those counts are tests, never application behavior
+**Scale/Scope**: One active build and every blueprint, effect, material and priced pre-engineered
+variant supplied by the installed package. Catalogue counts are discovered by contract tests, never
+application behavior
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d; adoption and departures are
 recorded in [design/reference-review.md](./design/reference-review.md)
@@ -88,7 +87,7 @@ buildRevision }` read boundary.
    `AssemblyRequirementsPort` without recomputing or reclassifying it.
 4. Feature 011 must implement the shared UI, localization/formatting, announcements, Firefox,
    landscape and automated accessibility infrastructure currently absent from the repository.
-5. Almanac 0.1.4 already supplies feature 009's required data APIs and the Expanded Cargo Rack
+5. The installed Almanac package supplies feature 009's required data APIs and the Expanded Cargo Rack
    regression fix; no direct Almanac blocker remains.
 
 ## Project Structure
@@ -156,7 +155,7 @@ quantities. No route, serializer, storage adapter, private catalogue or second `
 
 [research.md](./research.md) records the decisions and rejected alternatives. In summary:
 
-- `RetailCredits` is fully numeric in 0.1.4. Hull is exact; modules and rebuy become lower bounds
+- `RetailCredits` is fully numeric in the installed package. Hull is exact; modules and rebuy become lower bounds
   only when the returned ordered `unpriced` list is non-empty. No combined credit total is created.
 - Merc Coin is absent when no fitted variant is package-recognized. Otherwise per-slot optional
   prices and the literal `mercCoinCost()` result are shown; missing prices qualify that result as a

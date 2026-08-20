@@ -27,11 +27,10 @@ normalized capacitor bars are rejected.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 6.0.3, Angular HTML and SCSS; Angular 22.1 standalone and zoneless;
-Node.js 24 for tooling. Full TypeScript and Angular-template strictness is required but is not enabled
-in the current root configuration
+**Language/Version**: TypeScript, Angular HTML and SCSS; Angular standalone and zoneless; Node.js per
+the repository tooling configuration. Full TypeScript and Angular-template strictness is required
 
-**Primary Dependencies**: Angular signals; RxJS 7.8; `@elite-dangerous-almanac/core@0.1.4` leaf
+**Primary Dependencies**: Angular signals; RxJS; `@elite-dangerous-almanac/core` leaf
 exports for loadout weapon results, weapon types, capacitor results, ammunition, projectile metadata
 and game-text localization; feature 001 active-build revisions; feature 002 same-revision hardpoint
 coverage and exact-slot reveal; feature 003 viewing conditions, Status-provider envelope and
@@ -65,7 +64,7 @@ states retain package meaning; all owned text and figures localized; one tokeniz
 document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11
 
-**Scale/Scope**: The pinned package contains 48 hulls and 159 hardpoint catalogue records; normal
+**Scale/Scope**: The complete installed hull and hardpoint catalogues; normal
 hull layouts contain at most 10 known hardpoint slots. The returned collection has no application cap
 because package-valid weapons in unknown/unmapped source slots are appended. One active build presents
 one package total, every returned weapon entry, one capacitor result and one compact Status
@@ -107,13 +106,10 @@ strictness and prerequisite contracts listed below._
 6. Implement feature 011's tokens/components, game-text presenter, localization/formatters,
    component previews, ten-project Chromium/Firefox matrix and axe harness.
 
-The current source contains only the shell and build-link codec. The current Playwright configuration
-has three Chromium-only projects and no axe integration. Missing prerequisites block implementation;
-they do not authorize feature-local substitutes.
+Missing prerequisites block implementation; they do not authorize feature-local substitutes.
 
-The pinned Almanac 0.1.4 already exposes fitted maximum/falloff range, projectile boundaries,
-armour piercing and documented weapon ordering. The installed behavior satisfies the work tracked by
-Almanac issues #300 and #301; feature 007 has no remaining package blocker.
+The installed Almanac package exposes fitted maximum/falloff range, projectile boundaries,
+armour piercing and documented weapon ordering; feature 007 has no remaining package blocker.
 
 ## Project Structure
 
