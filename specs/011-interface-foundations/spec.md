@@ -105,8 +105,8 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ### Verification
 
-- **FR-021**: Every primary journey MUST run at desktop, tablet and mobile viewports in Chromium and
-  Firefox.
+- **FR-021**: Every primary journey MUST run across the five layout profiles — desktop, tablet
+  portrait, tablet landscape, mobile portrait and mobile landscape — in both Chromium and Firefox.
 - **FR-022**: Automated accessibility checks MUST cover every capability and relevant state and MUST
   fail the build on an in-scope violation.
 - **FR-023**: Screen-reader journeys MUST supplement automation for every primary capability.
@@ -119,7 +119,7 @@ The package supplies game names for supported locales and an explicit missing-tr
 It does not own application messages, locale selection, formatting, accessibility or the design
 system.
 
-## Current Almanac Boundary
+## Current Almanac Limit
 
 Package localisation covers modules, blueprints, experimental effects, materials, hull/manufacturer,
 slot/restriction, pre-engineered variant, engineering-group, effect-description and structured
@@ -134,7 +134,8 @@ translations.
 - **SC-002**: Automated scans report no in-scope WCAG violations.
 - **SC-003**: Every capability remains complete at all supported sizes without horizontal page scroll.
 - **SC-004**: No visual literal or application-owned display string bypasses its shared system.
-- **SC-005**: The full journey suite passes in Chromium and Firefox at all three viewport classes.
+- **SC-005**: The full journey suite passes in Chromium and Firefox across all five layout profiles,
+  covering the three viewport classes in both orientations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
   the corresponding shipped language, an unsupported browser language selects English, and a saved

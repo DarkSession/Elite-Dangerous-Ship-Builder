@@ -90,4 +90,5 @@ application performs no format or game calculation.
 - **SC-003**: Every rejected input leaves current work unchanged and exposes a structured location
   and reason.
 - **SC-004**: The package hull with the most slots, with every slot fitted and every supported modelled
-  field populated, imports and exports within 500 ms without a network request.
+  field populated, imports and exports within 500 ms each without a network request, measured as a
+  domain operation in the `.devcontainer/` reference environment.
