@@ -15,7 +15,7 @@ implementation code or replace [contracts/](./contracts/) and later `tasks.md`.
 2. Confirm features 001, 002, 003 and 011 are implemented against their accepted contracts:
    active-build revision capture, shared engineering-cost classification/exact-slot actions,
    `AssemblyRequirementsPort`, and shared localization/UI/dual-engine accessibility infrastructure.
-3. Confirm the package remains pinned to Almanac 0.1.3 or deliberately re-run every package
+3. Confirm the package remains pinned to Almanac 0.1.4 or deliberately re-run every package
    regression before accepting a later release.
 4. Confirm `pnpm exec playwright test --list` contains Chromium and Firefox projects for desktop,
    tablet portrait/landscape and mobile portrait/landscape, and the shared axe helper is active.

@@ -40,7 +40,7 @@ The package owns casing, omissions and derived export values. The application do
 capture-only `timestamp`, `ShipID`, per-module `Health`, `Hot`, ammunition, `Engineer`, `EngineerID`
 or `BlueprintID`. Their presence or omission in package serialization does not affect application
 acceptance or round-trip equality. Local record/name/note/revision, report, diagnostics,
-normalization provenance and substitute values are forbidden. Fixed fill exports only the resulting
+application normalization metadata and substitute values are forbidden. A package-defaulted fixed mount exports only the resulting
 package module.
 
 Module integrity is not a condition snapshot. It remains package-derived from the fitted and
@@ -56,7 +56,8 @@ Default package credit export is mandatory:
 
 - hull and fitted-module credits use current package catalogue list prices;
 - rebuy and totals follow the package's retail calculation;
-- engineering, symbol replacement/removal and fixed repair use the current resulting build;
+- engineering, symbol replacement/removal and package-defaulted fixed construction use the current
+  resulting build;
 - unpriced package entries remain absent/lower-bound exactly as the package reports;
 - captured or historical purchase figures are never requested or retained.
 

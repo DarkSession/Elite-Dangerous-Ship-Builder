@@ -1,6 +1,6 @@
 # Research: Mobility, Mass and Jump
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.3` declaration/runtime contracts,
+Research used the installed `@elite-dangerous-almanac/core@0.1.4` declaration/runtime contracts,
 the accepted feature 001/002/003/011 plans, and the wide/narrow Drives & Mass regions in
 `.design/Ship Builder.dc.html`. No game value was independently calculated.
 
@@ -39,7 +39,7 @@ Issue order and the non-empty incomplete tuple are unchanged. Application presen
 fallback disclosure when that helper returns `null`; it never parses `message`.
 
 Here `unresolved` is an exact package calculation-issue reason for a package-resolved build input; it
-does not authorize retaining an unknown module identity. Ingress normalizes those identities first.
+does not authorize unsupported module identities. Ingress supplies only package-resolved identities.
 
 **Rationale**: The old 008 artifacts incorrectly listed `hullMass` and `reserveFuelCapacity` and
 omitted `reason`. Preserving the package type eliminates that drift and keeps all unavailable-state
@@ -149,7 +149,7 @@ package answer for speed, rotation, curve and power readiness.
 Do not pre-gate the call with a power budget or reinterpret these issues. A complete all-zero
 `MobilityMetrics` above maximum supported thruster mass remains ready zero.
 
-**Rationale**: Almanac 0.1.3 directly returns every distinction required by the spec. Feature 005's
+**Rationale**: Almanac 0.1.4 directly returns every distinction required by the spec. Feature 005's
 accepted observation contract is hardpoint-specific and is not a core-thruster API. Removing the old
 feature 005 dependency avoids duplicate power classification and an integration cycle.
 
@@ -170,8 +170,8 @@ Module and slot display text is resolved in the presenter with Almanac locale he
 snapshot does not store `effectiveStats.name` as localized text.
 
 **Rationale**: `BuildSlot.core` is the package identity for a core function while `BuildSlot.key` is
-the exact journal-compatible target. This remains correct for empty or package-incomplete required
-mounts; unknown identities were normalized before projection.
+the exact journal-compatible target. Package construction populates every required mount, and this
+projection receives only package-resolved identities from supported ingress.
 
 **Alternatives considered**:
 
@@ -276,7 +276,7 @@ complete responsive/accessibility matrix is a constitutional release gate.
 ## Resolved questions and delivery blockers
 
 All planning questions are resolved and no missing Almanac API or defect blocks this feature.
-Almanac 0.1.3 supplies all required standard-load, jump, mobility, aggregate, fitted-slot and
+Almanac 0.1.4 supplies all required standard-load, jump, mobility, aggregate, fitted-slot and
 effective-stat contracts.
 
 Repository delivery still requires the shared TypeScript strict-mode migration and feature 011's

@@ -64,7 +64,7 @@ The owner accepts exact hardpoint and utility keys, derives state from one
 Feature 010 requires exact revision equality and copies the observation unchanged. It does not
 inspect raw fitted `on`/`priority`, consumers, bands, modifiers or module families.
 
-This generalization is a blocking feature 005 contract update. Almanac 0.1.3 already supplies
+This generalization is a blocking feature 005 contract update. Almanac 0.1.4 already supplies
 utility consumers; no local fallback or upstream fix is required.
 
 ## Complete-ledger fallback

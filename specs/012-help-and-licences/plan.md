@@ -27,7 +27,7 @@ or linked as additional legal documents in the modal.
 for artifact generation and verification
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular signals,
-`@elite-dangerous-almanac/core` 0.1.3 installed artifacts, Node standard library (`fs`, `crypto`,
+`@elite-dangerous-almanac/core` 0.1.4 installed artifacts, Node standard library (`fs`, `crypto`,
 `child_process`, `url`) for build-time generation, feature 001's application frame and offline app
 shell, and feature 011's dialog, localisation, token and accessibility infrastructure
 
@@ -95,7 +95,7 @@ requested._
    fallback, component previews, Firefox/landscape projects and the automated accessibility harness.
 3. Release automation supplies explicit version-matched release evidence. Every other build is
    classified as non-release and must have a safe immutable build identifier.
-4. No Almanac defect blocks this feature. The installed 0.1.3 manifest and legal artifacts are
+4. No Almanac defect blocks this feature. The installed 0.1.4 manifest and legal artifacts are
    sufficient inputs and are consumed without local correction.
 
 ## Project Structure

@@ -36,8 +36,8 @@ attack, damage percentage or combined defence score is calculated.
   package calculation behavior does not create a fitted source.
 - The actual armour slot is shown only when its `LoadoutSlot.module` exists.
 - Other fitted-role records use a package-resolved `engineeringGroup` classification. A module with
-  unavailable role/stat data yields no guessed record; unknown module identities never reach this
-  boundary because ingress normalized them first.
+  unavailable role/stat data yields no guessed record; unsupported module identities are outside this
+  boundary because ingress accepts only package-resolved identities.
 - A role record states what is fitted and where, not whether or how much the facade counted.
 - Direct `FittedModule.on` may be shown as enabled, disabled or unspecified; no local shedding verdict
   is attached.

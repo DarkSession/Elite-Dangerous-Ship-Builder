@@ -30,10 +30,10 @@ atomically installs it only on success. Components cannot call the Almanac or re
 | Priority                             | `setModulePriority(slotKey, priority0to4)`                     | UI presents localized `1..5`                                                                 |
 | Name/ident                           | Snapshot update and package reconstruction through feature 001 | All other modelled state exact; package results recomputed                                   |
 
-Every successful changed command produces one active revision and one history decision. It also
-clears any feature 001 `fixedMountNormalisation` entry for the exact edited slot before autosave;
-fit/replace/remove, engineering, enabled-state and priority changes all count. Failed, canceled,
-stale-draft and no-op commands produce no revision/history and clear no provenance.
+Every successful changed command produces one active revision and one history decision.
+Fit/replace/remove, engineering, enabled-state and priority changes all count. Failed, canceled,
+stale-draft and no-op commands produce no revision or history change. Package-defaulted fixed state
+has no auxiliary metadata lifecycle.
 
 ## Refusals
 
@@ -76,23 +76,19 @@ Merc Coin is presented separately.
 
 Before any active-build replacement is presented or any calculation is read:
 
-1. decode without changing the active build and retain only the transient source evidence needed to
-   present package normalization/refusal outcomes;
+1. decode without changing the active build and retain only evidence needed for supported
+   normalization/refusal outcomes;
 2. pass the complete candidate through the released Almanac ingress boundary. An unknown hull
-   refuses; an unknown removable module becomes empty; an unknown fixed module and an empty fixed
-   mount receive the hull's package default. Accept only the package's structured outcomes and do not
-   classify a slot or choose a replacement locally;
-3. discard each normalized unknown module's engineering with that source module. Capture finite
-   source quality in `[0,1)` only for modules the normalized candidate still resolves;
+   refuses and every fixed mount returns populated with the hull default. Do not classify a slot,
+   choose a replacement locally or run a second repair pass;
+3. capture finite source quality in `[0,1)` only for supported modules the candidate resolves;
 4. correlate those remaining partials by exact package slot/module identity and call
    `completeEngineeringGrade(slotKey)`. Accept `normalized`, atomically refuse `unsupported`, and
    treat unexpected missing/mismatched/`unchanged` results as package-contract failures;
-5. retain transient unknown-module emptied/defaulted and quality-completed notices. Persist fixed
-   provenance only when the source fixed mount was empty; no unknown source identity persists;
+5. retain transient quality-completed notices only; persist no fixed-default history metadata;
 6. commit once before history starts or resets, then allow validation/calculation reads.
 
-Never call `completeEngineeringGrade()` for absent quality or quality `1`. No package default means
-no substitute; retain package incompleteness. Refusal leaves the current build, revision, dirty
+Never call `completeEngineeringGrade()` for absent quality or quality `1`. Refusal leaves the current build, revision, dirty
 state, autosave, fragment, notices and history untouched.
 
 ## Power and recalculation
@@ -109,14 +105,14 @@ Cross-package tests must prove that the pinned Almanac version:
    ship name/ident, engineering and identified variants, while recomputing retail cost;
 2. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
    fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
-3. refuses unknown hulls, returns structured empty/default outcomes for unknown modules, and
-   normalizes supported imported partial-quality states losslessly with a stable unsupported result.
+3. refuses unknown hulls, always populates fixed mounts, and normalizes supported imported
+   partial-quality states losslessly with a stable unsupported result.
 
 Historical purchase values are not acceptance inputs and are never restored.
 
 ## Persistence and publication
 
 After any normal edit, undo or redo, feature 001 observes the newly committed active snapshot and
-performs autosave/fragment synchronization. Fixed-mount provenance is record metadata, not a history
-frame: undoing the model edit does not recreate a cleared entry. This contract adds no storage keys or
-URL fields. Editor draft, selected slot, search, refusal and history state are excluded.
+performs autosave/fragment synchronization. Package-defaulted fixed state is ordinary build data, not
+a history frame of its own. This contract adds no storage keys or URL fields. Editor draft, selected
+slot, search, refusal and history state are excluded.

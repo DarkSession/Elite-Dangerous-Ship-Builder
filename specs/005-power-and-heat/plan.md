@@ -30,7 +30,7 @@ enabled in the current repository configuration; that repository gap must close
 before implementation
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular
-signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.3` leaf exports, feature
+signals, RxJS 7.8, `@elite-dangerous-almanac/core@0.1.4` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
 feature 003's viewing-condition and status-provider contracts, feature 010's
 hardpoint observation port, and feature 011's design/localization/accessibility

@@ -49,7 +49,7 @@ slot targets to feature 002. Feature 003 also consumes feature 007's compact Sta
 - current revision pending and stale-result refusal;
 - missing integration port and unexpected projection failure;
 - confirmed no fitted hardpoints;
-- unavailable hardpoint coverage and package-normalized unknown-module ingress;
+- unavailable hardpoint coverage and package-resolved module ingress;
 - positive output, genuine-zero weapon, some disabled and all disabled;
 - every damage type, unclassified present and absent-means-zero, positive anti-xeno overlay;
 - no ammunition, finite ammunition, zero reserve and unlimited ammunition;

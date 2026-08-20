@@ -74,19 +74,19 @@ replacement coordinator and the shared dialog primitives that all three stories 
 - [ ] T016 [P] Implement the base-href-safe hull artwork path builder producing `assets/ships/<exact package symbol>/illustration.svg` in `src/app/platform/assets/hull-artwork-path.ts` with unit tests covering deployment sub-paths and exact symbol casing
 - [ ] T017 [P] Implement the crypto-backed UUID factory port used for record, revision and page-nonce identities in `src/app/platform/browser/uuid.port.ts` and `src/app/platform/browser/uuid.adapter.ts` with unit tests
 
-### Lossless snapshot and normalization domain
+### Lossless snapshot and reconstruction domain
 
 - [ ] T018 [P] Define the `BuildSnapshotV1`, `SnapshotModuleV1`, `PreEngineeredIdentityV1` and `EngineeringSnapshotV1` types with their literal discriminators in `src/app/domain/build/build-snapshot.ts`
 - [ ] T019 Implement `toBuildSnapshotV1(loadout)` reading hull symbol, nullable ship name/ident and per-slot module symbol, absent-vs-false `enabled`, nullable zero-based `priority`, `FittedModule.preEngineeredVariant` identity tuple and ordinary engineering from `ShipLoadout` getters in `src/app/domain/build/build-snapshot.serializer.ts` with unit tests asserting no derived, calculated or lowercased field is emitted (depends on T018)
 - [ ] T020 Implement `parseBuildSnapshotV1(value: unknown)` validating every discriminant, scalar, bound and case-insensitive slot uniqueness as untrusted input in `src/app/domain/build/build-snapshot.parser.ts` with unit tests for malformed, duplicate-slot and out-of-range fixtures (depends on T018)
-- [ ] T021 Implement `reconstructFromSnapshot(snapshot)` calling `ShipLoadout.fromLoadout()` and the package pre-engineered helpers, refusing an unknown hull, reading `ShipLoadout.importOutcomes` for the package unknown-module empty/default results, then calling `repairFixedMount(slotKey)` for every armour, core-internal and cargo-hatch mount the snapshot left empty and retaining a `defaultUnavailable` result as an incomplete build, in `src/app/domain/build/build-snapshot.reconstructor.ts` with unit tests covering `emptied`, `defaulted`, source-empty `repaired`, `defaultUnavailable` and `refused` outcomes (depends on T020)
-- [ ] T022 [P] Define `IngressIdentityNormalisationOutcome` and the mapper from the package `LoadoutImportOutcome` entries and `FixedMountRepairResult` values to `{ slotKey, sourceIdentity, action, replacementIdentity }`, where `action` covers `emptied`, `defaulted`, `repaired` and `defaultUnavailable`, in `src/app/domain/build/ingress-normalisation.ts` with unit tests asserting the collection is never attached to a snapshot
+- [ ] T021 Implement `reconstructFromSnapshot(snapshot)` by calling `ShipLoadout.fromLoadout()` and the package pre-engineered helpers, refusing an unknown hull and accepting the package-returned fixed defaults without a repair pass or provenance model, in `src/app/domain/build/build-snapshot.reconstructor.ts` with unit tests covering omitted and unusable fixed entries plus unknown-hull refusal (depends on T020)
+- [ ] T022 [P] Add reconstruction contract tests proving every accepted snapshot has package-populated armour, core internals and cargo hatch before activation and that this package defaulting is never attached to the snapshot or edit history
 - [ ] T023 [P] Implement the modelled-state `baselineFingerprint` derived only from a serialized snapshot, plus the `dirty` predicate, in `src/app/domain/build/replacement-policy.ts` with unit tests covering new-unnamed, equal-to-baseline and diverged states
 
 ### Active build and replacement coordination
 
 - [ ] T024 [P] Define `ActiveBuildState`, `BuildProvenance`, `PersistenceStatus` and `LinkPublicationState` as application models in `src/app/application/active-build/active-build.models.ts`
-- [ ] T025 Implement the signal `ActiveBuildStore` owning the single live `ShipLoadout`, provenance, working record id, named source baseline, dirty state, persistence status, link state and transient normalisation notices in `src/app/application/active-build/active-build.store.ts` with unit tests (depends on T023, T024)
+- [ ] T025 Implement the signal `ActiveBuildStore` owning the single live `ShipLoadout`, provenance, working record id, named source baseline, dirty state, persistence status, link state and transient quality-completion notices in `src/app/application/active-build/active-build.store.ts` with unit tests (depends on T023, T024)
 - [ ] T026 Implement the shared `ReplacementCoordinator` executing construct-candidate → validate → confirm-if-dirty → commit-once, with an async request token that discards a late candidate, in `src/app/application/active-build/replacement-coordinator.ts` with unit tests proving failure and cancel never mutate active state (depends on T025)
 - [ ] T027 Define the persistence sink and SLEF-fallback seam interfaces the coordinator publishes to, so stock creation, record open and link load share one commit path, in `src/app/application/active-build/commit-sinks.port.ts` (depends on T026)
 
@@ -126,8 +126,8 @@ of unsaved work requires confirmation.
 - [ ] T037 [US1] Implement the signal `CatalogueSessionStore` holding query, facets, sort and `resultAnchor` with a versioned `sessionStorage` cache, and no build, record, query-parameter or fragment write, in `src/app/application/catalogue/catalogue-session.store.ts` with unit tests (depends on T009, T036)
 - [ ] T038 [P] [US1] Implement the artwork coordinator exposing loading/available/temporarily-unavailable state and retrying a failed uncached request on the connectivity port's `online` transition without a reload in `src/app/application/catalogue/artwork.coordinator.ts` with unit tests (depends on T015, T016)
 - [ ] T039 [US1] Implement the catalogue page facade exposing immutable localized view models and the change-search/facet/sort and open-hull intents in `src/app/application/catalogue/catalogue.facade.ts` with unit tests (depends on T037)
-- [ ] T040 [US1] Implement the hull detail facade resolving the route symbol through `getShipBySymbol`, exposing populated/unknown-symbol/default-unavailable states and the back-to-catalogue intent in `src/app/application/catalogue/hull-detail.facade.ts` with unit tests (depends on T032, T033)
-- [ ] T041 [US1] Implement the stock creation transaction — resolve symbol, confirm `getDefaultLoadout(symbol)`, construct `ShipLoadout.default(symbol)` as a detached candidate, read package validation and normalization disclosure, then hand the candidate to `ReplacementCoordinator` — in `src/app/application/active-build/stock-build.creator.ts` with unit tests proving no image state participates and a package factory failure leaves route and build unchanged (depends on T026, T040)
+- [ ] T040 [US1] Implement the hull detail facade resolving the route symbol through `getShipBySymbol`, exposing populated/unknown-symbol states and the back-to-catalogue intent in `src/app/application/catalogue/hull-detail.facade.ts` with unit tests (depends on T032, T033)
+- [ ] T041 [US1] Implement the stock creation transaction — resolve symbol, confirm `getDefaultLoadout(symbol)`, construct `ShipLoadout.default(symbol)` as a detached candidate, confirm every fixed mount is populated, read package validation, then hand the candidate to `ReplacementCoordinator` — in `src/app/application/active-build/stock-build.creator.ts` with unit tests proving no image state participates and a package factory failure leaves route and build unchanged (depends on T026, T040)
 
 ### Shared components
 
@@ -149,7 +149,7 @@ of unsaved work requires confirmation.
 ### Verification
 
 - [ ] T053 [US1] Add the catalogue journey suite covering search, every facet, both directions of every sort field, stable ties, missing-versus-zero, no-match, session restoration and the absence of catalogue state from route query, fragment and storage in `e2e/ship-catalogue.spec.ts`
-- [ ] T054 [US1] Add the hull-detail and creation journey suite covering every FR-004 fact with units, aborted artwork, unknown symbol, default-unavailable, cancel-then-confirm replacement and the resulting exact `ShipLoadout.default(symbol)` state, with axe scans of each state across all ten projects, in `e2e/hull-detail.spec.ts`
+- [ ] T054 [US1] Add the hull-detail and creation journey suite covering every FR-004 fact with units, aborted artwork, unknown symbol, cancel-then-confirm replacement and the resulting exact `ShipLoadout.default(symbol)` state with every fixed mount populated, with axe scans of each state across all ten projects, in `e2e/hull-detail.spec.ts`
 
 **Checkpoint**: A Commander can find, inspect and create any package hull build. User Story 1 is
 independently demonstrable.
@@ -169,7 +169,7 @@ continues.
 
 ### Record domain
 
-- [ ] T055 [P] [US2] Define `LocalRecordV1`, `FixedMountNormalisationProvenance` and the `working`/`named` kinds with their literal `format`/`version` discriminators in `src/app/domain/build/stored-build.ts`
+- [ ] T055 [P] [US2] Define `LocalRecordV1` and the `working`/`named` kinds with their literal `format`/`version` discriminators in `src/app/domain/build/stored-build.ts`
 - [ ] T056 [US2] Implement the strict `LocalRecordV1` decoder validating format, version, `id`-equals-key-suffix, kind, revision, instants, nullable name/note, `hullSymbol`-equals-`build.shipSymbol` and the exact package validation booleans in `src/app/domain/build/stored-build.parser.ts` with unit tests for malformed, mismatched-id and foreign-value fixtures (depends on T020, T055)
 - [ ] T057 [US2] Implement the frozen decoder and sequential-migration registry producing a canonical intermediate model, with version 1 as the first published version and no fictional version 0, in `src/app/domain/build/record-migrations.ts` with unit tests (depends on T056)
 - [ ] T058 [P] [US2] Add frozen immutable round-trip fixtures for every published record version under `src/app/domain/build/fixtures/` including unsupported-newer, malformed and unknown-identity cases
@@ -178,7 +178,7 @@ continues.
 ### Storage repositories
 
 - [ ] T060 [US2] Implement the `LocalRecordRepository` performing serialize-then-single-`setItem` atomic writes, owned-key enumeration with independent per-record validation, no global index, and delete via one `removeItem`, in `src/app/platform/storage/local-record.repository.ts` with unit tests covering failed writes retaining prior bytes (depends on T010, T056, T059)
-- [ ] T061 [US2] Implement migration-on-open that replaces a record's own key only after decode, migration, package reconstruction, normalization and latest-version serialization all succeed, leaving original bytes authoritative on persistence failure, in `src/app/platform/storage/record-migration.service.ts` with unit tests (depends on T057, T060)
+- [ ] T061 [US2] Implement migration-on-open that replaces a record's own key only after decode, migration, package reconstruction and latest-version serialization all succeed, leaving original bytes authoritative on reconstruction or persistence failure, in `src/app/platform/storage/record-migration.service.ts` with unit tests (depends on T057, T060)
 - [ ] T062 [P] [US2] Implement the versioned `TabDescriptorV1` repository over `edsb:tab` in `src/app/platform/storage/tab-descriptor.repository.ts` with unit tests for absent, malformed and unsupported-version descriptors (depends on T010)
 
 ### Working ownership, autosave and retention
@@ -186,7 +186,7 @@ continues.
 - [ ] T063 [US2] Implement the tab ownership coordinator broadcasting a `{ workingRecordId, pageNonce }` claim and forking a collided live id into a new record before either page next autosaves in `src/app/application/build-library/tab-ownership.coordinator.ts` with unit tests (depends on T012, T017, T062)
 - [ ] T064 [US2] Implement coalesced autosave to the tab working key with best-effort `pagehide`/visibility-hidden flush and a `record-deleted-externally` pause requiring explicit resume in `src/app/application/build-library/autosave.service.ts` with unit tests (depends on T014, T060, T063)
 - [ ] T065 [US2] Implement the 20-record working retention rule where existing records always update, record 21 performs no write and no deletion, and named records are excluded from the count, in `src/app/application/build-library/retention.service.ts` with unit tests asserting no age, count, LRU or tab-closure eviction path exists (depends on T060)
-- [ ] T066 [US2] Implement fixed-mount normalisation provenance carry-through — autosave and named copy retain entries, a successful Commander edit to the exact slot clears one before the next write, and undo does not recreate it — in `src/app/application/build-library/fixed-mount-provenance.service.ts` with unit tests (depends on T055, T064)
+- [ ] T066 [US2] Add persistence tests proving package-defaulted fixed modules are stored as ordinary build state with no source-empty, repair or defaulting provenance (depends on T055, T064)
 
 ### Named operations and conflicts
 
@@ -235,7 +235,7 @@ dirty build is active.
 
 - [ ] T085 [US3] Implement the fragment recognizer that accepts only a `b.` value, leaves unrelated fragments uninterpreted and rejects a value longer than 500 characters before any decoding in `src/app/application/build-link/fragment-recognizer.ts` with unit tests (depends on T011)
 - [ ] T086 [US3] Implement the single ingress coordinator invoked identically by initial app start, address-bar paste, browser navigation and in-app `hashchange`, decoding to a detached candidate through `decodeBuildLinkFragment` behind an async request token so a late decode cannot replace a newer navigation, in `src/app/application/build-link/build-link.coordinator.ts` with unit tests (depends on T026, T085)
-- [ ] T087 [US3] Route the decoded candidate through the released package normalization boundary — refusing an unknown hull, emptying an unknown removable module, defaulting an unknown fixed module, repairing a fixed mount the payload left empty through `repairFixedMount(slotKey)` and retaining only transient `IngressIdentityNormalisationOutcome` feedback — in `src/app/application/build-link/build-link.coordinator.ts` with unit tests asserting no unknown identity survives into the accepted build (depends on T022, T086)
+- [ ] T087 [US3] Route the decoded candidate through the released package construction boundary — refusing an unknown hull and accepting its package-populated fixed modules without a second repair pass or provenance feedback — in `src/app/application/build-link/build-link.coordinator.ts` with unit tests asserting fixed mounts are populated before acceptance (depends on T022, T086)
 - [ ] T088 [US3] Implement fragment publication encoding the latest active build after each modelled edit and replacing only the fragment with `history.replaceState`, preserving origin, base path and query and adding no history entry per edit, in `src/app/application/build-link/fragment-publisher.ts` with unit tests (depends on T011, T025)
 - [ ] T089 [US3] Implement encode refusal that clears a stale `b.` fragment with `replaceState`, retains the active build, and exposes the structured code with the affected slot and reason in `src/app/application/build-link/fragment-publisher.ts` with unit tests (depends on T088)
 - [ ] T090 [US3] Ensure note, name, record and tab metadata edits neither enter nor perturb the payload by routing publication solely through the modelled snapshot allowlist in `src/app/application/build-link/link-payload.allowlist.ts` with unit tests naming every forbidden field (depends on T088)
@@ -253,7 +253,7 @@ dirty build is active.
 
 - [ ] T097 [US3] Add the link suite covering publication shape, the 500-character bound including `b.`, no build data in path or query, no history growth per edit, cross-tab restoration as working/link provenance without a named save, and malformed, truncated, over-limit and unsupported-version fragments arriving while a dirty build is active in `e2e/build-link.spec.ts`
 - [ ] T098 [US3] Assert in the link suite that no request URL contains `b.` build data and no automatic cross-origin request occurs during catalogue, detail, storage and share flows in `e2e/build-link.spec.ts` (depends on T097)
-- [ ] T099 [US3] Add unknown-hull, unknown-removable-module, unknown-fixed-module and source-empty-fixed-mount link fixtures asserting refusal, emptying, defaulting and repair with transient slot/source feedback and a normalized link containing neither unknown identity in `e2e/build-link.spec.ts` (depends on T087, T097)
+- [ ] T099 [US3] Add unknown-hull and omitted-fixed-mount link fixtures asserting hull refusal, package defaulting before activation and canonical re-encoding with no application repair feedback in `e2e/build-link.spec.ts` (depends on T087, T097)
 
 **Checkpoint**: All three user stories are independently functional.
 
@@ -267,7 +267,7 @@ integration closure and the documented validation run.
 - [ ] T100 [P] Add the offline and privacy suite covering shell and bundled-English readability offline, a previously opened illustration remaining available, an uncached illustration not blocking capability, and recovery on reconnection without a reload in `e2e/offline-privacy.spec.ts`
 - [ ] T101 [P] Add the cross-route accessibility suite asserting one `main`, one visible `h1`, consistent heading nesting, matching visible and accessible names, selected/expanded/invalid relationships, one polite live region for match count, one prompt alert per new blocking condition, 44 CSS px targets and no document horizontal overflow across all ten projects in `e2e/interface-conformance.spec.ts`
 - [ ] T102 [P] Add 200% text, 400% zoom, reduced-motion, expanded-message and RTL fixture assertions for all four screens in `e2e/interface-conformance.spec.ts`
-- [ ] T103 [P] Assert package hull, manufacturer and diagnostic text resolves through the 0.1.3 i18n leaves and renders canonical text with the untranslated disclosure on `null`, with no private game-text translation added, in `src/app/i18n/package-text.spec.ts`
+- [ ] T103 [P] Assert package hull, manufacturer and diagnostic text resolves through the 0.1.4 i18n leaves and renders canonical text with the untranslated disclosure on `null`, with no private game-text translation added, in `src/app/i18n/package-text.spec.ts`
 - [ ] T104 Register the FR-001–FR-021 surfaces, journeys, axe flags and named assertions in the feature 011 coverage ledger in `e2e/coverage-ledger.ts`
 - [ ] T105 [P] Extend `scripts/build-link-codec-capacity.mjs` coverage to the pinned package hull with the most slots, every slot fitted and every supported modelled field populated, asserting the produced value stays within 500 characters including `b.`, in `scripts/build-link-codec-capacity.test.mjs`
 - [ ] T106 [P] Verify search, filter and sort over all 48 pinned hulls, working-build restoration before interactivity, autosave coalescing and sub-50 ms codec encode/decode against the plan's performance goals in `e2e/performance.spec.ts`
@@ -283,9 +283,8 @@ integration closure and the documented validation run.
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies beyond feature 011 having landed; can start immediately
-- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all three user stories. T021's package
-  fixed-mount repair step and T022's `IngressIdentityNormalisationOutcome` are contract-first for
-  feature 002 T009, which composes them rather than re-implementing the rule
+- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all three user stories. T021/T022 establish
+  and test package-populated fixed mounts for feature 002 T009 to consume without another repair
 - **User Story 1 (Phase 3)**: Depends on Foundational only
 - **User Story 2 (Phase 4)**: Depends on Foundational only; shares the workspace shell with US1 and US3 but adds no requirement to US1
 - **User Story 3 (Phase 5)**: Depends on Foundational only; T095 touches the same workspace startup file as T081, so sequence those two if US2 and US3 run concurrently

@@ -178,8 +178,9 @@ type FittedMountState =
     };
 ```
 
-`symbol` is the exact package-resolved fitted-module identity. Unknown module identities have already
-been package-normalized to empty/default before anatomy projection.
+`symbol` is the exact package-resolved fitted-module identity. `empty` applies only to a removable
+mount with no fitted module. Required mounts are already package-populated, and unsupported module
+identities are outside the anatomy projection contract.
 
 ### EngineeringState
 

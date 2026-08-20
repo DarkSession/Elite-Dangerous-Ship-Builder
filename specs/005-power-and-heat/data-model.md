@@ -4,7 +4,7 @@ Every game-bearing value is an immutable projection of one
 `@elite-dangerous-almanac/core` `ShipLoadout`. Feature 005 owns no build,
 viewing-condition persistence, game formula or catalogue fallback.
 
-The types below map the Almanac 0.1.3 result fields exactly. They do not add a local detector.
+The types below map the Almanac 0.1.4 result fields exactly. They do not add a local detector.
 
 ## PowerHeatProjectionState
 

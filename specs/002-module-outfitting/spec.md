@@ -7,12 +7,10 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 
 ## Clarifications
 
-### Session 2026-08-18
+### Session 2026-08-20
 
-- Q: What happens when an incoming build contains an unknown module, including one with engineering?
-  → A: Package normalization takes precedence over attached module fields: empty its removable slot
-  or install the hull default in its fixed slot, report the replacement, and retain none of the
-  unknown module or its engineering in active build state.
+- Q: Are unknown module identities supported? → A: No. They receive no application compatibility
+  behavior. The package always returns fixed mounts populated with their hull defaults.
 - Q: Must edits and history preserve what a Commander originally paid for the hull or modules? →
   A: No. Historical purchase values are not build state. Cost presentation always uses the current
   catalogue values supplied by the Almanac.
@@ -21,8 +19,8 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 
 ### Story 1 — Fit modules (P1)
 
-1. Every Almanac slot is shown by game slot key, including empty slots; unknown modules are
-   normalized before the workspace becomes active.
+1. Every Almanac slot is shown by game slot key, including empty removable slots; every fixed mount
+   is populated when the workspace becomes active.
 2. A slot offers exactly the modules the Almanac reports as fittable for the current build.
 3. Fitting, replacing or removing a module updates the build and all Almanac results.
 4. A non-removable slot shows the package reason and offers no removal action.
@@ -60,7 +58,7 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 - **FR-002**: Slots, module facts, post-engineering attributes, compatibility, removability and edit
   results MUST come from `ShipLoadout`. Slot identity MUST be the game slot key, never position.
 - **FR-003**: Missing facts for package-resolved modules MUST remain unavailable rather than becoming
-  zero or an estimate. Unknown module identities MUST NOT reach the active outfitting view.
+  zero or an estimate. Only package-resolved module identities are supported.
 - **FR-004**: Replacement choices MUST contain the stock form and each package pre-engineered
   variant of every currently fittable module, with no application-added candidates.
 - **FR-005**: Search and ordering MAY arrange package records but MUST NOT alter their values or admit
@@ -75,20 +73,18 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
   structured refusal results.
 - **FR-009**: The cargo hatch MUST expose its facts and editable power state but MUST offer no
   replacement, search, engineering or removal because the package offers none.
-- **FR-010**: On load, package normalization MUST empty every unknown removable module, replace every
-  unknown fixed module with that hull's package default, and fill an empty fixed mount with the same
-  default before any calculation. The Commander MUST be told each affected slot, source identity
-  when present, and outcome. If the package has no fixed default, the slot remains empty and the
-  build remains incomplete.
-- **FR-011**: Fixed-mount normalisation MUST change the build but MUST NOT enter edit history.
+- **FR-010**: On load, package construction MUST populate every absent or unusable fixed mount with
+  that hull's package default before any calculation. The returned fixed module is ordinary build
+  state; the application MUST NOT run a repair pass, retain source-empty provenance or model an
+  empty/default-unavailable outcome.
+- **FR-011**: Package-defaulted fixed mounts MUST NOT create an application edit-history entry.
 - **FR-012**: Blueprint and effect identities MUST use package `fdname` values. Each module MUST
   support applying and replacing a blueprint and grade, adding, replacing and removing only an
   experimental effect, and clearing all ordinary engineering exactly as the package permits.
   Removing only the effect MUST preserve the blueprint and grade. Availability, modified attributes
   and restrictions on further engineering MUST come from the package.
-- **FR-013**: Every selected ordinary grade MUST represent 100% quality. After unknown modules have
-  received the FR-010 package outcome, partial imported quality on each remaining resolved module
-  MUST be normalised to 100% through the package and reported. If the package cannot resolve the
+- **FR-013**: Every selected ordinary grade MUST represent 100% quality. Partial imported quality on
+  each supported resolved module MUST be normalised to 100% through the package and reported. If the package cannot resolve the
   engineering identity or otherwise cannot complete the grade losslessly, the entire incoming build
   MUST be refused before activation, the current build MUST remain unchanged, and the refusal MUST
   identify the affected slot and engineering identity. The application MUST NOT change only its
@@ -108,8 +104,7 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 ## Edge Cases
 
 - A build remains editable while invalid or incomplete.
-- Unknown module normalization is independent of attached quality, modifiers or other fields: the
-  whole source module is emptied/defaulted and none of those attached fields survive.
+- Unknown module identities are outside the supported import contract and have no compatibility UI.
 - Replacing a module does not inherit the previous module's engineering.
 - Loading, editing, undoing or redoing a build never restores a historical purchase price; current
   cost is recalculated from the Almanac catalogue.
@@ -119,11 +114,11 @@ and undo or redo build edits. Build creation belongs to [001](../001-ship-select
 
 ## Almanac Coverage
 
-The package supplies slots, fittability, module limits, removability, defaults, edit operations,
+The package supplies slots, fittability, module limits, removability, fixed defaults, edit operations,
 engineering choices and calculations, costs, variants, acquisition and entitlement data. Package
-identity ingress refuses unknown hulls and returns empty/default outcomes for unknown modules before
-construction. Package construction outcomes and the structured engineering-normalisation result then
-decide whether a remaining resolved partial grade is completed or the incoming candidate is refused.
+identity ingress refuses unknown hulls and construction returns every fixed mount populated. The
+structured engineering-normalisation result decides whether a resolved partial grade is completed or
+the incoming candidate is refused.
 No game rule, value or variant-recognition heuristic is application-owned.
 
 ## Success Criteria

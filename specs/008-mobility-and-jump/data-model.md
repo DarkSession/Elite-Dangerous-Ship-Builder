@@ -20,7 +20,7 @@ import type {
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 ```
 
-`CalculationIssue` is not narrowed or copied. In Almanac 0.1.3 it contains required `field`,
+`CalculationIssue` is not narrowed or copied. In Almanac 0.1.4 it contains required `field`,
 `reason` and `message`, optional `slot`, `symbol` and `params`, and package ordering. A complete
 `CalculationResult` may contain numeric zero; an incomplete result contains `value: null` and a
 non-empty issue tuple.
@@ -168,7 +168,8 @@ type CoreModuleSource<TFacts> =
     };
 ```
 
-Unknown identities never reach this projection; package ingress has already emptied/defaulted them.
+The projection receives only package-resolved identities from supported ingress. Required mounts are
+already populated with their package defaults.
 
 The source slot is found through `slots('core')` and `slot.core`, then retains the package's exact
 `slot.key`. `on === false` is explicitly switched off; `undefined` remains unspecified and is not

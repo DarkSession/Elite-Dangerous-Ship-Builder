@@ -69,19 +69,18 @@ browser and share builds by URL. SLEF import and export are specified in
   records to discard while the active in-memory build remains usable.
 - **FR-014**: Browser persistence MUST use a versioned format and migrate every supported older
   version without losing recognized modelled state. During reconstruction, an unknown hull MUST
-  leave the record stored but unopened; an unknown removable module MUST become an empty slot, an
-  unknown fixed module MUST become the hull's package default, and a fixed mount reconstructed
-  empty MUST receive that same package default, remaining empty with the build reported incomplete
-  when the package supplies none — all with transient feedback before the normalized build becomes
-  active. [002](../002-module-outfitting/spec.md) FR-010 states that normalisation rule
-  canonically; this requirement applies it to reconstruction from storage. Unsupported newer
-  versions MUST remain stored but unopened. Storage failure MUST disable only persistence.
+  leave the record stored but unopened. Package reconstruction MUST populate every fixed mount from
+  the hull default whenever its source entry is absent or unusable, before the build becomes active;
+  the application MUST NOT run a separate repair or preserve empty-mount provenance. Unknown module
+  identities are outside the supported persistence contract. Unsupported newer versions MUST remain
+  stored but unopened. Storage failure MUST disable only persistence.
 - **FR-015**: A build link MUST keep its payload entirely in the URL fragment and MUST cause no
   transmission of build data.
 - **FR-016**: The payload MUST contain only non-derived modelled state: package-resolved identities,
   game slot keys, ordinary and package-identified pre-engineering, grade, enabled state, priority,
-  ship name and ident. Unknown hull or module identities MUST NOT be encoded. A module's package
-  variant and later ordinary engineering MUST both survive.
+  ship name and ident. Every encoded identity MUST resolve in the pinned package. A module's package
+  variant and later ordinary engineering MUST both survive. Package-defaulted fixed modules MAY be
+  implicit in a payload because reconstruction always restores them.
 - **FR-017**: Calculated values, catalogue facts, prices, purchase provenance, notes and storage
   identities MUST NOT enter the payload.
 - **FR-018**: The application-owned codec MUST be versioned, use package identities and preserve all
@@ -99,14 +98,12 @@ browser and share builds by URL. SLEF import and export are specified in
 
 ## Edge Cases
 
-- An unknown hull is refused atomically. Package normalization empties an unknown removable module
-  and installs the hull default for an unknown fixed module; the source identity is reported
-  transiently and is not retained in the accepted build.
+- An unknown hull is refused atomically. Unknown module identities are not a supported migration
+  input and receive no application-owned compatibility behavior.
 - Preview absence is temporary, not a catalogue failure.
 - A newer payload version is refused rather than guessed.
 - A build-link payload longer than the published 500-character limit is refused before decoding.
-- A fixed mount loaded empty or carrying an unknown module follows the normalisation rules in
-  [002](../002-module-outfitting/spec.md).
+- A fixed mount omitted or unusable at package reconstruction is returned with its hull default.
 
 ## Almanac Coverage
 
@@ -117,8 +114,8 @@ storage and the versioned URL codec; none calculates an Elite Dangerous value.
 ## Success Criteria
 
 - **SC-001**: Every hull fact and stock build matches the pinned Almanac release.
-- **SC-002**: Stored and linked builds preserve every recognized modelled field, apply the specified
-  package normalization to older unknown identities, and never allow one tab to silently overwrite
-  another tab's work.
+- **SC-002**: Stored and linked builds preserve every recognized modelled field, always reconstruct
+  fixed mounts with package defaults, and never allow one tab to silently overwrite another tab's
+  work.
 - **SC-003**: Every published link reconstructs an equivalent build and remains decodable.
 - **SC-004**: No automatic request sends build data or contacts another origin.

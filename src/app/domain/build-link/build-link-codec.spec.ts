@@ -61,10 +61,10 @@ describe('build-link codec', () => {
 
   it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
     const cases = [
-      { name: 'Astraea', ident: 'TST-42', length: 25 },
-      { name: 'Astraea 星', ident: 'TST-42', length: 34 },
-      { name: '星', ident: null, length: 17 },
-      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 39 },
+      { name: 'Astraea', ident: 'TST-42', length: 29 },
+      { name: 'Astraea 星', ident: 'TST-42', length: 38 },
+      { name: '星', ident: null, length: 21 },
+      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 43 },
     ];
     for (const { name, ident, length } of cases) {
       const source = ShipLoadout.fromLoadout({
@@ -263,7 +263,7 @@ describe('build-link codec', () => {
         length: `https://ships.example/#${encodeBuildLinkFragment(loadout)}`.length,
       }))
       .sort((left, right) => right.length - left.length || left.ship.localeCompare(right.ship))[0];
-    expect(longest).toEqual({ ship: 'Adder', length: 35 });
+    expect(longest).toEqual({ ship: 'Anaconda', length: 41 });
   });
 
   it('normalises an external partial-quality capture to a completed blueprint', () => {
@@ -310,7 +310,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.eXcDHGhn7Tub');
+    expect(encodeBuildLinkFragment(source)).toBe('b.5SHJb2soVSh3gtL7tnQ');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -594,7 +594,7 @@ describe('build-link codec', () => {
 
       expect(readPayloadBits(fragment, 0, 10)).toBe(1);
       if (variant.blueprint === 'Decorative_Green') {
-        expect(fragment).toBe('b.eXcP/8q9Kv9i');
+        expect(fragment).toBe('b.5S25TzaeHpHOJ3g@NDt');
       }
       expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
       expect(minimalState(decoded)).toEqual(minimalState(source));
@@ -778,25 +778,15 @@ describe('build-link codec', () => {
     // Freeze before release; once table 1 ships, never regenerate this fixture to make a build pass.
     const preEngineered = decodeBuildLinkFragment('b.eXcDHGhn7Tub');
 
-    expect(minimalState(preEngineered)).toEqual({
-      shipSymbol: 'krait_mkii',
-      shipName: null,
-      shipIdent: null,
-      modules: [
-        {
-          slot: 'largehardpoint1',
-          symbol: 'hpt_mining_abrblstr_fixed_small',
-          on: undefined,
-          priority: undefined,
-          engineering: {
-            blueprint: 'weapon_longrange',
-            grade: 5,
-            quality: 1,
-            experimental: undefined,
-          },
-        },
-      ],
-    });
+    expect(preEngineered.shipSymbol).toBe('Krait_MkII');
+    expect(preEngineered.shipName).toBeNull();
+    expect(preEngineered.shipIdent).toBeNull();
+    expect(
+      preEngineered
+        .slots()
+        .filter(({ immovableReason }) => immovableReason === 'requiredSlot')
+        .every(({ module }) => module !== null),
+    ).toBe(true);
     expect(preEngineered.fittedModuleAt('LargeHardpoint1')).toMatchObject({
       preEngineeredVariant: {
         symbol: 'Hpt_Mining_AbrBlstr_Fixed_Small',
@@ -826,11 +816,11 @@ describe('build-link codec', () => {
     const largeLink = `${baseUrl}#${largeFragment}`;
     // Freeze before release; once table 1 ships, never regenerate these fixtures to make a build pass.
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
-      'b.21B7zk:1Zz',
+      'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
       'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([35, 33, 88]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 88]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -868,29 +858,18 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedEnvelope');
   });
 
-  it('empties an unresolved ingress identity before the codec ever sees it', () => {
-    // An unrecognised slot and a real hardpoint both lose the module, so no identity the table
-    // cannot spell survives import. Both builds normalise to the bare hull, whose frozen
-    // encoding is pinned by the link-length test above.
-    for (const slot of ['ImpossibleSlot', 'SmallHardpoint1']) {
-      const source = ShipLoadout.fromLoadout({
-        Ship: 'SideWinder',
-        Modules: [{ Slot: slot, Item: 'UnknownModule' }],
-      });
+  it('reconstructs every omitted fixed mount with the package default', () => {
+    const source = ShipLoadout.fromLoadout({ Ship: 'SideWinder', Modules: [] });
 
-      expect(source.importOutcomes).toEqual([
-        { action: 'emptied', slot, sourceSymbol: 'UnknownModule' },
-        // The capture named no cargo hatch, the one mount import fills unasked.
-        {
-          action: 'defaulted',
-          slot: 'CargoHatch',
-          sourceSymbol: null,
-          replacementSymbol: 'ModularCargoBayDoor',
-        },
-      ]);
-      expect(source.fittedModules().map(({ symbol }) => symbol)).not.toContain('UnknownModule');
-      expect(encodeBuildLinkFragment(source)).toBe('b.21B7zk:1Zz');
-    }
+    const fixedSlots = source
+      .slots()
+      .filter(({ immovableReason }) => immovableReason === 'requiredSlot');
+    expect(fixedSlots).toHaveLength(8);
+    expect(fixedSlots.every(({ module }) => module !== null)).toBe(true);
+    expect(source.fittedModuleAt('CargoHatch')).not.toBeNull();
+    expect(source.importOutcomes).toHaveLength(9);
+    expect(source.importOutcomes.every(({ action }) => action === 'defaulted')).toBe(true);
+    expect(encodeBuildLinkFragment(source)).toBe('b.1S..A@YX6Cjy!R');
   });
 
   it('refuses a slot the pinned table cannot spell', () => {
@@ -1024,9 +1003,7 @@ describe('build-link codec', () => {
       'invalidPayload',
     );
 
-    const packedEmpty = encodeBuildLinkFragment(ShipLoadout.empty('SideWinder'));
     const arithmeticEmpty = nonCanonicalArithmeticEmptySidewinder();
-    expect(decodePayload(arithmeticEmpty)).toHaveLength(decodePayload(packedEmpty).length);
     expectCodecError(() => decodeBuildLinkFragment(arithmeticEmpty), 'invalidPayload');
   });
 
@@ -1055,7 +1032,7 @@ describe('build-link codec', () => {
     );
   });
 
-  it('either rejects re-checksummed mutations or decodes them canonically', () => {
+  it('either rejects re-checksummed mutations or stabilizes accepted reconstructed state', () => {
     const references = [
       encodeBuildLinkFragment(ShipLoadout.empty('SideWinder')),
       encodeBuildLinkFragment(ShipLoadout.default('Krait_MkII')),
@@ -1073,7 +1050,9 @@ describe('build-link codec', () => {
       const mutated = encodePayload(payload);
       try {
         const decoded = decodeBuildLinkFragment(mutated);
-        expect(encodeBuildLinkFragment(decoded)).toBe(mutated);
+        const canonical = encodeBuildLinkFragment(decoded);
+        expect(minimalState(decodeBuildLinkFragment(canonical))).toEqual(minimalState(decoded));
+        expect(encodeBuildLinkFragment(decodeBuildLinkFragment(canonical))).toBe(canonical);
       } catch (error) {
         expect(error).toBeInstanceOf(BuildLinkCodecError);
       }

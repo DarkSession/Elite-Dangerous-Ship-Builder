@@ -31,7 +31,7 @@ values, cross-capability modes and inline visual literals are rejected.
 `strictTemplates` are not yet enabled and are an implementation prerequisite
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8;
-`@elite-dangerous-almanac/core@0.1.3` leaf exports; feature 001's active build, workspace, asset
+`@elite-dangerous-almanac/core@0.1.4` leaf exports; feature 001's active build, workspace, asset
 coordinator and service worker; feature 002's complete ledger and exact-slot selection; feature
 003's settled deployed/retracted condition and revision; a generalized feature 005 located-mount
 power observation; feature 011's tokens, components, localization and verification harness; feature
@@ -63,7 +63,7 @@ reimplemented power verdict or persisted anatomy state; no page horizontal scrol
 dark theme; translatable owned text and locale formatting; shared 44 CSS-pixel target baseline;
 WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: Almanac 0.1.3 has 48 hulls and 96 side schematics totalling 8,987,603 bytes. They
+**Scale/Scope**: Almanac 0.1.4 has 48 hulls and 96 side schematics totalling 8,989,045 bytes. They
 contain 240 hardpoint occurrences for 234 unique hardpoints and 195 utility occurrences for 195
 unique utilities. Six hardpoints intentionally repeat across sides; future utility repeats are
 allowed by the package contract. Counts are regression evidence, never runtime constants
@@ -77,17 +77,17 @@ _GATE: Planning and direct Almanac anatomy contracts pass. Complete implementati
 the prerequisite contracts listed below; no application-side workaround is permitted. Re-checked
 after Phase 1 with the same result._
 
-| Principle                               | Design evidence                                                                                                                                            | Status                 |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | Installed SVGs become lazy same-origin static assets under feature 001's single service worker; build data never leaves the browser.                       | PASS; prerequisite 001 |
-| II. Almanac Source of Truth             | Hull symbol, slot kinds/keys/sizes, both mount geometries, fitted/engineering facts and power inputs remain package-owned.                                 | PASS                   |
-| III. Domain Logic Outside UI            | A pure mount projector joins typed asset annotations, exact slot views and owner power observations; components only render and emit intents.              | PASS                   |
-| IV. Lossless, Honest Builds             | Unknown modules normalize before projection; missing geometry, unavailable priority/power and package defects remain explicit; the ledger stays complete.  | PASS                   |
-| V. Desktop, Tablet and Mobile           | Paired/single-side compositions, bounded native pan, 44-pixel targets and a unique text equivalent cover touch, screen reader, zoom and both orientations. | PASS; prerequisite 011 |
-| VI. Commander's Language                | Owned labels and state text use feature 011; package names use Almanac localization with explicit canonical/unavailable handling.                          | PASS; prerequisite 011 |
-| VII. One Design System                  | Anatomy extends shared schematic, legend, selector, notice, detail and list primitives/tokens with full previews; no mock CSS is copied.                   | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Package-wide contracts, dual-engine five-layout E2E, axe, offline production checks and manual assistive protocols are required without weakening gates.   | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | The clarified hardpoint-and-utility scope maps to every plan-time surface before tasks.                                                                    | PASS                   |
+| Principle                               | Design evidence                                                                                                                                              | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| I. Client-Side Only                     | Installed SVGs become lazy same-origin static assets under feature 001's single service worker; build data never leaves the browser.                         | PASS; prerequisite 001 |
+| II. Almanac Source of Truth             | Hull symbol, slot kinds/keys/sizes, both mount geometries, fitted/engineering facts and power inputs remain package-owned.                                   | PASS                   |
+| III. Domain Logic Outside UI            | A pure mount projector joins typed asset annotations, exact slot views and owner power observations; components only render and emit intents.                | PASS                   |
+| IV. Lossless, Honest Builds             | Only package-resolved modules reach projection; missing geometry, unavailable priority/power and package defects remain explicit; the ledger stays complete. | PASS                   |
+| V. Desktop, Tablet and Mobile           | Paired/single-side compositions, bounded native pan, 44-pixel targets and a unique text equivalent cover touch, screen reader, zoom and both orientations.   | PASS; prerequisite 011 |
+| VI. Commander's Language                | Owned labels and state text use feature 011; package names use Almanac localization with explicit canonical/unavailable handling.                            | PASS; prerequisite 011 |
+| VII. One Design System                  | Anatomy extends shared schematic, legend, selector, notice, detail and list primitives/tokens with full previews; no mock CSS is copied.                     | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Package-wide contracts, dual-engine five-layout E2E, axe, offline production checks and manual assistive protocols are required without weakening gates.     | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | The clarified hardpoint-and-utility scope maps to every plan-time surface before tasks.                                                                      | PASS                   |
 
 ### Blocking and sequencing dependencies
 
@@ -102,14 +102,14 @@ after Phase 1 with the same result._
    feature 010 consumes it for hardpoint and utility mounts and defines no port of its own. Almanac
    `PowerBudget.consumers` already supports every mount kind, so this is an application-contract
    boundary rather than an Almanac defect. Feature 005's Almanac gate is resolved in
-   0.1.3; the shared strictness and application-contract prerequisites remain.
+   0.1.4; the shared strictness and application-contract prerequisites remain.
 5. **Feature 011** must deliver strict configuration, one design system, localization/game-text
    presentation, announcements, component previews, ten Playwright projects and the axe harness.
 6. **Feature 012** must deliver its planned in-place modal contract. Feature 010 emits its contextual
    provenance/help intent rather than owning legal content or targeting a route.
 
 The current repository implements only the Angular shell and feature 001's build-link codec. These
-dependencies are explicit sequencing gates, not unresolved planning questions. Almanac 0.1.3's
+dependencies are explicit sequencing gates, not unresolved planning questions. Almanac 0.1.4's
 direct schematic and per-consumer power contracts are present and need no upstream anatomy fix.
 
 ## Project Structure
@@ -182,7 +182,7 @@ owner and feature 012 remains the provenance/legal owner.
 Detailed decisions, rationale and rejected alternatives are in [research.md](./research.md). The
 decisive results are:
 
-- Almanac 0.1.3 publicly contracts both `hardpoint` and `utility_mount` annotations, exact journal
+- Almanac 0.1.4 publicly contracts both `hardpoint` and `utility_mount` annotations, exact journal
   keys, complete coverage, cross-side duplicate identity and safe static inline SVG content.
 - An exhaustive audit found all 429 current package mounts represented correctly by 435 occurrences,
   with no missing, wrong-kind, bad-key or same-side duplicate annotations.

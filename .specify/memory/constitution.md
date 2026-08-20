@@ -1,38 +1,14 @@
 <!--
-Sync Impact Report (6.0.1)
-- Version change: 6.0.0 -> 6.0.1 (PATCH)
-- Modified principles: None
-- Modified sections: Technology Constraints (Testing) — the Playwright project list named desktop,
-  tablet and mobile per engine while principle V already required portrait and landscape on tablet
-  and mobile. The list now names all five viewport-orientation projects per engine (ten in total),
-  matching what every feature 001-012 task list builds.
-- Rationale: clarification only. No obligation changes: principle V already required both
-  orientations and principle VIII already required both engines; the constraints paragraph simply
-  under-described the resulting project set.
-- Added sections: None
-- Removed sections: None
-- Invalidated-spec review: none required; no feature specification depended on the narrower list.
+Sync Impact Report (7.0.0)
+- Version change: 6.0.1 -> 7.0.0 (MAJOR)
+- Modified principles: IV. Lossless, Honest Builds — removed the compatibility contract for unknown
+  module identities and made package-defaulted fixed mounts an invariant of every constructed build.
+- Rationale: Almanac 0.1.4 no longer exposes an empty fixed-mount state: armour, the seven core
+  internals and the cargo hatch are populated from the hull defaults at construction and ingress.
+  Unknown module compatibility is no longer a supported application capability.
+- Invalidated-spec review: features 001, 002 and 004 updated; downstream features now rely only on
+  the stronger fixed-mount invariant and no longer prescribe unknown-module ingress coverage.
 - Follow-up TODOs: none.
-
-Previous report (6.0.0)
-- Version change: 5.0.0 -> 6.0.0
-- Modified principles: IV. Lossless, Honest Builds (unknown hull refusal and unknown module
-  replacement)
-- Rationale: an unknown hull cannot define a build, and an unknown fitted module cannot describe a
-  reproducible current loadout; package-owned empty/default normalization keeps every accepted build
-  constructible without inventing game data in the application.
-- Added sections: None
-- Removed sections: None
-- Invalidated-spec review: completed across features 001–012. Features 001, 002 and 004 now define
-  package-owned empty/default ingress and transient feedback; downstream calculation and anatomy
-  capabilities accept no unknown module identity.
-- Follow-up TODOs:
-  - Consume the release tracked by
-    [Almanac #332](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/332) before
-    implementing affected ingress, persistence, link and SLEF paths; do not reproduce its replacement
-    logic locally.
-  - Add migration and regression coverage for saved builds, links and SLEF carrying unknown hull or
-    module identities.
 -->
 
 # Elite Dangerous Ship Builder Constitution
@@ -148,38 +124,24 @@ A build is round-trippable and never silently wrong.
   The application MUST NOT accept the candidate by changing only its quality
   scalar, stripping its engineering, retaining the partial roll or fabricating
   modifiers. This quality rule applies only after the package has resolved the
-  fitted module: an unknown module follows the identity-normalization rule below
-  instead of being preserved or refused because of engineering attached to it. A
+  fitted module. Unknown module identities are outside the supported import contract. A
   build is shared so that another Commander can build it, and a partial roll
   cannot be reproduced at an engineer, so a plan quoting one would describe a
   ship its reader cannot make.
-- **Unknown catalogue identities are not build state, and a fixed mount is never
-  empty.** An incoming hull symbol that `@elite-dangerous-almanac/core` cannot
-  resolve MUST be refused atomically before activation. The current build MUST
-  remain intact, the Commander MUST be told which hull was refused, and the
-  application MUST NOT select a replacement hull. An incoming module symbol the
-  package cannot resolve MUST be removed from a removable mount or replaced with
-  that hull's package-defined stock module on a fixed mount. A fixed mount that
-  arrives empty receives the same package-defined stock module. The seven core
-  internals, armour and built-in cargo hatch are fixed mounts; outfitting offers
-  a swap and no route to a ship missing one.
+- **Unknown hulls are refused and fixed mounts are always populated.** An incoming hull symbol that
+  `@elite-dangerous-almanac/core` cannot resolve MUST be refused atomically before activation. The
+  current build MUST remain intact, the Commander MUST be told which hull was refused, and the
+  application MUST NOT select a replacement hull. Unknown module identities are not a supported
+  compatibility surface and no application-owned migration, placeholder, normalisation notice or
+  retained unknown-module state may be introduced for them.
 
-  Every ingress and reconstruction path MUST obtain these outcomes from the
-  package rather than detect catalogue misses, classify removability or choose a
-  default itself. Until the package release supplies the required unknown-module
-  replacement behavior, an affected application path waits on that release; a
-  local transitional rewrite is prohibited by principle II. Where the package
-  carries no stock module for a fixed mount, the mount stays empty and the build
-  is reported incomplete rather than receiving an invented substitute.
-
-  Module removal/defaulting changes the candidate build, so the source's unknown
-  symbol and attached fields do not enter active state, snapshots, edit history,
-  persistence, links or SLEF output. The normalized result is what later save,
-  share and export operations carry. Before any figure is read, the Commander
-  MUST be told which slots were emptied, which received defaults and what source
-  identities were replaced. Emptying a fixed mount MUST NOT be offered, which
-  the application MUST reach by surfacing the package's own removability result
-  rather than by a rule of its own (principle II).
+  Armour, the seven core internals and the built-in cargo hatch are fixed mounts. Every package
+  construction and ingress path populates an absent or unusable fixed mount with that hull's
+  package-defined stock module before returning the build. The application MUST consume that result
+  directly: it MUST NOT perform a second repair pass, choose a default, preserve empty-fixed-mount
+  provenance or model a `default unavailable` branch. Outfitting offers the package's permitted
+  swaps and no route to a ship missing a fixed module. Emptying a fixed mount MUST NOT be offered,
+  which the application reaches by surfacing the package's own removability result (principle II).
 - Where the package reports a value as unavailable or a build as invalid or
   incomplete (`validation`, the nullable aggregates and their `*Result`
   counterparts), the application MUST surface that state rather than hide it
@@ -412,4 +374,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 6.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-19
+**Version**: 7.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-20

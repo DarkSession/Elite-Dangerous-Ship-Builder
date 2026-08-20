@@ -6,7 +6,7 @@ an end-to-end acceptance guide, not an implementation recipe.
 ## Prerequisites
 
 - Node.js 24 and pnpm 10.33.0
-- `@elite-dangerous-almanac/core@0.1.3`
+- `@elite-dangerous-almanac/core@0.1.4`
 - full TypeScript and Angular-template strictness enabled with the repository passing
 - feature 001 active build/revision and `/build` workspace
 - feature 002 accepted same-revision hardpoint coverage and exact-slot reveal boundary
@@ -113,7 +113,7 @@ Expected:
 ### 3. Distinguish empty, unavailable, disabled and zero
 
 Exercise confirmed-empty hardpoints, unavailable package coverage, all returned weapons disabled and
-a genuine zero-damage weapon. Verify separately that unknown modules normalize before this feature.
+a genuine zero-damage weapon. Unsupported module identities are outside this feature's input contract.
 
 Expected:
 

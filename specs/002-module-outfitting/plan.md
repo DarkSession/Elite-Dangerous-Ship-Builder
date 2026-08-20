@@ -22,8 +22,9 @@ copied.
 
 Ingress runs before activation and before any calculation is read. Package-resolved partial grades
 are completed through `completeEngineeringGrade()`. Any partial grade returning `unsupported`
-rejects the whole candidate and leaves the current build intact, as required by Constitution 5.0.0
-and clarified FR-013. Missing package defaults instead retain an incomplete candidate under FR-010.
+rejects the whole candidate and leaves the current build intact, as required by Constitution 7.0.0
+and clarified FR-013. Package construction returns every fixed mount populated with its hull default
+under FR-010; unknown module identities are outside the supported contract.
 
 ## Technical Context
 
@@ -33,7 +34,7 @@ the current root configuration; enabling it through the shared foundation is an 
 prerequisite
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; pinned
-`@elite-dangerous-almanac/core@0.1.3`; feature 001's planned active-build snapshot/reconstruction/swap
+`@elite-dangerous-almanac/core@0.1.4`; feature 001's planned active-build snapshot/reconstruction/swap
 boundary; feature 011's planned UI, localization, announcement and verification foundations
 
 **Storage**: One observable committed `ShipLoadout`; modelled `BuildSnapshotV1` checkpoints in session
@@ -70,28 +71,27 @@ chooser 481 choices (`PantherMkII` `Slot01_Size8`: 473 stock plus 8 variants); a
 
 ## Constitution Check
 
-_GATE: **PASS with no exception**. Historical purchase values remain outside the model, and the
-package supplies structured empty/default normalization for unresolved modules at import, so no
-local substitute is required. Implementation remains sequenced behind features 001 and 011._
+_GATE: **PASS with no exception**. Historical purchase values remain outside the model, and package
+construction always populates fixed mounts, so no local substitute is required. Implementation
+remains sequenced behind features 001 and 011._
 
-| Principle                               | Plan evidence                                                                                                                                   | Status                     |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                                | PASS                       |
-| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including the empty/default normalization of unresolved modules at import.           | PASS                       |
-| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                           | PASS                       |
-| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and unresolved modules receive package empty/default outcomes with no retained identity. | PASS                       |
-| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.       | PASS; 011 prerequisite     |
-| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                      | PASS; 011 prerequisite     |
-| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                    | PASS; 011 prerequisite     |
-| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                  | PASS; harness prerequisite |
-| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                             | PASS                       |
+| Principle                               | Plan evidence                                                                                                                             | Status                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                          | PASS                       |
+| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including fixed-mount defaults at import.                                      | PASS                       |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                     | PASS                       |
+| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and package construction always populates fixed mounts.                            | PASS                       |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit. | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                              | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                            | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                       | PASS                       |
 
 Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, name/ident updates and
 modelled session checkpoints. Reconstruction goes back through `ShipLoadout`; raw-module overlays,
 local game rules and captured purchase fields remain prohibited. `completeEngineeringGrade()`
-returning `unsupported` triggers atomic ingress refusal;
-The released package identity-normalization contract may report that a fixed default is unavailable;
-that remains a nonblocking FR-010 incomplete-build outcome.
+returning `unsupported` triggers atomic ingress refusal. Package construction always returns fixed
+mounts populated with their hull defaults; feature 002 adds no missing-default outcome.
 
 ## Delivery Prerequisites
 
@@ -101,7 +101,7 @@ contracts must exist before feature 002 UI implementation is complete:
 1. Feature 011: strict TypeScript/templates, token and localization layers, shared components and
    announcements, preview catalogue, Firefox/landscape projects and axe scans.
 2. Feature 001: `/build`, one `ActiveBuildState`, modelled snapshot/reconstruction/swap operations,
-   atomic replacement notification, persistence/fragment observers and normalization provenance.
+   atomic replacement notification and persistence/fragment observers.
    Its `BuildSnapshotV1` also supplies the in-memory history checkpoint shape; history itself remains
    session-only.
 3. Feature 002 then extends those boundaries; it does not create temporary substitute shells,
@@ -185,10 +185,10 @@ The full decisions and alternatives are in [research.md](./research.md):
 - Every edit starts from a detached candidate reconstructed through feature 001's canonical modelled
   snapshot, invokes a package operation and commits that candidate or nothing. Current catalogue cost
   is recomputed and historical purchase values never enter the snapshot.
-- Ingress records partial/fixed source identities before construction, correlates only validated
-  qualities in `[0,1)`, rejects resolution/construction mismatch or `unsupported`, then repairs only
-  package-normalizes unknown modules first, then completes supported partials and repairs source-empty
-  fixed mounts; none of these automatic ingress outcomes commits history.
+- Ingress records source partial-engineering evidence before construction. Package construction
+  supplies every fixed default, then ingress correlates only validated qualities in `[0,1)`, rejects
+  resolution/construction mismatch or `unsupported`, and completes supported partials. Package
+  construction and quality-completion feedback do not commit history.
 - Package i18n leaves own module, variant, slot, restriction, blueprint, effect, engineering-group,
   material and diagnostic source text. App localization owns framing and controls only.
 - In-memory `BuildSnapshotV1` checkpoints implement undo/redo through package reconstruction; inverse

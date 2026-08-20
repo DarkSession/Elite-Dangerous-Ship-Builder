@@ -37,7 +37,7 @@ game-text strings.
 
 No frame is created for slot selection, category/anatomy/status mode, chooser search, editor draft,
 open/close/cancel, failed/stale/refused commands, calculation reads, autosave, link publication,
-ingress normalization or provenance-notice changes.
+package construction or transient quality-completion notice changes.
 
 ## Capacity and transitions
 
@@ -82,10 +82,9 @@ Clear both directions after every successful active-build replacement: stock/hul
 or named record open, URL load, SLEF import and reload restoration. A refused incoming candidate does
 not reset history because it never replaces the build.
 
-Unknown-module empty/default normalization, source-empty fixed repair and supported partial-quality
-completion occur on the detached incoming candidate before reset and are never undoable. Editing a
-normalized mount later is an ordinary Commander decision. That edit clears any source-empty fixed
-provenance; undo restores build state but does not recreate transient disclosure metadata.
+Package fixed-mount defaulting and supported partial-quality completion occur on the detached
+incoming candidate before reset and are never undoable. Editing a defaulted mount later is an
+ordinary Commander decision; undo restores build state but creates no source provenance.
 
 ## Boundary isolation
 

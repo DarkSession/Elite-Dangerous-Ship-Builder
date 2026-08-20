@@ -1,8 +1,8 @@
 # Data Model: Ship Statistics and Status
 
 Feature 003 owns viewing, composition and feedback state. Game calculations and their semantic
-result unions remain owned by features 005–009; fixed-mount provenance remains owned by features
-001/002. The types below reference those contracts instead of copying their fields.
+result unions remain owned by features 005–009. The types below reference those contracts instead of
+copying their fields.
 
 ## ViewingConditions
 
@@ -190,7 +190,6 @@ interface StatusProjection<P, D, O, M, A> {
   readonly conditionsRevision: number;
   readonly conditions: ViewingConditions;
   readonly structural: StructuralProjection;
-  readonly normalisationProvenance: readonly FixedMountNormalisationProvenance[];
   readonly power: P;
   readonly defence: D;
   readonly offence: O;
@@ -202,16 +201,14 @@ interface StatusProjection<P, D, O, M, A> {
 }
 ```
 
-`FixedMountNormalisationProvenance` is the feature 001 record type; feature 003 neither redefines nor
-persists it. Projection invariants:
+Projection invariants:
 
 - all five ready provider envelopes match the captured build and condition revisions;
-- provenance belongs to the active working record at the captured build revision;
 - `issueCount === structural.validation.issues.length`;
 - `qualifiedSummaryIds` contains only unique owner-allocated identities in fixed provider/summary
   order;
 - `qualifiedSummaryCount === qualifiedSummaryIds.length`;
-- validation, provider values and provenance are published in one assignment;
+- validation and provider values are published in one assignment;
 - no active build means no `StatusProjection`.
 
 ## StatusProjectionState
@@ -269,7 +266,7 @@ interface StatusRailView {
 ```
 
 This view formats and selects owner-provided fields; it calculates no game value and contains no
-validation issue record. The complete capability is the sole issue/provenance record location.
+validation issue record. The complete capability is the sole issue-record location.
 
 ## AnnouncementState
 

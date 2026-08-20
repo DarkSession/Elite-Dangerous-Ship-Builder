@@ -52,7 +52,7 @@ does not compute or assert a capacity transformation.
 `null` maps to one `unavailable` result with no capacitor figures. Null alone
 does not authorize a cause-specific diagnosis: it may reflect an absent,
 disabled, package-incomplete or retracted-shed distributor. Unknown catalogue identities have
-already been normalized at ingress and never reach this boundary.
+no supported ingress representation and never reach this boundary.
 
 Prohibited fallbacks:
 

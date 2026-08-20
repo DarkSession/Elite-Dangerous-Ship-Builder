@@ -1,8 +1,8 @@
 # Quickstart: Validate Module Outfitting and Engineering
 
 This is an acceptance guide for the plan, not implementation code. Features 001 and 011 remain
-repository prerequisites. Identity ingress relies on the package replacing unresolved removable
-modules with empty slots and unresolved fixed modules with hull defaults.
+repository prerequisites. Ingress relies on the package returning every fixed mount populated from
+the hull defaults.
 
 From the repository root, install the pinned workspace and start the development application with:
 
@@ -25,8 +25,7 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
 4. Confirm feature 011 supplies tokens, localization, responsive shared components, Firefox plus
    desktop/tablet/mobile portrait/landscape Playwright projects, and axe integration.
 5. Confirm the pinned released Almanac provides:
-   - structured ingress outcomes that refuse an unknown hull, empty an unknown removable module and
-     restore an unknown fixed module from the package default without retaining its identity;
+   - package construction that refuses an unknown hull and returns every fixed mount populated;
    - fixed-reward experimental-effect add/replace/remove that preserves the fixed base modifier
      block and variant identity while recomputing effect-dependent stats;
    - complete supported partial-quality normalization with a structured unsupported outcome.
@@ -35,44 +34,39 @@ complete gate. The scenarios below define the fixtures and expected outcomes tho
    removing it must return to 1785. Do not proceed if supported partial quality remains partial.
 7. Confirm all package imports use leaf paths and no component imports Almanac catalogues/loadouts.
 
-Expected: all package prerequisites are ready — the engineering operations and the empty/default
-normalization of unresolved modules alike. Do not implement a local substitute, captured-event
-checkpoints, inverse commands or intent replay.
+Expected: all package prerequisites are ready — including engineering operations and fixed defaults.
+Do not implement a local substitute, captured-event checkpoints, inverse commands or intent replay.
 
 ## 2. Inspect every slot
 
 1. Open a default build with hardpoint, utility, core, optional, armour, planetary and cargo-hatch
    mounts.
 2. Compare the rendered groups/order/keys with `loadout.slots()`.
-3. Load fixtures with empty known slots and package-reported incomplete/invalid states. Separately
-   send unknown known-slot and unknown-original-slot identities through the ingress boundary.
+3. Load fixtures with empty removable slots, omitted fixed entries and package-reported invalid states.
 4. Inspect invalid/incomplete package validation states.
 
 Expected:
 
 - every package slot appears by exact game key;
 - unavailable package facts remain explicit, never zero/guessed;
-- unknown module identities are emptied/defaulted before activation and never reach the ledger;
+- fixed mounts are populated before activation and unknown modules are outside the fixture contract;
 - invalid/incomplete builds remain editable wherever the package offers an operation;
 - no component owns or mutates a duplicate fitted array.
 
-## 3. Verify fixed-mount normalization
+## 3. Verify fixed-mount construction
 
-1. Prepare imports with missing armour/core/cargo-hatch entries plus unknown fixed, removable and
-   unknown-original-slot module identities, both with and without attached partial engineering.
+1. Prepare imports with missing or unusable armour/core/cargo-hatch entries, plus resolved modules
+   with and without attached partial engineering.
 2. Run the candidate through the shared ingress pipeline.
 3. Observe the active build before any calculation presenter reads it.
-4. Inspect normalization notices and history controls.
+4. Inspect quality-completion notices and history controls.
 
 Expected:
 
-- package identity normalization runs first, discards engineering attached to unknown modules, empties
-  unknown removable modules and defaults unknown fixed modules;
-- supported partial evidence is then completed before source-empty fixed repair;
-- `fromLoadout()` restores cargo and `repairFixedMount()` repairs source-empty fixed mounts from
-  package defaults;
-- notices name slot, source identity, empty/default action and replacement identity when applicable;
-- saved/shared/exported active state carries repairs;
+- package construction populates every fixed mount before quality processing;
+- supported partial evidence is then completed;
+- no `repairFixedMount()` pass or application default lookup occurs;
+- saved/shared/exported active state carries the package-returned modules without repair provenance;
 - undo is unavailable when normalization was the only change.
 
 ## 4. Build and search replacement choices
@@ -164,8 +158,7 @@ Expected:
 ## 9. Normalize imported quality
 
 1. Import known ordinary, Mercenary, fixed reward plus later effect, and package-supported uncommon
-   recipes at partial qualities. Add unknown partial, quality-1 and unengineered fixed, removable and
-   unknown-original-slot modules.
+   recipes at partial qualities. Add quality-1 and unengineered resolved modules across mount kinds.
 2. Complete ingress and inspect active engineering/effective stats/notices before any calculations.
 3. Save/share/export and reload the result.
 
@@ -175,8 +168,7 @@ Expected:
 - notices name original quality/slot and the 100% result;
 - active/persisted/published/exported build represents quality 1;
 - normalization creates no undo step;
-- every unknown module is package-normalized before quality processing regardless of attached
-  engineering; no source identity survives in active, persisted, published or exported state;
+- unknown module identities are outside the supported import matrix;
 - unsupported partial engineering on a remaining resolved module is atomically refused before
   activation with exact package reason; current build, storage, fragment, notices and history remain
   unchanged;

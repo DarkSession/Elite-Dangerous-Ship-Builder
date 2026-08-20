@@ -94,7 +94,7 @@ array index.
 ### `DamageSplit`
 
 `kinetic`, `thermal`, `explosive`, `absolute` and `antiXeno` are required numeric values.
-`unclassified` is optional and absent exactly when zero under the 0.1.3 contract. Presentation may
+`unclassified` is optional and absent exactly when zero under the 0.1.4 contract. Presentation may
 omit the optional row or state that no unclassified damage exists; it must not call the absence
 unknown. Anti-xeno remains an overlay on conventional damage and is not included in a locally created
 partition or total.
@@ -275,7 +275,7 @@ all current inputs ──atomic publication──> OffenceSnapshot
 - `weaponsCapacitorMetrics()` is called once per projected revision pair with WEP half-pips divided
   by two exactly once.
 - Every package result object, field, weapon and returned order remains intact.
-- Unknown-module identities never enter this boundary; feature 001/002 ingress normalized them first.
+- Only package-resolved module identities enter this boundary.
 - Optional unclassified absence means zero unclassified damage; optional range/piercing absence
   remains not stated.
 - No infinity reaches generic serialization/formatting.

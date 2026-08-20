@@ -26,7 +26,7 @@ package results or accepted requirements.
 requires TypeScript strict mode, but the current shared `tsconfig.json` does not yet enable `strict`
 
 **Primary Dependencies**: Angular 22.1 standalone and zoneless APIs; Angular signals; RxJS 7.8;
-`@elite-dangerous-almanac/core` 0.1.3 leaf exports; feature 001's active-build/revision and `/build`
+`@elite-dangerous-almanac/core` 0.1.4 leaf exports; feature 001's active-build/revision and `/build`
 workspace; feature 002's exact-slot selection; feature 003's viewing conditions, revision envelope,
 status-provider contract and `mobilityAndJump` target; feature 011's design-system, localization and
 test foundations
@@ -53,7 +53,7 @@ mobility; exact package issue order and identities; no document horizontal scrol
 dark theme; all application text and numeric/unit formatting localized; WCAG 2.2 AA except criteria
 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: One active build across the 48 hulls in Almanac 0.1.3; three standard jump profiles;
+**Scale/Scope**: One active build across the 48 hulls in Almanac 0.1.4; three standard jump profiles;
 seven mobility fields; three aggregate result groups; sparse FSD/thruster parameters; one mass row
 for every fitted module
 
@@ -91,7 +91,7 @@ gates listed below must be satisfied before feature 008 can ship._
 5. Feature 008 exports its concrete synchronous mobility status provider; feature 003 can then
    assemble the final five-provider Status capability without a circular completion dependency.
 
-Almanac 0.1.3 already supplies `standardLoadResult()`, structured powered-thruster diagnostics from
+Almanac 0.1.4 already supplies `standardLoadResult()`, structured powered-thruster diagnostics from
 `mobilityMetricsResult()`, and every other calculation required here. Feature 008 has no dependency
 on feature 005's power projection: the mobility result itself distinguishes `missing`, `disabled`,
 `shed`, package-issue `unresolved` and `invalid` inputs; no unknown identity reaches the capability.
@@ -173,7 +173,7 @@ outcomes are:
   are complete, call `mobilityMetricsResult({ ...load.value, enginesPips })` once and preserve all
   seven returned fields or its exact structured issues.
 - The diagnostic mobility facade directly distinguishes missing, disabled, shed, package-issue
-  `unresolved` and invalid inputs. Unknown module identities were normalized at ingress. A complete
+  `unresolved` and invalid inputs. Only package-resolved module identities enter. A complete
   all-zero result above thruster maximum mass remains ready zero; no
   feature 005 join or local power inference is needed.
 - Locate core sources through `ShipLoadout.slots('core')` and each slot's package `core`

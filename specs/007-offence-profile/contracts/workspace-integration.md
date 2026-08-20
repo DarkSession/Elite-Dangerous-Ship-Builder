@@ -36,8 +36,8 @@ captured build revision. The read:
 
 - uses package slot/fitted views rather than parsed names or array positions;
 - distinguishes empty, complete and unavailable coverage;
-- provides no weapon metric and never receives an unknown module identity because ingress has already
-  applied package empty/default normalization.
+- provides no weapon metric and receives only package-resolved module identities from supported
+  ingress; fixed mounts already contain their package defaults.
 
 This accepted boundary does not yet exist by name in feature 002 and is a delivery blocker.
 

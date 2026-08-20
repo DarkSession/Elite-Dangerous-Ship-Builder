@@ -15,7 +15,7 @@ providing one clear action to the complete Status capability.
 5. Six compact headline cards: shield, armour, sustained DPS, selected jump, speed and mass.
 6. Compact retail, conditional Merc Coin and material summaries from feature 009.
 
-The rail contains no validation issue record and no fixed-mount provenance record. Counts are not
+The rail contains no validation issue record. Counts are not
 issues, so every issue still appears exactly once in the complete capability.
 
 ## Behavior

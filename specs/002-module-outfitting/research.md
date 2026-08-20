@@ -1,7 +1,7 @@
 # Research: Module Outfitting and Engineering
 
-Research was rerun on 2026-08-18 against the amended Constitution 5.0.0, the clarified feature spec,
-the installed `@elite-dangerous-almanac/core@0.1.3`, planned feature 001/011 contracts, the actual
+Research was rerun on 2026-08-18 against the amended Constitution 7.0.0, the clarified feature spec,
+the installed `@elite-dangerous-almanac/core@0.1.4`, planned feature 001/011 contracts, the actual
 repository baseline and `.design/Ship Builder.dc.html`. Package probes used detached loadouts only.
 
 ## Decision 1: treat 001 and 011 as prerequisites, not existing code
@@ -95,11 +95,11 @@ while allowing application-owned control labels and framing to be translated loc
 diagnostic translations would fork package data. Rendering `LoadoutSlot.name` as localized would
 misrepresent its contract.
 
-## Decision 4: render every package slot after ingress normalization
+## Decision 4: render every package slot after package construction
 
-**Decision**: Render all package `slots()` in package order, including empty mounts, after the shared
-ingress boundary has refused an unknown hull and package-normalized unknown modules to empty/default
-outcomes. No unknown module record enters the active workspace. Re-read all views after each commit.
+**Decision**: Render all package `slots()` in package order, including empty removable mounts, after
+the shared ingress boundary has refused an unknown hull and package construction has populated every
+fixed mount. Re-read all views after each commit.
 
 Capability comes from current package evidence. Removal mirrors `LoadoutSlot.removable`; replacement
 queries `modulesForSlot()`; engineering comes from current menus/result state; power setters apply to
@@ -107,12 +107,11 @@ fitted modules. Cargo hatch is visible and power-editable but package-empty menu
 slot state provide no replacement, removal or engineering action.
 
 **Rationale**: The package owns the hull layout and normalization. Once active, every fitted identity
-is package-resolved; missing facts can still remain `null`/absent without preserving an unknown
-module.
+is package-resolved; missing facts can still remain `null`/absent.
 
 **Alternatives considered**: Preserving unknown records, positional reconciliation, symbol inference
 and application-selected defaults violate principles II/IV. A cargo-hatch symbol special case is
-unnecessary; package normalization and slot/menu results supply the behavior.
+unnecessary; package construction and slot/menu results supply the behavior.
 
 ## Decision 5: expand candidates exactly, then project order and search
 
@@ -186,37 +185,34 @@ primarily mutate/throw. Treating them as one generic exception contract would lo
 **Alternatives considered**: Editing raw `Engineering.Modifiers`, passing local computed stats or
 using a null blueprint as clear-all would blur package semantics and violate FR-012.
 
-## Decision 8: normalize identity before partial quality and candidate activation
+## Decision 8: construct fixed defaults before partial quality and candidate activation
 
 **Decision**: Every stock/open/link/SLEF/reload replacement uses one shared ingress pipeline:
 
 1. Decode to the source DTO without changing the active build. Reject malformed quality values
    through the owning decoder.
-2. Pass the candidate through the released Almanac identity-normalization boundary. Refuse an unknown
-   hull; empty unknown removable modules; default unknown or empty fixed mounts. Retain its structured
-   outcomes only for transient feedback.
-3. Discard attached fields with each normalized unknown module. Retain finite quality in `[0, 1)` only
-   for package-resolved modules that remain fitted.
+2. Pass the candidate through the released Almanac construction boundary. Refuse an unknown hull and
+   consume every fixed mount with the package default already populated. Unknown module identities
+   are outside the supported input contract.
+3. Retain finite quality in `[0, 1)` only for package-resolved modules that remain fitted.
 4. Correlate every retained source partial with the normalized fitted record by exact package slot and
    module symbol, then call `completeEngineeringGrade(slotKey)`. Accept only `normalized`;
    `unsupported` rejects the whole candidate and an unexpected mismatch/`unchanged` is a
    package-contract failure. Never call this operation for absent quality or quality `1`.
-5. Keep `defaultUnavailable` incomplete without inventing a substitute. Persist provenance only for
-   source-empty fixed mounts; unknown identity outcomes are transient.
+5. Do not call `repairFixedMount`, choose a default or retain fixed-source provenance.
 6. Commit the fully processed candidate atomically, publish notices, then start/reset history. Read
    validation/calculations only after commit.
 
 Atomic refusal changes no active build, revision, working record, fragment or history. Successful
-quality completion is transiently reported; fixed-mount provenance follows feature 001's local-record
-contract. Neither automatic operation enters edit history.
+quality completion is transiently reported. Neither package construction nor quality completion
+enters edit history.
 
-**Rationale**: Constitution 6.0.0 makes package identity normalization precede quality completion.
-Unknown-module engineering disappears with its source module; partial-quality refusal applies only
-to a module the normalized candidate resolves.
+**Rationale**: Constitution 7.0.0 makes package construction establish the fixed-mount invariant
+before quality completion. Partial-quality refusal applies only to a supported module the candidate
+resolves.
 
-**Alternatives considered**: Preserving unknown modules, locally classifying/removing/defaulting
-them, changing only `Quality`, retaining partial modifiers or accepting `unsupported` are prohibited.
-Rejecting `defaultUnavailable` would contradict FR-010.
+**Alternatives considered**: Adding unknown-module compatibility, locally repairing fixed mounts,
+changing only `Quality`, retaining partial modifiers or accepting `unsupported` are prohibited.
 
 ## Decision 9: package menus, candidate stats and cost functions own engineering
 
@@ -280,8 +276,8 @@ arrows or partial-roll help text violates the accepted requirements.
 
 **Decision**: Feature unit tests use real package records for membership/mutation and feature 001's
 snapshot/reconstruction/swap adapters for transactions/history. Cover every structured result,
-empty/package-incomplete states, unknown-module empty/default ingress outcomes, partial
-preflight including cargo hatch, missing defaults, 481-choice search, `null` versus `[]`, route labels,
+empty removable-slot states, package-defaulted fixed mounts, partial
+preflight including cargo hatch, package-defaulted fixed mounts, 481-choice search, `null` versus `[]`, route labels,
 101 edits and all history exclusions.
 
 Playwright runs each primary story at 1440×900, 834×1112, 1112×834, 390×844 and 844×390 in Chromium
@@ -299,6 +295,6 @@ lowering coverage cannot prove the behavioral contract.
 ## Research status
 
 No product clarification remains. Historical purchase values are outside the model. The package
-supplies structured empty/default normalization for unresolved modules at import, so every
-identity requirement here has a package owner. Features 001 and 011 remain repository
-prerequisites. No application-side normalization is permitted.
+supplies fixed defaults at construction, and unknown-module compatibility is not a product
+requirement. Features 001 and 011 remain repository prerequisites. No application-side repair is
+permitted.

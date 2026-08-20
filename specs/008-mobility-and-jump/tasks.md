@@ -41,7 +41,7 @@ calculation of its own. Four gates apply and are named on the tasks they block:
   the shared configuration and the existing project must pass under them (constitution technology
   requirement, closed by feature 011).
 - **Feature prerequisites**: feature 001 (one active `{ loadout, buildRevision }`, no-build state,
-  `/build` workspace), feature 002 (exact-slot reveal and editing, package-owned unknown-module
+  `/build` workspace), feature 002 (exact-slot reveal and editing, package-populated fixed mounts and
   ingress normalization), feature 003 (integer-half-pip `ViewingConditions`, settled
   `conditionsRevision`, `StatusRevisionContext`, generic `StatusProvider<T, I>`, the shared
   `WorkspaceTarget` union, the `mobilityAndJump` detail target and the shared condition control) and
@@ -57,7 +57,7 @@ calculation of its own. Four gates apply and are named on the tasks they block:
   assemble the five-provider Status capability; feature 003 never interprets a raw Almanac jump,
   mobility, mass or capacity result itself.
 
-The pinned `@elite-dangerous-almanac/core@0.1.3` has no remaining feature-008 API blocker:
+The pinned `@elite-dangerous-almanac/core@0.1.4` has no remaining feature-008 API blocker:
 `standardLoadResult()`, `jumpRangeSummary()`, the diagnostic `mobilityMetricsResult()`, the three
 aggregate result getters, `slots('core')` discriminators and post-engineering `effectiveStats` are
 all present in the installed release.
@@ -69,7 +69,7 @@ all present in the installed release.
 **Purpose**: Pin the package behaviour this feature projects and create the source and test locations
 before any contract lands.
 
-- [ ] T001 Pin the Almanac 0.1.3 mobility, jump, mass and slot behaviour this feature projects — `unladenMassResult`, `fuelCapacityResult` returning exact `{ main, reserve }` and `cargoCapacityResult` as `CalculationResult<T>` values whose incomplete form carries `value: null` and a non-empty ordered `CalculationIssue` tuple with required `field`, `reason` and `message` plus optional `slot`, `symbol` and `params`; `standardLoadResult('maximum' | 'unladen' | 'laden')` returning `CalculationResult<StandardLoadInputs>`; `jumpRangeSummary()` returning `max`, `unladen`, `laden`, `totalMax`, `totalUnladen` and `totalLaden` each with `range` and `jumps`; `frameShiftDrive` returning `FrameShiftDriveParams` including combined `jumpBoost`; `mobilityMetricsResult(StandardLoadInputs & { enginesPips })` returning all seven of `speed`, `boost`, `pitch`, `roll`, `yaw`, `massCurveMultiplier` and `rotationMassCurveMultiplier`; `slots('core')` exposing the `core` discriminators `frameShiftDrive` and `thrusters` with the exact game key `MainEngines` for thrusters; `fittedModules()` exposing exact `slot`, `symbol` and post-engineering `effectiveStats.mass`; and the leaf subpaths `ships/ship-loadout`, `ships/loadout-calculations`, `ships/mobility`, `ships/jump-range` and `ships/modules` — in `src/app/domain/mobility-jump/almanac-mobility-contract.spec.ts`
+- [ ] T001 Pin the Almanac 0.1.4 mobility, jump, mass and slot behaviour this feature projects — `unladenMassResult`, `fuelCapacityResult` returning exact `{ main, reserve }` and `cargoCapacityResult` as `CalculationResult<T>` values whose incomplete form carries `value: null` and a non-empty ordered `CalculationIssue` tuple with required `field`, `reason` and `message` plus optional `slot`, `symbol` and `params`; `standardLoadResult('maximum' | 'unladen' | 'laden')` returning `CalculationResult<StandardLoadInputs>`; `jumpRangeSummary()` returning `max`, `unladen`, `laden`, `totalMax`, `totalUnladen` and `totalLaden` each with `range` and `jumps`; `frameShiftDrive` returning `FrameShiftDriveParams` including combined `jumpBoost`; `mobilityMetricsResult(StandardLoadInputs & { enginesPips })` returning all seven of `speed`, `boost`, `pitch`, `roll`, `yaw`, `massCurveMultiplier` and `rotationMassCurveMultiplier`; `slots('core')` exposing the `core` discriminators `frameShiftDrive` and `thrusters` with the exact game key `MainEngines` for thrusters; `fittedModules()` exposing exact `slot`, `symbol` and post-engineering `effectiveStats.mass`; and the leaf subpaths `ships/ship-loadout`, `ships/loadout-calculations`, `ships/mobility`, `ships/jump-range` and `ships/modules` — in `src/app/domain/mobility-jump/almanac-mobility-contract.spec.ts`
 - [ ] T002 [P] Create the feature source skeleton `src/app/domain/mobility-jump/`, `src/app/application/mobility-jump/` and the `src/app/features/build-workspace/mobility-and-jump/` subdirectories `drives-and-mass-capability/`, `jump-performance/`, `mobility-performance/`, `mass-and-capacity/` and `module-mass-list/` per plan.md
 - [ ] T003 [P] Create the feature suite `e2e/mobility-and-jump.spec.ts` importing the feature 011 axe helper from `e2e/accessibility/axe.ts` and the semantic assertions from `e2e/accessibility/assertions.ts`, and register the Drives & Mass surfaces in `e2e/coverage-ledger.ts`
 

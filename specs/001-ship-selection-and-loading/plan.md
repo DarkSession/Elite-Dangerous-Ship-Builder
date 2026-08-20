@@ -14,7 +14,7 @@ Implementation of the shared design system, localization runtime and complete br
 
 **Language/Version**: TypeScript 6.0 in strict mode; HTML and SCSS; Node.js 24 per `.nvmrc` for tooling
 
-**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router, Angular service worker, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.3 leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
+**Primary Dependencies**: Angular 22.1 standalone and zoneless APIs, Angular Router, Angular service worker, RxJS 7.8, `@elite-dangerous-almanac/core` 0.1.4 leaf exports, Web Storage, Web Locks, BroadcastChannel, History and URL APIs
 
 **Storage**: In-memory `ShipLoadout` state; versioned, independently keyed JSON records in `localStorage`; tab identity and catalogue session state in `sessionStorage`; build payload only in the URL fragment; no backend or IndexedDB
 
@@ -26,7 +26,7 @@ Implementation of the shared design system, localization runtime and complete br
 
 **Performance Goals**: Search/filter/sort all 48 pinned hulls without perceptible delay; restore the working build before the workspace becomes interactive; coalesce autosaves without blocking interaction; retain the existing codec's sub-50 ms encode/decode target; import/export performance remains owned by feature 004
 
-**Constraints**: No server, account, telemetry or cross-origin request; no game-data duplication or calculation; no page-level horizontal scrolling; 500-character codec value including `b.`; lossless storage of recognized modelled state after package-owned module normalization; no automatic working-record deletion; one dark tokenized theme; all application text translatable; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+**Constraints**: No server, account, telemetry or cross-origin request; no game-data duplication or calculation; no page-level horizontal scrolling; 500-character codec value including `b.`; lossless storage of recognized modelled state after package reconstruction; no automatic working-record deletion; one dark tokenized theme; all application text translatable; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: 48 hulls in the pinned Almanac release; four routes; 20 recoverable working records before explicit management is required; named records limited only by browser storage quota; codec tables generated from and pinned to each supported Almanac release
 
@@ -34,21 +34,21 @@ Implementation of the shared design system, localization runtime and complete br
 
 ## Constitution Check
 
-_GATE: **PASS with no exception**. The package refuses an unknown hull and applies structured
-empty/default normalization to unresolved modules on every reconstruction path. No local replacement
-implementation is permitted._
+_GATE: **PASS with no exception**. The package refuses an unknown hull and returns every fixed mount
+populated on every reconstruction path. Unsupported module compatibility is out of scope and no
+local replacement implementation is permitted._
 
-| Principle                               | Design evidence                                                                                                                                                 | Status |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| I. Client-Side Only                     | Static Angular output, same-origin assets and service-worker cache; build data exists only in browser storage or a fragment.                                    | PASS   |
-| II. Almanac Source of Truth             | Hulls, facts, slots, defaults, artwork identity, validation, build construction and module normalization all use documented leaf imports.                       | PASS   |
-| III. Domain Logic Outside UI            | Pure domain services and injected platform ports precede signal stores and presentation-only components.                                                        | PASS   |
-| IV. Lossless, Honest Builds             | DTOs contain only resolved identities; unknown hulls refuse and unresolved modules empty/default through the package with transient feedback before activation. | PASS   |
-| V. Desktop, Tablet and Mobile           | Four fluid screen contracts cover touch, screen readers, 200% text, 400% zoom, portrait/landscape and reduced motion.                                           | PASS   |
-| VI. Commander's Language                | Runtime locale store, bundled English fallback, `Intl` formatting and an untranslated marker for package text are defined.                                      | PASS   |
-| VII. One Design System                  | Every screen composes shared `src/app/ui/` components and tokens; required additions and preview states are inventoried.                                        | PASS   |
-| VIII. Tested Before It Ships            | Unit, dual-engine multi-viewport E2E, automated accessibility and screen-reader-semantic scenarios are specified without reducing thresholds.                   | PASS   |
-| IX. Specification Before Implementation | The accepted capability spec is mapped to plan-time screen definitions before task generation.                                                                  | PASS   |
+| Principle                               | Design evidence                                                                                                                               | Status |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| I. Client-Side Only                     | Static Angular output, same-origin assets and service-worker cache; build data exists only in browser storage or a fragment.                  | PASS   |
+| II. Almanac Source of Truth             | Hulls, facts, slots, defaults, artwork identity, validation and build construction all use documented leaf imports.                           | PASS   |
+| III. Domain Logic Outside UI            | Pure domain services and injected platform ports precede signal stores and presentation-only components.                                      | PASS   |
+| IV. Lossless, Honest Builds             | DTOs contain only resolved identities; unknown hulls refuse and package construction always populates fixed mounts before activation.         | PASS   |
+| V. Desktop, Tablet and Mobile           | Four fluid screen contracts cover touch, screen readers, 200% text, 400% zoom, portrait/landscape and reduced motion.                         | PASS   |
+| VI. Commander's Language                | Runtime locale store, bundled English fallback, `Intl` formatting and an untranslated marker for package text are defined.                    | PASS   |
+| VII. One Design System                  | Every screen composes shared `src/app/ui/` components and tokens; required additions and preview states are inventoried.                      | PASS   |
+| VIII. Tested Before It Ships            | Unit, dual-engine multi-viewport E2E, automated accessibility and screen-reader-semantic scenarios are specified without reducing thresholds. | PASS   |
+| IX. Specification Before Implementation | The accepted capability spec is mapped to plan-time screen definitions before task generation.                                                | PASS   |
 
 There are no constitutional exceptions. Feature 011 must land first (or its complete shared foundational subset must be delivered as part of feature 001); bypassing it with local styles, strings or a partial test matrix is not an allowed shortcut.
 
@@ -132,8 +132,8 @@ At wide widths, the ship routes use the design's master-detail manifest and insp
 All technical unknowns are resolved in [research.md](./research.md). The decisive outcomes are:
 
 - `SHIPS`, `getShipBySymbol`, `getShipSlots`/`enumerateSlots`, `getDefaultLoadout` and `ShipLoadout.default` are the authoritative catalogue/detail/creation APIs.
-- A purpose-built `BuildSnapshotV1` preserves only recognized modelled state after package-owned
-  unknown-module normalization; `ShipLoadout.toLoadoutEvent()` is not used wholesale because it adds
+- A purpose-built `BuildSnapshotV1` preserves only recognized modelled state after package
+  reconstruction; `ShipLoadout.toLoadoutEvent()` is not used wholesale because it adds
   derived fields and normalizes spelling.
 - Each local record is an atomic, versioned `edsb:record:<uuid>` value. A 20-record working limit is enforced without eviction.
 - A `sessionStorage` tab record plus BroadcastChannel collision negotiation prevents duplicated tabs from sharing one working record. Named saves use revision UUIDs and short Web Locks.
@@ -157,7 +157,7 @@ component-owned domain state, hard-coded display text, visual literal or silent 
 Local notes and record identities are excluded explicitly from link/SLEF boundaries. Every mutation
 that could replace work is candidate-first and confirmable; every persistence failure keeps the
 active build usable. The design remains constitutionally sound, and ingress, migration, persistence
-and link reconstruction all rest on the package's structured normalization outcomes.
+and link reconstruction all rest on package reconstruction and validation results.
 
 ## Complexity Tracking
 
@@ -169,5 +169,5 @@ boundary that keeps persistence and link behaviour render-free and testable unde
 each wraps one browser API and adds no rule of its own. The candidate-first `ReplacementCoordinator`
 exists so that one commit path serves stock creation, record open, link load and SLEF import — a
 single boundary rather than four, and the reason no ingress path can half-replace active work. The
-fixed-mount repair step in `reconstructFromSnapshot` calls the package `repairFixedMount` and is
+fixed-mount invariant in `reconstructFromSnapshot` consumes the package-returned defaults and is
 composed by feature 002's shared ingress pipeline rather than duplicated in it.

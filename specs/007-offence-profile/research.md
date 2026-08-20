@@ -1,6 +1,6 @@
 # Research: Offence Profile
 
-Research used the installed `@elite-dangerous-almanac/core@0.1.3`, its public declarations and live
+Research used the installed `@elite-dangerous-almanac/core@0.1.4`, its public declarations and live
 leaf-import probes; the accepted feature 001/002/003/005/011 artifacts; the current repository
 configuration; and `.design/Ship Builder.dc.html` canvases 1c and 1d. No application formula was used.
 
@@ -29,7 +29,7 @@ risk.
 `maximumRange`/`falloffRange`/`projectileRange`/`armourPiercing`, and all 14 required
 `WeaponMetrics` fields. Preserve returned order and use the exact `slot` for navigation.
 
-**Rationale**: Runtime probes and declarations agree. Almanac 0.1.3 returns known weapons in hull-slot
+**Rationale**: Runtime probes and declarations agree. Almanac 0.1.4 returns known weapons in hull-slot
 order and appends unknown/unmapped slots in source order. Reversed Sidewinder input returns
 `SmallHardpoint1` then `SmallHardpoint2`; unknown slots retain their source order after the known set.
 The fitted range/piercing projection and ordering work tracked by Almanac #300/#301 is present in the
@@ -48,7 +48,7 @@ metrics. A non-empty zero-total list remains populated; disabled entries
 remain visible.
 
 **Rationale**: Disabled Sidewinder weapons remain in the list with full metrics while all aggregate
-fields become zero. Unknown module identities have already normalized to empty/default before this
+fields become zero. Only supported package-resolved module identities reach this
 capability. A real zero-damage hardpoint record also exists, so
 zero cannot identify absence or disability.
 
@@ -204,6 +204,6 @@ accessibility states or implementing private feature-local foundations were reje
 
 ## Research conclusion
 
-All feature semantics and design choices are resolved, and pinned Almanac 0.1.3 has no feature-007
+All feature semantics and design choices are resolved, and pinned Almanac 0.1.4 has no feature-007
 API blocker. Implementation remains blocked on shared strictness and features 001/002/003/005/011,
 including the two missing same-revision integration ports. No planning clarification remains.

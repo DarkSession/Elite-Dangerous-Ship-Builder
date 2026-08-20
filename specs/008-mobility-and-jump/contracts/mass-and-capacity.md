@@ -45,9 +45,9 @@ Never sum, group, subtract or reconcile module rows. `unladenMassResult` is the 
 Raw journal modifiers and catalogue base mass are prohibited fallbacks.
 
 An imported build may carry a complete package-trusted `UnladenMass` while a resolved fitted module
-has unavailable row mass. Preserve both package outcomes. Unknown module identities have already
-been package-normalized before this capability; the application never overrides a package-supplied
-complete aggregate.
+has unavailable row mass. Preserve both package outcomes. Unsupported module identities are
+outside the supported ingress contract; the application never overrides a package-supplied complete
+aggregate.
 
 ## Relationship to dependent calls
 

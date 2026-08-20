@@ -12,11 +12,10 @@ actions for one build/condition revision.
 2. Viewing conditions: load, SYS/ENG/WEP pip draft/total, hardpoints, Apply and Reset.
 3. Independent structural validity and completeness facts.
 4. Ordered package issue list or explicit none-reported statement.
-5. Separate fixed-mount normalisation provenance list when present.
-6. Power draw and capacity.
-7. Six headline cards: shield, armour, sustained DPS, selected jump, top speed, unladen mass.
-8. Qualification summary or explicit none-reported statement.
-9. Assembly requirements: retail fields, conditional Merc Coin and materials.
+5. Power draw and capacity.
+6. Six headline cards: shield, armour, sustained DPS, selected jump, top speed, unladen mass.
+7. Qualification summary or explicit none-reported statement.
+8. Assembly requirements: retail fields, conditional Merc Coin and materials.
 
 Controls precede the values they affect. Structural evidence precedes results. Requirements follow
 the headline set, matching the durable reference hierarchy.
@@ -24,7 +23,7 @@ the headline set, matching the durable reference hierarchy.
 ## Desktop
 
 Add Status as a peer in the central capability selector shown by canvas 1c. The rail action selects
-it without routing. The central outlet uses fluid cards and full-width issue/provenance/assembly
+it without routing. The central outlet uses fluid cards and full-width issue/assembly
 regions. The persistent rail remains a compact mirror of the same revision and contains no issue
 records.
 
@@ -59,12 +58,11 @@ Sustained DPS always remains the package firing value. When the selected power c
 retracted, the card identifies DPS as firing/deployed-native output rather than fabricating a
 retracted number or unavailable state.
 
-## Issues and provenance
+## Issues
 
 Structural facts use a definition list. Issues use one ordered semantic list item per package entry
 with visible code/severity, diagnostic helper/fallback text, structured context and optional exact
-slot action. Provenance follows in a separately labeled local-workflow region and is not counted as a
-package issue.
+slot action.
 
 ## Lifecycle states
 
@@ -74,7 +72,6 @@ package issue.
 - issue target present/absent;
 - no issues/no qualifications;
 - owner exact-zero, lower-bound, incomplete, unavailable, infinite and Merc Coin absent states;
-- provenance present/cleared;
 - invalid pip draft with previous settled results retained;
 - application projection failure distinct from package unavailable.
 

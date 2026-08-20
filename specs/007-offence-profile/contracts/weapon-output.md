@@ -63,7 +63,7 @@ For burst and sustained damage:
 
 - show exact kinetic, thermal, explosive, absolute and anti-xeno numbers;
 - show optional unclassified when present; when absent, omit it or state no unclassified damage,
-  because 0.1.3 omits the member exactly when zero;
+  because 0.1.4 omits the member exactly when zero;
 - state that anti-xeno overlays conventional damage;
 - create no share, percentage, conventional-plus-AX total, resistance result or color-only meaning.
 
@@ -78,7 +78,7 @@ and remains distinct.
 - `armourPiercing` is a rating. There is no target hardness input or piercing factor.
 - No range attenuation, range-band aggregation, target simulation or convergence result is allowed.
 
-Almanac 0.1.3 contains the fitted projection tracked by issue #300. Do not implement a
+Almanac 0.1.4 contains the fitted projection tracked by issue #300. Do not implement a
 `fittedModuleAt()` join or catalogue fallback.
 
 ## Ammunition
@@ -105,8 +105,7 @@ Feature 002 supplies same-build-revision package-backed hardpoint coverage:
 | Real returned zero-damage weapon        | Complete entry with exact zero and all other returned data |
 | Optional range/piercing member absent   | Field not stated, never zero                               |
 
-Unknown module identities never reach this boundary; ingress has already converted them to package
-empty/default outcomes.
+Unsupported module identities are outside this boundary; ingress provides package-resolved state.
 
 ## Exact-slot target
 

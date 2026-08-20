@@ -11,7 +11,7 @@ run/acceptance guide, not implementation code.
    pnpm install --frozen-lockfile
    ```
 
-2. Confirm the resolved Almanac is 0.1.3 or the subsequently accepted release and rerun the full
+2. Confirm the resolved Almanac is 0.1.4 or the subsequently accepted release and rerun the full
    installed-asset audit after any upgrade.
 3. Confirm features 001, 002 and 003 provide the active build/workspace, complete exact-slot ledger
    and settled deployed/retracted revision context.
@@ -46,7 +46,7 @@ and lines; no project/browser/layout is skipped.
 
 Run the package audit before and after the production build.
 
-Expected for the pinned 0.1.3 regression:
+Expected for the pinned 0.1.4 regression:
 
 - 48 package hulls and matching asset directories;
 - top and bottom schematics for every hull;
@@ -62,9 +62,9 @@ Counts validate the pinned fixture; application behavior must derive the next re
 
 ## Scenario 2: hardpoint and utility parity
 
-Open a build containing fitted, empty and engineered hardpoints and utilities. Inspect top, bottom,
-selected facts and the unique text list. Separately verify unknown fitted identities are
-package-normalized before anatomy receives the build.
+Open a supported build containing fitted, empty and engineered hardpoints and utilities. Inspect top,
+bottom, selected facts and the unique text list. Fixed mounts are already package-populated and
+unsupported module identities are outside this capability's ingress contract.
 
 Expected:
 

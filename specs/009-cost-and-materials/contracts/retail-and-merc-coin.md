@@ -19,7 +19,7 @@ Components never call the Almanac or calculate a price.
    prices to repair the result.
 
 A thrown/integration failure is a whole-projection failure, not a nullable hull/rebuy state. A valid
-0.1.3 `RetailCredits` result contains no nullable numeric field.
+0.1.4 `RetailCredits` result contains no nullable numeric field.
 
 For presentation, join each exact slot key to the captured `loadout.slots()` record before using
 the package slot-name helper. Resolve module names through the package helper. If either lookup fails,
