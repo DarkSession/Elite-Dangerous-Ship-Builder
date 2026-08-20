@@ -98,9 +98,10 @@ after Phase 1 with the same result._
    and narrow slot surface; feature 010 does not recreate that editor boundary.
 3. **Feature 003** must provide settled deployed/retracted state and the build/condition revision
    context used by current-power observations.
-4. **Feature 005** must generalize `HardpointPowerObservationPort` to a located-mount port covering
-   exact hardpoint and utility keys. Almanac `PowerBudget.consumers` already supports both; this is an
-   application-contract correction, not an Almanac defect. Feature 005's Almanac gate is resolved in
+4. **Feature 005** owns `MountPowerObservationPort`, which accepts any exact package slot key;
+   feature 010 consumes it for hardpoint and utility mounts and defines no port of its own. Almanac
+   `PowerBudget.consumers` already supports every mount kind, so this is an application-contract
+   boundary rather than an Almanac defect. Feature 005's Almanac gate is resolved in
    0.1.3; the shared strictness and application-contract prerequisites remain.
 5. **Feature 011** must deliver strict configuration, one design system, localization/game-text
    presentation, announcements, component previews, ten Playwright projects and the axe harness.

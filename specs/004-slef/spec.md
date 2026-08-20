@@ -58,7 +58,8 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 - **FR-012**: Successful import MUST report partial quality normalised to 100%, unknown removable
   modules emptied, unknown fixed modules replaced with package defaults, source-empty fixed mounts
   filled and fixed mounts left incomplete when no default exists. Source unknown identities are
-  transient feedback only.
+  transient feedback only. [002](../002-module-outfitting/spec.md) FR-010 states this normalisation
+  rule canonically; this requirement applies it to SLEF and journal ingress.
 - **FR-013**: Import followed by export MUST preserve every modelled field except the two
   constitutional ingress classes: completed engineering quality and package-owned identity/fixed-
   mount normalization. No unknown module identity or attached engineering may enter the export.

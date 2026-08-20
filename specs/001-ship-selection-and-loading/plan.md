@@ -158,3 +158,16 @@ Local notes and record identities are excluded explicitly from link/SLEF boundar
 that could replace work is candidate-first and confirmable; every persistence failure keeps the
 active build usable. The design remains constitutionally sound, and ingress, migration, persistence
 and link reconstruction all rest on the package's structured normalization outcomes.
+
+## Complexity Tracking
+
+No constitutional violation requires justification. The versioned URL codec is application-owned
+presentation of package identities rather than a second catalogue: it encodes and decodes
+`symbol`/slot-key identities and supplies no game fact or calculation. The injected browser ports
+(storage, history, BroadcastChannel, Web Locks, connectivity, lifecycle, UUID) are the minimum
+boundary that keeps persistence and link behaviour render-free and testable under principle III;
+each wraps one browser API and adds no rule of its own. The candidate-first `ReplacementCoordinator`
+exists so that one commit path serves stock creation, record open, link load and SLEF import — a
+single boundary rather than four, and the reason no ingress path can half-replace active work. The
+fixed-mount repair step in `reconstructFromSnapshot` calls the package `repairFixedMount` and is
+composed by feature 002's shared ingress pipeline rather than duplicated in it.

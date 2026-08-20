@@ -1,5 +1,20 @@
 <!--
-Sync Impact Report
+Sync Impact Report (6.0.1)
+- Version change: 6.0.0 -> 6.0.1 (PATCH)
+- Modified principles: None
+- Modified sections: Technology Constraints (Testing) — the Playwright project list named desktop,
+  tablet and mobile per engine while principle V already required portrait and landscape on tablet
+  and mobile. The list now names all five viewport-orientation projects per engine (ten in total),
+  matching what every feature 001-012 task list builds.
+- Rationale: clarification only. No obligation changes: principle V already required both
+  orientations and principle VIII already required both engines; the constraints paragraph simply
+  under-described the resulting project set.
+- Added sections: None
+- Removed sections: None
+- Invalidated-spec review: none required; no feature specification depended on the narrower list.
+- Follow-up TODOs: none.
+
+Previous report (6.0.0)
 - Version change: 5.0.0 -> 6.0.0
 - Modified principles: IV. Lossless, Honest Builds (unknown hull refusal and unknown module
   replacement)
@@ -341,8 +356,10 @@ requirements without prescribing implementation.
   side-effect free.
 - **Testing**: Vitest via the Angular unit-test builder, with coverage
   thresholds configured in `angular.json`; Playwright for end-to-end, with
-  desktop, tablet and mobile projects configured in `playwright.config.ts`,
-  each run in Chromium and in Firefox.
+  desktop, tablet portrait, tablet landscape, mobile portrait and mobile
+  landscape projects configured in `playwright.config.ts`, each run in Chromium
+  and in Firefox — ten projects, covering the three viewport classes in both
+  orientations principle V requires.
 - **Design system**: one component library under `src/app/ui/`, with design
   tokens defined in the global stylesheet layer and one dark theme built from
   them. It is versioned in this repository, and this repository is the source of
@@ -395,4 +412,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 6.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-18
+**Version**: 6.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-19
