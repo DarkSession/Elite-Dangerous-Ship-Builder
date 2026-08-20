@@ -12,10 +12,10 @@ application-level signal store. The frame's global action and package-backed con
 the same `open(source)` intent. The modal overlays the current capability; close returns to the
 unchanged underlying state. It does not invoke Angular Router, alter history or copy a build fragment.
 
-**Rationale**: FR-001 explicitly requires a modal without navigation. One instance prevents the four
-copied reference overlays from drifting and works when no build exists. A small store allows deeply
-nested package-backed surfaces to request the shared modal without importing a feature component or
-duplicating state.
+**Rationale**: FR-001 requires in-place, navigation-preserving help that works when no build exists;
+the modal is the plan-time design decision that satisfies that behavior. One instance prevents the
+four copied reference overlays from drifting. A small store allows deeply nested package-backed
+surfaces to request the shared modal without importing a feature component or duplicating state.
 
 **Alternatives considered**: The previous `/help` route was rejected because it leaves the current
 capability and contradicts FR-001. A modal per route, URL/query-driven dialog state and copied legal
@@ -40,8 +40,12 @@ was rejected because it cannot serve every capability cleanly.
 7. the bundled Almanac owns catalogue values, validation and calculations, with no live-game
    currency claim.
 
-Each topic is a stable ID plus question/body message keys. Content review links each topic to the
-constitution or accepted feature contract it describes.
+Each topic is exactly one stable ID plus question/body message keys and a non-empty set of
+tooling-only governing references to accepted feature requirements or constitution principles. The
+validator rejects any missing or duplicate required ID, empty reference set or unresolved reference.
+The release content-review gate compares every answer to those sources and rejects contradictions or
+unsupported product claims. References are review/build evidence and are neither displayed nor
+bundled.
 
 **Rationale**: These are exactly FR-010's questions and reflect accepted behavior. Stable records
 support ordered rendering, completeness tests and localisation without putting product prose in a
@@ -84,11 +88,12 @@ was rejected by FR-006.
 table generator pattern. Emit one immutable generated manifest for browser consumption.
 
 Only explicit release-workflow evidence whose release version/ref matches the non-placeholder root
-version produces `{ kind: 'release' }`. Every other build is `{ kind: 'nonRelease', buildId }`.
-CI supplies a bounded immutable build ID; a repository build uses the current commit abbreviation
-plus an optional `dirty` marker. The accepted alphabet excludes whitespace, URLs, paths, branch
-names, people, machines and account identifiers. If no truthful identifier is available, generation
-fails.
+version produces `{ kind: 'release' }`. A build outside a declared release workflow is normally
+`{ kind: 'nonRelease', buildId }`; incomplete, mismatched or placeholder evidence inside a declared
+release workflow fails rather than being silently downgraded. CI supplies a bounded immutable build
+ID; a repository build uses the current commit abbreviation plus an optional `dirty` marker. The
+accepted alphabet excludes whitespace, URLs, paths, branch names, people, machines and account
+identifiers. If no truthful identifier is available, generation fails.
 
 **Rationale**: The package export map does not expose its manifest to browser code, but installed
 artifacts are available to Node tooling under pnpm. Explicit classification prevents an optimized
@@ -148,12 +153,13 @@ terms disappear, fork package wording, hide review changes or contradict FR-003/
 
 ## Initial-load and offline delivery
 
-**Decision**: Eagerly import the generated help manifest and feature 011's bundled English message
-entries with the application frame. The shared modal component may instantiate on demand, but all
-facts, accepted help text and exact disclaimer bytes are already in the initial JavaScript bundle.
-Opening it performs no dynamic import or fetch. Feature 001's app-shell/service-worker policy caches
-that initial bundle; other locale catalogues may use feature 011's same-origin loading and bundled
-English fallback.
+**Decision**: Eagerly import the generated help manifest, separate generated help-topic catalogue and
+feature 011's bundled English message entries with the application frame. The shared modal component
+may instantiate on demand, but all facts, accepted help text and exact disclaimer bytes are already
+in the initial JavaScript bundle.
+Opening it performs no dynamic import or fetch. Feature 011's sole service-worker/base app-shell
+policy caches that initial bundle; other locale catalogues may use feature 011's same-origin loading
+and bundled English fallback.
 
 **Rationale**: This satisfies first-load/offline availability without adding a runtime missing,
 loading or stale legal state. It also ensures the modal is independent of build data, storage and
@@ -193,9 +199,11 @@ localisation/reflow or screen-reader requirements.
 **Decision**: Test at three layers:
 
 - Node tests cover every generator rejection, exact extraction, hashes, version/release identity,
-  destination allowlists and package-mirror equality.
-- Vitest covers manifest invariants, topic completeness, presenter localisation, store transitions,
-  view-model distinctions and component intents/semantics.
+  destination allowlists, package-mirror equality, exact topic identity/uniqueness, resolvable
+  governing references and shipped-locale completeness.
+- Vitest covers browser-manifest invariants, presenter localisation, store transitions, view-model
+  distinctions and component intents/semantics. Required content review rejects
+  contradictory/unsupported claims outside automated semantic tests.
 - Playwright covers global and contextual entry from no-build and active capabilities, URL/build
   stability, all content, release/non-release fixtures, offline opening/reload, exact destinations,
   no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
@@ -204,7 +212,7 @@ localisation/reflow or screen-reader requirements.
 Manual screen-reader protocol verifies that the modal is announced, the background is not traversed
 as active content, headings/topics/facts/disclaimer language/warnings are understandable, and the
 unchanged underlying capability is available again after close. The documented conformance
-statement retains the constitution's keyboard-criteria exclusions.
+statement says WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 **Rationale**: Artifact correctness cannot be established by UI tests alone, and an axe pass cannot
 prove reading order or meaning. Layered checks place failures at their owning boundary.

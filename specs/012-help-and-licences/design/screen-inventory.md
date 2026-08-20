@@ -55,7 +55,14 @@ conditions fail generation/release.
 
 ## Verification inventory
 
-Automated journeys open the modal from:
+The release coverage ledger is the exhaustive, versioned set required by FR-011. Before release it
+enumerates every current capability supplied by features 001–010, every package-backed artwork/value
+surface named by their accepted screen contracts and every full-screen layer that obscures the frame.
+Each row records whether the shared frame entry is visible or which contextual entry substitutes for
+it. A missing capability or applicable surface is a release failure; representative sampling is not
+sufficient.
+
+Automated journeys open the modal from every ledger row and include at least:
 
 1. a no-build hull-catalogue capability through the wide frame action;
 2. an active workspace through the narrow menu action;
@@ -63,5 +70,6 @@ Automated journeys open the modal from:
 4. a package value/calculation provenance entry.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return and no automatic network request. All open states receive axe, semantic and overflow
-checks in the complete Chromium/Firefox viewport-orientation matrix.
+close return and no automatic network request. The four classes above do not cap the ledger. All open
+states receive axe, semantic and overflow checks in the complete Chromium/Firefox
+viewport-orientation matrix.
