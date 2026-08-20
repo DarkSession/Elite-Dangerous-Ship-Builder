@@ -23,6 +23,11 @@ demonstrated independently.
 - **[Story]**: Which user story this task belongs to (US1, US2, US3)
 - Every task names every file it changes. A task that spans several files names all of them; it is
   never left to the implementer to infer an unnamed file
+- **One stated exception**: a ledger-driven task whose targets are fixed by the [Release coverage
+  ledger](./design/screen-inventory.md#release-coverage-ledger) names the ledger and the owning
+  feature for each row instead of a path, because those templates belong to features 001–011 and do
+  not exist when this list is written. The commit that performs such a task names every file it
+  actually changed. T022 is the only task using this exception
 
 ## Path Conventions
 
@@ -48,9 +53,18 @@ cannot start until its owner has shipped it:
 | `src/app/ui/components/app-frame/` — frame with wide and narrow action bar   | Feature 011 | T020, T024, T025             |
 | `src/app/i18n/locales/en.json` and `de.json` — localisation with fallback    | Feature 011 | T016, T031, T041, T047       |
 | `src/app/ui/previews/preview-manifest.ts` — component preview catalogue      | Feature 011 | T024, T032, T042, T052       |
+| Test-only expanded-copy and RTL pseudo locale providers                      | Feature 011 | T032, T052, T054             |
 | Shared dialog/layer primitives and tokens under `src/app/ui/`                | Feature 011 | T019, T021, T023, T028, T038 |
+| `e2e/coverage-ledger.ts` — the shared machine-readable coverage ledger       | Feature 011 | T025, T063                   |
 | Ten Chromium/Firefox viewport-orientation projects in `playwright.config.ts` | Feature 011 | T054, T055, T056, T057, T065 |
+| Chromium CDP `Emulation.setCPUThrottlingRate(4)` throttled-timing harness    | Feature 003 | T057                         |
 | Capability pages and layers in the Release coverage ledger                   | 001–011     | T022, T025, T063             |
+
+The RTL and expanded-copy providers are test-only fixtures, not shipped locales: the shipped
+application languages remain English and German. The throttled-timing harness is feature 003's, not
+feature 011's — feature 011 supplies the viewport projects it runs over. `e2e/coverage-ledger.ts` is
+feature 011's file, seeded by its own entries and appended to by every feature; this feature adds one
+`helpRouteCoverage` export to it and owns no other row in it.
 
 **Release automation is deliberately not a row above.** No workflow sets `SHIP_BUILDER_RELEASE_TAG`
 (`ci.yml` gates `main` and pull requests; `deploy.yml` publishes `main` to Pages), and root
@@ -120,7 +134,7 @@ owns its own failure fixtures, presenter projection, section rendering and journ
 - [ ] T022 Wire `ContextHelpLink` into every row of the Release coverage ledger in [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger) whose **contextual entry** column names one, so every surface required by FR-002 and FR-011 dispatches the shared open intent instead of embedding help copy. The ledger is the authority on which files are touched: resolve each row to its owning feature's screen contract and change that feature's own template. Name every file actually changed in the commit; do not add a surface the ledger does not list, and do not skip one it does (depends on T021)
 - [ ] T023 [P] Implement the shared `WarnedExternalLink` presentation component in `src/app/ui/components/warned-external-link/` as a native anchor that is inert until activation, carries `rel="noreferrer noopener"`, states its destination purpose plus the leaving-application and possible-network warnings in visible and accessible text, meets the shared token-backed 44 CSS-pixel target and has a focused co-located unit spec
 - [ ] T024 Register the closed-frame-entry, closed-contextual-entry and open-shell states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` at desktop centered, tablet and mobile portrait, and tablet and mobile landscape sheet treatments, plus the shell-level reduced-motion and 400%-zoom reflow states required by [contracts/help-navigation.md](./contracts/help-navigation.md)'s component-preview list (depends on T016, T020, T021, T022)
-- [ ] T025 Transcribe the Release coverage ledger from [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger) into `e2e/coverage-ledger.ts` one row at a time — transcribe, do not re-derive — and build the journey harness in `e2e/help-and-licences.spec.ts` that opens help from every transcribed row, including at least the wide frame action from a no-build capability, narrow menu action from an active workspace, package artwork entry and package value entry; assert exactly one dialog instance, unchanged pathname/query/fragment/history length/build revision/selected slot/stored records, no route chunk or cross-origin request on open, and an unchanged underlying capability after close (depends on T020, T022, T024)
+- [ ] T025 Transcribe the Release coverage ledger from [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger) one row at a time — transcribe, do not re-derive — into a single new `helpRouteCoverage` export appended to feature 011's shared `e2e/coverage-ledger.ts`, touching no entry another feature seeded there; and build the journey harness in `e2e/help-and-licences.spec.ts` that opens help from every transcribed row, including at least the wide frame action from a no-build capability, narrow menu action from an active workspace, package artwork entry and package value entry. Assert exactly one dialog instance, unchanged pathname/query/fragment/history length/build revision/selected slot/stored records, no route chunk or cross-origin request on open, an unchanged underlying capability after close, and — satisfying FR-002's prohibition rather than only its positive half — that the row's own surface embeds no legal body and offers no help or legal destination other than the shared open intent (depends on T020, T022, T024)
 
 **Checkpoint**: The shared modal opens and closes from every required surface over verified build artifacts. Story sections can now be added independently.
 
@@ -171,7 +185,7 @@ currency, and the issue action targets the Almanac issues page under a narrower,
 - [ ] T041 [P] [US2] Add the localised version labels, release and non-release wording, bounded provenance statement — the bundled Almanac supplies catalogue data, validation and calculations, and Frontier owns the covered game data and imagery — and the narrow package-defect action wording to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, with no live-game or live-catalogue currency claim
 - [ ] T042 [US2] Register the open-release, open-non-release-with-build-ID and long-application/build/package-identifier preview states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` (depends on T040, T041)
 - [ ] T043 [US2] Unit test in `src/app/application/help/help.presenter.spec.ts` and `src/app/features/help/help-dialog.component.spec.ts` that the two versions are distinct labelled facts, that a non-release view model always carries a visible build ID, that release state is only shown for generator-classified release evidence, that provenance stays within its bounded statement and that the issue action is not described as legal detail (depends on T040)
-- [ ] T044 [US2] Extend `e2e/help-and-licences.spec.ts` with the identity journey in two legs. Online: the displayed application and Almanac versions equal the shipped root and installed manifests, the current build shows Non-release plus its build ID, and neither value is labelled live game or live catalogue. Offline, completing SC-004's identity half: after one completed online production-app load, disable the network, reload a no-build capability and assert the same version facts, non-release state, build ID and bounded provenance are present and unchanged, with no request and no loading, missing or stale state (depends on T040)
+- [ ] T044 [US2] Extend `e2e/help-and-licences.spec.ts` with the identity journey in two legs. Online: the displayed application and Almanac versions equal the shipped root and installed manifests, the current build shows Non-release plus its build ID, and neither value is labelled live game or live catalogue. Offline, completing SC-004's identity part: after one completed online production-app load, disable the network, reload a no-build capability and assert the same version facts, non-release state, build ID and bounded provenance are present and unchanged, with no request and no loading, missing or stale state (depends on T040)
 - [ ] T045 [US2] Extend `e2e/help-and-licences.spec.ts` with the package-defect navigation assertion: no request before activation, then activation targeting exactly `https://github.com/DarkSession/Elite-Dangerous-Almanac/issues` with `rel="noreferrer noopener"`, the visible leaving-application and network warnings, and no query, fragment or build data (depends on T040)
 
 **Checkpoint**: User Stories 1 and 2 are both independently demonstrable over the same shared modal.
@@ -196,7 +210,7 @@ position while the complete modal stays available.
 - [ ] T050 [US3] Render the Help topics section directly after the header in `src/app/features/help/help-dialog.component.html` as one reading sequence with a coherent heading hierarchy, and apply the optional invocation topic hint to the initial in-modal position only (depends on T049)
 - [ ] T051 [US3] Unit test in `src/app/application/help/help.presenter.spec.ts`, `src/app/domain/help/help-topic.spec.ts` and `scripts/check-help-topics.test.mjs` that all seven IDs resolve exactly once in order, no answer contains a raw key, blank value, unresolved interpolation or HTML, prohibited import/partial-roll wording is absent, and neither a governing reference nor a partial topic set enters the separate generated topic module (depends on T050)
 - [ ] T052 [US3] Register the all-seven-topics-populated, doubled/expanded-text and RTL-framing preview states in feature 011's preview catalogue `src/app/ui/previews/preview-manifest.ts` (depends on T050)
-- [ ] T053 [US3] Extend `e2e/help-and-licences.spec.ts` to assert all seven topics from global and contextual entry and record the required seven-topic content review against every governing source in `specs/012-help-and-licences/design/help-topic-review.md`, failing release for any unchecked, contradictory, unsupported or speculative claim (depends on T050, T051)
+- [ ] T053 [US3] Extend `e2e/help-and-licences.spec.ts` to assert all seven topics from global and contextual entry; add the offline leg completing SC-004's help part — after one completed online production-app load, disable the network, reload a no-build capability and assert the same seven topics render in order with complete localised question and answer text, no request and no loading, missing or stale state; and record the required seven-topic content review against every governing source in `specs/012-help-and-licences/design/help-topic-review.md`, failing release for any unchecked, contradictory, unsupported or speculative claim (depends on T050, T051)
 
 **Checkpoint**: All three user stories are independently functional over one shared modal instance.
 
@@ -210,13 +224,13 @@ story.
 - [ ] T054 Extend `e2e/help-and-licences.spec.ts` with the axe, semantic and no-overflow sweep (governed by feature 011 FR-012 and FR-021 and constitution principle V; baseline in [design/screen-inventory.md](./design/screen-inventory.md#accessibility-responsive-and-localisation-baseline)) over the closed background and every open state — release, non-release, global, contextual, alternate locale and long text — across feature 011's ten Chromium and Firefox viewport and orientation projects (depends on T053)
 - [ ] T055 Assert the 200%-text and actual-400%-zoom reflow states (governed by feature 011 FR-011 and constitution principle V) in `e2e/help-and-licences.spec.ts`: every section and action stays reachable, the title and close stay available, the disclaimer is not clipped and the document has no horizontal overflow (depends on T054)
 - [ ] T056 Assert, under feature 011 FR-011/FR-012 and constitution principle V, in `e2e/help-and-licences.spec.ts` that open and closed state remains immediate and textual under `prefers-reduced-motion` and that no meaning depends on motion, colour, icon, shape, dimming or placement (depends on T055)
-- [ ] T057 Assert in `e2e/help-and-licences.spec.ts` that opening the already-loaded modal presents its first complete frame within 100 ms at the mobile viewport under 4× CPU slowdown, with no route load, same-origin asset request or cross-origin request — SC-005 in full. The no-request half also enforces FR-001. Use the same shared baseline features 003, 005, 009 and 010 measure against, from feature 011's Playwright matrix (depends on T056)
-- [ ] T058 [P] Confirm the eagerly imported manifest and bundled English help catalogue stay within the existing production initial-bundle error budget in `angular.json`; record a defect if the ceiling is exceeded and do not raise the budget within this feature
+- [ ] T057 Assert in `e2e/help-and-licences.spec.ts` that opening the already-loaded modal presents its first complete frame within 100 ms at the mobile viewport under 4× CPU slowdown, with no route load, same-origin asset request or cross-origin request — SC-005 in full. The no-request half also enforces FR-001 and runs in every project of feature 011's matrix; the timing half reuses feature 003's Chromium CDP `Emulation.setCPUThrottlingRate(4)` harness — the same baseline features 005, 009 and 010 measure against — and is therefore Chromium-only, which is a property of the harness rather than a narrowed matrix (depends on T056)
+- [ ] T058 [P] Confirm the eagerly imported manifest and bundled English help catalogue stay within the existing production initial-bundle error budget in `angular.json`. The ceiling itself is already enforced by `ng build` under T065; this task exists for the response when it is exceeded — record the measured initial-bundle size and the overage as a defect in `specs/012-help-and-licences/design/help-and-licences.md` under a Bundle budget heading, and do not raise the budget within this feature
 - [ ] T059 Add the generated-output purity test to `scripts/generate-help-manifest.test.mjs` asserting the emitted module contains no absolute workspace path, personal, account, machine or environment identifier, timestamp, random value, build payload or unrequested complete legal document (depends on T037)
 - [ ] T060 Record the completed manual screen-reader protocol required by constitution principle V and feature 011 FR-011 — entry discovery from a no-build and an active capability, single labelled dialog, background isolation, heading and topic order, version distinctions, disclaimer source and language, external warnings and the unchanged capability after close — in `specs/012-help-and-licences/design/screen-reader-record.md` (depends on T057)
 - [ ] T061 [P] Satisfy feature 011 FR-015 by stating the qualified conformance wording naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11 wherever this feature's accessibility conformance is reported in `specs/012-help-and-licences/design/help-and-licences.md`
 - [ ] T062 [P] Document in `AGENTS.md` the `pnpm run legal:sync` maintainer path, its review requirement after an Almanac upgrade, the rule that ordinary builds never rewrite tracked mirrors, and the two distinct generated-artifact conventions now in the repository — the build-link codec table is committed and regenerated on demand, while `help-manifest.generated.ts` and `help-topics.generated.ts` are ignored and regenerated ahead of every Angular command — so a contributor is not left inferring which rule applies
-- [ ] T063 Reconcile `e2e/coverage-ledger.ts` against the Release coverage ledger in [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger) in both directions and complete the frame-entry, contextual-entry, modal, legal, identity and topic mappings with FR-001–FR-011 requirement IDs; fail review on any row present in one and absent from the other, and on any capability, package-backed surface or obscuring layer that features 001–011 now ship but neither lists. Feature 011's component preview application is the single recorded exclusion
+- [ ] T063 Reconcile the `helpRouteCoverage` export in `e2e/coverage-ledger.ts` against the Release coverage ledger in [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger) in both directions and complete the frame-entry, contextual-entry, modal, legal, identity and topic mappings with FR-001–FR-011 requirement IDs; fail review on any row present in one and absent from the other, and on any capability, package-backed surface or obscuring layer that features 001–011 now ship but neither lists. The reconciliation is scoped to that one export: entries features 001–011 seeded elsewhere in the same file describe their own requirements and are neither expected in the Release coverage ledger nor a finding when absent from it. Feature 011's component preview application is the single recorded exclusion from the Release coverage ledger, which is why its preview-catalogue entries appear in the shared file but not here (depends on T025)
 - [ ] T064 Walk [quickstart.md](./quickstart.md) sections 1 through 8 against the built application and record any divergence as a defect rather than a documentation edit; quickstart section 9 is T065's gate, so the two tasks together cover the document (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063)
 - [ ] T065 Run the `pnpm run check` pipeline declared in `package.json` to green — quickstart section 9 — covering format, typecheck, production build, generator tests, unit coverage at or above the 80% thresholds and the complete Playwright and axe matrix, with no skipped browser, viewport, accessibility rule or test (depends on T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T064)
 
@@ -258,6 +272,8 @@ story.
 - `src/app/ui/previews/preview-manifest.ts`: T024 → T032 → T042 → T052
 - `src/app/i18n/locales/en.json` and `de.json`: T016 → T031, T041, T047
 - `e2e/help-and-licences.spec.ts`: T025 → T034–T036, T044, T045, T053–T057
+- `e2e/coverage-ledger.ts` (feature 011-owned, shared): T025 → T063, both confined to the
+  `helpRouteCoverage` export
 
 Six of these chains cross story boundaries: the presenter, the modal template, the preview
 catalogue, the two locale files, the generator test suite and the E2E spec are each touched by US1,
@@ -296,14 +312,15 @@ Task: "Licence framing messages in src/app/i18n/locales/en.json and de.json"
 4. **STOP and VALIDATE**: the modal opens from every enumerated entry without navigation, the disclaimer is
    byte-identical to root `LICENSE`, one warned GitHub action carries all remaining terms, and it all
    works on the first offline visit after one completed online load
-5. SC-001 and SC-004's legal half are satisfied at this point
+5. SC-001 and SC-004's disclaimer part are satisfied at this point. SC-004 names three things —
+   help, version information and the disclaimer — so it closes only after US2 and US3 land
 
 ### Incremental Delivery
 
 1. Setup + Foundational → verified manifest, one shared modal, every entry surface
 2. Add US1 → exact terms and attribution (MVP, SC-001)
-3. Add US2 → shipped identities and bounded provenance (SC-002, and SC-004's identity half)
-4. Add US3 → the seven accepted behaviour answers (SC-003)
+3. Add US2 → shipped identities and bounded provenance (SC-002, and SC-004's identity part)
+4. Add US3 → the seven accepted behaviour answers (SC-003, and SC-004's help part, which completes it)
 5. Polish → complete axe, reflow, performance, purity and manual gates, then a green `pnpm run check`
 
 ### Constitutional Guardrails
@@ -327,5 +344,10 @@ Task: "Licence framing messages in src/app/i18n/locales/en.json and de.json"
   never rewritten by an ordinary build
 - There is exactly one enumeration of capabilities, package-backed surfaces and obscuring layers —
   the Release coverage ledger in [design/screen-inventory.md](./design/screen-inventory.md#release-coverage-ledger).
-  T022 wires from it, T025 transcribes it, T063 reconciles both directions. Never re-derive it
+  T022 wires from it, T025 transcribes it into the `helpRouteCoverage` export of feature 011's shared
+  `e2e/coverage-ledger.ts`, and T063 reconciles that export against it in both directions. Never
+  re-derive it, and never widen the reconciliation to the rows other features own in the same file
+- T036, T044 and T053 each perform their own online-load-then-offline bootstrap for their third of
+  SC-004. The repetition is the price of story independence and is deliberate; if all three ship,
+  extracting one shared offline fixture is a safe follow-up, not a prerequisite
 - Commit after each task or logical group; stop at a checkpoint to validate a story independently

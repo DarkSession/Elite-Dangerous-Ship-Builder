@@ -82,8 +82,9 @@ accepted requirement rather than to nothing.
 
 ## Release coverage ledger
 
-This is the exhaustive set required by FR-011. `e2e/coverage-ledger.ts` transcribes it; it does not
-re-derive it. Every row is a current capability supplied by features 001–011, a package-backed
+This is the exhaustive set required by FR-011. The `helpRouteCoverage` export inside feature 011's
+shared `e2e/coverage-ledger.ts` transcribes it; it does not re-derive it, and it is the only part of
+that file this feature owns. Every row is a current capability supplied by features 001–011, a package-backed
 artwork or value surface named by an accepted screen contract, or a state that obscures the
 application frame. **Frame entry** records whether FR-001's shared route is visible in that state;
 where it is not, **contextual entry** names the route that substitutes for it under FR-011. A missing
@@ -106,7 +107,7 @@ capability or applicable surface is a release failure; representative sampling i
 | Status capability                            | 003   | visible                            | package value region                 | FR-002, FR-008         |
 | Import Build layer                           | 004   | obscured                           | layer entry                          | FR-011                 |
 | Export Build layer                           | 004   | obscured                           | layer entry, `buildLinkPrivacy` hint | FR-011                 |
-| Shared replacement confirmation              | 004   | obscured                           | layer entry                          | FR-011                 |
+| Shared replacement confirmation              | 001   | obscured                           | layer entry                          | FR-011                 |
 | Import Outcome disclosure                    | 004   | visible                            | `completedEngineeringGrades` hint    | FR-010                 |
 | Power and Heat capability                    | 005   | visible                            | package value region                 | FR-002, FR-008         |
 | Defence Profile                              | 006   | visible                            | package value region                 | FR-002, FR-008         |
@@ -121,16 +122,23 @@ capability or applicable surface is a release failure; representative sampling i
 | Global feedback/announcement host            | 011   | visible                            | —                                    | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
-owns the surface. Feature 010's own inventory already
+owns the surface — which is the feature whose template T022 changes, not necessarily the feature the
+surface appears in. The shared replacement confirmation is feature 001's overlay reused by feature
+004's import hosts, so it is owned by 001. Three rows apply only FR-010: they carry the shared route
+like every other row, and their contextual entry is a topic hint rather than an FR-011 substitute
+route. Feature 010's own inventory already
 declares its `Help/provenance modal entry (feature 012)` row; the rows above are the reciprocal set.
 
-**Excluded, deliberately**: feature 011's component preview application. It is tooling-only, never
+**Excluded, deliberately**: feature 011's component preview application. Feature 011 registers its
+own preview-catalogue entries in the shared `e2e/coverage-ledger.ts`; those entries are outside
+`helpRouteCoverage` and their absence here is this exclusion, not a reconciliation failure. It is tooling-only, never
 appears in product navigation or production output, and is therefore not a Commander-facing
 capability. It is the only exclusion, and it is recorded here so its absence from the ledger reads as
 a decision rather than an omission.
 
 A row is added whenever a feature adds a capability, package-backed surface or obscuring layer. This
-table and `e2e/coverage-ledger.ts` are checked against each other before release.
+table and the `helpRouteCoverage` export of `e2e/coverage-ledger.ts` are checked against each other
+before release.
 
 ## Verification inventory
 
@@ -143,6 +151,7 @@ ledger](#release-coverage-ledger) and include at least:
 4. a package value/calculation provenance entry.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return and no automatic network request. The four classes above do not cap the ledger. All open
+close return, no automatic network request, and — FR-002's prohibition — that the surface itself
+embeds no legal body and offers no help or legal destination of its own. The four classes above do not cap the ledger. All open
 states receive axe, semantic and overflow checks in the complete Chromium/Firefox
 viewport-orientation matrix.

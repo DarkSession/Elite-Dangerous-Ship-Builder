@@ -51,10 +51,12 @@ application with modal content usable without a network after one completed onli
 
 **Performance Goals**: Spec SC-005 — opening the already-loaded modal performs no route load,
 same-origin asset request or cross-origin request and presents its first complete frame within 100 ms
-at the mobile viewport under 4× CPU slowdown, the same shared baseline features 003, 005, 009 and 010
-measure against, supplied by feature 011's Playwright matrix; preserve the existing production
-initial-bundle error budget (`angular.json`, `initial` `maximumError: 1MB`) without raising its error
-ceiling within this feature
+at the mobile viewport under 4× CPU slowdown — the same baseline feature 003 established and
+features 005, 009 and 010 measure against, whose Chromium CDP `Emulation.setCPUThrottlingRate(4)`
+harness feature 003 owns, run over the viewport projects feature 011's Playwright matrix supplies.
+The timing half is therefore Chromium-only; SC-005's no-request half runs in both engines. Preserve
+the existing production initial-bundle error budget (`angular.json`, `initial` `maximumError: 1MB`)
+without raising its error ceiling within this feature
 
 **Constraints**: No backend, account, telemetry, runtime legal fetch, runtime environment
 configuration or automatic external navigation; only the exact project-specific Frontier disclaimer
@@ -179,7 +181,9 @@ src/app/
                                        # each new component with a co-located spec
 
 e2e/
-├── coverage-ledger.ts                 # exhaustive FR-011 capability/surface coverage set
+├── coverage-ledger.ts                 # feature 011-owned shared ledger; this feature appends
+│                                      # one `helpRouteCoverage` export holding the exhaustive
+│                                      # FR-011 capability/surface set and owns no other row
 └── help-and-licences.spec.ts
 ```
 
@@ -242,8 +246,8 @@ No planning clarification marker or unresolved upstream dependency remains.
   legal/provenance framing, external navigation and state preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
   entry, contextual provenance entry and shared Help · About modal; owns the exhaustive Release
-  coverage ledger required by FR-011, which `e2e/coverage-ledger.ts` transcribes rather than
-  re-derives; and records the inherited accessibility, responsive and localisation baseline that
+  coverage ledger required by FR-011, which the `helpRouteCoverage` export in feature 011's shared
+  `e2e/coverage-ledger.ts` transcribes rather than re-derives; and records the inherited accessibility, responsive and localisation baseline that
   feature 011's FR-011, FR-012, FR-015 and FR-021 govern.
 - [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
   semantic order, modal states, responsive behavior and component-system impact.
