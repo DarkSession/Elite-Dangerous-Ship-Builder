@@ -120,14 +120,16 @@ specs/012-help-and-licences/
 │   ├── distribution-artifacts.md
 │   └── help-navigation.md
 └── design/
-    ├── help-and-licences.md
-    ├── help-topic-review.md
-    ├── reference-review.md
-    ├── screen-reader-record.md
-    └── screen-inventory.md
+    ├── help-and-licences.md            # Phase 1 design artifact
+    ├── reference-review.md             # Phase 1 design artifact
+    ├── screen-inventory.md             # Phase 1 design artifact
+    ├── help-topic-review.md            # release-gate record, authored during implementation
+    └── screen-reader-record.md         # release-gate record, authored during implementation
 ```
 
-`tasks.md` is Phase 2 output and is intentionally not created by this command.
+`tasks.md` is Phase 2 output and is intentionally not created by this command. The two release-gate
+records are created when the work they record is performed, not at plan time; see
+[Release-gate records](#release-gate-records-authored-during-implementation).
 
 ### Source Code (repository root)
 
@@ -157,16 +159,20 @@ src/app/
 │   └── help-topics.generated.ts       # ignored deterministic topic-key browser input
 ├── application/help/
 │   ├── help-dialog.store.ts           # global ephemeral open/close/source state
+│   ├── help-dialog.store.spec.ts
 │   ├── help.presenter.ts              # generated facts + localised help view model
 │   └── help.presenter.spec.ts
 ├── features/help/
 │   ├── help-dialog.component.ts
 │   ├── help-dialog.component.html
-│   └── help-dialog.component.scss
+│   ├── help-dialog.component.scss
+│   └── help-dialog.component.spec.ts
 ├── i18n/                              # feature 011-owned help/framing message entries
-└── ui/                                # reused/extended dialog, fact, notice and external-link UI
+└── ui/                                # reused/extended dialog, fact, notice and external-link UI,
+                                       # each new component with a co-located spec
 
 e2e/
+├── coverage-ledger.ts                 # exhaustive FR-011 capability/surface coverage set
 └── help-and-licences.spec.ts
 ```
 
@@ -240,6 +246,17 @@ No planning clarification marker or unresolved upstream dependency remains.
   assistive-technology protocol required before release.
 - [quickstart.md](./quickstart.md) supplies runnable artifact, modal-state, offline, responsive,
   localisation, external-navigation and accessibility validation scenarios.
+
+### Release-gate records (authored during implementation)
+
+These two files are outputs of the gates below, not Phase 1 design artifacts. Each is written when
+the review or protocol it records is actually performed, and each is release-blocking until complete:
+
+- `design/help-topic-review.md` records the semantic review of every accepted help answer against its
+  governing sources, per [contracts/help-navigation.md](./contracts/help-navigation.md)'s required
+  content-review gate. Any unchecked topic or unresolved discrepancy fails release.
+- `design/screen-reader-record.md` records the completed manual assistive-technology protocol. The
+  automated axe sweep is a floor, not a substitute for it (constitution principle V).
 
 ## Post-Design Constitution Re-check
 

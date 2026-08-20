@@ -2,11 +2,11 @@
 
 ## Scope
 
-Commanders can open help, privacy and offline explanations, versions and a concise legal summary
-without leaving or changing their current capability. Help can be closed to resume that unchanged
-capability. The help, version information and exact project-specific Frontier disclaimer are present
-in the initial application load; the complete licence remains available through a deliberate external
-link to the repository's `LICENSE` on GitHub.
+Commanders can open help, privacy and offline explanations, versions and licence information without
+leaving or changing their current capability. Help can be closed to resume that unchanged capability.
+The help, version information and exact project-specific Frontier disclaimer are present in the
+initial application load; the complete licence remains available through a deliberate external link
+to the repository's `LICENSE` on GitHub.
 
 ## Clarifications
 
@@ -64,8 +64,9 @@ link to the repository's `LICENSE` on GitHub.
   NOT include build data in its URL.
 - **FR-004**: Source distribution MUST carry the terms applicable to redistributed package artwork
   and game data and MUST NOT present the application code licence as granting rights to them.
-- **FR-005**: The embedded Frontier disclaimer MUST come from the repository `LICENSE`. A missing,
-  empty or mismatched disclaimer or an absent GitHub licence destination MUST fail the release.
+- **FR-005**: FR-003's disclaimer source and licence destination MUST be verified before release. A
+  missing, empty or mismatched disclaimer or an absent GitHub licence destination MUST fail the
+  release rather than degrade at runtime.
 - **FR-006**: The embedded Frontier disclaimer MUST remain verbatim. Application-owned labels MUST be
   localised and identify the language of the untranslated disclaimer.
 - **FR-007**: Displayed application and Almanac versions MUST come from shipped artifacts. A

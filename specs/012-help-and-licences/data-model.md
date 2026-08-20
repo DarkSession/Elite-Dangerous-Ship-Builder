@@ -254,8 +254,8 @@ installed package.json ---> AlmanacIdentity ---------+--> HelpManifestV1
 root LICENSE -------------> FrontierDisclaimer -----+
 audited destinations -----> ExternalDestination ----+
 
-HelpManifestV1 + locale + HelpTopicDefinition --> HelpDialogViewModel
-HelpDialogState -------------------------------> shared HelpDialog visibility
+HelpManifestV1 + locale + BrowserHelpTopic[] --> HelpDialogViewModel
+HelpDialogState ------------------------------> shared HelpDialog visibility
 
 installed package legal files <==byte equality==> legal/almanac mirrors
                                               (build evidence only)
