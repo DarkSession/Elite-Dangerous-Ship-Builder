@@ -68,8 +68,11 @@ generation so a package/repository change receives review rather than silently w
 - `applicationVersion` is copied exactly from root `package.json#version`.
 - `almanac.version` is copied exactly from the resolved installed `package.json#version`.
 - Only explicit release-workflow input whose version/ref equals `applicationVersion` emits
-  `kind: release`; `0.0.0` and missing/mismatched evidence cannot be releases.
-- Every other build emits `kind: nonRelease` and a required safe immutable `buildId`.
+  `kind: release`; `0.0.0` cannot be a release.
+- A build outside a declared release workflow has no release evidence and normally emits
+  `kind: nonRelease` with a required safe immutable `buildId`.
+- Once a release workflow is declared, missing, mismatched or placeholder evidence is contradictory
+  and fails generation rather than silently downgrading the build to `nonRelease`.
 - CI may provide a bounded run/artifact identifier. A repository build may use an abbreviated commit
   plus optional `dirty` marker.
 - The accepted identifier format excludes whitespace, URLs, slashes, backslashes, colon-separated
@@ -124,7 +127,8 @@ Generation/check/release fails with a source-specific diagnostic when:
 - root `LICENSE` no longer distinguishes application MIT rights from package artwork/game data;
 - either external destination is absent, unexpected, non-HTTPS or contains forbidden URL parts;
 - more or fewer than one `completeLegalTerms` destination would be emitted;
-- release evidence is missing/mismatched/placeholder, or a non-release ID is missing/unsafe;
+- a declared release workflow has missing/mismatched/placeholder evidence, or a non-release ID is
+  missing/unsafe;
 - generated output contains an absolute path, personal/environment identifier, build data or an
   unrequested complete legal document.
 

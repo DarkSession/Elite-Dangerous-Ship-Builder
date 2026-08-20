@@ -40,7 +40,12 @@ Expected:
 
 Run the generator's fixture suite and confirm named failures for missing/duplicate/malformed/empty
 disclaimer blocks, invalid UTF-8, one-byte mirror drift, unsafe destinations, mismatched release
-evidence and missing/unsafe non-release IDs. No failure may fall back to runtime content.
+evidence and missing/unsafe non-release IDs. Run the help-definition invariant fixtures and confirm
+named failures for a missing or duplicate required topic, empty or unresolved governing references,
+and shipped-locale message gaps. Then execute the
+[required content-review gate](./contracts/help-navigation.md#required-content-review-gate) against
+the contract map and reject contradictions with cited sources or unsupported claims. No failed
+mechanical or review gate may fall back to runtime content.
 
 ## 2. Verify release and non-release identities
 
@@ -53,8 +58,9 @@ Expected:
 - the current placeholder/development build is visibly Non-release and shows its generated build ID;
 - no label describes either value as the live game or live catalogue version.
 
-In release-workflow fixture tests, provide version-matched evidence and confirm release state. Repeat
-with missing, placeholder and mismatched evidence and confirm generation fails.
+In fixture tests, omit any release-workflow declaration and confirm a normal non-release identity is
+emitted. Then declare a release workflow: provide version-matched evidence and confirm release state,
+and repeat with missing, placeholder and mismatched evidence to confirm generation fails.
 
 ## 3. Open and close without navigation or mutation
 
@@ -85,6 +91,8 @@ grades, hull facts versus build results and Almanac ownership.
 
 Expected:
 
+- the IDs form the exact seven-topic set with no duplicate, and every topic has a non-empty resolved
+  governing-reference set matching the contract map;
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
@@ -124,9 +132,9 @@ Expected:
 
 ## 7. Verify initial-load and offline behavior
 
-Build and serve the production output through the feature 001 app-shell harness. Load once to install
-the shell, then disable network and reload a no-build capability. Open the modal before opening any
-hull artwork.
+Build and serve the production output through the application-shell harness using feature 011's
+single service worker. Load once to install the shell, then disable network and reload a no-build
+capability. Open the modal before opening any hull artwork.
 
 Expected:
 

@@ -71,6 +71,42 @@ Owned/localised content describes only accepted current behavior:
 Raw message keys, blank answers, future promises, unsupported import claims, private game-text
 translations and the reference's retained-partial-roll wording are prohibited.
 
+Exactly one definition exists for each topic ID, with the following non-empty governing-reference
+set. References are build/review evidence only and are not displayed or bundled.
+
+| Topic ID                     | Governing accepted source                            |
+| ---------------------------- | ---------------------------------------------------- |
+| `buildLinkPrivacy`           | Feature 001 FR-015                                   |
+| `accountsUploadsTelemetry`   | Constitution Principle I                             |
+| `browserPersistence`         | Feature 001 FR-008, FR-013 and FR-014                |
+| `offlineAssets`              | Constitution Principle I and Feature 001 FR-006      |
+| `completedEngineeringGrades` | Constitution Principle IV and Feature 002 FR-013     |
+| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 003 FR-006 and FR-009 |
+| `almanacOwnership`           | Constitution Principle II and Feature 003 FR-002     |
+
+Build validation resolves every reference against the accepted repository artifacts and verifies
+the exact seven-ID set, uniqueness and non-empty shipped-locale messages. Required content review
+checks each answer for consistency with its cited behavior. A missing, duplicate, unreferenced,
+contradictory or unsupported topic blocks release; the modal never publishes a partial or
+speculative set.
+
+After validation, tooling emits a separate browser topic catalogue containing only each topic's ID,
+question key and answer key. It is not part of `HelpManifestV1`, and governing references never enter
+the generated browser module.
+
+### Required content-review gate
+
+Whenever an English question, English answer or governing reference changes, release review must
+record all seven topic IDs against the table above and confirm:
+
+1. every factual sentence is supported by at least one cited accepted source;
+2. no sentence contradicts any cited source or another accepted requirement;
+3. no answer promises behavior outside FR-010 or describes a future/unbuilt capability; and
+4. all shipped-locale answers preserve the reviewed meaning and interpolation contract.
+
+Any unchecked topic or unresolved discrepancy is a release failure. This semantic review complements
+the mechanical set/reference/catalogue checks; it is not replaced by a passing unit test.
+
 ## Identity and provenance
 
 - Display “Application version” and “Bundled Almanac version” as separate localised facts sourced
