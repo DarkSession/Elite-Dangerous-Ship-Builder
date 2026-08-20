@@ -28,7 +28,7 @@ type PowerHeatProjectionState =
 Package nulls are not application failures. A ready snapshot may contain an
 unavailable distributor or unavailable heat. `failure` is
 reserved for an unexpected exception, missing required `ShipLoadout` consumer
-identity or revision-contract violation.
+identity, missing required priority-band match or revision-contract violation.
 
 ## PowerHeatSnapshot
 
