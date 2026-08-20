@@ -139,7 +139,9 @@ For one captured context:
 4. Query hardpoint, utility and distributor-core observations covering not
    applicable, disabled, inactive retracted, powered and shed, including a band
    whose deployed and retracted verdicts differ.
-5. Advance build and condition revisions during projection.
+5. Query while the exact current index is pending, then inject a projection
+   failure and distinguish `unavailable` from propagated failure.
+6. Advance build and condition revisions during projection.
 
 Expected: both ports return the captured revision pair; stale results do not
 publish; feature 010 receives the selected state while feature 007 receives the

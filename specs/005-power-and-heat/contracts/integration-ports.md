@@ -78,12 +78,17 @@ The adapter uses the owner-private revision-keyed observation index projected
 from the same `PowerBudget` call as the detail view. That index retains the exact
 `PowerBudget.consumers` label and both verdicts from its matching returned band:
 
-- absent consumer → `notApplicable`;
+- current revision projection still pending, so its index is not ready →
+  `unavailable`;
+- ready index with no consumer for the exact key → `notApplicable`;
 - disabled → `disabled`;
 - requested retracted plus package `deployedOnly: true` →
   `inactiveRetracted`;
-- otherwise the matching requested package band becomes `powered` or `shed`;
-- the budget cannot answer for the requested key → `unavailable`.
+- otherwise the matching requested package band becomes `powered` or `shed`.
+
+A failed current projection propagates its revision/projection failure rather
+than being relabelled `unavailable`; malformed package identities or missing
+bands therefore never enter this union.
 
 Priority is the package-normalized one-based value.
 
@@ -124,7 +129,9 @@ neither infers a power cause from a capacitor or distributor value.
 - A fixture whose matching band has different `poweredDeployed` and
   `poweredRetracted` verdicts proves the explicit requested state selects the
   correct boolean and is repeated on the read.
-- Disabled, inactive, powered, shed and missing consumer states remain distinct.
+- Pending-index unavailable, missing consumer, disabled, inactive, powered and
+  shed states remain distinct; a failed projection propagates instead of
+  becoming unavailable.
 - Feature 003, 007 and 010 tests prove they do not recalculate or reinterpret
   power; feature 007 specifically proves a selected retracted context still
   requests and receives the deployed distributor verdict.

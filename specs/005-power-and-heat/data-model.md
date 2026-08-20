@@ -312,13 +312,17 @@ type MountPowerObservation =
   | { readonly kind: 'unavailable' };
 ```
 
-Selection rules use only one budget:
+Selection rules use one revision-keyed projection:
 
-1. no returned power consumer for the exact slot → `notApplicable`;
-2. disabled consumer → `disabled`;
-3. requested retracted plus `deployedOnly === true` → `inactiveRetracted`;
-4. otherwise select the matching package band's requested-state powered boolean;
-5. the budget cannot answer for the requested key → `unavailable`.
+1. the current projection is pending and its index is not ready → `unavailable`;
+2. a ready index has no returned consumer for the exact slot → `notApplicable`;
+3. disabled consumer → `disabled`;
+4. requested retracted plus `deployedOnly === true` → `inactiveRetracted`;
+5. otherwise select the matching package band's requested-state powered boolean.
+
+A failed projection is propagated as failure, not converted to `unavailable`.
+Missing required package identities or priority bands therefore never enter
+the observation union.
 
 `inactiveRetracted` is reachable only for a mount the package reports as
 `deployedOnly`, so a core internal never selects it. Consumers state their own
