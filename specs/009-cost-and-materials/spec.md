@@ -49,8 +49,10 @@ materials. Historical purchase values are outside the application model.
   purchase, not ordinary crafted engineering; later ordinary grades retain their package material
   cost.
 - **FR-010**: Material identity, grade and localised name MUST come from the Almanac. If the package
-  lacks the active locale, its canonical English name MUST remain visible and be identified as
-  untranslated; the application MUST NOT maintain game-text translations.
+  lacks the active locale, its canonical package text MUST be requested and, when present, remain
+  visible and be identified as untranslated. If the package supplies no canonical text, the name
+  MUST be unavailable rather than invented, while material identity and quantity remain visible.
+  The application MUST NOT maintain game-text translations.
 
 ## Edge Cases
 

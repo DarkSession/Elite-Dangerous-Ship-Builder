@@ -28,7 +28,9 @@ demonstrated independently.
 
 Single Angular workspace at the repository root: product source in `src/`, tooling-only preview
 application in `projects/ui-preview/`, end-to-end suite in `e2e/`. Unit tests live beside their source
-as `*.spec.ts`. Feature 002 adds no route; every surface composes inside feature 001's `/build`.
+as `*.spec.ts`. Component preview declarations are registered only in feature 011's manifest registry
+at `src/app/ui/previews/preview-manifest.ts`; `projects/ui-preview/` renders that registry and holds
+no feature-owned declaration file. Feature 002 adds no route; every surface composes inside feature 001's `/build`.
 
 ## Delivery Prerequisites
 
@@ -92,7 +94,7 @@ diagnostic text and signal store that every user story composes.
 ### Verification harness
 
 - [ ] T021 [P] Add the shared outfitting end-to-end helper providing axe scans, semantic-order, 44 CSS px target, no-document-overflow, 200% text, 400% zoom, expanded/RTL and reduced-motion assertions across the ten projects in `e2e/accessibility.ts`
-- [ ] T022 [P] Register the outfitting preview group in the feature 011 preview catalogue in `projects/ui-preview/src/app/preview-app.ts`
+- [ ] T022 [P] Register the outfitting component preview group and its shared fixtures in feature 011's typed manifest registry in `src/app/ui/previews/preview-manifest.ts`, which feature 011 T023 already renders; add no second preview entry point or declaration file outside that registry
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -136,7 +138,7 @@ slot offers a reason instead of remove.
 
 - [ ] T036 [US1] Implement the outfitting workspace component composing the wide three-region and compact card compositions, the no-build state that promises no action of its own, and the category controls that change visibility only, in `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.ts` (depends on T025, T031, T032, T033)
 - [ ] T037 [US1] Implement the minimal replacement surface — full ordered package membership, explicit fit action, remove when removable, cancel that changes nothing, and the wide inline versus compact full-screen layer with inert background — in `src/app/features/build-workspace/outfitting/module-replacement/module-replacement.ts` (depends on T026, T029)
-- [ ] T038 [US1] Add the workspace and replacement preview states (default, populated, selected, empty slot, non-removable, cargo hatch, unavailable facts, quality-completion notice, refusal) at wide, tablet and compact widths with expanded and RTL text in `projects/ui-preview/src/previews/outfitting/workspace.preview.ts` (depends on T022, T036, T037)
+- [ ] T038 [US1] Add the workspace and replacement preview declarations (default, populated, selected, empty slot, non-removable, cargo hatch, unavailable facts, quality-completion notice, refusal) at wide, tablet and compact widths with expanded and RTL text in `src/app/ui/previews/preview-manifest.ts` (depends on T022, T036, T037)
 
 ### Verification
 
@@ -157,7 +159,8 @@ acquisition and entitlement labels stay visible before and after fitting.
 **Independent Test**: Open the largest chooser, confirm grouping, ordering and the final unique-reward
 section against the package records, search with mixed case, accents and multiple terms spanning name,
 class, rating and mount, confirm symbol and stats never match, clear a no-match query, and measure
-input-to-rendered-result below 100 ms for the installed package's largest slot-choice fixture.
+input-to-rendered-result below 100 ms for the installed package's largest slot-choice fixture at the
+mobile viewport under 4× CPU slowdown.
 
 ### Ordering, search and labels
 
@@ -179,12 +182,12 @@ input-to-rendered-result below 100 ms for the installed package's largest slot-c
 
 - [ ] T051 [US2] Extend the replacement surface with sections, grouping, search, result count, the `noMatches`, `packageEmpty`, `loading`, `stale`, `notReplaceable` and `refused` states, and native radio or button choice selection with a separate full-width confirm, in `src/app/features/build-workspace/outfitting/module-replacement/module-replacement.ts` (depends on T043, T048, T049, T050)
 - [ ] T052 [US2] Add the message keys for search labelling, result counts, no-match, empty package result, stale rebuild and every acquisition and entitlement label with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T015, T045)
-- [ ] T053 [US2] Add replacement preview states (full, searched, no-match, empty package result, stale, refusal, unique-reward section, stacked labels) at wide, tablet and compact widths in `projects/ui-preview/src/previews/outfitting/replacement.preview.ts` (depends on T022, T051)
+- [ ] T053 [US2] Add replacement preview declarations (full, searched, no-match, empty package result, stale, refusal, unique-reward section, stacked labels) at wide, tablet and compact widths in `src/app/ui/previews/preview-manifest.ts` (depends on T022, T051)
 
 ### Verification
 
 - [ ] T054 [US2] Add replacement scenarios covering membership parity with `modulesForSlot` plus every variant, section and group order, multi-term accent-insensitive search, no-match with clear restoring all choices, and a candidate list rebuilt after a fit reflecting new exclusive and count limits, in `e2e/module-outfitting.spec.ts` (depends on T051)
-- [ ] T055 [US2] Add the browser `performance.now()` and result-settle measurement proving input-to-rendered-result stays under 100 ms for the installed package's largest slot-choice fixture, excluding automation transport, in `e2e/module-outfitting.spec.ts` (depends on T002, T054)
+- [ ] T055 [US2] Add the in-page result-settle measurement under Chromium CDP `Emulation.setCPUThrottlingRate(4)` at the mobile viewport, proving input-to-rendered-result stays under 100 ms for the installed package's largest slot-choice fixture and excluding automation transport, in `e2e/module-outfitting.spec.ts` (depends on T002, T054)
 
 **Checkpoint**: User Stories 1 and 2 both work independently.
 
@@ -233,7 +236,7 @@ pre-activation refusal leave the build untouched, then toggle enabled and priori
 - [ ] T072 [US3] Compose the power controls and cargo-hatch presentation into the slot card and workspace so enabled and priority are editable wherever the package supplies the operation in `src/app/ui/outfitting/slot-card.ts` (depends on T032, T069)
 - [ ] T073 [US3] Publish the accepted quality-completion notice and compose the pre-activation refusal surface into feature 001's open, link and reload flows and feature 004's import flow in `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.ts` (depends on T009, T034, T070)
 - [ ] T074 [US3] Add the engineering, material, power, quality-completion and ingress-refusal message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T015)
-- [ ] T075 [US3] Add engineering editor preview states for every row of the states table plus power controls at wide, tablet and compact widths with expanded and RTL text in `projects/ui-preview/src/previews/outfitting/engineering.preview.ts` (depends on T022, T071)
+- [ ] T075 [US3] Add engineering editor preview declarations for every row of the states table plus power controls at wide, tablet and compact widths with expanded and RTL text in `src/app/ui/previews/preview-manifest.ts` (depends on T022, T071)
 
 ### Verification
 
@@ -275,7 +278,7 @@ retained tape, and open a replacement build to see both directions reset.
 - [ ] T087 [P] [US4] Implement the undo and redo actions with programmatic disabled state, optional next-action summary and identical accessible names in the wide direct and compact overflow placements in `src/app/ui/outfitting/undo-redo-actions.ts`
 - [ ] T088 [US4] Compose the undo and redo actions into the wide header and the compact named overflow action region in `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.ts` (depends on T036, T087)
 - [ ] T089 [P] [US4] Add the history action, summary and disabled-state message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T090 [US4] Add history preview states covering available, unavailable, cleared redo branch and the 100-decision boundary at wide, tablet and compact widths in `projects/ui-preview/src/previews/outfitting/history.preview.ts` (depends on T022, T087)
+- [ ] T090 [US4] Add history preview declarations covering available, unavailable, cleared redo branch and the 100-decision boundary at wide, tablet and compact widths in `src/app/ui/previews/preview-manifest.ts` (depends on T022, T087)
 
 ### Verification
 
@@ -295,7 +298,7 @@ proof, coverage registration and the documented validation run.
 - [ ] T094 [P] Add the accessibility suite running axe over the workspace, chooser, engineering, no-build, empty, no-match, unavailable, refusal, normalization and history-disabled states, asserting role, name, selected, expanded, checked, invalid and live relationships, associated layer titles with inert background, coalesced announcements, and slot and module context in every switch and priority name, in `e2e/outfitting-accessibility.spec.ts` (depends on T021)
 - [ ] T095 [P] Add touch-only interaction, 44 CSS px target, no-document-horizontal-overflow, 200% text, 400% zoom selecting the compact composition, expanded-message, RTL and reduced-motion assertions for every feature 002 surface in `e2e/outfitting-accessibility.spec.ts` (depends on T094)
 - [ ] T096 [P] Assert that anatomy and ledger exchange only the exact game slot key and that no positional node index becomes shared identity in `e2e/module-outfitting.spec.ts`
-- [ ] T097 Register the FR-001–FR-018 surfaces, journeys, axe flags and named assertions for feature 002 in the coverage ledger in `e2e/coverage-ledger.ts` (depends on T093, T094, T095)
+- [ ] T097 Register the FR-001–FR-018 and SC-001–SC-005 surfaces, journeys, axe flags and named assertions for feature 002 in the coverage ledger in `e2e/coverage-ledger.ts` (depends on T093, T094, T095)
 - [ ] T098 [P] Add the repository policy check rejecting broad Almanac barrel imports, Almanac imports inside components, colour and spacing literals outside tokens, hard-coded application strings, history serialization, raw modifier rewrites and local fit, variant or compatibility rules in feature 002 source, in `scripts/policy/outfitting-ownership.mjs`
 - [ ] T099 [P] Document the outfitting edit, ingress normalization and session-history boundaries, including what is deliberately not persisted, in `docs/outfitting-and-history.md`
 - [ ] T100 Confirm the built asset tree contains no `.design/` mock module, price, stat, modifier or material value and record the reconciliation outcome in `specs/002-module-outfitting/design/reference-review.md`

@@ -33,7 +33,10 @@ demonstrated independently.
 
 Single Angular workspace at the repository root: product source in `src/app/` split into `domain/`,
 `application/`, `platform/`, `ui/` and `features/`; static assets in `public/`; end-to-end suite in
-`e2e/`; build tooling in `scripts/`. Unit tests live beside their source as `*.spec.ts`.
+`e2e/`; build tooling in `scripts/`. Unit tests live beside their source as `*.spec.ts`. Component
+preview declarations are registered only in feature 011's manifest registry at
+`src/app/ui/previews/preview-manifest.ts`, which feature 011 T023 renders; this feature adds no
+separate preview entry point or declaration file.
 
 ---
 
@@ -93,9 +96,9 @@ replacement coordinator and the shared dialog primitives that all three stories 
 
 ### Shared UI primitives added by this feature
 
-- [ ] T028 [P] Implement the `UnavailableValue` component rendering the localized unavailable state distinctly from `0` in `src/app/ui/value/unavailable-value.ts` with its preview declaration
-- [ ] T029 [P] Implement `ConfirmDialog` with associated title/description, named confirm/cancel actions, focus management and inert background in `src/app/ui/dialog/confirm-dialog.ts` with unit tests and previews
-- [ ] T030 [P] Implement the three-choice `ChoiceDialog` whose choices each carry visible text explaining which version survives in `src/app/ui/dialog/choice-dialog.ts` with unit tests and previews
+- [ ] T028 [P] Implement the `UnavailableValue` component rendering the localized unavailable state distinctly from `0` in `src/app/ui/value/unavailable-value.ts` with its preview declaration in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T029 [P] Implement `ConfirmDialog` with associated title/description, named confirm/cancel actions, focus management and inert background in `src/app/ui/dialog/confirm-dialog.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T030 [P] Implement the three-choice `ChoiceDialog` whose choices each carry visible text explaining which version survives in `src/app/ui/dialog/choice-dialog.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T031 Register the feature 001 message namespaces (`catalogue`, `hullDetail`, `workspace`, `library`, `link`) with complete reviewed messages and exact key/interpolation parity in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 
 **Checkpoint**: Routes resolve, every browser API is injected behind a port, a build can be committed
@@ -132,12 +135,12 @@ of unsaved work requires confirmation.
 
 ### Shared components
 
-- [ ] T042 [P] [US1] Implement `CollectionToolbar` with prominent search, segmented size choices, manufacturer/hardpoint/price facets, named bidirectional sort control, removable active constraints and textual match count in `src/app/ui/catalogue/collection-toolbar.ts` with unit tests and default/constrained/no-match previews
-- [ ] T043 [P] [US1] Implement `ResponsiveCatalogueView` rendering a real table with named bidirectional sort-button headers at wide widths and semantic stacked definition-list cards at narrow widths, owning its own internal overflow, in `src/app/ui/catalogue/responsive-catalogue-view.ts` with unit tests and previews for both variants
-- [ ] T044 [P] [US1] Implement `HullSummaryCard` exposing textual and programmatic selected state alongside the amber marker in `src/app/ui/catalogue/hull-summary-card.ts` with unit tests and previews
-- [ ] T045 [P] [US1] Implement `FactList` rendering label/value/unit definition semantics with `UnavailableValue` fallback in `src/app/ui/hull/fact-list.ts` with unit tests and previews (depends on T028)
-- [ ] T046 [P] [US1] Implement `HullArtwork` with a reserved 3:2 area, text equivalent, and loading/temporarily-unavailable text status that never disables an action in `src/app/ui/hull/hull-artwork.ts` with unit tests and previews
-- [ ] T047 [P] [US1] Implement `SlotLayout` grouping package-enumerated slots semantically by armour, core, hardpoint, utility, optional and cargo hatch with their game keys, sizes and restrictions in `src/app/ui/hull/slot-layout.ts` with unit tests and previews
+- [ ] T042 [P] [US1] Implement `CollectionToolbar` with prominent search, segmented size choices, manufacturer/hardpoint/price facets, named bidirectional sort control, removable active constraints and textual match count in `src/app/ui/catalogue/collection-toolbar.ts` with unit tests and default/constrained/no-match preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T043 [P] [US1] Implement `ResponsiveCatalogueView` rendering a real table with named bidirectional sort-button headers at wide widths and semantic stacked definition-list cards at narrow widths, owning its own internal overflow, in `src/app/ui/catalogue/responsive-catalogue-view.ts` with unit tests and preview declarations for both variants in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T044 [P] [US1] Implement `HullSummaryCard` exposing textual and programmatic selected state alongside the amber marker in `src/app/ui/catalogue/hull-summary-card.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T045 [P] [US1] Implement `FactList` rendering label/value/unit definition semantics with `UnavailableValue` fallback in `src/app/ui/hull/fact-list.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts` (depends on T028)
+- [ ] T046 [P] [US1] Implement `HullArtwork` with a reserved 3:2 area, text equivalent, and loading/temporarily-unavailable text status that never disables an action in `src/app/ui/hull/hull-artwork.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T047 [P] [US1] Implement `SlotLayout` grouping package-enumerated slots semantically by armour, core, hardpoint, utility, optional and cargo hatch with their game keys, sizes and restrictions in `src/app/ui/hull/slot-layout.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
 
 ### Routes
 
@@ -201,10 +204,10 @@ continues.
 
 - [ ] T072 [US2] Implement the `BuildLibraryStore` exposing working/named groups ordered by modified instant with a stable id tie-breaker, unavailable entries, storage summary and the open/name/rename/duplicate/delete/resolve/manage/retry intents in `src/app/application/build-library/build-library.store.ts` with unit tests (depends on T061, T065, T068, T070, T071)
 - [ ] T073 [US2] Implement record open as a detached candidate that decodes, migrates and reconstructs before reaching `ReplacementCoordinator`, then copies into this tab's working record and sets named `recordId`/`baseRevisionId` provenance, in `src/app/application/build-library/record-open.service.ts` with unit tests proving failure cannot replace active work (depends on T026, T061, T063)
-- [ ] T074 [P] [US2] Implement `SavedBuildCard` showing local name or working state, package hull text, locale-formatted modified instant, recorded valid/complete state with text plus icon, and the named open/rename/duplicate/delete actions in `src/app/ui/library/saved-build-card.ts` with unit tests and previews
-- [ ] T075 [P] [US2] Implement `ResponsiveRecordList` with labeled working and named groups in one logical reading order, columnar at wide widths and stacked at narrow widths, in `src/app/ui/library/responsive-record-list.ts` with unit tests and previews
-- [ ] T076 [P] [US2] Implement the record manager surface listing records for explicit individual selection under retention-limit and quota-full conditions in `src/app/ui/library/record-manager.ts` with unit tests and previews
-- [ ] T077 [P] [US2] Implement the local note editor bound to record metadata only in `src/app/ui/library/record-note-editor.ts` with unit tests and previews
+- [ ] T074 [P] [US2] Implement `SavedBuildCard` showing local name or working state, package hull text, locale-formatted modified instant, recorded valid/complete state with text plus icon, and the named open/rename/duplicate/delete actions in `src/app/ui/library/saved-build-card.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T075 [P] [US2] Implement `ResponsiveRecordList` with labeled working and named groups in one logical reading order, columnar at wide widths and stacked at narrow widths, in `src/app/ui/library/responsive-record-list.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T076 [P] [US2] Implement the record manager surface listing records for explicit individual selection under retention-limit and quota-full conditions in `src/app/ui/library/record-manager.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T077 [P] [US2] Implement the local note editor bound to record metadata only in `src/app/ui/library/record-note-editor.ts` with unit tests and preview declarations in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T078 [US2] Implement the library route as a route-backed wide modal over an inert, accessibility-tree-removed background and a narrow full-screen layer, with an ordinary page background on direct navigation, in `src/app/features/build-library/build-library.page.ts`, `.html` and `.scss` (depends on T072, T074, T075, T076)
 - [ ] T079 [US2] Implement the save/name dialog with duplicate-name warning and the overwrite-existing versus save-as-new choice resolved against record UUID and revision rather than display name in `src/app/features/build-library/save-build.dialog.ts` with unit tests (depends on T029, T067)
 - [ ] T080 [US2] Wire the three-choice conflict dialog and the delete/discard confirmation into the library screen in `src/app/features/build-library/build-library.page.ts` (depends on T029, T030, T068, T078)
@@ -244,7 +247,7 @@ dirty build is active.
 ### Presentation and SLEF seam
 
 - [ ] T091 [P] [US3] Map every `BuildLinkCodecError.code` — `invalidEncoding`, `integrityCheckFailed`, `unsupportedEnvelope`, `unsupportedTableVersion`, `invalidPayload`, `unknownIdentity` and `reconstructionFailed` — plus its structured parameters to localization keys, rendering no internal English exception message, in `src/app/application/build-link/link-error.mapper.ts` with unit tests covering every code (depends on T031)
-- [ ] T092 [P] [US3] Implement `ShareLinkPanel` rendering the selectable canonical `/build#b.…` text with a labeled internal scroll container, copy/share feedback, encoding and refusal states, and the feature 004 SLEF alternative, keeping the text selectable after clipboard or platform-share failure, in `src/app/ui/link/share-link-panel.ts` with unit tests and previews for published, encoding, refused and copy-failed states
+- [ ] T092 [P] [US3] Implement `ShareLinkPanel` rendering the selectable canonical `/build#b.…` text with a labeled internal scroll container, copy/share feedback, encoding and refusal states, and the feature 004 SLEF alternative, keeping the text selectable after clipboard or platform-share failure, in `src/app/ui/link/share-link-panel.ts` with unit tests and preview declarations for published, encoding, refused and copy-failed states in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T093 [US3] Define the SLEF fallback port feature 004 implements, with a documented no-op-plus-notice default until that feature lands, in `src/app/application/build-link/slef-fallback.port.ts` with unit tests (depends on T027)
 - [ ] T094 [US3] Compose the share-link panel into the workspace export surface and wire the copy/share, retry and SLEF intents in `src/app/features/build-workspace/build-workspace.page.ts` and `src/app/features/build-workspace/export.dialog.ts` (depends on T007, T092, T093)
 - [ ] T095 [US3] Order workspace startup so this tab's working record restores before an initial recognized fragment is processed as an incoming candidate in `src/app/features/build-workspace/build-workspace.page.ts` (depends on T064, T086)
@@ -269,7 +272,7 @@ integration closure and the documented validation run.
 - [ ] T101 [P] Add the cross-route accessibility suite asserting one `main`, one visible `h1`, consistent heading nesting, matching visible and accessible names, selected/expanded/invalid relationships, one polite live region for match count, one prompt alert per new blocking condition, 44 CSS px targets and no document horizontal overflow across all ten projects in `e2e/interface-conformance.spec.ts`
 - [ ] T102 [P] Add 200% text, 400% zoom, reduced-motion, expanded-message and RTL fixture assertions for all four screens in `e2e/interface-conformance.spec.ts`
 - [ ] T103 [P] Assert package hull, manufacturer and diagnostic text resolves through the installed package's i18n leaves and renders canonical text with the untranslated disclosure on `null`, with no private game-text translation added, in `src/app/i18n/package-text.spec.ts`
-- [ ] T104 Register the FR-001–FR-021 surfaces, journeys, axe flags and named assertions in the feature 011 coverage ledger in `e2e/coverage-ledger.ts`
+- [ ] T104 Register the FR-001–FR-021 and SC-001–SC-004 surfaces, journeys, axe flags and named assertions in the feature 011 coverage ledger in `e2e/coverage-ledger.ts`
 - [ ] T105 [P] Extend `scripts/build-link-codec-capacity.mjs` coverage to the installed package hull with the most slots, every slot fitted and every supported modelled field populated, asserting the produced value stays within 500 characters including `b.`, in `scripts/build-link-codec-capacity.test.mjs`
 - [ ] T106 [P] Verify search, filter and sort over the complete installed hull catalogue, working-build restoration before interactivity, autosave coalescing and sub-50 ms codec encode/decode against the plan's performance goals in `e2e/performance.spec.ts`
 - [ ] T107 Confirm the built asset tree contains no `.design/` mock data or assets, no Google Fonts request and no `/b/<name>#h=…` sample link, and record the reconciliation outcome in `specs/001-ship-selection-and-loading/design/reference-review.md`

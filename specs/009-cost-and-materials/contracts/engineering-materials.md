@@ -70,9 +70,10 @@ symbol, quantity and trace visible while marking name/grade unavailable and rais
 gap; do not infer any field.
 
 The presenter requests `getMaterialName(symbol, activeLocale)`. On `null`, it follows feature
-011's package-English/canonical fallback and attaches the shared visible/programmatic untranslated
-disclosure. Owned headings, source-kind labels, qualifications, quantities and accessible names use
-application localization and named formatters.
+011's canonical-package-text fallback and attaches the shared visible/programmatic untranslated
+disclosure. Where the package supplies no canonical text, the name is unavailable while identity
+and quantity remain visible. Owned headings, source-kind labels, qualifications, quantities and
+accessible names use application localization and named formatters.
 
 ## Package regression
 

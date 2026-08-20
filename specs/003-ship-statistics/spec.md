@@ -74,8 +74,8 @@ assembly requirements and viewing conditions. Detailed calculations remain defin
   application MUST NOT infer a location or target the package does not supply.
 - **FR-013**: Package-defaulted fixed modules MUST appear only as ordinary fitted build state and
   MUST NOT create a separate normalization or provenance region.
-- **FR-014**: Status MUST NOT infer, persist or publish import/defaulting history from fixed-module
-  state.
+- **FR-014**: Status MUST NOT persist or publish import/defaulting history derived from fixed-module
+  state to stored builds, links, SLEF or edit history.
 - **FR-015**: With no package issues or qualified results, the capability MUST state that none were
   reported without making a readiness or quality claim.
 - **FR-016**: The default load state MUST be unladen: full main tank and empty cargo hold. Maximum

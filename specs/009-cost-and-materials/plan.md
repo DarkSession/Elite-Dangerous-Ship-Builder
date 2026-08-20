@@ -165,8 +165,9 @@ quantities. No route, serializer, storage adapter, private catalogue or second `
   a separately selected effect costs one package application.
 - Only `sumMaterials()` consolidates known source lists. Case-insensitive trace joins retain source
   counts/identities without recalculating consolidated quantities or changing first-seen order.
-- Material metadata and names come from package leaf helpers; canonical English remains visible with
-  the shared untranslated disclosure on locale miss.
+- Material metadata and names come from package leaf helpers; canonical package text remains visible
+  with the shared untranslated disclosure on a locale miss, and the name is unavailable when the
+  package supplies no canonical text.
 - The reference's wide rail/context and mobile Status/Engineer hierarchy is retained after removing
   unsupported totals, truncation, merged currencies, remote assets and inaccessible interaction.
 

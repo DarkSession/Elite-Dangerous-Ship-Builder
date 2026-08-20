@@ -124,7 +124,8 @@ No game rule, value or variant-recognition heuristic is application-owned.
 ## Success Criteria
 
 - **SC-001**: Every slot, candidate, edit result and modified value matches the Almanac.
-- **SC-002**: Replacement search updates within 100 ms for the largest package candidate list.
+- **SC-002**: Replacement search updates within 100 ms for the largest package candidate list,
+  measured at the mobile viewport under 4× CPU slowdown.
 - **SC-003**: Undo and redo reproduce every intermediate modelled build exactly.
 - **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.
 - **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
