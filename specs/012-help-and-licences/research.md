@@ -12,10 +12,10 @@ application-level signal store. The frame's global action and package-backed con
 the same `open(source)` intent. The modal overlays the current capability; close returns to the
 unchanged underlying state. It does not invoke Angular Router, alter history or copy a build fragment.
 
-**Rationale**: FR-001 explicitly requires a modal without navigation. One instance prevents the four
-copied reference overlays from drifting and works when no build exists. A small store allows deeply
-nested package-backed surfaces to request the shared modal without importing a feature component or
-duplicating state.
+**Rationale**: FR-001 requires in-place, navigation-preserving help that works when no build exists;
+the modal is the plan-time design decision that satisfies that behavior. One instance prevents the
+four copied reference overlays from drifting. A small store allows deeply nested package-backed
+surfaces to request the shared modal without importing a feature component or duplicating state.
 
 **Alternatives considered**: The previous `/help` route was rejected because it leaves the current
 capability and contradicts FR-001. A modal per route, URL/query-driven dialog state and copied legal
@@ -88,11 +88,12 @@ was rejected by FR-006.
 table generator pattern. Emit one immutable generated manifest for browser consumption.
 
 Only explicit release-workflow evidence whose release version/ref matches the non-placeholder root
-version produces `{ kind: 'release' }`. Every other build is `{ kind: 'nonRelease', buildId }`.
-CI supplies a bounded immutable build ID; a repository build uses the current commit abbreviation
-plus an optional `dirty` marker. The accepted alphabet excludes whitespace, URLs, paths, branch
-names, people, machines and account identifiers. If no truthful identifier is available, generation
-fails.
+version produces `{ kind: 'release' }`. A build outside a declared release workflow is normally
+`{ kind: 'nonRelease', buildId }`; incomplete, mismatched or placeholder evidence inside a declared
+release workflow fails rather than being silently downgraded. CI supplies a bounded immutable build
+ID; a repository build uses the current commit abbreviation plus an optional `dirty` marker. The
+accepted alphabet excludes whitespace, URLs, paths, branch names, people, machines and account
+identifiers. If no truthful identifier is available, generation fails.
 
 **Rationale**: The package export map does not expose its manifest to browser code, but installed
 artifacts are available to Node tooling under pnpm. Explicit classification prevents an optimized
@@ -152,9 +153,10 @@ terms disappear, fork package wording, hide review changes or contradict FR-003/
 
 ## Initial-load and offline delivery
 
-**Decision**: Eagerly import the generated help manifest and feature 011's bundled English message
-entries with the application frame. The shared modal component may instantiate on demand, but all
-facts, accepted help text and exact disclaimer bytes are already in the initial JavaScript bundle.
+**Decision**: Eagerly import the generated help manifest, separate generated help-topic catalogue and
+feature 011's bundled English message entries with the application frame. The shared modal component
+may instantiate on demand, but all facts, accepted help text and exact disclaimer bytes are already
+in the initial JavaScript bundle.
 Opening it performs no dynamic import or fetch. Feature 011's sole service-worker/base app-shell
 policy caches that initial bundle; other locale catalogues may use feature 011's same-origin loading
 and bundled English fallback.

@@ -19,7 +19,8 @@ permitted legal excerpt without maintaining a second copy, classifies release/no
 and emits an immutable TypeScript manifest imported by the initial Angular bundle. A companion
 release gate mechanically requires exactly one definition for each of FR-010's seven help topics,
 complete shipped-locale messages and at least one resolvable governing accepted feature requirement
-or constitution principle per topic; content review checks each answer against those sources.
+or constitution principle per topic; it emits a separate immutable browser-topic catalogue containing
+only validated IDs and message keys, while content review checks each answer against its sources.
 Missing, duplicate, unreferenced, contradictory or unsupported content fails before release.
 Installed Almanac legal artifacts remain mirrored byte-for-byte in the source distribution to
 satisfy redistribution terms, but they are not embedded or linked as additional legal documents in
@@ -36,8 +37,8 @@ tooling configuration for artifact generation and verification
 shell, and feature 011's dialog, localisation, token and accessibility infrastructure
 
 **Storage**: No feature-owned persistence. Open/closed state and invocation context are ephemeral;
-the immutable help manifest is compiled into the initial application bundle. Locale persistence
-remains owned by feature 011
+the immutable help manifest and separate generated topic catalogue are compiled into the initial
+application bundle. Locale persistence remains owned by feature 011
 
 **Testing**: Node test runner for extraction, source-distribution equality and release metadata;
 Vitest through Angular's unit-test builder with the existing 80% thresholds; Playwright with
@@ -98,8 +99,10 @@ requested._
 2. Feature 011 supplies the application's sole service-worker registration/base app-shell caching,
    shared dialog/layer primitives, tokens, localisation with bundled English fallback, component
    previews, Firefox/landscape projects and the automated accessibility harness.
-3. Release automation supplies explicit version-matched release evidence. Every other build is
-   classified as non-release and must have a safe immutable build identifier.
+3. Release automation declares release workflows and supplies explicit version-matched evidence.
+   Builds outside a declared release workflow are non-release and must have a safe immutable build
+   identifier; incomplete or contradictory evidence inside a declared release workflow blocks the
+   build.
 4. No Almanac defect blocks this feature. The installed package manifest and legal artifacts are
    sufficient inputs and are consumed without local correction.
 
@@ -146,8 +149,12 @@ src/app/
 ├── domain/distribution/
 │   ├── help-manifest.ts               # immutable artifact contracts and invariant validation
 │   └── help-manifest.spec.ts
+├── domain/help/
+│   ├── help-topic.ts                  # runtime-safe topic identity and generated-record contract
+│   └── help-topic.spec.ts
 ├── platform/build/
-│   └── help-manifest.generated.ts     # ignored deterministic browser input
+│   ├── help-manifest.generated.ts     # ignored deterministic artifact/identity browser input
+│   └── help-topics.generated.ts       # ignored deterministic topic-key browser input
 ├── application/help/
 │   ├── help-dialog.store.ts           # global ephemeral open/close/source state
 │   ├── help.presenter.ts              # generated facts + localised help view model
@@ -170,11 +177,12 @@ rather than duplicated under help.
 **Structure Decision**: Keep one Angular application and one shared modal instance mounted by the
 application frame. Node tooling is the only boundary allowed to read package/repository files. It
 emits the minimal browser manifest and separately verifies exact source-distribution mirrors. A
-tooling-only help-definition module owns governing references; generation emits only the validated
-IDs and message keys, so references do not enter the browser bundle. A signal store owns only
-ephemeral modal state, a presenter combines immutable facts with localised messages, and presentation
-components render inputs. No help route, mutable feature persistence, runtime legal fetch, Markdown
-renderer, private legal wording or second navigation system is added.
+tooling-only help-definition module owns governing references and emits a separate generated topic
+catalogue containing only validated IDs and message keys, so references do not enter the browser
+bundle or `HelpManifestV1`. A signal store owns only ephemeral modal state, a presenter combines
+immutable facts with localised messages, and presentation components render inputs. No help route,
+mutable feature persistence, runtime legal fetch, Markdown renderer, private legal wording or second
+navigation system is added.
 
 ## Phase 0: Research Conclusions
 
@@ -193,14 +201,15 @@ are:
   rules” marker. Remove only Markdown's structural four-space prefix; preserve every remaining byte,
   newline and character, record its SHA-256 and language, and fail on ambiguity or drift.
 - Read application and Almanac versions from their actual manifests. Only explicit version-matched
-  release evidence produces a release identity; every other build carries a sanitised CI identifier
-  or git commit abbreviation plus optional dirty marker.
+  evidence in a declared release workflow produces a release identity. Builds outside a declared
+  release workflow carry a sanitised CI identifier or git commit abbreviation plus optional dirty
+  marker; invalid evidence in a declared release workflow fails.
 - Validate one audited, query-free GitHub `LICENSE` URL as the sole legal-details destination. Read
   and validate the separate package-defect destination from Almanac `package.json#bugs.url`.
 - Keep installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` as byte-exact tracked mirrors for
   source redistribution, but do not expose them as extra modal documents or links.
-- Import the generated manifest and bundled English help catalogue eagerly. Opening the modal never
-  enters a loading/error state and never causes a request.
+- Import the generated manifest, separate generated topic catalogue and bundled English messages
+  eagerly. Opening the modal never enters a loading/error state and never causes a request.
 - Compose feature 011's dialog/facts/notices/actions, with a centered wide treatment and bottom-sheet
   narrow treatment matching `.design` while meeting reflow, touch, screen-reader and reduced-motion
   requirements.

@@ -90,6 +90,10 @@ checks each answer for consistency with its cited behavior. A missing, duplicate
 contradictory or unsupported topic blocks release; the modal never publishes a partial or
 speculative set.
 
+After validation, tooling emits a separate browser topic catalogue containing only each topic's ID,
+question key and answer key. It is not part of `HelpManifestV1`, and governing references never enter
+the generated browser module.
+
 ### Required content-review gate
 
 Whenever an English question, English answer or governing reference changes, release review must

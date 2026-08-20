@@ -58,8 +58,9 @@ Expected:
 - the current placeholder/development build is visibly Non-release and shows its generated build ID;
 - no label describes either value as the live game or live catalogue version.
 
-In release-workflow fixture tests, provide version-matched evidence and confirm release state. Repeat
-with missing, placeholder and mismatched evidence and confirm generation fails.
+In fixture tests, omit any release-workflow declaration and confirm a normal non-release identity is
+emitted. Then declare a release workflow: provide version-matched evidence and confirm release state,
+and repeat with missing, placeholder and mismatched evidence to confirm generation fails.
 
 ## 3. Open and close without navigation or mutation
 

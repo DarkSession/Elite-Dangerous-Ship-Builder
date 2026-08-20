@@ -21,7 +21,9 @@ Validation:
   placeholder `0.0.0`.
 - `nonRelease` always has a bounded, non-personal immutable `buildId` from CI evidence or a git
   commit abbreviation plus optional `dirty` marker.
-- A missing, contradictory or unsafe identity is a build failure, not a runtime unavailable state.
+- Absence of release-workflow evidence selects `nonRelease`; a missing/unsafe non-release `buildId`
+  or incomplete, contradictory or placeholder evidence inside a declared release workflow is a build
+  failure, not a runtime unavailable state.
 
 ## AlmanacIdentity
 
@@ -122,6 +124,24 @@ Invariants:
   translated copy enters the manifest.
 - The complete help manifest is eagerly imported by the application frame.
 
+## BrowserHelpTopic
+
+Validated application-owned help content emitted in a generated module separate from
+`HelpManifestV1`.
+
+```text
+BrowserHelpTopic {
+  id: HelpTopicId
+  questionKey: message key
+  answerKey: message key
+}
+```
+
+The separate generated catalogue contains exactly seven records in the required order and is eagerly
+imported beside the manifest. It contains no governing references; those remain tooling-only review
+evidence. A missing, duplicated, reordered or blank browser record prevents emission of the complete
+catalogue, never publication of a partial runtime set.
+
 ## HelpTopicDefinition
 
 Application-owned accepted help content.
@@ -151,7 +171,7 @@ Required IDs, in modal order:
 
 Governing references are not displayed or bundled. Build-time checks require the exact seven-ID set,
 one definition per ID, a non-empty resolvable reference set per definition and non-empty question and
-answer messages in every shipped application locale. A missing, duplicate, unreferenced,
+answer messages in every shipped application locale. A missing, duplicate or unreferenced
 definition fails mechanically; a contradictory or unsupported definition fails required content
 review. Every case blocks release, and no partial topic set or runtime fallback is published.
 Feature 011's bundled English remains the final catalogue fallback only after the full candidate has
