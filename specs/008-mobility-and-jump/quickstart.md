@@ -7,10 +7,11 @@ does not contain implementation code or hand-calculated game figures.
 
 - Node.js 24 from `.nvmrc`
 - pnpm 10.33.0 from `packageManager`
-- `@elite-dangerous-almanac/core` 0.1.3 from the committed lockfile
+- `@elite-dangerous-almanac/core` 0.1.4 from the committed lockfile
 - TypeScript strict mode enabled in the shared configuration
 - feature 001 active build/revision and `/build` workspace
-- feature 002 fixed-mount normalization, revision advancement and exact-slot targeting
+- shared package-populated fixed-mount ingress, feature 002 revision advancement and exact-slot
+  targeting
 - feature 003 stage-one viewing-condition/context/provider/target contracts
 - feature 011 token, component, localization, preview and dual-engine accessibility foundations
 - Chromium and Firefox versions compatible with Playwright 1.62.1

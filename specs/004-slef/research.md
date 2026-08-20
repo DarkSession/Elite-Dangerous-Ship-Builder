@@ -1,8 +1,8 @@
 # Research: SLEF Import and Export
 
-Research used the accepted feature spec, Constitution 6.0.0, feature 001/002/011 design contracts,
+Research used the accepted feature spec, Constitution 7.0.0, feature 001/002/011 design contracts,
 the current repository, `.design/Ship Builder.dc.html`, and the pinned
-`@elite-dangerous-almanac/core@0.1.3` source/tag. Package probes used generated or public fixture data
+`@elite-dangerous-almanac/core@0.1.4` source/tag. Package probes used generated or public fixture data
 only.
 
 ## Decision 1: the Almanac owns SLEF inspection, construction and serialization
@@ -69,33 +69,24 @@ English in a non-English UI and extracting facts from exception messages were re
 
 **Decision**: Before construction, the shared feature 002 ingress boundary records:
 
-1. the package's structured identity outcomes after it refuses an unknown hull, empties unknown
-   removable modules and defaults unknown fixed modules;
-2. every remaining resolved source module with validated finite `Engineering.Quality` in `[0, 1)`;
-3. the source-empty state of package slots whose fixed reason is `requiredSlot` or `cargoHatch`.
+1. unknown-hull refusal;
+2. every supported resolved source module with validated finite `Engineering.Quality` in `[0, 1)`.
 
-Package identity normalization is first and independent of attached engineering; attached fields are
-discarded with an unknown module. Construct through the package boundary, correlate each remaining
-partial to its constructed slot and symbol, and call `completeEngineeringGrade(slotKey)` only for
+Construct through the package boundary, which returns every fixed mount populated, correlate each
+remaining partial to its constructed slot and symbol, and call `completeEngineeringGrade(slotKey)` only for
 those source partials. Every must return `normalized`; `unsupported` refuses atomically and
 `unchanged` for a source partial is a package-contract failure. Never call the method for absent
 quality or quality `1` because complete locked/final articles may correctly return `unsupported`.
 
-Only after all partials succeed, call `repairFixedMount()` for source-empty fixed mounts. Accept
-`repaired`; retain incomplete state for `defaultUnavailable`; treat a
-package-derived `refused` as a package-contract failure. Construction's cargo-hatch restoration is
-detected by comparing the source evidence with the constructed result and reported as an
-application-owned `autoRestored` classification backed by exact source/result identities.
+Do not call `repairFixedMount()`, compare source/constructed fixed mounts or retain defaulting
+provenance; fixed defaults are ordinary package-returned candidate state.
 
-**Rationale**: Identity-first ordering prevents unknown module data from entering candidate state;
-quality-before-empty-fixed repair preserves evidence that must trigger partial-quality refusal. A
-resolved but incompatible fixed module is not silently repaired, so other package-invalid state
-stays visible in final validation.
+**Rationale**: Package construction establishes the fixed-mount invariant before quality handling,
+while exact source evidence still triggers partial-quality refusal.
 
-**Alternatives considered**: Preserving unknown identities, local identity classification, a
-SLEF-only normalization loop, fixed-first ordering, normalizing every engineered module, scalar
-quality mutation, repairing every invalid fixed mount, application default lookup and accepting
-unsupported partials were rejected.
+**Alternatives considered**: Adding unknown-module compatibility, a SLEF-only normalization loop,
+normalizing every engineered module, scalar quality mutation, a second fixed-mount repair,
+application default lookup and accepting unsupported partials were rejected.
 
 ## Decision 6: feature 001 owns the only commit and persistence effects
 
@@ -114,23 +105,19 @@ top-level composition wires shell/workspace import/export intents to feature 004
 writing before confirmation and importing feature 004 from feature 001 domain/application code were
 rejected.
 
-## Decision 7: split detailed outcome from feature 001 record metadata
+## Decision 7: keep detailed quality outcome transient
 
-**Decision**: Bind the accepted import outcome to the committed active revision. Package identity
-outcomes, quality completion, remaining validation issue details and full validation presentation
-are transient/dismissible workspace feedback. Successful source-empty fixed-mount fills are handed
-to feature 001's
-`FixedMountNormalisationProvenance[]` and persist as local-record metadata until that mount is edited.
-Feature 001 independently persists the accepted revision's `valid`/`complete` booleans as ordinary
-record-list metadata. Neither detailed outcome nor fixed provenance enters the modelled snapshot,
-edit history, link or SLEF payload.
+**Decision**: Bind the accepted import outcome to the committed active revision. Quality completion,
+remaining validation issue details and full validation presentation are transient/dismissible
+workspace feedback. Feature 001 independently persists the accepted revision's `valid`/`complete`
+booleans as ordinary record-list metadata. Fixed defaults need no outcome or provenance. The detailed
+outcome enters neither modelled snapshot, edit history, link nor SLEF payload.
 
-**Rationale**: FR-012 requires durable-enough post-layer disclosure, feature 001 already owns local
-fixed-normalization provenance, and FR-006 forbids exporting it. Treating the entire report as
-non-persisted would contradict the accepted persistence contract.
+**Rationale**: FR-012 requires durable-enough post-layer quality disclosure while package construction
+already guarantees fixed state.
 
-**Alternatives considered**: SLEF custom properties, putting reports in the build snapshot, dropping
-the report when the layer closes and excluding fixed provenance from local records were rejected.
+**Alternatives considered**: SLEF custom properties, putting reports in the build snapshot and
+dropping the report when the layer closes were rejected.
 
 ## Decision 8: export one sparse current-retail artifact
 
@@ -147,8 +134,8 @@ loadout.toSlefString({
 
 Read package validation for disclosure only; invalid or incomplete builds remain exportable.
 Default export emits current catalogue-retail values. Historical source values do not enter the
-application model and are never requested. Engineering, symbol replacement/removal and fixed repair
-are reflected by the package's current fitted-build pricing.
+application model and are never requested. Engineering, symbol replacement/removal and
+package-defaulted fixed construction are reflected by the package's current fitted-build pricing.
 
 **Rationale**: Fitted order and sparse power preserve absence/order; readable indentation supports
 selection; default retail mode satisfies FR-005 without application price logic. Explicitly captured
@@ -259,7 +246,7 @@ title/placeholder-only labels, color-only feedback and axe as the sole proof wer
 
 **Decision**: Unit/contract tests cover UTF-8 boundaries, all inspector shapes/cardinality,
 diagnostic preservation/presentation, construction/normalization outcomes, quality-first ordering,
-fixed provenance split, source credits, derived-field round trips, exact-link inclusion, artifact
+quality-outcome split, source credits, derived-field round trips, exact-link inclusion, artifact
 invalidation and browser-port outcomes. Discover the maximum-slot hull from package data at test time
 and populate supported fields through package APIs; require import/export under 500 ms.
 
@@ -286,14 +273,13 @@ accessibility and claiming automated browser zoom coverage were rejected.
 
 ## Dependency and gate conclusion
 
-- The Almanac satisfies inspection, structured diagnostics, quality completion, cargo restoration,
-  fixed repair, default current-retail export, package-derived integrity and the structured
-  empty/default normalization of unresolved modules at import. Captured module `Health` remains
-  outside application state.
+- The Almanac satisfies inspection, structured diagnostics, quality completion, package-populated
+  fixed mounts, default current-retail export and package-derived integrity. Captured module `Health`
+  remains outside application state.
 - Feature 011 and feature 001 core are implementation prerequisites. Feature 002's shared ingress
   contract is also required.
 - The current repository does not yet contain those planned foundations; feature 004 must not create
   temporary shells, locale logic, active-build storage or test-matrix substitutes.
 
 No design clarification remains and no feature-specific package blocker is open; the package owns
-empty/default normalization for unresolved modules. No application workaround is permitted.
+fixed-mount construction. No application workaround is permitted.

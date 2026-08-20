@@ -3,7 +3,7 @@
 ## Package boundary and leaf imports
 
 **Decision**: Pin implementation to the installed
-`@elite-dangerous-almanac/core@0.1.3` facade methods:
+`@elite-dangerous-almanac/core@0.1.4` facade methods:
 `ShipLoadout.powerBudget()`, `distributorMetrics()` and `heatMetrics()`.
 Import `ShipLoadout` and `DistributorOptions` from
 `@elite-dangerous-almanac/core/ships/ship-loadout`; result types from
@@ -97,7 +97,7 @@ diagnosis or catalogue fallback; returned zero remains numeric zero.
 
 **Rationale**: Null can represent no recognized distributor, disabled state,
 missing capacitor facts or retracted priority shedding. Only the returned null is authoritative;
-unknown catalogue identities were already package-normalized at application ingress.
+unsupported module identities are outside the ingress contract.
 
 **Alternatives considered**: Local recharge scaling, catalogue figures,
 effective-stat fallback, symbol parsing and inferred null causes were rejected.
@@ -111,8 +111,8 @@ fields:
   returned in `PowerBudget.consumers`. Passive and zero-draw fittings are
   intentionally absent from that package result and have no contribution row.
 - A “package-incomplete distributor” is unavailable when its required build metrics remain
-  unavailable and `distributorMetrics()` returns null. Unknown catalogue identities do not reach the
-  calculation surface because the shared ingress boundary has already normalized them.
+  unavailable and `distributorMetrics()` returns null. The calculation surface receives only
+  package-resolved fitted identities from supported ingress.
 
 **Rationale**: FR-001, FR-005, FR-008 and the Almanac Coverage section make
 returned facade fields the normative boundary. This interpretation preserves

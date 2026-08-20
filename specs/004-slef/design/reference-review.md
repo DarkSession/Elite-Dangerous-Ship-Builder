@@ -30,8 +30,8 @@ The source is a visual/interaction reference, not executable behavior or authori
   actions reachable.
 - Add visible labels/instructions, exact UTF-8 usage/limit, over-limit, inspecting, cardinality,
   semantic diagnostics, candidate/replacement and normalization-refusal states to import.
-- Keep import exact and atomic. The workspace owns the post-commit outcome so normalization and
-  identity-normalization feedback and remaining incomplete state survive the input layer transition.
+- Keep import exact and atomic. The workspace owns the post-commit outcome so quality-completion
+  feedback and remaining incomplete state survive the input layer transition.
 - Add true package validation/incomplete warnings, exact-revision artifact/link behavior and real
   localized metadata to SLEF export.
 - Desktop Download and mobile Share File are not equivalent reference actions: Download is always
@@ -52,7 +52,7 @@ The source is a visual/interaction reference, not executable behavior or authori
   fabricated share behavior in `wireExport`.
 - Fabricated app/library versions, module counts, build links and sample game values.
 - The FAQ claim that imported partial rolls remain partial. Supported partials are package-normalized
-  to completed quality; unsupported partials refuse atomically under Constitution 5.0.0.
+  to completed quality; unsupported partials refuse atomically under Constitution 7.0.0.
 - Journal Loadout, Markdown and invented share-link export payloads; feature 001 owns canonical link.
 - Cross-origin Google fonts/runtime assets, hard-coded visual values, fixed canvas widths, hover-only
   meaning and color-only status.

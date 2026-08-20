@@ -52,11 +52,11 @@ and the plan uses that same compact order.
 ### Normalization and engineering
 
 - The canvas/help statement that imported modules keep a partial roll contradicts the constitution.
-  Unknown modules are first package-normalized to empty/default regardless of engineering.
-  Package-supported partials on remaining resolved modules complete to 100% with notice;
+  Unknown modules are outside the supported import contract. Package-supported partials on resolved
+  modules complete to 100% with notice;
   unsupported partial candidates are refused atomically before activation.
-- Source-empty fixed mounts are repaired from package defaults before workspace/calculations render;
-  unknown fixed modules are defaulted by the package identity boundary. Both disclose exact outcomes.
+- Package construction populates absent or unusable fixed mounts before workspace/calculations render;
+  no second repair or provenance surface is needed.
 - The engineering surface has distinct effect-only and clear-all behavior. It cannot rewrite raw
   modifier blocks or turn a fixed reward into an ordinary roll; it uses the package's structured
   `setExperimentalEffect()` operation.

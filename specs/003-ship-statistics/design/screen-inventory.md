@@ -35,8 +35,8 @@ the same. No arrangement creates document horizontal scrolling.
 | FR-010      | The fixed seven headline slots consume their owning provider fields.                                      |
 | FR-011      | Assembly consumes feature 009; credits/Merc Coin stay separate and Merc Coin can be absent.               |
 | FR-012      | Package slot and provider detail targets activate in one interaction; missing issue target has no action. |
-| FR-013      | Provenance has a separate heading/list and is never styled/counted as package validation.                 |
-| FR-014      | Provenance reflects feature 001/002 local-record lifecycle and never crosses public serialization.        |
+| FR-013      | Package-defaulted fixed modules appear only as ordinary fitted state with no provenance region.           |
+| FR-014      | Status infers and persists no import/defaulting history from fixed-module state.                          |
 | FR-015      | Empty issue/qualification statements avoid readiness/quality claims.                                      |
 | FR-016      | Load control defaults unladen and offers maximum jump/unladen/laden.                                      |
 | FR-017      | Pip draft exposes 0–4 half steps, visible total and valid six-pip Apply.                                  |
@@ -50,7 +50,7 @@ the same. No arrangement creates document horizontal scrolling.
 
 - Features 005–009 own detail capabilities and result semantics; Status links but does not reproduce
   their full analyses.
-- Feature 002 owns exact-slot editing/navigation and provenance clearing.
+- Feature 002 owns exact-slot editing/navigation.
 - Feature 001 owns active build/local record and no-build state.
 - Feature 011 owns workspace navigation primitives, tokens, formatting, fallback disclosure,
   announcements and test harness.

@@ -61,7 +61,7 @@ describe('build-link codec pinned symbol models', () => {
     );
 
     expect(fragments).toEqual([
-      'b.21B7zk:1Zz',
+      'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
       'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
       'b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV',
@@ -79,7 +79,7 @@ describe('build-link codec pinned symbol models', () => {
     // measured effect. A runner shows no console output for a passing spec, so a printed table
     // would let either column drift unnoticed; an assertion cannot.
     expect(rows).toEqual([
-      { label: 'empty Sidewinder', baselineLength: 12, modelledLength: 12 },
+      { label: 'empty Sidewinder', baselineLength: 16, modelledLength: 16 },
       { label: 'stock Krait Mk II', baselineLength: 10, modelledLength: 10 },
       { label: 'engineered Anaconda', baselineLength: 76, modelledLength: 65 },
       { label: 'supplied engineered Corvette', baselineLength: 108, modelledLength: 97 },
@@ -107,7 +107,7 @@ describe('build-link codec pinned symbol models', () => {
         expect(modelledFragment, symbol).toBe(baselineCodec.encodeBuildLinkFragment(source));
       }
     }
-    expect(longest).toBe(12);
+    expect(longest).toBe(18);
   });
 
   it('shrinks compact metadata under the character model', () => {

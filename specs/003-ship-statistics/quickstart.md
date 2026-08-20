@@ -11,9 +11,9 @@ pnpm install --frozen-lockfile
 
 Confirm:
 
-- the dependency is exactly `@elite-dangerous-almanac/core@0.1.3`;
-- feature 001 exposes the atomic active `{ loadout, buildRevision }` boundary and fixed-mount
-  provenance; feature 002 advances that revision for committed edits and exposes exact-slot actions;
+- the dependency is exactly `@elite-dangerous-almanac/core@0.1.4`;
+- feature 001 exposes the atomic active `{ loadout, buildRevision }` boundary; feature 002 advances
+  that revision for committed edits and exposes exact-slot actions;
 - feature 011 supplies tokens/components, locale/formatting/fallback disclosure, ten Playwright
   projects and the axe helper;
 - features 005–009 export exact status projection types and adapters over the generic envelope in
@@ -98,7 +98,7 @@ provider failure is application failure, while package unavailable remains an ow
 ## 7. Validate rail, capability and targets
 
 1. At desktop width inspect the persistent compact rail, then activate its complete Status action.
-2. Confirm the rail contains counts but no issue/provenance records.
+2. Confirm the rail contains counts but no issue records.
 3. Activate each displayed rail headline/assembly summary directly, then each complete-Status
    headline and assembly detail action.
 4. At tablet/mobile widths activate Status, then an issue slot action and return.
@@ -109,22 +109,21 @@ clear direct target is omitted. Detail targets open exactly `powerAndHeat`, `def
 `offenceProfile`, `mobilityAndJump` and `costAndMaterials`. Narrow Status suppresses the duplicate
 quick dock/ledger until an exact-slot action switches surfaces.
 
-## 8. Validate provenance and announcements
+## 8. Validate fixed defaults and announcements
 
-1. Ingest a build that feature 002 normalises, then open/save/duplicate/reload its record.
-2. Successfully edit one affected mount; also try refused/cancelled/no-op edits and undo.
+1. Ingest a build with omitted fixed entries, then open/save/duplicate/reload its record.
+2. Successfully edit one fixed mount; also try refused/cancelled/no-op edits and undo.
 3. Export SLEF and copy a build link.
 4. Introduce/resolve package issues and provider qualifications with rapid edits.
 
-Expected: provenance remains separate from package issues, follows feature 001 local records, clears
-only for a successful exact-mount edit, does not return on undo and enters no public serialization.
-Initial counts are silent; each settled changed count pair produces one polite message; unchanged,
-pending and stale revisions are silent.
+Expected: package-defaulted fixed modules remain ordinary fitted state with no provenance UI or
+metadata. Initial counts are silent; each settled changed count pair produces one polite message;
+unchanged, pending and stale revisions are silent.
 
 ## 9. Validate responsive, accessible and offline behavior
 
 Run the complete primary journey in Chromium and Firefox at desktop, tablet portrait/landscape and
-mobile portrait/landscape. For every relevant ready, empty, pending, error, issue, provenance,
+mobile portrait/landscape. For every relevant ready, empty, pending, error, issue,
 qualified, unavailable, infinite and absent state:
 
 - run the automated accessibility scan;

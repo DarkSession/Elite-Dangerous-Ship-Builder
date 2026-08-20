@@ -27,8 +27,9 @@ Initial app start, address-bar paste, browser navigation and in-app fragment nav
 2. Reject a value longer than 500 characters before decoding.
 3. Verify envelope, encoding, CRC and supported table version.
 4. Decode/reconstruct a candidate `ShipLoadout` without touching active state.
-5. Refuse an unknown hull. Through the released package boundary, empty unknown removable modules and
-   default unknown fixed modules, retaining only transient normalization feedback.
+5. Refuse an unknown hull or any identity the selected codec table cannot represent. Reconstruct the
+   candidate through the released package boundary, which returns every fixed mount populated with
+   its hull default.
 6. If current work is unsaved, request replacement confirmation.
 7. On acceptance, commit the candidate as link/working provenance and autosave it only to this tab's working record.
 
@@ -47,7 +48,7 @@ Any parse, integrity, version, identity or reconstruction error, or cancellation
 Map stable `BuildLinkCodecError.code` and structured parameters to application localization keys. Do not render internal English exception messages. Required categories include invalid/truncated encoding, failed integrity, unsupported envelope/table version, invalid payload, unknown/unrepresentable identity and reconstruction failure.
 
 A newer version is never guessed. A missing compact identity in a current payload is refused; a
-supported older payload reaches the same package-owned empty/default normalization as every other
+supported older payload reaches the same package-owned fixed-default construction as every other
 ingress path and is never repaired from a display index.
 
 ## Network and history assertions

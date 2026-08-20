@@ -26,11 +26,10 @@ No operation writes an index plus a record. Delete calls one `removeItem` only a
 - `format` selects the record family; `version` selects a frozen decoder.
 - Version 1 is the first published version. No fictional version 0 migration exists.
 - Every supported older decoder produces a canonical intermediate model. Pure sequential migrations then produce the latest model.
-- A migrated record replaces its own key only after decode, migration, package reconstruction,
-  package-owned unknown-module normalization and latest-version serialization all succeed. An
-  unknown hull refuses opening and leaves the original bytes unchanged. Unknown module source
-  identities may exist only in the transient migration candidate/outcome and are absent from the
-  latest stored form.
+- A migrated record replaces its own key only after decode, migration, package reconstruction and
+  latest-version serialization all succeed. An unknown hull refuses
+  opening and leaves the original bytes unchanged. A record containing an unsupported module
+  identity likewise refuses migration and opening atomically; its original bytes remain unchanged.
 - If migration persistence fails, the original old-version bytes remain authoritative and opening may continue from the in-memory candidate with a visible persistence warning.
 - A version greater than the latest supported value is listed as unsupported and left byte-for-byte unchanged.
 - Each future published version adds frozen lossless round-trip and failed-write fixtures; supported decoders are not silently removed.
@@ -42,9 +41,8 @@ No operation writes an index plus a record. Delete calls one `removeItem` only a
 - Opening any named or linked build copies the successful candidate into this tab's working record; it never converts or mutates the source named record.
 - Autosave targets only the tab working key and is coalesced after modelled edits. Best-effort flush occurs on `pagehide` and when the document becomes hidden.
 - A working record externally removed while its tab is live enters `record-deleted-externally`; autosave pauses until the Commander explicitly resumes.
-- Fixed-mount normalisation provenance autosaves and copies with the local record independently of
-  `BuildSnapshotV1`. A successful Commander edit to its exact slot clears that entry before the next
-  record write; undo does not restore it.
+- Package-defaulted fixed modules persist as ordinary `BuildSnapshotV1` state with no source-empty,
+  repair or defaulting provenance.
 
 At most 20 working records may exist:
 
@@ -83,6 +81,6 @@ All storage access, including obtaining the storage object, enumeration, `getIte
 ## Boundary exclusions
 
 Local record ID, revision, display name, note, timestamps, tab ownership, validation snapshot, save
-provenance, fixed-mount normalisation provenance and persistence status never enter build links or
+provenance and persistence status never enter build links or
 SLEF. The storage serializer and link/SLEF adapters consume the shared modelled snapshot through
 separate allowlists; they do not delete forbidden fields after broad serialization.

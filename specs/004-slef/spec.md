@@ -44,8 +44,8 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 - **FR-005**: Export credit figures MUST use the current catalogue-retail values supplied by the
   Almanac. Captured or historical purchase values MUST NOT be retained, displayed or requested for
   export.
-- **FR-006**: Fixed-mount normalisation MUST export the resulting build without exporting its
-  provenance notice.
+- **FR-006**: Export MUST include the package-returned fixed-module state without application-owned
+  fixed-mount defaulting metadata.
 - **FR-007**: Import MUST be available without an active build and accept pasted SLEF JSON or one
   journal `Loadout` event.
 - **FR-008**: Import MUST accept exactly one build and a maximum of 64 KiB. Larger input MUST be
@@ -55,14 +55,14 @@ Commanders can export the active build as one SLEF entry and import exactly one 
 - **FR-010**: Import MUST complete validation and normalisation before replacing the active build.
   Failure MUST leave active and stored builds unchanged.
 - **FR-011**: Package diagnostics MUST preserve entry index, path, code, constraint and parameters.
-- **FR-012**: Successful import MUST report partial quality normalised to 100%, unknown removable
-  modules emptied, unknown fixed modules replaced with package defaults, source-empty fixed mounts
-  filled and fixed mounts left incomplete when no default exists. Source unknown identities are
-  transient feedback only. [002](../002-module-outfitting/spec.md) FR-010 states this normalisation
-  rule canonically; this requirement applies it to SLEF and journal ingress.
-- **FR-013**: Import followed by export MUST preserve every modelled field except the two
-  constitutional ingress classes: completed engineering quality and package-owned identity/fixed-
-  mount normalization. No unknown module identity or attached engineering may enter the export.
+- **FR-012**: Successful import MUST report partial quality normalised to 100%. Package construction
+  MUST return every fixed mount populated with its hull default when the source entry was absent or
+  unusable; the application MUST NOT perform a second fixed-mount repair or expose an
+  empty/default-unavailable branch. Unknown module identities are outside the supported import
+  contract.
+- **FR-013**: Import followed by export MUST preserve every modelled field except completed
+  engineering quality and package-defaulted fixed mounts. Every exported identity MUST resolve in
+  the pinned package.
 - **FR-014**: Import and export MUST run entirely in the browser and MUST transmit no payload.
 
 ## Edge Cases
@@ -72,22 +72,21 @@ Commanders can export the active build as one SLEF entry and import exactly one 
   import acceptance, application behavior or round-trip success.
 - Post-engineering module integrity belongs to the fitted build configuration and remains available
   through Almanac results; it MUST NOT be inferred from a captured `Health` snapshot.
-- An unknown non-fixed module becomes an empty slot; an unknown fixed module becomes the package
-  default or remains explicitly incomplete when no package default exists.
+- Unknown module identities are not supported import fixtures or compatibility cases.
 - Clipboard and share permissions can fail without losing the generated payload.
 
 ## Almanac Coverage
 
 `inspectSlef()`, `ShipLoadout.fromSlef()`, `ShipLoadout.fromLoadout()`, `toLoadoutEvent()` and
 `toSlefString()` supply strict validation, construction, serialization and current catalogue-retail
-credit behaviour, together with unknown-hull refusal and structured empty/default outcomes for
-unresolved modules. The application performs no format or game calculation.
+credit behaviour, together with unknown-hull refusal and package-defaulted fixed mounts. The
+application performs no format or game calculation.
 
 ## Success Criteria
 
 - **SC-001**: Every reference export is accepted by the Almanac and independent SLEF consumers.
-- **SC-002**: Round trips preserve every modelled field after the stated quality and identity/fixed-
-  mount normalisations.
+- **SC-002**: Round trips preserve every modelled field after the stated quality and fixed-mount
+  normalisations.
 - **SC-003**: Every rejected input leaves current work unchanged and exposes a structured location
   and reason.
 - **SC-004**: The package hull with the most slots, with every slot fitted and every supported modelled

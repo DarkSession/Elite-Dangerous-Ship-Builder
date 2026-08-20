@@ -92,14 +92,13 @@ Expected: supported fixtures reconstruct identical modelled state and migrate lo
 3. Edit repeatedly and verify browser history does not gain an entry per edit.
 4. Load the link in another tab; verify an equivalent modelled build appears as working/link provenance without a named save.
 5. Navigate/paste malformed, truncated, over-limit and unsupported-version fragments while another dirty build is active.
-6. Load an older build with an unknown hull, then builds with an unknown removable and unknown fixed
-   module.
+6. Load an older supported payload that omits fixed entries, then separately load a payload with an
+   unknown hull or an identity absent from its selected codec table.
 
 Expected: initial and navigated hashes use identical validation/replacement rules; failures and
-cancel leave work unchanged; the unknown hull is refused; the released package empties the unknown
-removable module and defaults the unknown fixed module before activation, with transient slot/source
-feedback. The normalized link contains neither unknown identity. Local name/note/IDs, catalogue
-facts, calculations and prices are absent from payloads.
+cancel leave work unchanged; unknown or unrepresentable identities are refused; and the supported
+older payload reconstructs with package-defaulted fixed mounts as ordinary fitted state. Local
+name/note/IDs, catalogue facts, calculations and prices are absent from payloads.
 
 ## Scenario 8: Network, offline and privacy
 

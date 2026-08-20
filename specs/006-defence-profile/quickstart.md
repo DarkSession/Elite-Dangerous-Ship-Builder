@@ -15,7 +15,7 @@ pnpm install --frozen-lockfile
 
 Before feature acceptance, confirm:
 
-- pinned `@elite-dangerous-almanac/core@0.1.3` exposes the four defence facade methods, structured
+- pinned `@elite-dangerous-almanac/core@0.1.4` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
 - feature 001 supplies `/build` and one active loadout/revision;
 - feature 003 supplies settled SYS half-pips, revision/provider envelopes and `defenceProfile` target;
@@ -109,7 +109,7 @@ Expected:
 Use duplicate boosters/reinforcements plus generator, actual bulkhead and slot-bearing issues.
 
 Expected: package-resolved roles appear in package slot order; unavailable role/stat data produces no
-guessed record and no unknown module identity; duplicate symbols retain independent exact-slot
+guessed record and only supported module identities; duplicate symbols retain independent exact-slot
 actions; wide and narrow actions deliver the original key; no role row claims numeric facade
 provenance. Any package issue reason `unresolved` remains calculation feedback only.
 

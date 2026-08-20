@@ -2,7 +2,7 @@
 
 Research used the accepted feature specs, constitution 5.0.0, `.design/Ship Builder.dc.html`, the
 current source/tooling configuration and the installed public contracts and runtime behavior of
-`@elite-dangerous-almanac/core@0.1.3`. Runtime probes covered ready, missing-generator,
+`@elite-dangerous-almanac/core@0.1.4`. Runtime probes covered ready, missing-generator,
 disabled-generator and disabled-plant results. No application formula or private game datum was
 used.
 
@@ -34,7 +34,7 @@ every field. For incomplete results retain the complete ordered `CalculationIssu
 
 Missing, unresolved, disabled, shed and invalid meanings come directly from those issues. Here
 `unresolved` describes unavailable package calculation data for package-resolved build input; unknown
-module identities were normalized before this capability. A shield or recovery issue concerning
+module identities are outside the supported ingress contract. A shield or recovery issue concerning
 plant capacity/draw remains a plant/draw diagnosis and is never relabeled as a generator verdict.
 
 **Rationale**: The structured result already owns the unavailable-state distinction required by
@@ -141,7 +141,7 @@ the list.
 
 - Symbol/name parsing and positional keys are not package contracts.
 - Stat-based arithmetic or even division fabricates provenance.
-- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.3 API supports.
+- Claiming these rows are exactly the facade inputs is stronger than the public 0.1.4 API supports.
 - An upstream source-manifest API is unnecessary unless a future requirement demands exact
   per-source calculation provenance.
 

@@ -37,9 +37,9 @@ below is a planned responsive adaptation.
 ## Spec-driven extensions
 
 - Add Status as a peer desktop capability and a clear rail action to reach it. The complete Status
-  capability is the sole diagnostic/provenance record location.
+  capability is the sole diagnostic record location.
 - Add load, pip and hardpoint controls before affected results.
-- Add independent validity/completeness facts, complete ordered issues, fixed-mount provenance,
+- Add independent validity/completeness facts, complete ordered issues,
   qualifications, exact targets and no-issue/no-qualification states.
 - Add visible units/conditions and exact-zero, lower-bound, incomplete, unavailable, infinite,
   pending and application-failure states.

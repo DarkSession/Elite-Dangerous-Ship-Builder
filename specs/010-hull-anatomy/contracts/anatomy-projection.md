@@ -101,7 +101,7 @@ never duplicates the semantic list item.
 
 ## Verification
 
-Tests cover both mount kinds, empty/resolved articles, package-normalized unknown-module ingress,
+Tests cover both mount kinds, empty removable/resolved articles, package-populated fixed mounts,
 engineering presence, all power
 states, every location state, package order, cross-side repeats, wrong-kind/unknown/same-side
 defects, partial side readiness, stale revisions and selection changes. Regression fixtures include

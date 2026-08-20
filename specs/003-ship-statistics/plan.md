@@ -8,15 +8,15 @@
 
 Add one revision-coherent Status capability to the existing `/build` workspace. Feature 003 owns
 memory-only viewing conditions, the shared provider/target contracts and the composition of exact
-`ShipLoadout.validation`, five area-owned headline projections, feature 001/002 normalisation
-provenance and feature 009 assembly requirements. A single computed projection invokes synchronous
+`ShipLoadout.validation`, five area-owned headline projections and feature 009 assembly requirements.
+A single computed projection invokes synchronous
 provider ports with one captured build/condition revision and publishes the complete result at once;
 components never call Almanac calculations or reinterpret provider states.
 
 The visual hierarchy comes from `.design/Ship Builder.dc.html`: canvas 1c contributes the persistent
 wide status rail and canvas 1d contributes the in-workspace Status capability. The accepted spec
 requires more than the mock shows. The plan therefore adds an explicit desktop Status mode, viewing
-controls, complete validation/provenance lists, qualified/unavailable states, units, detail actions
+controls, complete validation lists, qualified/unavailable states, units, detail actions
 and accessible responsive behavior. The rail is a compact mirror; every diagnostic appears exactly
 once in the complete Status capability.
 
@@ -26,14 +26,13 @@ once in the complete Status capability.
 SCSS; Node.js 24 per `.nvmrc` for tooling
 
 **Primary Dependencies**: Angular signals, RxJS 7.8,
-`@elite-dangerous-almanac/core@0.1.3` leaf exports, feature 001 atomic active-build/revision and
+`@elite-dangerous-almanac/core@0.1.4` leaf exports, feature 001 atomic active-build/revision and
 local-record contracts, feature 002 committed-edit revision advancement and exact-slot editing,
 feature 005–009 status-provider implementations, and feature 011 UI/localization/accessibility
 infrastructure
 
 **Storage**: Viewing conditions, capability selection, pending state and announcements are memory
-only. Fixed-mount normalisation provenance is referenced from feature 001's versioned local record;
-feature 003 adds no persisted field and no build/link/SLEF data
+only. Feature 003 adds no persisted field and no build/link/SLEF data
 
 **Testing**: Vitest beside source with enforced 80% statement/branch/function/line coverage;
 Playwright with `@axe-core/playwright` in Chromium and Firefox at desktop, tablet portrait/landscape
@@ -56,7 +55,7 @@ formatting localized; no document horizontal scrolling; WCAG 2.2 AA except crite
 
 **Scale/Scope**: One active build of up to the package hull's complete slot set; two structural
 facts, all ordered package issues, seven headline slots, three load choices, valid half-pip
-allocations, two hardpoint choices, local provenance, and credit/Merc Coin/material summaries
+allocations, two hardpoint choices and credit/Merc Coin/material summaries
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d. Exact adopted and rejected
 elements are recorded in [design/reference-review.md](./design/reference-review.md).
@@ -145,7 +144,6 @@ src/app/
             ├── assembly-requirements/
             ├── headline-set/
             ├── issue-list/
-            ├── normalisation-provenance/
             ├── status-capability/
             ├── status-rail/
             └── viewing-conditions/
@@ -153,7 +151,7 @@ src/app/
 e2e/
 ├── accessibility.ts                      # feature 011 shared helper
 ├── ship-status.spec.ts
-├── status-provenance.spec.ts
+├── status-fixed-defaults.spec.ts
 └── viewing-conditions.spec.ts
 ```
 
@@ -198,7 +196,7 @@ All planning questions are resolved and no Almanac release blocker remains.
 
 - [data-model.md](./data-model.md) defines feature-owned conditions, revision context, structural
   projection, provider composition, status lifecycle and announcement state while referencing
-  owner-authored area/provenance types.
+  owner-authored area types.
 - [contracts/status-projection.md](./contracts/status-projection.md) freezes the synchronous provider
   transaction, exact source matrix and no-reclassification rule.
 - [contracts/viewing-conditions.md](./contracts/viewing-conditions.md) freezes defaults, draft
@@ -206,7 +204,7 @@ All planning questions are resolved and no Almanac release blocker remains.
 - [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes shared detail and
   exact-slot targets, the rail/capability relationship and the contract-first delivery graph.
 - [contracts/feedback-and-provenance.md](./contracts/feedback-and-provenance.md) freezes issue
-  presentation, locale fallback, settled announcements and feature 001/002 provenance lifecycle.
+  presentation, locale fallback and settled announcements.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR and each orientation;
   [status-rail.md](./design/status-rail.md) and
   [status-capability.md](./design/status-capability.md) define the two responsive surfaces.

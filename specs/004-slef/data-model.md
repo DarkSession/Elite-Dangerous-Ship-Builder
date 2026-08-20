@@ -68,32 +68,6 @@ Transient exact evidence captured from the inspected package entry before constr
 | `grade`              | package-validated grade or absent | Preserved for context                         |
 | `quality`            | finite number in `[0, 1)`         | Only source partials enter this collection    |
 
-### SourceFixedMount
-
-| Field              | Type                         | Rules                                                  |
-| ------------------ | ---------------------------- | ------------------------------------------------------ |
-| `slot`             | string                       | Package game slot key                                  |
-| `reason`           | `requiredSlot \| cargoHatch` | Package fixed reason; `moduleLimit` is excluded        |
-| `sourceSymbol`     | string or null               | Null means absent; exact identity otherwise            |
-| `sourceResolution` | `missing \| resolved`        | Unknown source modules were already package-normalized |
-
-Evidence is discarded after refusal or after its accepted outcome/provenance projection. It never
-enters build, record body, URL, SLEF or edit history.
-
-## IngressIdentityNormalizationOutcome
-
-Transient package-owned feedback produced before candidate construction.
-
-| Field          | Type                   | Rules                                                                       |
-| -------------- | ---------------------- | --------------------------------------------------------------------------- |
-| `slot`         | string                 | Exact source game slot key                                                  |
-| `sourceSymbol` | `string \| null`       | Unknown source identity, or null for an absent cargo hatch; never persisted |
-| `action`       | `emptied \| defaulted` | `emptied` for removable; `defaulted` for fixed                              |
-| `resultSymbol` | package symbol or null | Present only for a package default; null for an empty result                |
-
-Attached engineering and power fields are discarded with the unknown source module. The application
-does not derive this outcome or put its source identity in a build snapshot, URL, SLEF or history.
-
 ## EngineeringQualityCompletion
 
 | Field                | Type                    | Rules                                             |
@@ -109,48 +83,30 @@ does not derive this outcome or put its source identity in a build snapshot, URL
 Only successful package `normalized` results enter the collection. Quality-1 or absent-quality
 source modules are not passed to `completeEngineeringGrade()` and produce no completion notice.
 
-## FixedMountNormalizationOutcome
-
-| Field          | Type                                             | Rules                                                                                                           |
-| -------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `slot`         | string                                           | Candidate/source package slot identity                                                                          |
-| `reason`       | `requiredSlot \| cargoHatch`                     | Exact package fixed reason                                                                                      |
-| `sourceSymbol` | string or null                                   | Exact pre-construction evidence                                                                                 |
-| `resultSymbol` | string or null                                   | Exact constructed/repaired package identity; null when unavailable                                              |
-| `kind`         | `autoRestored \| repaired \| defaultUnavailable` | `autoRestored` is app workflow classification from exact before/after evidence; other kinds map package results |
-
-`defaultUnavailable` retains an incomplete candidate. Package `refused` or an unexpected
-`unchanged` for a targeted source-empty mount is a normalization failure, not an accepted
-outcome. Successful `autoRestored`/`repaired` results project to feature 001's local
-`FixedMountNormalisationProvenance`; unavailable results do not fabricate a replacement.
-
 ## SlefImportCandidate
 
 | Field                | Type                                          | Rules                                                                                              |
 | -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `loadout`            | `ShipLoadout`                                 | Detached package aggregate; sole game-bearing candidate                                            |
 | `sourceAttribution`  | package-validated app name/version or null    | Plain-text presentation only; empty synthetic/bare and empty-header envelope are not guessed apart |
-| `identityOutcomes`   | readonly package identity outcomes            | Transient empty/default report; source identities never enter the build                            |
 | `qualityCompletions` | readonly completion records                   | Transient report data                                                                              |
-| `fixedOutcomes`      | readonly fixed outcomes                       | Report plus successful local-provenance input                                                      |
-| `validationIssues`   | readonly package validation issue projections | Incomplete/invalid resolved state; no unknown identity retention                                   |
+| `validationIssues`   | readonly package validation issue projections | Incomplete/invalid resolved state                                                                  |
 | `validation`         | package `LoadoutValidation`                   | Final result after accepted normalization                                                          |
 | `requestToken`       | opaque token                                  | Must still match when feature 001 commits                                                          |
 
 ```text
 exact draft
   -> UTF-8 size gate -> empty gate -> inspectSlef(exact text)
-  -> exactly one valid entry -> package identity normalization
-  -> capture remaining source evidence -> package construction
+  -> exactly one valid entry -> package construction with fixed defaults
+  -> capture supported source evidence
   -> correlate/complete source partials
-  -> repair source-empty fixed mounts
   -> final package validation -> detached candidate
   -> feature 001 replacement coordinator
        failure/cancel/stale -> discard; all existing state unchanged
        accept -> one active replacement -> working autosave/link sync/history reset
 ```
 
-No calculated value is read before ingress normalization finishes.
+No calculated value is read before ingress construction and quality normalization finish.
 
 Incoming `appCustomProperties` and `appURL` are neither executed nor carried into candidate
 presentation. Empty header values simply produce no attribution; they are not used to classify the
@@ -160,20 +116,17 @@ input as journal or envelope.
 
 Revision-bound presentation after feature 001 accepts the candidate.
 
-| Field                | Type                                          | Rules                                                               |
-| -------------------- | --------------------------------------------- | ------------------------------------------------------------------- |
-| `activeRevision`     | opaque revision                               | Outcome disappears when it no longer describes the active revision  |
-| `identityOutcomes`   | readonly package identity outcomes            | Transient/dismissible; source identity is feedback only             |
-| `qualityCompletions` | readonly completion records                   | Transient/dismissible; never persisted                              |
-| `fixedOutcomes`      | readonly fixed outcomes                       | Presented; successful fills also map to feature 001 record metadata |
-| `validationIssues`   | readonly package validation issue projections | Package-owned code/params/text rules for remaining resolved state   |
-| `validation`         | package `LoadoutValidation`                   | Exact accepted final state, including invalid/incomplete            |
-| `dismissed`          | boolean                                       | Presentation only; dismissal is not a build edit                    |
+| Field                | Type                                          | Rules                                                              |
+| -------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
+| `activeRevision`     | opaque revision                               | Outcome disappears when it no longer describes the active revision |
+| `qualityCompletions` | readonly completion records                   | Transient/dismissible; never persisted                             |
+| `validationIssues`   | readonly package validation issue projections | Package-owned code/params/text rules for remaining resolved state  |
+| `validation`         | package `LoadoutValidation`                   | Exact accepted final state, including invalid/incomplete           |
+| `dismissed`          | boolean                                       | Presentation only; dismissal is not a build edit                   |
 
-The detailed outcome, identity and quality outcomes, validation issue list and full validation presentation do
+The detailed outcome, quality outcomes, validation issue list and full validation presentation do
 not enter `BuildSnapshotV1`, the fragment, SLEF or edit history. Feature 001 independently persists
-the accepted revision's existing `valid`/`complete` summary booleans and successful fixed-mount
-provenance in its working/local-record metadata.
+the accepted revision's existing `valid`/`complete` summary booleans.
 
 ## ActiveExportSnapshot | null
 
@@ -202,7 +155,7 @@ The snapshot prevents a stale published fragment from entering an artifact for a
 | `validation`  | package `LoadoutValidation`             | Disclosure only; never suppresses payload          |
 
 The artifact contains no local record identity/name/note, report, diagnostic, request token or
-normalization provenance. Active revision change invalidates it synchronously before delivery.
+application normalization metadata. Active revision change invalidates it synchronously before delivery.
 
 ## DeliveryCapability
 

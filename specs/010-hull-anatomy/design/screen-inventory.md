@@ -53,7 +53,7 @@ Previews and tests cover:
 - invalid/unsafe document, unknown key, wrong-kind annotation, same-side duplicate and missing
   contract geometry;
 - all empty, all fitted and mixed hardpoint/utility mounts;
-- empty/resolved modules, package-normalized unknown-module ingress and stock/engineered/unavailable
+- empty removable/resolved modules, package-populated fixed mounts and stock/engineered/unavailable
   engineering state;
 - no selection, hardpoint selection, utility selection and synchronized cross-side repeats;
 - selected internal/unlocated slot;

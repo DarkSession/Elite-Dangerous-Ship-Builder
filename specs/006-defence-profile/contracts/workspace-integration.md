@@ -53,7 +53,7 @@ resolved package engineering group.
 - They never carry an apportioned contribution, inferred resistance share or local power verdict.
 - They are described as fitted role records, not authoritative facade-input provenance.
 - Only package-resolved role records are classified. Unavailable role/stat data is not recovered from
-  symbol, display name, slot position or modifiers, and no unknown module identity is accepted.
+  symbol, display name, slot position or modifiers, and only package-resolved identities are accepted.
 - Cell banks are not duplicated; their returned entries already own exact slot actions.
 
 ## Slot intent

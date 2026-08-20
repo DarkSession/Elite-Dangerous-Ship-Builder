@@ -259,19 +259,16 @@ type IngressResult =
 
 `IngressNotice` is one of:
 
-- `unknownModuleEmptied` or `unknownModuleDefaulted`: exact slot/source identity, package action and
-  optional resolved default identity; transient only;
 - `qualityCompleted`: exact slot/identity, source quality and result quality `1`;
-- `fixedMountFilled`: source-empty slot and package default;
-- `fixedMountDefaultUnavailable`: exact source-empty slot and incomplete status.
 
 `PartialEngineeringFailure` contains exact source slot/module/engineering identity and either package
 construction/correlation mismatch or `EngineeringNormalizationResult` code/params. It never contains a
 partially mutated candidate. If any partial fails, discard the whole candidate and publish the
 pre-activation refusal; successful earlier normalizations create no notice on the active build.
 
-Fixed-mount notices may persist under feature 001's local provenance contract. Quality-completion and
-refusal records are workflow feedback, never build, history, link or SLEF state.
+Package-defaulted fixed mounts are ordinary candidate state and carry no application notice or
+provenance. Quality-completion and refusal records are workflow feedback, never build, history, link
+or SLEF state.
 
 ## SessionHistoryState
 

@@ -11,8 +11,8 @@ Add one browser-only SLEF interchange boundary around feature 001's active `Ship
 keeps the Commander's exact text, rejects over-64-KiB and whitespace-only drafts before package work,
 passes the untouched string to Almanac `inspectSlef()`, accepts exactly one observed entry, and then
 runs the shared feature 002 ingress normalizer. The package first refuses an unknown hull and applies
-empty/default outcomes to unknown modules; partial-quality engineering on remaining resolved modules
-is completed before any source-empty fixed-mount repair. Feature 001's replacement coordinator is
+fixed defaults for every fixed mount; partial-quality engineering on resolved modules is completed
+without any secondary fixed-mount repair. Feature 001's replacement coordinator is
 the only commit point.
 
 Export asks the active `ShipLoadout` for one current-catalogue-retail SLEF entry, captures the exact
@@ -37,17 +37,16 @@ environment. Full TypeScript and Angular template strictness is a feature 011 pr
 the current root configuration does not yet enable both
 
 **Primary Dependencies**: Angular 22.1 standalone/zoneless APIs and signals; RxJS 7.8; currently
-verified `@elite-dangerous-almanac/core` 0.1.3 leaf imports from `ships/slef`,
+verified `@elite-dangerous-almanac/core` 0.1.4 leaf imports from `ships/slef`,
 `ships/ship-loadout`, `ships/modules` and `i18n/diagnostics`; feature 001
 active-build/replacement/link/persistence boundaries; feature 002 shared
 build-ingress normalizer; feature 011 localization, announcements, shared UI and browser-test
 foundations
 
 **Storage**: Draft, candidate, export artifact and delivery status are session memory only. Accepted
-imports become feature 001 tab-owned working records. Source-empty fixed-mount normalization
-provenance follows feature 001 local-record metadata, which also records the accepted revision's `valid`/`complete`
-booleans; detailed quality/issues/refusal/delivery state is never persisted. Feature 004 owns no
-storage key
+imports become feature 001 tab-owned working records, whose metadata records the accepted revision's
+`valid`/`complete` booleans. Package-defaulted fixed mounts are ordinary build state; detailed
+quality/issues/refusal/delivery state is never persisted. Feature 004 owns no storage key
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
 function and line thresholds; Playwright 1.62 plus planned `@axe-core/playwright` over desktop,
@@ -81,15 +80,15 @@ import/export sheets and action-menu entry. Exact adoption and departures are re
 ## Constitution Check
 
 _GATE: **PASS with no exception**. Captured per-module `Health` and historical prices remain outside
-application state, and the package owns the empty/default normalization of unresolved modules at
-import. No local field rewrite or identity classification is permitted._
+application state, and package construction owns fixed defaults at import. No local field rewrite,
+repair or identity classification is permitted._
 
 | Principle                               | Design evidence                                                                                                                                                                     | Status                     |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | I. Client-Side Only                     | Inspection, normalization, serialization and delivery use installed code, memory and explicit browser APIs; unexpected requests fail tests.                                         | PASS                       |
-| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs, including the empty/default normalization of unresolved modules at import.                                                             | PASS                       |
+| II. Almanac Source of Truth             | All format/game behavior stays on leaf APIs, including fixed defaults at import.                                                                                                    | PASS                       |
 | III. Domain Logic Outside UI            | Pure import/export coordinators and injected ports precede signal stores; components render immutable views and emit intent.                                                        | PASS                       |
-| IV. Lossless, Honest Builds             | Unknown hulls refuse; unresolved modules become package empty/default outcomes with no identity retained; other modelled fields round-trip.                                         | PASS                       |
+| IV. Lossless, Honest Builds             | Unknown hulls refuse; package construction populates every fixed mount; other supported modelled fields round-trip.                                                                 | PASS                       |
 | V. Desktop, Tablet and Mobile           | Identical capability reflows among dialog, sheet and full-height layer; touch, screen reader, zoom, orientation, RTL/expansion, reduced motion and no-overflow checks are required. | PASS; 011 prerequisite     |
 | VI. Commander's Language                | Application framing uses feature 011; package diagnostics use `getSlefDiagnosticMessage` with the standard canonical-language disclosure on locale miss.                            | PASS; 011 prerequisite     |
 | VII. One Design System                  | Every layer, notice, diagnostic, field, action and status composes or extends `src/app/ui/` and receives complete responsive state previews.                                        | PASS; 011 prerequisite     |
@@ -102,7 +101,7 @@ The Almanac supplies the feature-specific package operations requested by
 [#298](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/298). Feature 004 constructs a
 fresh detached import candidate and reuses feature 002's accepted ingress ordering and outcomes.
 Neither captured purchase provenance nor per-module condition snapshots create an upstream gate, and
-the constitution 6.0.0 identity rule is satisfied by the package's own normalization. Feature 004
+the constitution 7.0.0 identity rule is satisfied by the package's own normalization. Feature 004
 must not implement a local substitute.
 
 ## Delivery Prerequisites
@@ -113,11 +112,10 @@ implementation depends on these planned boundaries rather than creating temporar
 1. Feature 011: strict compiler/template settings, token/localization/announcement layers, shared
    modal/sheet/field/notice/diagnostic/actions, complete previews, Firefox/landscape projects and axe.
 2. Feature 001: `/ships`, `/ships/:symbol` and `/build` hosts; one `ActiveBuildState`; current-revision
-   link publication; replacement confirmation/coordinator; working-record autosave and fixed-mount
-   provenance metadata.
-3. Feature 002 shared ingress: source partial/fixed preflight, quality-first normalization,
-   package-owned fixed repair and history-reset notification. Feature 004 calls this boundary once;
-   it does not add a SLEF-specific normalization loop.
+   link publication; replacement confirmation/coordinator and working-record autosave.
+3. Feature 002 shared ingress: source partial-quality preflight, package construction with populated
+   fixed mounts, quality completion and history-reset notification. Feature 004 calls this boundary
+   once; it does not add a SLEF-specific normalization loop.
 4. The pinned Almanac changes only when the relevant plans deliberately update and re-probe the
    package contract. No implementation may compensate for a package regression locally.
 
@@ -193,12 +191,11 @@ See [research.md](./research.md). The decisive outcomes are:
 
 - Measure the untouched string with `TextEncoder`, pass it to `inspectSlef`, and accept only one
   observed top-level entry with zero package diagnostics.
-- Apply package unknown-module empty/default outcomes, preflight remaining source partial-quality and
-  source-empty fixed-mount evidence, construct a detached loadout, complete every correlated source
-  partial, then repair only source-empty fixed mounts. Any
-  unsupported partial refuses the whole import before fixed repair or activation.
+- Construct a detached loadout with package-populated fixed mounts, preflight source partial-quality,
+  then complete every correlated source partial. Any unsupported partial refuses the whole import
+  before activation.
 - Commit solely through feature 001; accepted imports become working provenance, reset edit history,
-  autosave after commit and carry source-empty fixed-mount provenance plus feature 001's ordinary
+  autosave after commit and carry feature 001's ordinary
   `valid`/`complete` summary in local-record metadata.
 - Export through one default-retail `toSlefString` call with fitted order, sparse power fields,
   readable indentation, honest build-time metadata and an optional exact-revision canonical link.
@@ -234,9 +231,9 @@ and 011 boundaries.
 
 Phase 1 introduces no server, cross-origin request, private format schema, local game calculation,
 component-owned build, historical-price retention, hidden normalization, hard-coded
-display string, visual literal or reduced mobile capability. The shared ingress order prevents cargo
-or fixed repair from hiding a partial state that must refuse. Exact diagnostics and unavailable
-defaults remain visible. Only the accepted candidate is committed; every other terminal state keeps
+display string, visual literal or reduced mobile capability. The shared ingress order preserves
+source partial-quality evidence until it has been completed or refused. Exact diagnostics and
+unavailable calculations remain visible. Only the accepted candidate is committed; every other terminal state keeps
 active loadout, revision, dirty baseline, working/named bytes, fragment and edit history unchanged.
 
 Every FR has a route-preserving surface and validation path. The post-design feature gate is

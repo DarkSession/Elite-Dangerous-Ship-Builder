@@ -31,16 +31,15 @@ absent semantics. Feature 003 may format or place it but may not reclassify it.
 1. Capture feature 001's atomic active `{ loadout, buildRevision }` once; feature 002 advances that
    same revision for committed edits.
 2. Capture the settled `{ conditions, conditionsRevision }` once.
-3. Capture feature 001's fixed-mount provenance for that active working revision.
-4. Read `loadout.validation` once and align slot targets without changing an issue.
-5. Invoke every provider synchronously with that exact immutable context.
-6. If any provider explicitly returns pending for the captured pair, return pending and publish no
+3. Read `loadout.validation` once and align slot targets without changing an issue.
+4. Invoke every provider synchronously with that exact immutable context.
+5. If any provider explicitly returns pending for the captured pair, return pending and publish no
    partial status projection. If a ready envelope returns another revision pair, return application
    failure `projectionFailed`; a ready mismatch is an integration-contract violation, not in-flight
    work.
-7. If all providers are ready and matching, validate and concatenate their owner-supplied qualified
+6. If all providers are ready and matching, validate and concatenate their owner-supplied qualified
    summary identities, derive the count and construct one immutable `StatusProjection`.
-8. Confirm the active build and settled conditions still carry the captured revision pair, then
+7. Confirm the active build and settled conditions still carry the captured revision pair, then
    publish in one signal assignment; otherwise discard the result.
 
 A provider may share a pure projector with its detailed capability. It may not expose an

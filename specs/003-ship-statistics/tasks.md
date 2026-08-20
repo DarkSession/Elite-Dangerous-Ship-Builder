@@ -37,8 +37,8 @@ Feature 003 adds no calculation and owns no area result semantics. Two gates app
 the tasks they block:
 
 - **Repository prerequisites**: feature 001 (atomic active `{ loadout, buildRevision }` boundary,
-  local records, fixed-mount provenance), feature 002 (committed-edit revision advance, exact-slot
-  actions, provenance clearing) and feature 011 (tokens, components, localization, formatters,
+  local records), feature 002 (committed-edit revision advance, exact-slot
+  actions) and feature 011 (tokens, components, localization, formatters,
   game-text fallback disclosure, announcement primitives, preview manifest, ten Playwright projects,
   axe helper).
 - **Contract-first stage 3**: features 005–009 export their exact status projection types and
@@ -53,9 +53,9 @@ the tasks they block:
 **Purpose**: Pin the package behaviour this feature depends on and create the source and test
 locations before any contract lands.
 
-- [ ] T001 Pin the Almanac 0.1.3 status behaviour this feature composes — `ShipLoadout.validation` issue shape, order and `LoadoutIssueParams` including string arrays; `getLoadoutIssueMessage`/`getCalculationIssueMessage` returning canonical English and `null` outside English; `standardLoadResult('maximum'|'unladen'|'laden')`; the throwing `jumpRangeSummary()` prerequisite; `powerBudget()` deployed/retracted field sets; complete zero capacities; and `mercCoinCost()` absent versus zero — using leaf subpath imports in `src/app/domain/statistics/almanac-status-contract.spec.ts`
-- [ ] T002 [P] Create the feature source skeleton `src/app/domain/statistics/`, `src/app/application/statistics/` and the `src/app/features/build-workspace/status/` subdirectories `assembly-requirements/`, `headline-set/`, `issue-list/`, `normalisation-provenance/`, `status-capability/`, `status-rail/` and `viewing-conditions/` per plan.md
-- [ ] T003 [P] Create the three feature suites `e2e/ship-status.spec.ts`, `e2e/status-provenance.spec.ts` and `e2e/viewing-conditions.spec.ts` importing the feature 011 axe and assertion helpers, and register their surfaces in `e2e/coverage-ledger.ts`
+- [ ] T001 Pin the Almanac 0.1.4 status behaviour this feature composes — `ShipLoadout.validation` issue shape, order and `LoadoutIssueParams` including string arrays; `getLoadoutIssueMessage`/`getCalculationIssueMessage` returning canonical English and `null` outside English; `standardLoadResult('maximum'|'unladen'|'laden')`; the throwing `jumpRangeSummary()` prerequisite; `powerBudget()` deployed/retracted field sets; complete zero capacities; and `mercCoinCost()` absent versus zero — using leaf subpath imports in `src/app/domain/statistics/almanac-status-contract.spec.ts`
+- [ ] T002 [P] Create the feature source skeleton `src/app/domain/statistics/`, `src/app/application/statistics/` and the `src/app/features/build-workspace/status/` subdirectories `assembly-requirements/`, `headline-set/`, `issue-list/`, `status-capability/`, `status-rail/` and `viewing-conditions/` per plan.md
+- [ ] T003 [P] Create the three feature suites `e2e/ship-status.spec.ts`, `e2e/status-fixed-defaults.spec.ts` and `e2e/viewing-conditions.spec.ts` importing the feature 011 axe and assertion helpers, and register their surfaces in `e2e/coverage-ledger.ts`
 
 ---
 
@@ -82,10 +82,10 @@ composition transaction and the signal stores every surface reads.
 
 - [ ] T013 Implement `ViewingConditionsStore` — settled tuple, `conditionsRevision` incremented only for a changed valid Apply, draft signals, Reset to defaults in one settled revision, and reset on new document, active-build replacement and no-build transitions but not on edits, undo/redo or save — in `src/app/application/statistics/viewing-conditions.store.ts` with unit tests for every reset and non-reset trigger (depends on T008)
 - [ ] T014 Define the concrete five-provider bundle from the feature 005–009 exported adapter types and the `STATUS_PROVIDERS` injection token in `src/app/application/statistics/status.store.ts` (contract-first stage 3 gate: blocked until all five owner exports exist; depends on T006)
-- [ ] T015 Implement `StatusStore` — capture feature 001's atomic `{ loadout, buildRevision }`, the settled conditions pair and the record's fixed-mount provenance once, invoke `composeStatusProjection` with the injected bundle and publish `noBuild`, `pending`, `ready` or `failure` in one computed signal assignment — in `src/app/application/statistics/status.store.ts` with unit tests for each state and for rapid interleaved build and condition changes (depends on T011, T013, T014)
+- [ ] T015 Implement `StatusStore` — capture feature 001's atomic `{ loadout, buildRevision }` and the settled conditions pair once, invoke `composeStatusProjection` with the injected bundle and publish `noBuild`, `pending`, `ready` or `failure` in one computed signal assignment — in `src/app/application/statistics/status.store.ts` with unit tests for each state and for rapid interleaved build and condition changes (depends on T011, T013, T014)
 - [ ] T016 [P] Implement `StatusAnnouncementCoordinator` — `lastSettledCounts` initially `null` and silent, comparison of `{ issueCount, qualifiedSummaryCount }` on ready projections only, coalescing of rapid ready revisions into one `statusCountsChanged` message carrying both current counts, and silence for pending, failure, unchanged and discarded projections — in `src/app/application/statistics/status-announcement-coordinator.ts` with unit tests for initial, changed, unchanged, coalesced and stale cases (depends on T009)
 - [ ] T017 [P] Implement `WorkspaceTargetCoordinator` — memory-only selected capability, detail activation for the five capability names, slot activation through feature 002's exact-slot action, narrow-surface return intent and no route, query or fragment change — in `src/app/application/statistics/workspace-target-coordinator.ts` with unit tests including duplicate symbols in different slots (depends on T005)
-- [ ] T018 Add the serialization exclusion suite proving `BuildSnapshotV1`, `LocalRecordV1`, fixed-mount provenance, undo/redo history, preferences, route/query/fragment, compact link payloads and SLEF export contain no `ViewingConditions`, draft or `conditionsRevision` field, in `src/app/application/statistics/viewing-conditions.serialization.spec.ts` (depends on T013)
+- [ ] T018 Add the serialization exclusion suite proving `BuildSnapshotV1`, `LocalRecordV1`, undo/redo history, preferences, route/query/fragment, compact link payloads and SLEF export contain no `ViewingConditions`, draft or `conditionsRevision` field, in `src/app/application/statistics/viewing-conditions.serialization.spec.ts` (depends on T013)
 - [ ] T019 [P] Add the feature-owned framing message keys — Status heading, structural fact labels, generic severity labels, application failure keys `providerUnavailable` and `projectionFailed`, and the `statusCountsChanged` announcement with plural forms — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T020 Add the feature 003 boundary rules to `scripts/check-interface-foundations.mjs` — no area feature imports a `src/app/features/build-workspace/status/` component or `src/app/application/statistics/` store, feature 003 imports only owner contract leaves and never an area calculator, and no persistence, link or SLEF module references a viewing-condition type — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
 
@@ -98,38 +98,37 @@ features 005–009 can implement their adapters and user story work can begin.
 
 **Goal**: The complete Status capability states exactly what Almanac validation reports, lists every
 validation issue once with its package code, severity, structured context and exact-slot action,
-shows fixed-mount normalisation provenance as separate local disclosure, and announces settled count
-changes once — with no readiness, flyability or quality claim anywhere.
+and announces settled count changes once — with no readiness, flyability or quality claim anywhere.
 
 **Independent Test**: Load fixtures covering every reachable `validation.valid`/`complete`
 combination, then run the statistics unit suite plus `pnpm run e2e -- ship-status.spec.ts
-status-provenance.spec.ts`: the visible facts and ordered issue items match `loadout.validation` by
+status-fixed-defaults.spec.ts`: the visible facts and ordered issue items match `loadout.validation` by
 identity, a targeted issue reaches its exact slot in one interaction, an untargeted issue exposes no
-action, an empty report states that none were reported, and provenance survives save/open and clears
-only for a successful edit to that mount.
+action, an empty report states that none were reported, and package-defaulted fixed modules remain
+ordinary fitted state with no separate status region.
 
 ### Tests for User Story 1
 
 - [ ] T021 [P] [US1] Add structural-fact tests asserting independent `valid` and `complete` rendering for all four combinations, text-only meaning and no readiness wording in `src/app/features/build-workspace/status/status-capability/structural-facts.spec.ts`
 - [ ] T022 [P] [US1] Add issue-list tests for package order, visible `code` and `severity` text, full `LoadoutIssueParams` including string arrays, localized diagnostic through the feature 011 adapter, canonical fallback with the untranslated-game-text disclosure on a `null` helper result, exact-slot action only when `issue.slot` exists and no action otherwise, in `src/app/features/build-workspace/status/issue-list/issue-list.spec.ts`
-- [ ] T023 [P] [US1] Add provenance tests for the separately labelled region, one item per `LocalRecordV1.fixedMountNormalisation` entry, its stored exact slot target, omission when empty and exclusion from the package issue count, in `src/app/features/build-workspace/status/normalisation-provenance/normalisation-provenance.spec.ts`
+- [ ] T023 [P] [US1] Add regression tests proving no normalization/provenance region is rendered for package-defaulted fixed modules and issue counts remain package-owned, in `src/app/features/build-workspace/status/status-capability/status-capability.spec.ts`
 - [ ] T024 [P] [US1] Add Status capability lifecycle tests for `noBuild` deferring to the existing workspace empty state, `pending` showing no stale figures under the current revision pair, `ready` composition order and `failure` using the feature 011 prompt-error pattern while build editing stays available, in `src/app/features/build-workspace/status/status-capability/status-capability.spec.ts`
 - [ ] T025 [P] [US1] Add the structural journey — no active build, each validity/completeness combination, one issue with a slot and one without, single-location issue records at desktop, the none-reported statement and the absence of readiness wording — in `e2e/ship-status.spec.ts`
-- [ ] T026 [P] [US1] Add the provenance journey — ingest a normalised build, open/save/duplicate/reload its record, edit the exact mount successfully, attempt refused/cancelled/no-op edits and undo, then export SLEF and copy a build link — in `e2e/status-provenance.spec.ts`
+- [ ] T026 [P] [US1] Add the fixed-default journey — ingest a build with omitted fixed entries, open/save/duplicate/reload its record, edit a fixed mount, undo, export SLEF and copy a build link, asserting the package defaults remain ordinary state with no provenance UI — in `e2e/status-fixed-defaults.spec.ts`
 
 ### Implementation for User Story 1
 
 - [ ] T027 [US1] Implement `StructuralFacts` as a definition list of the two independent package facts with tokenized, text-only severity meaning in `src/app/features/build-workspace/status/status-capability/structural-facts.ts` and its template and styles (depends on T009)
 - [ ] T028 [US1] Implement `IssueList` rendering one ordered semantic list item per `LoadoutValidation.issues` entry with visible code and severity text, the feature 011 game-text adapter over `getLoadoutIssueMessage`, structured params, optional symbol and the exact-slot action from the aligned target, in `src/app/features/build-workspace/status/issue-list/issue-list.ts` and its template and styles (depends on T010, T017)
-- [ ] T029 [P] [US1] Implement `NormalisationProvenanceList` as a separately named local-workflow region referencing `LocalRecordV1.fixedMountNormalisation` without a second persisted model, in `src/app/features/build-workspace/status/normalisation-provenance/normalisation-provenance.ts` and its template and styles
+- [ ] T029 [P] [US1] Add status projection tests proving package-defaulted fixed modules appear only as ordinary fitted state and produce no normalization/provenance region in `src/app/domain/statistics/status-projector.spec.ts`
 - [ ] T030 [US1] Implement `StatusCountAnnouncer` as a visually hidden polite region bound to `StatusAnnouncementCoordinator`, never `role="alert"`, in `src/app/features/build-workspace/status/status-capability/status-count-announcer.ts` (depends on T016)
-- [ ] T031 [US1] Implement the `StatusCapability` container — heading and build identity, structural facts, ordered issues or the none-reported statement, provenance region and the four lifecycle states from `StatusStore` — in `src/app/features/build-workspace/status/status-capability/status-capability.ts` and its template and styles (depends on T015, T027, T028, T029, T030)
+- [ ] T031 [US1] Implement the `StatusCapability` container — heading and build identity, structural facts, ordered issues or the none-reported statement, and the four lifecycle states from `StatusStore` — in `src/app/features/build-workspace/status/status-capability/status-capability.ts` and its template and styles (depends on T015, T027, T028, T029, T030)
 - [ ] T032 [US1] Register Status as a peer central workspace capability in the desktop selector and the narrow capability navigation, selected in memory by `WorkspaceTargetCoordinator` with no route change, in `src/app/features/build-workspace/build-workspace.ts` and its template (depends on T017, T031)
-- [ ] T033 [P] [US1] Add the US1 message keys — issue kind and severity framing, structured-context labels, provenance region name and description, and the separate empty statements for issues and qualifications with their combined form — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T034 [P] [US1] Add `StructuralFacts`, `IssueList`, `NormalisationProvenanceList`, `StatusCountAnnouncer` and `StatusCapability` preview declarations covering every required state in the component matrix at desktop, tablet and mobile widths, including long params, string arrays, canonical fallback and RTL, in `src/app/ui/previews/preview-manifest.ts`
+- [ ] T033 [P] [US1] Add the US1 message keys — issue kind and severity framing, structured-context labels, and the separate empty statements for issues and qualifications with their combined form — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [ ] T034 [P] [US1] Add `StructuralFacts`, `IssueList`, `StatusCountAnnouncer` and `StatusCapability` preview declarations covering every required state in the component matrix at desktop, tablet and mobile widths, including long params, string arrays, canonical fallback and RTL, in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T035 [US1] Add the US1 surfaces, FR-001, FR-003–FR-005, FR-013–FR-015, FR-021, FR-022 ids, journeys and axe flags to `e2e/coverage-ledger.ts`
 
-**Checkpoint**: Structural status, complete issue reporting, provenance and settled announcements are
+**Checkpoint**: Structural status, complete issue reporting and settled announcements are
 independently demonstrable.
 
 ---
@@ -151,7 +150,7 @@ renders the matching revision within 100 ms under 4× CPU throttling.
 - [ ] T036 [P] [US2] Add metric card tests for exact positive and exact zero, owner incomplete and unavailable states, owner infinity, visible unit, localized meaning, only relevant conditions and the single named detail action, in `src/app/features/build-workspace/status/headline-set/metric-headline-card.spec.ts`
 - [ ] T037 [P] [US2] Add power headline tests proving the selected deployed or retracted owner projection is copied unchanged, deployed-only fields are omitted under retracted rather than derived, and no local headroom, utilisation or budget verdict is produced, in `src/app/features/build-workspace/status/headline-set/power-headline.spec.ts`
 - [ ] T038 [P] [US2] Add headline-set tests for the fixed seven-slot order and content — power draw and capacity, shield strength, armour, sustained DPS with its native firing condition, selected jump, top speed and unladen mass — in `src/app/features/build-workspace/status/headline-set/headline-set.spec.ts`
-- [ ] T039 [P] [US2] Add rail tests for the information order, counts without issue or provenance records, the always-labelled open-Status action, omission of a compact summary whose direct action cannot stay usable, current-revision pending replacing stale values and the application failure state, in `src/app/features/build-workspace/status/status-rail/status-rail.spec.ts`
+- [ ] T039 [P] [US2] Add rail tests for the information order, counts without issue records, the always-labelled open-Status action, omission of a compact summary whose direct action cannot stay usable, current-revision pending replacing stale values and the application failure state, in `src/app/features/build-workspace/status/status-rail/status-rail.spec.ts`
 - [ ] T040 [P] [US2] Extend `e2e/ship-status.spec.ts` with the results journey — every headline value, unit, condition and state against its owner projection, one-interaction detail activation from both the rail and the capability, and live update on a committed edit without refresh
 - [ ] T041 [P] [US2] Add the in-page revision-to-render measurement under Chromium CDP `Emulation.setCPUThrottlingRate(4)` at the mobile viewport, asserting 100 ms from committed build or condition revision to rendered DOM carrying the same pair and excluding transport time, in `e2e/ship-status.spec.ts`
 
@@ -233,7 +232,7 @@ target in one interaction at desktop, tablet and mobile.
 - [ ] T069 [US4] Compose assembly requirements after the headline set and the qualification summary into `StatusCapability` in `src/app/features/build-workspace/status/status-capability/status-capability.ts` and its template (depends on T045, T067, T068)
 - [ ] T070 [US4] Add the compact retail, conditional Merc Coin and material summaries with their direct detail actions to `StatusRail`, omitting any summary whose action cannot stay perceivable at the available width, in `src/app/features/build-workspace/status/status-rail/status-rail.ts` and its template (depends on T046, T067)
 - [ ] T071 [US4] Implement narrow-surface targeting — active Status suppresses the duplicate quick dock and slot ledger, an exact-slot action switches to the slot surface and leaving it returns to Status — in `src/app/features/build-workspace/build-workspace.ts`, its template and styles (depends on T032, T017)
-- [ ] T072 [US4] Clear a provenance entry only on a successful Commander edit to its exact mount, leaving refused, stale, cancelled, no-op and undo outcomes intact, by consuming feature 002's clearing signal in `src/app/features/build-workspace/status/normalisation-provenance/normalisation-provenance.ts` (depends on T029)
+- [ ] T072 [US4] Add integration coverage proving successful, refused, stale, cancelled, no-op and undo outcomes never create fixed-default provenance or a status region (depends on T029)
 - [ ] T073 [P] [US4] Add the US4 message keys — assembly section and field names, credit and Merc Coin separation, material framing, unpriced and missing-recipe qualification labels and the qualification summary names — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T074 [P] [US4] Add `AssemblyRequirements` and qualification summary preview declarations for present, absent Merc Coin, empty materials, unpriced, missing-recipe, pending and failure states with long names and currency separation in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T075 [US4] Add the US4 surfaces and FR-011, FR-012, FR-021 ids with their one-interaction and announcement assertions to `e2e/coverage-ledger.ts`
@@ -245,7 +244,7 @@ capability.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T076 [P] Run the complete primary journey in Chromium and Firefox at desktop, tablet portrait and landscape and mobile portrait and landscape with an axe scan over every ready, empty, pending, failure, issue, provenance, qualified, unavailable, infinite and absent state, in `e2e/ship-status.spec.ts`
+- [ ] T076 [P] Run the complete primary journey in Chromium and Firefox at desktop, tablet portrait and landscape and mobile portrait and landscape with an axe scan over every ready, empty, pending, failure, issue, qualified, unavailable, infinite and absent state, in `e2e/ship-status.spec.ts`
 - [ ] T077 [P] Assert 200% text, actual 400% browser zoom, long canonical diagnostics, expanded translations and RTL layout with no lost content, function or document horizontal scrolling, in `e2e/ship-status.spec.ts` and `e2e/viewing-conditions.spec.ts`
 - [ ] T078 [P] Assert `prefers-reduced-motion` changes no settlement timing, condition revision or state in `e2e/viewing-conditions.spec.ts`
 - [ ] T079 [P] Assert touch operation and 44 CSS-pixel targets for every rail action, issue slot action, detail action and condition control on the four touch projects in `e2e/ship-status.spec.ts`
@@ -303,10 +302,10 @@ capability.
 # Launch the failing tests together:
 Task: "Structural facts unit tests in src/app/features/build-workspace/status/status-capability/structural-facts.spec.ts"
 Task: "Issue list unit tests in src/app/features/build-workspace/status/issue-list/issue-list.spec.ts"
-Task: "Provenance unit tests in src/app/features/build-workspace/status/normalisation-provenance/normalisation-provenance.spec.ts"
+Task: "Fixed-default regression tests in src/app/features/build-workspace/status/status-capability/status-capability.spec.ts"
 Task: "Capability lifecycle tests in src/app/features/build-workspace/status/status-capability/status-capability.spec.ts"
 Task: "Structural journey in e2e/ship-status.spec.ts"
-Task: "Provenance journey in e2e/status-provenance.spec.ts"
+Task: "Fixed-default journey in e2e/status-fixed-defaults.spec.ts"
 ```
 
 ---
@@ -318,7 +317,7 @@ Task: "Provenance journey in e2e/status-provenance.spec.ts"
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational — this blocks everything and unblocks features 005–009
 3. Complete Phase 3: User Story 1
-4. **STOP and VALIDATE**: structural facts, ordered issues, provenance and the single settled
+4. **STOP and VALIDATE**: structural facts, ordered issues and the single settled
    announcement match `loadout.validation` by identity and pass axe in all ten projects
 5. A Commander can understand exactly what the package reports about the build at this point
 

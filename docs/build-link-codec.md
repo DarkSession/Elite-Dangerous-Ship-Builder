@@ -10,17 +10,19 @@ SLEF import, build reconstruction, calculated statistics, and SLEF export remain
 of `@elite-dangerous-almanac/core`. The codec carries only the state needed to reconstruct the same
 application loadout after invariant-quality normalisation: hull, optional ship labels, outfittable
 module identities, explicit power settings, and engineering choices. Every blueprint grade is
-treated as complete at 100% quality, so engineering quality is not link state. Fixed components
-such as the cargo hatch are implied by the hull; only their variable power state is carried. The
-codec deliberately omits calculated values, catalogue and purchase prices, aggregate module value,
-hull value, rebuy, health, and ammunition.
+treated as complete at 100% quality, so engineering quality is not link state. Almanac construction
+always supplies the hull's default armour, seven core internals, and cargo hatch. Armour and core
+internals remain codec-visible because they can be replaced; the cargo-hatch identity is implied by
+the hull and only its variable power state is carried. The codec deliberately omits calculated
+values, catalogue and purchase prices, aggregate module value, hull value, rebuy, health, and
+ammunition.
 
 The format is designed around these constraints:
 
-- links must remain compact for empty, stock, and fully engineered ships;
+- links must remain compact for minimal, stock, and fully engineered ships;
 - every accepted link must decode deterministically and losslessly for every field the application
   models;
-- alternate encodings of the same build must be rejected;
+- alternate encodings of the same table-indexed protocol state must be rejected;
 - published table versions must remain protocol-decodable indefinitely;
 - old tables must not accumulate in the application's initial JavaScript bundle; and
 - malformed, corrupted, unsupported, or ambiguous input must fail instead of being guessed.
@@ -117,7 +119,7 @@ trailing data.
 |     6 | Ship ident          | When present: tagged varuint length followed by compact symbols or UTF-8        |
 |     7 | Pristine default    | Boolean; when set, the hull's pinned stock loadout ends the logical symbol list |
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules       |
-|     9 | Power states        | Explicit values for power-drawing modules and fixed components                  |
+|     9 | Power states        | Explicit values for power-drawing modules and hull-implied components           |
 |    10 | Engineering states  | Engineering presence, identities, grades, and experimental effects              |
 
 ### Arithmetic representation
@@ -249,11 +251,11 @@ strictly smaller, so it can never add overhead to a build that does not repeat m
 
 ### Power state
 
-Power data includes only occupied outfittable modules and fixed components whose pinned catalogue
-power draw is greater than zero. Passive modules cannot be switched off or assigned a priority, so
-any redundant `On` or `Priority` fields in an imported event are discarded rather than encoded.
-The cargo hatch draws power and therefore has no presence or identity bit but retains an enabled
-state and priority at a stable position.
+Power data includes only occupied outfittable modules and hull-implied components whose pinned
+catalogue power draw is greater than zero. Passive modules cannot be switched off or assigned a
+priority, so any redundant `On` or `Priority` fields in an imported event are discarded rather than
+encoded. The cargo hatch draws power and therefore has no presence or identity bit but retains an
+enabled state and priority at a stable position.
 
 Data begins with a one-bit `has overrides` marker. An override exists when either `on` or priority is
 explicitly present, including priority `0`; absence remains distinct from an explicit value. When
@@ -296,7 +298,7 @@ Their modifier arrays are not encoded, because decoding regenerates them from th
 A module therefore takes this record only while that regeneration would reproduce the engineering it
 carries; see the Mercenary case below.
 
-Almanac 0.1.1 publishes modifier signatures for 54 fixed variants, which makes those articles
+Almanac 0.1.4 publishes modifier signatures for 54 fixed variants, which makes those articles
 identifiable and shareable. Its 22 Mercenary-system variants still have no published modifier
 signatures, but the package identifies them by their purchase-exclusive blueprint instead, so they
 are identifiable and shareable too. The codec continues to take every identity from the package and
@@ -314,12 +316,11 @@ different values.
 
 For a Mercenary article, therefore, the record is used only when decoding it would reproduce the
 module's engineering outright — same grade, same modifiers. Reward articles keep taking the record
-whenever the package identifies them, unchanged. Anything a record cannot describe is written as an
-ordinary record, blueprint and grade, exactly as beta.11 wrote it while the article was
-unidentifiable, and the Almanac re-derives the purchase identity on reconstruction. The two forms
-stay unambiguous because no Mercenary blueprint offers grade 1 as a craftable grade, so the purchase
-grade is unspellable in the ordinary form and grades 2 to 5 are unspellable in the pre-engineered
-one.
+whenever the package identifies them. Anything a record cannot describe is written as an ordinary
+record containing its blueprint and grade, and the Almanac re-derives the purchase identity on
+reconstruction. The two forms stay unambiguous because no Mercenary blueprint offers grade 1 as a
+craftable grade, so the purchase grade is unspellable in the ordinary form and grades 2 to 5 are
+unspellable in the pre-engineered one.
 
 Where neither form fits, the encoder refuses, naming the slot. That covers a purchase whose capture
 states modifiers the record cannot account for — there is no craftable grade 1 to fall back to — and
@@ -330,9 +331,9 @@ blueprint for those modules, so table 1 records none, and the discriminator that
 ordinary form is not even written for a module with an empty blueprint set: the reader infers the
 pre-engineered form from the table alone. Note this is the discriminator, not the blueprint index —
 an ordinary record can name a blueprint outside its module's candidate set, and all nineteen working
-Mercenary articles do exactly that. None of this is new; beta.11 refused the same builds. Closing it
-means a later table that carries Mercenary-route blueprints in each module's candidate set, which
-changes what the discriminator can express rather than the record layouts themselves.
+Mercenary articles do exactly that. Supporting the remaining cases requires a later table that
+carries Mercenary-route blueprints in each module's candidate set. That changes what the
+discriminator can express rather than the record layouts themselves.
 
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
 the same contextual pre-engineered identity as every other fixed article; the codec has no separate
@@ -452,18 +453,18 @@ Two measured findings shaped the design:
 `build-link-codec-models.spec.ts` pins both columns of the table below and asserts that no reference
 or hull link lengthens while the engineered references shrink. The comparison baseline is the same
 table with its `MODELS` block removed: bit packing ignores models, so the baseline reproduces every
-packed body — and with it every empty and stock reference — byte for byte, which the spec asserts
+packed body — and with it every minimal and stock reference — byte for byte, which the spec asserts
 character for character across all 48 hulls.
 
 | Reference build              | Without models | With models | Saving |
 | ---------------------------- | -------------: | ----------: | -----: |
-| Empty Sidewinder             |             12 |          12 |      — |
+| Minimal Sidewinder           |             16 |          16 |      — |
 | Stock Krait Mk II            |             10 |          10 |      — |
 | Engineered Anaconda          |             76 |          65 | −14.5% |
 | Supplied engineered Corvette |            108 |          97 | −10.2% |
 | Named stock Krait Mk II      |             38 |          34 | −10.5% |
 
-The win concentrates exactly where links are longest — dense engineered builds — while empty and
+The win concentrates exactly where links are longest — dense engineered builds — while minimal and
 stock links keep their packed rendering unchanged. The static priors carry the Corvette (whose
 engineering is diverse), adaptation carries the Anaconda (whose few records repeat across many
 mounts), and the split character models carry the labels: a single English model saved the named
@@ -502,6 +503,11 @@ alternatives cannot bypass the CRC check. Almanac reconstruction fidelity remain
 tested compatibility property, and a reconstruction failure is reported separately from malformed
 protocol data.
 
+This distinction preserves old links across package upgrades. Two different canonical protocol
+states may reconstruct to the same current `ShipLoadout` when a newer Almanac supplies defaults that
+an older state omitted. The decoder accepts both protocol states; encoding either reconstructed
+loadout emits the single canonical link for the current package result.
+
 ## Growth limits and the link budget
 
 No table dimension is capped by the codec. Every width is derived from the table a link names, so
@@ -523,19 +529,19 @@ The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPAC
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
 numbers, and generation refuses a table that exceeds one.
 
-| Dimension                          | Table 1 | Budgeted for | Encoded width at that size   |
-| ---------------------------------- | ------: | -----------: | ---------------------------- |
-| Hulls                              |      48 |          128 | 8-bit representation tag     |
-| Modules                            |   1,200 |        2,048 | 11-bit global fallback index |
-| Blueprints                         |     110 |          256 | 8-bit global fallback index  |
-| Experimental effects               |      86 |          256 | 8-bit global fallback index  |
-| Outfittable mounts on one hull     |      38 |           48 | 48-bit bitmap, 6-bit indexes |
-| Fixed mounts on one hull           |       1 |            4 | power state only             |
-| Grades on one blueprint            |       5 |            5 | 1 bit, or 3 below the top    |
-| Largest module candidate set       |     473 |        1,024 | 10 bits per fitted module    |
-| Largest blueprint candidate set    |       9 |           32 | 5 bits per engineered module |
-| Largest experimental candidate set |      12 |           32 | 5 bits per engineered module |
-| Largest pre-engineered set         |       6 |           32 | 5 bits per engineered module |
+| Dimension                           | Table 1 | Budgeted for | Encoded width at that size   |
+| ----------------------------------- | ------: | -----------: | ---------------------------- |
+| Hulls                               |      48 |          128 | 8-bit representation tag     |
+| Modules                             |   1,200 |        2,048 | 11-bit global fallback index |
+| Blueprints                          |     110 |          256 | 8-bit global fallback index  |
+| Experimental effects                |      86 |          256 | 8-bit global fallback index  |
+| Outfittable mounts on one hull      |      38 |           48 | 48-bit bitmap, 6-bit indexes |
+| Hull-implied components on one hull |       1 |            4 | power state only             |
+| Grades on one blueprint             |       5 |            5 | 1 bit, or 3 below the top    |
+| Largest module candidate set        |     473 |        1,024 | 10 bits per fitted module    |
+| Largest blueprint candidate set     |       9 |           32 | 5 bits per engineered module |
+| Largest experimental candidate set  |      12 |           32 | 5 bits per engineered module |
+| Largest pre-engineered set          |       6 |           32 | 5 bits per engineered module |
 
 Those numbers are a promise, so generation prices them as though a table had already grown into
 every one: **339 of the 377 bytes** a codec value holds, for a build with every mount filled and
@@ -562,9 +568,9 @@ capacity back without touching a published link's decoder.
 
 ## Versioned tables and lazy loading
 
-Table 1 is the pre-release `codec-table-1.json`, generated from
-`@elite-dangerous-almanac/core@0.1.1`. It pins hulls, hull-specific outfittable slots, fixed
-components, stock modules, module identities, blueprints and their grades, experimental effects,
+Table 1 is the pre-release `codec-table-1.json`, reproduced by
+`@elite-dangerous-almanac/core@0.1.4`. It pins hulls, hull-specific outfittable slots, the cargo
+hatch, stock modules, module identities, blueprints and their grades, experimental effects,
 contextual candidate sets, power-drawing module identities, pre-engineered identities, and the
 `MODELS` block of pinned symbol weights. Stable game identities originate from the package; indexes
 exist only inside the selected table. Before the first application/link-format release, the table
@@ -593,53 +599,15 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.2`. This release reproduces
-table 1, its content hash and the frozen literal-link reconstruction corpus unchanged. Every future
-Almanac upgrade must pass the frozen literal-link reconstruction corpus. Those literals are protocol
-fixtures and must never be regenerated merely to make an upgrade pass. The beta upgrades were
-checked this way. The `0.1.0-beta.8` to `0.1.0-beta.9` upgrade reproduced every pinned array byte for
-byte, and `0.1.0-beta.9` to `0.1.0-beta.10` did the same — beta.10 carries one
-calculation change, the power-aware cell bank pool, and alters no hull, module, blueprint,
-experimental-effect, pre-engineered or stock-loadout identity. `0.1.0-beta.10` to `0.1.0-beta.11`
-and `0.1.0-beta.11` to `0.1.0-beta.12` likewise reproduced the table exactly, at content hash
-`a2c4980d26089ce806d985f7f9f97e6e147687248a1f0f0ca1afbb9de9ba36c0`; `ALL_MODULES` is 1199 throughout
-and the `assets/ships` tree is byte-identical across all five releases. Almanac 0.1.1 then changed
-contextual blueprint and fixed-variant sets. Because the application remains `0.0.0` and no link
-format has shipped, table 1 was deliberately regenerated under the repository's pre-release rule at
-content hash `257d08860ac2b102da523c1ca3c4c16e54cd068bfffe6db69a62d6cca993983d`, then regenerated
-once more under the same rule to pin the symbol models, at
-`511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be` — the arithmetic spellings of
-the engineered references changed with it, and the frozen corpus literals were re-pinned in the
-same change. After the first release this exception closes: changed content must use the next
-table number.
+The current application dependency is exactly pinned to Almanac `0.1.4`. Running
+`pnpm run codec:tables` reproduces table 1 at content hash
+`511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be`. The package also reconstructs
+every omitted required mount with the hull's default module. That changes the canonical minimal
+loadout and the current encoder output for it without changing the table's identity.
 
-beta.12 changed no catalogue, but it did change an answer the encoder reads. Mercenary articles now
-resolve to their variant, so a module the encoder used to see as ordinarily engineered — a Rail Gun
-carrying grade 5 of `RailGun_LongShot`, say — now arrives carrying a pre-engineered identity as well.
-Written as a pre-engineered record, that build came back at the purchase grade: the Commander's
-upgrade was silently discarded on decode. A purchase-grade article whose capture stated modifiers
-lost those the same way, decoding to the values the record regenerates instead — stock where no
-experimental effect was applied, the effect's own where one was — in each case where beta.11 had
-refused the build outright. The record choice now asks whether decoding it would reproduce the
-engineering the module carries, grade and modifiers both, and asks it only of Mercenary articles,
-since a reward article is identified by the very block the record restores. That restores the beta.11
-outcome for every affected build, leaves reward encoding untouched, and leaves every frozen literal
-untouched with it. This was the application's own inference to correct, not an Almanac defect: the
-package reported the fitted grade, the modifiers and the purchase identity accurately, and it was the
-encoder that treated the identity as standing in for the rest.
-
-beta.11 did, however, require a correction to how the generator partitions mounts, and it is worth
-recording why. The generator used to split slots on the package's `removable` flag: everything
-removable was encoded, the rest carried as fixed. beta.11 closed
-[almanac issue #283](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/283), so armour
-and the seven core internals now correctly report `removable: false`. Under the old split that would
-have moved 384 mounts out of the encoded set and into the fixed set, changing the table and — worse —
-leaving a build's chosen power plant, thrusters and drive unrepresentable, since a fixed mount is
-encoded as its stock module. The flag never meant what the generator read it as: `removable` is about
-what may be **emptied**, and the codec cares about what may be **fitted**. Those coincided until
-beta.11 and no longer do. The partition now keys on the built-in cargo hatch, the only mount that
-offers no choice of module at all, which reproduces the committed table exactly. The content hash is
-what turned a silent format break into a refusal to write.
+Every future Almanac upgrade must reproduce the committed table and pass the frozen literal-link
+reconstruction corpus. Protocol fixtures must not be regenerated merely to make an upgrade pass.
+After the first release, changed table content must use the next table number.
 
 Note that the generator writes raw `JSON.stringify` output while the committed file
 is Prettier-formatted, so an upgrade check must compare against `pnpm run codec:tables`, which pairs
@@ -651,21 +619,21 @@ path for the affected table version.
 
 ## Reference corpus
 
-The fixed corpus currently produces these encoded data lengths. Each value and length includes
+The frozen corpus currently produces these encoded data lengths. Each value and length includes
 the `b.` protocol prefix. Packed spellings are untouched by the symbol models; the two engineered
 references, whose canonical body is arithmetic, were re-pinned when the models landed under the
 pre-release regeneration rule:
 
 | Reference build               | Base70 encoded data                                                                                 | Data length |
 | ----------------------------- | --------------------------------------------------------------------------------------------------- | ----------: |
-| Empty Sidewinder              | `b.21B7zk:1Zz`                                                                                      |          12 |
+| Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                  |          16 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                        |          10 |
-| Festive flak Krait            | `b.eXcP/8q9Kv9i`                                                                                    |          14 |
+| Festive flak Krait            | `b.5S25TzaeHpHOJ3g@NDt`                                                                             |          21 |
 | Full engineered Anaconda*     | `b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe`                                 |          65 |
 | Supplied engineered Corvette† | `b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV` |          97 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
-the fixed cargo hatch has an explicit power state. Cargo racks remain stock because 0.1.1 correctly
+the fixed cargo hatch has an explicit power state. Cargo racks remain stock because Almanac 0.1.4
 does not offer the fixed `CargoRack_IncreasedCapacity` reward as ordinary engineering.
 
 † All 37 outfittable modules present in the supplied journal event are represented, plus the fixed
@@ -673,9 +641,9 @@ cargo hatch's power state. Sixteen cosmetic and livery slots are outside the out
 scope and are not part of the codec model. Identifying ship metadata and all calculated, health,
 ammo, engineer, localisation, and purchase fields were removed from the checked-in reference.
 
-The every-hull baseline corpus covers empty and stock configurations for all 48 catalogue hulls.
-Its longest encoded value is 12 characters (the alphabetical tie-break reports the Adder). The
-festive literal covers an otherwise unengineered Krait Mk II whose medium hardpoint carries a
+The every-hull baseline corpus covers minimal and stock configurations for all 48 catalogue hulls.
+Its longest minimal value is 18 characters (the Anaconda). The festive literal covers an otherwise
+unengineered Krait Mk II whose medium hardpoint carries a
 package-owned green flak-launcher variant. The sanitised real engineered Federal Corvette produces
 97 characters of encoded data, 108 without the symbol models. Its source capture records a partial
 quality on one small hardpoint even though its modifier values match the completed grade-5 roll.
@@ -696,12 +664,13 @@ state is variable. `—` means the optional value is absent; it is different fro
 decoder rebuilds them through the Almanac.
 
 <details>
-<summary>Empty Sidewinder</summary>
+<summary>Minimal Sidewinder</summary>
 
 - Hull: `SideWinder`
 - Ship name: absent
 - Ship ident: absent
-- Outfittable modules: none
+- Required outfittable modules: package-default armour and seven core internals
+- Optional outfittable modules: none
 - Fixed cargo-hatch power: enabled absent, priority absent
 
 </details>
@@ -840,63 +809,21 @@ Fixed cargo-hatch power: on, priority `4`.
 
 </details>
 
-## Measured alternatives
+## Design rationale
 
-The remaining fixed overhead buys format selection, byte alignment, and a CRC-32. Shortening the
-checksum would save only a few encoded characters while weakening corruption detection, so CRC-32
-is retained deliberately. Engineering quality is invariant at `1` and omitted entirely.
-Complement sets, repeated-module identities, and repeated ordinary engineering records are all
-enabled only when their packed-bit cost comparison wins.
+The four-byte CRC-32 is retained for corruption detection. Engineering quality is invariant at `1`
+and omitted. Adaptive layouts, identity back-references, engineering-record back-references, and
+index-set complements are used only when their exact packed-bit cost is lower; ties keep the simpler
+canonical form.
 
-A general compression pass was also measured. The fair comparison compresses the body and then
-appends the unchanged four-byte CRC:
+The specialised grammar is materially smaller than compressing a general-purpose JSON
+representation. Current sizes are pinned by the [reference corpus](#reference-corpus) and codec
+tests rather than copied into a second historical benchmark table.
 
-| Build               | Bit-packed + CRC | Raw DEFLATE + CRC | Brotli + CRC |
-| ------------------- | ---------------: | ----------------: | -----------: |
-| Empty Sidewinder    |                8 |                10 |           12 |
-| Stock Krait Mk II   |                7 |                 9 |           11 |
-| Engineered Anaconda |               60 |                65 |           64 |
-
-Both general-purpose compressors make every reference larger. The adopted arithmetic path is
-different: it encodes the codec's existing semantic values against their exact cardinalities and is
-selected only when its final padded body is smaller. In table 1's then-valid fixture, the
-quality-free grammar reduced the Anaconda body from 56 to 55 bytes and produced 78 encoded
-characters including `b.`, while the Corvette body fell from 82 to 78 bytes and produced 108
-characters. Empty, stock, festive, and every other build where bit packing wins retain the packed
-form without a representation-bit penalty. The pinned symbol models then take the same two
-engineered references to 65 and 97 characters, as measured under [Pinned symbol
-models](#pinned-symbol-models). Base70 still needs interoperability testing in the actual sharing
-applications. Its radix conversion uses bounded byte/digit arithmetic rather than a whole-payload
-`BigInt`.
-
-The adaptive combination-rank index-set mode leaves empty and stock references at 12 and 10
-characters and remains part of the packed-cost grammar used before arithmetic rendering. A
-fixed-width truncated-binary index evaluation saved at most one character and changed several
-equally sized literals, so the combination rank was the stronger trade-off.
-
-The compact metadata path reduced an ASCII `Astraea` / `TST-42` build from 31 to 27 characters, the
-mixed `Astraea 星` / `TST-42` case from 36 to 35, and a longer ASCII example from 50 to 40. A
-short Unicode-only example remained 17 characters. The tag itself costs no additional byte for
-UTF-8 values shorter than 64 bytes. Doubling the tagged length does cross a varuint boundary at 64
-bytes, however, so a 64–127-byte fallback value uses one more header byte than the untagged
-encoding. Eligible metadata gains six-bit storage; other metadata preserves exact text with that
-documented boundary cost.
-
-An empty-loadout template was also tried. A dedicated flag shortened empty builds but enlarged
-some small non-empty builds; using the reserved index-set code avoided that regression but changed
-none of the 48 empty-hull data lengths because byte padding absorbed the saved bits. Neither form
-is retained.
-
-Engineering quality was subsequently made invariant across the application. Removing it from every
-record, instead of adding another adaptive group header, left table 1's empty and stock references
-unchanged while reducing its engineered Anaconda from 80 to 78 characters and the supplied
-Corvette from 114 to 108.
-
-Module-identity back-references, engineering-record back-references, index-set complements, and the
-baseline-relative module layout are retained because they are selected only when their measured
-cost is lower. Base70 uses underscore and comma but excludes dollar, tilde, asterisk, and plus.
-Keeping an alphanumeric terminal digit prevents punctuation trimming without giving GitHub a pair
-of dollar signs it could interpret as inline mathematics.
+Base70 uses underscore and comma but excludes dollar, tilde, asterisk, and plus. Keeping an
+alphanumeric terminal digit prevents punctuation trimming without giving GitHub a pair of dollar
+signs it could interpret as inline mathematics. The radix conversion uses bounded byte/digit
+arithmetic rather than a whole-payload `BigInt`.
 
 ## Known limitations and integration work
 
@@ -910,6 +837,6 @@ same feature owns whatever its deployed origin costs on top of a codec value —
 `https://ships.example/#` origin the tests use, against which the largest reference build spends 97
 of its 500.
 
-Almanac 0.1.1 models festive modules as fixed pre-engineered variants and exposes journal-shaped
+Almanac 0.1.4 models festive modules as fixed pre-engineered variants and exposes journal-shaped
 modifier reconstruction for known fixed articles. The application does not reimplement or adjust
 those values or ordinary blueprint arithmetic.

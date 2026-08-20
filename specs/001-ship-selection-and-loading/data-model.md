@@ -46,17 +46,17 @@ Derived values: filtered/sorted result symbols, active constraint descriptions a
 
 Application state around one mutable package `ShipLoadout`.
 
-| Field                  | Type                                        | Rule                                                                                     |
-| ---------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `loadout`              | `ShipLoadout \| null`                       | Only live source of build/game behavior                                                  |
-| `provenance`           | `none \| stock \| working \| named \| link` | Application workflow origin, not exported                                                |
-| `workingRecordId`      | UUID                                        | This tab's autosave target; local only                                                   |
-| `sourceNamed`          | `{ recordId; baseRevisionId } \| null`      | Optimistic save baseline; local only                                                     |
-| `baselineFingerprint`  | opaque string or null                       | Compares active modelled state with its explicit-save/open baseline; not a game identity |
-| `dirty`                | boolean                                     | True for a new unnamed build or when modelled state differs from the named/open baseline |
-| `persistence`          | `PersistenceStatus`                         | Does not determine whether the build is usable                                           |
-| `link`                 | `LinkPublicationState`                      | Current fragment synchronization/refusal status                                          |
-| `normalisationNotices` | readonly package-derived notice[]           | Local workflow disclosures; fixed-mount entries persist with the local record only       |
+| Field                      | Type                                        | Rule                                                                                     |
+| -------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `loadout`                  | `ShipLoadout \| null`                       | Only live source of build/game behavior                                                  |
+| `provenance`               | `none \| stock \| working \| named \| link` | Application workflow origin, not exported                                                |
+| `workingRecordId`          | UUID                                        | This tab's autosave target; local only                                                   |
+| `sourceNamed`              | `{ recordId; baseRevisionId } \| null`      | Optimistic save baseline; local only                                                     |
+| `baselineFingerprint`      | opaque string or null                       | Compares active modelled state with its explicit-save/open baseline; not a game identity |
+| `dirty`                    | boolean                                     | True for a new unnamed build or when modelled state differs from the named/open baseline |
+| `persistence`              | `PersistenceStatus`                         | Does not determine whether the build is usable                                           |
+| `link`                     | `LinkPublicationState`                      | Current fragment synchronization/refusal status                                          |
+| `qualityCompletionNotices` | readonly package-derived notice[]           | Transient workflow disclosures for completed partial engineering; never persisted        |
 
 Replacement transition:
 
@@ -102,64 +102,33 @@ Validation:
 
 - Decode JSON as untrusted input and validate every discriminant, scalar and collection bound before package construction.
 - Reconstruct with `ShipLoadout.fromLoadout()` and package pre-engineered helpers already used by the codec.
-- Duplicate slots and structurally invalid identity fields make a snapshot malformed. Any
-  syntactically valid module symbol—including one unknown after tampering or catalogue churn—must
-  reach the released package normalization boundary, regardless of snapshot version. An unknown hull
-  refuses reconstruction; unknown modules produce transient empty/default outcomes before the latest
-  snapshot is serialized.
+- Duplicate slots and structurally invalid identity fields make a snapshot malformed. Unknown module
+  identities are outside the supported migration contract. An unknown hull refuses reconstruction;
+  fixed mounts are returned with package defaults before the latest snapshot is serialized.
 - Calculated values, catalogue facts, local note/name, record IDs, validation snapshots and timestamps are forbidden.
 
 ## LocalRecordV1
 
 One atomic value stored under `edsb:record:<id>`.
 
-| Field                     | Type                                           | Rule                                                                                                      |
-| ------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `format`                  | literal `edsb.local-record`                    | Reject other owned-looking values without deleting them                                                   |
-| `version`                 | literal `1`                                    | Record-envelope version                                                                                   |
-| `id`                      | UUID                                           | Immutable local identity; must equal key suffix                                                           |
-| `kind`                    | `working \| named`                             | Controls ownership and UI behavior                                                                        |
-| `revisionId`              | UUID                                           | Fresh after every successful write; never time-derived                                                    |
-| `createdAt`               | ISO-8601 instant                               | Display metadata only                                                                                     |
-| `modifiedAt`              | ISO-8601 instant                               | Locale-formatted display metadata only                                                                    |
-| `name`                    | `string \| null`                               | Null for working; named duplicates allowed after warning                                                  |
-| `note`                    | `string \| null`                               | At most one local note; excluded from link and SLEF                                                       |
-| `hullSymbol`              | string                                         | List metadata; must equal `build.shipSymbol`                                                              |
-| `validation`              | `{ valid: boolean; complete: boolean }`        | Exact package booleans at the snapshot revision                                                           |
-| `build`                   | `BuildSnapshotV1`                              | Lossless modelled state                                                                                   |
-| `sourceNamed`             | `{ recordId; baseRevisionId } \| null`         | Present only on a working record opened/forked from a named record                                        |
-| `fixedMountNormalisation` | readonly `FixedMountNormalisationProvenance[]` | Local-only provenance for source-empty fixed mounts; excluded from modelled build, history, link and SLEF |
+| Field         | Type                                    | Rule                                                               |
+| ------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them            |
+| `version`     | literal `1`                             | Record-envelope version                                            |
+| `id`          | UUID                                    | Immutable local identity; must equal key suffix                    |
+| `kind`        | `working \| named`                      | Controls ownership and UI behavior                                 |
+| `revisionId`  | UUID                                    | Fresh after every successful write; never time-derived             |
+| `createdAt`   | ISO-8601 instant                        | Display metadata only                                              |
+| `modifiedAt`  | ISO-8601 instant                        | Locale-formatted display metadata only                             |
+| `name`        | `string \| null`                        | Null for working; named duplicates allowed after warning           |
+| `note`        | `string \| null`                        | At most one local note; excluded from link and SLEF                |
+| `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                       |
+| `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                    |
+| `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                            |
+| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on a working record opened/forked from a named record |
 
-### FixedMountNormalisationProvenance
-
-| Field                 | Type             | Rule                                                                 |
-| --------------------- | ---------------- | -------------------------------------------------------------------- |
-| `slotKey`             | string           | Exact game slot key affected by sanctioned fixed-mount normalisation |
-| `sourceWasEmpty`      | literal `true`   | Only a source-empty fixed mount may persist provenance               |
-| `replacementIdentity` | string           | Package default identity installed by the normaliser                 |
-| `normalisedAt`        | ISO-8601 instant | Display metadata only; never identity or conflict ordering           |
-
-Feature 002 creates these entries only for fixed mounts that arrived empty. Working autosave and
-named save/duplicate copy them as record metadata. Unknown-module empty/default outcomes instead use
-`IngressIdentityNormalisationOutcome` below and never persist. A successful Commander edit to the
-exact mount clears a fixed-empty entry; refused/cancelled/no-op and viewing changes do not. Undo
-restores only `BuildSnapshotV1` and therefore does not recreate cleared provenance. Link and SLEF
-adapters cannot accept either provenance type.
-
-### IngressIdentityNormalisationOutcome
-
-Transient feedback produced from the released package normalization result before candidate
-activation.
-
-| Field                 | Type                   | Rule                                                         |
-| --------------------- | ---------------------- | ------------------------------------------------------------ |
-| `slotKey`             | string                 | Exact package slot key                                       |
-| `sourceIdentity`      | `string \| null`       | Unknown source identity; null only for an absent cargo hatch |
-| `action`              | `emptied \| defaulted` | Exact package outcome                                        |
-| `replacementIdentity` | `string \| null`       | Null for emptied; package default identity for defaulted     |
-
-The collection is discarded after refusal or after its one activation notice. It never enters a
-snapshot, local record, history checkpoint, link or SLEF payload.
+Package construction owns fixed-mount defaulting. Working autosave and named save/duplicate store
+only the resulting modelled build; no empty-source or defaulting provenance is retained.
 
 State transitions:
 

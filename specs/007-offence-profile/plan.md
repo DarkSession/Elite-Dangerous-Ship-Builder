@@ -31,7 +31,7 @@ normalized capacitor bars are rejected.
 Node.js 24 for tooling. Full TypeScript and Angular-template strictness is required but is not enabled
 in the current root configuration
 
-**Primary Dependencies**: Angular signals; RxJS 7.8; `@elite-dangerous-almanac/core@0.1.3` leaf
+**Primary Dependencies**: Angular signals; RxJS 7.8; `@elite-dangerous-almanac/core@0.1.4` leaf
 exports for loadout weapon results, weapon types, capacitor results, ammunition, projectile metadata
 and game-text localization; feature 001 active-build revisions; feature 002 same-revision hardpoint
 coverage and exact-slot reveal; feature 003 viewing conditions, Status-provider envelope and
@@ -80,17 +80,17 @@ mobile Offence mode. Exact adoption and departures are in
 _GATE: The design passes with no constitutional exception. Delivery is blocked by missing shared
 strictness and prerequisite contracts listed below._
 
-| Principle                               | Design evidence                                                                                                                                                         | Status                 |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                         | PASS                   |
-| II. Almanac Source of Truth             | Exact package facade results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                          | PASS                   |
-| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only components.                                                                     | PASS                   |
-| IV. Lossless, Honest Builds             | Returned package identities are preserved; unknown modules normalize before projection; unavailable coverage, sparse fields, unlimited ammo and infinity stay distinct. | PASS                   |
-| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen reader, text-size, zoom, orientation and overflow verification.        | PASS; prerequisite 011 |
-| VI. Commander's Language                | Application labels/units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                    | PASS; prerequisite 011 |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only and every new component has the required preview matrix.                               | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                        | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every FR maps to the in-workspace capability, contracts and component-state previews before task generation.                                                            | PASS                   |
+| Principle                               | Design evidence                                                                                                                                                        | Status                 |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                        | PASS                   |
+| II. Almanac Source of Truth             | Exact package facade results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                         | PASS                   |
+| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only components.                                                                    | PASS                   |
+| IV. Lossless, Honest Builds             | Returned package identities are preserved; unsupported module inputs are out of scope; unavailable coverage, sparse fields, unlimited ammo and infinity stay distinct. | PASS                   |
+| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen reader, text-size, zoom, orientation and overflow verification.       | PASS; prerequisite 011 |
+| VI. Commander's Language                | Application labels/units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                   | PASS; prerequisite 011 |
+| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only and every new component has the required preview matrix.                              | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                       | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every FR maps to the in-workspace capability, contracts and component-state previews before task generation.                                                           | PASS                   |
 
 ### Delivery prerequisites and blockers
 
@@ -111,7 +111,7 @@ The current source contains only the shell and build-link codec. The current Pla
 has three Chromium-only projects and no axe integration. Missing prerequisites block implementation;
 they do not authorize feature-local substitutes.
 
-The pinned Almanac 0.1.3 already exposes fitted maximum/falloff range, projectile boundaries,
+The pinned Almanac 0.1.4 already exposes fitted maximum/falloff range, projectile boundaries,
 armour piercing and documented weapon ordering. The installed behavior satisfies the work tracked by
 Almanac issues #300 and #301; feature 007 has no remaining package blocker.
 

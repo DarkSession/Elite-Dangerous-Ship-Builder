@@ -70,7 +70,7 @@ explicit save of the same active build.
 
 `ViewingConditions`, its draft and `conditionsRevision` are prohibited from:
 
-- `BuildSnapshotV1`, `LocalRecordV1` and fixed-mount provenance;
+- `BuildSnapshotV1` and `LocalRecordV1`;
 - undo/redo history and preferences;
 - route, query, fragment and compact-link payloads;
 - SLEF import/export.

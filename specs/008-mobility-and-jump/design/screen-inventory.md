@@ -31,8 +31,8 @@ exact-slot target; it owns no build mutation, condition control or persisted vie
 ## Cross-feature ownership
 
 - Feature 001 owns the active build/revision and `/build` workspace.
-- Feature 002 owns fixed-mount normalization before calculations, committed-edit revision changes and
-  exact-slot reveal/edit behavior.
+- The shared ingress boundary supplies package-populated fixed mounts before calculations. Feature
+  002 owns committed-edit revision changes and exact-slot reveal/edit behavior.
 - Feature 003 owns viewing-condition draft/Apply/Reset, read-only condition identity, generic status
   envelope and workspace targets. Feature 008 owns its concrete three-summary provider.
 - Feature 005 is not a dependency; package mobility diagnostics already own thruster power meaning.

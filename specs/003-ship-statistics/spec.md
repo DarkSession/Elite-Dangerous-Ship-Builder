@@ -72,11 +72,10 @@ assembly requirements and viewing conditions. Detailed calculations remain defin
   package recognizes a Mercenary article.
 - **FR-012**: A package-provided slot or detail target MUST be reachable in one interaction. The
   application MUST NOT infer a location or target the package does not supply.
-- **FR-013**: Fixed-mount normalisation MUST appear as application provenance, separate from package
-  issues, until the Commander changes each affected mount.
-- **FR-014**: Normalisation provenance MUST persist as local metadata associated with its working or
-  named build record, clear per changed mount and be discarded with that record. It MUST NOT enter
-  modelled build data, a link or SLEF export.
+- **FR-013**: Package-defaulted fixed modules MUST appear only as ordinary fitted build state and
+  MUST NOT create a separate normalization or provenance region.
+- **FR-014**: Status MUST NOT infer, persist or publish import/defaulting history from fixed-module
+  state.
 - **FR-015**: With no package issues or qualified results, the capability MUST state that none were
   reported without making a readiness or quality claim.
 - **FR-016**: The default load state MUST be unladen: full main tank and empty cargo hold. Maximum
@@ -106,8 +105,7 @@ assembly requirements and viewing conditions. Detailed calculations remain defin
 `validation`, `powerBudget()`, the area metric/result methods, `standardLoadResult()`, diagnostic mass and capacity accessors,
 `retailCredits()`, `mercCoinCost()` and engineering cost functions provide every required game
 value, state and calculation. The application selects viewing conditions, consolidates returned
-facts and stores only its own normalisation provenance. It owns no game calculation or readiness
-verdict.
+facts and owns no game calculation or readiness verdict.
 
 ## Current Almanac Limit
 

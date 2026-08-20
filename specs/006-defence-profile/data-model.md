@@ -59,7 +59,7 @@ interface CalculationIssueView {
 Rules:
 
 - `reason: 'unresolved'` is an exact package calculation-issue reason for package-resolved build
-  input; it never carries or authorizes an unknown module identity;
+  input; it accepts only package-resolved module identities;
 - `packageIssue` is retained for `getCalculationIssueMessage()`; application code does not parse its
   English `message`.
 - `slot` and `symbol` remain exact package identities and may authorize a workspace slot target.

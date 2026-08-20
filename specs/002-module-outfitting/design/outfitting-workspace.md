@@ -53,8 +53,8 @@ Every package slot shows:
 - removability or package reason;
 - enabled and localized priority state where package operation exists.
 
-Unknown identities never reach the workspace: ingress has already applied the package's empty/default
-outcome. Unavailable facts for resolved package entries have explicit localized text.
+Unsupported identities are outside the workspace contract. Package construction has already
+populated fixed mounts. Unavailable facts for resolved package entries have explicit localized text.
 
 ## Cargo hatch
 
@@ -68,10 +68,10 @@ package immovable reason. Do not make the card open replacement or engineering a
 | No active build                   | Explain that outfitting requires a build. Compose feature 001 create/open/navigation and feature 004 import only when those owners supply them; feature 002 promises no action itself. |
 | Valid or invalid/incomplete build | Every available package slot remains inspectable/editable; validation stays visible.                                                                                                   |
 | Empty slot                        | Exact key, capacity facts and replace action; remove absent/no-op is not promoted.                                                                                                     |
-| Unknown module ingress            | Not rendered as active state; the owning ingress surface reports the package empty/default outcome.                                                                                    |
+| Unsupported module ingress        | Outside the supported application import contract.                                                                                                                                     |
 | Non-removable                     | Localized package reason and no remove action.                                                                                                                                         |
 | Cargo hatch                       | Facts and power only.                                                                                                                                                                  |
-| Accepted normalized ingress       | Notice distinguishes quality completion, fixed replacement/fill and default unavailable; names exact slot/source/result; undo excludes it.                                             |
+| Accepted normalized ingress       | Notice reports quality completion; package-returned fixed defaults have no separate repair/provenance state; undo excludes normalization.                                              |
 | Refused incoming normalization    | Not rendered as the rejected workspace. Owning ingress surface names every partial slot/identity/package reason and states that the current build/history are unchanged.               |
 | Edit refusal                      | Structured localized notice; active build, calculations and history unchanged.                                                                                                         |
 | History available/unavailable     | Direct or menu actions reflect `canUndo`/`canRedo`; new branch clears redo immediately.                                                                                                |

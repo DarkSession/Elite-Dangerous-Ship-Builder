@@ -1,5 +1,9 @@
 # Cross-artifact remediation log
 
+> Historical record: constitution 7.0.0 and Almanac 0.1.4 supersede the C1, U1/U2 and U1b
+> remediations below. Fixed mounts now arrive package-populated, unknown-module compatibility is no
+> longer supported, and the application has no repair/default-unavailable/provenance workflow.
+
 Amendments applied to `specs/**` following the cross-feature `/speckit-analyze` run of
 2026-08-19 over features 001–012 against constitution v6.0.0 and the pinned
 `@elite-dangerous-almanac/core@0.1.3`.

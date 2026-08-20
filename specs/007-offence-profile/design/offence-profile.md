@@ -109,7 +109,7 @@ The collection preserves package order. It neither sorts nor merges identical mo
 - Empty returned weapons plus feature-002 confirmed-empty coverage yields no fitted weapons.
 - Coverage unavailable says the package weapon result could not establish fitted coverage; it does
   not claim empty hardpoints.
-- Unknown modules never enter this surface because package ingress normalized them to empty/default.
+- Only package-resolved modules enter this surface.
 - A non-empty list with zero total remains populated. Disabled and genuine-zero meanings remain
   visible per entry.
 

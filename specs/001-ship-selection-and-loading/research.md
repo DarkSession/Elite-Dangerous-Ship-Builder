@@ -38,13 +38,13 @@
 hull symbol, nullable ship name/ident, and package-resolved fitted entries keyed by game slot. Each
 entry retains its module symbol/casing, presence of enabled/priority fields, package-identified
 pre-engineered tuple and ordinary blueprint grade/effect. Construct it from `ShipLoadout` getters
-after ingress normalization and reconstruct through the released package boundary before accepting
+after package reconstruction and reconstruct through the released package boundary before accepting
 it.
 
-**Rationale**: The package rejects an unknown hull, empties an unresolved removable module and
-defaults an unresolved fixed module before the application reads a figure or creates the snapshot.
-`toLoadoutEvent()` remains unsuitable as the
-storage DTO because it lowercases identities and adds recomputed derived fields.
+**Rationale**: The package rejects an unknown hull and returns every fixed mount populated with its
+hull default before the application reads a figure or creates the snapshot. Unknown module
+identities are outside the supported contract. `toLoadoutEvent()` remains unsuitable as the storage
+DTO because it lowercases identities and adds recomputed derived fields.
 
 **Alternatives considered**: `JSON.stringify(ShipLoadout)` was rejected because class internals are
 not a durable contract. Wholesale SLEF/loadout-event storage was rejected because it mixes modelled
