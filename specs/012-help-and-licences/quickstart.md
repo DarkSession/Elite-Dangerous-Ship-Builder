@@ -58,9 +58,23 @@ Expected:
 - the current placeholder/development build is visibly Non-release and shows its generated build ID;
 - no label describes either value as the live game or live catalogue version.
 
-In fixture tests, omit any release-workflow declaration and confirm a normal non-release identity is
-emitted. Then declare a release workflow: provide version-matched evidence and confirm release state,
-and repeat with missing, placeholder and mismatched evidence to confirm generation fails.
+No workflow is needed to exercise this — the classification reads one variable:
+
+```bash
+# 1. No declaration -> nonRelease with a buildId
+unset SHIP_BUILDER_RELEASE_TAG; pnpm run help:manifest
+
+# 2. Version-matched declaration over a non-0.0.0 version -> release
+SHIP_BUILDER_RELEASE_TAG="v$(node -p "require('./package.json').version")" pnpm run help:manifest
+
+# 3. Anything else while declared -> generation fails, never a silent downgrade
+SHIP_BUILDER_RELEASE_TAG=latest pnpm run help:manifest   # expect non-zero exit, no output written
+```
+
+Note that root `package.json#version` is currently `0.0.0`, which the contract forbids from ever
+being a release, so case 2 fails until the version is raised — that is the expected outcome, not a
+defect. Repeat case 3 with `v0.0.0`, `HEAD`, `undefined` and a mismatched version to confirm each
+fails and writes no partial output.
 
 ## 3. Open and close without navigation or mutation
 
@@ -80,7 +94,9 @@ Expected:
 - the URL, history length, build revision, selected capability/slot and stored records do not change;
 - all entries reach the same modal; contextual entry may change only its initial in-modal position;
 - close returns to the same underlying state; no focus/keyboard behavior is asserted;
-- no route chunk, help file, legal file or cross-origin request occurs on open.
+- no route chunk, help file, legal file or cross-origin request occurs on open;
+- SC-005: at the mobile viewport under 4× CPU slowdown, the first complete frame of the
+  already-loaded modal is presented within 100 ms of activation.
 
 ## 4. Validate accepted help and provenance
 
