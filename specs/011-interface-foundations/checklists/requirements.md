@@ -21,6 +21,8 @@
 - [x] Scope and exclusions are explicit
 - [x] Cross-feature ownership is clear
 - [x] Success criteria are measurable
+- [x] Shipped-locale completeness remains enforceable as capabilities change the owned message set
+- [x] Incomplete locale catalogues have one atomic, readable fallback outcome
 
 ## Almanac Integrity
 

@@ -1,7 +1,7 @@
 # Integration Ports Contract
 
-Feature 005 owns the power semantics consumed by features 003 and 010. These
-ports expose owner projections, not alternate calculation APIs.
+Feature 005 owns the power semantics consumed by features 003, 007 and 010.
+These ports expose owner projections, not alternate calculation APIs.
 
 ## Shared revision context
 

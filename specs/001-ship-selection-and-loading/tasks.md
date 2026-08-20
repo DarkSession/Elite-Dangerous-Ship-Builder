@@ -11,9 +11,10 @@ description: 'Task list for Ship Selection and Build Loading'
 [quickstart.md](./quickstart.md)
 
 **Upstream features**: Feature [011](../011-interface-foundations/tasks.md) supplies the token set,
-`AppShell`, localization runtime, preview manifest and the ten-project Playwright/axe harness. Feature
-[004](../004-slef/spec.md) supplies the SLEF export action reached from link refusal. Feature 001
-defines and tests both seams but cannot be declared complete until both integrations are present.
+`AppShell`, complete English/German localization runtime, the application's sole service-worker
+registration/base configuration, preview manifest and the ten-project Playwright/axe harness.
+Feature [004](../004-slef/spec.md) supplies the SLEF export action reached from link refusal. Feature
+001 defines and tests both seams but cannot be declared complete until both integrations are present.
 
 **Tests**: Test tasks are included. Constitution principle VIII gates the build on 80% unit coverage,
 the dual-engine multi-viewport Playwright matrix and automated accessibility scans, and the
@@ -42,8 +43,8 @@ Single Angular workspace at the repository root: product source in `src/app/` sp
 feature's source depends on.
 
 - [ ] T001 Add an `assets` entry copying `node_modules/@elite-dangerous-almanac/core/assets/ships/**/illustration.svg` to the same-origin output path `assets/ships/` in the build target options in `angular.json`
-- [ ] T002 [P] Create `ngsw-config.json` with an eager app-shell/bundled-message asset group and a lazy `assets/ships/**` performance cache group, and reference it from the production build configuration in `angular.json`
-- [ ] T003 Register `provideServiceWorker('ngsw-worker.js', { enabled: isDevMode() === false, registrationStrategy: 'registerWhenStable:30000' })` in `src/app/app.config.ts` (depends on T002)
+- [ ] T002 [P] Extend feature 011's existing `ngsw-config.json` with a versioned lazy `assets/ships/**` performance asset group for copied Almanac illustrations, without changing its app-shell/locale groups or registering another worker, and retain the production reference in `angular.json`
+- [ ] T003 Add the feature-boundary regression asserting exactly one `provideServiceWorker` registration remains feature 011-owned and feature 001 contributes only the ship-artwork asset group in `scripts/check-service-worker-ownership.test.mjs` (depends on T002 and feature 011's worker setup)
 - [ ] T004 [P] Add the `codec:capacity` script invoking `node scripts/build-link-codec-capacity.mjs` and include it in the `check` pipeline in `package.json`
 - [ ] T005 [P] Declare the owned key space constants `EDSB_RECORD_KEY_PREFIX = 'edsb:record:'`, `EDSB_TAB_KEY = 'edsb:tab'` and `EDSB_BROADCAST_CHANNEL = 'edsb.persistence.v1'` with the `edsb:named:<recordId>` lock-name builder in `src/app/platform/storage/storage-keys.ts`
 
@@ -80,7 +81,7 @@ replacement coordinator and the shared dialog primitives that all three stories 
 - [ ] T019 Implement `toBuildSnapshotV1(loadout)` reading hull symbol, nullable ship name/ident and per-slot module symbol, absent-vs-false `enabled`, nullable zero-based `priority`, `FittedModule.preEngineeredVariant` identity tuple and ordinary engineering from `ShipLoadout` getters in `src/app/domain/build/build-snapshot.serializer.ts` with unit tests asserting no derived, calculated or lowercased field is emitted (depends on T018)
 - [ ] T020 Implement `parseBuildSnapshotV1(value: unknown)` validating every discriminant, scalar, bound and case-insensitive slot uniqueness as untrusted input in `src/app/domain/build/build-snapshot.parser.ts` with unit tests for malformed, duplicate-slot and out-of-range fixtures (depends on T018)
 - [ ] T021 Implement `reconstructFromSnapshot(snapshot)` by calling `ShipLoadout.fromLoadout()` and the package pre-engineered helpers, refusing an unknown hull and accepting the package-returned fixed defaults without a repair pass or provenance model, in `src/app/domain/build/build-snapshot.reconstructor.ts` with unit tests covering omitted and unusable fixed entries plus unknown-hull refusal (depends on T020)
-- [ ] T022 [P] Add reconstruction contract tests proving every accepted snapshot has package-populated armour, core internals and cargo hatch before activation and that this package defaulting is never attached to the snapshot or edit history
+- [ ] T022 [P] Add reconstruction contract tests proving every accepted snapshot has package-populated armour, core internals and cargo hatch before activation and that this package defaulting is never attached to the snapshot or edit history in `src/app/domain/build/build-snapshot.reconstructor.spec.ts`
 - [ ] T023 [P] Implement the modelled-state `baselineFingerprint` derived only from a serialized snapshot, plus the `dirty` predicate, in `src/app/domain/build/replacement-policy.ts` with unit tests covering new-unnamed, equal-to-baseline and diverged states
 
 ### Active build and replacement coordination
@@ -95,7 +96,7 @@ replacement coordinator and the shared dialog primitives that all three stories 
 - [ ] T028 [P] Implement the `UnavailableValue` component rendering the localized unavailable state distinctly from `0` in `src/app/ui/value/unavailable-value.ts` with its preview declaration
 - [ ] T029 [P] Implement `ConfirmDialog` with associated title/description, named confirm/cancel actions, focus management and inert background in `src/app/ui/dialog/confirm-dialog.ts` with unit tests and previews
 - [ ] T030 [P] Implement the three-choice `ChoiceDialog` whose choices each carry visible text explaining which version survives in `src/app/ui/dialog/choice-dialog.ts` with unit tests and previews
-- [ ] T031 Register the feature 001 message namespaces (`catalogue`, `hullDetail`, `workspace`, `library`, `link`) with their English fallback seeds in `src/app/i18n/locales/en.json`
+- [ ] T031 Register the feature 001 message namespaces (`catalogue`, `hullDetail`, `workspace`, `library`, `link`) with complete reviewed messages and exact key/interpolation parity in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 
 **Checkpoint**: Routes resolve, every browser API is injected behind a port, a build can be committed
 candidate-first, and shared dialogs exist. User story work can begin.
@@ -144,7 +145,7 @@ of unsaved work requires confirmation.
 - [ ] T049 [US1] Implement the hull detail route as a wide inspector beside the manifest and a narrow full-screen layer with a named back action, rendering the "Hull specifications" `FactList`, `SlotLayout`, `HullArtwork` and the creation `ActionButton` present only when a package default exists, in `src/app/features/hull-detail/hull-detail.page.ts`, `.html` and `.scss` (depends on T040, T045, T046, T047)
 - [ ] T050 [US1] Implement the unknown-symbol error state with a named catalogue-return action, no guessed facts and no creation action in `src/app/features/hull-detail/hull-detail-unknown-symbol.ts` with unit tests (depends on T049)
 - [ ] T051 [US1] Restore catalogue constraints, order and the anchored result offset after detail back navigation once cards have stabilized in `src/app/features/ship-catalogue/catalogue-anchor.restorer.ts` with unit tests (depends on T037, T048)
-- [ ] T052 [US1] Add the catalogue, hull-detail, unavailable-fact, unknown-symbol and replacement-confirmation message keys to `src/app/i18n/locales/en.json` (depends on T031)
+- [ ] T052 [US1] Add the catalogue, hull-detail, unavailable-fact, unknown-symbol and replacement-confirmation message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T031)
 
 ### Verification
 
@@ -186,7 +187,7 @@ continues.
 - [ ] T063 [US2] Implement the tab ownership coordinator broadcasting a `{ workingRecordId, pageNonce }` claim and forking a collided live id into a new record before either page next autosaves in `src/app/application/build-library/tab-ownership.coordinator.ts` with unit tests (depends on T012, T017, T062)
 - [ ] T064 [US2] Implement coalesced autosave to the tab working key with best-effort `pagehide`/visibility-hidden flush and a `record-deleted-externally` pause requiring explicit resume in `src/app/application/build-library/autosave.service.ts` with unit tests (depends on T014, T060, T063)
 - [ ] T065 [US2] Implement the 20-record working retention rule where existing records always update, record 21 performs no write and no deletion, and named records are excluded from the count, in `src/app/application/build-library/retention.service.ts` with unit tests asserting no age, count, LRU or tab-closure eviction path exists (depends on T060)
-- [ ] T066 [US2] Add persistence tests proving package-defaulted fixed modules are stored as ordinary build state with no source-empty, repair or defaulting provenance (depends on T055, T064)
+- [ ] T066 [US2] Add persistence tests proving package-defaulted fixed modules are stored as ordinary build state with no source-empty, repair or defaulting provenance in `src/app/application/build-library/autosave.service.spec.ts` (depends on T055, T064)
 
 ### Named operations and conflicts
 
@@ -208,7 +209,7 @@ continues.
 - [ ] T079 [US2] Implement the save/name dialog with duplicate-name warning and the overwrite-existing versus save-as-new choice resolved against record UUID and revision rather than display name in `src/app/features/build-library/save-build.dialog.ts` with unit tests (depends on T029, T067)
 - [ ] T080 [US2] Wire the three-choice conflict dialog and the delete/discard confirmation into the library screen in `src/app/features/build-library/build-library.page.ts` (depends on T029, T030, T068, T078)
 - [ ] T081 [US2] Render persistence status — saving, saved, retention-limit, quota-full, unavailable, write-failed and record-deleted-externally — as visible localized text with an icon in the workspace, keeping editing available in every failure state, in `src/app/features/build-workspace/persistence-status.ts` with unit tests (depends on T007, T024, T064)
-- [ ] T082 [US2] Add the library, save-dialog, conflict, retention, quota, migration and persistence-failure message keys to `src/app/i18n/locales/en.json` (depends on T031)
+- [ ] T082 [US2] Add the library, save-dialog, conflict, retention, quota, migration and persistence-failure message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T031)
 
 ### Verification
 
@@ -247,7 +248,7 @@ dirty build is active.
 - [ ] T093 [US3] Define the SLEF fallback port feature 004 implements, with a documented no-op-plus-notice default until that feature lands, in `src/app/application/build-link/slef-fallback.port.ts` with unit tests (depends on T027)
 - [ ] T094 [US3] Compose the share-link panel into the workspace export surface and wire the copy/share, retry and SLEF intents in `src/app/features/build-workspace/build-workspace.page.ts` and `src/app/features/build-workspace/export.dialog.ts` (depends on T007, T092, T093)
 - [ ] T095 [US3] Order workspace startup so this tab's working record restores before an initial recognized fragment is processed as an incoming candidate in `src/app/features/build-workspace/build-workspace.page.ts` (depends on T064, T086)
-- [ ] T096 [US3] Add the link publication, refusal, copy-feedback and per-code error message keys to `src/app/i18n/locales/en.json` (depends on T031, T091)
+- [ ] T096 [US3] Add the link publication, refusal, copy-feedback and per-code error message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T031, T091)
 
 ### Verification
 
@@ -354,7 +355,7 @@ Task: "Implement SlotLayout in src/app/ui/hull/slot-layout.ts"
 
 1. The team completes Setup and Foundational together
 2. Then: Developer A takes US1, Developer B takes US2, Developer C takes US3
-3. Coordinate only on `src/app/i18n/locales/en.json` and `src/app/features/build-workspace/build-workspace.page.ts`, which US2 and US3 both touch
+3. Coordinate only on `src/app/i18n/locales/en.json`, `src/app/i18n/locales/de.json` and `src/app/features/build-workspace/build-workspace.page.ts`, which US2 and US3 both touch
 
 ---
 

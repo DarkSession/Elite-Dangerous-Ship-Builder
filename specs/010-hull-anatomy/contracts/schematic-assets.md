@@ -77,10 +77,11 @@ tokens only; source geometry remains unchanged.
 
 ## Cache and offline behavior
 
-Feature 001's one Angular service worker includes the copied schematic path in a versioned lazy asset
-group. No separate Cache API owner exists. An already opened side remains available offline after
-the worker has cached it. An uncached offline side reports temporary unavailability and loads after
-connectivity returns without a page reload.
+Feature 001 extends feature 011's sole Angular service-worker configuration with the copied
+schematic path as a versioned lazy asset group. Feature 011 retains the only registration and cache
+ownership; no separate Cache API owner exists. An already opened side remains available offline
+after the worker has cached it. An uncached offline side reports temporary unavailability and loads
+after connectivity returns without a page reload.
 
 Production validation uses the built static output and real generated service-worker manifest.
 Development request interception is not accepted as the only offline proof.

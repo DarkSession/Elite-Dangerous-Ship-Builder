@@ -44,7 +44,7 @@ history, URL, SLEF or undo/redo.
 
 ## Generalized mount-power observation
 
-Feature 005 must replace its hardpoint-only contribution with a generic located-mount boundary:
+Feature 005 owns this generalized exact-slot boundary from inception; feature 010 only consumes it:
 
 ```ts
 interface MountPowerObservationRead {
@@ -64,8 +64,8 @@ The owner accepts exact hardpoint and utility keys, derives state from one
 Feature 010 requires exact revision equality and copies the observation unchanged. It does not
 inspect raw fitted `on`/`priority`, consumers, bands, modifiers or module families.
 
-This generalization is a blocking feature 005 contract update. The installed Almanac already supplies
-utility consumers; no local fallback or upstream fix is required.
+Availability of this feature-005-owned generalized port is a sequencing dependency. The installed
+Almanac already supplies utility consumers; no local fallback or upstream fix is required.
 
 ## Complete-ledger fallback
 

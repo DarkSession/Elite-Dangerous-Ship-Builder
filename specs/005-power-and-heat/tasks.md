@@ -46,10 +46,10 @@ calculation of its own. Three gates apply and are named on the tasks they block:
   `StatusProvider<T, I>`, `powerAndHeat` detail target and the shared condition control) and feature
   011 (tokens, components, localization, formatters, game-text presenter, announcement primitives,
   preview manifest, ten Playwright projects, axe helpers).
-- **Contract-first exports**: feature 003's provider bundle and feature 010's anatomy both wait on
-  this feature's Phase 2 type exports (T005, T006). Those two tasks must land before either consumer
-  can compile against a concrete power contract. An absent consumer is a sequencing dependency —
-  never a reason to let feature 003 or feature 010 read raw power fields.
+- **Contract-first exports**: feature 003's provider bundle, feature 007's distributor endurance and
+  feature 010's anatomy wait on this feature's Phase 2 type exports (T005, T006). Those two tasks
+  must land before a consumer can compile against a concrete power contract. An absent consumer is a
+  sequencing dependency — never a reason to let features 003, 007 or 010 read raw power fields.
 
 ---
 
@@ -93,7 +93,7 @@ revision-stamped projection and the store every surface reads.
 - [ ] T015 Implement `PowerHeatPresenter` selecting message keys, active-locale formatters and the optional draw-descending module order with source ordinal as the stable tie break, performing no arithmetic on any package figure, with unit tests for tie-break stability, sentinel-to-message mapping and MW/MJ/MJ·s⁻¹/percentage/second unit selection, in `src/app/application/power-heat/power-heat.presenter.ts` and `src/app/application/power-heat/power-heat.presenter.spec.ts` (depends on T012)
 - [ ] T016 Implement `PowerHeatAnnouncementCoordinator` emitting one coalesced polite message for a settled build or condition change that names the changed state, staying silent for pending, unchanged, discarded and invalid-draft transitions and using the shared prompt alert only for `failure`, with unit tests for initial silence, changed, unchanged, coalesced and stale cases, in `src/app/application/power-heat/power-heat-announcement-coordinator.ts` and `src/app/application/power-heat/power-heat-announcement-coordinator.spec.ts` (depends on T014)
 - [ ] T017 [P] Add the feature-owned framing message keys — capability heading and description, the `projectionFailed` application-failure text, the distributor and heat unavailable statements, the retracted deployed-only-summary explanation, and the three semantic sentinel phrases “draw with zero available plant output”, “does not settle” and “never overheats” — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T018 [P] Add the feature 005 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the four listed leaf subpaths, no file under `src/app/` outside `src/app/domain/power-heat/` calls `powerBudget`, `distributorMetrics` or `heatMetrics`, no arithmetic operator is applied to a package power/heat field outside the single half-pip division, and features 003 and 010 import only the exported contract leaves and never a feature 005 component or store — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
+- [ ] T018 [P] Add the feature 005 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the four listed leaf subpaths, no file under `src/app/` outside `src/app/domain/power-heat/` calls `powerBudget`, `distributorMetrics` or `heatMetrics`, no arithmetic operator is applied to a package power/heat field outside the single half-pip division, and features 003, 007 and 010 import only the exported contract leaves and never a feature 005 component or store — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
 - [ ] T019 Add the serialization-exclusion suite proving no `PowerHeatSnapshot`, view, sentinel or revision pair reaches local storage, saved records, undo/redo history, preferences, the route, query or fragment, a copied build link or a SLEF export, and that no projection object is JSON-cloned, in `src/app/application/power-heat/power-heat.serialization.spec.ts` (depends on T014)
 
 **Checkpoint**: The cross-feature contracts, the pure projection, the store and the repository policy
@@ -107,8 +107,9 @@ exist — features 003 and 010 can compile against this feature and user story w
 draw together, defaults to deployed, lets the Commander switch to retracted through feature 003's one
 shared control, presents all five priority bands with their draw, cumulative draw and powered
 verdict, lists every returned power consumer with its exact slot, enabled, priority and deployed-only
-state, reaches that slot in one interaction, and supplies feature 003's compact power projection and
-feature 010's hardpoint observation from the same result.
+state, reaches that slot in one interaction, and supplies feature 003's compact power projection plus
+feature 005's generalized exact-slot mount observation for feature 010's hardpoints/utilities and
+feature 007's distributor core slot from the same result.
 
 **Independent Test**: Load a fixture whose deployed draw sheds a lower band while its retracted draw
 does not, then run the power-heat unit suite plus `pnpm run e2e -- power-and-heat.spec.ts`: capacity,
@@ -138,7 +139,7 @@ exact returned slot.
 - [ ] T032 [US1] Register Power and Heat as the `powerAndHeat` detail capability in the desktop capability selector and the narrow capability navigation, selected in memory through feature 003's workspace target coordinator with no route, query, fragment, history or persistence change, in `src/app/features/build-workspace/build-workspace.ts` and its template (depends on T031)
 - [ ] T033 [US1] Implement `PowerStatusAdapter` and its injection token, selecting the store's projection for the exact context and returning the revision-stamped `PowerStatusProjection` with the fixed detail target and empty qualified summaries, in `src/app/application/power-heat/power-status.adapter.ts` (depends on T005, T014)
 - [ ] T034 [US1] Implement `MountPowerObservationAdapter` and its injection token, resolving the exact `PowerBudget.consumers` label and matching returned band through the four ordered selection rules for hardpoint, utility and core-internal slot keys alike, returning `unavailable` when the budget cannot answer for a requested key, and stamping both revisions on every read, in `src/app/application/power-heat/mount-power-observation.adapter.ts` (depends on T006, T014)
-- [ ] T035 [US1] Wire both adapters through application composition so feature 003 receives the provider and feature 010 receives the port with no runtime circular dependency between domain modules, in `src/app/application/power-heat/power-heat.providers.ts` (depends on T033, T034)
+- [ ] T035 [US1] Wire both adapters through application composition so feature 003 receives the status provider and features 007 and 010 receive the same generalized `MountPowerObservationPort`, with no runtime circular dependency between domain modules, in `src/app/application/power-heat/power-heat.providers.ts` (depends on T033, T034)
 - [ ] T036 [P] [US1] Add the US1 message keys — capability heading, plant capacity, selected draw, headroom, utilisation, within-budget and its verdicts, hardpoint state names, priority band and cumulative draw labels, powered, shed, disabled, deployed-only and inactive-retracted state text, module and slot column names and the exact-slot action pattern — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T037 [P] [US1] Add `PowerBudgetSummary`, `PriorityBandCollection`, `ModulePowerBreakdown`, `PowerHeatAnnouncer` and `PowerAndHeatCapability` preview declarations covering populated, retracted-omission, zero-output, disabled, deployed-only, no-consumer, pending and failure states at 1440, 834 and 390 CSS pixels with long and expanded text, RTL and high-zoom container fixtures, in `src/app/ui/previews/preview-manifest.ts`
 - [ ] T038 [US1] Add the US1 surfaces, FR-001–FR-006 and FR-011 ids, the compact status and mount power observation contributions, journeys and axe flags to `e2e/coverage-ledger.ts`
@@ -225,7 +226,7 @@ one settled revision.
 - [ ] T065 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/power-heat/`, `src/app/application/power-heat/` and `src/app/features/build-workspace/power-and-heat/` under the thresholds in `angular.json`
 - [ ] T066 [P] Record the Power and Heat capability, its cross-feature ports and the retracted deployed-only-summary limit in `AGENTS.md` and `README.md`
 - [ ] T067 Execute every section of `specs/005-power-and-heat/quickstart.md` against the reference corpus and fix each divergence
-- [ ] T068 Run `pnpm run check` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
+- [ ] T068 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 
 ---
 

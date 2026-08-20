@@ -57,9 +57,11 @@ reference's many near-duplicate alpha tokens was rejected in favor of semantic s
 ## Initial shipped locales
 
 **Decision**: Ship complete application-owned English (`en`) and German (`de`) catalogues. English is
-the fallback. German becomes selectable only after every application message and interpolation has
-reviewed wording. Expanded-copy and RTL pseudo-catalogues remain test fixtures and are never shipped
-or persisted as Commander choices.
+the fallback. Their key sets, nonblank values and interpolation-variable sets remain identical across
+the whole application: every downstream capability that adds or changes a message updates both
+catalogues in the same change. German becomes selectable only after every application message and
+interpolation has reviewed wording. Expanded-copy and RTL pseudo-catalogues remain test fixtures and
+are never shipped or persisted as Commander choices.
 
 **Rationale**: The accepted story requires choosing another shipped language and SC-006 requires a
 browser-language match, so one product locale does not satisfy this feature. Existing feature 007
@@ -94,11 +96,13 @@ does not provide the required versioned, injected, failure-tolerant storage boun
 ## Catalogue delivery, completeness and offline behavior
 
 **Decision**: Keep canonical JSON catalogues under `src/app/i18n/locales/`. Import English into the
-initial JavaScript bundle and copy all catalogues to same-origin `/i18n/`. Add the version-matched
-Angular service worker: eager asset groups cache shell/fonts/English; a lazy asset group caches a
-secondary locale after first request. Preload and validate a requested catalogue before publishing
-it. A load, shape, blank-value or interpolation mismatch atomically publishes bundled English and
-one localized fallback status.
+initial JavaScript bundle and copy all catalogues to same-origin `/i18n/`. Feature 011 installs,
+registers and owns the application's single version-matched Angular service worker and its base
+configuration: eager asset groups cache shell/fonts/English; a lazy asset group caches a secondary
+locale after first request. Downstream capabilities extend this configuration for their static
+assets without another registration or cache owner. Preload and validate a requested catalogue
+before publishing it. A load, shape, blank-value or interpolation mismatch atomically publishes
+bundled English and one localized fallback status.
 
 **Rationale**: English must be readable without a network and the application must work offline after
 its first controlled load. A previously opened locale must also remain available offline. Angular's

@@ -32,7 +32,7 @@ Before implementation acceptance, confirm:
   condition revision, `StatusProvider<T, I>` and `powerAndHeat`;
 - feature 003 permits reuse of the same scoped condition controls inside Power
   and Heat as required by FR-003;
-- feature 010 consumes feature 005's
+- features 007 and 010 consume feature 005's generalized exact-slot
   `MountPowerObservationPort` rather than power fields directly;
 - feature 011 supplies shared UI, localized formatting/game text, previews,
   ten Playwright projects and axe helpers.
@@ -136,12 +136,12 @@ For one captured context:
    `hardpointState` and `selectedDraw` with the detail projection.
 2. Confirm `qualifiedSummaryIds` is empty.
 3. Confirm target is exactly `powerAndHeat`.
-4. Query hardpoint observations covering not applicable, disabled, inactive
-   retracted, powered and shed.
+4. Query hardpoint, utility and distributor-core observations covering not
+   applicable, disabled, inactive retracted, powered and shed.
 5. Advance build and condition revisions during projection.
 
 Expected: both ports return the captured revision pair; stale results do not
-publish; feature 003/010 do not calculate, join or reinterpret power.
+publish; features 003, 007 and 010 do not calculate, join or reinterpret power.
 
 ## 10. Validate responsive, accessibility and localization behavior
 

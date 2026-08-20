@@ -45,18 +45,19 @@ legal content and no geometry of its own. Four gates apply and are named on the 
   the shared configuration and the existing project must pass under them (constitution technology
   requirement, closed by feature 011).
 - **Feature prerequisites**: feature 001 (one active `ShipLoadout` with `buildRevision`, no-build
-  state, the `/build` workspace page, the `angular.json` package-asset copy pattern and the single
-  versioned `ngsw-config.json` service worker), feature 002 (the `SlotView` projection over
+  state, the `/build` workspace page, the `angular.json` package-asset copy pattern and its ship-asset
+  extension to feature 011's worker configuration), feature 002 (the `SlotView` projection over
   `ShipLoadout.slots()`, the complete ledger, one `selectedSlotKey` and the exact-slot open intent
   in `src/app/application/outfitting/outfitting.store.ts`), feature 003 (`StatusRevisionContext` and
   the settled deployed/retracted viewing condition with its `conditionsRevision`), feature 011
-  (tokens, primitives, localization, game-text presenter with untranslated disclosure, announcement
-  primitives, preview manifest, ten Playwright projects and the axe helpers in `e2e/accessibility/`)
-  and feature 012 (the accepted in-place help/provenance modal reached by contextual intent).
-- **Contract-first dependency**: feature 005 must replace its hardpoint-only
-  `MountPowerObservationPort` accepting any package slot key, which feature 010 consumes (T012). No feature-010 task
-  may join `PowerBudget.consumers` to bands, read raw `FittedModule.on` or zero-based `priority`, or
-  reconstruct a power verdict while that port is still hardpoint-only.
+  (the sole service-worker dependency/registration/base configuration, tokens, primitives,
+  localization, game-text presenter with untranslated disclosure, announcement primitives, preview
+  manifest, ten Playwright projects and the axe helpers in `e2e/accessibility/`) and feature 012 (the
+  accepted in-place help/provenance modal reached by contextual intent).
+- **Contract-first dependency**: feature 005 defines its generalized exact-slot
+  `MountPowerObservationPort` from inception, and feature 010 consumes it through T012. No
+  feature-010 task may join `PowerBudget.consumers` to bands, read raw `FittedModule.on` or zero-based
+  `priority`, reconstruct a power verdict or define a competing port.
 - **Package boundary**: `@elite-dangerous-almanac/core` contracts both `hardpoint` and
   `utility_mount` annotations, exact journal keys, complete top/bottom coverage, cross-side duplicate
   identity, the static inline `svg/g/path/circle` guarantee and per-consumer utility power. No
@@ -71,7 +72,7 @@ locations and test suites before any contract lands.
 
 - [ ] T001 Characterize the installed Almanac anatomy contract this feature consumes — `assets/ships/<Ship.symbol>/schematic-top.svg` and `schematic-bottom.svg` present for every catalogued hull; only `svg`, `g`, `path` and `circle` elements in unmodified files; `data-feature="hardpoint"` and `data-feature="utility_mount"` groups each carrying an exact journal-compatible `data-journal-slot`; `ShipLoadout.slots()` reporting package kinds `hardpoint` and `utility` with hardpoint class sizes and the documented size-`0` utility placeholder; and `powerBudget().consumers` containing both always-powered and deployed-only utility consumers — using leaf subpath imports in `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts`
 - [ ] T002 [P] Add an `assets` entry copying `node_modules/@elite-dangerous-almanac/core/assets/ships/**/schematic-top.svg` and `**/schematic-bottom.svg` unchanged to the same-origin output path `assets/ships/` in the build target options in `angular.json`
-- [ ] T003 [P] Extend feature 001's lazy `assets/ships/**` performance cache group so both schematic filenames are cached by the single versioned service worker with no second cache owner, in `ngsw-config.json`
+- [ ] T003 [P] Extend feature 001's ship-asset group inside feature 011's sole `ngsw-config.json` with both schematic filename patterns, preserving feature 011's registration and base groups and adding no second worker or cache owner
 - [ ] T004 [P] Create the feature source skeleton `src/app/domain/anatomy/`, `src/app/application/anatomy/`, `src/app/ui/hull-schematic/` and `src/app/features/build-workspace/hull-anatomy/` per plan.md
 - [ ] T005 [P] Create the feature suites `e2e/hull-anatomy.spec.ts` and `e2e/schematic-offline.spec.ts` importing feature 011's axe and assertion helpers from `e2e/accessibility/axe.ts` and `e2e/accessibility/assertions.ts`, and register their surfaces in `e2e/coverage-ledger.ts`
 
@@ -80,8 +81,8 @@ locations and test suites before any contract lands.
 ## Phase 2: Foundational (Blocking Prerequisites)
 
 **Purpose**: Audit the installed and generated artwork, publish the immutable anatomy contract,
-generalize the located-mount power boundary, and land the safe parser, same-origin loader, pure
-projector, revision-keyed store and presentation boundary every surface reads.
+consume feature 005's generalized exact-slot power boundary, and land the safe parser, same-origin
+loader, pure projector, revision-keyed store and presentation boundary every surface reads.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
@@ -97,7 +98,7 @@ projector, revision-keyed store and presentation boundary every surface reads.
 - [ ] T010 Define the canonical mount family — `LocatedMountKind`, `MountSize` as `class 1–4 | notClassSized | unavailable` with no class zero or estimated size, `FittedMountState` as `empty | resolved` carrying the exact `FittedModule.symbol` and a `LocalizedGameText` name, `EngineeringState` as presence-only `stock | engineered | unavailable`, `MountLocationState` as `pending | located | temporarilyUnavailable | packageDefect`, `MountItem` referencing its occurrences, and `SelectedMountFacts` containing no weapon metric, direction, distance, convergence or coordinate — in `src/app/domain/anatomy/anatomy-model.ts` (depends on T009)
 - [ ] T011 Define the lifecycle and evidence types — `SideAssetState` as `notRequested | loading | ready | temporarilyUnavailable | contractDefect` with its `offlineUncached | httpFailure | networkFailure` reasons and `manualAndOnline` / `afterPackageUpdate` retry rules, `SchematicDefect` as `unsafeOrInvalidDocument | unknownSlot | wrongSlotKind | sameSideDuplicate | missingContractGeometry` with language-neutral evidence and no build payload, `AnatomySnapshot` carrying hull symbol, both revisions, settled hardpoint state, selected key, visible side, both side states, ordered mounts and defects, `AnatomyState` as `noBuild | loading | ready | failure`, and `RevealState` with its `geometry | locatedList | completeLedger | null` source — in `src/app/domain/anatomy/anatomy-model.ts` (depends on T010)
 
-### Generalized located-mount power boundary (feature 005 contract update)
+### Generalized exact-slot power boundary (feature 005 contract consumption)
 
 - [ ] T012 Consume feature 005's generalized `MountPowerObservationPort` for exact hardpoint and utility keys, importing `MountPowerObservation`, `MountPowerObservationRead` and the owner's injection token from the contract leaf `src/app/domain/power-heat/mount-power-observation.ts` and declaring no local copy, narrowed variant or second adapter of that union in feature 010
 - [ ] T013 Add the utility-observation conformance tests proving feature 005's adapter derives every utility observation from one `ShipLoadout.powerBudget()` consumer and matching band result, that an always-powered utility and a deployed-only utility yield distinct current states, that a utility absent from the consumers list reads `notApplicable` rather than powered or zero, that priority is normalized to one-based or reported unavailable, and that both revisions are stamped on every read, in `src/app/application/power-heat/mount-power-observation.adapter.spec.ts` (depends on T012)
@@ -237,7 +238,7 @@ facts and ledger, and no navigation mutates the build.
 - [ ] T072 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/anatomy/`, `src/app/application/anatomy/`, `src/app/platform/assets/` and `src/app/features/build-workspace/hull-anatomy/` under the thresholds in `angular.json`
 - [ ] T073 [P] Record the Hull Anatomy capability, the installed-package schematic copy and audit, the generalized located-mount power port and the out-of-scope internal-slot geometry, weapon metrics, mount direction, convergence and coordinate data in `AGENTS.md` and `README.md`
 - [ ] T074 Execute every section of `specs/010-hull-anatomy/quickstart.md`, including the prerequisite gates and the package-pin check, and fix each divergence
-- [ ] T075 Run `pnpm run check` and confirm formatting, strict compilation, policy checks, both schematic audits, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
+- [ ] T075 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting, strict compilation, policy checks, both schematic audits, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 
 ---
 
@@ -302,8 +303,8 @@ Task: "Locate journey in e2e/hull-anatomy.spec.ts"
 ### MVP First (User Story 1)
 
 1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational — this blocks everything and includes the feature 005 port
-   generalization
+2. Complete Phase 2: Foundational — this blocks everything and consumes the feature 005 generalized
+   port
 3. Complete Phase 3: User Story 1
 4. **STOP and VALIDATE**: both schematics render unmodified package geometry, only exact
    `hardpoint` and `utility_mount` annotations resolving to the matching package kind are
@@ -314,9 +315,9 @@ Task: "Locate journey in e2e/hull-anatomy.spec.ts"
 
 ### Incremental Delivery
 
-1. Setup + Foundational → the audited asset pipeline, the anatomy contract, the generalized power
-   port, the safe parser, the same-origin loader, the pure projector, the revision-coherent store,
-   the presentation boundary and the repository policy
+1. Setup + Foundational → the audited asset pipeline, the anatomy contract, feature 005's generalized
+   power port, the safe parser, the same-origin loader, the pure projector, the revision-coherent
+   store, the presentation boundary and the repository policy
 2. Add US1 → both schematics, mount state, the legend, selected facts and the complete unique text
    equivalent (MVP)
 3. Add US2 → one-interaction movement to the exact slot, deterministic ledger-to-geometry reveal,
@@ -335,7 +336,8 @@ Task: "Locate journey in e2e/hull-anatomy.spec.ts"
   because its artwork is pending, unavailable or defective, or resolves a same-side duplicate by
   drawing order
 - No task commits, imports, renames or fetches a package SVG from anywhere but the installed package
-  copied by `angular.json`, and no task adds a second cache owner beside feature 001's service worker
+  copied by `angular.json`, and no task adds a registration or cache owner beside feature 011's sole
+  service worker; feature 001 only extends its static ship-asset configuration
 - No task passes package markup through `innerHTML`, `bypassSecurityTrustHtml`, `<object>`,
   `<iframe>` or another active document, and no task silently sanitizes a contract violation instead
   of rejecting the side

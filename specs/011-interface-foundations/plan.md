@@ -59,7 +59,9 @@ Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.
 **Scale/Scope**: One application frame, locale store, formatter registry and announcement service;
 initial complete application catalogues `en` and `de`; every exported `src/app/ui/` component and
 applicable populated/default, empty, loading, error and disabled state; every product screen and
-relevant state; ten browser/profile projects
+relevant state; ten browser/profile projects. Catalogue parity is an ongoing repository invariant:
+every downstream capability that adds or changes application-owned messages updates both shipped
+catalogues in the same change.
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. Canvas decomposition, retained
 visual decisions and required constitutional departures are recorded in
@@ -159,9 +161,11 @@ ngsw-config.json
 shared component fixtures only during development and testing, avoiding a production design-system
 route and Storybook's zone-based runtime. Canonical locale JSON remains under `src/app/i18n/locales/`:
 English is imported into the initial bundle, while Angular asset configuration copies all catalogues
-to same-origin `/i18n/`. The service worker eagerly caches the shell and English and lazily caches a
-secondary locale once requested. Product and preview applications import the same UI source and
-token entry point.
+to same-origin `/i18n/`. Feature 011 owns the application's single service-worker dependency,
+registration and base configuration. It eagerly caches the shell and English and lazily caches a
+secondary locale once requested. Downstream capabilities may extend that configuration with static
+asset groups but must not register another worker or introduce another cache owner. Product and
+preview applications import the same UI source and token entry point.
 
 ## Phase 0: Research Conclusions
 
@@ -174,14 +178,16 @@ outcomes are:
   metrics through audited semantic tokens and same-origin licensed font subsets. Do not copy its
   inline CSS, fixed dimensions, remote requests, mock values or interaction markup.
 - Retain complete English and German application catalogues. German stresses expansion and the
-  canonical-game-text disclosure path; it is not claimed to have complete Almanac coverage. Every
-  German application message must have reviewed wording before it becomes selectable.
+  canonical-game-text disclosure path; it is not claimed to have complete Almanac coverage. Their
+  non-empty key sets and interpolation variables must remain identical across the whole application;
+  every downstream message change updates both catalogues atomically.
 - Add Transloco as a runtime message engine behind an application-owned signal store/facade. Saved
   preference wins over browser-language match, which wins over bundled English. Locale publication
   is atomic and presentation-only.
-- Add the Angular service worker: shell and English are eager assets, while another shipped locale is
-  a lazy versioned asset available offline after it has been opened. Runtime never requests another
-  origin.
+- Add and register the application's one Angular service worker here: shell and English are eager
+  assets, while another shipped locale is a lazy versioned asset available offline after it has been
+  opened. Runtime never requests another origin. Feature 001 and later capabilities extend this
+  feature-owned configuration for static assets without adding a registration or cache owner.
 - Centralize named `Intl` formatters. Credits and light years use localized whole-message/unit
   patterns because neither is an appropriate ISO currency/standard `Intl` unit.
 - Use the installed Almanac leaf locale helpers. A known identity returning `null` is retried at the canonical
@@ -234,8 +240,11 @@ No planning clarification marker remains.
 Phase 1 introduces no server, account, external runtime service, build-persistence field, private
 game-data table, light theme, production preview route or component-owned domain rule. Locale changes
 cannot alter the active build. Bundled English keeps the application readable; a validated German
-catalogue is published only as a complete snapshot. Almanac text remains package-owned. The four
-reference canvases are decomposed into shared semantics and adaptive layouts rather than copied.
+catalogue is published only as a complete snapshot. Build validation enforces identical non-empty
+keys and interpolation variables for both shipped catalogues after every downstream capability
+change. Almanac text remains package-owned. Feature 011 owns the sole service-worker registration
+and base configuration; downstream static assets only extend it. The four reference canvases are
+decomposed into shared semantics and adaptive layouts rather than copied.
 
 Every requirement has a surface owner and verification path. Product and preview applications share
 the exact token, component and localization sources. The post-design gate remains **PASS with no

@@ -33,8 +33,9 @@ as `*.spec.ts`. Feature 002 adds no route; every surface composes inside feature
 ## Delivery Prerequisites
 
 Features 011 and 001 must have landed. Feature 002 extends their boundaries and never creates a
-substitute shell, token set, locale catalogue, storage format or second observable build. Their
-absence is not permission to weaken this design.
+substitute shell, token set, locale catalogue, storage format or second observable build. Every
+application-owned message change preserves feature 011's complete English/German key and
+interpolation parity. Their absence is not permission to weaken this design.
 
 ---
 
@@ -78,7 +79,7 @@ diagnostic text and signal store that every user story composes.
 
 - [ ] T013 [P] Extend feature 011's package text presenter with `getLoadoutEditErrorMessage`, `getLoadoutSlotName`, slot restriction, blueprint, experimental effect, engineering group and material leaf lookups plus the disclosed untranslated canonical fallback in `src/app/i18n/package-text.ts`
 - [ ] T014 Add unit tests proving no private game-text or entitlement-name table exists and that a `null` locale value renders canonical text with the untranslated disclosure, in `src/app/i18n/package-text.spec.ts` (depends on T013)
-- [ ] T015 [P] Add the outfitting workflow framing, capability, unavailable, notice and refusal message keys to `src/app/i18n/locales/en.json`
+- [ ] T015 [P] Add the outfitting workflow framing, capability, unavailable, notice and refusal message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 
 ### Store and workspace composition
 
@@ -177,7 +178,7 @@ input-to-rendered-result below 100 ms for the installed package's largest slot-c
 ### Feature composition
 
 - [ ] T051 [US2] Extend the replacement surface with sections, grouping, search, result count, the `noMatches`, `packageEmpty`, `loading`, `stale`, `notReplaceable` and `refused` states, and native radio or button choice selection with a separate full-width confirm, in `src/app/features/build-workspace/outfitting/module-replacement/module-replacement.ts` (depends on T043, T048, T049, T050)
-- [ ] T052 [US2] Add the message keys for search labelling, result counts, no-match, empty package result, stale rebuild and every acquisition and entitlement label to `src/app/i18n/locales/en.json` (depends on T015, T045)
+- [ ] T052 [US2] Add the message keys for search labelling, result counts, no-match, empty package result, stale rebuild and every acquisition and entitlement label with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T015, T045)
 - [ ] T053 [US2] Add replacement preview states (full, searched, no-match, empty package result, stale, refusal, unique-reward section, stacked labels) at wide, tablet and compact widths in `projects/ui-preview/src/previews/outfitting/replacement.preview.ts` (depends on T022, T051)
 
 ### Verification
@@ -231,7 +232,7 @@ pre-activation refusal leave the build untouched, then toggle enabled and priori
 - [ ] T071 [US3] Implement the engineering editor with wide inline and compact full-screen layers, explicit apply, distinct confirmable clear-all, cancel that restores nothing because only draft state changed, and the unengineered, ordinary, Mercenary, fixed re-engineerable, final, no-menu, known-zero, unavailable-cost, stale-draft and package-refusal states, in `src/app/features/build-workspace/outfitting/engineering-editor/engineering-editor.ts` (depends on T057, T058, T064, T065, T066, T067, T068)
 - [ ] T072 [US3] Compose the power controls and cargo-hatch presentation into the slot card and workspace so enabled and priority are editable wherever the package supplies the operation in `src/app/ui/outfitting/slot-card.ts` (depends on T032, T069)
 - [ ] T073 [US3] Publish the accepted quality-completion notice and compose the pre-activation refusal surface into feature 001's open, link and reload flows and feature 004's import flow in `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.ts` (depends on T009, T034, T070)
-- [ ] T074 [US3] Add the engineering, material, power, quality-completion and ingress-refusal message keys to `src/app/i18n/locales/en.json` (depends on T015)
+- [ ] T074 [US3] Add the engineering, material, power, quality-completion and ingress-refusal message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T015)
 - [ ] T075 [US3] Add engineering editor preview states for every row of the states table plus power controls at wide, tablet and compact widths with expanded and RTL text in `projects/ui-preview/src/previews/outfitting/engineering.preview.ts` (depends on T022, T071)
 
 ### Verification
@@ -273,7 +274,7 @@ retained tape, and open a replacement build to see both directions reset.
 
 - [ ] T087 [P] [US4] Implement the undo and redo actions with programmatic disabled state, optional next-action summary and identical accessible names in the wide direct and compact overflow placements in `src/app/ui/outfitting/undo-redo-actions.ts`
 - [ ] T088 [US4] Compose the undo and redo actions into the wide header and the compact named overflow action region in `src/app/features/build-workspace/outfitting/outfitting-workspace/outfitting-workspace.ts` (depends on T036, T087)
-- [ ] T089 [P] [US4] Add the history action, summary and disabled-state message keys to `src/app/i18n/locales/en.json`
+- [ ] T089 [P] [US4] Add the history action, summary and disabled-state message keys with reviewed English/German wording and matching interpolation variables to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T090 [US4] Add history preview states covering available, unavailable, cleared redo branch and the 100-decision boundary at wide, tablet and compact widths in `projects/ui-preview/src/previews/outfitting/history.preview.ts` (depends on T022, T087)
 
 ### Verification
@@ -340,7 +341,7 @@ proof, coverage registration and the documented validation run.
 ### Shared-File Sequencing
 
 - `src/app/application/outfitting/outfitting.store.ts`: T016 → T029 (US1) → T061, T062 (US3) → T082, T083 (US4)
-- `src/app/i18n/locales/en.json`: T015 → T052, T074, T089
+- `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`: T015 → T052, T074, T089
 - `src/app/ui/outfitting/slot-card.ts`: T032 → T072
 - `HardpointCoverage`: T004 (type) → T025 (adapter)
 - `src/app/features/.../outfitting-workspace/outfitting-workspace.ts`: T036 → T073 → T088
@@ -402,8 +403,9 @@ Task: "Implement the structured edit-refusal notice in src/app/ui/outfitting/edi
 2. Then: Developer A takes US1 and hands membership to Developer B for US2, Developer C takes US3,
    Developer D takes US4
 3. Coordinate on `src/app/application/outfitting/outfitting.store.ts`,
-   `src/app/i18n/locales/en.json` and `e2e/module-outfitting.spec.ts`, which several stories touch;
-   follow the shared-file sequencing above
+   `src/app/i18n/locales/en.json`, `src/app/i18n/locales/de.json` and
+   `e2e/module-outfitting.spec.ts`, which several stories touch; follow the shared-file sequencing
+   above
 
 ---
 

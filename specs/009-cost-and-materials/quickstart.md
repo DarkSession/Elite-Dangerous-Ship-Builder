@@ -163,5 +163,6 @@ Manually verify 200% text, actual 400% zoom, expanded/RTL text and reduced motio
 - initial/unchanged/locale-only content is silent and each settled semantic change produces at most
   one polite summary.
 
-Automated success does not waive a manual failure. Any conformance statement must name the keyboard
-criteria excluded by the constitution.
+Automated success does not waive a manual failure. Any conformance statement must say WCAG 2.2 AA
+except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11; no shorter or unqualified claim
+passes review.

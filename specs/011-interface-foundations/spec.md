@@ -4,13 +4,22 @@
 
 Every capability uses one design system, works with pointer, touch and screen reader at all supported
 sizes, and resolves application text and formatting through one localisation layer. The target is
-WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
+WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ## Clarifications
 
 ### Session 2026-08-18
 
 - Q: Which application-owned interface languages should ship initially? → A: English and German.
+
+### Session 2026-08-20
+
+- Q: Must every selectable shipped application language remain complete as capabilities add or
+  remove application-owned messages? → A: Yes. Every shipped catalogue has the same non-empty keys
+  and interpolation variables as bundled English. A change to the application-owned message set
+  updates every shipped catalogue in the same change. An incomplete catalogue is never partially
+  published; the interface remains on its prior complete language or falls back atomically to
+  bundled English.
 
 ## User Scenarios
 
@@ -25,7 +34,8 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
 
 1. Every capability remains available on desktop, tablet and mobile in portrait and landscape.
 2. Content remains complete at 200% text size and 400% zoom without horizontal page scrolling.
-3. In-scope text and non-text contrast and touch targets meet WCAG 2.2 AA.
+3. In-scope text and non-text contrast and touch targets meet their applicable WCAG 2.2 AA criteria;
+   overall conformance excludes criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 4. Reduced-motion preference removes nonessential motion without removing meaning.
 
 ### Story 3 — Read the appropriate language (P2)
@@ -64,8 +74,9 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
   carrier MUST have a text equivalent.
 - **FR-011**: Every capability MUST remain available on desktop, tablet and mobile in portrait and
   landscape and at 200% text size and 400% zoom, with no horizontal page scrolling.
-- **FR-012**: Text, meaningful non-text content and interactive targets MUST meet WCAG 2.2 AA contrast
-  and target-size rules.
+- **FR-012**: Within the qualified conformance target that excludes criteria 2.1.1, 2.1.2, 2.1.4,
+  2.4.1, 2.4.3, 2.4.7 and 2.4.11, text, meaningful non-text content and interactive targets MUST meet
+  the applicable WCAG 2.2 AA contrast and target-size rules.
 - **FR-013**: Motion MUST respect `prefers-reduced-motion` and MUST NOT carry required meaning.
 - **FR-014**: Layout and interaction MUST survive text expansion and right-to-left content.
 - **FR-015**: Conformance statements MUST name the excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.4.1,
@@ -81,7 +92,12 @@ WCAG 2.2 AA except the keyboard-operation criteria excluded by the constitution.
   able to select either language and persist that selection in the browser.
 - **FR-018**: Numbers, percentages, credits, distances and dates MUST use the active locale.
 - **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
-  MUST be available without a network. Raw keys, empty strings and placeholders MUST not appear.
+  MUST be available without a network. Every selectable shipped application locale MUST contain the
+  same application-owned message keys and interpolation variables as bundled English, with no blank
+  value. Adding, removing or changing an application-owned message MUST update every shipped locale
+  in the same change. An incomplete or malformed catalogue MUST NOT be partially published; the
+  interface MUST remain on its prior complete locale or fall back atomically to bundled English. Raw
+  keys, empty strings and placeholders MUST not appear.
 - **FR-020**: Game text MUST come from the Almanac. If the package cannot supply the active locale,
   its canonical text MUST be requested and, when present, shown and identified as untranslated. If
   the package supplies no canonical text, the value MUST be unavailable. The application MUST NOT
@@ -119,5 +135,7 @@ translations.
 - **SC-003**: Every capability remains complete at all supported sizes without horizontal page scroll.
 - **SC-004**: No visual literal or application-owned display string bypasses its shared system.
 - **SC-005**: The full journey suite passes in Chromium and Firefox at all three viewport classes.
-- **SC-006**: A matching browser language selects the corresponding shipped language, an unsupported
-  browser language selects English, and a saved Commander selection remains active.
+- **SC-006**: English and German contain identical non-empty application-owned message-key and
+  interpolation-variable sets across the complete application; a matching browser language selects
+  the corresponding shipped language, an unsupported browser language selects English, and a saved
+  Commander selection remains active.

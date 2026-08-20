@@ -16,10 +16,14 @@ separately identified Almanac package-defect link.
 
 A build-time Node generator validates the root and installed-package artifacts, extracts the one
 permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
-and emits an immutable TypeScript manifest imported by the initial Angular bundle. Missing, empty,
-ambiguous or drifted inputs fail before release. Installed Almanac legal artifacts remain mirrored
-byte-for-byte in the source distribution to satisfy redistribution terms, but they are not embedded
-or linked as additional legal documents in the modal.
+and emits an immutable TypeScript manifest imported by the initial Angular bundle. A companion
+release gate mechanically requires exactly one definition for each of FR-010's seven help topics,
+complete shipped-locale messages and at least one resolvable governing accepted feature requirement
+or constitution principle per topic; content review checks each answer against those sources.
+Missing, duplicate, unreferenced, contradictory or unsupported content fails before release.
+Installed Almanac legal artifacts remain mirrored byte-for-byte in the source distribution to
+satisfy redistribution terms, but they are not embedded or linked as additional legal documents in
+the modal.
 
 ## Technical Context
 
@@ -40,13 +44,14 @@ Vitest through Angular's unit-test builder with the existing 80% thresholds; Pla
 `@axe-core/playwright` over desktop, tablet/mobile portrait and landscape in Chromium and Firefox
 
 **Target Platform**: Modern evergreen browsers on desktop, tablet and mobile; static client
-application with modal content usable from the initial app shell without a network
+application with modal content usable without a network after one completed online app-shell load
 
 **Project Type**: Client-side Angular single-page application producing static files only
 
 **Performance Goals**: Opening the already-loaded modal performs no route load, same-origin asset
 request or cross-origin request and presents its first complete frame within 100 ms under the shared
-mobile 4x-CPU test profile; preserve the production initial-bundle error budget
+mobile 4x-CPU test profile; preserve the existing production initial-bundle error budget without
+raising its error ceiling within this feature
 
 **Constraints**: No backend, account, telemetry, runtime legal fetch, runtime environment
 configuration or automatic external navigation; only the exact project-specific Frontier disclaimer
@@ -57,10 +62,11 @@ scrolling; one dark tokenised theme; all application framing is localised; untra
 identified as English; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
 2.4.11
 
-**Scale/Scope**: One shared modal and dialog state; global plus contextual entry surfaces; seven
-accepted help topics; application, build and Almanac identity facts; one exact Frontier excerpt;
-one repository-licence destination; one Almanac package-defect destination; two required mirrored
-Almanac source-distribution artifacts
+**Scale/Scope**: One shared modal and dialog state; global plus contextual entry surfaces; exactly
+seven accepted help-topic definitions, each with unique identity and non-empty governing references;
+application, build and Almanac identity facts; one exact Frontier excerpt; one repository-licence
+destination; one Almanac package-defect destination; two required mirrored Almanac
+source-distribution artifacts
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. The grouped About → FAQ →
 Licence order, centered wide modal, narrow bottom sheet, persistent close control and global/mobile
@@ -87,10 +93,11 @@ requested._
 
 ### Required repository dependencies
 
-1. Feature 001 supplies the persistent application frame, canonical build-fragment behavior,
-   browser persistence and production service-worker/app-shell caching referenced by help.
-2. Feature 011 supplies shared dialog/layer primitives, tokens, localisation with bundled English
-   fallback, component previews, Firefox/landscape projects and the automated accessibility harness.
+1. Feature 001 supplies the persistent application frame, canonical build-fragment behavior and
+   browser persistence referenced by help.
+2. Feature 011 supplies the application's sole service-worker registration/base app-shell caching,
+   shared dialog/layer primitives, tokens, localisation with bundled English fallback, component
+   previews, Firefox/landscape projects and the automated accessibility harness.
 3. Release automation supplies explicit version-matched release evidence. Every other build is
    classified as non-release and must have a safe immutable build identifier.
 4. No Almanac defect blocks this feature. The installed package manifest and legal artifacts are
@@ -111,7 +118,9 @@ specs/012-help-and-licences/
 │   └── help-navigation.md
 └── design/
     ├── help-and-licences.md
+    ├── help-topic-review.md
     ├── reference-review.md
+    ├── screen-reader-record.md
     └── screen-inventory.md
 ```
 
@@ -123,9 +132,13 @@ specs/012-help-and-licences/
 legal/
 └── almanac/
     ├── LICENSE                         # exact installed-package source-distribution mirror
-    └── THIRD_PARTY_NOTICES.md          # exact installed-package source-distribution mirror
+    ├── THIRD_PARTY_NOTICES.md          # exact installed-package source-distribution mirror
+    └── README.md                       # mirror ownership, sync path and review rule
 
 scripts/
+├── help-topic-definitions.mjs         # exact IDs/message keys and tooling-only governing refs
+├── check-help-topics.mjs              # set/reference/catalogue invariant gate
+├── check-help-topics.test.mjs
 ├── generate-help-manifest.mjs         # validate/extract identities, disclaimer and destinations
 └── generate-help-manifest.test.mjs
 
@@ -157,9 +170,11 @@ rather than duplicated under help.
 **Structure Decision**: Keep one Angular application and one shared modal instance mounted by the
 application frame. Node tooling is the only boundary allowed to read package/repository files. It
 emits the minimal browser manifest and separately verifies exact source-distribution mirrors. A
-signal store owns only ephemeral modal state, a presenter combines immutable facts with localised
-messages, and presentation components render inputs. No help route, mutable feature persistence,
-runtime legal fetch, Markdown renderer, private legal wording or second navigation system is added.
+tooling-only help-definition module owns governing references; generation emits only the validated
+IDs and message keys, so references do not enter the browser bundle. A signal store owns only
+ephemeral modal state, a presenter combines immutable facts with localised messages, and presentation
+components render inputs. No help route, mutable feature persistence, runtime legal fetch, Markdown
+renderer, private legal wording or second navigation system is added.
 
 ## Phase 0: Research Conclusions
 
@@ -169,8 +184,11 @@ are:
 - Use the reference's single grouped modal, not the old plan's `/help` route. Global and contextual
   actions dispatch one store intent, so the current capability, URL and build remain intact.
 - Keep seven accepted help topics as localised application messages derived from the constitution
-  and accepted feature contracts. Exclude the mock's import claim and its obsolete partial-roll
-  answer.
+  and accepted feature contracts. Each exact topic ID occurs once and carries non-empty tooling-only
+  references to the governing accepted requirement or principle. Structural checks validate the
+  set and references; required content review validates the claims against them. Missing, duplicate,
+  unreferenced, contradictory or unsupported content is a release-blocking failure. Exclude the
+  mock's import claim and its obsolete partial-roll answer.
 - Extract the unique Markdown-indented disclaimer block beneath the Frontier section's “Under those
   rules” marker. Remove only Markdown's structural four-space prefix; preserve every remaining byte,
   newline and character, record its SHA-256 and language, and fail on ambiguity or drift.
@@ -198,14 +216,19 @@ No planning clarification marker or unresolved upstream dependency remains.
   resolution, exact extraction, byte/hash checks, source-distribution mirrors, URL validation,
   release classification and failure behavior.
 - [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, entry
-  surfaces, information order, accepted help content, legal/provenance framing, external navigation
-  and state preservation.
+  surfaces, information order, the exact seven accepted help records and governing-reference map,
+  legal/provenance framing, external navigation and state preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
-  entry, contextual provenance entry and shared Help · About modal.
+  entry, contextual provenance entry and shared Help · About modal, and owns the exhaustive current
+  capability/package-surface coverage set required by FR-011.
 - [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
   semantic order, modal states, responsive behavior and component-system impact.
+- [design/help-topic-review.md](./design/help-topic-review.md) records the release-blocking semantic
+  review of every accepted answer against its governing sources.
 - [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`
   and why mock facts, obsolete behavior and literal styling are excluded.
+- [design/screen-reader-record.md](./design/screen-reader-record.md) records the completed manual
+  assistive-technology protocol required before release.
 - [quickstart.md](./quickstart.md) supplies runnable artifact, modal-state, offline, responsive,
   localisation, external-navigation and accessibility validation scenarios.
 
@@ -215,9 +238,11 @@ Phase 1 introduces no server, runtime metadata request, telemetry, build-state f
 data, package correction, translated legal copy, second theme or route transition. The exact
 Frontier excerpt remains traceable to the root `LICENSE`; package redistribution documents remain
 traceable to the installed package; missing or contradictory inputs block release instead of
-degrading at runtime. Every FR has an owning surface and a dual-engine responsive/accessibility
-validation path. The modal's single legal-details link and separate package-defect action are
-identified, allowlisted and free of application/build data.
+degrading at runtime. The exact seven help definitions are unique, complete in every shipped locale
+and each traceable to a non-empty governing-reference set; contradictory or unsupported help blocks
+release. Every FR has an owning surface and a dual-engine responsive/accessibility validation path.
+The modal's single legal-details link and separate package-defect action are identified, allowlisted
+and free of application/build data.
 
 The post-design gate remains **PASS with no exception**. Implementation is sequenced behind the
 relevant feature 001 and 011 foundations.

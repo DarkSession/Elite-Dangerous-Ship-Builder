@@ -5,7 +5,8 @@
 For one captured build revision, the feature 005 projector calls
 `ShipLoadout.powerBudget()` once and retains that immutable result while
 selecting the settled hardpoint state. Components, feature 003 and feature 010
-do not call the package or reconstruct a second budget.
+do not call the package or reconstruct a second budget; feature 007 likewise
+uses the owner observation port for its distributor core slot.
 
 Production imports:
 

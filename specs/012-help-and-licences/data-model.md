@@ -126,12 +126,18 @@ Invariants:
 
 Application-owned accepted help content.
 
-| Field         | Type        | Rule                                                               |
-| ------------- | ----------- | ------------------------------------------------------------------ |
-| `id`          | enum        | one of the seven required topic identities                         |
-| `questionKey` | message key | resolves through feature 011 with bundled English fallback         |
-| `answerKey`   | message key | resolves through feature 011; never contains raw HTML              |
-| `evidence`    | doc links   | development-only links to accepted constitution/spec/contract text |
+| Field                 | Type                             | Rule                                                               |
+| --------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| `id`                  | `HelpTopicId`                    | one of the seven required identities; occurs exactly once          |
+| `questionKey`         | message key                      | resolves nonblank in every shipped locale                          |
+| `answerKey`           | message key                      | resolves nonblank in every shipped locale; never contains raw HTML |
+| `governingReferences` | non-empty `GoverningReference[]` | accepted feature requirements or constitution principles only      |
+
+```ts
+type GoverningReference =
+  | { readonly kind: 'featureRequirement'; readonly feature: string; readonly requirement: string }
+  | { readonly kind: 'constitutionPrinciple'; readonly principle: string };
+```
 
 Required IDs, in modal order:
 
@@ -143,9 +149,13 @@ Required IDs, in modal order:
 6. `hullFactsAndBuildResults`
 7. `almanacOwnership`
 
-The evidence field is not displayed or bundled. Build-time catalogue checks require a non-empty
-question and answer in every shipped application locale; feature 011's English invariant remains
-the final fallback.
+Governing references are not displayed or bundled. Build-time checks require the exact seven-ID set,
+one definition per ID, a non-empty resolvable reference set per definition and non-empty question and
+answer messages in every shipped application locale. A missing, duplicate, unreferenced,
+definition fails mechanically; a contradictory or unsupported definition fails required content
+review. Every case blocks release, and no partial topic set or runtime fallback is published.
+Feature 011's bundled English remains the final catalogue fallback only after the full candidate has
+passed validation and review.
 
 ## HelpInvocationContext
 
