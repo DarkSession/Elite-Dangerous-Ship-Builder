@@ -283,8 +283,8 @@ Selection rules use only one budget:
 
 1. no returned power consumer for the exact slot → `notApplicable`;
 2. disabled consumer → `disabled`;
-3. retracted plus `deployedOnly === true` → `inactiveRetracted`;
-4. otherwise select the matching package band's selected powered boolean;
+3. requested retracted plus `deployedOnly === true` → `inactiveRetracted`;
+4. otherwise select the matching package band's requested-state powered boolean;
 5. the budget cannot answer for the requested key → `unavailable`.
 
 `inactiveRetracted` is reachable only for a mount the package reports as
@@ -292,8 +292,11 @@ Selection rules use only one budget:
 vocabulary over this union — feature 007 presents `notApplicable` as absent —
 and none widens or narrows it.
 
-The port stamps every observation with build and condition revisions outside
-this union. Consumers accept no stale pair.
+The port accepts an explicit `deploymentState: 'deployed' | 'retracted'` and
+stamps that state plus the build and condition revisions outside this union.
+Feature 010 passes the selected `context.conditions.hardpoints`; feature 007
+passes `deployed` regardless of selected viewing state. Consumers accept no
+stale or state-mismatched read.
 
 ## LocalizedGameText
 

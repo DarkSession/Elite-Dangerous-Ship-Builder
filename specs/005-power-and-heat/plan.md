@@ -33,7 +33,8 @@ signals, RxJS, `@elite-dangerous-almanac/core` leaf exports, feature
 001's active-build/revision boundary, feature 002's exact-slot selection,
 feature 003's viewing-condition and status-provider contracts, and feature
 011's design/localization/accessibility foundation. Feature 005 exports its own
-generalized exact-slot `MountPowerObservationPort` to features 007 and 010
+generalized exact-slot, explicit-deployment-state `MountPowerObservationPort`
+to features 007 and 010
 
 **Storage**: None. Feature 005 projections, selected capability and viewing
 conditions are in memory only; no metric or condition enters local storage,
@@ -103,9 +104,10 @@ and make the existing project pass under it before feature 005 implementation is
    condition revision, `StatusProvider<T, I>` and `powerAndHeat` target.
    Feature 005 composes the shared scoped hardpoint/pip controls without owning parallel state.
 4. Feature 005 defines and exports the generalized exact-slot
-   `MountPowerObservationPort` from inception, plus the compact power provider
-   required by feature 003. Feature 010 consumes the port for hardpoints and
-   utilities, and feature 007 consumes it for the distributor core slot;
+   `MountPowerObservationPort` with an explicit deployed/retracted request from inception, plus the
+   compact power provider required by feature 003. Feature 010 consumes the port for hardpoints and
+   utilities in the selected state, and feature 007 consumes it for the distributor core slot in
+   the deployed state;
    neither consumer joins power consumers to bands itself.
 5. Feature 011 supplies the shared controls, tokens, localized messages and
    formatters, game-text presenter, previews, ten-project browser matrix and axe

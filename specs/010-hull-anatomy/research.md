@@ -109,7 +109,8 @@ class zero or copying the mock's size/node badges were rejected as invented mean
 ## Current priority and power state
 
 **Decision**: Consume feature 005's generalized exact-slot `MountPowerObservationPort`, defined by
-feature 005 from inception, for hardpoint and utility keys. Consume its
+feature 005 from inception, for hardpoint and utility keys, passing the selected
+`context.conditions.hardpoints` as the explicit observation state. Consume its
 build/condition-revision-stamped result unchanged: not applicable, disabled, inactive while
 retracted, powered or priority-shed, with normalized one-based priority or unavailable.
 

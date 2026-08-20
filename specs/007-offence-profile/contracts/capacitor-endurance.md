@@ -50,7 +50,8 @@ is visible and programmatically associated with the field.
 ## Zero capacity and deployed distributor context
 
 Capacity/recharge zero are genuine package numbers. They appear beside a separate, same-revision,
-feature-005-owned `MountPowerObservation`, read at the power distributor's exact core slot key:
+feature-005-owned `MountPowerObservation`, read through
+`observe(context, distributorSlotKey, 'deployed')` at the power distributor's exact core slot key:
 
 - powered;
 - disabled;
@@ -58,10 +59,10 @@ feature-005-owned `MountPowerObservation`, read at the power distributor's exact
 - absent (the owner's `notApplicable`);
 - unavailable.
 
-Feature 005 must accept and expose this port before feature 007 tasks. Its current
-`DistributorView.ready | unavailable` and feature-010-only hardpoint port do not satisfy this
-boundary. Feature 007 must not infer any cause from zero capacity, `distributorMetrics() === null`, a
-symbol prefix, module priority or consumer/band joins.
+Feature 005 T006 accepts this generalized exact-slot, explicit-state port contract-first; T034 and
+T035 implement and wire it before feature 007 composition. Feature 007 always requests `deployed`
+and rejects a read stamped with any other state. It must not infer any cause from zero capacity,
+`distributorMetrics() === null`, a symbol prefix, module priority or consumer/band joins.
 
 When both independent facts are available the UI may state them together, for example “capacity 0
 MJ” and “distributor is power-shed.” It must not say the observation caused the capacitor result
@@ -113,6 +114,8 @@ always models deployed firing; selected hardpoint state remains separate feature
 - Prove integer half-pips divide by two once and invalid drafts never call the package.
 - Cover finite duration, immediate drain and both infinity meanings.
 - Cover positive-draw/zero-capacity and zero-draw/zero-capacity results.
+- With selected hardpoints retracted and divergent deployed/retracted distributor band verdicts,
+  prove the owner call still requests `deployed` and publishes only that verdict.
 - Cover each owner-supplied distributor observation without changing capacitor values.
 - Prove aggregate weapon EPS and powered capacitor draw remain independent.
 - Prove stale or mismatched revision/port reads never publish.

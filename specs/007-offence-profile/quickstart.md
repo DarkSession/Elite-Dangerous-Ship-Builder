@@ -11,7 +11,7 @@ an end-to-end acceptance guide, not an implementation recipe.
 - feature 001 active build/revision and `/build` workspace
 - feature 002 accepted same-revision hardpoint coverage and exact-slot reveal boundary
 - feature 003 settled integer-half-pip conditions, Status provider and workspace targets
-- feature 005 accepted deployed distributor power-observation port
+- feature 005 accepted generalized power-observation port with an explicit deployed distributor read
 - feature 011 tokens/components, localization/game text, previews, axe and ten-project browser matrix
 
 Do not run feature 007 tasks by substituting private local infrastructure for any missing

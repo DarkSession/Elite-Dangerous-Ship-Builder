@@ -101,7 +101,8 @@ after Phase 1 with the same result._
 3. **Feature 003** must provide settled deployed/retracted state and the build/condition revision
    context used by current-power observations.
 4. **Feature 005** owns `MountPowerObservationPort`, which accepts any exact package slot key;
-   feature 010 consumes it for hardpoint and utility mounts and defines no port of its own. Almanac
+   feature 010 consumes it for hardpoint and utility mounts, explicitly requesting
+   `context.conditions.hardpoints`, and defines no port of its own. Almanac
    `PowerBudget.consumers` already supports every mount kind, so this is an application-contract
    boundary rather than an Almanac defect. Feature 005's Almanac gate is resolved; the shared
    strictness and application-contract prerequisites remain.

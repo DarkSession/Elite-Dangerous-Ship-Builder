@@ -55,25 +55,33 @@ interface MountPowerObservationRead {
   readonly buildRevision: number;
   readonly conditionsRevision: number;
   readonly slotKey: string;
+  readonly deploymentState: 'deployed' | 'retracted';
   readonly observation: MountPowerObservation;
 }
 
 interface MountPowerObservationPort {
-  observe(context: StatusRevisionContext, slotKey: string): MountPowerObservationRead;
+  observe(
+    context: StatusRevisionContext,
+    slotKey: string,
+    deploymentState: 'deployed' | 'retracted',
+  ): MountPowerObservationRead;
 }
 ```
 
 `slotKey` is any exact package slot key. Feature 010 observes hardpoint and
-utility mounts; feature 007 observes the power distributor's core slot.
+utility mounts and passes `context.conditions.hardpoints` as `deploymentState`;
+feature 007 observes the power distributor's core slot and always passes
+`deployed`, independently of the selected viewing state. The read repeats the
+requested `deploymentState` so consumers can reject a mismatched observation.
 
 The adapter uses the exact `PowerBudget.consumers` label and matching returned
 band:
 
 - absent consumer → `notApplicable`;
 - disabled → `disabled`;
-- selected retracted plus package `deployedOnly: true` →
+- requested retracted plus package `deployedOnly: true` →
   `inactiveRetracted`;
-- otherwise the matching selected package band becomes `powered` or `shed`;
+- otherwise the matching requested package band becomes `powered` or `shed`;
 - the budget cannot answer for the requested key → `unavailable`.
 
 Priority is the package-normalized one-based value.
@@ -110,6 +118,12 @@ neither infers a power cause from a capacitor or distributor value.
 
 - Both ports receive and return the identical revision pair.
 - Status selected draw and capacity exactly equal the detailed power projection.
-- Every exact hardpoint slot reaches the corresponding consumer observation.
+- Exact hardpoint, utility and core-internal slot keys reach their corresponding
+  consumer observations.
+- A fixture whose matching band has different `poweredDeployed` and
+  `poweredRetracted` verdicts proves the explicit requested state selects the
+  correct boolean and is repeated on the read.
 - Disabled, inactive, powered, shed and missing consumer states remain distinct.
-- Feature 003/010 tests prove they do not recalculate or reinterpret power.
+- Feature 003, 007 and 010 tests prove they do not recalculate or reinterpret
+  power; feature 007 specifically proves a selected retracted context still
+  requests and receives the deployed distributor verdict.

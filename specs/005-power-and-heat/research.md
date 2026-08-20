@@ -154,8 +154,10 @@ equal scenarios were rejected.
 1. a detailed `PowerHeatSnapshot`;
 2. `PowerStatusProvider` with selected draw and capacity for feature 003; and
 3. a feature-005-owned generalized `MountPowerObservationPort` that accepts any
-   exact package slot key and selects returned consumer/band fields for feature
-   010's hardpoints/utilities and feature 007's distributor core slot.
+   exact package slot key plus an explicit deployed/retracted observation state
+   and selects the matching returned consumer/band fields. Feature 010 requests
+   its selected viewing state for hardpoints/utilities; feature 007 always
+   requests deployed for the distributor core slot.
 
 Use computed signals/memoization keyed by build and condition revision. Outer
 detail lifecycle is `noBuild | pending | ready | failure`; distributor/heat

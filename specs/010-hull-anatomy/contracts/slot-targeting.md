@@ -51,18 +51,24 @@ interface MountPowerObservationRead {
   readonly buildRevision: number;
   readonly conditionsRevision: number;
   readonly slotKey: string;
+  readonly deploymentState: 'deployed' | 'retracted';
   readonly observation: MountPowerObservation;
 }
 
 interface MountPowerObservationPort {
-  observe(context: StatusRevisionContext, slotKey: string): MountPowerObservationRead;
+  observe(
+    context: StatusRevisionContext,
+    slotKey: string,
+    deploymentState: 'deployed' | 'retracted',
+  ): MountPowerObservationRead;
 }
 ```
 
-The owner accepts exact hardpoint and utility keys, derives state from one
-`ShipLoadout.powerBudget()` consumer/band result and returns normalized priority plus current state.
-Feature 010 requires exact revision equality and copies the observation unchanged. It does not
-inspect raw fitted `on`/`priority`, consumers, bands, modifiers or module families.
+The owner accepts exact hardpoint and utility keys plus an explicit observation state. Feature 010
+passes `context.conditions.hardpoints`, derives no state itself and receives the result from one
+`ShipLoadout.powerBudget()` consumer/band result with normalized priority. Feature 010 requires exact
+revision and returned-state equality and copies the observation unchanged. It does not inspect raw
+fitted `on`/`priority`, consumers, bands, modifiers or module families.
 
 Availability of this feature-005-owned generalized port is a sequencing dependency. The installed
 Almanac already supplies utility consumers; no local fallback or upstream fix is required.
