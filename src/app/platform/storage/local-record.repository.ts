@@ -1,0 +1,148 @@
+import { Injectable, inject } from '@angular/core';
+import { decodeAndMigrate } from '../../domain/build/record-migrations';
+import { serializeLocalRecord, type RecordDraft } from '../../domain/build/stored-build.serializer';
+import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
+import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
+import {
+  LOCAL_STORAGE_PORT,
+  type StorageFailureCode,
+  type WebStoragePort,
+} from './web-storage.port';
+
+/** How a record operation ended. */
+export type RepositoryResult<T> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly code: StorageFailureCode };
+
+/** One record read back, with whether it had to be migrated to be readable. */
+export interface ReadRecord {
+  readonly record: LocalRecordV1;
+  readonly migrated: boolean;
+}
+
+/**
+ * Every local record, one key at a time.
+ *
+ * Three decisions shape this, all of them about not losing a Commander's work:
+ *
+ *   * **one key per record, no index.** An index plus a record is two writes
+ *     that can tear apart, and an autosave would rewrite the index — and so
+ *     every build's neighbour — on every keystroke;
+ *   * **serialize completely, then write once.** `setItem` replaces one value
+ *     atomically, so a failure leaves the previous bytes intact rather than
+ *     half of the new ones;
+ *   * **validate every record independently.** One unreadable record must not
+ *     make its neighbours unopenable, so listing decodes each on its own and
+ *     reports the failures as entries rather than throwing them.
+ */
+@Injectable({ providedIn: 'root' })
+export class LocalRecordRepository {
+  readonly #storage = inject(LOCAL_STORAGE_PORT);
+
+  /** Whether the browser is letting this application store anything at all. */
+  available(): boolean {
+    return this.#storage.keys(EDSB_RECORD_KEY_PREFIX).ok;
+  }
+
+  /**
+   * Every owned record, readable or not.
+   *
+   * Unreadable ones are listed rather than hidden: a Commander whose build
+   * cannot be opened is better served by seeing it there, untouched, than by
+   * watching it silently vanish (persistence contract, "Failure behavior").
+   */
+  list(): RepositoryResult<readonly StoredRecordEntry[]> {
+    const keys = this.#storage.keys(EDSB_RECORD_KEY_PREFIX);
+    if (!keys.ok) {
+      return keys;
+    }
+
+    const entries: StoredRecordEntry[] = [];
+    for (const key of keys.value) {
+      const id = recordIdFromKey(key);
+      if (id === null) {
+        continue;
+      }
+      const read = this.read(id);
+      if (!read.ok) {
+        continue;
+      }
+      entries.push(read.value);
+    }
+
+    return { ok: true, value: entries };
+  }
+
+  /** One record by identity, decoded and migrated as far as it can be. */
+  read(id: string): RepositoryResult<StoredRecordEntry> {
+    const raw = this.#storage.read(recordKey(id));
+    if (!raw.ok) {
+      return raw;
+    }
+    if (raw.value === null) {
+      return {
+        ok: true,
+        value: { available: false, id, reason: 'malformed', hullSymbol: null, name: null },
+      };
+    }
+
+    return { ok: true, value: decodeEntry(id, raw.value) };
+  }
+
+  /** One record, only if it is fully readable. */
+  open(id: string): RepositoryResult<ReadRecord | null> {
+    const raw = this.#storage.read(recordKey(id));
+    if (!raw.ok) {
+      return raw;
+    }
+    if (raw.value === null) {
+      return { ok: true, value: null };
+    }
+
+    const decoded = decodeAndMigrate(parseJson(raw.value), id);
+    return decoded.ok
+      ? { ok: true, value: { record: decoded.record, migrated: decoded.migrated } }
+      : { ok: true, value: null };
+  }
+
+  /**
+   * Writes one record as a single value.
+   *
+   * The whole record is serialized before storage is touched, so a serializer
+   * that throws cannot leave a partial value behind.
+   */
+  write(draft: RecordDraft): RepositoryResult<void> {
+    const json = serializeLocalRecord(draft);
+    return this.#storage.write(recordKey(draft.id), json);
+  }
+
+  /** Removes one record. Only ever called after an explicit confirmation. */
+  remove(id: string): RepositoryResult<void> {
+    return this.#storage.remove(recordKey(id));
+  }
+}
+
+/** Decodes one stored value into a listing entry, never throwing. */
+export function decodeEntry(id: string, raw: string): StoredRecordEntry {
+  const decoded = decodeAndMigrate(parseJson(raw), id);
+
+  if (decoded.ok) {
+    return { available: true, record: decoded.record };
+  }
+  return {
+    available: false,
+    id,
+    reason: decoded.reason,
+    hullSymbol: decoded.hullSymbol,
+    name: decoded.name,
+  };
+}
+
+/** `undefined` for anything that is not JSON at all, which decoding rejects. */
+function parseJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}

@@ -1,0 +1,58 @@
+@use '../../../styles/responsive' as layout;
+
+// The reference's outfitting command bar carries the build's own name and its
+// hull beneath, with the committing actions on the trailing edge (canvas 1c).
+:host {
+  @include layout.stack(var(--edsb-space-panel));
+
+  display: flex;
+}
+
+.workspace__summary {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+}
+
+.workspace__summary dt {
+  @include layout.micro-label;
+}
+
+.workspace__summary dd {
+  margin: 0;
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-numeric);
+  overflow-wrap: break-word;
+}
+
+.workspace__saved-state {
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
+  text-transform: none;
+}
+
+.workspace__empty {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding-block: var(--edsb-space-section);
+  max-inline-size: var(--edsb-layout-prose-max);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.workspace__empty h2 {
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.workspace__empty p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+}
+
+.workspace__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

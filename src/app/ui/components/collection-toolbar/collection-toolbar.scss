@@ -1,0 +1,80 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: toolbar;
+}
+
+// The reference draws no container here: the search sits on the screen's own
+// ground with its own border, and the size strip abuts it (canvas 1a/1b).
+.toolbar {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.toolbar__primary {
+  display: grid;
+  gap: var(--edsb-space-inline);
+  grid-template-columns: 1fr;
+  align-items: end;
+}
+
+// Search and the size strip share one row, as the reference draws them.
+@include layout.container-medium-up(toolbar) {
+  .toolbar__primary {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+// The chip row belongs to the compact composition; the wide manifest's own
+// column headers are the sort control there (canvas 1a vs canvas 1b).
+.toolbar__sort {
+  display: none;
+}
+
+@include layout.compact {
+  .toolbar__sort {
+    @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  }
+}
+
+.toolbar__sort-label {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+// One row that scrolls sideways rather than wrapping, as the reference draws
+// it (canvas 1b). The row owns the overflow; the document never scrolls.
+.toolbar__sort-chips {
+  display: flex;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  gap: var(--edsb-space-inline-tight);
+  overflow-x: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toolbar__sort-chips > li {
+  flex: none;
+}
+
+// The reference's sort chip: condensed, tracked, quiet until it is the order in
+// force, when it takes the amber fill (canvas 1b `.sm-sort`).
+.toolbar__sort-chip {
+  @include layout.control-base(var(--edsb-text-tracking-heading));
+
+  padding-inline: var(--edsb-space-inline-loose);
+  white-space: nowrap;
+  background-color: var(--edsb-surface-control-quiet);
+  border-color: transparent;
+  color: var(--edsb-text-secondary);
+}
+
+.toolbar__sort-chip[aria-pressed='true'] {
+  @include layout.control-primary;
+}
+
+.toolbar__caret {
+  @include layout.metric-value(var(--edsb-text-size-micro), currentcolor);
+}

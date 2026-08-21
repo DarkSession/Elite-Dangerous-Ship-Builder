@@ -24,6 +24,12 @@ export type TextFieldKind = 'text' | 'search';
 })
 export class TextField {
   readonly label = input.required<string>();
+  /**
+   * Whether the label is drawn. A hidden label is still a real `<label>` bound
+   * to the control — the reference's search field carries its words in the
+   * placeholder and draws no label above it (canvas 1a/1b).
+   */
+  readonly labelHidden = input(false);
   readonly value = input<string>('');
   readonly kind = input<TextFieldKind>('text');
   readonly description = input<string | null>(null);

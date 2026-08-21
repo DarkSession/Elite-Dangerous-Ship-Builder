@@ -190,6 +190,18 @@ export function resetPreviewManifest(): void {
 
 import { AnnouncementOutlet } from '../announcements/announcement-outlet';
 import { ActionButton } from '../components/action/action-button';
+import { ResponsiveCatalogueView } from '../components/catalogue-view/responsive-catalogue-view';
+import { ChoiceDialog } from '../components/choice-dialog/choice-dialog';
+import { CollectionToolbar } from '../components/collection-toolbar/collection-toolbar';
+import { ConfirmDialog } from '../components/confirm-dialog/confirm-dialog';
+import { RecordManager } from '../components/record-manager/record-manager';
+import { RecordNoteEditor } from '../components/note-editor/record-note-editor';
+import { ResponsiveRecordList } from '../components/record-list/responsive-record-list';
+import { SavedBuildCard } from '../components/saved-build-card/saved-build-card';
+import { ShareLinkPanel } from '../components/share-link-panel/share-link-panel';
+import { FactList } from '../components/fact-list/fact-list';
+import { HullArtwork } from '../components/hull-artwork/hull-artwork';
+import { HullSummaryCard } from '../components/hull-summary-card/hull-summary-card';
 import { ActionLink } from '../components/action/action-link';
 import { ActionLayer } from '../components/app-frame/action-layer';
 import { AppFrame } from '../components/app-frame/app-frame';
@@ -1180,5 +1192,909 @@ registerPreview({
       'An outlet carries an error’s text but has no error state of its own; the notice component renders the visible error.',
     ),
     notApplicable('disabled', 'A live region is not interactive, so it cannot be disabled.'),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 001 additions: the catalogue, hull-detail and decision surfaces.
+// ---------------------------------------------------------------------------
+
+/** One hull, as every catalogue fixture below shows it. */
+const ANACONDA = {
+  symbol: 'Anaconda',
+  name: { text: 'Anaconda', language: 'en', translationState: 'localized', disclosureKey: null },
+  manufacturer: {
+    text: 'Faulcon DeLacy',
+    language: 'en',
+    translationState: 'localized',
+    disclosureKey: null,
+  },
+  size: 'LRG',
+  sizeText: 'Large',
+  hardpoints: '1H 4L 2M 1S',
+  hardpointsText: '1 huge, 4 large, 2 medium, 1 small',
+  price: '146.97',
+  selected: false,
+} as const;
+
+/** The same hull with every fact the package could fail to supply missing. */
+const UNAVAILABLE_HULL = {
+  ...ANACONDA,
+  symbol: 'Unknown',
+  size: null,
+  sizeText: null,
+  price: null,
+} as const;
+
+const CATALOGUE_COLUMNS = [
+  {
+    field: 'name',
+    label: 'Ship',
+    sortActionLabel: 'Sort by Ship, descending',
+    sorted: true,
+    direction: 'ascending',
+  },
+  {
+    field: 'manufacturer',
+    label: 'Manufacturer',
+    sortActionLabel: 'Sort by Manufacturer, ascending',
+    sorted: false,
+    direction: 'ascending',
+  },
+  {
+    field: 'size',
+    label: 'Size',
+    sortActionLabel: 'Sort by Size, ascending',
+    sorted: false,
+    direction: 'ascending',
+  },
+  {
+    field: 'hardpoints',
+    label: 'Hardpoints',
+    sortActionLabel: 'Sort by Hardpoints, ascending',
+    sorted: false,
+    direction: 'ascending',
+  },
+  {
+    field: 'price',
+    label: 'Price Mcr',
+    sortActionLabel: 'Sort by Price Mcr, ascending',
+    sorted: false,
+    direction: 'ascending',
+    numeric: true,
+  },
+] as const;
+
+const TOOLBAR_BASE = {
+  sizeChoices: [
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' },
+  ],
+  sortOptions: [
+    { value: 'name', label: 'Ship', actionLabel: 'Sort by Ship, ascending' },
+    { value: 'price', label: 'Price Mcr', actionLabel: 'Sort by Price Mcr, ascending' },
+  ],
+} as const;
+
+registerPreview({
+  componentId: 'collection-toolbar',
+  group: 'Catalogue',
+  component: CollectionToolbar,
+  contract: contract(
+    'collection-toolbar',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['selected', 'invalid', 'disabled'],
+      relationships: ['label', 'description'],
+      textEquivalents: ['sort field and direction'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        ...TOOLBAR_BASE,
+        search: 'cutter',
+        selectedSizes: ['large'],
+        sort: {
+          field: 'price',
+          direction: 'descending',
+          text: 'Sorted by Price Mcr, descending',
+          toggleLabel: 'Sort by Price Mcr, ascending',
+        },
+      },
+      [
+        'the search and the size strip are the only controls the reference draws',
+        'the chip carrying the order in force says what re-choosing it would do',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        ...TOOLBAR_BASE,
+        search: '',
+        selectedSizes: [],
+        sort: {
+          field: 'name',
+          direction: 'ascending',
+          text: 'Sorted by Ship, ascending',
+          toggleLabel: 'Sort by Ship, descending',
+        },
+      },
+      ['keeps every control reachable with nothing selected'],
+    ),
+    notApplicable(
+      'loading',
+      'The catalogue is installed with the package, so the toolbar never waits for it.',
+    ),
+    state(
+      'error',
+      {
+        ...TOOLBAR_BASE,
+        search: 'no such hull',
+        selectedSizes: [],
+        sort: {
+          field: 'name',
+          direction: 'ascending',
+          text: 'Sorted by Ship, ascending',
+          toggleLabel: 'Sort by Ship, descending',
+        },
+      },
+      ['a search that matches nothing leaves every control usable'],
+    ),
+    notApplicable(
+      'disabled',
+      'A toolbar with no reachable controls would leave a Commander unable to widen a search they cannot see the results of.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'responsive-catalogue-view',
+  group: 'Catalogue',
+  component: ResponsiveCatalogueView,
+  contract: contract(
+    'responsive-catalogue-view',
+    {
+      role: 'table',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['selected', 'current'],
+      relationships: ['label'],
+      textEquivalents: ['sort direction', 'selected hull', 'unavailable fact'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        caption: 'Hulls in the Almanac',
+        columns: CATALOGUE_COLUMNS,
+        hulls: [ANACONDA, { ...ANACONDA, symbol: 'Adder', selected: true }, UNAVAILABLE_HULL],
+      },
+      [
+        'the wide composition is a real table with scoped column and row headers',
+        'each column header is a named bidirectional sort button',
+        'the narrow composition keeps every label as a definition list',
+        'the current hull is marked with the reference lozenge and aria-current',
+        'an unavailable fact is stated in words, never as a zero',
+        'the manifest owns its own overflow; the document never scrolls sideways',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        caption: 'Hulls in the Almanac',
+        columns: CATALOGUE_COLUMNS,
+        hulls: [],
+        emptyLabel: 'No hull matches these filters.',
+      },
+      ['says why there is nothing to show rather than rendering an empty frame'],
+    ),
+    notApplicable('loading', 'The catalogue ships with the package, so the list is never pending.'),
+    notApplicable(
+      'error',
+      'A constrained result of zero is an empty state; a catalogue that failed to load cannot occur.',
+    ),
+    notApplicable(
+      'disabled',
+      'A read-only list of hulls has no disabled state; the sort actions are always available.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'hull-summary-card',
+  group: 'Catalogue',
+  component: HullSummaryCard,
+  contract: contract(
+    'hull-summary-card',
+    {
+      role: 'article',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['current'],
+      relationships: ['label', 'unavailable-reason'],
+      textEquivalents: ['selected state', 'unavailable fact'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { hull: { ...ANACONDA, selected: true } },
+      [
+        'each fact is paired with the label that names it, drawn or not',
+        'the current state is exposed as aria-current, not only as colour',
+        'the opening action names the hull it opens',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    state(
+      'empty',
+      { hull: UNAVAILABLE_HULL },
+      ['every absent fact is stated in words rather than as a zero'],
+      ['normal', 'unavailable-text'],
+    ),
+    notApplicable('loading', 'A card renders facts the package already holds.'),
+    notApplicable(
+      'error',
+      'An absent fact is an unavailable value, which the card renders; it reports no error of its own.',
+    ),
+    notApplicable(
+      'disabled',
+      'Every hull can be opened; a card that could not would hide a hull from the catalogue.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'fact-list',
+  group: 'Hull',
+  component: FactList,
+  contract: contract(
+    'fact-list',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'unit', 'viewing-condition', 'unavailable-reason'],
+      textEquivalents: ['unit', 'measurement condition', 'unavailable value'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Hull specifications',
+        facts: [
+          {
+            id: 'maximum-speed',
+            label: 'Speed',
+            value: '183',
+            unit: 'm/s',
+            condition: 'at 4 ENG pips',
+          },
+          {
+            id: 'hardness',
+            label: 'Hull hardness',
+            value: '65',
+            unit: 'rating, no unit',
+            condition: null,
+          },
+          {
+            id: 'base-shield',
+            label: 'Base shield strength',
+            value: null,
+            unit: 'MJ',
+            condition: null,
+          },
+        ],
+      },
+      [
+        'every value is related to its unit and its measurement condition',
+        'a figure with no unit is marked as a rating rather than given one',
+        'an unavailable value is stated in words, never as a zero',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'unavailable-text'],
+    ),
+    state(
+      'empty',
+      { label: 'Hull specifications', facts: [], emptyLabel: 'The Almanac supplies no figures.' },
+      ['says there is nothing rather than rendering an empty list'],
+    ),
+    notApplicable(
+      'loading',
+      'Hull facts are installed with the package and resolve synchronously.',
+    ),
+    notApplicable(
+      'error',
+      'An absent figure is an unavailable value, not an error the list reports.',
+    ),
+    notApplicable('disabled', 'A list of published facts is not interactive.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'hull-artwork',
+  group: 'Hull',
+  component: HullArtwork,
+  contract: contract(
+    'hull-artwork',
+    {
+      role: 'figure',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['description'],
+      textEquivalents: ['the illustration itself', 'loading state', 'unavailable state'],
+    },
+    ['default', 'loading', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        source: 'assets/ships/Anaconda/illustration.png',
+        label: 'Illustration of the Anaconda',
+        state: 'available',
+      },
+      [
+        'the illustration carries a text equivalent naming the hull',
+        'the area is reserved at a fixed ratio so nothing shifts on load',
+      ],
+      ['normal', 'rtl', 'reduced-motion'],
+    ),
+    notApplicable(
+      'empty',
+      'Every hull the package carries has an illustration; an absent one is the error state, not an empty one.',
+    ),
+    state(
+      'loading',
+      {
+        source: 'assets/ships/Anaconda/illustration.png',
+        label: 'Illustration of the Anaconda',
+        state: 'loading',
+      },
+      ['the pending state is stated in text', 'the reserved area holds its size'],
+    ),
+    state(
+      'error',
+      {
+        source: 'assets/ships/Anaconda/illustration.png',
+        label: 'Illustration of the Anaconda',
+        state: 'temporarily-unavailable',
+      },
+      [
+        'the absence is explained as temporary and the hull is still named',
+        'a retry is offered that does not reload the page',
+        'no action elsewhere on the screen is disabled by it',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'An illustration is decoration with a text equivalent; it never gates anything, so it has nothing to disable.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'confirm-dialog',
+  group: 'Decisions',
+  component: ConfirmDialog,
+  contract: contract(
+    'confirm-dialog',
+    {
+      role: 'dialog',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['destructive intent'],
+    },
+    ['default', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        open: true,
+        title: 'Replace the build you are working on?',
+        description:
+          'Your current Anaconda build has unsaved changes. Opening this Cutter build discards them.',
+        confirmLabel: 'Discard and open',
+        cancelLabel: 'Keep what I have',
+        dismissLabel: 'Close',
+      },
+      [
+        'both outcomes are named in their own words, never OK and Cancel',
+        'the description is associated with the dialog',
+        'the background is inert and absent from the accessibility tree',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+      true,
+    ),
+    notApplicable('empty', 'A confirmation always names a subject and two outcomes.'),
+    notApplicable(
+      'loading',
+      'The decision is the Commander’s; nothing is pending while it is open.',
+    ),
+    state(
+      'error',
+      {
+        open: true,
+        title: 'Delete “Anaconda explorer”?',
+        description: 'This removes the saved build from this browser. It cannot be undone.',
+        confirmLabel: 'Delete this build',
+        cancelLabel: 'Keep this build',
+        dismissLabel: 'Close',
+        destructive: true,
+      },
+      [
+        'the destructive outcome is carried by the wording, not only by emphasis',
+        'the record being deleted is named',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      true,
+    ),
+    notApplicable(
+      'disabled',
+      'A dialog with no usable answer would trap a Commander in a decision they cannot make.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'choice-dialog',
+  group: 'Decisions',
+  component: ChoiceDialog,
+  contract: contract(
+    'choice-dialog',
+    {
+      role: 'dialog',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['which version each choice keeps'],
+    },
+    ['default', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        open: true,
+        title: 'This build was changed in another tab',
+        description: 'Another tab saved “Anaconda explorer” after you opened it.',
+        choices: [
+          {
+            id: 'overwrite',
+            label: 'Replace the other tab’s version',
+            outcome: 'Your version is kept. The version the other tab saved is replaced.',
+          },
+          {
+            id: 'keep-both',
+            label: 'Keep both versions',
+            outcome: 'Both versions are kept, as two separate saved builds.',
+          },
+          {
+            id: 'cancel',
+            label: 'Do not save',
+            outcome: 'Nothing is saved. The other tab’s version is kept.',
+            emphasis: 'quiet',
+          },
+        ],
+        dismissLabel: 'Close',
+      },
+      [
+        'each choice states which version survives, in visible associated text',
+        'the choices are a semantic list',
+        'the emitted value is a stable identity, never the translated label',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+      true,
+    ),
+    notApplicable(
+      'empty',
+      'A decision with no choices is not a decision; the dialog is only shown when there are ways out.',
+    ),
+    notApplicable(
+      'loading',
+      'The decision is the Commander’s; nothing is pending while it is open.',
+    ),
+    state(
+      'error',
+      {
+        open: true,
+        title: 'This build was changed in another tab',
+        description: 'The build changed again while you were deciding.',
+        choices: [
+          {
+            id: 'overwrite',
+            label: 'Replace the other tab’s version',
+            outcome: 'Your version is kept. The newest stored version is replaced.',
+          },
+          {
+            id: 'cancel',
+            label: 'Do not save',
+            outcome: 'Nothing is saved. The newest stored version is kept.',
+            emphasis: 'quiet',
+          },
+        ],
+        dismissLabel: 'Close',
+      },
+      [
+        'a third revision refreshes the question rather than overwriting silently',
+        'the refreshed outcome text names what is now stored',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      true,
+    ),
+    notApplicable(
+      'disabled',
+      'A dialog with no usable answer would trap a Commander in a decision they cannot make.',
+    ),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 001 additions: the saved-build library surfaces.
+// ---------------------------------------------------------------------------
+
+/** One hull name, presented the way the library receives it. */
+const ANACONDA_NAME = ANACONDA.name;
+
+const NAMED_BUILD = {
+  id: 'record-1',
+  name: 'Anaconda explorer',
+  hull: ANACONDA_NAME,
+  modified: '12 August 2026, 14:20',
+  validation: { label: 'Complete', tone: 'success' },
+  note: 'Neutron route to Colonia. Swap the AFMU before the return leg.',
+  actions: [
+    { id: 'open', label: 'Open Anaconda explorer', emphasis: 'primary' },
+    { id: 'rename', label: 'Rename Anaconda explorer' },
+    { id: 'duplicate', label: 'Duplicate Anaconda explorer' },
+    { id: 'delete', label: 'Delete Anaconda explorer', emphasis: 'danger' },
+  ],
+} as const;
+
+/** A build that was never named and carries no note of its own. */
+const WORKING_BUILD = {
+  ...NAMED_BUILD,
+  id: 'record-working',
+  name: null,
+  note: null,
+  actions: [{ id: 'open', label: 'Open the working build', emphasis: 'primary' }],
+} as const;
+
+registerPreview({
+  componentId: 'saved-build-card',
+  group: 'Library',
+  component: SavedBuildCard,
+  contract: contract(
+    'saved-build-card',
+    {
+      role: 'article',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['validation verdict', 'working state'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      { build: NAMED_BUILD },
+      [
+        'every action names the record it acts on, so no label reads as a bare verb',
+        'the recorded verdict is words with a tone, never a coloured dot',
+        'each fact is paired with the label that names it',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
+    ),
+    state(
+      'empty',
+      { build: WORKING_BUILD },
+      [
+        'a build with no name is shown as a working build rather than given an invented one',
+        'an absent note is omitted rather than rendered as an empty field',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'loading',
+      'A record is read from this browser’s own storage before the card is given it; there is nothing left to wait for.',
+    ),
+    state(
+      'error',
+      {
+        build: {
+          ...NAMED_BUILD,
+          validation: { label: 'Power draw exceeds the plant’s output', tone: 'error' },
+        },
+      },
+      [
+        'the verdict recorded when the build was saved is stated in words',
+        'an invalid build is still openable, renameable and deletable',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'A stored build a Commander could not act on would be a build stranded in their own library.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'responsive-record-list',
+  group: 'Library',
+  component: ResponsiveRecordList,
+  contract: contract(
+    'responsive-record-list',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['group membership', 'why a record cannot be opened'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Saved builds',
+        groups: [
+          {
+            id: 'working',
+            label: 'Working builds',
+            builds: [WORKING_BUILD],
+            emptyLabel: 'No working builds.',
+          },
+          {
+            id: 'named',
+            label: 'Named builds',
+            builds: [NAMED_BUILD, { ...NAMED_BUILD, id: 'record-2', name: 'Krait combat' }],
+            emptyLabel: 'No named builds yet.',
+          },
+        ],
+      },
+      [
+        'each group carries its own heading and stays in one reading order',
+        'the narrow and wide compositions present the same records in the same order',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        label: 'Saved builds',
+        groups: [
+          {
+            id: 'named',
+            label: 'Named builds',
+            builds: [],
+            emptyLabel: 'No builds are saved in this browser.',
+          },
+        ],
+      },
+      ['an empty group says so in text rather than collapsing to nothing'],
+    ),
+    notApplicable(
+      'loading',
+      'The list renders the records it is given; reading them from storage belongs to the library store.',
+    ),
+    state(
+      'error',
+      {
+        label: 'Saved builds',
+        groups: [
+          {
+            id: 'named',
+            label: 'Named builds',
+            builds: [NAMED_BUILD],
+            emptyLabel: 'No named builds yet.',
+          },
+        ],
+        unavailableLabel: 'Builds this version cannot open',
+        unavailable: [
+          {
+            id: 'record-future',
+            explanation: 'This build was saved by a newer version of the application.',
+            detail: 'Last changed 2 August 2026',
+          },
+        ],
+      },
+      [
+        'a record that cannot be opened is listed with what is known about it, never hidden',
+        'the explanation says why, so a Commander knows the build is still theirs',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'The list is a container; a record’s own actions carry any disabled state.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'record-manager',
+  group: 'Library',
+  component: RecordManager,
+  contract: contract(
+    'record-manager',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['checked'],
+      relationships: ['label', 'description'],
+      textEquivalents: ['why room is needed', 'what each record is'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        reason: 'This browser keeps 20 working builds. Discard one to make room for another.',
+        records: [
+          { id: 'record-1', label: 'Anaconda explorer', detail: 'Anaconda — 12 August 2026' },
+          { id: 'record-2', label: 'Krait combat', detail: 'Krait Mk II — 9 August 2026' },
+          { id: 'record-3', label: 'Working build', detail: 'Cutter — 2 August 2026' },
+        ],
+        selected: ['record-3'],
+      },
+      [
+        'every record is listed and selected individually — nothing is preselected',
+        'each record carries enough detail to decide without opening it',
+        'the discard action stays inert until something is chosen',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
+    ),
+    state('empty', { records: [], selected: [] }, [
+      'says there is nothing to discard rather than offering an empty choice',
+    ]),
+    notApplicable(
+      'loading',
+      'The records were already read to reach the limit that opened this; none of them is pending.',
+    ),
+    state(
+      'error',
+      {
+        reason: 'This browser has no room left to save builds. Discard one to continue.',
+        records: [
+          { id: 'record-1', label: 'Anaconda explorer', detail: 'Anaconda — 12 August 2026' },
+        ],
+        selected: [],
+      },
+      [
+        'a full store is explained in words a Commander can act on',
+        'nothing is discarded automatically, however full the store is',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'The manager only opens when room has to be made; a disabled one would leave a Commander unable to make it.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'record-note-editor',
+  group: 'Library',
+  component: RecordNoteEditor,
+  contract: contract(
+    'record-note-editor',
+    {
+      role: 'textbox',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['disabled'],
+      relationships: ['label', 'description'],
+      textEquivalents: [],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      { note: 'Neutron route to Colonia. Swap the AFMU before the return leg.' },
+      [
+        'the note has its own save action, so editing one never marks the build as changed',
+        'the label is programmatically associated with the control',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state('empty', { note: null }, ['renders with no note and keeps its label and description']),
+    notApplicable(
+      'loading',
+      'A note is read from this browser’s own storage with the record it belongs to.',
+    ),
+    notApplicable(
+      'error',
+      'Any text is a valid note: it is local metadata, never part of a build, a link or an export, so there is nothing for it to fail.',
+    ),
+    state('disabled', { note: 'Neutron route to Colonia.', disabled: true }, [
+      'exposes the disabled state natively on the control and its save action',
+    ]),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 001 additions: passing a build on.
+// ---------------------------------------------------------------------------
+
+/** A published link at roughly the length a real engineered build produces. */
+const PUBLISHED_URL =
+  'https://ships.example/build#b.1QAcOnR2yV9tGm4KpZ0xLbW7fEuHsJdCiNrTaMoPqXvYbZ3g5hKlD8eF';
+
+registerPreview({
+  componentId: 'share-link-panel',
+  group: 'Sharing',
+  component: ShareLinkPanel,
+  contract: contract(
+    'share-link-panel',
+    {
+      role: 'region',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['copy outcome', 'why a link was refused'],
+    },
+    ['default', 'empty', 'loading', 'error', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      { state: 'published', url: PUBLISHED_URL, shareAvailable: true },
+      [
+        'the link text is present and selectable before anything is pressed',
+        'the value scrolls inside its own labelled region, never the document',
+        'the value is reachable without a pointer',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    state('empty', { state: 'absent' }, [
+      'says there is no build to link to rather than showing an empty box',
+    ]),
+    state('loading', { state: 'encoding' }, [
+      'the pending state is named in text',
+      'no stale link is shown while a new one is being prepared',
+    ]),
+    state(
+      'error',
+      {
+        state: 'refused',
+        refusal: {
+          message: 'This build link names a hull or module the installed Almanac does not carry.',
+          detail: 'The mount involved is Slot03_Size6.',
+        },
+        slefAvailable: false,
+      },
+      [
+        'the refusal is the application’s own words, never an internal exception message',
+        'the mount involved is named where the codec could name one',
+        'a retry is offered, and the file alternative says plainly that it is not in this version',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    state(
+      'disabled',
+      { state: 'published', url: PUBLISHED_URL, feedback: 'copy-failed', shareAvailable: false },
+      [
+        'a platform that cannot copy leaves the link text on screen and selectable',
+        'the failure says what to do instead rather than only that it failed',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
   ],
 });

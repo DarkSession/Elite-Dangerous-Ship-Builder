@@ -1,0 +1,70 @@
+@use '../../../../styles/responsive' as layout;
+
+// The reference frames hull art on a hatched plate inside an amber hairline,
+// and pushes neutral package line art into amber with a filter rather than by
+// shipping a second, tinted copy of every illustration (canvas 1a/1b,
+// "Hull artwork frame").
+:host {
+  display: block;
+}
+
+.artwork {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+}
+
+// Reserved before anything loads, so a late illustration cannot push the facts
+// below it down the page while they are being read.
+.artwork__frame {
+  @include layout.artwork-plate;
+
+  aspect-ratio: 3 / 2;
+  inline-size: 100%;
+}
+
+.artwork__image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  filter: var(--edsb-artwork-filter);
+}
+
+// Hidden rather than removed while the next illustration is on its way: the
+// element has to stay in the document to report that it loaded, but the hull
+// that was there is not the hull being asked for, and leaving it up until the
+// new one decodes shows the wrong ship.
+.artwork__image--pending {
+  visibility: hidden;
+}
+
+// Centred on the plate, at the size the mark is drawn at. It is decoration:
+// the words beside it are what a reader hears.
+.artwork__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artwork__loader {
+  inline-size: var(--edsb-target-size);
+  block-size: var(--edsb-target-size);
+}
+
+.artwork__spoken {
+  @include layout.visually-hidden;
+}
+
+.artwork__status {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  align-items: center;
+  text-align: center;
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

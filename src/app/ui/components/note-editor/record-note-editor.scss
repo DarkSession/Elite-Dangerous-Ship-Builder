@@ -1,0 +1,11 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.note {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  align-items: flex-start;
+}

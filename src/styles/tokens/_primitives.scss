@@ -1,20 +1,49 @@
 // Primitive design tokens — the sole owner of governed visual literals.
 //
-// Colour primitives are taken from the named custom properties in the product
-// reference canvas `.design/Ship Builder.dc.html`. Every other scale (type,
-// spacing, radius, elevation, border, motion, target, layout) is authored here
-// as a bounded named step scale. The canvas is a visual reference and a preview,
-// never the record: its 8px and 9px `font-size` values are artboard-thumbnail
-// artifacts, and its 78 `padding`, 18 `gap` and 15 `letter-spacing` literals are
-// not a spacing system. This repository is the record (constitution VII).
+// Every value here is measured from the product reference canvas
+// `.design/Ship Builder.dc.html`, canvases 1a–1d. The measurement is recorded in
+// `specs/011-interface-foundations/design/canvas-extraction.md`; that file, not
+// this one, is where a value is argued for.
+//
+// The canvas ships a 55-property colour block and nothing else — every other
+// decision is an inline literal repeated at each site. Naming those literals as
+// bounded scales is this feature's job. The scales are extracted, not invented:
+// where a token below has no obvious canvas source, the extraction file names
+// the sites it was read from.
+//
+// One deliberate transform. The canvas type ramp runs from 7.5px to 22px at 1:1
+// (canvas 1b is a 390 × 844 viewport with 44px inputs, so the ramp is literal,
+// not a thumbnail artefact). The ramp is lifted uniformly by ~1.25× so the
+// smallest rung is 11px, preserving every ratio between rungs — the ratios are
+// what the hierarchy is made of. Every step is `rem`, so 200% text and 400% zoom
+// reflow the whole interface.
 //
 // Nothing here encodes meaning. Roles live in `_semantic.scss`; components
 // consume semantic aliases only.
 
 :root {
   // ---------------------------------------------------------------------------
-  // Colour — reference-derived palette
+  // Colour — the canvas `:root` block, adopted verbatim
   // ---------------------------------------------------------------------------
+
+  // Ground
+  --edsb-palette-bg: #0b0b0c;
+  --edsb-palette-bg-deep: #0a0a0b;
+
+  // Panels, darkest to lightest
+  --edsb-palette-panel: #101010;
+  --edsb-palette-panel-0: #111111;
+  --edsb-palette-panel-menu: #121211;
+  --edsb-palette-panel-1: #131313;
+  --edsb-palette-panel-2: #141414;
+  --edsb-palette-panel-3: #151514;
+  --edsb-palette-panel-3b: #151515;
+  --edsb-palette-panel-4: #161615;
+  --edsb-palette-panel-5: #1c1c1a;
+  --edsb-palette-panel-6: #1e1d1b;
+
+  // The rail ground, a literal in canvas 1a rather than a named property.
+  --edsb-palette-panel-rail: #0f0f0f;
 
   // Warm amber emphasis
   --edsb-palette-amber: #ff8c1a;
@@ -23,134 +52,185 @@
   --edsb-palette-amber-dim: #c7893a;
   --edsb-palette-amber-deep: #8a6a3a;
 
-  // Amber washes. Fills and boundaries only — none reaches text contrast.
+  // Amber washes. Fills and boundaries only — none reaches a text contrast floor.
   --edsb-palette-amber-a10: rgb(255 140 26 / 0.1);
+  --edsb-palette-amber-a12: rgb(255 140 26 / 0.12);
   --edsb-palette-amber-a14: rgb(255 140 26 / 0.14);
+  --edsb-palette-amber-a16: rgb(255 140 26 / 0.16);
   --edsb-palette-amber-a18: rgb(255 140 26 / 0.18);
+  --edsb-palette-amber-a20: rgb(255 140 26 / 0.2);
   --edsb-palette-amber-a22: rgb(255 140 26 / 0.22);
+  --edsb-palette-amber-a25: rgb(255 140 26 / 0.25);
   --edsb-palette-amber-a30: rgb(255 140 26 / 0.3);
+  --edsb-palette-amber-a35: rgb(255 140 26 / 0.35);
+  --edsb-palette-amber-a40: rgb(255 140 26 / 0.4);
   --edsb-palette-amber-a45: rgb(255 140 26 / 0.45);
+  --edsb-palette-amber-a50: rgb(255 140 26 / 0.5);
   --edsb-palette-amber-a60: rgb(255 140 26 / 0.6);
+  --edsb-palette-amber-a70: rgb(255 140 26 / 0.7);
 
   // Warm off-white ink
   --edsb-palette-ink: #e8ded1;
   --edsb-palette-ink-2: #ddd3c6;
 
-  // Ink washes. The step name is the alpha percentage; the audited floors are
-  // recorded in `_semantic.scss` and `design/token-evidence.md`.
+  // Ink washes. The step name is the alpha percentage. Which of these clear a
+  // text or a non-text contrast floor is audited in `_semantic.scss`.
   --edsb-palette-ink-a18: rgb(232 222 209 / 0.18);
   --edsb-palette-ink-a30: rgb(232 222 209 / 0.3);
+  --edsb-palette-ink-a32: rgb(232 222 209 / 0.32);
+  --edsb-palette-ink-a36: rgb(232 222 209 / 0.36);
   --edsb-palette-ink-a38: rgb(232 222 209 / 0.38);
   --edsb-palette-ink-a42: rgb(232 222 209 / 0.42);
   --edsb-palette-ink-a45: rgb(232 222 209 / 0.45);
+  --edsb-palette-ink-a48: rgb(232 222 209 / 0.48);
+  --edsb-palette-ink-a50: rgb(232 222 209 / 0.5);
   --edsb-palette-ink-a55: rgb(232 222 209 / 0.55);
   --edsb-palette-ink-a62: rgb(232 222 209 / 0.62);
+  --edsb-palette-ink-a66: rgb(232 222 209 / 0.66);
   --edsb-palette-ink-a70: rgb(232 222 209 / 0.7);
+  --edsb-palette-ink-a75: rgb(232 222 209 / 0.75);
   --edsb-palette-ink-a80: rgb(232 222 209 / 0.8);
-
-  // Near-black grounds and panels
-  --edsb-palette-bg-deep: #0a0a0b;
-  --edsb-palette-bg: #0b0b0c;
-  --edsb-palette-panel: #101010;
-  --edsb-palette-panel-1: #131313;
-  --edsb-palette-panel-2: #141414;
-  --edsb-palette-panel-3: #151514;
-  --edsb-palette-panel-4: #161615;
-  --edsb-palette-panel-5: #1c1c1a;
-  --edsb-palette-panel-6: #1e1d1b;
-  --edsb-palette-panel-menu: #121211;
 
   // Status hues
   --edsb-palette-hot: #ff6b3d;
+  --edsb-palette-hot-2: #ff9b78;
   --edsb-palette-good: #8fd94a;
+  --edsb-palette-good-2: #7fc46b;
   --edsb-palette-cool: #5fd0e0;
+
+  // Status washes. Canvas literals: the issue badge and the destructive border.
+  --edsb-palette-hot-a16: rgb(255 107 61 / 0.16);
+  --edsb-palette-hot-a40: rgb(255 107 61 / 0.4);
 
   // Hairline. Decorative separation only — far below any contrast floor, so it
   // may never be the sole carrier of a boundary that means something.
   --edsb-palette-hair: rgb(255 255 255 / 0.04);
 
-  // Shadow ground
-  --edsb-palette-shadow: rgb(0 0 0 / 0.55);
-  --edsb-palette-shadow-strong: rgb(0 0 0 / 0.7);
+  // Scrim and shadow, canvas literals rather than named properties.
+  --edsb-palette-scrim: rgb(6 6 7 / 0.78);
+  --edsb-palette-scrim-strong: rgb(6 6 7 / 0.8);
+  --edsb-palette-shadow: rgb(0 0 0 / 0.6);
 
   // ---------------------------------------------------------------------------
-  // Typography — authored bounded scales
+  // Typography
   // ---------------------------------------------------------------------------
 
-  // Families. Faces are declared in `_fonts.scss`; every stack ends in a
-  // generic family so a missing subset never leaves text unrendered.
+  // Three families, each with one job. Faces are declared in `_fonts.scss`; every
+  // stack ends in a generic family so a missing subset never leaves text
+  // unrendered.
   --edsb-family-sans: 'Barlow', 'Segoe UI', 'Helvetica Neue', arial, sans-serif;
   --edsb-family-condensed:
     'Barlow Condensed', 'Barlow', 'Roboto Condensed', 'Arial Narrow', sans-serif;
   --edsb-family-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
 
-  // Sizes are relative so 200% text scaling and 400% zoom reflow the whole
-  // interface. `2xs` is the smallest step the system offers; nothing smaller
-  // exists to be reached for.
-  --edsb-type-size-2xs: 0.75rem;
-  --edsb-type-size-xs: 0.8125rem;
-  --edsb-type-size-sm: 0.875rem;
-  --edsb-type-size-md: 1rem;
-  --edsb-type-size-lg: 1.125rem;
-  --edsb-type-size-xl: 1.375rem;
-  --edsb-type-size-2xl: 1.75rem;
-  --edsb-type-size-3xl: 2.25rem;
+  // The lifted canvas ramp. `micro` is the smallest step the system offers;
+  // nothing smaller exists to be reached for.
+  --edsb-type-size-micro: 0.6875rem; //  canvas 7.5–9.5
+  --edsb-type-size-2xs: 0.75rem; //      canvas 10
+  --edsb-type-size-xs: 0.8125rem; //     canvas 10.5–11
+  --edsb-type-size-sm: 0.875rem; //      canvas 12
+  --edsb-type-size-md: 1rem; //          canvas 13
+  --edsb-type-size-lg: 1.125rem; //      canvas 14–15
+  --edsb-type-size-xl: 1.25rem; //       canvas 16
+  --edsb-type-size-2xl: 1.5rem; //       canvas 18
+  --edsb-type-size-3xl: 1.75rem; //      canvas 22
 
-  --edsb-type-leading-tight: 1.2;
-  --edsb-type-leading-snug: 1.35;
-  --edsb-type-leading-normal: 1.5;
-  --edsb-type-leading-relaxed: 1.65;
+  // The canvas sets `line-height: 1` on every tracked single-line label and
+  // number. `flat` is that; it is only ever correct on a line that cannot wrap.
+  --edsb-type-leading-flat: 1;
+  --edsb-type-leading-tight: 1.05;
+  --edsb-type-leading-snug: 1.3;
+  --edsb-type-leading-normal: 1.4;
+  --edsb-type-leading-body: 1.5;
+  --edsb-type-leading-prose: 1.6;
 
+  --edsb-type-weight-light: 300;
   --edsb-type-weight-regular: 400;
   --edsb-type-weight-medium: 500;
   --edsb-type-weight-semibold: 600;
   --edsb-type-weight-bold: 700;
 
-  --edsb-type-tracking-tight: -0.01em;
-  --edsb-type-tracking-normal: 0em;
-  --edsb-type-tracking-wide: 0.02em;
-  --edsb-type-tracking-wider: 0.06em;
+  // The tracking ladder. This is the reference's strongest visual signal and is
+  // adopted at the canvas values exactly — the lift applied to size is not
+  // applied here, because tracking is already relative to the em.
+  --edsb-type-tracking-none: 0em;
+  --edsb-type-tracking-xs: 0.04em;
+  --edsb-type-tracking-sm: 0.06em;
+  --edsb-type-tracking-md: 0.07em;
+  --edsb-type-tracking-lg: 0.09em;
+  --edsb-type-tracking-xl: 0.1em;
+  --edsb-type-tracking-2xl: 0.12em;
+  --edsb-type-tracking-3xl: 0.14em;
+  --edsb-type-tracking-4xl: 0.16em;
+  --edsb-type-tracking-5xl: 0.18em;
+  --edsb-type-tracking-6xl: 0.22em;
+  --edsb-type-tracking-7xl: 0.26em;
 
   // ---------------------------------------------------------------------------
-  // Spacing — authored bounded step scale
+  // Spacing
   // ---------------------------------------------------------------------------
 
   --edsb-space-none: 0;
-  --edsb-space-3xs: 0.125rem;
-  --edsb-space-2xs: 0.25rem;
-  --edsb-space-xs: 0.375rem;
-  --edsb-space-sm: 0.5rem;
-  --edsb-space-md: 0.75rem;
-  --edsb-space-lg: 1rem;
-  --edsb-space-xl: 1.5rem;
-  --edsb-space-2xl: 2rem;
-  --edsb-space-3xl: 3rem;
+
+  // A one-pixel gap over an amber wash is how the canvas draws the rules inside
+  // a metric grid and a segmented control. It is a rule, so it does not scale
+  // with text.
+  --edsb-space-hair: 0.0625rem;
+
+  --edsb-space-3xs: 0.125rem; //  2
+  --edsb-space-2xs: 0.25rem; //   4
+  --edsb-space-xs: 0.375rem; //   6
+  --edsb-space-sm: 0.5rem; //     8
+  --edsb-space-md: 0.625rem; //  10
+  --edsb-space-lg: 0.75rem; //   12
+  --edsb-space-xl: 0.875rem; //  14
+  --edsb-space-2xl: 1rem; //     16
+  --edsb-space-3xl: 1.125rem; // 18
+  --edsb-space-4xl: 1.375rem; // 22
+  --edsb-space-5xl: 2.125rem; // 34
 
   // ---------------------------------------------------------------------------
-  // Radius — square-to-small geometry, matching the reference's density
+  // Geometry
   // ---------------------------------------------------------------------------
 
-  --edsb-radius-none: 0;
-  --edsb-radius-sm: 0.125rem;
-  --edsb-radius-md: 0.1875rem;
-  --edsb-radius-lg: 0.375rem;
-  --edsb-radius-pill: 62.4375rem;
-
-  // ---------------------------------------------------------------------------
-  // Border widths
-  // ---------------------------------------------------------------------------
+  // There is not one `border-radius` on a product surface anywhere in the four
+  // canvases. The scale is one step, and it is zero.
+  --edsb-radius-square: 0;
 
   --edsb-border-width-thin: 1px;
-  --edsb-border-width-thick: 2px;
+  --edsb-border-width-rule: 2px;
+  --edsb-border-width-marker: 3px;
 
   // ---------------------------------------------------------------------------
-  // Elevation — reserved for overlays and menus
+  // Elevation — one canvas value, used by every overlay in the file
   // ---------------------------------------------------------------------------
 
   --edsb-elevation-flat: none;
-  --edsb-elevation-raised: 0 1px 2px var(--edsb-palette-shadow);
-  --edsb-elevation-overlay: 0 8px 24px var(--edsb-palette-shadow);
-  --edsb-elevation-layer: 0 16px 48px var(--edsb-palette-shadow-strong);
+  --edsb-elevation-overlay: 0 1.5rem 3.75rem var(--edsb-palette-shadow);
+
+  // The rule the canvas draws under the tab or entry that is currently open. An
+  // inset shadow rather than a border, so the entry keeps its box geometry and
+  // nothing shifts when the current one changes.
+  --edsb-elevation-underline: inset 0 calc(-1 * var(--edsb-border-width-rule)) 0
+    var(--edsb-palette-amber);
+
+  // ---------------------------------------------------------------------------
+  // Surface textures
+  // ---------------------------------------------------------------------------
+
+  // The hatched plate the canvas puts behind hull artwork.
+  --edsb-texture-plate: repeating-linear-gradient(
+    135deg,
+    #161616 0 0.375rem,
+    var(--edsb-palette-panel-0) 0.375rem 0.75rem
+  );
+
+  // The wash that marks a selected row, run from the leading edge.
+  --edsb-texture-selected: linear-gradient(90deg, var(--edsb-palette-amber-a16), transparent);
+
+  // What makes neutral package line art read as amber instrumentation.
+  --edsb-filter-artwork: grayscale(1) sepia(1) hue-rotate(-18deg) saturate(1.6) brightness(0.95)
+    contrast(1.05);
 
   // ---------------------------------------------------------------------------
   // Motion — nonessential by contract; `_base.scss` neutralises these under
@@ -172,19 +252,34 @@
   --edsb-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
 
   // ---------------------------------------------------------------------------
-  // Target size — the 44 CSS-pixel design baseline (relative so it grows with
-  // text scale rather than shrinking against it)
+  // Target size — the 44 CSS-pixel design baseline. The canvas already meets it
+  // on its compact artboard (44px search, 46px rows, 48px actions); its wide
+  // artboard does not, and the wide values are lifted to this floor.
   // ---------------------------------------------------------------------------
 
   --edsb-target-min: 2.75rem;
   --edsb-target-min-compact: 2.25rem;
 
   // ---------------------------------------------------------------------------
-  // Layout — named measures, not copied canvas widths
+  // Layout measures. The canvas's own 1320px artboard width is not one of these:
+  // it is the size of a drawing, not a rule about the product.
   // ---------------------------------------------------------------------------
 
   --edsb-measure-content-max: 90rem;
   --edsb-measure-prose-max: 68ch;
-  --edsb-measure-rail-min: 16rem;
-  --edsb-measure-layer-max: 40rem;
+
+  // The inspector rail, 340px in canvas 1a.
+  --edsb-measure-rail-min: 21.25rem;
+
+  // The command bar: one row of controls at the 44px target baseline inside the
+  // bar's own block padding. The canvas draws 56px around 30px chips; the extra
+  // is the target floor, which is a rule about the product rather than a
+  // measurement taken off the drawing.
+  --edsb-measure-bar-height: 4.125rem;
+
+  // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export,
+  // 860 library. Three named steps cover them.
+  --edsb-measure-layer-sm: 33.75rem;
+  --edsb-measure-layer-md: 38.75rem;
+  --edsb-measure-layer-lg: 53.75rem;
 }

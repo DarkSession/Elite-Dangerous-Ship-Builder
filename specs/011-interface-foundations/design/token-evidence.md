@@ -72,19 +72,37 @@ boundaries. They are not accepted as semantic tokens. The hierarchy they created
 is rebuilt with weight, size, spacing and the audited steps above — see
 [design/reference-review.md](./reference-review.md).
 
-| Reference pair               | Reference use                 | Reason rejected                 |
-| ---------------------------- | ----------------------------- | ------------------------------- |
-| ink alpha 0.50 and below     | Reference body/label text     | Below 4.5:1 on every surface    |
-| ink alpha 0.38 and below     | Reference meaningful borders  | Below 3:1 on every surface      |
-| amber-deep #8a6a3a           | Reference emphasis text       | Below 4.5:1 on every surface    |
-| hair rgb(255 255 255 / 0.04) | Reference meaningful dividers | Below 3:1; decorative only here |
+Every one of the reference's 55 colour properties is carried into
+`_primitives.scss` unchanged. What is constrained is which of them a **text**
+role may point at: the canvas sets label text in ink washes from 0.32 to 0.50,
+and those measure 2.4:1 to 4.2:1 against the nine grounds it actually uses.
+
+The ladder is therefore shifted, not truncated. `--edsb-text-faint` — where the
+canvas's 0.32–0.50 label band lands — is ink 0.55, the dimmest step that clears
+4.5:1. The rungs above it keep their order and their spacing, so the four-level
+hierarchy the canvas draws (faint label, subtle meta, muted body, primary value)
+survives intact and slightly brighter.
+
+| Reference pair               | Reference use               | Where it goes here                             |
+| ---------------------------- | --------------------------- | ---------------------------------------------- |
+| ink alpha 0.32–0.50          | Micro-labels, counts, units | Lifted to `--edsb-text-faint` (0.55, 4.74:1)   |
+| ink alpha 0.18–0.38          | Control and panel borders   | Kept, as decorative hairlines only             |
+| amber alpha 0.14–0.45        | Field edges, grid rules     | Kept, as decorative hairlines and grid grounds |
+| amber-deep #8a6a3a           | Reference emphasis text     | No text role; 2.9:1                            |
+| hair rgb(255 255 255 / 0.04) | Row and list dividers       | Kept as `--edsb-border-decorative`             |
+
+A decorative boundary is never a control's only identification: a field is a
+darker fill inside its hairline, a selected row carries `aria-current` and a
+word, and a segment's state is its own checked state.
 
 ## Non-colour evidence
 
-| Concern                        | Token                      | Evidence                                                                                                                                                  |
-| ------------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Target size (SC 2.5.8 AA)      | `--edsb-target-size`       | `2.75rem` = 44 CSS px at the 16px root, and grows with text scale rather than against it. Asserted per state in `e2e/target-and-contrast.spec.ts`.        |
-| Dense target                   | `--edsb-target-size-dense` | `2.25rem` = 36 CSS px. Permitted only where a genuine SC 2.5.8 exception is recorded and every condition verified; never the default.                     |
-| Text scaling (SC 1.4.4 AA)     | `--edsb-type-size-*`       | Every step is `rem`. The smallest step is `0.75rem` (12 px); the reference's 8 px and 9 px artboard values have no token.                                 |
-| Reflow (SC 1.4.10 AA)          | `--edsb-measure-*`         | Named measures, no copied canvas width. Verified at 320 CSS px in `e2e/reflow.spec.ts`.                                                                   |
-| Motion (SC 2.3.3 AAA / FR-013) | `--edsb-duration-*`        | Neutralised to `0s` under `prefers-reduced-motion: reduce` in `src/styles/_base.scss`, which removes the transition without delaying or hiding the state. |
+| Concern                        | Token                      | Evidence                                                                                                                                                                                                                                                                              |
+| ------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Target size (SC 2.5.8 AA)      | `--edsb-target-size`       | `2.75rem` = 44 CSS px at the 16px root, and grows with text scale rather than against it. Asserted per state in `e2e/target-and-contrast.spec.ts`.                                                                                                                                    |
+| Dense target                   | `--edsb-target-size-dense` | `2.25rem` = 36 CSS px. Permitted only where a genuine SC 2.5.8 exception is recorded and every condition verified; never the default.                                                                                                                                                 |
+| Text scaling (SC 1.4.4 AA)     | `--edsb-type-size-*`       | Every step is `rem`. The ramp is the canvas's own 7.5–22 px ladder lifted uniformly by ~1.25×, so every ratio between rungs is preserved and the smallest rung is `0.6875rem` (11 px) rather than 7.5 px. The mapping is tabulated in [canvas-extraction.md](./canvas-extraction.md). |
+| Tracking                       | `--edsb-type-tracking-*`   | The canvas's eleven letter-spacing steps, 0.04em to 0.26em, adopted at their exact values. Tracking is already relative to the em, so the size lift does not apply to it.                                                                                                             |
+| Geometry                       | `--edsb-radius-square`     | One step, `0`. There is no `border-radius` on a product surface anywhere in canvases 1a–1d; the only rounded corners in the file belong to the design viewer's own chrome.                                                                                                            |
+| Reflow (SC 1.4.10 AA)          | `--edsb-measure-*`         | Named measures, no copied canvas width. Verified at 320 CSS px in `e2e/reflow.spec.ts`.                                                                                                                                                                                               |
+| Motion (SC 2.3.3 AAA / FR-013) | `--edsb-duration-*`        | Neutralised to `0s` under `prefers-reduced-motion: reduce` in `src/styles/_base.scss`, which removes the transition without delaying or hiding the state.                                                                                                                             |

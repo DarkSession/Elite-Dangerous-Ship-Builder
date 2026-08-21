@@ -1,0 +1,41 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [dismissLabel]="dismissLabel()"
+  presentation="adaptive"
+  (dismissed)="dismissed.emit()"
+>
+  <div class="save">
+    <edsb-text-field
+      [label]="nameLabel()"
+      [value]="currentName()"
+      [description]="nameDescription()"
+      (changed)="changeName($event)"
+    />
+
+    @if (duplicateWarning(); as warning) {
+      <edsb-status-notice tone="warning" [message]="warning" />
+    }
+
+    @if (overwriteUnavailable(); as reason) {
+      <edsb-status-notice tone="warning" [message]="reason" />
+    }
+
+    <div class="save__actions">
+      @if (canOverwrite()) {
+        <edsb-action-button
+          [label]="overwriteLabel()"
+          emphasis="primary"
+          [disabled]="!canSave()"
+          (activated)="save(true)"
+        />
+      }
+      <edsb-action-button
+        [label]="asNewLabel()"
+        [emphasis]="canOverwrite() ? 'secondary' : 'primary'"
+        [disabled]="!canSave()"
+        (activated)="save(false)"
+      />
+    </div>
+  </div>
+</edsb-layer>

@@ -7,7 +7,7 @@ This feature defines the active-build shell and persistence/share behavior. Modu
 
 ## Composition
 
-- `AppShell`, one workspace heading and active hull/provenance summary.
+- `AppShell` and the active hull/provenance summary. The workspace renders no heading of its own: canvas 1c puts the build's identity in the command bar (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)).
 - Named/working/dirty and package validation `StatusIndicator` with visible text, not color alone.
 - Active capability outlet for future outfitting/statistics screens; no component owns a second build copy.
 - Save/name and library actions.
@@ -49,3 +49,17 @@ Modelled edits coalesce into this tab's working key. Visibility loss/pagehide re
 - The share-link mode always renders `/build#b.…`; the reference `/b/<name>#h=…` sample is not implemented because it puts local naming/version detail outside the canonical fragment contract.
 - Persistence status, working provenance, conflict, retention/quota and link-refusal states are added to the visual hierarchy even though the reference canvases do not depict them.
 - Preview states cover no-build, working/named/link, dirty, persistence failures, valid/invalid/refused links and confirmation at all core widths.
+
+## Reference composition
+
+Measured from canvas 1c's command bar and its save and export dialogs, and canvas 1d's compact
+equivalents. The workspace's editing regions belong to feature 002; what feature 001 takes from
+these canvases is the bar, the identity and the two dialogs.
+
+| Part          | Canvas                                                                                                                                                                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Command bar   | Amber flag, then the build name in condensed 700 tracked 0.16em over a monospace `HULL · IDENT` line; actions trail                                                                                                                                    |
+| Actions       | Quiet monospace history controls, a hairline separator, a bordered `EXPORT`, a filled `SAVE`, then a square help control                                                                                                                               |
+| Save dialog   | Name and note fields under tracked monospace labels, then the save mode as two bordered cards — the selected one washed amber with a filled square marker — over a footer rule carrying a monospace message and the two actions                        |
+| Export dialog | A format list on the leading edge, each a bordered card with a tracked condensed title over a Barlow 300 description; the payload fills the trailing region as monospace text in a field, over a monospace meta line and the download and copy actions |
+| Share value   | Monospace inside a field surface, selectable, scrolling inside its own box rather than wrapping the page                                                                                                                                               |

@@ -5,6 +5,11 @@
 // region, and the wide mode allows a workspace. A capability opts into the
 // wider modes through the region primitives; the shell itself only has to keep
 // its own chrome legible at all three (shell design, "Composition modes").
+//
+// The banner is the reference's application command bar: a darker plate closed
+// by a heavy amber rule, opened by a solid amber flag, carrying the screen
+// identity on the leading edge and its actions on the trailing edge
+// (canvas 1a/1b/1c, "Command bar").
 :host {
   display: flex;
   flex-direction: column;
@@ -12,16 +17,16 @@
 }
 
 .frame__banner {
-  @include layout.wrapping-row(var(--edsb-space-inline-loose));
+  @include layout.command-bar;
 
   position: sticky;
   inset-block-start: 0;
   z-index: 2;
+  flex-wrap: wrap;
   justify-content: space-between;
-  padding-block: var(--edsb-space-inline-loose);
-  padding-inline: var(--edsb-space-panel);
-  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-default);
-  background-color: var(--edsb-surface-panel);
+  padding-block: var(--edsb-space-control-block);
+  // Exactly the height the regions below offset their own sticky chrome by.
+  min-block-size: var(--edsb-layout-bar-height);
 }
 
 // A sticky banner is a fixed share of a short viewport, and at 400% zoom that
@@ -36,45 +41,47 @@
 
 .frame__identity {
   @include layout.wrapping-row(var(--edsb-space-inline));
+
+  min-inline-size: 0;
 }
 
-.frame__product {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-sm);
-  font-weight: var(--edsb-text-weight-heading);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  text-transform: uppercase;
-  color: var(--edsb-text-primary);
+.frame__flag {
+  @include layout.command-flag;
 }
 
-.frame__context {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-compact);
+.frame__title {
+  @include layout.display-title(
+    var(--edsb-text-size-heading-md),
+    var(--edsb-text-tracking-product)
+  );
+}
+
+.frame__count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 }
 
 .frame__navigation-list {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
   list-style: none;
 }
 
+// The reference puts the bar's trailing controls on a quiet plate behind an
+// amber hairline rather than setting them as bare text (canvas 1a
+// "OPEN SAVED BUILD · 6 / IMPORT / ?", canvas 1b "IMPORT / ?").
 .frame__navigation-link {
-  @include layout.target-baseline;
+  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-secondary;
 
-  display: inline-flex;
-  align-items: center;
-  padding-inline: var(--edsb-space-inline);
-  color: var(--edsb-text-secondary);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-compact);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
+  min-inline-size: 0;
+  padding-inline: var(--edsb-space-inline-loose);
   text-decoration: none;
 }
 
+// The current entry takes the amber fill the reference gives an active
+// segment. It is not the only carrier: `aria-current` states the same thing.
 .frame__navigation-link[aria-current='page'] {
-  color: var(--edsb-text-accent);
-  border-block-end: var(--edsb-border-width-thick) solid var(--edsb-border-accent);
+  @include layout.control-primary;
 }
 
 .frame__actions {
@@ -94,6 +101,12 @@
     // than competing for one; nothing shrinks below its target baseline and no
     // label truncates.
     align-items: flex-start;
+    padding-inline: var(--edsb-space-inline-loose);
+  }
+
+  .frame__title {
+    font-size: var(--edsb-text-size-heading-sm);
+    letter-spacing: var(--edsb-text-tracking-dialog);
   }
 
   .frame__actions {
@@ -108,23 +121,23 @@
 
 .frame__status {
   padding-block: var(--edsb-space-inline-loose);
-  padding-inline: var(--edsb-space-panel);
+  padding-inline: var(--edsb-space-region);
 }
 
 .frame__main {
   @include layout.content-measure;
 
   flex: 1 1 auto;
-  padding-block: var(--edsb-space-region);
-  padding-inline: var(--edsb-space-panel);
+  padding-block: var(--edsb-space-panel);
+  padding-inline: var(--edsb-space-region);
 
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
-  scroll-margin-block-start: var(--edsb-space-section);
+  scroll-margin-block-start: var(--edsb-layout-bar-height);
 }
 
-@include layout.wide-up {
+@include layout.compact {
   .frame__main {
-    padding-inline: var(--edsb-space-region);
+    padding-inline: var(--edsb-space-inline-loose);
   }
 }

@@ -10,18 +10,22 @@
 }
 
 .unavailable__label {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-subtle);
 }
 
 // Readable, at the audited contrast floor. An unavailable value is quieter
 // than a real one, never invisible.
 .unavailable__text {
-  color: var(--edsb-text-subtle);
-  font-size: var(--edsb-text-size-compact);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  letter-spacing: var(--edsb-text-tracking-count);
+  text-transform: uppercase;
+  color: var(--edsb-text-faint);
 }
 
 .unavailable__reason {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-caption);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }

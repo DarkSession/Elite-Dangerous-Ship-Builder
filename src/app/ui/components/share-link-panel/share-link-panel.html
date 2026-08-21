@@ -1,0 +1,62 @@
+<section class="share-link" [attr.aria-labelledby]="panelId + '-title'">
+  <h3 class="share-link__title" [id]="panelId + '-title'">{{ title() }}</h3>
+  <p class="share-link__description">{{ description() }}</p>
+
+  @switch (state()) {
+    @case ('encoding') {
+      <edsb-status-notice tone="loading" [message]="encodingLabel()" />
+    }
+    @case ('absent') {
+      <edsb-status-notice tone="info" [message]="absentLabel()" />
+    }
+    @case ('refused') {
+      @if (refusal(); as reason) {
+        <edsb-status-notice
+          tone="error"
+          [message]="refusedTitle()"
+          [detail]="reason.detail === null ? reason.message : reason.message + ' ' + reason.detail"
+        />
+      }
+    }
+  }
+
+  @if (hasUrl()) {
+    <p class="share-link__value-label" [id]="panelId + '-value-label'">{{ valueLabel() }}</p>
+    <!--
+      Selectable text in its own scroll container: the one way of getting the
+      link out that no permission, platform or failure can take away.
+    -->
+    <output
+      class="share-link__value"
+      [attr.aria-labelledby]="panelId + '-value-label'"
+      tabindex="0"
+      >{{ url() }}</output
+    >
+
+    <div class="share-link__actions">
+      <edsb-action-button
+        [label]="copyLabel()"
+        emphasis="primary"
+        (activated)="copyRequested.emit()"
+      />
+      @if (shareAvailable()) {
+        <edsb-action-button [label]="shareLabel()" (activated)="shareRequested.emit()" />
+      }
+    </div>
+  }
+
+  @if (feedbackNotice(); as notice) {
+    <edsb-status-notice [tone]="notice.tone" [message]="notice.message" />
+  }
+
+  @if (state() === 'refused') {
+    <div class="share-link__actions">
+      <edsb-action-button [label]="retryLabel()" (activated)="retryRequested.emit()" />
+    </div>
+    @if (slefAvailable()) {
+      <edsb-action-button [label]="slefLabel()" (activated)="slefRequested.emit()" />
+    } @else {
+      <p class="share-link__slef-unavailable">{{ slefUnavailableLabel() }}</p>
+    }
+  }
+</section>

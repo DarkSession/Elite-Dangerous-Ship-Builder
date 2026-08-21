@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { settled } from './assertions';
 
 /**
  * Computed contrast assertions.
@@ -206,6 +207,7 @@ const measure = (unresolvedKind: 'text' | 'non-text'): ContrastSample[] => {
 
 /** Every visible text run meets the ratio its size and weight require. */
 export async function expectTextContrast(page: Page): Promise<void> {
+  await settled(page);
   const samples = await page.evaluate(measure, 'text' as const);
   const failing = samples.filter((sample) => sample.ratio < sample.required);
 
@@ -215,6 +217,7 @@ export async function expectTextContrast(page: Page): Promise<void> {
 
 /** Every declared visual carrier meets the 3:1 non-text minimum. */
 export async function expectNonTextContrast(page: Page): Promise<void> {
+  await settled(page);
   const samples = await page.evaluate(measure, 'non-text' as const);
   const failing = samples.filter((sample) => sample.ratio < sample.required);
 

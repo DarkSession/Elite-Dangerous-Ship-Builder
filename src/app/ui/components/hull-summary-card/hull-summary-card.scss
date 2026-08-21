@@ -1,0 +1,129 @@
+@use '../../../../styles/responsive' as layout;
+
+// The reference's compact manifest record: a size code on the leading edge, the
+// hull name over one monospace `manufacturer · mounts` line, the price and its
+// unit on the trailing edge, over a plate opened by a selection marker
+// (canvas 1b `.sm-row`). The facts keep definition-list semantics so every
+// label stays associated with its value, hidden or not.
+:host {
+  display: block;
+}
+
+.hull-card {
+  @include layout.selectable-row;
+
+  padding-block: var(--edsb-space-row);
+  padding-inline: var(--edsb-space-row);
+}
+
+// Every label the reference compresses away, and every code it shortens, is
+// still here for a reader who is not looking at the plate.
+.hull-card__spoken,
+.hull-card__facts > dt {
+  @include layout.visually-hidden;
+}
+
+// The reference draws one row. Expanded copy or an unavailable fact stated in
+// words will not fit one at 390 CSS pixels, so the row wraps rather than
+// pushing the page sideways — and every part of it may shrink.
+.hull-card__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  margin: 0;
+}
+
+.hull-card__facts dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.hull-card__size {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
+
+  flex: 0 1 auto;
+}
+
+.hull-card__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  flex: 1 1 60%;
+  min-inline-size: 0;
+}
+
+.hull-card__name {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-name);
+  line-height: var(--edsb-text-leading-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-numeric);
+}
+
+// The name is the record's own action: the reference makes the whole row
+// activate, and this is the part of it that carries the words.
+.hull-card__open {
+  @include layout.target-baseline;
+
+  display: block;
+  inline-size: 100%;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  /*
+   * `min-inline-size: 0` releases the flex item's automatic minimum, and
+   * `anywhere` lets the break count towards the track's minimum size — which
+   * `break-word` does not. Without both, a 320 CSS-pixel viewport at 200% text
+   * sizes this column to its longest hull name and pushes the card off-screen.
+   */
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.hull-card[aria-current='true'] .hull-card__name {
+  color: var(--edsb-text-accent-strong);
+}
+
+.hull-card__line {
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edsb-space-inline-tight);
+  text-transform: none;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.hull-card__price {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--edsb-space-2xs);
+}
+
+.hull-card__amount {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-accent-strong));
+}
+
+.hull-card__unit {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+
+  text-transform: none;
+}
+
+// As in the manifest: the reference marks the current record, it does not
+// label it. The word remains for anyone not reading the marker.
+.hull-card__selected {
+  @include layout.visually-hidden;
+}

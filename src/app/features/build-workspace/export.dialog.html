@@ -1,0 +1,19 @@
+<edsb-layer
+  [title]="title()"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  (dismissed)="dismissed.emit()"
+>
+  <edsb-share-link-panel
+    [state]="state()"
+    [url]="url()"
+    [refusal]="refusal()"
+    [feedback]="feedback()"
+    [shareAvailable]="shareAvailable"
+    [slefAvailable]="slefAvailable"
+    (copyRequested)="copy()"
+    (shareRequested)="share()"
+    (retryRequested)="retry()"
+    (slefRequested)="exportFile()"
+  />
+</edsb-layer>

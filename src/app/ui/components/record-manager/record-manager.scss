@@ -1,0 +1,26 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.manager {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-inset);
+}
+
+.manager__title {
+  @include layout.display-title(var(--edsb-text-size-heading-sm));
+}
+
+.manager__reason,
+.manager__description,
+.manager__empty {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

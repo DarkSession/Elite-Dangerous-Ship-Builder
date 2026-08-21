@@ -1,8 +1,17 @@
+<!--
+  The reference's command bar carries the screen's own name on the leading
+  edge, the one count that belongs to it beside that, and the screen's actions
+  on the trailing edge (canvas 1a/1b/1c). It carries no product name, so the
+  heading here is the page's `h1` rather than a second copy of one.
+-->
 <header class="frame__banner" [attr.aria-label]="bannerLabel()">
   <div class="frame__identity">
-    <span class="frame__product">{{ productName() }}</span>
-    @if (routeContext()) {
-      <span class="frame__context" [attr.aria-label]="contextLabel()">{{ routeContext() }}</span>
+    <span class="frame__flag" aria-hidden="true"></span>
+    @if (routeContext(); as context) {
+      <h1 class="frame__title">{{ context }}</h1>
+    }
+    @if (routeCount(); as count) {
+      <span class="frame__count">{{ count }}</span>
     }
   </div>
 
@@ -15,6 +24,7 @@
               class="frame__navigation-link"
               [href]="entry.href"
               [attr.aria-current]="entry.current ? 'page' : null"
+              (click)="navigationSelected.emit({ entry, event: $event })"
             >
               {{ entry.label }}
             </a>

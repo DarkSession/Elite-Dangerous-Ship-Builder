@@ -13,6 +13,34 @@ import { expect, type Locator, type Page } from '@playwright/test';
 /** The design target baseline, in CSS pixels. */
 export const TARGET_BASELINE_PX = 44;
 
+/**
+ * Waits for every running transition to finish before a surface is measured.
+ *
+ * A control that has just been mounted can be mid-transition between the
+ * user-agent's own default and the design system's tokens. That intermediate
+ * frame is not a state anyone is expected to read, and measuring it reports the
+ * browser's default button colour rather than the one that was designed — so
+ * every colour and geometry measurement waits for the surface to settle first.
+ *
+ * A repeating animation is deliberately not waited for. A busy indicator runs
+ * for as long as it is busy, which is forever in a preview: waiting for one to
+ * finish would hang every measurement on the page it appears on rather than
+ * stabilising it.
+ */
+export async function settled(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () =>
+      document.getAnimations().every((animation) => {
+        if (animation.playState !== 'running') {
+          return true;
+        }
+        return animation.effect?.getComputedTiming().iterations === Infinity;
+      }),
+    undefined,
+    { timeout: 2_000 },
+  );
+}
+
 /** Normalises text the way an accessible-name computation does. */
 function normalize(value: string | null): string {
   return (value ?? '').replace(/\s+/g, ' ').trim();
@@ -65,7 +93,19 @@ export async function expectOrderedHeadings(page: Page): Promise<void> {
  * contradict the words on screen (FR-007).
  */
 export async function expectNameMatchesVisibleText(control: Locator): Promise<void> {
-  const visible = normalize(await control.textContent());
+  // Decoration marked `aria-hidden` is not part of the label: a direction caret
+  // beside a sort field is drawn for the eye and stated by `aria-pressed` and
+  // by the name itself, so requiring the name to repeat the arrow would be
+  // asking for a name no reader benefits from.
+  const visible = normalize(
+    await control.evaluate((node) => {
+      const clone = node.cloneNode(true) as HTMLElement;
+      for (const hidden of clone.querySelectorAll('[aria-hidden="true"]')) {
+        hidden.remove();
+      }
+      return clone.textContent;
+    }),
+  );
   if (visible.length === 0) {
     return;
   }
@@ -241,13 +281,21 @@ export async function expectRootLanguage(
   page: Page,
   expected: { lang: string; dir: 'ltr' | 'rtl' },
 ): Promise<void> {
-  const root = await page.evaluate(() => ({
-    lang: document.documentElement.lang,
-    dir: document.documentElement.dir,
-  }));
-
-  expect(root.lang).toBe(expected.lang);
-  expect(root.dir).toBe(expected.dir);
+  // Polled rather than sampled once. A non-English catalogue is fetched, and
+  // the application deliberately renders complete English until it arrives
+  // rather than a half-translated screen under a German root `lang`. So the
+  // first paint of a route can legitimately precede the language it will settle
+  // on, and a single read races that load.
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => ({
+          lang: document.documentElement.lang,
+          dir: document.documentElement.dir,
+        })),
+      { message: 'the root language and direction never settled on the expected pair' },
+    )
+    .toEqual(expected);
 }
 
 /** No raw message key or unresolved placeholder is visible anywhere on the page. */
@@ -296,15 +344,18 @@ export async function clippedText(page: Page): Promise<ClippedElement[]> {
         if (style.display === 'inline') {
           return false;
         }
-        if (element.clientWidth === 0 && element.clientHeight === 0) {
+        // A box one pixel on a side is content hidden from the eye on purpose:
+        // it is there for assistive technology, and nothing about it is drawn,
+        // so "cut off" is not a thing that can happen to it.
+        if (element.clientWidth <= 1 && element.clientHeight <= 1) {
           return false;
         }
-        return !(
-          style.overflowX === 'auto' ||
-          style.overflowX === 'scroll' ||
-          style.overflowY === 'auto' ||
-          style.overflowY === 'scroll'
-        );
+        // Only a box that actually clips can cut text off. Content that
+        // overflows a visible box is still painted and still readable — a
+        // diacritic rising past its line box is the common case, and reporting
+        // it as truncation would say a legible heading is unreadable.
+        const clips = (value: string) => value === 'hidden' || value === 'clip';
+        return clips(style.overflowX) || clips(style.overflowY);
       })
       .map((node) => {
         const element = node as HTMLElement;
@@ -343,18 +394,36 @@ export async function expectBannerReleasesShortViewport(page: Page): Promise<voi
   expect(position, 'the banner stays stuck to a short viewport').not.toBe('sticky');
   expect(position, 'the banner is pinned over a short viewport').not.toBe('fixed');
 
+  // The route renders lazily, and `main` exists before its content does. A page
+  // with nothing to scroll cannot show whether the banner scrolls with it, so
+  // the assertion waits for one that can rather than measuring an empty screen.
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(
+          () => document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        ),
+      { message: 'the page never grew tall enough to scroll' },
+    )
+    .toBeGreaterThan(0);
+
   const before = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
 
-  const scrolled = await page.evaluate(() => {
+  // The banner's travel and the page's scroll are read in one evaluation.
+  // Reading them separately compares two different moments, and a page whose
+  // height is still settling — a font swapping in, an illustration arriving —
+  // has its scroll position clamped between them, which looks exactly like a
+  // banner that refused to move.
+  const { scrolled, after } = await page.evaluate(() => {
     // Enough to prove the behaviour on a page of any length; the assertion is
     // on how far the banner travelled, not on where it ended up.
     window.scrollTo(0, document.documentElement.scrollHeight);
-    return window.scrollY;
+    const element = document.querySelector('header, [role="banner"]') as HTMLElement;
+    return { scrolled: window.scrollY, after: element.getBoundingClientRect().top };
   });
-
-  const after = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
   await page.evaluate(() => window.scrollTo(0, 0));
 
+  expect(scrolled, 'the page is too short to prove anything about the banner').toBeGreaterThan(0);
   expect(
     Math.abs(before - after - scrolled),
     `the banner held its place while the page scrolled ${Math.round(scrolled)} px`,

@@ -1,0 +1,40 @@
+<figure class="artwork">
+  <div class="artwork__frame">
+    @if (!isUnavailable()) {
+      <img
+        class="artwork__image"
+        [class.artwork__image--pending]="isLoading()"
+        [src]="requestUrl()"
+        [alt]="label()"
+        [attr.aria-describedby]="isLoading() ? statusId : null"
+        decoding="async"
+        (load)="loaded.emit()"
+        (error)="failed.emit()"
+      />
+    }
+
+    <!--
+      While the illustration is on its way the plate carries the loader rather
+      than a line of prose under it: the words move nothing on the page, and
+      the mark sits where the picture will be.
+    -->
+    @if (isLoading()) {
+      <p class="artwork__loading">
+        <img class="artwork__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <span class="artwork__spoken" [id]="statusId">{{ loadingText() }}</span>
+      </p>
+    }
+  </div>
+
+  @if (isUnavailable()) {
+    <figcaption class="artwork__status" [id]="statusId">
+      <span>{{ label() }}</span>
+      <span>{{ unavailableText() }}</span>
+      <edsb-action-button
+        [label]="retryLabel()"
+        emphasis="quiet"
+        (activated)="retryRequested.emit()"
+      />
+    </figcaption>
+  }
+</figure>

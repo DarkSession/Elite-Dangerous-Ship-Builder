@@ -307,6 +307,7 @@ function writeWithTable(codec: CodecContext, loadout: ShipLoadout): SymbolWriter
       throw new BuildLinkCodecError(
         'unknownIdentity',
         `Slot ${module.slot} is absent from codec table ${codec.tableVersion} for ${canonicalShip}.`,
+        { slot: module.slot },
       );
     }
     const slot = slots[encodedSlot];
@@ -2155,6 +2156,7 @@ function requireIdentity(
       'unknownIdentity',
       `${slot === undefined ? '' : `Slot ${slot}: `}${kind} identity ${value} is absent from ` +
         `codec table ${codec.tableVersion}.`,
+      { slot: slot ?? null },
     );
   }
   return result;

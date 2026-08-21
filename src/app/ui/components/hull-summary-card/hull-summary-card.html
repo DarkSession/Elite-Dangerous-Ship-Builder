@@ -1,0 +1,62 @@
+<!--
+  The reference's compact hull record: the size code on the leading edge, the
+  name over one monospace `manufacturer · mounts` line, the price and its unit
+  on the trailing edge (canvas 1b `.sm-row`). Each fact keeps the label that
+  names it; only the eye sees the compressed line.
+-->
+<article class="hull-card" [attr.aria-labelledby]="cardId" [attr.aria-current]="current()">
+  <dl class="hull-card__facts">
+    <dt>{{ sizeLabel() }}</dt>
+    <dd class="hull-card__size">
+      @if (hull().sizeText; as size) {
+        <span aria-hidden="true">{{ hull().size }}</span>
+        <span class="hull-card__spoken">{{ size }}</span>
+      } @else {
+        <edsb-unavailable-value [label]="sizeLabel()" />
+      }
+    </dd>
+
+    <dt class="hull-card__spoken">{{ nameLabel() }}</dt>
+    <dd class="hull-card__identity">
+      <h2 class="hull-card__name" [id]="cardId">
+        <button
+          type="button"
+          class="hull-card__open"
+          [attr.aria-label]="openActionLabel()"
+          (click)="opened.emit(hull().symbol)"
+        >
+          <edsb-game-text
+            [text]="hull().name.text"
+            [language]="hull().name.language"
+            [translationState]="hull().name.translationState"
+          />
+        </button>
+      </h2>
+
+      <p class="hull-card__line">
+        <edsb-game-text
+          [text]="hull().manufacturer.text"
+          [language]="hull().manufacturer.language"
+          [translationState]="hull().manufacturer.translationState"
+        />
+        <span class="hull-card__separator" aria-hidden="true">·</span>
+        <span aria-hidden="true">{{ hull().hardpoints }}</span>
+        <span class="hull-card__spoken">{{ hull().hardpointsText }}</span>
+      </p>
+    </dd>
+
+    <dt class="hull-card__spoken">{{ priceLabel() }}</dt>
+    <dd class="hull-card__price">
+      @if (hull().price; as price) {
+        <span class="hull-card__amount">{{ price }}</span>
+        <span class="hull-card__unit">{{ priceUnit() }}</span>
+      } @else {
+        <edsb-unavailable-value [label]="priceLabel()" />
+      }
+    </dd>
+  </dl>
+
+  @if (hull().selected) {
+    <p class="hull-card__selected">{{ selectedLabel() }}</p>
+  }
+</article>

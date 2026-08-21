@@ -6,7 +6,7 @@
 ## Composition
 
 - Wide: canvas 1a's centered, route-backed saved-build modal over an inert originating screen. Narrow: canvas 1b's full-screen saved-build layer with a named return action. Direct navigation to `/builds` supplies an ordinary page background while keeping the same content/heading.
-- One “Saved builds”/“Builds” heading, create/select-hull action where appropriate, record count and storage summary/status.
+- No page heading and no count of its own: the command bar carries both, as it does on every screen (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)). Create/select-hull action where appropriate, and the storage summary/status.
 - Semantic `ResponsiveRecordList` divided by labeled working and named groups without changing one logical reading order.
 - `SavedBuildCard` showing local name or working state, package hull text, locale-formatted last modification and recorded validation valid/complete state. Note presence/content is local and exposed through a named editor.
 - Named actions: open, rename, duplicate and delete. Working actions: open, name/save as a named copy, duplicate as a newly named copy and explicit delete/discard. The tab working record remains separate when a named copy is created.
@@ -48,3 +48,19 @@ The reference rows establish the compact name/note, hull, validation badge and m
 - Record names/notes/symbols wrap without truncating identity or causing page overflow.
 - While the route-backed modal is open, its background is inert and removed from the accessibility tree; close/back restores the originating route and session position.
 - Previews cover empty, populated, duplicate, delete, conflict, changed-again, retention, quota, unsupported, malformed and unavailable states.
+
+## Reference composition
+
+Measured from canvas 1a's `SAVED BUILDS` modal and canvas 1b's `ssv-screen`.
+
+| Part            | Canvas                                                                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wide surface    | A centred dialog on a near-opaque scrim: amber-hairline body, a darker title bar with the title tracked 0.22em and a monospace dismiss, and a committing footer on its own plate |
+| Compact surface | The same content as a full-screen layer with a back arrow and a pinned footer                                                                                                    |
+| Header row      | A search field beside a monospace record count                                                                                                                                   |
+| Column headers  | Monospace, tracked 0.14em, on a slightly lighter plate                                                                                                                           |
+| Record          | Title in condensed 600 tracked 0.09em, a one-line note beneath in Barlow 300, then hull, price and edited-at in monospace                                                        |
+| Issue badge     | A monospace count on a translucent warm plate beside the title                                                                                                                   |
+| Record marker   | A 3px leading edge that takes amber when the record is the current one                                                                                                           |
+| Empty state     | Centred prose, no panel                                                                                                                                                          |
+| Footer actions  | The destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge                                                                   |

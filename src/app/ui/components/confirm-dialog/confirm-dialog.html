@@ -1,0 +1,17 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [dismissLabel]="dismissLabel()"
+  presentation="adaptive"
+  (dismissed)="cancelled.emit()"
+>
+  <div class="confirm__actions">
+    <edsb-action-button
+      [label]="confirmLabel()"
+      [emphasis]="destructive() ? 'danger' : 'primary'"
+      (activated)="confirmed.emit()"
+    />
+    <edsb-action-button [label]="cancelLabel()" emphasis="quiet" (activated)="cancelled.emit()" />
+  </div>
+</edsb-layer>

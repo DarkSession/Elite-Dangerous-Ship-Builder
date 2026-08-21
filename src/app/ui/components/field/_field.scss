@@ -5,6 +5,9 @@
 // One place, so a label, description and error look and behave the same in
 // every field. A capability that needs a new field composes this rather than
 // inventing local rules (FR-001).
+//
+// The reference sets a field as a darker fill inside an amber hairline, under a
+// tracked monospace label (canvas 1c, "Text input").
 
 :host {
   display: block;
@@ -15,12 +18,11 @@
 }
 
 .field__label {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
-  color: var(--edsb-text-secondary);
+  @include layout.micro-label(var(--edsb-text-subtle));
+}
+
+.field__label--hidden {
+  @include layout.visually-hidden;
 }
 
 .field__control {
@@ -29,10 +31,8 @@
   inline-size: 100%;
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-control-inline);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-strong);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-inset);
-  color: var(--edsb-text-primary);
+  @include layout.field-surface;
+
   font-family: var(--edsb-font-body);
   font-size: var(--edsb-text-size-body);
   transition:
@@ -48,18 +48,20 @@
 
 .field__control:disabled {
   color: var(--edsb-text-disabled);
-  border-color: var(--edsb-border-decorative-strong);
+  border-color: var(--edsb-border-quiet);
 }
 
 .field__description {
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
 }
 
 .field__error {
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-emphasis);
-  color: var(--edsb-text-danger);
+  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-count));
+
+  text-transform: none;
 }
 
 .field__control option {

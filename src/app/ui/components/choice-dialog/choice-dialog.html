@@ -1,0 +1,22 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [dismissLabel]="dismissLabel()"
+  presentation="adaptive"
+  (dismissed)="dismissed.emit()"
+>
+  <ul class="choice__list">
+    @for (choice of choices(); track choice.id) {
+      <li class="choice__item">
+        <edsb-action-button
+          [label]="choice.label"
+          [emphasis]="choice.emphasis ?? 'secondary'"
+          [attr.aria-describedby]="outcomeId(choice.id)"
+          (activated)="chosen.emit(choice.id)"
+        />
+        <p class="choice__outcome" [id]="outcomeId(choice.id)">{{ choice.outcome }}</p>
+      </li>
+    }
+  </ul>
+</edsb-layer>

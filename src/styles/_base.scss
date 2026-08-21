@@ -78,6 +78,9 @@ select,
 textarea {
   font: inherit;
   letter-spacing: inherit;
+  // Stated because no engine inherits it into a control on its own: without it
+  // a button inside an uppercase label draws the words as they were written.
+  text-transform: inherit;
   color: inherit;
 }
 

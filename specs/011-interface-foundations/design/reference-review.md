@@ -18,8 +18,8 @@ owned by their capability features; feature 011 owns the system those screens co
 
 - One near-black dark theme with warm amber as restrained emphasis, not a general meaning channel.
 - Condensed uppercase headings, readable body text and monospaced numeric/technical data.
-- Strong section labels, thin dividers, square/small-radius geometry and elevation reserved for
-  overlays/menus.
+- Strong section labels set in tracked condensed or monospace, hairline dividers, square geometry —
+  the canvases carry no `border-radius` on any product surface — and elevation reserved for overlays.
 - Wide master-detail and multi-region composition that becomes a complete stacked/drill-in compact
   experience.
 - Persistent contextual identity at the start of a frame and visible primary actions at the end.
@@ -65,3 +65,39 @@ typography roles, density and wide-to-compact composition. Pixel similarity cann
 specification, constitution, Almanac, locale state or accessibility contracts. Conversely,
 accessibility work is not permission to replace the supplied visual direction with an unrelated
 generic component library.
+
+## Extraction outcome (implementation)
+
+The canvas was measured rather than paraphrased. [canvas-extraction.md](./canvas-extraction.md)
+records every value read out of `.design/Ship Builder.dc.html`; `src/styles/tokens/_primitives.scss`
+is that measurement expressed as scales, and `_semantic.scss` is the canvas's _use_ of them expressed
+as roles.
+
+| Family    | What the canvas ships                                          | What the token layer holds                                                                                        |
+| --------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Colour    | 55 `:root` properties — the only design system in the file     | All 55, verbatim, plus five values the canvas leaves as literals (rail ground, scrim ×2, shadow, hull-art filter) |
+| Type      | Three families with one job each; a 7.5–22 px ramp             | The same three roles; the same ramp lifted uniformly by ~1.25× to an 11 px floor                                  |
+| Tracking  | Eleven letter-spacing steps, 0.04em–0.26em                     | The same eleven, at the same values                                                                               |
+| Spacing   | 78 padding, 18 gap and 15 letter-spacing literals              | Twelve named steps covering every recurring value, including the 1px gap that draws grid rules                    |
+| Geometry  | No `border-radius` on any product surface; 1px, 2px, 3px rules | One radius step (`0`); three border widths, named for the jobs they do                                            |
+| Elevation | One shadow, `0 24px 60px rgba(0,0,0,.6)`, on every overlay     | One overlay token, plus the inset rule the canvas draws under a current tab                                       |
+
+The recurring chrome — command bar, panel dialog, the five button variants, the segmented choice,
+the manifest row and its marker, the ruled metric grid, the section rule, the field surface and the
+hull-artwork plate — is named once as mixins in `src/styles/_responsive.scss` and composed by the
+components rather than restated per component.
+
+### The one deliberate transform
+
+The type ramp is lifted; nothing else is. Canvas 1b is a 390 × 844 viewport with 44 px inputs and
+46 px rows, so its 7.5–9.5 px monospace micro-labels are the design's literal intent rather than a
+thumbnail artefact. Lifting the whole ramp by a single factor keeps every ratio between rungs — the
+ratios are the hierarchy — while putting the smallest rung at 11 px.
+
+### What the canvas keeps that this feature previously discarded
+
+The first implementation of this feature took the palette and authored generic scales for everything
+else. That lost the reference's identity, which lives almost entirely in the non-colour decisions:
+the condensed uppercase tracking ladder, the monospace numeric channel, the square geometry, the
+amber rule closing the command bar and the amber marker opening a selected row. Those are now
+extracted rather than approximated.

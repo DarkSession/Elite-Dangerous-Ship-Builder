@@ -25,6 +25,14 @@
       "resources": {
         "files": ["/i18n/*.json"]
       }
+    },
+    {
+      "name": "ship-artwork",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/assets/ships/**"]
+      }
     }
   ]
 }

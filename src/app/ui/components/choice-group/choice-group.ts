@@ -5,6 +5,17 @@ import { relationId } from '../../a11y/text-equivalence';
 /** How the group behaves: one choice, many choices, or a single on/off. */
 export type ChoiceKind = 'radio' | 'checkbox' | 'switch';
 
+/**
+ * How the group is composed.
+ *
+ * `stack` is one choice per row with room for a description. `segmented` is the
+ * reference's abutted strip of tracked labels separated by hairline rules
+ * (canvas 1a/1b, "Segmented choice"), for short sets of one-word choices that
+ * need no description. Both render the same native inputs; only the arrangement
+ * differs.
+ */
+export type ChoiceLayout = 'stack' | 'segmented';
+
 /** One choice. `description` is associated, not merely rendered nearby. */
 export interface Choice {
   readonly value: string;
@@ -33,8 +44,15 @@ export interface Choice {
 export class ChoiceGroup {
   /** The question the group asks. Rendered as the legend. */
   readonly legend = input.required<string>();
+  /**
+   * Whether the legend is drawn. The reference's segmented strip carries no
+   * question above it; the words stay for anyone reading it aloud
+   * (canvas 1a/1b).
+   */
+  readonly legendHidden = input(false);
   readonly choices = input.required<readonly Choice[]>();
   readonly kind = input<ChoiceKind>('radio');
+  readonly layout = input<ChoiceLayout>('stack');
 
   /** Selected values. A radio group and a switch hold at most one. */
   readonly selected = input<readonly string[]>([]);

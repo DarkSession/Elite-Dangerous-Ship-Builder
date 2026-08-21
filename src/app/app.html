@@ -1,5 +1,20 @@
-<edsb-app-frame>
-  <h1>{{ heading() }}</h1>
-  <p>{{ tagline() }}</p>
+<edsb-app-frame
+  [routeContext]="pageName()"
+  [routeCount]="pageCount()"
+  [navigation]="navigation()"
+  (actionSelected)="selectAction($event)"
+  (navigationSelected)="navigateFromShell($event)"
+>
   <router-outlet />
 </edsb-app-frame>
+
+<edsb-confirm-dialog
+  [open]="replacementOpen()"
+  [title]="replacementTitle()"
+  [description]="replacementDescription()"
+  [confirmLabel]="replacementConfirm()"
+  [cancelLabel]="replacementCancel()"
+  [dismissLabel]="dismissLabel()"
+  (confirmed)="answerReplacement(true)"
+  (cancelled)="answerReplacement(false)"
+/>

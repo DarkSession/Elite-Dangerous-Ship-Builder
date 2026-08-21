@@ -1,0 +1,115 @@
+<!--
+  The wide manifest. Removed entirely at narrow widths, so its headers and
+  actions are neither rendered nor announced there.
+-->
+<div class="catalogue__manifest" role="group" [attr.aria-labelledby]="captionId">
+  <table class="catalogue__table">
+    <!-- The reference's manifest starts at the column headers, so the caption
+         names the table for a reader without being drawn. A caption cannot be
+         positioned out of flow, so the span inside it is what is hidden. -->
+    <caption [id]="captionId">
+      <span class="catalogue__spoken">{{ caption() }}</span>
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">
+          <span class="catalogue__spoken">{{ markerLabel() }}</span>
+        </th>
+        @for (column of columns(); track column.field) {
+          <th
+            scope="col"
+            [class.catalogue__numeric]="column.numeric"
+            [attr.aria-sort]="ariaSort(column)"
+          >
+            <!--
+              The visible text is the column's short label, so the manifest
+              stays readable; the accessible name adds what activating it does
+              and which way it will order. It contains the visible words rather
+              than replacing them.
+            -->
+            <button
+              type="button"
+              class="catalogue__sort"
+              [attr.aria-label]="column.sortActionLabel"
+              (click)="sortRequested.emit(column.field)"
+            >
+              {{ column.label }}
+              @if (indicator(column); as caret) {
+                <span class="catalogue__caret" aria-hidden="true">{{ caret }}</span>
+              }
+            </button>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (hull of hulls(); track hull.symbol) {
+        <tr [attr.aria-current]="currentFor(hull)" [attr.data-hull-symbol]="hull.symbol">
+          <!-- The reference opens a current row with an amber lozenge in its
+               own narrow column (canvas 1a `.sy-mark`). -->
+          <td class="catalogue__mark" aria-hidden="true">{{ hull.selected ? marker : '' }}</td>
+          <th scope="row">
+            <button
+              type="button"
+              class="catalogue__open"
+              [attr.aria-label]="openActionLabel(hull)"
+              (click)="hullOpened.emit(hull.symbol)"
+            >
+              <edsb-game-text
+                [text]="hull.name.text"
+                [language]="hull.name.language"
+                [translationState]="hull.name.translationState"
+              />
+            </button>
+            @if (hull.selected) {
+              <span class="catalogue__spoken">{{ selectedLabel() }}</span>
+            }
+          </th>
+          <td>
+            <edsb-game-text
+              [text]="hull.manufacturer.text"
+              [language]="hull.manufacturer.language"
+              [translationState]="hull.manufacturer.translationState"
+            />
+          </td>
+          <td class="catalogue__code">
+            @if (hull.sizeText; as size) {
+              <span aria-hidden="true">{{ hull.size }}</span>
+              <span class="catalogue__spoken">{{ size }}</span>
+            } @else {
+              <edsb-unavailable-value />
+            }
+          </td>
+          <td class="catalogue__code catalogue__numeric">
+            <span aria-hidden="true">{{ hull.hardpoints }}</span>
+            <span class="catalogue__spoken">{{ hull.hardpointsText }}</span>
+          </td>
+          <td class="catalogue__numeric">
+            @if (hull.price; as price) {
+              {{ price }}
+            } @else {
+              <edsb-unavailable-value />
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (isEmpty() && emptyLabel()) {
+    <p class="catalogue__empty">{{ emptyLabel() }}</p>
+  }
+</div>
+
+<!-- The same hulls as stacked records, for narrow widths and 400% zoom. -->
+<ul class="catalogue__cards">
+  @for (hull of hulls(); track hull.symbol) {
+    <li [attr.data-hull-symbol]="hull.symbol">
+      <edsb-hull-summary-card [hull]="hull" (opened)="hullOpened.emit($event)" />
+    </li>
+  }
+</ul>
+
+@if (isEmpty() && emptyLabel()) {
+  <p class="catalogue__empty catalogue__empty--cards">{{ emptyLabel() }}</p>
+}

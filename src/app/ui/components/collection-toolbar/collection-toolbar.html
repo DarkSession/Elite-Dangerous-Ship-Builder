@@ -1,0 +1,56 @@
+<div class="toolbar">
+  <!--
+    The reference's whole toolbar: one search field, then the size choices as
+    an abutted segmented strip (canvas 1a/1b). Nothing else is drawn here.
+  -->
+  <div class="toolbar__primary">
+    <div class="toolbar__search">
+      <edsb-text-field
+        [label]="searchLabel()"
+        [labelHidden]="true"
+        [placeholder]="searchLabel()"
+        [value]="search()"
+        kind="search"
+        (changed)="searchChanged.emit($event)"
+      />
+    </div>
+
+    <edsb-choice-group
+      class="toolbar__sizes"
+      [legend]="sizeLegend()"
+      [legendHidden]="true"
+      [choices]="sizeChoices()"
+      [selected]="selectedSizes()"
+      kind="radio"
+      layout="segmented"
+      (changed)="sizesChanged.emit($event)"
+    />
+  </div>
+
+  <!--
+    The compact composition's sort chips (canvas 1b). The wide manifest sorts
+    from its own column headers, so this row is removed there rather than
+    duplicating them.
+  -->
+  <div class="toolbar__sort" role="group" [attr.aria-labelledby]="sortId">
+    <p class="toolbar__sort-label" [id]="sortId">{{ sortLabel() }}</p>
+    <ul class="toolbar__sort-chips">
+      @for (option of sortOptions(); track option.value) {
+        <li>
+          <button
+            type="button"
+            class="toolbar__sort-chip"
+            [attr.aria-pressed]="option.value === sort().field"
+            [attr.aria-label]="option.actionLabel"
+            (click)="sortFieldChanged.emit(option.value)"
+          >
+            {{ option.label }}
+            @if (option.value === sort().field) {
+              <span class="toolbar__caret" aria-hidden="true">{{ caret() }}</span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

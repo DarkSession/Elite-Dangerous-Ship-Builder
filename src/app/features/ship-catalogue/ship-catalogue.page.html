@@ -1,0 +1,37 @@
+<div class="catalogue" [class.catalogue--detail-open]="detailOpen()">
+  <div class="catalogue__manifest-region">
+    <!--
+      Everything that is browsing rather than heading. At narrow widths with a
+      hull open, this steps aside so the detail has the screen — while the page
+      keeps exactly one h1 and one heading order, whichever composition is
+      showing.
+    -->
+    <div class="catalogue__browse">
+      <edsb-collection-toolbar
+        [search]="search()"
+        [sizeChoices]="sizeChoices()"
+        [selectedSizes]="selectedSizes()"
+        [sortOptions]="sortOptions()"
+        [sort]="sort()"
+        (searchChanged)="changeSearch($event)"
+        (sizesChanged)="changeSizes($event)"
+        (sortFieldChanged)="changeSort($event)"
+      />
+
+      <edsb-responsive-catalogue-view
+        [caption]="caption()"
+        [columns]="columns()"
+        [hulls]="hulls()"
+        [emptyLabel]="emptyDescription()"
+        (sortRequested)="changeSort($event)"
+        (hullOpened)="openHull($event)"
+      />
+    </div>
+  </div>
+
+  <!-- The hull-detail child route: an inspector here, a full-screen layer at
+       narrow widths. Same address either way. -->
+  <div class="catalogue__inspector">
+    <router-outlet />
+  </div>
+</div>

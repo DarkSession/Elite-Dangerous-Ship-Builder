@@ -1,0 +1,342 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+/**
+ * The interface still looks like the reference canvas.
+ *
+ * `scripts/check-interface-foundations.mjs` proves no component holds a visual
+ * literal. It cannot prove the token layer holds the *right* values, and it
+ * cannot prove a component composes them into the arrangement the reference
+ * draws — a system of perfectly tokenised generic scales passes it completely.
+ * That is exactly how this feature first shipped: the palette was taken from
+ * `.design/Ship Builder.dc.html` and every other scale was invented beside it,
+ * so the product used the reference's colours and none of its identity.
+ *
+ * So this suite reads what the browser actually computes and compares it with
+ * what canvas 1a–1d actually sets. The values below are measurements, recorded
+ * in `specs/011-interface-foundations/design/canvas-extraction.md`; each one is
+ * cited where it is asserted.
+ *
+ * Where a value is deliberately not the canvas's, the assertion says so and
+ * says why. There is one such family: the type ramp is lifted uniformly by
+ * ~1.25× so its smallest rung is 11px rather than 7.5px, which is why sizes are
+ * asserted as ratios and floors rather than as the canvas's own pixel values.
+ */
+
+/** The canvas `:root` colours these assertions refer to, as the browser reports them. */
+const AMBER = 'rgb(255, 140, 26)';
+const AMBER_3 = 'rgb(255, 176, 96)';
+const PANEL_4 = 'rgb(22, 22, 21)';
+
+/** One computed property of one element. */
+async function style(target: Locator, property: string): Promise<string> {
+  return await target.evaluate(
+    (element, name) => getComputedStyle(element).getPropertyValue(name),
+    property,
+  );
+}
+
+/** Every computed font-size on the page, in CSS pixels. */
+async function fontSizes(page: Page): Promise<number[]> {
+  return await page.evaluate(() =>
+    [...document.querySelectorAll('body *')]
+      .filter((element) => (element as HTMLElement).offsetParent !== null)
+      .map((element) => parseFloat(getComputedStyle(element).fontSize))
+      .filter((size) => Number.isFinite(size)),
+  );
+}
+
+test.describe('the reference visual language', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  test('closes the command bar with the heavy amber rule', async ({ page }) => {
+    // Canvas 1a/1b/1c: `background: var(--panel-4)`, `border-bottom: 2px solid
+    // var(--amber)`. The rule is the single strongest mark in the reference and
+    // is the same on all four canvases.
+    const banner = page.getByRole('banner');
+
+    expect(await style(banner, 'background-color')).toBe(PANEL_4);
+    expect(await style(banner, 'border-bottom-width')).toBe('2px');
+    expect(await style(banner, 'border-bottom-color')).toBe(AMBER);
+  });
+
+  test('opens the command bar with the solid amber flag', async ({ page }) => {
+    // Canvas 1a: a 10 × 26px amber block before the title; canvas 1b: 8 × 22px.
+    const flag = page.locator('.frame__flag');
+
+    expect(await style(flag, 'background-color')).toBe(AMBER);
+    const box = await flag.boundingBox();
+    expect(box, 'the command flag is rendered').not.toBeNull();
+    expect(box!.width).toBeGreaterThan(0);
+    expect(box!.height).toBeGreaterThan(box!.width);
+  });
+
+  test('sets every heading in tracked uppercase condensed', async ({ page }) => {
+    // Canvas: every heading and every control label is 'Barlow Condensed',
+    // uppercase, tracked between 0.07em and 0.26em. Nothing in the reference is
+    // a heading in the body face.
+    const heading = page.getByRole('heading', { level: 1 });
+
+    expect(await style(heading, 'font-family')).toContain('Barlow Condensed');
+    expect(await style(heading, 'text-transform')).toBe('uppercase');
+
+    const size = parseFloat(await style(heading, 'font-size'));
+    const tracking = parseFloat(await style(heading, 'letter-spacing'));
+    // Canvas 1a sets the command bar's title at 0.26em and canvas 1b, where
+    // there is less room for it, at 0.22em. Both are steps on the same ladder.
+    expect([0.26, 0.22].some((step) => Math.abs(tracking / size - step) < 0.005)).toBe(true);
+  });
+
+  test('sets every number and micro-label in monospace', async ({ page }) => {
+    // Canvas: 'JetBrains Mono' carries every number, unit, count and code. The
+    // hull count beside the screen title in the command bar is one of them.
+    const count = page.locator('.frame__count');
+
+    expect(await style(count, 'font-family')).toContain('JetBrains Mono');
+    expect(await style(count, 'text-transform')).toBe('uppercase');
+  });
+
+  test('opens every record with a marker that only the current one fills', async ({ page }) => {
+    // Canvas 1a/1b: `border-left: 3px solid transparent`, taking `var(--amber)`
+    // on the selected record. Every record reserves it, so nothing shifts when
+    // the selection moves.
+    //
+    // The manifest and the card list are two renderings of one list and exactly
+    // one is on screen, so the marker is looked for wherever this width puts
+    // it: on a row's first cell, or on the card itself.
+    const marker = page
+      .locator('tbody tr:visible > :first-child')
+      .or(page.locator('.hull-card:visible'))
+      .first();
+    await expect(marker).toBeVisible();
+
+    expect(await style(marker, 'border-left-width')).toBe('3px');
+    expect(await style(marker, 'border-left-color')).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('leaves every product surface square', async ({ page }) => {
+    // Canvas 1a–1d contain no `border-radius` on any product surface. The only
+    // rounded corners in the file belong to the design viewer's own chrome.
+    const rounded = await page.evaluate(() =>
+      [...document.querySelectorAll('body *')]
+        .filter((element) => (element as HTMLElement).offsetParent !== null)
+        .filter((element) => {
+          const radius = getComputedStyle(element).borderRadius;
+          return radius !== '' && radius !== '0px';
+        })
+        .map((element) => `${element.tagName.toLowerCase()}.${element.className}`)
+        .slice(0, 10),
+    );
+
+    expect(rounded, 'a product surface is rounded; the reference is square').toEqual([]);
+  });
+
+  test('never renders text below the lifted ramp floor', async ({ page }) => {
+    // The one deliberate departure. The canvas ramp starts at 7.5px; it is
+    // lifted uniformly so the smallest rung is 11px, which is what
+    // `--edsb-type-size-micro` resolves to at a 16px root.
+    const sizes = await fontSizes(page);
+
+    expect(sizes.length).toBeGreaterThan(0);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
+  });
+
+  test('fills the selected segment and quiets the rest', async ({ page }) => {
+    // Canvas 1a/1b: the selected segment is `background: var(--amber)` with
+    // `color: var(--bg)`; the rest are `var(--panel-3)`. The gaps between them
+    // are one pixel of amber ground rather than borders.
+    const large = page.getByRole('radio', { name: 'Large' });
+    const label = page.locator(`label[for="${await large.getAttribute('id')}"]`);
+
+    expect(await style(label, 'background-color')).not.toBe(AMBER);
+    await large.check();
+    await expect(large).toBeChecked();
+    expect(await style(label, 'background-color')).toBe(AMBER);
+  });
+
+  // Canvas 1a draws the rail only with a hull in it: with none chosen there is
+  // no ground, no hairline and no reserved track, and the manifest has the
+  // width.
+  test('draws nothing of the inspector until a hull is chosen', async ({ page }) => {
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeHidden();
+
+    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+    await expect(rail).toBeVisible();
+  });
+
+  test('sets the inspector name large in tracked amber over a monospace line', async ({ page }) => {
+    // Canvas 1a: `font: 700 22px 'Barlow Condensed'`, `letter-spacing: .08em`,
+    // `color: var(--amber-3)`, over the manufacturer and landing pad in mono.
+    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+
+    const name = page.locator('.detail__name');
+    await expect(name).toBeVisible();
+
+    expect(await style(name, 'font-family')).toContain('Barlow Condensed');
+    expect(await style(name, 'color')).toBe(AMBER_3);
+    expect(await style(name, 'text-transform')).toBe('uppercase');
+  });
+
+  test('rules the metric grid with its gaps rather than with borders', async ({ page }) => {
+    // Canvas 1a/1b: `display: grid; gap: 1px; background: var(--amber-a14)`
+    // with each cell on `var(--panel-3)` — the amber ground showing through the
+    // gaps is what draws the rules.
+    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+
+    const grid = page.locator('.metric-group').first();
+    await expect(grid).toBeVisible();
+
+    expect(await style(grid, 'display')).toBe('grid');
+    expect(await style(grid, 'row-gap')).toBe('1px');
+    expect(await style(grid, 'background-color')).toBe('rgba(255, 140, 26, 0.14)');
+  });
+});
+
+test.describe('the wide manifest', () => {
+  // The column-header row exists only in the wide composition, so it is
+  // asserted at a width that has one rather than at whichever width the project
+  // happens to run. Every project still runs it: what the reference sets for a
+  // manifest header does not change with the engine.
+  test.use({ viewport: { width: 1320, height: 900 } });
+
+  test('sets the column headers as tracked monospace over one rule', async ({ page }) => {
+    // Canvas 1a: `font: 500 9px 'JetBrains Mono'`, `letter-spacing: .16em`,
+    // over `border-bottom: 1px solid var(--amber-a16)`.
+    await page.goto('/ships');
+    const header = page.locator('thead th').first();
+    await expect(header).toBeVisible();
+
+    expect(await style(header, 'font-family')).toContain('JetBrains Mono');
+    expect(await style(header, 'font-weight')).toBe('500');
+    const size = parseFloat(await style(header, 'font-size'));
+    expect(parseFloat(await style(header, 'letter-spacing')) / size).toBeCloseTo(0.16, 2);
+    expect(await style(header, 'border-bottom-width')).toBe('1px');
+
+    // The canvas writes the headers in capitals. They are sort controls, and no
+    // engine inherits `text-transform` into a control on its own, so the words
+    // reach the screen as capitals only because the base reset says they do.
+    const sort = page.locator('.catalogue__sort').first();
+    expect(await style(sort, 'text-transform')).toBe('uppercase');
+    expect(await sort.evaluate((element: HTMLElement) => element.innerText)).toMatch(/^SHIP/);
+  });
+
+  test('marks the column the manifest is ordered by with amber and a caret', async ({ page }) => {
+    // Canvas 1a `paintSort`: the active header takes `#ffb060` and a `▲`/`▼`
+    // caret. The caret is decoration; `aria-sort` carries the same fact.
+    await page.goto('/ships');
+    const sorted = page.locator('thead th[aria-sort]');
+    await expect(sorted).toHaveCount(1);
+
+    expect(await style(sorted, 'color')).toBe(AMBER_3);
+    await expect(sorted.locator('.catalogue__caret')).toHaveText(/[▲▼]/);
+    await expect(sorted.locator('.catalogue__caret')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('sets the mount mix and the price against the trailing edge', async ({ page }) => {
+    // Canvas 1a: `text-align: right` on the hardpoint and price columns, so a
+    // digit lines up with the digit above it.
+    await page.goto('/ships');
+    const cells = page.locator('tbody tr').first().locator('td.catalogue__numeric');
+    await expect(cells).toHaveCount(2);
+
+    for (const cell of await cells.all()) {
+      expect(await style(cell, 'text-align')).toBe('end');
+    }
+  });
+
+  test('keeps the search, the size strip and the column headers in place', async ({ page }) => {
+    // Not measured off an artboard: 48 hulls are several screenfuls, and a
+    // figure whose column has scrolled away is a figure a Commander cannot
+    // read. The offsets are derived from the bar and the toolbar, so the
+    // assertion is that nothing ends up behind anything else.
+    await page.goto('/ships');
+    const header = page.locator('thead th').first();
+    const toolbar = page.locator('edsb-collection-toolbar');
+    await expect(header).toBeVisible();
+    const resting = (await header.boundingBox())!;
+
+    await page.mouse.wheel(0, 1200);
+    await page.waitForTimeout(200);
+
+    const bar = (await page.locator('.frame__banner').boundingBox())!;
+    const strip = (await toolbar.boundingBox())!;
+    const columns = (await header.boundingBox())!;
+
+    expect(bar.y).toBeCloseTo(0, 0);
+    expect(strip.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
+    expect(columns.y).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
+    await expect(header).toBeInViewport();
+    // Freezing is not the same as staying put: the row gap the table draws
+    // above its header rested it below where it freezes, and it hopped that far
+    // up on the first scroll.
+    expect(columns.y).toBeCloseTo(resting.y, 0);
+  });
+
+  // Canvas 1a draws the rail as a column of its own ground running from the
+  // command bar's rule down. A column does not slide: it starts where it
+  // freezes, so the first turn of the wheel moves the manifest and nothing else.
+  test('holds the inspector rail still while the manifest scrolls', async ({ page }) => {
+    await page.goto('/ships/Anaconda');
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeVisible();
+    const resting = (await rail.boundingBox())!;
+
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(200);
+
+    expect((await rail.boundingBox())!.y).toBeCloseTo(resting.y, 0);
+  });
+
+  // Canvas 1a draws the manifest as a grid with one track list:
+  // `22px 2.1fr 1.5fr 56px 104px 96px`, the same for the headers and for every
+  // row. Narrowing the list must not re-measure it.
+  test('holds the column track list while the manifest is narrowed', async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.locator('thead th').first()).toBeVisible();
+    const widths = () =>
+      page
+        .locator('thead th')
+        .evaluateAll((cells) =>
+          cells.map((cell) => Math.round(cell.getBoundingClientRect().width)),
+        );
+
+    const before = await widths();
+    expect(before).toHaveLength(6);
+
+    await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('federal');
+    await expect(page.locator('[data-hull-symbol]:visible')).not.toHaveCount(48);
+    expect(await widths()).toEqual(before);
+
+    await page.getByRole('radio', { name: 'Large' }).check();
+    expect(await widths()).toEqual(before);
+  });
+
+  // Canvas 1a: `padding: 12px` around a 16px name, so a row is a little over
+  // forty pixels tall and every row is the same.
+  test('sets every row to one height, close to the reference row', async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.locator('tbody tr').first()).toBeVisible();
+    const heights = await page
+      .locator('tbody tr')
+      .evaluateAll((rows) => [
+        ...new Set(rows.map((row) => Math.round(row.getBoundingClientRect().height))),
+      ]);
+
+    expect(heights).toHaveLength(1);
+    expect(heights[0]).toBeLessThanOrEqual(48);
+  });
+
+  test('keeps the inspector with the hull it describes', async ({ page }) => {
+    await page.goto('/ships/Anaconda');
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeVisible();
+
+    await page.mouse.wheel(0, 1200);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('.detail__name')).toBeInViewport();
+  });
+});

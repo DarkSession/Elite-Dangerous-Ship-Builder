@@ -1,5 +1,7 @@
 @use '../../../../styles/responsive' as layout;
 
+// A panel is the reference's titled plate: a hairline-bounded body under a
+// darker title bar closed by an amber hairline (canvas 1a/1c, "Panel dialog").
 :host {
   display: block;
   container-type: inline-size;
@@ -7,40 +9,46 @@
 }
 
 .panel {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--edsb-space-none));
 
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
   border-radius: var(--edsb-shape-panel);
   background-color: var(--edsb-surface-panel);
 }
 
 .panel--raised {
-  background-color: var(--edsb-surface-panel-raised);
+  border-color: var(--edsb-border-dialog);
   box-shadow: var(--edsb-elevation-menu);
 }
 
 .panel__header {
   @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-bar);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
 }
 
 .panel__heading {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-sm);
-  font-weight: var(--edsb-text-weight-heading);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  text-transform: uppercase;
-  color: var(--edsb-text-primary);
-  overflow-wrap: break-word;
+  @include layout.display-title(var(--edsb-text-size-heading-sm));
 }
 
 .panel__description {
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
+  text-transform: none;
+}
+
+.panel__body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
 }
 
 @include layout.container-compact(panel) {
-  .panel {
-    padding: var(--edsb-space-inline-loose);
+  .panel__body,
+  .panel__header {
+    padding-inline: var(--edsb-space-inline-loose);
   }
 }

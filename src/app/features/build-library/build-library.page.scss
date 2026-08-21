@@ -1,0 +1,35 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.library {
+  @include layout.stack(var(--edsb-space-panel));
+  @include layout.content-measure;
+}
+
+.library__description {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  max-inline-size: var(--edsb-layout-prose-max);
+  text-wrap: pretty;
+}
+
+.library__empty {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding-block: var(--edsb-space-section);
+  max-inline-size: var(--edsb-layout-prose-max);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.library__empty h2 {
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.library__empty p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+}

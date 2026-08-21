@@ -1,0 +1,21 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.unknown {
+  @include layout.stack(var(--edsb-space-stack));
+
+  max-inline-size: var(--edsb-layout-prose-max);
+}
+
+.unknown h2 {
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.unknown p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

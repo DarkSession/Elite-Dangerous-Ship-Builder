@@ -1,12 +1,15 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference's dialog: a panel closed by an amber hairline and lifted off a
+// near-opaque scrim, opened by a darker title bar carrying a tracked amber title
+// and a monospace dismiss (canvas 1a/1c, "Panel dialog").
 :host {
   display: contents;
 }
 
 .layer {
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  padding: 0;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
   border-radius: var(--edsb-shape-layer);
   background-color: var(--edsb-surface-layer);
   color: var(--edsb-text-primary);
@@ -18,34 +21,44 @@
 }
 
 .layer__header {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.command-bar(var(--edsb-border-width-hairline), var(--edsb-rule-panel));
 
+  flex-wrap: wrap;
   justify-content: space-between;
-  margin-block-end: var(--edsb-space-stack);
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-panel);
 }
 
 .layer__title {
-  font-size: var(--edsb-text-size-heading-sm);
+  @include layout.display-title(var(--edsb-text-size-heading-sm));
+
+  min-inline-size: 0;
 }
 
 .layer__dismiss {
-  @include layout.target-baseline;
+  @include layout.control-base(var(--edsb-text-tracking-count));
 
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-strong);
-  border-radius: var(--edsb-shape-control);
+  padding-inline: var(--edsb-space-inline-loose);
   background-color: transparent;
-  color: var(--edsb-text-primary);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  cursor: pointer;
+  border-color: transparent;
+  font-family: var(--edsb-font-metric);
+  font-weight: var(--edsb-text-weight-body);
+  color: var(--edsb-text-subtle);
 }
 
 .layer__description {
-  margin-block-end: var(--edsb-space-stack);
-  color: var(--edsb-text-muted);
+  padding-block-start: var(--edsb-space-panel);
+  padding-inline: var(--edsb-space-panel);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+.layer__body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
 }
 
 // The three presentations, as mixins, so the adaptive presentation composes
@@ -68,10 +81,8 @@
   margin-inline: auto;
   max-block-size: 80vh;
   overflow-y: auto;
-  border-start-start-radius: var(--edsb-shape-layer);
-  border-start-end-radius: var(--edsb-shape-layer);
-  border-end-start-radius: 0;
-  border-end-end-radius: 0;
+  border-radius: var(--edsb-shape-layer);
+  border-block-end: 0;
 }
 
 // A full-height layer owns the viewport. Used where content, expansion or a
@@ -84,7 +95,7 @@
   margin: 0;
   overflow-y: auto;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--edsb-shape-layer);
 }
 
 .layer--dialog {

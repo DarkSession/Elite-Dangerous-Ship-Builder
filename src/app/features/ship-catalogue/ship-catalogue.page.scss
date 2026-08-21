@@ -1,0 +1,115 @@
+@use '../../../styles/responsive' as layout;
+
+// The reference's wide shipyard: a manifest region beside a fixed inspector
+// rail, the rail set off by an amber hairline and its own darker ground
+// (canvas 1a, "Wide shipyard layout").
+:host {
+  display: block;
+}
+
+.catalogue {
+  @include layout.region-pair(var(--edsb-layout-rail-min), var(--edsb-space-none));
+}
+
+.catalogue__manifest-region {
+  @include layout.stack(var(--edsb-space-panel));
+
+  min-inline-size: 0;
+}
+
+.catalogue__browse {
+  @include layout.stack(var(--edsb-space-panel));
+}
+
+.catalogue__inspector {
+  min-inline-size: 0;
+}
+
+// Search, the size strip and the column headers stay put while the manifest
+// scrolls under them: with 48 hulls, a Commander comparing a figure two
+// screenfuls down should not have to scroll back to find out which column it
+// belongs to, or to narrow the list again.
+//
+// The offsets are exact by construction. The command bar is one row of
+// target-height controls inside its own block padding, and the toolbar below it
+// is one row of the same height, so each region clears what is above it without
+// measuring anything at runtime.
+@include layout.medium-up {
+  .catalogue__browse edsb-collection-toolbar {
+    position: sticky;
+    inset-block-start: var(--edsb-layout-bar-height);
+    z-index: 2;
+    background-color: var(--edsb-surface-root);
+    // The shell's own block padding is above this, so the strip covers the rows
+    // passing behind it rather than letting them show through the gap.
+    padding-block: var(--edsb-space-panel);
+    margin-block: calc(-1 * var(--edsb-space-panel));
+    // The strip and the column headers freeze against the same edge, and a
+    // fractional device pixel ratio rounds the two boxes apart: a hairline of
+    // row shows through the seam. The strip paints over the seam rather than
+    // the arithmetic being tuned to a ratio nobody's screen has to have.
+    box-shadow: 0 var(--edsb-space-3xs) 0 var(--edsb-surface-root);
+  }
+}
+
+// A short viewport releases the shell's sticky bar, and the chrome below it
+// releases with it rather than freezing over a gap (FR-011).
+@include layout.short-viewport {
+  .catalogue__browse edsb-collection-toolbar {
+    position: static;
+  }
+}
+
+// Canvas 1a draws the rail only with a hull in it. With none selected there is
+// no rail: no ground, no hairline, no reserved track — the manifest has the
+// width, and the region-pair's second column is not there to be seen.
+.catalogue:not(.catalogue--detail-open) {
+  grid-template-columns: 1fr;
+}
+
+.catalogue:not(.catalogue--detail-open) .catalogue__inspector {
+  display: none;
+}
+
+@include layout.wide-up {
+  .catalogue--detail-open .catalogue__manifest-region {
+    padding-inline-end: var(--edsb-space-region);
+  }
+
+  .catalogue__inspector {
+    background-color: var(--edsb-surface-rail);
+    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    padding: var(--edsb-space-panel);
+    // The rail's ground runs from the command bar's rule down, as the canvas
+    // draws it, and its resting position is therefore the position it freezes
+    // in: it does not travel a block of padding on the first scroll.
+    margin-block-start: calc(-1 * var(--edsb-space-panel));
+
+    // The inspector stays with the hull it describes while the manifest
+    // scrolls beside it, and scrolls inside itself when it is taller than the
+    // space left under the command bar.
+    position: sticky;
+    inset-block-start: var(--edsb-layout-bar-height);
+    align-self: start;
+    max-block-size: calc(100dvh - var(--edsb-layout-bar-height));
+    overflow-y: auto;
+  }
+}
+
+@include layout.short-viewport {
+  .catalogue__inspector {
+    position: static;
+    max-block-size: none;
+    overflow-y: visible;
+  }
+}
+
+// Narrow widths give hull detail the screen rather than stacking it beneath
+// the manifest. Same route, same history entry, same state — only the
+// composition changes (hull-detail design, "Responsive and accessibility
+// notes").
+@include layout.compact {
+  .catalogue--detail-open .catalogue__browse {
+    display: none;
+  }
+}

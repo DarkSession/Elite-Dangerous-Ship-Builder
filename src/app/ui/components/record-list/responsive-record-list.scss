@@ -1,0 +1,44 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: records;
+}
+
+.records {
+  @include layout.stack(var(--edsb-space-section));
+}
+
+.records__group {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.records__heading {
+  @include layout.section-rule;
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
+}
+
+.records__list {
+  display: grid;
+  gap: var(--edsb-space-stack);
+  grid-template-columns: 1fr;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+// Wider containers hold more than one record across without the identities
+// wrapping. The reading order does not change with the number of columns.
+@include layout.container-wide-up(records) {
+  .records__list {
+    grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-rail-min), 1fr));
+  }
+}
+
+.records__empty {
+  padding-block: var(--edsb-space-section);
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
+}

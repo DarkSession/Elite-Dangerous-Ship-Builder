@@ -1,0 +1,19 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+.save {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+// The reference closes a dialog with its commitments on a plate of their own,
+// above a hairline (canvas 1c, "SAVE BUILD").
+.save__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: flex-end;
+  padding-block-start: var(--edsb-space-control-block);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+}

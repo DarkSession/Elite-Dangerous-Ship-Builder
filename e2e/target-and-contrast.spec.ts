@@ -55,6 +55,11 @@ test.describe('target size and contrast', () => {
   });
 
   test('meets the target baseline and contrast minima in every preview state', async ({ page }) => {
+    // One navigation and three measurement passes per rendered state, and the
+    // catalogue grows with every component that lands. This is the slowest test
+    // in the suite by design: it is a sweep, not a sample.
+    test.slow();
+
     const addresses = await previewAddresses(page);
 
     expect(addresses.length, 'the catalogue rendered no addressable state').toBeGreaterThan(0);

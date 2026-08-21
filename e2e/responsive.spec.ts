@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
+  clippedText,
   expectLandmarks,
   expectNoDocumentOverflow,
   expectTargetSizes,
@@ -46,24 +47,10 @@ test.describe('responsive availability', () => {
   });
 
   test('keeps every datum readable rather than clipping it', async ({ page }) => {
-    const clipped = await page.locator('main *').evaluateAll((nodes) =>
-      nodes
-        .filter((node) => {
-          const element = node as HTMLElement;
-          if (element.children.length > 0) {
-            return false;
-          }
-          const style = getComputedStyle(element);
-          if (style.overflow === 'auto' || style.overflow === 'scroll') {
-            return false;
-          }
-          // Content wider than its own box, with no scroller to reach it.
-          return element.scrollWidth > element.clientWidth + 1;
-        })
-        .map((node) => (node.textContent ?? '').trim().slice(0, 40)),
-    );
-
-    expect(clipped, 'content is cut off with no way to reach it').toEqual([]);
+    // The same measurement expanded copy, mirrored direction and 400% zoom use:
+    // truncation is one failure, and one detector keeps the engines' sub-pixel
+    // disagreements in one place rather than four.
+    expect(await clippedText(page), 'content is cut off with no way to reach it').toEqual([]);
   });
 
   test('meets the target baseline at every profile', async ({ page }) => {

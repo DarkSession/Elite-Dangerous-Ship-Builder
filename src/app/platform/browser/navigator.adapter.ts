@@ -35,4 +35,51 @@ export class NavigatorAdapter {
 
     return list.filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0);
   }
+
+  /**
+   * Puts text on the clipboard, reporting whether it actually happened.
+   *
+   * Clipboard access is a permission, and a permission can be refused, absent
+   * or unavailable outside a secure context. Every one of those is an ordinary
+   * outcome rather than an exception to propagate: the caller keeps the text on
+   * screen and says so (FR-019).
+   */
+  async copyText(text: string): Promise<boolean> {
+    const clipboard = this.#window?.navigator?.clipboard;
+    if (!clipboard) {
+      return false;
+    }
+    try {
+      await clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Whether this platform offers a share sheet at all. */
+  canShare(): boolean {
+    return typeof this.#window?.navigator?.share === 'function';
+  }
+
+  /**
+   * Opens the platform share sheet.
+   *
+   * A Commander who dismisses the sheet cancels the share, and the rejection
+   * that reports it is indistinguishable from a failure. Both return false,
+   * because both mean the same thing here: the link did not leave this way, so
+   * the one on screen is still the way out.
+   */
+  async share(payload: { title: string; url: string }): Promise<boolean> {
+    const navigator = this.#window?.navigator;
+    if (typeof navigator?.share !== 'function') {
+      return false;
+    }
+    try {
+      await navigator.share(payload);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

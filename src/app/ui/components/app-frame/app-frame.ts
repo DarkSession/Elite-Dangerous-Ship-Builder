@@ -42,14 +42,14 @@ export interface ShellStatus {
 /**
  * The application frame.
  *
- * Supplies the landmarks, product identity, route context, actions and feedback
- * outlets that surround every capability — and owns none of their state. Route
- * context arrives as immutable presentation input and the frame emits intent;
- * it never reaches into a build store (constitution III).
+ * Supplies the landmarks, route identity, actions and feedback outlets that
+ * surround every capability — and owns none of their state. Route context
+ * arrives as immutable presentation input and the frame emits intent; it never
+ * reaches into a build store (constitution III).
  *
- * The frame renders `<main>` but does not put a heading in it: the route owns
- * its own `h1`. A shell that synthesized a heading would give every screen the
- * same one and leave a reader unable to tell where they are.
+ * The reference puts the screen's own name in the command bar and nowhere
+ * else, so that name is the document's one `h1` and routes do not render a
+ * second copy of it (canvas 1a/1b/1c, "Command bar").
  */
 @Component({
   selector: 'edsb-app-frame',
@@ -66,6 +66,9 @@ export class AppFrame {
   /** Visible identity of the current screen or build, supplied by the route. */
   readonly routeContext = input<string | null>(null);
 
+  /** The one count the bar carries beside that name, when the screen has one. */
+  readonly routeCount = input<string | null>(null);
+
   readonly navigation = input<readonly NavigationEntry[]>([]);
   readonly actions = input<readonly ShellAction[]>([]);
 
@@ -74,10 +77,19 @@ export class AppFrame {
 
   readonly actionSelected = output<string>();
 
-  readonly productName = this.#messages.messageSignal('app.name');
+  /**
+   * A primary navigation link was activated.
+   *
+   * The link stays a real link — it has an `href`, it can be opened in a new
+   * tab, its address can be copied — and the frame does not decide what
+   * activating it means. The event is handed to the caller so an application
+   * that routes on the client can take it over, and one that does not (the
+   * preview catalogue) simply lets the browser follow the link.
+   */
+  readonly navigationSelected = output<{ entry: NavigationEntry; event: MouseEvent }>();
+
   readonly bannerLabel = this.#messages.messageSignal('shell.banner.label');
   readonly navigationLabel = this.#messages.messageSignal('shell.navigation.label');
-  readonly contextLabel = this.#messages.messageSignal('shell.context.label');
   readonly actionsLabel = this.#messages.messageSignal('shell.actions.label');
   readonly statusLabel = this.#messages.messageSignal('shell.status.label');
   readonly actionsOpenLabel = this.#messages.messageSignal('shell.actions.open');
