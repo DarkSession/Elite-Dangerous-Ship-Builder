@@ -1,0 +1,68 @@
+<!--
+  One body, two placements. Canvas 1c draws the bench inline beside the ledger;
+  canvas 1d draws it as a full-screen view over an inert background. Writing the
+  content once and placing it twice is what keeps the two widths identical in
+  what they offer — a second copy is where a capability goes missing at one of
+  them (constitution V).
+-->
+<ng-template #body>
+  @if (packageEmpty()) {
+    <p class="replacement__empty">{{ packageEmptyLabel() }}</p>
+  } @else {
+    <fieldset class="replacement__choices">
+      <legend class="visually-hidden">{{ listLabel() }}</legend>
+      @for (choice of choices(); track choice.key) {
+        <label class="replacement__choice">
+          <input
+            class="replacement__radio"
+            type="radio"
+            name="module-choice"
+            [value]="choice.key"
+            [checked]="selectedChoiceKey() === choice.key"
+            (change)="choose(choice.key)"
+          />
+          <edsb-module-identity-badge
+            [name]="nameOf(choice)"
+            [symbol]="choice.module.symbol"
+            [moduleClass]="choice.module.class"
+            [rating]="choice.module.rating"
+            [mount]="choice.module.mount ?? null"
+          />
+        </label>
+      }
+    </fieldset>
+  }
+
+  <div class="replacement__actions">
+    <button class="replacement__cancel" type="button" (click)="cancel()">
+      {{ cancelLabel() }}
+    </button>
+    <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
+      {{ fitLabel() }}
+    </button>
+  </div>
+</ng-template>
+
+@if (asLayer()) {
+  <edsb-layer
+    [title]="heading()"
+    [open]="true"
+    [dismissLabel]="cancelLabel()"
+    presentation="full-height"
+    (dismissed)="cancel()"
+  >
+    <div class="replacement replacement--layer">
+      <ng-container [ngTemplateOutlet]="body" />
+    </div>
+  </edsb-layer>
+} @else {
+  <!--
+    Inline, the bench above already carries the mount's title, exactly as canvas
+    1c draws it: `FITTING . HARDPOINT 1` and then the manifest. A second visible
+    heading here would be the same words twice. The region keeps its accessible
+    name so a reader still knows what the list is for.
+  -->
+  <section class="replacement" [attr.aria-label]="heading()">
+    <ng-container [ngTemplateOutlet]="body" />
+  </section>
+}

@@ -2,11 +2,13 @@
 
 ## Reference scope
 
-Reviewed `.design/Ship Builder.dc.html`:
+Reviewed `.design/Ship Builder.dc.html`, canvases **1c** (wide outfitting, 1560px) and **1d**
+(compact outfitting, 390px with an 844px minimum root height) — the two screens applicable to
+features 002–010:
 
-- wide Drives tab, `data-anat-layer="mass"` and `data-anat-detail="mass"` (especially the paired
-  Thruster Load and Frame Shift Drive cards); and
-- narrow Drives tab, `data-m-mode="mass"`.
+- canvas 1c's Drives tab, `data-anat-layer="mass"` and `data-anat-detail="mass"` (especially the
+  paired Thruster Load and Frame Shift Drive cards); and
+- canvas 1d's Drives tab, `data-m-mode="mass"`.
 
 The reference supplies information hierarchy only. The accepted specification, Almanac contracts,
 constitution and repository design system override its sample values, labels, interactions and

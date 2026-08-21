@@ -87,7 +87,7 @@ export default defineConfig({
   // run, so flakiness cannot be absorbed into a green build.
   retries: isCI ? 2 : 0,
   failOnFlakyTests: isCI,
-  workers: isCI ? 1 : undefined,
+  workers: isCI ? 2 : undefined,
   reporter: isCI ? [['list'], ['html', { open: 'never' }]] : [['list']],
 
   use: {

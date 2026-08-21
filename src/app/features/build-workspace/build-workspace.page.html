@@ -37,8 +37,14 @@
   <!--
     Where the module editors and statistics of later capabilities mount. The
     workspace owns the build; they compose into it.
+
+    Feature 002's outfitting region is the first of them. It reads the same one
+    active build this page owns and never holds a second, so the validation
+    verdict above and the ledger below cannot disagree about what is fitted.
   -->
-  <div class="workspace__outlet"></div>
+  <div class="workspace__outlet">
+    <edsb-outfitting-workspace />
+  </div>
 } @else {
   <div class="workspace__empty">
     <h2>{{ emptyTitle() }}</h2>

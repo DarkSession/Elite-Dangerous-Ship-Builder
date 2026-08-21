@@ -17,9 +17,25 @@ All compositions preserve this semantic order:
 
 Visual multi-column placement may differ, but DOM/assistive reading order remains coherent.
 
+## Declared content minimums
+
+Every "minimum" this document and the verification tasks refer to is one of these three. They are
+content minimums measured on the region's own inline size, never a viewport label.
+
+| Region                                 | Minimum inline size | What must fit at it                                                                     |
+| -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
+| Ledger / master pane                   | 320 CSS px          | A slot card's exact key, one wrapped module name and its 44px controls without clipping |
+| Selected-slot pane (chooser or editor) | 360 CSS px          | A candidate row's name, class, rating, mount and stacked labels plus a 44px fit control |
+| Wide right rail                        | 280 CSS px          | One validation or cost line with its number and unit on at most two lines               |
+
+Two panes are used only when both the ledger and selected-slot minimums fit together in the available
+inline space, at the active text size, expansion and zoom. Three regions are used only when all three
+fit. Otherwise the next composition down applies. A region that cannot reach its minimum is never
+narrowed below it — the composition changes instead.
+
 ## Wide composition
 
-At space equivalent to the 1440×900 project viewport and where declared region minimums fit, adapt
+At space equivalent to the 1440×900 project viewport and where all three declared minimums fit, adapt
 canvas 1c's three visual regions:
 
 - left: persistent `ALL`, hardpoint, core, optional and utility controls plus the complete grouped
@@ -28,7 +44,8 @@ canvas 1c's three visual regions:
   regions inline;
 - right: shared package validation, cost/material and downstream status outlets.
 
-The wide header exposes editable identity from feature 001 and direct undo/redo; export, save and help
+The wide header exposes the feature 002 editable ship name/ident control (FR-019) beside feature 001's
+build identity, plus direct undo/redo; export, save and help
 remain owned composition actions. Mounts anatomy may show top and bottom together. Ledger, manifest
 and center regions may scroll internally; any wide fact table has a labeled overflow container. The
 document itself never scrolls horizontally.
@@ -40,8 +57,8 @@ Tablet is an intentional plan-time interpolation because `.design` provides none
 - At a roomy landscape container (verified at 1112×834), use two panes below feedback/shared status:
   a complete ledger master on the left and selected-slot facts/chooser/editor on the right. Collapse
   the wide right rail into the shared status/outlet region above. Keep every action.
-- At 834×1112 portrait, or whenever expanded/RTL/zoomed content cannot satisfy both pane minimums,
-  use the compact composition.
+- At 834×1112 portrait, or whenever expanded/RTL/zoomed content cannot satisfy the 320 px ledger and
+  360 px selected-slot minimums together, use the compact composition.
 - If a future feature 011 token selects two panes at another size, tests must prove both declared
   content minimums, 44px controls and no document overflow; the viewport label alone is insufficient.
 

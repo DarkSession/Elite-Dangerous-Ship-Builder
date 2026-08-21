@@ -1,0 +1,21 @@
+<span class="identity">
+  <edsb-game-text
+    class="identity__name"
+    [text]="name().text"
+    [language]="name().language"
+    [translationState]="name().translationState"
+  />
+
+  <span class="identity__code-line">
+    @if (code()) {
+      <span class="identity__code">{{ code() }}</span>
+      <span class="visually-hidden">{{ codeDescription() }}</span>
+    }
+    @if (mountLabel()) {
+      <span class="identity__mount">{{ mountLabel() }}</span>
+    }
+    @if (showSymbol() && symbol()) {
+      <span class="identity__symbol" data-bidi-isolate>{{ symbol() }}</span>
+    }
+  </span>
+</span>

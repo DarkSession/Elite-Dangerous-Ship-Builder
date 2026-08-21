@@ -1,0 +1,170 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's three regions at wide width and canvas 1d's single flow when
+// there is not room for them. The composition is chosen from the region's own
+// inline size, so 400% zoom and expanded text select the compact one for the
+// same reason a phone does — the two declared content minimums are what decide,
+// never a viewport label (responsive composition, "Declared content minimums").
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: outfitting;
+}
+
+.outfitting {
+  @include layout.stack(var(--edsb-space-stack-loose));
+}
+
+.outfitting__empty {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-section);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.outfitting__empty-title {
+  @include layout.display-title;
+
+  margin: 0;
+}
+
+.outfitting__empty-description {
+  margin: 0;
+  max-inline-size: var(--edsb-layout-prose-max);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+.outfitting__category {
+  @include layout.control-base(var(--edsb-text-tracking-heading));
+
+  // The label and its count are one line, as the canvas draws them; the strip
+  // wraps to another row before either of them does.
+  flex-wrap: nowrap;
+  padding-inline: var(--edsb-space-inline);
+  background-color: var(--edsb-surface-panel-raised);
+
+  &[aria-pressed='true'] {
+    background-color: var(--edsb-surface-accent-quiet);
+    color: var(--edsb-text-accent);
+  }
+}
+
+// The count follows its label's colour rather than carrying one of its own:
+// the strip's pressed state changes the ground under it, and a fixed faint ink
+// that reads on the resting ground does not read on the pressed one.
+.outfitting__category-count {
+  @include layout.micro-label(currentcolor, var(--edsb-text-tracking-count));
+}
+
+.outfitting__ledger {
+  @include layout.stack(var(--edsb-space-stack-loose));
+}
+
+.outfitting__slot {
+  display: block;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// Wide enough for the ledger and the selected mount's bench to sit side by
+// side, with both declared minimums met.
+// Wide enough for the ledger and the bench to sit side by side with both
+// declared content minimums met: 20rem for a slot card's wrapped name and its
+// controls, 22.5rem for a candidate row and its fit control, plus the gap
+// between them. The threshold is the sum of those minimums rather than feature
+// 011's generic wide step, because a generic step that happens to be smaller
+// would grant two panes that cannot both hold their content — which is the one
+// thing "a region is never narrowed below its minimum" rules out (responsive
+// composition, "Declared content minimums").
+//
+// Stated in rem, so it moves with the reader's text size: at 200% text the same
+// pixel width no longer holds the same content, and the composition steps down
+// rather than overflowing.
+@container outfitting (min-width: 44rem) {
+  .outfitting {
+    display: grid;
+    grid-template-columns: minmax(20rem, 1fr) minmax(22.5rem, 1fr);
+    gap: var(--edsb-space-region);
+    align-items: start;
+  }
+
+  .outfitting__empty,
+  .outfitting__feedback {
+    grid-column: 1 / -1;
+  }
+
+  // The bench follows the mount a Commander is looking at rather than scrolling
+  // away from it, and is bounded by what is left of the viewport below the
+  // command bar so its manifest scrolls inside itself rather than growing the
+  // page to two hundred rows. `svh` is layout syntax, not a measurement taken
+  // off the canvas.
+  .outfitting__bench {
+    position: sticky;
+    inset-block-start: var(--edsb-layout-bar-height);
+    max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    overflow: hidden;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The regions, named
+// ---------------------------------------------------------------------------
+
+.outfitting__ledger-region {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+// The canvas's segmented category strip: abutted tracked labels over a hairline
+// ground, each carrying its own count (canvas 1c).
+.outfitting__categories {
+  @include layout.ruled-group(repeat(auto-fit, minmax(9rem, 1fr)));
+
+  margin: 0;
+  padding: 0;
+  border-inline: 0;
+}
+
+.outfitting__bench {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.outfitting__bench-header {
+  @include layout.section-rule;
+}
+
+.outfitting__bench-title {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  font-size: var(--edsb-text-size-label);
+}
+
+.outfitting__bench-actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+.outfitting__action {
+  @include layout.control-secondary;
+  @include layout.control-base;
+}
+
+.outfitting__bench-reason,
+.outfitting__bench-empty {
+  margin: 0;
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

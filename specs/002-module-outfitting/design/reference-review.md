@@ -2,6 +2,12 @@
 
 ## Source reviewed
 
+> Re-verified against the 2026-08-21 canvas re-sync (`.design/Ship Builder.dc.html`, 397 KB). All four
+> canvases remain. `NODE NO.`, `None — stock module`, `None — remove effect`, `⌘K` and the identity
+> pencils are unchanged, so every ruling below still applies. `CLEAR ✕`, `G5 ROLL`, the `data-delta`
+> markers and the per-candidate delta chips have been removed from the design, matching four rulings
+> already recorded here.
+
 - `.design/Ship Builder.dc.html`
 - Canvas **1c**: wide outfitting workspace, module manifest and engineering/material regions
 - Canvas **1d**: narrow slot list, change-module layer and engineering layer
@@ -94,6 +100,103 @@ and the plan uses that same compact order.
   400% zoom uses narrow composition with no document horizontal scrolling.
 - Screen-reader order follows semantic content, not three-column visual placement. Expanded/RTL text,
   200% text, 400% zoom, both orientations and reduced motion are explicit acceptance states.
+
+## Divergence from FR-019 (ship name and ident)
+
+**What the reference draws.** Canvas 1c's 54px command bar draws `PACIFIER ✎` on the first line and
+`ANACONDA · FD-11X ✎` on the second: two pencil affordances editing in place, no labelled fields and
+no separate screen. Canvas 1d draws `PACIFIER ✎` and `ANACONDA · FD-11X` — **the ident carries no
+pencil at compact width**.
+
+**What was withdrawn.** The labelled header text inputs first written into T083a. They are not on
+either canvas, and a labelled field pair beside the identity line is the addition-beside-the-design
+failure this repository has already made three times.
+
+**What survives at the facade.** The pencil affordance on the identity line at both widths, as a
+native control with a `visually-hidden` accessible name and a 44 CSS px target. Editing happens in
+place on the identity line; nothing else is added to the command bar.
+
+**What is left open** (needs a ruling before T083a is scheduled):
+
+1. ~~Is `PACIFIER` the record name or the modelled `shipName`?~~ **Ruled 2026-08-21: they are one
+   field.** The canvas showing the same string in the header, the save dialog and the export title is
+   correct and literal — feature 001's save dialog and this feature's identity control read and write
+   the same modelled `shipName`. Neither keeps a second copy. Record identity stays a local id
+   independent of that name (001 FR-008), so no feature 001 requirement changes.
+2. ~~Canvas 1d omits the ident pencil.~~ **Ruled 2026-08-21: the ident carries a pencil at both
+   widths.** 1d's omission is an omission in the reference, not a capability boundary, so the wide
+   affordance is mirrored at compact width using the same design-system element. Nothing is invented.
+
+## Open collisions — awaiting ruling
+
+Found on 2026-08-21 and not covered by the 2026-08-16 rulings above.
+
+**Per-row change/engineer/remove actions, ruled 2026-08-21 during US1 implementation.**
+Withdrawn. An earlier draft of the slot card put `Change module`, `Engineer` and `Remove module` on
+every ledger row. Neither canvas draws them there: canvas 1c's ledger row carries a size, a node
+badge, the module's identity and its power control, and the actions live on the selected mount's
+bench under `FITTING · HARDPOINT 1`; canvas 1d's row carries the same and puts the actions in the
+persistent selected-slot bar. The row's job is to select. The actions moved to the bench at both
+widths, which is what the reference draws and what
+[outfitting-workspace.md](./outfitting-workspace.md) "Selected slot exposes explicit `Change module`
+and `Engineer` actions" already said.
+
+The Almanac's _reason_ a mount cannot be emptied moved with them. The row keeps a short marker —
+canvas 1d's `FIXED` on the cargo hatch — and the full sentence is published on the bench, where it
+answers a question a Commander is asking rather than repeating down seven core rows.
+
+**Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The wide composition is selected
+at the sum of the two declared content minimums plus their gap (20rem + 22.5rem + one region gap),
+not at feature 011's generic wide container step. The generic step is smaller, and granting two panes
+below the sum produces exactly the state
+[responsive-composition.md](./responsive-composition.md) rules out: both panes present and neither
+able to hold its content. Expressed in rem, so a reader at 200% text steps down to the compact
+composition instead of overflowing the document. The same two minimums drive the TypeScript observer
+that decides whether the bench is inline or a full-screen layer, so the CSS and the layer decision
+cannot disagree.
+
+**Region heading, ruled 2026-08-21 during US1 implementation.** Neither canvas draws a heading over
+the outfitting region. One is present and `visually-hidden`: without it the document jumps from the
+route's `h1` to the ledger's kind headings, which leaves a reader unable to tell whether they have
+moved into a subsection or out of one. This is the invisible accessibility floor the design-canvas
+rule already permits, not an addition to either canvas.
+
+**`⌘K` search shortcut, ruled 2026-08-21.** Adopted as drawn, as an _unrequired_ affordance. It
+cannot be a requirement or an acceptance gate — constitution V puts criterion 2.1.4 out of scope and
+forbids any requirement demanding keyboard operation — and it is never the only route to the field.
+The hint is application text: localized, and resolved per platform rather than shipping the macOS
+`⌘` literal everywhere. See [module-replacement.md](./module-replacement.md).
+
+**`G5 ROLL` label, ruled 2026-08-21 — since adopted by the design.** The canvas now draws
+`MATERIALS · G5`, so specification and design agree and the heading is the canvas's own form. A
+selected grade always represents a completed 100% grade (constitution IV, FR-013), so no surface
+calls the recipe a roll. Same contradiction as the help modal's roll sentence, ruled on 2026-08-16.
+
+**Visible slot key, ruled 2026-08-21.** Withdrawn. Neither canvas draws a game slot key; they draw
+`SIZE · NODE NO.` in the ledger and `FITTING · HARDPOINT 1` at the bench. Screens show those labels.
+The exact key remains the internal identity, the anatomy/ledger exchange value and `visually-hidden`
+text beside the drawn label — the invisible accessibility floor, not an addition to the design.
+FR-002 is unaffected: it fixes slot _identity_, not slot display.
+
+**Clear-all, ruled 2026-08-21 — since adopted by the design.** `CLEAR ✕` no longer appears on either
+canvas. It was withdrawn as duplicative rather than
+mirrored into 1d: both canvases already draw `None — stock module · REMOVES ENGINEERING` in the
+blueprint list and `None — remove effect` in the effect list, so every clear route already exists
+identically at both widths. See [engineering-editor.md](./engineering-editor.md) "Clearing
+engineering". This removes the asymmetry without adding to either canvas.
+
+**Closed on review, no ruling needed.** Canvas 1d's per-candidate delta chips (`+5.1 DPS`,
+`−1.83 MW`, `+9.3 DPS`) and canvas 1c's `data-delta` ▲/▼ markers and `Δ VS SAVED` labels have been
+removed from the design. The specification had already excluded them independently — see
+[module-replacement.md](./module-replacement.md) "no local comparison deltas",
+[module-catalogue.md](../contracts/module-catalogue.md) "no suitability delta", tasks T049 and
+quickstart scenario 11 — so design and specification agree and nothing changes. The chooser's cost
+column is likewise already adopted by [module-catalogue.md](../contracts/module-catalogue.md); only
+credit _formatting_ differs between the canvases, and that belongs to feature 009.
+
+| #   | What canvas 1c/1d draws                                                                                                            | What the specification says                                      | Why it collides                                                                                               |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | Canvas 1c's anatomy legend reads `SELECTED · FITTED · EMPTY · UTILITY · ENGINEERED`; canvas 1d's reads `FITTED · EMPTY · UTILITY`. | The workspace composes the shared anatomy outlet at both widths. | The two canvases disagree on the legend; feature 010 owns the resolution but feature 002 composes the result. |
 
 ## Released API constraint
 

@@ -90,7 +90,8 @@ Expected:
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
-- result rendering settles under 100 ms for the installed package's measured maximum choice set.
+- result rendering settles under 100 ms for the installed package's measured maximum choice set,
+  measured in the Chromium timing project at the mobile viewport under 4x CPU throttling.
 
 ## 5. Fit, replace, remove and refuse
 
@@ -127,7 +128,8 @@ Expected:
 
 1. Compare blueprint fdnames/grades and effect fdnames with package menu methods.
 2. Apply a blueprint + grade + effect in one confirmation.
-3. Replace grade/blueprint; add/replace/remove only the effect; clear all ordinary engineering.
+3. Replace grade/blueprint; add/replace/remove only the effect; clear all ordinary engineering by
+   choosing the explicit no-blueprint entry and applying.
 4. Fit a Mercenary article, upgrade beyond purchase grade and then clear.
 
 Expected:
@@ -135,6 +137,7 @@ Expected:
 - every apply passes explicit quality `1` and creates one history step;
 - effect-only removal preserves current blueprint/grade;
 - clear-all differs and may intentionally erase package Mercenary identification;
+- no separate clear control exists at any width, and clearing dispatches `clearEngineering`;
 - purchase grade remains distinct from current grade until package identity disappears;
 - package `stats`/`effectiveStats`/modifiers drive values; no private delta/better-worse math appears.
 
@@ -175,7 +178,8 @@ Expected:
 
 ## 10. Exercise 100-decision undo/redo
 
-1. Mix fits, remove, engineering, effect, power, name and ident edits.
+1. Mix fits, remove, engineering, effect, power, name and ident edits. Set a ship name, set an ident,
+   then clear each back to absence.
 2. Undo and redo each intermediate state, comparing modelled state and recomputed package results.
 3. Undo several, make a new edit and check redo.
 4. Execute 101 decisions and traverse the retained history.
@@ -184,7 +188,9 @@ Expected:
 Expected:
 
 - one successful decision equals one checkpoint; draft/no-op/cancel/refusal/viewing/normalization equals
-  none;
+  none — typing in the name or ident field before confirming is a draft;
+- a cleared name or ident restores absence rather than an empty string, and undo restores the prior
+  value with every other modelled field unchanged;
 - every restored modelled checkpoint is exact, and historical purchase values never reappear;
 - new edit clears redo;
 - newest 100 decisions remain after 101;

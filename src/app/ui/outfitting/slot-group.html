@@ -1,0 +1,15 @@
+<section class="group" [attr.aria-labelledby]="headingId">
+  <div class="group__rule">
+    <h3 class="group__heading" [id]="headingId">{{ heading() }}</h3>
+    <span class="group__count">{{ count() }}</span>
+  </div>
+
+  <!--
+    The list items are projected by the workspace, which owns the card and its
+    intents. The group owns the heading, the rule and the list semantics — the
+    part that is the same for every kind.
+  -->
+  <ul class="group__slots">
+    <ng-content />
+  </ul>
+</section>

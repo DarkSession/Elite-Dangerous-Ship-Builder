@@ -182,7 +182,10 @@ effect is one decision. Replacing a module never carries old engineering.
 primarily mutate/throw. Treating them as one generic exception contract would lose stable outcomes.
 
 **Alternatives considered**: Editing raw `Engineering.Modifiers`, passing local computed stats or
-using a null blueprint as clear-all would blur package semantics and violate FR-012.
+calling `applyBlueprint` with a null fdname to mean clear would blur package semantics and violate
+FR-012. Clearing is offered as the package's explicit no-blueprint entry among the blueprint choices
+and dispatches `clearEngineering(slotKey)`; the choice-list entry and the API call are separate
+things, and only the latter is prohibited.
 
 ## Decision 8: construct fixed defaults before partial quality and candidate activation
 
@@ -220,8 +223,10 @@ selection only. Produce preview attributes by applying the intended operation to
 and reading its `stats`/`effectiveStats`; do not compute or color-code better/worse semantics.
 
 Use `getBlueprintCost(fdname, targetGrade, currentGrade)` only when continuing the same ordinary or
-Mercenary recipe; otherwise price from grade 0. Use `getBlueprintGradeCost()` only for an explicitly
-shown per-roll fact, `getExperimentalEffectCost()` for adding/replacing the selected effect, and
+Mercenary recipe; otherwise price from grade 0. No surface presents a per-grade
+craft fact separately, so `getBlueprintGradeCost()` is unused: a material requirement is identified by
+its grade and is never called a roll (2026-08-21 clarification). Use
+`getExperimentalEffectCost()` for adding/replacing the selected effect, and
 `sumMaterials()` only when every source is known. Effect removal costs nothing selected. Preserve
 `null` as unavailable and `[]` as known zero. Baked fixed engineering has no craft cost; Merc Coin is
 separate from materials and credits.

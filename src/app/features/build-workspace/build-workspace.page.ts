@@ -25,6 +25,7 @@ import { ActionLink } from '../../ui/components/action/action-link';
 import { GameText } from '../../ui/components/game-text/game-text';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { ExportDialog } from './export.dialog';
+import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
 import { PersistenceStatus } from './persistence-status';
 
 /**
@@ -47,6 +48,7 @@ import { PersistenceStatus } from './persistence-status';
     ActionLink,
     ExportDialog,
     GameText,
+    OutfittingWorkspace,
     PersistenceStatus,
     StatusNotice,
     RouterLink,

@@ -1,0 +1,46 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's module identity: a name in condensed type over a tracked mono
+// code line reading `4A GIMBALLED` (canvas 1c/1d, the ledger rows and the
+// candidate manifest).
+:host {
+  display: block;
+}
+
+.identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.identity__name {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-body);
+  font-weight: var(--edsb-text-weight-heading);
+  letter-spacing: var(--edsb-text-tracking-name);
+  color: var(--edsb-text-primary);
+  overflow-wrap: break-word;
+}
+
+.identity__code-line {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+.identity__code,
+.identity__mount,
+.identity__symbol {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+}
+
+.identity__code {
+  color: var(--edsb-text-accent);
+}
+
+// A package symbol is an identity, not prose: it reads left to right whatever
+// the surrounding direction is, or two different modules can look like one.
+.identity__symbol {
+  text-transform: none;
+  unicode-bidi: isolate;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

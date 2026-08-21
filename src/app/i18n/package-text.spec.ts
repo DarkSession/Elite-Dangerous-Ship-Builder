@@ -1,3 +1,15 @@
+import { getBlueprintName } from '@elite-dangerous-almanac/core/i18n/blueprints';
+import { getEngineeringGroupName } from '@elite-dangerous-almanac/core/i18n/engineering-groups';
+import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
+import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
+import {
+  getLoadoutSlotName,
+  getSlotRestrictionLabel,
+} from '@elite-dangerous-almanac/core/i18n/slots';
+import { CORE_MODULES } from '@elite-dangerous-almanac/core/ships/modules-core';
+import { HARDPOINT_MODULES } from '@elite-dangerous-almanac/core/ships/modules-hardpoint';
+import { INTERNAL_MODULES } from '@elite-dangerous-almanac/core/ships/modules-internal';
+import { UTILITY_MODULES } from '@elite-dangerous-almanac/core/ships/modules-utility';
 import { getShipManufacturer, getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
 import { getLoadoutEditErrorMessage } from '@elite-dangerous-almanac/core/i18n/diagnostics';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
@@ -114,5 +126,68 @@ describe('package text', () => {
         expect(nouns.has(value.trim().toLowerCase()), `${key} restates a package noun`).toBe(false);
       }
     }
+  });
+
+  it('keeps no private table of entitlement names', () => {
+    // An entitlement is an opaque Frontier token — `ELITE_HORIZONS_V_METAHULL`
+    // — and the package publishes no name for one. The application explains
+    // what an entitlement *means* and discloses the token as data; a catalogue
+    // entry keyed or valued by a token would be a private game-data table
+    // wearing a message key (FR-006, module-catalogue contract).
+    const tokens = new Set<string>();
+    for (const module of [
+      ...CORE_MODULES,
+      ...INTERNAL_MODULES,
+      ...HARDPOINT_MODULES,
+      ...UTILITY_MODULES,
+    ]) {
+      if (module.entitlement !== undefined) {
+        tokens.add(module.entitlement);
+      }
+    }
+    expect(tokens.size).toBeGreaterThan(0);
+
+    const catalogues: readonly Record<string, string>[] = [
+      BUNDLED_ENGLISH as Record<string, string>,
+      germanCatalogue as Record<string, string>,
+    ];
+
+    for (const catalogue of catalogues) {
+      for (const [key, value] of Object.entries(catalogue)) {
+        for (const token of tokens) {
+          expect(key.includes(token), `${key} is keyed by an entitlement token`).toBe(false);
+          expect(value.includes(token), `${key} hard-codes an entitlement token`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('resolves every package leaf this feature needs through one rule', () => {
+    // Each family feature 002 renders — slot label, restriction, blueprint,
+    // effect, engineering group, material — goes through the same presenter, so
+    // the untranslated disclosure and the unavailable answer are the same rule
+    // everywhere rather than six near-copies of it (FR-020).
+    const build = ShipLoadout.default('Anaconda');
+    const slot = build.slots('core')[0]!;
+
+    expect(presentGameText(getLoadoutSlotName, slot, 'en').translationState).toBe('localized');
+    expect(presentGameText(getSlotRestrictionLabel, 'military', 'en').translationState).toBe(
+      'localized',
+    );
+    expect(presentGameText(getBlueprintName, 'Engine_Dirty', 'en').translationState).toBe(
+      'localized',
+    );
+    expect(
+      presentGameText(getExperimentalEffectName, 'special_engine_cooled', 'en').translationState,
+    ).toBe('localized');
+    expect(presentGameText(getEngineeringGroupName, 'thrusters', 'en').translationState).toBe(
+      'localized',
+    );
+    expect(presentGameText(getMaterialName, 'Iron', 'en').translationState).toBe('localized');
+
+    // The same rule at an untranslated locale: canonical text, disclosed.
+    const disclosed = presentGameText(getBlueprintName, 'Engine_Dirty', UNTRANSLATED_LOCALE);
+    expect(disclosed.text).toBe(getBlueprintName('Engine_Dirty', 'en'));
+    expect(disclosed.disclosureKey).toBe('game-text.untranslated.description');
   });
 });

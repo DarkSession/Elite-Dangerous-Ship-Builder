@@ -1,0 +1,27 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's fact cell: a tracked mono micro-label over a tabular mono value
+// (canvas 1c, the `SPEED m/s` / `MASS t` metric grid).
+:host {
+  display: block;
+}
+
+.fact {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.fact__label {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+// A package figure is a technical value: it keeps its own direction inside a
+// right-to-left sentence rather than being reordered by it.
+.fact__value {
+  @include layout.metric-value;
+
+  unicode-bidi: isolate;
+}
+
+.fact__unit {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+}

@@ -1,0 +1,39 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's section rule: a tracked heading, a hairline filling the
+// remaining width, and the mount count at the trailing edge (canvas 1c). The
+// rule is drawn by the heading's own `::after`, so the count can sit beyond it
+// the way the reference places it.
+:host {
+  display: block;
+}
+
+.group__rule {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  flex-wrap: nowrap;
+}
+
+.group__heading {
+  @include layout.section-rule;
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--edsb-text-size-label);
+}
+
+.group__count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+
+  flex: none;
+}
+
+.group__slots {
+  @include layout.stack(var(--edsb-space-rule));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

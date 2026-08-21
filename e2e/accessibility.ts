@@ -1,0 +1,183 @@
+import { expect, type Page, type TestInfo } from '@playwright/test';
+import {
+  clippedText,
+  expectNoDocumentOverflow,
+  expectOrderedHeadings,
+  expectTargetSizes,
+  settled,
+} from './accessibility/assertions';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+
+/**
+ * One sweep, applied to every outfitting state.
+ *
+ * Feature 002 has a lot of states — workspace, chooser, engineering, no-build,
+ * empty, no-match, unavailable, refusal, normalization, history-disabled — and
+ * every one of them owes the same evidence. Writing that evidence out per state
+ * would guarantee that one of them ends up with four checks instead of eight,
+ * and nobody would notice which. So the sweep is one function and every state
+ * calls it (responsive composition, "Verification matrix").
+ *
+ * What it does not do is judge. Whether a name is meaningful and whether a
+ * reading order makes sense stay in the named assertions beside each journey
+ * and in the manual screen-reader protocols; this is the floor beneath them.
+ */
+
+/** The 400%-zoom equivalence WCAG 1.4.10 defines, as a browser context. */
+export const ZOOM_400 = { viewport: { width: 320, height: 256 }, deviceScaleFactor: 4 } as const;
+
+/** Every layout profile the outfitting suites name, by the label they use. */
+export const OUTFITTING_VIEWPORTS = {
+  desktop: { width: 1440, height: 900 },
+  'tablet-portrait': { width: 834, height: 1112 },
+  'tablet-landscape': { width: 1112, height: 834 },
+  'mobile-portrait': { width: 390, height: 844 },
+  'mobile-landscape': { width: 844, height: 390 },
+} as const;
+
+/**
+ * The full sweep over one rendered outfitting state.
+ *
+ * `label` names the state in every failure message, because "axe violations"
+ * with no state attached sends whoever reads it looking through ten of them.
+ */
+export async function sweepOutfittingState(
+  page: Page,
+  testInfo: TestInfo,
+  label: string,
+): Promise<void> {
+  await settled(page);
+  await expectNoAccessibilityViolations(page, testInfo, { label });
+  await expectOrderedHeadings(page);
+  await expectTargetSizes(page);
+  await expectNoDocumentOverflow(page);
+  await expectNoClippedText(page, label);
+}
+
+/**
+ * No label, name or identity is cut off.
+ *
+ * A truncated module name is not a cosmetic problem here: two modules can
+ * differ only in their tail, so an ellipsis can make two different articles
+ * look like the same one (module-replacement design, "identity ambiguity is not
+ * hidden by ellipsis").
+ */
+export async function expectNoClippedText(page: Page, label: string): Promise<void> {
+  const clipped = await clippedText(page);
+  expect(clipped, `clipped text in ${label}`).toEqual([]);
+}
+
+/**
+ * Re-runs a check at the user's doubled text size.
+ *
+ * The scale is applied through an init script, so it is in place for the first
+ * frame; the page is therefore reloaded rather than resized.
+ */
+export async function atDoubledText(
+  page: Page,
+  url: string,
+  check: () => Promise<void>,
+): Promise<void> {
+  await withRootTextScale(page, DOUBLED_TEXT);
+  await page.goto(url);
+  await settled(page);
+  await check();
+}
+
+/**
+ * Re-runs a check at 400% zoom, which must select the compact composition.
+ *
+ * Viewport and device scale factor together: the width is what wraps the
+ * layout, and the scale factor is what makes `devicePixelRatio` and the
+ * resolution media queries agree with a genuinely zoomed page.
+ */
+export async function atZoom400(
+  page: Page,
+  url: string,
+  check: () => Promise<void>,
+): Promise<void> {
+  await page.setViewportSize(ZOOM_400.viewport);
+  await page.goto(url);
+  await settled(page);
+  await check();
+}
+
+/**
+ * Re-runs a check with motion removed.
+ *
+ * The assertion carried by this is that *nothing* changes: a state that is only
+ * reachable through a transition is unreachable for a Commander who has asked
+ * for no transitions.
+ */
+export async function withReducedMotion(
+  page: Page,
+  url: string,
+  check: () => Promise<void>,
+): Promise<void> {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(url);
+  await settled(page);
+  await check();
+  await page.emulateMedia({ reducedMotion: null });
+}
+
+/**
+ * Re-runs a check with expanded copy and right-to-left direction.
+ *
+ * Both are stress tests of the same property: the layout has to survive text it
+ * did not expect, and the reading order has to stay the reading order when the
+ * visual direction flips. Feature 011 provides the pseudo-locales; this only
+ * applies them and hands back.
+ */
+export async function withExpandedAndRtl(
+  page: Page,
+  url: string,
+  check: (variant: 'expanded' | 'rtl') => Promise<void>,
+): Promise<void> {
+  for (const variant of ['expanded', 'rtl'] as const) {
+    await page.goto(`${url}${url.includes('?') ? '&' : '?'}variant=${variant}`);
+    await settled(page);
+    await check(variant);
+  }
+}
+
+/**
+ * A control's programmatic state, as a plain record.
+ *
+ * Every outfitting control that carries selection, expansion, checked or
+ * disabled state exposes it here rather than in a border colour, and the suites
+ * read it through this one helper so the attribute names are written once.
+ */
+export async function programmaticState(
+  page: Page,
+  selector: string,
+): Promise<Record<string, string | null>> {
+  return page
+    .locator(selector)
+    .first()
+    .evaluate((node) => ({
+      role: node.getAttribute('role'),
+      selected: node.getAttribute('aria-selected'),
+      expanded: node.getAttribute('aria-expanded'),
+      checked: node.getAttribute('aria-checked'),
+      pressed: node.getAttribute('aria-pressed'),
+      invalid: node.getAttribute('aria-invalid'),
+      disabled: node.hasAttribute('disabled') ? 'true' : node.getAttribute('aria-disabled'),
+      current: node.getAttribute('aria-current'),
+    }));
+}
+
+/**
+ * The exact game slot keys a surface publishes to assistive technology.
+ *
+ * The keys are never visible text — the canvas draws `SIZE · NODE NO.` and
+ * `FITTING · HARDPOINT 1` — so this reads them from where they actually live:
+ * the `visually-hidden` identity beside the drawn label (reference review,
+ * "Visible slot key, ruled 2026-08-21").
+ */
+export async function publishedSlotKeys(page: Page): Promise<string[]> {
+  return page
+    .locator('[data-slot-key]')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-slot-key') ?? ''));
+}

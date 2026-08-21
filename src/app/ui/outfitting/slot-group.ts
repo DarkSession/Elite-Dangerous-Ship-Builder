@@ -1,0 +1,57 @@
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import type { SlotView } from '../../application/outfitting/slot-view';
+import type { MessageKey } from '../../i18n/locale-registry';
+import { MessageService } from '../../i18n/message.service';
+import { relationId } from '../a11y/text-equivalence';
+
+/** One kind of mount, and the mounts of that kind, in package order. */
+export interface SlotGroupView {
+  readonly kind: SlotView['kind'];
+  readonly slots: readonly SlotView[];
+}
+
+/**
+ * The ledger's kind headings and the lists beneath them.
+ *
+ * The canvas rules a heading across the region — `HARDPOINTS`, `CORE
+ * INTERNALS`, `OPTIONAL INTERNALS` — with the mount count at its trailing edge,
+ * and lists the mounts below it. This is that, as a heading and a real list,
+ * because a reader moving by heading and by list item is exactly the movement
+ * the visual grouping affords a sighted one.
+ *
+ * Order is never touched. The groups arrive in the order `slots()` returned
+ * them, which is the game's own outfitting order.
+ */
+@Component({
+  selector: 'edsb-slot-group',
+  templateUrl: './slot-group.html',
+  styleUrl: './slot-group.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SlotGroup {
+  readonly #messages = inject(MessageService);
+
+  readonly group = input.required<SlotGroupView>();
+
+  readonly headingId = relationId('slot-group-heading');
+
+  readonly heading = computed(() => this.#messages.message(headingKey(this.group().kind)));
+
+  readonly count = computed(() =>
+    this.#messages.message('outfitting.category.count', { count: this.group().slots.length }),
+  );
+}
+
+/** The heading one mount kind sits under. */
+function headingKey(kind: SlotView['kind']): MessageKey {
+  return (
+    {
+      hardpoint: 'outfitting.group.hardpoint',
+      utility: 'outfitting.group.utility',
+      armour: 'outfitting.group.armour',
+      core: 'outfitting.group.core',
+      optional: 'outfitting.group.optional',
+      cargoHatch: 'outfitting.group.cargoHatch',
+    } as const
+  )[kind];
+}

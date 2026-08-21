@@ -13,6 +13,13 @@ the build.
 
 - Selected slot heading with exact key, size/kind/restriction and current module summary.
 - Visibly labeled `CandidateSearch`, result count and clear action.
+- A focus shortcut and its hint, as canvas 1c draws beside the field. **Ruled 2026-08-21: adopted as
+  an unrequired affordance.** Constitution V puts the keyboard criteria out of scope and forbids any
+  requirement in this repository from demanding them, so this MUST NOT become a normative
+  requirement, an acceptance gate or the only route to the field: pointer and touch reach the search
+  exactly as canvas 1d shows, with no hint. The hint is application-owned text, so it resolves through
+  localization (constitution VI) and names the modifier for the Commander's platform — `⌘K` is
+  macOS-only and MUST NOT ship as a literal on Windows or Linux.
 - Standard-choice section followed by explicit unique-reward section.
 - Responsive semantic manifest grouped by localized package module name and ordered by class/rating.
 - Rows expose explicit fitted/stock/variant state, class/rating/mount, acquisition and entitlement

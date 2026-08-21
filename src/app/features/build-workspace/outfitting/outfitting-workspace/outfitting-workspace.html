@@ -1,0 +1,119 @@
+<section class="outfitting" [attr.aria-labelledby]="regionHeadingId">
+  <!--
+    Neither canvas draws a heading over the outfitting region; they rule each
+    mount kind and leave the region itself unlabelled. The heading is therefore
+    hidden rather than removed: it is what lets a reader move into the region by
+    heading and keeps the levels descending, and it costs the design nothing
+    (design-canvas rule, "the only things that stay without being drawn are
+    invisible").
+  -->
+  <h2 class="visually-hidden" [id]="regionHeadingId">{{ regionLabel() }}</h2>
+
+  @if (!store.hasBuild()) {
+    <div class="outfitting__empty">
+      <h3 class="outfitting__empty-title">{{ noBuildTitle() }}</h3>
+      <p class="outfitting__empty-description">{{ noBuildDescription() }}</p>
+    </div>
+  } @else {
+    <edsb-edit-refusal-notice
+      class="outfitting__feedback"
+      [failure]="failure()"
+      [revision]="revision()"
+      [slotLabel]="selectedSlotLabel()"
+      (dismissed)="store.dismissFailure()"
+    />
+
+    <div class="outfitting__ledger-region">
+      <fieldset class="outfitting__categories">
+        <legend class="visually-hidden">{{ categoryLegend() }}</legend>
+        @for (entry of categories(); track entry.value) {
+          <button
+            class="outfitting__category"
+            type="button"
+            [attr.aria-pressed]="category() === entry.value ? 'true' : 'false'"
+            (click)="category.set(entry.value)"
+          >
+            <span class="outfitting__category-label">{{ entry.label }}</span>
+            <span class="outfitting__category-count">{{ entry.count }}</span>
+          </button>
+        }
+      </fieldset>
+
+      <div class="outfitting__ledger" [attr.aria-label]="ledgerLabel()">
+        @for (group of groups(); track group.kind) {
+          <edsb-slot-group [group]="group">
+            @for (slot of group.slots; track slot.key) {
+              <li class="outfitting__slot">
+                <edsb-slot-card
+                  [slot]="slot"
+                  [capabilities]="capabilitiesFor(slot)"
+                  [selected]="store.selectedSlotKey() === slot.key"
+                  (intent)="handle(slot, $event)"
+                />
+              </li>
+            }
+          </edsb-slot-group>
+        }
+      </div>
+    </div>
+
+    <!--
+      The selected mount's bench. Canvas 1c puts it beside the ledger and titles
+      it `FITTING · HARDPOINT 1`; canvas 1d puts the same actions in a
+      persistent bar under the list. Both are this region, and both offer
+      exactly what the Almanac permits on the selected mount — never a control
+      with nothing behind it (FR-009).
+    -->
+    <div class="outfitting__bench">
+      @if (selectedSlot(); as slot) {
+        <div class="outfitting__bench-header">
+          <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
+        </div>
+
+        <div class="outfitting__bench-actions">
+          @if (capabilitiesFor(slot).canOpenReplacement) {
+            <button
+              class="outfitting__action"
+              type="button"
+              (click)="handle(slot, { kind: 'replace' })"
+            >
+              {{ replaceLabel() }}
+            </button>
+          }
+          @if (capabilitiesFor(slot).canOpenEngineering) {
+            <button
+              class="outfitting__action"
+              type="button"
+              (click)="handle(slot, { kind: 'engineer' })"
+            >
+              {{ engineerLabel() }}
+            </button>
+          }
+          @if (capabilitiesFor(slot).canRemove) {
+            <button
+              class="outfitting__action"
+              type="button"
+              (click)="handle(slot, { kind: 'remove' })"
+            >
+              {{ removeLabel() }}
+            </button>
+          }
+        </div>
+
+        @if (benchReason(); as reason) {
+          <p class="outfitting__bench-reason">{{ reason }}</p>
+        }
+
+        @if (replacementOpen()) {
+          <edsb-module-replacement
+            [slot]="slot"
+            [asLayer]="benchIsLayer()"
+            (closed)="closeSurface()"
+          />
+        }
+      } @else {
+        <p class="outfitting__bench-empty">{{ noSelectionLabel() }}</p>
+      }
+    </div>
+  }
+</section>

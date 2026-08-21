@@ -1,0 +1,62 @@
+<div
+  class="slot"
+  [attr.data-selected]="selected() ? 'true' : null"
+  [attr.data-slot-key]="slot().key"
+>
+  <span class="visually-hidden" [id]="identityId">{{ identityText() }}</span>
+
+  <button
+    class="slot__select"
+    type="button"
+    [attr.aria-pressed]="selected() ? 'true' : 'false'"
+    [attr.aria-describedby]="identityId"
+    (click)="emit({ kind: 'select' })"
+  >
+    <span class="slot__mount">
+      @if (slot().size !== null) {
+        <span class="slot__size">{{ slot().size }}</span>
+      }
+      @if (slot().kind === 'hardpoint') {
+        <span class="slot__node">{{ slot().node }}</span>
+      }
+    </span>
+
+    <span class="slot__identity">
+      @if (slot().module !== null) {
+        <edsb-module-identity-badge
+          [name]="slot().module!.displayName"
+          [symbol]="slot().module!.symbol"
+          [moduleClass]="slot().module!.article?.class ?? null"
+          [rating]="slot().module!.article?.rating ?? null"
+          [mount]="slot().module!.article?.mount ?? null"
+        />
+      } @else {
+        <span class="slot__empty">{{ emptyLabel() }}</span>
+      }
+      <span class="slot__drawn-label">{{ drawnLabel() }}</span>
+      @if (engineeringSummary()) {
+        <span class="slot__engineering">{{ engineeringSummary() }}</span>
+      }
+    </span>
+
+    @if (selected()) {
+      <span class="visually-hidden">{{ selectedLabel() }}</span>
+    }
+  </button>
+
+  <div class="slot__notes">
+    @if (restrictionText()) {
+      <p class="slot__note">{{ restrictionText() }}</p>
+    }
+    @if (!capabilities().canRemove && immovableMarker()) {
+      <p class="slot__marker">{{ immovableMarker() }}</p>
+    }
+    @if (labels().length > 0) {
+      <ul class="slot__labels">
+        @for (label of labels(); track label) {
+          <li class="slot__label">{{ label }}</li>
+        }
+      </ul>
+    }
+  </div>
+</div>

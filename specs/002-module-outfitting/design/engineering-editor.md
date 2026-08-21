@@ -18,25 +18,30 @@ package material requirements. Draft changes do not mutate the active build unti
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect.
 - Current versus candidate package attributes without locally interpreted better/worse arrows.
 - Material list separating blueprint progression, effect, combined/unavailable status and Merc Coin.
-- Explicit apply, clear-all (when package permits) and cancel/revert-draft actions.
+  Its heading names the grade only, as the canvas now draws it — `MATERIALS · G5`. The application
+  models a completed grade, never a roll, so no surface may call the recipe a roll (constitution IV,
+  FR-013).
+- Explicit apply and cancel/revert-draft actions. Clearing is not a separate control — see
+  "Clearing engineering" below.
 
 ## Narrow and 400%-zoom composition
 
 - Full-screen layer inspired by canvas 1d with associated title/module description and inert
   background.
 - Blueprint, grade, effect, attributes and materials stack in semantic sections.
-- Apply/cancel remain reachable without horizontal scrolling; clear-all is distinct and confirmable
+- Apply/cancel remain reachable without horizontal scrolling; clearing is the blueprint list's first
+  option and needs no separate confirmable control
   where loss of Mercenary identity must be explained.
 - Closing without apply restores no build because only draft state changed.
 
 ## Operations
 
-| Commander action                  | Required result                                                                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Apply/replace blueprint and grade | One package operation at explicit quality 1; optional selected effect included; one history step.                                   |
-| Add/replace/remove only effect    | Released operation preserves blueprint/grade, fixed identity and base modifiers while recomputing effect-dependent stats; one step. |
-| Clear ordinary engineering        | `clearEngineering`; remove blueprint/effect together; follow package loss of Mercenary identity; one step.                          |
-| Cancel/revert draft               | Active build and history unchanged.                                                                                                 |
+| Commander action                  | Required result                                                                                                                                                                                                      |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Apply/replace blueprint and grade | One package operation at explicit quality 1; optional selected effect included; one history step.                                                                                                                    |
+| Add/replace/remove only effect    | Released operation preserves blueprint/grade, fixed identity and base modifiers while recomputing effect-dependent stats; one step.                                                                                  |
+| Clear ordinary engineering        | Selecting the blueprint list's `None — stock module` option and applying. Dispatches `clearEngineering`; removes blueprint/effect together; follows package loss of Mercenary identity; one step, one history frame. |
+| Cancel/revert draft               | Active build and history unchanged.                                                                                                                                                                                  |
 
 The editor calls the installed package's structured `setExperimentalEffect()` for fixed-reward
 effect-only edits. It never merges raw modifiers locally. `updated`, `unchanged` and `unsupported`
@@ -58,6 +63,21 @@ remain distinct outcomes.
 | Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.     |
 | Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                  |
 | Package refusal                      | Structured localized error; current build/history unchanged.                                                           |
+
+## Clearing engineering
+
+**Ruled 2026-08-21.** Canvas 1c's `CLEAR ✕` header control is withdrawn as duplicative. Both canvases
+already draw `None — stock module · REMOVES ENGINEERING` as the first option of the blueprint list and
+`None — remove effect` as the first option of the experimental effect list, so every clear route
+exists identically at both widths with no addition to either canvas:
+
+- clear all ordinary engineering — choose `None — stock module`, then apply;
+- remove only the experimental effect — choose `None — remove effect`, then apply, which preserves
+  blueprint and grade as FR-012 requires.
+
+Both are ordinary applications of the draft, so each is one Commander decision producing one history
+frame, and neither needs a second confirmation step. This also removes the constitution V asymmetry
+that `CLEAR ✕` created by existing at wide width only.
 
 ## Attribute and cost honesty
 

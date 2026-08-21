@@ -219,6 +219,13 @@ import { TabGroup } from '../components/tab-group/tab-group';
 import { TextField } from '../components/text-field/text-field';
 import { TextareaField } from '../components/textarea-field/textarea-field';
 import { UnavailableValue } from '../components/unavailable-value/unavailable-value';
+import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
+import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
+import { OutfittingNotice } from '../outfitting/outfitting-notice';
+import { QualityCompletionNotice } from '../outfitting/quality-completion-notice';
+import { SlotCard } from '../outfitting/slot-card';
+import { SlotGroup } from '../outfitting/slot-group';
+import { UnavailableFact } from '../outfitting/unavailable-fact';
 
 /** A state rendered from a fixture. */
 function state(
@@ -2096,5 +2103,476 @@ registerPreview({
       ],
       ['normal', 'expanded-copy', 'rtl'],
     ),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 002 — module outfitting and engineering
+//
+// The outfitting components register here, in feature 011's one registry.
+// There is no second manifest, no second preview application and no
+// feature-owned declaration file: a component that is not in this list is a
+// component nothing sweeps (feature 002 tasks T022).
+// ---------------------------------------------------------------------------
+
+registerPreview({
+  componentId: 'unavailable-fact',
+  group: 'Outfitting',
+  component: UnavailableFact,
+  contract: contract(
+    'unavailable-fact',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label', 'unit', 'unavailable-reason'],
+      textEquivalents: ['an absent value, stated in words rather than shown as zero'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { label: 'Power draw', value: '0.88', unit: 'MW' },
+      ['the label, the value and the unit are three separate readable parts'],
+      CONTROL_VARIANTS,
+    ),
+    state(
+      'empty',
+      { label: 'Weapon capacitor draw', value: null },
+      [
+        'an absent package value reads as unavailable, never as zero',
+        'the reason is associated with the absence rather than sitting loose beside it',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'unavailable-text', 'long-identity'],
+    ),
+    notApplicable(
+      'loading',
+      'A fact is read from a build that is already in memory; there is no moment at which it is being fetched.',
+    ),
+    notApplicable(
+      'error',
+      'An absent value is an unavailable value, which this renders honestly. It is not an error the component reports.',
+    ),
+    notApplicable(
+      'disabled',
+      'A published fact is read, never operated, so it has no disabled state.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'outfitting-notice',
+  group: 'Outfitting',
+  component: OutfittingNotice,
+  contract: contract(
+    'outfitting-notice',
+    {
+      role: 'region',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['the notice’s tone, named in words beside its colour'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        title: 'Imported build',
+        revision: 1,
+        mode: 'status',
+        lines: [
+          {
+            id: 'MainEngines',
+            messageKey: 'outfitting.notice.quality-completed',
+            params: { slot: 'Thrusters', quality: '37%' },
+          },
+        ],
+      },
+      [
+        'the notice is announced politely, once, rather than interrupting',
+        'the tone is named in text and is not carried by colour alone',
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state('empty', { title: 'Imported build', revision: 1, mode: 'status', lines: [] }, [
+      'a notice with nothing to say renders nothing rather than an empty frame',
+    ]),
+    notApplicable(
+      'loading',
+      'A notice reports something that has already happened; there is no pending notice.',
+    ),
+    state(
+      'error',
+      {
+        title: 'That change was not made',
+        revision: 2,
+        mode: 'alert',
+        lines: [
+          {
+            id: 'HugeHardpoint1',
+            messageKey: 'outfitting.refusal.packageEdit',
+            detail: 'A power plant does not fit a hardpoint.',
+          },
+          {
+            id: 'Slot03_Size6',
+            messageKey: 'outfitting.refusal.packageEdit',
+            detail: 'Only one shield generator can be fitted.',
+          },
+        ],
+      },
+      [
+        'an alert interrupts once for the batch, not once per line',
+        'every line stays on the page to be found and re-read',
+        'the Almanac’s own reason is shown beside the application’s framing, never instead of it',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated'],
+    ),
+    notApplicable(
+      'disabled',
+      'A notice is content, not a control. Dismissing it removes it rather than disabling it.',
+    ),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 002 — user story 1: the ledger
+//
+// The fixtures below are presentation values shaped like the package's, not
+// copies of package data: a slot view carries whatever `slots()` returned, and
+// these state the *shapes* the ledger has to render — fitted, empty,
+// non-removable, the cargo hatch — so each is swept at every width and variant.
+// ---------------------------------------------------------------------------
+
+/** Package text that needs no disclosure. */
+function localized(text: string): Record<string, unknown> {
+  return { text, language: 'en', translationState: 'localized' };
+}
+
+/** Package text the active locale has no translation for. */
+function canonical(text: string): Record<string, unknown> {
+  return { text, language: 'en', translationState: 'canonical' };
+}
+
+/** Everything a mount permits. Narrowed per fixture. */
+const EVERY_CAPABILITY = {
+  canOpenReplacement: true,
+  canFitSelection: true,
+  canRemove: true,
+  canOpenEngineering: true,
+  canSetEnabled: true,
+  canSetPriority: true,
+  packageEmpty: false,
+};
+
+/** The cargo hatch: power alone, because the package offers nothing else. */
+const HATCH_CAPABILITIES = {
+  ...EVERY_CAPABILITY,
+  canOpenReplacement: false,
+  canFitSelection: false,
+  canRemove: false,
+  canOpenEngineering: false,
+  packageEmpty: true,
+};
+
+function slotFixture(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    key: 'HugeHardpoint1',
+    canonicalName: 'Huge Hardpoint 1',
+    displayName: localized('Huge Hardpoint 1'),
+    kind: 'hardpoint',
+    size: 4,
+    restriction: null,
+    restrictionText: null,
+    removable: true,
+    immovableReason: null,
+    node: 1,
+    module: {
+      slotKey: 'HugeHardpoint1',
+      symbol: 'Hpt_MultiCannon_Gimbal_Huge',
+      displayName: localized('Multi-Cannon'),
+      enabled: undefined,
+      priority: 0,
+      article: { class: 4, rating: 'A', mount: 'Gimballed' },
+      effectiveArticle: null,
+      engineering: null,
+      variant: null,
+      entitlement: null,
+    },
+    ...overrides,
+  };
+}
+
+registerPreview({
+  componentId: 'module-identity-badge',
+  group: 'Outfitting',
+  component: ModuleIdentityBadge,
+  contract: contract(
+    'module-identity-badge',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['untranslated-disclosure'],
+      textEquivalents: ['the class and rating code, spelled out for a reader'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        name: localized('Multi-Cannon'),
+        symbol: 'Hpt_MultiCannon_Gimbal_Huge',
+        moduleClass: 4,
+        rating: 'A',
+        mount: 'Gimballed',
+      },
+      [
+        'class, rating and mount are separate package values, never parsed from a symbol',
+        'the code is also spelled out for anyone reading it aloud',
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state(
+      'empty',
+      { name: canonical('Corrosion Resistant Cargo Rack'), moduleClass: null, rating: null },
+      [
+        'an article the package has no localized name for reads canonically, disclosed',
+        'a missing class or rating leaves the code line out rather than inventing one',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    notApplicable('loading', 'An identity is read from a build already in memory.'),
+    notApplicable('error', 'An unresolved name is an unavailable name, which it renders honestly.'),
+    notApplicable('disabled', 'An identity is read, never operated.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'slot-card',
+  group: 'Outfitting',
+  component: SlotCard,
+  contract: contract(
+    'slot-card',
+    {
+      role: 'button',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['pressed'],
+      relationships: ['label', 'description'],
+      textEquivalents: [
+        'selection, as pressed state and hidden text beside the amber marker',
+        'the reason a mount cannot be emptied',
+      ],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        slot: slotFixture(),
+        capabilities: EVERY_CAPABILITY,
+        selected: true,
+        engineeringSummary: 'Overcharged G5 · Corrosive Shell',
+        labels: ['Powerplay reward · not ordinarily available'],
+      },
+      [
+        'the exact game slot key is present for assistive technology and never as visible text',
+        'selection is exposed as pressed state and in words, not by the marker alone',
+        'the drawn label is kind, size and node number, as the canvas writes it',
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state(
+      'empty',
+      { slot: slotFixture({ module: null }), capabilities: EVERY_CAPABILITY },
+      [
+        'an empty removable mount stays visible and readable',
+        'the mount still names its kind, size and node so it can be chosen',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable('loading', 'A ledger row is read from the committed build; it is never pending.'),
+    notApplicable(
+      'error',
+      'A refusal is about an attempted edit and belongs to the refusal notice, not to a row.',
+    ),
+    state(
+      'disabled',
+      {
+        slot: slotFixture({
+          key: 'CargoHatch',
+          canonicalName: 'Cargo Hatch',
+          displayName: localized('Cargo Hatch'),
+          kind: 'cargoHatch',
+          size: 1,
+          removable: false,
+          immovableReason: 'cargoHatch',
+          node: 1,
+          module: {
+            slotKey: 'CargoHatch',
+            symbol: 'ModularCargoBayDoor',
+            displayName: localized('Cargo Hatch'),
+            enabled: true,
+            priority: 4,
+            article: { class: 1, rating: 'E' },
+            effectiveArticle: null,
+            engineering: null,
+            variant: null,
+            entitlement: null,
+          },
+        }),
+        capabilities: HATCH_CAPABILITIES,
+      },
+      [
+        'the mount carries a short marker rather than a sentence repeated down the ledger',
+        'no remove action is drawn where the Almanac permits none',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'slot-group',
+  group: 'Outfitting',
+  component: SlotGroup,
+  contract: contract(
+    'slot-group',
+    {
+      role: 'region',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['the mount count beside the heading'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        group: {
+          kind: 'hardpoint',
+          slots: [slotFixture(), slotFixture({ key: 'LargeHardpoint1' })],
+        },
+      },
+      [
+        'the kind is a heading and the mounts beneath it are a list',
+        'the count is stated in words rather than only as a number',
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state('empty', { group: { kind: 'utility', slots: [] } }, [
+      'a kind with no mounts still names itself and its count',
+    ]),
+    notApplicable('loading', 'The ledger is read from the committed build.'),
+    notApplicable('error', 'A group reports no error of its own.'),
+    notApplicable('disabled', 'A heading and a list are content, not controls.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'quality-completion-notice',
+  group: 'Outfitting',
+  component: QualityCompletionNotice,
+  contract: contract(
+    'quality-completion-notice',
+    {
+      role: 'region',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['what changed, in words rather than as a badge'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        revision: 3,
+        slotLabels: { MainEngines: 'Thrusters' },
+        notices: [
+          {
+            kind: 'qualityCompleted',
+            slotKey: 'MainEngines',
+            moduleSymbol: 'Int_Engine_Size7_Class5',
+            blueprintFdname: 'Engine_Dirty',
+            previousQuality: 0.37,
+            quality: 1,
+          },
+        ],
+      },
+      [
+        'the mount and the quality it arrived at are both named',
+        'the notice is announced politely, once for the batch',
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state('empty', { revision: 3, notices: [] }, [
+      'a build with nothing completed renders nothing rather than an empty frame',
+    ]),
+    notApplicable('loading', 'The notice reports a completed import, never a pending one.'),
+    notApplicable(
+      'error',
+      'A partial roll the Almanac could not complete refuses the whole build; it never becomes a notice on an active one.',
+    ),
+    notApplicable(
+      'disabled',
+      'A notice is content; dismissing removes it rather than disabling it.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'edit-refusal-notice',
+  group: 'Outfitting',
+  component: EditRefusalNotice,
+  contract: contract(
+    'edit-refusal-notice',
+    {
+      role: 'alert',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['the refusal, named in words beside its colour'],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state('default', { failure: null, revision: 1 }, [
+      'no refusal renders nothing, so a cleared failure leaves no residue',
+    ]),
+    state('empty', { failure: null, revision: 1 }, [
+      'the empty and default states are the same absence, stated once',
+    ]),
+    notApplicable('loading', 'A refusal is the outcome of an attempt that has already finished.'),
+    state(
+      'error',
+      {
+        revision: 2,
+        slotLabel: 'Huge Hardpoint 1',
+        failure: {
+          category: 'packageEdit',
+          slotKey: 'HugeHardpoint1',
+          code: 'incompatibleModule',
+          constraint: 'oversized',
+          params: {},
+          diagnostic: null,
+          framingKey: 'outfitting.refusal.packageEdit',
+        },
+      },
+      [
+        'the application frames the outcome and the Almanac supplies the reason',
+        'the mount involved is named the way the ledger names it',
+        'it interrupts once, because nothing happened when something was expected to',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated'],
+    ),
+    notApplicable('disabled', 'A refusal is content, not a control.'),
   ],
 });

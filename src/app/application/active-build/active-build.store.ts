@@ -116,6 +116,29 @@ export class ActiveBuildStore {
     this.#revision.update((revision) => revision + 1);
   }
 
+  /**
+   * Swaps in an edited build, in one write, without replacing the build.
+   *
+   * The distinction from `commit` is the whole point of having both. `commit`
+   * replaces one build with a different one and moves every fact about where
+   * the build came from along with it. This installs a *new object describing
+   * the same build*: an edit made candidate-first, on a detached copy that the
+   * package produced and one operation changed. Provenance, the named source it
+   * was opened from, the saved baseline and the working record all still apply,
+   * because a Commander fitting a module has not opened a different build
+   * (edit-history contract, "Restoration").
+   *
+   * One revision is spent, which is what autosave, link publication and every
+   * derived projection observe.
+   */
+  installEdited(loadout: ShipLoadout): void {
+    if (this.#loadout() === null) {
+      return;
+    }
+    this.#loadout.set(loadout);
+    this.#revision.update((revision) => revision + 1);
+  }
+
   /** The tab-owned record autosave writes to. */
   setWorkingRecordId(recordId: string | null): void {
     this.#workingRecordId.set(recordId);

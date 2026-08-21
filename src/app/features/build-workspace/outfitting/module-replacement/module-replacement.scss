@@ -1,0 +1,80 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's inline manifest and canvas 1d's full-screen layer are the same
+// content; the arrangement follows the space the region is given. The list
+// scrolls inside its own box — the document never does.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: replacement;
+}
+
+.replacement {
+  @include layout.stack(var(--edsb-space-stack));
+
+  // The list is the tall part, so the region is a column that can be bounded
+  // and the list is what gives way. The bench above sets the bound.
+  min-block-size: 0;
+  flex: 1;
+}
+
+.replacement__empty {
+  margin: 0;
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The manifest scrolls inside its own box, as canvas 1c's does. The document
+// never scrolls horizontally and never grows to two hundred rows tall.
+.replacement__choices {
+  @include layout.stack(var(--edsb-space-rule));
+
+  flex: 1;
+  min-block-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+}
+
+.replacement__choice {
+  @include layout.selectable-row;
+  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.target-baseline;
+
+  padding: var(--edsb-space-row);
+  cursor: pointer;
+
+  &:has(.replacement__radio:checked) {
+    background-image: var(--edsb-surface-row-selected);
+    border-inline-start-color: var(--edsb-marker-selected);
+  }
+}
+
+.replacement__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+.replacement__cancel {
+  @include layout.control-base;
+  @include layout.control-secondary;
+}
+
+.replacement__fit {
+  @include layout.control-base;
+  @include layout.control-primary;
+
+  flex: 1;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// The native control keeps its own semantics and its own focus behaviour; only
+// its accent follows the design system.
+.replacement__radio {
+  accent-color: var(--edsb-marker-selected);
+  flex: none;
+}
