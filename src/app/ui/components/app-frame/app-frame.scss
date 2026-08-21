@@ -1,0 +1,130 @@
+@use '../../../../styles/responsive' as layout;
+
+// The shell composes in three modes. Content selects the mode, not a device
+// name: the compact mode is one semantic flow, the medium mode allows a second
+// region, and the wide mode allows a workspace. A capability opts into the
+// wider modes through the region primitives; the shell itself only has to keep
+// its own chrome legible at all three (shell design, "Composition modes").
+:host {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+}
+
+.frame__banner {
+  @include layout.wrapping-row(var(--edsb-space-inline-loose));
+
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  justify-content: space-between;
+  padding-block: var(--edsb-space-inline-loose);
+  padding-inline: var(--edsb-space-panel);
+  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  background-color: var(--edsb-surface-panel);
+}
+
+// A sticky banner is a fixed share of a short viewport, and at 400% zoom that
+// share is most of it. Below the short-viewport threshold it releases and
+// scrolls away with the rest of the page, which is what keeps content complete
+// rather than merely present (FR-011).
+@include layout.short-viewport {
+  .frame__banner {
+    position: static;
+  }
+}
+
+.frame__identity {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+.frame__product {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+  font-weight: var(--edsb-text-weight-heading);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-primary);
+}
+
+.frame__context {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.frame__navigation-list {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  list-style: none;
+}
+
+.frame__navigation-link {
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--edsb-space-inline);
+  color: var(--edsb-text-secondary);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-compact);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.frame__navigation-link[aria-current='page'] {
+  color: var(--edsb-text-accent);
+  border-block-end: var(--edsb-border-width-thick) solid var(--edsb-border-accent);
+}
+
+.frame__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+// One composition is rendered at a time. `display: none` is deliberate rather
+// than a visual hide: the composition that is not in use must leave the
+// accessibility tree entirely, or every action would be announced twice.
+.frame__action-layer {
+  display: none;
+}
+
+@include layout.compact {
+  .frame__banner {
+    // The identity, navigation and action trigger each take a full row rather
+    // than competing for one; nothing shrinks below its target baseline and no
+    // label truncates.
+    align-items: flex-start;
+  }
+
+  .frame__actions {
+    display: none;
+  }
+
+  .frame__action-layer {
+    display: block;
+    inline-size: 100%;
+  }
+}
+
+.frame__status {
+  padding-block: var(--edsb-space-inline-loose);
+  padding-inline: var(--edsb-space-panel);
+}
+
+.frame__main {
+  @include layout.content-measure;
+
+  flex: 1 1 auto;
+  padding-block: var(--edsb-space-region);
+  padding-inline: var(--edsb-space-panel);
+
+  // Space reserved under the sticky banner so a target scrolled to by an
+  // in-page link lands below it rather than behind it.
+  scroll-margin-block-start: var(--edsb-space-section);
+}
+
+@include layout.wide-up {
+  .frame__main {
+    padding-inline: var(--edsb-space-region);
+  }
+}

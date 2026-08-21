@@ -1,0 +1,122 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+.layer {
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-layer);
+  background-color: var(--edsb-surface-layer);
+  color: var(--edsb-text-primary);
+  box-shadow: var(--edsb-elevation-dialog);
+}
+
+.layer::backdrop {
+  background-color: var(--edsb-surface-scrim);
+}
+
+.layer__header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+  margin-block-end: var(--edsb-space-stack);
+}
+
+.layer__title {
+  font-size: var(--edsb-text-size-heading-sm);
+}
+
+.layer__dismiss {
+  @include layout.target-baseline;
+
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-control-inline);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-strong);
+  border-radius: var(--edsb-shape-control);
+  background-color: transparent;
+  color: var(--edsb-text-primary);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.layer__description {
+  margin-block-end: var(--edsb-space-stack);
+  color: var(--edsb-text-muted);
+}
+
+// The three presentations, as mixins, so the adaptive presentation composes
+// exactly the same rules rather than a second nearly-identical copy of them.
+
+// Centred dialog: bounded by a named measure, and never taller than the
+// viewport, so its own content scrolls instead of the document.
+@mixin dialog-presentation {
+  inline-size: min(var(--edsb-layout-layer-max), 100%);
+  max-block-size: 90vh;
+  overflow-y: auto;
+}
+
+// A sheet rises from the block end. Reachable by thumb on a phone.
+@mixin sheet-presentation {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  margin-block-start: auto;
+  margin-block-end: 0;
+  margin-inline: auto;
+  max-block-size: 80vh;
+  overflow-y: auto;
+  border-start-start-radius: var(--edsb-shape-layer);
+  border-start-end-radius: var(--edsb-shape-layer);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+// A full-height layer owns the viewport. Used where content, expansion or a
+// short landscape viewport means a sheet would clip.
+@mixin full-height-presentation {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 100%;
+  max-block-size: 100%;
+  margin: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+}
+
+.layer--dialog {
+  @include dialog-presentation;
+}
+
+.layer--sheet {
+  @include sheet-presentation;
+}
+
+.layer--full-height {
+  @include full-height-presentation;
+}
+
+// The adaptive presentation. One contract, three resolutions, chosen by the
+// space that is actually available rather than by a device name.
+.layer--adaptive {
+  @include dialog-presentation;
+}
+
+@include layout.compact {
+  .layer--adaptive {
+    @include sheet-presentation;
+  }
+}
+
+// A short viewport promotes a sheet to a full-height layer rather than letting
+// its content be cut off. This is the landscape-phone case, and it is also what
+// a 400% zoom looks like to the layout.
+@include layout.short-viewport {
+  .layer--adaptive,
+  .layer--sheet {
+    @include full-height-presentation;
+  }
+}

@@ -1,0 +1,12 @@
+/* TypeScript configuration for the tooling-only component preview application.
+   Product sources under `src/app/ui` and `src/app/i18n` are type-checked here
+   through the imports the preview actually makes, so this project stays a
+   consumer of the production library rather than a second root for it. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts"]
+}

@@ -1,0 +1,54 @@
+<div class="table-scroller" role="group" [attr.aria-labelledby]="captionId" tabindex="0">
+  <table class="table">
+    <caption class="table__caption" [id]="captionId">
+      {{
+        caption()
+      }}
+    </caption>
+
+    <thead>
+      <tr>
+        @for (column of columns(); track column.key) {
+          <th
+            scope="col"
+            [id]="columnId(column.key)"
+            [class.table__cell--numeric]="column.numeric ?? false"
+          >
+            <span class="table__column-label">{{ column.label }}</span>
+            @if (column.unit) {
+              <span class="table__column-unit">{{ column.unit }}</span>
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (row of rows(); track row.id) {
+        <tr [attr.aria-selected]="row.selected ? 'true' : null">
+          @if (rowHeaderColumn(); as header) {
+            <th scope="row" [headers]="columnId(header.key)">
+              {{ row.cells[header.key] }}
+              @if (row.selected && selectedLabel()) {
+                <span class="table__state">{{ selectedLabel() }}</span>
+              }
+            </th>
+          }
+          @for (column of otherColumns(); track column.key) {
+            <td
+              [headers]="columnId(column.key)"
+              [class.table__cell--numeric]="column.numeric ?? false"
+              [attr.data-bidi-isolate]="column.numeric ? '' : null"
+            >
+              {{ row.cells[column.key] }}
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (rows().length === 0 && emptyLabel()) {
+    <p class="table__empty">{{ emptyLabel() }}</p>
+  }
+</div>

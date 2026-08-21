@@ -39,12 +39,12 @@ application message change updates the complete English and German catalogues to
 **Purpose**: Add the dependencies, compiler strictness, assets and second Angular application the
 foundation needs before any source lands.
 
-- [ ] T001 Add lockfile-compatible `@jsverse/transloco` and `@angular/service-worker` dependencies and `@axe-core/playwright`, `postcss` and `postcss-scss` development dependencies in `package.json`, then install and commit the updated `pnpm-lock.yaml`
-- [ ] T002 Enable `"strict": true` in `compilerOptions` and `"strictTemplates": true` in `angularCompilerOptions` in `tsconfig.json`, and repair every resulting error in `src/`, `e2e/` and `playwright.config.ts`
-- [ ] T003 [P] Add the `ui:preview`, `e2e:preview`, `e2e:offline` and `policy` script entries to `package.json` so the new preview, offline and policy targets are runnable
-- [ ] T004 [P] Vendor licensed Barlow, Barlow Condensed and JetBrains Mono WOFF2 subsets with their OFL licence files under `public/fonts/`
-- [ ] T005 Scaffold the tooling-only preview application in `projects/ui-preview/` (`src/main.ts`, `src/index.html`, `src/app/preview-app.ts`, `tsconfig.app.json`) and register its build and serve targets under `projects` in `angular.json`
-- [ ] T006 [P] Copy `src/app/i18n/locales` to the same-origin `/i18n/` output through the build `assets` array in `angular.json` and keep `projects/ui-preview` out of the product build graph
+- [x] T001 Add lockfile-compatible `@jsverse/transloco` and `@angular/service-worker` dependencies and `@axe-core/playwright`, `postcss` and `postcss-scss` development dependencies in `package.json`, then install and commit the updated `pnpm-lock.yaml`
+- [x] T002 Enable `"strict": true` in `compilerOptions` and `"strictTemplates": true` in `angularCompilerOptions` in `tsconfig.json`, and repair every resulting error in `src/`, `e2e/` and `playwright.config.ts`
+- [x] T003 [P] Add the `ui:preview`, `e2e:preview`, `e2e:offline` and `policy` script entries to `package.json` so the new preview, offline and policy targets are runnable
+- [x] T004 [P] Vendor licensed Barlow, Barlow Condensed and JetBrains Mono WOFF2 subsets with their OFL licence files under `public/fonts/`
+- [x] T005 Scaffold the tooling-only preview application in `projects/ui-preview/` (`src/main.ts`, `src/index.html`, `src/app/preview-app.ts`, `tsconfig.app.json`) and register its build and serve targets under `projects` in `angular.json`
+- [x] T006 [P] Copy `src/app/i18n/locales` to the same-origin `/i18n/` output through the build `assets` array in `angular.json` and keep `projects/ui-preview` out of the product build graph
 
 ---
 
@@ -57,42 +57,42 @@ verification harness that every user story composes.
 
 ### Design tokens and global styles
 
-- [ ] T007 [P] Define the primitive token literals in `src/styles/tokens/_primitives.scss`: take the colour primitives from the 55 named custom properties in `.design/Ship Builder.dc.html` (`--amber-*`, `--ink-*`, `--panel-*`, `--bg-*`, `--hot`, `--good`, `--cool`, `--hair`), and author the type scale, spacing, radius, elevation, border, motion and target primitives here as bounded named step scales with the canvas as visual reference only — this repository is the record and the design tool is a preview (principle VII). The canvas `font-size` values of 8px and 9px are artboard-thumbnail artifacts and MUST NOT become a type scale, and its 78 `padding`, 18 `gap` and 15 `letter-spacing` literals MUST NOT be imported as a spacing system
-- [ ] T008 Define the one contrast-audited semantic dark set consuming only primitives in `src/styles/tokens/_semantic.scss` (depends on T007)
-- [ ] T009 [P] Record AA text and non-text contrast evidence for every intended semantic pair in `specs/011-interface-foundations/design/token-evidence.md`
-- [ ] T010 [P] Declare the same-origin `@font-face` rules and complete fallback stacks in `src/styles/_fonts.scss`
-- [ ] T011 [P] Set the dark surface, root typography, logical-property defaults and `prefers-reduced-motion` base rules in `src/styles/_base.scss`
-- [ ] T012 [P] Define the named layout, container-query and wide/medium/compact composition primitives in `src/styles/_responsive.scss`
-- [ ] T013 Compose the token, font, base and responsive partials in `src/styles.scss` (depends on T007–T012)
+- [x] T007 [P] Define the primitive token literals in `src/styles/tokens/_primitives.scss`: take the colour primitives from the 55 named custom properties in `.design/Ship Builder.dc.html` (`--amber-*`, `--ink-*`, `--panel-*`, `--bg-*`, `--hot`, `--good`, `--cool`, `--hair`), and author the type scale, spacing, radius, elevation, border, motion and target primitives here as bounded named step scales with the canvas as visual reference only — this repository is the record and the design tool is a preview (principle VII). The canvas `font-size` values of 8px and 9px are artboard-thumbnail artifacts and MUST NOT become a type scale, and its 78 `padding`, 18 `gap` and 15 `letter-spacing` literals MUST NOT be imported as a spacing system
+- [x] T008 Define the one contrast-audited semantic dark set consuming only primitives in `src/styles/tokens/_semantic.scss` (depends on T007)
+- [x] T009 [P] Record AA text and non-text contrast evidence for every intended semantic pair in `specs/011-interface-foundations/design/token-evidence.md`
+- [x] T010 [P] Declare the same-origin `@font-face` rules and complete fallback stacks in `src/styles/_fonts.scss`
+- [x] T011 [P] Set the dark surface, root typography, logical-property defaults and `prefers-reduced-motion` base rules in `src/styles/_base.scss`
+- [x] T012 [P] Define the named layout, container-query and wide/medium/compact composition primitives in `src/styles/_responsive.scss`
+- [x] T013 Compose the token, font, base and responsive partials in `src/styles.scss` (depends on T007–T012)
 
 ### Platform adapters
 
-- [ ] T014 [P] Implement the document and navigator adapters with unit tests in `src/app/platform/browser/document.adapter.ts` and `src/app/platform/browser/navigator.adapter.ts`
-- [ ] T015 [P] Implement the versioned locale-preference adapter in `src/app/platform/storage/locale-preference.repository.ts` with unit tests covering malformed JSON, unknown version, removed locale, denied storage and failed writes
+- [x] T014 [P] Implement the document and navigator adapters with unit tests in `src/app/platform/browser/document.adapter.ts` and `src/app/platform/browser/navigator.adapter.ts`
+- [x] T015 [P] Store nothing: the browser language setting is the only locale input, so no preference adapter exists
 
 ### Localization core (bundled English)
 
-- [ ] T016 [P] Define the `ShippedLocale`, `LocaleCandidate` and `LocaleSnapshot` types and the `en`/`de` registry entries in `src/app/i18n/locale-registry.ts`
-- [ ] T017 Seed the canonical English and German catalogues with reviewed shell, action, status, error, unavailable, disclosure and generic-unknown-key messages using identical key and interpolation-variable sets in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T018 Implement the signal `LocaleStore` that commits exactly one bundled-English ready snapshot per revision in `src/app/i18n/locale.store.ts` with unit tests (depends on T016, T017)
-- [ ] T019 Implement the typed message facade over Transloco in `src/app/i18n/message.service.ts` and register the localization providers in `src/app/app.config.ts` (depends on T016–T018)
-- [ ] T020 [P] Implement the cached named `Intl` formatter registry (integer, decimal, fraction-percent, metre/kilometre unit, named date, collator, display name, and credit/light-year message patterns) in `src/app/i18n/formatters/` with unit tests
+- [x] T016 [P] Define the `ShippedLocale`, `LocaleCandidate` and `LocaleSnapshot` types and the `en`/`de` registry entries in `src/app/i18n/locale-registry.ts`
+- [x] T017 Seed the canonical English and German catalogues with reviewed shell, action, status, error, unavailable, disclosure and generic-unknown-key messages using identical key and interpolation-variable sets in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [x] T018 Implement the signal `LocaleStore` that commits exactly one bundled-English ready snapshot per revision in `src/app/i18n/locale.store.ts` with unit tests (depends on T016, T017)
+- [x] T019 Implement the typed message facade over Transloco in `src/app/i18n/message.service.ts` and register the localization providers in `src/app/app.config.ts` (depends on T016–T018)
+- [x] T020 [P] Implement the cached named `Intl` formatter registry (integer, decimal, fraction-percent, metre/kilometre unit, named date, collator, display name, and credit/light-year message patterns) in `src/app/i18n/formatters/` with unit tests
 
 ### Shared component and preview infrastructure
 
-- [ ] T021 [P] Define the shared component contract types (immutable inputs, typed intents, semantics, required state set) in `src/app/ui/component-contract.ts`
-- [ ] T022 Define the typed preview declaration, required-state and N/A rationale rules and the manifest registry in `src/app/ui/previews/preview-manifest.ts` (depends on T021)
-- [ ] T023 Render every manifest declaration at a stable component/state address in `projects/ui-preview/src/app/`, importing the production tokens, UI exports and localization providers (depends on T005, T013, T019, T022)
-- [ ] T024 [P] Create the machine-readable coverage ledger joining surfaces, requirement ids, journeys, axe flags, named assertions and manual protocol ids, seeded with this feature's cross-cutting design-system (FR-001–FR-005) and verification (FR-021–FR-024) entries that no user story owns, in `e2e/coverage-ledger.ts`
+- [x] T021 [P] Define the shared component contract types (immutable inputs, typed intents, semantics, required state set) in `src/app/ui/component-contract.ts`
+- [x] T022 Define the typed preview declaration, required-state and N/A rationale rules and the manifest registry in `src/app/ui/previews/preview-manifest.ts` (depends on T021)
+- [x] T023 Render every manifest declaration at a stable component/state address in `projects/ui-preview/src/app/`, importing the production tokens, UI exports and localization providers (depends on T005, T013, T019, T022)
+- [x] T024 [P] Create the machine-readable coverage ledger joining surfaces, requirement ids, journeys, axe flags, named assertions and manual protocol ids, seeded with this feature's cross-cutting design-system (FR-001–FR-005) and verification (FR-021–FR-024) entries that no user story owns, in `e2e/coverage-ledger.ts`
 
 ### Verification harness
 
-- [ ] T025 Generate the ten named projects (desktop, tablet portrait, tablet landscape, mobile portrait, mobile landscape × Chromium and Firefox) with explicit engine descriptors, `hasTouch` on the four touch profiles and `E2E_CHROMIUM_PATH`/`E2E_FIREFOX_PATH` escape hatches in `playwright.config.ts`
-- [ ] T026 [P] Add the shared axe helper that scans WCAG A/AA through 2.2 with no disabled rules and attaches the full JSON result on failure in `e2e/accessibility/axe.ts`
-- [ ] T027 [P] Add the landmark, heading, matching-name, state, relationship, text-equivalence, target-size and document-overflow assertion helpers in `e2e/accessibility/assertions.ts`
-- [ ] T028 Implement the AST- and PostCSS-backed policy checker for owned literal display text, literal visible/accessibility attributes, governed visual literals outside token sources, uninspectable inline styles, missing preview declarations, skipped or focused interface tests, and every `FR-` and `SC-` id declared in any `specs/*/spec.md` appearing at least once in `e2e/coverage-ledger.ts` with the unregistered ids named on failure, in `scripts/check-interface-foundations.mjs`
-- [ ] T029 Add positive and negative fixture tests for every checker rule in `scripts/check-interface-foundations.test.mjs` (depends on T028)
-- [ ] T030 Invoke the policy checker, preview and offline targets from the `check` script in `package.json` so a violation fails the build (depends on T003, T028)
+- [x] T025 Generate the ten named projects (desktop, tablet portrait, tablet landscape, mobile portrait, mobile landscape × Chromium and Firefox) with explicit engine descriptors, `hasTouch` on the four touch profiles and `E2E_CHROMIUM_PATH`/`E2E_FIREFOX_PATH` escape hatches in `playwright.config.ts`
+- [x] T026 [P] Add the shared axe helper that scans WCAG A/AA through 2.2 with no disabled rules and attaches the full JSON result on failure in `e2e/accessibility/axe.ts`
+- [x] T027 [P] Add the landmark, heading, matching-name, state, relationship, text-equivalence, target-size and document-overflow assertion helpers in `e2e/accessibility/assertions.ts`
+- [x] T028 Implement the AST- and PostCSS-backed policy checker for owned literal display text, literal visible/accessibility attributes, governed visual literals outside token sources, uninspectable inline styles, missing preview declarations, skipped or focused interface tests, and every `FR-` and `SC-` id declared in any `specs/*/spec.md` appearing at least once in `e2e/coverage-ledger.ts` with the unregistered ids named on failure, in `scripts/check-interface-foundations.mjs`
+- [x] T029 Add positive and negative fixture tests for every checker rule in `scripts/check-interface-foundations.test.mjs` (depends on T028)
+- [x] T030 Invoke the policy checker, preview and offline targets from the `check` script in `package.json` so a violation fails the build (depends on T003, T028)
 
 **Checkpoint**: Tokens, localization core, component contract, preview host and the ten-project axe-enabled harness exist — user story work can begin.
 
@@ -112,33 +112,33 @@ policy in the feedback contract.
 
 ### Tests for User Story 1
 
-- [ ] T031 [P] [US1] Add the product semantics journey (banner, navigation, one `main`, one visible `h1`, ordered headings, matching names, roles, states, label/description/error/unit relationships) in `e2e/interface-foundations.spec.ts`
-- [ ] T032 [P] [US1] Add the announcement policy journey (one assertive blocking summary, coalesced polite change, silence for initial, unchanged, stale and unaffected content) in `e2e/announcements.spec.ts`
-- [ ] T033 [P] [US1] Add the preview sweep that renders every applicable declaration and runs axe plus the semantic and text-equivalence assertions in `e2e/ui-preview.spec.ts`
+- [x] T031 [P] [US1] Add the product semantics journey (banner, navigation, one `main`, one visible `h1`, ordered headings, matching names, roles, states, label/description/error/unit relationships) in `e2e/interface-foundations.spec.ts`
+- [x] T032 [P] [US1] Add the announcement policy journey (one assertive blocking summary, coalesced polite change, silence for initial, unchanged, stale and unaffected content) in `e2e/announcements.spec.ts`
+- [x] T033 [P] [US1] Add the preview sweep that renders every applicable declaration and runs axe plus the semantic and text-equivalence assertions in `e2e/ui-preview.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T034 [P] [US1] Implement the announcement event record and `(kind, revision, urgency)` dedupe policy in `src/app/ui/announcements/announcement.service.ts` with unit tests
-- [ ] T035 [US1] Implement the hidden assertive and polite outlet component in `src/app/ui/announcements/announcement-outlet.ts` (depends on T034)
-- [ ] T036 [P] [US1] Implement the visually-hidden text and bidi-isolation utilities in `src/app/ui/a11y/text-equivalence.ts`
-- [ ] T037 [P] [US1] Implement the action button and link components with visible/accessible name parity and busy, pressed and disabled state in `src/app/ui/components/action/`
-- [ ] T038 [P] [US1] Implement the labelled text input and search field with associated label, description and error in `src/app/ui/components/text-field/`
-- [ ] T039 [P] [US1] Implement the labelled select with associated label, description and error in `src/app/ui/components/select-field/`
-- [ ] T040 [P] [US1] Implement the labelled textarea with associated label, description and error in `src/app/ui/components/textarea-field/`
-- [ ] T041 [P] [US1] Implement the radio, checkbox and switch choice group exposing checked and invalid state in `src/app/ui/components/choice-group/`
-- [ ] T042 [P] [US1] Implement the segmented and tab controls exposing selected and current state in `src/app/ui/components/tab-group/`
-- [ ] T043 [P] [US1] Implement the panel and card containers with named regions in `src/app/ui/components/panel/`
-- [ ] T044 [P] [US1] Implement the semantic collection (list) shell that never swallows nested controls in `src/app/ui/components/collection/`
-- [ ] T045 [P] [US1] Implement the table shell with caption and associated row/column headers in `src/app/ui/components/table/`
-- [ ] T046 [P] [US1] Implement the definition and metric group exposing value, unit, viewing condition and description relationships in `src/app/ui/components/metric-group/`
-- [ ] T047 [P] [US1] Implement the status, notice and error pattern whose state is named in text rather than colour in `src/app/ui/components/status/`
-- [ ] T048 [P] [US1] Implement the unavailable and incomplete value pattern that never substitutes zero or an estimate in `src/app/ui/components/unavailable-value/`
-- [ ] T049 [P] [US1] Implement the disclosure component exposing expanded state and a persistent text alternative to hover in `src/app/ui/components/disclosure/`
-- [ ] T050 [US1] Implement the layer component with visible associated title and description, inert and accessibility-tree-excluded background, dismissal and invoker restoration in `src/app/ui/components/layer/`
-- [ ] T051 [US1] Implement the application frame (banner, product identity, navigation slot, route context group, named action group, route-owned `main`, visible status/error region and announcement outlets) in `src/app/ui/components/app-frame/` (depends on T035, T037, T047, T050)
-- [ ] T052 [US1] Mount the frame and its route context/heading contract in `src/app/app.html`, `src/app/app.ts` and `src/app/app.routes.ts` (depends on T051)
-- [ ] T053 [US1] Register the default/populated, empty, loading, error and disabled declarations — or a nonempty machine-readable N/A rationale — for every component added in this phase in `src/app/ui/previews/preview-manifest.ts`
-- [ ] T054 [US1] Add the shell, layer, feedback and preview-catalogue entries with their FR-006–FR-010 requirement ids to `e2e/coverage-ledger.ts`
+- [x] T034 [P] [US1] Implement the announcement event record and `(kind, revision, urgency)` dedupe policy in `src/app/ui/announcements/announcement.service.ts` with unit tests
+- [x] T035 [US1] Implement the hidden assertive and polite outlet component in `src/app/ui/announcements/announcement-outlet.ts` (depends on T034)
+- [x] T036 [P] [US1] Implement the visually-hidden text and bidi-isolation utilities in `src/app/ui/a11y/text-equivalence.ts`
+- [x] T037 [P] [US1] Implement the action button and link components with visible/accessible name parity and busy, pressed and disabled state in `src/app/ui/components/action/`
+- [x] T038 [P] [US1] Implement the labelled text input and search field with associated label, description and error in `src/app/ui/components/text-field/`
+- [x] T039 [P] [US1] Implement the labelled select with associated label, description and error in `src/app/ui/components/select-field/`
+- [x] T040 [P] [US1] Implement the labelled textarea with associated label, description and error in `src/app/ui/components/textarea-field/`
+- [x] T041 [P] [US1] Implement the radio, checkbox and switch choice group exposing checked and invalid state in `src/app/ui/components/choice-group/`
+- [x] T042 [P] [US1] Implement the segmented and tab controls exposing selected and current state in `src/app/ui/components/tab-group/`
+- [x] T043 [P] [US1] Implement the panel and card containers with named regions in `src/app/ui/components/panel/`
+- [x] T044 [P] [US1] Implement the semantic collection (list) shell that never swallows nested controls in `src/app/ui/components/collection/`
+- [x] T045 [P] [US1] Implement the table shell with caption and associated row/column headers in `src/app/ui/components/table/`
+- [x] T046 [P] [US1] Implement the definition and metric group exposing value, unit, viewing condition and description relationships in `src/app/ui/components/metric-group/`
+- [x] T047 [P] [US1] Implement the status, notice and error pattern whose state is named in text rather than colour in `src/app/ui/components/status/`
+- [x] T048 [P] [US1] Implement the unavailable and incomplete value pattern that never substitutes zero or an estimate in `src/app/ui/components/unavailable-value/`
+- [x] T049 [P] [US1] Implement the disclosure component exposing expanded state and a persistent text alternative to hover in `src/app/ui/components/disclosure/`
+- [x] T050 [US1] Implement the layer component with visible associated title and description, inert and accessibility-tree-excluded background, dismissal and invoker restoration in `src/app/ui/components/layer/`
+- [x] T051 [US1] Implement the application frame (banner, product identity, navigation slot, route context group, named action group, route-owned `main`, visible status/error region and announcement outlets) in `src/app/ui/components/app-frame/` (depends on T035, T037, T047, T050)
+- [x] T052 [US1] Mount the frame and its route context/heading contract in `src/app/app.html`, `src/app/app.ts` and `src/app/app.routes.ts` (depends on T051)
+- [x] T053 [US1] Register the default/populated, empty, loading, error and disabled declarations — or a nonempty machine-readable N/A rationale — for every component added in this phase in `src/app/ui/previews/preview-manifest.ts`
+- [x] T054 [US1] Add the shell, layer, feedback and preview-catalogue entries with their FR-006–FR-010 requirement ids to `e2e/coverage-ledger.ts`
 
 **Checkpoint**: The shared library and frame are screen-reader complete and every state is previewed, scanned and asserted.
 
@@ -156,27 +156,27 @@ doubled-copy, RTL and reduced-motion variants pass with `documentElement.scrollW
 
 ### Tests for User Story 2
 
-- [ ] T055 [P] [US2] Add the responsive journey asserting every action and datum remains available and the document never scrolls horizontally across all ten projects in `e2e/responsive.spec.ts`
-- [ ] T056 [P] [US2] Add the 200% text-scale and 320 CSS-pixel reflow variants in `e2e/reflow.spec.ts`
-- [ ] T057 [P] [US2] Add the `prefers-reduced-motion: reduce` emulation asserting state and feedback equivalence in `e2e/reduced-motion.spec.ts`
-- [ ] T058 [P] [US2] Add the doubled-copy and RTL rendering assertions for stable semantic order and untruncated meaning in `e2e/expansion-rtl.spec.ts`
-- [ ] T059 [P] [US2] Add the target-size and computed contrast assertions over every ledger state in `e2e/target-and-contrast.spec.ts`
+- [x] T055 [P] [US2] Add the responsive journey asserting every action and datum remains available and the document never scrolls horizontally across all ten projects in `e2e/responsive.spec.ts`
+- [x] T056 [P] [US2] Add the 200% text-scale and 320 CSS-pixel reflow variants in `e2e/reflow.spec.ts`
+- [x] T057 [P] [US2] Add the `prefers-reduced-motion: reduce` emulation asserting state and feedback equivalence in `e2e/reduced-motion.spec.ts`
+- [x] T058 [P] [US2] Add the doubled-copy and RTL rendering assertions for stable semantic order and untruncated meaning in `e2e/expansion-rtl.spec.ts`
+- [x] T059 [P] [US2] Add the target-size and computed contrast assertions over every ledger state in `e2e/target-and-contrast.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T060 [US2] Implement the wide, medium and compact shell composition with wrapping identity/action rows and reserved sticky space in `src/app/ui/components/app-frame/app-frame.scss`
-- [ ] T061 [US2] Implement the compact named action layer in which every action keeps visible localized text, replacing the reference's unlabeled ellipsis, in `src/app/ui/components/app-frame/action-layer.ts`
-- [ ] T062 [US2] Extend the layer component with the adaptive dialog, bottom-sheet and full-height presentations sharing one state and intent contract in `src/app/ui/components/layer/` (depends on T050)
-- [ ] T063 [P] [US2] Apply container-query composition to the collection, table, panel and metric components in their `*.scss` files under `src/app/ui/components/`
-- [ ] T064 [P] [US2] Apply the 44 CSS-pixel target baseline token to every interactive component style under `src/app/ui/components/`
-- [ ] T065 [P] [US2] Apply the named duration and easing tokens and the reduced-motion removal of nonessential transitions across `src/app/ui/components/`
-- [ ] T066 [P] [US2] Convert component styles to logical inline/block properties and apply bidi isolation to technical identifiers across `src/app/ui/components/`
-- [ ] T067 [P] [US2] Add the test-only expanded-copy and RTL pseudo providers, excluded from the production registry, in `src/app/i18n/testing/pseudo-locales.ts`
-- [ ] T068 [P] [US2] Add the test-only root text-scale provider applied before application render in `e2e/accessibility/text-scale.ts`
-- [ ] T069 [US2] Add the expanded, RTL, reduced-motion, long unbroken identity and nested relationship variants to the affected declarations in `src/app/ui/previews/preview-manifest.ts`
-- [ ] T070 [US2] Add the wide/medium/compact, orientation, zoom and reduced-motion states with their FR-011–FR-014 ids to `e2e/coverage-ledger.ts`
-- [ ] T071 [P] [US2] Write the actual 400% browser zoom protocol for Chromium and Firefox with pointer and single-touch completion in both orientations in `e2e/manual/zoom-400.protocol.md`
-- [ ] T072 [US2] Record the first versioned zoom run (versions, viewport/orientation, capability/state, expected, actual, date, result) in `e2e/manual/results/zoom-400.md` (depends on T071)
+- [x] T060 [US2] Implement the wide, medium and compact shell composition with wrapping identity/action rows and reserved sticky space in `src/app/ui/components/app-frame/app-frame.scss`
+- [x] T061 [US2] Implement the compact named action layer in which every action keeps visible localized text, replacing the reference's unlabeled ellipsis, in `src/app/ui/components/app-frame/action-layer.ts`
+- [x] T062 [US2] Extend the layer component with the adaptive dialog, bottom-sheet and full-height presentations sharing one state and intent contract in `src/app/ui/components/layer/` (depends on T050)
+- [x] T063 [P] [US2] Apply container-query composition to the collection, table, panel and metric components in their `*.scss` files under `src/app/ui/components/`
+- [x] T064 [P] [US2] Apply the 44 CSS-pixel target baseline token to every interactive component style under `src/app/ui/components/`
+- [x] T065 [P] [US2] Apply the named duration and easing tokens and the reduced-motion removal of nonessential transitions across `src/app/ui/components/`
+- [x] T066 [P] [US2] Convert component styles to logical inline/block properties and apply bidi isolation to technical identifiers across `src/app/ui/components/`
+- [x] T067 [P] [US2] Add the test-only expanded-copy and RTL pseudo providers, excluded from the production registry, in `src/app/i18n/testing/pseudo-locales.ts`
+- [x] T068 [P] [US2] Add the test-only root text-scale provider applied before application render in `e2e/accessibility/text-scale.ts`
+- [x] T069 [US2] Add the expanded, RTL, reduced-motion, long unbroken identity and nested relationship variants to the affected declarations in `src/app/ui/previews/preview-manifest.ts`
+- [x] T070 [US2] Add the wide/medium/compact, orientation, zoom and reduced-motion states with their FR-011–FR-014 ids to `e2e/coverage-ledger.ts`
+- [x] T071 [P] [US2] Write the actual 400% browser zoom protocol for Chromium and Firefox with pointer and single-touch completion in both orientations in `e2e/manual/zoom-400.protocol.md`
+- [x] T072 [US2] Run 400% zoom automatically — the 320x256 viewport at a device scale factor of 4, in both engines across all ten projects — in `e2e/reflow.spec.ts`, leaving `e2e/manual/results/zoom-400.md` for the usability judgment a measurement cannot make (depends on T071)
 
 **Checkpoint**: The foundation is complete at every supported size, text scale, zoom level, direction and motion preference.
 
@@ -184,42 +184,41 @@ doubled-copy, RTL and reduced-motion variants pass with `documentElement.scrollW
 
 ## Phase 5: User Story 3 - Read the appropriate language (Priority: P2)
 
-**Goal**: Startup selects a shipped language from the saved preference, then the browser language, then
-bundled English; a Commander can choose English or German and keep that choice; application text and
-number, credit, distance, percentage and date formatting follow the active locale; a missing application
-translation falls back to bundled English; and package game text that is unavailable in the active locale
-becomes disclosed canonical text or an explicit unavailable value.
+**Goal**: Startup selects a shipped language from the browser language, then bundled English, with no
+in-application language control and nothing stored; application text and number, credit, distance,
+percentage and date formatting follow the active locale; a missing application translation falls back to
+bundled English; and package game text that is unavailable in the active locale becomes disclosed
+canonical text or an explicit unavailable value.
 
-**Independent Test**: Run the locale unit suite plus `pnpm run e2e -- locale.spec.ts` and
-`pnpm run e2e:offline`: a `de-DE` browser gets German, an unsupported language gets English with zero
-locale requests, an explicit selection survives reload, a failed candidate commits complete English once,
-and a previously opened German catalogue still loads offline.
+**Independent Test**: Run the locale unit suite plus `pnpm run e2e:offline`: a `de-DE` browser gets
+German, an unsupported language gets English with zero locale requests, a failed candidate commits
+complete English once, and a German catalogue loaded once still loads offline.
 
 ### Tests for User Story 3
 
-- [ ] T073 [P] [US3] Add startup precedence unit tests (saved supported tag, exact then base `navigator.languages` match, bundled English default) in `src/app/i18n/locale.store.spec.ts`
-- [ ] T074 [P] [US3] Add candidate validation and atomic fallback unit tests covering locale identity, shape, missing and extra keys, blank values, interpolation-variable mismatch, one complete commit, retained prior snapshot during loading and no partial or mixed-language frame in `src/app/i18n/catalogue-loader.spec.ts`
-- [ ] T075 [P] [US3] Add `formatToParts`-based English and German formatter tests for integers, decimals, fraction-percent, metres, kilometres, credits, light years, dates and collation in `src/app/i18n/formatters/formatters.spec.ts`
-- [ ] T076 [P] [US3] Add game-text presenter tests over installed Almanac fixtures (localized text, known identity with canonical-only text, known identity with no canonical source, unknown identity) in `src/app/i18n/game-text.presenter.spec.ts`
-- [ ] T077 [P] [US3] Add the locale journey asserting browser match, explicit selection, persistence across reload, atomic `lang`/`dir`/title change, no raw-key flash and the zero/one/zero request counts in `e2e/locale.spec.ts`
-- [ ] T078 [P] [US3] Add the production offline journey (controlled worker, open German once, go offline, reload shell, English and German) in `e2e/offline.spec.ts`
+- [x] T073 [P] [US3] Add startup precedence unit tests (exact then base `navigator.languages` match, bundled English default) in `src/app/i18n/locale.store.spec.ts`
+- [x] T074 [P] [US3] Add candidate validation and atomic fallback unit tests covering locale identity, shape, missing and extra keys, blank values, interpolation-variable mismatch, one complete commit, retained prior snapshot during loading and no partial or mixed-language frame in `src/app/i18n/catalogue-loader.spec.ts`
+- [x] T075 [P] [US3] Add `formatToParts`-based English and German formatter tests for integers, decimals, fraction-percent, metres, kilometres, credits, light years, dates and collation in `src/app/i18n/formatters/formatters.spec.ts`
+- [x] T076 [P] [US3] Add game-text presenter tests over installed Almanac fixtures (localized text, known identity with canonical-only text, known identity with no canonical source, unknown identity) in `src/app/i18n/game-text.presenter.spec.ts`
+- [x] T077 [P] [US3] Cover browser match, atomic `lang`/`dir`/title change and the zero/one request counts through the offline journey and the locale unit suite; no product journey exists for switching because the interface offers no language control
+- [x] T078 [P] [US3] Add the production offline journey (controlled worker, a German browser context loading German once, go offline, reload shell in both languages) in `e2e/offline.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T079 [US3] Implement the saved → browser → bundled-English startup precedence with canonical tag matching in `src/app/i18n/locale.store.ts` (depends on T015, T018)
-- [ ] T080 [US3] Implement the candidate loader and validator for locale identity, catalogue shape, exact English key set, nonblank values and interpolation parity in `src/app/i18n/catalogue-loader.ts`
-- [ ] T081 [US3] Implement the single atomic commit that publishes messages, effective locale, formatter locale, document title, `<html lang>` and `dir` together in `src/app/i18n/locale.store.ts` (depends on T080)
-- [ ] T082 [US3] Implement the persistence policy — persist only when a ready snapshot commits with `effectiveLocale === requestedLocale`, retain the prior preference on fallback and report non-persistence once — in `src/app/i18n/locale.store.ts` (depends on T081)
-- [ ] T083 [US3] Complete the reviewed English and German catalogues for every application-owned message currently present in the repository, preserving identical non-empty key sets and interpolation variables in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T084 [US3] Add the repository-wide English/German exact-key, nonblank-value, interpolation-variable and reviewed-wording gate to `scripts/check-interface-foundations.mjs`, requiring every downstream capability message change to update both catalogues in the same change and naming every mismatch in positive and negative fixtures in `scripts/check-interface-foundations.test.mjs` (depends on T028, T083)
-- [ ] T085 [P] [US3] Implement the Almanac leaf presenter (active locale → canonical package text → unavailable) over the installed package's `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`, `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`, `i18n/materials`, `i18n/micro-resources`, `i18n/ships`, `i18n/slots`, `i18n/pre-engineered` and `i18n/diagnostics` exports in `src/app/i18n/game-text.presenter.ts`
-- [ ] T086 [P] [US3] Implement the game-text component that renders package text with its accurate `lang` and a programmatically associated untranslated disclosure or unavailable framing in `src/app/ui/components/game-text/`
-- [ ] T087 [US3] Implement the labelled language selector showing catalogue self-names with busy state, and the shell Language action opening it, in `src/app/ui/components/language-selector/` and `src/app/ui/components/app-frame/` (depends on T079–T082)
-- [ ] T088 [US3] Install and register the application's sole service worker with eager shell, font and bundled-English asset groups plus a lazy `/i18n/*.json` group in `ngsw-config.json`, `src/app/app.config.ts` and `angular.json`; add ownership fixtures to `scripts/check-interface-foundations.test.mjs` proving downstream features may extend static asset groups but cannot add another registration, worker dependency or cache owner
-- [ ] T089 [US3] Surface the locale fallback reason and non-persistence outcome as visible status plus one polite announcement in `src/app/ui/components/app-frame/app-frame.ts` (depends on T034, T082)
-- [ ] T090 [US3] Resolve the application-owned document title through the message facade on every committed snapshot in `src/app/i18n/message.service.ts`
-- [ ] T091 [US3] Add the language selector, game-text disclosure and unavailable declarations with German format, canonical-untranslated and absent-canonical fixtures in `src/app/ui/previews/preview-manifest.ts`
-- [ ] T092 [US3] Add the locale selection, candidate loading, fallback, persistence-unavailable and offline states with their FR-016–FR-020 ids to `e2e/coverage-ledger.ts`
+- [x] T079 [US3] Implement the browser → bundled-English startup precedence with canonical tag matching in `src/app/i18n/locale.store.ts` (depends on T018)
+- [x] T080 [US3] Implement the candidate loader and validator for locale identity, catalogue shape, exact English key set, nonblank values and interpolation parity in `src/app/i18n/catalogue-loader.ts`
+- [x] T081 [US3] Implement the single atomic commit that publishes messages, effective locale, formatter locale, document title, `<html lang>` and `dir` together in `src/app/i18n/locale.store.ts` (depends on T080)
+- [x] T082 [US3] Keep the locale entirely derived: no language control, no stored preference and no storage adapter, so a changed browser setting takes effect on the next start with nothing to invalidate (depends on T081)
+- [x] T083 [US3] Complete the reviewed English and German catalogues for every application-owned message currently present in the repository, preserving identical non-empty key sets and interpolation variables in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [x] T084 [US3] Add the repository-wide English/German exact-key, nonblank-value, interpolation-variable and reviewed-wording gate to `scripts/check-interface-foundations.mjs`, requiring every downstream capability message change to update both catalogues in the same change and naming every mismatch in positive and negative fixtures in `scripts/check-interface-foundations.test.mjs` (depends on T028, T083)
+- [x] T085 [P] [US3] Implement the Almanac leaf presenter (active locale → canonical package text → unavailable) over the installed package's `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`, `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`, `i18n/materials`, `i18n/micro-resources`, `i18n/ships`, `i18n/slots`, `i18n/pre-engineered` and `i18n/diagnostics` exports in `src/app/i18n/game-text.presenter.ts`
+- [x] T086 [P] [US3] Implement the game-text component that renders package text with its accurate `lang` and a programmatically associated untranslated disclosure or unavailable framing in `src/app/ui/components/game-text/`
+- [x] T087 [US3] Publish no language control: the shell contributes no Language action and the application ships no selector component (depends on T079–T082)
+- [x] T088 [US3] Install and register the application's sole service worker with eager shell, font and bundled-English asset groups plus a lazy `/i18n/*.json` group in `ngsw-config.json`, `src/app/app.config.ts` and `angular.json`; add ownership fixtures to `scripts/check-interface-foundations.test.mjs` proving downstream features may extend static asset groups but cannot add another registration, worker dependency or cache owner
+- [x] T089 [US3] Surface the locale fallback reason as visible status plus one polite announcement in `src/app/ui/components/app-frame/app-frame.ts` (depends on T034, T082)
+- [x] T090 [US3] Resolve the application-owned document title through the message facade on every committed snapshot in `src/app/i18n/message.service.ts`
+- [x] T091 [US3] Add the game-text disclosure and unavailable declarations with German format, canonical-untranslated and absent-canonical fixtures in `src/app/ui/previews/preview-manifest.ts`
+- [x] T092 [US3] Add the locale startup, candidate loading, fallback and offline states with their FR-016–FR-020 ids to `e2e/coverage-ledger.ts`
 
 **Checkpoint**: All three stories are independently functional; the foundation ships English and German with an explicit package-text boundary.
 
@@ -227,14 +226,14 @@ and a previously opened German catalogue still loads offline.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T093 [P] Add the canonical qualified conformance message naming criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11 to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, register the FR-015 id with those assertions in `e2e/coverage-ledger.ts`, and reject unqualified application claims in `scripts/check-interface-foundations.mjs`
-- [ ] T094 Reconcile the coverage ledger with the route table, exported `src/app/ui/` components, preview declarations and Playwright project names in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-006 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T024, T054, T070, T092)
-- [ ] T095 Assert the production output contains no preview route or chunk and emits no cross-origin request in `scripts/check-interface-foundations.mjs`
-- [ ] T096 [P] Write and run the versioned NVDA/Firefox desktop, TalkBack/Chromium mobile and tablet screen-reader protocols with their result records in `e2e/manual/screen-reader.protocol.md` and `e2e/manual/results/`
-- [ ] T097 [P] Update the Playwright matrix and accessibility-gate statements in `AGENTS.md` and `README.md` to record the ten configured projects and the axe gate
-- [ ] T098 Restore unit coverage to at least 80% statements, branches, functions and lines under the thresholds in `angular.json`
-- [ ] T099 Execute every scenario in `specs/011-interface-foundations/quickstart.md` and fix each divergence
-- [ ] T100 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
+- [x] T093 [P] Keep the interface free of any conformance statement, register the FR-015 id in `e2e/coverage-ledger.ts` against the prohibition it actually states, and reject unqualified application claims in `scripts/check-interface-foundations.mjs`
+- [x] T094 Reconcile the coverage ledger with the route table, exported `src/app/ui/` components, preview declarations and Playwright project names in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-006 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T024, T054, T070, T092)
+- [x] T095 Assert the production output contains no preview route or chunk and emits no cross-origin request in `scripts/check-interface-foundations.mjs`
+- [x] T096 [P] Assert the accessibility tree itself — shell structure and order, named live regions, dialog ownership, group state and field/error association — in `e2e/screen-reader.spec.ts`, and record in `e2e/manual/screen-reader.protocol.md` which layers remain manual: NVDA speech capture needs a Windows runner, TalkBack has no driver, and comprehension is a judgment
+- [x] T097 [P] Update the Playwright matrix and accessibility-gate statements in `AGENTS.md` and `README.md` to record the ten configured projects and the axe gate
+- [x] T098 Restore unit coverage to at least 80% statements, branches, functions and lines under the thresholds in `angular.json`
+- [x] T099 Execute every scenario in `specs/011-interface-foundations/quickstart.md` and fix each divergence
+- [x] T100 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 
 ---
 

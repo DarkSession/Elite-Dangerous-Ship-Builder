@@ -25,8 +25,6 @@ the shell emits action/navigation/language intent and does not reach into a buil
   matching the reference hierarchy.
 - Primary actions remain visible. Secondary utilities may use a named menu only when every menu item
   repeats a visible text label.
-- Language is a visible labelled control or Language action opening the shared selector layer. It is
-  never represented only by a globe/icon.
 - Route content receives a fluid central region; the shell does not impose the reference's fixed
   canvas width.
 
@@ -49,14 +47,13 @@ the shell emits action/navigation/language intent and does not reach into a buil
 
 ## Language behavior
 
-The selector shows self-names through the locale catalogue. Startup follows saved → browser → English
-precedence. Selecting German loads and validates a candidate, then atomically changes messages,
-formats, title, `lang` and `dir`. Selecting English uses the bundled catalogue. A failed candidate
-publishes readable English and one nonblocking fallback status. A storage write failure keeps the
-choice for the session and reports that it will not persist.
+The shell has no language control. Startup follows browser → English precedence: a browser-matched
+German loads and validates a candidate, then atomically commits messages, formats, title, `lang` and
+`dir` before the shell renders. English uses the bundled catalogue with no request. A failed
+candidate publishes readable English and one nonblocking fallback status.
 
-Locale changes do not announce/recompute an unchanged build. The visible language labels change in
-ordinary reading order; only a new fallback or persistence outcome creates a polite event.
+Locale resolution does not announce/recompute an unchanged build. Only a new fallback creates a
+polite event.
 
 ## Shell states
 
@@ -65,10 +62,8 @@ ordinary reading order; only a new fallback or persistence outcome creates a pol
 | Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                   |
 | Browser-matched German          | Complete catalogue/root metadata commit before German route render                      |
 | Unsupported browser language    | English appears as the ordinary default                                                 |
-| Restored saved choice           | Supported saved tag wins without altering route/build state                             |
-| Locale candidate loading        | Current complete snapshot remains; selector exposes busy state                          |
+| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                             |
 | Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                 |
-| Preference storage unavailable  | Active locale remains in memory plus one nonblocking non-persistence notice             |
 | Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable               |
 | Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable |
 

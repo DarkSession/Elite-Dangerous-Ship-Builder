@@ -1,0 +1,46 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.action-layer__trigger {
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--edsb-space-inline);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-control);
+  background-color: var(--edsb-surface-panel-raised);
+  color: var(--edsb-text-primary);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-compact);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  transition:
+    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
+    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+}
+
+.action-layer__panel {
+  @include layout.stack(var(--edsb-space-inline-tight));
+
+  margin-block-start: var(--edsb-space-inline-tight);
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-menu);
+  box-shadow: var(--edsb-elevation-menu);
+}
+
+// `hidden` must win over the stacking display above, or a closed layer keeps
+// taking space and stays reachable.
+.action-layer__panel[hidden] {
+  display: none;
+}
+
+.action-layer__action {
+  display: block;
+}

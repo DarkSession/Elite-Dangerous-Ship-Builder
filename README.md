@@ -39,18 +39,36 @@ pnpm start        # dev server on http://localhost:4200/
 
 ## Scripts
 
-| Command              | What it does                                                 |
-| -------------------- | ------------------------------------------------------------ |
-| `pnpm start`         | Run the dev server with hot reload                           |
-| `pnpm run build`     | Production build into `dist/`                                |
-| `pnpm test`          | Run the unit tests with coverage                             |
-| `pnpm run e2e`       | Run the Playwright suite (desktop, tablet, mobile)           |
-| `pnpm run e2e:ui`    | Run Playwright in interactive UI mode                        |
-| `pnpm run typecheck` | Type-check the project without emitting                      |
-| `pnpm run format`    | Format the repository with Prettier                          |
-| `pnpm run check`     | Format check, typecheck, build, unit tests and the E2E suite |
+| Command                | What it does                                                           |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `pnpm start`           | Run the dev server with hot reload                                     |
+| `pnpm run build`       | Production build into `dist/`                                          |
+| `pnpm test`            | Run the unit tests with coverage                                       |
+| `pnpm run e2e`         | Run the Playwright suite across all ten projects                       |
+| `pnpm run e2e:ui`      | Run Playwright in interactive UI mode                                  |
+| `pnpm run e2e:offline` | Serve the production build and run the offline journey                 |
+| `pnpm run ui:preview`  | Serve the tooling-only component preview catalogue                     |
+| `pnpm run policy`      | Run the repository interface-policy checks                             |
+| `pnpm run typecheck`   | Type-check the project without emitting                                |
+| `pnpm run format`      | Format the repository with Prettier                                    |
+| `pnpm run check`       | Format check, typecheck, builds, policy, unit tests and the E2E suites |
 
 Run `pnpm run check` before proposing a change.
+
+## Running and debugging
+
+The dev server binds to `0.0.0.0` so the dev container's forwarded ports reach
+it; the addresses stay the same (`http://localhost:4200/` for the product,
+`http://localhost:4300/` for the preview catalogue).
+
+Run the server with the **`ng serve` task** (`Ctrl+Shift+B`, or Terminal → Run
+Task), and stop it from that terminal. It is a task rather than a debug
+session because the container has no browser to attach a debugger to, and a
+task stops when you tell it to. VS Code opens the app on your own machine when
+it forwards port 4200; its developer tools do the front-end debugging.
+
+Unit tests do run under the debugger: the **`ng test`** launch configuration
+runs them in watch mode and stops on breakpoints in specs and source.
 
 ## Testing
 
@@ -61,26 +79,46 @@ branches, functions and lines; the thresholds are configured in
 
 End-to-end tests live in [`e2e/`](./e2e) and run on
 [Playwright](https://playwright.dev/) as part of `pnpm run check`.
-[`playwright.config.ts`](./playwright.config.ts) currently defines three
-projects — desktop, tablet and mobile — in Chromium.
+[`playwright.config.ts`](./playwright.config.ts) generates **ten projects** —
+five layout profiles in each of two engines:
 
-Spec 011 requires more than that, and the config has yet to catch up: every
-journey must run in **Firefox** as well as Chromium (FR-021), and an automated
-accessibility check must cover every capability and relevant state (FR-022). Adding them is a
-change to the config, never a change to those requirements.
+| Profile          | Viewport   | Touch | Engines           |
+| ---------------- | ---------- | ----- | ----------------- |
+| desktop          | 1440 × 900 | no    | Chromium, Firefox |
+| tablet portrait  | 834 × 1112 | yes   | Chromium, Firefox |
+| tablet landscape | 1112 × 834 | yes   | Chromium, Firefox |
+| mobile portrait  | 390 × 844  | yes   | Chromium, Firefox |
+| mobile landscape | 844 × 390  | yes   | Chromium, Firefox |
+
+Every rendered product and preview state is scanned with
+[`@axe-core/playwright`](https://www.npmjs.com/package/@axe-core/playwright)
+against WCAG 2.0, 2.1 and 2.2 level A and AA, with no rule disabled; an in-scope
+violation fails the build and the full result is attached to the failure. On top
+of the ten projects the suite runs 200% text-scale, 320 CSS-pixel reflow,
+reduced-motion, expanded-copy and right-to-left variants, and a production
+offline journey under `pnpm run e2e:offline`.
+
+CI may shard the matrix; it may not reduce it. The project names are generated
+from the same constants the coverage ledger uses
+([`e2e/coverage-ledger.ts`](./e2e/coverage-ledger.ts)), and `pnpm run policy`
+reconciles the two.
+
+Automation is a floor. The versioned manual protocols in
+[`e2e/manual/`](./e2e/manual) — screen-reader journeys and actual 400% browser
+zoom — cover what no scan can judge.
 
 Playwright needs browsers installed once:
 
 ```bash
-pnpm exec playwright install --with-deps chromium
+pnpm exec playwright install --with-deps chromium firefox
 ```
 
-The dev container does this for you. If your environment already ships a
-Chromium whose build does not match the one Playwright pins, point at it instead
-of editing the config:
+The dev container does this for you. If your environment already ships a browser
+whose build does not match the one Playwright pins, point at it instead of
+editing the config:
 
 ```bash
-E2E_CHROMIUM_PATH=/path/to/chromium pnpm run e2e
+E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e2e
 ```
 
 ## Deployment

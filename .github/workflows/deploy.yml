@@ -67,9 +67,9 @@ jobs:
         run: pnpm run build
         if: ${{ github.event_name != 'workflow_dispatch' }}
 
-      - name: Install Playwright Chromium
+      - name: Install Playwright browsers
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium firefox
 
       # A manual run has no CI result behind it, so it earns green the same way
       # a pushed commit does before anything reaches the site. `check` builds as

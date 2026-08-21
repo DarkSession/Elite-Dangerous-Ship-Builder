@@ -1,0 +1,23 @@
+<span class="game-text">
+  @if (label()) {
+    <span class="game-text__label">{{ label() }}</span>
+  }
+
+  @if (isUnavailable()) {
+    <span class="game-text__unavailable">{{ unavailableText() }}</span>
+  } @else {
+    <span
+      class="game-text__value"
+      data-bidi-isolate
+      [attr.lang]="language()"
+      [attr.dir]="'auto'"
+      [attr.aria-describedby]="isCanonical() ? disclosureId : null"
+      >{{ text() }}</span
+    >
+
+    @if (isCanonical()) {
+      <span class="game-text__tag">{{ untranslatedLabel() }}</span>
+      <span class="game-text__disclosure" [id]="disclosureId">{{ disclosure() }}</span>
+    }
+  }
+</span>

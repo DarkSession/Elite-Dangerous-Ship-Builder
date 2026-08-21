@@ -1,0 +1,136 @@
+// Named layout and composition primitives.
+//
+// Two mechanisms, deliberately separated:
+//
+//   * **container queries** govern reusable component composition, so a
+//     component adapts to the space it is actually given rather than to the
+//     viewport it happens to sit in;
+//   * **page-level media queries** govern the shell and route regions.
+//
+// The reference canvas's fixed 1320px, 1560px and 390px artboards are evidence
+// of wide and compact intent. They are not breakpoints and are not copied. The
+// medium/tablet mode is synthesized here because the canvases have none.
+
+// Composition modes. Content, not a device label, selects one.
+$mode-compact-max: 47.9375rem; // below this, one semantic flow
+$mode-medium-min: 48rem; // two regions where relationships stay legible
+$mode-wide-min: 64rem; // master-detail or multi-region workspace
+
+// Container sizes for component-level composition.
+$container-compact-max: 23.9375rem;
+$container-medium-min: 24rem;
+$container-wide-min: 40rem;
+
+@mixin compact {
+  @media (max-width: #{$mode-compact-max}) {
+    @content;
+  }
+}
+
+@mixin medium-up {
+  @media (min-width: #{$mode-medium-min}) {
+    @content;
+  }
+}
+
+@mixin wide-up {
+  @media (min-width: #{$mode-wide-min}) {
+    @content;
+  }
+}
+
+// Short viewports promote a sheet to a full-height scrollable layer rather than
+// letting content be cut off — the landscape-phone case the canvases omit.
+@mixin short-viewport {
+  @media (max-height: 30rem) {
+    @content;
+  }
+}
+
+// Component-level composition. `$name` must match a `container-name` the
+// component sets, so a component reads its own box and not an ancestor's.
+@mixin container-compact($name) {
+  @container #{$name} (max-width: #{$container-compact-max}) {
+    @content;
+  }
+}
+
+@mixin container-medium-up($name) {
+  @container #{$name} (min-width: #{$container-medium-min}) {
+    @content;
+  }
+}
+
+@mixin container-wide-up($name) {
+  @container #{$name} (min-width: #{$container-wide-min}) {
+    @content;
+  }
+}
+
+// Shared composition primitives. Zero, percentages, `fr`, `auto`, intrinsic
+// sizing and token calculations are layout syntax, not an alternate literal
+// scale (design-system contract).
+
+// A row that wraps before labels truncate or targets shrink.
+@mixin wrapping-row($gap: var(--edsb-space-inline)) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap;
+}
+
+// A vertical rhythm of equal steps.
+@mixin stack($gap: var(--edsb-space-stack)) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+// The centred content measure. Uses a named token, never a canvas width.
+@mixin content-measure {
+  inline-size: 100%;
+  max-inline-size: var(--edsb-layout-content-max);
+  margin-inline: auto;
+}
+
+// A region pair that collapses to one flow when the space cannot hold both.
+@mixin region-pair($rail: var(--edsb-layout-rail-min), $gap: var(--edsb-space-region)) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: 1fr;
+
+  @include wide-up {
+    grid-template-columns: minmax(0, 1fr) minmax($rail, auto);
+  }
+}
+
+// A bounded scroller for content that genuinely needs two dimensions. The
+// component that owns it must label it; the document still never scrolls
+// horizontally.
+@mixin bounded-scroller {
+  overflow-x: auto;
+  max-inline-size: 100%;
+  overscroll-behavior-inline: contain;
+}
+
+// Every interactive target meets the 44 CSS-pixel design baseline.
+@mixin target-baseline {
+  min-block-size: var(--edsb-target-size);
+  min-inline-size: var(--edsb-target-size);
+}
+
+// Content hidden visually but present for assistive technology.
+@mixin visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  // No negative margin: that belonged to the legacy `clip` recipe. `clip-path`
+  // with absolute positioning hides the box without one, and a literal offset
+  // here would be a visual decision made outside the token layer.
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

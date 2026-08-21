@@ -1,0 +1,68 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: tab-group;
+}
+
+.tab-group {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+}
+
+.tab {
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-control-inline);
+  border: 0;
+  border-block-end: var(--edsb-border-width-thick) solid transparent;
+  background-color: transparent;
+  color: var(--edsb-text-muted);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
+    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+}
+
+.tab[aria-selected='true'],
+.tab[aria-pressed='true'] {
+  border-block-end-color: var(--edsb-border-accent);
+  color: var(--edsb-text-accent);
+}
+
+// The selected state's text equivalent. Small, but present — the border and
+// colour above are a supplement to it, never the only signal.
+.tab__state {
+  font-size: var(--edsb-text-size-caption);
+  font-weight: var(--edsb-text-weight-body);
+  color: var(--edsb-text-muted);
+  text-transform: none;
+  letter-spacing: var(--edsb-text-tracking-body);
+}
+
+.tab:disabled {
+  color: var(--edsb-text-disabled);
+  cursor: not-allowed;
+}
+
+// In a narrow container the strip scrolls inside itself rather than pushing the
+// document into horizontal overflow. Every choice stays reachable.
+@include layout.container-compact(tab-group) {
+  .tab-group {
+    @include layout.bounded-scroller;
+
+    flex-wrap: nowrap;
+  }
+}

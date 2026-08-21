@@ -1,0 +1,47 @@
+:host {
+  display: inline-block;
+}
+
+.game-text {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+}
+
+.game-text__label {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+}
+
+.game-text__value {
+  color: var(--edsb-text-primary);
+  // A game noun keeps its own character order inside prose that reads the other
+  // way; direction is resolved from the text itself rather than inherited.
+  unicode-bidi: isolate;
+  overflow-wrap: break-word;
+}
+
+// The untranslated tag is words, not a colour or an icon: the state has to be
+// readable to someone who cannot see the styling (FR-010).
+.game-text__tag {
+  padding-block: var(--edsb-space-3xs);
+  padding-inline: var(--edsb-space-inline-tight);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-badge);
+  color: var(--edsb-text-secondary);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-caption);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+}
+
+.game-text__disclosure {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-caption);
+}
+
+.game-text__unavailable {
+  color: var(--edsb-text-subtle);
+  font-size: var(--edsb-text-size-compact);
+}

@@ -30,16 +30,28 @@
     }
   },
 
-  "forwardPorts": [1455, 4200],
+  "forwardPorts": [1455, 4200, 4300, 4400],
 
   "portsAttributes": {
     "1455": {
       "label": "Codex login callback",
       "onAutoForward": "silent",
       "requireLocalPort": true
+    },
+    "4200": {
+      "label": "Angular dev server",
+      "onAutoForward": "openBrowser"
+    },
+    "4300": {
+      "label": "Component preview catalogue",
+      "onAutoForward": "silent"
+    },
+    "4400": {
+      "label": "Production build (offline journey)",
+      "onAutoForward": "silent"
     }
   },
 
   "remoteUser": "node",
-  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium"
+  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium firefox"
 }

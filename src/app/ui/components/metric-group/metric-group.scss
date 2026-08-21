@@ -1,0 +1,77 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: metric-group;
+}
+
+.metric-group {
+  display: grid;
+  gap: var(--edsb-space-stack);
+  grid-template-columns: 1fr;
+}
+
+.metric {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.metric__label {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  color: var(--edsb-text-muted);
+}
+
+.metric__value {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  margin-inline-start: 0;
+}
+
+.metric__number {
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-lead);
+  font-variant-numeric: tabular-nums;
+  color: var(--edsb-text-numeric);
+  // A technical value keeps its own ordering inside right-to-left prose.
+  unicode-bidi: isolate;
+}
+
+.metric__unit {
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-secondary);
+}
+
+.metric__condition {
+  font-size: var(--edsb-text-size-caption);
+  color: var(--edsb-text-muted);
+}
+
+// An unavailable value is stated, never rendered as a zero or a dash whose
+// meaning a reader has to guess (constitution IV).
+.metric__unavailable {
+  font-size: var(--edsb-text-size-compact);
+  font-style: normal;
+  color: var(--edsb-text-subtle);
+}
+
+.metric__description {
+  margin-inline-start: 0;
+  font-size: var(--edsb-text-size-label);
+  color: var(--edsb-text-muted);
+}
+
+@include layout.container-medium-up(metric-group) {
+  .metric-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include layout.container-wide-up(metric-group) {
+  .metric-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

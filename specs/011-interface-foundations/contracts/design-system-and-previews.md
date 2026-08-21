@@ -47,7 +47,7 @@ Shared components:
 Feature 011 initially supplies application frame/heading/context actions, buttons/links, labelled
 input/select/search/textarea, choice/tab/segmented controls, panel/card, semantic collection and
 table shells, definition/metric/status/unavailable patterns, dialog/sheet/full-height layer,
-language selector, game-text disclosure and live-announcement outlets. Hull rows, slot rows, anatomy,
+game-text disclosure and live-announcement outlets. Hull rows, slot rows, anatomy,
 engineering and other domain composites remain owned by their capability features but extend this
 same library.
 

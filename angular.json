@@ -28,6 +28,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*.json",
+                "input": "src/app/i18n/locales",
+                "output": "i18n"
               }
             ],
             "styles": ["src/styles.scss"]
@@ -46,7 +51,8 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
@@ -58,6 +64,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "host": "0.0.0.0",
+            "port": 4200,
+            "allowedHosts": true
+          },
           "configurations": {
             "production": {
               "buildTarget": "elite-dangerous-ship-builder:build:production"
@@ -87,6 +98,59 @@
               "lines": 80
             }
           }
+        }
+      }
+    },
+    "ui-preview": {
+      "projectType": "application",
+      "root": "projects/ui-preview",
+      "sourceRoot": "projects/ui-preview/src",
+      "prefix": "ui-preview",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/ui-preview/src/main.ts",
+            "index": "projects/ui-preview/src/index.html",
+            "tsConfig": "projects/ui-preview/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "outputPath": "dist/ui-preview",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": ["src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "host": "0.0.0.0",
+            "port": 4300,
+            "allowedHosts": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "ui-preview:build:production"
+            },
+            "development": {
+              "buildTarget": "ui-preview:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }

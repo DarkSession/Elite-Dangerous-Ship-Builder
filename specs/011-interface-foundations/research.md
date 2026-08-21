@@ -59,12 +59,12 @@ reference's many near-duplicate alpha tokens was rejected in favor of semantic s
 **Decision**: Ship complete application-owned English (`en`) and German (`de`) catalogues. English is
 the fallback. Their key sets, nonblank values and interpolation-variable sets remain identical across
 the whole application: every downstream capability that adds or changes a message updates both
-catalogues in the same change. German becomes selectable only after every application message and
+catalogues in the same change. German ships only after every application message and
 interpolation has reviewed wording. Expanded-copy and RTL pseudo-catalogues remain test fixtures and
-are never shipped or persisted as Commander choices.
+are never shipped.
 
-**Rationale**: The accepted story requires choosing another shipped language and SC-006 requires a
-browser-language match, so one product locale does not satisfy this feature. Existing feature 007
+**Rationale**: SC-006 requires a browser-language match, so one product locale does not satisfy this
+feature. Existing feature 007
 preview planning already depends on English/German expansion fixtures. German is useful for text
 expansion and for exercising canonical-game-text disclosure; it is not selected because Almanac has
 complete German text. Installed-package probes find partial German coverage across game-text
@@ -79,19 +79,18 @@ as a human language.
 
 **Decision**: Add `@jsverse/transloco` as the runtime message engine behind an application-owned
 signal `LocaleStore` and message facade. Use Angular's app initializer to resolve the valid startup
-snapshot before root content renders. Saved supported preference wins; otherwise match
-`navigator.languages` by canonical exact tag then base language; otherwise use English. The store is
+snapshot before root content renders. Match `navigator.languages` by canonical exact tag then base
+language; otherwise use English. There is no other input and nothing is stored. The store is
 the only code that changes active messages, document title, root `lang`/`dir` and formatter locale.
 
-**Rationale**: Transloco supports the repository's Angular/RxJS versions, runtime loading/switching and fallback without a
+**Rationale**: Transloco supports the repository's Angular/RxJS versions, runtime loading and fallback without a
 zone peer. A facade prevents components from coupling to library mutable state and lets publication
-be one testable revision. Angular compile-time localized builds do not satisfy a persisted in-session
-switch. See the official [Transloco configuration](https://jsverse.gitbook.io/transloco/getting-started/config-options)
+be one testable revision. Angular compile-time localized builds would need one build per language
+and would resolve the browser match by redirect rather than at startup. See the official [Transloco configuration](https://jsverse.gitbook.io/transloco/getting-started/config-options)
 and [language API](https://jsverse.gitbook.io/transloco/core-concepts/language-api).
 
-**Alternatives considered**: Angular compile-time-only i18n cannot switch in session. A custom
-interpolation/plural engine would reimplement solved message behavior. Transloco's persistence plugin
-does not provide the required versioned, injected, failure-tolerant storage boundary.
+**Alternatives considered**: Angular compile-time-only i18n needs one build per language. A custom
+interpolation/plural engine would reimplement solved message behavior.
 
 ## Catalogue delivery, completeness and offline behavior
 

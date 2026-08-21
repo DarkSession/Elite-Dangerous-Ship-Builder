@@ -37,13 +37,19 @@ planning ship loadouts.
 - **Tests gate the build.** Unit coverage must stay at or above 80% (statements,
   branches, functions, lines) — enforced in `angular.json`; never lower the
   threshold to get green. Playwright end-to-end tests run as part of
-  `pnpm run check` and must cover desktop, tablet and mobile viewports, in
-  **Chromium and Firefox**, with an automated accessibility check over every
-  screen. The suite has yet to reach that: `playwright.config.ts` configures the
-  three viewports in Chromium only, and no accessibility check runs. Closing the
-  gap is work on the suite, never a relaxation of the obligation. Do not skip,
-  quarantine or delete tests to pass a build.
-- **Accessible to WCAG 2.2 AA, except the keyboard-operation criteria.**
+  `pnpm run check` and cover desktop, tablet and mobile viewports, in **Chromium
+  and Firefox**, with an automated accessibility check over every screen.
+  `playwright.config.ts` generates **ten projects** — five layout profiles
+  (desktop, tablet portrait, tablet landscape, mobile portrait, mobile
+  landscape) in each of the two engines — and every rendered product and preview
+  state is scanned with `@axe-core/playwright` against WCAG 2.0/2.1/2.2 A and AA
+  with no disabled rules. CI may shard the matrix; it may not reduce it. Do not
+  skip, quarantine or delete tests to pass a build — `pnpm run policy` fails a
+  build that contains a skipped, focused or quarantined interface test.
+- **Accessible to WCAG 2.2 AA, except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+  2.4.7 and 2.4.11.** Those seven are the keyboard-operation criteria the constitution
+  excludes. Every conformance statement names them; an unqualified "WCAG 2.2 AA" claim is a
+  stronger claim than this project supports, and the policy checker rejects one.
   Screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
   touch targets, `prefers-reduced-motion` honoured, and nothing carried by
   colour alone. It is a requirement of every feature, not a later pass.
@@ -76,14 +82,18 @@ planning ship loadouts.
   coverage, Playwright) before proposing a change.
 - Unit tests live beside their source in `src/`; end-to-end tests live in
   `e2e/`. New user journeys need both.
-- The end-to-end suite must run every project in Chromium **and** in Firefox, with
-  an automated accessibility check over every capability and relevant state (feature 011, FR-021
-  and FR-022). `playwright.config.ts` has yet to catch up: it currently defines the
-  three viewport projects in Chromium only. Closing that gap is a change to the
-  config, never to those requirements, and no browser may be dropped from the
-  matrix to get a build green. If a preinstalled browser does not match the
-  version Playwright pins, point at its executable (`E2E_CHROMIUM_PATH`, and
-  `E2E_FIREFOX_PATH` once Firefox is configured) rather than editing the config.
+- The end-to-end suite runs every project in Chromium **and** in Firefox, with an
+  automated accessibility check over every capability and relevant state (feature
+  011, FR-021 and FR-022). `playwright.config.ts` generates the ten projects from
+  `ENGINES × LAYOUT_PROFILES` in `e2e/coverage-ledger.ts`, which is also where
+  the coverage ledger lives; the policy checker reconciles the two, so a project
+  cannot be renamed or dropped without the build noticing. No browser may be
+  dropped from the matrix to get a build green. If a preinstalled browser does
+  not match the version Playwright pins, point at its executable
+  (`E2E_CHROMIUM_PATH`, `E2E_FIREFOX_PATH`) rather than editing the config.
+- Automation is a floor, not the gate. The versioned manual protocols in
+  `e2e/manual/` — screen-reader journeys and actual 400% browser zoom — cover
+  what no scan can judge, and their result records live beside them.
 - **Specs are scoped to a capability and name no screen.** They constrain
   behaviour and the information a screen must convey. Screens are defined at
   plan time in `specs/<NNN>-<short-name>/design/`, recording what each screen

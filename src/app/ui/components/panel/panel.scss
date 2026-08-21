@@ -1,0 +1,46 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: panel;
+}
+
+.panel {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-panel);
+}
+
+.panel--raised {
+  background-color: var(--edsb-surface-panel-raised);
+  box-shadow: var(--edsb-elevation-menu);
+}
+
+.panel__header {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.panel__heading {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+  font-weight: var(--edsb-text-weight-heading);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-primary);
+  overflow-wrap: break-word;
+}
+
+.panel__description {
+  font-size: var(--edsb-text-size-label);
+  color: var(--edsb-text-muted);
+}
+
+@include layout.container-compact(panel) {
+  .panel {
+    padding: var(--edsb-space-inline-loose);
+  }
+}

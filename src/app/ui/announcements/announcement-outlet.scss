@@ -1,0 +1,9 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+div {
+  @include layout.visually-hidden;
+}

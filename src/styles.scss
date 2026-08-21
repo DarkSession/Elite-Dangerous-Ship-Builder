@@ -1,1 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+// The single global style entry point, shared by the product application and
+// the tooling-only preview application so both render against exactly the same
+// system (constitution VII).
+//
+// Order matters: primitives define the literals, semantics alias them into
+// roles, fonts declare the same-origin faces, base applies the roles globally.
+// `_responsive.scss` exports mixins only and is forwarded for components to
+// `@use`; it emits no CSS here.
+
+@use 'styles/tokens/primitives';
+@use 'styles/tokens/semantic';
+@use 'styles/fonts';
+@use 'styles/base';
+@forward 'styles/responsive';

@@ -1,0 +1,25 @@
+<div
+  class="tab-group"
+  [class.tab-group--segmented]="!isTabs()"
+  [attr.role]="isTabs() ? 'tablist' : 'group'"
+  [attr.aria-label]="label()"
+>
+  @for (tab of tabs(); track tab.id) {
+    <button
+      class="tab"
+      type="button"
+      [id]="tab.id"
+      [attr.role]="isTabs() ? 'tab' : null"
+      [attr.aria-selected]="isTabs() ? (isSelected(tab.id) ? 'true' : 'false') : null"
+      [attr.aria-pressed]="isTabs() ? null : isSelected(tab.id) ? 'true' : 'false'"
+      [attr.aria-controls]="isTabs() ? (tab.panelId ?? null) : null"
+      [disabled]="(tab.disabled ?? false) || disabled()"
+      (click)="select(tab)"
+    >
+      <span class="tab__label">{{ tab.label }}</span>
+      @if (isSelected(tab.id) && selectedLabel()) {
+        <span class="tab__state">{{ selectedLabel() }}</span>
+      }
+    </button>
+  }
+</div>

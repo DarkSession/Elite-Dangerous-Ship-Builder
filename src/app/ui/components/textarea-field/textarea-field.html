@@ -1,0 +1,27 @@
+<div class="field">
+  <label class="field__label" [id]="relations.labelId" [attr.for]="relations.controlId">
+    {{ label() }}
+  </label>
+
+  <textarea
+    class="field__control"
+    [id]="relations.controlId"
+    [rows]="rows()"
+    [value]="value()"
+    [attr.required]="required() ? '' : null"
+    [attr.aria-required]="required() ? 'true' : null"
+    [attr.aria-invalid]="relations.invalid() ? 'true' : null"
+    [attr.aria-describedby]="relations.describedBy()"
+    [attr.aria-busy]="busy() ? 'true' : null"
+    [disabled]="disabled()"
+    (input)="onInput($event)"
+  ></textarea>
+
+  @if (description()) {
+    <p class="field__description" [id]="relations.descriptionId">{{ description() }}</p>
+  }
+
+  @if (error()) {
+    <p class="field__error" [id]="relations.errorId">{{ error() }}</p>
+  }
+</div>

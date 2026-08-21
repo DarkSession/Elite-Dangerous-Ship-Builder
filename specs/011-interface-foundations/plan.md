@@ -29,7 +29,7 @@ route and no build state.
 `@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n
 exports, `@axe-core/playwright`, PostCSS and `postcss-scss`
 
-**Storage**: One versioned locale-preference record in `localStorage` behind an injected adapter.
+**Storage**: None. The browser language setting is the only locale input and is read on every start.
 Catalogues, formatter caches, preview fixtures and announcement history remain memory/static-asset
 state and never enter builds, saved records, SLEF or build links.
 
@@ -74,12 +74,12 @@ _GATE: Passed before Phase 0 research. No exception or justified violation is re
 
 | Principle                               | Design evidence                                                                                                                                                                         | Status |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| I. Client-Side Only                     | Locale/font assets and both Angular outputs are static; the preview is tooling-only; one local preference is stored; service-worker requests are same-origin only.                      | PASS   |
+| I. Client-Side Only                     | Locale/font assets and both Angular outputs are static; the preview is tooling-only; nothing is stored; service-worker requests are same-origin only.                                   | PASS   |
 | II. Almanac Source of Truth             | Game nouns and diagnostics use installed-package leaf helpers; a locale miss becomes disclosed canonical package text or unavailable, never an application translation.                 | PASS   |
-| III. Domain Logic Outside UI            | Locale selection, persistence, formatting and announcement policy live in stores/services/adapters; UI components accept immutable view state and emit typed intent.                    | PASS   |
+| III. Domain Logic Outside UI            | Locale startup, formatting and announcement policy live in stores/services/adapters; UI components accept immutable view state and emit typed intent.                                   | PASS   |
 | IV. Lossless, Honest Builds             | Interface state never mutates a build; null/unavailable and untranslated boundaries stay explicit, and locale state is excluded from every build serialization.                         | PASS   |
 | V. Desktop, Tablet and Mobile           | Wide, synthesized medium and compact compositions; ten browser/profile projects; axe, touch, reflow, text-size, reduced-motion and screen-reader/zoom protocols are specified.          | PASS   |
-| VI. Commander's Language                | Runtime choice and persistence, complete `en`/`de` assets, bundled English, atomic `lang`/`dir`, named `Intl` formatting and package-text disclosure are contracted.                    | PASS   |
+| VI. Commander's Language                | Browser-language startup, complete `en`/`de` assets, bundled English, atomic `lang`/`dir`, named `Intl` formatting and package-text disclosure are contracted.                          | PASS   |
 | VII. One Design System                  | One audited dark token set and one `src/app/ui/` library supply product and preview; canvases inform hierarchy but none of their inline literals become production sources.             | PASS   |
 | VIII. Tested Before It Ships            | Existing coverage thresholds remain; strict compilation, policy checks, ten Playwright projects, axe and versioned manual accessibility records join `pnpm run check`.                  | PASS   |
 | IX. Specification Before Implementation | Every FR maps to a feature-owned surface or cross-feature contract; Phase 0 decisions resolve the locale, dependency, offline, preview, design and verification questions before tasks. | PASS   |
@@ -130,8 +130,7 @@ src/
     │   ├── locale.store.ts
     │   └── message.service.ts         # application facade over Transloco
     ├── platform/
-    │   ├── browser/                   # document/navigator adapters
-    │   └── storage/locale-preference.repository.ts
+    │   └── browser/                   # document/navigator adapters
     └── ui/
         ├── announcements/
         ├── components/
@@ -181,9 +180,9 @@ outcomes are:
   canonical-game-text disclosure path; it is not claimed to have complete Almanac coverage. Their
   non-empty key sets and interpolation variables must remain identical across the whole application;
   every downstream message change updates both catalogues atomically.
-- Add Transloco as a runtime message engine behind an application-owned signal store/facade. Saved
-  preference wins over browser-language match, which wins over bundled English. Locale publication
-  is atomic and presentation-only.
+- Add Transloco as a runtime message engine behind an application-owned signal store/facade. A
+  browser-language match wins over bundled English; there is no third input. Locale publication is
+  atomic and presentation-only.
 - Add and register the application's one Angular service worker here: shell and English are eager
   assets, while another shipped locale is a lazy versioned asset available offline after it has been
   opened. Runtime never requests another origin. Feature 001 and later capabilities extend this
@@ -211,10 +210,10 @@ No planning clarification marker remains.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines locale/catalogue/preference state, formatter requests,
+- [data-model.md](./data-model.md) defines locale/catalogue state, formatter requests,
   package-text presentation, announcements, tokens, component previews and verification coverage.
 - [contracts/localization-and-formatting.md](./contracts/localization-and-formatting.md) freezes
-  selection precedence, atomic fallback/persistence, `Intl` boundaries and exact Almanac behavior.
+  selection precedence, atomic fallback, `Intl` boundaries and exact Almanac behavior.
 - [contracts/design-system-and-previews.md](./contracts/design-system-and-previews.md) freezes token
   ownership, reference adaptation, component boundaries and complete preview declarations.
 - [contracts/feedback-and-semantics.md](./contracts/feedback-and-semantics.md) freezes landmarks,
@@ -255,6 +254,6 @@ constitutional exception**.
 No constitutional violation requires justification. The tooling-only Angular preview application is
 the minimum reliable way to render the real zoneless component library in both browser engines
 without adding product surface or a separate zone-based component runtime. Transloco supplies the
-message engine; the application store owns only selection, persistence and atomic document state
-that the library cannot own. The service worker supplies the constitutional offline boundary for
+message engine; the application store owns only startup selection and atomic document state that
+the library cannot own. The service worker supplies the constitutional offline boundary for
 static locale assets.

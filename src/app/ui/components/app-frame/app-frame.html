@@ -1,0 +1,73 @@
+<header class="frame__banner" [attr.aria-label]="bannerLabel()">
+  <div class="frame__identity">
+    <span class="frame__product">{{ productName() }}</span>
+    @if (routeContext()) {
+      <span class="frame__context" [attr.aria-label]="contextLabel()">{{ routeContext() }}</span>
+    }
+  </div>
+
+  @if (navigation().length > 0) {
+    <nav class="frame__navigation" [attr.aria-label]="navigationLabel()">
+      <ul class="frame__navigation-list">
+        @for (entry of navigation(); track entry.id) {
+          <li>
+            <a
+              class="frame__navigation-link"
+              [href]="entry.href"
+              [attr.aria-current]="entry.current ? 'page' : null"
+            >
+              {{ entry.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+
+  @if (actions().length > 0) {
+    <!--
+      The same actions in two compositions, one rendered at a time. The wide row
+      keeps every action on the banner; the compact layer moves them behind one
+      named trigger. Whichever is not in use is removed from layout and from the
+      accessibility tree by its media query, so no action is ever announced
+      twice or reachable while invisible.
+    -->
+    <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
+      @for (action of actions(); track action.id) {
+        <edsb-action-button
+          [label]="action.label"
+          [emphasis]="action.emphasis ?? 'secondary'"
+          [disabled]="action.disabled ?? false"
+          (activated)="selectAction(action)"
+        />
+      }
+    </div>
+
+    <edsb-action-layer
+      class="frame__action-layer"
+      [actions]="actions()"
+      [label]="actionsLabel()"
+      [openLabel]="actionsOpenLabel()"
+      [closeLabel]="actionsCloseLabel()"
+      [expanded]="actionsOpen()"
+      (toggled)="setActionsOpen($event)"
+      (actionSelected)="selectActionById($event)"
+    />
+  }
+</header>
+
+@if (status() ?? localeNotice(); as shellStatus) {
+  <div class="frame__status" [attr.aria-label]="statusLabel()">
+    <edsb-status-notice
+      [tone]="shellStatus.tone"
+      [message]="shellStatus.message"
+      [detail]="shellStatus.detail ?? null"
+    />
+  </div>
+}
+
+<main class="frame__main">
+  <ng-content />
+</main>
+
+<edsb-announcement-outlet />

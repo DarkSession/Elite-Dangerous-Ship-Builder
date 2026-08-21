@@ -40,13 +40,13 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ### Story 3 — Read the appropriate language (P2)
 
-1. On first use, the application selects a shipped language matching the browser language setting;
-   when none matches, it uses English.
-2. A Commander can choose another shipped language and keep that choice across sessions.
-3. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
+1. The application selects a shipped language matching the browser language setting; when none
+   matches, it uses English. There is no in-application language control: the browser setting is the
+   only input.
+2. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
    active locale.
-4. Missing application translation falls back to bundled English text.
-5. Game text unavailable in the active locale uses canonical package text and is identified as
+3. Missing application translation falls back to bundled English text.
+4. Game text unavailable in the active locale uses canonical package text and is identified as
    untranslated when that text exists; otherwise it is explicitly unavailable.
 
 ## Requirements
@@ -86,10 +86,10 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 - **FR-016**: Every application-owned user-facing string MUST resolve through the localisation layer;
   hard-coded display text in components, templates and formatters is prohibited.
-- **FR-017**: When no saved language selection exists, the application MUST automatically select a
-  shipped language matching the browser language setting and MUST fall back to English when none
-  matches. The initial shipped application languages MUST be English and German. A Commander MUST be
-  able to select either language and persist that selection in the browser.
+- **FR-017**: The application MUST select a shipped language matching the browser language setting
+  and MUST fall back to English when none matches. The initial shipped application languages MUST be
+  English and German. The browser language setting is the only input: the application MUST NOT offer
+  a language control and MUST NOT persist a language of its own.
 - **FR-018**: Numbers, percentages, credits, distances and dates MUST use the active locale.
 - **FR-019**: Translations MUST ship as same-origin static assets and complete English fallback text
   MUST be available without a network. Every selectable shipped application locale MUST contain the
@@ -138,5 +138,4 @@ translations.
   covering the three viewport classes in both orientations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
-  the corresponding shipped language, an unsupported browser language selects English, and a saved
-  Commander selection remains active.
+  the corresponding shipped language and an unsupported browser language selects English.

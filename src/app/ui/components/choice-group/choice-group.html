@@ -1,0 +1,41 @@
+<fieldset
+  class="choice-group"
+  [disabled]="disabled()"
+  [attr.aria-invalid]="relations.invalid() ? 'true' : null"
+  [attr.aria-describedby]="relations.describedBy()"
+>
+  <legend class="choice-group__legend">{{ legend() }}</legend>
+
+  <div class="choice-group__options">
+    @for (choice of choices(); track choice.value) {
+      <div class="choice">
+        <input
+          class="choice__input"
+          [id]="choiceId(choice.value)"
+          [type]="inputType()"
+          [attr.role]="role()"
+          [attr.name]="isMultiple() ? null : groupName"
+          [checked]="isSelected(choice.value)"
+          [attr.aria-checked]="role() ? (isSelected(choice.value) ? 'true' : 'false') : null"
+          [attr.aria-describedby]="choice.description ? choiceDescriptionId(choice.value) : null"
+          [disabled]="(choice.disabled ?? false) || disabled()"
+          (change)="toggle(choice.value)"
+        />
+        <label class="choice__label" [attr.for]="choiceId(choice.value)">{{ choice.label }}</label>
+        @if (choice.description) {
+          <p class="choice__description" [id]="choiceDescriptionId(choice.value)">
+            {{ choice.description }}
+          </p>
+        }
+      </div>
+    }
+  </div>
+
+  @if (description()) {
+    <p class="field__description" [id]="relations.descriptionId">{{ description() }}</p>
+  }
+
+  @if (error()) {
+    <p class="field__error" [id]="relations.errorId">{{ error() }}</p>
+  }
+</fieldset>

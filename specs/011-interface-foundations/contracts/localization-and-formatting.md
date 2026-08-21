@@ -13,7 +13,7 @@
 
 The initial registry contains complete `en` and `de` catalogues. Each entry supplies canonical tag,
 base language, direction, self-name key and same-origin asset path. English is the only fallback and
-is imported into the initial bundle. German is selectable only when build-time key, nonblank,
+is imported into the initial bundle. German is shipped only when build-time key, nonblank,
 placeholder and reviewed-wording gates pass.
 
 Completeness is repository-wide and continuous, not a one-time bootstrap condition. Any downstream
@@ -21,28 +21,25 @@ capability that adds or changes an application-owned message must update both sh
 the same change. The build accepts only identical non-empty key sets and matching interpolation
 variables; an invalid candidate never replaces any part of the current snapshot.
 
-Test-only expanded-copy and RTL providers are not production registry entries and cannot be stored.
+Test-only expanded-copy and RTL providers are not production registry entries and are reachable only
+from the tooling-only preview application.
 
 Adding a locale requires:
 
 1. reviewed application wording for every English key and matching interpolation set;
 2. registry/self-name entries without a private game-text table;
-3. browser match, explicit selection, persistence, cold/warm request, offline and fallback tests;
+3. browser match, cold/warm request, offline and fallback tests;
 4. responsive, glyph and RTL coverage for any new direction/script/expansion behavior.
 
-## Selection precedence and persistence
+## Selection precedence
 
-1. Read the versioned preference through the storage adapter. A current supported tag wins.
-2. Otherwise inspect `navigator.languages` in order, canonicalizing each entry and matching exact
-   shipped tag before base language.
-3. Otherwise use bundled English.
-4. An explicit selection creates a candidate. Persist its requested tag only after a complete ready
-   snapshot commits with `effectiveLocale === requestedLocale`. A fallback retains the prior stored
-   preference and offers retry. A failed write keeps the ready in-memory choice and reports
-   non-persistence once.
+1. Inspect `navigator.languages` in order, canonicalizing each entry and matching exact shipped tag
+   before base language.
+2. Otherwise use bundled English.
 
-Malformed JSON, unknown versions, removed locales, denied storage and failed reads/writes remain
-bounded adapter outcomes. The full browser language list is never persisted or uploaded.
+The browser language setting is the only input. The application offers no language control, stores
+no preference of its own and reads none, so a changed browser setting takes effect on the next start
+with nothing to invalidate. The full browser language list is never persisted or uploaded.
 
 ## Candidate validation and atomic publication
 

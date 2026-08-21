@@ -6,12 +6,11 @@ component preview application, which never appears in product navigation or prod
 
 ## Feature-owned surfaces
 
-| Surface                           | Wide/medium presentation                                                    | Compact/zoom presentation                                                | Primary states                                                                                     |
-| --------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Embedded application shell        | Product/route identity, navigation, wrapping actions, Language and feedback | Identity plus named action layer retaining Language/Help/context actions | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback, persistence unavailable |
-| Language selector/layer           | Labelled field or named utility layer                                       | Labelled sheet/full-height layer                                         | browser/default/saved/explicit, candidate loading, ready, fallback, write failure                  |
-| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets          | Same semantic order and event policy                                     | initial, new/stale/replayed blocking/nonblocking events                                            |
-| Component preview application     | Manifest selection and bounded component fixture                            | Same fixture under compact project viewport                              | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable           |
+| Surface                           | Wide/medium presentation                                           | Compact/zoom presentation                                       | Primary states                                                                           |
+| --------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Embedded application shell        | Product/route identity, navigation, wrapping actions and feedback  | Identity plus named action layer retaining Help/context actions | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback                |
+| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets | Same semantic order and event policy                            | initial, new/stale/replayed blocking/nonblocking events                                  |
+| Component preview application     | Manifest selection and bounded component fixture                   | Same fixture under compact project viewport                     | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable |
 
 ## Reference-canvas consumption
 
@@ -45,7 +44,7 @@ mapping. They register/preview shared extensions through this feature's contract
 | FR-014      | Logical CSS, stable DOM order, expanded/RTL/bidi fixtures and glyph coverage                                     |
 | FR-015      | Canonical qualified message plus scoped policy check naming all seven exclusions                                 |
 | FR-016      | Typed message facade and Angular/TypeScript AST display-text gate, including document title                      |
-| FR-017      | Shell language entry plus locale startup/explicit/persistence state machine                                      |
+| FR-017      | Locale startup state machine: browser-language match, then bundled English                                       |
 | FR-018      | Named cached `Intl` formatter registry                                                                           |
 | FR-019      | Canonical catalogues, bundled English, same-origin versioned assets, atomic fallback and offline production test |
 | FR-020      | Almanac leaf presenter with known-identity provenance, canonical disclosure and unavailable state                |
@@ -56,7 +55,7 @@ mapping. They register/preview shared extensions through this feature's contract
 
 ## Cross-feature ownership
 
-- Feature 011 owns shell semantics, language preference and formatters, package-text disclosure,
+- Feature 011 owns shell semantics, locale startup and formatters, package-text disclosure,
   global announcements, base tokens/components, responsive/adaptive contracts, preview
   infrastructure, strict compiler flags, service-worker locale boundary and the common browser/
   accessibility gate.
