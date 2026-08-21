@@ -33,6 +33,11 @@
                 "glob": "**/*.json",
                 "input": "src/app/i18n/locales",
                 "output": "i18n"
+              },
+              {
+                "glob": "**/illustration.svg",
+                "input": "node_modules/@elite-dangerous-almanac/core/assets/ships",
+                "output": "assets/ships"
               }
             ],
             "styles": ["src/styles.scss"]

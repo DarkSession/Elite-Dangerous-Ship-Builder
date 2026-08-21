@@ -1,0 +1,86 @@
+<div class="toolbar">
+  <div class="toolbar__search">
+    <edsb-text-field
+      [label]="searchLabel()"
+      [value]="search()"
+      [description]="searchDescription()"
+      kind="search"
+      (changed)="searchChanged.emit($event)"
+    />
+  </div>
+
+  <div class="toolbar__facets">
+    <edsb-choice-group
+      [legend]="sizeLegend()"
+      [choices]="sizeChoices()"
+      [selected]="selectedSizes()"
+      kind="checkbox"
+      (changed)="sizesChanged.emit($event)"
+    />
+
+    <edsb-select-field
+      [label]="manufacturerLabel()"
+      [options]="manufacturerOptions()"
+      [value]="selectedManufacturer()"
+      (changed)="manufacturerChanged.emit($event)"
+    />
+
+    <edsb-select-field
+      [label]="hardpointLabel()"
+      [options]="hardpointOptions()"
+      [value]="selectedHardpointClass()"
+      (changed)="hardpointClassChanged.emit($event)"
+    />
+
+    <edsb-text-field
+      [label]="priceMinLabel()"
+      [value]="priceMin()"
+      [description]="priceDescription()"
+      (changed)="priceMinChanged.emit($event)"
+    />
+
+    <edsb-text-field
+      [label]="priceMaxLabel()"
+      [value]="priceMax()"
+      (changed)="priceMaxChanged.emit($event)"
+    />
+
+    <div class="toolbar__sort">
+      <edsb-select-field
+        [label]="sortLabel()"
+        [options]="sortOptions()"
+        [value]="sort().field"
+        (changed)="sortFieldChanged.emit($event)"
+      />
+      <edsb-action-button
+        [label]="sort().toggleLabel"
+        emphasis="quiet"
+        (activated)="sortDirectionToggled.emit()"
+      />
+    </div>
+  </div>
+
+  <p class="toolbar__sort-state">{{ sort().text }}</p>
+
+  <div class="toolbar__constraints" role="group" [attr.aria-labelledby]="constraintsId">
+    <p class="toolbar__constraints-label" [id]="constraintsId">{{ constraintsLabel() }}</p>
+    @if (hasConstraints()) {
+      <ul class="toolbar__constraint-list">
+        @for (constraint of constraints(); track constraint.id) {
+          <li>
+            <edsb-action-button
+              [label]="constraint.removeLabel"
+              emphasis="quiet"
+              (activated)="constraintRemoved.emit(constraint.id)"
+            />
+          </li>
+        }
+      </ul>
+      <edsb-action-button [label]="clearLabel()" emphasis="quiet" (activated)="cleared.emit()" />
+    } @else {
+      <p class="toolbar__no-constraints">{{ noConstraintsLabel() }}</p>
+    }
+  </div>
+
+  <p class="toolbar__count">{{ countText() }}</p>
+</div>

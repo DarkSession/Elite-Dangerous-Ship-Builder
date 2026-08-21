@@ -61,11 +61,11 @@ The dev server binds to `0.0.0.0` so the dev container's forwarded ports reach
 it; the addresses stay the same (`http://localhost:4200/` for the product,
 `http://localhost:4300/` for the preview catalogue).
 
-Run the server with the **`ng serve` task** (`Ctrl+Shift+B`, or Terminal → Run
-Task), and stop it from that terminal. It is a task rather than a debug
-session because the container has no browser to attach a debugger to, and a
-task stops when you tell it to. VS Code opens the app on your own machine when
-it forwards port 4200; its developer tools do the front-end debugging.
+Pick **`ng serve`** in Run and Debug (`F5`) or run the `ng serve` task
+(`Ctrl+Shift+B`) — both start the same server in a terminal you can stop. VS
+Code opens the app on your own machine when it forwards port 4200; the
+container has no browser to attach a debugger to, so its developer tools do
+the front-end debugging.
 
 Unit tests do run under the debugger: the **`ng test`** launch configuration
 runs them in watch mode and stops on breakpoints in specs and source.

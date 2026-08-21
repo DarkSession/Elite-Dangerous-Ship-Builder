@@ -1,0 +1,67 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.hull-card {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-panel);
+}
+
+.hull-card[aria-current='true'] {
+  border-color: var(--edsb-border-accent);
+  background-color: var(--edsb-surface-accent-selected);
+}
+
+.hull-card__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.hull-card__name {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+  overflow-wrap: anywhere;
+}
+
+.hull-card__selected {
+  color: var(--edsb-text-accent);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+.hull-card__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  margin: 0;
+}
+
+.hull-card__facts dt {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+/*
+ * `min-inline-size: 0` releases the grid item's automatic minimum, and
+ * `anywhere` lets the break count towards the track's minimum size — which
+ * `break-word` does not. Without both, a 320 CSS-pixel viewport at 200% text
+ * sizes this column to its longest hull name and pushes the card off-screen.
+ */
+.hull-card__facts dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.hull-card__price {
+  font-family: var(--edsb-font-metric);
+  color: var(--edsb-text-numeric);
+}

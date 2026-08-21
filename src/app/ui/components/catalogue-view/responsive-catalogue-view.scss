@@ -1,0 +1,102 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+// Exactly one composition exists at a time. `display: none` removes the other
+// from layout and from the accessibility tree, so nothing is announced twice.
+.catalogue__cards {
+  @include layout.stack(var(--edsb-space-stack));
+
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.catalogue__manifest {
+  display: none;
+}
+
+@include layout.medium-up {
+  .catalogue__manifest {
+    @include layout.bounded-scroller;
+
+    display: block;
+  }
+
+  .catalogue__cards {
+    display: none;
+  }
+
+  .catalogue__empty--cards {
+    display: none;
+  }
+}
+
+.catalogue__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.catalogue__table caption {
+  text-align: start;
+  padding-block-end: var(--edsb-space-stack);
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+.catalogue__table th,
+.catalogue__table td {
+  text-align: start;
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-tight);
+  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-decorative);
+  overflow-wrap: break-word;
+}
+
+.catalogue__table tr[aria-current='true'] {
+  background-color: var(--edsb-surface-accent-selected);
+}
+
+.catalogue__sort,
+.catalogue__open {
+  @include layout.target-baseline;
+
+  display: block;
+  inline-size: 100%;
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-control-inline);
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.catalogue__sort {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+.catalogue__selected {
+  display: block;
+  color: var(--edsb-text-accent);
+  font-size: var(--edsb-text-size-caption);
+  text-transform: uppercase;
+}
+
+.catalogue__numeric {
+  font-family: var(--edsb-font-metric);
+  color: var(--edsb-text-numeric);
+}
+
+.catalogue__empty {
+  padding-block: var(--edsb-space-section);
+  color: var(--edsb-text-muted);
+}

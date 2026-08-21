@@ -100,7 +100,11 @@ $container-wide-min: 40rem;
   grid-template-columns: 1fr;
 
   @include wide-up {
-    grid-template-columns: minmax(0, 1fr) minmax($rail, auto);
+    // Both tracks are bounded fractions. An `auto` maximum on the rail lets it
+    // take its content's max-content width, which Firefox grants in full and
+    // Chromium does not — and a rail sized to a hull inspector's widest line
+    // collapses the manifest beside it to zero.
+    grid-template-columns: minmax(0, 1fr) minmax($rail, 1fr);
   }
 }
 

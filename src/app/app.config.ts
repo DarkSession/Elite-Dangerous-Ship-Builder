@@ -1,15 +1,25 @@
 import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
+import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { provideLocalization } from './i18n/i18n.providers';
+import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    // Route parameters are bound to component inputs, so a screen takes its
+    // subject as an input rather than reaching into the router for it.
+    provideRouter(routes, withComponentInputBinding()),
+    // Route titles are message keys resolved in the committed locale, so the
+    // tab's language cannot lag the page's.
+    { provide: TitleStrategy, useClass: RouteTitleStrategy },
     provideLocalization(),
+    // Every browser store is reached through a port with an exception
+    // boundary, so a blocked or full one changes persistence and nothing else.
+    ...WEB_STORAGE_PROVIDERS,
     // The application's only service worker, and its only cache owner.
     //
     // It exists for one reason: complete English and the shell must be readable

@@ -32,7 +32,10 @@
  * implemented. This is not a way to defer coverage for a feature that exists —
  * a feature with product code and no entry here is the drift the ledger is for.
  */
-export const COVERED_FEATURES: readonly string[] = ['011-interface-foundations'];
+export const COVERED_FEATURES: readonly string[] = [
+  '011-interface-foundations',
+  '001-ship-selection-and-loading',
+];
 
 /** The five layout profiles, each run in both engines. */
 export const LAYOUT_PROFILES = [
@@ -426,6 +429,177 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: false,
     assertions: ['a versioned protocol and result record exists for every primary capability'],
     manualRecord: 'screen-reader',
+  },
+  // -------------------------------------------------------------------------
+  // Feature 001: ship selection and build loading.
+  // -------------------------------------------------------------------------
+  {
+    surfaceId: 'ships/catalogue',
+    requirements: ['001/FR-001', '001/FR-002', '001/SC-001'],
+    journey: 'product/ship-catalogue',
+    axe: true,
+    assertions: [
+      'every installed hull is listed, with name, manufacturer, size, hardpoints and retail price',
+      'search, every facet and both directions of every sort field constrain the list',
+      'a missing value is stated in words and never rendered as a zero',
+      'ties are broken by the package’s own order, identically in both directions',
+      'the wide manifest uses table semantics with named bidirectional sort buttons',
+      'the narrow list restates every label as a definition list',
+      'the match count precedes the results and is announced once, politely',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'ships/catalogue-session',
+    requirements: ['001/FR-003'],
+    journey: 'product/ship-catalogue',
+    axe: false,
+    assertions: [
+      'constraints, order and the anchored result survive a trip to hull detail and back',
+      'no catalogue state appears in the route path, the query, the fragment or a build record',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'ships/:symbol',
+    requirements: ['001/FR-004', '001/FR-005', '001/FR-006'],
+    journey: 'product/hull-detail',
+    axe: true,
+    assertions: [
+      'every specified hull fact is shown with its unit, or marked as a rating with none',
+      'speed and rotation endpoints name the viewing condition they were measured under',
+      'the slot layout uses the game’s own keys, including the irregular ones',
+      'an unknown symbol is a named error with no facts, no build and no creation action',
+      'a missing illustration is explained as temporary and disables nothing',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'ships/:symbol/create-stock-build',
+    requirements: ['001/FR-007', '001/FR-009'],
+    journey: 'product/hull-detail',
+    axe: true,
+    assertions: [
+      'creation is explicit and produces exactly the package default loadout',
+      'every fixed mount is populated before the build becomes active',
+      'creation is unavailable, and says so, when the package has no default loadout',
+      'replacing unsaved work is confirmed first; cancelling changes neither build nor route',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build',
+    requirements: ['001/FR-008', '001/FR-010', '001/FR-014'],
+    journey: 'product/build-working-state',
+    axe: true,
+    assertions: [
+      'the tab’s working build is restored after a reload',
+      'persistence status is visible text with an icon, never colour alone',
+      'every persistence failure leaves the build editable',
+      'a stored record is migrated losslessly or left byte-for-byte unchanged',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'builds',
+    requirements: ['001/FR-011', '001/FR-012', '001/FR-013', '001/SC-002'],
+    journey: 'product/build-library',
+    axe: true,
+    assertions: [
+      'records list name or working state, hull, modified instant and recorded validation',
+      'name, rename, duplicate and delete each act on a record identity, never a display name',
+      'a duplicate name warns and then proceeds, creating a separate record',
+      'two pages saving one named record are offered overwrite, keep both and cancel',
+      'the retention limit and a full quota offer explicit discard and never evict automatically',
+      'notes and record identities never enter a build link or a SLEF export',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/share-link',
+    requirements: [
+      '001/FR-015',
+      '001/FR-016',
+      '001/FR-017',
+      '001/FR-018',
+      '001/FR-019',
+      '001/FR-020',
+      '001/FR-021',
+      '001/SC-003',
+    ],
+    journey: 'product/build-link',
+    axe: true,
+    assertions: [
+      'the payload is entirely in the fragment; the path and query carry no build data',
+      'a published value starts “b.” and is at most 500 characters including that prefix',
+      'a pasted, navigated or initial fragment all take the same candidate-first path',
+      'an invalid, truncated, over-limit or unsupported payload leaves the active build unchanged',
+      'editing replaces the fragment without adding a history entry per edit',
+      'a build the codec cannot represent is refused with its slot and reason, and offers SLEF',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'system/no-transmission',
+    requirements: ['001/SC-004'],
+    journey: 'product/build-link',
+    axe: false,
+    assertions: [
+      'no request URL contains build-link payload data',
+      'no automatic cross-origin request occurs during catalogue, detail, storage or share flows',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'ships/unrecognised-path-**',
+    requirements: ['001/FR-005'],
+    journey: 'product/ship-catalogue',
+    axe: false,
+    assertions: [
+      'an address this application does not serve returns to the shipyard rather than an empty screen',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'system/cross-route-conformance',
+    requirements: ['001/FR-005', '001/FR-010', '001/FR-014'],
+    journey: 'product/interface-conformance',
+    axe: true,
+    assertions: [
+      'each of the four product routes has one main, one visible h1 and no skipped heading level',
+      'every control’s accessible name is the words on its face, on every route',
+      'exactly one polite and one assertive outlet exist, and nothing else is live',
+      'one blocking condition raises one prompt, naming both outcomes in its own words',
+      'every route survives 200% text, 400% zoom, expanded German copy and a mirrored direction',
+      'removing motion removes no state, no feedback and no control',
+    ],
+    manualRecord: 'zoom-400',
+  },
+  {
+    surfaceId: 'system/performance-budgets',
+    requirements: ['001/SC-001', '001/SC-003'],
+    journey: 'product/performance',
+    axe: false,
+    assertions: [
+      'search, filter and order constrain the complete installed manifest without a perceptible wait',
+      'the workspace restores this tab’s working build before it offers the build’s own actions',
+      'a burst of edits coalesces into one record rather than one write each',
+      'a build is published as a link inside the codec’s sub-50 ms target',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'system/offline-capability',
+    requirements: ['001/FR-006', '001/FR-014', '001/SC-004'],
+    journey: 'product/offline-privacy',
+    axe: false,
+    assertions: [
+      'the shell and bundled English read with no network at all',
+      'an illustration seen once stays available offline',
+      'an illustration that cannot be fetched blocks nothing, and recovers on retry without a reload',
+      'nothing of another origin, and nothing of a build, is ever cached',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'system/policy-checker',

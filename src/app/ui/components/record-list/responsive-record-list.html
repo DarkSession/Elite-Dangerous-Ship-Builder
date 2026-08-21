@@ -1,0 +1,43 @@
+<div class="records" role="group" [attr.aria-label]="label()">
+  @for (group of groups(); track group.id) {
+    <section
+      class="records__group"
+      [attr.data-record-group]="group.id"
+      [attr.aria-labelledby]="groupId(group.id)"
+    >
+      <h2 class="records__heading" [id]="groupId(group.id)">{{ group.label }}</h2>
+
+      @if (group.builds.length > 0) {
+        <ul class="records__list">
+          @for (build of group.builds; track build.id) {
+            <li [attr.data-record-id]="build.id">
+              <edsb-saved-build-card
+                [build]="build"
+                (actionSelected)="actionSelected.emit($event)"
+              />
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="records__empty">{{ group.emptyLabel }}</p>
+      }
+    </section>
+  }
+
+  @if (hasUnavailable() && unavailableLabel()) {
+    <section class="records__group" [attr.aria-labelledby]="groupId('unavailable')">
+      <h2 class="records__heading" [id]="groupId('unavailable')">{{ unavailableLabel() }}</h2>
+      <ul class="records__list">
+        @for (record of unavailable(); track record.id) {
+          <li [attr.data-record-id]="record.id">
+            <edsb-status-notice
+              tone="warning"
+              [message]="record.explanation"
+              [detail]="record.detail"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

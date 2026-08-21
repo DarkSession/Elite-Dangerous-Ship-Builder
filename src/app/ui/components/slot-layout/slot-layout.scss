@@ -1,0 +1,50 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.slots {
+  @include layout.stack(var(--edsb-space-section));
+}
+
+.slots__group {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.slots__heading {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+  color: var(--edsb-text-muted);
+}
+
+.slots__list {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.slots__slot {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+.slots__key {
+  font-family: var(--edsb-font-metric);
+  // A slot key is one identifier: direction must not reorder its parts.
+  unicode-bidi: isolate;
+  overflow-wrap: anywhere;
+}
+
+.slots__size,
+.slots__restriction {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+}
+
+.slots__empty {
+  color: var(--edsb-text-muted);
+}

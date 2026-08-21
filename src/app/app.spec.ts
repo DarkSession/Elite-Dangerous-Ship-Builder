@@ -28,23 +28,31 @@ describe('App', () => {
     expect(element.querySelector('main')).not.toBeNull();
   });
 
-  it('owns exactly one visible top-level heading', () => {
+  it('synthesizes no heading of its own, leaving the h1 to the route', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const headings = (fixture.nativeElement as HTMLElement).querySelectorAll('h1');
+    const element = fixture.nativeElement as HTMLElement;
 
-    expect(headings.length).toBe(1);
-    expect(headings[0]?.textContent?.trim()).toBe(BUNDLED_ENGLISH['app.name']);
+    // A shell-owned h1 would name every screen the same thing, so the shell
+    // owns none: the route inside `main` supplies it.
+    expect(element.querySelectorAll('h1').length).toBe(0);
+    expect(element.querySelector('header')?.querySelector('h1') ?? null).toBeNull();
   });
 
-  it('puts the route heading inside main, not in the banner', () => {
+  it('offers the same primary navigation from every screen', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const main = (fixture.nativeElement as HTMLElement).querySelector('main');
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('nav a')].map(
+      (link) => link.textContent?.trim(),
+    );
 
-    expect(main?.querySelector('h1')).not.toBeNull();
+    expect(links).toEqual([
+      BUNDLED_ENGLISH['navigation.catalogue'],
+      BUNDLED_ENGLISH['navigation.build'],
+      BUNDLED_ENGLISH['navigation.library'],
+    ]);
   });
 
   it('resolves its text through the message facade', () => {
@@ -53,7 +61,7 @@ describe('App', () => {
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
 
-    expect(text).toContain(BUNDLED_ENGLISH['app.tagline']);
+    expect(text).toContain(BUNDLED_ENGLISH['app.name']);
     expect(text).not.toMatch(/\{\{/);
   });
 

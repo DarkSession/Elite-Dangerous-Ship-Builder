@@ -74,6 +74,17 @@ export class AppFrame {
 
   readonly actionSelected = output<string>();
 
+  /**
+   * A primary navigation link was activated.
+   *
+   * The link stays a real link — it has an `href`, it can be opened in a new
+   * tab, its address can be copied — and the frame does not decide what
+   * activating it means. The event is handed to the caller so an application
+   * that routes on the client can take it over, and one that does not (the
+   * preview catalogue) simply lets the browser follow the link.
+   */
+  readonly navigationSelected = output<{ entry: NavigationEntry; event: MouseEvent }>();
+
   readonly productName = this.#messages.messageSignal('app.name');
   readonly bannerLabel = this.#messages.messageSignal('shell.banner.label');
   readonly navigationLabel = this.#messages.messageSignal('shell.navigation.label');

@@ -1,0 +1,89 @@
+@if (view(); as detail) {
+  @if (detail.kind === 'unknown') {
+    <edsb-hull-detail-unknown-symbol [symbol]="detail.symbol" />
+  } @else {
+    <article class="detail">
+      <edsb-action-link
+        class="detail__back"
+        [label]="backLabel()"
+        [href]="catalogueRoute"
+        [routerLink]="catalogueRoute"
+      />
+
+      <h2 class="detail__name">
+        <edsb-game-text
+          [text]="detail.name.text"
+          [language]="detail.name.language"
+          [translationState]="detail.name.translationState"
+        />
+      </h2>
+
+      <dl class="detail__identity">
+        <dt>{{ manufacturerLabel() }}</dt>
+        <dd>
+          <edsb-game-text
+            [text]="detail.manufacturer.text"
+            [language]="detail.manufacturer.language"
+            [translationState]="detail.manufacturer.translationState"
+            [label]="manufacturerLabel()"
+          />
+        </dd>
+        @if (detail.size; as size) {
+          <dt>{{ sizeLabel() }}</dt>
+          <dd>{{ size }}</dd>
+        }
+      </dl>
+
+      <edsb-hull-artwork
+        [source]="detail.artworkPath"
+        [label]="detail.artworkLabel"
+        [state]="artworkState()"
+        [attempt]="artworkAttempt()"
+        (loaded)="markArtworkAvailable()"
+        (failed)="markArtworkUnavailable()"
+        (retryRequested)="retryArtwork()"
+      />
+
+      <edsb-panel
+        [heading]="specificationsHeading()"
+        [description]="specificationsDescription()"
+        [headingLevel]="3"
+      >
+        @for (group of specificationGroups(); track group.group) {
+          <edsb-fact-list [label]="specificationsHeading()" [facts]="group.facts" />
+        }
+      </edsb-panel>
+
+      <edsb-panel [heading]="costsHeading()" [description]="costsDescription()" [headingLevel]="3">
+        @for (group of priceGroups(); track group.group) {
+          <edsb-fact-list [label]="costsHeading()" [facts]="group.facts" />
+        }
+      </edsb-panel>
+
+      <edsb-panel [heading]="slotsHeading()" [description]="slotsDescription()" [headingLevel]="3">
+        <edsb-slot-layout
+          [label]="slotsHeading()"
+          [groups]="detail.slotGroups"
+          [emptyLabel]="slotsUnavailable()"
+        />
+      </edsb-panel>
+
+      <div class="detail__create">
+        @if (detail.canCreate) {
+          <edsb-action-button
+            [label]="createLabel()"
+            emphasis="primary"
+            (activated)="createStockBuild()"
+          />
+          <p class="detail__create-description">{{ createDescription() }}</p>
+        } @else {
+          <edsb-status-notice tone="warning" [message]="createUnavailable()" />
+        }
+
+        @if (creationError(); as failure) {
+          <edsb-status-notice tone="error" [message]="failure" />
+        }
+      </div>
+    </article>
+  }
+}

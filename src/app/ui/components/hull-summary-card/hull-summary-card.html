@@ -1,0 +1,53 @@
+<article class="hull-card" [attr.aria-labelledby]="cardId" [attr.aria-current]="current()">
+  <div class="hull-card__identity">
+    <h2 class="hull-card__name" [id]="cardId">
+      <edsb-game-text
+        [text]="hull().name.text"
+        [language]="hull().name.language"
+        [translationState]="hull().name.translationState"
+      />
+    </h2>
+    @if (hull().selected) {
+      <p class="hull-card__selected">{{ selectedLabel() }}</p>
+    }
+  </div>
+
+  <dl class="hull-card__facts">
+    <dt>{{ manufacturerLabel() }}</dt>
+    <dd>
+      <edsb-game-text
+        [text]="hull().manufacturer.text"
+        [language]="hull().manufacturer.language"
+        [translationState]="hull().manufacturer.translationState"
+        [label]="manufacturerLabel()"
+      />
+    </dd>
+
+    <dt>{{ sizeLabel() }}</dt>
+    <dd>
+      @if (hull().size; as size) {
+        {{ size }}
+      } @else {
+        <edsb-unavailable-value [label]="sizeLabel()" />
+      }
+    </dd>
+
+    <dt>{{ hardpointsLabel() }}</dt>
+    <dd>{{ hull().hardpoints }}</dd>
+
+    <dt>{{ priceLabel() }}</dt>
+    <dd>
+      @if (hull().price; as price) {
+        <span class="hull-card__price">{{ price }}</span>
+      } @else {
+        <edsb-unavailable-value [label]="priceLabel()" />
+      }
+    </dd>
+  </dl>
+
+  <edsb-action-button
+    [label]="openLabel()"
+    emphasis="quiet"
+    (activated)="opened.emit(hull().symbol)"
+  />
+</article>

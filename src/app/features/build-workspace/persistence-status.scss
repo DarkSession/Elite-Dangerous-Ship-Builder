@@ -1,0 +1,13 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.persistence {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.persistence__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

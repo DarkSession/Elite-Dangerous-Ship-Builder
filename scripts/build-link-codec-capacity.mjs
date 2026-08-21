@@ -1,4 +1,6 @@
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /** The widest bounded symbol the packed writer accepts, and so the codec's structural ceiling. */
 export const CODEC_SYMBOL_BITS = 31;
@@ -250,4 +252,33 @@ export function assertTableFitsEnvelope(table, constants) {
     );
   }
   return { bytes, limit };
+}
+
+const isMain =
+  process.argv[1] && resolve(process.argv[1]) === fileURLToPath(new URL(import.meta.url));
+
+/**
+ * Check the committed table against the budget, without regenerating it.
+ *
+ * The generator makes the same assertions when it writes a table; this runs
+ * them against what is actually in the repository, so a table that was hand
+ * edited, or a codec bound that moved underneath one, fails the build rather
+ * than waiting for the next regeneration.
+ */
+if (isMain) {
+  const table = JSON.parse(
+    await readFile(new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url)),
+  );
+  const constants = await readCodecConstants();
+
+  assertCapacityWithinCodecLimits();
+  assertTableWithinCapacity(table);
+  const budgeted = assertCapacityFitsEnvelope(constants);
+  const envelope = assertTableFitsEnvelope(table, constants);
+
+  process.stdout.write(
+    `Codec capacity: the largest build the committed table can express needs up to ` +
+      `${envelope.bytes} of the ${envelope.limit} bytes a ${constants.maxLinkCharacters}-character ` +
+      `value carries (${budgeted.bytes} once grown to the budgeted capacity).\n`,
+  );
 }

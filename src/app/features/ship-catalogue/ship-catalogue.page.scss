@@ -1,0 +1,56 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.catalogue {
+  @include layout.region-pair;
+}
+
+.catalogue__manifest-region {
+  @include layout.stack(var(--edsb-space-section));
+
+  min-inline-size: 0;
+}
+
+.catalogue__browse {
+  @include layout.stack(var(--edsb-space-section));
+}
+
+h1 {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-lg);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+}
+
+.catalogue__description,
+.catalogue__total {
+  color: var(--edsb-text-muted);
+}
+
+.catalogue__empty {
+  @include layout.stack(var(--edsb-space-stack));
+
+  max-inline-size: var(--edsb-layout-prose-max);
+}
+
+.catalogue__empty h2 {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+}
+
+.catalogue__inspector {
+  min-inline-size: 0;
+}
+
+// Narrow widths give hull detail the screen rather than stacking it beneath
+// the manifest. Same route, same history entry, same state — only the
+// composition changes (hull-detail design, "Responsive and accessibility
+// notes").
+@include layout.compact {
+  .catalogue--detail-open .catalogue__browse {
+    display: none;
+  }
+}

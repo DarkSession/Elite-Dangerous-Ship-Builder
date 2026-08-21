@@ -1,0 +1,53 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.share-link {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-panel);
+}
+
+.share-link__title {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+}
+
+.share-link__description,
+.share-link__slef-unavailable {
+  color: var(--edsb-text-muted);
+}
+
+.share-link__value-label {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+/*
+ * The link is one long unbroken token. It scrolls inside this box rather than
+ * wrapping the document sideways, and it is focusable so the value is reachable
+ * without a pointer.
+ */
+.share-link__value {
+  display: block;
+  overflow-x: auto;
+  padding: var(--edsb-space-inline-tight);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-control);
+  background-color: var(--edsb-surface-sunken);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  white-space: nowrap;
+  user-select: all;
+}
+
+.share-link__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

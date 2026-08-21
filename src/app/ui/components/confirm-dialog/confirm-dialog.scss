@@ -1,0 +1,11 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+.confirm__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: flex-end;
+}

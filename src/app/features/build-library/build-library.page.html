@@ -1,0 +1,73 @@
+<section class="library">
+  <h1>{{ heading() }}</h1>
+  <p class="library__description">{{ description() }}</p>
+  <p class="library__count">{{ countText() }}</p>
+
+  @if (storageNotice(); as notice) {
+    <edsb-status-notice tone="error" [message]="notice" />
+  }
+
+  @if (failure(); as reason) {
+    <edsb-status-notice tone="error" [message]="reason" />
+  }
+
+  @if (isEmpty()) {
+    <div class="library__empty">
+      <h2>{{ emptyTitle() }}</h2>
+      <p>{{ emptyDescription() }}</p>
+    </div>
+  } @else {
+    <edsb-responsive-record-list
+      [label]="listLabel()"
+      [groups]="groups()"
+      [unavailable]="unavailable()"
+      [unavailableLabel]="unavailableLabel()"
+      (actionSelected)="selectAction($event)"
+    />
+  }
+
+  @if (manageReason(); as reason) {
+    <edsb-record-manager
+      [records]="manageableRecords()"
+      [selected]="selectedForDiscard()"
+      [reason]="reason"
+      (selectionChanged)="changeDiscardSelection($event)"
+      (discardRequested)="discardSelected($event)"
+    />
+  }
+
+  <edsb-action-button [label]="closeLabel()" emphasis="quiet" (activated)="close()" />
+</section>
+
+<edsb-confirm-dialog
+  [open]="pendingDelete() !== null"
+  [title]="deleteTitle()"
+  [description]="deleteDescription()"
+  [confirmLabel]="deleteConfirmLabel()"
+  [cancelLabel]="deleteCancelLabel()"
+  [dismissLabel]="dismissLabel()"
+  [destructive]="true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+/>
+
+<edsb-save-build-dialog
+  [open]="saveOpen()"
+  [initialName]="saveName()"
+  [duplicateCount]="duplicateCount()"
+  [canOverwrite]="canOverwriteSource()"
+  [overwriteUnavailable]="overwriteUnavailable()"
+  (nameChanged)="changeSaveName($event)"
+  (saveRequested)="requestSave($event)"
+  (dismissed)="dismissSave()"
+/>
+
+<edsb-choice-dialog
+  [open]="conflict() !== null"
+  [title]="conflictTitle()"
+  [description]="conflictDescription()"
+  [choices]="conflictChoices()"
+  [dismissLabel]="dismissLabel()"
+  (chosen)="resolveConflict($event)"
+  (dismissed)="dismissConflict()"
+/>

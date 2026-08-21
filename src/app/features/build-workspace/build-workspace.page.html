@@ -1,0 +1,56 @@
+<h1>{{ heading() }}</h1>
+
+@if (linkFailure(); as failure) {
+  <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
+}
+
+@if (hasBuild()) {
+  <dl class="workspace__summary">
+    <dt>{{ hullLabel() }}</dt>
+    <dd>
+      @if (hull(); as name) {
+        <edsb-game-text
+          [text]="name.text"
+          [language]="name.language"
+          [translationState]="name.translationState"
+          [label]="hullLabel()"
+        />
+      }
+    </dd>
+
+    @if (provenance(); as source) {
+      <dt>{{ provenanceLabel() }}</dt>
+      <dd>{{ source }}</dd>
+    }
+  </dl>
+
+  <p class="workspace__saved-state">{{ savedState() }}</p>
+
+  <edsb-persistence-status />
+
+  @if (validation(); as verdict) {
+    <edsb-status-notice [tone]="verdict.tone" [message]="verdict.message" />
+  }
+
+  <div class="workspace__actions">
+    <edsb-action-button [label]="shareLabel()" (activated)="exportOpen.set(true)" />
+  </div>
+
+  <!--
+    Where the module editors and statistics of later capabilities mount. The
+    workspace owns the build; they compose into it.
+  -->
+  <div class="workspace__outlet"></div>
+} @else {
+  <div class="workspace__empty">
+    <h2>{{ emptyTitle() }}</h2>
+    <p>{{ emptyDescription() }}</p>
+    <edsb-action-link
+      [label]="emptyAction()"
+      [href]="catalogueRoute"
+      [routerLink]="catalogueRoute"
+    />
+  </div>
+}
+
+<edsb-export-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />

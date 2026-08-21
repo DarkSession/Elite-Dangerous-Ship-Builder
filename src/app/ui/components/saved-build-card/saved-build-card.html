@@ -1,0 +1,38 @@
+<article class="record" [attr.aria-labelledby]="cardId">
+  <h3 class="record__title" [id]="cardId">{{ title() }}</h3>
+
+  <dl class="record__facts">
+    <dt>{{ hullLabel() }}</dt>
+    <dd>
+      <edsb-game-text
+        [text]="build().hull.text"
+        [language]="build().hull.language"
+        [translationState]="build().hull.translationState"
+        [label]="hullLabel()"
+      />
+    </dd>
+
+    <dt>{{ modifiedLabel() }}</dt>
+    <dd>{{ build().modified }}</dd>
+
+    <dt>{{ validationLabel() }}</dt>
+    <dd>
+      <edsb-status-notice [tone]="build().validation.tone" [message]="build().validation.label" />
+    </dd>
+
+    @if (build().note; as note) {
+      <dt>{{ noteLabel() }}</dt>
+      <dd class="record__note">{{ note }}</dd>
+    }
+  </dl>
+
+  <div class="record__actions">
+    @for (action of build().actions; track action.id) {
+      <edsb-action-button
+        [label]="action.label"
+        [emphasis]="action.emphasis ?? 'quiet'"
+        (activated)="select(action)"
+      />
+    }
+  </div>
+</article>

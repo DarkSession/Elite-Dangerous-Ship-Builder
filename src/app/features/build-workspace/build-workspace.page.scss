@@ -1,0 +1,52 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  @include layout.stack(var(--edsb-space-section));
+
+  display: flex;
+}
+
+h1 {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-lg);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+}
+
+.workspace__summary {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+}
+
+.workspace__summary dt {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+.workspace__summary dd {
+  margin: 0;
+  font-size: var(--edsb-text-size-lead);
+  overflow-wrap: break-word;
+}
+
+.workspace__saved-state {
+  color: var(--edsb-text-muted);
+}
+
+.workspace__empty {
+  @include layout.stack(var(--edsb-space-stack));
+
+  max-inline-size: var(--edsb-layout-prose-max);
+}
+
+.workspace__empty h2 {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+}
+
+.workspace__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

@@ -75,3 +75,30 @@ One help sentence in the mock says imported modules keep partial engineering rol
 ## Design acceptance gate
 
 Feature 001 visual implementation is accepted only when it remains recognizably consistent with these canvases **and** every adaptation above is present. Pixel similarity cannot override the specification, package source of truth, responsive/accessibility behavior, localization or privacy contracts.
+
+## Reconciliation outcome (implementation)
+
+Checked against the production build (`pnpm run build`), not against intent.
+
+| Check                                            | Outcome                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.design/` mock data or assets in the built tree | None. No file under `dist/` references `.design`, and every shipped asset is either a font, a locale catalogue or one of the 48 hull illustrations copied from the installed package.                                                                                                               |
+| Google Fonts request                             | None. `fonts.googleapis.com` and `fonts.gstatic.com` appear nowhere in the built CSS, JavaScript or HTML. Barlow, Barlow Condensed and JetBrains Mono are served same-origin from `browser/fonts/`, with system fallbacks and feature 012's licence attribution.                                    |
+| The `/b/<name>#h=…` sample link                  | Absent. `#h=` appears nowhere in the built tree. Published links are same-origin `/build#b.<payload>`, and a local save name never enters the path.                                                                                                                                                 |
+| Any other origin                                 | The only absolute URLs in the built output are inside framework diagnostic text (`angular.dev`, `github.com`) and an XML namespace. Nothing is fetched from them; the end-to-end suite additionally asserts that no request during any catalogue, detail, storage or share flow leaves this origin. |
+
+The adaptations listed above are implemented as described. The ones worth naming, because they
+change what the canvas shows rather than only how it is built:
+
+- the manifest's wide composition is a real table with named bidirectional sort buttons, and its
+  narrow composition restates every label as a definition list;
+- the selected row carries `aria-current` and the word for the state, not amber and a diamond;
+- the library lists working records, unsupported and malformed entries, and the retention and quota
+  states the mock does not depict, and it never evicts anything on its own;
+- the share value stays selectable after a copy or share failure, and a refused encode clears the
+  stale fragment while keeping the build;
+- the help sentence claiming imported modules keep partial engineering rolls is not implemented —
+  modelled engineering quality is normalised, per constitution principle IV.
+
+Feature 004 owns SLEF export. Until it lands, the refusal path offers an explicit "not part of this
+version yet" rather than an action that does nothing.

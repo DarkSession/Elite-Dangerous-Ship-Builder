@@ -1,0 +1,31 @@
+<figure class="artwork">
+  <div class="artwork__frame">
+    @if (!isUnavailable()) {
+      <img
+        class="artwork__image"
+        [src]="requestUrl()"
+        [alt]="label()"
+        [attr.aria-describedby]="isLoading() ? statusId : null"
+        decoding="async"
+        (load)="loaded.emit()"
+        (error)="failed.emit()"
+      />
+    }
+  </div>
+
+  @if (isLoading()) {
+    <p class="artwork__status" [id]="statusId">{{ loadingText() }}</p>
+  }
+
+  @if (isUnavailable()) {
+    <figcaption class="artwork__status" [id]="statusId">
+      <span>{{ label() }}</span>
+      <span>{{ unavailableText() }}</span>
+      <edsb-action-button
+        [label]="retryLabel()"
+        emphasis="quiet"
+        (activated)="retryRequested.emit()"
+      />
+    </figcaption>
+  }
+</figure>

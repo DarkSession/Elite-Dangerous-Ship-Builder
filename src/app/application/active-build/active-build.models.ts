@@ -1,0 +1,108 @@
+import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { BuildLinkCodecErrorCode } from '../../domain/build-link/build-link-codec-error';
+
+/**
+ * Where the active build came from, as a workflow fact.
+ *
+ * This is application state, not build state: it decides what the workspace
+ * says and which actions make sense, and it is never exported, encoded or
+ * stored inside a build (persistence contract, "Boundary exclusions").
+ */
+export type BuildProvenance = 'none' | 'stock' | 'working' | 'named' | 'link';
+
+/** The named record an active build was opened from, and the revision it saw. */
+export interface NamedSource {
+  readonly recordId: string;
+  readonly baseRevisionId: string;
+}
+
+/**
+ * What persistence is currently doing, or currently unable to do.
+ *
+ * None of these states makes the build unusable. That is the point of naming
+ * them separately from the build: editing, calculating, sharing and exporting
+ * all continue while persistence is unavailable, full or failing (FR-014).
+ */
+export type PersistenceStatus =
+  | 'ready'
+  | 'saving'
+  | 'saved'
+  | 'retention-limit'
+  | 'quota-full'
+  | 'unavailable'
+  | 'write-failed'
+  | 'record-deleted-externally';
+
+/**
+ * Why a build link could not be used.
+ *
+ * The codec's own seven codes, plus the one refusal the application makes
+ * without it: a value longer than the published bound is rejected before a
+ * decoder is ever built, so no codec code describes it.
+ */
+export type LinkFailureCode = BuildLinkCodecErrorCode | 'tooLong';
+
+/** How the current build is represented in the URL fragment. */
+export type LinkPublicationState =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'encoding' }
+  | { readonly kind: 'published'; readonly fragment: string }
+  | {
+      readonly kind: 'refused';
+      readonly code: LinkFailureCode;
+      /** The slot the codec named, when it could name one. */
+      readonly slot: string | null;
+    };
+
+/**
+ * A detached build, complete and validated, that has not been made active.
+ *
+ * Every path that can replace the active build — stock creation, opening a
+ * record, loading a link — produces one of these first and hands it to the one
+ * coordinator that commits. A candidate that fails to construct never reaches
+ * the store, so a failure cannot half-replace a Commander's work.
+ */
+export interface BuildCandidate {
+  readonly loadout: ShipLoadout;
+  /**
+   * The hull's name, in the Commander's language, resolved by whoever built
+   * the candidate.
+   *
+   * It travels with the candidate rather than being looked up when it is
+   * displayed, because the package's game-text leaves are half a megabyte and
+   * the surface that shows this name — the replacement question — is mounted
+   * on every screen, including the ones that never open a build.
+   */
+  readonly hullName: string;
+  readonly provenance: BuildProvenance;
+  /** The named record this candidate came from, when it came from one. */
+  readonly sourceNamed: NamedSource | null;
+  /**
+   * The fingerprint this candidate is already saved against, or `null`.
+   *
+   * A candidate opened from a named record arrives clean; a freshly created
+   * stock build or a decoded link arrives dirty, because neither exists
+   * anywhere the Commander could get it back from.
+   */
+  readonly baseline: string | null;
+}
+
+/** One transient notice the package produced while completing a partial edit. */
+export interface QualityCompletionNotice {
+  readonly slot: string;
+  readonly previousQuality: number;
+}
+
+/** The whole of the application's state around one live build. */
+export interface ActiveBuildState {
+  readonly loadout: ShipLoadout | null;
+  readonly hullName: string | null;
+  readonly provenance: BuildProvenance;
+  readonly workingRecordId: string | null;
+  readonly sourceNamed: NamedSource | null;
+  readonly baselineFingerprint: string | null;
+  readonly dirty: boolean;
+  readonly persistence: PersistenceStatus;
+  readonly link: LinkPublicationState;
+  readonly qualityCompletionNotices: readonly QualityCompletionNotice[];
+}

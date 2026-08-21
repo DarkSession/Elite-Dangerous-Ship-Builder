@@ -15,6 +15,7 @@
               class="frame__navigation-link"
               [href]="entry.href"
               [attr.aria-current]="entry.current ? 'page' : null"
+              (click)="navigationSelected.emit({ entry, event: $event })"
             >
               {{ entry.label }}
             </a>

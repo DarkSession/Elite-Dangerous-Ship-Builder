@@ -1211,6 +1211,11 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'status.info': '"Information" is the ordinary German word.',
     'field.optional': '"Optional" is the ordinary German word.',
     'format.credits': 'CR is the in-game abbreviation and is not translated.',
+    'hullDetail.unit.speed': 'The SI symbol for metres per second, identical in German.',
+    'hullDetail.unit.rotation': 'The SI symbol for degrees per second, identical in German.',
+    'hullDetail.unit.mass': 'The SI symbol for the tonne, identical in German.',
+    'hullDetail.unit.shield': 'The SI symbol for the megajoule, identical in German.',
+    'library.save.name.label': '"Name" is the ordinary German word.',
   },
 };
 

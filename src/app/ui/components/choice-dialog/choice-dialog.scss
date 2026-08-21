@@ -1,0 +1,23 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+.choice__list {
+  @include layout.stack(var(--edsb-space-stack));
+
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.choice__item {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.choice__outcome {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  overflow-wrap: break-word;
+}

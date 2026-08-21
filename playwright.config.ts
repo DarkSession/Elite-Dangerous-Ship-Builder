@@ -80,7 +80,7 @@ export default defineConfig({
   // exists in a production build. It runs under `pnpm run e2e:offline`, which
   // serves the built output; a development run would otherwise fail it for a
   // reason that has nothing to do with the behaviour under test.
-  testIgnore: IS_PRODUCTION_RUN ? [] : ['**/offline.spec.ts'],
+  testIgnore: IS_PRODUCTION_RUN ? [] : ['**/offline.spec.ts', '**/offline-privacy.spec.ts'],
   fullyParallel: true,
   forbidOnly: isCI,
   // Retries are diagnostic only: a test that passes on retry still fails the

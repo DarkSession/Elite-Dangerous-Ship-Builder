@@ -1,0 +1,48 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.record {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-panel);
+  background-color: var(--edsb-surface-panel);
+}
+
+.record__title {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-sm);
+  overflow-wrap: anywhere;
+}
+
+.record__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  margin: 0;
+}
+
+.record__facts dt {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-label);
+  text-transform: uppercase;
+  letter-spacing: var(--edsb-text-tracking-label);
+}
+
+.record__facts dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.record__note {
+  color: var(--edsb-text-muted);
+}
+
+.record__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

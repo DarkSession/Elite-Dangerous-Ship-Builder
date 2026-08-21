@@ -1,0 +1,16 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.unknown {
+  @include layout.stack(var(--edsb-space-stack));
+
+  max-inline-size: var(--edsb-layout-prose-max);
+}
+
+.unknown h2 {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+}

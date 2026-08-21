@@ -13,6 +13,34 @@ import { expect, type Locator, type Page } from '@playwright/test';
 /** The design target baseline, in CSS pixels. */
 export const TARGET_BASELINE_PX = 44;
 
+/**
+ * Waits for every running transition to finish before a surface is measured.
+ *
+ * A control that has just been mounted can be mid-transition between the
+ * user-agent's own default and the design system's tokens. That intermediate
+ * frame is not a state anyone is expected to read, and measuring it reports the
+ * browser's default button colour rather than the one that was designed — so
+ * every colour and geometry measurement waits for the surface to settle first.
+ *
+ * A repeating animation is deliberately not waited for. A busy indicator runs
+ * for as long as it is busy, which is forever in a preview: waiting for one to
+ * finish would hang every measurement on the page it appears on rather than
+ * stabilising it.
+ */
+export async function settled(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () =>
+      document.getAnimations().every((animation) => {
+        if (animation.playState !== 'running') {
+          return true;
+        }
+        return animation.effect?.getComputedTiming().iterations === Infinity;
+      }),
+    undefined,
+    { timeout: 2_000 },
+  );
+}
+
 /** Normalises text the way an accessible-name computation does. */
 function normalize(value: string | null): string {
   return (value ?? '').replace(/\s+/g, ' ').trim();
@@ -299,12 +327,12 @@ export async function clippedText(page: Page): Promise<ClippedElement[]> {
         if (element.clientWidth === 0 && element.clientHeight === 0) {
           return false;
         }
-        return !(
-          style.overflowX === 'auto' ||
-          style.overflowX === 'scroll' ||
-          style.overflowY === 'auto' ||
-          style.overflowY === 'scroll'
-        );
+        // Only a box that actually clips can cut text off. Content that
+        // overflows a visible box is still painted and still readable — a
+        // diacritic rising past its line box is the common case, and reporting
+        // it as truncation would say a legible heading is unreadable.
+        const clips = (value: string) => value === 'hidden' || value === 'clip';
+        return clips(style.overflowX) || clips(style.overflowY);
       })
       .map((node) => {
         const element = node as HTMLElement;

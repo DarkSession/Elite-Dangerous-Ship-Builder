@@ -1,0 +1,15 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: contents;
+}
+
+.save {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.save__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: flex-end;
+}

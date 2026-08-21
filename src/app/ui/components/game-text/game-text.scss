@@ -19,7 +19,7 @@
   // A game noun keeps its own character order inside prose that reads the other
   // way; direction is resolved from the text itself rather than inherited.
   unicode-bidi: isolate;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 // The untranslated tag is words, not a colour or an icon: the state has to be

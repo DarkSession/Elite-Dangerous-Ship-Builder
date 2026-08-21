@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type TestInfo } from '@playwright/test';
+import { settled } from './assertions';
 
 /**
  * The tags scanned on every rendered state.
@@ -36,6 +37,11 @@ export async function expectNoAccessibilityViolations(
   testInfo: TestInfo,
   options: { label?: string } = {},
 ): Promise<void> {
+  // Scanned once the surface has settled: a colour caught mid-transition is a
+  // frame no one reads, and reporting it as a contrast failure would point at
+  // the user-agent's defaults rather than at anything this project chose.
+  await settled(page);
+
   const results = await new AxeBuilder({ page }).withTags([...AXE_TAGS]).analyze();
 
   if (results.violations.length > 0) {

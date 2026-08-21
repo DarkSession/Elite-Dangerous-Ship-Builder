@@ -1,0 +1,22 @@
+<div class="slots" role="group" [attr.aria-label]="label()">
+  @for (group of groups(); track group.kind) {
+    <section class="slots__group" [attr.aria-labelledby]="groupId(group.kind)">
+      <h3 class="slots__heading" [id]="groupId(group.kind)">{{ group.label }}</h3>
+      <ul class="slots__list">
+        @for (slot of group.slots; track slot.key) {
+          <li class="slots__slot">
+            <span class="slots__key" dir="ltr">{{ slot.key }}</span>
+            <span class="slots__size">{{ slot.size }}</span>
+            @if (slot.restriction) {
+              <span class="slots__restriction">{{ slot.restriction }}</span>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  } @empty {
+    @if (emptyLabel()) {
+      <p class="slots__empty">{{ emptyLabel() }}</p>
+    }
+  }
+</div>
