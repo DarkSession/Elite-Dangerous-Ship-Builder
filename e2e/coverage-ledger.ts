@@ -406,6 +406,20 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'system/accessibility-tree',
+    requirements: ['011/FR-006', '011/FR-008'],
+    journey: 'product/semantics',
+    axe: false,
+    assertions: [
+      'the shell presents one banner, one main and one level-1 heading in that order',
+      'both announcement outlets are named rather than anonymous live regions',
+      'a layer presents as a named dialog that owns its content',
+      'a choice group is one named group whose options expose their own state',
+      'a field error is associated with its field rather than left as loose text',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
     surfaceId: 'system/manual-protocols',
     requirements: ['011/FR-023', '011/SC-001'],
     journey: 'manual/protocols',

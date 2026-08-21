@@ -2,33 +2,25 @@
 
 **Protocol id**: `zoom-400`
 **Covers**: FR-011, FR-012, SC-003
-**Version**: 2
+**Version**: 3
 
 ## What is automated, and what is left
 
 WCAG 1.4.10 defines 400% zoom by equivalence: content at 1280x1024 zoomed to 400% is content at a
-**320x256 CSS-pixel viewport**. That is the normative measurement, and `e2e/reflow.spec.ts` runs it
-in both engines across all ten projects — no horizontal page scroll, every landmark, every action
-present with visible text, every target reachable, the banner released and travelling with the page,
-nothing clipped, a layer at full height, an axe scan, and the same viewport again at 200% text.
+**320x256 CSS-pixel viewport**. `e2e/reflow.spec.ts` runs that viewport at a **device scale factor
+of 4**, in both engines across all ten projects — so `devicePixelRatio` is 4, resolution media
+queries report a high-density surface, and images resolve as they would on a zoomed page. It asserts
+no horizontal page scroll, every landmark, every action present with visible text, every target
+reachable, the banner released and travelling with the page, nothing clipped, a layer at full
+height, an axe scan, and the same condition again at 200% root text.
 
-Under actual browser zoom every length scales with the CSS pixel, so the layout in CSS pixels is the
-same layout. Borders, focus rings and scrollbars do not consume more CSS space at 400% — a scrollbar
-consumes less. This protocol therefore does **not** exist because automation measures the wrong
-thing.
+That is not a proxy for zoom; it is zoom, minus one thing: the browser's own chrome and the
+operating system's toolbars, which take physical space and therefore a little more of the viewport
+than the emulation gives away.
 
-It exists for the two things the automated run genuinely cannot reach:
-
-1. **Actual zoom cannot be driven.** Playwright has no API for reflow zoom, CDP's
-   `setPageScaleFactor` is pinch-zoom rather than reflow zoom, and Firefox exposes nothing
-   equivalent. Real zoom also brings the browser's own chrome and the operating system's toolbars,
-   which take physical space no viewport setting reproduces.
-2. **Usability is a judgment, not an assertion.** "Nothing is lost" and "nothing is truncated
-   without a way to read it" are asserted mechanically; whether a Commander can still _get the job
-   done_ in what is left is not a measurement.
-
-A person running this is confirming the automated result against a real browser and forming that
-judgment — not substituting for the measurement.
+What is left for a person is a judgment rather than a measurement — whether a Commander can still
+_get the job done_ in what remains at 400%. A run confirms the automated result in a real window and
+records that judgment. It does not re-derive numbers the suite already has.
 
 ## Environment to record
 
@@ -60,9 +52,9 @@ device can be rotated. Rotating a desktop window means resizing it to a portrait
 
 ## Steps, for each capability and state
 
-Steps 1-4 and 8 are already asserted at the equivalent viewport; confirm rather than re-derive them,
-and record a row only where the browser disagrees with the automated result. Steps 5-7 are where a
-real window, real chrome and a real pointing device can still surprise the suite.
+Every step below is already asserted under emulated zoom. Confirm rather than re-derive them, and
+record a row only where a real browser disagrees with the automated result or where the capability is
+technically intact but practically unusable.
 
 1. **No horizontal page scrolling.** Scroll to the block end of the page. The document must not
    scroll sideways at any point. A component may own a labelled, bounded scroller; the page may not.

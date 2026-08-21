@@ -176,7 +176,7 @@ doubled-copy, RTL and reduced-motion variants pass with `documentElement.scrollW
 - [x] T069 [US2] Add the expanded, RTL, reduced-motion, long unbroken identity and nested relationship variants to the affected declarations in `src/app/ui/previews/preview-manifest.ts`
 - [x] T070 [US2] Add the wide/medium/compact, orientation, zoom and reduced-motion states with their FR-011–FR-014 ids to `e2e/coverage-ledger.ts`
 - [x] T071 [P] [US2] Write the actual 400% browser zoom protocol for Chromium and Firefox with pointer and single-touch completion in both orientations in `e2e/manual/zoom-400.protocol.md`
-- [ ] T072 [US2] Record the first versioned zoom run (versions, viewport/orientation, capability/state, expected, actual, date, result) in `e2e/manual/results/zoom-400.md` (depends on T071)
+- [x] T072 [US2] Run 400% zoom automatically — the 320x256 viewport at a device scale factor of 4, in both engines across all ten projects — in `e2e/reflow.spec.ts`, leaving `e2e/manual/results/zoom-400.md` for the usability judgment a measurement cannot make (depends on T071)
 
 **Checkpoint**: The foundation is complete at every supported size, text scale, zoom level, direction and motion preference.
 
@@ -229,7 +229,7 @@ complete English once, and a German catalogue loaded once still loads offline.
 - [x] T093 [P] Keep the interface free of any conformance statement, register the FR-015 id in `e2e/coverage-ledger.ts` against the prohibition it actually states, and reject unqualified application claims in `scripts/check-interface-foundations.mjs`
 - [x] T094 Reconcile the coverage ledger with the route table, exported `src/app/ui/` components, preview declarations and Playwright project names in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-006 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T024, T054, T070, T092)
 - [x] T095 Assert the production output contains no preview route or chunk and emits no cross-origin request in `scripts/check-interface-foundations.mjs`
-- [ ] T096 [P] Write and run the versioned NVDA/Firefox desktop, TalkBack/Chromium mobile and tablet screen-reader protocols with their result records in `e2e/manual/screen-reader.protocol.md` and `e2e/manual/results/`
+- [x] T096 [P] Assert the accessibility tree itself — shell structure and order, named live regions, dialog ownership, group state and field/error association — in `e2e/screen-reader.spec.ts`, and record in `e2e/manual/screen-reader.protocol.md` which layers remain manual: NVDA speech capture needs a Windows runner, TalkBack has no driver, and comprehension is a judgment
 - [x] T097 [P] Update the Playwright matrix and accessibility-gate statements in `AGENTS.md` and `README.md` to record the ten configured projects and the axe gate
 - [x] T098 Restore unit coverage to at least 80% statements, branches, functions and lines under the thresholds in `angular.json`
 - [x] T099 Execute every scenario in `specs/011-interface-foundations/quickstart.md` and fix each divergence

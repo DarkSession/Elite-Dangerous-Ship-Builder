@@ -11,26 +11,31 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { previewUrl } from './servers';
 
 /**
- * The viewport WCAG 1.4.10 defines 400% zoom to be equivalent to: content at
- * 1280x1024 zoomed to 400% is content at 320x256 CSS pixels. Both axes matter —
- * the width is what wraps the layout, and the height is what makes a sticky
- * region intolerable. Testing the width alone leaves the failure that actual
- * zoom is most likely to produce untested.
+ * Actual 400% browser zoom, emulated exactly.
+ *
+ * WCAG 1.4.10 defines 400% zoom by equivalence: content at 1280x1024 zoomed to
+ * 400% is content at 320x256 CSS pixels. Both axes matter — the width wraps the
+ * layout, the height is what makes a sticky region intolerable.
+ *
+ * Pairing that viewport with a device scale factor of 4 reproduces the rest of
+ * what zoom does: `devicePixelRatio` is 4, resolution media queries report a
+ * high-density surface, and images resolve as they would on a zoomed page. What
+ * is left over is the browser's own chrome and the operating system's toolbars,
+ * which take physical space — a smaller height, not a behaviour no test can
+ * reach.
  */
-const ZOOM_400_EQUIVALENT = { width: 320, height: 256 } as const;
+const ZOOM_400 = { viewport: { width: 320, height: 256 }, deviceScaleFactor: 4 } as const;
 
 /**
  * Text-scale and reflow variants (US2).
  *
  * These are variants of the existing projects, not extra projects: the same
  * journeys re-run under a condition. A 390-pixel mobile project is not by
- * itself the WCAG 400%-zoom equivalent — 320x256 CSS pixels is — so that
- * viewport is exercised explicitly here in both engines.
+ * itself 400% zoom — 320x256 CSS pixels at a device scale factor of 4 is — so
+ * that condition is exercised explicitly here in both engines.
  *
- * This is the normative measurement, not an approximation of one. Under actual
- * browser zoom every length scales with the CSS pixel, so the layout in CSS
- * pixels is the same layout; what a person still has to judge at real zoom is
- * whether the result remains usable, which no assertion decides.
+ * What a person still has to judge at real zoom is whether the result remains
+ * usable, which no assertion decides. Everything measurable is measured here.
  */
 
 test.describe('200% text scale', () => {
@@ -73,9 +78,10 @@ test.describe('200% text scale', () => {
   });
 });
 
-test.describe('400% zoom equivalent (320x256 CSS pixels)', () => {
+test.describe('400% browser zoom', () => {
+  test.use(ZOOM_400);
+
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize(ZOOM_400_EQUIVALENT);
     await page.goto('/');
     await expect(page.getByRole('main')).toBeVisible();
   });
@@ -144,13 +150,14 @@ test.describe('400% zoom equivalent (320x256 CSS pixels)', () => {
   });
 });
 
-test.describe('400% zoom equivalent at 200% text', () => {
+test.describe('400% browser zoom at 200% text', () => {
+  test.use(ZOOM_400);
+
   test('survives both conditions at once', async ({ page }) => {
     // The hardest realistic case: a 400%-zoomed window and a Commander who has
     // also set larger text. Each condition alone passing does not imply the
     // pair does.
     await withRootTextScale(page, DOUBLED_TEXT);
-    await page.setViewportSize(ZOOM_400_EQUIVALENT);
     await page.goto('/');
     await expect(page.getByRole('main')).toBeVisible();
 

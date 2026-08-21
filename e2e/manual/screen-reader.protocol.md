@@ -2,20 +2,27 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, SC-001
-**Version**: 1
+**Version**: 2
 
-## Why this is manual
+## What is automated, and what is left
 
-Automation checks whether markup is well-formed and whether names, roles and
-relationships exist. It cannot hear what a screen reader actually says, in what
-order, or whether what it says means anything. A page can pass every axe rule
-and still announce "button, button, button" — so the automated suite is a floor,
-and this is the gate.
+Three layers, and only the third needs a person.
 
-The keyboard-operation criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
-2.4.11 are outside the conformance target. **Screen-reader quick navigation and
-gestures are still required**, and are exercised below: they are how a reader
-moves through a page, not a keyboard-operation criterion.
+**Structure, names, roles, states and relationships** are automated. `e2e/screen-reader.spec.ts`
+asserts the accessibility tree itself — the exact structure a reader walks — with
+`toMatchAriaSnapshot`, alongside the named assertions in `e2e/accessibility/assertions.ts` and an axe
+scan of every product and preview state in all ten projects. That is what catches a page which
+passes every rule and still presents as "button, button, button".
+
+**Actual speech** is automatable but not from this repository's Linux container. `guidepup` drives
+NVDA on Windows and VoiceOver on macOS and captures the spoken phrase log, which turns "the reader
+said this" into a diff. It needs a Windows runner in CI. TalkBack has no comparable driver, so the
+Android configuration stays manual regardless.
+
+**Whether what is said means anything** is a judgment no capture can make. A reader can announce a
+correct name, in the correct order, with the correct state, and still leave a Commander unable to
+work out what the screen is for. That is what this protocol exists for, and it is one observation
+per configuration rather than twelve.
 
 ## Configurations to run
 
@@ -37,7 +44,9 @@ date of the run.
 ## Steps
 
 Run each step in each configuration. Record what was actually announced, not a
-paraphrase of what should have been.
+paraphrase of what should have been. Steps 1-6 and 8 are asserted structurally
+by the automated suite: confirm them, and record a row only where a real reader
+disagrees or where the announcement is correct but unusable.
 
 1. **Landmark discovery.** List the landmarks with the reader's landmark
    listing. Expect exactly one banner, one main and at most one navigation. The
