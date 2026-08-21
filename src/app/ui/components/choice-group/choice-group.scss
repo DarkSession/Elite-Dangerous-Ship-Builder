@@ -8,13 +8,9 @@
 }
 
 .choice-group__legend {
+  @include layout.micro-label(var(--edsb-text-subtle));
+
   padding: 0;
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
-  color: var(--edsb-text-secondary);
 }
 
 .choice-group__options {
@@ -51,6 +47,79 @@
 
 .choice__description {
   grid-column: 2;
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+}
+
+// The segmented arrangement.
+//
+// The native input stays in the accessibility tree and stays focusable; it is
+// the label that takes the reference's fill. Selection is therefore carried by
+// the control's own checked state, and the fill is the visible echo of it
+// rather than the fact itself.
+.choice-group__options[data-layout='segmented'] {
+  display: flex;
+  // Explicit: the stacked arrangement above sets `column`, and a segmented
+  // strip that inherits it is a stack of full-width bars.
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--edsb-space-rule);
+  background-color: var(--edsb-rule-grid);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+
+  // Each choice is its own positioned segment, and the native input is the
+  // segment: transparent, full size, on top. The label supplies the appearance
+  // underneath it.
+  //
+  // Hiding the input and styling the label would work for a mouse and fail
+  // everything else — the control's own hit area would be a point, so the
+  // target that a pointer, a stylus or an automated check aims at would not be
+  // the thing being operated. Here the whole segment is the checkbox.
+  .choice {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .choice__input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    inline-size: 100%;
+    block-size: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .choice__label {
+    @include layout.control-base(var(--edsb-text-tracking-heading));
+
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    padding-inline: var(--edsb-space-inline-loose);
+    background-color: var(--edsb-surface-control-quiet);
+    color: var(--edsb-text-subtle);
+  }
+
+  .choice__input:checked + .choice__label {
+    background-color: var(--edsb-surface-accent-solid);
+    color: var(--edsb-text-on-accent);
+    font-weight: var(--edsb-text-weight-heading);
+  }
+
+  // The input is visually hidden, so its own focus ring is invisible. The
+  // label wears it instead — focus must be visible wherever the platform
+  // moves it.
+  .choice__input:focus-visible + .choice__label {
+    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+    outline-offset: calc(-1 * var(--edsb-focus-ring-width));
+  }
+
+  .choice__input:disabled + .choice__label {
+    color: var(--edsb-text-disabled);
+    cursor: not-allowed;
+  }
 }

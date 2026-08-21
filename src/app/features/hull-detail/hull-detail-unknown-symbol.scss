@@ -11,6 +11,11 @@
 }
 
 .unknown h2 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.unknown p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
 }

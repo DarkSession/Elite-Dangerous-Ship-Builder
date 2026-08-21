@@ -10,8 +10,8 @@
 }
 
 .game-text__label {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-subtle);
 }
 
 .game-text__value {
@@ -26,19 +26,20 @@
 // readable to someone who cannot see the styling (FR-010).
 .game-text__tag {
   padding-block: var(--edsb-space-3xs);
-  padding-inline: var(--edsb-space-inline-tight);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  padding-inline: var(--edsb-space-2xs);
   border-radius: var(--edsb-shape-badge);
-  color: var(--edsb-text-secondary);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-caption);
-  letter-spacing: var(--edsb-text-tracking-label);
+  background-color: var(--edsb-surface-accent-quiet);
+  color: var(--edsb-text-accent);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-emphasis);
+  letter-spacing: var(--edsb-text-tracking-count);
   text-transform: uppercase;
 }
 
 .game-text__disclosure {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-caption);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-subtle);
 }
 
 .game-text__unavailable {

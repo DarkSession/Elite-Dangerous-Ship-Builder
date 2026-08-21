@@ -1,5 +1,6 @@
 <header class="frame__banner" [attr.aria-label]="bannerLabel()">
   <div class="frame__identity">
+    <span class="frame__flag" aria-hidden="true"></span>
     <span class="frame__product">{{ productName() }}</span>
     @if (routeContext()) {
       <span class="frame__context" [attr.aria-label]="contextLabel()">{{ routeContext() }}</span>

@@ -48,3 +48,19 @@ The reference rows establish the compact name/note, hull, validation badge and m
 - Record names/notes/symbols wrap without truncating identity or causing page overflow.
 - While the route-backed modal is open, its background is inert and removed from the accessibility tree; close/back restores the originating route and session position.
 - Previews cover empty, populated, duplicate, delete, conflict, changed-again, retention, quota, unsupported, malformed and unavailable states.
+
+## Reference composition
+
+Measured from canvas 1a's `SAVED BUILDS` modal and canvas 1b's `ssv-screen`.
+
+| Part            | Canvas                                                                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wide surface    | A centred dialog on a near-opaque scrim: amber-hairline body, a darker title bar with the title tracked 0.22em and a monospace dismiss, and a committing footer on its own plate |
+| Compact surface | The same content as a full-screen layer with a back arrow and a pinned footer                                                                                                    |
+| Header row      | A search field beside a monospace record count                                                                                                                                   |
+| Column headers  | Monospace, tracked 0.14em, on a slightly lighter plate                                                                                                                           |
+| Record          | Title in condensed 600 tracked 0.09em, a one-line note beneath in Barlow 300, then hull, price and edited-at in monospace                                                        |
+| Issue badge     | A monospace count on a translucent warm plate beside the title                                                                                                                   |
+| Record marker   | A 3px leading edge that takes amber when the record is the current one                                                                                                           |
+| Empty state     | Centred prose, no panel                                                                                                                                                          |
+| Footer actions  | The destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge                                                                   |

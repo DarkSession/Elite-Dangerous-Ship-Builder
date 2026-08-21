@@ -1,5 +1,9 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference states a condition as a tracked monospace line rather than as a
+// coloured box: the issue badge on a saved build, the `AWAITING INPUT` line
+// under an import field, the licence block. The tone's name is text; colour is
+// its echo (canvas 1a, "Panel dialog" and the library rows).
 :host {
   display: block;
 }
@@ -7,8 +11,9 @@
 .status {
   @include layout.stack(var(--edsb-space-stack-tight));
 
-  padding: var(--edsb-space-inline-loose);
-  border-inline-start: var(--edsb-border-width-thick) solid var(--edsb-border-default);
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-default);
   border-radius: var(--edsb-shape-control);
   background-color: var(--edsb-surface-panel-raised);
 }
@@ -16,26 +21,24 @@
 // The tone's name. Colour below is a supplement to these words, never a
 // substitute for them.
 .status__tone {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
-  color: var(--edsb-text-secondary);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
 }
 
 .status__message {
   color: var(--edsb-text-primary);
   overflow-wrap: break-word;
+  text-wrap: pretty;
 }
 
 .status__detail {
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }
 
 .status--error {
   border-inline-start-color: var(--edsb-border-danger);
+  background-color: var(--edsb-surface-danger-quiet);
 }
 
 .status--error .status__tone {
@@ -52,6 +55,7 @@
 
 .status--warning {
   border-inline-start-color: var(--edsb-border-accent);
+  background-color: var(--edsb-surface-accent-quiet);
 }
 
 .status--warning .status__tone {

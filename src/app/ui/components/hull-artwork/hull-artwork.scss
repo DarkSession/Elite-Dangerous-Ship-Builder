@@ -1,5 +1,9 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference frames hull art on a hatched plate inside an amber hairline,
+// and pushes neutral package line art into amber with a filter rather than by
+// shipping a second, tinted copy of every illustration (canvas 1a/1b,
+// "Hull artwork frame").
 :host {
   display: block;
 }
@@ -13,23 +17,27 @@
 // Reserved before anything loads, so a late illustration cannot push the facts
 // below it down the page while they are being read.
 .artwork__frame {
+  @include layout.artwork-plate;
+
   aspect-ratio: 3 / 2;
   inline-size: 100%;
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-decorative);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-inset);
-  overflow: hidden;
 }
 
 .artwork__image {
   inline-size: 100%;
   block-size: 100%;
   object-fit: contain;
+  filter: var(--edsb-artwork-filter);
 }
 
 .artwork__status {
   @include layout.stack(var(--edsb-space-stack-tight));
 
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  align-items: center;
+  text-align: center;
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
 }

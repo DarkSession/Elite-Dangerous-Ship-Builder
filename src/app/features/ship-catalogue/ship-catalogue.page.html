@@ -9,8 +9,10 @@
       showing.
     -->
     <div class="catalogue__browse">
-      <p class="catalogue__description">{{ description() }}</p>
-      <p class="catalogue__total">{{ totalText() }}</p>
+      <div class="catalogue__header">
+        <p class="catalogue__description">{{ description() }}</p>
+        <p class="catalogue__total">{{ totalText() }}</p>
+      </div>
 
       <edsb-collection-toolbar
         [search]="search()"

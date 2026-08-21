@@ -1,21 +1,20 @@
 @use '../../../../styles/responsive' as layout;
 
+// The compact manifest record. The reference's narrow shipyard puts a size code
+// on the leading edge, the hull name and its meta in the middle and the price on
+// the trailing edge, over a plate opened by a selection marker (canvas 1b,
+// "Manifest row"). The facts keep definition-list semantics so every label stays
+// associated with its value.
 :host {
   display: block;
 }
 
 .hull-card {
   @include layout.stack(var(--edsb-space-stack));
+  @include layout.selectable-row;
 
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-panel);
-}
-
-.hull-card[aria-current='true'] {
-  border-color: var(--edsb-border-accent);
-  background-color: var(--edsb-surface-accent-selected);
+  padding-block: var(--edsb-space-row);
+  padding-inline: var(--edsb-space-row);
 }
 
 .hull-card__identity {
@@ -24,15 +23,21 @@
 
 .hull-card__name {
   font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-sm);
+  font-size: var(--edsb-text-size-heading-md);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-name);
+  line-height: var(--edsb-text-leading-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-numeric);
   overflow-wrap: anywhere;
 }
 
+.hull-card[aria-current='true'] .hull-card__name {
+  color: var(--edsb-text-accent-strong);
+}
+
 .hull-card__selected {
-  color: var(--edsb-text-accent);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
 }
 
 .hull-card__facts {
@@ -43,10 +48,7 @@
 }
 
 .hull-card__facts dt {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label;
 }
 
 /*
@@ -59,9 +61,10 @@
   margin: 0;
   min-inline-size: 0;
   overflow-wrap: anywhere;
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-secondary);
 }
 
 .hull-card__price {
-  font-family: var(--edsb-font-metric);
-  color: var(--edsb-text-numeric);
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-accent-strong));
 }

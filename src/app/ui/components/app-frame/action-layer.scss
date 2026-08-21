@@ -10,14 +10,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: var(--edsb-space-inline);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  inline-size: 100%;
+  padding-inline: var(--edsb-space-inline-loose);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
   border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-panel-raised);
-  color: var(--edsb-text-primary);
+  background-color: var(--edsb-surface-control);
+  color: var(--edsb-text-accent);
   font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-compact);
-  letter-spacing: var(--edsb-text-tracking-label);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-control);
   text-transform: uppercase;
   transition:
     background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
@@ -28,8 +30,8 @@
   @include layout.stack(var(--edsb-space-inline-tight));
 
   margin-block-start: var(--edsb-space-inline-tight);
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  padding: var(--edsb-space-inline-loose);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
   border-radius: var(--edsb-shape-panel);
   background-color: var(--edsb-surface-menu);
   box-shadow: var(--edsb-elevation-menu);

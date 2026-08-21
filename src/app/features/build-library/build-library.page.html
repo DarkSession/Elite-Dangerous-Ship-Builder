@@ -1,7 +1,9 @@
 <section class="library">
   <h1>{{ heading() }}</h1>
-  <p class="library__description">{{ description() }}</p>
-  <p class="library__count">{{ countText() }}</p>
+  <div class="library__header">
+    <p class="library__description">{{ description() }}</p>
+    <p class="library__count">{{ countText() }}</p>
+  </div>
 
   @if (storageNotice(); as notice) {
     <edsb-status-notice tone="error" [message]="notice" />

@@ -5,29 +5,48 @@
 }
 
 .library {
-  @include layout.stack(var(--edsb-space-section));
+  @include layout.stack(var(--edsb-space-panel));
   @include layout.content-measure;
 }
 
-h1 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-lg);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  text-transform: uppercase;
+.library__header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
 }
 
-.library__description,
+h1 {
+  @include layout.display-title(
+    var(--edsb-text-size-heading-lg),
+    var(--edsb-text-tracking-product)
+  );
+}
+
+.library__description {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  max-inline-size: var(--edsb-layout-prose-max);
+  text-wrap: pretty;
+}
+
 .library__count {
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 }
 
 .library__empty {
   @include layout.stack(var(--edsb-space-stack));
 
+  padding-block: var(--edsb-space-section);
   max-inline-size: var(--edsb-layout-prose-max);
+  margin-inline: auto;
+  text-align: center;
 }
 
 .library__empty h2 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.library__empty p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }

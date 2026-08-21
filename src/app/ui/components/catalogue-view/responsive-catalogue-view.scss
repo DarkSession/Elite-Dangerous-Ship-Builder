@@ -36,16 +36,15 @@
 
 .catalogue__table {
   inline-size: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 var(--edsb-space-3xs);
 }
 
 .catalogue__table caption {
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+
   text-align: start;
   padding-block-end: var(--edsb-space-stack);
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
 }
 
 .catalogue__table th,
@@ -53,12 +52,39 @@
   text-align: start;
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-inline-tight);
-  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-decorative);
   overflow-wrap: break-word;
 }
 
-.catalogue__table tr[aria-current='true'] {
-  background-color: var(--edsb-surface-accent-selected);
+.catalogue__table thead th {
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+
+  padding: 0;
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.catalogue__table tbody th,
+.catalogue__table tbody td {
+  background-color: var(--edsb-surface-row);
+}
+
+// The row's leading marker. Transparent until the row is current, so no row
+// changes width when the selection moves.
+.catalogue__table tbody tr > :first-child {
+  border-inline-start: var(--edsb-border-width-marker) solid transparent;
+}
+
+// Painted on the row, not on each cell: a per-cell gradient restarts at every
+// column boundary and leaves seams the reference does not have.
+.catalogue__table tbody tr[aria-current='true'] {
+  background-image: var(--edsb-surface-row-selected);
+}
+
+.catalogue__table tbody tr[aria-current='true'] > * {
+  background-color: transparent;
+}
+
+.catalogue__table tr[aria-current='true'] > :first-child {
+  border-inline-start-color: var(--edsb-marker-selected);
 }
 
 .catalogue__sort,
@@ -78,25 +104,45 @@
 }
 
 .catalogue__sort {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  // Inherits the header cell's tracked monospace rather than restating it, so
+  // the whole header row is one decision.
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  min-block-size: var(--edsb-target-size);
 }
 
 .catalogue__selected {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
+
   display: block;
-  color: var(--edsb-text-accent);
-  font-size: var(--edsb-text-size-caption);
-  text-transform: uppercase;
+  margin-block-start: var(--edsb-space-2xs);
 }
 
 .catalogue__numeric {
-  font-family: var(--edsb-font-metric);
+  @include layout.metric-value(var(--edsb-text-size-body), var(--edsb-text-secondary));
+
+  unicode-bidi: isolate;
+}
+
+.catalogue__open {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-name);
+  line-height: var(--edsb-text-leading-heading);
+  text-transform: uppercase;
   color: var(--edsb-text-numeric);
+}
+
+.catalogue__table tr[aria-current='true'] .catalogue__open {
+  color: var(--edsb-text-accent-strong);
 }
 
 .catalogue__empty {
   padding-block: var(--edsb-space-section);
-  color: var(--edsb-text-muted);
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
 }

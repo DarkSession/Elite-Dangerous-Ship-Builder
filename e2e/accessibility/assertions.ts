@@ -269,13 +269,21 @@ export async function expectRootLanguage(
   page: Page,
   expected: { lang: string; dir: 'ltr' | 'rtl' },
 ): Promise<void> {
-  const root = await page.evaluate(() => ({
-    lang: document.documentElement.lang,
-    dir: document.documentElement.dir,
-  }));
-
-  expect(root.lang).toBe(expected.lang);
-  expect(root.dir).toBe(expected.dir);
+  // Polled rather than sampled once. A non-English catalogue is fetched, and
+  // the application deliberately renders complete English until it arrives
+  // rather than a half-translated screen under a German root `lang`. So the
+  // first paint of a route can legitimately precede the language it will settle
+  // on, and a single read races that load.
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => ({
+          lang: document.documentElement.lang,
+          dir: document.documentElement.dir,
+        })),
+      { message: 'the root language and direction never settled on the expected pair' },
+    )
+    .toEqual(expected);
 }
 
 /** No raw message key or unresolved placeholder is visible anywhere on the page. */
@@ -371,18 +379,36 @@ export async function expectBannerReleasesShortViewport(page: Page): Promise<voi
   expect(position, 'the banner stays stuck to a short viewport').not.toBe('sticky');
   expect(position, 'the banner is pinned over a short viewport').not.toBe('fixed');
 
+  // The route renders lazily, and `main` exists before its content does. A page
+  // with nothing to scroll cannot show whether the banner scrolls with it, so
+  // the assertion waits for one that can rather than measuring an empty screen.
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(
+          () => document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        ),
+      { message: 'the page never grew tall enough to scroll' },
+    )
+    .toBeGreaterThan(0);
+
   const before = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
 
-  const scrolled = await page.evaluate(() => {
+  // The banner's travel and the page's scroll are read in one evaluation.
+  // Reading them separately compares two different moments, and a page whose
+  // height is still settling — a font swapping in, an illustration arriving —
+  // has its scroll position clamped between them, which looks exactly like a
+  // banner that refused to move.
+  const { scrolled, after } = await page.evaluate(() => {
     // Enough to prove the behaviour on a page of any length; the assertion is
     // on how far the banner travelled, not on where it ended up.
     window.scrollTo(0, document.documentElement.scrollHeight);
-    return window.scrollY;
+    const element = document.querySelector('header, [role="banner"]') as HTMLElement;
+    return { scrolled: window.scrollY, after: element.getBoundingClientRect().top };
   });
-
-  const after = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
   await page.evaluate(() => window.scrollTo(0, 0));
 
+  expect(scrolled, 'the page is too short to prove anything about the banner').toBeGreaterThan(0);
   expect(
     Math.abs(before - after - scrolled),
     `the banner held its place while the page scrolled ${Math.round(scrolled)} px`,

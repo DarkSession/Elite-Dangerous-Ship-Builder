@@ -1,16 +1,15 @@
 @use '../../../styles/responsive' as layout;
 
+// The reference's hull inspector: artwork on a hatched plate, the hull name set
+// large in tracked condensed amber over a monospace identity line, a ruled
+// metric grid, the hardpoint section under its own rule, the price on a rule of
+// its own, then the hull actions (canvas 1a rail / canvas 1b detail screen).
 :host {
   display: block;
 }
 
 .detail {
-  @include layout.stack(var(--edsb-space-section));
-
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-panel-raised);
+  @include layout.stack(var(--edsb-space-panel));
 }
 
 // At narrow widths the same route is the whole screen rather than a rail
@@ -18,30 +17,22 @@
 // change with the breakpoint; only where it sits does.
 @include layout.compact {
   .detail {
-    padding: var(--edsb-space-inline-loose);
-    border: 0;
-    border-radius: 0;
+    padding-block: var(--edsb-space-inline-loose);
   }
 }
 
 .detail__name {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
-  overflow-wrap: break-word;
+  @include layout.display-title(var(--edsb-text-size-display), var(--edsb-text-tracking-title));
 }
 
 .detail__identity {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  @include layout.stack(var(--edsb-space-stack-tight));
+
   margin: 0;
 }
 
 .detail__identity dt {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label;
 }
 
 /*
@@ -54,13 +45,26 @@
   margin: 0;
   min-inline-size: 0;
   overflow-wrap: anywhere;
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-secondary);
 }
 
 .detail__create {
   @include layout.stack(var(--edsb-space-stack));
+
+  padding-block-start: var(--edsb-space-lg);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
 }
 
 .detail__create-description {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The hull action is the reference's one filled, widely tracked commitment on
+// this screen.
+.detail__create edsb-action-button {
+  display: block;
 }

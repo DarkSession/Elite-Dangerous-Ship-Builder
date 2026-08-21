@@ -46,3 +46,18 @@ No image state participates in these steps.
 - The `.design/assets/ships/*.png` files and hard-coded mock values are visual references only. Runtime art is the package `illustration.svg` copied to the application origin, and every displayed value is read from the active package record.
 - Component previews cover populated, missing-fact, artwork-loading/error, unknown-symbol and
   confirmation states.
+
+## Reference composition
+
+Measured from canvas 1a's inspector rail and canvas 1b's `sd-screen`.
+
+| Part           | Canvas                                                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Artwork        | A fixed-height hatched plate inside an amber hairline; the illustration is contained, not cropped, and pushed into amber by a filter rather than by shipping a tinted copy    |
+| Missing art    | The same plate, with the reason centred in Barlow 300 inside it                                                                                                               |
+| Identity       | Hull name in condensed 700 tracked 0.08em at the display step, over a monospace line reading `MANUFACTURER · LANDING PAD`                                                     |
+| Facts          | A two-column grid whose one-pixel gaps expose an amber ground as rules; each cell is a tracked monospace label over a larger monospace value; a final cell spans both columns |
+| Hardpoints     | A section rule — tracked label, a hairline filling the width, the total on the trailing edge — over count-and-size pills                                                      |
+| Price          | Its own rule, the label on the leading edge and the value in large monospace amber with a quiet `cr` suffix                                                                   |
+| Actions        | The stock-hull action filled amber, condensed 700 tracked 0.22em, full width; the secondary action bordered beneath it                                                        |
+| Compact layout | The same stack as a full-screen layer with a back arrow in its command bar and the actions pinned to a footer plate                                                           |

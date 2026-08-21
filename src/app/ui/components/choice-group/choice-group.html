@@ -6,7 +6,7 @@
 >
   <legend class="choice-group__legend">{{ legend() }}</legend>
 
-  <div class="choice-group__options">
+  <div class="choice-group__options" [attr.data-layout]="layout()">
     @for (choice of choices(); track choice.value) {
       <div class="choice">
         <input

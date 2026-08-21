@@ -9,10 +9,25 @@
 .toolbar {
   @include layout.stack(var(--edsb-space-stack));
 
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  padding: var(--edsb-space-inline-loose);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
   border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-panel);
+  background-color: var(--edsb-surface-sunken);
+}
+
+// The reference's toolbar leads with the search and the size strip on one row,
+// then the remaining facets beneath (canvas 1a).
+.toolbar__primary {
+  display: grid;
+  gap: var(--edsb-space-inline);
+  grid-template-columns: 1fr;
+  align-items: end;
+}
+
+@include layout.container-medium-up(toolbar) {
+  .toolbar__primary {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
 }
 
 .toolbar__facets {
@@ -22,6 +37,21 @@
 }
 
 @include layout.container-medium-up(toolbar) {
+  // The reference's toolbar leads with the search and the size strip on one row,
+  // then the remaining facets beneath (canvas 1a).
+  .toolbar__primary {
+    display: grid;
+    gap: var(--edsb-space-inline);
+    grid-template-columns: 1fr;
+    align-items: end;
+  }
+
+  @include layout.container-medium-up(toolbar) {
+    .toolbar__primary {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+
   .toolbar__facets {
     grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-rail-min), 1fr));
   }
@@ -35,8 +65,9 @@
 
 .toolbar__sort-state,
 .toolbar__count {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
+  text-transform: none;
 }
 
 .toolbar__constraints {
@@ -44,10 +75,7 @@
 }
 
 .toolbar__constraints-label {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label(var(--edsb-text-subtle));
 }
 
 .toolbar__constraint-list {
@@ -59,5 +87,7 @@
 }
 
 .toolbar__no-constraints {
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }

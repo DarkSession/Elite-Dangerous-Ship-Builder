@@ -15,10 +15,8 @@
 }
 
 .records__heading {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-sm);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-heading);
+  @include layout.section-rule;
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
 }
 
 .records__list {
@@ -39,5 +37,8 @@
 }
 
 .records__empty {
-  color: var(--edsb-text-muted);
+  padding-block: var(--edsb-space-section);
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
 }

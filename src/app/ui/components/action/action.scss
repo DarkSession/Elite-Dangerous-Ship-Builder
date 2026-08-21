@@ -1,29 +1,19 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference's button family: condensed, uppercase, widely tracked, square,
+// and separated by fill rather than by shape (canvas 1a/1c, "Buttons").
 :host {
   display: inline-flex;
 }
 
 .action {
-  @include layout.target-baseline;
+  @include layout.control-base;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--edsb-space-inline-tight);
   padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-strong);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-panel-raised);
-  color: var(--edsb-text-primary);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
+  background-color: var(--edsb-surface-control-quiet);
+  border-color: var(--edsb-border-control-quiet);
+  color: var(--edsb-text-accent);
   text-decoration: none;
-  cursor: pointer;
   transition:
     background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
     border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
@@ -35,32 +25,35 @@
 }
 
 .action--primary {
-  border-color: var(--edsb-border-accent);
-  background-color: var(--edsb-surface-accent-solid);
-  color: var(--edsb-text-on-accent);
+  @include layout.control-primary;
+}
+
+.action--secondary {
+  @include layout.control-secondary;
 }
 
 .action--quiet {
-  border-color: var(--edsb-border-decorative-strong);
-  background-color: transparent;
+  @include layout.control-quiet;
 }
 
 .action--danger {
-  border-color: var(--edsb-border-danger);
-  color: var(--edsb-text-danger);
+  @include layout.control-danger;
 }
 
 .action--link {
   border-color: transparent;
   background-color: transparent;
   color: var(--edsb-text-accent);
+  font-family: var(--edsb-font-body);
+  letter-spacing: var(--edsb-text-tracking-body);
+  text-transform: none;
   // Underlined, so the link is not identified by colour alone.
   text-decoration: underline;
 }
 
 .action__external {
-  font-size: var(--edsb-text-size-caption);
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
   text-transform: none;
 }
 
@@ -68,18 +61,24 @@
 // touch device has no hover at all (FR-006).
 @media (hover: hover) {
   .action:hover:not(:disabled) {
-    background-color: var(--edsb-surface-accent-quiet);
+    background-color: var(--edsb-surface-accent-selected);
+  }
+
+  .action--primary:hover:not(:disabled) {
+    background-color: var(--edsb-text-accent-strong);
   }
 }
 
 .action:disabled,
 .action[aria-disabled='true'] {
   color: var(--edsb-text-disabled);
-  border-color: var(--edsb-border-decorative-strong);
+  background-color: transparent;
+  border-color: var(--edsb-border-quiet);
   cursor: not-allowed;
 }
 
 .action[aria-pressed='true'] {
   border-color: var(--edsb-border-accent);
   background-color: var(--edsb-surface-accent-selected);
+  color: var(--edsb-text-accent-strong);
 }

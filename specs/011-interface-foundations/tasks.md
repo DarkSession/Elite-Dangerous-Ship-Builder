@@ -237,6 +237,27 @@ complete English once, and a German catalogue loaded once still loads offline.
 
 ---
 
+## Phase 7: Reference Extraction
+
+**Goal**: the token layer is the measured reference canvas rather than a palette taken from it and
+generic scales authored beside it. Raised after review found the first implementation had adopted the
+55 colour properties and invented every other scale, losing the reference's identity — which lives
+almost entirely in the non-colour decisions.
+
+- [x] T101 Measure `.design/Ship Builder.dc.html` canvases 1a–1d and record every governed value — colour, families, type ramp, tracking ladder, spacing, geometry, elevation, textures and the recurring chrome — in `specs/011-interface-foundations/design/canvas-extraction.md`
+- [x] T102 Carry all 55 canvas colour properties into `src/styles/tokens/_primitives.scss`, plus the five the canvas leaves as literals (rail ground, both scrims, the overlay shadow and the hull-artwork filter) (depends on T101)
+- [x] T103 Replace the authored type, tracking, spacing, radius, border and elevation scales in `src/styles/tokens/_primitives.scss` with the measured ones, lifting only the type ramp and only uniformly (depends on T101)
+- [x] T104 Re-audit every text role against the nine grounds the canvas uses, shift the ink label ladder so its lowest rung clears 4.5:1, and record the outcome in `specs/011-interface-foundations/design/token-evidence.md` (depends on T103)
+- [x] T105 Express the canvas's use of the primitives as roles in `src/styles/tokens/_semantic.scss` — bar, rail, footer, field and row surfaces, the grid and command rules, the selection marker, the tracking ladder by job (depends on T104)
+- [x] T106 Name the recurring chrome once as mixins in `src/styles/_responsive.scss`: command bar, command flag, display title, micro label, metric value, the five control variants, ruled group, field surface, selectable row, section rule and artwork plate (depends on T105)
+- [x] T107 Compose those mixins across `src/app/ui/` so no component restates the chrome: frame, action, panel, layer, field, choice group, table, catalogue view, record list, metric group, artwork, tabs, disclosure, collection, toolbar, status and the game-text markers (depends on T106)
+- [x] T108 Add the segmented arrangement to `src/app/ui/components/choice-group/choice-group.ts` — native inputs, labels styled as the strip, focus visible on the label — and use it for the catalogue's size choices (depends on T106)
+- [x] T109 Bound both tracks of `region-pair` to the reference's `1fr` plus fixed rail in `src/styles/_responsive.scss` (depends on T106)
+- [x] T110 Record the extraction outcome, the one deliberate transform and what the first implementation discarded in `specs/011-interface-foundations/design/reference-review.md` (depends on T101)
+- [x] T111 Run `pnpm run check` and fix every divergence the ten Playwright projects, the axe scans and the computed contrast assertions report against the extracted tokens (depends on T107, T108, T109)
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -307,6 +328,7 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 3. Add US2 → every supported size, text scale, zoom, direction and motion preference
 4. Add US3 → English and German with persistence, offline catalogues and the package-text boundary
 5. Polish → conformance wording, ledger reconciliation, manual records and a green `pnpm run check`
+6. Reference extraction → the measured canvas as the token layer, composed by every component
 
 ### Constitutional Guardrails
 

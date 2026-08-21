@@ -194,6 +194,21 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'system/design-reference',
+    requirements: ['011/FR-002', '001/FR-001'],
+    journey: 'catalogue/reference-language',
+    axe: false,
+    assertions: [
+      'the command bar is the reference plate closed by the heavy amber rule and opened by the flag',
+      'headings are tracked uppercase condensed and numbers are monospace',
+      'every row reserves the leading marker and only the current row fills it',
+      'no product surface is rounded',
+      'no text falls below the lifted ramp floor',
+      'the metric grid is ruled by its own one-pixel gaps',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'system/shared-component-library',
     requirements: ['011/FR-001', '011/FR-004', '011/FR-005'],
     journey: 'static/design-system',

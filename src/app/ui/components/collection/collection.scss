@@ -14,16 +14,10 @@
 
 .collection__item {
   @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.selectable-row;
 
   padding-block: var(--edsb-space-control-block);
-  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-decorative-strong);
-}
-
-.collection__item[aria-current='true'] {
-  // A supplement to the visible state text, not a replacement for it.
-  border-inline-start: var(--edsb-border-width-thick) solid var(--edsb-border-accent);
-  padding-inline-start: var(--edsb-space-inline);
-  background-color: var(--edsb-surface-accent-quiet);
+  padding-inline: var(--edsb-space-inline-loose);
 }
 
 .collection__activate {
@@ -47,20 +41,18 @@
 }
 
 .collection__detail {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-subtle));
 }
 
 .collection__state {
-  color: var(--edsb-text-accent);
-  font-size: var(--edsb-text-size-caption);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
 }
 
 .collection__empty {
-  padding-block: var(--edsb-space-panel);
-  color: var(--edsb-text-muted);
+  padding-block: var(--edsb-space-section);
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
 }
 
 // In a narrow container each item becomes one flow rather than a cramped row.

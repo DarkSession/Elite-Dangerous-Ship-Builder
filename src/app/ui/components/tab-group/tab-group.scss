@@ -7,9 +7,10 @@
 }
 
 .tab-group {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--edsb-space-rule));
 
-  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  background-color: var(--edsb-rule-grid);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 .tab {
@@ -21,14 +22,14 @@
   justify-content: center;
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-control-inline);
+  flex: 1 1 auto;
   border: 0;
-  border-block-end: var(--edsb-border-width-thick) solid transparent;
-  background-color: transparent;
-  color: var(--edsb-text-muted);
+  background-color: var(--edsb-surface-layer);
+  color: var(--edsb-text-subtle);
   font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-compact);
+  font-size: var(--edsb-text-size-label);
   font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
+  letter-spacing: var(--edsb-text-tracking-heading);
   text-transform: uppercase;
   cursor: pointer;
   transition:
@@ -38,18 +39,18 @@
 
 .tab[aria-selected='true'],
 .tab[aria-pressed='true'] {
-  border-block-end-color: var(--edsb-border-accent);
-  color: var(--edsb-text-accent);
+  background-color: var(--edsb-surface-root);
+  color: var(--edsb-text-accent-strong);
+  font-weight: var(--edsb-text-weight-heading);
+  box-shadow: var(--edsb-elevation-current);
 }
 
 // The selected state's text equivalent. Small, but present — the border and
 // colour above are a supplement to it, never the only signal.
 .tab__state {
-  font-size: var(--edsb-text-size-caption);
-  font-weight: var(--edsb-text-weight-body);
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
   text-transform: none;
-  letter-spacing: var(--edsb-text-tracking-body);
 }
 
 .tab:disabled {

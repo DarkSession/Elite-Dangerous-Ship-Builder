@@ -1,23 +1,27 @@
 <div class="toolbar">
-  <div class="toolbar__search">
-    <edsb-text-field
-      [label]="searchLabel()"
-      [value]="search()"
-      [description]="searchDescription()"
-      kind="search"
-      (changed)="searchChanged.emit($event)"
-    />
-  </div>
+  <div class="toolbar__primary">
+    <div class="toolbar__search">
+      <edsb-text-field
+        [label]="searchLabel()"
+        [value]="search()"
+        [description]="searchDescription()"
+        kind="search"
+        (changed)="searchChanged.emit($event)"
+      />
+    </div>
 
-  <div class="toolbar__facets">
     <edsb-choice-group
+      class="toolbar__sizes"
       [legend]="sizeLegend()"
       [choices]="sizeChoices()"
       [selected]="selectedSizes()"
       kind="checkbox"
+      layout="segmented"
       (changed)="sizesChanged.emit($event)"
     />
+  </div>
 
+  <div class="toolbar__facets">
     <edsb-select-field
       [label]="manufacturerLabel()"
       [options]="manufacturerOptions()"

@@ -362,6 +362,22 @@ Task: "Implement SlotLayout in src/app/ui/hull/slot-layout.ts"
 
 ---
 
+## Phase 7: Reference Composition
+
+**Goal**: each screen composes the reference canvas's arrangement, not merely its palette. Raised
+with feature 011's Phase 7, which supplies the extracted vocabulary these tasks assemble.
+
+- [x] T111 Record each screen's canvas parts — chrome, region split, toolbar, headers, rows, markers, facts, actions and empty state — in the "Reference composition" section of `design/hull-catalogue.md`, `design/hull-detail.md`, `design/build-library.md` and `design/build-workspace.md` (depends on 011 T101)
+- [x] T112 Compose canvas 1a's wide shipyard in `src/app/features/ship-catalogue/`: the manifest region against a fixed inspector rail carrying its own ground behind an amber hairline (depends on T111, 011 T106)
+- [x] T113 Compose canvas 1a/1b's manifest rows in `src/app/ui/components/catalogue-view/` and `src/app/ui/components/hull-summary-card/`: row plates, the leading marker, tracked condensed hull names and monospace facts (depends on T111, 011 T106)
+- [x] T114 Compose canvas 1a's inspector and canvas 1b's detail screen in `src/app/features/hull-detail/`: artwork plate, display identity, ruled metric grid, section rules and the filled hull action (depends on T111, 011 T106)
+- [x] T115 Compose canvas 1a's library modal and canvas 1b's library screen in `src/app/features/build-library/` and `src/app/ui/components/saved-build-card/` (depends on T111, 011 T106)
+- [x] T116 Compose canvas 1c's command identity and its save and export dialogs in `src/app/features/build-workspace/` and `src/app/ui/components/share-link-panel/` (depends on T111, 011 T106)
+- [x] T117 Replace the negative-only reconciliation in `design/reference-review.md` with both halves of quickstart Scenario 10: the built-output checks and a part-by-part composition table (depends on T112, T113, T114, T115, T116)
+- [x] T118 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T117)
+
+---
+
 ## Notes
 
 - [P] tasks touch different files and have no dependency on incomplete work

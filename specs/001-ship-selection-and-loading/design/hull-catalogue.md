@@ -38,3 +38,22 @@ Search uses the actual localized strings/formatters shown in the current manifes
 - No result depends on hover artwork or color. Long canonical package names/manufacturers wrap.
 - A wide manifest that cannot fit expanded/translated content owns internal overflow; the document never scrolls horizontally, and zoomed layouts switch to cards.
 - Component previews cover default, constrained, no-match and unavailable states in wide manifest and narrow card variants.
+
+## Reference composition
+
+Measured from canvas 1a (wide) and 1b (compact); the shared vocabulary is in
+[feature 011's canvas extraction](../../011-interface-foundations/design/canvas-extraction.md).
+
+| Part                | Canvas                                                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Screen chrome       | The application command bar: amber flag, `SHIPYARD` in condensed 700 tracked 0.26em, the package hull count in monospace beside it |
+| Region split        | `1fr` manifest against a fixed inspector rail; the rail carries its own darker ground behind an amber hairline                     |
+| Toolbar             | A search field on the darker ground, then the size choices as an abutted segmented strip whose one-pixel gaps show amber through   |
+| Column headers      | Monospace, tracked 0.16em, over a single amber hairline; each header is the sort control                                           |
+| Row                 | A plate on `--panel` separated from its neighbours by a 2px gap, opened by a 3px marker on the leading edge                        |
+| Selected row        | The marker takes amber and a wash runs from the leading edge; the hull name turns amber                                            |
+| Hull name           | Condensed 600 uppercase tracked 0.07em — the largest thing in the row                                                              |
+| Manufacturer        | Barlow, untracked, quieter than the name                                                                                           |
+| Size, mounts, price | Monospace, tabular, price aligned to the trailing edge                                                                             |
+| Compact row         | A fixed size code on the leading edge, name over a `manufacturer · mounts` line, price and `Mcr` on the trailing edge              |
+| Empty state         | Centred prose in Barlow 300 on the manifest's own ground, no panel                                                                 |

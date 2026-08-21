@@ -13,11 +13,8 @@
 }
 
 .slots__heading {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
-  color: var(--edsb-text-muted);
+  @include layout.section-rule;
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
 }
 
 .slots__list {
@@ -41,10 +38,10 @@
 
 .slots__size,
 .slots__restriction {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
 }
 
 .slots__empty {
-  color: var(--edsb-text-muted);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }

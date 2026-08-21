@@ -1,5 +1,8 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference's metric grid: cells on a panel fill, separated by the amber
+// ground showing through one-pixel gaps, each a tracked monospace label over a
+// larger monospace value (canvas 1a/1b, "Metric grid").
 :host {
   display: block;
   container-type: inline-size;
@@ -7,22 +10,19 @@
 }
 
 .metric-group {
-  display: grid;
-  gap: var(--edsb-space-stack);
-  grid-template-columns: 1fr;
+  @include layout.ruled-group(1fr);
 }
 
 .metric {
   @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding-block: var(--edsb-space-lg);
+  padding-inline: var(--edsb-space-lg);
+  background-color: var(--edsb-surface-inset);
 }
 
 .metric__label {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-label);
-  text-transform: uppercase;
-  color: var(--edsb-text-muted);
+  @include layout.micro-label;
 }
 
 .metric__value {
@@ -32,22 +32,20 @@
 }
 
 .metric__number {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-lead);
-  font-variant-numeric: tabular-nums;
-  color: var(--edsb-text-numeric);
+  @include layout.metric-value;
+
   // A technical value keeps its own ordering inside right-to-left prose.
   unicode-bidi: isolate;
 }
 
 .metric__unit {
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-secondary);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
 }
 
 .metric__condition {
-  font-size: var(--edsb-text-size-caption);
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
+  text-transform: none;
 }
 
 // An unavailable value is stated, never rendered as a zero or a dash whose
@@ -60,8 +58,14 @@
 
 .metric__description {
   margin-inline-start: 0;
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+}
+
+.metric-group__empty {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }
 
 @include layout.container-medium-up(metric-group) {

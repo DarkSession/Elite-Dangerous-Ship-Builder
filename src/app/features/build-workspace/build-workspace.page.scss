@@ -1,16 +1,18 @@
 @use '../../../styles/responsive' as layout;
 
+// The reference's outfitting command bar carries the build's own name and its
+// hull beneath, with the committing actions on the trailing edge (canvas 1c).
 :host {
-  @include layout.stack(var(--edsb-space-section));
+  @include layout.stack(var(--edsb-space-panel));
 
   display: flex;
 }
 
 h1 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-lg);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  text-transform: uppercase;
+  @include layout.display-title(
+    var(--edsb-text-size-heading-lg),
+    var(--edsb-text-tracking-heading)
+  );
 }
 
 .workspace__summary {
@@ -20,31 +22,42 @@ h1 {
 }
 
 .workspace__summary dt {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label;
 }
 
 .workspace__summary dd {
   margin: 0;
-  font-size: var(--edsb-text-size-lead);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-heading-md);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-numeric);
   overflow-wrap: break-word;
 }
 
 .workspace__saved-state {
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+
+  text-transform: none;
 }
 
 .workspace__empty {
   @include layout.stack(var(--edsb-space-stack));
 
+  padding-block: var(--edsb-space-section);
   max-inline-size: var(--edsb-layout-prose-max);
+  margin-inline: auto;
+  text-align: center;
 }
 
 .workspace__empty h2 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.workspace__empty p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }
 
 .workspace__actions {

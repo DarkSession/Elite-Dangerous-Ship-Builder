@@ -8,4 +8,6 @@
   @include layout.wrapping-row(var(--edsb-space-inline));
 
   justify-content: flex-end;
+  padding-block-start: var(--edsb-space-control-block);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
 }

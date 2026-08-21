@@ -1,48 +1,82 @@
 @use '../../../styles/responsive' as layout;
 
+// The reference's wide shipyard: a manifest region beside a fixed inspector
+// rail, the rail set off by an amber hairline and its own darker ground
+// (canvas 1a, "Wide shipyard layout").
 :host {
   display: block;
 }
 
 .catalogue {
-  @include layout.region-pair;
+  @include layout.region-pair(var(--edsb-layout-rail-min), var(--edsb-space-none));
 }
 
 .catalogue__manifest-region {
-  @include layout.stack(var(--edsb-space-section));
+  @include layout.stack(var(--edsb-space-panel));
 
   min-inline-size: 0;
 }
 
 .catalogue__browse {
-  @include layout.stack(var(--edsb-space-section));
+  @include layout.stack(var(--edsb-space-panel));
+}
+
+.catalogue__header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
 }
 
 h1 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-lg);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  text-transform: uppercase;
+  @include layout.display-title(
+    var(--edsb-text-size-heading-lg),
+    var(--edsb-text-tracking-product)
+  );
 }
 
-.catalogue__description,
 .catalogue__total {
-  color: var(--edsb-text-muted);
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+}
+
+.catalogue__description {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  max-inline-size: var(--edsb-layout-prose-max);
+  text-wrap: pretty;
 }
 
 .catalogue__empty {
   @include layout.stack(var(--edsb-space-stack));
 
+  padding-block: var(--edsb-space-section);
   max-inline-size: var(--edsb-layout-prose-max);
+  text-align: center;
+  margin-inline: auto;
 }
 
 .catalogue__empty h2 {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
+  @include layout.display-title(var(--edsb-text-size-heading-md));
+}
+
+.catalogue__empty p {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
 }
 
 .catalogue__inspector {
   min-inline-size: 0;
+}
+
+@include layout.wide-up {
+  .catalogue__manifest-region {
+    padding-inline-end: var(--edsb-space-region);
+  }
+
+  .catalogue__inspector {
+    background-color: var(--edsb-surface-rail);
+    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    padding: var(--edsb-space-panel);
+  }
 }
 
 // Narrow widths give hull detail the screen rather than stacking it beneath

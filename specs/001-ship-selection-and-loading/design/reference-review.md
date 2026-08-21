@@ -78,6 +78,13 @@ Feature 001 visual implementation is accepted only when it remains recognizably 
 
 ## Reconciliation outcome (implementation)
 
+This section records both halves of quickstart Scenario 10. Steps 3 and 4 — the mandatory
+adaptations and the built asset tree — are checked against the production build. Steps 1 and 2 —
+whether the wide and compact compositions preserve the reference hierarchy — are checked against
+`.design/Ship Builder.dc.html` itself, canvas by canvas.
+
+### Built output (Scenario 10, steps 3 and 4)
+
 Checked against the production build (`pnpm run build`), not against intent.
 
 | Check                                            | Outcome                                                                                                                                                                                                                                                                                             |
@@ -87,12 +94,38 @@ Checked against the production build (`pnpm run build`), not against intent.
 | The `/b/<name>#h=…` sample link                  | Absent. `#h=` appears nowhere in the built tree. Published links are same-origin `/build#b.<payload>`, and a local save name never enters the path.                                                                                                                                                 |
 | Any other origin                                 | The only absolute URLs in the built output are inside framework diagnostic text (`angular.dev`, `github.com`) and an XML namespace. Nothing is fetched from them; the end-to-end suite additionally asserts that no request during any catalogue, detail, storage or share flow leaves this origin. |
 
-The adaptations listed above are implemented as described. The ones worth naming, because they
-change what the canvas shows rather than only how it is built:
+### Composition (Scenario 10, steps 1 and 2)
+
+Each screen's canvas parts are tabulated in its own design file — see the "Reference composition"
+section of [hull-catalogue.md](./hull-catalogue.md), [hull-detail.md](./hull-detail.md),
+[build-library.md](./build-library.md) and [build-workspace.md](./build-workspace.md). The shared
+vocabulary those tables draw on is measured in
+[feature 011's canvas extraction](../../011-interface-foundations/design/canvas-extraction.md).
+
+| Canvas part                                                       | Implemented as                                                                          |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Command bar: amber flag, tracked condensed title, monospace count | `AppFrame`'s banner, via the `command-bar`, `command-flag` and `display-title` mixins   |
+| `1fr` manifest against a fixed inspector rail                     | `region-pair` at wide widths, the rail carrying its own ground and hairline             |
+| Segmented size choices with hairline gaps                         | `ChoiceGroup` with `layout="segmented"` — native checkboxes, labels styled as the strip |
+| Tracked monospace column headers over a single amber hairline     | `DataTable` and `ResponsiveCatalogueView` headers                                       |
+| Row plates with a 3px leading marker and an amber wash when open  | The `selectable-row` mixin, used by the manifest, the hull cards and the record list    |
+| Ruled two-column metric grid                                      | `MetricGroup`, via the `ruled-group` mixin                                              |
+| Section rule with a trailing total                                | The `section-rule` mixin, used by the record groups and the slot layout                 |
+| Hatched artwork plate with the amber filter                       | `HullArtwork`                                                                           |
+| Panel dialog: scrim, amber hairline, darker title bar, footer     | `Layer`, in all three presentations                                                     |
+| Five button variants                                              | `ActionButton`'s emphasis values, via the `control-*` mixins                            |
+
+The adaptations recorded above the fold are implemented as described. The ones worth naming, because
+they change what the canvas shows rather than only how it is built:
 
 - the manifest's wide composition is a real table with named bidirectional sort buttons, and its
   narrow composition restates every label as a definition list;
-- the selected row carries `aria-current` and the word for the state, not amber and a diamond;
+- the selected row carries `aria-current` and the word for the state as well as the amber marker;
+- the segmented size choices are multi-select checkboxes rather than the canvas's single-select
+  strip, because the specification's constraints are additive;
+- the canvas's 0.32–0.50 ink label washes are lifted to the 0.55 step, the dimmest that clears
+  4.5:1; the ladder above keeps its order, so the hierarchy survives;
+- the type ramp is the canvas's own, lifted uniformly by ~1.25× to an 11 px floor;
 - the library lists working records, unsupported and malformed entries, and the retention and quota
   states the mock does not depict, and it never evicts anything on its own;
 - the share value stays selectable after a copy or share failure, and a refused encode clears the

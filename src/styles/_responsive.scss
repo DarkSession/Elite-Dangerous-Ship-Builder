@@ -100,11 +100,12 @@ $container-wide-min: 40rem;
   grid-template-columns: 1fr;
 
   @include wide-up {
-    // Both tracks are bounded fractions. An `auto` maximum on the rail lets it
-    // take its content's max-content width, which Firefox grants in full and
-    // Chromium does not — and a rail sized to a hull inspector's widest line
-    // collapses the manifest beside it to zero.
-    grid-template-columns: minmax(0, 1fr) minmax($rail, 1fr);
+    // The reference sets `1fr 340px`: the manifest takes what is left and the
+    // inspector is a fixed rail. Both tracks are bounded — an `auto` or
+    // `max-content` maximum on the rail lets it take its content's widest line,
+    // which Firefox grants in full and Chromium does not, collapsing the
+    // manifest beside it to zero.
+    grid-template-columns: minmax(0, 1fr) minmax(0, $rail);
   }
 }
 
@@ -137,4 +138,175 @@ $container-wide-min: 40rem;
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Reference compositions.
+//
+// The recurring chrome of `.design/Ship Builder.dc.html`, named once. Each of
+// these appears at three or more sites in the canvas; the measurements behind
+// them are in `specs/011-interface-foundations/design/canvas-extraction.md`.
+// ---------------------------------------------------------------------------
+
+// The bar at the top of a screen or a dialog: a darker plate closed by an amber
+// rule. `$rule` is the rule's weight — the application bar takes the heavy one,
+// a dialog title bar the hairline.
+@mixin command-bar($rule: var(--edsb-border-width-thick), $colour: var(--edsb-rule-command)) {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  padding-inline: var(--edsb-space-region);
+  background-color: var(--edsb-surface-bar);
+  border-block-end: $rule solid $colour;
+}
+
+// The solid amber block on the leading edge of a command bar.
+@mixin command-flag {
+  flex: none;
+  inline-size: var(--edsb-space-md);
+  block-size: var(--edsb-space-4xl);
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// A screen or dialog title: condensed, uppercase, widely tracked, amber.
+@mixin display-title(
+  $size: var(--edsb-text-size-heading-md),
+  $tracking: var(--edsb-text-tracking-dialog)
+) {
+  margin: 0;
+  font-family: var(--edsb-font-heading);
+  font-size: $size;
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: var(--edsb-text-leading-heading);
+  letter-spacing: $tracking;
+  text-transform: uppercase;
+  color: var(--edsb-text-accent-strong);
+  overflow-wrap: break-word;
+}
+
+// A monospace micro-label: the canvas's unit suffixes, counts and field labels.
+@mixin micro-label($colour: var(--edsb-text-faint), $tracking: var(--edsb-text-tracking-label)) {
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-emphasis);
+  line-height: var(--edsb-text-leading-control);
+  letter-spacing: $tracking;
+  text-transform: uppercase;
+  color: $colour;
+}
+
+// A monospace value: numbers, identities, codes. Tabular so a changing digit
+// does not reflow its neighbours.
+@mixin metric-value($size: var(--edsb-text-size-metric), $colour: var(--edsb-text-numeric)) {
+  font-family: var(--edsb-font-metric);
+  font-size: $size;
+  font-weight: var(--edsb-text-weight-body);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--edsb-text-leading-control);
+  color: $colour;
+}
+
+// The shared skeleton of every button in the reference: condensed, uppercase,
+// tracked, square, and never below the target baseline.
+@mixin control-base($tracking: var(--edsb-text-tracking-control)) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--edsb-space-inline-tight);
+  min-block-size: var(--edsb-target-size);
+  padding-inline: var(--edsb-space-region);
+  border: var(--edsb-border-width-hairline) solid transparent;
+  border-radius: var(--edsb-shape-control);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  line-height: var(--edsb-text-leading-control);
+  letter-spacing: $tracking;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+}
+
+@mixin control-primary {
+  background-color: var(--edsb-surface-accent-solid);
+  border-color: var(--edsb-surface-accent-solid);
+  color: var(--edsb-text-on-accent);
+  font-weight: var(--edsb-text-weight-heading);
+}
+
+@mixin control-secondary {
+  background-color: var(--edsb-surface-control);
+  border-color: var(--edsb-border-control);
+  color: var(--edsb-text-accent);
+}
+
+@mixin control-quiet {
+  background-color: transparent;
+  border-color: var(--edsb-border-quiet);
+  color: var(--edsb-text-muted);
+}
+
+@mixin control-danger {
+  background-color: transparent;
+  border-color: var(--edsb-border-danger-quiet);
+  color: var(--edsb-text-danger-quiet);
+}
+
+// A group whose one-pixel gaps expose an amber ground as hairline rules. The
+// canvas builds its metric grids, segmented controls and tab strips this way.
+@mixin ruled-group($columns: null) {
+  display: grid;
+  @if $columns {
+    grid-template-columns: $columns;
+  }
+  gap: var(--edsb-space-rule);
+  background-color: var(--edsb-rule-grid);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+}
+
+// A field's edge: a darker fill inside a hairline, square.
+@mixin field-surface {
+  background-color: var(--edsb-surface-field);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-field);
+  border-radius: var(--edsb-shape-control);
+  color: var(--edsb-text-primary);
+}
+
+// A row in a manifest or a record list, with the leading marker the canvas uses
+// to carry selection. Colour is never the only carrier: the components that use
+// this also expose the state in text and in programmatic state.
+@mixin selectable-row {
+  position: relative;
+  background-color: var(--edsb-surface-row);
+  border-inline-start: var(--edsb-border-width-marker) solid transparent;
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+
+  &[aria-current],
+  &[data-selected='true'] {
+    background-image: var(--edsb-surface-row-selected);
+    border-inline-start-color: var(--edsb-marker-selected);
+  }
+}
+
+// A labelled rule: a tracked label, a hairline that fills the remaining width,
+// and an optional trailing total.
+@mixin section-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+
+  &::after {
+    content: '';
+    flex: 1;
+    block-size: var(--edsb-border-width-hairline);
+    background-color: var(--edsb-rule-section);
+  }
+}
+
+// The hatched plate the canvas puts behind hull artwork.
+@mixin artwork-plate {
+  position: relative;
+  background-image: var(--edsb-surface-plate);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  overflow: hidden;
 }

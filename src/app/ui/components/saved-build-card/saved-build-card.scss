@@ -1,21 +1,28 @@
 @use '../../../../styles/responsive' as layout;
 
+// The reference's saved-build record: a title in tracked condensed over a quiet
+// one-line note, with the hull, price and edited-at set in monospace, all on a
+// plate opened by a selection marker (canvas 1a "SAVED BUILDS", canvas 1b list).
 :host {
   display: block;
 }
 
 .record {
   @include layout.stack(var(--edsb-space-stack));
+  @include layout.selectable-row;
 
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-thin) solid var(--edsb-border-default);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-panel);
+  padding-block: var(--edsb-space-row);
+  padding-inline: var(--edsb-space-row);
 }
 
 .record__title {
   font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-sm);
+  font-size: var(--edsb-text-size-heading-md);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-title);
+  line-height: var(--edsb-text-leading-heading);
+  text-transform: uppercase;
+  color: var(--edsb-text-numeric);
   overflow-wrap: anywhere;
 }
 
@@ -27,20 +34,24 @@
 }
 
 .record__facts dt {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-label);
-  text-transform: uppercase;
-  letter-spacing: var(--edsb-text-tracking-label);
+  @include layout.micro-label;
 }
 
 .record__facts dd {
   margin: 0;
   min-inline-size: 0;
   overflow-wrap: anywhere;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  font-variant-numeric: tabular-nums;
+  color: var(--edsb-text-secondary);
 }
 
 .record__note {
-  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
 }
 
 .record__actions {
