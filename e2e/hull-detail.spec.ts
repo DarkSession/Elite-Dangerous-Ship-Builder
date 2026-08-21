@@ -86,11 +86,24 @@ test.describe('hull detail', () => {
     }
   });
 
+  // Canvas 1a/1b: `FAULCON DELACY · LARGE LANDING PAD`. The pad class is a
+  // pad class, and the line says so rather than leaving a bare `LARGE`.
   test('names the manufacturer and the pad class on one identity line', async ({ page }) => {
     const text = await readableText(page);
 
     expect(text).toContain('faulcon delacy');
-    expect(text).toContain('large');
+    expect(text).toContain('large landing pad');
+  });
+
+  // The reference draws every figure in the metric grid whole: `400`, not
+  // `400.0` (canvas 1a `sy-mass`).
+  test('draws every figure in the metric grid whole', async ({ page }) => {
+    const grid = detail(page).locator('.metric-group');
+    await expect(grid.first()).toBeVisible();
+
+    for (const value of await grid.locator('.metric__number').allInnerTexts()) {
+      expect(value.trim(), 'a metric grid figure carries no fraction').not.toMatch(/[.,]\d/);
+    }
   });
 
   test('counts the mount classes the hull carries, largest first', async ({ page }) => {
@@ -111,6 +124,27 @@ test.describe('hull detail', () => {
 
     expect(text).toContain('hull price');
     expect(text).toMatch(/146,969,451\s*cr/);
+  });
+
+  // The plate carries the loader alone: the hull that was there is not the
+  // hull being asked for, and holding the old picture up until the new one
+  // decodes shows the wrong ship.
+  test('shows the loader alone while an illustration is on its way', async ({ page }) => {
+    await page.route('**/assets/ships/**', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+      await route.continue();
+    });
+    // `commit` rather than the default: waiting for load would wait for the
+    // very request being held, and the state under test would be over.
+    await page.goto(ANACONDA, { waitUntil: 'commit' });
+
+    const image = page.locator('.artwork__image');
+    await expect(page.locator('.artwork__loader')).toBeVisible();
+    await expect(image).toBeHidden();
+
+    await page.unroute('**/assets/ships/**');
+    await expect(image).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.artwork__loader')).toHaveCount(0);
   });
 
   test('keeps every action usable when the illustration cannot be fetched', async ({ page }) => {

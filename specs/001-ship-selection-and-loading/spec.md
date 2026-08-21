@@ -38,8 +38,10 @@ browser and share builds by URL. SLEF import and export are specified in
 - **FR-001**: Hull identities, facts, slots and default loadouts MUST come from
   `@elite-dangerous-almanac/core`; hulls MUST use the package `symbol`.
 - **FR-002**: The catalogue MUST show name, manufacturer, size, hardpoint layout and retail price,
-  and MUST support search, filtering and bidirectional sorting over those facts. Missing values MUST
-  remain distinct from zero and sort ties MUST be stable.
+  and MUST support bidirectional sorting over those facts. It MUST narrow in exactly the two ways the
+  reference toolbar draws: one text search matching every fact a hull shows, where each word of the
+  search may land on a different fact, and one exclusive landing-pad size strip led by `ALL`. Missing
+  values MUST remain distinct from zero and sort ties MUST be stable.
 - **FR-003**: Catalogue search, filters, sort and scroll position MUST survive a trip to hull detail
   and back during the browser session. They MUST NOT become build or link state.
 - **FR-004**: Hull detail MUST show the package name, manufacturer, size, speed and boost, base

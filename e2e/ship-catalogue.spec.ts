@@ -48,23 +48,22 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('hull catalogue', () => {
-  // The reference carries the manifest's count in the command bar beside the
-  // screen's own name, and nowhere else (canvas 1a, canvas 1b).
+  // The reference carries the size of the shipyard in the command bar beside
+  // the screen's own name, and nowhere else (canvas 1a "48 SHIPS").
   test('lists every installed hull before anything is narrowed', async ({ page }) => {
-    await expect(commandBar(page).getByText(/48 ships/)).toBeVisible();
+    await expect(commandBar(page).getByText('48 ships')).toBeVisible();
   });
 
-  test('states the match count as text, and updates it', async ({ page }) => {
+  test('keeps the shipyard’s own size in the bar while the list is narrowed', async ({ page }) => {
     await search(page).fill('anaconda');
 
-    await expect(visibleHulls(page)).not.toHaveCount(48);
-    await expect(commandBar(page).getByText(/1 of 48 ships/)).toBeVisible();
+    await expect(visibleHulls(page)).toHaveCount(1);
+    await expect(commandBar(page).getByText('48 ships')).toBeVisible();
   });
 
-  // The reference toolbar narrows by search and landing-pad size. Filtering by
-  // manufacturer, hardpoint class and price is FR-002 capability the reference
-  // draws no control for; it is covered at the facade rather than here.
-  // The reference's strip is exclusive: `ALL` or one pad class, never two.
+  // The reference toolbar narrows two ways and no more: the search field and
+  // the landing-pad strip, which is exclusive — `ALL` or one pad class, never
+  // two. Manufacturer, hardpoint class and price are words the search matches.
   test('narrows by search and by landing-pad size', async ({ page }) => {
     await page.getByRole('radio', { name: 'Large' }).check();
     await expect(visibleHulls(page)).not.toHaveCount(48);
@@ -79,6 +78,28 @@ test.describe('hull catalogue', () => {
     await expect(visibleHulls(page)).not.toHaveCount(48);
   });
 
+  // One field, so a Commander types everything they know: a manufacturer and
+  // part of a name, in either order.
+  test('searches a mix of manufacturer and ship name', async ({ page }) => {
+    const symbols = () =>
+      visibleHulls(page).evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute('data-hull-symbol')),
+      );
+
+    await search(page).fill('lakon asp');
+    await expect(visibleHulls(page)).toHaveCount(2);
+    const found = await symbols();
+
+    // Word order is not part of the question being asked.
+    await search(page).fill('asp lakon');
+    await expect(visibleHulls(page)).toHaveCount(2);
+    expect(await symbols()).toEqual(found);
+
+    // Neither word alone is this narrow: both had to land.
+    await search(page).fill('lakon');
+    await expect(visibleHulls(page)).not.toHaveCount(2);
+  });
+
   test('says why a constrained list is empty', async ({ page }) => {
     await search(page).fill('no such hull anywhere');
 
@@ -88,7 +109,6 @@ test.describe('hull catalogue', () => {
     await expect(page.locator('.catalogue__empty:visible')).toHaveText(
       /no hull in the catalogue matches that filter/i,
     );
-    await expect(commandBar(page).getByText(/0 of 48 ships/)).toBeVisible();
   });
 
   test('sorts in both directions on every field, and says which way', async ({ page }) => {

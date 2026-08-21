@@ -123,7 +123,7 @@ of unsaved work requires confirmation.
 - [x] T033 [P] [US1] Implement the FR-004 `detailFacts` map — manufacturer, size, minimum/four-pip speed and boost, base shield and armour, hull mass, hardness, mass-lock factor, crew seats, heat capacity and dissipation, reserve fuel, min/four-pip pitch, roll and yaw, hull-only and retail cost — with each entry carrying its package-documented unit or explicit rating-without-unit marker in `src/app/domain/catalogue/hull-facts.ts` with unit tests
 - [x] T034 [US1] Implement `CatalogueQuery` filtering (text over displayed localized values, manufacturer, size, hardpoint class, inclusive price interval with open bounds) in `src/app/domain/catalogue/catalogue-query.ts` with unit tests (depends on T032)
 - [x] T035 [US1] Implement bidirectional sorting by name, manufacturer, semantic small/medium/large size, huge-to-small hardpoint tuple and retail price using `Intl.Collator`, missing-last in both directions and `sourceOrdinal` as the final stable tie-breaker in `src/app/domain/catalogue/catalogue-sort.ts` with unit tests for equal-value ties, missing values and zero (depends on T032)
-- [x] T036 [US1] Implement the active-constraint description and match-count derivation in `src/app/domain/catalogue/catalogue-constraints.ts` with unit tests (depends on T034, T035)
+- [x] T036 [US1] Implement the active-constraint description and match-count derivation in `src/app/domain/catalogue/catalogue-constraints.ts` with unit tests (depends on T034, T035) — **superseded by T135**: the constraint description went with the controls the reference never drew, and the count is now a plain derivation on `CatalogueFacade`
 
 ### Application
 
@@ -410,6 +410,26 @@ what the drawing carries.
 - [x] T132 [P] Let a placement colour a game noun: `GameText` inherits its colour so the hull name takes canvas 1a's amber on the inspector and on a selected row
 - [x] T133 Rasterise the package illustrations to PNG with `scripts/convert-ship-artwork.mjs`, commit them under `public/assets/ships/`, and draw the loading mark inside the artwork plate from a same-origin copy of EDAssets' loader rather than as a line of prose under it
 - [x] T134 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T126, T128, T129, T130, T131, T133)
+
+---
+
+## Phase 10: Third design pass — narrowing FR-002 and settling the manifest
+
+**Goal**: close the nine differences raised on 2026-08-21 after the second pass. FR-002 is narrowed
+to the two controls the reference toolbar draws and everything behind the withdrawn facets is
+deleted; the manifest stops re-measuring itself; and the remaining figures, strings and states are
+brought to the drawing.
+
+- [x] T135 Narrow FR-002 in `spec.md` and delete the withdrawn facets: `CatalogueFilters` becomes `{ query, sizes }`, and `PriceRange`, `manufacturersIn`, `ActiveConstraint`, `withoutConstraint` and `src/app/domain/catalogue/catalogue-constraints.ts` go with the controls that were never drawn
+- [x] T136 Match each word of a search separately across the facts a hull shows, so `lakon asp` finds the hull that is both, in `src/app/domain/catalogue/catalogue-query.ts` with unit and journey tests (depends on T135)
+- [x] T137 [P] Carry the shipyard's own size in the command bar — canvas 1a's `48 SHIPS`, narrowed or not — and leave the match count to the polite live region
+- [x] T138 Hold canvas 1a's column track list: `table-layout: fixed` with the reference's shares on the header cells, so narrowing the manifest cannot shuffle the headings sideways
+- [x] T139 [P] Bring the row to the reference's height by paying its block padding once, on the open action, rather than twice; and stop `HARDPOINTS` wrapping by dropping the second helping of inline padding inside the sort control (depends on T138)
+- [x] T140 [P] Paint over the sticky seam between the toolbar and the column headers, which a fractional device pixel ratio rounds apart
+- [x] T141 [P] Name the pad class as a pad class on the identity line — `LARGE LANDING PAD` — through a new `hullDetail.landing-pad` message
+- [x] T142 [P] Draw every figure in the metric grid whole: `400`, not `400.0`, and delete `HullFact.fractionDigits`
+- [x] T143 [P] Hide the illustration while the next one is on its way, so the plate carries the loader alone rather than the previous hull
+- [x] T144 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T135, T136, T137, T138, T139, T141, T142, T143)
 
 ---
 

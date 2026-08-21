@@ -51,8 +51,7 @@ describe('CatalogueSessionStore', () => {
   it('starts unconstrained, in the package’s own order', () => {
     const { store } = setup();
 
-    expect(store.constrained()).toBe(false);
-    expect(store.filters().query).toBe('');
+    expect(store.filters()).toEqual({ query: '', sizes: [] });
     expect(store.sort()).toEqual({ field: 'name', direction: 'ascending' });
     expect(store.anchor()).toBeNull();
   });
@@ -101,17 +100,11 @@ describe('CatalogueSessionStore', () => {
 
   it('clears every constraint at once', () => {
     const { store } = setup();
-    store.setFilters({
-      query: 'cutter',
-      sizes: ['large'],
-      manufacturers: ['Gutamaya'],
-      hardpointClasses: [4],
-      price: { min: 1, max: 2 },
-    });
+    store.setFilters({ query: 'cutter', sizes: ['large'] });
 
     store.clearFilters();
 
-    expect(store.constrained()).toBe(false);
+    expect(store.filters()).toEqual({ query: '', sizes: [] });
   });
 
   it('ignores a stored session written by another version', () => {
@@ -132,7 +125,7 @@ describe('CatalogueSessionStore', () => {
     const session = new FakeSession();
     session.entries.set(
       'edsb:catalogue',
-      JSON.stringify({ version: 1, filters: { query: 7 }, sort: { field: 'name' } }),
+      JSON.stringify({ version: 2, filters: { query: 7 }, sort: { field: 'name' } }),
     );
 
     expect(setup(session).store.filters().query).toBe('');
@@ -146,6 +139,5 @@ describe('CatalogueSessionStore', () => {
     store.setFilters({ ...store.filters(), query: 'cutter' });
 
     expect(store.filters().query).toBe('cutter');
-    expect(store.constrained()).toBe(true);
   });
 });

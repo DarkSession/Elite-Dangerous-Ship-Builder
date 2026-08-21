@@ -139,19 +139,17 @@ export class HullDetailFacade {
   /**
    * Formats one value, or reports that there is none.
    *
-   * Credits go through the credits pattern; everything else is a plain number
+   * Credits go through the credits pattern; everything else is a whole number
    * with its unit named separately, because the unit is related to the value
-   * programmatically rather than glued onto the front of it.
+   * programmatically rather than glued onto the front of it. The reference
+   * draws every figure in the metric grid whole — `400`, not `400.0`.
    */
   #formatFact(fact: HullFact): string | null {
     if (fact.value === null) {
       return null;
     }
-    if (fact.unit === 'credits') {
-      return this.#formatters.credits(fact.value);
-    }
-    return fact.fractionDigits > 0
-      ? this.#formatters.decimal(fact.value, fact.fractionDigits)
+    return fact.unit === 'credits'
+      ? this.#formatters.credits(fact.value)
       : this.#formatters.integer(fact.value);
   }
 
@@ -177,12 +175,16 @@ export class HullDetailFacade {
     if (entry.size === null) {
       return null;
     }
-    return this.#messages.message(
-      entry.size === 'small'
-        ? 'catalogue.size.small'
-        : entry.size === 'medium'
-          ? 'catalogue.size.medium'
-          : 'catalogue.size.large',
-    );
+    // The reference's identity line reads `LARGE LANDING PAD`, not `LARGE`:
+    // the figure is a pad class, and the word for it says so (canvas 1a/1b).
+    return this.#messages.message('hullDetail.landing-pad', {
+      size: this.#messages.message(
+        entry.size === 'small'
+          ? 'catalogue.size.small'
+          : entry.size === 'medium'
+            ? 'catalogue.size.medium'
+            : 'catalogue.size.large',
+      ),
+    });
   }
 }

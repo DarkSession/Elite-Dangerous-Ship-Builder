@@ -44,6 +44,11 @@
     // passing behind it rather than letting them show through the gap.
     padding-block: var(--edsb-space-panel);
     margin-block: calc(-1 * var(--edsb-space-panel));
+    // The strip and the column headers freeze against the same edge, and a
+    // fractional device pixel ratio rounds the two boxes apart: a hairline of
+    // row shows through the seam. The strip paints over the seam rather than
+    // the arithmetic being tuned to a ratio nobody's screen has to have.
+    box-shadow: 0 var(--edsb-space-3xs) 0 var(--edsb-surface-root);
   }
 }
 
@@ -55,8 +60,19 @@
   }
 }
 
+// Canvas 1a draws the rail only with a hull in it. With none selected there is
+// no rail: no ground, no hairline, no reserved track — the manifest has the
+// width, and the region-pair's second column is not there to be seen.
+.catalogue:not(.catalogue--detail-open) {
+  grid-template-columns: 1fr;
+}
+
+.catalogue:not(.catalogue--detail-open) .catalogue__inspector {
+  display: none;
+}
+
 @include layout.wide-up {
-  .catalogue__manifest-region {
+  .catalogue--detail-open .catalogue__manifest-region {
     padding-inline-end: var(--edsb-space-region);
   }
 

@@ -37,7 +37,7 @@ describe('CatalogueFacade', () => {
 
     expect(catalogue.rows()).toHaveLength(SHIPS.length);
     expect(catalogue.total).toBe(SHIPS.length);
-    expect(catalogue.count()).toMatchObject({ shown: SHIPS.length, unconstrained: true });
+    expect(catalogue.count()).toEqual({ shown: SHIPS.length, total: SHIPS.length });
   });
 
   it('presents each hull as localized text rather than as raw package fields', () => {
@@ -58,13 +58,13 @@ describe('CatalogueFacade', () => {
 
     expect(catalogue.rows().length).toBeLessThan(SHIPS.length);
     expect(catalogue.rows().some((row) => row.symbol === 'Anaconda')).toBe(true);
-    expect(catalogue.count().unconstrained).toBe(false);
+    expect(catalogue.count().shown).toBe(catalogue.rows().length);
   });
 
-  // FR-002's filtering, which the reference toolbar draws no controls for.
-  // The capability is here and tested; only the manufacturer, hardpoint and
-  // price controls are absent from the screen.
-  it('narrows by every facet FR-002 names', () => {
+  // The reference toolbar narrows two ways and no more: the search field and
+  // the exclusive landing-pad strip. Manufacturer, hardpoint class and price
+  // are words the search already matches, not facets of their own.
+  it('narrows by the two constraints the toolbar draws', () => {
     let catalogue = facade();
     catalogue.changeSizes(['large']);
     const large = catalogue.rows().length;
@@ -72,16 +72,24 @@ describe('CatalogueFacade', () => {
     expect(large).toBeLessThan(SHIPS.length);
 
     catalogue = facade();
-    catalogue.changeManufacturers([catalogue.manufacturers()[0]!]);
+    catalogue.changeSearch('lakon');
     expect(catalogue.rows().length).toBeGreaterThan(0);
-
-    catalogue = facade();
-    catalogue.changeHardpointClasses([4]);
-    expect(catalogue.rows().length).toBeGreaterThan(0);
-
-    catalogue = facade();
-    catalogue.changePrice(0, 1);
     expect(catalogue.rows().length).toBeLessThan(SHIPS.length);
+  });
+
+  // One field, so a Commander types everything they know about the hull they
+  // want and each word lands wherever it belongs.
+  it('matches a search that mixes a manufacturer with a ship name', () => {
+    const catalogue = facade();
+
+    catalogue.changeSearch('lakon asp');
+
+    const found = catalogue.rows();
+    expect(found.length).toBeGreaterThan(0);
+    for (const row of found) {
+      expect(row.manufacturer.text?.toLowerCase()).toContain('lakon');
+      expect(row.name.text?.toLowerCase()).toContain('asp');
+    }
   });
 
   it('starts a new sort field ascending and flips the current one', () => {
@@ -115,22 +123,16 @@ describe('CatalogueFacade', () => {
     expect([...prices].sort((a, b) => a - b)).toEqual(prices);
   });
 
-  // The reference's bar reads "48 SHIPS" whole and "8 OF 48 SHIPS" narrowed.
-  it('states the match count the way the command bar carries it', () => {
+  // The reference's bar reads "48 SHIPS": how many hulls the shipyard holds,
+  // which narrowing the list does not change (canvas 1a).
+  it('carries the size of the shipyard in the command bar, narrowed or not', () => {
     const catalogue = facade();
 
     expect(catalogue.countText()).toBe(`${SHIPS.length} ships`);
 
     catalogue.changeSearch('anaconda');
-    expect(catalogue.countText()).toContain('of');
-    expect(catalogue.countText()).toContain(String(SHIPS.length));
-  });
-
-  it('offers every manufacturer once, ordered for the reader', () => {
-    const manufacturers = facade().manufacturers();
-
-    expect(new Set(manufacturers).size).toBe(manufacturers.length);
-    expect([...manufacturers].sort()).toEqual([...manufacturers].sort());
+    expect(catalogue.rows()).toHaveLength(1);
+    expect(catalogue.countText()).toBe(`${SHIPS.length} ships`);
   });
 
   it('remembers where the Commander was before opening a hull', () => {

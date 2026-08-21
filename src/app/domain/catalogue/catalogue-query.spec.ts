@@ -1,11 +1,5 @@
 import { hullCatalogue, type HullCatalogueEntry } from './hull-catalogue';
-import {
-  NO_FILTERS,
-  filterCatalogue,
-  hasFilters,
-  manufacturersIn,
-  type CatalogueFilters,
-} from './catalogue-query';
+import { NO_FILTERS, filterCatalogue, type CatalogueFilters } from './catalogue-query';
 
 const entries = hullCatalogue();
 
@@ -28,7 +22,7 @@ function symbolsOf(filters: Partial<CatalogueFilters>): readonly string[] {
 describe('catalogue filtering', () => {
   it('shows everything when nothing is narrowed', () => {
     expect(filterCatalogue(entries, NO_FILTERS, displayed)).toHaveLength(entries.length);
-    expect(hasFilters(NO_FILTERS)).toBe(false);
+    expect(symbolsOf({ query: '   ' })).toHaveLength(entries.length);
   });
 
   it('matches the text a Commander can actually see', () => {
@@ -51,6 +45,25 @@ describe('catalogue filtering', () => {
     );
   });
 
+  // The toolbar draws one field, so a Commander who knows both halves of what
+  // they want types both halves: "lakon asp" is a manufacturer and a name.
+  it('lands each word of a search separately, across whichever facts carry it', () => {
+    const mixed = symbolsOf({ query: 'lakon asp' });
+
+    expect(mixed.length).toBeGreaterThan(0);
+    for (const symbol of mixed) {
+      const entry = entries.find((candidate) => candidate.symbol === symbol)!;
+      expect(entry.manufacturer?.toLowerCase()).toContain('lakon');
+      expect(entry.name?.toLowerCase()).toContain('asp');
+    }
+    // Word order is not part of the question being asked.
+    expect(symbolsOf({ query: 'asp lakon' })).toEqual(mixed);
+  });
+
+  it('finds nothing when one word of a search matches nothing', () => {
+    expect(symbolsOf({ query: 'lakon gutamaya' })).toHaveLength(0);
+  });
+
   it('narrows by size, keeping every chosen size', () => {
     const large = symbolsOf({ sizes: ['large'] });
     const both = symbolsOf({ sizes: ['large', 'small'] });
@@ -62,63 +75,19 @@ describe('catalogue filtering', () => {
     }
   });
 
-  it('narrows by manufacturer', () => {
-    const manufacturer = manufacturersIn(entries)[0]!;
+  it('excludes a hull whose size is unavailable rather than guessing one', () => {
+    const sizeless: HullCatalogueEntry = { ...entries[0]!, size: null, symbol: 'Sizeless' };
+
     const found = filterCatalogue(
-      entries,
-      withFilters({ manufacturers: [manufacturer] }),
+      [...entries, sizeless],
+      withFilters({ sizes: ['large', 'medium', 'small'] }),
       displayed,
     );
 
-    expect(found.length).toBeGreaterThan(0);
-    expect(found.every((entry) => entry.manufacturer === manufacturer)).toBe(true);
+    expect(found.map((entry) => entry.symbol)).not.toContain('Sizeless');
   });
 
-  it('requires every chosen hardpoint class to be present', () => {
-    const huge = symbolsOf({ hardpointClasses: [4] });
-    const hugeAndSmall = symbolsOf({ hardpointClasses: [4, 1] });
-
-    expect(huge.length).toBeGreaterThan(0);
-    expect(hugeAndSmall.length).toBeLessThanOrEqual(huge.length);
-    for (const symbol of hugeAndSmall) {
-      expect(huge).toContain(symbol);
-    }
-  });
-
-  it('treats a price interval as inclusive at both ends', () => {
-    const cheapest = [...entries].sort((a, b) => a.retailPrice! - b.retailPrice!)[0]!;
-    const found = filterCatalogue(
-      entries,
-      withFilters({ price: { min: cheapest.retailPrice, max: cheapest.retailPrice } }),
-      displayed,
-    );
-
-    expect(found.map((entry) => entry.symbol)).toContain(cheapest.symbol);
-  });
-
-  it('treats a null bound as no limit rather than as zero', () => {
-    const openTop = symbolsOf({ price: { min: 1, max: null } });
-    const openBottom = symbolsOf({ price: { min: null, max: Number.MAX_SAFE_INTEGER } });
-
-    expect(openTop).toHaveLength(entries.length);
-    expect(openBottom).toHaveLength(entries.length);
-  });
-
-  it('excludes a hull whose value for a constraint is unavailable', () => {
-    const unpriced: HullCatalogueEntry = { ...entries[0]!, retailPrice: null, symbol: 'Unpriced' };
-    const withUnpriced = [...entries, unpriced];
-
-    const found = filterCatalogue(
-      withUnpriced,
-      withFilters({ price: { min: 0, max: Number.MAX_SAFE_INTEGER } }),
-      displayed,
-    );
-
-    // Absence is not "cheap": an unknown price is not within any interval.
-    expect(found.map((entry) => entry.symbol)).not.toContain('Unpriced');
-  });
-
-  it('combines constraints of different kinds with and', () => {
+  it('combines the search and the size strip with and', () => {
     const bySize = symbolsOf({ sizes: ['large'] });
     const both = symbolsOf({ sizes: ['large'], query: 'anaconda' });
 
@@ -126,22 +95,5 @@ describe('catalogue filtering', () => {
     for (const symbol of both) {
       expect(bySize).toContain(symbol);
     }
-  });
-
-  it('reports whether anything is narrowing the catalogue', () => {
-    expect(hasFilters(withFilters({ query: '  ' }))).toBe(false);
-    expect(hasFilters(withFilters({ query: 'a' }))).toBe(true);
-    expect(hasFilters(withFilters({ sizes: ['small'] }))).toBe(true);
-    expect(hasFilters(withFilters({ manufacturers: ['x'] }))).toBe(true);
-    expect(hasFilters(withFilters({ hardpointClasses: [1] }))).toBe(true);
-    expect(hasFilters(withFilters({ price: { min: 1, max: null } }))).toBe(true);
-    expect(hasFilters(withFilters({ price: { min: null, max: 1 } }))).toBe(true);
-  });
-
-  it('lists each manufacturer once, for the facet control', () => {
-    const manufacturers = manufacturersIn(entries);
-
-    expect(new Set(manufacturers).size).toBe(manufacturers.length);
-    expect(manufacturers.length).toBeGreaterThan(1);
   });
 });

@@ -2,12 +2,7 @@ import { Injectable, computed, inject } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import { matchCount } from '../../domain/catalogue/catalogue-constraints';
-import {
-  filterCatalogue,
-  manufacturersIn,
-  type CatalogueFilters,
-} from '../../domain/catalogue/catalogue-query';
+import { filterCatalogue } from '../../domain/catalogue/catalogue-query';
 import {
   sortCatalogue,
   type CatalogueSort,
@@ -80,32 +75,20 @@ export class CatalogueFacade {
     this.results().map((entry) => this.rowFor(entry)),
   );
 
-  readonly count = computed(() =>
-    matchCount(this.results().length, this.total, this.#session.constrained()),
-  );
+  /** How many hulls are shown, and out of how many. */
+  readonly count = computed(() => ({ shown: this.results().length, total: this.total }));
 
   /**
-   * The count as the command bar carries it, and as the live region announces
-   * it: the whole catalogue reads "48 ships", a narrowed one "8 of 48 ships"
-   * (canvas 1a, canvas 1b).
+   * The count the command bar carries beside the screen's name: how many hulls
+   * the shipyard holds, which does not change when a Commander narrows the
+   * list (canvas 1a, "48 SHIPS"). What the narrowing did is announced to the
+   * live region instead, where it is news rather than chrome.
    */
-  readonly countText = computed(() => {
-    const count = this.count();
-    return count.unconstrained
-      ? this.#messages.message('catalogue.match-count.all', {
-          total: this.#formatters.integer(count.total),
-        })
-      : this.#messages.message('catalogue.match-count', {
-          count: this.#formatters.integer(count.shown),
-          total: this.#formatters.integer(count.total),
-        });
-  });
-
-  /** Every manufacturer the package carries, ordered for the active locale. */
-  readonly manufacturers = computed(() => {
-    const collator = this.#formatters.collator();
-    return [...manufacturersIn(this.#entries)].sort(collator.compare);
-  });
+  readonly countText = computed(() =>
+    this.#messages.message('catalogue.match-count.all', {
+      total: this.#formatters.integer(this.total),
+    }),
+  );
 
   /** The order, in words, for the sort control's own visible state. */
   readonly sortText = computed(() =>
@@ -161,18 +144,6 @@ export class CatalogueFacade {
 
   changeSizes(sizes: readonly HullSize[]): void {
     this.#session.setFilters({ ...this.#session.filters(), sizes });
-  }
-
-  changeManufacturers(manufacturers: readonly string[]): void {
-    this.#session.setFilters({ ...this.#session.filters(), manufacturers });
-  }
-
-  changeHardpointClasses(hardpointClasses: readonly number[]): void {
-    this.#session.setFilters({ ...this.#session.filters(), hardpointClasses });
-  }
-
-  changePrice(min: number | null, max: number | null): void {
-    this.#session.setFilters({ ...this.#session.filters(), price: { min, max } });
   }
 
   /**

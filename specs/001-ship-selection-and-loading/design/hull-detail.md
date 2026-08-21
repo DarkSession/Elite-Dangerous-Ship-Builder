@@ -7,7 +7,7 @@
 
 - Wide: canvas 1a's inspector rail beside the manifest. Narrow: canvas 1b's full-screen detail sheet with the bare back arrow the reference draws. Neither carries a page heading: the command bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
 - `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text.
-- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. Both facts keep their labels in the markup; only the eye sees the compressed line.
+- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line.
 - A ruled two-column `FactList` of the eight figures the reference's metric grid carries: speed, boost, shield, armour, hull mass, hardness, crew and mass lock, each with its localized unit where the reference draws one.
 - The mount classes the hull carries, under a section rule, as `<count> <CLASS>` chips with the classes it has none of left out.
 - One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
@@ -33,20 +33,22 @@ The earlier divergence recorded here is **closed**. The design gained hardness, 
 
 Four of the eight carry no unit, because the reference draws none: hardness and mass lock are comparative numbers the game publishes bare, crew is a count, and armour is drawn as `ARMOUR`, not as "hull points". `HullFactUnit` admits `null` for exactly that, so nothing is invented to fill the column.
 
+Every figure in the grid is whole. The reference draws `400`, not `400.0`, and hull mass was the one figure carrying a fraction digit; `HullFact.fractionDigits` is gone with it, so there is no place left to add one back by accident.
+
 The viewing condition — "at 4 ENG pips" — is gone with the rotation rates and the zero-pip endpoints that needed it. `SPEED` is the reference's one speed figure.
 
 `SlotLayout` is deleted. Canvas 1c's outfitting slot ledger is where the reference puts a slot layout, and that belongs to feature 002.
 
 ## States
 
-| State                            | Required presentation and behavior                                                                                                                                                                        |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Populated                        | Every figure the reference inspector carries is shown with its unit; no build is created by entry.                                                                                                        |
-| Artwork loading                  | Facts and stock action remain usable; the loading mark is drawn inside the artwork plate so nothing below it moves when the illustration arrives, and the load state stays textually available beside it. |
-| Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable.                                                 |
-| Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                                                                         |
-| Replacement confirmation         | Current unsaved work and incoming stock hull are named; confirm commits candidate, cancel retains current build and detail.                                                                               |
-| Package factory failure          | Blocking error is announced once; current build and route state remain.                                                                                                                                   |
+| State                            | Required presentation and behavior                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Populated                        | Every figure the reference inspector carries is shown with its unit; no build is created by entry.                                                                                                                                                                                                                                                            |
+| Artwork loading                  | Facts and stock action remain usable; the loading mark is drawn inside the artwork plate so nothing below it moves when the illustration arrives, and the plate carries the mark alone — a hull that is no longer the hull being asked for is hidden rather than held up until the new one decodes. The load state stays textually available beside the mark. |
+| Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable.                                                                                                                                                                                                     |
+| Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                                                                                                                                                                                                                             |
+| Replacement confirmation         | Current unsaved work and incoming stock hull are named; confirm commits candidate, cancel retains current build and detail.                                                                                                                                                                                                                                   |
+| Package factory failure          | Blocking error is announced once; current build and route state remain.                                                                                                                                                                                                                                                                                       |
 
 ## Creation transaction
 

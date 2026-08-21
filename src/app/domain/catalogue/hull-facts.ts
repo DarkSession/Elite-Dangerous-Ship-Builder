@@ -22,8 +22,6 @@ export interface HullFact {
   /** `null` where the package reports no value. Never substituted with zero. */
   readonly value: number | null;
   readonly unit: HullFactUnit;
-  /** How many fraction digits the value is meaningful to. */
-  readonly fractionDigits: number;
 }
 
 /**
@@ -46,13 +44,11 @@ export function hullDetailFacts(symbolOrShip: string | Ship): readonly HullFact[
     group: HullFactGroup,
     value: number | undefined,
     unit: HullFactUnit,
-    fractionDigits = 0,
   ): HullFact => ({
     id,
     group,
     value: typeof value === 'number' && Number.isFinite(value) ? value : null,
     unit,
-    fractionDigits,
   });
 
   return [
@@ -62,7 +58,7 @@ export function hullDetailFacts(symbolOrShip: string | Ship): readonly HullFact[
     fact('base-shield', 'defence', ship.baseShieldStrength, 'shield'),
     fact('base-armour', 'defence', ship.baseArmour, null),
 
-    fact('hull-mass', 'mass', ship.hullMass, 'mass', 1),
+    fact('hull-mass', 'mass', ship.hullMass, 'mass'),
     fact('hardness', 'mass', ship.hardness, null),
     fact('crew', 'mass', ship.crew, null),
     fact('masslock', 'mass', ship.masslock, null),

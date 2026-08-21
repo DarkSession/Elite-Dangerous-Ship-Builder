@@ -21,7 +21,7 @@
 // A short viewport releases the shell's own sticky bar, so the header releases
 // with it rather than freezing over a gap (FR-011).
 @include layout.short-viewport {
-  .catalogue__table thead th {
+  thead th {
     position: static;
   }
 }
@@ -46,15 +46,48 @@
 
 .catalogue__table {
   inline-size: 100%;
+  // Fixed, because the reference's manifest is a grid with one column track
+  // list: narrowing the list must not re-measure the columns and shuffle every
+  // heading sideways while a Commander is reading them (canvas 1a).
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0 var(--edsb-space-3xs);
 }
 
-.catalogue__table th,
-.catalogue__table td {
+// The reference's track list, as shares of the manifest rather than pixels:
+// `22px 2.1fr 1.5fr 56px 104px 96px` at the width it is drawn at.
+thead th:nth-child(1) {
+  inline-size: 3%;
+}
+
+thead th:nth-child(2) {
+  inline-size: 36%;
+}
+
+thead th:nth-child(3) {
+  inline-size: 24%;
+}
+
+thead th:nth-child(4) {
+  inline-size: 8%;
+}
+
+thead th:nth-child(5) {
+  inline-size: 16%;
+}
+
+thead th:nth-child(6) {
+  inline-size: 13%;
+}
+
+th,
+td {
   text-align: start;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-tight);
+  // No block padding: the row's height is the open action's own target area,
+  // and adding cell padding around it made every row half again as tall as the
+  // reference draws it.
+  padding-inline: var(--edsb-space-md);
+  vertical-align: middle;
   // `anywhere` rather than `break-word`: only `anywhere` counts the break
   // towards the column's minimum, which is what lets the table shrink instead
   // of pushing the document sideways at 200% text. The manifest is not an
@@ -64,7 +97,7 @@
 
 // Frozen under the screen's own chrome, so a column is still named after the
 // first screenful of hulls.
-.catalogue__table thead th {
+thead th {
   @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
 
   position: sticky;
@@ -77,7 +110,7 @@
 
 // The column a list is ordered by takes the reference's amber and its caret
 // (canvas 1a `paintSort`).
-.catalogue__table thead th[aria-sort] {
+thead th[aria-sort] {
   color: var(--edsb-text-accent-strong);
 }
 
@@ -85,8 +118,8 @@
   font-size: var(--edsb-text-size-micro);
 }
 
-.catalogue__table tbody th,
-.catalogue__table tbody td {
+tbody th,
+tbody td {
   background-color: var(--edsb-surface-row);
 }
 
@@ -99,8 +132,6 @@
 // The reference's current-row lozenge, in its own narrow leading column.
 .catalogue__mark {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
-
-  inline-size: var(--edsb-space-4xl);
 }
 
 .catalogue__code {
@@ -108,20 +139,20 @@
 }
 
 // Transparent until the row is current, so no row changes width.
-.catalogue__table tbody tr > :first-child {
+tbody tr > :first-child {
   border-inline-start: var(--edsb-border-width-marker) solid transparent;
 }
 
 // Painted on the row: a per-cell gradient restarts at every column boundary.
-.catalogue__table tbody tr[aria-current='true'] {
+tbody tr[aria-current='true'] {
   background-image: var(--edsb-surface-row-selected);
 }
 
-.catalogue__table tbody tr[aria-current='true'] > * {
+tbody tr[aria-current='true'] > * {
   background-color: transparent;
 }
 
-.catalogue__table tr[aria-current='true'] > :first-child {
+tr[aria-current='true'] > :first-child {
   border-inline-start-color: var(--edsb-marker-selected);
 }
 
@@ -130,8 +161,9 @@
   @include layout.target-baseline;
 
   inline-size: 100%;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
+  // The cell already carries the reference's inline padding; a second helping
+  // inside the control narrowed `HARDPOINTS` until it wrapped.
+  padding: var(--edsb-space-control-block) 0;
   border: 0;
   background-color: transparent;
   color: inherit;
@@ -145,21 +177,21 @@
   // the whole header row is one decision.
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--edsb-space-3xs);
   font: inherit;
   letter-spacing: inherit;
 }
 
 // The mount mix and the price sit hard against the trailing edge, so digits
 // line up down the column (canvas 1a).
-.catalogue__table td.catalogue__numeric {
+td.catalogue__numeric {
   @include layout.metric-value(var(--edsb-text-size-body), var(--edsb-text-secondary));
 
   unicode-bidi: isolate;
 }
 
-.catalogue__table .catalogue__numeric,
-.catalogue__table .catalogue__numeric .catalogue__sort {
+.catalogue__numeric,
+.catalogue__numeric .catalogue__sort {
   justify-content: flex-end;
   text-align: end;
 }
@@ -177,7 +209,7 @@
   color: var(--edsb-text-numeric);
 }
 
-.catalogue__table tr[aria-current='true'] .catalogue__open {
+tr[aria-current='true'] .catalogue__open {
   color: var(--edsb-text-accent-strong);
 }
 

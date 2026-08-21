@@ -14,9 +14,9 @@ Feature 001 is expressed through four logical route screens. `.design/Ship Build
 | Requirement | Screen/interface coverage                                                                                                                |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | FR-001      | Catalogue and detail consume package hull records; detail/workspace create through `ShipLoadout.default`; domain contract uses `symbol`. |
-| FR-002      | Catalogue toolbar/cards expose every displayed fact, all constraints, count and stable bidirectional sort.                               |
+| FR-002      | Catalogue toolbar/cards expose every displayed fact, one word-wise search, the exclusive size strip and stable bidirectional sort.       |
 | FR-003      | Catalogue session store and detail back action preserve query/facets/sort/result anchor; route/link/storage contracts exclude it.        |
-| FR-004      | Hull detail `FactList` and `SlotLayout` show every named package field/unit under a “Hull specifications” boundary.                      |
+| FR-004      | Hull detail `FactList` shows the reference metric grid's eight figures with their units under a “Hull specifications” boundary.          |
 | FR-005      | Symbol route lookup; detail unknown-symbol error has no creation action and no build mutation.                                           |
 | FR-006      | Catalogue/detail `HullArtwork` uses copied same-origin package assets, textual equivalence and non-blocking absence.                     |
 | FR-007      | Detail explicit create intent checks package default then transactionally calls the package factory.                                     |

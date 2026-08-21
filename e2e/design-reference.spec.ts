@@ -156,6 +156,17 @@ test.describe('the reference visual language', () => {
     expect(await style(label, 'background-color')).toBe(AMBER);
   });
 
+  // Canvas 1a draws the rail only with a hull in it: with none chosen there is
+  // no ground, no hairline and no reserved track, and the manifest has the
+  // width.
+  test('draws nothing of the inspector until a hull is chosen', async ({ page }) => {
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeHidden();
+
+    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+    await expect(rail).toBeVisible();
+  });
+
   test('sets the inspector name large in tracked amber over a monospace line', async ({ page }) => {
     // Canvas 1a: `font: 700 22px 'Barlow Condensed'`, `letter-spacing: .08em`,
     // `color: var(--amber-3)`, over the manufacturer and landing pad in mono.
@@ -249,6 +260,45 @@ test.describe('the wide manifest', () => {
     expect(strip.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
     expect(columns.y).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
     await expect(header).toBeInViewport();
+  });
+
+  // Canvas 1a draws the manifest as a grid with one track list:
+  // `22px 2.1fr 1.5fr 56px 104px 96px`, the same for the headers and for every
+  // row. Narrowing the list must not re-measure it.
+  test('holds the column track list while the manifest is narrowed', async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.locator('thead th').first()).toBeVisible();
+    const widths = () =>
+      page
+        .locator('thead th')
+        .evaluateAll((cells) =>
+          cells.map((cell) => Math.round(cell.getBoundingClientRect().width)),
+        );
+
+    const before = await widths();
+    expect(before).toHaveLength(6);
+
+    await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('federal');
+    await expect(page.locator('[data-hull-symbol]:visible')).not.toHaveCount(48);
+    expect(await widths()).toEqual(before);
+
+    await page.getByRole('radio', { name: 'Large' }).check();
+    expect(await widths()).toEqual(before);
+  });
+
+  // Canvas 1a: `padding: 12px` around a 16px name, so a row is a little over
+  // forty pixels tall and every row is the same.
+  test('sets every row to one height, close to the reference row', async ({ page }) => {
+    await page.goto('/ships');
+    await expect(page.locator('tbody tr').first()).toBeVisible();
+    const heights = await page
+      .locator('tbody tr')
+      .evaluateAll((rows) => [
+        ...new Set(rows.map((row) => Math.round(row.getBoundingClientRect().height))),
+      ]);
+
+    expect(heights).toHaveLength(1);
+    expect(heights[0]).toBeLessThanOrEqual(48);
   });
 
   test('keeps the inspector with the hull it describes', async ({ page }) => {

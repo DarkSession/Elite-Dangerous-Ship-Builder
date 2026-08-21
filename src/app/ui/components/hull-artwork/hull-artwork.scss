@@ -30,6 +30,14 @@
   filter: var(--edsb-artwork-filter);
 }
 
+// Hidden rather than removed while the next illustration is on its way: the
+// element has to stay in the document to report that it loaded, but the hull
+// that was there is not the hull being asked for, and leaving it up until the
+// new one decodes shows the wrong ship.
+.artwork__image--pending {
+  visibility: hidden;
+}
+
 // Centred on the plate, at the size the mark is drawn at. It is decoration:
 // the words beside it are what a reader hears.
 .artwork__loading {

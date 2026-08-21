@@ -3,6 +3,7 @@
     @if (!isUnavailable()) {
       <img
         class="artwork__image"
+        [class.artwork__image--pending]="isLoading()"
         [src]="requestUrl()"
         [alt]="label()"
         [attr.aria-describedby]="isLoading() ? statusId : null"

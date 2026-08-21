@@ -1,27 +1,23 @@
 import type { HullCatalogueEntry, HullSize } from './hull-catalogue';
 
-/** An inclusive credits interval. `null` is an open bound, not zero. */
-export interface PriceRange {
-  readonly min: number | null;
-  readonly max: number | null;
-}
-
-/** Everything currently narrowing the catalogue. */
+/**
+ * Everything currently narrowing the catalogue.
+ *
+ * The reference toolbar draws two controls and no more: one search field and
+ * one exclusive landing-pad strip (canvas 1a, canvas 1b). Manufacturer,
+ * hardpoint class and price are not separate facets — they are words and
+ * digits the search already matches, because it matches every string a hull
+ * shows.
+ */
 export interface CatalogueFilters {
   readonly query: string;
-  readonly manufacturers: readonly string[];
   readonly sizes: readonly HullSize[];
-  readonly hardpointClasses: readonly number[];
-  readonly price: PriceRange;
 }
 
 /** The state of a catalogue with nothing narrowed. */
 export const NO_FILTERS: CatalogueFilters = {
   query: '',
-  manufacturers: [],
   sizes: [],
-  hardpointClasses: [],
-  price: { min: null, max: null },
 };
 
 /**
@@ -35,97 +31,46 @@ export const NO_FILTERS: CatalogueFilters = {
  */
 export type CatalogueDisplayText = (entry: HullCatalogueEntry) => readonly (string | null)[];
 
-/** Whether any constraint is currently narrowing the catalogue. */
-export function hasFilters(filters: CatalogueFilters): boolean {
-  return (
-    filters.query.trim().length > 0 ||
-    filters.manufacturers.length > 0 ||
-    filters.sizes.length > 0 ||
-    filters.hardpointClasses.length > 0 ||
-    filters.price.min !== null ||
-    filters.price.max !== null
-  );
-}
-
 /**
  * Narrows the catalogue to the hulls matching every active constraint.
  *
- * Constraints are combined with `and` across kinds and `or` within one kind:
- * choosing two manufacturers widens the manufacturer constraint, while adding a
- * size narrows the result. That is what the controls look like they do.
- *
- * A hull whose value for a constraint is unavailable is excluded by that
- * constraint rather than included on a guess — an unknown price is not "within
- * range", and treating it as zero would put it at the cheap end of every
- * search.
+ * A hull whose size is unavailable is excluded by the size constraint rather
+ * than included on a guess.
  */
 export function filterCatalogue(
   entries: readonly HullCatalogueEntry[],
   filters: CatalogueFilters,
   displayText: CatalogueDisplayText,
 ): readonly HullCatalogueEntry[] {
-  const query = normalize(filters.query);
+  const terms = normalize(filters.query).split(/\s+/).filter(Boolean);
 
   return entries.filter((entry) => {
-    if (query.length > 0 && !matchesQuery(entry, query, displayText)) {
+    if (terms.length > 0 && !matchesQuery(entry, terms, displayText)) {
       return false;
     }
-    if (filters.sizes.length > 0 && (entry.size === null || !filters.sizes.includes(entry.size))) {
-      return false;
-    }
-    if (
-      filters.manufacturers.length > 0 &&
-      (entry.manufacturer === null || !filters.manufacturers.includes(entry.manufacturer))
-    ) {
-      return false;
-    }
-    if (
-      filters.hardpointClasses.length > 0 &&
-      !hasHardpointClasses(entry, filters.hardpointClasses)
-    ) {
-      return false;
-    }
-    return withinPrice(entry.retailPrice, filters.price);
+    return (
+      filters.sizes.length === 0 || (entry.size !== null && filters.sizes.includes(entry.size))
+    );
   });
 }
 
-/** Every manufacturer present in the catalogue, for the facet control. */
-export function manufacturersIn(entries: readonly HullCatalogueEntry[]): readonly string[] {
-  const found = new Set<string>();
-  for (const entry of entries) {
-    if (entry.manufacturer !== null) {
-      found.add(entry.manufacturer);
-    }
-  }
-  return [...found];
-}
-
+/**
+ * Whether a hull answers the whole search.
+ *
+ * Every word must land somewhere, but they need not land in the same place:
+ * "lakon asp" is a manufacturer and a name, and a Commander who types both
+ * means the hull that is both. Requiring one field to contain the whole phrase
+ * would find nothing, which is the one answer that is certainly wrong.
+ */
 function matchesQuery(
   entry: HullCatalogueEntry,
-  query: string,
+  terms: readonly string[],
   displayText: CatalogueDisplayText,
 ): boolean {
-  return displayText(entry).some((value) => value !== null && normalize(value).includes(query));
-}
-
-/** A hull matches when it carries at least one mount of every chosen class. */
-function hasHardpointClasses(entry: HullCatalogueEntry, classes: readonly number[]): boolean {
-  const profile = entry.hardpoints;
-  if (profile === null) {
-    return false;
-  }
-  // The profile is huge-first; a class number is the mount size.
-  return classes.every((size) => (profile[4 - size] ?? 0) > 0);
-}
-
-function withinPrice(price: number | null, range: PriceRange): boolean {
-  if (range.min === null && range.max === null) {
-    return true;
-  }
-  if (price === null) {
-    return false;
-  }
-  return (range.min === null || price >= range.min) && (range.max === null || price <= range.max);
+  const shown = displayText(entry)
+    .filter((value) => value !== null)
+    .map(normalize);
+  return terms.every((term) => shown.some((value) => value.includes(term)));
 }
 
 /**

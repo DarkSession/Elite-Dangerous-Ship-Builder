@@ -1,9 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import {
-  NO_FILTERS,
-  type CatalogueFilters,
-  hasFilters,
-} from '../../domain/catalogue/catalogue-query';
+import { NO_FILTERS, type CatalogueFilters } from '../../domain/catalogue/catalogue-query';
 import { DEFAULT_SORT, type CatalogueSort } from '../../domain/catalogue/catalogue-sort';
 import { SESSION_STORAGE_PORT } from '../../platform/storage/web-storage.port';
 
@@ -23,7 +19,7 @@ export interface CatalogueSessionState {
 
 /** The key this store owns in `sessionStorage`, and the shape it writes. */
 const SESSION_KEY = 'edsb:catalogue';
-const SESSION_VERSION = 1;
+const SESSION_VERSION = 2;
 
 /**
  * How the Commander is currently looking at the catalogue.
@@ -48,8 +44,6 @@ export class CatalogueSessionStore {
   readonly filters = this.#filters.asReadonly();
   readonly sort = this.#sort.asReadonly();
   readonly anchor = this.#anchor.asReadonly();
-
-  readonly constrained = computed(() => hasFilters(this.#filters()));
 
   readonly state = computed<CatalogueSessionState>(() => ({
     filters: this.#filters(),
@@ -145,18 +139,7 @@ function isFilters(value: unknown): value is CatalogueFilters {
     return false;
   }
   const filters = value as Record<string, unknown>;
-  const price = filters['price'] as Record<string, unknown> | undefined;
-  return (
-    typeof filters['query'] === 'string' &&
-    isStringArray(filters['manufacturers']) &&
-    isStringArray(filters['sizes']) &&
-    Array.isArray(filters['hardpointClasses']) &&
-    (filters['hardpointClasses'] as unknown[]).every((entry) => typeof entry === 'number') &&
-    typeof price === 'object' &&
-    price !== null &&
-    isNullableNumber(price['min']) &&
-    isNullableNumber(price['max'])
-  );
+  return typeof filters['query'] === 'string' && isStringArray(filters['sizes']);
 }
 
 function isSort(value: unknown): value is CatalogueSort {
@@ -180,8 +163,4 @@ function isAnchor(value: unknown): value is ResultAnchor {
 
 function isStringArray(value: unknown): boolean {
   return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
-}
-
-function isNullableNumber(value: unknown): boolean {
-  return value === null || typeof value === 'number';
 }

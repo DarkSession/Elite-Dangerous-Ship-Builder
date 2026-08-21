@@ -98,6 +98,7 @@
   "hullDetail.mount.small": "Small",
   "hullDetail.fact.manufacturer": "Manufacturer",
   "hullDetail.fact.size": "Landing pad size",
+  "hullDetail.landing-pad": "{{size}} landing pad",
   "hullDetail.fact.maximum-speed": "Speed",
   "hullDetail.fact.boost": "Boost",
   "hullDetail.fact.base-shield": "Shield",

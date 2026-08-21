@@ -35,7 +35,7 @@ The design file is a product visual reference. It is not application source, a g
 
 ### Catalogue behavior
 
-- The visible size controls and search/sort treatments are retained. **The adaptation that added manufacturer, hardpoint and price controls to the toolbar was withdrawn on 2026-08-21**; the capability remains on the facade but no control draws it. See [hull-catalogue, "Divergence from FR-002"](./hull-catalogue.md#divergence-from-fr-002).
+- The visible size controls and search/sort treatments are retained. **The adaptation that added manufacturer, hardpoint and price controls to the toolbar was withdrawn on 2026-08-21**, and the facets themselves were deleted the same day when FR-002 was narrowed to the two controls the reference draws. See [hull-catalogue, "Narrowing is the search and the size strip"](./hull-catalogue.md#narrowing-is-the-search-and-the-size-strip-and-nothing-else).
 - Wide column headers become semantic sort buttons with announced field/direction. Narrow sort chips expose the same state and are at least 44 CSS px.
 - Selected-row amber/lozenge styling gains programmatic state. The lozenge and the wash are drawn as the reference draws them and `aria-current` carries the same fact, so nothing depends on colour alone; the visible “Currently viewing” label the earlier build added is gone.
 - The selected inspector corresponds to `/ships/:symbol`. The `/ships` route does not silently create a build or require an arbitrary default hull.
@@ -127,17 +127,19 @@ they change what the canvas shows rather than only how it is built:
 - every code the manifest shortens — `LRG`, `2H 2L 1M 2S` — travels with its spelled-out form, and
   every label the reference compresses away stays in the markup, hidden from the eye rather than
   dropped;
-- the segmented size choices are multi-select checkboxes rather than the canvas's single-select
-  strip, because the specification's constraints are additive;
+- the segmented size choices follow the canvas: a single-select strip led by `ALL`, one pad class
+  at a time (the multi-select reading of the specification was withdrawn on 2026-08-21);
 - the canvas's 0.32–0.50 ink label washes are lifted to the 0.55 step, the dimmest that clears
   4.5:1; the ladder above keeps its order, so the hierarchy survives;
 - the type ramp is the canvas's own, lifted uniformly by ~1.25× to an 11 px floor;
 - **two adaptations recorded above the fold were withdrawn on 2026-08-21**, because the design is
   the record and anything it does not draw is not on the screen: the toolbar's manufacturer,
   hardpoint and price controls with their constraint chips (FR-002), and everything the reference
-  inspector leaves out of its five figures, one price and mount chips (FR-004). Both divergences,
-  and what is left open by them, are recorded in [hull-catalogue.md](./hull-catalogue.md#divergence-from-fr-002)
-  and [hull-detail.md](./hull-detail.md#divergence-from-fr-004);
+  inspector leaves out of its metric grid, one price and mount chips (FR-004). Both requirements
+  were narrowed to what the reference draws the same day, and the facets and figures behind them
+  deleted rather than left dormant; see
+  [hull-catalogue.md](./hull-catalogue.md#narrowing-is-the-search-and-the-size-strip-and-nothing-else)
+  and [hull-detail.md](./hull-detail.md#the-inspector-is-the-reference-composition);
 - the library lists working records, unsupported and malformed entries, and the retention and quota
   states the mock does not depict, and it never evicts anything on its own;
 - the share value stays selectable after a copy or share failure, and a refused encode clears the
