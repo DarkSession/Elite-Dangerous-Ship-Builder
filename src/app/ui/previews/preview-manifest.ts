@@ -202,7 +202,6 @@ import { ShareLinkPanel } from '../components/share-link-panel/share-link-panel'
 import { FactList } from '../components/fact-list/fact-list';
 import { HullArtwork } from '../components/hull-artwork/hull-artwork';
 import { HullSummaryCard } from '../components/hull-summary-card/hull-summary-card';
-import { SlotLayout } from '../components/slot-layout/slot-layout';
 import { ActionLink } from '../components/action/action-link';
 import { ActionLayer } from '../components/app-frame/action-layer';
 import { AppFrame } from '../components/app-frame/app-frame';
@@ -1540,7 +1539,7 @@ registerPreview({
     state(
       'default',
       {
-        source: 'assets/ships/Anaconda/illustration.svg',
+        source: 'assets/ships/Anaconda/illustration.png',
         label: 'Illustration of the Anaconda',
         state: 'available',
       },
@@ -1557,7 +1556,7 @@ registerPreview({
     state(
       'loading',
       {
-        source: 'assets/ships/Anaconda/illustration.svg',
+        source: 'assets/ships/Anaconda/illustration.png',
         label: 'Illustration of the Anaconda',
         state: 'loading',
       },
@@ -1566,7 +1565,7 @@ registerPreview({
     state(
       'error',
       {
-        source: 'assets/ships/Anaconda/illustration.svg',
+        source: 'assets/ships/Anaconda/illustration.png',
         label: 'Illustration of the Anaconda',
         state: 'temporarily-unavailable',
       },
@@ -1581,74 +1580,6 @@ registerPreview({
       'disabled',
       'An illustration is decoration with a text equivalent; it never gates anything, so it has nothing to disable.',
     ),
-  ],
-});
-
-registerPreview({
-  componentId: 'slot-layout',
-  group: 'Hull',
-  component: SlotLayout,
-  contract: contract(
-    'slot-layout',
-    {
-      role: 'group',
-      visibleNameMatchesAccessibleName: true,
-      exposedStates: [],
-      relationships: ['label'],
-      textEquivalents: ['slot size', 'slot restriction'],
-    },
-    ['default', 'empty'],
-  ),
-  states: [
-    state(
-      'default',
-      {
-        label: 'Slot layout',
-        groups: [
-          {
-            kind: 'core',
-            label: 'Core internals',
-            slots: [
-              { key: 'PowerPlant', size: 'Size 8', restriction: null },
-              { key: 'MainEngines', size: 'Size 7', restriction: null },
-            ],
-          },
-          {
-            kind: 'optional',
-            label: 'Optional internals',
-            slots: [
-              { key: 'Slot14_Size1', size: 'Size 1', restriction: null },
-              {
-                key: 'Military01',
-                size: 'Size 5',
-                restriction: 'Takes reinforcement packages only',
-              },
-            ],
-          },
-        ],
-      },
-      [
-        'mounts are grouped by kind under their own headings',
-        'the game’s own slot key is shown verbatim and bidi-isolated',
-        'a restricted mount says what it accepts',
-      ],
-      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
-    ),
-    state(
-      'empty',
-      {
-        label: 'Slot layout',
-        groups: [],
-        emptyLabel: 'The Almanac supplies no slot layout for this hull.',
-      },
-      ['an absent layout is stated rather than rendered as an empty region'],
-    ),
-    notApplicable('loading', 'A hull’s layout is installed with the package.'),
-    notApplicable(
-      'error',
-      'An absent layout is an unavailable value the empty state names, not an error.',
-    ),
-    notApplicable('disabled', 'A read-only layout is not interactive.'),
   ],
 });
 

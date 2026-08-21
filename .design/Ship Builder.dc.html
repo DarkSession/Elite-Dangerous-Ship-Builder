@@ -2451,9 +2451,7 @@
                           945
                         </div>
                       </div>
-                      <div
-                        style="grid-column: span 2; background: var(--panel-3); padding: 11px 12px"
-                      >
+                      <div style="background: var(--panel-3); padding: 11px 12px">
                         <div
                           style="
                             font:
@@ -2475,6 +2473,78 @@
                           id="sy-mass"
                         >
                           400
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          HARDNESS
+                        </div>
+                        <div
+                          id="sy-hardness"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          65
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          CREW
+                        </div>
+                        <div
+                          id="sy-crew"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          3
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          MASS LOCK
+                        </div>
+                        <div
+                          id="sy-masslock"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          23
                         </div>
                       </div>
                     </div>
@@ -4048,9 +4118,7 @@
                           945
                         </div>
                       </div>
-                      <div
-                        style="grid-column: span 2; background: var(--panel-3); padding: 11px 12px"
-                      >
+                      <div style="background: var(--panel-3); padding: 11px 12px">
                         <div
                           style="
                             font:
@@ -4072,6 +4140,78 @@
                           "
                         >
                           400
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          HARDNESS
+                        </div>
+                        <div
+                          id="sd-hardness"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          65
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          CREW
+                        </div>
+                        <div
+                          id="sd-crew"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          3
+                        </div>
+                      </div>
+                      <div style="background: var(--panel-3); padding: 11px 12px">
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-48);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          MASS LOCK
+                        </div>
+                        <div
+                          id="sd-masslock"
+                          style="
+                            font:
+                              400 15px/1 'JetBrains Mono',
+                              monospace;
+                            margin-top: 7px;
+                          "
+                        >
+                          23
                         </div>
                       </div>
                     </div>
@@ -27502,6 +27642,7 @@
             set('sd-mfr', (r.dataset.mfr || '').toUpperCase() + ' \u00b7 ' + (SIZE[r.dataset.size] || '') + ' LANDING PAD');
             set('sd-speed', meta.speed); set('sd-boost', meta.boost);
             set('sd-shield', meta.shield); set('sd-armour', meta.armour);
+            set('sd-hardness', meta.hardness); set('sd-crew', meta.crew); set('sd-masslock', meta.masslock);
             set('sd-mass', Number(r.dataset.mass).toLocaleString('en-US'));
             set('sd-price', Math.round(Number(r.dataset.price) * 1e6).toLocaleString('en-US'));
             let art = false;
@@ -27922,14 +28063,14 @@
 
         data() {
           return {
-            'FEDERAL CORVETTE': { speed: 200, boost: 320, shield: 555, armour: 666, art: '' },
-            'ANACONDA': { speed: 180, boost: 235, shield: 350, armour: 945, art: 'assets/ships/Anaconda.png' },
-            'TYPE-10 DEFENDER': { speed: 179, boost: 200, shield: 320, armour: 580, art: '' , sco: false },
-            'FER-DE-LANCE': { speed: 260, boost: 350, shield: 300, armour: 405, art: 'assets/ships/FerDeLance.png' },
-            'KRAIT MK II': { speed: 240, boost: 330, shield: 220, armour: 396, art: 'assets/ships/Krait_MkII.png' },
-            'FEDERAL GUNSHIP': { speed: 170, boost: 240, shield: 260, armour: 405, art: 'assets/ships/Federation_Gunship.png', sco: false },
-            'FEDERAL ASSAULT SHIP': { speed: 210, boost: 350, shield: 200, armour: 405, art: '' },
-            'ALLIANCE CHIEFTAIN': { speed: 230, boost: 320, shield: 200, armour: 378, art: '' },
+            'FEDERAL CORVETTE': { speed: 200, boost: 320, shield: 555, armour: 666, hardness: 70, crew: 3, masslock: 27, art: '' },
+            'ANACONDA': { speed: 180, boost: 235, shield: 350, armour: 945, hardness: 65, crew: 3, masslock: 23, art: 'assets/ships/Anaconda.png' },
+            'TYPE-10 DEFENDER': { speed: 179, boost: 200, shield: 320, armour: 580, hardness: 75, crew: 3, masslock: 23, art: '' , sco: false },
+            'FER-DE-LANCE': { speed: 260, boost: 350, shield: 300, armour: 405, hardness: 70, crew: 2, masslock: 14, art: 'assets/ships/FerDeLance.png' },
+            'KRAIT MK II': { speed: 240, boost: 330, shield: 220, armour: 396, hardness: 55, crew: 3, masslock: 13, art: 'assets/ships/Krait_MkII.png' },
+            'FEDERAL GUNSHIP': { speed: 170, boost: 240, shield: 260, armour: 405, hardness: 70, crew: 3, masslock: 19, art: 'assets/ships/Federation_Gunship.png', sco: false },
+            'FEDERAL ASSAULT SHIP': { speed: 210, boost: 350, shield: 200, armour: 405, hardness: 70, crew: 2, masslock: 19, art: '' },
+            'ALLIANCE CHIEFTAIN': { speed: 230, boost: 320, shield: 200, armour: 378, hardness: 65, crew: 3, masslock: 13, art: '' },
           };
         }
 
@@ -27978,6 +28119,7 @@
             set('sy-blurb', (row.dataset.mfr || '').toUpperCase() + ' \u00b7 ' + (PADS[row.dataset.size] || '') + ' LANDING PAD');
             set('sy-speed', d.speed); set('sy-boost', d.boost);
             set('sy-shield', d.shield); set('sy-armour', d.armour);
+            set('sy-hardness', d.hardness); set('sy-crew', d.crew); set('sy-masslock', d.masslock);
             set('sy-mass', Number(row.dataset.mass).toLocaleString('en-US'));
             set('sy-price', Math.round(parseFloat(row.dataset.price) * 1e6).toLocaleString('en-US'));
             const names = { H: 'HUGE', L: 'LARGE', M: 'MED', S: 'SMALL' };

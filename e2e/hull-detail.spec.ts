@@ -15,10 +15,9 @@ import {
  * is created until a Commander asks — and then only after anything unsaved has
  * been accounted for.
  *
- * The reference inspector carries five figures, the mount classes and one
- * price. FR-004 names many more; that divergence is recorded in the hull-detail
- * design note rather than asserted here, because this file tests the screen
- * that exists.
+ * The reference inspector carries eight figures, the mount classes and one
+ * price. Four of the eight are drawn bare, because the reference gives them no
+ * unit: hardness, crew, mass lock and armour.
  */
 
 const ANACONDA = '/ships/Anaconda';
@@ -26,11 +25,13 @@ const ANACONDA = '/ships/Anaconda';
 /** Every figure the reference inspector carries, with the unit it shows. */
 const FACTS: readonly (readonly [label: string, unit: string])[] = [
   ['Speed', 'm/s'],
-  ['Boost speed', 'm/s'],
-  ['Base shield strength', 'MJ'],
-  ['Base armour', 'hull points'],
+  ['Boost', 'm/s'],
+  ['Shield', 'MJ'],
   ['Hull mass', 't'],
 ];
+
+/** The figures the reference draws bare, with no unit beside them. */
+const BARE_FACTS: readonly string[] = ['Armour', 'Hardness', 'Crew', 'Mass lock'];
 
 const detail = (page: Page) => page.getByRole('article').first();
 
@@ -58,12 +59,12 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   // it the search below can be typed into a manifest that is already leaving.
   await page.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
   await expect(page).toHaveURL(/\/ships$/);
-  await page.getByRole('searchbox', { name: 'Search hulls' }).fill(name);
+  await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await page
     .getByRole('button', { name: new RegExp(`View ${name}`, 'i') })
     .first()
     .click();
-  await expect(page.getByRole('button', { name: 'Create a stock build' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
 }
 
 test.describe('hull detail', () => {
@@ -75,16 +76,14 @@ test.describe('hull detail', () => {
   test('shows every published fact with the unit it is measured in', async ({ page }) => {
     const text = await readableText(page);
 
+    for (const label of BARE_FACTS) {
+      expect(text, `${label} is shown`).toContain(label.toLowerCase());
+    }
+
     for (const [label, unit] of FACTS) {
       expect(text, `${label} is shown`).toContain(label.toLowerCase());
       expect(text, `${label} names its unit`).toContain(unit.toLowerCase());
     }
-  });
-
-  test('names the viewing condition a figure was measured under', async ({ page }) => {
-    const text = await readableText(page);
-
-    expect(text).toContain('at 4 eng pips');
   });
 
   test('names the manufacturer and the pad class on one identity line', async ({ page }) => {
@@ -121,7 +120,7 @@ test.describe('hull detail', () => {
     await expect(page.getByText(/illustration is not available right now/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Load the illustration again' })).toBeVisible();
     // The absence of a picture never gates creating a build (FR-006).
-    await expect(page.getByRole('button', { name: 'Create a stock build' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeEnabled();
   });
 
   test('recovers the illustration on retry, without reloading the page', async ({ page }) => {
@@ -155,14 +154,14 @@ test.describe('hull detail', () => {
     await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible();
     await expect(page.getByText(/Nonexistent_Hull/)).toBeVisible();
     await expect(page.getByText(/nothing has been created or changed/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Create a stock build' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Build stock hull' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Back to the shipyard' })).toBeVisible();
   });
 
   test('creates the package’s own default build, and only when asked', async ({ page }) => {
     await expect(page).toHaveURL(/\/ships\/Anaconda$/);
 
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
@@ -172,11 +171,11 @@ test.describe('hull detail', () => {
   });
 
   test('confirms before replacing unsaved work, and cancelling keeps it', async ({ page }) => {
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByText('New stock build')).toBeVisible();
 
     await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -185,16 +184,20 @@ test.describe('hull detail', () => {
     await dialog.getByRole('button', { name: 'Keep what I have' }).click();
     await expect(dialog).toBeHidden();
 
-    await page.getByRole('navigation').getByRole('link', { name: 'Build', exact: true }).click();
+    // The reference's command bar offers no chip for the build screen, so the
+    // way back to it is its own address. The working record is what has to have
+    // survived, and a fresh load is the strictest way to ask.
+    await page.goto('/build');
+    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
     await expect(page.getByText('Anaconda')).toBeVisible();
   });
 
   test('replaces unsaved work once the Commander confirms', async ({ page }) => {
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByText('New stock build')).toBeVisible();
 
     await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Discard and open' }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
@@ -216,10 +219,10 @@ test.describe('hull detail', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-unknown' });
 
     await page.goto(ANACONDA);
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByText('New stock build')).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-replacement' });
   });

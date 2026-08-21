@@ -115,10 +115,13 @@ describe('CatalogueFacade', () => {
     expect([...prices].sort((a, b) => a - b)).toEqual(prices);
   });
 
-  it('states the match count as one sentence', () => {
+  // The reference's bar reads "48 SHIPS" whole and "8 OF 48 SHIPS" narrowed.
+  it('states the match count the way the command bar carries it', () => {
     const catalogue = facade();
-    catalogue.changeSearch('anaconda');
 
+    expect(catalogue.countText()).toBe(`${SHIPS.length} ships`);
+
+    catalogue.changeSearch('anaconda');
     expect(catalogue.countText()).toContain('of');
     expect(catalogue.countText()).toContain(String(SHIPS.length));
   });
@@ -150,7 +153,7 @@ describe('CatalogueFacade', () => {
       retailPrice: null,
       hullPrice: null,
       slots: [],
-      artworkPath: 'assets/ships/Unarmed/illustration.svg',
+      artworkPath: 'assets/ships/Unarmed/illustration.png',
       defaultAvailable: false,
     });
 

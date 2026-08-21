@@ -5,7 +5,7 @@
     <!--
       The reference's inspector, in its order and with its contents: the
       illustration on its plate, the hull's name over one monospace identity
-      line, five figures, the mounts, the price, and the one commitment
+      line, the metric grid, the mounts, the price, and the two hull actions
       (canvas 1a rail, canvas 1b detail sheet).
     -->
     <article class="detail">
@@ -78,6 +78,7 @@
       <div class="detail__create">
         @if (detail.canCreate) {
           <edsb-action-button
+            block
             [label]="createLabel()"
             emphasis="primary"
             (activated)="createStockBuild()"

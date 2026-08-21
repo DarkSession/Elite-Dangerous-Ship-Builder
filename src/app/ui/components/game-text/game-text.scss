@@ -15,7 +15,10 @@
 }
 
 .game-text__value {
-  color: var(--edsb-text-primary);
+  // The placement decides the colour. The reference sets a hull name in amber
+  // on the inspector and on a selected row, and in ink in the manifest; a
+  // colour fixed here would override all three (canvas 1a).
+  color: inherit;
   // A game noun keeps its own character order inside prose that reads the other
   // way; direction is resolved from the text itself rather than inherited.
   unicode-bidi: isolate;

@@ -91,7 +91,7 @@ test.describe('the privacy promise', () => {
       .first()
       .getByRole('button', { name: /View / })
       .click();
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await page.goto('/builds');
 

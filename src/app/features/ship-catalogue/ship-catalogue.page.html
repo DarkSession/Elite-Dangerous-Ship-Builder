@@ -18,10 +18,6 @@
         (sortFieldChanged)="changeSort($event)"
       />
 
-      @if (hasUnavailableFacts()) {
-        <edsb-status-notice tone="info" [message]="unavailableFactsNotice()" />
-      }
-
       <edsb-responsive-catalogue-view
         [caption]="caption()"
         [columns]="columns()"

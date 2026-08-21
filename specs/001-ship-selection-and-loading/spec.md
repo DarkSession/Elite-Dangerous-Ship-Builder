@@ -42,11 +42,16 @@ browser and share builds by URL. SLEF import and export are specified in
   remain distinct from zero and sort ties MUST be stable.
 - **FR-003**: Catalogue search, filters, sort and scroll position MUST survive a trip to hull detail
   and back during the browser session. They MUST NOT become build or link state.
-- **FR-004**: Hull detail MUST show the package name, manufacturer, size, base speed and boost, base
-  shield and armour, hull mass, hardness, mass-lock factor, crew, heat capacity and dissipation,
-  reserve fuel, rotation rates, slot layout, cost fields and illustration, with units for every
-  measured value. Hull facts MUST be
+- **FR-004**: Hull detail MUST show the package name, manufacturer, size, speed and boost, base
+  shield and armour, hull mass, hardness, crew, mass-lock factor, the hardpoint mix, the hull price
+  and the illustration, with units for every measured value that has one. Hull facts MUST be
   distinguished from module-dependent build results.
+
+  Heat capacity and dissipation, reserve fuel, rotation rates and the slot layout are deliberately
+  out of scope for this feature: the reference draws none of them on the shipyard, and the slot
+  layout belongs to the outfitting ledger (canvas 1c), not to hull selection. Hardness, crew and
+  mass lock replaced them on the reference's metric grid on 2026-08-21.
+
 - **FR-005**: Hull detail URLs MUST use the hull `symbol`. An unknown symbol MUST show an error and
   MUST NOT create a build.
 - **FR-006**: Hull artwork MUST come from the Almanac package assets, be served from the

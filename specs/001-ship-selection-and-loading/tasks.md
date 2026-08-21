@@ -394,6 +394,25 @@ design file rather than made silently.
 
 ---
 
+## Phase 9: Second design pass — the reference's own words and figures
+
+**Goal**: close the twelve differences raised on 2026-08-21 after the canvas was updated. Phase 8
+composed what the reference draws; this phase makes the screen use the reference's own strings,
+figures, controls, indicators and assets rather than paraphrases of them, and narrows FR-004 to
+what the drawing carries.
+
+- [x] T126 Narrow FR-004 in `spec.md` and rewrite `src/app/domain/catalogue/hull-facts.ts` to the reference's eight figures — dropping heat capacity and dissipation, reserve fuel, the rotation rates, the zero-pip endpoints and the viewing condition, and adding hardness, crew and mass lock to the metric grid
+- [x] T127 [P] Delete `src/app/ui/components/slot-layout/` with its preview and tests, and the slot ledger from `HullDetailFacade`: the reference puts a slot layout in canvas 1c's outfitting ledger, not on hull selection (depends on T126)
+- [x] T128 Replace every invented string in `src/app/i18n/locales/{en,de}.json` with the reference's own — `48 SHIPS`/`8 OF 48 SHIPS`, the search placeholder, `SIZE`, `SPEED`, `SHIELD`, `ARMOUR`, `BUILD STOCK HULL` — and remove the drawn search label, the drawn size legend, the "hull points" unit and the `Build` navigation chip the reference draws on no artboard
+- [x] T129 [P] Add canvas 1a's `ALL` segment and make the strip exclusive, so a pad class replaces the one in force rather than adding to it
+- [x] T130 [P] Paint canvas 1a's `▲`/`▼` caret and amber on the column the manifest is ordered by, and set the mount mix and the price hard against the trailing edge
+- [x] T131 Freeze the command bar, the toolbar and the column headers while the manifest scrolls, and keep the inspector rail with the hull it describes — offsets derived from the target baseline and the region's own padding, released on a short viewport
+- [x] T132 [P] Let a placement colour a game noun: `GameText` inherits its colour so the hull name takes canvas 1a's amber on the inspector and on a selected row
+- [x] T133 Rasterise the package illustrations to PNG with `scripts/convert-ship-artwork.mjs`, commit them under `public/assets/ships/`, and draw the loading mark inside the artwork plate from a same-origin copy of EDAssets' loader rather than as a line of prose under it
+- [x] T134 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T126, T128, T129, T130, T131, T133)
+
+---
+
 ## Notes
 
 - [P] tasks touch different files and have no dependency on incomplete work

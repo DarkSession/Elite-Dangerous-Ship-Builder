@@ -16,7 +16,6 @@ import {
   type CatalogueColumn,
 } from '../../ui/components/catalogue-view/responsive-catalogue-view';
 import type { HullSummary } from '../../ui/components/hull-summary-card/hull-summary-card';
-import { StatusNotice } from '../../ui/components/status/status-notice';
 import type { CatalogueSortField } from '../../domain/catalogue/catalogue-sort';
 import type { HullSize } from '../../domain/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
@@ -26,12 +25,14 @@ const COLUMNS: readonly { field: CatalogueSortField; labelKey: string; numeric?:
   { field: 'name', labelKey: 'catalogue.column.ship' },
   { field: 'manufacturer', labelKey: 'catalogue.column.manufacturer' },
   { field: 'size', labelKey: 'catalogue.column.size' },
-  { field: 'hardpoints', labelKey: 'catalogue.column.hardpoints' },
+  { field: 'hardpoints', labelKey: 'catalogue.column.hardpoints', numeric: true },
   { field: 'price', labelKey: 'catalogue.column.price', numeric: true },
 ];
 
 const SIZES: readonly HullSize[] = ['small', 'medium', 'large'];
-const HARDPOINT_CLASSES = [4, 3, 2, 1] as const;
+
+/** The reference's leading segment: every pad class at once (canvas 1a/1b). */
+const ALL_SIZES = 'all';
 
 /**
  * The shipyard: every hull the Almanac carries.
@@ -48,7 +49,7 @@ const HARDPOINT_CLASSES = [4, 3, 2, 1] as const;
  */
 @Component({
   selector: 'edsb-ship-catalogue-page',
-  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet, StatusNotice],
+  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet],
   templateUrl: './ship-catalogue.page.html',
   styleUrl: './ship-catalogue.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,7 +65,6 @@ export class ShipCataloguePage {
 
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');
-  readonly unavailableFactsNotice = this.#messages.messageSignal('catalogue.facts-unavailable');
 
   readonly countText = this.#catalogue.countText;
   readonly search = computed(() => this.#catalogue.filters().query);
@@ -84,8 +84,6 @@ export class ShipCataloguePage {
     }));
   });
 
-  readonly isEmpty = computed(() => this.hulls().length === 0);
-
   /**
    * Whether the hull-detail child route is showing.
    *
@@ -94,17 +92,6 @@ export class ShipCataloguePage {
    * as a second page of content.
    */
   readonly detailOpen = computed(() => this.#restorer.selectedSymbol() !== null);
-
-  /**
-   * Whether any shown hull has a fact the package does not supply.
-   *
-   * Surfaced once above the list rather than only inside the cell that lacks
-   * it, so a Commander comparing a column knows the gaps are absences rather
-   * than zeroes before they start reading (FR-002).
-   */
-  readonly hasUnavailableFacts = computed(() =>
-    this.hulls().some((hull) => hull.size === null || hull.price === null),
-  );
 
   readonly columns = computed<readonly CatalogueColumn[]>(() =>
     COLUMNS.map((column) => {
@@ -120,8 +107,9 @@ export class ShipCataloguePage {
     }),
   );
 
-  readonly sizeChoices = computed<readonly Choice[]>(() =>
-    SIZES.map((size) => ({
+  readonly sizeChoices = computed<readonly Choice[]>(() => [
+    { value: ALL_SIZES, label: this.#messages.message('catalogue.size.all') },
+    ...SIZES.map((size) => ({
       value: size,
       label: this.#messages.message(
         size === 'small'
@@ -131,9 +119,16 @@ export class ShipCataloguePage {
             : 'catalogue.size.large',
       ),
     })),
-  );
+  ]);
 
-  readonly selectedSizes = computed<readonly string[]>(() => this.#catalogue.filters().sizes);
+  /**
+   * The one segment in force. The reference's strip is exclusive: `ALL` or one
+   * pad class, never two at once (canvas 1a/1b).
+   */
+  readonly selectedSizes = computed<readonly string[]>(() => {
+    const sizes = this.#catalogue.filters().sizes;
+    return sizes.length === 1 ? sizes : [ALL_SIZES];
+  });
 
   readonly sortOptions = computed<readonly ToolbarSortOption[]>(() =>
     COLUMNS.map((column) => ({

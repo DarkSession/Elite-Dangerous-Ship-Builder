@@ -19,6 +19,16 @@
     border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
 }
 
+// A commitment the reference draws full-bleed on its own row rather than sized
+// to its words (canvas 1a "BUILD STOCK HULL").
+:host([block]) {
+  display: flex;
+}
+
+:host([block]) .action {
+  inline-size: 100%;
+}
+
 .action__label {
   // Long translated labels wrap rather than pushing the page into overflow.
   overflow-wrap: break-word;

@@ -48,9 +48,10 @@ describe('App', () => {
       (link) => link.textContent?.trim(),
     );
 
+    // The reference's command bar offers the shipyard and the library, and
+    // never a chip for the build screen (canvas 1a/1b/1c).
     expect(links).toEqual([
       BUNDLED_ENGLISH['navigation.catalogue'],
-      BUNDLED_ENGLISH['navigation.build'],
       BUNDLED_ENGLISH['navigation.library'],
     ]);
   });

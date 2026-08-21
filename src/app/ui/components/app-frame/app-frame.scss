@@ -25,7 +25,8 @@
   flex-wrap: wrap;
   justify-content: space-between;
   padding-block: var(--edsb-space-control-block);
-  min-block-size: var(--edsb-space-section);
+  // Exactly the height the regions below offset their own sticky chrome by.
+  min-block-size: var(--edsb-layout-bar-height);
 }
 
 // A sticky banner is a fixed share of a short viewport, and at 400% zoom that
@@ -132,7 +133,7 @@
 
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
-  scroll-margin-block-start: var(--edsb-space-section);
+  scroll-margin-block-start: var(--edsb-layout-bar-height);
 }
 
 @include layout.compact {

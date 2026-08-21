@@ -16,7 +16,11 @@
           <span class="catalogue__spoken">{{ markerLabel() }}</span>
         </th>
         @for (column of columns(); track column.field) {
-          <th scope="col" [attr.aria-sort]="ariaSort(column)">
+          <th
+            scope="col"
+            [class.catalogue__numeric]="column.numeric"
+            [attr.aria-sort]="ariaSort(column)"
+          >
             <!--
               The visible text is the column's short label, so the manifest
               stays readable; the accessible name adds what activating it does
@@ -30,6 +34,9 @@
               (click)="sortRequested.emit(column.field)"
             >
               {{ column.label }}
+              @if (indicator(column); as caret) {
+                <span class="catalogue__caret" aria-hidden="true">{{ caret }}</span>
+              }
             </button>
           </th>
         }
@@ -55,7 +62,7 @@
               />
             </button>
             @if (hull.selected) {
-              <span class="catalogue__selected">{{ selectedLabel() }}</span>
+              <span class="catalogue__spoken">{{ selectedLabel() }}</span>
             }
           </th>
           <td>

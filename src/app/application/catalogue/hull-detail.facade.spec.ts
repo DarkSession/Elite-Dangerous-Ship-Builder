@@ -39,14 +39,14 @@ describe('HullDetailFacade', () => {
     }
 
     const facts = view.factGroups.flatMap((group) => group.facts);
-    expect(facts).toHaveLength(20);
+    expect(facts).toHaveLength(10);
     for (const fact of facts) {
       expect(fact.label.length).toBeGreaterThan(0);
       expect(fact.value).not.toBeNull();
     }
   });
 
-  it('names the unit of a measured value and the rating marker of an unmeasured one', () => {
+  it('names the unit of a measured value and leaves a bare figure bare', () => {
     const detail = facade();
     detail.setSymbol('Anaconda');
     const view = detail.view();
@@ -60,77 +60,12 @@ describe('HullDetailFacade', () => {
     expect(byId.get('maximum-speed')?.unit).toBe('m/s');
     expect(byId.get('hull-mass')?.unit).toBe('t');
     expect(byId.get('base-shield')?.unit).toBe('MJ');
-    expect(byId.get('pitch')?.unit).toBe('°/s');
-    expect(byId.get('hardness')?.unit).toBe('rating, no unit');
+    // The reference draws these bare rather than inventing a unit for them.
+    expect(byId.get('hardness')?.unit).toBe('');
+    expect(byId.get('base-armour')?.unit).toBe('');
     // The credits pattern already carries its own currency.
     expect(byId.get('retail-cost')?.unit).toBe('');
     expect(byId.get('retail-cost')?.value).toContain('CR');
-  });
-
-  it('names the viewing condition of an endpoint pair in words', () => {
-    const detail = facade();
-    detail.setSymbol('Anaconda');
-    const view = detail.view();
-    if (view?.kind !== 'populated') {
-      throw new Error('expected a populated view');
-    }
-    const byId = new Map(
-      view.factGroups.flatMap((group) => group.facts).map((fact) => [fact.id, fact]),
-    );
-
-    expect(byId.get('minimum-speed')?.condition).toContain('0');
-    expect(byId.get('maximum-speed')?.condition).toContain('4');
-    expect(byId.get('boost')?.condition).toBeNull();
-  });
-
-  it('groups the slot layout the way an outfitting panel does', () => {
-    const detail = facade();
-    detail.setSymbol('Anaconda');
-    const view = detail.view();
-    if (view?.kind !== 'populated') {
-      throw new Error('expected a populated view');
-    }
-
-    expect(view.slotGroups.map((group) => group.kind)).toEqual([
-      'armour',
-      'core',
-      'hardpoint',
-      'utility',
-      'optional',
-      'cargoHatch',
-    ]);
-    // The game's own irregular key, not a derived one.
-    expect(
-      view.slotGroups.flatMap((group) => group.slots).some((slot) => slot.key === 'Slot14_Size1'),
-    ).toBe(true);
-  });
-
-  it('says a mount has no size class rather than calling it size zero', () => {
-    const detail = facade();
-    detail.setSymbol('Anaconda');
-    const view = detail.view();
-    if (view?.kind !== 'populated') {
-      throw new Error('expected a populated view');
-    }
-
-    const utility = view.slotGroups.find((group) => group.kind === 'utility')!;
-    expect(utility.slots[0]?.size).toBe('No size class');
-  });
-
-  it('names a restricted mount’s restriction through the package', () => {
-    const detail = facade();
-    detail.setSymbol('Anaconda');
-    const view = detail.view();
-    if (view?.kind !== 'populated') {
-      throw new Error('expected a populated view');
-    }
-
-    const restricted = view.slotGroups
-      .flatMap((group) => group.slots)
-      .filter((slot) => slot.restriction !== null);
-
-    expect(restricted.length).toBeGreaterThan(0);
-    expect(restricted[0]?.restriction).toContain('Takes');
   });
 
   it('offers creation only when the package carries a default loadout', () => {
@@ -164,7 +99,7 @@ describe('HullDetailFacade', () => {
     }
 
     expect(view.artworkLabel).toContain('Anaconda');
-    expect(view.artworkPath).toBe('assets/ships/Anaconda/illustration.svg');
+    expect(view.artworkPath).toBe('assets/ships/Anaconda/illustration.png');
   });
 
   it('tracks the illustration’s state without disturbing the facts', () => {

@@ -84,13 +84,22 @@ export class CatalogueFacade {
     matchCount(this.results().length, this.total, this.#session.constrained()),
   );
 
-  /** The count as the one sentence the live region announces. */
-  readonly countText = computed(() =>
-    this.#messages.message('catalogue.match-count', {
-      count: this.#formatters.integer(this.count().shown),
-      total: this.#formatters.integer(this.count().total),
-    }),
-  );
+  /**
+   * The count as the command bar carries it, and as the live region announces
+   * it: the whole catalogue reads "48 ships", a narrowed one "8 of 48 ships"
+   * (canvas 1a, canvas 1b).
+   */
+  readonly countText = computed(() => {
+    const count = this.count();
+    return count.unconstrained
+      ? this.#messages.message('catalogue.match-count.all', {
+          total: this.#formatters.integer(count.total),
+        })
+      : this.#messages.message('catalogue.match-count', {
+          count: this.#formatters.integer(count.shown),
+          total: this.#formatters.integer(count.total),
+        });
+  });
 
   /** Every manufacturer the package carries, ordered for the active locale. */
   readonly manufacturers = computed(() => {

@@ -103,7 +103,7 @@ test.describe('cross-route semantics', () => {
       .first()
       .getByRole('button', { name: /View / })
       .click();
-    await expect(page.getByRole('button', { name: 'Create a stock build' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
   });
 
@@ -125,13 +125,13 @@ test.describe('cross-route semantics', () => {
     await openScreen(page, 'workspace');
 
     await page.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
-    await page.getByRole('searchbox', { name: 'Search hulls' }).fill('Sidewinder');
+    await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
     await page
       .locator('[data-hull-symbol]:visible')
       .first()
       .getByRole('button', { name: /View /i })
       .click();
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
 
     // One question, asked once, naming both outcomes in its own words.
     const dialog = page.getByRole('dialog');

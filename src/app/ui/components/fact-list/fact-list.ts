@@ -11,7 +11,7 @@ export interface Fact {
   /** The unit, or the explicit rating marker where a figure has none. */
   readonly unit: string;
   /** What the value was measured under, when that changes what it means. */
-  readonly condition: string | null;
+  readonly condition?: string | null;
 }
 
 /**
@@ -47,7 +47,7 @@ export class FactList {
       label: fact.label,
       value: fact.value,
       ...(fact.unit.length > 0 ? { unit: fact.unit } : {}),
-      ...(fact.condition !== null ? { condition: fact.condition } : {}),
+      ...(fact.condition != null ? { condition: fact.condition } : {}),
       unavailableLabel: this.#messages.message('unavailable.value'),
     })),
   );

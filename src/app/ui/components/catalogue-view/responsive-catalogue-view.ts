@@ -64,6 +64,9 @@ export class ResponsiveCatalogueView {
   readonly selectedLabel = this.#messages.messageSignal('catalogue.selected');
   readonly markerLabel = this.#messages.messageSignal('catalogue.selected');
 
+  readonly #ascending = this.#messages.messageSignal('catalogue.sort.indicator.ascending');
+  readonly #descending = this.#messages.messageSignal('catalogue.sort.indicator.descending');
+
   /** The reference's current-row lozenge. Decorative: `aria-current` says it. */
   readonly marker = '\u25c6';
 
@@ -72,6 +75,18 @@ export class ResponsiveCatalogueView {
   /** `aria-sort` for a header: only the sorted column carries one. */
   ariaSort(column: CatalogueColumn): string | null {
     return column.sorted ? column.direction : null;
+  }
+
+  /**
+   * The caret the reference paints on the column a list is ordered by (canvas
+   * 1a `.sy-caret`). Decorative: `aria-sort` and the header's own accessible
+   * name carry the same fact.
+   */
+  indicator(column: CatalogueColumn): string | null {
+    if (!column.sorted) {
+      return null;
+    }
+    return column.direction === 'ascending' ? this.#ascending() : this.#descending();
   }
 
   currentFor(hull: HullSummary): string | null {

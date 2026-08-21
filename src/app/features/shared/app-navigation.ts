@@ -21,6 +21,9 @@ export const NAVIGATION_ROUTES = {
  * The screen a Commander is already on is left out: the reference's command
  * bar names it once, on the leading edge, and never repeats it as a control
  * (canvas 1a/1b/1c).
+ *
+ * The build screen is not listed. The reference reaches it by committing to a
+ * hull or by opening a saved build, and draws no chip for it on any artboard.
  */
 @Injectable({ providedIn: 'root' })
 export class AppNavigation {
@@ -34,12 +37,6 @@ export class AppNavigation {
         label: this.#messages.message('navigation.catalogue'),
         href: NAVIGATION_ROUTES.catalogue,
         current: currentPath.startsWith(NAVIGATION_ROUTES.catalogue),
-      },
-      {
-        id: 'build',
-        label: this.#messages.message('navigation.build'),
-        href: NAVIGATION_ROUTES.build,
-        current: currentPath === NAVIGATION_ROUTES.build,
       },
       {
         id: 'library',

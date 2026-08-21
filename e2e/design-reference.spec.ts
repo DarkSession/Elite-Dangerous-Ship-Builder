@@ -147,7 +147,7 @@ test.describe('the reference visual language', () => {
     // Canvas 1a/1b: the selected segment is `background: var(--amber)` with
     // `color: var(--bg)`; the rest are `var(--panel-3)`. The gaps between them
     // are one pixel of amber ground rather than borders.
-    const large = page.getByRole('checkbox', { name: 'Large' });
+    const large = page.getByRole('radio', { name: 'Large' });
     const label = page.locator(`label[for="${await large.getAttribute('id')}"]`);
 
     expect(await style(label, 'background-color')).not.toBe(AMBER);
@@ -202,5 +202,63 @@ test.describe('the wide manifest', () => {
     const size = parseFloat(await style(header, 'font-size'));
     expect(parseFloat(await style(header, 'letter-spacing')) / size).toBeCloseTo(0.16, 2);
     expect(await style(header, 'border-bottom-width')).toBe('1px');
+  });
+
+  test('marks the column the manifest is ordered by with amber and a caret', async ({ page }) => {
+    // Canvas 1a `paintSort`: the active header takes `#ffb060` and a `▲`/`▼`
+    // caret. The caret is decoration; `aria-sort` carries the same fact.
+    await page.goto('/ships');
+    const sorted = page.locator('thead th[aria-sort]');
+    await expect(sorted).toHaveCount(1);
+
+    expect(await style(sorted, 'color')).toBe(AMBER_3);
+    await expect(sorted.locator('.catalogue__caret')).toHaveText(/[▲▼]/);
+    await expect(sorted.locator('.catalogue__caret')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('sets the mount mix and the price against the trailing edge', async ({ page }) => {
+    // Canvas 1a: `text-align: right` on the hardpoint and price columns, so a
+    // digit lines up with the digit above it.
+    await page.goto('/ships');
+    const cells = page.locator('tbody tr').first().locator('td.catalogue__numeric');
+    await expect(cells).toHaveCount(2);
+
+    for (const cell of await cells.all()) {
+      expect(await style(cell, 'text-align')).toBe('end');
+    }
+  });
+
+  test('keeps the search, the size strip and the column headers in place', async ({ page }) => {
+    // Not measured off an artboard: 48 hulls are several screenfuls, and a
+    // figure whose column has scrolled away is a figure a Commander cannot
+    // read. The offsets are derived from the bar and the toolbar, so the
+    // assertion is that nothing ends up behind anything else.
+    await page.goto('/ships');
+    const header = page.locator('thead th').first();
+    const toolbar = page.locator('edsb-collection-toolbar');
+    await expect(header).toBeVisible();
+
+    await page.mouse.wheel(0, 1200);
+    await page.waitForTimeout(200);
+
+    const bar = (await page.locator('.frame__banner').boundingBox())!;
+    const strip = (await toolbar.boundingBox())!;
+    const columns = (await header.boundingBox())!;
+
+    expect(bar.y).toBeCloseTo(0, 0);
+    expect(strip.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
+    expect(columns.y).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
+    await expect(header).toBeInViewport();
+  });
+
+  test('keeps the inspector with the hull it describes', async ({ page }) => {
+    await page.goto('/ships/Anaconda');
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeVisible();
+
+    await page.mouse.wheel(0, 1200);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('.detail__name')).toBeInViewport();
   });
 });

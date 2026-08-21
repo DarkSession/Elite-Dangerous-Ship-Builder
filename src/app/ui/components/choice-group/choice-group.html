@@ -4,7 +4,9 @@
   [attr.aria-invalid]="relations.invalid() ? 'true' : null"
   [attr.aria-describedby]="relations.describedBy()"
 >
-  <legend class="choice-group__legend">{{ legend() }}</legend>
+  <legend class="choice-group__legend" [class.field__label--hidden]="legendHidden()">
+    {{ legend() }}
+  </legend>
 
   <div class="choice-group__options" [attr.data-layout]="layout()">
     @for (choice of choices(); track choice.value) {

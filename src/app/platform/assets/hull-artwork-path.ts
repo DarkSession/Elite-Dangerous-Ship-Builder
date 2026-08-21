@@ -1,10 +1,11 @@
 /**
  * Where a hull's illustration is served from.
  *
- * The Almanac ships one `illustration.svg` per hull; the build copies them to
- * the application's own origin, so nothing here ever names another host
- * (constitution I). The symbol keeps the package's exact casing, because the
- * copied directory names are the package's own and a case-insensitive
+ * The Almanac ships one `illustration.svg` per hull. Those are rasterised to
+ * PNG by `scripts/convert-ship-artwork.mjs` and committed under `public/`, so
+ * the served files are this application's own and nothing here ever names
+ * another host (constitution I). The symbol keeps the package's exact casing,
+ * because the directory names are the package's own and a case-insensitive
  * filesystem in development would otherwise hide a 404 that production returns.
  */
 const ARTWORK_ROOT = 'assets/ships';
@@ -17,7 +18,7 @@ const ARTWORK_ROOT = 'assets/ships';
  * Callers that need an absolute URL join it with the document base.
  */
 export function hullArtworkPath(symbol: string): string {
-  return `${ARTWORK_ROOT}/${symbol}/illustration.svg`;
+  return `${ARTWORK_ROOT}/${symbol}/illustration.png`;
 }
 
 /**

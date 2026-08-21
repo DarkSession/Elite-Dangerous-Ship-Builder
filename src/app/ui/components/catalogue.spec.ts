@@ -98,7 +98,7 @@ describe('HullSummaryCard', () => {
 
     expect(query(plain, 'article').getAttribute('aria-current')).toBeNull();
     expect(query(selected, 'article').getAttribute('aria-current')).toBe('true');
-    expect(textOf(element(selected))).toContain('Currently viewing');
+    expect(textOf(element(selected))).toContain('Selected');
   });
 
   it('names the hull it opens, so the action is not a bare hull name', () => {
@@ -137,8 +137,9 @@ describe('ResponsiveCatalogueView', () => {
     expect(buttons).toHaveLength(columns.length);
     for (const [index, button] of buttons.entries()) {
       // The visible word is the column; the accessible name adds the action
-      // and the direction without replacing it.
-      expect(textOf(button)).toBe(columns[index]!.label);
+      // and the direction without replacing it. The sorted column also wears
+      // the reference's caret, which is decoration and is hidden.
+      expect(textOf(button)).toContain(columns[index]!.label);
       expect(button.getAttribute('aria-label')).toBe(columns[index]!.sortActionLabel);
       expect(button.getAttribute('aria-label')?.toLowerCase()).toContain(
         columns[index]!.label.toLowerCase(),
@@ -194,7 +195,8 @@ describe('ResponsiveCatalogueView', () => {
 
     expect(query(fixture, 'tbody tr').getAttribute('aria-current')).toBe('true');
     expect(textOf(query(fixture, '.catalogue__mark'))).toBe('◆');
-    expect(textOf(element(fixture))).toContain('Currently viewing');
+    // The reference marks the row; the word is there but never drawn.
+    expect(textOf(element(fixture))).toContain('Selected');
   });
 
   it('says so when there is nothing to show, rather than showing an empty frame', () => {
@@ -243,7 +245,7 @@ describe('CollectionToolbar', () => {
     const search = query(fixture, 'input[type="search"]') as HTMLInputElement;
 
     expect(search.value).toBe('cutter');
-    expect(textOf(element(fixture).querySelector('label'))).toBe('Search hulls');
+    expect(textOf(element(fixture).querySelector('label'))).toBe('Search ships or manufacturers');
   });
 
   // The reference toolbar is a search field, a size strip and — compact only —
@@ -252,8 +254,8 @@ describe('CollectionToolbar', () => {
     const fixture = renderComponent(CollectionToolbar, toolbarInputs);
     const text = textOf(element(fixture));
 
-    expect(text).toContain('Search hulls');
-    expect(text).toContain('Landing pad size');
+    expect(text).toContain('Search ships or manufacturers');
+    expect(text).toContain('Size');
     expect(element(fixture).querySelectorAll('select')).toHaveLength(0);
     expect(text).not.toContain('Manufacturer');
     expect(text).not.toContain('Lowest retail price');

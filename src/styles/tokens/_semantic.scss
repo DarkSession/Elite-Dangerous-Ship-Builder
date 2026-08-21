@@ -236,6 +236,18 @@
   --edsb-layout-content-max: var(--edsb-measure-content-max);
   --edsb-layout-prose-max: var(--edsb-measure-prose-max);
   --edsb-layout-rail-min: var(--edsb-measure-rail-min);
+
+  // What a region has to clear to sit below the sticky command bar.
+  --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+
+  // What a manifest's frozen column headers have to clear: the command bar,
+  // then one target-height row of toolbar controls inside the hairline the
+  // segmented strip is ruled with and the region's own block padding. Stated
+  // here rather than on the screen so the two heights stay one decision.
+  --edsb-layout-manifest-offset: calc(
+    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
+      var(--edsb-border-width-hairline)
+  );
   --edsb-layout-layer-max: var(--edsb-measure-layer-md);
   --edsb-layout-layer-narrow: var(--edsb-measure-layer-sm);
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);

@@ -33,11 +33,11 @@ test.describe('the catalogue, at full size', () => {
   test('searches, filters and orders the whole manifest without a perceptible wait', async ({
     page,
   }) => {
-    const search = page.getByRole('searchbox', { name: 'Search hulls' });
+    const search = page.getByRole('searchbox', { name: 'Search ships or manufacturers' });
 
     const searching = await timeConstraint(page, () => search.fill('a'));
     const filtering = await timeConstraint(page, async () => {
-      await page.getByRole('checkbox', { name: 'Large' }).check();
+      await page.getByRole('radio', { name: 'Large' }).check();
     });
     const ordering = await timeConstraint(page, async () => {
       // The reference orders the wide manifest from its own column headers.
@@ -60,7 +60,7 @@ test.describe('the catalogue, at full size', () => {
 test.describe('the workspace, on arrival', () => {
   test('restores the working build before it is interactive', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByText('Saved in this browser')).toBeVisible();
 
@@ -77,7 +77,7 @@ test.describe('the workspace, on arrival', () => {
 
   test('coalesces autosaves instead of writing once per edit', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByText('Saved in this browser')).toBeVisible();
 
     // One record, one key, however many revisions went into it.
@@ -91,7 +91,7 @@ test.describe('the workspace, on arrival', () => {
 test.describe('the codec', () => {
   test('encodes and decodes a real build well inside the sub-50 ms target', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build#b\./);
 
     // Publication happens once per modelled edit, so the time from an edit to a

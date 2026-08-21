@@ -19,6 +19,12 @@
   margin-block-start: var(--edsb-space-stack-tight);
 }
 
+// A legend that is not drawn leaves no gap above the options either. It wears
+// the shared field rule, so the hiding recipe is stated once.
+.field__label--hidden + .choice-group__options {
+  margin-block-start: 0;
+}
+
 .choice {
   display: grid;
   grid-template-columns: auto 1fr;

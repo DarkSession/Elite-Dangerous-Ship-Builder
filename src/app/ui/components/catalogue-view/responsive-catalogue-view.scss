@@ -4,8 +4,8 @@
   display: block;
 }
 
-// Exactly one composition exists at a time. `display: none` removes the other
-// from layout and from the accessibility tree, so nothing is announced twice.
+// Exactly one composition exists at a time: `display: none` removes the other
+// from layout and from the accessibility tree.
 .catalogue__cards {
   @include layout.stack(var(--edsb-space-stack));
 
@@ -18,11 +18,21 @@
   display: none;
 }
 
-@include layout.medium-up {
-  .catalogue__manifest {
-    @include layout.bounded-scroller;
+// A short viewport releases the shell's own sticky bar, so the header releases
+// with it rather than freezing over a gap (FR-011).
+@include layout.short-viewport {
+  .catalogue__table thead th {
+    position: static;
+  }
+}
 
+@include layout.medium-up {
+  // Not a scroller: a sticky header inside an `overflow` box freezes against
+  // that box rather than against the viewport, and this table only ever renders
+  // above the medium threshold, where its six short columns already fit.
+  .catalogue__manifest {
     display: block;
+    max-inline-size: 100%;
   }
 
   .catalogue__cards {
@@ -45,14 +55,34 @@
   text-align: start;
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-inline-tight);
-  overflow-wrap: break-word;
+  // `anywhere` rather than `break-word`: only `anywhere` counts the break
+  // towards the column's minimum, which is what lets the table shrink instead
+  // of pushing the document sideways at 200% text. The manifest is not an
+  // overflow container, so there is nothing else to absorb it.
+  overflow-wrap: anywhere;
 }
 
+// Frozen under the screen's own chrome, so a column is still named after the
+// first screenful of hulls.
 .catalogue__table thead th {
   @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
 
+  position: sticky;
+  inset-block-start: var(--edsb-layout-manifest-offset);
+  z-index: 1;
   padding: 0;
+  background-color: var(--edsb-surface-root);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The column a list is ordered by takes the reference's amber and its caret
+// (canvas 1a `paintSort`).
+.catalogue__table thead th[aria-sort] {
+  color: var(--edsb-text-accent-strong);
+}
+
+.catalogue__caret {
+  font-size: var(--edsb-text-size-micro);
 }
 
 .catalogue__table tbody th,
@@ -60,10 +90,8 @@
   background-color: var(--edsb-surface-row);
 }
 
-// The reference names the current row with the marker, the wash and the hull
-// name in amber — never with a word (canvas 1a/1b). The words stay for anyone
-// not reading the plate; they are not drawn.
-.catalogue__selected,
+// The current row is named by the marker, the wash and the amber name, never
+// by a word (canvas 1a/1b). The words stay for anyone not reading the plate.
 .catalogue__spoken {
   @include layout.visually-hidden;
 }
@@ -79,14 +107,12 @@
   @include layout.micro-label(var(--edsb-text-secondary), var(--edsb-text-tracking-count));
 }
 
-// The row's leading marker. Transparent until the row is current, so no row
-// changes width when the selection moves.
+// Transparent until the row is current, so no row changes width.
 .catalogue__table tbody tr > :first-child {
   border-inline-start: var(--edsb-border-width-marker) solid transparent;
 }
 
-// Painted on the row, not on each cell: a per-cell gradient restarts at every
-// column boundary and leaves seams the reference does not have.
+// Painted on the row: a per-cell gradient restarts at every column boundary.
 .catalogue__table tbody tr[aria-current='true'] {
   background-image: var(--edsb-surface-row-selected);
 }
@@ -99,15 +125,10 @@
   border-inline-start-color: var(--edsb-marker-selected);
 }
 
-.catalogue__table tr[aria-current='true'] .catalogue__open {
-  color: var(--edsb-text-accent-strong);
-}
-
 .catalogue__sort,
 .catalogue__open {
   @include layout.target-baseline;
 
-  display: block;
   inline-size: 100%;
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-control-inline);
@@ -122,20 +143,31 @@
 .catalogue__sort {
   // Inherits the header cell's tracked monospace rather than restating it, so
   // the whole header row is one decision.
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
   font: inherit;
   letter-spacing: inherit;
-  text-transform: inherit;
-  color: inherit;
-  min-block-size: var(--edsb-target-size);
 }
 
-.catalogue__numeric {
+// The mount mix and the price sit hard against the trailing edge, so digits
+// line up down the column (canvas 1a).
+.catalogue__table td.catalogue__numeric {
   @include layout.metric-value(var(--edsb-text-size-body), var(--edsb-text-secondary));
 
   unicode-bidi: isolate;
 }
 
+.catalogue__table .catalogue__numeric,
+.catalogue__table .catalogue__numeric .catalogue__sort {
+  justify-content: flex-end;
+  text-align: end;
+}
+
 .catalogue__open {
+  display: block;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   font-family: var(--edsb-font-heading);
   font-size: var(--edsb-text-size-heading-md);
   font-weight: var(--edsb-text-weight-control);

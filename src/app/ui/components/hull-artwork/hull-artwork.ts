@@ -48,6 +48,13 @@ export class HullArtwork {
 
   readonly statusId = relationId('artwork-status');
 
+  /**
+   * The loading mark, served from this origin like every other asset. The file
+   * is a copy of EDAssets' `EDLoader1.svg`, not a link to it — nothing this
+   * application draws is fetched from another host at runtime.
+   */
+  readonly loaderSource = 'assets/loader.svg';
+
   readonly loadingText = this.#messages.messageSignal('hullDetail.artwork.loading');
   readonly unavailableText = this.#messages.messageSignal('hullDetail.artwork.unavailable');
   readonly retryLabel = this.#messages.messageSignal('hullDetail.artwork.retry');

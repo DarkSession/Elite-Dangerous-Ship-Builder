@@ -11,11 +11,19 @@
         (error)="failed.emit()"
       />
     }
-  </div>
 
-  @if (isLoading()) {
-    <p class="artwork__status" [id]="statusId">{{ loadingText() }}</p>
-  }
+    <!--
+      While the illustration is on its way the plate carries the loader rather
+      than a line of prose under it: the words move nothing on the page, and
+      the mark sits where the picture will be.
+    -->
+    @if (isLoading()) {
+      <p class="artwork__loading">
+        <img class="artwork__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <span class="artwork__spoken" [id]="statusId">{{ loadingText() }}</span>
+      </p>
+    }
+  </div>
 
   @if (isUnavailable()) {
     <figcaption class="artwork__status" [id]="statusId">

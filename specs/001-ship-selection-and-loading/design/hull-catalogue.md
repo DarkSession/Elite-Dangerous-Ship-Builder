@@ -6,11 +6,11 @@
 ## Composition
 
 - `AppShell` with the reference shipyard command bar. The bar carries the screen's name and the live match count, and the page renders neither again (see [screen chrome](#screen-chrome-and-the-command-bar)).
-- `CollectionToolbar` as the reference draws it and no further: a localized search field and the size choices as an abutted segmented strip. Ordering is the wide manifest's own column headers, and canvas 1b's sort chips in the compact composition.
-- Wide `ResponsiveCatalogueView`: canvas 1a's manifest — a leading marker column, then ship, manufacturer, the size code, the mount code and the price in Mcr. Column headers are named bidirectional sort buttons. The current row is marked by the amber lozenge, the wash and the amber hull name, and by `aria-current`; it carries no label.
+- `CollectionToolbar` as the reference draws it and no further: a localized search field carrying its words in the placeholder rather than in a drawn label, and the size choices as an abutted segmented strip led by `ALL`. The strip is exclusive — `ALL` or one pad class, never two at once — so it is a radio group, not a set of checkboxes. Ordering is the wide manifest's own column headers, and canvas 1b's sort chips in the compact composition.
+- Wide `ResponsiveCatalogueView`: canvas 1a's manifest — a leading marker column, then ship, manufacturer, the size code, the mount code and the price in Mcr, the last two hard against the trailing edge as the reference sets them. Column headers are named bidirectional sort buttons; the column in force takes the reference's amber and its `▲`/`▼` caret, which is decoration beside `aria-sort`. The current row is marked by the amber lozenge, the 3px marker on its leading edge, the wash and the amber hull name, and by `aria-current`; it carries no drawn label.
 - Narrow `ResponsiveCatalogueView`: canvas 1b's stacked records — the size code on the leading edge, the hull name over one `manufacturer · mounts` line, the price and `Mcr` on the trailing edge — preceded by the horizontally scrolling sort chips.
 - When `/ships/:symbol` is active at wide widths, the manifest shares the page with the [hull-detail inspector](./hull-detail.md). `/ships` itself requires no implicit first selection.
-- One centred sentence for no matches, on the manifest's own ground, and `InlineNotice` for unavailable package facts.
+- One centred sentence for no matches, on the manifest's own ground. No notice above the list: the reference draws none, and a cell with no value already says "Unavailable" in place.
 
 ### Divergence from FR-002
 
@@ -19,6 +19,32 @@ FR-002 requires filtering over manufacturer, hardpoint layout and retail price. 
 An earlier build resolved this by folding those facets and the constraint list behind a “More filters” disclosure. That was rejected on 2026-08-21: anything the design does not draw is not on the screen.
 
 `CatalogueFacade` keeps `changeManufacturers`, `changeHardpointClasses` and `changePrice`, and they remain unit-tested, so the capability is intact and one template away. What has gone is the constraint-view surface (`constraints`, `removeConstraint`, `clearConstraints`), which existed only to render controls the reference has no place for. Either FR-002 is narrowed to search and size, or the design gains a place to draw the rest.
+
+Canvas 1b's sort chips are a second open point of the same kind: the reference offers `PRICE`, `SHIP`, `HULL t` and `MOUNTS` there, which is neither the wide manifest's column set nor a subset of it — `HULL t` orders by a figure the compact card does not show, and there is no `mass` sort field. The chips currently carry the manifest's own five fields. Settling this means either adding a mass ordering or narrowing the compact chip set on the drawing.
+
+### Words the reference uses
+
+Every string on this screen is the reference's, not a paraphrase of it:
+
+| Reference       | Message key                                          |
+| --------------- | ---------------------------------------------------- |
+| `48 SHIPS`      | `catalogue.match-count.all`                          |
+| `8 OF 48 SHIPS` | `catalogue.match-count`                              |
+| search field    | `catalogue.search.label` — placeholder, hidden label |
+| `ALL`           | `catalogue.size.all`                                 |
+| `SIZE`          | `catalogue.filter.size.legend` — hidden legend       |
+| `HARDPOINTS`    | `catalogue.column.hardpoints`                        |
+| `PRICE Mcr`     | `catalogue.column.price`                             |
+
+The table caption and the size legend are not drawn; they stay in the markup as the accessible names of the table and the strip, in the reference's own words rather than in invented ones.
+
+### Frozen chrome
+
+With 48 hulls the manifest is several screenfuls, so the command bar, the toolbar and the column headers stay put while the rows scroll under them, and the inspector rail stays with the hull it describes.
+
+The offsets are exact by construction rather than measured at runtime. The command bar is one row of controls at the target baseline inside its own block padding (`--edsb-layout-bar-height`), the toolbar below it is one such row inside the region's block padding and the size strip's hairline, and the manifest header clears both through `--edsb-catalogue-sticky-offset`. A short viewport releases the bar (FR-011), and every region below releases with it.
+
+The manifest is deliberately **not** an overflow container: a sticky header inside one freezes against that box rather than against the viewport. It only ever renders above the medium threshold, where its six short columns fit, and narrower or zoomed layouts use the cards instead.
 
 ### Screen chrome and the command bar
 
@@ -51,7 +77,7 @@ Search uses the actual localized strings/formatters shown in the current manifes
 - Manifest headers expose sort name/direction; narrow cards use list/definition semantics so fact labels and values remain associated.
 - Row/card click is not the only action mechanism; a named touch target exposes detail navigation.
 - No result depends on hover artwork or color. Long canonical package names/manufacturers wrap.
-- A wide manifest that cannot fit expanded/translated content owns internal overflow; the document never scrolls horizontally, and zoomed layouts switch to cards.
+- The document never scrolls horizontally. Zoomed and narrow layouts switch to cards rather than squeezing the manifest, which is what lets the manifest stay a plain table with a viewport-sticky header.
 - Component previews cover default, constrained, no-match and unavailable states in wide manifest and narrow card variants.
 
 ## Reference composition

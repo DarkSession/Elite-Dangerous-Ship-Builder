@@ -1,9 +1,8 @@
 @use '../../../styles/responsive' as layout;
 
-// The reference's hull inspector: artwork on a hatched plate, the hull name set
-// large in tracked condensed amber over a monospace identity line, a ruled
-// metric grid, the hardpoint section under its own rule, the price on a rule of
-// its own, then the hull actions (canvas 1a rail / canvas 1b detail screen).
+// The hull inspector: artwork on a hatched plate, the hull name in tracked
+// condensed amber over a monospace identity line, a ruled metric grid, the
+// hardpoint section, the price, then the two hull actions (canvas 1a/1b).
 :host {
   display: block;
 }
@@ -12,9 +11,8 @@
   @include layout.stack(var(--edsb-space-panel));
 }
 
-// At narrow widths the same route is the whole screen rather than a rail
-// beside the manifest. The address, the state and the history entry do not
-// change with the breakpoint; only where it sits does.
+// At narrow widths the same route is the whole screen. The address, the state
+// and the history entry do not change with the breakpoint.
 @include layout.compact {
   .detail {
     padding-block: var(--edsb-space-inline-loose);
@@ -29,9 +27,8 @@
   @include layout.display-title(var(--edsb-text-size-display), var(--edsb-text-tracking-title));
 }
 
-// The reference's identity line: manufacturer and pad class as one tracked
-// monospace run. The labels stay in the markup for anyone reading it aloud;
-// only the eye sees a single line (canvas 1a `#sy-blurb`).
+// The identity line: manufacturer and pad class as one tracked monospace run.
+// The labels stay in the markup; only the eye sees a single line (canvas 1a).
 .detail__blurb {
   display: flex;
   flex-wrap: wrap;
@@ -45,16 +42,15 @@
 
 // `min-inline-size: 0` releases the flex item's automatic minimum and
 // `anywhere` lets the break count towards the track's minimum, which
-// `break-word` does not. Without both, a narrow viewport at 200% text sizes
-// this line to its longest package noun and pushes the page sideways.
+// `break-word` does not. Without both, 200% text pushes the page sideways.
 .detail__blurb dd {
   margin: 0;
   min-inline-size: 0;
   overflow-wrap: anywhere;
 }
 
-// The separator is punctuation, not information: it is generated so it never
-// lands between a label and the value it belongs to.
+// Punctuation, not information: generated so it never lands between a label
+// and its value.
 .detail__blurb dd:not(:first-of-type)::before {
   content: '·\00a0';
 }
@@ -72,8 +68,8 @@
   margin: 0;
 }
 
-// The reference's mount chip: a count in amber beside a tracked class name, on
-// an inset plate behind an amber hairline (canvas 1a `#sy-hp`).
+// The mount chip: a count in amber beside a tracked class name, on an inset
+// plate behind an amber hairline (canvas 1a `#sy-hp`).
 .detail__mount {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
@@ -123,14 +119,12 @@
   @include layout.stack(var(--edsb-space-stack));
 }
 
-// The hull action is the reference's one filled, widely tracked commitment on
-// this screen.
-.detail__create edsb-action-button {
-  display: block;
-}
+// The commitment is drawn full-bleed on its own row (canvas 1a). The
+// reference's second rail button opens the library, which the command bar
+// already offers on this screen; it is not drawn twice.
 
-// The reference's back control: a bare arrow on the compact sheet, and nothing
-// at all at wide widths, where the manifest is still beside it.
+// The back control: a bare arrow on the compact sheet, and nothing at wide
+// widths, where the manifest is still beside it.
 .detail__back {
   display: none;
 }

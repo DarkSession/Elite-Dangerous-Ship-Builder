@@ -25,9 +25,8 @@ import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
 import type { HullFactGroup } from '../../domain/catalogue/hull-facts';
 
 /**
- * The five figures the reference rail carries, in its order: speed at four
- * pips, boost, shield, armour, hull mass (canvas 1a, "Metric grid"). Every
- * other published figure is one disclosure down rather than absent.
+ * The eight figures the reference's metric grid carries, in its order (canvas
+ * 1a, "Metric grid").
  */
 const SUMMARY_FACTS: readonly string[] = [
   'maximum-speed',
@@ -35,6 +34,9 @@ const SUMMARY_FACTS: readonly string[] = [
   'base-shield',
   'base-armour',
   'hull-mass',
+  'hardness',
+  'crew',
+  'masslock',
 ];
 
 /** The mount classes the reference chips name, largest first. */
@@ -100,9 +102,6 @@ export class HullDetailPage {
   readonly createUnavailable = this.#messages.messageSignal('hullDetail.create.unavailable');
   readonly manufacturerLabel = this.#messages.messageSignal('hullDetail.fact.manufacturer');
   readonly sizeLabel = this.#messages.messageSignal('hullDetail.fact.size');
-  readonly moreSpecificationsHeading = this.#messages.messageSignal(
-    'hullDetail.specifications.all',
-  );
   readonly mountsHeading = this.#messages.messageSignal('hullDetail.slots.group.hardpoint');
   readonly priceLabel = this.#messages.messageSignal('hullDetail.price');
 
@@ -114,7 +113,7 @@ export class HullDetailPage {
   readonly #creationError = signal<string | null>(null);
   readonly creationError = this.#creationError.asReadonly();
 
-  /** The reference rail's five figures, in the reference's order. */
+  /** The reference rail's figures, in the reference's order. */
   readonly summaryFacts = computed<readonly Fact[]>(() => {
     const view = this.view();
     const facts = view?.kind === 'populated' ? view.factGroups.flatMap((group) => group.facts) : [];

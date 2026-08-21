@@ -14,7 +14,7 @@ function entry(overrides: Partial<HullCatalogueEntry>): HullCatalogueEntry {
     retailPrice: 0,
     hullPrice: 0,
     slots: [],
-    artworkPath: 'assets/ships/Hull/illustration.svg',
+    artworkPath: 'assets/ships/Hull/illustration.png',
     defaultAvailable: true,
     ...overrides,
   };

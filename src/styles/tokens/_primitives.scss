@@ -271,6 +271,12 @@
   // The inspector rail, 340px in canvas 1a.
   --edsb-measure-rail-min: 21.25rem;
 
+  // The command bar: one row of controls at the 44px target baseline inside the
+  // bar's own block padding. The canvas draws 56px around 30px chips; the extra
+  // is the target floor, which is a rule about the product rather than a
+  // measurement taken off the drawing.
+  --edsb-measure-bar-height: 4.125rem;
+
   // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export,
   // 860 library. Three named steps cover them.
   --edsb-measure-layer-sm: 33.75rem;

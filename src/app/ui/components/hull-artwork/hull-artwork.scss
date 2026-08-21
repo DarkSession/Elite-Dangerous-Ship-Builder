@@ -30,6 +30,25 @@
   filter: var(--edsb-artwork-filter);
 }
 
+// Centred on the plate, at the size the mark is drawn at. It is decoration:
+// the words beside it are what a reader hears.
+.artwork__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artwork__loader {
+  inline-size: var(--edsb-target-size);
+  block-size: var(--edsb-target-size);
+}
+
+.artwork__spoken {
+  @include layout.visually-hidden;
+}
+
 .artwork__status {
   @include layout.stack(var(--edsb-space-stack-tight));
 

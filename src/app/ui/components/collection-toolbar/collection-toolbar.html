@@ -7,6 +7,8 @@
     <div class="toolbar__search">
       <edsb-text-field
         [label]="searchLabel()"
+        [labelHidden]="true"
+        [placeholder]="searchLabel()"
         [value]="search()"
         kind="search"
         (changed)="searchChanged.emit($event)"
@@ -16,9 +18,10 @@
     <edsb-choice-group
       class="toolbar__sizes"
       [legend]="sizeLegend()"
+      [legendHidden]="true"
       [choices]="sizeChoices()"
       [selected]="selectedSizes()"
-      kind="checkbox"
+      kind="radio"
       layout="segmented"
       (changed)="sizesChanged.emit($event)"
     />

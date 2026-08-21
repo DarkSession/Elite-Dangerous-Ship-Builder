@@ -51,7 +51,7 @@ describe('hull catalogue projection', () => {
 
   it('names a same-origin illustration for every hull', () => {
     for (const entry of hullCatalogue()) {
-      expect(entry.artworkPath).toBe(`assets/ships/${entry.symbol}/illustration.svg`);
+      expect(entry.artworkPath).toBe(`assets/ships/${entry.symbol}/illustration.png`);
       expect(entry.artworkPath).not.toContain('://');
     }
   });

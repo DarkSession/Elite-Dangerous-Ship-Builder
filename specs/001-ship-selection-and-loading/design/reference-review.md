@@ -29,8 +29,8 @@ The design file is a product visual reference. It is not application source, a g
 ### Almanac data and assets
 
 - All row/detail values in the design are illustrative. Runtime reads `SHIPS`, exact package symbols, package units and package validation; it does not copy the HTML's hard-coded arrays or labels.
-- The reference PNGs and partial-coverage copy are stale mock assets/state. The installed package provides an `illustration.svg` for every catalogued hull. Runtime copies those package files to a same-origin asset path and retains defensive loading/missing states for package drift and offline conditions.
-- The reference detail summary omits hardness, mass-lock factor, crew, heat capacity/dissipation, reserve fuel, rotation endpoints, complete slot layout and the hull-only/retail cost distinction. **This adaptation was withdrawn on 2026-08-21.** The screen is the reference composition; those figures are not shown. See [hull-detail, "Divergence from FR-004"](./hull-detail.md#divergence-from-fr-004).
+- The reference's partial-coverage copy is stale mock state: the installed package provides an `illustration.svg` for every catalogued hull. The reference's use of PNGs is not stale, and was adopted on 2026-08-21 — the package files are rasterised to PNG and served from a same-origin asset path, with defensive loading/missing states retained for package drift and offline conditions.
+- The reference detail summary omitted hardness, mass-lock factor, crew, heat capacity/dissipation, reserve fuel, rotation endpoints, the slot layout and the hull-only/retail cost distinction. **This adaptation was withdrawn on 2026-08-21** and then settled the same day: the design gained hardness, crew and mass lock, and FR-004 dropped heat, reserve fuel, rotation and the slot layout. The screen is the reference composition. See [hull-detail](./hull-detail.md#the-inspector-is-the-reference-composition).
 - Missing package values render as unavailable, never as the mock's zero, blank cell or guessed value.
 
 ### Catalogue behavior

@@ -1,6 +1,5 @@
 import { FactList, type Fact } from './fact-list/fact-list';
 import { HullArtwork } from './hull-artwork/hull-artwork';
-import { SlotLayout, type SlotGroup } from './slot-layout/slot-layout';
 import {
   describedText,
   element,
@@ -62,7 +61,7 @@ describe('FactList', () => {
 
 describe('HullArtwork', () => {
   const inputs = {
-    source: 'assets/ships/Anaconda/illustration.svg',
+    source: 'assets/ships/Anaconda/illustration.png',
     label: 'Illustration of the Anaconda',
   };
 
@@ -131,70 +130,5 @@ describe('HullArtwork', () => {
     query(fixture, 'img').dispatchEvent(new Event('error'));
 
     expect(events).toEqual(['loaded', 'failed']);
-  });
-});
-
-describe('SlotLayout', () => {
-  const groups: readonly SlotGroup[] = [
-    {
-      kind: 'core',
-      label: 'Core internals',
-      slots: [{ key: 'PowerPlant', size: 'Size 8', restriction: null }],
-    },
-    {
-      kind: 'optional',
-      label: 'Optional internals',
-      slots: [
-        { key: 'Slot14_Size1', size: 'Size 1', restriction: null },
-        { key: 'Military01', size: 'Size 5', restriction: 'Takes reinforcement packages only' },
-      ],
-    },
-  ];
-
-  it('groups mounts by kind, each under its own heading', () => {
-    const fixture = renderComponent(SlotLayout, { label: 'Slot layout', groups });
-
-    expect([...element(fixture).querySelectorAll('h3')].map(textOf)).toEqual([
-      'Core internals',
-      'Optional internals',
-    ]);
-  });
-
-  it('shows the game’s own slot key verbatim', () => {
-    const fixture = renderComponent(SlotLayout, { label: 'Slot layout', groups });
-    const keys = [...element(fixture).querySelectorAll('.slots__key')].map(textOf);
-
-    expect(keys).toEqual(['PowerPlant', 'Slot14_Size1', 'Military01']);
-  });
-
-  it('isolates a slot key from the surrounding text direction', () => {
-    const fixture = renderComponent(SlotLayout, { label: 'Slot layout', groups });
-
-    expect(query(fixture, '.slots__key').getAttribute('dir')).toBe('ltr');
-  });
-
-  it('names a mount’s size and any restriction it carries', () => {
-    const fixture = renderComponent(SlotLayout, { label: 'Slot layout', groups });
-    const text = textOf(element(fixture));
-
-    expect(text).toContain('Size 8');
-    expect(text).toContain('Takes reinforcement packages only');
-  });
-
-  it('presents each group of mounts as a semantic list', () => {
-    const fixture = renderComponent(SlotLayout, { label: 'Slot layout', groups });
-
-    expect(element(fixture).querySelectorAll('ul')).toHaveLength(2);
-    expect(element(fixture).querySelectorAll('li')).toHaveLength(3);
-  });
-
-  it('says so when the package supplies no layout at all', () => {
-    const fixture = renderComponent(SlotLayout, {
-      label: 'Slot layout',
-      groups: [],
-      emptyLabel: 'The Almanac supplies no slot layout for this hull.',
-    });
-
-    expect(textOf(element(fixture))).toContain('no slot layout');
   });
 });

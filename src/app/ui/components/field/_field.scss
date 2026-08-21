@@ -21,6 +21,10 @@
   @include layout.micro-label(var(--edsb-text-subtle));
 }
 
+.field__label--hidden {
+  @include layout.visually-hidden;
+}
+
 .field__control {
   @include layout.target-baseline;
 

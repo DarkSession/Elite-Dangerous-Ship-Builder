@@ -27,7 +27,8 @@ function visibleHulls(page: Page) {
   return page.locator('[data-hull-symbol]:visible');
 }
 
-const search = (page: Page) => page.getByRole('searchbox', { name: 'Search hulls' });
+const search = (page: Page) =>
+  page.getByRole('searchbox', { name: 'Search ships or manufacturers' });
 
 /** The command bar, where the reference puts the screen's one count. */
 const commandBar = (page: Page) => page.getByRole('banner');
@@ -50,24 +51,28 @@ test.describe('hull catalogue', () => {
   // The reference carries the manifest's count in the command bar beside the
   // screen's own name, and nowhere else (canvas 1a, canvas 1b).
   test('lists every installed hull before anything is narrowed', async ({ page }) => {
-    await expect(commandBar(page).getByText(/48 of 48 hulls shown/)).toBeVisible();
+    await expect(commandBar(page).getByText(/48 ships/)).toBeVisible();
   });
 
   test('states the match count as text, and updates it', async ({ page }) => {
     await search(page).fill('anaconda');
 
     await expect(visibleHulls(page)).not.toHaveCount(48);
-    await expect(commandBar(page).getByText(/1 of 48 hulls shown/)).toBeVisible();
+    await expect(commandBar(page).getByText(/1 of 48 ships/)).toBeVisible();
   });
 
   // The reference toolbar narrows by search and landing-pad size. Filtering by
   // manufacturer, hardpoint class and price is FR-002 capability the reference
   // draws no control for; it is covered at the facade rather than here.
+  // The reference's strip is exclusive: `ALL` or one pad class, never two.
   test('narrows by search and by landing-pad size', async ({ page }) => {
-    await page.getByRole('checkbox', { name: 'Large' }).check();
+    await page.getByRole('radio', { name: 'Large' }).check();
     await expect(visibleHulls(page)).not.toHaveCount(48);
 
-    await page.getByRole('checkbox', { name: 'Large' }).uncheck();
+    await page.getByRole('radio', { name: 'Medium' }).check();
+    await expect(page.getByRole('radio', { name: 'Large' })).not.toBeChecked();
+
+    await page.getByRole('radio', { name: 'All', exact: true }).check();
     await expect(visibleHulls(page)).toHaveCount(48);
 
     await search(page).fill('type');
@@ -83,7 +88,7 @@ test.describe('hull catalogue', () => {
     await expect(page.locator('.catalogue__empty:visible')).toHaveText(
       /no hull in the catalogue matches that filter/i,
     );
-    await expect(commandBar(page).getByText(/0 of 48 hulls shown/)).toBeVisible();
+    await expect(commandBar(page).getByText(/0 of 48 ships/)).toBeVisible();
   });
 
   test('sorts in both directions on every field, and says which way', async ({ page }) => {
@@ -120,7 +125,7 @@ test.describe('hull catalogue', () => {
 
   test('keeps browsing state out of the route, the fragment and storage', async ({ page }) => {
     await search(page).fill('anaconda');
-    await page.getByRole('checkbox', { name: 'Large' }).check();
+    await page.getByRole('radio', { name: 'Large' }).check();
     await expect(visibleHulls(page)).toHaveCount(1);
 
     const url = new URL(page.url());

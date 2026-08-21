@@ -44,6 +44,12 @@ export interface Choice {
 export class ChoiceGroup {
   /** The question the group asks. Rendered as the legend. */
   readonly legend = input.required<string>();
+  /**
+   * Whether the legend is drawn. The reference's segmented strip carries no
+   * question above it; the words stay for anyone reading it aloud
+   * (canvas 1a/1b).
+   */
+  readonly legendHidden = input(false);
   readonly choices = input.required<readonly Choice[]>();
   readonly kind = input<ChoiceKind>('radio');
   readonly layout = input<ChoiceLayout>('stack');
