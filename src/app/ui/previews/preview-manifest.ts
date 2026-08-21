@@ -232,6 +232,13 @@ import {
   packageText,
 } from '../../domain/outfitting/outfitting.fixtures';
 import { AcquisitionBadge } from '../outfitting/acquisition-badge';
+import { AttributeComparison } from '../outfitting/attribute-comparison';
+import { BlueprintChoiceList } from '../outfitting/blueprint-choice-list';
+import { ExperimentalEffectList } from '../outfitting/experimental-effect-list';
+import { GradeSelector } from '../outfitting/grade-selector';
+import { IngressRefusalNotice } from '../outfitting/ingress-refusal-notice';
+import { MaterialCostList } from '../outfitting/material-cost-list';
+import { PowerControls } from '../outfitting/power-controls';
 import { CandidateList } from '../outfitting/candidate-list';
 import { CandidateSearch } from '../outfitting/candidate-search';
 import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
@@ -2783,5 +2790,451 @@ registerPreview({
     notApplicable('loading', 'A restriction is a fact already read from the package record.'),
     notApplicable('error', 'A restriction is content, not the outcome of an attempt.'),
     notApplicable('disabled', 'A restriction is content, not a control.'),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Engineering
+//
+// Every row of the engineering editor's states table has a fixture here, and
+// each is rendered at every viewport the Playwright projects supply. The
+// recurring subject is the pair of absences the design keeps apart: a known
+// zero and an unstated figure, which look identical if either is drawn as the
+// other (engineering editor design, "States").
+// ---------------------------------------------------------------------------
+
+/** A recipe the package offers, as the choice list sees it. */
+function blueprintChoice(
+  fdname: string,
+  name: string,
+  route: 'ordinary' | 'mercenary',
+  applied = false,
+): Record<string, unknown> {
+  return { fdname, name: localized(name), route, applied };
+}
+
+const ENGINEERING_MATERIALS = [
+  { symbol: 'ConductivePolymers', name: localized('Conductive Polymers'), grade: 4, count: '5' },
+  { symbol: 'Selenium', name: localized('Selenium'), grade: 4, count: '1' },
+  { symbol: 'Zirconium', name: localized('Zirconium'), grade: 3, count: '5' },
+];
+
+registerPreview({
+  componentId: 'blueprint-choice-list',
+  group: 'Engineering',
+  component: BlueprintChoiceList,
+  contract: contract(
+    'blueprint-choice-list',
+    {
+      role: 'radiogroup',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected'],
+      relationships: ['label'],
+      textEquivalents: [
+        'the applied recipe, in words rather than by its fill',
+        'the route a recipe needs, where the package says it is not an ordinary one',
+        'what clearing the engineering would also remove',
+      ],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        choices: [
+          blueprintChoice('Weapon_Overcharged', 'Overcharged', 'ordinary', true),
+          blueprintChoice('Weapon_LongRange', 'Long Range', 'ordinary'),
+          blueprintChoice('RailGun_LongShot', 'Long Shot', 'mercenary'),
+        ],
+        selected: 'Weapon_Overcharged',
+        clearConsequence: null,
+      },
+      [
+        'the explicit no-blueprint option is first, and is the only clear route',
+        'no separate clear control exists at any width',
+        'the applied recipe is stated, not only filled',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    state('empty', { choices: [], selected: null, clearConsequence: null }, [
+      'a mount with no package menu still offers the way back to a stock module',
+    ]),
+    state(
+      'disabled',
+      {
+        choices: [blueprintChoice('RailGun_LongShot', 'Long Shot', 'mercenary', true)],
+        selected: 'none',
+        clearConsequence:
+          'This also removes the Almanac’s record of the module as a purchased article.',
+      },
+      ['the loss of purchase identity is disclosed on the option that would cause it'],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'loading',
+      'The menu is read synchronously from the package; the editor owns the state where there is nothing to give it yet.',
+    ),
+    notApplicable(
+      'error',
+      'A refusal belongs to the edit that was attempted, and is published by the workspace’s refusal notice.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'grade-selector',
+  group: 'Engineering',
+  component: GradeSelector,
+  contract: contract(
+    'grade-selector',
+    {
+      role: 'radiogroup',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected'],
+      relationships: ['label'],
+      textEquivalents: ['the chosen grade, beside the label as well as in the fill'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state('default', { grades: [1, 2, 3, 4, 5], selected: 5 }, [
+      'five cells, the chosen one stated as a number as well as filled',
+      'no quality or roll control appears anywhere',
+    ]),
+    state('empty', { grades: [], selected: null }, [
+      'no recipe chosen means no grades: a grade is a grade of something',
+    ]),
+    notApplicable(
+      'loading',
+      'The grades come with the selected package descriptor and are never awaited separately.',
+    ),
+    notApplicable(
+      'error',
+      'A grade cannot fail; applying one can, and that belongs to the editor.',
+    ),
+    notApplicable(
+      'disabled',
+      'A recipe with no grades renders no cells rather than five unusable ones.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'experimental-effect-list',
+  group: 'Engineering',
+  component: ExperimentalEffectList,
+  contract: contract(
+    'experimental-effect-list',
+    {
+      role: 'radiogroup',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected'],
+      relationships: ['label'],
+      textEquivalents: [
+        'the applied effect, in words',
+        'the package’s own description of each effect, or its absence',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        effects: [
+          {
+            fdname: 'special_corrosive_shell',
+            name: localized('Corrosive Shell'),
+            description: localized('Rounds reduce the target’s hull resistance.'),
+            applied: true,
+          },
+          {
+            fdname: 'special_auto_loader',
+            name: localized('Auto Loader'),
+            description: canonical('Reloads while firing, at a smaller clip size.'),
+            applied: false,
+          },
+        ],
+        selected: 'special_corrosive_shell',
+      },
+      [
+        'the explicit no-effect option is first, and is the only removal route',
+        'each description is the package’s, disclosed where it is untranslated',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'unavailable-text'],
+    ),
+    state('empty', { effects: [], selected: null }, [
+      'a module with no experimental menu still offers the explicit no-effect option',
+    ]),
+    notApplicable('loading', 'The menu is read synchronously from the package.'),
+    notApplicable(
+      'error',
+      'A refusal belongs to the edit that was attempted, not to the list of choices.',
+    ),
+    notApplicable('disabled', 'A final article renders no effect list at all.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'attribute-comparison',
+  group: 'Engineering',
+  component: AttributeComparison,
+  contract: contract(
+    'attribute-comparison',
+    {
+      role: 'table',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'each figure related to its attribute by a row header, never by column position',
+        'a figure the Almanac never published, as a word rather than a zero',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        rows: [
+          { key: 'damage', label: 'Damage', current: '5.72', candidate: '6.90' },
+          { key: 'thermalLoad', label: 'Thermal load', current: '0.34', candidate: '0.41' },
+          { key: 'powerDraw', label: 'Power draw MW', current: '0.73', candidate: '0.88' },
+          { key: 'clipSize', label: 'Clip size', current: '90', candidate: '81' },
+          { key: 'mass', label: 'Mass t', current: null, candidate: '4.00' },
+        ],
+      },
+      [
+        'no arrow, percentage or better-worse colour appears anywhere',
+        'an unavailable figure is a word, never a zero',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'unavailable-text'],
+    ),
+    state('empty', { rows: [] }, [
+      'nothing chosen yet means nothing to compare, and no empty table structure either',
+    ]),
+    notApplicable(
+      'loading',
+      'The comparison is computed with the draft; the editor owns the state before there is one.',
+    ),
+    notApplicable(
+      'error',
+      'A selection the package refuses has no candidate to describe, which the editor states instead.',
+    ),
+    notApplicable('disabled', 'A comparison is content, not a control.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'material-cost-list',
+  group: 'Engineering',
+  component: MaterialCostList,
+  contract: contract(
+    'material-cost-list',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'each count associated with its material through a description list',
+        'a known zero and an unavailable cost, as two different sentences',
+        'each material’s package rarity, as a number rather than a remote icon',
+      ],
+    },
+    ['default', 'empty', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        parts: [
+          { part: 'blueprint', state: 'known', materials: ENGINEERING_MATERIALS },
+          {
+            part: 'experimental',
+            state: 'known',
+            materials: [ENGINEERING_MATERIALS[0]],
+          },
+          { part: 'combined', state: 'known', materials: ENGINEERING_MATERIALS },
+        ],
+        grade: 5,
+        mercCoin: '120',
+        fixedPurchase: false,
+      },
+      [
+        'the heading names the grade and nothing calls the recipe a roll',
+        'Merc Coin sits on its own line and joins no material list',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'canonical-untranslated'],
+    ),
+    state(
+      'empty',
+      {
+        parts: [{ part: 'blueprint', state: 'known', materials: [] }],
+        grade: 3,
+        mercCoin: null,
+        fixedPurchase: true,
+      },
+      [
+        'a known zero reads as nothing more needed, not as unavailable',
+        'a purchased article says its baked engineering was never crafted',
+      ],
+    ),
+    state(
+      'error',
+      {
+        parts: [{ part: 'blueprint', state: 'unavailable', materials: [] }],
+        grade: 5,
+        mercCoin: null,
+        fixedPurchase: false,
+      },
+      ['an unavailable cost reads as unavailable, and never as a zero'],
+    ),
+    notApplicable('loading', 'Costs come from the package catalogues synchronously.'),
+    notApplicable('disabled', 'A requirement is content, not a control.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'power-controls',
+  group: 'Engineering',
+  component: PowerControls,
+  contract: contract(
+    'power-controls',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['checked', 'selected'],
+      relationships: ['label'],
+      textEquivalents: [
+        'both controls named by module and mount, so a ledger row is identifiable',
+        'an absent priority group, left absent rather than chosen',
+      ],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        slotLabel: 'Core internals · Size 8',
+        moduleLabel: 'Power Plant 8A',
+        enabled: true,
+        priority: 2,
+        canSetEnabled: true,
+        canSetPriority: true,
+      },
+      [
+        'the package’s zero-based group is presented one-based, as the game does',
+        'each control names the module and the mount it acts on',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        slotLabel: 'Cargo hatch',
+        moduleLabel: 'Cargo Hatch',
+        enabled: undefined,
+        priority: undefined,
+        canSetEnabled: true,
+        canSetPriority: true,
+      },
+      [
+        'an absent power field reads as on, the way the package treats it',
+        'an absent group stays absent rather than being drawn as group 1',
+      ],
+    ),
+    state(
+      'disabled',
+      {
+        slotLabel: 'Utility mounts · Node 1',
+        moduleLabel: 'Heat Sink Launcher',
+        enabled: false,
+        priority: 4,
+        canSetEnabled: false,
+        canSetPriority: true,
+      },
+      ['only what the package permits on this mount is drawn'],
+    ),
+    notApplicable('loading', 'Power state is read from the fitted module, never awaited.'),
+    notApplicable(
+      'error',
+      'A refused power change is published by the workspace’s refusal notice, not by the control.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'ingress-refusal-notice',
+  group: 'Engineering',
+  component: IngressRefusalNotice,
+  contract: contract(
+    'ingress-refusal-notice',
+    {
+      role: 'alert',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'every affected mount, module, recipe and roll, named exactly',
+        'the package’s own refusal code, named rather than paraphrased',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        revision: 4,
+        slotLabels: { MainEngines: 'Thrusters', FrameShiftDrive: 'Frame Shift Drive' },
+        failures: [
+          {
+            source: {
+              slotKey: 'MainEngines',
+              moduleSymbol: 'Int_Engine_Size7_Class5',
+              blueprintFdname: 'Engine_Dirty',
+              effectFdname: null,
+              grade: 5,
+              quality: 0.42,
+            },
+            reason: 'packageResult',
+            code: 'unsupportedEngineering',
+            params: null,
+          },
+          {
+            source: {
+              slotKey: 'FrameShiftDrive',
+              moduleSymbol: 'Int_Hyperdrive_Size6_Class5',
+              blueprintFdname: null,
+              effectFdname: null,
+              grade: null,
+              quality: 0.08,
+            },
+            reason: 'packageContract',
+            code: null,
+            params: null,
+          },
+        ],
+      },
+      [
+        'the build is said to be exactly as it was',
+        'every affected mount is named the way the ledger names it',
+        'a source that stated no recipe is not given one',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
+    ),
+    state('empty', { revision: 4, failures: [], slotLabels: {} }, [
+      'nothing refused renders nothing at all',
+    ]),
+    notApplicable(
+      'loading',
+      'The refusal is the ingress gate’s finished answer; there is no partway state to render.',
+    ),
+    notApplicable('error', 'This notice is the error state, so it has no second one.'),
+    notApplicable('disabled', 'A notice is content, not a control.'),
   ],
 });

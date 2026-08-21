@@ -1,5 +1,7 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
+import { FIXED_REWARD_REGRESSION, fixedRewardBuild } from '../outfitting/outfitting.fixtures';
+import { reconstructFromSnapshot } from './build-snapshot.reconstructor';
 import { toBuildSnapshotV1 } from './build-snapshot.serializer';
 
 describe('build snapshot serializer', () => {
@@ -153,5 +155,40 @@ describe('build snapshot serializer', () => {
     // The variant already says what its own engineering is, so the snapshot
     // does not repeat it as ordinary engineering.
     expect(fitted?.engineering).toBeNull();
+  });
+
+  it('carries a reward’s later experimental effect on its identity, not on top of it', () => {
+    const build = fixedRewardBuild();
+    const slot = FIXED_REWARD_REGRESSION.slot;
+    const effect = build.availableExperimentalEffects(slot)[0]!;
+    build.setExperimentalEffect(slot, effect);
+
+    const fitted = toBuildSnapshotV1(build).modules.find((module) => module.slot === slot);
+
+    expect(fitted?.preEngineered?.experimental).toBe(effect);
+    // Not as ordinary engineering on top. The reward's blueprint is also an
+    // ordinary recipe for this drive, so recording it there would rebuild as a
+    // rolled blueprint rather than as the article the Commander owns.
+    expect(fitted?.engineering).toBeNull();
+  });
+
+  it('rebuilds a reward that carries a later effect with its fixed block intact', () => {
+    const build = fixedRewardBuild();
+    const slot = FIXED_REWARD_REGRESSION.slot;
+    const effect = build.availableExperimentalEffects(slot)[0]!;
+    build.setExperimentalEffect(slot, effect);
+    const edited = build.fittedModuleAt(slot);
+
+    const rebuilt = reconstructFromSnapshot(toBuildSnapshotV1(build));
+
+    expect(rebuilt.ok).toBe(true);
+    const restored = rebuilt.ok ? rebuilt.loadout.fittedModuleAt(slot) : null;
+    // All three at once, because losing any one of them is the same defect: the
+    // article stops being the article (FR-012). Before this was recorded on the
+    // identity, the round trip returned five package modifiers instead of six
+    // and no `preEngineeredVariant` at all.
+    expect(restored?.preEngineeredVariant?.acquisition).toBe(FIXED_REWARD_REGRESSION.acquisition);
+    expect(restored?.engineering?.ExperimentalEffect).toBe(effect);
+    expect(restored?.engineering?.Modifiers).toEqual(edited?.engineering?.Modifiers);
   });
 });

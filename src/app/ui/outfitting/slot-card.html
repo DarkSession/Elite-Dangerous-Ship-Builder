@@ -44,6 +44,26 @@
     }
   </button>
 
+  <!--
+    The priority control the canvas draws at the end of every ledger row, and
+    the power switch beside it. Both sit outside the selection control rather
+    than inside it: the canvas nests a clickable control in a clickable row, and
+    a reader cannot tell which of the two they are on (reference review,
+    "Interaction and semantics").
+  -->
+  @if (showsPower()) {
+    <edsb-power-controls
+      class="slot__power"
+      [slotLabel]="drawnLabel()"
+      [moduleLabel]="moduleLabel()"
+      [enabled]="slot().module!.enabled"
+      [priority]="slot().module!.priority"
+      [canSetEnabled]="capabilities().canSetEnabled"
+      [canSetPriority]="capabilities().canSetPriority"
+      (intent)="emit($event)"
+    />
+  }
+
   <div class="slot__notes">
     @if (restrictionText()) {
       <p class="slot__note">{{ restrictionText() }}</p>

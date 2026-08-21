@@ -65,6 +65,7 @@ function commitBuild(active: ActiveBuildStore, symbol = 'Anaconda'): ShipLoadout
     loadout,
     hullName: symbol,
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: null,
   });

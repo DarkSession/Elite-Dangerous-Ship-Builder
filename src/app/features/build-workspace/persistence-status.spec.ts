@@ -46,6 +46,7 @@ function render(status: Status) {
     loadout: ShipLoadout.default('Anaconda'),
     hullName: 'Anaconda',
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: null,
   });

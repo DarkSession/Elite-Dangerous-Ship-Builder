@@ -1,0 +1,70 @@
+<!--
+  Labelled rather than headed. The canvas draws a tracked micro-label, and the
+  editor appears at two nesting depths — inline under the bench's `h3`, and
+  inside a layer whose title is an `h2` — so a fixed heading level would jump
+  the outline at one of them (feature 011, ordered headings).
+-->
+<section class="materials" [attr.aria-labelledby]="headingId">
+  <div class="materials__head">
+    <p class="materials__heading" [id]="headingId">{{ heading() }}</p>
+    <p class="materials__required">{{ requiredLabel() }}</p>
+  </div>
+
+  @if (fixedPurchase()) {
+    <!--
+      A reward arrived already modified. There is no shopping list for what it
+      came with, and quoting its recipe would price the wrong thing entirely.
+    -->
+    <p class="materials__note">{{ notCraftedLabel() }}</p>
+  }
+
+  @for (part of shown(); track part.part) {
+    <div class="materials__part">
+      <p class="materials__part-heading">{{ partLabel(part.part) }}</p>
+
+      @if (part.state === 'unavailable') {
+        <p class="materials__note">{{ unavailableLabel() }}</p>
+      } @else if (part.materials.length === 0) {
+        <p class="materials__note">{{ noneLabel() }}</p>
+      } @else {
+        <dl class="materials__list">
+          @for (material of part.materials; track material.symbol) {
+            <div class="material">
+              <dt class="material__name">
+                <!--
+                  The rarity sits inside the term rather than beside it. A `dl`
+                  group may hold only `dt` and `dd`, so a third element between
+                  them breaks the association that is the whole reason this is a
+                  description list.
+                -->
+                @if (material.grade !== null) {
+                  <span class="material__grade">{{ gradeLabel(material.grade) }}</span>
+                }
+                <edsb-game-text
+                  [text]="material.name.text"
+                  [language]="material.name.language"
+                  [translationState]="material.name.translationState"
+                />
+              </dt>
+              <dd class="material__count" data-bidi-isolate>{{ material.count }}</dd>
+            </div>
+          }
+        </dl>
+      }
+    </div>
+  }
+
+  @if (mercCoin(); as coins) {
+    <!--
+      Its own line, never folded into a material list. Merc Coin has no credit
+      or material equivalent, so summing it with anything would invent an
+      exchange rate the game does not have.
+    -->
+    <dl class="materials__list materials__list--coin">
+      <div class="material">
+        <dt class="material__name">{{ mercCoinLabel() }}</dt>
+        <dd class="material__count" data-bidi-isolate>{{ coins }}</dd>
+      </div>
+    </dl>
+  }
+</section>

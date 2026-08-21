@@ -84,8 +84,13 @@ async function fitFromChooser(
   // and the label activates the radio, which is the whole reason the row is a
   // label. Reaching past it to click the input asserts an interaction nobody
   // performs, and Firefox refuses it outright.
+  //
+  // The module's name rather than the row's centre. A wide row's centre falls
+  // in the gap between the identity and the figures, and Firefox does not
+  // activate a label from a click that lands on no content — measured at
+  // desktop, where the row is 943px wide and the centre is empty.
   const row = rows.nth(index);
-  await row.click();
+  await row.locator('.candidate__identity').click();
   await expect(row.locator('input[type="radio"]')).toBeChecked();
   await page.getByRole('button', { name: /fit module/i }).click();
   // The chooser closes on a committed fit; waiting for that is waiting for the
@@ -437,5 +442,77 @@ test.describe('finding a replacement', () => {
     await page.getByRole('button', { name: /cancel/i }).click();
     await selectMount(page, 'CargoHatch');
     await sweepOutfittingState(page, testInfo, 'chooser/mount takes nothing');
+  });
+});
+
+test.describe('power and the cargo hatch', () => {
+  test('offers power on the cargo hatch and nothing else, with the reason', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'CargoHatch');
+
+    const hatch = page.locator('[data-slot-key="CargoHatch"]');
+    await expect(hatch.locator('.power__toggle')).toHaveCount(1);
+    await expect(hatch.locator('.power__priority')).toHaveCount(1);
+
+    // Replace, search, engineer and remove are all absent — and the Almanac's
+    // reason for that is published on the bench, because an action missing
+    // without a reason reads as a defect (FR-009).
+    await expect(page.getByRole('button', { name: /change module/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^engineer$/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
+    await expect(page.locator('.outfitting__bench-reason')).toContainText(/built in/i);
+  });
+
+  test('presents the package’s five groups one-based, as the game does', async ({ page }) => {
+    await openStockBuild(page);
+
+    const options = page
+      .locator('[data-slot-key="PowerPlant"] .power__priority option')
+      .filter({ hasNotText: /no group/i });
+
+    await expect(options).toHaveCount(5);
+    await expect(options.first()).toHaveText(/group 1/i);
+    await expect(options.first()).toHaveAttribute('value', '0');
+    await expect(options.last()).toHaveText(/group 5/i);
+    await expect(options.last()).toHaveAttribute('value', '4');
+  });
+
+  test('leaves a module fitted when its power changes', async ({ page }) => {
+    await openStockBuild(page);
+    const before = await fittedIdentityAt(page, 'PowerPlant');
+
+    await page.locator('[data-slot-key="PowerPlant"] .power__priority').selectOption('2');
+
+    // Still fitted, so its mass and its catalogue cost are still in the build
+    // (contract, "Power and recalculation").
+    expect(await fittedIdentityAt(page, 'PowerPlant')).toBe(before);
+    await expect(page.locator('[data-slot-key="PowerPlant"] .power__priority')).toHaveValue('2');
+  });
+
+  test('switches a module off without unfitting it', async ({ page }) => {
+    await openStockBuild(page);
+    const before = await fittedIdentityAt(page, 'SmallHardpoint1');
+    const mount = page.locator('[data-slot-key="SmallHardpoint1"]');
+    const toggle = mount.locator('.power__toggle');
+
+    // An absent power field reads as on, which is how the package treats it.
+    await expect(toggle).toBeChecked();
+    // The label is the control. Its checkbox is a hidden box under the drawn
+    // track, so a pointer — a Commander's or this one's — lands on the label,
+    // which is the whole reason the switch is one.
+    await mount.locator('.power__switch').click();
+
+    await expect(toggle).not.toBeChecked();
+    expect(await fittedIdentityAt(page, 'SmallHardpoint1')).toBe(before);
+  });
+
+  test('names both power controls by module and mount', async ({ page }) => {
+    await openStockBuild(page);
+
+    // Forty rows of the same two controls: "powered" on its own says nothing
+    // about which module a reader is on.
+    const toggle = page.locator('[data-slot-key="PowerPlant"] .power__toggle');
+    await expect(toggle).toHaveAttribute('aria-label', /power plant/i);
+    await expect(toggle).toHaveAttribute('aria-label', /core internals/i);
   });
 });

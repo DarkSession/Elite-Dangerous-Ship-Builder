@@ -235,6 +235,34 @@ stays the flat list the canvas draws. Same invisible accessibility floor as the 
 the slot key above, and the `REWARD ONLY` badge is kept as the visible marker the canvas gives the
 unique-reward section.
 
+**Blueprint option descriptions, ruled 2026-08-21 during US3 implementation.** Withdrawn. Both
+canvases write a summary under each recipe — `DAMAGE ▲ · THERMAL LOAD ▲`, `RATE OF FIRE ▲ · ACCURACY
+▼`. The Almanac publishes no description for a blueprint and no direction for what one moves, so
+those lines would have to be authored here: a private claim about game mechanics, which FR-007 and
+the localization contract both forbid. The explicit `None — stock module · REMOVES ENGINEERING` line
+stays, because it describes an _operation this application performs_ rather than a game mechanic, and
+the route line stays where the package itself says a recipe is not an ordinary one. What each recipe
+does is shown instead in the comparison the draft actually computes.
+
+The **experimental effect** descriptions are kept exactly as drawn: `getExperimentalEffectDescription`
+publishes one per effect, so `−3% ENEMY HULL RESIST · −20% AMMO` is package text rather than a claim
+of ours. Where the package has none, the row says so.
+
+**Attribute column headings, ruled 2026-08-21 during US3 implementation.** The two columns are drawn
+as the canvas draws them; their headings read `Current` and `Candidate` rather than the canvas's
+`STOCK` and `MODIFIED`. The editor holds an unapplied draft, and the question it answers is what this
+change would do to the module as it is now — which is what
+[engineering-editor.md](./engineering-editor.md) and task T070 both specify. Carrying the canvas's
+words over a different pair of numbers would be the one thing worse than changing them. The canvas's
+green/red deltas and ▲/▼ markers stay withdrawn for the reason already recorded above: the Almanac
+documents its own `LessIsGood` as unreliable and nothing else publishes a direction.
+
+**Material rarity icons, ruled 2026-08-21 during US3 implementation.** Both canvases draw each
+material's rarity as an image from `edassets.org`. Constitution I forbids any cross-origin runtime
+request, so the rarity is drawn as the package's own grade in words — `Grade 4` — in the icon's
+place. Same fact, same source, no request. The row composition the canvas draws is otherwise
+unchanged, and the Merc Coin line keeps its own row exactly as drawn.
+
 | #   | What canvas 1c/1d draws                                                                                                            | What the specification says                                      | Why it collides                                                                                               |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 1   | Canvas 1c's anatomy legend reads `SELECTED · FITTED · EMPTY · UTILITY · ENGINEERED`; canvas 1d's reads `FITTED · EMPTY · UTILITY`. | The workspace composes the shared anatomy outlet at both widths. | The two canvases disagree on the legend; feature 010 owns the resolution but feature 002 composes the result. |

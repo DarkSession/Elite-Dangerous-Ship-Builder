@@ -1,4 +1,5 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { IngressNotice } from '../../domain/build/build-ingress-result';
 import type { BuildLinkCodecErrorCode } from '../../domain/build-link/build-link-codec-error';
 
 /**
@@ -75,6 +76,14 @@ export interface BuildCandidate {
    */
   readonly hullName: string;
   readonly provenance: BuildProvenance;
+  /**
+   * What the Almanac completed while this candidate was being read in.
+   *
+   * Travels with the candidate rather than being published separately, because
+   * a notice about a build that was not committed is a notice about nothing —
+   * and one published after the commit would race the commit that clears them.
+   */
+  readonly qualityNotices: readonly IngressNotice[];
   /** The named record this candidate came from, when it came from one. */
   readonly sourceNamed: NamedSource | null;
   /**
@@ -87,11 +96,14 @@ export interface BuildCandidate {
   readonly baseline: string | null;
 }
 
-/** One transient notice the package produced while completing a partial edit. */
-export interface QualityCompletionNotice {
-  readonly slot: string;
-  readonly previousQuality: number;
-}
+/**
+ * One transient notice the package produced while completing a partial roll.
+ *
+ * The ingress gate's own record, carried through rather than copied into a
+ * second shape. Two shapes for one notice is two places for the slot key to be
+ * spelled differently (build-ingress result, "IngressNotice").
+ */
+export type QualityCompletionNotice = IngressNotice;
 
 /** The whole of the application's state around one live build. */
 export interface ActiveBuildState {

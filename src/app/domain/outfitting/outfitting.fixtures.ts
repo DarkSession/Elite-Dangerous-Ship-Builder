@@ -1,6 +1,7 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
 import {
+  PRE_ENGINEERED_MODULES,
   getPreEngineeredVariants,
   type PreEngineeredVariant,
 } from '@elite-dangerous-almanac/core/ships/pre-engineered';
@@ -120,6 +121,27 @@ export function fixedRewardVariant(): PreEngineeredVariant {
       `The installed Almanac no longer carries a ${FIXED_REWARD_REGRESSION.acquisition} ` +
         `"${FIXED_REWARD_REGRESSION.blueprint}" variant of ${FIXED_REWARD_REGRESSION.symbol}. ` +
         'Pick a new regression subject from the package rather than writing one here.',
+    );
+  }
+  return variant;
+}
+
+/**
+ * A Mercenary article: bought with Merc Coin, engineered from grade 1 upward.
+ *
+ * Its bespoke recipe is the reason it is here. A Mercenary blueprint defines
+ * only the grades above the purchase, so it is the fixture that proves a climb
+ * starts above the grade the article arrived at rather than from nothing
+ * (FR-013, contract "Engineering").
+ */
+export function mercenaryVariant(): PreEngineeredVariant {
+  const variant = PRE_ENGINEERED_MODULES.find(
+    (candidate) => candidate.acquisition === 'mercenary' && candidate.mercCoinCost !== undefined,
+  );
+  if (variant === undefined) {
+    throw new Error(
+      'The installed Almanac no longer carries a Merc-Coin priced Mercenary article. ' +
+        'Pick a new fixture from the package rather than writing one here.',
     );
   }
   return variant;

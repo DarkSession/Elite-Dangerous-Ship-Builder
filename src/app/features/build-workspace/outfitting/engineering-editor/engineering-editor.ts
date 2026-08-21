@@ -1,0 +1,459 @@
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { getMaterialBySymbol } from '@elite-dangerous-almanac/core/materials/materials';
+import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
+import {
+  NO_BLUEPRINT,
+  draftIsStale,
+  engineeringIntent,
+  openEngineeringDraft,
+  openingSelection,
+  withBlueprint,
+  withEffect,
+  withGrade,
+  type EngineeringDraft,
+  type EngineeringSelection,
+} from '../../../../application/outfitting/engineering-draft';
+import { engineeringView } from '../../../../application/outfitting/engineering-view';
+import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
+import type { SlotView } from '../../../../application/outfitting/slot-view';
+import type { CombinedCost, MaterialCost } from '../../../../domain/outfitting/engineering-cost';
+import { Formatters } from '../../../../i18n/formatters/formatters';
+import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
+import { MessageService } from '../../../../i18n/message.service';
+import { Layer } from '../../../../ui/components/layer/layer';
+import {
+  AttributeComparison,
+  type AttributeComparisonRow,
+} from '../../../../ui/outfitting/attribute-comparison';
+import {
+  BlueprintChoiceList,
+  NO_BLUEPRINT_CHOICE,
+  type BlueprintChoiceView,
+} from '../../../../ui/outfitting/blueprint-choice-list';
+import {
+  ExperimentalEffectList,
+  type ExperimentalEffectView,
+} from '../../../../ui/outfitting/experimental-effect-list';
+import { GradeSelector } from '../../../../ui/outfitting/grade-selector';
+import {
+  MaterialCostList,
+  type MaterialLineView,
+  type MaterialPart,
+  type MaterialPartView,
+} from '../../../../ui/outfitting/material-cost-list';
+
+/** What the editor is showing, as one value. */
+export type EngineeringState =
+  'noModule' | 'packageEmpty' | 'final' | 'stale' | 'refused' | 'ready';
+
+/**
+ * Choosing what one module is engineered with.
+ *
+ * The reference draws the wide editor as a two-column panel inside the bench
+ * and the compact one as a full-screen view over an inert background. Both are
+ * this component; the arrangement comes from the space the region was given,
+ * never from a device label — which is also why 400% zoom and a long German
+ * translation select the compact composition for the same reason a phone does.
+ *
+ * Nothing here mutates the build. The draft holds selection, the preview runs
+ * on a detached candidate, and exactly one explicit action commits — so a
+ * Commander can price a grade 5, look at what it would do, and walk away having
+ * spent no revision and recorded no history (FR-018).
+ *
+ * There is no clear control. Canvas 1c's wide-only `CLEAR ✕` was withdrawn as
+ * duplicative: both canvases already open the blueprint list with `None — stock
+ * module`, so the clear route exists identically at both widths and needs no
+ * second confirmation — choosing it and applying is one Commander decision and
+ * one history frame, like every other apply (engineering editor design,
+ * "Clearing engineering").
+ */
+@Component({
+  selector: 'edsb-engineering-editor',
+  imports: [
+    AttributeComparison,
+    BlueprintChoiceList,
+    ExperimentalEffectList,
+    GradeSelector,
+    Layer,
+    MaterialCostList,
+    NgTemplateOutlet,
+  ],
+  templateUrl: './engineering-editor.html',
+  styleUrl: './engineering-editor.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class EngineeringEditor {
+  readonly #messages = inject(MessageService);
+  readonly #gameText = inject(GameTextPresenter);
+  readonly #formatters = inject(Formatters);
+  readonly store = inject(OutfittingStore);
+
+  readonly slot = input.required<SlotView>();
+
+  /** Whether this is a full-screen layer rather than an inline panel. */
+  readonly asLayer = input(false);
+
+  readonly closed = output<void>();
+
+  /** The Commander's choices, and the revision they were made against. */
+  readonly #pick = signal<{
+    readonly selection: EngineeringSelection;
+    readonly revision: number;
+  } | null>(null);
+
+  /** What the module carries now, re-read at the current revision. */
+  readonly current = computed(() => {
+    const module = this.slot().module;
+    return module === null ? null : engineeringView(module);
+  });
+
+  /** True when the choices were made against a build that has since changed. */
+  readonly stale = computed(() => {
+    const pick = this.#pick();
+    return pick !== null && pick.revision !== this.store.revision();
+  });
+
+  /**
+   * The selection the editor is working from.
+   *
+   * A stale pick is not carried forward. It describes menus that were true a
+   * revision ago, and applying it would apply a decision to a build the
+   * Commander is no longer looking at — so it falls back to what the module
+   * actually carries now and the surface says the choices were rebuilt.
+   */
+  readonly selection = computed<EngineeringSelection>(() => {
+    const pick = this.#pick();
+    const current = this.current();
+    return pick === null || this.stale() || current === null
+      ? openingSelection(
+          current ?? {
+            blueprintFdname: null,
+            currentGrade: null,
+            quality: 1,
+            effectFdname: null,
+            modifiers: null,
+            purchaseVariant: null,
+          },
+        )
+      : pick.selection;
+  });
+
+  readonly draft = computed<EngineeringDraft | null>(() => {
+    const loadout = this.store.loadout();
+    return loadout === null
+      ? null
+      : openEngineeringDraft(
+          loadout,
+          this.slot().key,
+          this.store.revision(),
+          this.selection(),
+          this.#gameText,
+        );
+  });
+
+  readonly state = computed<EngineeringState>(() => {
+    const draft = this.draft();
+    if (draft === null) {
+      return 'noModule';
+    }
+    if (draft.finalArticle) {
+      return 'final';
+    }
+    if (draft.packageEmpty) {
+      return 'packageEmpty';
+    }
+    if (this.stale()) {
+      return 'stale';
+    }
+    if (this.store.lastEditFailure()?.slotKey === this.slot().key) {
+      return 'refused';
+    }
+    return 'ready';
+  });
+
+  /** True where there are choices to make. A final article has none. */
+  readonly showChoices = computed(
+    () => this.state() === 'ready' || this.state() === 'refused' || this.state() === 'stale',
+  );
+
+  readonly blueprintChoices = computed<readonly BlueprintChoiceView[]>(() => {
+    const draft = this.draft();
+    const currentFdname = draft?.current.blueprintFdname ?? null;
+    return (draft?.blueprints ?? []).map((blueprint) => ({
+      fdname: blueprint.fdname,
+      name: this.#gameText.blueprintName(blueprint.fdname),
+      route: blueprint.route,
+      applied: sameIdentity(blueprint.fdname, currentFdname),
+    }));
+  });
+
+  readonly effectChoices = computed<readonly ExperimentalEffectView[]>(() => {
+    const draft = this.draft();
+    const currentEffect = draft?.current.effectFdname ?? null;
+    return (draft?.effects ?? []).map((fdname) => ({
+      fdname,
+      name: this.#gameText.experimentalEffectName(fdname),
+      description: this.#gameText.experimentalEffectDescription(fdname),
+      applied: sameIdentity(fdname, currentEffect),
+    }));
+  });
+
+  /** The grades of the selected recipe, and none at all before one is chosen. */
+  readonly grades = computed<readonly number[]>(() => {
+    const draft = this.draft();
+    const selected = draft?.selectedBlueprintFdname ?? null;
+    if (draft === null || selected === null || selected === NO_BLUEPRINT) {
+      return [];
+    }
+    return (
+      draft.blueprints.find((blueprint) => sameIdentity(blueprint.fdname, selected))?.grades ?? []
+    );
+  });
+
+  readonly selectedBlueprint = computed(() => this.draft()?.selectedBlueprintFdname ?? null);
+  readonly selectedGrade = computed(() => this.draft()?.selectedGrade ?? null);
+  readonly selectedEffect = computed(() => this.draft()?.selectedEffectFdname ?? null);
+
+  readonly attributes = computed<readonly AttributeComparisonRow[]>(() => {
+    const preview = this.draft()?.preview;
+    if (preview === undefined || preview.kind !== 'known') {
+      return [];
+    }
+    return preview.attributes.map((row) => ({
+      key: row.attribute,
+      label: this.#messages.message(`outfitting.engineering.attribute.${row.attribute}` as const),
+      current: this.#figure(row.current),
+      candidate: this.#figure(row.candidate),
+    }));
+  });
+
+  readonly materialParts = computed<readonly MaterialPartView[]>(() => {
+    const cost = this.draft()?.cost;
+    if (cost === undefined) {
+      return [];
+    }
+    return [
+      this.#part('blueprint', cost.blueprint),
+      this.#part('experimental', cost.experimental),
+      // The fold is only worth drawing when there are two things folded. One
+      // part repeated under a "Together" heading is the same list twice.
+      ...(cost.blueprint.kind === 'known' && cost.experimental.kind === 'known'
+        ? [this.#part('combined', cost.combined)]
+        : []),
+    ];
+  });
+
+  readonly mercCoin = computed(() => {
+    const coins = this.draft()?.cost.mercCoin ?? null;
+    return coins === null ? null : this.#formatters.integer(coins);
+  });
+
+  readonly fixedPurchase = computed(() => this.draft()?.cost.fixedPurchase === 'notCrafted');
+
+  /**
+   * What clearing would also cost, when the package would lose something by it.
+   *
+   * Only shown where the module is a package-identified purchase, because that
+   * is the only case where clearing takes away more than the engineering: the
+   * Almanac stops recognising the article as bought at all.
+   */
+  readonly clearConsequence = computed(() =>
+    this.draft()?.current.purchaseVariant === null
+      ? null
+      : this.#messages.message('outfitting.engineering.clear-consequence'),
+  );
+
+  readonly heading = computed(() =>
+    this.#messages.message('outfitting.engineering.title', { slot: this.#slotLabel() }),
+  );
+
+  readonly regionLabel = computed(() =>
+    this.#messages.message('outfitting.engineering.region', { slot: this.#slotLabel() }),
+  );
+
+  /** What the module carries now, said in words above the choices. */
+  readonly currentSummary = computed(() => {
+    const current = this.draft()?.current;
+    if (current === undefined) {
+      return null;
+    }
+    if (current.blueprintFdname === null || current.currentGrade === null) {
+      return this.#messages.message('outfitting.engineering.unengineered');
+    }
+    return this.#messages.message('outfitting.engineering.current', {
+      blueprint:
+        this.#gameText.blueprintName(current.blueprintFdname).text ?? current.blueprintFdname,
+      grade: current.currentGrade,
+    });
+  });
+
+  /**
+   * The article the module was bought as, and the grade it was bought at.
+   *
+   * Kept beside the current grade rather than replacing it. A Mercenary article
+   * bought at grade 1 and crafted to 3 is both things at once, and showing one
+   * number tells a Commander the wrong thing about the other (FR-007).
+   */
+  readonly purchaseSummary = computed(() => {
+    const variant = this.draft()?.current.purchaseVariant ?? null;
+    if (variant === null) {
+      return null;
+    }
+    return this.#messages.message('outfitting.engineering.purchase', {
+      article: this.#gameText.preEngineeredVariantName(variant).text ?? variant.name,
+      grade: variant.grade,
+    });
+  });
+
+  readonly effectSummary = computed(() => {
+    const effect = this.draft()?.current.effectFdname ?? null;
+    return effect === null
+      ? null
+      : this.#messages.message('outfitting.engineering.current.effect', {
+          effect: this.#gameText.experimentalEffectName(effect).text ?? effect,
+        });
+  });
+
+  readonly applyLabel = this.#messages.messageSignal('outfitting.engineering.apply');
+  readonly revertLabel = this.#messages.messageSignal('outfitting.engineering.revert');
+  // The layer's own header control, named the way every other layer in the
+  // product names it. Two controls called `Revert` in one dialog would give a
+  // reader nothing to tell them apart.
+  readonly closeLabel = this.#messages.messageSignal('action.close');
+  readonly packageEmptyLabel = this.#messages.messageSignal('outfitting.engineering.package-empty');
+  readonly finalLabel = this.#messages.messageSignal('outfitting.engineering.final');
+  readonly staleLabel = this.#messages.messageSignal('outfitting.engineering.stale');
+  readonly loadingLabel = this.#messages.messageSignal('outfitting.engineering.loading');
+  readonly noAttributesLabel = this.#messages.messageSignal(
+    'outfitting.engineering.attributes.unavailable',
+  );
+
+  /** True when applying would actually ask the Almanac for something. */
+  readonly canApply = computed(() => {
+    const draft = this.draft();
+    return draft !== null && !this.stale() && engineeringIntent(draft) !== null;
+  });
+
+  chooseBlueprint(fdname: string): void {
+    const draft = this.draft();
+    if (draft === null) {
+      return;
+    }
+    this.#choose(withBlueprint(draft, fdname === NO_BLUEPRINT_CHOICE ? NO_BLUEPRINT : fdname));
+  }
+
+  chooseGrade(grade: number): void {
+    const draft = this.draft();
+    if (draft !== null) {
+      this.#choose(withGrade(draft, grade));
+    }
+  }
+
+  chooseEffect(fdname: string | null): void {
+    const draft = this.draft();
+    if (draft !== null) {
+      this.#choose(withEffect(draft, fdname));
+    }
+  }
+
+  /** Commits the draft, as one decision. */
+  apply(): void {
+    const draft = this.draft();
+    if (draft === null) {
+      return;
+    }
+
+    if (draftIsStale(draft, this.store.revision()) || this.stale()) {
+      // The choices were made against a build that no longer exists. Nothing is
+      // applied and no history frame is kept; the menus rebuild from what the
+      // module actually carries now.
+      this.#pick.set(null);
+      return;
+    }
+
+    const intent = engineeringIntent(draft);
+    if (intent === null) {
+      return;
+    }
+
+    const result = this.store.dispatch(intent);
+    if (result.kind === 'committed' || result.kind === 'unchanged') {
+      this.#pick.set(null);
+      this.closed.emit();
+    }
+    // A refusal keeps the editor open with the choices intact. The Almanac's
+    // reason is published by the workspace's refusal notice, and closing here
+    // would take the Commander away from the thing the reason is about.
+  }
+
+  /** Abandons the draft. The build and the history are untouched, because only
+   * draft state ever changed. */
+  revert(): void {
+    this.#pick.set(null);
+    this.closed.emit();
+  }
+
+  #choose(selection: EngineeringSelection): void {
+    this.#pick.set({ selection, revision: this.store.revision() });
+  }
+
+  #slotLabel(): string {
+    const slot = this.slot();
+    return slot.displayName.text ?? slot.canonicalName;
+  }
+
+  /** One part's requirement, with the package's own three answers preserved. */
+  #part(part: MaterialPart, cost: MaterialCost | CombinedCost): MaterialPartView {
+    if (cost.kind === 'unavailable') {
+      return { part, state: 'unavailable', materials: [] };
+    }
+    if (cost.kind === 'notSelected') {
+      return { part, state: 'notSelected', materials: [] };
+    }
+    return {
+      part,
+      state: 'known',
+      materials: cost.materials.map((material) => this.#line(material)),
+    };
+  }
+
+  #line(material: EngineeringMaterial): MaterialLineView {
+    return {
+      symbol: material.symbol,
+      name: this.#gameText.materialName(material.symbol),
+      // The rarity the canvas draws as a remote icon, taken from the package's
+      // own record instead. `null` where it carries none.
+      grade: getMaterialBySymbol(material.symbol)?.grade ?? null,
+      count: this.#formatters.integer(material.count),
+    };
+  }
+
+  /** A package figure, formatted, or `null` where the package published none. */
+  #figure(value: number | null): string | null {
+    if (value === null) {
+      return null;
+    }
+    // Two places for everything: the canvas draws `5.72`, `0.88`, `0.34`, and a
+    // rule per attribute would be a private opinion about which figures matter.
+    return Number.isInteger(value)
+      ? this.#formatters.integer(value)
+      : this.#formatters.decimal(value, 2);
+  }
+}
+
+/** Package identities are compared the way the package matches them. */
+function sameIdentity(left: string | null, right: string | null): boolean {
+  if (left === null || right === null) {
+    return left === right;
+  }
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}

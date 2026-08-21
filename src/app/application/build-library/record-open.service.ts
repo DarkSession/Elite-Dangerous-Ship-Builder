@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
+import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
 import { reconstructFromSnapshot } from '../../domain/build/build-snapshot.reconstructor';
 import { baselineFingerprint } from '../../domain/build/replacement-policy';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { RecordMigrationService } from '../../platform/storage/record-migration.service';
+import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildProvenance } from '../active-build/active-build.models';
 import {
   ReplacementCoordinator,
@@ -30,6 +32,7 @@ export class RecordOpenService {
   readonly #migration = inject(RecordMigrationService);
   readonly #coordinator = inject(ReplacementCoordinator);
   readonly #gameText = inject(GameTextPresenter);
+  readonly #active = inject(ActiveBuildStore);
 
   /** Opens one record, asking about unsaved work first where there is any. */
   async open(recordId: string): Promise<ReplacementResult> {
@@ -48,6 +51,23 @@ export class RecordOpenService {
       return { ok: false, reason: rebuilt.reason };
     }
 
+    // The ingress gate, before anything is offered for activation. A record
+    // stored before this application completed rolls — or written by an older
+    // version of it — can carry a partial one, and a partial roll is either
+    // completed by the package or the whole candidate is refused. There is no
+    // third outcome and no repair pass here (contract, "Mandatory ingress
+    // normalization").
+    const ingress = normalizeReconstructedBuild(rebuilt.loadout);
+    if (ingress.kind === 'unusable') {
+      return { ok: false, reason: ingress.reason };
+    }
+    if (ingress.kind === 'refused') {
+      // Published, not thrown away: the surface that names every affected mount
+      // is what makes this actionable. Nothing about the current build moves.
+      this.#active.reportIngressRefusal(ingress.failures);
+      return { ok: false, reason: refusalReason(ingress.failures) };
+    }
+
     // A named record is the baseline it was opened at, so it starts clean; a
     // working record has no version a Commander could return to, so it starts
     // dirty and is protected by the replacement question like any other
@@ -59,9 +79,10 @@ export class RecordOpenService {
     return {
       ok: true,
       candidate: {
-        loadout: rebuilt.loadout,
+        loadout: ingress.candidate,
         hullName: this.#gameText.shipName(record.hullSymbol).text ?? record.hullSymbol,
         provenance,
+        qualityNotices: ingress.notices,
         sourceNamed:
           record.kind === 'named'
             ? { recordId: record.id, baseRevisionId: record.revisionId }
@@ -70,4 +91,11 @@ export class RecordOpenService {
       },
     };
   }
+}
+
+/** A diagnostic naming what the Almanac refused. Never Commander-facing text. */
+function refusalReason(failures: readonly { readonly code: string | null }[]): string {
+  return `The Almanac could not complete ${failures.length} partial engineering roll(s): ${failures
+    .map((failure) => failure.code ?? 'unknown')
+    .join(', ')}.`;
 }

@@ -14,6 +14,7 @@ import {
   type ReplacementResult,
 } from '../active-build/replacement-coordinator';
 import { recognizeBuildLinkFragment } from './fragment-recognizer';
+import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
 import { LinkErrorMapper, type LinkFailure } from './link-error.mapper';
 
 /** Why a decode was thrown away rather than reported. */
@@ -207,12 +208,30 @@ export class BuildLinkCoordinator {
       return { ok: false, reason: UNCHANGED };
     }
 
+    // The ingress gate, before anything is offered for activation. A link is
+    // the one ingress a Commander did not author, so a partial roll encoded
+    // into one is either completed by the package or the whole candidate is
+    // refused with the current build untouched (contract, "Mandatory ingress
+    // normalization").
+    const ingress = normalizeReconstructedBuild(loadout);
+    if (ingress.kind === 'unusable') {
+      return { ok: false, reason: ingress.reason };
+    }
+    if (ingress.kind === 'refused') {
+      this.#active.reportIngressRefusal(ingress.failures);
+      return {
+        ok: false,
+        reason: `Build link refused: ${ingress.failures.length} partial engineering roll(s) the Almanac could not complete.`,
+      };
+    }
+
     return {
       ok: true,
       candidate: {
-        loadout,
+        loadout: ingress.candidate,
         hullName: this.#gameText.shipName(ship.symbol).text ?? ship.symbol,
         provenance: 'link',
+        qualityNotices: ingress.notices,
         sourceNamed: null,
         // A link build is saved nowhere a Commander could get it back from, so
         // it arrives dirty and the next replacement asks before discarding it.

@@ -21,10 +21,22 @@ class CompositionHost {
   readonly composition: Signal<OutfittingComposition> = observeComposition();
 }
 
-/** Sets the host's measured width, since jsdom lays nothing out on its own. */
+/** The prototype's own measurement, so the patch below can be undone. */
+const MEASURE = HTMLElement.prototype.getBoundingClientRect;
+
+/**
+ * Sets the host's measured width, since jsdom lays nothing out on its own.
+ *
+ * `writable` matters here. A prototype property defined without it is
+ * non-writable, and a *later* spec in the same worker assigning its own
+ * `element.getBoundingClientRect` then throws in strict mode — a failure with
+ * nothing to do with the file it lands in, appearing and disappearing as the
+ * suite is re-sharded. The patch is undone after each test for the same reason.
+ */
 function withWidth(width: number): void {
   Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
     configurable: true,
+    writable: true,
     value: () => ({ width, height: 0, top: 0, left: 0, right: width, bottom: 0 }),
   });
 }
@@ -48,6 +60,7 @@ describe('outfitting composition', () => {
 
   afterEach(() => {
     document.documentElement.style.fontSize = '';
+    HTMLElement.prototype.getBoundingClientRect = MEASURE;
     delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
   });
 

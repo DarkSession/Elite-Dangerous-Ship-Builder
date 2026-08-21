@@ -1,0 +1,65 @@
+@use '../../../styles/responsive' as layout;
+
+// Canvas 1c's `GRADE   5` over a bar of five equal cells; canvas 1d's `GRADE`
+// beside them. One composition, wrapping where the row runs out.
+:host {
+  display: block;
+}
+
+.grades {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.grades__legend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline-tight);
+  padding: 0;
+  inline-size: 100%;
+}
+
+.grades__label {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+.grades__selected {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+}
+
+.grades__cells {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+.grade {
+  @include layout.target-baseline;
+
+  flex: 1 1 var(--edsb-target-size);
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--edsb-surface-control-quiet);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+  color: var(--edsb-text-accent);
+  cursor: pointer;
+
+  // The canvas fills the chosen cell solid. Fill is not the only carrier: the
+  // radio's own checked state and the number beside the legend both say it too.
+  &[data-selected='true'] {
+    background-color: var(--edsb-surface-accent-solid);
+    border-color: var(--edsb-border-accent);
+    color: var(--edsb-text-on-accent);
+  }
+}
+
+.grade__radio {
+  @include layout.visually-hidden;
+}
+
+.grade__number {
+  @include layout.metric-value(var(--edsb-text-size-compact), currentColor);
+}

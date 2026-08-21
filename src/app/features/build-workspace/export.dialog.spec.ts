@@ -84,6 +84,7 @@ function commitAnaconda(active: ActiveBuildStore): void {
     loadout: ShipLoadout.default('Anaconda'),
     hullName: 'Anaconda',
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: null,
   });

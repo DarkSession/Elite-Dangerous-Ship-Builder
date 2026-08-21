@@ -1,0 +1,58 @@
+<fieldset class="blueprints">
+  <legend class="blueprints__legend">{{ legend() }}</legend>
+
+  <!--
+    The canvas's first option, at both widths. Choosing it and applying is the
+    whole clear route; there is no second control anywhere that does this.
+  -->
+  <label class="blueprint blueprint--none" [attr.data-selected]="clearing()">
+    <input
+      class="blueprint__radio"
+      type="radio"
+      [name]="groupName"
+      [value]="noBlueprint"
+      [checked]="clearing()"
+      (change)="chosen.emit(noBlueprint)"
+    />
+    <span class="blueprint__identity">
+      <span class="blueprint__name">{{ noneLabel() }}</span>
+      <span class="blueprint__note">{{ noneDescription() }}</span>
+      @if (clearConsequence(); as consequence) {
+        <span class="blueprint__consequence">{{ consequence }}</span>
+      }
+    </span>
+  </label>
+
+  @for (choice of choices(); track choice.fdname) {
+    <label class="blueprint" [attr.data-selected]="selected() === choice.fdname">
+      <input
+        class="blueprint__radio"
+        type="radio"
+        [name]="groupName"
+        [value]="choice.fdname"
+        [checked]="selected() === choice.fdname"
+        [attr.aria-label]="nameFor(choice)"
+        (change)="chosen.emit(choice.fdname)"
+      />
+      <span class="blueprint__identity">
+        <edsb-game-text
+          class="blueprint__name"
+          [text]="choice.name.text"
+          [language]="choice.name.language"
+          [translationState]="choice.name.translationState"
+        />
+        <!--
+          The route, where the package says the recipe is not an ordinary one.
+          An ordinary recipe says nothing, because "this is the normal kind" is
+          not news on a list where most of them are.
+        -->
+        @if (choice.route === 'mercenary') {
+          <span class="blueprint__note">{{ mercenaryLabel() }}</span>
+        }
+        @if (choice.applied) {
+          <span class="blueprint__applied">{{ appliedLabel() }}</span>
+        }
+      </span>
+    </label>
+  }
+</fieldset>

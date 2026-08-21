@@ -21,6 +21,7 @@ import {
   type CandidateMembership,
 } from './candidate-membership';
 import { applyQuery, openCandidateQuery, type CandidateQueryState } from './candidate-query';
+import { engineeringOperation } from './engineering-draft';
 import type { OutfittingSurface } from './outfitting-state';
 import { slotCapabilities } from './slot-capabilities';
 import { slotViews, type SlotView } from './slot-view';
@@ -51,6 +52,17 @@ export class OutfittingStore {
   readonly #surface = signal<OutfittingSurface>('workspace');
   readonly #lastEditFailure = signal<EditFailure | null>(null);
   readonly #query = signal('');
+
+  /**
+   * The package's structured refusal from the operation that just ran.
+   *
+   * `setExperimentalEffect` refuses by *returning* rather than by throwing, so
+   * a refused effect edit reaches the transaction as an operation that changed
+   * nothing — indistinguishable from a Commander re-selecting the effect they
+   * already had. This carries the package's own code and parameters back out of
+   * the closure so the two stay distinguishable (contract, "Refusals").
+   */
+  #structuredRefusal: { readonly code: string; readonly params: unknown } | null = null;
 
   /** Feature 001's revision. Changes once per committed edit or replacement. */
   readonly revision = this.#active.revision;
@@ -200,6 +212,7 @@ export class OutfittingStore {
       );
     }
 
+    this.#takeStructuredRefusal();
     const operation = this.#operationFor(intent, current);
     if (operation === null) {
       return this.#refuse(
@@ -216,10 +229,35 @@ export class OutfittingStore {
       );
     }
 
-    return this.#commitOutcome(
-      runEditTransaction(current, operation, slotKeyOf(intent)),
-      slotKeyOf(intent),
-    );
+    const outcome = runEditTransaction(current, operation, slotKeyOf(intent));
+
+    // Checked before the outcome, because a structured refusal reaches here as
+    // an unchanged build and "nothing needed doing" is the wrong thing to tell
+    // a Commander whose edit the Almanac declined.
+    const refusal = this.#takeStructuredRefusal();
+    if (refusal !== null) {
+      return this.#refuse(
+        {
+          category: 'packageResult',
+          slotKey: slotKeyOf(intent),
+          code: refusal.code,
+          constraint: null,
+          params: null,
+          diagnostic: refusal.params,
+          framingKey: 'outfitting.refusal.packageResult',
+        },
+        this.#active.revision(),
+      );
+    }
+
+    return this.#commitOutcome(outcome, slotKeyOf(intent));
+  }
+
+  /** Reads the last structured refusal and clears it, so it is never read twice. */
+  #takeStructuredRefusal(): { readonly code: string; readonly params: unknown } | null {
+    const refusal = this.#structuredRefusal;
+    this.#structuredRefusal = null;
+    return refusal;
   }
 
   /**
@@ -318,6 +356,54 @@ export class OutfittingStore {
               candidate.setPreEngineeredVariant(intent.slotKey, choice.variant);
             }
           : null;
+      }
+
+      case 'applyEngineering':
+      case 'setExperimental':
+      case 'clearEngineering': {
+        // Re-read now rather than remembered from when the editor drew its
+        // menus. A mount whose module has since been replaced offers a
+        // different menu, and the package is the one that knows.
+        if (current.fittedModuleAt(intent.slotKey) === null) {
+          return null;
+        }
+        return engineeringOperation(intent, (code, params) => {
+          this.#structuredRefusal = { code, params };
+        });
+      }
+
+      case 'setEnabled':
+      case 'setPriority': {
+        // Power belongs to whatever is fitted — including the cargo hatch,
+        // which is the one mount that offers this and nothing else (FR-009).
+        // The module stays fitted either way: its mass and its catalogue cost
+        // are still in the build (contract, "Power and recalculation").
+        const fitted = current.fittedModuleAt(intent.slotKey);
+        if (fitted === null) {
+          return null;
+        }
+
+        // Switching on a module that never said it was off changes nothing a
+        // Commander can see, but it does write `On: true` where the source said
+        // nothing — which the modelled snapshot records as a different build.
+        // The package documents an absent field as on, so this asks for the
+        // state it is already in, and asking for that is not a decision: it
+        // would spend a revision and a history frame on undo doing nothing
+        // (build-edit transaction, "the no-op check").
+        if (intent.kind === 'setEnabled' && (fitted.on ?? true) === intent.enabled) {
+          return () => {};
+        }
+
+        return intent.kind === 'setEnabled'
+          ? (candidate) => {
+              candidate.setModuleEnabled(intent.slotKey, intent.enabled);
+            }
+          : (candidate) => {
+              // The package's own zero-based group. The interface presents
+              // 1–5; the translation happens once, at the control, and never
+              // here (contract, "Operations").
+              candidate.setModulePriority(intent.slotKey, intent.priority);
+            };
       }
 
       case 'remove': {

@@ -1,0 +1,57 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's three-column grid: a name that takes the width and two mono
+// figures right-aligned under tracked micro headings.
+:host {
+  display: block;
+}
+
+// Long attribute names and expanded translations widen this before anything
+// else in the editor does. It scrolls inside itself rather than pushing the
+// page sideways (constitution VII).
+.comparison__scroller {
+  overflow-x: auto;
+}
+
+.comparison {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.comparison__column {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  text-align: start;
+  padding-block-end: var(--edsb-space-stack-tight);
+}
+
+.comparison__column--figure {
+  text-align: end;
+}
+
+.comparison__attribute {
+  text-align: start;
+  font-weight: inherit;
+  color: var(--edsb-text-secondary);
+  font-size: var(--edsb-text-size-compact);
+  padding-block: var(--edsb-space-stack-tight);
+}
+
+.comparison__value {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-subtle));
+
+  text-align: end;
+  padding-block: var(--edsb-space-stack-tight);
+  padding-inline-start: var(--edsb-space-inline);
+  white-space: nowrap;
+}
+
+// The candidate column is the one the Commander is deciding about, so it reads
+// as the brighter of the two — which is emphasis, not a claim that it is better.
+.comparison__value--candidate {
+  color: var(--edsb-text-numeric);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

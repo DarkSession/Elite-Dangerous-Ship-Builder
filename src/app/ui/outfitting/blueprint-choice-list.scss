@@ -1,0 +1,69 @@
+@use '../../../styles/responsive' as layout;
+
+// Canvas 1d's card list, which canvas 1c draws as a menu of the same rows. One
+// composition rather than two: the rows carry a description, and a description
+// is not something a native menu can hold.
+:host {
+  display: block;
+}
+
+.blueprints {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.blueprints__legend {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  padding: 0;
+  margin-block-end: var(--edsb-space-stack-tight);
+}
+
+.blueprint {
+  @include layout.selectable-row;
+  @include layout.target-baseline;
+
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  padding: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  cursor: pointer;
+}
+
+// The canvas draws the no-blueprint row dashed, so it reads as the way out
+// rather than as one more recipe.
+.blueprint--none {
+  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-quiet);
+}
+
+.blueprint__radio {
+  @include layout.visually-hidden;
+}
+
+.blueprint__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.blueprint__name {
+  color: var(--edsb-text-primary);
+  font-size: var(--edsb-text-size-body);
+}
+
+.blueprint__note {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+.blueprint__consequence {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-caption);
+}
+
+.blueprint__applied {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+}

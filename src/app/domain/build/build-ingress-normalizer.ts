@@ -47,8 +47,31 @@ export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
     return { kind: 'unusable', reason: error instanceof Error ? error.message : String(error) };
   }
 
-  // Steps 3–4. Correlate, then complete. Every failure is collected rather than
-  // thrown on the first one, so a refusal can name every affected slot at once.
+  return completePartials(candidate, partials);
+}
+
+/**
+ * The same gate, for a candidate the package has already built.
+ *
+ * Opening a stored record and loading a build link both reconstruct through the
+ * package from a modelled snapshot rather than from a journal event, so there
+ * is no source event left to read step 1 off. The partials are read from the
+ * built candidate instead — which is the same evidence, one step later — and
+ * steps 3 to 5 are the identical code below. Two entry points, one pipeline: a
+ * second implementation is exactly how one ingress path ends up skipping a
+ * check the others make (contract, "Mandatory ingress normalization").
+ */
+export function normalizeReconstructedBuild(candidate: ShipLoadout): IngressResult {
+  return completePartials(candidate, builtPartials(candidate));
+}
+
+/** Steps 3 to 5, shared by both entry points. */
+function completePartials(
+  candidate: ShipLoadout,
+  partials: readonly SourcePartialEngineering[],
+): IngressResult {
+  // Correlate, then complete. Every failure is collected rather than thrown on
+  // the first one, so a refusal can name every affected slot at once.
   const notices: IngressNotice[] = [];
   const failures: PartialEngineeringFailure[] = [];
 
@@ -104,6 +127,35 @@ export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   }
 
   return { kind: 'accepted', candidate, notices };
+}
+
+/**
+ * Every partial roll a built candidate is carrying, in the build's own order.
+ *
+ * The equivalent of `sourcePartials` for a candidate that arrived as a modelled
+ * snapshot. What it reads is the package's own fitted modules, so a roll that
+ * did not survive construction is simply not here — which is the correlation
+ * step already done rather than skipped.
+ */
+function builtPartials(candidate: ShipLoadout): readonly SourcePartialEngineering[] {
+  const partials: SourcePartialEngineering[] = [];
+
+  for (const module of candidate.fittedModules()) {
+    const engineering = module.engineering;
+    if (engineering === undefined || !isPartialQuality(engineering.Quality)) {
+      continue;
+    }
+    partials.push({
+      slotKey: module.slot,
+      moduleSymbol: module.symbol,
+      blueprintFdname: engineering.BlueprintName ?? null,
+      effectFdname: engineering.ExperimentalEffect ?? null,
+      grade: engineering.Level,
+      quality: engineering.Quality,
+    });
+  }
+
+  return partials;
 }
 
 /** Every partial roll the source stated, in source order. */

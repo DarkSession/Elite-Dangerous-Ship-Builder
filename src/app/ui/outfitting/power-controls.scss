@@ -1,0 +1,54 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's hairline-bordered priority control at the end of a ledger row,
+// with the power switch beside it.
+:host {
+  display: block;
+}
+
+.power {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  align-items: center;
+}
+
+.power__switch {
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: pointer;
+}
+
+// The checkbox itself carries the state; the track is what the canvas draws.
+// It is never the only carrier: the control's own checked state and its
+// accessible name both say it too.
+.power__toggle {
+  @include layout.visually-hidden;
+}
+
+.power__switch-track {
+  inline-size: var(--edsb-space-inline-loose);
+  block-size: var(--edsb-space-inline);
+  background-color: var(--edsb-surface-control-quiet);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+
+  .power__toggle:checked + & {
+    background-color: var(--edsb-surface-accent-solid);
+    border-color: var(--edsb-border-accent);
+  }
+}
+
+.power__priority {
+  @include layout.control-base;
+  @include layout.field-surface;
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

@@ -5,13 +5,15 @@ import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 import { ModuleIdentityBadge } from './module-identity-badge';
+import { PowerControls, type PowerIntent } from './power-controls';
 
 /** What a card asks the workspace to do. Deciding whether it happens is not its job. */
 export type SlotCardIntent =
   | { readonly kind: 'select' }
   | { readonly kind: 'replace' }
   | { readonly kind: 'engineer' }
-  | { readonly kind: 'remove' };
+  | { readonly kind: 'remove' }
+  | PowerIntent;
 
 /**
  * One mount in the ledger.
@@ -40,7 +42,7 @@ export type SlotCardIntent =
  */
 @Component({
   selector: 'edsb-slot-card',
-  imports: [ModuleIdentityBadge],
+  imports: [ModuleIdentityBadge, PowerControls],
   templateUrl: './slot-card.html',
   styleUrl: './slot-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -124,6 +126,22 @@ export class SlotCard {
       ? null
       : this.#messages.message('outfitting.slot.restriction', { restriction: restriction.text });
   });
+
+  /**
+   * The module's name, for the power controls to name what they act on.
+   *
+   * A ledger is forty rows of the same two controls, so "powered" on its own
+   * says nothing about which module. Falls back to the mount's own label where
+   * the package resolves no name, rather than to a bare symbol.
+   */
+  readonly moduleLabel = computed(() => this.slot().module?.displayName.text ?? this.drawnLabel());
+
+  /** True where the package offers power on this mount at all. */
+  readonly showsPower = computed(
+    () =>
+      this.slot().module !== null &&
+      (this.capabilities().canSetEnabled || this.capabilities().canSetPriority),
+  );
 
   emit(intent: SlotCardIntent): void {
     this.intent.emit(intent);

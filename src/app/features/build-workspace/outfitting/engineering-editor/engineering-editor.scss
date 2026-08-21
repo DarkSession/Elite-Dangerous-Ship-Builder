@@ -1,0 +1,105 @@
+@use '../../../../../styles/responsive' as layout;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  container-name: engineering;
+
+  // The bound the panel gives way against, written the way the bench above
+  // writes its own. Without one the region grows to its content, nothing
+  // scrolls inside it, and the actions below end up drawn over the foot of the
+  // material list — over the control a Commander is reaching for.
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+}
+
+// A viewport this short cannot divide into a scroller and a foot and still show
+// one choice. The region stops bounding itself, the actions stop sticking, and
+// the page scrolls — the same release the command bar and the bench make at the
+// same threshold, and what keeps the whole of it readable at 400% zoom (FR-011).
+@include layout.short-viewport {
+  :host {
+    max-block-size: none;
+  }
+
+  .engineering__actions {
+    position: static;
+  }
+}
+
+.engineering {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-block-size: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.engineering--layer {
+  padding: var(--edsb-space-panel);
+}
+
+.engineering__state {
+  margin: 0;
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.engineering__current {
+  margin: 0;
+  color: var(--edsb-text-secondary);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.engineering__purchase {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+// Canvas 1c's two columns: the choices on the left, what they would do on the
+// right. One column until the region is wide enough for both to keep their own
+// content readable, because two narrow columns is worse than one wide one.
+.engineering__panes {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+@include layout.container-wide-up(engineering) {
+  .engineering__panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--edsb-space-region);
+    align-items: start;
+  }
+}
+
+.engineering__choices,
+.engineering__result {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+.engineering__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  position: sticky;
+  inset-block-end: 0;
+  flex: none;
+  padding-block: var(--edsb-space-stack-tight);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+}
+
+.engineering__revert {
+  @include layout.control-base;
+  @include layout.control-secondary;
+}
+
+.engineering__apply {
+  @include layout.control-base;
+  @include layout.control-primary;
+
+  flex: 1;
+  min-inline-size: 0;
+}

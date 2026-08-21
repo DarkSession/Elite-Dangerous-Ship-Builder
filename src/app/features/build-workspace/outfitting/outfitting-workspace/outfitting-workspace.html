@@ -9,6 +9,28 @@
   -->
   <h2 class="visually-hidden" [id]="regionHeadingId">{{ regionLabel() }}</h2>
 
+  <!--
+    Both halves of the ingress gate's answer, above everything else on the
+    screen. They are drawn outside the has-a-build branch on purpose: a refused
+    build is exactly the case where there may be nothing open to describe, and
+    that is when the reason matters most (FR-013).
+  -->
+  <edsb-ingress-refusal-notice
+    class="outfitting__feedback"
+    [failures]="ingressFailures()"
+    [revision]="revision()"
+    [slotLabels]="slotLabels()"
+    (dismissed)="active.dismissIngressRefusal()"
+  />
+
+  <edsb-quality-completion-notice
+    class="outfitting__feedback"
+    [notices]="qualityNotices()"
+    [revision]="revision()"
+    [slotLabels]="slotLabels()"
+    (dismissed)="active.setQualityCompletionNotices([])"
+  />
+
   @if (!store.hasBuild()) {
     <div class="outfitting__empty">
       <h3 class="outfitting__empty-title">{{ noBuildTitle() }}</h3>
@@ -48,6 +70,7 @@
                   [slot]="slot"
                   [capabilities]="capabilitiesFor(slot)"
                   [selected]="store.selectedSlotKey() === slot.key"
+                  [engineeringSummary]="engineeringSummaryFor(slot)"
                   (intent)="handle(slot, $event)"
                 />
               </li>
@@ -106,6 +129,14 @@
 
         @if (replacementOpen()) {
           <edsb-module-replacement
+            [slot]="slot"
+            [asLayer]="benchIsLayer()"
+            (closed)="closeSurface()"
+          />
+        }
+
+        @if (engineeringOpen()) {
+          <edsb-engineering-editor
             [slot]="slot"
             [asLayer]="benchIsLayer()"
             (closed)="closeSurface()"

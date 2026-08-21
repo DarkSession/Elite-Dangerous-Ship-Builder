@@ -1,16 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import type { SlotKind } from '@elite-dangerous-almanac/core/ships/slots';
+import { engineeringView } from '../../../../application/outfitting/engineering-view';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
 import { slotCapabilities } from '../../../../application/outfitting/slot-capabilities';
 import { NO_SLOT_CAPABILITIES } from '../../../../application/outfitting/outfitting-state';
 import type { MessageKey } from '../../../../i18n/locale-registry';
+import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';
+import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { EditRefusalNotice } from '../../../../ui/outfitting/edit-refusal-notice';
+import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-notice';
+import { QualityCompletionNotice } from '../../../../ui/outfitting/quality-completion-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
+import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
 
 /** The category controls the canvas draws above the ledger. */
@@ -37,14 +43,24 @@ type Category = 'all' | SlotKind;
  */
 @Component({
   selector: 'edsb-outfitting-workspace',
-  imports: [EditRefusalNotice, ModuleReplacement, SlotCard, SlotGroup],
+  imports: [
+    EditRefusalNotice,
+    EngineeringEditor,
+    IngressRefusalNotice,
+    ModuleReplacement,
+    QualityCompletionNotice,
+    SlotCard,
+    SlotGroup,
+  ],
   templateUrl: './outfitting-workspace.html',
   styleUrl: './outfitting-workspace.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OutfittingWorkspace {
   readonly #messages = inject(MessageService);
+  readonly #gameText = inject(GameTextPresenter);
   readonly store = inject(OutfittingStore);
+  readonly active = inject(ActiveBuildStore);
 
   /** Which mounts are listed. Visibility only; never build or history state. */
   readonly category = signal<Category>('all');
@@ -106,6 +122,25 @@ export class OutfittingWorkspace {
   readonly failure = this.store.lastEditFailure;
   readonly revision = this.store.revision;
 
+  /** What the Almanac completed while the build on screen was being read in. */
+  readonly qualityNotices = this.active.qualityCompletionNotices;
+
+  /** Why a build the Commander tried to open never became this one. */
+  readonly ingressFailures = this.active.ingressFailures;
+
+  /**
+   * The ledger's own labels, keyed by exact slot key.
+   *
+   * Both ingress surfaces name mounts, and they name them the way the ledger
+   * does rather than by the game's slot key — which is the identity everything
+   * uses and not something a Commander reads.
+   */
+  readonly slotLabels = computed<Readonly<Record<string, string>>>(() =>
+    Object.fromEntries(
+      this.store.slots().map((slot) => [slot.key, slot.displayName.text ?? slot.canonicalName]),
+    ),
+  );
+
   /** The label the ledger draws for the selected mount, for the notices. */
   readonly selectedSlotLabel = computed(() => {
     const slot = this.selectedSlot();
@@ -147,11 +182,40 @@ export class OutfittingWorkspace {
     () => this.store.surface() === 'replacement' && this.selectedSlot() !== null,
   );
 
+  readonly engineeringOpen = computed(
+    () => this.store.surface() === 'engineering' && this.selectedSlot() !== null,
+  );
+
   /** What the package permits on one mount, re-read at the current revision. */
   capabilitiesFor(slot: SlotView) {
     this.store.revision();
     const loadout = this.store.loadout();
     return loadout === null ? NO_SLOT_CAPABILITIES : slotCapabilities(loadout, slot);
+  }
+
+  /**
+   * The engineering the ledger's code line carries, as canvas 1c draws it.
+   *
+   * `OVERCHARGED G5` — the recipe's name in the Commander's language and the
+   * grade currently applied. It is beside the engineered marker rather than
+   * instead of it, because a glyph is not readable and disappears in forced
+   * colours (feature 011, FR-010).
+   */
+  engineeringSummaryFor(slot: SlotView): string | null {
+    const module = slot.module;
+    if (module === null) {
+      return null;
+    }
+    const engineering = engineeringView(module);
+    if (engineering.blueprintFdname === null || engineering.currentGrade === null) {
+      return null;
+    }
+    return this.#messages.message('outfitting.slot.engineering', {
+      blueprint:
+        this.#gameText.blueprintName(engineering.blueprintFdname).text ??
+        engineering.blueprintFdname,
+      grade: engineering.currentGrade,
+    });
   }
 
   handle(slot: SlotView, intent: SlotCardIntent): void {
@@ -172,6 +236,16 @@ export class OutfittingWorkspace {
         return;
       case 'remove':
         this.store.dispatch({ kind: 'remove', slotKey: slot.key });
+        return;
+      case 'setEnabled':
+        this.store.dispatch({ kind: 'setEnabled', slotKey: slot.key, enabled: intent.enabled });
+        return;
+      case 'setPriority':
+        // Power belongs to the mount it was pressed on, not to whichever one
+        // happens to be selected. Nothing here selects it first: switching a
+        // heat sink off is not a reason to empty the bench a Commander is
+        // reading.
+        this.store.dispatch({ kind: 'setPriority', slotKey: slot.key, priority: intent.priority });
         return;
     }
   }

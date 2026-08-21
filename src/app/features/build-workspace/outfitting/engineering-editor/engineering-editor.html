@@ -1,0 +1,120 @@
+<!--
+  One body, two placements — the same arrangement the chooser uses, and for the
+  same reason. Canvas 1c draws the editor inline inside the bench; canvas 1d
+  draws it as a full-screen view over an inert background. Writing the content
+  once and placing it twice is what keeps the two widths identical in what they
+  offer (constitution V).
+-->
+<ng-template #body>
+  @switch (state()) {
+    @case ('noModule') {
+      <p class="engineering__state" role="status">{{ loadingLabel() }}</p>
+    }
+    @case ('packageEmpty') {
+      <p class="engineering__state">{{ packageEmptyLabel() }}</p>
+    }
+    @case ('final') {
+      <!--
+        A final article. The Almanac's restriction is stated and its current
+        fixed state stays visible; no apply or clear control is drawn, because
+        neither is an operation the package offers here (FR-009).
+      -->
+      <p class="engineering__state">{{ finalLabel() }}</p>
+    }
+  }
+
+  @if (currentSummary(); as summary) {
+    <p class="engineering__current">{{ summary }}</p>
+  }
+  @if (effectSummary(); as summary) {
+    <p class="engineering__current">{{ summary }}</p>
+  }
+  @if (purchaseSummary(); as summary) {
+    <p class="engineering__purchase">{{ summary }}</p>
+  }
+
+  @if (state() === 'stale') {
+    <p class="engineering__state" role="status">{{ staleLabel() }}</p>
+  }
+
+  @if (showChoices()) {
+    <div class="engineering__panes">
+      <div class="engineering__choices">
+        <edsb-blueprint-choice-list
+          [choices]="blueprintChoices()"
+          [selected]="selectedBlueprint()"
+          [clearConsequence]="clearConsequence()"
+          (chosen)="chooseBlueprint($event)"
+        />
+
+        @if (grades().length > 0) {
+          <edsb-grade-selector
+            [grades]="grades()"
+            [selected]="selectedGrade()"
+            (chosen)="chooseGrade($event)"
+          />
+        }
+
+        @if (effectChoices().length > 0) {
+          <edsb-experimental-effect-list
+            [effects]="effectChoices()"
+            [selected]="selectedEffect()"
+            (chosen)="chooseEffect($event)"
+          />
+        }
+      </div>
+
+      <div class="engineering__result">
+        @if (attributes().length > 0) {
+          <edsb-attribute-comparison [rows]="attributes()" />
+        } @else {
+          <p class="engineering__state">{{ noAttributesLabel() }}</p>
+        }
+
+        <edsb-material-cost-list
+          [parts]="materialParts()"
+          [grade]="selectedGrade()"
+          [mercCoin]="mercCoin()"
+          [fixedPurchase]="fixedPurchase()"
+        />
+      </div>
+    </div>
+
+    <!--
+      Canvas 1d pins these to the foot of the screen; canvas 1c draws them under
+      the panel. There is no third control: clearing is the blueprint list's
+      first option, applied like any other choice.
+    -->
+    <div class="engineering__actions">
+      <button class="engineering__revert" type="button" (click)="revert()">
+        {{ revertLabel() }}
+      </button>
+      <button class="engineering__apply" type="button" [disabled]="!canApply()" (click)="apply()">
+        {{ applyLabel() }}
+      </button>
+    </div>
+  }
+</ng-template>
+
+@if (asLayer()) {
+  <edsb-layer
+    [title]="heading()"
+    [open]="true"
+    [dismissLabel]="closeLabel()"
+    presentation="full-height"
+    (dismissed)="revert()"
+  >
+    <div class="engineering engineering--layer">
+      <ng-container [ngTemplateOutlet]="body" />
+    </div>
+  </edsb-layer>
+} @else {
+  <!--
+    Inline, the bench above already carries the mount's title exactly as canvas
+    1c draws it. A second visible heading here would be the same words twice.
+    The region keeps its accessible name so a reader still knows what it is for.
+  -->
+  <section class="engineering" [attr.aria-label]="regionLabel()">
+    <ng-container [ngTemplateOutlet]="body" />
+  </section>
+}

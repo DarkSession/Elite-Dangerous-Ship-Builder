@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import type { PartialEngineeringFailure } from '../../domain/build/build-ingress-result';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildSnapshotV1 } from '../../domain/build/build-snapshot';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
@@ -39,6 +40,7 @@ export class ActiveBuildStore {
   readonly #persistence = signal<PersistenceStatus>('ready');
   readonly #link = signal<LinkPublicationState>({ kind: 'absent' });
   readonly #notices = signal<readonly QualityCompletionNotice[]>([]);
+  readonly #ingressFailures = signal<readonly PartialEngineeringFailure[]>([]);
 
   readonly loadout = this.#loadout.asReadonly();
   /** The active hull's name in the Commander's language, as committed. */
@@ -50,6 +52,17 @@ export class ActiveBuildStore {
   readonly persistence = this.#persistence.asReadonly();
   readonly link = this.#link.asReadonly();
   readonly qualityCompletionNotices = this.#notices.asReadonly();
+
+  /**
+   * Why the last incoming build was refused before it was ever activated.
+   *
+   * Kept beside the accepted notices because it is the same event's other
+   * outcome. It describes a build that never arrived, so it changes nothing
+   * about the one on screen — no revision, no dirty state, no fragment, no
+   * history — and it is cleared by the next build that does arrive
+   * (contract, "Mandatory ingress normalization").
+   */
+  readonly ingressFailures = this.#ingressFailures.asReadonly();
 
   /** Increments once per modelled edit or commit. Everything derived reads it. */
   readonly revision = this.#revision.asReadonly();
@@ -103,7 +116,8 @@ export class ActiveBuildStore {
     this.#provenance.set(candidate.provenance);
     this.#sourceNamed.set(candidate.sourceNamed);
     this.#baseline.set(candidate.baseline);
-    this.#notices.set([]);
+    this.#notices.set(candidate.qualityNotices);
+    this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
     this.#revision.update((revision) => revision + 1);
   }
@@ -171,6 +185,15 @@ export class ActiveBuildStore {
     this.#notices.set(notices);
   }
 
+  /** Records a whole-candidate ingress refusal. Nothing about the build moves. */
+  reportIngressRefusal(failures: readonly PartialEngineeringFailure[]): void {
+    this.#ingressFailures.set(failures);
+  }
+
+  dismissIngressRefusal(): void {
+    this.#ingressFailures.set([]);
+  }
+
   /** Clears the active build entirely. Test support and explicit discard only. */
   clear(): void {
     this.#loadout.set(null);
@@ -179,6 +202,7 @@ export class ActiveBuildStore {
     this.#sourceNamed.set(null);
     this.#baseline.set(null);
     this.#notices.set([]);
+    this.#ingressFailures.set([]);
     this.#link.set({ kind: 'absent' });
     this.#revision.update((revision) => revision + 1);
   }

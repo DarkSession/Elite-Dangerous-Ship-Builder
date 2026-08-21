@@ -1,0 +1,35 @@
+<div class="power">
+  @if (canSetEnabled()) {
+    <label class="power__switch">
+      <input
+        class="power__toggle"
+        type="checkbox"
+        [checked]="isOn()"
+        [attr.aria-label]="enabledLabel()"
+        (change)="toggle($event)"
+      />
+      <span class="power__switch-track" aria-hidden="true"></span>
+    </label>
+  }
+
+  @if (canSetPriority()) {
+    <span class="visually-hidden" [id]="priorityId">{{ priorityLabel() }}</span>
+    <select
+      class="power__priority"
+      [attr.aria-labelledby]="priorityId"
+      [value]="selectedValue()"
+      (change)="choose($event)"
+    >
+      <!--
+        The empty option exists so an absent group has something to be. It is
+        never written back: choosing it emits nothing.
+      -->
+      <option value="">{{ absentLabel() }}</option>
+      @for (group of groups; track group) {
+        <option [value]="group" [selected]="priority() === group">
+          {{ groupLabel(group) }}
+        </option>
+      }
+    </select>
+  }
+</div>

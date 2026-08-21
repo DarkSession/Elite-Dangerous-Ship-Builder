@@ -73,6 +73,10 @@ export class StockBuildCreator {
         loadout,
         hullName: this.#gameText.shipName(ship.symbol).text ?? ship.symbol,
         provenance: 'stock',
+        // A hull's own default build is the package's, at the package's own
+        // quality. There is no source to have stated a partial roll, so the
+        // ingress gate has nothing to complete and nothing to report.
+        qualityNotices: [],
         sourceNamed: null,
         // A build that exists only in this tab, with no copy anywhere: unsaved
         // by definition, so the next replacement asks before discarding it.
