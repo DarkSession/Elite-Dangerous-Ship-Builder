@@ -43,7 +43,7 @@ With 48 hulls the manifest is several screenfuls, so the command bar, the toolba
 
 The offsets are exact by construction rather than measured at runtime. The command bar is one row of controls at the target baseline inside its own block padding (`--edsb-layout-bar-height`), the toolbar below it is one such row inside the region's block padding and the size strip's hairline, and the manifest header clears both through `--edsb-layout-manifest-offset`. A short viewport releases the bar (FR-011), and every region below releases with it.
 
-The toolbar and the column headers freeze against the same edge, so a fractional device pixel ratio can round the two boxes apart and let a hairline of the row behind them show through the seam. The toolbar paints a hairline of its own ground below itself rather than the arithmetic being tuned to a ratio nobody's screen has to have.
+The manifest's own row gap is drawn above its header row as well as between its rows, which rested the header two pixels below where it freezes: a hairline of ground under the toolbar at rest, and a two-pixel hop the first time a Commander scrolled. The table starts one gap early so its resting position and its frozen position are the same place.
 
 The manifest is deliberately **not** an overflow container: a sticky header inside one freezes against that box rather than against the viewport. It only ever renders above the medium threshold, where its six short columns fit, and narrower or zoomed layouts use the cards instead.
 

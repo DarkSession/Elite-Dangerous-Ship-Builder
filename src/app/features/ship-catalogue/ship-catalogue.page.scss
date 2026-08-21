@@ -80,6 +80,10 @@
     background-color: var(--edsb-surface-rail);
     border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
     padding: var(--edsb-space-panel);
+    // The rail's ground runs from the command bar's rule down, as the canvas
+    // draws it, and its resting position is therefore the position it freezes
+    // in: it does not travel a block of padding on the first scroll.
+    margin-block-start: calc(-1 * var(--edsb-space-panel));
 
     // The inspector stays with the hull it describes while the manifest
     // scrolls beside it, and scrolls inside itself when it is taller than the

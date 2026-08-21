@@ -52,6 +52,10 @@
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0 var(--edsb-space-3xs);
+  // The row gap is drawn above the header row as well as between the rows, so
+  // the header rests two pixels below where it freezes and hops that far up on
+  // the first scroll. The table starts one gap early instead.
+  margin-block-start: calc(-1 * var(--edsb-space-3xs));
 }
 
 // The reference's track list, as shares of the manifest rather than pixels:
@@ -96,9 +100,10 @@ td {
 }
 
 // Frozen under the screen's own chrome, so a column is still named after the
-// first screenful of hulls.
+// first screenful of hulls. Monospace 500 at the micro size, tracked 0.16em,
+// in the canvas's own 0.52 ink lifted to the contrast floor (canvas 1a).
 thead th {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
 
   position: sticky;
   inset-block-start: var(--edsb-layout-manifest-offset);
@@ -166,20 +171,16 @@ tr[aria-current='true'] > :first-child {
   padding: var(--edsb-space-control-block) 0;
   border: 0;
   background-color: transparent;
-  color: inherit;
-  font: inherit;
   text-align: start;
   cursor: pointer;
 }
 
+// The header cell's tracked uppercase monospace reaches the control through
+// the base reset, so the whole header row stays one decision.
 .catalogue__sort {
-  // Inherits the header cell's tracked monospace rather than restating it, so
-  // the whole header row is one decision.
   display: flex;
   align-items: center;
   gap: var(--edsb-space-3xs);
-  font: inherit;
-  letter-spacing: inherit;
 }
 
 // The mount mix and the price sit hard against the trailing edge, so digits

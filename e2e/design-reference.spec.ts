@@ -210,9 +210,17 @@ test.describe('the wide manifest', () => {
     await expect(header).toBeVisible();
 
     expect(await style(header, 'font-family')).toContain('JetBrains Mono');
+    expect(await style(header, 'font-weight')).toBe('500');
     const size = parseFloat(await style(header, 'font-size'));
     expect(parseFloat(await style(header, 'letter-spacing')) / size).toBeCloseTo(0.16, 2);
     expect(await style(header, 'border-bottom-width')).toBe('1px');
+
+    // The canvas writes the headers in capitals. They are sort controls, and no
+    // engine inherits `text-transform` into a control on its own, so the words
+    // reach the screen as capitals only because the base reset says they do.
+    const sort = page.locator('.catalogue__sort').first();
+    expect(await style(sort, 'text-transform')).toBe('uppercase');
+    expect(await sort.evaluate((element: HTMLElement) => element.innerText)).toMatch(/^SHIP/);
   });
 
   test('marks the column the manifest is ordered by with amber and a caret', async ({ page }) => {
@@ -248,6 +256,7 @@ test.describe('the wide manifest', () => {
     const header = page.locator('thead th').first();
     const toolbar = page.locator('edsb-collection-toolbar');
     await expect(header).toBeVisible();
+    const resting = (await header.boundingBox())!;
 
     await page.mouse.wheel(0, 1200);
     await page.waitForTimeout(200);
@@ -260,6 +269,25 @@ test.describe('the wide manifest', () => {
     expect(strip.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
     expect(columns.y).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
     await expect(header).toBeInViewport();
+    // Freezing is not the same as staying put: the row gap the table draws
+    // above its header rested it below where it freezes, and it hopped that far
+    // up on the first scroll.
+    expect(columns.y).toBeCloseTo(resting.y, 0);
+  });
+
+  // Canvas 1a draws the rail as a column of its own ground running from the
+  // command bar's rule down. A column does not slide: it starts where it
+  // freezes, so the first turn of the wheel moves the manifest and nothing else.
+  test('holds the inspector rail still while the manifest scrolls', async ({ page }) => {
+    await page.goto('/ships/Anaconda');
+    const rail = page.locator('.catalogue__inspector');
+    await expect(rail).toBeVisible();
+    const resting = (await rail.boundingBox())!;
+
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(200);
+
+    expect((await rail.boundingBox())!.y).toBeCloseTo(resting.y, 0);
   });
 
   // Canvas 1a draws the manifest as a grid with one track list:
