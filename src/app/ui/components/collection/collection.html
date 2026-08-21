@@ -1,0 +1,39 @@
+@if (items().length === 0) {
+  @if (emptyLabel()) {
+    <p class="collection__empty">{{ emptyLabel() }}</p>
+  }
+} @else {
+  <ul class="collection" [attr.aria-label]="label()">
+    @for (item of items(); track item.id) {
+      <li class="collection__item" [attr.aria-current]="item.selected ? 'true' : null">
+        @if (item.activatable) {
+          <button
+            class="collection__activate"
+            type="button"
+            [attr.aria-describedby]="item.detail ? detailId(item.id) : null"
+            [disabled]="item.disabled ?? false"
+            (click)="activate(item)"
+          >
+            {{ item.label }}
+          </button>
+        } @else {
+          <span class="collection__label">{{ item.label }}</span>
+        }
+
+        @if (item.detail) {
+          <span class="collection__detail" [id]="detailId(item.id)">{{ item.detail }}</span>
+        }
+
+        @if (item.selected && selectedLabel()) {
+          <span class="collection__state">{{ selectedLabel() }}</span>
+        }
+
+        <!-- An item's own controls sit beside its activation target, never
+             inside it, so neither swallows the other. -->
+        <span class="collection__actions">
+          <ng-content />
+        </span>
+      </li>
+    }
+  </ul>
+}

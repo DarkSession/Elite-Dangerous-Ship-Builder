@@ -1,0 +1,13 @@
+<div
+  class="status"
+  [class]="'status status--' + tone()"
+  [attr.role]="role()"
+  [attr.aria-describedby]="detail() ? detailId : null"
+  data-visual-carrier="status-tone"
+>
+  <span class="status__tone">{{ resolvedToneLabel() }}</span>
+  <span class="status__message">{{ message() }}</span>
+  @if (detail()) {
+    <span class="status__detail" [id]="detailId">{{ detail() }}</span>
+  }
+</div>

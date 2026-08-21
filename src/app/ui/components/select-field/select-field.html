@@ -1,0 +1,35 @@
+<div class="field">
+  <label class="field__label" [id]="relations.labelId" [attr.for]="relations.controlId">
+    {{ label() }}
+  </label>
+
+  <select
+    class="field__control"
+    [id]="relations.controlId"
+    [attr.required]="required() ? '' : null"
+    [attr.aria-required]="required() ? 'true' : null"
+    [attr.aria-invalid]="relations.invalid() ? 'true' : null"
+    [attr.aria-describedby]="relations.describedBy()"
+    [attr.aria-busy]="busy() ? 'true' : null"
+    [disabled]="disabled()"
+    (change)="onChange($event)"
+  >
+    @for (option of options(); track option.value) {
+      <option
+        [value]="option.value"
+        [selected]="option.value === value()"
+        [disabled]="option.disabled ?? false"
+      >
+        {{ option.label }}
+      </option>
+    }
+  </select>
+
+  @if (description()) {
+    <p class="field__description" [id]="relations.descriptionId">{{ description() }}</p>
+  }
+
+  @if (error()) {
+    <p class="field__error" [id]="relations.errorId">{{ error() }}</p>
+  }
+</div>

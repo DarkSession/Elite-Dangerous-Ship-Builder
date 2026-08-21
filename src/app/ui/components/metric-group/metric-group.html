@@ -1,0 +1,34 @@
+@if (metrics().length === 0) {
+  @if (emptyLabel()) {
+    <p class="metric-group__empty">{{ emptyLabel() }}</p>
+  }
+} @else {
+  <dl class="metric-group" [attr.aria-label]="label()">
+    @for (metric of metrics(); track metric.id) {
+      <div class="metric">
+        <dt class="metric__label">{{ metric.label }}</dt>
+        <dd class="metric__value" [attr.aria-describedby]="describedBy(metric)">
+          @if (metric.value !== null) {
+            <span class="metric__number" data-bidi-isolate>{{ metric.value }}</span>
+            @if (metric.unit) {
+              <span class="metric__unit" [id]="unitId(metric.id)">{{ metric.unit }}</span>
+            }
+          } @else {
+            <span class="metric__unavailable">{{ metric.unavailableLabel }}</span>
+          }
+
+          @if (metric.condition) {
+            <span class="metric__condition" [id]="conditionId(metric.id)">
+              {{ metric.condition }}
+            </span>
+          }
+        </dd>
+        @if (metric.description) {
+          <dd class="metric__description" [id]="descriptionId(metric.id)">
+            {{ metric.description }}
+          </dd>
+        }
+      </div>
+    }
+  </dl>
+}

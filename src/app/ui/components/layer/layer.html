@@ -1,0 +1,21 @@
+<dialog
+  [class]="presentationClass()"
+  [attr.aria-labelledby]="titleId"
+  [attr.aria-describedby]="description() ? descriptionId : null"
+  (close)="dismiss()"
+>
+  <div class="layer__header">
+    <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>
+    <button class="layer__dismiss" type="button" (click)="dismiss()">
+      {{ dismissLabel() }}
+    </button>
+  </div>
+
+  @if (description()) {
+    <p class="layer__description" [id]="descriptionId">{{ description() }}</p>
+  }
+
+  <div class="layer__body">
+    <ng-content />
+  </div>
+</dialog>

@@ -1,0 +1,12 @@
+<a
+  class="action action--link"
+  [href]="href()"
+  [attr.aria-disabled]="disabled() ? 'true' : null"
+  [attr.target]="external() ? '_blank' : null"
+  [attr.rel]="external() ? 'noopener noreferrer' : null"
+>
+  <span class="action__label">{{ label() }}</span>
+  @if (external() && externalLabel()) {
+    <span class="action__external">{{ externalLabel() }}</span>
+  }
+</a>

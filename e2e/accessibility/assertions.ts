@@ -1,0 +1,362 @@
+import { expect, type Locator, type Page } from '@playwright/test';
+
+/**
+ * Named semantic assertions.
+ *
+ * These state expected meaning that an automated scan cannot: that a control's
+ * accessible name is the text a Commander can actually see, that a value is
+ * related to the unit it is measured in, that a status is readable without
+ * seeing its colour. Axe checks whether markup is well-formed; these check
+ * whether it says the right thing.
+ */
+
+/** The design target baseline, in CSS pixels. */
+export const TARGET_BASELINE_PX = 44;
+
+/** Normalises text the way an accessible-name computation does. */
+function normalize(value: string | null): string {
+  return (value ?? '').replace(/\s+/g, ' ').trim();
+}
+
+/** Exactly one banner, one main and at most one primary navigation. */
+export async function expectLandmarks(page: Page): Promise<void> {
+  await expect(page.getByRole('banner')).toHaveCount(1);
+  await expect(page.getByRole('main')).toHaveCount(1);
+  expect(await page.getByRole('navigation').count()).toBeLessThanOrEqual(1);
+}
+
+/** Exactly one visible `h1`. */
+export async function expectSingleVisibleH1(page: Page): Promise<void> {
+  const headings = page.getByRole('heading', { level: 1 });
+  await expect(headings).toHaveCount(1);
+  await expect(headings.first()).toBeVisible();
+}
+
+/**
+ * Heading levels descend without skipping.
+ *
+ * A jump from `h2` to `h4` leaves a screen-reader user unable to tell whether
+ * they have moved into a subsection or out of one.
+ */
+export async function expectOrderedHeadings(page: Page): Promise<void> {
+  const levels = await page
+    .locator('h1, h2, h3, h4, h5, h6')
+    .evaluateAll((nodes) =>
+      nodes
+        .filter((node) => (node as HTMLElement).offsetParent !== null || node.tagName === 'H1')
+        .map((node) => Number(node.tagName.slice(1))),
+    );
+
+  for (let index = 1; index < levels.length; index += 1) {
+    const previous = levels[index - 1] ?? 0;
+    const current = levels[index] ?? 0;
+    expect(
+      current - previous,
+      `heading level jumped from h${previous} to h${current}`,
+    ).toBeLessThanOrEqual(1);
+  }
+}
+
+/**
+ * The accessible name contains the visible text.
+ *
+ * Containment rather than equality, because an accessible name may legitimately
+ * add context a sighted reader gets from position — but it may never omit or
+ * contradict the words on screen (FR-007).
+ */
+export async function expectNameMatchesVisibleText(control: Locator): Promise<void> {
+  const visible = normalize(await control.textContent());
+  if (visible.length === 0) {
+    return;
+  }
+  const accessible = normalize(await control.evaluate((node) => node.getAttribute('aria-label')));
+  const computed = accessible.length > 0 ? accessible : visible;
+
+  expect(
+    computed.toLowerCase(),
+    `accessible name "${computed}" does not contain visible text "${visible}"`,
+  ).toContain(visible.toLowerCase());
+}
+
+/** A control exposes the named state with the expected value. */
+export async function expectState(
+  control: Locator,
+  state:
+    'selected' | 'expanded' | 'pressed' | 'checked' | 'invalid' | 'busy' | 'disabled' | 'current',
+  value: boolean,
+): Promise<void> {
+  const attribute = {
+    selected: 'aria-selected',
+    expanded: 'aria-expanded',
+    pressed: 'aria-pressed',
+    checked: 'aria-checked',
+    invalid: 'aria-invalid',
+    busy: 'aria-busy',
+    disabled: 'aria-disabled',
+    current: 'aria-current',
+  }[state];
+
+  const actual = await control.getAttribute(attribute);
+  if (state === 'disabled' && actual === null) {
+    // A native `disabled` attribute is the preferred expression of the state.
+    expect(await control.isDisabled()).toBe(value);
+    return;
+  }
+  if (state === 'checked' && actual === null) {
+    expect(await control.isChecked()).toBe(value);
+    return;
+  }
+  if (state === 'current') {
+    expect(actual !== null && actual !== 'false').toBe(value);
+    return;
+  }
+
+  expect(actual, `expected ${attribute}="${value}"`).toBe(String(value));
+}
+
+/** A value is programmatically related to the text that explains it. */
+export async function expectRelationship(
+  page: Page,
+  subject: Locator,
+  relation: 'label' | 'description' | 'error',
+  expectedText: string,
+): Promise<void> {
+  const attribute = relation === 'label' ? 'aria-labelledby' : 'aria-describedby';
+  const ids = (await subject.getAttribute(attribute))?.split(/\s+/).filter(Boolean) ?? [];
+
+  expect(ids.length, `expected ${attribute} on the subject`).toBeGreaterThan(0);
+
+  const texts = await Promise.all(
+    ids.map(async (id) => normalize(await page.locator(`[id="${id}"]`).textContent())),
+  );
+
+  expect(texts.join(' ')).toContain(expectedText);
+}
+
+/**
+ * A visual carrier also carries its meaning in text.
+ *
+ * Given the element that shows the meaning visually — a colour swatch, a bar, a
+ * shape — the text equivalent must be present and non-empty, either as visible
+ * text or as an associated accessible name.
+ */
+export async function expectTextEquivalent(carrier: Locator): Promise<void> {
+  const visible = normalize(await carrier.textContent());
+  const label = normalize(await carrier.getAttribute('aria-label'));
+  const describedBy = await carrier.getAttribute('aria-describedby');
+
+  expect(
+    visible.length > 0 || label.length > 0 || (describedBy ?? '').length > 0,
+    'a visual information carrier has no text equivalent',
+  ).toBe(true);
+}
+
+/**
+ * Every interactive target meets the design baseline.
+ *
+ * The measured region is the **effective target**, not the control's own box. A
+ * 16-pixel checkbox with a label beside it is not a 16-pixel target: clicking
+ * the label activates the control, so the target is the union of the two. This
+ * is what a pointer can actually hit, and measuring anything narrower would
+ * report failures that are not real — and push the design towards oversized
+ * glyphs to satisfy a bad measurement.
+ *
+ * The baseline applied is the project's 44 CSS-pixel design baseline, which is
+ * deliberately stricter than WCAG 2.2 SC 2.5.8's 24-pixel AA minimum.
+ *
+ * Reports every offender rather than the first, because a layout regression
+ * usually produces a family of them.
+ */
+export async function expectTargetSizes(
+  page: Page,
+  selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"]',
+): Promise<void> {
+  const undersized = await page.locator(selector).evaluateAll((nodes, baseline) => {
+    /** The union of a control's box and the box of any label that activates it. */
+    const effectiveBox = (element: HTMLElement): DOMRect => {
+      const boxes = [element.getBoundingClientRect()];
+
+      const id = element.getAttribute('id');
+      if (id !== null) {
+        for (const label of document.querySelectorAll(`label[for="${id}"]`)) {
+          boxes.push(label.getBoundingClientRect());
+        }
+      }
+      const wrapping = element.closest('label');
+      if (wrapping !== null) {
+        boxes.push(wrapping.getBoundingClientRect());
+      }
+
+      const left = Math.min(...boxes.map((box) => box.left));
+      const top = Math.min(...boxes.map((box) => box.top));
+      const right = Math.max(...boxes.map((box) => box.right));
+      const bottom = Math.max(...boxes.map((box) => box.bottom));
+
+      return new DOMRect(left, top, right - left, bottom - top);
+    };
+
+    return nodes
+      .filter((node) => {
+        const style = getComputedStyle(node as HTMLElement);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+      })
+      .map((node) => {
+        const box = effectiveBox(node as HTMLElement);
+        return {
+          tag: node.tagName.toLowerCase(),
+          text: (node.textContent ?? '').trim().slice(0, 40),
+          id: node.getAttribute('id') ?? '',
+          width: Math.round(box.width),
+          height: Math.round(box.height),
+        };
+      })
+      .filter((box) => box.width > 0 && box.height > 0)
+      .filter((box) => box.width < baseline || box.height < baseline);
+  }, TARGET_BASELINE_PX);
+
+  expect(undersized, `targets below the ${TARGET_BASELINE_PX} CSS-pixel baseline`).toEqual([]);
+}
+
+/**
+ * The document does not scroll horizontally.
+ *
+ * A component may own a labelled, bounded scroller; the page may not (FR-011).
+ * A one-pixel tolerance absorbs sub-pixel rounding in layout, not a real
+ * overflow.
+ */
+export async function expectNoDocumentOverflow(page: Page): Promise<void> {
+  const overflow = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+
+  expect(
+    overflow.scrollWidth,
+    `document overflows by ${overflow.scrollWidth - overflow.clientWidth} px`,
+  ).toBeLessThanOrEqual(overflow.clientWidth + 1);
+}
+
+/** Root language and direction are present and agree with the active locale. */
+export async function expectRootLanguage(
+  page: Page,
+  expected: { lang: string; dir: 'ltr' | 'rtl' },
+): Promise<void> {
+  const root = await page.evaluate(() => ({
+    lang: document.documentElement.lang,
+    dir: document.documentElement.dir,
+  }));
+
+  expect(root.lang).toBe(expected.lang);
+  expect(root.dir).toBe(expected.dir);
+}
+
+/** No raw message key or unresolved placeholder is visible anywhere on the page. */
+export async function expectNoRawMessages(page: Page): Promise<void> {
+  const text = normalize(await page.locator('body').textContent());
+
+  expect(text, 'an unresolved interpolation placeholder is visible').not.toMatch(
+    /\{\{\s*\w+\s*\}\}/,
+  );
+  // Message keys are dotted lower-case identifiers; any visible run of them is
+  // a resolution failure that escaped the facade.
+  expect(text, 'a raw message key is visible').not.toMatch(
+    /\b(?:app|shell|action|status|error|field|unavailable|incomplete|game-text|locale|message|format)\.[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+\b/,
+  );
+}
+
+/** One element whose content does not fit the box it is drawn in. */
+export interface ClippedElement {
+  readonly selector: string;
+  readonly text: string;
+  readonly overflowInline: number;
+  readonly overflowBlock: number;
+}
+
+/**
+ * Text that is cut off with no scroller to reach the rest of it.
+ *
+ * Shared rather than owned by one spec: truncation is the same failure whether
+ * it is caused by expanded copy, a mirrored direction or a viewport the size of
+ * a 400%-zoomed window, and all three need the same measurement.
+ */
+export async function clippedText(page: Page): Promise<ClippedElement[]> {
+  return page.locator('main *').evaluateAll((nodes) =>
+    nodes
+      .filter((node) => {
+        const element = node as HTMLElement;
+        if (element.children.length > 0) {
+          return false;
+        }
+        const style = getComputedStyle(element);
+        // A non-replaced inline box has no client rectangle: `clientHeight` is
+        // defined as zero while `scrollHeight` reports the line box, so the
+        // difference is the line height rather than an overflow. Firefox and
+        // Chromium disagree on what they report there, and neither number means
+        // the text was cut off.
+        if (style.display === 'inline') {
+          return false;
+        }
+        if (element.clientWidth === 0 && element.clientHeight === 0) {
+          return false;
+        }
+        return !(
+          style.overflowX === 'auto' ||
+          style.overflowX === 'scroll' ||
+          style.overflowY === 'auto' ||
+          style.overflowY === 'scroll'
+        );
+      })
+      .map((node) => {
+        const element = node as HTMLElement;
+        const classes = element.className.toString().trim().split(/\s+/).filter(Boolean).join('.');
+        return {
+          selector: `${element.tagName.toLowerCase()}${classes.length > 0 ? `.${classes}` : ''}`,
+          text: (element.textContent ?? '').trim().slice(0, 40),
+          overflowInline: element.scrollWidth - element.clientWidth,
+          overflowBlock: element.scrollHeight - element.clientHeight,
+        };
+      })
+      // A one-pixel difference is sub-pixel layout rounding, which the engines
+      // do differently; two is a box that genuinely cannot hold its content.
+      .filter((entry) => entry.overflowInline > 1 || entry.overflowBlock > 1),
+  );
+}
+
+/**
+ * The banner gets out of the way in a short viewport.
+ *
+ * At the 400%-zoom equivalent the viewport is 256 CSS pixels tall, and the
+ * shell's banner is a sizeable share of that. That is only tolerable because
+ * the banner releases its sticky position there and travels with the page.
+ *
+ * What is asserted is that travel: the banner moves by exactly the distance
+ * scrolled, which is the definition of being in normal flow and is what makes
+ * the whole viewport reachable once there is content to scroll. It is asserted
+ * this way rather than as "the banner has left the screen", because that only
+ * holds once a page is taller than the viewport, and rather than as a height
+ * budget, which no criterion states and which would be a number invented here.
+ */
+export async function expectBannerReleasesShortViewport(page: Page): Promise<void> {
+  const banner = page.getByRole('banner');
+
+  const position = await banner.evaluate((node) => getComputedStyle(node as HTMLElement).position);
+  expect(position, 'the banner stays stuck to a short viewport').not.toBe('sticky');
+  expect(position, 'the banner is pinned over a short viewport').not.toBe('fixed');
+
+  const before = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
+
+  const scrolled = await page.evaluate(() => {
+    // Enough to prove the behaviour on a page of any length; the assertion is
+    // on how far the banner travelled, not on where it ended up.
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    return window.scrollY;
+  });
+
+  const after = await banner.evaluate((node) => (node as HTMLElement).getBoundingClientRect().top);
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  expect(
+    Math.abs(before - after - scrolled),
+    `the banner held its place while the page scrolled ${Math.round(scrolled)} px`,
+  ).toBeLessThanOrEqual(1);
+}

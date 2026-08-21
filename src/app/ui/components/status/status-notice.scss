@@ -1,0 +1,69 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.status {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-thick) solid var(--edsb-border-default);
+  border-radius: var(--edsb-shape-control);
+  background-color: var(--edsb-surface-panel-raised);
+}
+
+// The tone's name. Colour below is a supplement to these words, never a
+// substitute for them.
+.status__tone {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  color: var(--edsb-text-secondary);
+}
+
+.status__message {
+  color: var(--edsb-text-primary);
+  overflow-wrap: break-word;
+}
+
+.status__detail {
+  font-size: var(--edsb-text-size-label);
+  color: var(--edsb-text-muted);
+}
+
+.status--error {
+  border-inline-start-color: var(--edsb-border-danger);
+}
+
+.status--error .status__tone {
+  color: var(--edsb-text-danger);
+}
+
+.status--success {
+  border-inline-start-color: var(--edsb-border-success);
+}
+
+.status--success .status__tone {
+  color: var(--edsb-text-success);
+}
+
+.status--warning {
+  border-inline-start-color: var(--edsb-border-accent);
+}
+
+.status--warning .status__tone {
+  color: var(--edsb-text-accent);
+}
+
+.status--info,
+.status--loading {
+  border-inline-start-color: var(--edsb-border-info);
+}
+
+.status--info .status__tone,
+.status--loading .status__tone {
+  color: var(--edsb-text-info);
+}

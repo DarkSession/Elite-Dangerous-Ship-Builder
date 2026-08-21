@@ -59,7 +59,9 @@ new effective locale. Auto-dismiss timing cannot be the only route to reading or
 
 ## Conformance wording
 
-One canonical localized application message owns any conformance statement:
+The interface states no conformance target. FR-015 is a prohibition, not an obligation to publish: it
+constrains how a claim is phrased wherever one is made, and the product makes none. The project
+documents that do state it use one wording:
 
 > WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 

@@ -1,0 +1,19 @@
+<div
+  data-announcement-outlet="assertive"
+  role="alert"
+  aria-live="assertive"
+  aria-atomic="true"
+  [attr.aria-label]="assertiveLabel()"
+>
+  {{ assertive() }}
+</div>
+
+<div
+  data-announcement-outlet="polite"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  [attr.aria-label]="politeLabel()"
+>
+  {{ polite() }}
+</div>

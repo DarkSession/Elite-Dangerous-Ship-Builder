@@ -1,0 +1,30 @@
+<button
+  class="action-layer__trigger"
+  type="button"
+  [id]="triggerId"
+  [attr.aria-expanded]="expanded() ? 'true' : 'false'"
+  [attr.aria-controls]="layerId"
+  [disabled]="disabled()"
+  (click)="toggle()"
+>
+  <span class="action-layer__trigger-label">{{ triggerLabel() }}</span>
+</button>
+
+<div
+  class="action-layer__panel"
+  role="group"
+  [id]="layerId"
+  [attr.aria-label]="label()"
+  [attr.aria-labelledby]="triggerId"
+  [hidden]="!expanded()"
+>
+  @for (action of actions(); track action.id) {
+    <edsb-action-button
+      class="action-layer__action"
+      [label]="action.label"
+      [emphasis]="action.emphasis ?? 'secondary'"
+      [disabled]="disabled() || (action.disabled ?? false)"
+      (activated)="select(action)"
+    />
+  }
+</div>

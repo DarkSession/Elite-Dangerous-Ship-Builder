@@ -1,0 +1,11 @@
+<button
+  type="button"
+  [class]="'action action--' + emphasis()"
+  [disabled]="disabled()"
+  [attr.aria-busy]="busy() ? 'true' : null"
+  [attr.aria-pressed]="isToggle() ? (pressed() ? 'true' : 'false') : null"
+  [attr.aria-label]="accessibleName() === label() ? null : accessibleName()"
+  (click)="activate()"
+>
+  <span class="action__label">{{ label() }}</span>
+</button>

@@ -1,0 +1,43 @@
+<main [attr.dir]="direction()">
+  <h1>Component previews</h1>
+
+  @if (isolatedAddresses().length > 0) {
+    <nav aria-label="Isolated previews">
+      <ul>
+        @for (address of isolatedAddresses(); track address) {
+          <li>
+            <a [attr.href]="'?address=' + address" [attr.data-preview-isolated]="address">
+              {{ address }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+
+  @if (isEmpty()) {
+    <p data-preview-empty>No component previews are registered.</p>
+  }
+
+  @for (cell of cells(); track cell.address) {
+    <section [id]="cell.address" [attr.data-preview-address]="cell.address">
+      <h2>{{ cell.declaration.componentId }} — {{ cell.state.state }}</h2>
+
+      @if (isRendered(cell.state)) {
+        <div class="preview-cell__stage" [attr.data-preview-stage]="cell.address">
+          <ng-container
+            *ngComponentOutlet="cell.declaration.component; inputs: inputsFor(cell.state)"
+          />
+        </div>
+      } @else {
+        <p [attr.data-preview-na]="cell.address">{{ cell.state.naReason }}</p>
+      }
+
+      <ul class="preview-cell__expectations">
+        @for (expectation of cell.state.expectations; track expectation) {
+          <li>{{ expectation }}</li>
+        }
+      </ul>
+    </section>
+  }
+</main>

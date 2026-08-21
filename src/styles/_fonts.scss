@@ -1,0 +1,73 @@
+// Same-origin font declarations.
+//
+// Every face is a licensed WOFF2 subset vendored under `public/fonts/` and
+// served from the application's own origin. No stylesheet, component or asset
+// may trigger a request to another origin at runtime (constitution I) — the
+// reference canvas's Google Fonts `preconnect` and stylesheet link are rejected
+// for exactly that reason.
+//
+// Licences ship beside the faces:
+//   * Barlow and Barlow Condensed — SIL Open Font License 1.1, `public/fonts/barlow/OFL.txt`
+//     and `public/fonts/barlow-condensed/OFL.txt`;
+//   * JetBrains Mono — SIL Open Font License 1.1, `public/fonts/jetbrains-mono/OFL.txt`.
+//
+// Attribution is surfaced to Commanders by feature 012 through the shared
+// components, not by this file.
+//
+// `font-display: swap` keeps text readable while a subset loads, so a cold or
+// offline load never renders invisible text. The complete fallback stacks live
+// with the family tokens in `tokens/_primitives.scss`; each ends in a generic
+// family, so a missing subset degrades to a system face rather than to nothing.
+
+$latin: 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
+$latin-ext: 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF';
+
+@mixin face($family, $dir, $file, $weight, $subset, $range) {
+  @font-face {
+    font-family: $family;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: url('/fonts/#{$dir}/#{$file}-#{$subset}-#{$weight}-normal.woff2') format('woff2');
+    unicode-range: #{$range};
+  }
+}
+
+// Body text.
+@each $weight in (400, 500, 600, 700) {
+  @include face('Barlow', 'barlow', 'barlow', $weight, 'latin', $latin);
+  @include face('Barlow', 'barlow', 'barlow', $weight, 'latin-ext', $latin-ext);
+}
+
+// Condensed uppercase headings and section labels.
+@each $weight in (500, 600, 700) {
+  @include face(
+    'Barlow Condensed',
+    'barlow-condensed',
+    'barlow-condensed',
+    $weight,
+    'latin',
+    $latin
+  );
+  @include face(
+    'Barlow Condensed',
+    'barlow-condensed',
+    'barlow-condensed',
+    $weight,
+    'latin-ext',
+    $latin-ext
+  );
+}
+
+// Numeric and technical data.
+@each $weight in (400, 500, 700) {
+  @include face('JetBrains Mono', 'jetbrains-mono', 'jetbrains-mono', $weight, 'latin', $latin);
+  @include face(
+    'JetBrains Mono',
+    'jetbrains-mono',
+    'jetbrains-mono',
+    $weight,
+    'latin-ext',
+    $latin-ext
+  );
+}

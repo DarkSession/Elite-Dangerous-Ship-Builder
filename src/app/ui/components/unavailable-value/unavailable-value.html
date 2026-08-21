@@ -1,0 +1,9 @@
+<span class="unavailable" [attr.aria-describedby]="reason() ? reasonId : null">
+  @if (label()) {
+    <span class="unavailable__label">{{ label() }}</span>
+  }
+  <span class="unavailable__text">{{ text() }}</span>
+  @if (reason()) {
+    <span class="unavailable__reason" [id]="reasonId">{{ reason() }}</span>
+  }
+</span>

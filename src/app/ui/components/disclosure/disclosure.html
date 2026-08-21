@@ -1,0 +1,24 @@
+<button
+  class="disclosure__trigger"
+  type="button"
+  [id]="triggerId"
+  [attr.aria-expanded]="expanded() ? 'true' : 'false'"
+  [attr.aria-controls]="contentId"
+  [disabled]="disabled()"
+  (click)="toggle()"
+>
+  <span class="disclosure__label">{{ label() }}</span>
+  @if (stateLabel()) {
+    <span class="disclosure__state">{{ stateLabel() }}</span>
+  }
+</button>
+
+<div
+  class="disclosure__content"
+  [id]="contentId"
+  [attr.role]="'region'"
+  [attr.aria-labelledby]="triggerId"
+  [hidden]="!expanded()"
+>
+  <ng-content />
+</div>

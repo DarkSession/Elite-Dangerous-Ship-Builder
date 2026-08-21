@@ -14,18 +14,11 @@ build link, SLEF payload, active build or saved-build record.
 | `selfNameKey` | application message key | Resolves through the catalogue, never component text                     |
 | `fallback`    | boolean                 | Exactly one production locale (`en`)                                     |
 
-Expanded-copy and RTL pseudo-locales are test providers, not shipped locale records. They cannot be
-selected or persisted.
+Expanded-copy and RTL pseudo-locales are test providers, not shipped locale records. They are absent
+from the production registry and reachable only from the tooling-only preview application.
 
-## Locale Preference V1
-
-| Field     | Type        | Rules                                                |
-| --------- | ----------- | ---------------------------------------------------- |
-| `version` | literal `1` | Unknown versions are ignored rather than guessed     |
-| `locale`  | locale tag  | Must resolve to a current `ShippedLocale` before use |
-
-One namespaced `localStorage` key owns the record. Storage access, parsing and writes are behind an
-adapter and exception boundary. Invalid data, denied storage or a failed write never blocks the app.
+There is no locale preference record: the browser language setting is the only input, read on every
+start, so the application stores nothing about the language.
 
 ## Message Catalogue
 
@@ -55,35 +48,31 @@ A candidate is transient. It cannot partially update current messages, formatter
 
 ## Locale Snapshot
 
-| Field             | Type                                      | Rules                                                    |
-| ----------------- | ----------------------------------------- | -------------------------------------------------------- |
-| `revision`        | monotonic integer                         | Increments once per committed startup/switch/fallback    |
-| `requestedLocale` | shipped locale tag                        | The saved/browser/default/explicit intent                |
-| `effectiveLocale` | shipped locale tag                        | Valid candidate tag or bundled `en` fallback             |
-| `selectionSource` | `saved \| browser \| default \| explicit` | Does not retain the full browser language list           |
-| `catalogue`       | immutable message catalogue               | Complete and consistent with the effective locale        |
-| `direction`       | `ltr \| rtl`                              | From the effective locale                                |
-| `status`          | `ready \| fallback`                       | Both states are readable and usable                      |
-| `fallbackReason`  | stable code or `null`                     | Present only when the requested locale could not be used |
+| Field             | Type                        | Rules                                                    |
+| ----------------- | --------------------------- | -------------------------------------------------------- |
+| `revision`        | monotonic integer           | Increments once per committed startup or fallback        |
+| `requestedLocale` | shipped locale tag          | The browser/default intent                               |
+| `effectiveLocale` | shipped locale tag          | Valid candidate tag or bundled `en` fallback             |
+| `selectionSource` | `browser \| default`        | Does not retain the full browser language list           |
+| `catalogue`       | immutable message catalogue | Complete and consistent with the effective locale        |
+| `direction`       | `ltr \| rtl`                | From the effective locale                                |
+| `status`          | `ready \| fallback`         | Both states are readable and usable                      |
+| `fallbackReason`  | stable code or `null`       | Present only when the requested locale could not be used |
 
 ### Locale transitions
 
 ```text
 startup
-  -> valid saved tag
   -> first exact/base navigator.languages match
   -> bundled English default
 candidate(en) -> validate bundled catalogue -> commit ready snapshot
 candidate(non-en) -> load and validate -> commit ready snapshot
 candidate(non-en) -> fail -> commit bundled-English fallback snapshot
-ready/fallback -> explicit tag -> candidate -> one ready/fallback commit
-ready -> effective tag equals explicit request -> persist the accepted request
-fallback -> retain the previous stored preference and offer retry
 ```
 
 The prior snapshot may stay visible during a secondary-locale load. No new root `lang` or translated
-label appears until the whole candidate commits. Domain/build revision, URL and persistence are not
-effects of a locale transition.
+label appears until the whole candidate commits. The language is read from the browser on every
+start and stored nowhere; domain/build revision and URL are not effects of a locale transition.
 
 ## Formatter Request
 

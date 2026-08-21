@@ -1,0 +1,57 @@
+// Preview chrome only. Every rule here styles the catalogue's own scaffolding —
+// never the components under inspection, which must render exactly as the
+// product renders them.
+:host {
+  display: block;
+  padding: var(--edsb-space-panel);
+}
+
+h1 {
+  margin-block-end: var(--edsb-space-region);
+  font-size: var(--edsb-text-size-heading-md);
+}
+
+section {
+  padding-block: var(--edsb-space-region);
+  border-block-start: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+}
+
+h2 {
+  margin-block-end: var(--edsb-space-stack);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-label);
+  text-transform: none;
+  letter-spacing: var(--edsb-text-tracking-body);
+  color: var(--edsb-text-muted);
+}
+
+.preview-cell__stage {
+  padding: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+}
+
+.preview-cell__expectations {
+  margin-block-start: var(--edsb-space-stack);
+  list-style: none;
+  font-size: var(--edsb-text-size-label);
+  color: var(--edsb-text-muted);
+}
+
+// Catalogue navigation to the states that render on their own.
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edsb-space-inline);
+  margin-block-end: var(--edsb-space-region);
+  list-style: none;
+}
+
+nav a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--edsb-target-size);
+  padding-inline: var(--edsb-space-inline);
+  color: var(--edsb-text-accent);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-label);
+}

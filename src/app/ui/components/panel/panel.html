@@ -1,0 +1,19 @@
+<section
+  class="panel"
+  [class.panel--raised]="elevation() === 'raised'"
+  [attr.aria-labelledby]="headingId"
+  [attr.aria-describedby]="description() ? descriptionId : null"
+>
+  <div class="panel__header">
+    <div class="panel__heading" role="heading" [id]="headingId" [attr.aria-level]="headingLevel()">
+      {{ heading() }}
+    </div>
+    @if (description()) {
+      <p class="panel__description" [id]="descriptionId">{{ description() }}</p>
+    }
+  </div>
+
+  <div class="panel__body">
+    <ng-content />
+  </div>
+</section>

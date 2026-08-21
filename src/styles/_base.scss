@@ -1,0 +1,125 @@
+// Global base rules.
+//
+// Sets the one dark ground, root typography, logical-property defaults and the
+// reduced-motion baseline. Everything here consumes semantic tokens; no
+// governed visual literal appears outside `tokens/_primitives.scss` and
+// `_fonts.scss`.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// The root font size is left to the user agent so a Commander's browser text
+// setting — and 200% text scaling — reaches every `rem` in the system.
+html {
+  block-size: 100%;
+  // Prevent a mobile browser inflating text in one axis and breaking the
+  // audited type scale, without disabling the user's own zoom.
+  text-size-adjust: 100%;
+}
+
+body {
+  min-block-size: 100%;
+  margin: 0;
+  background-color: var(--edsb-surface-root);
+  color: var(--edsb-text-primary);
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-body);
+  font-weight: var(--edsb-text-weight-body);
+  line-height: var(--edsb-text-leading-body);
+  letter-spacing: var(--edsb-text-tracking-body);
+  // The page itself never scrolls horizontally (FR-011). Content that genuinely
+  // needs two dimensions owns a labelled, bounded scroller of its own.
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Headings carry the reference's condensed hierarchy. Sizes are applied by the
+// components that own each level; the shared rules are the family, weight,
+// tracking and rhythm.
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--edsb-font-heading);
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: var(--edsb-text-leading-heading);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  // Long unbroken translated headings and technical identities wrap instead of
+  // forcing document overflow.
+  overflow-wrap: break-word;
+}
+
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding-inline-start: 0;
+}
+
+// Controls inherit the type system rather than the user agent's.
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+// Numeric and technical values are monospaced and tabular so columns of figures
+// align and a changing digit does not reflow its neighbours.
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--edsb-font-metric);
+  font-variant-numeric: tabular-nums;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+// One visible focus indicator for the whole system. Keyboard operation is
+// constitutionally excluded from the conformance claim, but focus must still be
+// visible wherever the platform moves it.
+:focus-visible {
+  outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+  outline-offset: var(--edsb-focus-ring-offset);
+}
+
+// Reduced motion.
+//
+// Nonessential transitions and animations become immediate. The state itself
+// still changes, still renders and is still announced — motion is removed, not
+// the meaning it accompanied (FR-013). `0.01ms` rather than `0s` so animations
+// that depend on an `animationend` event still fire.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--edsb-duration-instant) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--edsb-duration-instant) !important;
+    scroll-behavior: auto !important;
+  }
+}

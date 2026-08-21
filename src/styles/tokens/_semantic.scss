@@ -1,0 +1,156 @@
+// Semantic design tokens — the one dark set.
+//
+// There is exactly one theme. No light set, no `prefers-color-scheme` variant,
+// no theme control and no stored theme preference (FR-003).
+//
+// Every alias here consumes a primitive from `_primitives.scss` and never a
+// literal. Contrast evidence for every intended pair is recorded in
+// `specs/011-interface-foundations/design/token-evidence.md`.
+//
+// Audited floors on this palette, against the darkest ground each role is used
+// on (`--edsb-surface-inset`, #1c1c1a):
+//
+//   * text roles are at or above 4.5:1;
+//   * meaningful non-text roles (boundaries, indicators, focus) are at or above
+//     3:1;
+//   * anything below 3:1 is named `-decorative` and may never be the sole
+//     carrier of meaning (FR-010).
+//
+// The reference canvas uses ink washes down to alpha 0.18 as visible text and as
+// meaningful borders. Those pairs are 1.5:1–2.9:1 and are rejected here; the
+// hierarchy they created is rebuilt with weight, size, spacing and the audited
+// steps below.
+
+:root {
+  // ---------------------------------------------------------------------------
+  // Surfaces
+  // ---------------------------------------------------------------------------
+
+  --edsb-surface-root: var(--edsb-palette-bg);
+  --edsb-surface-sunken: var(--edsb-palette-bg-deep);
+  --edsb-surface-panel: var(--edsb-palette-panel);
+  --edsb-surface-panel-raised: var(--edsb-palette-panel-2);
+  --edsb-surface-inset: var(--edsb-palette-panel-5);
+  --edsb-surface-menu: var(--edsb-palette-panel-menu);
+  --edsb-surface-layer: var(--edsb-palette-panel-1);
+  --edsb-surface-scrim: var(--edsb-palette-shadow-strong);
+
+  --edsb-surface-accent-quiet: var(--edsb-palette-amber-a10);
+  --edsb-surface-accent-selected: var(--edsb-palette-amber-a18);
+  --edsb-surface-accent-solid: var(--edsb-palette-amber);
+
+  // ---------------------------------------------------------------------------
+  // Text — every role at or above 4.5:1 on every surface above
+  // ---------------------------------------------------------------------------
+
+  --edsb-text-primary: var(--edsb-palette-ink); //        12.84:1 min
+  --edsb-text-secondary: var(--edsb-palette-ink-a80); //   8.62:1 min
+  --edsb-text-muted: var(--edsb-palette-ink-a62); //       5.70:1 min
+  --edsb-text-subtle: var(--edsb-palette-ink-a55); //      4.77:1 min — the floor
+  --edsb-text-accent: var(--edsb-palette-amber-2); //      8.73:1 min
+  --edsb-text-on-accent: var(--edsb-palette-bg-deep); //   8.50:1 on amber
+  --edsb-text-danger: var(--edsb-palette-hot); //          6.03:1 min
+  --edsb-text-success: var(--edsb-palette-good); //        9.91:1 min
+  --edsb-text-info: var(--edsb-palette-cool); //           9.42:1 min
+
+  // Disabled text keeps the AA floor: a control that is unusable must still be
+  // readable, and its state is carried in text and programmatic state, never by
+  // this colour alone.
+  --edsb-text-disabled: var(--edsb-palette-ink-a55);
+
+  --edsb-text-numeric: var(--edsb-palette-ink-2); //      11.55:1 min
+
+  // ---------------------------------------------------------------------------
+  // Boundaries and indicators — meaningful roles at or above 3:1
+  // ---------------------------------------------------------------------------
+
+  --edsb-border-strong: var(--edsb-palette-ink-a45); //    3.63:1 min
+  --edsb-border-default: var(--edsb-palette-ink-a42); //   3.33:1 min
+  --edsb-border-accent: var(--edsb-palette-amber); //      7.23:1 min
+  --edsb-border-danger: var(--edsb-palette-hot);
+  --edsb-border-success: var(--edsb-palette-good);
+  --edsb-border-info: var(--edsb-palette-cool);
+
+  // Decorative only. Below 3:1 by construction — separation the eye can use and
+  // meaning never depends on.
+  --edsb-border-decorative: var(--edsb-palette-hair);
+  --edsb-border-decorative-strong: var(--edsb-palette-ink-a18);
+
+  --edsb-focus-ring: var(--edsb-palette-amber-2);
+  --edsb-focus-ring-width: var(--edsb-border-width-thick);
+  --edsb-focus-ring-offset: var(--edsb-space-3xs);
+
+  // ---------------------------------------------------------------------------
+  // Type roles
+  // ---------------------------------------------------------------------------
+
+  --edsb-font-body: var(--edsb-family-sans);
+  --edsb-font-heading: var(--edsb-family-condensed);
+  --edsb-font-metric: var(--edsb-family-mono);
+
+  --edsb-text-size-caption: var(--edsb-type-size-2xs);
+  --edsb-text-size-label: var(--edsb-type-size-xs);
+  --edsb-text-size-compact: var(--edsb-type-size-sm);
+  --edsb-text-size-body: var(--edsb-type-size-md);
+  --edsb-text-size-lead: var(--edsb-type-size-lg);
+  --edsb-text-size-heading-sm: var(--edsb-type-size-xl);
+  --edsb-text-size-heading-md: var(--edsb-type-size-2xl);
+  --edsb-text-size-heading-lg: var(--edsb-type-size-3xl);
+
+  --edsb-text-leading-heading: var(--edsb-type-leading-tight);
+  --edsb-text-leading-control: var(--edsb-type-leading-snug);
+  --edsb-text-leading-body: var(--edsb-type-leading-normal);
+  --edsb-text-leading-prose: var(--edsb-type-leading-relaxed);
+
+  --edsb-text-weight-body: var(--edsb-type-weight-regular);
+  --edsb-text-weight-emphasis: var(--edsb-type-weight-medium);
+  --edsb-text-weight-control: var(--edsb-type-weight-semibold);
+  --edsb-text-weight-heading: var(--edsb-type-weight-semibold);
+
+  --edsb-text-tracking-heading: var(--edsb-type-tracking-wider);
+  --edsb-text-tracking-label: var(--edsb-type-tracking-wide);
+  --edsb-text-tracking-body: var(--edsb-type-tracking-normal);
+
+  // ---------------------------------------------------------------------------
+  // Space roles
+  // ---------------------------------------------------------------------------
+
+  --edsb-space-inline-tight: var(--edsb-space-2xs);
+  --edsb-space-inline: var(--edsb-space-sm);
+  --edsb-space-inline-loose: var(--edsb-space-md);
+  --edsb-space-stack-tight: var(--edsb-space-2xs);
+  --edsb-space-stack: var(--edsb-space-md);
+  --edsb-space-stack-loose: var(--edsb-space-xl);
+  --edsb-space-control-inline: var(--edsb-space-md);
+  --edsb-space-control-block: var(--edsb-space-sm);
+  --edsb-space-panel: var(--edsb-space-lg);
+  --edsb-space-region: var(--edsb-space-xl);
+  --edsb-space-section: var(--edsb-space-3xl);
+
+  // ---------------------------------------------------------------------------
+  // Shape, elevation, motion and target roles
+  // ---------------------------------------------------------------------------
+
+  --edsb-shape-control: var(--edsb-radius-sm);
+  --edsb-shape-panel: var(--edsb-radius-md);
+  --edsb-shape-layer: var(--edsb-radius-lg);
+  --edsb-shape-badge: var(--edsb-radius-pill);
+
+  --edsb-elevation-panel: var(--edsb-elevation-flat);
+  --edsb-elevation-menu: var(--edsb-elevation-overlay);
+  --edsb-elevation-dialog: var(--edsb-elevation-layer);
+
+  --edsb-motion-duration-state: var(--edsb-duration-fast);
+  --edsb-motion-duration-layer: var(--edsb-duration-base);
+  --edsb-motion-easing: var(--edsb-easing-standard);
+  --edsb-motion-easing-enter: var(--edsb-easing-decelerate);
+  --edsb-motion-easing-exit: var(--edsb-easing-accelerate);
+
+  --edsb-target-size: var(--edsb-target-min);
+  --edsb-target-size-dense: var(--edsb-target-min-compact);
+
+  --edsb-layout-content-max: var(--edsb-measure-content-max);
+  --edsb-layout-prose-max: var(--edsb-measure-prose-max);
+  --edsb-layout-rail-min: var(--edsb-measure-rail-min);
+  --edsb-layout-layer-max: var(--edsb-measure-layer-max);
+}

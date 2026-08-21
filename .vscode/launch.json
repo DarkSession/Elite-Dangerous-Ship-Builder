@@ -1,20 +1,25 @@
 {
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  //
+  // No browser configurations: the dev container has no browser to attach to.
+  // The dev server is not here either — it runs as the "ng serve" task, and
+  // the application is debugged in the browser on your own machine.
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "ng serve",
-      "type": "chrome",
-      "request": "launch",
-      "preLaunchTask": "npm: start",
-      "url": "http://localhost:4200/"
-    },
-    {
+      // Unit tests run in Node (Vitest via @angular/build:unit-test), so this
+      // is a Node debug session. Breakpoints in specs and in the code under
+      // test are hit directly.
       "name": "ng test",
-      "type": "chrome",
+      "type": "node",
       "request": "launch",
-      "preLaunchTask": "npm: test",
-      "url": "http://localhost:9876/debug.html"
+      "program": "${workspaceFolder}/node_modules/@angular/cli/bin/ng.js",
+      "args": ["test", "--watch"],
+      "console": "integratedTerminal",
+      "env": {
+        "NG_FORCE_TTY": "false"
+      },
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

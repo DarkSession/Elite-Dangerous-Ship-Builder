@@ -1,0 +1,98 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: table;
+}
+
+// The table owns its overflow. This is the labelled, bounded scroller the
+// responsive contract permits — the page itself still never scrolls sideways.
+.table-scroller {
+  @include layout.bounded-scroller;
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.table__caption {
+  padding-block-end: var(--edsb-space-stack-tight);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  text-align: start;
+  color: var(--edsb-text-secondary);
+}
+
+.table th,
+.table td {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline);
+  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-decorative-strong);
+  text-align: start;
+  vertical-align: baseline;
+}
+
+.table thead th {
+  border-block-end: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  color: var(--edsb-text-secondary);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table__column-unit {
+  display: block;
+  color: var(--edsb-text-muted);
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-caption);
+  text-transform: none;
+  letter-spacing: var(--edsb-text-tracking-body);
+}
+
+.table__cell--numeric {
+  font-family: var(--edsb-font-metric);
+  font-variant-numeric: tabular-nums;
+  // Logical property: the alignment follows the reading direction rather than
+  // pinning numbers to the right in a right-to-left context.
+  text-align: end;
+  // A measured value keeps its own character order inside right-to-left prose:
+  // without this, `-5.2` renders as `5.2-`, which is a different number.
+  unicode-bidi: isolate;
+}
+
+.table tr[aria-selected='true'] {
+  background-color: var(--edsb-surface-accent-quiet);
+}
+
+.table__state {
+  margin-inline-start: var(--edsb-space-inline-tight);
+  color: var(--edsb-text-accent);
+  font-size: var(--edsb-text-size-caption);
+  text-transform: uppercase;
+}
+
+.table__empty {
+  padding-block: var(--edsb-space-panel);
+  color: var(--edsb-text-muted);
+}
+
+// In a narrow container the table tightens its own gutters before it asks the
+// reader to scroll, and the column headings wrap rather than forcing a width
+// nothing on screen can hold.
+@include layout.container-compact(table) {
+  .table th,
+  .table td {
+    padding-inline: var(--edsb-space-inline-tight);
+  }
+
+  .table thead th {
+    white-space: normal;
+  }
+}

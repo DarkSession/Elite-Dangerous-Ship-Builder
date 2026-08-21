@@ -1,0 +1,56 @@
+@use '../field/field';
+@use '../../../../styles/responsive' as layout;
+
+.choice-group {
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.choice-group__legend {
+  padding: 0;
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  color: var(--edsb-text-secondary);
+}
+
+.choice-group__options {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin-block-start: var(--edsb-space-stack-tight);
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  gap: var(--edsb-space-inline);
+}
+
+.choice__input {
+  // The glyph stays small, matching the reference's density. The hit area is
+  // the label beside it, which fills the full target height — clicking a label
+  // activates its control, so the two together are the real target.
+  align-self: center;
+  inline-size: var(--edsb-space-lg);
+  block-size: var(--edsb-space-lg);
+  accent-color: var(--edsb-surface-accent-solid);
+}
+
+.choice__label {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--edsb-target-size);
+  font-size: var(--edsb-text-size-body);
+  color: var(--edsb-text-primary);
+  cursor: pointer;
+}
+
+.choice__description {
+  grid-column: 2;
+  font-size: var(--edsb-text-size-label);
+  color: var(--edsb-text-muted);
+}

@@ -40,7 +40,7 @@ Visually compare the implemented foundation to `.design/Ship Builder.dc.html`: r
 hierarchy, typography roles, density and wide-to-compact grouping while confirming the prototype's
 tiny/faint/hover-only/nonsemantic mechanics are absent.
 
-## Locale startup, switching and persistence
+## Locale startup
 
 Run locale/store unit tests and start the product app:
 
@@ -53,12 +53,10 @@ In clean browser contexts verify:
 
 1. `navigator.languages` beginning with `de-DE` selects the reviewed German catalogue.
 2. An unsupported browser language selects bundled English with no locale request.
-3. An explicit English/German selection persists across reload and wins over browser language.
-4. Malformed, unknown-version and removed-locale preference records are ignored safely.
-5. Storage denial keeps the explicit locale for the session and reports non-persistence once.
-6. A secondary-catalogue load/shape/blank/placeholder failure commits complete English once.
-7. Messages, title, `lang`, `dir` and formatters change in one revision; no mixed frame/raw key flash.
-8. Active build bytes/revision, URL, save state and undo history remain unchanged.
+3. No language control is present and nothing about the language is stored in the browser.
+4. A secondary-catalogue load/shape/blank/placeholder failure commits complete English once.
+5. Messages, title, `lang`, `dir` and formatters change in one revision; no mixed frame/raw key flash.
+6. Active build bytes/revision, URL, save state and undo history remain unchanged.
 
 Expected request counts: English zero; cold German at most one same-origin `/i18n/` request; warm
 German zero.

@@ -1,0 +1,85 @@
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { createFieldRelations } from '../field/field-relations';
+import { relationId } from '../../a11y/text-equivalence';
+
+/** How the group behaves: one choice, many choices, or a single on/off. */
+export type ChoiceKind = 'radio' | 'checkbox' | 'switch';
+
+/** One choice. `description` is associated, not merely rendered nearby. */
+export interface Choice {
+  readonly value: string;
+  readonly label: string;
+  readonly description?: string;
+  readonly disabled?: boolean;
+}
+
+/**
+ * A group of related choices.
+ *
+ * Native `input` elements inside a `fieldset` with a `legend`. The fieldset is
+ * what tells a screen reader that these options belong together and what the
+ * group as a whole is asking — without it, a reader hears seven unrelated
+ * checkboxes.
+ *
+ * A switch is a checkbox with `role="switch"`: the same semantics, named the
+ * way an on/off control should be.
+ */
+@Component({
+  selector: 'edsb-choice-group',
+  templateUrl: './choice-group.html',
+  styleUrl: './choice-group.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ChoiceGroup {
+  /** The question the group asks. Rendered as the legend. */
+  readonly legend = input.required<string>();
+  readonly choices = input.required<readonly Choice[]>();
+  readonly kind = input<ChoiceKind>('radio');
+
+  /** Selected values. A radio group and a switch hold at most one. */
+  readonly selected = input<readonly string[]>([]);
+
+  readonly description = input<string | null>(null);
+  readonly error = input<string | null>(null);
+  readonly disabled = input(false);
+
+  readonly changed = output<readonly string[]>();
+
+  readonly relations = createFieldRelations({
+    description: this.description,
+    error: this.error,
+  });
+
+  /** A stable name binding the radio inputs of this instance together. */
+  readonly groupName = relationId('choice-group');
+
+  readonly isMultiple = computed(() => this.kind() === 'checkbox');
+  readonly inputType = computed(() => (this.kind() === 'radio' ? 'radio' : 'checkbox'));
+  readonly role = computed(() => (this.kind() === 'switch' ? 'switch' : null));
+
+  isSelected(value: string): boolean {
+    return this.selected().includes(value);
+  }
+
+  choiceId(value: string): string {
+    return `${this.groupName}-${value}`;
+  }
+
+  choiceDescriptionId(value: string): string {
+    return `${this.groupName}-${value}-description`;
+  }
+
+  toggle(value: string): void {
+    if (this.disabled()) {
+      return;
+    }
+    if (!this.isMultiple()) {
+      this.changed.emit([value]);
+      return;
+    }
+    const current = this.selected();
+    this.changed.emit(
+      current.includes(value) ? current.filter((entry) => entry !== value) : [...current, value],
+    );
+  }
+}

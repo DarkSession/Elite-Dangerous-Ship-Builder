@@ -55,8 +55,8 @@ owned by their capability features; feature 011 owns the system those screens co
   label alone carries the meaning.
 - The canvas includes journal and Markdown export modes and a mock share URL. Those are feature 004/
   001 decisions and do not expand this foundation's scope.
-- The compact design has no language control. Feature 011 adds a visible Language action/selector to
-  the global utility composition without treating the omission as product intent.
+- The compact design has no language control, and neither does the product: the browser language
+  setting is the only input, so the omission is the decision rather than a gap to fill.
 
 ## Acceptance rule
 

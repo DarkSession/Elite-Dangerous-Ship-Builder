@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/index.html", "/*.css", "/*.js"]
+      }
+    },
+    {
+      "name": "fonts-and-bundled-english",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/fonts/**", "/i18n/en.json"]
+      }
+    },
+    {
+      "name": "translations",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/i18n/*.json"]
+      }
+    }
+  ]
+}
