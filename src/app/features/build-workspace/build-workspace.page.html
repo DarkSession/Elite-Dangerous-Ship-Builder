@@ -1,5 +1,4 @@
-<h1>{{ heading() }}</h1>
-
+<!-- The command bar carries this screen's name; the page does not repeat it. -->
 @if (linkFailure(); as failure) {
   <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
 }

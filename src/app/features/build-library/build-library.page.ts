@@ -27,6 +27,7 @@ import { LocalRecordRepository } from '../../platform/storage/local-record.repos
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
+import { ScreenChrome } from '../shared/screen-chrome';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { ConfirmDialog } from '../../ui/components/confirm-dialog/confirm-dialog';
@@ -90,11 +91,11 @@ export class BuildLibraryPage {
   readonly #records = inject(LocalRecordRepository);
   readonly #active = inject(ActiveBuildStore);
   readonly #messages = inject(MessageService);
+  readonly #chrome = inject(ScreenChrome);
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
 
-  readonly heading = this.#messages.messageSignal('library.title');
   readonly description = this.#messages.messageSignal('library.description');
   readonly closeLabel = this.#messages.messageSignal('library.close');
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
@@ -269,6 +270,12 @@ export class BuildLibraryPage {
   readonly canOverwriteSource = computed(() => this.#active.sourceNamed() !== null);
 
   constructor() {
+    // The command bar carries this screen's count, as it does the shipyard's.
+    effect((onCleanup) => {
+      this.#chrome.setCount(this.countText());
+      onCleanup(() => this.#chrome.setCount(null));
+    });
+
     // Any change made by another page invalidates the listing, and the answer
     // is always to re-read storage rather than to patch what is on screen.
     inject(DestroyRef).onDestroy(this.#library.follow());

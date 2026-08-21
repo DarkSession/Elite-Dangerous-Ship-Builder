@@ -1,17 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { MessageService } from '../../../i18n/message.service';
 import { relationId } from '../../a11y/text-equivalence';
-import { ActionButton } from '../action/action-button';
 import { ChoiceGroup, type Choice } from '../choice-group/choice-group';
-import { SelectField, type SelectOption } from '../select-field/select-field';
 import { TextField } from '../text-field/text-field';
 
-/** One constraint currently narrowing the collection, and how to take it off. */
-export interface ToolbarConstraint {
-  readonly id: string;
+/** One field the collection can be ordered by, and what choosing it would do. */
+export interface ToolbarSortOption {
+  readonly value: string;
+  /** The field's own name, as the chip shows it. */
   readonly label: string;
-  /** The removing action's own words, naming the constraint it removes. */
-  readonly removeLabel: string;
+  /** "Sort by retail price, ascending" — the whole action, in words. */
+  readonly actionLabel: string;
 }
 
 /** The current order, in the words the control shows. */
@@ -25,20 +24,17 @@ export interface ToolbarSort {
 }
 
 /**
- * Search, facets, order and what is currently narrowing a collection.
+ * Search, size and order for a collection.
  *
- * The reference design puts the search first and the facets beside it; this
- * keeps that hierarchy and adds the two things the mock has no room for: the
- * active constraints as individually removable items, and the match count as
- * text before the results.
- *
- * Both of those exist for the same reason. A Commander who cannot see the
- * highlighted state of six controls at a glance has no way to tell why a list
- * is short, and no way to undo one constraint without clearing them all.
+ * Exactly what the reference draws and nothing else: a search field, the size
+ * choices as an abutted segmented strip, and — in the compact composition
+ * only — a row of sort chips carrying the active field and its direction
+ * (canvas 1a, canvas 1b). The wide manifest sorts from its own column headers,
+ * so the chip row is removed there rather than repeating them.
  */
 @Component({
   selector: 'edsb-collection-toolbar',
-  imports: [ActionButton, ChoiceGroup, SelectField, TextField],
+  imports: [ChoiceGroup, TextField],
   templateUrl: './collection-toolbar.html',
   styleUrl: './collection-toolbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,43 +45,23 @@ export class CollectionToolbar {
   readonly search = input('');
   readonly sizeChoices = input.required<readonly Choice[]>();
   readonly selectedSizes = input<readonly string[]>([]);
-  readonly manufacturerOptions = input.required<readonly SelectOption[]>();
-  readonly selectedManufacturer = input<string | null>(null);
-  readonly hardpointOptions = input.required<readonly SelectOption[]>();
-  readonly selectedHardpointClass = input<string | null>(null);
-  readonly priceMin = input<string>('');
-  readonly priceMax = input<string>('');
-  readonly sortOptions = input.required<readonly SelectOption[]>();
+  readonly sortOptions = input.required<readonly ToolbarSortOption[]>();
   readonly sort = input.required<ToolbarSort>();
-  readonly constraints = input<readonly ToolbarConstraint[]>([]);
-  /** The match count, already a sentence. Announced politely by the screen. */
-  readonly countText = input.required<string>();
 
   readonly searchChanged = output<string>();
   readonly sizesChanged = output<readonly string[]>();
-  readonly manufacturerChanged = output<string>();
-  readonly hardpointClassChanged = output<string>();
-  readonly priceMinChanged = output<string>();
-  readonly priceMaxChanged = output<string>();
+  /** The field a chip asks for. Re-choosing the active field flips it. */
   readonly sortFieldChanged = output<string>();
-  readonly sortDirectionToggled = output<void>();
-  readonly constraintRemoved = output<string>();
-  readonly cleared = output<void>();
 
-  readonly constraintsId = relationId('toolbar-constraints');
+  readonly sortId = relationId('toolbar-sort');
 
   readonly searchLabel = this.#messages.messageSignal('catalogue.search.label');
-  readonly searchDescription = this.#messages.messageSignal('catalogue.search.description');
   readonly sizeLegend = this.#messages.messageSignal('catalogue.filter.size.legend');
-  readonly manufacturerLabel = this.#messages.messageSignal('catalogue.filter.manufacturer.label');
-  readonly hardpointLabel = this.#messages.messageSignal('catalogue.filter.hardpoint.label');
-  readonly priceMinLabel = this.#messages.messageSignal('catalogue.filter.price.min.label');
-  readonly priceMaxLabel = this.#messages.messageSignal('catalogue.filter.price.max.label');
-  readonly priceDescription = this.#messages.messageSignal('catalogue.filter.price.description');
   readonly sortLabel = this.#messages.messageSignal('catalogue.sort.label');
-  readonly constraintsLabel = this.#messages.messageSignal('catalogue.constraints.label');
-  readonly noConstraintsLabel = this.#messages.messageSignal('catalogue.constraints.none');
-  readonly clearLabel = this.#messages.messageSignal('catalogue.constraints.clear');
 
-  readonly hasConstraints = computed(() => this.constraints().length > 0);
+  /**
+   * The direction marker the reference puts on the active chip. It is decorative
+   * — `aria-pressed` and the chip's own accessible name carry the same state.
+   */
+  readonly caret = computed(() => (this.sort().direction === 'ascending' ? '↑' : '↓'));
 }

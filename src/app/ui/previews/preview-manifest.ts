@@ -1210,14 +1210,22 @@ const ANACONDA = {
     translationState: 'localized',
     disclosureKey: null,
   },
-  size: 'Large',
-  hardpoints: '1 huge, 4 large, 2 medium, 1 small',
-  price: '146,969,450 CR',
+  size: 'LRG',
+  sizeText: 'Large',
+  hardpoints: '1H 4L 2M 1S',
+  hardpointsText: '1 huge, 4 large, 2 medium, 1 small',
+  price: '146.97',
   selected: false,
 } as const;
 
 /** The same hull with every fact the package could fail to supply missing. */
-const UNAVAILABLE_HULL = { ...ANACONDA, symbol: 'Unknown', size: null, price: null } as const;
+const UNAVAILABLE_HULL = {
+  ...ANACONDA,
+  symbol: 'Unknown',
+  size: null,
+  sizeText: null,
+  price: null,
+} as const;
 
 const CATALOGUE_COLUMNS = [
   {
@@ -1250,8 +1258,8 @@ const CATALOGUE_COLUMNS = [
   },
   {
     field: 'price',
-    label: 'Retail price',
-    sortActionLabel: 'Sort by Retail price, ascending',
+    label: 'Price Mcr',
+    sortActionLabel: 'Sort by Price Mcr, ascending',
     sorted: false,
     direction: 'ascending',
     numeric: true,
@@ -1264,19 +1272,9 @@ const TOOLBAR_BASE = {
     { value: 'medium', label: 'Medium' },
     { value: 'large', label: 'Large' },
   ],
-  manufacturerOptions: [
-    { value: '', label: 'Any' },
-    { value: 'Faulcon DeLacy', label: 'Faulcon DeLacy' },
-    { value: 'Gutamaya', label: 'Gutamaya' },
-  ],
-  hardpointOptions: [
-    { value: '', label: 'Any' },
-    { value: '4', label: 'Class 4' },
-    { value: '3', label: 'Class 3' },
-  ],
   sortOptions: [
-    { value: 'name', label: 'Ship' },
-    { value: 'price', label: 'Retail price' },
+    { value: 'name', label: 'Ship', actionLabel: 'Sort by Ship, ascending' },
+    { value: 'price', label: 'Price Mcr', actionLabel: 'Sort by Price Mcr, ascending' },
   ],
 } as const;
 
@@ -1291,7 +1289,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: true,
       exposedStates: ['selected', 'invalid', 'disabled'],
       relationships: ['label', 'description'],
-      textEquivalents: ['active constraints', 'sort field and direction', 'match count'],
+      textEquivalents: ['sort field and direction'],
     },
     ['default', 'empty', 'error'],
   ),
@@ -1302,26 +1300,16 @@ registerPreview({
         ...TOOLBAR_BASE,
         search: 'cutter',
         selectedSizes: ['large'],
-        selectedManufacturer: 'Gutamaya',
-        selectedHardpointClass: '4',
-        priceMin: '1000000',
-        priceMax: '',
         sort: {
           field: 'price',
           direction: 'descending',
-          text: 'Sorted by Retail price, descending',
-          toggleLabel: 'Sort by Retail price, ascending',
+          text: 'Sorted by Price Mcr, descending',
+          toggleLabel: 'Sort by Price Mcr, ascending',
         },
-        constraints: [
-          { id: 'query', label: 'Search: cutter', removeLabel: 'Remove filter: Search: cutter' },
-          { id: 'size:large', label: 'Size: Large', removeLabel: 'Remove filter: Size: Large' },
-        ],
-        countText: '2 of 48 hulls shown',
       },
       [
-        'every active constraint is named and individually removable',
-        'the current sort field and direction are stated in words',
-        'the match count is text, not only a live announcement',
+        'the search and the size strip are the only controls the reference draws',
+        'the chip carrying the order in force says what re-choosing it would do',
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
     ),
@@ -1331,23 +1319,14 @@ registerPreview({
         ...TOOLBAR_BASE,
         search: '',
         selectedSizes: [],
-        selectedManufacturer: '',
-        selectedHardpointClass: '',
-        priceMin: '',
-        priceMax: '',
         sort: {
           field: 'name',
           direction: 'ascending',
           text: 'Sorted by Ship, ascending',
           toggleLabel: 'Sort by Ship, descending',
         },
-        constraints: [],
-        countText: '48 of 48 hulls shown',
       },
-      [
-        'states that no filters are active rather than showing an empty region',
-        'keeps every control reachable with nothing selected',
-      ],
+      ['keeps every control reachable with nothing selected'],
     ),
     notApplicable(
       'loading',
@@ -1359,29 +1338,14 @@ registerPreview({
         ...TOOLBAR_BASE,
         search: 'no such hull',
         selectedSizes: [],
-        selectedManufacturer: '',
-        selectedHardpointClass: '',
-        priceMin: '',
-        priceMax: '',
         sort: {
           field: 'name',
           direction: 'ascending',
           text: 'Sorted by Ship, ascending',
           toggleLabel: 'Sort by Ship, descending',
         },
-        constraints: [
-          {
-            id: 'query',
-            label: 'Search: no such hull',
-            removeLabel: 'Remove filter: Search: no such hull',
-          },
-        ],
-        countText: '0 of 48 hulls shown',
       },
-      [
-        'a constrained result of zero is stated as a count, not as a failure',
-        'the constraint that produced it remains removable',
-      ],
+      ['a search that matches nothing leaves every control usable'],
     ),
     notApplicable(
       'disabled',
@@ -1412,13 +1376,12 @@ registerPreview({
         caption: 'Hulls in the Almanac',
         columns: CATALOGUE_COLUMNS,
         hulls: [ANACONDA, { ...ANACONDA, symbol: 'Adder', selected: true }, UNAVAILABLE_HULL],
-        openLabel: (hull: { symbol: string }) => `View ${hull.symbol}`,
       },
       [
         'the wide composition is a real table with scoped column and row headers',
         'each column header is a named bidirectional sort button',
-        'the narrow composition restates every label as a definition list',
-        'the selected hull is named in text as well as marked',
+        'the narrow composition keeps every label as a definition list',
+        'the current hull is marked with the reference lozenge and aria-current',
         'an unavailable fact is stated in words, never as a zero',
         'the manifest owns its own overflow; the document never scrolls sideways',
       ],
@@ -1430,7 +1393,6 @@ registerPreview({
         caption: 'Hulls in the Almanac',
         columns: CATALOGUE_COLUMNS,
         hulls: [],
-        openLabel: (hull: { symbol: string }) => `View ${hull.symbol}`,
         emptyLabel: 'No hull matches these filters.',
       },
       ['says why there is nothing to show rather than rendering an empty frame'],
@@ -1465,17 +1427,17 @@ registerPreview({
   states: [
     state(
       'default',
-      { hull: { ...ANACONDA, selected: true }, openLabel: 'View Anaconda' },
+      { hull: { ...ANACONDA, selected: true } },
       [
-        'each fact is paired with the label that names it',
-        'the selected state is named in words and exposed as aria-current',
+        'each fact is paired with the label that names it, drawn or not',
+        'the current state is exposed as aria-current, not only as colour',
         'the opening action names the hull it opens',
       ],
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
     ),
     state(
       'empty',
-      { hull: UNAVAILABLE_HULL, openLabel: 'View Unknown' },
+      { hull: UNAVAILABLE_HULL },
       ['every absent fact is stated in words rather than as a zero'],
       ['normal', 'unavailable-text'],
     ),

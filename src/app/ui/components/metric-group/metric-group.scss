@@ -68,14 +68,30 @@
   color: var(--edsb-text-subtle);
 }
 
-@include layout.container-medium-up(metric-group) {
+// Two cells across as soon as two fit, which in the reference is inside a
+// 340px inspector rail rather than at a page-wide measure (canvas 1a).
+@include layout.container-compact-up(metric-group) {
   .metric-group {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  // A cell alone on the last row takes the whole row, as the reference's hull
+  // mass does, rather than leaving the amber ground showing beside it.
+  .metric:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 
 @include layout.container-wide-up(metric-group) {
   .metric-group {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .metric:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .metric:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
   }
 }

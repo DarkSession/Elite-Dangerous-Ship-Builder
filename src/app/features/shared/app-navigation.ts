@@ -17,6 +17,10 @@ export const NAVIGATION_ROUTES = {
  * entries feature 004 and feature 012 own — importing a build and help — are
  * listed as they land; naming them here rather than in four route components is
  * what stops one screen quietly offering fewer than another.
+ *
+ * The screen a Commander is already on is left out: the reference's command
+ * bar names it once, on the leading edge, and never repeats it as a control
+ * (canvas 1a/1b/1c).
  */
 @Injectable({ providedIn: 'root' })
 export class AppNavigation {
@@ -24,7 +28,7 @@ export class AppNavigation {
 
   /** The navigation entries for a screen, with the current one marked. */
   entries(currentPath: string): readonly NavigationEntry[] {
-    return [
+    const entries: readonly NavigationEntry[] = [
       {
         id: 'catalogue',
         label: this.#messages.message('navigation.catalogue'),
@@ -44,6 +48,7 @@ export class AppNavigation {
         current: currentPath === NAVIGATION_ROUTES.library,
       },
     ];
+    return entries.filter((entry) => entry.current !== true);
   }
 
   /** The library entry point every screen offers as a shell action. */

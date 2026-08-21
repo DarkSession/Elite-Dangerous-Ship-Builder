@@ -9,28 +9,11 @@
   @include layout.content-measure;
 }
 
-.library__header {
-  @include layout.wrapping-row(var(--edsb-space-inline));
-
-  justify-content: space-between;
-}
-
-h1 {
-  @include layout.display-title(
-    var(--edsb-text-size-heading-lg),
-    var(--edsb-text-tracking-product)
-  );
-}
-
 .library__description {
   font-weight: var(--edsb-text-weight-prose);
   color: var(--edsb-text-subtle);
   max-inline-size: var(--edsb-layout-prose-max);
   text-wrap: pretty;
-}
-
-.library__count {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 }
 
 .library__empty {

@@ -6,6 +6,8 @@ import {
 } from './application/active-build/replacement-coordinator';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
+import { ScreenChrome } from './features/shared/screen-chrome';
+import { LocaleStore } from './i18n/locale.store';
 import { AppFrame, type NavigationEntry } from './ui/components/app-frame/app-frame';
 import { ConfirmDialog } from './ui/components/confirm-dialog/confirm-dialog';
 
@@ -38,6 +40,8 @@ interface PendingReplacement {
 })
 export class App {
   readonly #navigation = inject(AppNavigation);
+  readonly #locale = inject(LocaleStore);
+  readonly #chrome = inject(ScreenChrome);
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
   readonly #replacement = inject(ReplacementCoordinator);
@@ -46,6 +50,14 @@ export class App {
   readonly #pending = signal<PendingReplacement | null>(null);
 
   readonly navigation = computed(() => this.#navigation.entries(this.#path()));
+
+  /**
+   * What the command bar shows: the screen's own name, and the one count that
+   * belongs to it. The name is the same string the document title uses, so the
+   * bar and the tab can never disagree.
+   */
+  readonly pageName = this.#locale.page;
+  readonly pageCount = this.#chrome.count;
 
   readonly replacementOpen = computed(() => this.#pending() !== null);
   readonly replacementTitle = this.#messages.messageSignal('workspace.replace.title');

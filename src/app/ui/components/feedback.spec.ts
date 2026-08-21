@@ -133,22 +133,29 @@ describe('AppFrame', () => {
     expect(element(fixture).querySelectorAll('main').length).toBe(1);
   });
 
-  it('renders the product identity from the catalogue', () => {
-    const fixture = renderComponent(AppFrame, {});
+  // The reference's command bar carries the screen's own name and no product
+  // name, so that name is the document's one `h1` (canvas 1a/1b/1c).
+  it('renders the screen name supplied to it as the document heading', () => {
+    const fixture = renderComponent(AppFrame, { routeContext: 'Anaconda explorer' });
+    const headings = [...element(fixture).querySelectorAll('h1')];
 
-    expect(textOf(query(fixture, '.frame__product'))).toBe(BUNDLED_ENGLISH['app.name']);
+    expect(headings).toHaveLength(1);
+    expect(textOf(headings[0])).toBe('Anaconda explorer');
   });
 
-  it('never synthesizes a route heading', () => {
-    const fixture = renderComponent(AppFrame, { routeContext: 'Anaconda explorer' });
+  it('synthesizes no heading for a route that names none', () => {
+    const fixture = renderComponent(AppFrame, {});
 
     expect(element(fixture).querySelector('h1')).toBeNull();
   });
 
-  it('shows the route context supplied to it', () => {
-    const fixture = renderComponent(AppFrame, { routeContext: 'Anaconda explorer' });
+  it('carries the screen count beside that name', () => {
+    const fixture = renderComponent(AppFrame, {
+      routeContext: 'Shipyard',
+      routeCount: '48 of 48 hulls shown',
+    });
 
-    expect(textOf(query(fixture, '.frame__context'))).toBe('Anaconda explorer');
+    expect(textOf(query(fixture, '.frame__count'))).toBe('48 of 48 hulls shown');
   });
 
   it('omits navigation entirely when the route set provides none', () => {

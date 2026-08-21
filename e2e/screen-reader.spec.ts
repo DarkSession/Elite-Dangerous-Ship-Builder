@@ -15,17 +15,21 @@ import { previewUrl } from './servers';
  * which is what `e2e/manual/screen-reader.protocol.md` is still for.
  */
 test.describe('accessibility tree', () => {
-  test('presents the shell as one named banner, one main and its heading', async ({ page }) => {
+  test('presents the shell as one named banner carrying the heading', async ({ page }) => {
     await page.goto('/');
 
     // Roles and nesting only. The names are catalogue text and are asserted
     // against what is visible elsewhere; pinning them here would make every
     // wording change a snapshot failure without checking anything new.
+    //
+    // The reference puts the screen's name in the command bar rather than in
+    // the content, so the document's one `h1` is inside the banner
+    // (canvas 1a/1b/1c, "Command bar").
     await expect(page.locator('body')).toMatchAriaSnapshot(`
-      - banner
-      - main:
+      - banner:
         - heading [level=1]
-        - paragraph
+        - navigation
+      - main
       - alert
       - status
     `);

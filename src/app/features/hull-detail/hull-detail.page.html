@@ -2,36 +2,18 @@
   @if (detail.kind === 'unknown') {
     <edsb-hull-detail-unknown-symbol [symbol]="detail.symbol" />
   } @else {
+    <!--
+      The reference's inspector, in its order and with its contents: the
+      illustration on its plate, the hull's name over one monospace identity
+      line, five figures, the mounts, the price, and the one commitment
+      (canvas 1a rail, canvas 1b detail sheet).
+    -->
     <article class="detail">
-      <edsb-action-link
-        class="detail__back"
-        [label]="backLabel()"
-        [href]="catalogueRoute"
-        [routerLink]="catalogueRoute"
-      />
-
-      <h2 class="detail__name">
-        <edsb-game-text
-          [text]="detail.name.text"
-          [language]="detail.name.language"
-          [translationState]="detail.name.translationState"
-        />
-      </h2>
-
-      <dl class="detail__identity">
-        <dt>{{ manufacturerLabel() }}</dt>
-        <dd>
-          <edsb-game-text
-            [text]="detail.manufacturer.text"
-            [language]="detail.manufacturer.language"
-            [translationState]="detail.manufacturer.translationState"
-          />
-        </dd>
-        @if (detail.size; as size) {
-          <dt>{{ sizeLabel() }}</dt>
-          <dd>{{ size }}</dd>
-        }
-      </dl>
+      <!-- The reference gives the compact sheet a way back and the wide rail
+           none: there the manifest is still on screen beside it. -->
+      <a class="detail__back" [routerLink]="catalogueRoute" [attr.aria-label]="backLabel()">
+        <span aria-hidden="true">←</span>
+      </a>
 
       <edsb-hull-artwork
         [source]="detail.artworkPath"
@@ -43,29 +25,55 @@
         (retryRequested)="retryArtwork()"
       />
 
-      <edsb-panel
-        [heading]="specificationsHeading()"
-        [description]="specificationsDescription()"
-        [headingLevel]="3"
-      >
-        @for (group of specificationGroups(); track group.group) {
-          <edsb-fact-list [label]="specificationsHeading()" [facts]="group.facts" />
-        }
-      </edsb-panel>
+      <div class="detail__identity">
+        <h2 class="detail__name">
+          <edsb-game-text
+            [text]="detail.name.text"
+            [language]="detail.name.language"
+            [translationState]="detail.name.translationState"
+          />
+        </h2>
 
-      <edsb-panel [heading]="costsHeading()" [description]="costsDescription()" [headingLevel]="3">
-        @for (group of priceGroups(); track group.group) {
-          <edsb-fact-list [label]="costsHeading()" [facts]="group.facts" />
-        }
-      </edsb-panel>
+        <!-- One line to the eye, two labelled facts to a reader: the labels
+             are hidden rather than dropped. -->
+        <dl class="detail__blurb">
+          <dt>{{ manufacturerLabel() }}</dt>
+          <dd>
+            <edsb-game-text
+              [text]="detail.manufacturer.text"
+              [language]="detail.manufacturer.language"
+              [translationState]="detail.manufacturer.translationState"
+            />
+          </dd>
+          @if (detail.size; as size) {
+            <dt>{{ sizeLabel() }}</dt>
+            <dd>{{ size }}</dd>
+          }
+        </dl>
+      </div>
 
-      <edsb-panel [heading]="slotsHeading()" [description]="slotsDescription()" [headingLevel]="3">
-        <edsb-slot-layout
-          [label]="slotsHeading()"
-          [groups]="detail.slotGroups"
-          [emptyLabel]="slotsUnavailable()"
-        />
-      </edsb-panel>
+      <edsb-fact-list [label]="specificationsHeading()" [facts]="summaryFacts()" />
+
+      @if (mounts().length > 0) {
+        <div class="detail__mounts">
+          <h3 class="detail__section">{{ mountsHeading() }}</h3>
+          <ul class="detail__mount-list">
+            @for (mount of mounts(); track mount.label) {
+              <li class="detail__mount">
+                <span class="detail__mount-count">{{ mount.count }}</span>
+                <span class="detail__mount-label">{{ mount.label }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (retailPrice(); as price) {
+        <p class="detail__price">
+          <span class="detail__price-label">{{ priceLabel() }}</span>
+          <span class="detail__price-value">{{ price }}</span>
+        </p>
+      }
 
       <div class="detail__create">
         @if (detail.canCreate) {
@@ -74,7 +82,6 @@
             emphasis="primary"
             (activated)="createStockBuild()"
           />
-          <p class="detail__create-description">{{ createDescription() }}</p>
         } @else {
           <edsb-status-notice tone="warning" [message]="createUnavailable()" />
         }

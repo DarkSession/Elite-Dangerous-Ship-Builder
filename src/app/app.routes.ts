@@ -34,8 +34,10 @@ export const routes: Routes = [
       ),
     children: [
       {
+        // No title of its own: the reference keeps the command bar reading
+        // SHIPYARD while a hull is open in the inspector (canvas 1a), and the
+        // compact sheet carries the hull's name in its own heading.
         path: ':symbol',
-        title: 'hullDetail.specifications',
         loadComponent: () =>
           import('./features/hull-detail/hull-detail.page').then((module) => module.HullDetailPage),
       },

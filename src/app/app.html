@@ -1,4 +1,6 @@
 <edsb-app-frame
+  [routeContext]="pageName()"
+  [routeCount]="pageCount()"
   [navigation]="navigation()"
   (actionSelected)="selectAction($event)"
   (navigationSelected)="navigateFromShell($event)"

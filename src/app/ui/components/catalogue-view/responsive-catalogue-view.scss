@@ -40,13 +40,6 @@
   border-spacing: 0 var(--edsb-space-3xs);
 }
 
-.catalogue__table caption {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
-
-  text-align: start;
-  padding-block-end: var(--edsb-space-stack);
-}
-
 .catalogue__table th,
 .catalogue__table td {
   text-align: start;
@@ -67,6 +60,25 @@
   background-color: var(--edsb-surface-row);
 }
 
+// The reference names the current row with the marker, the wash and the hull
+// name in amber — never with a word (canvas 1a/1b). The words stay for anyone
+// not reading the plate; they are not drawn.
+.catalogue__selected,
+.catalogue__spoken {
+  @include layout.visually-hidden;
+}
+
+// The reference's current-row lozenge, in its own narrow leading column.
+.catalogue__mark {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
+
+  inline-size: var(--edsb-space-4xl);
+}
+
+.catalogue__code {
+  @include layout.micro-label(var(--edsb-text-secondary), var(--edsb-text-tracking-count));
+}
+
 // The row's leading marker. Transparent until the row is current, so no row
 // changes width when the selection moves.
 .catalogue__table tbody tr > :first-child {
@@ -85,6 +97,10 @@
 
 .catalogue__table tr[aria-current='true'] > :first-child {
   border-inline-start-color: var(--edsb-marker-selected);
+}
+
+.catalogue__table tr[aria-current='true'] .catalogue__open {
+  color: var(--edsb-text-accent-strong);
 }
 
 .catalogue__sort,
@@ -111,13 +127,6 @@
   text-transform: inherit;
   color: inherit;
   min-block-size: var(--edsb-target-size);
-}
-
-.catalogue__selected {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
-
-  display: block;
-  margin-block-start: var(--edsb-space-2xs);
 }
 
 .catalogue__numeric {

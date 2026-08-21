@@ -7,7 +7,7 @@ This feature defines the active-build shell and persistence/share behavior. Modu
 
 ## Composition
 
-- `AppShell`, one workspace heading and active hull/provenance summary.
+- `AppShell` and the active hull/provenance summary. The workspace renders no heading of its own: canvas 1c puts the build's identity in the command bar (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)).
 - Named/working/dirty and package validation `StatusIndicator` with visible text, not color alone.
 - Active capability outlet for future outfitting/statistics screens; no component owns a second build copy.
 - Save/name and library actions.

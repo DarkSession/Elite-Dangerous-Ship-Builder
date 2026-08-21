@@ -11,30 +11,45 @@ import { Router, RouterLink } from '@angular/router';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { ArtworkCoordinator } from '../../application/catalogue/artwork.coordinator';
 import { HullDetailFacade } from '../../application/catalogue/hull-detail.facade';
+import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import { ActionButton } from '../../ui/components/action/action-button';
-import { ActionLink } from '../../ui/components/action/action-link';
-import { FactList } from '../../ui/components/fact-list/fact-list';
+import { FactList, type Fact } from '../../ui/components/fact-list/fact-list';
 import { GameText } from '../../ui/components/game-text/game-text';
 import { HullArtwork } from '../../ui/components/hull-artwork/hull-artwork';
-import { Panel } from '../../ui/components/panel/panel';
-import { SlotLayout } from '../../ui/components/slot-layout/slot-layout';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
 import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
 import type { HullFactGroup } from '../../domain/catalogue/hull-facts';
 
-/** The heading each group of facts appears under. */
-const GROUP_HEADINGS: Record<HullFactGroup, string> = {
-  identity: 'hullDetail.specifications',
-  performance: 'hullDetail.specifications',
-  defence: 'hullDetail.specifications',
-  'mass-and-heat': 'hullDetail.specifications',
-  handling: 'hullDetail.specifications',
-  prices: 'hullDetail.costs',
-};
+/**
+ * The five figures the reference rail carries, in its order: speed at four
+ * pips, boost, shield, armour, hull mass (canvas 1a, "Metric grid"). Every
+ * other published figure is one disclosure down rather than absent.
+ */
+const SUMMARY_FACTS: readonly string[] = [
+  'maximum-speed',
+  'boost',
+  'base-shield',
+  'base-armour',
+  'hull-mass',
+];
+
+/** The mount classes the reference chips name, largest first. */
+const MOUNT_LABELS = [
+  'hullDetail.mount.huge',
+  'hullDetail.mount.large',
+  'hullDetail.mount.medium',
+  'hullDetail.mount.small',
+] as const;
+
+/** One mount-class chip: how many of that class the hull carries. */
+export interface MountCount {
+  readonly count: string;
+  readonly label: string;
+}
 
 /**
  * One hull, in full.
@@ -53,14 +68,11 @@ const GROUP_HEADINGS: Record<HullFactGroup, string> = {
   selector: 'edsb-hull-detail-page',
   imports: [
     ActionButton,
-    ActionLink,
     FactList,
     GameText,
     HullArtwork,
     HullDetailUnknownSymbol,
-    Panel,
     RouterLink,
-    SlotLayout,
     StatusNotice,
   ],
   templateUrl: './hull-detail.page.html',
@@ -72,6 +84,7 @@ export class HullDetailPage {
   readonly #artwork = inject(ArtworkCoordinator);
   readonly #creator = inject(StockBuildCreator);
   readonly #messages = inject(MessageService);
+  readonly #formatters = inject(Formatters);
   readonly #announcements = inject(AnnouncementService);
   readonly #router = inject(Router);
   readonly #restorer = inject(CatalogueAnchorRestorer);
@@ -83,19 +96,15 @@ export class HullDetailPage {
 
   readonly backLabel = this.#messages.messageSignal('hullDetail.back');
   readonly specificationsHeading = this.#messages.messageSignal('hullDetail.specifications');
-  readonly specificationsDescription = this.#messages.messageSignal(
-    'hullDetail.specifications.description',
-  );
-  readonly costsHeading = this.#messages.messageSignal('hullDetail.costs');
-  readonly costsDescription = this.#messages.messageSignal('hullDetail.costs.description');
-  readonly slotsHeading = this.#messages.messageSignal('hullDetail.slots');
-  readonly slotsDescription = this.#messages.messageSignal('hullDetail.slots.description');
-  readonly slotsUnavailable = this.#messages.messageSignal('hullDetail.slots.unavailable');
   readonly createLabel = this.#messages.messageSignal('hullDetail.create');
-  readonly createDescription = this.#messages.messageSignal('hullDetail.create.description');
   readonly createUnavailable = this.#messages.messageSignal('hullDetail.create.unavailable');
   readonly manufacturerLabel = this.#messages.messageSignal('hullDetail.fact.manufacturer');
   readonly sizeLabel = this.#messages.messageSignal('hullDetail.fact.size');
+  readonly moreSpecificationsHeading = this.#messages.messageSignal(
+    'hullDetail.specifications.all',
+  );
+  readonly mountsHeading = this.#messages.messageSignal('hullDetail.slots.group.hardpoint');
+  readonly priceLabel = this.#messages.messageSignal('hullDetail.price');
 
   readonly view = this.#detail.view;
   readonly artworkState = this.#detail.artworkState;
@@ -105,20 +114,36 @@ export class HullDetailPage {
   readonly #creationError = signal<string | null>(null);
   readonly creationError = this.#creationError.asReadonly();
 
-  /** The fact groups that belong under "Hull specifications". */
-  readonly specificationGroups = computed(() => {
+  /** The reference rail's five figures, in the reference's order. */
+  readonly summaryFacts = computed<readonly Fact[]>(() => {
     const view = this.view();
-    return view?.kind === 'populated'
-      ? view.factGroups.filter((group) => GROUP_HEADINGS[group.group] !== 'hullDetail.costs')
-      : [];
+    const facts = view?.kind === 'populated' ? view.factGroups.flatMap((group) => group.facts) : [];
+    return SUMMARY_FACTS.map((id) => facts.find((fact) => fact.id === id)).filter(
+      (fact): fact is Fact => fact !== undefined,
+    );
   });
 
-  /** The fact groups that belong under "Prices". */
-  readonly priceGroups = computed(() => {
+  /**
+   * The mount classes this hull carries, largest first. A class it has none of
+   * is left out rather than shown as a zero — the chips are what it has.
+   */
+  readonly mounts = computed<readonly MountCount[]>(() => {
     const view = this.view();
-    return view?.kind === 'populated'
-      ? view.factGroups.filter((group) => GROUP_HEADINGS[group.group] === 'hullDetail.costs')
-      : [];
+    const profile = view?.kind === 'populated' ? view.entry.hardpoints : null;
+    if (profile === null) {
+      return [];
+    }
+    return profile
+      .map((count, index) => ({ count, label: this.#messages.message(MOUNT_LABELS[index]!) }))
+      .filter((mount) => mount.count > 0)
+      .map((mount) => ({ count: this.#formatters.integer(mount.count), label: mount.label }));
+  });
+
+  /** The ready-to-fly price, as the reference's one headline number. */
+  readonly retailPrice = computed(() => {
+    const view = this.view();
+    const price = view?.kind === 'populated' ? view.entry.retailPrice : null;
+    return price === null ? null : this.#formatters.credits(price);
   });
 
   constructor() {

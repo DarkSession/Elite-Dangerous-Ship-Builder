@@ -70,7 +70,6 @@ export class BuildWorkspacePage {
 
   readonly catalogueRoute = NAVIGATION_ROUTES.catalogue;
 
-  readonly heading = this.#messages.messageSignal('workspace.title');
   readonly emptyTitle = this.#messages.messageSignal('workspace.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('workspace.empty.description');
   readonly emptyAction = this.#messages.messageSignal('workspace.empty.action');

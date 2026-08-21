@@ -8,13 +8,6 @@
   display: flex;
 }
 
-h1 {
-  @include layout.display-title(
-    var(--edsb-text-size-heading-lg),
-    var(--edsb-text-tracking-heading)
-  );
-}
-
 .workspace__summary {
   @include layout.stack(var(--edsb-space-stack-tight));
 

@@ -18,6 +18,9 @@ $mode-wide-min: 64rem; // master-detail or multi-region workspace
 
 // Container sizes for component-level composition.
 $container-compact-max: 23.9375rem;
+// The reference fits two metric cells into a 340px rail, so a container step
+// below the medium one exists for content that compact (canvas 1a rail).
+$container-compact-min: 17rem;
 $container-medium-min: 24rem;
 $container-wide-min: 40rem;
 
@@ -51,6 +54,12 @@ $container-wide-min: 40rem;
 // component sets, so a component reads its own box and not an ancestor's.
 @mixin container-compact($name) {
   @container #{$name} (max-width: #{$container-compact-max}) {
+    @content;
+  }
+}
+
+@mixin container-compact-up($name) {
+  @container #{$name} (min-width: #{$container-compact-min}) {
     @content;
   }
 }

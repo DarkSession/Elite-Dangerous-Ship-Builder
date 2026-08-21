@@ -93,7 +93,19 @@ export async function expectOrderedHeadings(page: Page): Promise<void> {
  * contradict the words on screen (FR-007).
  */
 export async function expectNameMatchesVisibleText(control: Locator): Promise<void> {
-  const visible = normalize(await control.textContent());
+  // Decoration marked `aria-hidden` is not part of the label: a direction caret
+  // beside a sort field is drawn for the eye and stated by `aria-pressed` and
+  // by the name itself, so requiring the name to repeat the arrow would be
+  // asking for a name no reader benefits from.
+  const visible = normalize(
+    await control.evaluate((node) => {
+      const clone = node.cloneNode(true) as HTMLElement;
+      for (const hidden of clone.querySelectorAll('[aria-hidden="true"]')) {
+        hidden.remove();
+      }
+      return clone.textContent;
+    }),
+  );
   if (visible.length === 0) {
     return;
   }
@@ -332,7 +344,10 @@ export async function clippedText(page: Page): Promise<ClippedElement[]> {
         if (style.display === 'inline') {
           return false;
         }
-        if (element.clientWidth === 0 && element.clientHeight === 0) {
+        // A box one pixel on a side is content hidden from the eye on purpose:
+        // it is there for assistive technology, and nothing about it is drawn,
+        // so "cut off" is not a thing that can happen to it.
+        if (element.clientWidth <= 1 && element.clientHeight <= 1) {
           return false;
         }
         // Only a box that actually clips can cut text off. Content that

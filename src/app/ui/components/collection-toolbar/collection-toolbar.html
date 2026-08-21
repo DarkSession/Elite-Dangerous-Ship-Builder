@@ -1,10 +1,13 @@
 <div class="toolbar">
+  <!--
+    The reference's whole toolbar: one search field, then the size choices as
+    an abutted segmented strip (canvas 1a/1b). Nothing else is drawn here.
+  -->
   <div class="toolbar__primary">
     <div class="toolbar__search">
       <edsb-text-field
         [label]="searchLabel()"
         [value]="search()"
-        [description]="searchDescription()"
         kind="search"
         (changed)="searchChanged.emit($event)"
       />
@@ -21,70 +24,30 @@
     />
   </div>
 
-  <div class="toolbar__facets">
-    <edsb-select-field
-      [label]="manufacturerLabel()"
-      [options]="manufacturerOptions()"
-      [value]="selectedManufacturer()"
-      (changed)="manufacturerChanged.emit($event)"
-    />
-
-    <edsb-select-field
-      [label]="hardpointLabel()"
-      [options]="hardpointOptions()"
-      [value]="selectedHardpointClass()"
-      (changed)="hardpointClassChanged.emit($event)"
-    />
-
-    <edsb-text-field
-      [label]="priceMinLabel()"
-      [value]="priceMin()"
-      [description]="priceDescription()"
-      (changed)="priceMinChanged.emit($event)"
-    />
-
-    <edsb-text-field
-      [label]="priceMaxLabel()"
-      [value]="priceMax()"
-      (changed)="priceMaxChanged.emit($event)"
-    />
-
-    <div class="toolbar__sort">
-      <edsb-select-field
-        [label]="sortLabel()"
-        [options]="sortOptions()"
-        [value]="sort().field"
-        (changed)="sortFieldChanged.emit($event)"
-      />
-      <edsb-action-button
-        [label]="sort().toggleLabel"
-        emphasis="quiet"
-        (activated)="sortDirectionToggled.emit()"
-      />
-    </div>
+  <!--
+    The compact composition's sort chips (canvas 1b). The wide manifest sorts
+    from its own column headers, so this row is removed there rather than
+    duplicating them.
+  -->
+  <div class="toolbar__sort" role="group" [attr.aria-labelledby]="sortId">
+    <p class="toolbar__sort-label" [id]="sortId">{{ sortLabel() }}</p>
+    <ul class="toolbar__sort-chips">
+      @for (option of sortOptions(); track option.value) {
+        <li>
+          <button
+            type="button"
+            class="toolbar__sort-chip"
+            [attr.aria-pressed]="option.value === sort().field"
+            [attr.aria-label]="option.actionLabel"
+            (click)="sortFieldChanged.emit(option.value)"
+          >
+            {{ option.label }}
+            @if (option.value === sort().field) {
+              <span class="toolbar__caret" aria-hidden="true">{{ caret() }}</span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
   </div>
-
-  <p class="toolbar__sort-state">{{ sort().text }}</p>
-
-  <div class="toolbar__constraints" role="group" [attr.aria-labelledby]="constraintsId">
-    <p class="toolbar__constraints-label" [id]="constraintsId">{{ constraintsLabel() }}</p>
-    @if (hasConstraints()) {
-      <ul class="toolbar__constraint-list">
-        @for (constraint of constraints(); track constraint.id) {
-          <li>
-            <edsb-action-button
-              [label]="constraint.removeLabel"
-              emphasis="quiet"
-              (activated)="constraintRemoved.emit(constraint.id)"
-            />
-          </li>
-        }
-      </ul>
-      <edsb-action-button [label]="clearLabel()" emphasis="quiet" (activated)="cleared.emit()" />
-    } @else {
-      <p class="toolbar__no-constraints">{{ noConstraintsLabel() }}</p>
-    }
-  </div>
-
-  <p class="toolbar__count">{{ countText() }}</p>
 </div>

@@ -2,12 +2,7 @@ import { Injectable, computed, inject } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import {
-  activeConstraints,
-  matchCount,
-  withoutConstraint,
-  type ActiveConstraint,
-} from '../../domain/catalogue/catalogue-constraints';
+import { matchCount } from '../../domain/catalogue/catalogue-constraints';
 import {
   filterCatalogue,
   manufacturersIn,
@@ -30,20 +25,17 @@ export interface HullRowView {
   readonly symbol: string;
   readonly name: GameTextPresentation;
   readonly manufacturer: GameTextPresentation;
-  /** The size in the Commander's language, or `null` when the package has none. */
+  /** The manifest's short size code, or `null` when the package has none. */
   readonly size: string | null;
-  /** The hardpoint layout as a sentence, never as an unlabelled tuple. */
+  /** The same size spelled out, for readers the code tells nothing. */
+  readonly sizeText: string | null;
+  /** The mount code the manifest shows: "2H 2L 1M 2S". */
   readonly hardpoints: string;
-  /** The formatted retail price, or `null` when the package reports none. */
+  /** The same mounts spelled out, for readers the code tells nothing. */
+  readonly hardpointsText: string;
+  /** The retail price in Mcr, as the manifest column shows it. */
   readonly price: string | null;
   readonly artworkPath: string;
-}
-
-/** One removable constraint, with the words that name it. */
-export interface ConstraintView {
-  readonly id: string;
-  readonly label: string;
-  readonly removeLabel: string;
 }
 
 /**
@@ -100,17 +92,6 @@ export class CatalogueFacade {
     }),
   );
 
-  readonly constraints = computed<readonly ConstraintView[]>(() =>
-    activeConstraints(this.#session.filters()).map((constraint) => {
-      const label = this.#describe(constraint);
-      return {
-        id: constraint.id,
-        label,
-        removeLabel: this.#messages.message('catalogue.constraints.remove', { constraint: label }),
-      };
-    }),
-  );
-
   /** Every manufacturer the package carries, ordered for the active locale. */
   readonly manufacturers = computed(() => {
     const collator = this.#formatters.collator();
@@ -131,9 +112,12 @@ export class CatalogueFacade {
       symbol: entry.symbol,
       name: this.#gameText.shipName(entry.symbol),
       manufacturer: this.#gameText.shipManufacturer(entry.symbol),
-      size: this.#sizeLabel(entry.size),
-      hardpoints: this.#hardpointsLabel(entry),
-      price: entry.retailPrice === null ? null : this.#formatters.credits(entry.retailPrice),
+      size: this.#sizeCode(entry.size),
+      sizeText: this.#sizeLabel(entry.size),
+      hardpoints: this.#hardpointsCode(entry),
+      hardpointsText: this.#hardpointsLabel(entry),
+      price:
+        entry.retailPrice === null ? null : this.#formatters.decimal(entry.retailPrice / 1e6, 2),
       artworkPath: entry.artworkPath,
     };
   }
@@ -219,20 +203,6 @@ export class CatalogueFacade {
     this.#session.setSort(sort);
   }
 
-  removeConstraint(id: string): void {
-    const constraint = activeConstraints(this.#session.filters()).find(
-      (candidate) => candidate.id === id,
-    );
-    if (constraint === undefined) {
-      return;
-    }
-    this.#session.setFilters(withoutConstraint(this.#session.filters(), constraint));
-  }
-
-  clearConstraints(): void {
-    this.#session.clearFilters();
-  }
-
   /** Remembers where the Commander was before they opened a hull. */
   rememberPosition(symbol: string, offsetWithinItem: number): void {
     this.#session.setAnchor({ symbol, offsetWithinItem });
@@ -264,6 +234,46 @@ export class CatalogueFacade {
           ? 'catalogue.size.medium'
           : 'catalogue.size.large',
     );
+  }
+
+  /** The manifest's short size code: "LRG", "MED", "SML" (canvas 1a/1b). */
+  #sizeCode(size: HullSize | null): string | null {
+    if (size === null) {
+      return null;
+    }
+    return this.#messages.message(
+      size === 'small'
+        ? 'catalogue.size.code.small'
+        : size === 'medium'
+          ? 'catalogue.size.code.medium'
+          : 'catalogue.size.code.large',
+    );
+  }
+
+  /**
+   * The manifest's mount code: "2H 2L 1M 2S", with classes the hull has none
+   * of left out (canvas 1a/1b). The spelled-out form travels beside it as
+   * `hardpointsText`, for readers the code tells nothing.
+   */
+  #hardpointsCode(entry: HullCatalogueEntry): string {
+    const profile = entry.hardpoints;
+    if (profile === null || profile.every((count) => count === 0)) {
+      return this.#messages.message('catalogue.hardpoint.none');
+    }
+    const keys = [
+      'catalogue.hardpoint.code.huge',
+      'catalogue.hardpoint.code.large',
+      'catalogue.hardpoint.code.medium',
+      'catalogue.hardpoint.code.small',
+    ] as const;
+    return profile
+      .map((count, index) =>
+        count === 0
+          ? null
+          : this.#messages.message(keys[index]!, { count: this.#formatters.integer(count) }),
+      )
+      .filter((part) => part !== null)
+      .join(' ');
   }
 
   #hardpointsLabel(entry: HullCatalogueEntry): string {
@@ -301,36 +311,5 @@ export class CatalogueFacade {
         ? 'catalogue.sort.direction.ascending'
         : 'catalogue.sort.direction.descending',
     );
-  }
-
-  #describe(constraint: ActiveConstraint): string {
-    switch (constraint.kind) {
-      case 'query':
-        return this.#messages.message('catalogue.constraint.search', {
-          value: String(constraint.value),
-        });
-      case 'size':
-        return this.#messages.message('catalogue.constraint.size', {
-          value: this.#sizeLabel(constraint.value as HullSize) ?? String(constraint.value),
-        });
-      case 'manufacturer':
-        return this.#messages.message('catalogue.constraint.manufacturer', {
-          value: String(constraint.value),
-        });
-      case 'hardpoint':
-        return this.#messages.message('catalogue.constraint.hardpoint', {
-          value: this.#messages.message('catalogue.hardpoint.class', {
-            class: this.#formatters.integer(constraint.value as number),
-          }),
-        });
-      case 'price-min':
-        return this.#messages.message('catalogue.constraint.price-min', {
-          value: this.#formatters.credits(constraint.value as number),
-        });
-      case 'price-max':
-        return this.#messages.message('catalogue.constraint.price-max', {
-          value: this.#formatters.credits(constraint.value as number),
-        });
-    }
   }
 }

@@ -84,14 +84,15 @@ test.describe('the reference visual language', () => {
 
     const size = parseFloat(await style(heading, 'font-size'));
     const tracking = parseFloat(await style(heading, 'letter-spacing'));
-    // 0.26em, the product title's step.
-    expect(tracking / size).toBeCloseTo(0.26, 2);
+    // Canvas 1a sets the command bar's title at 0.26em and canvas 1b, where
+    // there is less room for it, at 0.22em. Both are steps on the same ladder.
+    expect([0.26, 0.22].some((step) => Math.abs(tracking / size - step) < 0.005)).toBe(true);
   });
 
   test('sets every number and micro-label in monospace', async ({ page }) => {
     // Canvas: 'JetBrains Mono' carries every number, unit, count and code. The
-    // hull count beside the screen title is one of them.
-    const count = page.locator('.catalogue__total');
+    // hull count beside the screen title in the command bar is one of them.
+    const count = page.locator('.frame__count');
 
     expect(await style(count, 'font-family')).toContain('JetBrains Mono');
     expect(await style(count, 'text-transform')).toBe('uppercase');

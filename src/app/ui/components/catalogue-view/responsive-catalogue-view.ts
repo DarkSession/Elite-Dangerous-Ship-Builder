@@ -53,9 +53,6 @@ export class ResponsiveCatalogueView {
   readonly columns = input.required<readonly CatalogueColumn[]>();
   readonly hulls = input.required<readonly HullSummary[]>();
 
-  /** The label of the action that opens one hull, per hull. */
-  readonly openLabel = input.required<(hull: HullSummary) => string>();
-
   /** Text shown instead of an empty list. Never an empty region. */
   readonly emptyLabel = input<string | null>(null);
 
@@ -65,6 +62,10 @@ export class ResponsiveCatalogueView {
   readonly captionId = relationId('catalogue-caption');
   readonly scrollLabel = this.#messages.messageSignal('catalogue.table.caption');
   readonly selectedLabel = this.#messages.messageSignal('catalogue.selected');
+  readonly markerLabel = this.#messages.messageSignal('catalogue.selected');
+
+  /** The reference's current-row lozenge. Decorative: `aria-current` says it. */
+  readonly marker = '\u25c6';
 
   readonly isEmpty = computed(() => this.hulls().length === 0);
 
@@ -86,6 +87,8 @@ export class ResponsiveCatalogueView {
    * and so one locator finds the same action in both compositions.
    */
   openActionLabel(hull: HullSummary): string {
-    return this.openLabel()(hull);
+    return this.#messages.message('catalogue.open-hull', {
+      hull: hull.name.text ?? hull.symbol,
+    });
   }
 }

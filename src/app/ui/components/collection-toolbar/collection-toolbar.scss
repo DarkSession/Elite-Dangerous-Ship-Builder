@@ -6,17 +6,12 @@
   container-name: toolbar;
 }
 
+// The reference draws no container here: the search sits on the screen's own
+// ground with its own border, and the size strip abuts it (canvas 1a/1b).
 .toolbar {
   @include layout.stack(var(--edsb-space-stack));
-
-  padding: var(--edsb-space-inline-loose);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-sunken);
 }
 
-// The reference's toolbar leads with the search and the size strip on one row,
-// then the remaining facets beneath (canvas 1a).
 .toolbar__primary {
   display: grid;
   gap: var(--edsb-space-inline);
@@ -24,70 +19,62 @@
   align-items: end;
 }
 
+// Search and the size strip share one row, as the reference draws them.
 @include layout.container-medium-up(toolbar) {
   .toolbar__primary {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
-.toolbar__facets {
-  display: grid;
-  gap: var(--edsb-space-inline);
-  grid-template-columns: 1fr;
-}
-
-@include layout.container-medium-up(toolbar) {
-  // The reference's toolbar leads with the search and the size strip on one row,
-  // then the remaining facets beneath (canvas 1a).
-  .toolbar__primary {
-    display: grid;
-    gap: var(--edsb-space-inline);
-    grid-template-columns: 1fr;
-    align-items: end;
-  }
-
-  @include layout.container-medium-up(toolbar) {
-    .toolbar__primary {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-  }
-
-  .toolbar__facets {
-    grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-rail-min), 1fr));
-  }
-}
-
+// The chip row belongs to the compact composition; the wide manifest's own
+// column headers are the sort control there (canvas 1a vs canvas 1b).
 .toolbar__sort {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-
-  align-items: end;
+  display: none;
 }
 
-.toolbar__sort-state,
-.toolbar__count {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
-
-  text-transform: none;
+@include layout.compact {
+  .toolbar__sort {
+    @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  }
 }
 
-.toolbar__constraints {
-  @include layout.stack(var(--edsb-space-stack-tight));
+.toolbar__sort-label {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
 }
 
-.toolbar__constraints-label {
-  @include layout.micro-label(var(--edsb-text-subtle));
-}
-
-.toolbar__constraint-list {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-
+// One row that scrolls sideways rather than wrapping, as the reference draws
+// it (canvas 1b). The row owns the overflow; the document never scrolls.
+.toolbar__sort-chips {
+  display: flex;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  gap: var(--edsb-space-inline-tight);
+  overflow-x: auto;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.toolbar__no-constraints {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+.toolbar__sort-chips > li {
+  flex: none;
+}
+
+// The reference's sort chip: condensed, tracked, quiet until it is the order in
+// force, when it takes the amber fill (canvas 1b `.sm-sort`).
+.toolbar__sort-chip {
+  @include layout.control-base(var(--edsb-text-tracking-heading));
+
+  padding-inline: var(--edsb-space-inline-loose);
+  white-space: nowrap;
+  background-color: var(--edsb-surface-control-quiet);
+  border-color: transparent;
+  color: var(--edsb-text-secondary);
+}
+
+.toolbar__sort-chip[aria-pressed='true'] {
+  @include layout.control-primary;
+}
+
+.toolbar__caret {
+  @include layout.metric-value(var(--edsb-text-size-micro), currentcolor);
 }

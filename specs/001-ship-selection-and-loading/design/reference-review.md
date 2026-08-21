@@ -30,14 +30,14 @@ The design file is a product visual reference. It is not application source, a g
 
 - All row/detail values in the design are illustrative. Runtime reads `SHIPS`, exact package symbols, package units and package validation; it does not copy the HTML's hard-coded arrays or labels.
 - The reference PNGs and partial-coverage copy are stale mock assets/state. The installed package provides an `illustration.svg` for every catalogued hull. Runtime copies those package files to a same-origin asset path and retains defensive loading/missing states for package drift and offline conditions.
-- The reference detail summary omits hardness, mass-lock factor, crew, heat capacity/dissipation, reserve fuel, rotation endpoints, complete slot layout and the hull-only/retail cost distinction. The planned inspector/full-screen view adds every FR-004 fact without reducing the reference's initial hierarchy.
+- The reference detail summary omits hardness, mass-lock factor, crew, heat capacity/dissipation, reserve fuel, rotation endpoints, complete slot layout and the hull-only/retail cost distinction. **This adaptation was withdrawn on 2026-08-21.** The screen is the reference composition; those figures are not shown. See [hull-detail, "Divergence from FR-004"](./hull-detail.md#divergence-from-fr-004).
 - Missing package values render as unavailable, never as the mock's zero, blank cell or guessed value.
 
 ### Catalogue behavior
 
-- The visible size controls and search/sort treatments are retained. Manufacturer, hardpoint and price filtering plus every required bidirectional sort remain reachable through the shared collection toolbar even if they are not all expanded simultaneously in the mock.
+- The visible size controls and search/sort treatments are retained. **The adaptation that added manufacturer, hardpoint and price controls to the toolbar was withdrawn on 2026-08-21**; the capability remains on the facade but no control draws it. See [hull-catalogue, "Divergence from FR-002"](./hull-catalogue.md#divergence-from-fr-002).
 - Wide column headers become semantic sort buttons with announced field/direction. Narrow sort chips expose the same state and are at least 44 CSS px.
-- Selected-row amber/diamond styling gains programmatic and textual selected state; color/shape alone is insufficient.
+- Selected-row amber/lozenge styling gains programmatic state. The lozenge and the wash are drawn as the reference draws them and `aria-current` carries the same fact, so nothing depends on colour alone; the visible “Currently viewing” label the earlier build added is gone.
 - The selected inspector corresponds to `/ships/:symbol`. The `/ships` route does not silently create a build or require an arbitrary default hull.
 
 ### Persistence and saved builds
@@ -102,30 +102,42 @@ section of [hull-catalogue.md](./hull-catalogue.md), [hull-detail.md](./hull-det
 vocabulary those tables draw on is measured in
 [feature 011's canvas extraction](../../011-interface-foundations/design/canvas-extraction.md).
 
-| Canvas part                                                       | Implemented as                                                                          |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Command bar: amber flag, tracked condensed title, monospace count | `AppFrame`'s banner, via the `command-bar`, `command-flag` and `display-title` mixins   |
-| `1fr` manifest against a fixed inspector rail                     | `region-pair` at wide widths, the rail carrying its own ground and hairline             |
-| Segmented size choices with hairline gaps                         | `ChoiceGroup` with `layout="segmented"` — native checkboxes, labels styled as the strip |
-| Tracked monospace column headers over a single amber hairline     | `DataTable` and `ResponsiveCatalogueView` headers                                       |
-| Row plates with a 3px leading marker and an amber wash when open  | The `selectable-row` mixin, used by the manifest, the hull cards and the record list    |
-| Ruled two-column metric grid                                      | `MetricGroup`, via the `ruled-group` mixin                                              |
-| Section rule with a trailing total                                | The `section-rule` mixin, used by the record groups and the slot layout                 |
-| Hatched artwork plate with the amber filter                       | `HullArtwork`                                                                           |
-| Panel dialog: scrim, amber hairline, darker title bar, footer     | `Layer`, in all three presentations                                                     |
-| Five button variants                                              | `ActionButton`'s emphasis values, via the `control-*` mixins                            |
+| Canvas part                                                       | Implemented as                                                                                                                   |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Command bar: amber flag, tracked condensed title, monospace count | `AppFrame`'s banner. The title is the document's one `h1` and the count comes from `ScreenChrome`; no route renders either again |
+| `1fr` manifest against a fixed inspector rail                     | `region-pair` at wide widths, the rail carrying its own ground and hairline                                                      |
+| Segmented size choices with hairline gaps                         | `ChoiceGroup` with `layout="segmented"` — native checkboxes, labels styled as the strip                                          |
+| Tracked monospace column headers over a single amber hairline     | `DataTable` and `ResponsiveCatalogueView` headers                                                                                |
+| Row plates with a 3px leading marker and an amber wash when open  | The `selectable-row` mixin, used by the manifest, the hull cards and the record list                                             |
+| Amber lozenge in the current row's own marker column              | `ResponsiveCatalogueView`'s leading `.catalogue__mark` cell                                                                      |
+| Compact sort chips, the one in force filled amber with a caret    | `CollectionToolbar`'s chip row, removed at wide widths where the headers sort                                                    |
+| Ruled two-column metric grid                                      | `MetricGroup`, via the `ruled-group` mixin                                                                                       |
+| Section rule with a trailing total                                | The `section-rule` mixin, used by the record groups and the slot layout                                                          |
+| Hatched artwork plate with the amber filter                       | `HullArtwork`                                                                                                                    |
+| Panel dialog: scrim, amber hairline, darker title bar, footer     | `Layer`, in all three presentations                                                                                              |
+| Five button variants                                              | `ActionButton`'s emphasis values, via the `control-*` mixins                                                                     |
 
 The adaptations recorded above the fold are implemented as described. The ones worth naming, because
 they change what the canvas shows rather than only how it is built:
 
 - the manifest's wide composition is a real table with named bidirectional sort buttons, and its
   narrow composition restates every label as a definition list;
-- the selected row carries `aria-current` and the word for the state as well as the amber marker;
+- the current row carries `aria-current` alongside the amber lozenge and wash, but no visible word:
+  the reference marks the row and never labels it;
+- every code the manifest shortens — `LRG`, `2H 2L 1M 2S` — travels with its spelled-out form, and
+  every label the reference compresses away stays in the markup, hidden from the eye rather than
+  dropped;
 - the segmented size choices are multi-select checkboxes rather than the canvas's single-select
   strip, because the specification's constraints are additive;
 - the canvas's 0.32–0.50 ink label washes are lifted to the 0.55 step, the dimmest that clears
   4.5:1; the ladder above keeps its order, so the hierarchy survives;
 - the type ramp is the canvas's own, lifted uniformly by ~1.25× to an 11 px floor;
+- **two adaptations recorded above the fold were withdrawn on 2026-08-21**, because the design is
+  the record and anything it does not draw is not on the screen: the toolbar's manufacturer,
+  hardpoint and price controls with their constraint chips (FR-002), and everything the reference
+  inspector leaves out of its five figures, one price and mount chips (FR-004). Both divergences,
+  and what is left open by them, are recorded in [hull-catalogue.md](./hull-catalogue.md#divergence-from-fr-002)
+  and [hull-detail.md](./hull-detail.md#divergence-from-fr-004);
 - the library lists working records, unsupported and malformed entries, and the retention and quota
   states the mock does not depict, and it never evicts anything on its own;
 - the share value stays selectable after a copy or share failure, and a refused encode clears the

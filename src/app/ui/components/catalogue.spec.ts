@@ -11,9 +11,11 @@ function hull(overrides: Partial<HullSummary> = {}): HullSummary {
     symbol: 'Anaconda',
     name: localized('Anaconda'),
     manufacturer: localized('Faulcon DeLacy'),
-    size: 'Large',
-    hardpoints: '1 huge, 4 large, 2 medium, 1 small',
-    price: '146,969,450 CR',
+    size: 'LRG',
+    sizeText: 'Large',
+    hardpoints: '1H 4L 2M 1S',
+    hardpointsText: '1 huge, 4 large, 2 medium, 1 small',
+    price: '146.97',
     selected: false,
     ...overrides,
   };
@@ -50,8 +52,8 @@ const columns = [
   },
   {
     field: 'price',
-    label: 'Retail price',
-    sortActionLabel: 'Sort by Retail price, ascending',
+    label: 'Price Mcr',
+    sortActionLabel: 'Sort by Price Mcr, ascending',
     sorted: false,
     direction: 'ascending' as const,
     numeric: true,
@@ -62,24 +64,27 @@ const viewInputs = {
   caption: 'Hulls in the Almanac',
   columns,
   hulls: [hull()],
-  openLabel: (candidate: HullSummary) => `View ${candidate.name.text}`,
 };
 
 describe('HullSummaryCard', () => {
+  // The reference compresses the labels away and shortens the codes; both the
+  // labels and the spelled-out values stay in the record for a reader.
   it('pairs every fact with the label that names it', () => {
-    const fixture = renderComponent(HullSummaryCard, { hull: hull(), openLabel: 'View Anaconda' });
+    const fixture = renderComponent(HullSummaryCard, { hull: hull() });
     const terms = [...element(fixture).querySelectorAll('dt')].map(textOf);
-    const values = [...element(fixture).querySelectorAll('dd')].map(textOf);
+    const text = textOf(element(fixture));
 
-    expect(terms).toEqual(['Manufacturer', 'Size', 'Hardpoints', 'Retail price']);
-    expect(values[1]).toBe('Large');
-    expect(values[3]).toContain('146,969,450');
+    expect(terms).toEqual(['Size', 'Ship', 'Price Mcr']);
+    expect(text).toContain('LRG');
+    expect(text).toContain('Large');
+    expect(text).toContain('1H 4L 2M 1S');
+    expect(text).toContain('1 huge, 4 large, 2 medium, 1 small');
+    expect(text).toContain('146.97');
   });
 
   it('states an unavailable fact in words rather than as a zero', () => {
     const fixture = renderComponent(HullSummaryCard, {
-      hull: hull({ price: null, size: null }),
-      openLabel: 'View Anaconda',
+      hull: hull({ price: null, size: null, sizeText: null }),
     });
     const text = textOf(element(fixture));
 
@@ -87,27 +92,23 @@ describe('HullSummaryCard', () => {
     expect(text).not.toContain('0 CR');
   });
 
-  it('carries selection in text and programmatic state, not only in colour', () => {
-    const plain = renderComponent(HullSummaryCard, { hull: hull(), openLabel: 'View' });
-    const selected = renderComponent(HullSummaryCard, {
-      hull: hull({ selected: true }),
-      openLabel: 'View',
-    });
+  it('carries selection in programmatic state, not only in colour', () => {
+    const plain = renderComponent(HullSummaryCard, { hull: hull() });
+    const selected = renderComponent(HullSummaryCard, { hull: hull({ selected: true }) });
 
     expect(query(plain, 'article').getAttribute('aria-current')).toBeNull();
     expect(query(selected, 'article').getAttribute('aria-current')).toBe('true');
     expect(textOf(element(selected))).toContain('Currently viewing');
   });
 
-  it('names the hull it opens, so the action is not a bare “View”', () => {
-    const fixture = renderComponent(HullSummaryCard, {
-      hull: hull(),
-      openLabel: 'View Anaconda',
-    });
+  it('names the hull it opens, so the action is not a bare hull name', () => {
+    const fixture = renderComponent(HullSummaryCard, { hull: hull() });
     let opened: string | null = null;
     fixture.componentInstance.opened.subscribe((symbol) => (opened = symbol));
 
-    query(fixture, 'edsb-action-button button').click();
+    const open = query(fixture, '.hull-card__open');
+    expect(open.getAttribute('aria-label')).toBe('View Anaconda');
+    (open as HTMLButtonElement).click();
 
     expect(opened).toBe('Anaconda');
   });
@@ -124,6 +125,8 @@ describe('ResponsiveCatalogueView', () => {
         (header) => header.getAttribute('scope') === 'col',
       ),
     ).toBe(true);
+    // The reference opens each row with a marker column of its own.
+    expect(element(fixture).querySelectorAll('thead th')).toHaveLength(columns.length + 1);
     expect(query(fixture, 'tbody th').getAttribute('scope')).toBe('row');
   });
 
@@ -147,8 +150,8 @@ describe('ResponsiveCatalogueView', () => {
     const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
     const headers = [...element(fixture).querySelectorAll('thead th')];
 
-    expect(headers[0]?.getAttribute('aria-sort')).toBe('ascending');
-    expect(headers[1]?.getAttribute('aria-sort')).toBeNull();
+    expect(headers[1]?.getAttribute('aria-sort')).toBe('ascending');
+    expect(headers[2]?.getAttribute('aria-sort')).toBeNull();
   });
 
   it('emits the field a header asks to sort by', () => {
@@ -190,6 +193,7 @@ describe('ResponsiveCatalogueView', () => {
     });
 
     expect(query(fixture, 'tbody tr').getAttribute('aria-current')).toBe('true');
+    expect(textOf(query(fixture, '.catalogue__mark'))).toBe('◆');
     expect(textOf(element(fixture))).toContain('Currently viewing');
   });
 
@@ -222,33 +226,16 @@ describe('CollectionToolbar', () => {
       { value: 'large', label: 'Large' },
     ],
     selectedSizes: ['large'],
-    manufacturerOptions: [
-      { value: '', label: 'Any' },
-      { value: 'Gutamaya', label: 'Gutamaya' },
-    ],
-    selectedManufacturer: 'Gutamaya',
-    hardpointOptions: [
-      { value: '', label: 'Any' },
-      { value: '4', label: 'Class 4' },
-    ],
-    selectedHardpointClass: '4',
-    priceMin: '1000',
-    priceMax: '',
     sortOptions: [
-      { value: 'name', label: 'Ship' },
-      { value: 'price', label: 'Retail price' },
+      { value: 'name', label: 'Ship', actionLabel: 'Sort by Ship, ascending' },
+      { value: 'price', label: 'Price Mcr', actionLabel: 'Sort by Price Mcr, ascending' },
     ],
     sort: {
       field: 'price',
       direction: 'descending' as const,
-      text: 'Sorted by Retail price, descending',
-      toggleLabel: 'Sort by Retail price, ascending',
+      text: 'Sorted by Price Mcr, descending',
+      toggleLabel: 'Sort by Price Mcr, ascending',
     },
-    constraints: [
-      { id: 'query', label: 'Search: cutter', removeLabel: 'Remove filter: Search: cutter' },
-      { id: 'size:large', label: 'Size: Large', removeLabel: 'Remove filter: Size: Large' },
-    ],
-    countText: '2 of 48 hulls shown',
   };
 
   it('gives search the most prominent position and a real label', () => {
@@ -259,67 +246,42 @@ describe('CollectionToolbar', () => {
     expect(textOf(element(fixture).querySelector('label'))).toBe('Search hulls');
   });
 
-  it('offers every facet as a labelled control', () => {
+  // The reference toolbar is a search field, a size strip and — compact only —
+  // a row of sort chips. Nothing else is drawn, so nothing else is rendered.
+  it('draws only the controls the reference draws', () => {
     const fixture = renderComponent(CollectionToolbar, toolbarInputs);
     const text = textOf(element(fixture));
 
+    expect(text).toContain('Search hulls');
     expect(text).toContain('Landing pad size');
-    expect(text).toContain('Manufacturer');
-    expect(text).toContain('Hardpoint class');
-    expect(text).toContain('Lowest retail price');
-    expect(text).toContain('Highest retail price');
+    expect(element(fixture).querySelectorAll('select')).toHaveLength(0);
+    expect(text).not.toContain('Manufacturer');
+    expect(text).not.toContain('Lowest retail price');
+    expect(text).not.toContain('Active filters');
   });
 
-  it('states the current order and what the toggle would do', () => {
+  it('marks the order in force and says what re-choosing it would do', () => {
     const fixture = renderComponent(CollectionToolbar, toolbarInputs);
-    const text = textOf(element(fixture));
+    const chips = [...element(fixture).querySelectorAll('.toolbar__sort-chip')];
 
-    expect(text).toContain('Sorted by Retail price, descending');
-    expect(text).toContain('Sort by Retail price, ascending');
-  });
-
-  it('lists every active constraint with its own removing action', () => {
-    const fixture = renderComponent(CollectionToolbar, toolbarInputs);
-    const removed: string[] = [];
-    fixture.componentInstance.constraintRemoved.subscribe((id) => removed.push(id));
-
-    const buttons = [...element(fixture).querySelectorAll('.toolbar__constraint-list button')];
-    expect(buttons.map(textOf)).toEqual([
-      'Remove filter: Search: cutter',
-      'Remove filter: Size: Large',
-    ]);
-
-    buttons[1]!.dispatchEvent(new MouseEvent('click'));
-    expect(removed).toEqual(['size:large']);
-  });
-
-  it('says so when nothing is narrowing the collection', () => {
-    const fixture = renderComponent(CollectionToolbar, { ...toolbarInputs, constraints: [] });
-
-    expect(textOf(element(fixture))).toContain('No filters are active.');
-  });
-
-  it('states the match count as text', () => {
-    const fixture = renderComponent(CollectionToolbar, toolbarInputs);
-
-    expect(textOf(query(fixture, '.toolbar__count'))).toBe('2 of 48 hulls shown');
+    expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+    // Every chip says what activating it would do, not just which field it is.
+    expect(chips[1]!.getAttribute('aria-label')).toBe('Sort by Price Mcr, ascending');
+    expect(chips[0]!.getAttribute('aria-label')).toBe('Sort by Ship, ascending');
   });
 
   it('emits each change as intent rather than acting on it', () => {
     const fixture = renderComponent(CollectionToolbar, toolbarInputs);
     const events: string[] = [];
     fixture.componentInstance.searchChanged.subscribe((value) => events.push(`search:${value}`));
-    fixture.componentInstance.sortDirectionToggled.subscribe(() => events.push('direction'));
-    fixture.componentInstance.cleared.subscribe(() => events.push('cleared'));
+    fixture.componentInstance.sortFieldChanged.subscribe((field) => events.push(`sort:${field}`));
 
     const search = query(fixture, 'input[type="search"]') as HTMLInputElement;
     search.value = 'adder';
     search.dispatchEvent(new Event('input'));
 
-    const buttons = [...element(fixture).querySelectorAll('button')];
-    buttons.find((button) => textOf(button) === 'Sort by Retail price, ascending')!.click();
-    buttons.find((button) => textOf(button) === 'Clear all filters')!.click();
+    (query(fixture, '.toolbar__sort-chip') as HTMLButtonElement).click();
 
-    expect(events).toEqual(['search:adder', 'direction', 'cleared']);
+    expect(events).toEqual(['search:adder', 'sort:name']);
   });
 });

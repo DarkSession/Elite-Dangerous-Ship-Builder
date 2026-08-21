@@ -61,7 +61,7 @@ describe('App', () => {
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
 
-    expect(text).toContain(BUNDLED_ENGLISH['app.name']);
+    expect(text).toContain(BUNDLED_ENGLISH['navigation.library']);
     expect(text).not.toMatch(/\{\{/);
   });
 

@@ -376,6 +376,22 @@ with feature 011's Phase 7, which supplies the extracted vocabulary these tasks 
 - [x] T117 Replace the negative-only reconciliation in `design/reference-review.md` with both halves of quickstart Scenario 10: the built-output checks and a part-by-part composition table (depends on T112, T113, T114, T115, T116)
 - [x] T118 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T117)
 
+### Phase 8: Nothing the design does not draw
+
+**Goal**: the screens carry what the reference draws and nothing else. Phase 7 composed the
+reference's arrangement but kept additions beside it — a folded facet panel, a second page heading,
+a back link, spelled-out codes, a labelled selection — and those additions were rejected on
+2026-08-21. Every removal that collides with a stated requirement is recorded in the screen's own
+design file rather than made silently.
+
+- [x] T119 Strip `src/app/ui/components/collection-toolbar/` to canvas 1a's search field and size strip, add canvas 1b's compact sort chips, and remove the manufacturer, hardpoint, price, order and constraint controls with the facade's constraint-view surface (`constraints`, `removeConstraint`, `clearConstraints`)
+- [x] T120 Record the FR-002 collision in `design/hull-catalogue.md` — what the reference draws, what was withdrawn, what remains on the facade and what is left open (depends on T119)
+- [x] T121 Move the screen's name and its one count into the command bar in `src/app/ui/components/app-frame/`, publish them through `LocaleStore.page()` and the new `ScreenChrome`, drop `AppFrame`'s product name and the current screen's own navigation entry, and remove the duplicate `h1`, description and count from all four routes
+- [x] T122 Strip `src/app/features/hull-detail/` to canvas 1a's rail: artwork, identity line, five figures, mount chips, one price, the hull action and canvas 1b's back arrow — no disclosures, no framing prose, no slot layout
+- [x] T123 Record the FR-004 collision in `design/hull-detail.md`, including what `hullDetailFacts` still computes and where `SlotLayout` is likely to land (depends on T122)
+- [x] T124 Draw canvas 1a/1b's manifest values as the reference draws them: the amber lozenge in its own marker column, `LRG`/`MED`/`SML`, `2H 2L 1M 2S`, prices in Mcr — each shortened code carrying its spelled-out form for readers, and the selection marked rather than labelled
+- [x] T125 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T119, T121, T122, T124)
+
 ---
 
 ## Notes

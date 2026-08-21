@@ -255,6 +255,9 @@ almost entirely in the non-colour decisions.
 - [x] T109 Bound both tracks of `region-pair` to the reference's `1fr` plus fixed rail in `src/styles/_responsive.scss` (depends on T106)
 - [x] T110 Record the extraction outcome, the one deliberate transform and what the first implementation discarded in `specs/011-interface-foundations/design/reference-review.md` (depends on T101)
 - [x] T111 Run `pnpm run check` and fix every divergence the ten Playwright projects, the axe scans and the computed contrast assertions report against the extracted tokens (depends on T107, T108, T109)
+- [x] T112 Give the shell the reference's command bar: the screen's own name as the document's one `h1`, the screen's count beside it, no product name, and no navigation entry for the screen already showing (`src/app/ui/components/app-frame/`, `src/app/features/shared/screen-chrome.ts`, `src/app/features/shared/app-navigation.ts`)
+- [x] T113 Add the container step below `medium` that the reference's 340px rail needs for a two-column metric grid, and span a lone trailing cell across the row (`src/styles/_responsive.scss`, `src/app/ui/components/metric-group/metric-group.scss`)
+- [x] T114 Stop the shared clipping scan reporting visually hidden content as cut off, and exclude `aria-hidden` decoration from the visible-text half of the name-matches-visible-text assertion (`e2e/accessibility/assertions.ts`)
 
 ---
 

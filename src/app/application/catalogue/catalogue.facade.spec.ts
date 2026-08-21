@@ -47,7 +47,8 @@ describe('CatalogueFacade', () => {
     expect(row.manufacturer.text).not.toBeNull();
     expect(row.size).not.toBeNull();
     expect(row.hardpoints.length).toBeGreaterThan(0);
-    expect(row.price).toContain('CR');
+    // The manifest column is priced in Mcr, as the reference draws it.
+    expect(row.price).toMatch(/^\d+(\.\d+)?$/);
   });
 
   it('narrows to the hulls matching a search over the displayed text', () => {
@@ -60,58 +61,27 @@ describe('CatalogueFacade', () => {
     expect(catalogue.count().unconstrained).toBe(false);
   });
 
-  it('narrows by every facet the toolbar offers', () => {
-    const catalogue = facade();
-
+  // FR-002's filtering, which the reference toolbar draws no controls for.
+  // The capability is here and tested; only the manufacturer, hardpoint and
+  // price controls are absent from the screen.
+  it('narrows by every facet FR-002 names', () => {
+    let catalogue = facade();
     catalogue.changeSizes(['large']);
     const large = catalogue.rows().length;
     expect(large).toBeGreaterThan(0);
     expect(large).toBeLessThan(SHIPS.length);
 
-    catalogue.clearConstraints();
+    catalogue = facade();
     catalogue.changeManufacturers([catalogue.manufacturers()[0]!]);
     expect(catalogue.rows().length).toBeGreaterThan(0);
 
-    catalogue.clearConstraints();
+    catalogue = facade();
     catalogue.changeHardpointClasses([4]);
     expect(catalogue.rows().length).toBeGreaterThan(0);
 
-    catalogue.clearConstraints();
+    catalogue = facade();
     catalogue.changePrice(0, 1);
     expect(catalogue.rows().length).toBeLessThan(SHIPS.length);
-  });
-
-  it('names every active constraint with its own removing action', () => {
-    const catalogue = facade();
-    catalogue.changeSearch('cutter');
-    catalogue.changeSizes(['large']);
-
-    const constraints = catalogue.constraints();
-
-    expect(constraints).toHaveLength(2);
-    for (const constraint of constraints) {
-      expect(constraint.label.length).toBeGreaterThan(0);
-      expect(constraint.removeLabel).toContain(constraint.label);
-    }
-  });
-
-  it('removes one constraint without disturbing the others', () => {
-    const catalogue = facade();
-    catalogue.changeSearch('cutter');
-    catalogue.changeSizes(['large']);
-
-    catalogue.removeConstraint('size:large');
-
-    expect(catalogue.constraints().map((constraint) => constraint.id)).toEqual(['query']);
-  });
-
-  it('ignores a request to remove a constraint that is not active', () => {
-    const catalogue = facade();
-    catalogue.changeSearch('cutter');
-
-    catalogue.removeConstraint('size:large');
-
-    expect(catalogue.constraints()).toHaveLength(1);
   });
 
   it('starts a new sort field ascending and flips the current one', () => {
@@ -131,7 +101,7 @@ describe('CatalogueFacade', () => {
     const catalogue = facade();
     catalogue.setSort({ field: 'price', direction: 'descending' });
 
-    expect(catalogue.sortText()).toContain('Retail price');
+    expect(catalogue.sortText()).toContain('Price Mcr');
     expect(catalogue.sortText()).toContain('descending');
     expect(catalogue.sortActionLabel('price')).toContain('ascending');
   });
@@ -229,34 +199,6 @@ describe('CatalogueFacade', () => {
       }
 
       expect(said.size).toBe(10);
-    });
-  });
-
-  describe('constraints, said in words', () => {
-    it('names every kind of active constraint and offers to remove it', () => {
-      const catalogue = facade();
-
-      catalogue.changeSearch('cutter');
-      catalogue.changeSizes(['large']);
-      catalogue.changeManufacturers(['Gutamaya']);
-      catalogue.changeHardpointClasses([4]);
-      catalogue.changePrice(1_000_000, 900_000_000);
-
-      const constraints = catalogue.constraints();
-      const ids = constraints.map((constraint) => constraint.id);
-
-      expect(ids).toContain('query');
-      expect(ids.some((id) => id.startsWith('size:'))).toBe(true);
-      expect(ids.some((id) => id.startsWith('manufacturer:'))).toBe(true);
-      expect(ids.some((id) => id.startsWith('hardpoint:'))).toBe(true);
-      expect(ids).toContain('price-min');
-      expect(ids).toContain('price-max');
-      for (const constraint of constraints) {
-        expect(constraint.label.length).toBeGreaterThan(0);
-        expect(constraint.removeLabel.length).toBeGreaterThan(0);
-        // Never a bare value: the label says which facet it narrows.
-        expect(constraint.removeLabel).toContain(constraint.label);
-      }
     });
   });
 });

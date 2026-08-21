@@ -40,9 +40,11 @@ test.describe('the catalogue, at full size', () => {
       await page.getByRole('checkbox', { name: 'Large' }).check();
     });
     const ordering = await timeConstraint(page, async () => {
+      // The reference orders the wide manifest from its own column headers.
       await page
-        .getByRole('combobox', { name: 'Order', exact: true })
-        .selectOption({ label: 'Retail price' });
+        .getByRole('button', { name: /^Sort by Price Mcr, / })
+        .first()
+        .click();
     });
 
     for (const [what, elapsed] of [

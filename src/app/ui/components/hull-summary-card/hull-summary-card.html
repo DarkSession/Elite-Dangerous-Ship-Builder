@@ -1,52 +1,62 @@
+<!--
+  The reference's compact hull record: the size code on the leading edge, the
+  name over one monospace `manufacturer · mounts` line, the price and its unit
+  on the trailing edge (canvas 1b `.sm-row`). Each fact keeps the label that
+  names it; only the eye sees the compressed line.
+-->
 <article class="hull-card" [attr.aria-labelledby]="cardId" [attr.aria-current]="current()">
-  <div class="hull-card__identity">
-    <h2 class="hull-card__name" [id]="cardId">
-      <edsb-game-text
-        [text]="hull().name.text"
-        [language]="hull().name.language"
-        [translationState]="hull().name.translationState"
-      />
-    </h2>
-    @if (hull().selected) {
-      <p class="hull-card__selected">{{ selectedLabel() }}</p>
-    }
-  </div>
-
   <dl class="hull-card__facts">
-    <dt>{{ manufacturerLabel() }}</dt>
-    <dd>
-      <edsb-game-text
-        [text]="hull().manufacturer.text"
-        [language]="hull().manufacturer.language"
-        [translationState]="hull().manufacturer.translationState"
-      />
-    </dd>
-
     <dt>{{ sizeLabel() }}</dt>
-    <dd>
-      @if (hull().size; as size) {
-        {{ size }}
+    <dd class="hull-card__size">
+      @if (hull().sizeText; as size) {
+        <span aria-hidden="true">{{ hull().size }}</span>
+        <span class="hull-card__spoken">{{ size }}</span>
       } @else {
         <edsb-unavailable-value [label]="sizeLabel()" />
       }
     </dd>
 
-    <dt>{{ hardpointsLabel() }}</dt>
-    <dd>{{ hull().hardpoints }}</dd>
+    <dt class="hull-card__spoken">{{ nameLabel() }}</dt>
+    <dd class="hull-card__identity">
+      <h2 class="hull-card__name" [id]="cardId">
+        <button
+          type="button"
+          class="hull-card__open"
+          [attr.aria-label]="openActionLabel()"
+          (click)="opened.emit(hull().symbol)"
+        >
+          <edsb-game-text
+            [text]="hull().name.text"
+            [language]="hull().name.language"
+            [translationState]="hull().name.translationState"
+          />
+        </button>
+      </h2>
 
-    <dt>{{ priceLabel() }}</dt>
-    <dd>
+      <p class="hull-card__line">
+        <edsb-game-text
+          [text]="hull().manufacturer.text"
+          [language]="hull().manufacturer.language"
+          [translationState]="hull().manufacturer.translationState"
+        />
+        <span class="hull-card__separator" aria-hidden="true">·</span>
+        <span aria-hidden="true">{{ hull().hardpoints }}</span>
+        <span class="hull-card__spoken">{{ hull().hardpointsText }}</span>
+      </p>
+    </dd>
+
+    <dt class="hull-card__spoken">{{ priceLabel() }}</dt>
+    <dd class="hull-card__price">
       @if (hull().price; as price) {
-        <span class="hull-card__price">{{ price }}</span>
+        <span class="hull-card__amount">{{ price }}</span>
+        <span class="hull-card__unit">{{ priceUnit() }}</span>
       } @else {
         <edsb-unavailable-value [label]="priceLabel()" />
       }
     </dd>
   </dl>
 
-  <edsb-action-button
-    [label]="openLabel()"
-    emphasis="quiet"
-    (activated)="opened.emit(hull().symbol)"
-  />
+  @if (hull().selected) {
+    <p class="hull-card__selected">{{ selectedLabel() }}</p>
+  }
 </article>

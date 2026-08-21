@@ -27,14 +27,18 @@ function visibleHulls(page: Page) {
   return page.locator('[data-hull-symbol]:visible');
 }
 
-/** The toolbar's own controls, away from the live region that echoes them. */
-function toolbar(page: Page) {
-  return page.getByRole('group', { name: /active filters/i }).locator('..');
-}
-
 const search = (page: Page) => page.getByRole('searchbox', { name: 'Search hulls' });
-const orderField = (page: Page) => page.getByRole('combobox', { name: 'Order', exact: true });
-const clearAll = (page: Page) => page.getByRole('button', { name: 'Clear all filters' });
+
+/** The command bar, where the reference puts the screen's one count. */
+const commandBar = (page: Page) => page.getByRole('banner');
+
+/**
+ * The control that orders the manifest: a column header where the manifest is
+ * a table, a sort chip where it is a card list. The reference draws one or the
+ * other, never both, so the journey asks for the action rather than the widget.
+ */
+const sortControl = (page: Page, field: string) =>
+  page.getByRole('button', { name: new RegExp(`^Sort by ${field}, `) }).first();
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/ships');
@@ -43,79 +47,67 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('hull catalogue', () => {
+  // The reference carries the manifest's count in the command bar beside the
+  // screen's own name, and nowhere else (canvas 1a, canvas 1b).
   test('lists every installed hull before anything is narrowed', async ({ page }) => {
-    await expect(page.getByText('48 hulls', { exact: true })).toBeVisible();
-    await expect(toolbar(page).getByText(/48 of 48 hulls shown/)).toBeVisible();
+    await expect(commandBar(page).getByText(/48 of 48 hulls shown/)).toBeVisible();
   });
 
   test('states the match count as text, and updates it', async ({ page }) => {
     await search(page).fill('anaconda');
 
     await expect(visibleHulls(page)).not.toHaveCount(48);
-    await expect(toolbar(page).getByText(/of 48 hulls shown/)).toBeVisible();
+    await expect(commandBar(page).getByText(/1 of 48 hulls shown/)).toBeVisible();
   });
 
-  test('narrows by every facet the toolbar offers', async ({ page }) => {
+  // The reference toolbar narrows by search and landing-pad size. Filtering by
+  // manufacturer, hardpoint class and price is FR-002 capability the reference
+  // draws no control for; it is covered at the facade rather than here.
+  test('narrows by search and by landing-pad size', async ({ page }) => {
     await page.getByRole('checkbox', { name: 'Large' }).check();
     await expect(visibleHulls(page)).not.toHaveCount(48);
 
-    await clearAll(page).click();
+    await page.getByRole('checkbox', { name: 'Large' }).uncheck();
     await expect(visibleHulls(page)).toHaveCount(48);
 
-    await page.getByRole('combobox', { name: 'Manufacturer' }).selectOption('Gutamaya');
-    await expect(visibleHulls(page)).not.toHaveCount(48);
-
-    await clearAll(page).click();
-    await page.getByRole('combobox', { name: 'Hardpoint class' }).selectOption('4');
-    await expect(visibleHulls(page)).not.toHaveCount(48);
-
-    await clearAll(page).click();
-    await page.getByRole('textbox', { name: 'Lowest retail price' }).fill('100000000');
-    await expect(visibleHulls(page)).not.toHaveCount(48);
-  });
-
-  test('names each active constraint and removes exactly the one asked for', async ({ page }) => {
     await search(page).fill('type');
-    await page.getByRole('checkbox', { name: 'Large' }).check();
-
-    await expect(page.getByRole('button', { name: 'Remove filter: Search: type' })).toBeVisible();
-    await page.getByRole('button', { name: 'Remove filter: Size: Large' }).click();
-
-    await expect(page.getByRole('button', { name: 'Remove filter: Size: Large' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Remove filter: Search: type' })).toBeVisible();
+    await expect(visibleHulls(page)).not.toHaveCount(48);
   });
 
-  test('says why a constrained list is empty, and offers a way out', async ({ page }) => {
+  test('says why a constrained list is empty', async ({ page }) => {
     await search(page).fill('no such hull anywhere');
 
     await expect(visibleHulls(page)).toHaveCount(0);
-    await expect(page.getByText(/no hull matches these filters/i)).toBeVisible();
-    await expect(toolbar(page).getByText(/0 of 48 hulls shown/)).toBeVisible();
-    await expect(clearAll(page)).toBeVisible();
+    // Two renderings of one list, one of them on screen: the empty statement
+    // belongs to whichever composition this width is showing.
+    await expect(page.locator('.catalogue__empty:visible')).toHaveText(
+      /no hull in the catalogue matches that filter/i,
+    );
+    await expect(commandBar(page).getByText(/0 of 48 hulls shown/)).toBeVisible();
   });
 
   test('sorts in both directions on every field, and says which way', async ({ page }) => {
-    for (const field of ['Ship', 'Manufacturer', 'Size', 'Hardpoints', 'Retail price']) {
-      await orderField(page).selectOption({ label: field });
-      await expect(page.getByText(`Sorted by ${field}, ascending`)).toBeVisible();
+    for (const field of ['Ship', 'Manufacturer', 'Size', 'Hardpoints', 'Price Mcr']) {
+      const control = sortControl(page, field);
+      const before = await control.getAttribute('aria-label');
 
-      await page
-        .getByRole('button', { name: `Sort by ${field}, descending` })
-        .first()
-        .click();
-      await expect(page.getByText(`Sorted by ${field}, descending`)).toBeVisible();
+      await control.click();
+      await expect(control).not.toHaveAttribute('aria-label', before!);
+      await expect(control).toHaveAttribute('aria-label', /ascending|descending/);
+
+      await control.click();
+      await expect(control).toHaveAttribute('aria-label', before!);
     }
   });
 
   test('keeps every hull, and its order stable, when the direction flips', async ({ page }) => {
-    await orderField(page).selectOption({ label: 'Size' });
-    await expect(page.getByText('Sorted by Size, ascending')).toBeVisible();
+    const size = sortControl(page, 'Size');
+    await size.click();
     const ascending = await visibleHulls(page).evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('data-hull-symbol')),
     );
 
-    await page.getByRole('button', { name: 'Sort by Size, descending' }).first().click();
-    await expect(page.getByText('Sorted by Size, descending')).toBeVisible();
+    await size.click();
     const descending = await visibleHulls(page).evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('data-hull-symbol')),
     );
@@ -129,7 +121,7 @@ test.describe('hull catalogue', () => {
   test('keeps browsing state out of the route, the fragment and storage', async ({ page }) => {
     await search(page).fill('anaconda');
     await page.getByRole('checkbox', { name: 'Large' }).check();
-    await expect(page.getByRole('button', { name: 'Remove filter: Size: Large' })).toBeVisible();
+    await expect(visibleHulls(page)).toHaveCount(1);
 
     const url = new URL(page.url());
     expect(url.search).toBe('');
@@ -146,23 +138,38 @@ test.describe('hull catalogue', () => {
 
   test('restores constraints, order and place after a trip to hull detail', async ({ page }) => {
     await search(page).fill('type');
-    await orderField(page).selectOption({ label: 'Retail price' });
-    await expect(page.getByText('Sorted by Retail price, ascending')).toBeVisible();
-    const before = await visibleHulls(page).count();
+    await sortControl(page, 'Price Mcr').click();
+    await expect(sortControl(page, 'Price Mcr')).toHaveAttribute(
+      'aria-label',
+      'Sort by Price Mcr, descending',
+    );
+    const before = await visibleHulls(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-hull-symbol')),
+    );
 
     await page.getByRole('button', { name: /View / }).first().click();
-    await expect(page.getByRole('link', { name: 'Back to the shipyard' }).first()).toBeVisible();
-    await page.getByRole('link', { name: 'Back to the shipyard' }).first().click();
+    await expect(page).toHaveURL(/\/ships\/[^/]+$/);
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/ships$/);
 
     await expect(search(page)).toHaveValue('type');
-    await expect(page.getByText('Sorted by Retail price, ascending')).toBeVisible();
-    await expect(visibleHulls(page)).toHaveCount(before);
+    await expect(sortControl(page, 'Price Mcr')).toHaveAttribute(
+      'aria-label',
+      'Sort by Price Mcr, descending',
+    );
+    expect(
+      await visibleHulls(page).evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute('data-hull-symbol')),
+      ),
+    ).toEqual(before);
   });
 
   test('never renders a missing fact as a zero', async ({ page }) => {
     // Every installed hull publishes every catalogue fact, so the assertion is
     // the negative: nothing is being substituted for an absence.
-    await expect(page.getByText('0 CR', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('0.00', { exact: true })).toHaveCount(0);
   });
 
   test('never scrolls the document sideways', async ({ page }) => {

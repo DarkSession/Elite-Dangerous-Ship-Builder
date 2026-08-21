@@ -4,13 +4,17 @@
 -->
 <div class="catalogue__manifest" role="group" [attr.aria-labelledby]="captionId">
   <table class="catalogue__table">
+    <!-- The reference's manifest starts at the column headers, so the caption
+         names the table for a reader without being drawn. A caption cannot be
+         positioned out of flow, so the span inside it is what is hidden. -->
     <caption [id]="captionId">
-      {{
-        caption()
-      }}
+      <span class="catalogue__spoken">{{ caption() }}</span>
     </caption>
     <thead>
       <tr>
+        <th scope="col">
+          <span class="catalogue__spoken">{{ markerLabel() }}</span>
+        </th>
         @for (column of columns(); track column.field) {
           <th scope="col" [attr.aria-sort]="ariaSort(column)">
             <!--
@@ -34,6 +38,9 @@
     <tbody>
       @for (hull of hulls(); track hull.symbol) {
         <tr [attr.aria-current]="currentFor(hull)" [attr.data-hull-symbol]="hull.symbol">
+          <!-- The reference opens a current row with an amber lozenge in its
+               own narrow column (canvas 1a `.sy-mark`). -->
+          <td class="catalogue__mark" aria-hidden="true">{{ hull.selected ? marker : '' }}</td>
           <th scope="row">
             <button
               type="button"
@@ -58,14 +65,18 @@
               [translationState]="hull.manufacturer.translationState"
             />
           </td>
-          <td>
-            @if (hull.size; as size) {
-              {{ size }}
+          <td class="catalogue__code">
+            @if (hull.sizeText; as size) {
+              <span aria-hidden="true">{{ hull.size }}</span>
+              <span class="catalogue__spoken">{{ size }}</span>
             } @else {
               <edsb-unavailable-value />
             }
           </td>
-          <td>{{ hull.hardpoints }}</td>
+          <td class="catalogue__code catalogue__numeric">
+            <span aria-hidden="true">{{ hull.hardpoints }}</span>
+            <span class="catalogue__spoken">{{ hull.hardpointsText }}</span>
+          </td>
           <td class="catalogue__numeric">
             @if (hull.price; as price) {
               {{ price }}
@@ -87,11 +98,7 @@
 <ul class="catalogue__cards">
   @for (hull of hulls(); track hull.symbol) {
     <li [attr.data-hull-symbol]="hull.symbol">
-      <edsb-hull-summary-card
-        [hull]="hull"
-        [openLabel]="openLabel()(hull)"
-        (opened)="hullOpened.emit($event)"
-      />
+      <edsb-hull-summary-card [hull]="hull" (opened)="hullOpened.emit($event)" />
     </li>
   }
 </ul>

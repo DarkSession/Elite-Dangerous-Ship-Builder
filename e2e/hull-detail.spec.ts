@@ -10,29 +10,26 @@ import {
 /**
  * Inspecting a hull, and asking for a stock build.
  *
- * The two things this journey is really about: that every published figure is
- * shown with the unit it is measured in, and that nothing is created until a
- * Commander asks — and then only after anything unsaved has been accounted for.
+ * The two things this journey is really about: that every figure the reference
+ * inspector carries is shown with the unit it is measured in, and that nothing
+ * is created until a Commander asks — and then only after anything unsaved has
+ * been accounted for.
+ *
+ * The reference inspector carries five figures, the mount classes and one
+ * price. FR-004 names many more; that divergence is recorded in the hull-detail
+ * design note rather than asserted here, because this file tests the screen
+ * that exists.
  */
 
 const ANACONDA = '/ships/Anaconda';
 
-/** Every fact FR-004 names, with the unit each is expected to carry. */
+/** Every figure the reference inspector carries, with the unit it shows. */
 const FACTS: readonly (readonly [label: string, unit: string])[] = [
   ['Speed', 'm/s'],
   ['Boost speed', 'm/s'],
   ['Base shield strength', 'MJ'],
   ['Base armour', 'hull points'],
   ['Hull mass', 't'],
-  ['Hull hardness', 'rating, no unit'],
-  ['Mass-lock factor', 'rating, no unit'],
-  ['Crew seats', 'seats'],
-  ['Heat capacity', 'rating, no unit'],
-  ['Heat dissipation', 'thermal load per second'],
-  ['Reserve fuel', 't'],
-  ['Pitch rate', '°/s'],
-  ['Roll rate', '°/s'],
-  ['Yaw rate', '°/s'],
 ];
 
 const detail = (page: Page) => page.getByRole('article').first();
@@ -55,7 +52,12 @@ async function readableText(page: Page): Promise<string> {
  * question this journey is about would then never be asked.
  */
 async function openHullInApp(page: Page, name: string): Promise<void> {
+  // The command bar names the screen it is on and offers only the others, so
+  // this link is the way back from anywhere but the shipyard. Waiting for it is
+  // what keeps the journey behind the navigation that brought us here: without
+  // it the search below can be typed into a manifest that is already leaving.
   await page.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
+  await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search hulls' }).fill(name);
   await page
     .getByRole('button', { name: new RegExp(`View ${name}`, 'i') })
@@ -79,36 +81,37 @@ test.describe('hull detail', () => {
     }
   });
 
-  test('names the viewing condition of each endpoint pair', async ({ page }) => {
+  test('names the viewing condition a figure was measured under', async ({ page }) => {
     const text = await readableText(page);
 
-    expect(text).toContain('at 0 eng pips');
     expect(text).toContain('at 4 eng pips');
   });
 
-  test('separates bare-hull figures from a build’s own results', async ({ page }) => {
-    await expect(page.getByText(/bare-hull figures from the almanac/i)).toBeVisible();
-    await expect(page.getByText(/do not include any fitted module/i)).toBeVisible();
-  });
-
-  test('splits the price into hull only and ready to fly', async ({ page }) => {
+  test('names the manufacturer and the pad class on one identity line', async ({ page }) => {
     const text = await readableText(page);
 
-    expect(text).toContain('hull only');
-    expect(text).toContain('ready to fly');
-    expect(text).toMatch(/cr/);
+    expect(text).toContain('faulcon delacy');
+    expect(text).toContain('large');
   });
 
-  test('shows the slot layout with the game’s own keys, irregular ones included', async ({
-    page,
-  }) => {
+  test('counts the mount classes the hull carries, largest first', async ({ page }) => {
+    const mounts = await detail(page).locator('.detail__mount').allInnerTexts();
+
+    // The design system sets the class names in capitals; the assertion is
+    // about the counts and their order, not about the stylesheet.
+    expect(mounts.map((mount) => mount.replace(/\s+/g, ' ').trim().toLowerCase())).toEqual([
+      '1 huge',
+      '3 large',
+      '2 medium',
+      '2 small',
+    ]);
+  });
+
+  test('shows the hull price as one headline figure in credits', async ({ page }) => {
     const text = await readableText(page);
 
-    expect(text).toContain('core internals');
-    expect(text).toContain('powerplant');
-    // The Anaconda's smallest optional; a derived key would read Slot12_Size1.
-    expect(text).toContain('slot14_size1');
-    expect(text).toContain('cargo hatch');
+    expect(text).toContain('hull price');
+    expect(text).toMatch(/146,969,451\s*cr/);
   });
 
   test('keeps every action usable when the illustration cannot be fetched', async ({ page }) => {
@@ -214,6 +217,7 @@ test.describe('hull detail', () => {
 
     await page.goto(ANACONDA);
     await page.getByRole('button', { name: 'Create a stock build' }).click();
+    await expect(page.getByText('New stock build')).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Create a stock build' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();

@@ -21,48 +21,6 @@
   @include layout.stack(var(--edsb-space-panel));
 }
 
-.catalogue__header {
-  @include layout.wrapping-row(var(--edsb-space-inline));
-
-  justify-content: space-between;
-}
-
-h1 {
-  @include layout.display-title(
-    var(--edsb-text-size-heading-lg),
-    var(--edsb-text-tracking-product)
-  );
-}
-
-.catalogue__total {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
-}
-
-.catalogue__description {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
-  max-inline-size: var(--edsb-layout-prose-max);
-  text-wrap: pretty;
-}
-
-.catalogue__empty {
-  @include layout.stack(var(--edsb-space-stack));
-
-  padding-block: var(--edsb-space-section);
-  max-inline-size: var(--edsb-layout-prose-max);
-  text-align: center;
-  margin-inline: auto;
-}
-
-.catalogue__empty h2 {
-  @include layout.display-title(var(--edsb-text-size-heading-md));
-}
-
-.catalogue__empty p {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
-}
-
 .catalogue__inspector {
   min-inline-size: 0;
 }

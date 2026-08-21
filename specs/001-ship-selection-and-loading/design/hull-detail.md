@@ -5,21 +5,32 @@
 
 ## Composition
 
-- Wide: canvas 1a's inspector rail beside the manifest, with package hull-name heading and no duplicate page landmark. Narrow: canvas 1b's full-screen detail layer with a named back action to the preserved catalogue session and its own route heading.
-- `HullArtwork` loaded from the same-origin package asset path with reserved 3:2 area and temporary-unavailable text.
-- “Hull specifications” `FactList`, explicitly described as bare-hull/catalogue facts rather than active-build results.
-- Facts: manufacturer; size; minimum/four-pip speed and boost; base shield and armour; hull mass; hardness; mass-lock factor; crew seats; heat capacity and dissipation; reserve fuel; min/four-pip pitch, roll and yaw; hull-only and retail costs. Every measured value includes a localized unit.
-- `SlotLayout`, grouped semantically by armour, core, hardpoint, utility, optional and cargo hatch using package-enumerated game keys/sizes/restrictions.
+- Wide: canvas 1a's inspector rail beside the manifest. Narrow: canvas 1b's full-screen detail sheet with the bare back arrow the reference draws. Neither carries a page heading: the command bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
+- `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text.
+- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. Both facts keep their labels in the markup; only the eye sees the compressed line.
+- A ruled two-column `FactList` of the five figures the reference rail carries: speed at four pips, boost, base shield, base armour and hull mass, each with its localized unit.
+- The mount classes the hull carries, under a section rule, as `<count> <CLASS>` chips with the classes it has none of left out.
+- One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
 - Primary `ActionButton` requesting stock-build creation, present only when `getDefaultLoadout(symbol)` succeeds.
 - `InlineNotice`/`ErrorSummary` for default unavailability or unknown symbol.
 
-The reference mock's compact speed/boost/shield/armour/mass/hardpoint/price summary defines the initial hierarchy, not the complete data set. The inspector scrolls or expands below that summary to expose every FR-004 fact and full slot layout. “Hull price” is split into explicitly labeled hull-only and ready-to-fly retail costs.
+### Divergence from FR-004
+
+FR-004 names every published figure — hardness, mass-lock factor, crew seats, heat capacity and dissipation, reserve fuel, the rotation rates — plus both cost fields and the full slot layout. **The reference inspector carries none of them**, on either artboard: canvas 1a's rail and canvas 1b's detail sheet both hold exactly the artwork, the identity line, five figures, the mount chips, one price and two actions.
+
+An earlier build resolved this by folding the remainder into disclosures below the reference composition. That was rejected on 2026-08-21: anything the design does not draw is not on the screen. The screen is the reference composition; FR-004's remaining figures are **not shown**, and this note is the record of that.
+
+What that leaves open, for whoever settles it:
+
+- `hullDetailFacts()` still computes every figure FR-004 names and `HullDetailFacade` still formats them; only five reach the screen. The capability is intact and unit-tested.
+- `SlotLayout` is unused by this screen. Canvas 1c's outfitting slot ledger is where the reference puts a slot layout, so feature 002 is its likely home.
+- Either FR-004 is narrowed to what the reference draws, or the design gains a place to draw the rest. Both are decisions for the requirement's owner, not for the implementation.
 
 ## States
 
 | State                            | Required presentation and behavior                                                                                                                        |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Populated                        | Every available package fact and slot is shown; no build is created by entry.                                                                             |
+| Populated                        | Every figure the reference inspector carries is shown with its unit; no build is created by entry.                                                        |
 | Artwork loading                  | Facts and stock action remain usable; load state is textually available.                                                                                  |
 | Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable. |
 | Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                         |

@@ -3,18 +3,19 @@ import { Router, RouterOutlet } from '@angular/router';
 import { CatalogueFacade } from '../../application/catalogue/catalogue.facade';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
+import { ScreenChrome } from '../shared/screen-chrome';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import type { Choice } from '../../ui/components/choice-group/choice-group';
 import {
   CollectionToolbar,
   type ToolbarSort,
+  type ToolbarSortOption,
 } from '../../ui/components/collection-toolbar/collection-toolbar';
 import {
   ResponsiveCatalogueView,
   type CatalogueColumn,
 } from '../../ui/components/catalogue-view/responsive-catalogue-view';
 import type { HullSummary } from '../../ui/components/hull-summary-card/hull-summary-card';
-import type { SelectOption } from '../../ui/components/select-field/select-field';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import type { CatalogueSortField } from '../../domain/catalogue/catalogue-sort';
 import type { HullSize } from '../../domain/catalogue/hull-catalogue';
@@ -59,22 +60,13 @@ export class ShipCataloguePage {
   readonly #announcements = inject(AnnouncementService);
   readonly #router = inject(Router);
   readonly #restorer = inject(CatalogueAnchorRestorer);
+  readonly #chrome = inject(ScreenChrome);
 
-  readonly heading = this.#messages.messageSignal('catalogue.title');
-  readonly description = this.#messages.messageSignal('catalogue.description');
-  readonly emptyTitle = this.#messages.messageSignal('catalogue.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');
   readonly unavailableFactsNotice = this.#messages.messageSignal('catalogue.facts-unavailable');
 
-  readonly totalText = computed(() =>
-    this.#messages.message('catalogue.total', {
-      count: this.#formatters.integer(this.#catalogue.total),
-    }),
-  );
-
   readonly countText = this.#catalogue.countText;
-  readonly constraints = this.#catalogue.constraints;
   readonly search = computed(() => this.#catalogue.filters().query);
 
   readonly hulls = computed<readonly HullSummary[]>(() => {
@@ -84,7 +76,9 @@ export class ShipCataloguePage {
       name: row.name,
       manufacturer: row.manufacturer,
       size: row.size,
+      sizeText: row.sizeText,
       hardpoints: row.hardpoints,
+      hardpointsText: row.hardpointsText,
       price: row.price,
       selected: row.symbol === selected,
     }));
@@ -141,37 +135,13 @@ export class ShipCataloguePage {
 
   readonly selectedSizes = computed<readonly string[]>(() => this.#catalogue.filters().sizes);
 
-  readonly manufacturerOptions = computed<readonly SelectOption[]>(() => [
-    { value: '', label: this.#messages.message('catalogue.filter.any') },
-    ...this.#catalogue.manufacturers().map((name) => ({ value: name, label: name })),
-  ]);
-
-  readonly selectedManufacturer = computed(() => this.#catalogue.filters().manufacturers[0] ?? '');
-
-  readonly hardpointOptions = computed<readonly SelectOption[]>(() => [
-    { value: '', label: this.#messages.message('catalogue.filter.any') },
-    ...HARDPOINT_CLASSES.map((size) => ({
-      value: String(size),
-      label: this.#messages.message('catalogue.hardpoint.class', {
-        class: this.#formatters.integer(size),
-      }),
-    })),
-  ]);
-
-  readonly selectedHardpointClass = computed(() => {
-    const chosen = this.#catalogue.filters().hardpointClasses[0];
-    return chosen === undefined ? '' : String(chosen);
-  });
-
-  readonly priceMin = computed(() => textOfBound(this.#catalogue.filters().price.min));
-  readonly priceMax = computed(() => textOfBound(this.#catalogue.filters().price.max));
-
-  readonly sortOptions = computed<readonly SelectOption[]>(() =>
+  readonly sortOptions = computed<readonly ToolbarSortOption[]>(() =>
     COLUMNS.map((column) => ({
       value: column.field,
       label: this.#messages.message(
         `catalogue.sort.field.${column.field}` as 'catalogue.sort.field.name',
       ),
+      actionLabel: this.#catalogue.sortActionLabel(column.field),
     })),
   );
 
@@ -185,13 +155,15 @@ export class ShipCataloguePage {
     };
   });
 
-  /** The label of the action opening one hull, named after that hull. */
-  readonly openLabel = computed(
-    () => (hull: HullSummary) =>
-      this.#messages.message('catalogue.open-hull', { hull: hull.name.text ?? hull.symbol }),
-  );
-
   constructor() {
+    // The reference carries the manifest's count in the command bar beside the
+    // screen's own name, and nowhere else (canvas 1a "48 SHIPS", canvas 1b
+    // "8 OF 48 SHIPS").
+    effect((onCleanup) => {
+      this.#chrome.setCount(this.countText());
+      onCleanup(() => this.#chrome.setCount(null));
+    });
+
     // Returning from hull detail puts the Commander back where they were —
     // whether they used the named back action or the browser's own, because
     // both close the child route and nothing else does.
@@ -238,43 +210,10 @@ export class ShipCataloguePage {
     this.#catalogue.changeSizes(sizes.filter(isHullSize));
   }
 
-  changeManufacturer(manufacturer: string): void {
-    this.#catalogue.changeManufacturers(manufacturer.length > 0 ? [manufacturer] : []);
-  }
-
-  changeHardpointClass(value: string): void {
-    const parsed = Number.parseInt(value, 10);
-    this.#catalogue.changeHardpointClasses(Number.isInteger(parsed) ? [parsed] : []);
-  }
-
-  changePriceMin(value: string): void {
-    this.#catalogue.changePrice(parseBound(value), this.#catalogue.filters().price.max);
-  }
-
-  changePriceMax(value: string): void {
-    this.#catalogue.changePrice(this.#catalogue.filters().price.min, parseBound(value));
-  }
-
-  /** A column header: choose the field, or reverse it if it is already chosen. */
+  /** A column header or a sort chip: choose the field, or reverse it if it is
+   * already the one in force. */
   changeSort(field: string): void {
     this.#catalogue.changeSort(field as CatalogueSortField);
-  }
-
-  /** The toolbar's field select: choose what to order by, nothing more. */
-  selectSortField(field: string): void {
-    this.#catalogue.selectSortField(field as CatalogueSortField);
-  }
-
-  toggleSortDirection(): void {
-    this.#catalogue.toggleSortDirection();
-  }
-
-  removeConstraint(id: string): void {
-    this.#catalogue.removeConstraint(id);
-  }
-
-  clearConstraints(): void {
-    this.#catalogue.clearConstraints();
   }
 
   /** Remembers where the Commander was, then opens the hull. */
@@ -286,18 +225,4 @@ export class ShipCataloguePage {
 
 function isHullSize(value: string): value is HullSize {
   return value === 'small' || value === 'medium' || value === 'large';
-}
-
-/** An empty bound is "no limit", not zero. */
-function parseBound(value: string): number | null {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return null;
-  }
-  const parsed = Number(trimmed.replace(/[^\d.-]/g, ''));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function textOfBound(value: number | null): string {
-  return value === null ? '' : String(value);
 }

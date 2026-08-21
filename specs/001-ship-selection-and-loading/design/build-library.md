@@ -6,7 +6,7 @@
 ## Composition
 
 - Wide: canvas 1a's centered, route-backed saved-build modal over an inert originating screen. Narrow: canvas 1b's full-screen saved-build layer with a named return action. Direct navigation to `/builds` supplies an ordinary page background while keeping the same content/heading.
-- One “Saved builds”/“Builds” heading, create/select-hull action where appropriate, record count and storage summary/status.
+- No page heading and no count of its own: the command bar carries both, as it does on every screen (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)). Create/select-hull action where appropriate, and the storage summary/status.
 - Semantic `ResponsiveRecordList` divided by labeled working and named groups without changing one logical reading order.
 - `SavedBuildCard` showing local name or working state, package hull text, locale-formatted last modification and recorded validation valid/complete state. Note presence/content is local and exposed through a named editor.
 - Named actions: open, rename, duplicate and delete. Working actions: open, name/save as a named copy, duplicate as a newly named copy and explicit delete/discard. The tab working record remains separate when a named copy is created.

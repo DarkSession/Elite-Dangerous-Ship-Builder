@@ -48,14 +48,14 @@
   @include layout.command-flag;
 }
 
-.frame__product {
+.frame__title {
   @include layout.display-title(
     var(--edsb-text-size-heading-md),
     var(--edsb-text-tracking-product)
   );
 }
 
-.frame__context {
+.frame__count {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 }
 
@@ -65,22 +65,22 @@
   list-style: none;
 }
 
+// The reference puts the bar's trailing controls on a quiet plate behind an
+// amber hairline rather than setting them as bare text (canvas 1a
+// "OPEN SAVED BUILD · 6 / IMPORT / ?", canvas 1b "IMPORT / ?").
 .frame__navigation-link {
   @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-secondary;
 
   min-inline-size: 0;
   padding-inline: var(--edsb-space-inline-loose);
-  background-color: transparent;
-  border-color: transparent;
-  color: var(--edsb-text-subtle);
   text-decoration: none;
 }
 
+// The current entry takes the amber fill the reference gives an active
+// segment. It is not the only carrier: `aria-current` states the same thing.
 .frame__navigation-link[aria-current='page'] {
-  color: var(--edsb-text-accent-strong);
-  // The rule under the current entry repeats the command bar's own closing
-  // rule. It is not the only carrier: `aria-current` states the same thing.
-  box-shadow: var(--edsb-elevation-current);
+  @include layout.control-primary;
 }
 
 .frame__actions {
@@ -103,7 +103,7 @@
     padding-inline: var(--edsb-space-inline-loose);
   }
 
-  .frame__product {
+  .frame__title {
     font-size: var(--edsb-text-size-heading-sm);
     letter-spacing: var(--edsb-text-tracking-dialog);
   }
