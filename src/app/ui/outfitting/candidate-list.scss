@@ -1,0 +1,141 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's candidate manifest. One list, two arrangements, chosen from the
+// space the list is given rather than from a device label: an aligned grid
+// under one header row (canvas 1c) and stacked cards that carry their own
+// labels (canvas 1d).
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: candidates;
+}
+
+.candidates {
+  @include layout.stack(0);
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+// Hidden until there is room to align columns under it.
+.candidates__columns {
+  display: none;
+}
+
+// The canvas's leading amber edge marks the row in hand. Never the only
+// carrier: the radio's own checked state and the row's spoken name say it too.
+.candidate {
+  @include layout.selectable-row;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--edsb-space-stack-tight);
+  align-items: center;
+  min-block-size: var(--edsb-target-size);
+  padding: var(--edsb-space-row);
+  cursor: pointer;
+
+  // The largest mount the Almanac offers has hundreds of choices, and a
+  // Commander sees a handful of them at a time. Rows outside the scroller skip
+  // layout and paint until they are scrolled to, which is what keeps typing
+  // responsive on a phone (SC-002). They stay in the document and in the
+  // accessibility tree — this is a rendering optimisation, not a way to hide
+  // content.
+  content-visibility: auto;
+
+  // What an unrealised row is assumed to be worth. `auto` means the browser
+  // uses the height it last rendered this row at and only falls back to this
+  // figure for one it has never drawn, so the number is a first guess rather
+  // than a constraint — nothing is clamped to it.
+  //
+  // It has to be close, though. A guess below the real row makes the document
+  // grow as rows are realised, which walks everything below the list — the
+  // count, and the control that builds the next page — down the page while a
+  // Commander is reaching for it. Each row only drifts once, but a list is
+  // hundreds of rows and the drift adds up over a scroll.
+  //
+  // The card composition measures 132–221px and averages 177; this is that
+  // average, not the middle of the range.
+  contain-intrinsic-block-size: auto 11rem;
+}
+
+.candidate__radio {
+  // The control stays in the accessibility tree and stays operable; the row's
+  // own ground is what shows the state, exactly as both canvases draw it.
+  position: absolute;
+  inline-size: var(--edsb-space-hair);
+  block-size: var(--edsb-space-hair);
+  opacity: 0;
+}
+
+.candidate__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
+.candidate__state,
+.candidate__grade {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+.candidate__facts {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+.candidates__section:empty,
+.candidates__group:empty {
+  display: none;
+}
+
+// Wide enough to align seven columns without truncating a module name: the
+// canvas's manifest measures 2.2fr for the name and five figure columns beside
+// the class. Below it the cards take over rather than the name being cut.
+@container candidates (min-width: 44rem) {
+  .candidates__columns {
+    display: grid;
+    gap: var(--edsb-space-inline);
+    grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr));
+    padding-inline: var(--edsb-space-row);
+    padding-block-end: var(--edsb-space-stack-tight);
+  }
+
+  .candidates__column {
+    @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  }
+
+  .candidates__column--figure {
+    text-align: end;
+  }
+
+  .candidate {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr);
+
+    // Aligned rows are far shorter than cards: 69–123px against 132–221px.
+    contain-intrinsic-block-size: auto 5.5rem;
+  }
+
+  .candidate__facts {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--edsb-space-inline);
+    text-align: end;
+  }
+
+  // The header row already names these columns once. Repeating the label on
+  // every row is what the canvas's aligned manifest exists to avoid — but the
+  // label stays in the accessibility tree, so a cell is never a bare number.
+  .candidate__fact ::ng-deep .fact__label {
+    @include layout.visually-hidden;
+  }
+
+  .candidate__fact ::ng-deep .fact {
+    justify-content: flex-end;
+  }
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

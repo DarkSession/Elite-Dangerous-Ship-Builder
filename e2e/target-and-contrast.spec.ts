@@ -64,6 +64,12 @@ test.describe('target size and contrast', () => {
 
     expect(addresses.length, 'the catalogue rendered no addressable state').toBeGreaterThan(0);
 
+    // Stated per address rather than as one number, because the number would be
+    // wrong again the next time a component lands. A state costs a navigation
+    // and three passes over the rendered tree; a second of it is generous on an
+    // idle machine and enough on one running the rest of the matrix beside it.
+    test.setTimeout(30_000 + addresses.length * 1_000);
+
     for (const address of addresses) {
       await page.goto(previewUrl(address));
       await expect(page.locator(`[id="${address}"]`)).toHaveCount(1);

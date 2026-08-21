@@ -12,6 +12,7 @@ import {
 import type { MessageKey } from '../../i18n/locale-registry';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import type { BuildEditIntent, BuildEditResult, EditFailure } from './build-edit-intent';
 import {
@@ -19,6 +20,7 @@ import {
   resolveChoice,
   type CandidateMembership,
 } from './candidate-membership';
+import { applyQuery, openCandidateQuery, type CandidateQueryState } from './candidate-query';
 import type { OutfittingSurface } from './outfitting-state';
 import { slotCapabilities } from './slot-capabilities';
 import { slotViews, type SlotView } from './slot-view';
@@ -43,6 +45,7 @@ export class OutfittingStore {
   readonly #active = inject(ActiveBuildStore);
   readonly #coordinator = inject(ReplacementCoordinator);
   readonly #gameText = inject(GameTextPresenter);
+  readonly #formatters = inject(Formatters);
 
   readonly #selectedSlotKey = signal<string | null>(null);
   readonly #surface = signal<OutfittingSurface>('workspace');
@@ -97,7 +100,31 @@ export class OutfittingStore {
     const revision = this.revision();
     const loadout = this.#active.loadout();
     const key = this.#selectedSlotKey();
-    return loadout === null || key === null ? null : candidateMembership(loadout, key, revision);
+    return loadout === null || key === null
+      ? null
+      : candidateMembership(loadout, key, revision, this.#gameText);
+  });
+
+  /**
+   * The chooser, ordered and indexed, for the current mount at this revision.
+   *
+   * Split from `candidateQuery` on purpose. This recomputes only when the
+   * mount, the build revision or the reading language changes; the query
+   * signal is read one step later. Collapsing the two would sort and fold every
+   * choice again on each character typed, which is the whole difference between
+   * a chooser that keeps up on a phone and one that does not (SC-002).
+   */
+  readonly #openQuery = computed<CandidateQueryState | null>(() => {
+    const membership = this.membership();
+    return membership === null
+      ? null
+      : openCandidateQuery(membership, this.#gameText.locale, this.#formatters.collator());
+  });
+
+  /** The chooser as the Commander currently has it filtered. */
+  readonly candidateQuery = computed<CandidateQueryState | null>(() => {
+    const open = this.#openQuery();
+    return open === null ? null : applyQuery(open, this.#query());
   });
 
   constructor() {
@@ -126,6 +153,11 @@ export class OutfittingStore {
 
   setQuery(query: string): void {
     this.#query.set(query);
+  }
+
+  /** Restores every choice without touching selection or the build. */
+  clearQuery(): void {
+    this.#query.set('');
   }
 
   dismissFailure(): void {

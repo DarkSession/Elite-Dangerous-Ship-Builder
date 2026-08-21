@@ -1,0 +1,31 @@
+<div class="search">
+  <edsb-text-field
+    class="search__field"
+    kind="search"
+    [label]="label()"
+    [labelHidden]="true"
+    [placeholder]="placeholder()"
+    [description]="instructions()"
+    [value]="query()"
+    (changed)="changed.emit($event)"
+  />
+
+  <!--
+    The canvas's `⌘K` beside the field. Decorative for a reader: it names a
+    convenience, and the field is already reachable and already named.
+  -->
+  <p class="search__shortcut" aria-hidden="true">{{ shortcutHint() }}</p>
+
+  @if (canClear()) {
+    <button class="search__clear" type="button" (click)="cleared.emit()">
+      {{ clearLabel() }}
+    </button>
+  }
+</div>
+
+<!--
+  The count is spoken, not drawn, at this level: canvas 1d draws it in the
+  screen's own header bar and canvas 1c draws none, so the surface places the
+  visible one and this stays the polite announcement of it.
+-->
+<p class="visually-hidden" role="status">{{ announcement() }}</p>

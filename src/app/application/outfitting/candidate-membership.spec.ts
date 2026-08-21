@@ -3,6 +3,7 @@ import {
   FIXTURE_SLOTS,
   ROUTE_DISTINCT_SYMBOL,
   defaultBuild,
+  packageText,
   routeDistinctVariants,
 } from '../../domain/outfitting/outfitting.fixtures';
 import { candidateMembership, resolveChoice } from './candidate-membership';
@@ -36,7 +37,7 @@ describe('candidate membership', () => {
     it(`offers exactly the package's stock records plus every variant for a ${kind} mount`, () => {
       const loadout = defaultBuild();
 
-      const membership = candidateMembership(loadout, slotKey, 1);
+      const membership = candidateMembership(loadout, slotKey, 1, packageText());
 
       expect(membership.choices.length).toBe(expectedCount(loadout, slotKey));
       expect(membership.slotKey).toBe(slotKey);
@@ -45,7 +46,7 @@ describe('candidate membership', () => {
 
   it('emits each variant immediately after the stock record it belongs to', () => {
     const loadout = defaultBuild();
-    const membership = candidateMembership(loadout, FIXTURE_SLOTS.hardpoint, 1);
+    const membership = candidateMembership(loadout, FIXTURE_SLOTS.hardpoint, 1, packageText());
 
     for (const [index, choice] of membership.choices.entries()) {
       if (choice.kind !== 'variant') {
@@ -71,7 +72,7 @@ describe('candidate membership', () => {
       );
     expect(slotKey).toBeDefined();
 
-    const membership = candidateMembership(loadout, slotKey!, 1);
+    const membership = candidateMembership(loadout, slotKey!, 1, packageText());
     const forSymbol = membership.choices.filter(
       (choice) =>
         choice.kind === 'variant' &&
@@ -85,13 +86,18 @@ describe('candidate membership', () => {
   });
 
   it('reports the cargo hatch as a successful empty answer', () => {
-    const membership = candidateMembership(defaultBuild(), FIXTURE_SLOTS.cargoHatch, 1);
+    const membership = candidateMembership(
+      defaultBuild(),
+      FIXTURE_SLOTS.cargoHatch,
+      1,
+      packageText(),
+    );
 
     expect(membership.choices).toEqual([]);
   });
 
   it('discards a choice resolved against a stale revision', () => {
-    const membership = candidateMembership(defaultBuild(), FIXTURE_SLOTS.core, 4);
+    const membership = candidateMembership(defaultBuild(), FIXTURE_SLOTS.core, 4, packageText());
     const key = membership.choices[0]!.key;
 
     expect(resolveChoice(membership, key, 4)).not.toBeNull();
@@ -102,7 +108,7 @@ describe('candidate membership', () => {
 
   it('resolves a key back to the exact package object it was built from', () => {
     const loadout = defaultBuild();
-    const membership = candidateMembership(loadout, FIXTURE_SLOTS.core, 1);
+    const membership = candidateMembership(loadout, FIXTURE_SLOTS.core, 1, packageText());
     const first = membership.choices[0]!;
 
     const resolved = resolveChoice(membership, first.key, 1);
@@ -117,14 +123,14 @@ describe('candidate membership', () => {
     // The hull's default already carries a shield generator, and they are one
     // per ship — so it is removed first and the exclusion is watched appearing.
     loadout.removeModule(FIXTURE_SLOTS.fittedOptional);
-    const before = candidateMembership(loadout, FIXTURE_SLOTS.optional, 1);
+    const before = candidateMembership(loadout, FIXTURE_SLOTS.optional, 1, packageText());
     const shield = before.choices.find((choice) =>
       choice.module.symbol.toLowerCase().includes('shieldgenerator'),
     );
     expect(shield).toBeDefined();
 
     loadout.setModule(FIXTURE_SLOTS.optional, shield!.module);
-    const after = candidateMembership(loadout, 'Slot02_Size6', 2);
+    const after = candidateMembership(loadout, 'Slot02_Size6', 2, packageText());
 
     // Shield generators are one per ship, so the package stops offering another
     // one. Nothing here knows that rule; the count simply follows the package.

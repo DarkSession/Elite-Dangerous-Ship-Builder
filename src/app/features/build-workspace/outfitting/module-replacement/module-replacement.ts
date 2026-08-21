@@ -8,41 +8,63 @@ import {
   output,
   signal,
 } from '@angular/core';
+import {
+  groupCandidates,
+  type CandidateSectionView,
+  type CandidateStatus,
+} from '../../../../application/outfitting/candidate-query';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
-import type { ModuleChoice } from '../../../../application/outfitting/candidate-membership';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
-import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
+import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import { Layer } from '../../../../ui/components/layer/layer';
-import { ModuleIdentityBadge } from '../../../../ui/outfitting/module-identity-badge';
+import { CandidateList } from '../../../../ui/outfitting/candidate-list';
+import { CandidateSearch } from '../../../../ui/outfitting/candidate-search';
+
+/** What the surface is showing, including the one state the query cannot know. */
+export type ReplacementState = CandidateStatus | 'notReplaceable';
+
+/**
+ * How many rows are built before a Commander asks for more.
+ *
+ * The largest mount the Almanac offers takes 478 modules, and canvas 1c draws
+ * six. Building all of them costs more than the whole hundred milliseconds the
+ * contract allows between a keystroke and the result on screen (SC-002), and
+ * nobody reads four hundred rows without scrolling. A page is far more than a
+ * screenful, so the common case — a search that narrows to a handful — is one
+ * page and no growing at all.
+ */
+const PAGE = 60;
 
 /**
  * Choosing what goes in one mount.
  *
- * The reference draws the wide bench as a manifest of rows and the compact one
- * as a full-screen layer of cards. Both are this component; the arrangement is
- * decided in CSS from the space the region is given.
+ * The reference draws the wide bench as an aligned manifest and the compact one
+ * as a full-screen view over an inert background. Both are this component; the
+ * arrangement comes from the space the region was given, never from a device
+ * label.
  *
  * What the reference does *not* draw, and this adds deliberately, is the
- * confirmation. Canvas 1c shows no Fit control at wide width — a row appears to
+ * confirmation. Canvas 1c shows no fit control at wide width — a row appears to
  * be the decision. Selecting has no side effect here and a separate explicit
  * action commits, so one confirmation is one atomic Commander decision and one
  * history frame, at both widths (reference review, "Interaction and semantics").
  *
- * Selecting a row changes only this component's own draft. The build is
- * untouched until the fit action is pressed, and cancelling changes nothing at
- * all — there is nothing to restore, because nothing happened.
+ * The pick is held with the revision it was made at. That is what turns "the
+ * build changed under this surface" into a state the Commander is told about,
+ * rather than a fit of a record that was offered a revision ago and would be
+ * refused anyway — after they had been offered it.
  */
 @Component({
   selector: 'edsb-module-replacement',
-  imports: [Layer, ModuleIdentityBadge, NgTemplateOutlet],
+  imports: [CandidateList, CandidateSearch, Layer, NgTemplateOutlet],
   templateUrl: './module-replacement.html',
   styleUrl: './module-replacement.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModuleReplacement {
   readonly #messages = inject(MessageService);
-  readonly #gameText = inject(GameTextPresenter);
+  readonly #formatters = inject(Formatters);
   readonly store = inject(OutfittingStore);
 
   readonly slot = input.required<SlotView>();
@@ -58,8 +80,66 @@ export class ModuleReplacement {
 
   readonly closed = output<void>();
 
-  /** The row a Commander has picked. Draft state; it changes no build. */
-  readonly selectedChoiceKey = signal<string | null>(null);
+  /** The row a Commander picked, and the revision they picked it at. */
+  readonly #pick = signal<{ readonly key: string; readonly revision: number } | null>(null);
+
+  readonly query = computed(() => this.store.candidateQuery());
+
+  /** True when the pick was made against a build that has since changed. */
+  readonly stale = computed(() => {
+    const pick = this.#pick();
+    return pick !== null && pick.revision !== this.store.revision();
+  });
+
+  /** The pick, or nothing once it stops being about the build on screen. */
+  readonly selectedChoiceKey = computed(() => (this.stale() ? null : (this.#pick()?.key ?? null)));
+
+  /** How many rows are currently built. Grows; never shrinks a Commander's view. */
+  readonly #window = signal(PAGE);
+
+  readonly sections = computed<readonly CandidateSectionView[]>(() => {
+    const query = this.query();
+    return query === null
+      ? []
+      : groupCandidates(query.results.slice(0, this.#window()), this.#formatters.collator());
+  });
+
+  /** How many choices there are — not how many are built. */
+  readonly resultCount = computed(() => this.query()?.results.length ?? 0);
+
+  /** How many are built, so the surface can say which part of the list this is. */
+  readonly builtCount = computed(() => Math.min(this.resultCount(), this.#window()));
+
+  readonly hasMore = computed(() => this.resultCount() > this.#window());
+  readonly canClear = computed(() => this.query()?.canClear ?? false);
+
+  /**
+   * What the surface is showing, as one value.
+   *
+   * `notReplaceable` comes first because it is about the mount rather than the
+   * query: a mount the Almanac takes no other module in has nothing to search
+   * and nothing to fit, and offering a search over it would be a control with
+   * nothing behind it (FR-009).
+   */
+  readonly state = computed<ReplacementState>(() => {
+    if (this.store.selectedCapabilities()?.canOpenReplacement === false) {
+      return 'notReplaceable';
+    }
+
+    const query = this.query();
+    if (query === null) {
+      return 'loading';
+    }
+    if (this.stale()) {
+      return 'stale';
+    }
+    if (this.store.lastEditFailure()?.slotKey === this.slot().key) {
+      return 'refused';
+    }
+    return query.status;
+  });
+
+  readonly showList = computed(() => this.state() === 'ready' || this.state() === 'refused');
 
   readonly heading = computed(() =>
     this.#messages.message('outfitting.replacement.title', {
@@ -67,35 +147,79 @@ export class ModuleReplacement {
     }),
   );
 
-  readonly fitLabel = this.#messages.messageSignal('outfitting.replacement.fit');
-  readonly cancelLabel = this.#messages.messageSignal('action.cancel');
-  readonly listLabel = this.#messages.messageSignal('outfitting.replacement.list');
-  readonly packageEmptyLabel = this.#messages.messageSignal('outfitting.replacement.package-empty');
-
-  /** Every choice the package offers, at the current build revision. */
-  readonly choices = computed<readonly ModuleChoice[]>(
-    () => this.store.membership()?.choices ?? [],
+  /** Canvas 1d's `24 FIT` beside the screen's title. */
+  readonly countLabel = computed(() =>
+    this.#messages.message('outfitting.results.count', { count: this.resultCount() }),
   );
 
-  readonly packageEmpty = computed(() => this.choices().length === 0);
+  readonly noMatchesLabel = computed(() =>
+    this.#messages.message('outfitting.replacement.no-matches', {
+      query: this.query()?.query ?? '',
+    }),
+  );
+
+  readonly fitLabel = this.#messages.messageSignal('outfitting.replacement.fit');
+  readonly cancelLabel = this.#messages.messageSignal('action.cancel');
+  // The layer's own header control, which every other layer in the product
+  // names the same way. Naming it `Cancel` too would put two controls with one
+  // name in one dialog, and a reader moving between them would have nothing to
+  // tell them apart.
+  readonly closeLabel = this.#messages.messageSignal('action.close');
+  readonly listLabel = this.#messages.messageSignal('outfitting.replacement.list');
+  readonly packageEmptyLabel = this.#messages.messageSignal('outfitting.replacement.package-empty');
+  readonly loadingLabel = this.#messages.messageSignal('outfitting.replacement.loading');
+  readonly staleLabel = this.#messages.messageSignal('outfitting.replacement.stale');
+  readonly notReplaceableLabel = this.#messages.messageSignal(
+    'outfitting.replacement.not-replaceable',
+  );
+  readonly clearLabel = this.#messages.messageSignal('outfitting.search.clear');
+  readonly moreLabel = this.#messages.messageSignal('outfitting.replacement.more');
+
+  readonly builtLabel = computed(() =>
+    this.#messages.message('outfitting.replacement.built', {
+      built: this.builtCount(),
+      total: this.resultCount(),
+    }),
+  );
 
   readonly canFit = computed(() => this.selectedChoiceKey() !== null);
 
-  /**
-   * The package's name for a choice, in the Commander's language.
-   *
-   * A variant is named as the article it is, not as the stock module it is
-   * based on: a Commander choosing between the stock form and a reward form
-   * is choosing between two things, and one name for both would hide that.
-   */
-  nameOf(choice: ModuleChoice): GameTextPresentation {
-    return choice.kind === 'variant'
-      ? this.#gameText.preEngineeredVariantName(choice.variant)
-      : this.#gameText.moduleName(choice.module.symbol);
-  }
+  /** The symbol currently in the mount, so its rows can say they are fitted. */
+  readonly fittedSymbol = computed(() => this.slot().module?.symbol ?? null);
 
   choose(choiceKey: string): void {
-    this.selectedChoiceKey.set(choiceKey);
+    this.#pick.set({ key: choiceKey, revision: this.store.revision() });
+  }
+
+  search(query: string): void {
+    this.store.setQuery(query);
+    // A new query is a new list. Keeping a grown window would build hundreds of
+    // rows for a search that narrowed to three.
+    this.#window.set(PAGE);
+  }
+
+  clear(): void {
+    this.store.clearQuery();
+    this.#window.set(PAGE);
+  }
+
+  /** Builds the next page. */
+  more(): void {
+    this.#window.update((built) => built + PAGE);
+  }
+
+  /**
+   * Builds the next page as the end of the list comes into reach.
+   *
+   * One viewport of slack, so the rows are there by the time they are scrolled
+   * to rather than appearing under the Commander. The explicit control does the
+   * same thing for anyone who is not scrolling.
+   */
+  onScroll(event: Event): void {
+    const scroller = event.target as HTMLElement;
+    if (this.hasMore() && scroller.scrollTop + scroller.clientHeight * 2 >= scroller.scrollHeight) {
+      this.more();
+    }
   }
 
   /** Commits the picked row, as one decision. */
@@ -104,7 +228,7 @@ export class ModuleReplacement {
     if (choiceKey === null) {
       return;
     }
-    const choice = this.choices().find((candidate) => candidate.key === choiceKey);
+    const choice = this.query()?.choices.find((candidate) => candidate.key === choiceKey);
     if (choice === undefined) {
       return;
     }
@@ -116,7 +240,7 @@ export class ModuleReplacement {
     );
 
     if (result.kind === 'committed' || result.kind === 'unchanged') {
-      this.selectedChoiceKey.set(null);
+      this.#pick.set(null);
       this.closed.emit();
     }
     // A refusal keeps the surface open with the pick intact. The Almanac's
@@ -125,7 +249,8 @@ export class ModuleReplacement {
   }
 
   cancel(): void {
-    this.selectedChoiceKey.set(null);
+    this.#pick.set(null);
+    this.store.clearQuery();
     this.closed.emit();
   }
 }

@@ -169,12 +169,17 @@ $container-wide-min: 40rem;
   border-block-end: $rule solid $colour;
 }
 
-// The solid amber block on the leading edge of a command bar.
+// The amber insignia on the leading edge of a command bar.
 @mixin command-flag {
   flex: none;
-  inline-size: var(--edsb-space-md);
+  inline-size: var(--edsb-space-4xl);
   block-size: var(--edsb-space-4xl);
   background-color: var(--edsb-surface-accent-solid);
+
+  // The wedge insignia the canvases draw on the command bar, and the same shape
+  // the app icon is cut from (canvas 3b). Drawn from the accent wash rather
+  // than an image so it follows the one theme and needs no asset request.
+  clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%);
 }
 
 // A screen or dialog title: condensed, uppercase, widely tracked, amber.

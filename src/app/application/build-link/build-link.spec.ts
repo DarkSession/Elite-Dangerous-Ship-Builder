@@ -174,6 +174,40 @@ describe('FragmentPublisher', () => {
     expect(window.history.length).toBe(before);
   });
 
+  it('stamps no fragment on a screen the Commander moved to while it encoded', async () => {
+    const build = `${window.location.pathname}${window.location.search}`;
+    // Earlier tests here publish onto the same window, and the adapter reads the
+    // address it finds. The condition under test is a *new* fragment appearing,
+    // so the address starts clean.
+    window.history.replaceState(window.history.state, '', build);
+
+    const { publisher, active, location } = setup();
+    commitAnaconda(active);
+    expect(location.fragment()).toBe('');
+
+    // The encode is held open, which is the whole condition: on a loaded
+    // machine it takes long enough for a Commander to leave.
+    let finish: (fragment: string) => void = () => {};
+    publisher.encode = () =>
+      new Promise<string>((resolve) => {
+        finish = resolve;
+      });
+
+    const publishing = publisher.publish();
+    window.history.replaceState(window.history.state, '', '/ships');
+    finish(await anacondaFragment());
+    await publishing;
+
+    try {
+      // The shipyard is not a build, and a build link on it would decode into
+      // one the Commander is not editing.
+      expect(location.fragment()).toBe('');
+      expect(window.location.pathname).toBe('/ships');
+    } finally {
+      window.history.replaceState(window.history.state, '', build);
+    }
+  });
+
   it('takes down a stale build fragment when there is no build left', async () => {
     const { publisher, active, location } = setup();
     commitAnaconda(active);

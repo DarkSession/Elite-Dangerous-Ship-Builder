@@ -1224,6 +1224,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'hullDetail.fact.boost': 'The in-game term, used untranslated in the German community.',
     'hullDetail.slots.group.hardpoint':
       'The in-game term, used untranslated in the German community.',
+    'outfitting.search.shortcut.apple':
+      'The Apple command key and a letter; the glyph is the key itself, not a word.',
+    'outfitting.acquisition.short.mercenary':
+      'Merc-Coin is the in-game currency name and is not translated.',
   },
 };
 

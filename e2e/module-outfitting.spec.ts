@@ -70,7 +70,7 @@ async function fitFromChooser(
   pick: (identities: readonly string[]) => number,
 ): Promise<string> {
   await page.getByRole('button', { name: /change module/i }).click();
-  const rows = page.locator('.replacement__choice');
+  const rows = page.locator('.candidate');
   await expect(rows.first()).toBeVisible();
 
   const identities = await rows.evaluateAll((nodes) =>
@@ -79,9 +79,14 @@ async function fitFromChooser(
   const index = pick(identities);
   expect(index, 'no choice matched what the test asked for').toBeGreaterThan(-1);
 
-  const radio = rows.nth(index).locator('input[type="radio"]');
-  await radio.check();
-  await expect(radio).toBeChecked();
+  // The row is the control. Its radio is a 1px box underneath the label's own
+  // content, so a pointer — a Commander's or this one's — lands on the label
+  // and the label activates the radio, which is the whole reason the row is a
+  // label. Reaching past it to click the input asserts an interaction nobody
+  // performs, and Firefox refuses it outright.
+  const row = rows.nth(index);
+  await row.click();
+  await expect(row.locator('input[type="radio"]')).toBeChecked();
   await page.getByRole('button', { name: /fit module/i }).click();
   // The chooser closes on a committed fit; waiting for that is waiting for the
   // decision to have actually been taken.
@@ -253,5 +258,184 @@ test.describe('package-populated fixed mounts', () => {
     expect(stored).not.toContain('repair');
     expect(stored).not.toContain('sourceSymbol');
     expect(page.url()).not.toContain('defaulted');
+  });
+});
+
+/**
+ * Finding a replacement, end to end (US2).
+ *
+ * The chooser's order and its four-field search are proved against the package
+ * in `candidate-query.spec.ts`. What is checked here is that a Commander
+ * actually gets them: that the sections are announced, that a term with the
+ * wrong case still finds the module, that nothing matched is a sentence rather
+ * than a blank region, and that the list is read again after a fit instead of
+ * being remembered.
+ */
+
+/** Opens the chooser for the selected mount and waits for its rows. */
+async function openChooser(page: Page): Promise<void> {
+  await page.getByRole('button', { name: /change module/i }).click();
+  await expect(page.locator('.candidate').first()).toBeVisible();
+}
+
+/** The number the surface draws beside the search — canvas 1d's `24 FIT`. */
+async function drawnCount(page: Page): Promise<number> {
+  const text = await page.locator('.replacement__count').innerText();
+  return Number(text.replace(/\D+/gu, ''));
+}
+
+async function search(page: Page, query: string): Promise<void> {
+  await page.locator('input[type="search"]').fill(query);
+}
+
+test.describe('finding a replacement', () => {
+  test('offers every choice the Almanac has for the mount, and says how many', async ({ page }) => {
+    await openStockBuild(page);
+    // A small hardpoint's whole list is short enough to be built in one page, so
+    // the drawn count and the rendered rows are the same number here.
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+
+    const drawn = await drawnCount(page);
+    const rendered = await page.locator('.candidate').count();
+
+    // The count is the list, not a separate claim about it.
+    expect(drawn).toBe(rendered);
+    expect(drawn).toBeGreaterThan(1);
+
+    // The expansion is stock records *plus* their pre-engineered variants, so a
+    // list that offered only stock rows would be missing a whole kind of choice.
+    await expect(page.getByText('Pre-engineered', { exact: true }).first()).toBeVisible();
+  });
+
+  test('builds a long list a page at a time, and says how much is built', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    const drawn = await drawnCount(page);
+    const firstPage = await page.locator('.candidate').count();
+
+    // The whole list is longer than the page that was built for it, and the
+    // surface says so rather than letting the shortfall pass as the answer.
+    expect(drawn).toBeGreaterThan(firstPage);
+    await expect(page.locator('.replacement__built')).toContainText(String(drawn));
+
+    await page.getByRole('button', { name: /show more modules/i }).click();
+    await expect(page.locator('.candidate')).not.toHaveCount(firstPage);
+  });
+
+  test('names its sections and puts the unique rewards last', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+
+    const headings = await page
+      .locator('.candidates__section > h3')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+
+    // Neither canvas draws these; they are the structure, named for a reader.
+    expect(headings[0]).toMatch(/standard/i);
+    expect(headings.at(-1)).toMatch(/unique reward/i);
+
+    const rewardRow = page.locator('.candidates__section').last().locator('.candidate').first();
+    await expect(rewardRow).toContainText(/reward only/i);
+  });
+
+  test('matches every term, whatever case or accents it is typed in', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    // Two terms across two different indexed fields: the module's name and its
+    // mount type. Both have to match, and neither is typed the way it is drawn.
+    await search(page, 'MULTI-CANNON gimballed');
+    await expect(page.locator('.candidate').first()).toBeVisible();
+
+    const identities = await page
+      .locator('.candidate .identity')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
+
+    expect(identities.length).toBeGreaterThan(0);
+    for (const identity of identities) {
+      expect(identity.toLowerCase()).toContain('multi-cannon');
+      expect(identity.toLowerCase()).toContain('gimballed');
+    }
+  });
+
+  test('never matches a package symbol, however exactly it is typed', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    await search(page, 'Hpt_MultiCannon_Gimbal_Medium');
+
+    // The symbol is the identity a fit is carried out with; it is not something
+    // a Commander searches by, and a search that quietly matched it would find
+    // rows whose visible text does not contain the query.
+    await expect(page.locator('.replacement__no-matches')).toBeVisible();
+  });
+
+  test('explains a search that found nothing, and clears back to the whole list', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    const all = await drawnCount(page);
+
+    await search(page, 'zzzz nothing');
+    await expect(page.locator('.replacement__no-matches')).toContainText(/zzzz nothing/);
+    await expect(page.locator('.candidate')).toHaveCount(0);
+
+    await page.locator('.replacement__clear').click();
+    await expect(page.locator('.candidate').first()).toBeVisible();
+    expect(await drawnCount(page)).toBe(all);
+  });
+
+  test('reads the list again after a fit rather than remembering it', async ({ page }) => {
+    await openStockBuild(page);
+
+    // A docking computer is one of the Almanac's exclusive families: fitting one
+    // takes the rest of that family out of every other optional mount.
+    await selectMount(page, 'Slot02_Size6');
+    await openChooser(page);
+    await search(page, 'docking computer');
+    const before = await page.locator('.candidate').count();
+    expect(before).toBeGreaterThan(0);
+    await page.getByRole('button', { name: /cancel/i }).click();
+
+    await selectMount(page, 'Slot01_Size7');
+    await fitFromChooser(page, (identities) =>
+      identities.findIndex((identity) => /docking computer/i.test(identity)),
+    );
+
+    await selectMount(page, 'Slot02_Size6');
+    await openChooser(page);
+    await search(page, 'docking computer');
+
+    // Fewer, because the Almanac now says so. Nothing here knows what an
+    // exclusive family is; it asked again and rendered the answer.
+    expect(await page.locator('.candidate').count()).toBeLessThan(before);
+  });
+
+  test('is accessible in every chooser state', async ({ page }, testInfo) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+    await sweepOutfittingState(page, testInfo, 'chooser/full');
+
+    await search(page, 'multi');
+    await expect(page.locator('.candidate').first()).toBeVisible();
+    await sweepOutfittingState(page, testInfo, 'chooser/searched');
+
+    await search(page, 'zzzz nothing');
+    await expect(page.locator('.replacement__no-matches')).toBeVisible();
+    await sweepOutfittingState(page, testInfo, 'chooser/no matches');
+
+    await page.getByRole('button', { name: /cancel/i }).click();
+    await selectMount(page, 'CargoHatch');
+    await sweepOutfittingState(page, testInfo, 'chooser/mount takes nothing');
   });
 });

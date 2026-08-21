@@ -19,24 +19,41 @@ export class SilentDocumentAdapter {
   commitRootState(): void {}
 }
 
-/** A browser whose declared languages the test states. */
+/** A browser whose declared languages and platform the test states. */
 export class StaticNavigatorAdapter {
-  constructor(private readonly tags: readonly string[] = ['en']) {}
+  constructor(
+    private readonly tags: readonly string[] = ['en'],
+    private readonly apple = false,
+  ) {}
 
   languages(): readonly string[] {
     return this.tags;
+  }
+
+  /**
+   * Which modifier key a hint should name.
+   *
+   * Stated by the test rather than read from the machine, so a suite does not
+   * pass on a Mac and fail on the build agent over a `⌘`.
+   */
+  applePlatform(): boolean {
+    return this.apple;
   }
 }
 
 /** Providers isolating a test's locale state from the machine it runs on. */
 export function provideIsolatedLocaleEnvironment(options?: {
   browserLanguages?: readonly string[];
+  applePlatform?: boolean;
 }): Provider[] {
   return [
     { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },
     {
       provide: NavigatorAdapter,
-      useValue: new StaticNavigatorAdapter(options?.browserLanguages ?? ['en']),
+      useValue: new StaticNavigatorAdapter(
+        options?.browserLanguages ?? ['en'],
+        options?.applePlatform ?? false,
+      ),
     },
   ];
 }

@@ -4,9 +4,37 @@
 // content; the arrangement follows the space the region is given. The list
 // scrolls inside its own box — the document never does.
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   container-type: inline-size;
   container-name: replacement;
+
+  // The bound the list gives way against. Without one the region grows to its
+  // content, `.replacement__list` never scrolls, the document does instead, and
+  // the sticky actions below end up drawn over the foot of the list — over the
+  // control that builds the next page of it.
+  //
+  // It is the bench's own bound, written the same way on purpose. The bench
+  // clips what overflows it, so a region that bounded itself any more loosely
+  // would put its last rows and its fit control inside a box that shows
+  // neither of them and scrolls to neither.
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+}
+
+// A viewport this short cannot divide into a scroller and a foot and still show
+// one row: at 390px the bench's share is 274px and a candidate card is up to
+// 221px of it. So the region stops bounding itself, the foot stops sticking,
+// and the page scrolls — the same release the command bar and the bench above
+// it make at the same threshold, and what keeps the whole of it readable at
+// 400% zoom (FR-011).
+@include layout.short-viewport {
+  :host {
+    max-block-size: none;
+  }
+
+  .replacement__foot {
+    position: static;
+  }
 }
 
 .replacement {
@@ -18,38 +46,86 @@
   flex: 1;
 }
 
-.replacement__empty {
+.replacement__state {
   margin: 0;
   color: var(--edsb-text-subtle);
   text-wrap: pretty;
 }
 
+// Canvas 1d's header row: the field takes the width and the count sits at the
+// trailing edge in faint mono.
+.replacement__toolbar {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+.replacement__search {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.replacement__count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+
+  margin: 0;
+  flex: none;
+}
+
+// The foot of a list that has more behind it: how much is built, and the way
+// to build the rest.
+.replacement__more {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  flex: none;
+}
+
+.replacement__built {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+.replacement__more-action {
+  @include layout.control-base;
+  @include layout.control-quiet;
+}
+
+.replacement__no-matches {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.replacement__clear {
+  @include layout.control-base;
+  @include layout.control-quiet;
+
+  align-self: start;
+}
+
 // The manifest scrolls inside its own box, as canvas 1c's does. The document
 // never scrolls horizontally and never grows to two hundred rows tall.
-.replacement__choices {
-  @include layout.stack(var(--edsb-space-rule));
-
+.replacement__list {
   flex: 1;
   min-block-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
   overflow-y: auto;
   overscroll-behavior-block: contain;
 }
 
-.replacement__choice {
-  @include layout.selectable-row;
-  @include layout.wrapping-row(var(--edsb-space-inline));
-  @include layout.target-baseline;
+// Canvas 1d pins `CANCEL` and `FIT MODULE` to the foot of the screen, below the
+// scrolling list. With a mount that offers two hundred choices the alternative
+// is a confirm control a Commander has to scroll past every one of them to
+// reach, which is not a confirmation anyone would find.
+//
+// It is the foot that pins, not the buttons, because the paging control belongs
+// to the foot too. Where the region is bounded the foot is simply the last row
+// of the column; where the page scrolls instead, this is what keeps it in view.
+.replacement__foot {
+  @include layout.stack(var(--edsb-space-stack-tight));
 
-  padding: var(--edsb-space-row);
-  cursor: pointer;
-
-  &:has(.replacement__radio:checked) {
-    background-image: var(--edsb-surface-row-selected);
-    border-inline-start-color: var(--edsb-marker-selected);
-  }
+  position: sticky;
+  inset-block-end: 0;
+  flex: none;
+  padding-block: var(--edsb-space-stack-tight);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
 }
 
 .replacement__actions {
@@ -70,11 +146,4 @@
 
 .visually-hidden {
   @include layout.visually-hidden;
-}
-
-// The native control keeps its own semantics and its own focus behaviour; only
-// its accent follows the design system.
-.replacement__radio {
-  accent-color: var(--edsb-marker-selected);
-  flex: none;
 }

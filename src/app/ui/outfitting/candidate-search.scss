@@ -1,0 +1,44 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's search row: one field that takes the space, the key hint beside
+// it in faint mono, and — only where there is something to clear — the way back
+// to the whole list (canvas 1c's `search this slot… ⌘K`, canvas 1d's full-width
+// `Search modules`).
+:host {
+  display: block;
+}
+
+.search {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+// The field takes the row, as canvas 1d draws it, and the hint follows on the
+// line below rather than competing with it for width.
+.search__field {
+  flex: 1 1 100%;
+  min-inline-size: 0;
+}
+
+.search__shortcut {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+
+  // Shrinks and wraps rather than claiming its own width. At twice the English
+  // length this hint is wider than a phone, and of everything in the row it is
+  // the one thing a Commander never has to read.
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.search__clear {
+  @include layout.control-base;
+  @include layout.control-quiet;
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

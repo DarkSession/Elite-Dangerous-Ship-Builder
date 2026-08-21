@@ -219,6 +219,21 @@ import { TabGroup } from '../components/tab-group/tab-group';
 import { TextField } from '../components/text-field/text-field';
 import { TextareaField } from '../components/textarea-field/textarea-field';
 import { UnavailableValue } from '../components/unavailable-value/unavailable-value';
+import { candidateMembership } from '../../application/outfitting/candidate-membership';
+import {
+  applyQuery,
+  groupCandidates,
+  openCandidateQuery,
+  type CandidateSectionView,
+} from '../../application/outfitting/candidate-query';
+import {
+  FIXTURE_SLOTS,
+  defaultBuild,
+  packageText,
+} from '../../domain/outfitting/outfitting.fixtures';
+import { AcquisitionBadge } from '../outfitting/acquisition-badge';
+import { CandidateList } from '../outfitting/candidate-list';
+import { CandidateSearch } from '../outfitting/candidate-search';
 import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
 import { OutfittingNotice } from '../outfitting/outfitting-notice';
@@ -2574,5 +2589,199 @@ registerPreview({
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated'],
     ),
     notApplicable('disabled', 'A refusal is content, not a control.'),
+  ],
+});
+
+/**
+ * A chooser's real contents, for the candidate previews.
+ *
+ * Built from the Almanac rather than written out: the states worth previewing
+ * are an ordered manifest, a searched subset and an empty result, and a
+ * hand-shaped row would let all three drift from what the product renders.
+ *
+ * Taken as a specimen rather than whole. A hardpoint's expansion is hundreds of
+ * rows; every catalogue sweep reads every one of them for its target size and
+ * its contrast, and one component would then cost more than the rest of the
+ * catalogue together. The slice is taken after ordering, so the sections, the
+ * groups and the order within them are the product's own.
+ */
+const PREVIEW_ROWS = 12;
+
+function candidateSections(slotKey: string, query = ''): readonly CandidateSectionView[] {
+  const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+  const state = applyQuery(
+    openCandidateQuery(
+      candidateMembership(defaultBuild(), slotKey, 1, packageText('en')),
+      'en',
+      collator,
+    ),
+    query,
+  );
+  // The rewards are the last section and one of the states worth seeing, so the
+  // specimen takes from both ends rather than the first twelve rows.
+  const results = state.results;
+  const specimen =
+    results.length <= PREVIEW_ROWS
+      ? results
+      : [...results.slice(0, PREVIEW_ROWS - 4), ...results.slice(-4)];
+  return groupCandidates(specimen, collator);
+}
+
+registerPreview({
+  componentId: 'candidate-search',
+  group: 'Outfitting',
+  component: CandidateSearch,
+  contract: contract(
+    'candidate-search',
+    {
+      role: 'searchbox',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label', 'description'],
+      textEquivalents: ['the result count, announced politely'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { query: 'multi', resultCount: 27, canClear: true },
+      [
+        'the label is hidden and still bound to the control',
+        'the instructions say which four fields a term is matched against',
+        'the key hint names this platform’s modifier rather than one glyph everywhere',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state('empty', { query: '', resultCount: 0, canClear: false }, [
+      'an empty query offers no clear action, because there is nothing to clear',
+    ]),
+    notApplicable(
+      'loading',
+      'The chooser is built synchronously from the package; the surface owns the busy state, not the field.',
+    ),
+    notApplicable(
+      'error',
+      'A search cannot fail. A query that matches nothing is the surface’s no-match state, not an error here.',
+    ),
+    notApplicable('disabled', 'A mount that takes nothing renders no search at all.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'candidate-list',
+  group: 'Outfitting',
+  component: CandidateList,
+  contract: contract(
+    'candidate-list',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected'],
+      relationships: ['label'],
+      textEquivalents: [
+        'the section and group structure, named for a reader',
+        'the fitted, stock and pre-engineered state, in words',
+        'every acquisition restriction, as text beside its chip',
+        'an absent package figure, as a word rather than a zero',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        sections: candidateSections(FIXTURE_SLOTS.hardpoint),
+        label: 'Modules the Almanac offers for this mount',
+        fittedSymbol: null,
+        selectedKey: null,
+      },
+      [
+        'the unique rewards are the final section and are named as one',
+        'each row is named well enough to tell it from its neighbours',
+        'a package figure the Almanac never published is a word, never a zero',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'unavailable-text'],
+    ),
+    state(
+      'empty',
+      {
+        sections: candidateSections(FIXTURE_SLOTS.hardpoint, 'zzzz nothing'),
+        label: 'Modules the Almanac offers for this mount',
+        fittedSymbol: null,
+        selectedKey: null,
+      },
+      ['a search that matched nothing renders no rows, and no empty structure either'],
+    ),
+    notApplicable(
+      'loading',
+      'The list renders what it is given; the replacement surface owns the state where there is nothing to give it yet.',
+    ),
+    notApplicable(
+      'error',
+      'A refusal belongs to the edit that was attempted, and is published by the workspace’s refusal notice.',
+    ),
+    notApplicable(
+      'disabled',
+      'A mount the Almanac takes no module in renders its own sentence instead of a disabled list.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'acquisition-badge',
+  group: 'Outfitting',
+  component: AcquisitionBadge,
+  contract: contract(
+    'acquisition-badge',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['every restriction, as words rather than as a colour'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        showExplanations: true,
+        labels: [
+          {
+            kind: 'communityGoal',
+            packageValue: 'communityGoal',
+            messageKey: 'outfitting.acquisition.communityGoal',
+            params: null,
+          },
+          {
+            kind: 'uniqueReward',
+            packageValue: 'communityGoal',
+            messageKey: 'outfitting.acquisition.uniqueReward',
+            params: null,
+          },
+          {
+            kind: 'entitlement',
+            packageValue: 'ELITE_HORIZONS_V_PLANETARY_LANDINGS',
+            messageKey: 'outfitting.acquisition.entitlement',
+            params: { token: 'ELITE_HORIZONS_V_PLANETARY_LANDINGS' },
+          },
+        ],
+      },
+      [
+        'restrictions stack rather than replace one another',
+        'the reward marker is the canvas’s chip and its reason is a sentence',
+        'the raw entitlement token is disclosed, not translated away',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state('empty', { labels: [] }, [
+      'a module the Almanac puts no restriction on renders nothing at all',
+    ]),
+    notApplicable('loading', 'A restriction is a fact already read from the package record.'),
+    notApplicable('error', 'A restriction is content, not the outcome of an attempt.'),
+    notApplicable('disabled', 'A restriction is content, not a control.'),
   ],
 });

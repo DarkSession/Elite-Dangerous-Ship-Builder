@@ -1,5 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
-import { ENGINES, LAYOUT_PROFILES, type Engine, type LayoutProfile } from './e2e/coverage-ledger';
+import {
+  ENGINES,
+  LAYOUT_PROFILES,
+  TIMING_PROJECT,
+  TIMING_SPEC,
+  type Engine,
+  type LayoutProfile,
+} from './e2e/coverage-ledger';
 import {
   IS_PRODUCTION_RUN,
   PREVIEW_PORT,
@@ -9,6 +16,20 @@ import {
 } from './e2e/servers';
 
 const isCI = !!process.env['CI'];
+
+/**
+ * Specs no run may load, whatever else it selects.
+ *
+ * A project that declares `testIgnore` replaces this list rather than adding to
+ * it, so every project that needs its own exclusion composes it with these. The
+ * offline journey needs a service worker, and a service worker only exists in a
+ * production build. It runs under `pnpm run e2e:offline`, which serves the built
+ * output; a development run would otherwise fail it for a reason that has
+ * nothing to do with the behaviour under test.
+ */
+const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
+  ? []
+  : ['**/offline.spec.ts', '**/offline-privacy.spec.ts'];
 
 /**
  * Escape hatches for environments whose preinstalled browser build does not
@@ -56,12 +77,17 @@ const ENGINE_DEFAULTS: Record<Engine, Record<string, unknown>> = {
  * Every primary journey runs in all ten. CI may shard this matrix; it may not
  * reduce it.
  */
-const projects = ENGINES.flatMap((engine) =>
+const matrixProjects = ENGINES.flatMap((engine) =>
   LAYOUT_PROFILES.map((profile) => {
     const { viewport, touch } = PROFILES[profile];
     const path = executablePath[engine];
     return {
       name: `${engine}-${profile}`,
+      // The one measurement that needs Chromium's DevTools Protocol runs in its
+      // own project below. Ignoring its file here is what keeps a Firefox
+      // project from loading a test it cannot run — the alternative is a test
+      // that skips itself at runtime, which is forbidden outright.
+      testIgnore: [...NEVER_IN_A_DEVELOPMENT_RUN, TIMING_SPEC],
       use: {
         ...ENGINE_DEFAULTS[engine],
         browserName: engine,
@@ -73,14 +99,33 @@ const projects = ENGINES.flatMap((engine) =>
   }),
 );
 
+/**
+ * The SC-002 measurement, at the mobile viewport, under Chromium alone.
+ *
+ * Its own project so it runs exactly once rather than ten times, and so the
+ * declaration that this measurement is Chromium-only lives here in the matrix
+ * rather than inside the test as a runtime condition.
+ */
+const timingProject = {
+  name: TIMING_PROJECT,
+  testMatch: [TIMING_SPEC],
+  use: {
+    ...ENGINE_DEFAULTS.chromium,
+    browserName: 'chromium' as const,
+    viewport: PROFILES['mobile-portrait'].viewport,
+    hasTouch: PROFILES['mobile-portrait'].touch,
+    ...(executablePath.chromium
+      ? { launchOptions: { executablePath: executablePath.chromium } }
+      : {}),
+  },
+};
+
+const projects = [...matrixProjects, timingProject];
+
 export default defineConfig({
   testDir: './e2e',
   outputDir: './dist/e2e-results',
-  // The offline journey needs a service worker, and a service worker only
-  // exists in a production build. It runs under `pnpm run e2e:offline`, which
-  // serves the built output; a development run would otherwise fail it for a
-  // reason that has nothing to do with the behaviour under test.
-  testIgnore: IS_PRODUCTION_RUN ? [] : ['**/offline.spec.ts', '**/offline-privacy.spec.ts'],
+  testIgnore: NEVER_IN_A_DEVELOPMENT_RUN,
   fullyParallel: true,
   forbidOnly: isCI,
   // Retries are diagnostic only: a test that passes on retry still fails the

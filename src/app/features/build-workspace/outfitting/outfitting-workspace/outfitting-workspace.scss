@@ -110,6 +110,34 @@
   }
 }
 
+// The bench holds a manifest of hundreds of rows now, and a short viewport has
+// no share to give it: at 390px tall the sticky pane above works out at 274px,
+// which is less than one candidate card. It releases with the command bar, at
+// the command bar's own threshold, and the page scrolls instead.
+@include layout.short-viewport {
+  .outfitting__bench {
+    position: static;
+    max-block-size: none;
+    overflow: visible;
+  }
+}
+
+// Canvas 1c draws the chooser as a wide manifest, not a narrow list: seven
+// columns and a module name that is not cut. While it is open the bench takes
+// the larger share of the row so the manifest has the width its columns need
+// instead of falling back to cards on a desktop.
+//
+// The threshold is its own, above the one that puts the two panes side by side,
+// because the share only helps if the row is wide enough for the bench's 5/7 of
+// it to clear the manifest's own 44rem. Asking for that share at 44rem instead
+// would set two column minimums summing past the row and scroll the document
+// sideways — which is the thing that is never traded for a composition.
+@container outfitting (min-width: 64rem) {
+  .outfitting:has(edsb-module-replacement) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // The regions, named
 // ---------------------------------------------------------------------------

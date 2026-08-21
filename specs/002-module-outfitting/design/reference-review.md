@@ -185,14 +185,55 @@ blueprint list and `None — remove effect` in the effect list, so every clear r
 identically at both widths. See [engineering-editor.md](./engineering-editor.md) "Clearing
 engineering". This removes the asymmetry without adding to either canvas.
 
-**Closed on review, no ruling needed.** Canvas 1d's per-candidate delta chips (`+5.1 DPS`,
-`−1.83 MW`, `+9.3 DPS`) and canvas 1c's `data-delta` ▲/▼ markers and `Δ VS SAVED` labels have been
-removed from the design. The specification had already excluded them independently — see
+**Per-candidate delta chips, ruled 2026-08-21 during US2 implementation.** Withdrawn. Canvas 1c's
+`data-delta` ▲/▼ markers and its `Δ VS SAVED` labels are gone from the design — only the tooltip
+script that once wired them survives, attached to nothing. Canvas 1d's chooser rows still draw two,
+`−2.4 DPS` and `−8.6 DPS` in `--hot-2`, against the module currently fitted. Those are not
+implemented. A delta is a comparison this feature does not own: it needs the fitted module's
+performance and the candidate's computed side by side, and colouring one row warm is a statement
+about which module is better for this build. Both are excluded independently by
 [module-replacement.md](./module-replacement.md) "no local comparison deltas",
-[module-catalogue.md](../contracts/module-catalogue.md) "no suitability delta", tasks T049 and
-quickstart scenario 11 — so design and specification agree and nothing changes. The chooser's cost
-column is likewise already adopted by [module-catalogue.md](../contracts/module-catalogue.md); only
-credit _formatting_ differs between the canvases, and that belongs to feature 009.
+[module-catalogue.md](../contracts/module-catalogue.md) "no suitability delta", task T050 and
+quickstart scenario 11, and the accepted specification governs where it and the canvas disagree. The
+package facts the row is built from — mount, DPS, power, mass, cost — are all drawn and all kept; it
+is only the _difference between two of them_ that is withdrawn.
+
+The chooser's cost column is already adopted by
+[module-catalogue.md](../contracts/module-catalogue.md); only credit _formatting_ differs between the
+canvases, and that belongs to feature 009.
+
+**Weapon-family chips, confirmed withdrawn 2026-08-21 during US2 implementation.** Canvas 1d still
+draws a horizontally scrolling chip row above the compact chooser — `ALL · MULTI-CANNON · BEAM ·
+CANNON · PLASMA`. [module-replacement.md](./module-replacement.md) "Candidate facts and labels"
+already omits it, and implementation confirms why: the rows those chips filter are named `Huge
+Multi-Cannon` and `Huge Beam Laser`, so a `MULTI-CANNON` chip is not one of the package's names. It
+is a family cut out of them, and cutting it out means this application deciding where a game name
+divides — a private taxonomy over package text, which FR-007 and the localization contract both
+forbid. Search covers exactly name, class, rating and mount, and that is the whole filter.
+
+**Paged chooser, ruled 2026-08-21 during US2 implementation.** Canvas 1c draws six candidate rows
+and canvas 1d seven. The Almanac's largest mount — the Panther Mk II's size-8 optional internal —
+offers 478, and building all of them costs more than the whole hundred milliseconds SC-002 allows
+between a keystroke and the result on screen: measured under Chromium at the mobile viewport with the
+CPU throttled fourfold, a full list settles at about 120 ms and a page of sixty at about 75 ms. The
+chooser therefore builds a page at a time, growing as the list is scrolled and through an explicit
+`Show more modules` control beside a `Showing 60 of 478` count.
+
+The control is the one thing here that neither canvas draws. It stays because scrolling cannot be the
+only way to reach the rest of a list — constitution V puts the keyboard criteria out of scope, which
+means an interface may not _depend_ on them, and "scroll to load" is exactly such a dependency for a
+Commander reading rather than scrolling. The count beside it is what keeps the paging honest: the
+number the surface publishes is always how many choices there are, never how many are built.
+
+**Section and group headings, ruled 2026-08-21 during US2 implementation.** Neither canvas draws one:
+1c draws a flat six-row table under a single column header, and 1d a flat card list, with the
+unique-reward choices marked by a `REWARD ONLY` badge on the row rather than gathered under a
+heading. [module-replacement.md](./module-replacement.md) requires headings that "describe list
+structure". Both hold: the sections and name groups are real structure with real accessible names,
+and those names are `visually-hidden`, so a screen reader hears where a list changes and the screen
+stays the flat list the canvas draws. Same invisible accessibility floor as the region heading and
+the slot key above, and the `REWARD ONLY` badge is kept as the visible marker the canvas gives the
+unique-reward section.
 
 | #   | What canvas 1c/1d draws                                                                                                            | What the specification says                                      | Why it collides                                                                                               |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |

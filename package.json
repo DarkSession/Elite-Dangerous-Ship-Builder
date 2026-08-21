@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:scripts": "node --test scripts/*.test.mjs",
-    "e2e": "playwright test",
+    "e2e": "playwright test --grep-invert \"candidate search timing\"",
+    "e2e:timing": "playwright test --project=chromium-mobile-timing --workers=1",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "ui:preview": "ng serve ui-preview",
@@ -20,7 +21,7 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.e2e.json --noEmit && tsc -p projects/ui-preview/tsconfig.app.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm run format:check && pnpm run typecheck && pnpm run build && pnpm run build:preview && pnpm run policy && pnpm run codec:capacity && pnpm run test:scripts && pnpm run test && pnpm run e2e && pnpm run e2e:offline",
+    "check": "pnpm run format:check && pnpm run typecheck && pnpm run build && pnpm run build:preview && pnpm run policy && pnpm run codec:capacity && pnpm run test:scripts && pnpm run test && pnpm run e2e && pnpm run e2e:timing && pnpm run e2e:offline",
     "build:preview": "ng build ui-preview"
   },
   "private": true,

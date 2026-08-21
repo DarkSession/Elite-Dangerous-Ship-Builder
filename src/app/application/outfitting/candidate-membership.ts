@@ -1,10 +1,63 @@
-import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modules';
+import type {
+  ModuleMount,
+  ModuleRating,
+  OutfittingModule,
+} from '@elite-dangerous-almanac/core/ships/modules';
 import {
   getPreEngineeredVariants,
   type PreEngineeredVariant,
 } from '@elite-dangerous-almanac/core/ships/pre-engineered';
+import { getPreEngineeredStats } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { GameTextPresentation } from '../../i18n/game-text.presenter';
+import {
+  acquisitionLabels,
+  acquisitionSection,
+  catalogueSource,
+  type AcquisitionLabel,
+  type CandidateSection,
+} from './acquisition-labels';
 import { choiceKeyOf } from './choice-key';
+import type { ModuleTextResolver } from './fitted-module-view';
+
+/**
+ * The package facts one chooser row shows.
+ *
+ * Exactly the columns canvas 1c draws that the Almanac actually publishes, and
+ * `null` wherever it publishes none. There is no fallback to the stock record's
+ * number for a variant that resolves to nothing: a reward's mass is the
+ * reward's, and showing the stock module's in its place would be a figure
+ * nobody measured (module-catalogue contract, "Candidate facts").
+ */
+export interface CandidateFacts {
+  /** Damage per round, or per second on a continuous-fire weapon. */
+  readonly damage: number | null;
+  readonly mass: number | null;
+  readonly powerDraw: number | null;
+  /** The weapons capacitor draw canvas 1c heads `DRAW WEP`. */
+  readonly distributorDraw: number | null;
+  readonly cost: number | null;
+}
+
+/** One row's presentation values, all projected straight from the package. */
+export interface ChoicePresentation {
+  readonly name: GameTextPresentation;
+  readonly class: number;
+  readonly rating: ModuleRating;
+  readonly mount: ModuleMount | null;
+  readonly section: CandidateSection;
+  readonly labels: readonly AcquisitionLabel[];
+  /**
+   * The grade a variant is *bought* at, never its current ordinary grade.
+   *
+   * The two are different numbers and confusing them is a real error: a
+   * Mercenary article arrives at grade 1 and is upgraded from there, so
+   * labelling that 1 as the module's engineering grade tells a Commander their
+   * reward is worse than it is (module-catalogue contract, "Candidate facts").
+   */
+  readonly purchaseGrade: number | null;
+  readonly facts: CandidateFacts;
+}
 
 /**
  * One thing a Commander can fit into the selected mount.
@@ -21,6 +74,7 @@ export type ModuleChoice =
       readonly key: string;
       readonly module: OutfittingModule;
       readonly sourceOrdinal: number;
+      readonly presentation: ChoicePresentation;
     }
   | {
       readonly kind: 'variant';
@@ -29,6 +83,7 @@ export type ModuleChoice =
       readonly variant: PreEngineeredVariant;
       readonly sourceOrdinal: number;
       readonly variantOrdinal: number;
+      readonly presentation: ChoicePresentation;
     };
 
 /** Everything the chooser holds for one mount at one build revision. */
@@ -59,6 +114,7 @@ export function candidateMembership(
   loadout: ShipLoadout,
   slotKey: string,
   buildRevision: number,
+  text: ModuleTextResolver,
 ): CandidateMembership {
   const choices: ModuleChoice[] = [];
 
@@ -68,6 +124,7 @@ export function candidateMembership(
       key: choiceKeyOf({ kind: 'stock', symbol: module.symbol, sourceOrdinal }),
       module,
       sourceOrdinal,
+      presentation: presentationOf(module, null, text),
     });
 
     getPreEngineeredVariants(module.symbol).forEach((variant, variantOrdinal) => {
@@ -84,11 +141,49 @@ export function candidateMembership(
         variant,
         sourceOrdinal,
         variantOrdinal,
+        presentation: presentationOf(module, variant, text),
       });
     });
   });
 
   return { slotKey, buildRevision, choices };
+}
+
+/**
+ * One row's values, read from the package and nowhere else.
+ *
+ * A variant is named as the article it is and measured as the article it is:
+ * `getPreEngineeredStats` resolves the hand-set changes a reward arrives with,
+ * so its mass and power are its own. When the package cannot resolve them the
+ * facts are unavailable, which is the honest answer and the one the interface
+ * is built to show.
+ */
+function presentationOf(
+  module: OutfittingModule,
+  variant: PreEngineeredVariant | null,
+  text: ModuleTextResolver,
+): ChoicePresentation {
+  const article = variant === null ? module : getPreEngineeredStats(variant);
+
+  return {
+    name:
+      variant === null ? text.moduleName(module.symbol) : text.preEngineeredVariantName(variant),
+    // Class, rating and mount identify the *mount fit*, which a variant shares
+    // with its base module: a reward is that module, already modified.
+    class: module.class,
+    rating: module.rating,
+    mount: module.mount ?? null,
+    section: acquisitionSection(variant),
+    labels: acquisitionLabels(catalogueSource(module, variant)),
+    purchaseGrade: variant?.grade ?? null,
+    facts: {
+      damage: article?.damage ?? null,
+      mass: article?.mass ?? null,
+      powerDraw: article?.powerDraw ?? null,
+      distributorDraw: article?.distributorDraw ?? null,
+      cost: article?.cost ?? null,
+    },
+  };
 }
 
 /**

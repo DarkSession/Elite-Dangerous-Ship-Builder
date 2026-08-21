@@ -1,0 +1,17 @@
+@if (rendered().length > 0) {
+  <ul class="acquisition" [attr.aria-label]="groupLabel()">
+    @for (label of rendered(); track label.kind + label.packageValue) {
+      <li class="acquisition__item" [class.acquisition--reward]="label.kind === 'uniqueReward'">
+        <!--
+          The chip carries the marker and the sentence carries the reason. When
+          the sentence is not drawn it is still here, so the row is never a
+          coloured chip whose meaning has to be guessed at.
+        -->
+        <span class="acquisition__chip">{{ label.short }}</span>
+        <span [class.visually-hidden]="!showExplanations()" class="acquisition__explanation">
+          {{ label.explanation }}
+        </span>
+      </li>
+    }
+  </ul>
+}

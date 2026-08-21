@@ -133,10 +133,18 @@ from the per-screen files.
 ### Command bar
 
 `height: 56px` wide / `52px` compact, `background: var(--panel-4)`,
-`border-bottom: 2px solid var(--amber)`. Leading edge carries a solid amber block
-(`10 × 26px` wide, `8 × 22px` compact), then the screen title in condensed 700
+`border-bottom: 2px solid var(--amber)`. Leading edge carries the amber wedge
+insignia (`26 × 24px` wide, `22 × 20px` compact, cut by
+`clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%)` — the same shape the app icon
+is drawn from, canvas 3b), then the screen title in condensed 700
 uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
 `--ink-45`. Trailing edge carries actions.
+
+The product draws the insignia at one size, `22 × 22px`, rather than the two the
+canvases measure. The canvas's own difference between them is four pixels on
+each axis; a breakpoint to reproduce it would be a responsive rule nobody could
+see, and the wedge is a mark rather than a measured element of the layout. This
+is the second recorded deviation from the canvases, after the type ramp.
 
 ### Panel dialog
 

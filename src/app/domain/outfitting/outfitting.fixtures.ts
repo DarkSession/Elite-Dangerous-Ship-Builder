@@ -4,6 +4,10 @@ import {
   getPreEngineeredVariants,
   type PreEngineeredVariant,
 } from '@elite-dangerous-almanac/core/ships/pre-engineered';
+import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
+import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
+import { presentGameText } from '../../i18n/game-text.presenter';
+import type { ModuleTextResolver } from '../../application/outfitting/fitted-module-view';
 
 /**
  * The shared outfitting fixtures.
@@ -231,4 +235,20 @@ export function assertLargestChoiceSet(): { hull: string; slot: string; choices:
     0,
   );
   return { hull: LARGEST_CHOICE_SET.hull, slot: LARGEST_CHOICE_SET.slot, choices };
+}
+
+/**
+ * A module-name resolver backed by the package's own i18n leaves.
+ *
+ * Tests that assert ordering need the names a Commander actually reads, and
+ * those are the package's. Stubbing them would make the tests assert the stub's
+ * alphabet rather than the Almanac's, which is the one thing the ordering rules
+ * are written against (module-catalogue contract, "Sections, groups and order").
+ */
+export function packageText(locale = 'en'): ModuleTextResolver {
+  return {
+    moduleName: (symbol) => presentGameText(getModuleName, symbol, locale),
+    preEngineeredVariantName: (variant) =>
+      presentGameText(getPreEngineeredVariantName, variant, locale),
+  };
 }

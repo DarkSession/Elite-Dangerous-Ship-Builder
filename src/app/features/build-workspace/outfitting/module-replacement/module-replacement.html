@@ -6,40 +6,87 @@
   them (constitution V).
 -->
 <ng-template #body>
-  @if (packageEmpty()) {
-    <p class="replacement__empty">{{ packageEmptyLabel() }}</p>
-  } @else {
-    <fieldset class="replacement__choices">
-      <legend class="visually-hidden">{{ listLabel() }}</legend>
-      @for (choice of choices(); track choice.key) {
-        <label class="replacement__choice">
-          <input
-            class="replacement__radio"
-            type="radio"
-            name="module-choice"
-            [value]="choice.key"
-            [checked]="selectedChoiceKey() === choice.key"
-            (change)="choose(choice.key)"
-          />
-          <edsb-module-identity-badge
-            [name]="nameOf(choice)"
-            [symbol]="choice.module.symbol"
-            [moduleClass]="choice.module.class"
-            [rating]="choice.module.rating"
-            [mount]="choice.module.mount ?? null"
-          />
-        </label>
-      }
-    </fieldset>
+  @switch (state()) {
+    @case ('notReplaceable') {
+      <p class="replacement__state">{{ notReplaceableLabel() }}</p>
+    }
+    @case ('packageEmpty') {
+      <p class="replacement__state">{{ packageEmptyLabel() }}</p>
+    }
+    @case ('loading') {
+      <p class="replacement__state" role="status">{{ loadingLabel() }}</p>
+    }
+    @case ('stale') {
+      <p class="replacement__state" role="status">{{ staleLabel() }}</p>
+    }
   }
 
-  <div class="replacement__actions">
-    <button class="replacement__cancel" type="button" (click)="cancel()">
-      {{ cancelLabel() }}
-    </button>
-    <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
-      {{ fitLabel() }}
-    </button>
+  @if (state() !== 'notReplaceable' && state() !== 'packageEmpty' && state() !== 'loading') {
+    <div class="replacement__toolbar">
+      <edsb-candidate-search
+        class="replacement__search"
+        [query]="query()?.query ?? ''"
+        [resultCount]="resultCount()"
+        [canClear]="canClear()"
+        (changed)="search($event)"
+        (cleared)="clear()"
+      />
+
+      <!-- Canvas 1d's `24 FIT`: the count, drawn where the reference draws it. -->
+      <p class="replacement__count">{{ countLabel() }}</p>
+    </div>
+  }
+
+  @if (state() === 'noMatches') {
+    <div class="replacement__no-matches" role="status">
+      <p class="replacement__state">{{ noMatchesLabel() }}</p>
+      <button class="replacement__clear" type="button" (click)="clear()">
+        {{ clearLabel() }}
+      </button>
+    </div>
+  }
+
+  @if (showList()) {
+    <edsb-candidate-list
+      class="replacement__list"
+      [sections]="sections()"
+      [label]="listLabel()"
+      [selectedKey]="selectedChoiceKey()"
+      [fittedSymbol]="fittedSymbol()"
+      (scroll)="onScroll($event)"
+      (chosen)="choose($event)"
+    />
+  }
+
+  <!--
+    Canvas 1d pins the foot of the screen. Everything that belongs to the foot
+    is pinned together: how much of the list is built and the way to build the
+    rest sit with the two decisions, rather than at the end of two hundred rows
+    where a Commander would have to chase them down a growing page.
+  -->
+  <div class="replacement__foot">
+    @if (showList() && hasMore()) {
+      <!--
+        Scrolling builds the next page on its own; this is the same thing said
+        out loud, for a Commander who is reading the list rather than scrolling
+        it, and it is where the size of the list is stated.
+      -->
+      <div class="replacement__more">
+        <p class="replacement__built" role="status">{{ builtLabel() }}</p>
+        <button class="replacement__more-action" type="button" (click)="more()">
+          {{ moreLabel() }}
+        </button>
+      </div>
+    }
+
+    <div class="replacement__actions">
+      <button class="replacement__cancel" type="button" (click)="cancel()">
+        {{ cancelLabel() }}
+      </button>
+      <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
+        {{ fitLabel() }}
+      </button>
+    </div>
   </div>
 </ng-template>
 
@@ -47,7 +94,7 @@
   <edsb-layer
     [title]="heading()"
     [open]="true"
-    [dismissLabel]="cancelLabel()"
+    [dismissLabel]="closeLabel()"
     presentation="full-height"
     (dismissed)="cancel()"
   >

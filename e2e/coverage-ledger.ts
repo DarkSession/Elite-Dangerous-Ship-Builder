@@ -53,10 +53,26 @@ export const ENGINES = ['chromium', 'firefox'] as const;
 
 export type Engine = (typeof ENGINES)[number];
 
-/** Every Playwright project name the matrix generates. */
-export const PROJECT_NAMES: readonly string[] = ENGINES.flatMap((engine) =>
-  LAYOUT_PROFILES.map((profile) => `${engine}-${profile}`),
-);
+/**
+ * The one measurement project outside the matrix.
+ *
+ * SC-002 is measured under Chromium's CPU throttling, which is a DevTools
+ * Protocol capability Firefox does not have. Rather than a test that skips
+ * itself in five of the ten projects — which the constitution forbids — the
+ * measurement lives in its own file and its own project, and the behaviour it
+ * measures is separately covered in all ten (module-catalogue contract,
+ * "Verification").
+ */
+export const TIMING_PROJECT = 'chromium-mobile-timing';
+
+/** The file that project runs, and the only one it runs. */
+export const TIMING_SPEC = '**/outfitting-timing.spec.ts';
+
+/** Every Playwright project name the matrix generates, plus the timing project. */
+export const PROJECT_NAMES: readonly string[] = [
+  ...ENGINES.flatMap((engine) => LAYOUT_PROFILES.map((profile) => `${engine}-${profile}`)),
+  TIMING_PROJECT,
+];
 
 /** One covered surface and state. */
 export interface CoverageEntry {
