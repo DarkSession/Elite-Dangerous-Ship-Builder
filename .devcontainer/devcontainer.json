@@ -53,5 +53,5 @@
   },
 
   "remoteUser": "node",
-  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium"
+  "postCreateCommand": "node --version && python3 --version && pnpm --version && pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium firefox"
 }

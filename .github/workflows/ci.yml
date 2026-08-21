@@ -53,11 +53,11 @@ jobs:
         run: pnpm run test
 
       # Only the end-to-end step needs a browser, and fetching one is expensive,
-      # so it waits until the cheaper checks have passed. Every Playwright
-      # project drives Chromium, so only that browser is needed; `--with-deps`
-      # adds the system libraries the runner image lacks.
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+      # so it waits until the cheaper checks have passed. The project matrix
+      # drives both engines, so both are installed; `--with-deps` adds the
+      # system libraries the runner image lacks.
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox
 
       - name: End-to-end tests
         run: pnpm run e2e
