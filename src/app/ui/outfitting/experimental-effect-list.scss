@@ -1,0 +1,73 @@
+@use '../../../styles/responsive' as layout;
+
+// Canvas 1d's `EXPERIMENTAL EFFECT` card and canvas 1c's menu of the same rows.
+:host {
+  display: block;
+}
+
+.effects {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.effects__legend {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  padding: 0;
+  margin-block-end: var(--edsb-space-stack-tight);
+}
+
+.effect {
+  @include layout.selectable-row;
+  @include layout.target-baseline;
+
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  padding: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  cursor: pointer;
+}
+
+.effect--none {
+  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-quiet);
+}
+
+.effect__radio {
+  @include layout.visually-hidden;
+}
+
+.effect__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.effect__name {
+  color: var(--edsb-text-primary);
+  font-size: var(--edsb-text-size-body);
+}
+
+.effect__description {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-caption);
+}
+
+.effect__note {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+.effect__applied {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+}
+
+// Canvas 1c sets the effect dropdown apart from the amber one above it in the
+// cool it uses for an effect everywhere else. Never the only carrier: the
+// control is labelled `Experimental effect` and sits under its own label.
+.effects__field ::ng-deep .field__control {
+  border-color: var(--edsb-border-info);
+  color: var(--edsb-text-info);
+}

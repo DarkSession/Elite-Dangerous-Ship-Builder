@@ -18,17 +18,24 @@ import { previewUrl } from './servers';
  * the control.
  */
 
-/** Every address the preview catalogue renders, shared cells and isolated ones. */
-async function previewAddresses(page: import('@playwright/test').Page): Promise<string[]> {
+/**
+ * The addresses that cannot be measured on the catalogue page.
+ *
+ * A shared cell renders on the index alongside every other one, so a single
+ * pass over that page measures all of them — in the catalogue grid, which
+ * constrains a control's width more than its own address does, so the shared
+ * measurement is the stricter of the two. An **isolated** state is the one that
+ * cannot: it renders a whole shell or an open modal, which would nest landmarks
+ * or make the rest of the page inert, so it is listed on the index and reached
+ * by its own address instead.
+ */
+async function isolatedAddresses(page: import('@playwright/test').Page): Promise<string[]> {
   await page.goto(previewUrl());
-  const shared = await page
-    .locator('[data-preview-address]')
-    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-preview-address') ?? ''));
-  const isolated = await page
-    .locator('[data-preview-isolated]')
-    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-preview-isolated') ?? ''));
-
-  return [...shared, ...isolated].filter((address) => address.length > 0);
+  return (
+    await page
+      .locator('[data-preview-isolated]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-preview-isolated') ?? ''))
+  ).filter((address) => address.length > 0);
 }
 
 test.describe('target size and contrast', () => {
@@ -55,16 +62,42 @@ test.describe('target size and contrast', () => {
   });
 
   test('meets the target baseline and contrast minima in every preview state', async ({ page }) => {
-    // One navigation and three measurement passes per rendered state, and the
-    // catalogue grows with every component that lands. This is the slowest test
-    // in the suite by design: it is a sweep, not a sample.
+    // A sweep, not a sample — but one that reaches each state the cheapest way
+    // it can be reached rather than by its own address regardless.
+    //
+    // **Narrowed 2026-08-22.** This navigated to every address, shared cells
+    // included, and re-bootstrapped the preview application ~55 times per
+    // project because `previewUrl` addresses a state through a query parameter.
+    // At 10 projects that was 11.4% of the whole end-to-end suite — the single
+    // most expensive test in it — spent re-rendering components the catalogue
+    // page had already rendered together. The three passes below measure the
+    // rendered tree, so measuring the index once covers every shared cell on
+    // it, in the grid that constrains them more tightly than isolation does.
+    // Only the isolated states still cost a navigation each, because those are
+    // exactly the states that cannot share the page.
     test.slow();
 
-    const addresses = await previewAddresses(page);
+    await page.goto(previewUrl());
+    await expect(page.locator('[data-preview-address]').first()).toBeVisible();
 
-    expect(addresses.length, 'the catalogue rendered no addressable state').toBeGreaterThan(0);
+    await expectTargetSizes(page);
+    await expectTextContrast(page);
+    await expectNonTextContrast(page);
 
-    for (const address of addresses) {
+    const isolated = await isolatedAddresses(page);
+
+    expect(
+      isolated.length,
+      'isolated states are listed so the sweep can reach them',
+    ).toBeGreaterThan(0);
+
+    // Stated per address rather than as one number, because the number would be
+    // wrong again the next time a component lands. A state costs a navigation
+    // and three passes over the rendered tree; a second of it is generous on an
+    // idle machine and enough on one running the rest of the matrix beside it.
+    test.setTimeout(30_000 + isolated.length * 1_000);
+
+    for (const address of isolated) {
       await page.goto(previewUrl(address));
       await expect(page.locator(`[id="${address}"]`)).toHaveCount(1);
 

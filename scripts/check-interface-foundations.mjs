@@ -1224,6 +1224,16 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'hullDetail.fact.boost': 'The in-game term, used untranslated in the German community.',
     'hullDetail.slots.group.hardpoint':
       'The in-game term, used untranslated in the German community.',
+    'outfitting.power.priority.absent':
+      'A dash standing in for a group the package never published; not a word in either language.',
+    'outfitting.search.shortcut.apple':
+      'The Apple command key and a letter; the glyph is the key itself, not a word.',
+    'outfitting.acquisition.short.mercenary':
+      'Merc-Coin is the in-game currency name and is not translated.',
+    'outfitting.engineering.materials.merc-coin':
+      'Merc Coins is the in-game currency name and is not translated.',
+    'outfitting.slot.engineering':
+      'A composition of a package-supplied recipe name and the grade; G is the in-game grade marker and is not a word.',
   },
 };
 

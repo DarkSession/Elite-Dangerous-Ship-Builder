@@ -62,15 +62,23 @@ test.describe('the reference visual language', () => {
     expect(await style(banner, 'border-bottom-color')).toBe(AMBER);
   });
 
-  test('opens the command bar with the solid amber flag', async ({ page }) => {
-    // Canvas 1a: a 10 × 26px amber block before the title; canvas 1b: 8 × 22px.
+  test('opens the command bar with the amber wedge insignia', async ({ page }) => {
+    // The resynced canvases replaced the plain amber block that opened the bar
+    // with the wedge the app icon is cut from (canvas 3b): roughly square, and
+    // clipped rather than rectangular. The product draws it at one size at all
+    // widths, which canvas-extraction records as a deviation.
     const flag = page.locator('.frame__flag');
 
     expect(await style(flag, 'background-color')).toBe(AMBER);
+    // The mark is the clip, not the box. A flag that lost its `clip-path` would
+    // still be an amber rectangle of the right size and would pass every other
+    // assertion here.
+    expect(await style(flag, 'clip-path')).toMatch(/^polygon\(/);
+
     const box = await flag.boundingBox();
     expect(box, 'the command flag is rendered').not.toBeNull();
     expect(box!.width).toBeGreaterThan(0);
-    expect(box!.height).toBeGreaterThan(box!.width);
+    expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(1);
   });
 
   test('sets every heading in tracked uppercase condensed', async ({ page }) => {
@@ -133,14 +141,16 @@ test.describe('the reference visual language', () => {
     expect(rounded, 'a product surface is rounded; the reference is square').toEqual([]);
   });
 
-  test('never renders text below the lifted ramp floor', async ({ page }) => {
-    // The one deliberate departure. The canvas ramp starts at 7.5px; it is
-    // lifted uniformly so the smallest rung is 11px, which is what
-    // `--edsb-type-size-micro` resolves to at a 16px root.
+  test('never renders text below the canvas ramp floor', async ({ page }) => {
+    // The canvas ramp starts at 7.5px and is taken at 1:1: `micro` is 9px, which
+    // covers the canvas's 7.5–9.5 rung and is the smallest step the system
+    // offers. This once pinned an 11px floor, from a uniform ~1.25 lift over the
+    // canvas — the lift is gone, because the design's sizes are as much the
+    // design as its ratios are (wave 9).
     const sizes = await fontSizes(page);
 
     expect(sizes.length).toBeGreaterThan(0);
-    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(9);
   });
 
   test('fills the selected segment and quiets the rest', async ({ page }) => {

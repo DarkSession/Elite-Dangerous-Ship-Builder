@@ -5,7 +5,18 @@
   [attr.aria-busy]="busy() ? 'true' : null"
   [attr.aria-pressed]="isToggle() ? (pressed() ? 'true' : 'false') : null"
   [attr.aria-label]="accessibleName() === label() ? null : accessibleName()"
+  [attr.aria-describedby]="description() ? descriptionId : null"
   (click)="activate()"
 >
   <span class="action__label">{{ label() }}</span>
 </button>
+
+<!--
+  Beside the control rather than inside it. Text inside a button with no
+  `aria-label` becomes part of its accessible name, and the name is the label a
+  Commander reads aloud — the description says what the control would do, which
+  is a different thing and belongs in `aria-describedby`.
+-->
+@if (description(); as text) {
+  <span class="visually-hidden" [id]="descriptionId">{{ text }}</span>
+}

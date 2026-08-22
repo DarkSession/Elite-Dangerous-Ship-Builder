@@ -133,6 +133,15 @@ $container-wide-min: 40rem;
   min-inline-size: var(--edsb-target-size);
 }
 
+// The accessible floor rather than the comfortable baseline, for the dense
+// inline chips the canvas draws — a ledger row's power cell is 20px there, and
+// forty rows of a 44px chip is a different interface. Only for a control the
+// canvas itself draws small, and never for one that stands alone.
+@mixin target-floor {
+  min-block-size: var(--edsb-target-size-floor);
+  min-inline-size: var(--edsb-target-size-floor);
+}
+
 // Content hidden visually but present for assistive technology.
 @mixin visually-hidden {
   position: absolute;
@@ -169,12 +178,17 @@ $container-wide-min: 40rem;
   border-block-end: $rule solid $colour;
 }
 
-// The solid amber block on the leading edge of a command bar.
+// The amber insignia on the leading edge of a command bar.
 @mixin command-flag {
   flex: none;
-  inline-size: var(--edsb-space-md);
+  inline-size: var(--edsb-space-4xl);
   block-size: var(--edsb-space-4xl);
   background-color: var(--edsb-surface-accent-solid);
+
+  // The wedge insignia the canvases draw on the command bar, and the same shape
+  // the app icon is cut from (canvas 3b). Drawn from the accent wash rather
+  // than an image so it follows the one theme and needs no asset request.
+  clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%);
 }
 
 // A screen or dialog title: condensed, uppercase, widely tracked, amber.

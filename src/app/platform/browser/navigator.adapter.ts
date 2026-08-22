@@ -57,6 +57,25 @@ export class NavigatorAdapter {
     }
   }
 
+  /**
+   * Whether this is an Apple platform, for naming a modifier key.
+   *
+   * Used for one thing: writing `⌘K` where that is the key and `Ctrl + K`
+   * everywhere else. It decides no capability and gates no feature — a hint
+   * naming the wrong key is a small confusion, and treating the answer as a
+   * capability test would be the browser-sniffing this adapter exists to keep
+   * out of components.
+   *
+   * `userAgentData.platform` is the modern answer and `platform` the fallback;
+   * a runtime that offers neither is not Apple as far as a hint is concerned.
+   */
+  applePlatform(): boolean {
+    const navigator = this.#window?.navigator as
+      (Navigator & { userAgentData?: { platform?: string } }) | undefined;
+    const declared = navigator?.userAgentData?.platform ?? navigator?.platform ?? '';
+    return /mac|iphone|ipad|ipod/i.test(declared);
+  }
+
   /** Whether this platform offers a share sheet at all. */
   canShare(): boolean {
     return typeof this.#window?.navigator?.share === 'function';

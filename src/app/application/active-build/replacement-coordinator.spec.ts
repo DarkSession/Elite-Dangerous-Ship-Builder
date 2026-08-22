@@ -21,6 +21,7 @@ function candidateFor(symbol: string, saved = false): BuildCandidate {
     loadout,
     hullName: symbol,
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: saved ? baselineFingerprint(toBuildSnapshotV1(loadout)) : null,
   };

@@ -23,7 +23,6 @@
   inset-block-start: 0;
   z-index: 2;
   flex-wrap: wrap;
-  justify-content: space-between;
   padding-block: var(--edsb-space-control-block);
   // Exactly the height the regions below offset their own sticky chrome by.
   min-block-size: var(--edsb-layout-bar-height);
@@ -39,9 +38,21 @@
   }
 }
 
+// Every canvas builds the bar from exactly two groups: the screen's identity on
+// the leading edge and everything it offers on the trailing one (canvas 1a's
+// `OPEN SAVED BUILD · IMPORT · ?`, canvas 1c's `UNDO · REDO · EXPORT · SAVE ·
+// ?`). Nothing is drawn between them, so the identity takes the slack and the
+// navigation and the actions abut on the trailing edge as one row of controls.
 .frame__identity {
   @include layout.wrapping-row(var(--edsb-space-inline));
 
+  min-inline-size: 0;
+  margin-inline-end: auto;
+}
+
+// The workspace's identity block takes the width the plain title would have.
+.frame__screen-identity {
+  flex: 1 1 auto;
   min-inline-size: 0;
 }
 
@@ -58,6 +69,13 @@
 
 .frame__count {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+}
+
+// Canvas 1c orders the bar's trailing edge by what the controls do to the
+// build: the history pair, the committing actions, then the way off the screen.
+// The navigation is therefore drawn after the actions, not before them.
+.frame__navigation {
+  order: 1;
 }
 
 .frame__navigation-list {
@@ -88,6 +106,14 @@
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 }
 
+// Canvas 1c's hairline between the history pair and the committing actions.
+.frame__actions-divider {
+  flex: none;
+  inline-size: var(--edsb-border-width-hairline);
+  block-size: var(--edsb-space-2xl);
+  background-color: var(--edsb-border-quiet);
+}
+
 // One composition is rendered at a time. `display: none` is deliberate rather
 // than a visual hide: the composition that is not in use must leave the
 // accessibility tree entirely, or every action would be announced twice.
@@ -109,13 +135,18 @@
     letter-spacing: var(--edsb-text-tracking-dialog);
   }
 
-  .frame__actions {
+  // Canvas 1d's compact bar is a single 52px row: the wedge, the identity, and
+  // one `⋮` control holding everything else. The screens the bar offers are in
+  // that menu with the actions, so the chip row that stood under the bar at
+  // compact width is not drawn — it was the wide bar folded, not the compact
+  // one (canvas 1d).
+  .frame__actions,
+  .frame__navigation {
     display: none;
   }
 
   .frame__action-layer {
     display: block;
-    inline-size: 100%;
   }
 }
 
@@ -124,20 +155,21 @@
   padding-inline: var(--edsb-space-region);
 }
 
+// No centred measure. Every canvas runs its regions to the edge of the artboard
+// — canvas 1c's `392px 1fr 306px` grid and canvas 1a's `1fr 340px` both give
+// the slack to a region rather than to a margin — so the screen takes the width
+// it is given and the regions that want a measure declare their own.
+// No inset. Both wide canvases put the page ground edge to edge under the top
+// bar — canvas 1a's `1320px` card and canvas 1c's `1560px` card each hold the
+// bar and the region grid as direct children with nothing between them — and
+// every region inside carries its own padding. The 18px/22px this once set was
+// ours: it stood the category strip and the ledger's leading rule off the window
+// edge and off the bar above them, which is a frame the design does not draw
+// (wave 9).
 .frame__main {
-  @include layout.content-measure;
-
   flex: 1 1 auto;
-  padding-block: var(--edsb-space-panel);
-  padding-inline: var(--edsb-space-region);
 
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
   scroll-margin-block-start: var(--edsb-layout-bar-height);
-}
-
-@include layout.compact {
-  .frame__main {
-    padding-inline: var(--edsb-space-inline-loose);
-  }
 }

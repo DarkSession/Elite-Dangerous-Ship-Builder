@@ -1,0 +1,32 @@
+@if (rendered().length > 0) {
+  <ul class="acquisition" [attr.aria-label]="groupLabel()">
+    @for (label of rendered(); track label.kind + label.packageValue) {
+      <li class="acquisition__item">
+        <!--
+          Both canvases draw exactly two markers on a restricted row: the cool
+          `REWARD ONLY` chip, and the Merc Coin icon beside the module's name.
+          Every other restriction is real and is carried in the sentence, which
+          is here whether or not it is drawn — the invisible floor, rather than
+          a row of chips the reference does not have (design-canvas rule).
+        -->
+        @switch (label.marker) {
+          @case ('reward') {
+            <span class="acquisition__chip acquisition__chip--reward">{{ label.short }}</span>
+          }
+          @case ('mercCoin') {
+            <img
+              class="acquisition__coin"
+              src="assets/icons/merc-coin.png"
+              alt=""
+              width="14"
+              height="14"
+            />
+          }
+        }
+        <span [class.visually-hidden]="!showExplanations()" class="acquisition__explanation">
+          {{ label.explanation }}
+        </span>
+      </li>
+    }
+  </ul>
+}

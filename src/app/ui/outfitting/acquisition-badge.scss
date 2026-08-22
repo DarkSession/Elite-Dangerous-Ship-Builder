@@ -1,0 +1,50 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's two restriction markers: the cool `REWARD ONLY` chip and the
+// Merc Coin icon (canvas 1c/1d). Nothing else is drawn — the sentences beside
+// them carry every other restriction.
+:host {
+  display: block;
+}
+
+.acquisition {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acquisition__item {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}
+
+// The canvas's chip: a cool marker on a cool wash inside a cool hairline.
+.acquisition__chip--reward {
+  @include layout.micro-label(var(--edsb-text-info), var(--edsb-text-tracking-code));
+
+  flex: none;
+  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
+  background-color: var(--edsb-surface-info-quiet);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-info);
+}
+
+// The canvas's Merc Coin, beside the module's name at the size it draws it.
+.acquisition__coin {
+  flex: none;
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  object-fit: contain;
+}
+
+.acquisition__explanation {
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

@@ -1,6 +1,6 @@
 # Implementation Plan: Module Outfitting and Engineering
 
-**Branch**: `002-module-outfitting` | **Date**: 2026-08-18 | **Spec**: [spec.md](./spec.md)
+**Branch**: `002-module-outfitting` | **Date**: 2026-08-21 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/002-module-outfitting/spec.md`
 
@@ -8,7 +8,9 @@
 
 Add package-authoritative outfitting to feature 001's single active build: enumerate every mount,
 find and fit stock or package pre-engineered modules, apply supported engineering, edit module power,
-and retain a session-only 100-decision undo/redo history. Components render immutable presentation
+name the loaded ship, and retain a session-only 100-decision undo/redo history. Ship name and ident
+editing is owned here (FR-019): feature 001 supplies the modelled snapshot fields, feature 002 supplies
+the control and routes it through the same transaction and history path as any other edit. Components render immutable presentation
 models and dispatch intents. Pure TypeScript services query and edit package-owned detached
 `ShipLoadout` candidates reconstructed from feature 001's modelled snapshot boundary; only a
 successful, changed candidate atomically replaces the active build.
@@ -51,7 +53,8 @@ reader; portrait and landscape; static same-origin deployment usable offline aft
 **Project Type**: Client-side Angular single-page application producing static files only
 
 **Performance Goals**: Search input to settled candidate results below 100 ms for the installed
-package's largest list; one active-build revision and one result refresh per accepted decision; exact
+package's largest list, measured in a dedicated Chromium-only Playwright project because CPU
+throttling is a CDP capability with no Firefox equivalent; one active-build revision and one result refresh per accepted decision; exact
 modelled-checkpoint restoration without cumulative mutation or stale catalogue cost
 
 **Constraints**: No backend, account, telemetry or cross-origin runtime request; no private fitting,
@@ -60,7 +63,7 @@ all application text translatable; all package game text/diagnostics remain pack
 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: Every hull, slot and pre-engineered variant supplied by the installed package; the
-package's largest discovered chooser; at least the newest 100 Commander decisions; three product
+package's largest discovered chooser; exactly the newest 100 Commander decisions; three product
 surfaces composed within `/build`
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c (1560px wide reference) and 1d
@@ -73,20 +76,20 @@ _GATE: **PASS with no exception**. Historical purchase values remain outside the
 construction always populates fixed mounts, so no local substitute is required. Implementation
 remains sequenced behind features 001 and 011._
 
-| Principle                               | Plan evidence                                                                                                                             | Status                     |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                          | PASS                       |
-| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including fixed-mount defaults at import.                                      | PASS                       |
-| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                     | PASS                       |
-| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and package construction always populates fixed mounts.                            | PASS                       |
-| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit. | PASS; 011 prerequisite     |
-| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                | PASS; 011 prerequisite     |
-| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                              | PASS; 011 prerequisite     |
-| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                            | PASS; harness prerequisite |
-| IX. Specification Before Implementation | The 2026-08-18 clarification resolves unsupported partial ingress before this redesign; every FR maps to a surface.                       | PASS                       |
+| Principle                               | Plan evidence                                                                                                                                                                                                                                       | Status                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                                                                                                                                    | PASS                       |
+| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including fixed-mount defaults at import.                                                                                                                                                | PASS                       |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                                                                                                                               | PASS                       |
+| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and package construction always populates fixed mounts.                                                                                                                                      | PASS                       |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.                                                                                                           | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                                                                                                                          | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                                                                                                                        | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                                                                                                                      | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18 and 2026-08-21 clarifications resolve unsupported partial ingress, ship name/ident ownership, slot display, clear-all duplication, roll wording and the unrequired search shortcut before this redesign; every FR maps to a surface. | PASS                       |
 
-Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, name/ident updates and
-modelled session checkpoints. Reconstruction goes back through `ShipLoadout`; raw-module overlays,
+Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, its name/ident fields and
+modelled session checkpoints; feature 002 owns the name/ident control that writes them. Reconstruction goes back through `ShipLoadout`; raw-module overlays,
 local game rules and captured purchase fields remain prohibited. `completeEngineeringGrade()`
 returning `unsupported` triggers atomic ingress refusal. Package construction always returns fixed
 mounts populated with their hull defaults; feature 002 adds no missing-default outcome.
@@ -148,7 +151,6 @@ src/app/
 │   ├── active-build/                       # feature 001; integrated, not duplicated
 │   └── outfitting/
 │       ├── candidate-query.ts            # locale-dependent projection/search
-│       ├── outfitting.presenter.ts
 │       └── outfitting.store.ts
 ├── i18n/                                      # feature 011 package/app text presenter
 ├── ui/                                        # feature 011 primitives extended here
@@ -158,10 +160,14 @@ src/app/
     └── engineering-editor/
 
 e2e/
-├── accessibility.ts
+├── accessibility.ts                        # feature 011 shared helper, extended here
+├── coverage-ledger.ts                      # feature 011 registry, extended here
 ├── module-outfitting.spec.ts
 ├── module-engineering.spec.ts
-└── outfitting-history.spec.ts
+├── outfitting-history.spec.ts
+├── outfitting-responsive.spec.ts
+├── outfitting-accessibility.spec.ts
+└── outfitting-timing.spec.ts               # SC-002 only; Chromium-only Playwright project
 ```
 
 **Structure Decision**: Keep one Angular application, one committed active loadout and no new route.

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  input,
+  output,
+  viewChild,
+  type ElementRef,
+} from '@angular/core';
 import { createFieldRelations } from '../field/field-relations';
 
 /** One choice in a select. `label` is what a Commander reads; `value` is the identity. */
@@ -38,6 +46,24 @@ export class SelectField {
     description: this.description,
     error: this.error,
   });
+
+  protected readonly control = viewChild<ElementRef<HTMLSelectElement>>('control');
+
+  constructor() {
+    // A `<select>` keeps whatever the Commander last chose, whatever the
+    // `selected` attributes on its options say afterwards. Without this, a
+    // value reset in code — a draft reverted, a menu rebuilt against a build
+    // that changed — leaves the control showing a choice nothing holds.
+    effect(() => {
+      const element = this.control()?.nativeElement;
+      const value = this.value() ?? '';
+      // Read so the effect re-runs when the menu itself is rebuilt.
+      this.options();
+      if (element !== undefined && element.value !== value) {
+        element.value = value;
+      }
+    });
+  }
 
   onChange(event: Event): void {
     this.changed.emit((event.target as HTMLSelectElement).value);

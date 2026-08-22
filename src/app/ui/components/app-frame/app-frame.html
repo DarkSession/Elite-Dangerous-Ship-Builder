@@ -7,7 +7,25 @@
 <header class="frame__banner" [attr.aria-label]="bannerLabel()">
   <div class="frame__identity">
     <span class="frame__flag" aria-hidden="true"></span>
-    @if (routeContext(); as context) {
+    <!--
+      The bar's title, or the screen's own identity where it publishes one.
+      Canvas 1c and 1d both put the build's name where every other screen's
+      name goes, so the two are alternatives rather than a title with a second
+      identity beside it (FR-019).
+    -->
+    @if (identity(); as screenIdentity) {
+      <edsb-ship-identity-fields
+        class="frame__screen-identity"
+        [name]="screenIdentity.name"
+        [fallbackName]="routeContext() ?? ''"
+        [detail]="screenIdentity.detail"
+        [ident]="screenIdentity.ident"
+        [editing]="screenIdentity.editing"
+        (opened)="identityOpened.emit($event)"
+        (closed)="identityClosed.emit()"
+        (committed)="identityCommitted.emit($event)"
+      />
+    } @else if (routeContext(); as context) {
       <h1 class="frame__title">{{ context }}</h1>
     }
     @if (routeCount(); as count) {
@@ -34,7 +52,7 @@
     </nav>
   }
 
-  @if (actions().length > 0) {
+  @if (actions().length > 0 || navigation().length > 0) {
     <!--
       The same actions in two compositions, one rendered at a time. The wide row
       keeps every action on the banner; the compact layer moves them behind one
@@ -44,10 +62,14 @@
     -->
     <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
       @for (action of actions(); track action.id) {
+        @if (action.startsGroup) {
+          <span class="frame__actions-divider" aria-hidden="true"></span>
+        }
         <edsb-action-button
           [label]="action.label"
           [emphasis]="action.emphasis ?? 'secondary'"
           [disabled]="action.disabled ?? false"
+          [description]="action.description ?? null"
           (activated)="selectAction(action)"
         />
       }
@@ -56,12 +78,15 @@
     <edsb-action-layer
       class="frame__action-layer"
       [actions]="actions()"
+      [links]="navigation()"
+      [linksLabel]="navigationLabel()"
       [label]="actionsLabel()"
       [openLabel]="actionsOpenLabel()"
       [closeLabel]="actionsCloseLabel()"
       [expanded]="actionsOpen()"
       (toggled)="setActionsOpen($event)"
       (actionSelected)="selectActionById($event)"
+      (linkSelected)="navigationSelected.emit($event)"
     />
   }
 </header>

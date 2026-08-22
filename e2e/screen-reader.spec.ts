@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { previewUrl } from './servers';
+import { openActionLayer } from './shell';
 
 /**
  * What a screen reader is given (US1).
@@ -28,11 +29,25 @@ test.describe('accessibility tree', () => {
     await expect(page.locator('body')).toMatchAriaSnapshot(`
       - banner:
         - heading [level=1]
-        - navigation
       - main
       - alert
       - status
     `);
+  });
+
+  test('offers the screens it navigates to as one landmark, at either width', async ({ page }) => {
+    await page.goto('/');
+
+    // Canvas 1c draws them on the bar's trailing edge and canvas 1d puts them
+    // in the `⋮` menu, so which composition is drawn depends on the width. The
+    // landmark is in the banner either way; at compact it is inside the menu,
+    // which is where the reference puts them.
+    if ((await page.getByRole('navigation').count()) === 0) {
+      await openActionLayer(page);
+    }
+
+    await expect(page.getByRole('banner').getByRole('navigation')).toHaveCount(1);
+    await expect(page.getByRole('banner').getByRole('navigation')).toHaveAccessibleName(/.+/);
   });
 
   test('names the announcement outlets rather than leaving them anonymous', async ({ page }) => {

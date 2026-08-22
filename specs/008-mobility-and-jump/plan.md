@@ -57,8 +57,9 @@ dark theme; all application text and numeric/unit formatting localized; WCAG 2.2
 seven mobility fields; three aggregate result groups; sparse FSD/thruster parameters; one mass row
 for every fitted module
 
-**Design Reference**: `.design/Ship Builder.dc.html`, wide `data-anat-detail="mass"` and narrow
-`data-m-mode="mass"` regions. See [design/reference-review.md](./design/reference-review.md)
+**Design Reference**: `.design/Ship Builder.dc.html` canvases **1c** (1560px wide outfitting) and
+**1d** (390px compact outfitting) — the two applicable screens for features 002–010 — specifically
+their wide `data-anat-detail="mass"` and narrow `data-m-mode="mass"` regions. See [design/reference-review.md](./design/reference-review.md)
 
 ## Constitution Check
 

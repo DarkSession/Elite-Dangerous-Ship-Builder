@@ -41,7 +41,7 @@ revision. The read:
 - provides no weapon metric and receives only package-resolved module identities from supported
   ingress; fixed mounts already contain their package defaults.
 
-Feature 002 T025 derives the accepted read before feature 007 composition. That implementation is a
+Feature 002 T026 derives the accepted read before feature 007 composition. That implementation is a
 sequencing dependency, not a missing or feature-local boundary.
 
 ## Required feature-005 boundary

@@ -1,0 +1,37 @@
+@use '../../../styles/responsive' as layout;
+
+// A labelled rule above a stack of stated conditions — the canvas's
+// `BUILD STATUS` block, which names its heading and then lists its lines
+// (canvas 1c).
+:host {
+  display: block;
+}
+
+.notice {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.notice__header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+}
+
+.notice__title {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+.notice__dismiss {
+  @include layout.control-base;
+  @include layout.control-quiet;
+}
+
+.notice__lines {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

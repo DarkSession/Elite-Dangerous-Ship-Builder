@@ -1,7 +1,8 @@
 @use '../../../styles/responsive' as layout;
 
+// Nothing at all while storage is healthy — not an empty box holding a gap.
 :host {
-  display: block;
+  display: contents;
 }
 
 .persistence {

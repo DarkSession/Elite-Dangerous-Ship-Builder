@@ -1,0 +1,82 @@
+<!--
+  Canvas 1c draws the wide editor's blueprint control as a dropdown; canvas 1d
+  draws it as a list of cards. Same choices, same order, same first option —
+  only the control differs, chosen from the space the editor was given.
+-->
+@if (fixed()) {
+  <!--
+    The article's own recipe, stated. There is no menu, because there is no
+    choice: this recipe is what makes the article the article (wave 5).
+  -->
+  <p class="blueprints__legend" [id]="fixedLabelId">{{ legend() }}</p>
+  <p class="blueprints__fixed" [attr.aria-labelledby]="fixedLabelId">
+    @for (choice of choices(); track choice.fdname) {
+      @if (choice.applied) {
+        <edsb-game-text
+          [text]="choice.name.text"
+          [language]="choice.name.language"
+          [translationState]="choice.name.translationState"
+        />
+      }
+    }
+  </p>
+} @else if (asDropdown()) {
+  <edsb-select-field
+    class="blueprints__field"
+    [label]="legend()"
+    [options]="options()"
+    [value]="selected() ?? noBlueprint"
+    [description]="clearing() ? clearConsequence() : null"
+    (changed)="chosen.emit($event)"
+  />
+} @else {
+  <fieldset class="blueprints">
+    <legend class="blueprints__legend">{{ legend() }}</legend>
+
+    <!--
+      The canvas's first option, at both widths. Choosing it and applying is the
+      whole clear route; there is no second control anywhere that does this.
+    -->
+    <label class="blueprint blueprint--none" [attr.data-selected]="clearing()">
+      <input
+        class="blueprint__radio"
+        type="radio"
+        [name]="groupName"
+        [value]="noBlueprint"
+        [checked]="clearing()"
+        (change)="chosen.emit(noBlueprint)"
+      />
+      <span class="blueprint__identity">
+        <span class="blueprint__name">{{ noneLabel() }}</span>
+        @if (clearConsequence(); as consequence) {
+          <span class="blueprint__consequence">{{ consequence }}</span>
+        }
+      </span>
+    </label>
+
+    @for (choice of choices(); track choice.fdname) {
+      <label class="blueprint" [attr.data-selected]="selected() === choice.fdname">
+        <input
+          class="blueprint__radio"
+          type="radio"
+          [name]="groupName"
+          [value]="choice.fdname"
+          [checked]="selected() === choice.fdname"
+          [attr.aria-label]="nameFor(choice)"
+          (change)="chosen.emit(choice.fdname)"
+        />
+        <span class="blueprint__identity">
+          <edsb-game-text
+            class="blueprint__name"
+            [text]="choice.name.text"
+            [language]="choice.name.language"
+            [translationState]="choice.name.translationState"
+          />
+          @if (choice.applied) {
+            <span class="blueprint__applied">{{ appliedLabel() }}</span>
+          }
+        </span>
+      </label>
+    }
+  </fieldset>
+}

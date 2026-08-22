@@ -1,0 +1,84 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's materials card: a tracked amber heading with `REQUIRED` opposite,
+// then a rarity marker, a name that takes the width, and a mono count.
+:host {
+  display: block;
+}
+
+// No rule above the heading. The requirement sits in its own column of canvas
+// 1c's panel, with the choices beside it rather than above it, so there is
+// nothing for a rule to separate it from — it was a line drawn across the top of
+// a column (wave 9).
+.materials {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.materials__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline-tight);
+}
+
+.materials__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+.materials__required {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+.materials__part {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.materials__part-heading {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+.materials__note {
+  margin: 0;
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-caption);
+}
+
+.materials__list {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+}
+
+.material {
+  display: flex;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+}
+
+.material__name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--edsb-text-primary);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.material__count {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-numeric));
+
+  flex: none;
+  margin: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

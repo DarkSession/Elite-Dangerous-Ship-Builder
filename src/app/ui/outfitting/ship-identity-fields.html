@@ -1,0 +1,74 @@
+<div class="identity-fields">
+  <!--
+    The name is the command bar's own title, as both canvases draw it, edited
+    where it stands: the canvas gives the title a dashed rule, a text cursor and
+    the title "Click to rename this build", and no field, no dialog and no row
+    of controls anywhere near it. Confirming is leaving the field — Enter or a
+    click elsewhere — and Escape leaves it as it was (wave 4).
+  -->
+  <div class="identity-fields__line">
+    @if (editing() === 'name') {
+      <label class="visually-hidden" [attr.for]="nameFieldId">{{ nameLabel() }}</label>
+      <input
+        #field
+        class="identity-fields__input identity-fields__input--name"
+        type="text"
+        [id]="nameFieldId"
+        [value]="name() ?? ''"
+        [attr.placeholder]="fallbackName()"
+        (change)="confirm('name', field.value)"
+        (keydown.escape)="closed.emit()"
+      />
+    } @else {
+      <button
+        class="identity-fields__open identity-fields__open--name"
+        type="button"
+        (click)="open('name')"
+      >
+        @if (headingLevel() === 1) {
+          <h1 class="identity-fields__name">{{ heading() }}</h1>
+        } @else {
+          <h2 class="identity-fields__name">{{ heading() }}</h2>
+        }
+        <!--
+          What the control does, after the name it is showing. Not an
+          `aria-label`: that would replace the title a Commander reads aloud
+          with words that are not on the screen (WCAG 2.5.3).
+        -->
+        <span class="visually-hidden">{{ nameEdit() }}</span>
+        <span class="identity-fields__pencil-mark" aria-hidden="true">&#x270E;</span>
+      </button>
+    }
+  </div>
+
+  <div class="identity-fields__line identity-fields__line--detail">
+    @if (detail(); as hull) {
+      <span class="identity-fields__detail">{{ hull }}</span>
+    }
+
+    @if (editing() === 'ident') {
+      <label class="visually-hidden" [attr.for]="identFieldId">{{ identLabel() }}</label>
+      <input
+        #plateField
+        class="identity-fields__input identity-fields__input--ident"
+        type="text"
+        [id]="identFieldId"
+        [value]="ident() ?? ''"
+        (change)="confirm('ident', plateField.value)"
+        (keydown.escape)="closed.emit()"
+      />
+    } @else {
+      <button
+        class="identity-fields__open identity-fields__ident"
+        type="button"
+        [attr.aria-label]="identEdit()"
+        (click)="open('ident')"
+      >
+        @if (ident(); as plate) {
+          <span class="identity-fields__plate" data-bidi-isolate>{{ plate }}</span>
+        }
+        <span class="identity-fields__pencil-mark" aria-hidden="true">&#x270E;</span>
+      </button>
+    }
+  </div>
+</div>

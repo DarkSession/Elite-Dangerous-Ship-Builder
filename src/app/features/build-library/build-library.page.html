@@ -1,8 +1,6 @@
 <!-- The command bar carries this screen's name and its count; the page does
      not repeat either (canvas 1a/1b/1c, "Command bar"). -->
 <section class="library">
-  <p class="library__description">{{ description() }}</p>
-
   @if (storageNotice(); as notice) {
     <edsb-status-notice tone="error" [message]="notice" />
   }

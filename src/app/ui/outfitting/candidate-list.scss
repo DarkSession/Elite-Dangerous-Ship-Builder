@@ -1,0 +1,287 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's candidate manifest. One list, two arrangements, chosen from the
+// space the list is given rather than from a device label: an aligned grid
+// under one header row (canvas 1c) and stacked cards that carry their own
+// labels (canvas 1d).
+//
+// The head is fixed and the rows scroll under it, so the component is a column
+// of two: the head, and the scroller that holds everything else.
+:host {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  container-type: inline-size;
+  container-name: candidates;
+}
+
+.candidates {
+  @include layout.stack(0);
+
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+// The scroller, and the only one in this component.
+.candidates__body {
+  @include layout.stack(0);
+
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+}
+
+// Hidden until there is room to align columns under it.
+.candidates__columns {
+  display: none;
+}
+
+// The canvas's leading amber edge marks the row in hand. Never the only
+// carrier: the radio's own checked state and the row's spoken name say it too.
+.candidate {
+  @include layout.selectable-row;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--edsb-space-stack-tight);
+  align-items: center;
+  min-block-size: var(--edsb-target-size);
+  padding: var(--edsb-space-row);
+  cursor: pointer;
+}
+
+.candidate__radio {
+  // The control stays in the accessibility tree and stays operable; the row's
+  // own ground is what shows the state, exactly as both canvases draw it.
+  position: absolute;
+  inline-size: var(--edsb-space-hair);
+  block-size: var(--edsb-space-hair);
+  opacity: 0;
+}
+
+// The canvas's module cell: one line, the name and its mount, with whatever
+// markers the row carries beside it.
+.candidate__identity {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+  min-inline-size: 0;
+}
+
+.candidate__name {
+  min-inline-size: 0;
+  font-family: var(--edsb-font-body);
+  // The canvas's 13px, which is this scale's `lead` step.
+  font-size: var(--edsb-text-size-lead);
+  font-weight: var(--edsb-text-weight-emphasis);
+  color: var(--edsb-text-primary);
+  overflow-wrap: break-word;
+}
+
+.candidate--fitted .candidate__name,
+[data-selected='true'] .candidate__name {
+  color: var(--edsb-text-accent-strong);
+}
+
+// `Multi-Cannon · Gimballed`: the canvas writes the mount into the name with a
+// separator, so the space before it is drawn rather than left to whitespace the
+// template collapses. It is one string in one type — the canvas gives the mount
+// no lighter weight and no quieter ink of its own, and drawn at 300 against the
+// name's 500 the two halves of a module's name read as two different things
+// (wave 9).
+.candidate__mount {
+  margin-inline-start: var(--edsb-space-stack-tight);
+}
+
+.candidate__badge {
+  flex: none;
+}
+
+// The canvas's `CLASS` column. At compact it sits under the name, in the mono
+// the canvas sets every code in — and in the same ink as the figures beside it.
+// Canvas 1c gives `4A` no colour of its own: what is amber on this manifest is
+// the row a Commander is on, whole, and a class picked out on every row read as
+// two hundred rows all marked (wave 8).
+// Canvas 1c's `font: 400 11px/1 'JetBrains Mono'` and nothing else: `4A` is
+// drawn as one of the row's figures, in the figures' own type at the figures'
+// own rung — not as a tracked uppercase label, which set it apart from the five
+// numbers it is read across (wave 9).
+.candidate__class {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-muted));
+}
+
+.candidate--fitted .candidate__class,
+[data-selected='true'] .candidate__class {
+  color: var(--edsb-text-accent-strong);
+}
+
+.candidate__facts {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+// Canvas 1c's `COST` cell: the credit price, and under it the coin price where
+// the Almanac states one. The two are stacked, never summed.
+.candidate__cost {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edsb-space-stack-tight);
+  min-inline-size: 0;
+}
+
+// Both lines are laid out on the same two-column template — the figure, then a
+// column of one unit's width holding `cr` or the coin. That fixed unit column is
+// what the canvas uses to line the credit figure up with the coin figure under
+// it; without it each line ends wherever its own unit happens to be wide, and
+// the two numbers sit a few pixels apart (wave 8).
+.candidate__cost ::ng-deep .fact,
+.candidate__merc {
+  display: grid;
+  grid-template-columns: minmax(0, auto) var(--edsb-layout-icon-size);
+  align-items: center;
+  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline-tight);
+  justify-content: start;
+}
+
+// At compact the cell keeps its own label, on a row of its own above the two
+// figures rather than in the figure's column.
+.candidate__cost ::ng-deep .fact__label {
+  grid-column: 1 / -1;
+}
+
+.candidate__cost ::ng-deep .fact__unit {
+  text-align: start;
+}
+
+// The canvas sets the coin figure a rung under the credit figure beside it, in
+// the Merc ink. The icon is decorative — the unit is read out in words.
+.candidate__merc-count {
+  @include layout.metric-value(var(--edsb-text-size-caption), var(--edsb-text-merc));
+
+  unicode-bidi: isolate;
+}
+
+.candidate__merc-icon {
+  flex: none;
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  object-fit: contain;
+}
+
+.candidates__section:empty,
+.candidates__group:empty {
+  display: none;
+}
+
+// Wide enough to align seven columns without truncating a module name: the
+// canvas's manifest measures 2.2fr for the name and five figure columns beside
+// the class. Below it the cards take over rather than the name being cut.
+@container candidates (min-width: 44rem) {
+  // Canvas 1c's header row: `padding: 0 12px 7px`, and nothing else — no
+  // ground, no rule under it, no sticky offset. It sits above the scroller
+  // rather than inside it, so it stays put without any of that (wave 9).
+  .candidates__columns {
+    flex: none;
+    display: grid;
+    // No gap: the canvas's seven columns abut, and their measures already carry
+    // the space between them. A gap on top of them is what pushed the figures
+    // out of the widths the canvas sets.
+    gap: 0;
+    grid-template-columns: var(--edsb-layout-candidate-columns);
+    padding-inline: var(--edsb-space-row);
+    padding-block-end: var(--edsb-space-stack-tight);
+  }
+
+  .candidates__column {
+    @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  }
+
+  .candidates__column--figure {
+    text-align: end;
+  }
+
+  .candidate {
+    grid-template-columns: var(--edsb-layout-candidate-columns);
+    // The same gap the header row sets — none — or the figures sit beside their
+    // labels rather than under them.
+    gap: 0;
+
+    // One line, at one height, exactly as the canvas draws it. That fixed
+    // height is what lets the rows outside the scroller be skipped without the
+    // scroller's own height moving: the largest mount the Almanac offers has
+    // hundreds of choices, and every one of them is this tall whether it has
+    // been laid out or not. The card composition has no such height — a card
+    // is as tall as its own text — so it is rendered whole instead, rather
+    // than declared at a size that is only ever an estimate (wave 4).
+    block-size: var(--edsb-layout-candidate-row);
+    content-visibility: auto;
+    contain-intrinsic-block-size: var(--edsb-layout-candidate-row);
+  }
+
+  // A name longer than its column is cut rather than wrapped: the canvas cuts
+  // it, and a row that grew a line would put the scroller's height back in
+  // doubt. The whole name stays in the row's accessible name.
+  .candidate__identity {
+    overflow: hidden;
+  }
+
+  .candidate__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  // The five figure cells sit in the row's own grid so they line up under the
+  // header rather than in a nested grid of their own — one template, seven
+  // columns, exactly as the canvas sets it.
+  .candidate__facts {
+    display: contents;
+  }
+
+  .candidate__fact {
+    text-align: end;
+  }
+
+  // In the manifest the cell is one grid column, so its two prices line up on
+  // the trailing edge under the `COST` heading rather than filling the column.
+  .candidate__cost {
+    align-items: flex-end;
+  }
+
+  .candidate__cost ::ng-deep .fact,
+  .candidate__merc {
+    justify-content: end;
+  }
+
+  // A Mercenary article carries two prices, and canvas 1c gives that row the
+  // second line it needs rather than cutting the coin price off into the row
+  // below. So the row takes its own height — and, because a height nobody
+  // declared cannot be estimated, it is never skipped either: an intrinsic size
+  // that is wrong for even a few rows is exactly what moves the scrollbar under
+  // a Commander as the list is reached, which is the thing the estimate exists
+  // to prevent (wave 8).
+  .candidate:has(.candidate__merc) {
+    block-size: auto;
+    min-block-size: var(--edsb-layout-candidate-row);
+    content-visibility: visible;
+  }
+
+  // The header row already names these columns once. Repeating the label on
+  // every row is what the canvas's aligned manifest exists to avoid — but the
+  // label stays in the accessibility tree, so a cell is never a bare number.
+  .candidate__fact ::ng-deep .fact__label {
+    @include layout.visually-hidden;
+  }
+
+  .candidate__fact ::ng-deep .fact {
+    justify-content: flex-end;
+  }
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

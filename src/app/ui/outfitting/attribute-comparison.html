@@ -1,0 +1,51 @@
+<!--
+  The scroller is a labelled region rather than a bare overflow box. Long
+  attribute names and expanded translations widen this table before anything
+  else in the editor does, so it scrolls inside itself rather than pushing the
+  page sideways — and a scrollable box with no reachable content is a box some
+  readers cannot get into at all. The label and the tab stop are invisible and
+  cost the design nothing (design-canvas rule, the accessibility floor).
+-->
+<div class="comparison__scroller" tabindex="0" role="region" [attr.aria-label]="caption()">
+  <table class="comparison" [attr.aria-describedby]="captionId">
+    <caption class="visually-hidden" [id]="captionId">
+      {{
+        caption()
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th class="comparison__column" scope="col">{{ attributeColumn() }}</th>
+        <th class="comparison__column comparison__column--figure" scope="col">
+          {{ stockColumn() }}
+        </th>
+        <th class="comparison__column comparison__column--figure" scope="col">
+          {{ modifiedColumn() }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.key) {
+        <tr class="comparison__row">
+          <th class="comparison__attribute" scope="row">{{ row.label }}</th>
+          <td class="comparison__value" data-bidi-isolate>
+            {{ row.stock ?? unavailable() }}
+          </td>
+          <td
+            class="comparison__value comparison__value--modified"
+            [attr.data-direction]="row.direction ?? null"
+            data-bidi-isolate
+          >
+            {{ row.modified ?? unavailable() }}
+            @if (row.direction === 'better' || row.direction === 'worse') {
+              <span class="comparison__marker" aria-hidden="true">{{
+                row.direction === 'better' ? '▲' : '▼'
+              }}</span>
+              <span class="visually-hidden">{{ directionLabel(row.direction) }}</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

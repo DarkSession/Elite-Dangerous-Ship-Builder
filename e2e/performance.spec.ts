@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { savedToBrowser } from './shell';
 
 /**
  * The plan's performance goals, measured rather than assumed.
@@ -62,23 +63,22 @@ test.describe('the workspace, on arrival', () => {
     await page.goto('/ships/Anaconda');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     await page.reload();
 
     // The first frame that offers the build's own actions is a frame in which
     // the build is already there. A workspace that lets a Commander act before
     // it has restored is a workspace that can discard what they did.
-    await expect(page.getByRole('button', { name: 'Share this build' })).toBeVisible();
-    await expect(page.getByText('Anaconda').first()).toBeVisible();
-    const provenance = await page.getByText(/Working build|Opened from a build link/).count();
-    expect(provenance).toBeGreaterThan(0);
+    await expect(page.getByRole('button', { name: /^(export|menu)$/i }).first()).toBeVisible();
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
   test('coalesces autosaves instead of writing once per edit', async ({ page }) => {
     await page.goto('/ships/Anaconda');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     // One record, one key, however many revisions went into it.
     const keys = await page.evaluate(() =>

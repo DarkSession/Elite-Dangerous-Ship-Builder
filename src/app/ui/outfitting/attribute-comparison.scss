@@ -1,0 +1,75 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's three-column grid: a name that takes the width and two mono
+// figures right-aligned under tracked micro headings.
+:host {
+  display: block;
+}
+
+// Long attribute names and expanded translations widen this before anything
+// else in the editor does. It scrolls inside itself rather than pushing the
+// page sideways (constitution VII).
+.comparison__scroller {
+  overflow-x: auto;
+}
+
+.comparison {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.comparison__column {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  text-align: start;
+  padding-block-end: var(--edsb-space-stack-tight);
+}
+
+.comparison__column--figure {
+  text-align: end;
+}
+
+// The canvas writes the whole row in one mono face — the name and both figures
+// — so an attribute lines up with its own numbers rather than sitting in a
+// different type from them (canvas 1c `eng-right`).
+.comparison__attribute {
+  text-align: start;
+  font-family: var(--edsb-font-metric);
+  font-weight: inherit;
+  color: var(--edsb-text-secondary);
+  font-size: var(--edsb-text-size-compact);
+  padding-block: var(--edsb-space-stack-tight);
+}
+
+.comparison__value {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-subtle));
+
+  text-align: end;
+  padding-block: var(--edsb-space-stack-tight);
+  padding-inline-start: var(--edsb-space-inline);
+  white-space: nowrap;
+}
+
+// The candidate column is the one the Commander is deciding about, so it reads
+// as the brighter of the two.
+.comparison__value--modified {
+  color: var(--edsb-text-numeric);
+}
+
+// The canvas's own two: what the recipe improved and what it cost. Never the
+// only carrier — the ▲/▼ beside the figure and the word behind it say it too.
+.comparison__value--modified[data-direction='better'] {
+  color: var(--edsb-text-success);
+}
+
+.comparison__value--modified[data-direction='worse'] {
+  color: var(--edsb-text-danger);
+}
+
+.comparison__marker {
+  margin-inline-start: var(--edsb-space-hair);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

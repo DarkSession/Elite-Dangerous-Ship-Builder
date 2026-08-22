@@ -1,0 +1,30 @@
+<fieldset class="grades">
+  <legend class="grades__legend">
+    <span class="grades__label">{{ legend() }}</span>
+    @if (selectedLabel(); as grade) {
+      <span class="grades__selected">{{ grade }}</span>
+    }
+  </legend>
+
+  <div class="grades__cells">
+    @for (grade of grades(); track grade) {
+      <label
+        class="grade"
+        [attr.data-selected]="selected() === grade"
+        [attr.data-filled]="filled(grade)"
+        [attr.data-unavailable]="unavailable(grade)"
+      >
+        <input
+          class="grade__radio"
+          type="radio"
+          [name]="groupName"
+          [value]="grade"
+          [checked]="selected() === grade"
+          [attr.aria-label]="optionLabel(grade)"
+          (change)="chosen.emit(grade)"
+        />
+        <span class="grade__number">{{ grade }}</span>
+      </label>
+    }
+  </div>
+</fieldset>

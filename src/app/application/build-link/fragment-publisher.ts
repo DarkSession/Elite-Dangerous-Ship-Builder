@@ -76,13 +76,17 @@ export class FragmentPublisher {
 
     this.#token += 1;
     const token = this.#token;
+    // Where this publication belongs. Encoding is asynchronous, and a Commander
+    // who leaves the build while one is in flight must not arrive at the
+    // shipyard with a build link stamped on it.
+    const document = this.#location.currentDocument();
     this.#active.setLink({ kind: 'encoding' });
 
     let fragment: string;
     try {
       fragment = await this.encode(loadout);
     } catch (error) {
-      if (token !== this.#token) {
+      if (token !== this.#token || this.#location.currentDocument() !== document) {
         return;
       }
       const failure = this.#errors.classify(error);
@@ -90,7 +94,7 @@ export class FragmentPublisher {
       return;
     }
 
-    if (token !== this.#token) {
+    if (token !== this.#token || this.#location.currentDocument() !== document) {
       return;
     }
 

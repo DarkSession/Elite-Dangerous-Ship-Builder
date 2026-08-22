@@ -44,16 +44,23 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('nav a')].map(
-      (link) => link.textContent?.trim(),
-    );
+    const named = (selector: string) =>
+      [...(fixture.nativeElement as HTMLElement).querySelectorAll(selector)].map((link) =>
+        link.textContent?.trim(),
+      );
 
     // The reference's command bar offers the shipyard and the library, and
     // never a chip for the build screen (canvas 1a/1b/1c).
-    expect(links).toEqual([
+    const expected = [
       BUNDLED_ENGLISH['navigation.catalogue'],
       BUNDLED_ENGLISH['navigation.library'],
-    ]);
+    ];
+
+    // The same list in both placements: on the bar's trailing edge where there
+    // is room (canvas 1c), and in the `⋮` menu where there is not (canvas 1d).
+    // One is drawn at a time, and which one is a stylesheet's decision.
+    expect(named('.frame__navigation a')).toEqual(expected);
+    expect(named('.action-layer__navigation a')).toEqual(expected);
   });
 
   it('resolves its text through the message facade', () => {

@@ -64,6 +64,7 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
+  --edsb-surface-info-quiet: var(--edsb-palette-cool-a10);
 
   // The wash that runs from the leading edge of a selected row.
   --edsb-surface-row-selected: var(--edsb-texture-selected);
@@ -87,6 +88,7 @@
   --edsb-text-accent: var(--edsb-palette-amber-2); //      8.62:1 min
   --edsb-text-accent-strong: var(--edsb-palette-amber-3); // 9.33:1 min
   --edsb-text-on-accent: var(--edsb-palette-bg-deep); //   8.50:1 on amber
+  --edsb-text-merc: var(--edsb-palette-merc); //           4.67:1 min
   --edsb-text-danger: var(--edsb-palette-hot); //          5.95:1 min
   --edsb-text-danger-quiet: var(--edsb-palette-hot-2); //  8.19:1 min
   --edsb-text-success: var(--edsb-palette-good); //        9.78:1 min
@@ -230,12 +232,14 @@
 
   --edsb-target-size: var(--edsb-target-min);
   --edsb-target-size-dense: var(--edsb-target-min-compact);
+  --edsb-target-size-floor: var(--edsb-target-min-floor);
 
   --edsb-artwork-filter: var(--edsb-filter-artwork);
 
   --edsb-layout-content-max: var(--edsb-measure-content-max);
   --edsb-layout-prose-max: var(--edsb-measure-prose-max);
   --edsb-layout-rail-min: var(--edsb-measure-rail-min);
+  --edsb-layout-ledger-rail: var(--edsb-measure-ledger-rail);
 
   // What a region has to clear to sit below the sticky command bar.
   --edsb-layout-bar-height: var(--edsb-measure-bar-height);
@@ -248,6 +252,36 @@
     var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
       var(--edsb-border-width-hairline)
   );
+  // Canvas 1c's own `2.2fr 62px 74px 74px 78px 86px 128px`, at those measures.
+  // The figure columns are fixed so they line up across the whole manifest
+  // rather than being redistributed by whatever the widest cell happens to hold;
+  // the cost column is nearly twice a mass or a power draw because it holds nine
+  // digits and a unit.
+  //
+  // Two departures from the literal track list, both because the bench is wider
+  // than the canvas's: canvas 1c's workspace is `392px 1fr 306px` and the third
+  // track — live stats and export — is not built yet, so the centre column holds
+  // 306px the canvas never gave it. The name is therefore **capped** at the
+  // 436px the canvas resolves `2.2fr` to, instead of taking the surplus and
+  // running to 58% of the table; and the **figure columns share what is left in
+  // the canvas's own ratio** — their `fr` values are the canvas px over 100, so
+  // cost stays twice a mass and the whole set widens together, with each canvas
+  // measure still standing as its floor. Pooling the surplus into the cost
+  // column alone spanned the panel too, but opened a void between `DRAW WEP` and
+  // `COST` the width of the missing region; sharing it equally spanned it as
+  // well, but flattened the ratios that make a nine-digit column read as one.
+  // Both come out when the third column goes in (wave 9).
+  --edsb-layout-candidate-columns: minmax(0, 27.25rem) minmax(3.875rem, 0.62fr)
+    minmax(4.625rem, 0.74fr) minmax(4.625rem, 0.74fr) minmax(4.875rem, 0.78fr)
+    minmax(5.375rem, 0.86fr) minmax(8rem, 1.28fr);
+  --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
+  --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
+
+  --edsb-layout-mount-box: var(--edsb-measure-mount-box);
+  --edsb-layout-node-box: var(--edsb-measure-node-box);
+  --edsb-layout-icon-size: var(--edsb-measure-icon);
+  --edsb-layout-menu-min: var(--edsb-measure-menu-min);
+  --edsb-layout-menu-max: var(--edsb-measure-menu-max);
   --edsb-layout-layer-max: var(--edsb-measure-layer-md);
   --edsb-layout-layer-narrow: var(--edsb-measure-layer-sm);
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);

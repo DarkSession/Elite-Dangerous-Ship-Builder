@@ -33,6 +33,19 @@ export class HistoryLocationAdapter {
     });
   }
 
+  /**
+   * The document the fragment would be written onto, as path and query.
+   *
+   * A build link belongs to the build it describes. Publishing is asynchronous,
+   * so a Commander can leave `/build` while an encoding is still running; a
+   * caller compares this before and after to keep the finished fragment from
+   * being stamped onto whatever screen they went to instead.
+   */
+  currentDocument(): string {
+    const location = this.#window?.location;
+    return location ? `${location.pathname}${location.search}` : '';
+  }
+
   /** The canonical link for the current document with this fragment value. */
   urlWithFragment(value: string): string {
     const location = this.#window?.location;

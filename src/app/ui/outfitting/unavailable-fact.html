@@ -1,0 +1,11 @@
+<div class="fact">
+  <span class="fact__label">{{ label() }}</span>
+  @if (available()) {
+    <span class="fact__value" data-bidi-isolate>{{ value() }}</span>
+    @if (unit()) {
+      <span class="fact__unit">{{ unit() }}</span>
+    }
+  } @else {
+    <edsb-unavailable-value [reason]="reason()" />
+  }
+</div>

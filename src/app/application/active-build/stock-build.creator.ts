@@ -40,12 +40,12 @@ export class StockBuildCreator {
   #construct(symbol: string): CandidateOutcome {
     const ship = getShipBySymbol(symbol);
     if (ship === null) {
-      return { ok: false, reason: `The installed Almanac carries no hull "${symbol}".` };
+      return { ok: false, reason: `This installation carries no hull "${symbol}".` };
     }
     if (getDefaultLoadout(ship.symbol) === null) {
       return {
         ok: false,
-        reason: `The installed Almanac carries no default loadout for "${ship.symbol}".`,
+        reason: `This installation carries no default loadout for "${ship.symbol}".`,
       };
     }
 
@@ -73,6 +73,10 @@ export class StockBuildCreator {
         loadout,
         hullName: this.#gameText.shipName(ship.symbol).text ?? ship.symbol,
         provenance: 'stock',
+        // A hull's own default build is the package's, at the package's own
+        // quality. There is no source to have stated a partial roll, so the
+        // ingress gate has nothing to complete and nothing to report.
+        qualityNotices: [],
         sourceNamed: null,
         // A build that exists only in this tab, with no copy anywhere: unsaved
         // by definition, so the next replacement asks before discarding it.

@@ -18,12 +18,34 @@
   [attr.aria-labelledby]="triggerId"
   [hidden]="!expanded()"
 >
+  <!--
+    Canvas 1d's `⋮` menu is one list: `SAVE`, then the history pair, then
+    `IMPORT · EXPORT`, then `HELP & FAQ`. The screens a Commander can move to
+    are part of that list at this width, not a second row of chips under the
+    bar — the compact bar is one 52px row and nothing else.
+  -->
+  @if (links().length > 0) {
+    <nav class="action-layer__navigation" [attr.aria-label]="linksLabel()">
+      @for (entry of links(); track entry.id) {
+        <a
+          class="action-layer__action action-layer__link"
+          [href]="entry.href"
+          [attr.aria-current]="entry.current ? 'page' : null"
+          (click)="linkSelected.emit({ entry, event: $event })"
+        >
+          {{ entry.label }}
+        </a>
+      }
+    </nav>
+  }
+
   @for (action of actions(); track action.id) {
     <edsb-action-button
       class="action-layer__action"
       [label]="action.label"
       [emphasis]="action.emphasis ?? 'secondary'"
       [disabled]="disabled() || (action.disabled ?? false)"
+      [description]="action.description ?? null"
       (activated)="select(action)"
     />
   }

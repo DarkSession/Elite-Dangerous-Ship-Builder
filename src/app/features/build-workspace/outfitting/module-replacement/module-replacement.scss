@@ -1,0 +1,175 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's inline manifest and canvas 1d's full-screen layer are the same
+// content; the arrangement follows the space the region is given. The list
+// scrolls inside its own box — the document never does.
+:host {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  container-name: replacement;
+
+  // The bound the list gives way against. Without one the region grows to its
+  // content, `.replacement__list` never scrolls, the document does instead, and
+  // the sticky actions below end up drawn over the foot of the list — over the
+  // control that builds the next page of it.
+  //
+  // It is the bench's own bound, written the same way on purpose. The bench
+  // clips what overflows it, so a region that bounded itself any more loosely
+  // would put its last rows and its fit control inside a box that shows
+  // neither of them and scrolls to neither.
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+}
+
+// A viewport this short cannot divide into a scroller and a foot and still show
+// one row: at 390px the bench's share is 274px and a candidate card is up to
+// 221px of it. So the region stops bounding itself, the foot stops sticking,
+// and the page scrolls — the same release the command bar and the bench above
+// it make at the same threshold, and what keeps the whole of it readable at
+// 400% zoom (FR-011).
+@include layout.short-viewport {
+  :host {
+    max-block-size: none;
+  }
+
+  .replacement__foot {
+    position: static;
+  }
+}
+
+.replacement {
+  @include layout.stack(var(--edsb-space-stack));
+
+  // The list is the tall part, so the region is a column that can be bounded
+  // and the list is what gives way. The bench above sets the bound.
+  min-block-size: 0;
+  flex: 1;
+}
+
+.replacement__state {
+  margin: 0;
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The panel's header row. Canvas 1c sets a 214px field and `REMOVE MODULE`
+// against the trailing edge under the `FITTING · HARDPOINT 1` rule; canvas 1d
+// gives the field the whole width with the count after it. Same row, and which
+// one it is follows the width the panel was given.
+.replacement__toolbar {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: center;
+}
+
+// Canvas 1c's `FITTING · HARDPOINT 1`, on the row with the field and
+// `REMOVE MODULE` rather than on a rule above them.
+.replacement__title {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  flex: none;
+  margin: 0;
+  margin-inline-end: auto;
+  font-size: var(--edsb-text-size-compact);
+}
+
+.replacement__search {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+@container replacement (min-width: 34rem) {
+  .replacement__toolbar {
+    justify-content: flex-end;
+  }
+
+  // The canvas's own 214px, plus the key hint that sits beside it here rather
+  // than inside the field's box.
+  .replacement__search {
+    flex: 0 1 20rem;
+  }
+}
+
+.replacement__count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+
+  margin: 0;
+  flex: none;
+  margin-inline-end: auto;
+}
+
+// Canvas 1c's outlined `REMOVE MODULE`, at the end of the panel header.
+.replacement__remove {
+  @include layout.control-base;
+  @include layout.control-secondary;
+
+  flex: none;
+}
+
+// The measure kept, the control gone. `visibility: hidden` removes it from the
+// accessibility tree and the tab order as surely as `@if` would, and unlike
+// `@if` it leaves the header row the width it had — which is what stops the
+// search field resizing under a Commander's hands as they move between a fitted
+// mount and an empty one.
+.replacement__remove--reserved {
+  visibility: hidden;
+}
+
+.replacement__no-matches {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.replacement__clear {
+  @include layout.control-base;
+  @include layout.control-quiet;
+
+  align-self: start;
+}
+
+// The manifest scrolls inside its own box, as canvas 1c's does. The document
+// never scrolls horizontally and never grows to two hundred rows tall. The box
+// that scrolls is the list's own, under its column head — this is the bound it
+// gives way against, not a second scroller around it.
+.replacement__list {
+  flex: 1;
+  min-block-size: 0;
+}
+
+// Canvas 1d pins `CANCEL` and `FIT MODULE` to the foot of the screen, below the
+// scrolling list. With a mount that offers two hundred choices the alternative
+// is a confirm control a Commander has to scroll past every one of them to
+// reach, which is not a confirmation anyone would find.
+//
+// It is the foot that pins, not the buttons, because the paging control belongs
+// to the foot too. Where the region is bounded the foot is simply the last row
+// of the column; where the page scrolls instead, this is what keeps it in view.
+.replacement__foot {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  position: sticky;
+  inset-block-end: 0;
+  flex: none;
+  padding-block: var(--edsb-space-stack-tight);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+}
+
+.replacement__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+}
+
+.replacement__cancel {
+  @include layout.control-base;
+  @include layout.control-secondary;
+}
+
+.replacement__fit {
+  @include layout.control-base;
+  @include layout.control-primary;
+
+  flex: 1;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

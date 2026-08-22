@@ -33,6 +33,15 @@ export class TextField {
   readonly value = input<string>('');
   readonly kind = input<TextFieldKind>('text');
   readonly description = input<string | null>(null);
+
+  /**
+   * Whether the description is bound to the control without being drawn.
+   *
+   * The same arrangement `labelHidden` already offers, for the same reason: a
+   * field the reference draws with nothing beside it still has to say what it
+   * matches to a reader who cannot see the manifest fill in as they type.
+   */
+  readonly descriptionHidden = input(false);
   readonly error = input<string | null>(null);
   readonly placeholder = input<string | null>(null);
   readonly required = input(false);

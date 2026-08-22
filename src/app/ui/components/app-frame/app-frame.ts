@@ -12,6 +12,11 @@ import { LocaleStore } from '../../../i18n/locale.store';
 import { MessageService } from '../../../i18n/message.service';
 import { AnnouncementOutlet } from '../../announcements/announcement-outlet';
 import { AnnouncementService } from '../../announcements/announcement.service';
+import {
+  ShipIdentityFields,
+  type IdentityCommit,
+  type IdentityField,
+} from '../../outfitting/ship-identity-fields';
 import { ActionButton } from '../action/action-button';
 import { ActionLayer } from './action-layer';
 import { StatusNotice, type StatusTone } from '../status/status-notice';
@@ -30,6 +35,32 @@ export interface ShellAction {
   readonly label: string;
   readonly emphasis?: 'primary' | 'secondary' | 'quiet' | 'danger';
   readonly disabled?: boolean;
+  /** What activating it would do, said only to a reader. Never drawn. */
+  readonly description?: string;
+  /**
+   * Whether the canvas's hairline divider is drawn before this action.
+   *
+   * Canvas 1c rules one between the history pair and the committing actions —
+   * `↶ UNDO  REDO ↷ │ EXPORT  SAVE  ?`. It is decoration and is hidden from a
+   * reader, who has the actions' own names to go by.
+   */
+  readonly startsGroup?: boolean;
+}
+
+/**
+ * A screen's own identity, drawn in place of the bar's plain title.
+ *
+ * Only the workspace publishes one: canvas 1c and 1d both put the build's name
+ * where the screen's name goes on every other screen, with the hull and the ID
+ * plate under it. The frame renders it and owns none of it — the values and
+ * what confirming one means both belong to the screen (FR-019).
+ */
+export interface ScreenIdentity {
+  readonly name: string | null;
+  readonly detail: string | null;
+  readonly ident: string | null;
+  /** Which field is open for editing, or `null` for the drawn, idle state. */
+  readonly editing: 'name' | 'ident' | null;
 }
 
 /** Visible route or global feedback, in ordinary reading order. */
@@ -53,7 +84,7 @@ export interface ShellStatus {
  */
 @Component({
   selector: 'edsb-app-frame',
-  imports: [ActionButton, ActionLayer, AnnouncementOutlet, StatusNotice],
+  imports: [ActionButton, ActionLayer, AnnouncementOutlet, ShipIdentityFields, StatusNotice],
   templateUrl: './app-frame.html',
   styleUrl: './app-frame.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,12 +101,20 @@ export class AppFrame {
   readonly routeCount = input<string | null>(null);
 
   readonly navigation = input<readonly NavigationEntry[]>([]);
+
+  /** The open screen's own identity block, where it publishes one. */
+  readonly identity = input<ScreenIdentity | null>(null);
   readonly actions = input<readonly ShellAction[]>([]);
 
   /** Visible route or global feedback. Ordinary content, not a live region. */
   readonly status = input<ShellStatus | null>(null);
 
   readonly actionSelected = output<string>();
+
+  /** The identity block asked to open, close or confirm one of its fields. */
+  readonly identityOpened = output<IdentityField>();
+  readonly identityClosed = output<void>();
+  readonly identityCommitted = output<IdentityCommit>();
 
   /**
    * A primary navigation link was activated.

@@ -2,7 +2,12 @@
   [routeContext]="pageName()"
   [routeCount]="pageCount()"
   [navigation]="navigation()"
+  [actions]="actions()"
+  [identity]="identity()"
   (actionSelected)="selectAction($event)"
+  (identityOpened)="chrome.openIdentity($event)"
+  (identityClosed)="chrome.closeIdentity()"
+  (identityCommitted)="chrome.commitIdentity($event)"
   (navigationSelected)="navigateFromShell($event)"
 >
   <router-outlet />

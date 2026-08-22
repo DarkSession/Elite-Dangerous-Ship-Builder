@@ -1,0 +1,37 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's fact cell: a tracked mono micro-label over a tabular mono value
+// (canvas 1c, the candidate manifest's `DPS · MASS t · PWR MW · DRAW WEP ·
+// COST` columns).
+:host {
+  display: block;
+}
+
+.fact {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.fact__label {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+// A package figure is a technical value: it keeps its own direction inside a
+// right-to-left sentence rather than being reordered by it.
+// Canvas 1c sets these figures at 11px — this scale's `compact` step — not at
+// the 14–16px it reserves for a hull's headline metrics. At the larger rung a
+// manifest row's numbers stood taller than the module name beside them, which
+// is what put the whole table out of proportion (wave 8).
+.fact__value {
+  @include layout.metric-value(var(--edsb-text-size-compact));
+
+  unicode-bidi: isolate;
+}
+
+// The canvas writes the unit inside the figure's own cell and in the figure's
+// own type — `2,613,410` then a quieter `cr`, same mono, same 11px, same
+// weight, no tracking and no capitals. Set as a tracked uppercase micro-label
+// it came out as `CR`: a column heading that had slipped down into the row
+// (wave 9).
+.fact__unit {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-faint));
+}

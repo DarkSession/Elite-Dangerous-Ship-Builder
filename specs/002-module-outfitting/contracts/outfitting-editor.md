@@ -18,17 +18,17 @@ atomically installs it only on success. Components cannot call the Almanac or re
 
 ## Commands
 
-| Intent                               | Required operation                                             | Success                                                                                      |
-| ------------------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Fit stock                            | `setModule(slotKey, exactModule)`                              | Replacement carries no old module engineering                                                |
-| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`               | Package fixed identity/stats retained                                                        |
-| Remove                               | `removeModule(slotKey)`                                        | Slot becomes empty only if package allows                                                    |
-| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })`     | Package recomputes modifiers/results                                                         |
-| Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`                 | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute |
-| Clear ordinary engineering           | `clearEngineering(slotKey)`                                    | Package base state restored; Mercenary identity may disappear                                |
-| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                           | Package power-dependent results recompute                                                    |
-| Priority                             | `setModulePriority(slotKey, priority0to4)`                     | UI presents localized `1..5`                                                                 |
-| Name/ident                           | Snapshot update and package reconstruction through feature 001 | All other modelled state exact; package results recomputed                                   |
+| Intent                               | Required operation                                                                     | Success                                                                                                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fit stock                            | `setModule(slotKey, exactModule)`                                                      | Replacement carries no old module engineering                                                                                                                    |
+| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`                                       | Package fixed identity/stats retained                                                                                                                            |
+| Remove                               | `removeModule(slotKey)`                                                                | Slot becomes empty only if package allows                                                                                                                        |
+| Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })`                             | Package recomputes modifiers/results                                                                                                                             |
+| Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`                                         | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute                                                                     |
+| Clear ordinary engineering           | `clearEngineering(slotKey)`                                                            | Package base state restored; Mercenary identity may disappear                                                                                                    |
+| Enable/disable                       | `setModuleEnabled(slotKey, enabled)`                                                   | Package power-dependent results recompute                                                                                                                        |
+| Priority                             | `setModulePriority(slotKey, priority0to4)`                                             | UI presents localized `1..5`                                                                                                                                     |
+| Name/ident (FR-019)                  | Feature 002 control writing feature 001's snapshot fields, then package reconstruction | One shared modelled `shipName`/`shipIdent`; no second copy anywhere. All other modelled state exact; package results recomputed; clearing to absent is permitted |
 
 Every successful changed command produces one active revision and one history decision.
 Fit/replace/remove, engineering, enabled-state and priority changes all count. Failed, canceled,
@@ -67,8 +67,8 @@ is used.
 - Do not claim better/worse direction from `LessIsGood`, which the package documents as unreliable.
 - Fixed/final articles expose only package-supported operations.
 
-Material cost uses only `getBlueprintCost`, `getBlueprintGradeCost`,
-`getExperimentalEffectCost` and `sumMaterials`. Preserve `null` (unavailable) versus `[]` (known
+Material cost uses only `getBlueprintCost`, `getExperimentalEffectCost` and `sumMaterials`; no
+surface breaks the requirement down per grade, so `getBlueprintGradeCost` is unused. Preserve `null` (unavailable) versus `[]` (known
 zero). Baked fixed engineering has no craft cost. A Mercenary upgrade starts above its purchase grade;
 Merc Coin is presented separately.
 

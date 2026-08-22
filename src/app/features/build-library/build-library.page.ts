@@ -96,7 +96,6 @@ export class BuildLibraryPage {
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
 
-  readonly description = this.#messages.messageSignal('library.description');
   readonly closeLabel = this.#messages.messageSignal('library.close');
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');

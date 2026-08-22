@@ -38,7 +38,7 @@ export function reconstructFromSnapshot(snapshot: BuildSnapshotV1): Reconstructi
     return {
       ok: false,
       failure: 'unknown-hull',
-      reason: `The installed Almanac carries no hull "${snapshot.shipSymbol}".`,
+      reason: `This installation carries no hull "${snapshot.shipSymbol}".`,
     };
   }
 
@@ -135,7 +135,7 @@ function preEngineeredEngineering(
     return {
       ok: false,
       failure: 'unknown-identity',
-      reason: `The installed Almanac carries no pre-engineered "${identity.symbol}" article matching this identity.`,
+      reason: `This installation carries no pre-engineered "${identity.symbol}" article matching this identity.`,
     };
   }
 

@@ -1,0 +1,19 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: inline-flex;
+  flex: none;
+  align-self: center;
+}
+
+// The canvas draws it at 13px, sitting back from the material's own name
+// rather than competing with it.
+.material-grade {
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  object-fit: contain;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

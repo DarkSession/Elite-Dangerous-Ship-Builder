@@ -1,11 +1,24 @@
-<div class="persistence" role="group" [attr.aria-label]="label()">
-  <edsb-status-notice [tone]="tone()" [message]="message()" />
+<!--
+  Nothing at all while storage is doing its job. Canvas 1c draws no "saved"
+  banner anywhere; its build status panel reports a problem and is otherwise
+  silent, and repeating "saved" over the top of someone's reading is worse than
+  silence. A state a Commander has to act on is still drawn, because a browser
+  that will not store anything is the one thing they have to know (FR-014).
+-->
+@if (problem()) {
+  <div class="persistence" role="group" [attr.aria-label]="label()">
+    <edsb-status-notice [tone]="tone()" [message]="message()" />
 
-  @if (actions().length > 0) {
-    <div class="persistence__actions">
-      @for (action of actions(); track action.id) {
-        <edsb-action-button [label]="action.label" emphasis="quiet" (activated)="select(action)" />
-      }
-    </div>
-  }
-</div>
+    @if (actions().length > 0) {
+      <div class="persistence__actions">
+        @for (action of actions(); track action.id) {
+          <edsb-action-button
+            [label]="action.label"
+            emphasis="quiet"
+            (activated)="select(action)"
+          />
+        }
+      </div>
+    }
+  </div>
+}

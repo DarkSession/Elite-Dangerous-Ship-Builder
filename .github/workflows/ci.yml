@@ -2,6 +2,16 @@
 # failure names the stage that broke: formatting, types, build, unit tests
 # (with the 80% coverage thresholds from angular.json) and the Playwright
 # end-to-end suite across the desktop, tablet and mobile viewports.
+#
+# The end-to-end suite is **sharded across parallel jobs**, which is the one
+# thing the verification contract permits a CI run to do with the matrix: shard
+# it, never reduce it. Every shard loads the same ten projects and between them
+# they run every test exactly once. The suite is ~96 minutes of work; six shards
+# of two workers put it inside a job budget, where a single job of two workers
+# reached only about half of it before the timeout. The width is on the shard
+# axis rather than the worker axis because a shard is another runner with its
+# own cores, and a fourth worker on a four-vCPU box only starves the other
+# three — see the note on `workers` in `playwright.config.ts`.
 name: CI
 
 on:
@@ -16,11 +26,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # One place to change the shard count. It is read by the job matrix below and
+  # by `playwright.config.ts`, and the two must agree or the run silently covers
+  # a fraction of the suite while reporting green.
+  E2E_SHARDS: 6
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Check out the repository
@@ -52,16 +68,6 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
-      # Only the end-to-end step needs a browser, and fetching one is expensive,
-      # so it waits until the cheaper checks have passed. The project matrix
-      # drives both engines, so both are installed; `--with-deps` adds the
-      # system libraries the runner image lacks.
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium firefox
-
-      - name: End-to-end tests
-        run: pnpm run e2e
-
       - name: Upload unit test coverage
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -74,14 +80,117 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Upload Playwright report
+  e2e:
+    name: End-to-end (shard ${{ matrix.shard }})
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    strategy:
+      # Every shard runs to completion. A failure in one is a failure of the
+      # run, but cancelling the others would throw away the evidence of what
+      # else broke — which is the whole point of running the full matrix.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Two engine downloads per shard is the same bytes fetched four times.
+      # Keyed on the lockfile because that is what pins the Playwright version
+      # the browser builds have to match.
+      - name: Restore the browser cache
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # `--with-deps` adds the system libraries the runner image lacks. Those
+      # live outside the cached directory, so they are installed on every run;
+      # only the browser builds themselves are skipped on a hit.
+      - name: Install Playwright browsers
+        run: |
+          if [ "${{ steps.browser-cache.outputs.cache-hit }}" = "true" ]; then
+            pnpm exec playwright install-deps chromium firefox
+          else
+            pnpm exec playwright install --with-deps chromium firefox
+          fi
+
+      # The shard is passed in the environment, not as an argument: `pnpm run
+      # e2e -- --shard=1/4` forwards the bare `--`, Playwright reads the flag as
+      # a filename filter, and the shard reports a green run over zero tests.
+      # `PLAYWRIGHT_SHARD` also switches the reporter to `blob`, which the report
+      # job below merges — otherwise each shard writes its own partial HTML
+      # report and the last upload wins.
+      - name: End-to-end tests
+        run: pnpm run e2e
+        env:
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
+
+      - name: Upload the shard's report data
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: blob-report/
+          if-no-files-found: ignore
+          retention-days: 1
+
+  e2e-report:
+    name: End-to-end report
+    # Runs on failure too: a red run is exactly when someone needs the report.
+    if: ${{ !cancelled() }}
+    needs: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download every shard's report data
+        uses: actions/download-artifact@v7
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge into one report
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload the Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
-          path: |
-            playwright-report/
-            dist/e2e-results/
-          # Absent whenever the job fails before the end-to-end tests run.
+          path: playwright-report/
+          # Absent whenever every shard failed before writing any blob.
           if-no-files-found: ignore
           retention-days: 7

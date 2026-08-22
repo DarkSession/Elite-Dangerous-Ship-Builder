@@ -46,6 +46,7 @@ function render(status: Status) {
     loadout: ShipLoadout.default('Anaconda'),
     hullName: 'Anaconda',
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: null,
   });
@@ -64,10 +65,8 @@ const buttons = (fixture: { nativeElement: unknown }) => [
 ];
 
 describe('PersistenceStatus', () => {
-  it('names every state in words, never by colour alone', () => {
+  it('names every state a Commander has to act on, never by colour alone', () => {
     const expected: readonly (readonly [Status, string])[] = [
-      ['saving', 'Saving'],
-      ['saved', 'Saved in this browser'],
       ['retention-limit', 'recoverable working builds'],
       ['quota-full', 'storage is full'],
       ['unavailable', 'not allowing the application to store'],
@@ -79,6 +78,17 @@ describe('PersistenceStatus', () => {
       const { fixture } = render(status);
 
       expect(textOf(fixture), status).toContain(words);
+    }
+  });
+
+  it('draws nothing at all while storage is doing its job', () => {
+    // Neither canvas has a "saved" banner. Repeating it every few seconds over
+    // the top of someone's reading is worse than silence, and the states that
+    // matter are the ones above.
+    for (const status of ['ready', 'saving', 'saved'] as const) {
+      const { fixture } = render(status);
+
+      expect(textOf(fixture).trim(), status).toBe('');
     }
   });
 

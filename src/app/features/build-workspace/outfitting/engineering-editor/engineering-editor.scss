@@ -1,0 +1,161 @@
+@use '../../../../../styles/responsive' as layout;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  container-name: engineering;
+
+  // The bound the panel gives way against, written the way the bench above
+  // writes its own. Without one the region grows to its content, nothing
+  // scrolls inside it, and the actions below end up drawn over the foot of the
+  // material list — over the control a Commander is reaching for.
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+}
+
+// A viewport this short cannot divide into a scroller and a foot and still show
+// one choice. The region stops bounding itself, the actions stop sticking, and
+// the page scrolls — the same release the command bar and the bench make at the
+// same threshold, and what keeps the whole of it readable at 400% zoom (FR-011).
+@include layout.short-viewport {
+  :host {
+    max-block-size: none;
+  }
+
+  .engineering__actions {
+    position: static;
+  }
+}
+
+.engineering {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-block-size: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.engineering--layer {
+  padding: var(--edsb-space-panel);
+}
+
+// Inline, canvas 1c draws a bordered box rather than a heading over loose
+// content: a hairline amber edge, the panel's own ground inside it, and a ruled
+// bar across the top. What scrolls is the body under that bar, so the bar stays
+// where the canvas puts it (wave 7).
+.engineering--panel {
+  gap: 0;
+  overflow: hidden;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  background-color: var(--edsb-surface-panel);
+}
+
+.engineering__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline);
+  // Canvas 1c's `11px 14px`.
+  padding: var(--edsb-space-row) var(--edsb-space-xl);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+}
+
+.engineering__body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: var(--edsb-space-xl);
+}
+
+// Canvas 1c's panel heading: tracked mono in amber, at one end of the bar.
+.engineering__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  font-size: var(--edsb-text-size-label);
+}
+
+.engineering__state {
+  margin: 0;
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.engineering__purchase {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+// Canvas 1c's two columns: the choices on the left, what they would do on the
+// right. One column until the region is wide enough for both to keep their own
+// content readable, because two narrow columns is worse than one wide one.
+.engineering__panes {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+@include layout.container-wide-up(engineering) {
+  .engineering__panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 0;
+    align-items: start;
+  }
+
+  // The canvas rules the two columns apart rather than spacing them apart.
+  .engineering__choices {
+    padding-inline-end: var(--edsb-space-panel);
+    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  }
+
+  .engineering__result {
+    padding-inline-start: var(--edsb-space-panel);
+  }
+}
+
+// Canvas 1c's `padding-top: 11px; border-top: 1px solid var(--amber-a12)`: the
+// attribute table belongs to the choices column and is ruled off from the
+// controls above it.
+.engineering__attributes {
+  display: block;
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+}
+
+.engineering__choices,
+.engineering__result {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+.engineering__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  position: sticky;
+  inset-block-end: 0;
+  flex: none;
+  padding-block: var(--edsb-space-stack-tight);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+}
+
+.engineering__revert {
+  @include layout.control-base;
+  @include layout.control-secondary;
+}
+
+.engineering__apply {
+  @include layout.control-base;
+  @include layout.control-primary;
+
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

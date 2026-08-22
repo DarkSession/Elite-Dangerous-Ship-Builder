@@ -21,7 +21,8 @@
   @include layout.micro-label(var(--edsb-text-subtle));
 }
 
-.field__label--hidden {
+.field__label--hidden,
+.field__description--hidden {
   @include layout.visually-hidden;
 }
 

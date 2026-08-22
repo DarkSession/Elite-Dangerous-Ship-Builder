@@ -1,6 +1,10 @@
 @use '../../../../styles/responsive' as layout;
 
+// The menu hangs off the trigger rather than pushing the bar open: canvas 1d's
+// bar is one 52px row and the panel is drawn over the screen below it, 196px
+// wide against the trailing edge.
 :host {
+  position: relative;
   display: block;
 }
 
@@ -10,7 +14,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 100%;
   padding-inline: var(--edsb-space-inline-loose);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
   border-radius: var(--edsb-shape-control);
@@ -29,7 +32,13 @@
 .action-layer__panel {
   @include layout.stack(var(--edsb-space-inline-tight));
 
-  margin-block-start: var(--edsb-space-inline-tight);
+  position: absolute;
+  inset-block-start: calc(100% + var(--edsb-space-inline-tight));
+  inset-inline-end: 0;
+  z-index: 3;
+  inline-size: max-content;
+  min-inline-size: var(--edsb-layout-menu-min);
+  max-inline-size: min(100vw - 2 * var(--edsb-space-region), var(--edsb-layout-menu-max));
   padding: var(--edsb-space-inline-loose);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
   border-radius: var(--edsb-shape-panel);
@@ -45,4 +54,22 @@
 
 .action-layer__action {
   display: block;
+}
+
+// A menu entry that navigates: canvas 1d sets every row of the `⋮` menu the
+// same way, whatever it does.
+.action-layer__navigation {
+  @include layout.stack(var(--edsb-space-inline-tight));
+}
+
+.action-layer__link {
+  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-secondary;
+
+  inline-size: 100%;
+  text-decoration: none;
+}
+
+.action-layer__link[aria-current='page'] {
+  @include layout.control-primary;
 }

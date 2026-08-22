@@ -17,6 +17,7 @@ function candidate(overrides: Partial<BuildCandidate> = {}): BuildCandidate {
     loadout,
     hullName: 'Anaconda',
     provenance: 'stock',
+    qualityNotices: [],
     sourceNamed: null,
     baseline: null,
     ...overrides,
@@ -153,7 +154,16 @@ describe('ActiveBuildStore', () => {
     const active = store();
     active.commit(candidate());
 
-    active.setQualityCompletionNotices([{ slot: 'FrameShiftDrive', previousQuality: 0.4 }]);
+    active.setQualityCompletionNotices([
+      {
+        kind: 'qualityCompleted',
+        slotKey: 'FrameShiftDrive',
+        moduleSymbol: 'Int_Hyperdrive_Size6_Class5',
+        blueprintFdname: 'FSD_LongRange',
+        previousQuality: 0.4,
+        quality: 1,
+      },
+    ]);
     expect(active.qualityCompletionNotices()).toHaveLength(1);
 
     active.commit(candidate());

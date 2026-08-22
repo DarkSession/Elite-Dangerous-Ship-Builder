@@ -20,6 +20,39 @@ renaming or removing projects.
 Every primary journey runs in all ten projects. CI may shard the same matrix; it may not reduce it.
 Retries remain diagnostic only and `failOnFlakyTests` is enabled in CI.
 
+**Sharded, 2026-08-22.** CI runs the suite as six `--shard` jobs of two workers, merged back into
+one report with `playwright merge-reports`. Every shard loads all ten projects and between them they
+run every test exactly once — the shard boundary is a division of the same matrix, not a selection
+from it, and the shard count is stated once in the workflow so the job matrix and the `--shard`
+argument cannot disagree. The suite is ~96 minutes of work; a single job of two workers reached only
+about half of it inside a 30-minute budget.
+
+The width is on the **shard** axis, not the worker axis. Four workers per job was tried first and
+came back with seven failures and ten flaky tests on the first real run, almost all of them Firefox —
+which costs about 1.7x Chromium per project — and almost all of them a five-second wait losing a CPU
+race rather than anything about the product. Four browser instances do not fit on four vCPUs. A shard
+is another runner with its own cores, so that is where the parallelism belongs, and each job runs at
+the width its machine can sustain.
+
+**Served from a built artifact on CI, 2026-08-22.** A local run keeps `ng serve` for both
+applications, because a phase is a loop of edit and re-run. A CI run has nothing to re-run and pays
+for the watching anyway: two dev servers boot from cold, hold file watchers open and keep a compiler
+resident beside the workers on the same four vCPUs. CI therefore builds each application with
+`--configuration=development` — the same unoptimised code the dev server hands out — and serves it
+statically. That configuration deliberately does **not** register a service worker, so the matrix
+goes on measuring the application rather than a caching layer in front of it; the service worker
+keeps its own run under `pnpm run e2e:offline`.
+
+**Timeouts, ruled 2026-08-22.** Playwright's 30-second default is a figure calibrated on a developer
+machine, and a CI runner puts the same work at roughly two to three times the wall clock — enough to
+fail a test that has never been near the limit anywhere else, and to report a machine as a product
+defect. A run therefore takes its budget from two places. The **run** gets 60 seconds on CI and keeps
+30 locally, so a genuinely slow test is felt where it is written. A **test** that is slow because of
+how much it draws extends its own budget as it draws it: every call to `sweepOutfittingState` adds
+one sweep's worth, so a three-state sweep is given three sweeps' worth and a fourth state raises the
+allowance with it rather than moving the test back towards the edge. Neither is a licence to absorb a
+hang — retries stay diagnostic only and `failOnFlakyTests` stays on.
+
 ## Product and preview coverage ledger
 
 Maintain a machine-readable ledger joining:
@@ -32,6 +65,15 @@ Maintain a machine-readable ledger joining:
 
 Static tests compare the ledger with route/UI exports, preview declarations and Playwright project
 names. A new screen, state or component cannot silently avoid the suite.
+
+**Where a preview state is measured, ruled 2026-08-22.** A shared cell is measured **on the catalogue
+page**, in one pass over the rendered tree, rather than by navigating to its own address. The three
+measurements — target size, text contrast and non-text contrast — read the rendered tree, so a single
+pass over the index covers every cell on it, and covers it in the catalogue grid, which constrains a
+control's width more tightly than its own address does. Navigating per address re-bootstrapped the
+preview application once per state, because `previewUrl` addresses a state through a query parameter,
+and made that one test 11.4% of the entire suite. An **isolated** state is still visited by its own
+address, because an isolated state is by definition one that cannot share the page.
 
 ## Automated checks
 

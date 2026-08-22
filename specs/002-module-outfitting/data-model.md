@@ -152,20 +152,24 @@ non-empty query and clear action; `packageEmpty` means a successful package quer
 
 `EngineeringDraft` is non-build state:
 
-| Field                     | Type                                | Rule                                         |
-| ------------------------- | ----------------------------------- | -------------------------------------------- |
-| `slotKey`                 | string                              | Exact selected slot                          |
-| `baseBuildRevision`       | integer                             | Apply refuses/rebuilds when stale            |
-| `blueprints`              | readonly `AvailableBlueprint[]`     | Exact current package menu                   |
-| `selectedBlueprintFdname` | `string \| null`                    | Null means no draft selection, not clear-all |
-| `selectedRoute`           | package route/null                  | From selected descriptor                     |
-| `selectedGrade`           | package-offered grade/null          | Must occur in selected descriptor            |
-| `effects`                 | readonly fdname[]                   | Exact current package menu                   |
-| `selectedEffectFdname`    | `string \| null`                    | Null explicitly means no effect              |
-| `preview`                 | detached package result/unavailable | Read from candidate `stats`/`effectiveStats` |
-| `cost`                    | `EngineeringCostView`               | Package cost results only                    |
+| Field                     | Type                                | Rule                                                                                                                                              |
+| ------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `slotKey`                 | string                              | Exact selected slot                                                                                                                               |
+| `baseBuildRevision`       | integer                             | Apply refuses/rebuilds when stale                                                                                                                 |
+| `blueprints`              | readonly `AvailableBlueprint[]`     | Exact current package menu                                                                                                                        |
+| `selectedBlueprintFdname` | `string \| 'none' \| null`          | `null` is no draft selection; `'none'` is the Commander choosing the package's explicit no-blueprint entry, which clears all ordinary engineering |
+| `selectedRoute`           | package route/null                  | From selected descriptor                                                                                                                          |
+| `selectedGrade`           | package-offered grade/null          | Must occur in selected descriptor                                                                                                                 |
+| `effects`                 | readonly fdname[]                   | Exact current package menu                                                                                                                        |
+| `selectedEffectFdname`    | `string \| null`                    | Null explicitly means no effect                                                                                                                   |
+| `preview`                 | detached package result/unavailable | Read from candidate `stats`/`effectiveStats`                                                                                                      |
+| `cost`                    | `EngineeringCostView`               | Package cost results only                                                                                                                         |
 
-`clearEngineering` is a separate confirmed intent. It is never encoded as a null blueprint choice.
+`clearEngineering` remains a separate confirmed intent with its own package operation. It is reached
+by selecting `'none'` and applying, and it MUST dispatch `clearEngineering(slotKey)` — never
+`applyBlueprint` with a null or `'none'` fdname, which would blur package semantics. `null` and
+`'none'` are therefore distinct states and MUST NOT be collapsed: the first means the Commander has
+chosen nothing yet, the second means the Commander has chosen to remove the blueprint.
 Opening/changing/canceling a draft creates no history. A rejected incoming partial build never
 creates an editor draft.
 
@@ -174,7 +178,6 @@ creates an editor draft.
 | Field           | Type                                               | Rule                                                     |
 | --------------- | -------------------------------------------------- | -------------------------------------------------------- |
 | `blueprint`     | `known(materials[]) \| unavailable \| notSelected` | Complete climb for a selected package menu recipe        |
-| `singleRoll`    | `known(materials[]) \| unavailable \| notShown`    | Only if UI explicitly presents per-roll cost             |
 | `experimental`  | `known(materials[]) \| unavailable \| notSelected` | New selected effect; removal has no craft cost           |
 | `combined`      | `known(materials[]) \| unavailable`                | `sumMaterials()` only when every selected input is known |
 | `fixedPurchase` | `notCrafted \| null`                               | Baked reward is never priced from its identity           |

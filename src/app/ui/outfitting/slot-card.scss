@@ -1,0 +1,193 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's ledger row: a mono size and node column, then the module's name
+// over its tracked code line. Both canvases select from the row and put the
+// change, engineer and remove actions on the selected mount's bench rather than
+// on every row — so the ledger stays a ledger and one row is one decision.
+//
+// Selection is carried by the leading amber marker the mixin draws, and,
+// because colour is never the only carrier, by `aria-pressed` on the select
+// control and by the visually-hidden selected text beside it.
+:host {
+  display: block;
+}
+
+// One row, as the canvas draws it: the mount, the module, the power chip and
+// the immovable marker on a single line. Stacking the chip and the notes under
+// the row was the compact card's arrangement rendered at every width.
+.slot {
+  @include layout.selectable-row;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+  padding-inline-end: var(--edsb-space-2xl);
+
+  // The canvas's ledger is one ground from the category strip to the last row.
+  // Rows carry no ground and no rule of their own there: what separates them is
+  // the space between them, and the only line drawn down the rail is the
+  // group's own. Giving each row a panel over a rail a shade darker drew a
+  // divider under every entry the canvas has none of (wave 7).
+  background-color: transparent;
+  border-block-end: 0;
+}
+
+.slot__select {
+  display: grid;
+  grid-template-columns: minmax(2.5rem, auto) minmax(0, 1fr);
+  gap: var(--edsb-space-inline);
+  align-items: center;
+  // Small enough that the power chip stays on the row beside it even where the
+  // package states no group and the chip has to show the whole `Unavailable`
+  // value; it grows into whatever the chip leaves.
+  flex: 1 1 8rem;
+  min-inline-size: 0;
+  min-block-size: var(--edsb-target-size);
+  // Canvas 1c's `11px 16px`.
+  padding: var(--edsb-space-row) var(--edsb-space-2xl);
+  border: 0;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+}
+
+// The canvas sets the size box and the node badge side by side, not stacked.
+.slot__mount {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+}
+
+// The canvas's size box: a filled square on a faint amber ground with the class
+// number in mono, not a bare metric. It is drawn the same on every row — canvas
+// 1c gives the marked row a leading amber edge, a washed ground and an amber
+// module name, and leaves the size box and the node badge beside it exactly as
+// they are on the rows above and below. A number that changed colour with the
+// row read as a second state the mount had entered (wave 9).
+.slot__size {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--edsb-layout-mount-box);
+  block-size: var(--edsb-layout-mount-box);
+  background-color: var(--edsb-surface-accent-quiet);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: var(--edsb-text-leading-control);
+  color: var(--edsb-text-numeric);
+}
+
+// The canvas's engineered mark, at the size it draws it.
+.slot__engineered {
+  flex: none;
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  object-fit: contain;
+}
+
+// The canvas's node badge: this hardpoint's number on the hull anatomy, in a
+// hairline square beside the size box rather than as loose text.
+.slot__node {
+  @include layout.micro-label(var(--edsb-text-accent-strong), var(--edsb-text-tracking-body));
+
+  // Canvas 1c's `600 10px`, which is this scale's `label` step — a rung above
+  // the `micro` the mixin starts at, and the same rung the category strip above
+  // it takes (wave 9).
+  font-size: var(--edsb-text-size-label);
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--edsb-layout-node-box);
+  block-size: var(--edsb-layout-node-box);
+  background-color: var(--edsb-surface-sunken);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+}
+
+.slot__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
+.slot__empty {
+  // The canvas's `Empty`: the same Barlow at the same size as a fitted module's
+  // name, set in italic and a rung quieter, so the two read as one column of
+  // names with the unfitted ones withdrawn.
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-lead);
+  font-style: italic;
+  color: var(--edsb-text-subtle);
+}
+
+// Canvas 1c draws a mount with nothing in it as an outline rather than a fill:
+// the size box loses its amber ground for a dashed amber edge, and the node
+// badge's solid edge goes dashed with it. Both keep their measure, so an empty
+// row still lines up with the fitted rows above and below it.
+//
+// The canvas also dims the whole row to 0.62. That is the one part not taken:
+// it puts every ink on the row under the contrast floor, and an empty mount is
+// exactly the row a Commander is looking for (FR-010).
+.slot:has(.slot__empty) .slot__size {
+  background-color: transparent;
+  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-control-quiet);
+  color: var(--edsb-text-faint);
+}
+
+// The design's selected hardpoint number: a solid amber ground and the page's own
+// ground for ink, with the amber ring the canvas draws around it. It is canvas
+// 1c's selected anatomy node, `background: var(--amber); color: var(--bg); font:
+// 700 11px/1 mono; box-shadow: 0 0 0 4px var(--amber-a22)` — the design's one
+// drawing of "this hardpoint number is the one that is selected". The plates
+// that carry those nodes are not built yet, so the ledger badge is where the
+// number lives and where the treatment belongs (wave 9).
+.slot[data-selected='true'] .slot__node {
+  background-color: var(--edsb-surface-accent-solid);
+  border-color: var(--edsb-surface-accent-solid);
+  color: var(--edsb-text-on-accent);
+  font-weight: var(--edsb-text-weight-heading);
+  box-shadow: 0 0 0 var(--edsb-space-2xs) var(--edsb-palette-amber-a22);
+}
+
+// Only while it is not the selected one. The canvas paints the node from its
+// `kind` — `empty` gets the dashed edge and the withdrawn ink — but the selected
+// branch is checked first and takes every kind: `color = on ? '#0b0b0c' : (util
+// ? … : empty ? … : …)`. Without the guard this rule matched at the same
+// specificity as the selected one and, sitting after it, won — so selecting an
+// empty mount left its number dashed and faint, the one row-marker that never
+// showed which row was selected (wave 9).
+.slot:not([data-selected='true']):has(.slot__empty) .slot__node {
+  border-style: dashed;
+  border-color: var(--edsb-border-strong);
+  color: var(--edsb-text-faint);
+}
+
+.slot__drawn-label,
+.slot__marker {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+// Both shrink rather than claiming their content's width. At twice the English
+// length the marker is wider than a phone, and a row item that will not give
+// way scrolls the document sideways instead (FR-011).
+.slot__marker {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+}
+
+.slot__power {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

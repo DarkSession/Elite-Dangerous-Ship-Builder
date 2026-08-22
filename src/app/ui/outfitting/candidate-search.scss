@@ -1,0 +1,55 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's search row: one field that takes the space, the key hint beside
+// it in faint mono, and — only where there is something to clear — the way back
+// to the whole list (canvas 1c's `search this slot… ⌘K`, canvas 1d's full-width
+// `Search modules`).
+:host {
+  display: block;
+}
+
+// Canvas 1c draws the hint inside the field's own box at its trailing edge, so
+// the row is the field and the field is the box the hint sits in.
+.search {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  position: relative;
+  align-items: center;
+}
+
+.search__field {
+  flex: 1 1 8rem;
+  min-inline-size: 0;
+}
+
+// Inside the field's box, against its trailing edge, as canvas 1c draws it.
+// Out of the flow entirely: it is decoration, it never takes a pointer, and on
+// its own line under the field it read as a sentence about the field rather
+// than as a key cap.
+.search__shortcut {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  position: absolute;
+  inset-inline-end: var(--edsb-space-control-inline);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  pointer-events: none;
+}
+
+// So a long query never runs under the hint.
+.search__field ::ng-deep .field__control {
+  padding-inline-end: var(--edsb-space-2xl);
+}
+
+.search__clear {
+  @include layout.control-base;
+  @include layout.control-quiet;
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
