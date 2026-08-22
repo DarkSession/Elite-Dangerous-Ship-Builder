@@ -108,7 +108,10 @@ thead th {
   position: sticky;
   inset-block-start: var(--edsb-layout-manifest-offset);
   z-index: 1;
-  padding: 0;
+  // Canvas 1a's header row is `padding: 0 12px 8px`: the rule under it stands
+  // off the labels, and the first hull starts below the rule instead of against
+  // it. With no block padding the header and the `ADDER` row shared an edge.
+  padding: 0 0 var(--edsb-space-sm);
   background-color: var(--edsb-surface-root);
   // The seam a sticky head leaves above itself, painted over: the browser's own
   // rounding puts a fraction of a pixel between the head and what it is frozen

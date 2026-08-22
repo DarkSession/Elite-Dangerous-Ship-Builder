@@ -57,6 +57,12 @@ export interface MaterialPartView {
   readonly part: MaterialPart;
   readonly state: 'known' | 'unavailable' | 'notSelected';
   readonly materials: readonly MaterialLineView[];
+  /**
+   * The Merc Coin the job bills beside the materials, formatted, or `null`
+   * where it bills none. Twenty-five of the Almanac's recipes charge it and the
+   * rest report a real `0`, which is not a figure worth a row of its own.
+   */
+  readonly mercCoins: string | null;
 }
 
 /**
@@ -104,6 +110,9 @@ export class MaterialCostList {
   readonly noneLabel = this.#messages.messageSignal('outfitting.engineering.materials.none');
   readonly unavailableLabel = this.#messages.messageSignal(
     'outfitting.engineering.materials.unavailable',
+  );
+  readonly mercCoinLabel = this.#messages.messageSignal(
+    'outfitting.engineering.materials.merc-coin',
   );
 
   /** Canvas 1c and 1d both write `MATERIALS · G5`; without a grade, just the noun. */

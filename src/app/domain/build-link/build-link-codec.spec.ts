@@ -1,4 +1,5 @@
 import { ShipLoadout, type FittedModule } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { getBlueprintsForModule } from '@elite-dangerous-almanac/core/ships/engineering-options';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { getPreEngineeredJournalModifiers } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
@@ -310,7 +311,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.5SHJb2soVSh3gtL7tnQ');
+    expect(encodeBuildLinkFragment(source)).toBe('b.5SHJb2soVSh3gubx2!B');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -413,12 +414,8 @@ describe('build-link codec', () => {
       expect(sourceModule.engineering?.Modifiers).toHaveLength(1);
 
       // The ordinary record is the fallback, and no Mercenary blueprint offers the purchase grade
-      // as a craftable one, so it cannot spell this either. Which refusal arrives depends on
-      // whether the module has an ordinary blueprint set at all.
-      const error = expectCodecError(
-        () => encodeBuildLinkFragment(source),
-        hasOrdinaryBlueprints(variant.symbol) ? 'invalidPayload' : 'unknownIdentity',
-      );
+      // as a craftable one, so it cannot spell this either.
+      const error = expectCodecError(() => encodeBuildLinkFragment(source), 'invalidPayload');
       expect(error.message).toContain('LargeHardpoint1');
     }
   });
@@ -501,12 +498,9 @@ describe('build-link codec', () => {
   });
 
   it('keeps the fitted grade of a Mercenary variant upgraded past its purchase', () => {
-    const upgradable = PRE_ENGINEERED_MODULES.filter(
-      (variant) => variant.acquisition === 'mercenary' && hasOrdinaryBlueprints(variant.symbol),
-    );
-    expect(upgradable).toHaveLength(16);
-
-    for (const variant of upgradable) {
+    // Every one of them, including the six the package gives no ordinary engineering menu: table 1
+    // records their variants' own blueprints, so the ordinary record can name the climbed grade.
+    for (const variant of mercenaryVariants()) {
       const grades = blueprintGrades(variant.blueprint);
       expect(grades).not.toContain(variant.grade);
 
@@ -552,14 +546,16 @@ describe('build-link codec', () => {
     expect(error.message).toContain('Hpt_MiningLaser_Fixed_Small_Advanced');
   });
 
-  it('refuses an upgraded Mercenary article table 1 cannot spell', () => {
-    // These six sit on modules the package reports no ordinary blueprint for, so table 1 records
-    // none either and the ordinary record cannot name one. Refusing is the only honest answer: the
-    // pre-engineered record would silently restore the purchase grade.
-    const unspellable = PRE_ENGINEERED_MODULES.filter(
-      (variant) => variant.acquisition === 'mercenary' && !hasOrdinaryBlueprints(variant.symbol),
+  it('spells the six articles the package gives no engineering menu of their own', () => {
+    // These sit on modules the package reports no ordinary blueprint for. Table 1 lists their
+    // variants' blueprints all the same, because a bought article can be climbed past the grade it
+    // was sold at and only an ordinary record can say so — without them the pre-engineered record
+    // would silently restore the purchase grade, and the encoder refused instead, so the link
+    // vanished the moment a Commander engineered one (2026-08-22).
+    const menuless = PRE_ENGINEERED_MODULES.filter(
+      (variant) => variant.acquisition === 'mercenary' && !hasOwnEngineeringMenu(variant.symbol),
     );
-    expect(unspellable.map(({ symbol }) => symbol).sort()).toEqual([
+    expect(menuless.map(({ symbol }) => symbol).sort()).toEqual([
       'Hpt_CausticMissile_Fixed_Medium',
       'Hpt_MiningLaser_Fixed_Small',
       'Hpt_Mining_AbrBlstr_Fixed_Small',
@@ -568,13 +564,13 @@ describe('build-link codec', () => {
       'Int_ModuleReinforcement_Size5_Class2',
     ]);
 
-    for (const variant of unspellable) {
-      for (const grade of blueprintGrades(variant.blueprint)) {
-        const source = mercenaryBuild(variant, grade);
-        expect(source.fittedModuleAt('LargeHardpoint1')?.preEngineeredVariant).toEqual(variant);
-        const error = expectCodecError(() => encodeBuildLinkFragment(source), 'unknownIdentity');
-        expect(error.message).toContain('LargeHardpoint1');
-      }
+    for (const variant of menuless) {
+      // Nothing but its own variants' blueprints: the set exists so a climbed article can be
+      // spelled, not to invent an engineering menu the package does not offer.
+      const owned = PRE_ENGINEERED_MODULES.filter(({ symbol }) => symbol === variant.symbol).map(
+        ({ blueprint }) => blueprint,
+      );
+      expect([...ordinaryBlueprints(variant.symbol)].sort()).toEqual([...new Set(owned)].sort());
     }
   });
 
@@ -594,7 +590,7 @@ describe('build-link codec', () => {
 
       expect(readPayloadBits(fragment, 0, 10)).toBe(1);
       if (variant.blueprint === 'Decorative_Green') {
-        expect(fragment).toBe('b.5S25TzaeHpHOJ3g@NDt');
+        expect(fragment).toBe('b.5S25TzaeHpHX!Om2.:Z');
       }
       expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
       expect(minimalState(decoded)).toEqual(minimalState(source));
@@ -652,7 +648,7 @@ describe('build-link codec', () => {
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be');
+    expect(contentHash).toBe('0a030271f23249552e4eaeac221c8a165b321b08c18b8e7cfb49f24c97337758');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -776,7 +772,9 @@ describe('build-link codec', () => {
 
   it('keeps the frozen literal special-build link stable in the decode direction', () => {
     // Freeze before release; once table 1 ships, never regenerate this fixture to make a build pass.
-    const preEngineered = decodeBuildLinkFragment('b.eXcDHGhn7Tub');
+    // Re-frozen 2026-08-22 with table 1 itself, when a pre-engineered module's own blueprint joined
+    // its ordinary set and every record over one shifted by the discriminator bit that gained.
+    const preEngineered = decodeBuildLinkFragment('b.5SHJb2soVSh3gubx2!B');
 
     expect(preEngineered.shipSymbol).toBe('Krait_MkII');
     expect(preEngineered.shipName).toBeNull();
@@ -1207,10 +1205,17 @@ function blueprintGrades(fdname: string): readonly number[] {
   return grades;
 }
 
-function hasOrdinaryBlueprints(symbol: string): boolean {
+/** The blueprints table 1 lets a record over this module name, in table order. */
+function ordinaryBlueprints(symbol: string): readonly string[] {
   const moduleIndex = codecTable1.MODULES.indexOf(symbol);
   const setIndex = codecTable1.BLUEPRINT_SET_BY_MODULE[moduleIndex];
-  return setIndex !== undefined && codecTable1.BLUEPRINT_SETS[setIndex].length > 0;
+  const set = setIndex === undefined ? [] : codecTable1.BLUEPRINT_SETS[setIndex];
+  return set.map((index) => codecTable1.BLUEPRINTS[index]);
+}
+
+/** Whether the package offers this module an engineering menu of its own, variants aside. */
+function hasOwnEngineeringMenu(symbol: string): boolean {
+  return getBlueprintsForModule(symbol).length > 0;
 }
 
 function stockStats(symbol: string): unknown {

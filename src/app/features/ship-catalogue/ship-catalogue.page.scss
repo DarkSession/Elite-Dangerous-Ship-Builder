@@ -9,12 +9,21 @@
 
 .catalogue {
   @include layout.region-pair(var(--edsb-layout-rail-min), var(--edsb-space-none));
+  // The shell draws no page frame, so a screen that wants a measure declares
+  // its own (app frame, wave 9). At 2560px the manifest's five columns were
+  // spread across the whole window with `SHIP` and `PRICE MCR` a monitor apart.
+  @include layout.content-measure;
 }
 
+// Canvas 1a's manifest column is `padding: 18px 22px` inside the grid — the
+// inset the region carries itself now that the frame carries none. Without it
+// the search field started at the window edge and the price column's last
+// digit ended at it.
 .catalogue__manifest-region {
   @include layout.stack(var(--edsb-space-panel));
 
   min-inline-size: 0;
+  padding: var(--edsb-space-panel) var(--edsb-space-region);
 }
 
 .catalogue__browse {
@@ -72,9 +81,7 @@
 }
 
 @include layout.wide-up {
-  .catalogue--detail-open .catalogue__manifest-region {
-    padding-inline-end: var(--edsb-space-region);
-  }
+  // The region's own trailing inset already stands the manifest off the rail.
 
   .catalogue__inspector {
     background-color: var(--edsb-surface-rail);

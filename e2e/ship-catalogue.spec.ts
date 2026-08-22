@@ -172,12 +172,20 @@ test.describe('hull catalogue', () => {
       nodes.map((node) => node.getAttribute('data-hull-symbol')),
     );
 
-    await page.getByRole('button', { name: /View / }).first().click();
+    // Where the manifest can be hovered, resting on a row opens the hull beside
+    // it and pressing one flies it, so the trip is a hover and there is no entry
+    // to come back from: the inspector replaces the address rather than stacking
+    // one per row the pointer crossed. Where it cannot, the press is the trip.
+    const hoverable = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+    const row = page.getByRole('button', { name: /(view|build a stock) /i }).first();
+    await (hoverable ? row.hover() : row.click());
     await expect(page).toHaveURL(/\/ships\/[^/]+$/);
     await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
 
-    await page.goBack();
-    await expect(page).toHaveURL(/\/ships$/);
+    if (!hoverable) {
+      await page.goBack();
+      await expect(page).toHaveURL(/\/ships$/);
+    }
 
     await expect(search(page)).toHaveValue('type');
     await expect(sortControl(page, 'Price Mcr')).toHaveAttribute(

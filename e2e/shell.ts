@@ -66,3 +66,39 @@ export async function savedToBrowser(page: Page | Locator): Promise<void> {
     'saved',
   );
 }
+
+/**
+ * Opens a hull's detail from the manifest, however this device does it.
+ *
+ * Where the manifest can be hovered, resting on a row is what shows the hull
+ * and pressing it starts a stock build of it; where it cannot — a touch screen
+ * has no resting — the press is still the way in. A journey wanting the detail
+ * should not have to know which of the two it is looking at, so the question is
+ * asked here, once, in the stylesheets' own words.
+ */
+export async function openHullFromManifest(page: Page, name: string): Promise<void> {
+  await reachHull(
+    page,
+    page.getByRole('button', { name: new RegExp(`(view|build a stock) ${name}\\b`, 'i') }).first(),
+  );
+}
+
+/** The same, for a journey that only needs a hull rather than a named one. */
+export async function openFirstHullFromManifest(page: Page): Promise<void> {
+  await reachHull(
+    page,
+    page
+      .locator('[data-hull-symbol]:visible')
+      .first()
+      .getByRole('button', { name: /(view|build a stock) /i })
+      .first(),
+  );
+}
+
+async function reachHull(page: Page, row: Locator): Promise<void> {
+  if (await page.evaluate(() => matchMedia('(hover: hover)').matches)) {
+    await row.hover();
+  } else {
+    await row.click();
+  }
+}

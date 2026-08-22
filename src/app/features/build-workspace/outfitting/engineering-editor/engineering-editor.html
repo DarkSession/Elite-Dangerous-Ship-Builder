@@ -8,7 +8,9 @@
 <ng-template #body>
   @switch (state()) {
     @case ('noModule') {
-      <p class="engineering__state" role="status">{{ loadingLabel() }}</p>
+      <p class="engineering__state" [attr.role]="emptyMount() ? null : 'status'">
+        {{ noModuleLabel() }}
+      </p>
     }
     @case ('packageEmpty') {
       <!--
@@ -104,8 +106,9 @@
             already folded together, because a Commander gathers them once
             (wave 9). The article's Merc Coin price is not on it: that is what
             buying the module costs, which the manifest row it is bought from
-            already states, and the Almanac publishes no per-grade figure that
-            would belong here instead (constitution IV).
+            already states. The Merc Coin the *climb* bills is a different
+            figure and is on the list: Almanac 0.1.5 publishes it per grade
+            (upstream #337).
           -->
           <edsb-material-cost-list [parts]="materialParts()" [grade]="selectedGrade()" />
         </div>

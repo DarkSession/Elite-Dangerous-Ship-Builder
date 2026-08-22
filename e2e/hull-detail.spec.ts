@@ -6,7 +6,7 @@ import {
   expectOrderedHeadings,
   expectSingleVisibleH1,
 } from './accessibility/assertions';
-import { reachShellLink } from './shell';
+import { openHullFromManifest, reachShellLink } from './shell';
 
 /**
  * Inspecting a hull, and asking for a stock build.
@@ -61,10 +61,7 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   await reachShellLink(page, 'Shipyard');
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
-  await page
-    .getByRole('button', { name: new RegExp(`View ${name}`, 'i') })
-    .first()
-    .click();
+  await openHullFromManifest(page, name);
   await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
 }
 

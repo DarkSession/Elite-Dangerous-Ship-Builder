@@ -356,6 +356,20 @@ export class EngineeringEditor {
   readonly finalLabel = this.#messages.messageSignal('outfitting.engineering.final');
   readonly staleLabel = this.#messages.messageSignal('outfitting.engineering.stale');
   readonly loadingLabel = this.#messages.messageSignal('outfitting.engineering.loading');
+  readonly #noModuleLabel = this.#messages.messageSignal('outfitting.engineering.no-module');
+
+  /**
+   * Why there is no draft: an empty mount, or a build not read yet.
+   *
+   * Both arrive as `noModule`, and they are not the same sentence. A mount with
+   * nothing in it is a settled answer a Commander selected the row to get; a
+   * build still loading is a wait. Only the second is a status worth
+   * announcing, so only the second is one.
+   */
+  readonly emptyMount = computed(() => this.slot().module === null);
+  readonly noModuleLabel = computed(() =>
+    this.emptyMount() ? this.#noModuleLabel() : this.loadingLabel(),
+  );
   readonly noAttributesLabel = this.#messages.messageSignal(
     'outfitting.engineering.attributes.unavailable',
   );
@@ -448,10 +462,10 @@ export class EngineeringEditor {
   /** One part's requirement, with the package's own three answers preserved. */
   #part(part: MaterialPart, cost: MaterialCost | CombinedCost): MaterialPartView {
     if (cost.kind === 'unavailable') {
-      return { part, state: 'unavailable', materials: [] };
+      return { part, state: 'unavailable', materials: [], mercCoins: null };
     }
     if (cost.kind === 'notSelected') {
-      return { part, state: 'notSelected', materials: [] };
+      return { part, state: 'notSelected', materials: [], mercCoins: null };
     }
     return {
       part,
@@ -460,6 +474,9 @@ export class EngineeringEditor {
         cost.materials.map((material) => this.#line(material)),
         this.#formatters.collator(),
       ),
+      // `0` is the package saying this recipe bills no currency — a real
+      // amount, and not one worth a row that says so on every other job.
+      mercCoins: cost.mercCoins === 0 ? null : this.#formatters.integer(cost.mercCoins),
     };
   }
 

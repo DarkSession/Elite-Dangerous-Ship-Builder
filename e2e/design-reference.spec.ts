@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openFirstHullFromManifest } from './shell';
 
 /**
  * The interface still looks like the reference canvas.
@@ -173,14 +174,14 @@ test.describe('the reference visual language', () => {
     const rail = page.locator('.catalogue__inspector');
     await expect(rail).toBeHidden();
 
-    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+    await openFirstHullFromManifest(page);
     await expect(rail).toBeVisible();
   });
 
   test('sets the inspector name large in tracked amber over a monospace line', async ({ page }) => {
     // Canvas 1a: `font: 700 22px 'Barlow Condensed'`, `letter-spacing: .08em`,
     // `color: var(--amber-3)`, over the manufacturer and landing pad in mono.
-    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+    await openFirstHullFromManifest(page);
 
     const name = page.locator('.detail__name');
     await expect(name).toBeVisible();
@@ -194,7 +195,7 @@ test.describe('the reference visual language', () => {
     // Canvas 1a/1b: `display: grid; gap: 1px; background: var(--amber-a14)`
     // with each cell on `var(--panel-3)` — the amber ground showing through the
     // gaps is what draws the rules.
-    await page.locator('[data-hull-symbol]:visible').first().getByRole('button').first().click();
+    await openFirstHullFromManifest(page);
 
     const grid = page.locator('.metric-group').first();
     await expect(grid).toBeVisible();

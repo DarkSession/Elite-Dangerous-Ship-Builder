@@ -16,6 +16,16 @@ import { fixedRewardVariant, mercenaryVariant } from './outfitting.fixtures';
 const ORDINARY_BLUEPRINT = 'FSD_LongRange';
 const ORDINARY_EFFECT = 'special_fsd_heavy';
 
+/**
+ * One of the four ordinary recipes that bill Merc Coin as well as materials.
+ *
+ * Almanac 0.1.5 publishes the currency per grade (upstream #337); before it
+ * there was only a Mercenary article's one fixed shop price, which is not this
+ * figure. The expected amount is still the package's own answer, never a
+ * literal.
+ */
+const MERC_COIN_BLUEPRINT = 'FuelScoop_Efficiency';
+
 /** Nothing selected, nothing fitted. The starting point every case adds to. */
 const NOTHING: EngineeringSelection = {
   blueprintFdname: null,
@@ -38,7 +48,7 @@ describe('engineering cost', () => {
 
       expect(cost.blueprint).toEqual({
         kind: 'known',
-        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 5),
+        ...getBlueprintCost(ORDINARY_BLUEPRINT, 5)!,
       });
     });
 
@@ -56,7 +66,7 @@ describe('engineering cost', () => {
       // time a Commander read it (wave 5).
       expect(cost.blueprint).toEqual({
         kind: 'known',
-        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 5),
+        ...getBlueprintCost(ORDINARY_BLUEPRINT, 5)!,
       });
       expect(
         (cost.blueprint as { materials: readonly unknown[] }).materials.length,
@@ -73,7 +83,7 @@ describe('engineering cost', () => {
         currentGrade: 4,
       });
 
-      expect(cost.blueprint).toEqual({ kind: 'known', materials: getBlueprintCost(other, 5) });
+      expect(cost.blueprint).toEqual({ kind: 'known', ...getBlueprintCost(other, 5)! });
     });
 
     it('prices a completed grade at what that grade costs, never at nothing', () => {
@@ -89,7 +99,7 @@ describe('engineering cost', () => {
       // the package failing to price a job, not a free one (wave 5).
       expect(cost.blueprint).toEqual({
         kind: 'known',
-        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 3),
+        ...getBlueprintCost(ORDINARY_BLUEPRINT, 3)!,
       });
     });
 
@@ -123,6 +133,39 @@ describe('engineering cost', () => {
     });
   });
 
+  describe('the Merc Coin a climb bills', () => {
+    it('carries the package’s per-grade figure beside the materials', () => {
+      const expected = getBlueprintCost(MERC_COIN_BLUEPRINT, 5, 0)!;
+      // The package is what makes this case worth having: a recipe that bills
+      // no currency would pass the same assertion with both halves at zero.
+      expect(expected.mercCoins).toBeGreaterThan(0);
+
+      expect(
+        engineeringCost({ ...NOTHING, blueprintFdname: MERC_COIN_BLUEPRINT, grade: 5 }).blueprint,
+      ).toEqual({ kind: 'known', ...expected });
+    });
+
+    it('is the whole job’s figure, since an effect bills none', () => {
+      const cost = engineeringCost({
+        ...NOTHING,
+        blueprintFdname: MERC_COIN_BLUEPRINT,
+        grade: 5,
+        effectFdname: ORDINARY_EFFECT,
+      });
+
+      expect(cost.experimental).toMatchObject({ mercCoins: 0 });
+      expect(cost.combined).toMatchObject({
+        mercCoins: getBlueprintCost(MERC_COIN_BLUEPRINT, 5, 0)!.mercCoins,
+      });
+    });
+
+    it('is nothing at all on a recipe the package charges no currency for', () => {
+      expect(
+        engineeringCost({ ...NOTHING, blueprintFdname: ORDINARY_BLUEPRINT, grade: 5 }).blueprint,
+      ).toMatchObject({ mercCoins: 0 });
+    });
+  });
+
   describe('the experimental effect', () => {
     it('charges one application for an effect the module does not carry', () => {
       const cost = engineeringCost({ ...NOTHING, effectFdname: ORDINARY_EFFECT });
@@ -130,6 +173,8 @@ describe('engineering cost', () => {
       expect(cost.experimental).toEqual({
         kind: 'known',
         materials: getExperimentalEffectCost(ORDINARY_EFFECT),
+        // An effect charges materials alone; the package says so outright.
+        mercCoins: 0,
       });
     });
 
@@ -157,6 +202,8 @@ describe('engineering cost', () => {
       expect(cost.experimental).toEqual({
         kind: 'known',
         materials: getExperimentalEffectCost(ORDINARY_EFFECT),
+        // An effect charges materials alone; the package says so outright.
+        mercCoins: 0,
       });
     });
 
@@ -182,9 +229,11 @@ describe('engineering cost', () => {
       expect(cost.combined).toEqual({
         kind: 'known',
         materials: sumMaterials(
-          getBlueprintCost(ORDINARY_BLUEPRINT, 5)!,
+          getBlueprintCost(ORDINARY_BLUEPRINT, 5)!.materials,
           getExperimentalEffectCost(ORDINARY_EFFECT)!,
         ),
+        // An effect bills no currency, so the total is the climb's own figure.
+        mercCoins: getBlueprintCost(ORDINARY_BLUEPRINT, 5)!.mercCoins,
       });
     });
 
@@ -202,7 +251,11 @@ describe('engineering cost', () => {
     });
 
     it('is a known zero when nothing is selected', () => {
-      expect(engineeringCost(NOTHING).combined).toEqual({ kind: 'known', materials: [] });
+      expect(engineeringCost(NOTHING).combined).toEqual({
+        kind: 'known',
+        materials: [],
+        mercCoins: 0,
+      });
     });
   });
 
@@ -223,7 +276,7 @@ describe('engineering cost', () => {
       // what it came with, and quoting its recipe would quote for the wrong
       // thing entirely.
       expect(cost.blueprint).toEqual({ kind: 'notSelected' });
-      expect(cost.combined).toEqual({ kind: 'known', materials: [] });
+      expect(cost.combined).toEqual({ kind: 'known', materials: [], mercCoins: 0 });
     });
 
     it('prices engineering a reward further, like any other job', () => {
@@ -312,7 +365,7 @@ describe('engineering cost', () => {
 
       expect(engineeringCost({ ...bought, grade: 5 }).blueprint).toEqual({
         kind: 'known',
-        materials: getBlueprintCost(recipe, 5, merc.grade),
+        ...getBlueprintCost(recipe, 5, merc.grade)!,
       });
       // At the grade it arrived at there is no job at all: the article was
       // bought, not crafted, and its price is the Merc Coin line. Pricing its
@@ -325,7 +378,7 @@ describe('engineering cost', () => {
       // continuation is a live rule rather than a comment.
       const fromPurchase = getBlueprintCost(recipe, 5, merc.grade)!;
       const fromFour = getBlueprintCost(recipe, 5, 4)!;
-      expect(total(fromFour)).toBeLessThan(total(fromPurchase));
+      expect(total(fromFour.materials)).toBeLessThan(total(fromPurchase.materials));
     });
   });
 });

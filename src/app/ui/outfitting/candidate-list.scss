@@ -83,6 +83,17 @@
   overflow-wrap: break-word;
 }
 
+// The row already in the mount is marked the same way as the row in hand, and
+// with the same three things the canvas draws: the amber wash from the leading
+// edge, the 3px marker that opens it, and the amber ink. `selectable-row` keys
+// on `[data-selected]` alone, and an inline fit clears that the moment it
+// commits — which left the fitted row carrying amber text over the ordinary
+// ground, with no marker at all (canvas 1c, the row under `COST`).
+.candidate--fitted {
+  background-image: var(--edsb-surface-row-selected);
+  border-inline-start-color: var(--edsb-marker-selected);
+}
+
 .candidate--fitted .candidate__name,
 [data-selected='true'] .candidate__name {
   color: var(--edsb-text-accent-strong);

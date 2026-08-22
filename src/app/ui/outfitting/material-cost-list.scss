@@ -79,6 +79,22 @@
   margin: 0;
 }
 
+// The Merc ink the manifest row and the status rail already use for this
+// currency, so the same figure reads the same wherever it is drawn. The row
+// names the currency in words, so the colour adds emphasis rather than
+// carrying the distinction (WCAG 1.4.1).
+.material--merc-coin {
+  .material__name,
+  .material__count {
+    color: var(--edsb-text-merc);
+  }
+}
+
+.material__coin {
+  flex: none;
+  align-self: center;
+}
+
 .visually-hidden {
   @include layout.visually-hidden;
 }

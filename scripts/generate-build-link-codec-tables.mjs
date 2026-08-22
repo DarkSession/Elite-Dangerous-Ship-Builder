@@ -228,23 +228,39 @@ for (const ship of ships) {
 
 const blueprintSets = internSets();
 const experimentalSets = internSets();
-const blueprintSetByModule = modules.map((symbol) =>
-  blueprintSets.intern(
-    getBlueprintsForModule(symbol).map((fdname) =>
-      indexOf(blueprintIndex, fdname, 'engineering blueprint'),
-    ),
+const preEngineeredSetByModule = modules.map((symbol) =>
+  preEngineeredVariants.flatMap(({ module }, index) =>
+    modules[module].toLowerCase() === symbol.toLowerCase() ? [index] : [],
   ),
+);
+/**
+ * Every blueprint a record over this module may name.
+ *
+ * The module's own engineering menu, and then the blueprints its pre-engineered variants carry.
+ * A bought article can be climbed past the grade it was sold at, and the variant record only
+ * reproduces the grade on the receipt, so a climbed article has to be written as an ordinary
+ * record naming that same blueprint. Six modules are sold pre-engineered with no ordinary menu
+ * of their own — the Mercenary hardpoints among them — and until their variants' blueprints
+ * joined this set, climbing one past its purchased grade left the build with no encodable record
+ * at all and the link simply vanished.
+ */
+const blueprintSetByModule = modules.map((symbol, moduleIndex) =>
+  blueprintSets.intern([
+    ...new Set([
+      ...getBlueprintsForModule(symbol).map((fdname) =>
+        indexOf(blueprintIndex, fdname, 'engineering blueprint'),
+      ),
+      ...preEngineeredSetByModule[moduleIndex].map(
+        (variant) => preEngineeredVariants[variant].blueprint,
+      ),
+    ]),
+  ]),
 );
 const experimentalSetByModule = modules.map((symbol) =>
   experimentalSets.intern(
     getExperimentalsForModule(symbol).map((fdname) =>
       indexOf(experimentalIndex, fdname, 'experimental effect'),
     ),
-  ),
-);
-const preEngineeredSetByModule = modules.map((symbol) =>
-  preEngineeredVariants.flatMap(({ module }, index) =>
-    modules[module].toLowerCase() === symbol.toLowerCase() ? [index] : [],
   ),
 );
 

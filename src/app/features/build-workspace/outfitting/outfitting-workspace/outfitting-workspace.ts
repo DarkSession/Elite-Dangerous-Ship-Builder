@@ -273,9 +273,16 @@ export class OutfittingWorkspace {
     if (slot === null) {
       return false;
     }
-    return this.benchIsLayer()
-      ? this.store.surface() === 'engineering'
-      : this.capabilitiesFor(slot).canOpenEngineering;
+    // Inline, the panel is simply there for whichever row is marked: canvas 1c
+    // draws no control that opens it, and a mount with nothing in it is exactly
+    // the mount a Commander is asking about when they select it. Gating it on a
+    // fitted module made the region come and go as the selection moved down the
+    // ledger, which answers by saying nothing (wave 9's own reasoning for
+    // `packageEmpty`, applied to the empty mount it left out).
+    //
+    // At layer width it is a screen reached by pressing `ENGINEER`, and that
+    // action still needs a module to be about.
+    return this.benchIsLayer() ? this.store.surface() === 'engineering' : true;
   });
 
   constructor() {

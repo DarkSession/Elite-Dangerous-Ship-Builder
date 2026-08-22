@@ -220,6 +220,14 @@ CPU throttled fourfold, a full list settles at about 120 ms and a page of sixty 
 chooser therefore builds a page at a time, growing as the list is scrolled and through an explicit
 `Show more modules` control beside a `Showing 60 of 478` count.
 
+**Superseded 2026-08-22 by [module-replacement.md](./module-replacement.md) "The manifest is whole,
+and the scroller knows how tall it is".** There is no paging, no growing window, no `Show more
+modules` and no built count: every choice is in the document from the first frame, and at wide width
+the rows outside the scroller are skipped over a height each row is given. The paragraph above is
+kept as the record of the decision it replaced, and the two below belong to it. Note that the
+measurement quoted in it is the one the newer rule has since had to record as **unmet at the compact
+composition** — see that rule's own note.
+
 The control is the one thing here that neither canvas draws. It stays because scrolling cannot be the
 only way to reach the rest of a list — constitution V puts the keyboard criteria out of scope, which
 means an interface may not _depend_ on them, and "scroll to load" is exactly such a dependency for a

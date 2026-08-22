@@ -104,8 +104,31 @@ offers is in the DOM from the first frame. At wide width each row is drawn at on
 rows outside the scroller are skipped with `content-visibility: auto` over a **fixed**
 `contain-intrinsic-block-size` — a declared figure, never `auto`, so the scroller's height is added
 up before anything is laid out and its bar is right from the first frame rather than shrinking under
-the Commander's thumb. The card composition has no such height — a card is as tall as its own text —
-so it is rendered whole rather than declared at a size that is only ever an estimate.
+the Commander's thumb.
+
+**SC-002 is not met at the compact composition, and this rule is why. Recorded 2026-08-22.** The
+manifest being whole costs what it costs: on the Panther Mk II's 478-choice mount at 390 px, the
+compact list lays out and paints 478 full cards, and a keystroke settles at about 113 ms against the
+100 ms SC-002 allows. Two things were measured and rejected rather than assumed.
+
+Skipping the offscreen cards the way the wide manifest does brings it to about 84 ms, and is not
+honest here: a card is as tall as its own text, so `contain-intrinsic-block-size` can only be an
+estimate, and an estimate is right at one width only. Measured at 834 px the scroller's height fell
+from 59,246 px to 50,539 px as the list was scrolled — the bar shrinking under the Commander's thumb,
+which is the exact thing this rule exists to prevent. `contain-intrinsic-block-size: auto` behaves
+identically. The repository's own `renders the whole expansion, so the scroller knows how tall it is`
+catches it in all four tablet projects.
+
+Nor is the cost Angular's. Building the list from the _results_ and hiding the unmatched rows instead
+— so a query destroys and creates no views at all — was implemented and measured at both
+compositions and moved the figure by less than the run-to-run spread. What is expensive is the
+browser laying out and painting hundreds of cards, not the framework making them.
+
+**What would close it** is the one thing that makes an exact intrinsic size possible: a compact card
+of one declared height. Canvas 1d draws exactly that — a `min-height: 64px` row with the facts on one
+mono line rather than the wrapping block of labelled cells this composition grew — so the fix is a
+return to the canvas, not a departure from it. Until then the criterion is unmet at this composition
+and stated as unmet.
 
 The one row that is not that height is the row with two prices in its cost cell. A declared figure
 that is wrong for even a handful of rows moves the bar as those rows are reached, which is the whole

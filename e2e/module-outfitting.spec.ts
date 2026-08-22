@@ -311,6 +311,34 @@ test.describe('the slot ledger', () => {
     expect(nodes.every((node) => /^\d+$/.test(node))).toBe(true);
   });
 
+  test('opens the row already in the mount with the canvas\u2019s wash and marker', async ({
+    page,
+  }) => {
+    // Canvas 1c marks the manifest row under `COST` with
+    // `background: linear-gradient(90deg, var(--amber-a16), \u2026)` and
+    // `border-left: 3px solid var(--amber)` \u2014 the ground and the opening line,
+    // not amber ink alone. The shared row treatment keys on `[data-selected]`,
+    // which an inline fit clears the moment it commits, so the fitted row was
+    // left drawn like every other row but for its colour.
+    await openStockBuild(page);
+    await fitFromChooser(page, () => 1);
+    await openChooser(page);
+
+    const fitted = page.locator('.candidate--fitted').first();
+    await expect(fitted).toBeVisible();
+
+    const drawn = await fitted.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        wash: style.backgroundImage,
+        marker: `${style.borderInlineStartWidth} ${style.borderInlineStartColor}`,
+      };
+    });
+    expect(drawn.wash).toContain('linear-gradient');
+    expect(drawn.wash).toContain('255, 140, 26');
+    expect(drawn.marker).toBe('3px rgb(255, 140, 26)');
+  });
+
   test('marks an empty mount as selected the same way it marks a fitted one', async ({ page }) => {
     // The canvas paints the node from its kind — dashed and withdrawn for
     // `empty`, amber for a fitted mount — but checks the selected branch first

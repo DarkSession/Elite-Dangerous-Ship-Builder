@@ -19,6 +19,8 @@ import type { HullSummary } from '../../ui/components/hull-summary-card/hull-sum
 import type { CatalogueSortField } from '../../domain/catalogue/catalogue-sort';
 import type { HullSize } from '../../domain/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
+import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
+import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 
 /** Every column the manifest shows, and the fact each one orders by. */
 const COLUMNS: readonly { field: CatalogueSortField; labelKey: string; numeric?: boolean }[] = [
@@ -62,6 +64,7 @@ export class ShipCataloguePage {
   readonly #router = inject(Router);
   readonly #restorer = inject(CatalogueAnchorRestorer);
   readonly #chrome = inject(ScreenChrome);
+  readonly #creator = inject(StockBuildCreator);
 
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');
@@ -215,6 +218,39 @@ export class ShipCataloguePage {
   openHull(symbol: string): void {
     this.#catalogue.rememberPosition(symbol, this.#restorer.offsetOf(symbol));
     void this.#router.navigate(['/ships', symbol]);
+  }
+
+  /**
+   * The same navigation, without a history entry per hull.
+   *
+   * A pointer crossing the manifest rests on a dozen hulls on its way to one,
+   * and each of those is the inspector's own address. Replacing the entry keeps
+   * the address honest — the detail is still a real URL a Commander can share
+   * or reload — while leaving the browser's back action pointing at wherever
+   * they came into the shipyard from, rather than at the row above.
+   */
+  previewHull(symbol: string): void {
+    if (symbol === this.#restorer.selectedSymbol()) {
+      return;
+    }
+    this.#catalogue.rememberPosition(symbol, this.#restorer.offsetOf(symbol));
+    void this.#router.navigate(['/ships', symbol], { replaceUrl: true });
+  }
+
+  /**
+   * Flies the hull: its stock build, straight from the manifest.
+   *
+   * The creator is the same one the detail screen's own action uses, so the
+   * unsaved-work question and every refusal reason are asked and answered in
+   * one place. A refusal leaves the Commander on the manifest with the hull
+   * still open beside it, which is where the reason is already published.
+   */
+  async buildHull(symbol: string): Promise<void> {
+    this.previewHull(symbol);
+    const result = await this.#creator.create(symbol);
+    if (result.kind === 'committed') {
+      void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
+    }
   }
 }
 

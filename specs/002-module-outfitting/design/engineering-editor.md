@@ -80,13 +80,21 @@ package material requirements. Draft changes do not mutate the active build unti
   job. At the purchase grade there is therefore nothing to draw — no job, no list — which is the same
   answer the material cost gives there, and for the same reason: the article was bought, not crafted.
 
-  **What is not drawn, and why.** If the game charges further Merc Coin for grades 2–5, the Almanac
-  publishes no figure for it. `PreEngineeredVariant.mercCoinCost` is one fixed shop price per article
-  — the package's own words are that "the current grade does not change the original shop price" —
-  and no per-grade Merc Coin appears anywhere in the catalogues. Only the material half of those
-  grades can be stated, and it is; a Merc Coin figure beside it would be one the game does not have.
-  This is an upstream data gap, not something this surface may work around, and it is filed as one:
-  https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/337.
+  **What the climb bills, closed 2026-08-22 by Almanac 0.1.5.** The figure this section once
+  recorded as missing now exists. `getBlueprintCost(fdname, grade, currentGrade)` returns a
+  `BlueprintCost` — the materials _and_ a `mercCoins` amount, weighted for the rolls exactly as the
+  material counts are — for the 25 recipes that charge the currency: the 21 bespoke grade-2–5 recipes
+  only a Mercenary article can be taken through, plus `FuelScoop_Efficiency` and the three
+  `*Laser_ThermalPlasmaConversion`. That closes
+  [#337](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/337), so the materials panel
+  draws the Merc Coin line the canvas gives it, on its own row under the list, in the Merc ink with
+  the coin beside it and the currency named in words.
+
+  It is not folded into anything. `sumMaterials` takes materials only — Merc Coin has no credit
+  equivalent and is not a material — so the panel adds the two halves' `mercCoins` itself and shows
+  no row at all where the total is `0`. An experimental effect bills none, which the package states
+  outright. The _purchase_ price stays out, for the reason ruled above: that is what buying the
+  module cost, and the manifest row it is bought from states it.
 
 - **No apply and no revert.** Canvas 1c draws neither, and inline there is nothing for them to act
   on: a choice _is_ the decision as it is made, and undo is what takes it back. The controls belong
@@ -119,20 +127,20 @@ remain distinct outcomes.
 
 ## States
 
-| State                                | Required presentation and behavior                                                                                                                                                                                                                    |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unengineered, package menu present   | Blueprint first; no grade/effect until applicable; no quality control.                                                                                                                                                                                |
-| Ordinary engineered                  | Current fdname/grade/effect, package values and appropriate change/clear actions.                                                                                                                                                                     |
-| Mercenary article                    | Recipe stated, not offered. The purchase's own grade is a pressable cell however far the article has since been climbed. Merc Coin is not priced here at all: it is the price of buying the module, and the manifest row it is bought from states it. |
-| Fixed re-engineerable reward         | Fixed route/stats retained; only package-supported later operations.                                                                                                                                                                                  |
-| Final article                        | Package restriction and current fixed state visible; no apply/clear actions.                                                                                                                                                                          |
-| Empty/incomplete/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                                                                                                                                                         |
-| Known zero cost                      | A **defect signal**, not a state to design for. Engineering always costs materials, so an empty list from the package means the wrong thing was priced (wave 5).                                                                                      |
-| Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                                                                                                                                                      |
-| Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                                                                                                                                                 |
-| Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.                                                                                                                                    |
-| Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                                                                                                                                                 |
-| Package refusal                      | Structured localized error; current build/history unchanged.                                                                                                                                                                                          |
+| State                                | Required presentation and behavior                                                                                                                                                                                                                                                                                    |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unengineered, package menu present   | Blueprint first; no grade/effect until applicable; no quality control.                                                                                                                                                                                                                                                |
+| Ordinary engineered                  | Current fdname/grade/effect, package values and appropriate change/clear actions.                                                                                                                                                                                                                                     |
+| Mercenary article                    | Recipe stated, not offered. The purchase's own grade is a pressable cell however far the article has since been climbed. The _purchase_ price is not priced here — the manifest row it is bought from states it — but the Merc Coin a climb above that grade bills is, on the materials list's own row (0.1.5, #337). |
+| Fixed re-engineerable reward         | Fixed route/stats retained; only package-supported later operations.                                                                                                                                                                                                                                                  |
+| Final article                        | Package restriction and current fixed state visible; no apply/clear actions.                                                                                                                                                                                                                                          |
+| Empty/incomplete/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                                                                                                                                                                                                                         |
+| Known zero cost                      | A **defect signal**, not a state to design for. Engineering always costs materials, so an empty list from the package means the wrong thing was priced (wave 5).                                                                                                                                                      |
+| Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                                                                                                                                                                                                                      |
+| Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                                                                                                                                                                                                                 |
+| Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.                                                                                                                                                                                                    |
+| Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                                                                                                                                                                                                                 |
+| Package refusal                      | Structured localized error; current build/history unchanged.                                                                                                                                                                                                                                                          |
 
 ## Clearing engineering
 
@@ -186,13 +194,62 @@ that `CLEAR ✕` created by existing at wide width only.
   canvas draws at 28px: those clear the 24px WCAG 2.2 AA floor and are named in `DENSE_TARGETS`. Text expansion, RTL, reduced motion,
   portrait/landscape and no-page-overflow are tested.
 
-## Known limitation: a climbed Mercenary article cannot be shared as a link
+## Closed 2026-08-22: six climbed reward articles could not be shared as a link
 
-**Recorded 2026-08-22.** Engineering a Merc-Coin article above the grade it was bought at produces a
-build the link codec cannot encode. The pre-engineered record no longer reproduces the module, and
-the ordinary record needs an ordinary blueprint the codec table records none of for that module —
-so `encode` refuses with `unknownIdentity` and the workspace says the build cannot be shared. This
-is a codec-table gap, not something this feature may work around: writing some other blueprint into
-the link would hand a Commander a build that is not theirs (constitution IV). It is upstream work.
+**Recorded 2026-08-22, corrected the same day after measuring it, fixed the same day.** Six of the
+Almanac's 76 pre-engineered variants could be engineered into a state the link codec refused to
+encode — the build's link simply disappeared. All six are Merc-Coin articles, and what they had in
+common was not the Merc-Coin route: it is that the module under them has **no ordinary engineering
+menu at all**.
+
+| Article                      | Module                                 | Recipe                          |
+| ---------------------------- | -------------------------------------- | ------------------------------- |
+| Abrasion Blaster             | `Hpt_Mining_AbrBlstr_Fixed_Small`      | `AbrasionBlaster_FarReaching`   |
+| Enzyme Missile Rack          | `Hpt_CausticMissile_Fixed_Medium`      | `EnzymeMissileRack_HighYield`   |
+| Mining Laser                 | `Hpt_MiningLaser_Fixed_Small`          | `MiningLaser_LongRange`         |
+| Cargo Rack (size 5)          | `Int_CargoRack_Size5_Class1`           | `CargoRackS5C1_Extended`        |
+| Cargo Rack (size 6)          | `Int_CargoRack_Size6_Class1`           | `CargoRackS6C1_Extended`        |
+| Module Reinforcement Package | `Int_ModuleReinforcement_Size5_Class2` | `ModuleReinforcement_HeavyDuty` |
+
+**Why.** Climbing off the purchase grade leaves the pre-engineered record unable to reproduce the
+module — it records the grade the article was sold at — so the engineering has to be written as the
+ordinary record instead. The codec's per-module blueprint set came from the Almanac's
+`getBlueprintsForModule`, which is _every blueprint in a stock module's ordinary engineering menu_,
+so a bespoke recipe was never in it — for all 22 Merc articles. That alone is harmless: where the
+module has an ordinary menu, `writeContextualIndex` writes a not-in-set flag and the blueprint's
+global index, and the link round-trips whole, purchase identity included. Where the set was
+**empty**, the format had no discriminator left: `readEngineering` derives which record follows from
+whether the module has any ordinary blueprints at all, so with none it always read the
+pre-engineered branch and there was no bit that could say otherwise. `encode` refused rather than
+write a link that would decode as the grade-1 article.
+
+**Measured, not inferred.** A Merc Rail Gun and a Merc Detailed Surface Scanner — the latter with an
+ordinary menu of exactly one blueprint — both encoded at grade 2 and reloaded with `Bought as … at
+grade 1` intact. The Abrasion Blaster at grade 2 refused.
+
+**Whose gap it was.** Not upstream: the Almanac reports everything needed, and resolves
+`preEngineeredVariant` on all 22 at grade 2. It was **this repository's codec table**. The fix is in
+`scripts/generate-build-link-codec-tables.mjs`: a module's blueprint set is now its own engineering
+menu **plus the blueprints its own pre-engineered variants carry**. No menu is invented — the six
+gain a set of exactly their variants' recipes — and with a non-empty set the discriminator bit
+exists again. Table 1 was overwritten in place rather than minted as table 2, because it is still
+pre-release and no link has been published against it; its content hash moved to `0a030271f232…`.
+
+**What it cost.** Nothing at the envelope: `pnpm run codec:capacity` reports the same 272 of 377
+bytes for the largest expressible build, and the widest blueprint candidate set is still 9, so no
+index got wider. Measured across 457 builds — every stock hull, the fully engineered Anaconda, the
+imported Corvette, and every pre-engineered variant both as bought and at every craftable grade — 308
+encodings are byte-identical, 81 lost one character, 10 gained one, and **58 that could not be
+encoded at all now encode**. The rescued 58 are not only the Merc six: the community-goal and
+tech-broker variants sitting on those same modules were refused for the same reason. The table's own
+JSON grew 129,684 → 130,434 bytes, which is lazy-loaded application payload and not link length.
+
+## Still open: the encode direction borrows the decode direction's sentence
+
+When the encoder does refuse — a Merc purchase whose capture states modifiers the record cannot
+account for is the case that remains — `unknownIdentity` renders "This build link names a hull or
+module that is not available here", and both the hull and the module are installed and on screen.
+Only `unknownIdentity`, `invalidPayload` and `tooLong` can arise while encoding; the encode
+direction needs its own wording for them.
 
 Preview/test states cover every row in the states table at desktop, tablet and mobile widths.

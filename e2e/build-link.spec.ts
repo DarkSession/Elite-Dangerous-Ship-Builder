@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
-import { reachShellAction } from './shell';
+import { openFirstHullFromManifest, reachShellAction } from './shell';
 
 /**
  * A build, passed to someone else.
@@ -197,11 +197,7 @@ test.describe('what a link never sends', () => {
     // Any hull will do — this journey is about what leaves the browser, not
     // about which ship. Whichever the manifest lists first is reachable at every
     // layout profile without opening a filter panel.
-    await page
-      .locator('[data-hull-symbol]:visible')
-      .first()
-      .getByRole('button', { name: /View / })
-      .click();
+    await openFirstHullFromManifest(page);
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build#b\./);
     await openShare(page);

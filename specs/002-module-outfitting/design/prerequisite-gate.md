@@ -51,6 +51,7 @@ local fitting, variant, engineering or cost rule. Every one of those is checked 
 
 ## Installed package
 
-`@elite-dangerous-almanac/core` is pinned at `0.1.4` in `package.json`. Feature 002 adds no
+`@elite-dangerous-almanac/core` is pinned at `0.1.5` in `package.json` (raised from 0.1.4 on
+2026-08-22 for the per-grade Merc Coin figure, upstream #337). Feature 002 adds no
 dependency. The acceptance characterization of that installed version lives in
 `src/app/domain/outfitting/almanac-acceptance.spec.ts`.

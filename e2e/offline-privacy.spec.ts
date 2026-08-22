@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openFirstHullFromManifest } from './shell';
 
 /**
  * Offline capability and the privacy promise (US1, US2, US3).
@@ -86,11 +87,7 @@ test.describe('the privacy promise', () => {
     });
 
     await withWorker(page, '/ships');
-    await page
-      .locator('[data-hull-symbol]:visible')
-      .first()
-      .getByRole('button', { name: /View / })
-      .click();
+    await openFirstHullFromManifest(page);
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await page.goto('/builds');

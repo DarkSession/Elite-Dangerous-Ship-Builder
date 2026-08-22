@@ -15,7 +15,7 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { reachShellLink } from './shell';
+import { openFirstHullFromManifest, reachShellLink } from './shell';
 
 /**
  * Every screen this feature adds, held to the same interface contract.
@@ -99,11 +99,7 @@ test.describe('cross-route semantics', () => {
     await expect(sorted.or(page.locator('[aria-sort]')).first()).toBeAttached();
 
     // Opening a hull marks it as the current one rather than only colouring it.
-    await page
-      .locator('[data-hull-symbol]:visible')
-      .first()
-      .getByRole('button', { name: /View / })
-      .click();
+    await openFirstHullFromManifest(page);
     await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
   });
@@ -127,11 +123,7 @@ test.describe('cross-route semantics', () => {
 
     await reachShellLink(page, 'Shipyard');
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
-    await page
-      .locator('[data-hull-symbol]:visible')
-      .first()
-      .getByRole('button', { name: /View /i })
-      .click();
+    await openFirstHullFromManifest(page);
     await page.getByRole('button', { name: 'Build stock hull' }).click();
 
     // One question, asked once, naming both outcomes in its own words.

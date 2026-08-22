@@ -460,16 +460,33 @@ test.describe('purchased and reward articles', () => {
 
     const parts = page.locator('.materials__part');
     await expect(parts.first()).toBeVisible();
-    // It joins no material list: Merc Coin has no credit or material
-    // equivalent, so summing it would invent an exchange rate the game does
-    // not have.
-    await expect(parts).not.toContainText(/merc coin/i);
+    // The climb's own Merc Coin, which Almanac 0.1.5 publishes per grade
+    // (upstream #337): stated on its own row rather than folded into anything.
+    // It joins no material list — Merc Coin has no credit or material
+    // equivalent, so summing it would invent an exchange rate the game does not
+    // have — so the figure is its own row and not one of the counts above it.
+    const coins = page.locator('.material--merc-coin');
+    await expect(coins).toHaveCount(1);
+    await expect(coins).toContainText(/merc coin/i);
+    // The *purchase* price is still not here: this row is what the climb above
+    // the bought grade bills, and what buying the article cost is stated by the
+    // manifest row it is bought from.
 
     // And back down to the grade it was bought at, which the recipe's own table
     // does not reach. The bar has to come back to 1 rather than to nothing:
     // a blank bar on a plainly engineered article was what pressing that cell
     // used to do, because the Almanac publishes no recipe there and the answer
     // is to restore the article rather than to ask for one (wave 6).
+    // The build still has a link. Six Mercenary articles — this small mining
+    // hardpoint among them — sit on modules the package gives no engineering
+    // menu, so until table 1 recorded their variants' own blueprints there was
+    // no ordinary record to write and the link vanished the moment one was
+    // climbed off its purchase grade (2026-08-22).
+    // Its own timeout: publishing a fragment lazily loads the codec table and
+    // encodes off the main thread, which is comfortably under a second here and
+    // past the default assertion window on a machine running the whole matrix.
+    await expect(page).toHaveURL(/\/build#b\./, { timeout: 15_000 });
+
     const climbed = await applied(page, 'SmallHardpoint1');
     await page.locator('.grade').first().click();
     await expect(page.locator('.grades__selected')).toHaveText('1');

@@ -13,9 +13,15 @@
     (click)="emit({ kind: 'select' })"
   >
     <span class="slot__mount">
-      @if (slot().size !== null) {
-        <span class="slot__size">{{ slot().size }}</span>
-      }
+      <!--
+        Drawn on every row, empty where the package states no size. Utility
+        mounts and armour are sized `0`, which is not a size a Commander has —
+        but omitting the box moved their module names a box's width left of
+        every other group's, and a ledger column that only lines up in some
+        groups is not a column (canvas 1c, which draws the box on its utility
+        rows too).
+      -->
+      <span class="slot__size">{{ slot().size }}</span>
       @if (slot().kind === 'hardpoint') {
         <span class="slot__node">{{ slot().node }}</span>
       }

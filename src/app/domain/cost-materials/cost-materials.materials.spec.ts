@@ -34,7 +34,7 @@ describe('cost and materials — engineering materials', () => {
     const materials = projectMaterials(build.fittedModules());
 
     expect(materials?.rows.map(bare)).toEqual(
-      sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []).map(bare),
+      sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? []).map(bare),
     );
   });
 
@@ -48,8 +48,8 @@ describe('cost and materials — engineering materials', () => {
     // them, which is the package's business and not this fixture's to assume —
     // so the expectation is built by walking that same enumeration.
     const recipes = new Map<string, readonly EngineeringMaterial[]>([
-      [FIXTURE_SLOTS.frameShiftDrive, getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []],
-      [FIXTURE_SLOTS.thrusters, getBlueprintCost(THRUSTER_BLUEPRINT, 3) ?? []],
+      [FIXTURE_SLOTS.frameShiftDrive, getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? []],
+      [FIXTURE_SLOTS.thrusters, getBlueprintCost(THRUSTER_BLUEPRINT, 3)?.materials ?? []],
     ]);
     const inFittedOrder = build
       .fittedModules()
@@ -69,7 +69,7 @@ describe('cost and materials — engineering materials', () => {
     const materials = projectMaterials(build.fittedModules());
     const expected = sumMaterials(
       sumMaterials(
-        getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? [],
+        getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? [],
         getExperimentalEffectCost(DRIVE_EFFECT) ?? [],
       ),
     );
@@ -111,7 +111,7 @@ describe('cost and materials — engineering materials', () => {
       // Counted against the package's own consolidation rather than against
       // this projection's own rows, which would assert the field back to the
       // list it was measured from and hold however wrong both were.
-      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []);
+      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? []);
       expect(consolidated.length).toBeGreaterThan(1);
       expect(materials?.types).toBe(consolidated.length);
     });
@@ -119,7 +119,7 @@ describe('cost and materials — engineering materials', () => {
     it('sums the package counts for the unit total', () => {
       const materials = projectMaterials(engineeredBuild().fittedModules());
 
-      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []);
+      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? []);
       const expected = consolidated.reduce((running, material) => running + material.count, 0);
 
       // Units, not types: the two differ, which is what makes this a check on
@@ -168,7 +168,7 @@ describe('cost and materials — engineering materials', () => {
       // nothing because one source was unavailable.
       expect(materials?.blueprints).toBe(1);
       expect(materials?.rows.map(bare)).toEqual(
-        sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []).map(bare),
+        sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5)?.materials ?? []).map(bare),
       );
     });
   });

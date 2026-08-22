@@ -323,17 +323,21 @@ craftable grade, so the purchase grade is unspellable in the ordinary form and g
 unspellable in the pre-engineered one.
 
 Where neither form fits, the encoder refuses, naming the slot. That covers a purchase whose capture
-states modifiers the record cannot account for — there is no craftable grade 1 to fall back to — and
-it covers three of the 22 whenever they are engineered above their purchase grade: the two small
-mining tools and the class-2 size-5 module reinforcement package. Those three still share correctly
-at their purchase grade, which is the state the record was made for. The package reports no ordinary
-blueprint for those modules, so table 1 records none, and the discriminator that would select the
-ordinary form is not even written for a module with an empty blueprint set: the reader infers the
-pre-engineered form from the table alone. Note this is the discriminator, not the blueprint index —
-an ordinary record can name a blueprint outside its module's candidate set, and all nineteen working
-Mercenary articles do exactly that. Supporting the remaining cases requires a later table that
-carries Mercenary-route blueprints in each module's candidate set. That changes what the
-discriminator can express rather than the record layouts themselves.
+states modifiers the record cannot account for — there is no craftable grade 1 to fall back to.
+
+It used to cover more. A module's blueprint candidate set was its own engineering menu and nothing
+else, and six of the modules sold pre-engineered have no menu at all: the two small mining tools,
+the enzyme missile rack, two cargo racks, and the class-2 size-5 module reinforcement package. Their
+sets were empty, and an empty set is not merely a missing blueprint index — it removes the
+discriminator, because the reader infers the pre-engineered form from the table alone when no
+ordinary form is available. So an ordinary record could not be written for them at any grade, the
+encoder refused, and a Commander who engineered one watched the build's link disappear.
+
+Since 2026-08-22 each module's set is its own menu plus the blueprints its pre-engineered variants
+carry. The six gain a set of exactly their variants' blueprints — no menu is invented, only the
+blueprint a climbed article has to name — and with it the discriminator that tells the two forms
+apart. Every one of the 22 Mercenary articles now shares at every craftable grade, as do the
+community-goal and tech-broker variants on those same modules. The record layouts are unchanged.
 
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
 the same contextual pre-engineered identity as every other fixed article; the codec has no separate
@@ -569,7 +573,7 @@ capacity back without touching a published link's decoder.
 ## Versioned tables and lazy loading
 
 Table 1 is the pre-release `codec-table-1.json`, reproduced by
-`@elite-dangerous-almanac/core@0.1.4`. It pins hulls, hull-specific outfittable slots, the cargo
+`@elite-dangerous-almanac/core@0.1.5`. It pins hulls, hull-specific outfittable slots, the cargo
 hatch, stock modules, module identities, blueprints and their grades, experimental effects,
 contextual candidate sets, power-drawing module identities, pre-engineered identities, and the
 `MODELS` block of pinned symbol weights. Stable game identities originate from the package; indexes
@@ -599,9 +603,13 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.4`. Running
-`pnpm run codec:tables` reproduces table 1 at content hash
-`511740e210f8f22a334c3f337e4f6c67e81385205e3776f8ce7a5e90e1c045be`. The package also reconstructs
+The current application dependency is exactly pinned to Almanac `0.1.5` (raised from `0.1.4` on
+2026-08-22; the upgrade itself left table 1 byte-identical, as `pnpm run codec:tables` reported).
+Table 1 was then overwritten in place on 2026-08-22, while it is still pre-release and no link has
+been published against it, so that a module's pre-engineered variants contribute their blueprints to
+its candidate set — see "Where neither form fits" above. Running `pnpm run codec:tables` reproduces
+table 1 at content hash
+`0a030271f23249552e4eaeac221c8a165b321b08c18b8e7cfb49f24c97337758`. The package also reconstructs
 every omitted required mount with the hull's default module. That changes the canonical minimal
 loadout and the current encoder output for it without changing the table's identity.
 
@@ -622,13 +630,14 @@ path for the affected table version.
 The frozen corpus currently produces these encoded data lengths. Each value and length includes
 the `b.` protocol prefix. Packed spellings are untouched by the symbol models; the two engineered
 references, whose canonical body is arithmetic, were re-pinned when the models landed under the
-pre-release regeneration rule:
+pre-release regeneration rule. The festive Krait was re-pinned again on 2026-08-22, at the same
+length, when pre-engineered variants' blueprints joined their modules' candidate sets:
 
 | Reference build               | Base70 encoded data                                                                                 | Data length |
 | ----------------------------- | --------------------------------------------------------------------------------------------------- | ----------: |
 | Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                  |          16 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                        |          10 |
-| Festive flak Krait            | `b.5S25TzaeHpHOJ3g@NDt`                                                                             |          21 |
+| Festive flak Krait            | `b.5S25TzaeHpHX!Om2.:Z`                                                                             |          21 |
 | Full engineered Anaconda*     | `b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe`                                 |          65 |
 | Supplied engineered Corvette† | `b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV` |          97 |
 

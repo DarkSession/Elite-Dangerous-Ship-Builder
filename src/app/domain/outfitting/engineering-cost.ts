@@ -17,14 +17,23 @@ import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/p
  * a free upgrade the Almanac never costed (FR-013, constitution VI).
  */
 export type MaterialCost =
-  | { readonly kind: 'known'; readonly materials: readonly EngineeringMaterial[] }
+  | {
+      readonly kind: 'known';
+      readonly materials: readonly EngineeringMaterial[];
+      /** The Merc Coin this part bills beside the materials. `0` on most recipes. */
+      readonly mercCoins: number;
+    }
   | { readonly kind: 'unavailable' }
   /** Nothing is selected that this part could cost. Not zero, not missing. */
   | { readonly kind: 'notSelected' };
 
 /** The combined figure, which is either summable or not stateable. */
 export type CombinedCost =
-  | { readonly kind: 'known'; readonly materials: readonly EngineeringMaterial[] }
+  | {
+      readonly kind: 'known';
+      readonly materials: readonly EngineeringMaterial[];
+      readonly mercCoins: number;
+    }
   | { readonly kind: 'unavailable' };
 
 /** What one draft would cost to craft, entirely from package results. */
@@ -37,13 +46,15 @@ export interface EngineeringCostView {
   readonly combined: CombinedCost;
 }
 
-// The article's Merc Coin shop price is deliberately **not** here. It is the
-// price of buying the module, which the manifest row it is bought from already
-// states; standing at the foot of a job's shopping list it read as the price of
-// that job instead. Nor is there a per-grade figure to put in its place: the
-// Almanac publishes one fixed `mercCoinCost` per Mercenary article and says the
-// current grade does not change it, so a Merc Coin figure beside a grade-5 climb
-// would be one the game does not have (wave 9, constitution IV).
+// The article's Merc Coin *shop price* is deliberately not here. It is the price
+// of buying the module, which the manifest row it is bought from already states;
+// standing at the foot of a job's shopping list it read as the price of that job
+// instead (wave 9, constitution IV).
+//
+// The Merc Coin the *climb* bills is a different figure and is here: Almanac
+// 0.1.5 publishes it per grade as `BlueprintCost.mercCoins`, weighted for the
+// rolls exactly as the material counts are, on the 25 recipes that charge any.
+// It closes upstream issue #337.
 
 /** What the Commander has chosen, against what the module already carries. */
 export interface EngineeringSelection {
@@ -63,9 +74,9 @@ export interface EngineeringSelection {
 /**
  * Prices one engineering draft, using only the package's own cost catalogues.
  *
- * Three package calls and nothing else: `getBlueprintCost` for the climb,
- * `getExperimentalEffectCost` for the effect, `sumMaterials` to fold them
- * together. There is deliberately no per-grade breakdown and no call to
+ * Three package calls and nothing else: `getBlueprintCost` for the climb's
+ * materials and Merc Coin, `getExperimentalEffectCost` for the effect,
+ * `sumMaterials` to fold the material halves together. There is deliberately no per-grade breakdown and no call to
  * `getBlueprintGradeCost`, because a per-roll figure is a figure about *rolling*
  * — and this application models completed grades, never rolls. A surface that
  * showed "5 rolls at grade 5" would be describing a mechanic the rest of the
@@ -115,8 +126,10 @@ function blueprintCost(selection: EngineeringSelection): MaterialCost {
   // the grade rather than of how far along the module happens to be — and since
   // a choice commits as it is made, a figure for what is *left* would be zero
   // every time it was read (wave 5, canvas 1c `MATERIALS · G5 · REQUIRED`).
-  const materials = getBlueprintCost(fdname, grade, 0);
-  return materials === null ? { kind: 'unavailable' } : { kind: 'known', materials };
+  const cost = getBlueprintCost(fdname, grade, 0);
+  return cost === null
+    ? { kind: 'unavailable' }
+    : { kind: 'known', materials: cost.materials, mercCoins: cost.mercCoins };
 }
 
 function experimentalCost(selection: EngineeringSelection): MaterialCost {
@@ -142,8 +155,10 @@ function experimentalCost(selection: EngineeringSelection): MaterialCost {
   // effect is always "already applied"; a cost that fell to nothing on being
   // chosen was a list that never changed no matter what was picked (wave 9,
   // canvas 1c `MATERIALS · G5 · REQUIRED`).
+  // An effect charges materials alone; the package states it carries no Merc
+  // Coin, so `0` here is the package's answer rather than a stand-in for one.
   const materials = getExperimentalEffectCost(fdname);
-  return materials === null ? { kind: 'unavailable' } : { kind: 'known', materials };
+  return materials === null ? { kind: 'unavailable' } : { kind: 'known', materials, mercCoins: 0 };
 }
 
 /**
@@ -158,14 +173,18 @@ function combine(blueprint: MaterialCost, experimental: MaterialCost): CombinedC
     return { kind: 'unavailable' };
   }
 
-  const lists = [blueprint, experimental]
-    .filter(
-      (part): part is { kind: 'known'; materials: readonly EngineeringMaterial[] } =>
-        part.kind === 'known',
-    )
-    .map((part) => part.materials);
+  const known = [blueprint, experimental].filter(
+    (part): part is Extract<MaterialCost, { kind: 'known' }> => part.kind === 'known',
+  );
+  const lists = known.map((part) => part.materials);
 
-  return { kind: 'known', materials: lists.length === 0 ? [] : sumMaterials(...lists) };
+  return {
+    kind: 'known',
+    materials: lists.length === 0 ? [] : sumMaterials(...lists),
+    // Merc Coin has no credit equivalent and is not a material, so the package
+    // keeps it out of `sumMaterials` and it is added here instead.
+    mercCoins: known.reduce((total, part) => total + part.mercCoins, 0),
+  };
 }
 
 /** Package identities are compared the way the package matches them. */

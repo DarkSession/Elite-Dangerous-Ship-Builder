@@ -45,6 +45,31 @@
           }
         </dl>
       }
+
+      <!--
+        Merc Coin closes the part, on its own row exactly as both canvases draw
+        it. It is a currency rather than a material, so the package keeps it out
+        of `sumMaterials` and it stays out of the list above — and it is named
+        in words beside the coin, because nothing here may carry meaning by
+        colour or icon alone.
+      -->
+      @if (part.mercCoins; as coins) {
+        <dl class="materials__list">
+          <div class="material material--merc-coin">
+            <dt class="material__name">
+              <img
+                class="material__coin"
+                src="assets/icons/merc-coin.png"
+                alt=""
+                width="14"
+                height="14"
+              />
+              {{ mercCoinLabel() }}
+            </dt>
+            <dd class="material__count" data-bidi-isolate>{{ coins }}</dd>
+          </div>
+        </dl>
+      }
     </div>
   }
 </section>
