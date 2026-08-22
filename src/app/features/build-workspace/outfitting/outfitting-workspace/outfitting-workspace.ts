@@ -102,6 +102,7 @@ export class OutfittingWorkspace {
 
   readonly regionLabel = this.#messages.messageSignal('outfitting.region.label');
   readonly ledgerLabel = this.#messages.messageSignal('outfitting.ledger.label');
+  readonly statusRailLabel = this.#messages.messageSignal('outfitting.status-rail.label');
   readonly categoryLegend = this.#messages.messageSignal('outfitting.category.legend');
   readonly noBuildTitle = this.#messages.messageSignal('outfitting.no-build.title');
   readonly noBuildDescription = this.#messages.messageSignal('outfitting.no-build.description');

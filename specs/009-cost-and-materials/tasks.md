@@ -239,11 +239,16 @@ is not named, and that a build with no engineering draws no materials block at a
       boundary, the four ruled application-owned figures, and the out-of-scope historical purchase
       values, currency conversion, material traces and unpriced evidence in `AGENTS.md` and
       `README.md`
-- [ ] T033 Execute every section of `specs/009-cost-and-materials/quickstart.md`, including the
+- [x] T033 Execute every section of `specs/009-cost-and-materials/quickstart.md`, including the
       cargo-rack stop condition and the package-pin check, and fix each divergence
-- [ ] T034 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting,
+- [x] T034 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting,
       strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all
-      axe scans pass with no skipped, focused or quarantined test
+      axe scans pass with no skipped, focused or quarantined test. The ten matrix projects pass
+      (2940) and so do `e2e:offline` (70) and every axe sweep. The eleventh project,
+      `chromium-mobile-timing`, is flaky on this machine **at `main`** — five isolated runs of
+      `e2e:timing` on a clean `main` worktree gave 111.4, 135.5, pass, 133.0 and 129.6 ms against a
+      100 ms budget, no better than this branch. It is feature 002's SC-002 gate and a pre-existing
+      environment problem, not a feature 009 regression; nothing here raises the budget.
 
 ---
 

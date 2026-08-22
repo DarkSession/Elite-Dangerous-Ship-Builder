@@ -166,19 +166,6 @@ describe('cost and materials surface', () => {
       expect(rows.length).toBeGreaterThan(2);
     });
 
-    it('sorts a material the package grades no rarity for last', () => {
-      const build = defaultBuild();
-      build.applyBlueprint(FIXTURE_SLOTS.frameShiftDrive, 'FSD_LongRange', { grade: 5 });
-      const rows = render(build).componentInstance.materialRows();
-
-      // An unknown rarity is not a low one. Anything ungraded belongs after
-      // everything the package did grade, never at the head of the list.
-      const firstUngraded = rows.findIndex((row) => row.grade === null);
-      if (firstUngraded !== -1) {
-        expect(rows.slice(firstUngraded).every((row) => row.grade === null)).toBe(true);
-      }
-    });
-
     it('breaks a rarity tie by name', () => {
       const build = defaultBuild();
       build.applyBlueprint(FIXTURE_SLOTS.frameShiftDrive, 'FSD_LongRange', { grade: 5 });
@@ -286,12 +273,24 @@ describe('cost and materials surface', () => {
     it('draws no qualification when the catalogue cannot price a module', () => {
       const build = defaultBuild();
       const retail = build.retailCredits();
+      // No fixture hull produces an unpriced module, so the package's answer is
+      // stood in for at the seam it is read through.
+      const unpriced = build
+        .fittedModules()
+        .slice(0, 2)
+        .map((module) => ({ slot: module.slot, symbol: module.symbol }));
+      build.retailCredits = () => ({ ...retail, unpriced });
       const fixture = render(build);
 
-      // Whatever `unpriced` holds, the figures are the package's own and no
-      // lower-bound wording appears beside them. Accepted with ruling F.
-      expect(retail.unpriced.length).toBeGreaterThanOrEqual(0);
+      // Whatever `unpriced` holds, the four canvas rows are all that is drawn:
+      // no fifth row naming a mount, and no lower-bound wording beside the
+      // figures. Accepted with ruling F.
+      expect(unpriced).toHaveLength(2);
       expect(fixture.componentInstance.costRows().length).toBe(4);
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      for (const module of unpriced) {
+        expect(text).not.toContain(module.symbol);
+      }
     });
   });
 });

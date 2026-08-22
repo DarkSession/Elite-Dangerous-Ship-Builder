@@ -2,7 +2,14 @@ import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
-import { applyDraft, chooseRecipe, openEditor as bringEditorOnScreen } from './outfitting-surfaces';
+import {
+  applyDraft,
+  chooseRecipe,
+  fitCommitted,
+  openChooser,
+  openEditor as bringEditorOnScreen,
+  surfacesAreLayers,
+} from './outfitting-surfaces';
 
 /**
  * The cost and material blocks, end to end.
@@ -15,6 +22,20 @@ import { applyDraft, chooseRecipe, openEditor as bringEditorOnScreen } from './o
  */
 
 const HULL = 'Anaconda';
+
+/**
+ * The mount the package sells two ways, one of them for Merc Coin.
+ *
+ * The same fixture the unit suite uses, reached the way a Commander reaches it:
+ * through the chooser (`src/app/domain/cost-materials/cost-materials.fixtures.ts`).
+ * Several Merc-Coin articles fit this mount at different prices, so the row is
+ * pinned to a cargo rack — the package sells both sizes of it for the same
+ * figure, which is why either may be the one the chooser lists first.
+ */
+const CARGO_RACK = {
+  slots: ['Slot01_Size7', 'Slot02_Size6'],
+  symbols: ['Int_CargoRack_Size5_Class1', 'Int_CargoRack_Size6_Class1'],
+} as const;
 
 /**
  * Creates a stock build and lands in the workspace with the rail rendered.
@@ -196,6 +217,101 @@ test.describe('what the canvas does not draw', () => {
   });
 });
 
+test.describe('the Merc Coin row', () => {
+  test('appears with the package total once a Merc-Coin article is fitted', async ({ page }) => {
+    await openStockBuild(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+
+    const row = page.locator('edsb-cost-materials .rail-material--merc-coin');
+    await expect(row).toHaveCount(1);
+
+    // The package's own build total, asked of the installed Almanac rather
+    // than written down.
+    expect(digits(await row.innerText())).toBe(await mercPrice(CARGO_RACK.slots[0]));
+  });
+
+  test('states the build total, not one article’s price', async ({ page }) => {
+    await openStockBuild(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+    const one = digits(
+      await page.locator('edsb-cost-materials .rail-material--merc-coin').innerText(),
+    );
+
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[1]);
+
+    // Two recognised articles, still one row (ruling C). The figure is
+    // `mercCoinCost()` over the whole build, so it moves past what either
+    // article costs on its own — which is what tells a build total from a
+    // per-article price (FR-005).
+    const both = digits(
+      await page.locator('edsb-cost-materials .rail-material--merc-coin').innerText(),
+    );
+    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
+    expect(both).toBe(one + (await mercPrice(CARGO_RACK.slots[1])));
+    expect(both).toBeGreaterThan(one);
+  });
+
+  test('is named, and closes the block after every material row', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+
+    // Ruling C put this row inside the materials block rather than in COST, and
+    // the canvas draws it last. A colour alone would not say what it is, so the
+    // row carries its own label as well (WCAG 1.4.1).
+    const rows = page.locator('edsb-cost-materials .rail-material');
+    await expect(rows.last()).toHaveClass(/rail-material--merc-coin/);
+    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toContainText(
+      /\p{L}/u,
+    );
+  });
+
+  test('is left out of the material type and unit counts', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+
+    // Merc Coins are neither a material type nor a unit of one. The two footer
+    // counts are counted over the material rows only (FR-006).
+    const materialRows = await page
+      .locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)')
+      .count();
+    const footer = await page.locator('edsb-cost-materials .block__footer span').allInnerTexts();
+
+    expect(digits(footer[0]!)).toBe(materialRows);
+
+    // The unit total too: Merc Coins are not units of a material, so the
+    // figure is the sum of the material rows' own counts and nothing else.
+    const counts = await page
+      .locator(
+        'edsb-cost-materials .rail-material:not(.rail-material--merc-coin) .rail-material__count',
+      )
+      .allInnerTexts();
+    expect(counts).toHaveLength(materialRows);
+    expect(digits(footer[1]!)).toBe(counts.reduce((running, count) => running + digits(count), 0));
+  });
+
+  test('draws its rarity and its coin from this origin', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+
+    // The canvas draws both the rarity marks and the coin as `edassets.org`
+    // files. Every image in these blocks is served from here instead
+    // (constitution I), and the rarity a row carries is the package's grade.
+    const sources = await page
+      .locator('edsb-cost-materials img')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src') ?? ''));
+    expect(sources.length).toBeGreaterThan(0);
+    for (const source of sources) {
+      expect(source).toMatch(/^assets\//);
+    }
+    await expect(
+      page.locator('edsb-cost-materials .rail-material edsb-material-grade').first(),
+    ).toHaveAttribute('data-grade', /^[1-5]$/);
+  });
+});
+
 test.describe('accessibility and reflow', () => {
   test('scans clean with both blocks rendered', async ({ page }, testInfo) => {
     await openStockBuild(page);
@@ -311,4 +427,61 @@ async function engineerTheDrive(page: Page): Promise<void> {
   await chooseRecipe(page, /Increased Range/i);
   await applyDraft(page);
   await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+}
+
+/**
+ * Fits the cargo rack's Merc-Coin article through the chooser.
+ *
+ * The variant shares its symbol with the stock record in the same mount, so the
+ * row is found by the acquisition label the package supplies for it rather than
+ * by the module's name, which both rows carry.
+ */
+async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
+  const mount = page.locator(`[data-slot-key="${slot}"] button`).first();
+  await mount.click();
+  await expect(mount).toHaveAttribute('aria-pressed', 'true');
+
+  await openChooser(page);
+  // Both labels: several Merc-Coin articles fit this mount, and the module's
+  // own name is what tells this one from the rest.
+  const row = page
+    .locator('.candidate')
+    .filter({ hasText: /merc-coin/i })
+    .filter({ hasText: /cargo rack/i })
+    .first();
+  await expect(row).toBeVisible();
+  // The name, not the row: a row's centre can fall in the gap between the
+  // identity and the figures, and Firefox does not activate a label from a
+  // click that lands on no content.
+  await row.locator('.candidate__name').click();
+  await expect(row.locator('input[type="radio"]')).toBeChecked();
+  if (await surfacesAreLayers(page)) {
+    await page.getByRole('button', { name: /fit module/i }).click();
+  }
+  await fitCommitted(page);
+
+  await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toBeVisible();
+}
+
+/**
+ * What the package charges for the Merc-Coin article of one mount's rack.
+ *
+ * Read from the installed Almanac by the symbol the stock build has in that
+ * mount, so the expectation follows a catalogue change instead of pinning one.
+ */
+async function mercPrice(slot: string): Promise<number> {
+  const loadout = await import('@elite-dangerous-almanac/core/ships/ship-loadout');
+  const pre = await import('@elite-dangerous-almanac/core/ships/pre-engineered');
+
+  const symbol = loadout.ShipLoadout.default(HULL)
+    .fittedModules()
+    .find((module) => module.slot === slot)?.symbol;
+  const price = pre
+    .getPreEngineeredVariants(symbol ?? '')
+    .find((article) => article.acquisition === 'mercenary')?.mercCoinCost;
+
+  // A catalogue that no longer sells this mount's rack for Merc Coin fails
+  // here, rather than quietly making every assertion below it vacuous.
+  expect(price).toBeGreaterThan(0);
+  return price ?? 0;
 }

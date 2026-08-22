@@ -164,7 +164,12 @@ ruling the operative conclusions are:
   baseline, the baked effect and the cumulative climb. Feature 009 folds its per-module results and
   adds no classifier.
 - Only `sumMaterials()` consolidates the contributing lists, and its order, symbols and counts are
-  preserved literally. The blueprint, type and unit counts are counted over that result.
+  preserved literally in the projection. The blueprint, type and unit counts are counted over that
+  result.
+- Reading order is the surface's, through the shared `sortMaterialLines` in
+  `ui/outfitting/material-cost-list.ts` that feature 002's Engineer panel also calls: commonest
+  rarity first, ties by active-locale name, ungraded last (ruling G). One comparator, because the
+  two lists show the same materials for the same build.
 - Material rarity comes from `materialRarity()`; names come from the package through feature 011's
   game-text presenter, which supplies the untranslated disclosure the whole application uses.
 - The canvas's cross-origin rarity icons, `Mcr` abbreviation and unsemantic `div` controls remain

@@ -46,6 +46,10 @@ purchase value and no consumer-derived percentage.
 is counted, summed, sorted, deduplicated or reordered. The Merc Coin figure is excluded from all
 three.
 
+Reading order is not the projection's business. The rows leave here in the package's own order; the
+surface sorts a copy for display through the shared `sortMaterialLines`, because the tie-break needs
+the active-locale name that only the presentation layer has (ruling G).
+
 `materials` is `null` — the whole block absent — when no fitted module contributes a known cost
 list. A module whose recipe the package cannot cost simply contributes nothing (ruling F); it does
 not make the block absent and is not named.

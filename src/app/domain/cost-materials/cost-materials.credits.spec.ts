@@ -1,4 +1,4 @@
-import { defaultBuild, FIXTURE_SLOTS } from '../outfitting/outfitting.fixtures';
+import { defaultBuild } from '../outfitting/outfitting.fixtures';
 import { projectCostAndMaterials, projectCredits } from './cost-materials';
 
 /**
@@ -54,31 +54,45 @@ describe('cost and materials — credits', () => {
 
   it('never reads a captured purchase value to fill a price', () => {
     const build = defaultBuild();
-    const fitted = build.fittedModules();
-    const captured = fitted.filter((module) => module.value !== undefined);
+    const fitted = vi.fn(build.fittedModules.bind(build));
+    build.fittedModules = fitted;
+    // A build imported from a journal carries what its Commander paid. The
+    // catalogue is stood in for with figures nothing else could produce, so a
+    // value reaching these rows from anywhere else would be visible.
+    build.retailCredits = () => ({ hull: 11, modules: 22, rebuy: 3, unpriced: [] });
 
     const credits = projectCredits(build);
-    const retail = build.retailCredits();
 
-    // Whatever a source Commander paid is not what this build costs at current
-    // catalogue retail (FR-003). If any captured value had leaked in, these two
-    // would part company.
-    expect(credits.modules).toBe(retail.modules);
-    expect(captured.every((module) => credits.modules !== module.value)).toBe(true);
+    // Every figure is that one catalogue answer, and the fitted modules — the
+    // only place a captured `value` lives — are never consulted for credits at
+    // all (FR-003). One source is what makes the claim structural rather than
+    // a property of this fixture's numbers.
+    expect(credits).toEqual({ hull: 11, modules: 22, total: 33, rebuy: 3 });
+    expect(fitted).not.toHaveBeenCalled();
   });
 
   it('shows the package figures for a build the catalogue cannot fully price', () => {
     const build = defaultBuild();
-    build.applyBlueprint(FIXTURE_SLOTS.frameShiftDrive, 'FSD_LongRange', { grade: 5 });
     const retail = build.retailCredits();
+
+    // No fixture hull produces an unpriced module, so the package's answer is
+    // stood in for at the seam it is read through. Two mounts the catalogue
+    // cannot price, and a `modules` figure that consequently omits them.
+    const unpriced = build
+      .fittedModules()
+      .slice(0, 2)
+      .map((module) => ({ slot: module.slot, symbol: module.symbol }));
+    expect(unpriced).toHaveLength(2);
+    build.retailCredits = () => ({ ...retail, modules: retail.modules - 1_000, unpriced });
 
     const credits = projectCredits(build);
 
-    // Ruling F: whatever `unpriced` holds, nothing about it is drawn. The
-    // figures stay the package's own, and `modules` is silently a lower bound —
-    // a cost accepted with that ruling.
-    expect(credits.modules).toBe(retail.modules);
-    expect(credits.total).toBe(retail.hull + retail.modules);
+    // Ruling F: whatever `unpriced` holds, nothing about it is drawn and
+    // nothing about it changes a figure. `modules` is passed through as the
+    // package stated it — silently a lower bound, a cost accepted with that
+    // ruling — and `TOTAL` adds that same lower bound rather than compensating.
+    expect(credits.modules).toBe(retail.modules - 1_000);
+    expect(credits.total).toBe(retail.hull + retail.modules - 1_000);
   });
 
   it('returns a frozen projection', () => {

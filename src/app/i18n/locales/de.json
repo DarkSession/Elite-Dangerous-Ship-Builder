@@ -236,6 +236,7 @@
   "outfitting.no-build.title": "Für die Ausrüstung muss ein Aufbau geöffnet sein",
   "outfitting.no-build.description": "Halterungen, Module und Technik gehören zu einem Aufbau. Sobald einer geöffnet ist, erscheinen sie hier.",
   "outfitting.ledger.label": "Alle Halterungen dieses Rumpfes",
+  "outfitting.status-rail.label": "Status des Aufbaus",
   "outfitting.category.legend": "Welche Halterungen angezeigt werden",
   "outfitting.category.all": "Alle",
   "outfitting.category.hardpoint": "Waffenhalterungen",

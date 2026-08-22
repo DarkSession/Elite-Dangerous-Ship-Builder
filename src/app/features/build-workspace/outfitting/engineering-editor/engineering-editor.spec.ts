@@ -266,6 +266,27 @@ describe('engineering editor surface', () => {
       expect(only.materials.every((material) => material.count.length > 0)).toBe(true);
       expect(only.materials.some((material) => material.grade !== null)).toBe(true);
     });
+
+    it('lists them commonest first, in the one shared order', () => {
+      commit(defaultBuild());
+      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
+
+      editor.chooseBlueprint('FSD_LongRange');
+      editor.chooseGrade(5);
+
+      // The package returns its own catalogue order, which is neither. This
+      // panel and the status rail draw the same materials for the same build,
+      // so both read them through `sortMaterialLines` — and nothing but an
+      // assertion here holds this caller to it (ruling G,
+      // `specs/009-cost-and-materials/design/reference-review.md`).
+      const grades = editor
+        .materialParts()[0]!
+        .materials.map((material) => material.grade ?? Number.MAX_SAFE_INTEGER);
+
+      expect(grades.length).toBeGreaterThan(1);
+      expect(new Set(grades).size).toBeGreaterThan(1);
+      expect(grades).toEqual([...grades].sort((left, right) => left - right));
+    });
   });
 
   describe('the comparison', () => {

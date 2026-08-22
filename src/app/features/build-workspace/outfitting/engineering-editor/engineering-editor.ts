@@ -52,6 +52,7 @@ import {
 import { GradeSelector } from '../../../../ui/outfitting/grade-selector';
 import {
   MaterialCostList,
+  sortMaterialLines,
   type MaterialLineView,
   type MaterialPart,
   type MaterialPartView,
@@ -455,28 +456,11 @@ export class EngineeringEditor {
     return {
       part,
       state: 'known',
-      materials: this.#sorted(cost.materials.map((material) => this.#line(material))),
+      materials: sortMaterialLines(
+        cost.materials.map((material) => this.#line(material)),
+        this.#formatters.collator(),
+      ),
     };
-  }
-
-  /**
-   * A shopping list in the order a Commander gathers one: commonest first.
-   *
-   * Rarity, then name. The package returns a recipe's materials in its own
-   * catalogue order, which is neither — so two grade-1 commons sat either side
-   * of a grade-5 rarity and the list read as unordered. A material the package
-   * grades no rarity for sorts last rather than first: an unknown rarity is not
-   * a low one (wave 9).
-   */
-  #sorted(lines: readonly MaterialLineView[]): readonly MaterialLineView[] {
-    return [...lines].sort((left, right) => {
-      const byGrade =
-        (left.grade ?? Number.MAX_SAFE_INTEGER) - (right.grade ?? Number.MAX_SAFE_INTEGER);
-      if (byGrade !== 0) {
-        return byGrade;
-      }
-      return (left.name.text ?? left.symbol).localeCompare(right.name.text ?? right.symbol);
-    });
   }
 
   #line(material: EngineeringMaterial): MaterialLineView {

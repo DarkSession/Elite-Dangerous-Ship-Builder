@@ -177,8 +177,24 @@
       `392px 1fr 306px` grid, and canvas 1d's Status stack. Feature 003 owns the
       rest of what belongs here; these two blocks are its first occupants and sit
       as siblings of whatever it adds later.
+
+      A labelled group with a tab stop, not a bare overflow box. At the widest
+      composition a long material list makes this column taller than the
+      viewport, and a sticky column with no scroll box of its own would pin with
+      its lower rows permanently off-screen — content lost, which is in scope
+      whatever keyboard operation's status is. The scroll box prevents that, and
+      neither block inside holds a control (ruling F), so `tabindex` is what the
+      axe gate requires of it. Both are invisible and cost the design nothing —
+      the same pattern `edsb-data-table` already uses. The name is the canvas's
+      own for this region — 1d labels the mode `BUILD STATUS` — so it still fits
+      once feature 003's warnings join these two blocks.
     -->
-    <div class="outfitting__status-rail">
+    <div
+      class="outfitting__status-rail"
+      tabindex="0"
+      role="group"
+      [attr.aria-label]="statusRailLabel()"
+    >
       <edsb-cost-materials />
     </div>
   }

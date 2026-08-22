@@ -108,15 +108,24 @@ describe('cost and materials — engineering materials', () => {
     it('counts consolidated rows as material types', () => {
       const materials = projectMaterials(engineeredBuild().fittedModules());
 
-      expect(materials?.types).toBe(materials?.rows.length);
+      // Counted against the package's own consolidation rather than against
+      // this projection's own rows, which would assert the field back to the
+      // list it was measured from and hold however wrong both were.
+      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []);
+      expect(consolidated.length).toBeGreaterThan(1);
+      expect(materials?.types).toBe(consolidated.length);
     });
 
     it('sums the package counts for the unit total', () => {
       const materials = projectMaterials(engineeredBuild().fittedModules());
-      const expected = (materials?.rows ?? []).reduce((running, row) => running + row.count, 0);
 
+      const consolidated = sumMaterials(getBlueprintCost(DRIVE_BLUEPRINT, 5) ?? []);
+      const expected = consolidated.reduce((running, material) => running + material.count, 0);
+
+      // Units, not types: the two differ, which is what makes this a check on
+      // the sum rather than on the row count under another name.
+      expect(expected).toBeGreaterThan(consolidated.length);
       expect(materials?.units).toBe(expected);
-      expect(materials?.units).toBeGreaterThan(0);
     });
   });
 

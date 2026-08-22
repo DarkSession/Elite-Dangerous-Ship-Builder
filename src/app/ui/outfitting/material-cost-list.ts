@@ -16,6 +16,39 @@ export interface MaterialLineView {
   readonly count: string;
 }
 
+/**
+ * Orders a material list the way a Commander gathers one: commonest first.
+ *
+ * Shared rather than written twice, because the Engineer panel's list and the
+ * status rail's list draw the same materials for the same build and a
+ * Commander reads them against each other. Two comparators would be two
+ * orderings of one shopping list (ruling G,
+ * `specs/009-cost-and-materials/design/reference-review.md`).
+ *
+ * The collator is passed in so ties break in the application's active
+ * language rather than the runtime's — `localeCompare` with no locale reads
+ * the browser's, which is a different language from the one on screen
+ * whenever a Commander has chosen one.
+ *
+ * An ungraded row sorts last. An unknown rarity is not a common one, and
+ * heading the list with it would claim something the package never said.
+ */
+export function sortMaterialLines(
+  lines: readonly MaterialLineView[],
+  collator: Intl.Collator,
+): readonly MaterialLineView[] {
+  // A name the package supplies no text for falls back to the symbol, which is
+  // the row's own identity and the only other stable thing about it. Without
+  // it two nameless rows would order differently on each render.
+  const key = (line: MaterialLineView): string => line.name.text ?? line.symbol;
+
+  return [...lines].sort((left, right) => {
+    const byRarity =
+      (left.grade ?? Number.MAX_SAFE_INTEGER) - (right.grade ?? Number.MAX_SAFE_INTEGER);
+    return byRarity === 0 ? collator.compare(key(left), key(right)) : byRarity;
+  });
+}
+
 /** Which part of the job a list belongs to. */
 export type MaterialPart = 'blueprint' | 'experimental' | 'combined';
 

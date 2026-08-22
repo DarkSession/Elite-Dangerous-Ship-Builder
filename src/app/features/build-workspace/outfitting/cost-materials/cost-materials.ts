@@ -5,11 +5,15 @@ import {
   type CostAndMaterials,
 } from '../../../../domain/cost-materials/cost-materials';
 import { Formatters } from '../../../../i18n/formatters/formatters';
-import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
+import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { GameText } from '../../../../ui/components/game-text/game-text';
+import {
+  sortMaterialLines,
+  type MaterialLineView,
+} from '../../../../ui/outfitting/material-cost-list';
 import { MaterialGrade } from '../../../../ui/outfitting/material-grade';
 
 /** One row of the `COST` block: a label, a figure, and how the canvas weights it. */
@@ -34,14 +38,6 @@ const COST_LABELS = {
   total: 'cost-materials.cost.total',
   rebuy: 'cost-materials.cost.rebuy',
 } as const satisfies Record<string, MessageKey>;
-
-/** One row of the `MATERIALS` block. */
-interface MaterialRowView {
-  readonly symbol: string;
-  readonly name: GameTextPresentation;
-  readonly grade: number | null;
-  readonly count: string;
-}
 
 /**
  * What the build costs and what it needs, in the outfitting status rail.
@@ -151,42 +147,29 @@ export class CostMaterials {
   /**
    * The consolidated rows, ordered commonest first and then by name.
    *
-   * A shopping list in the order a Commander gathers one — the same order
-   * `edsb-material-cost-list` puts the Engineer panel's list in, and for the
-   * same reason (wave 9). Both canvases actually draw this list in *descending*
-   * rarity; that was ruled against in wave 10 so the two material lists in the
-   * application agree with each other rather than each matching its own artboard
+   * A shopping list in the order a Commander gathers one — literally the same
+   * comparator the Engineer panel's list uses, so the two cannot drift apart.
+   * Both canvases actually draw this list in *descending* rarity; that was
+   * ruled against in wave 10 so the two material lists in the application agree
+   * with each other rather than each matching its own artboard
    * (`design/reference-review.md`, ruling G).
    *
    * The package returns its own catalogue order, which is neither, so the
    * ordering is applied here rather than in the projection: it is a reading
    * decision, and its tie-break needs the localised name that only this layer
    * has.
-   *
-   * A material the package grades no rarity for sorts last. An unknown rarity
-   * is not a low one, and putting it at the head would claim something the
-   * package never said.
    */
-  readonly materialRows = computed<readonly MaterialRowView[]>(() => {
-    const rows = (this.#projection()?.materials?.rows ?? []).map((row) => ({
-      symbol: row.symbol,
-      name: this.#gameText.materialName(row.symbol),
-      grade: row.grade,
-      count: this.#formatters.integer(row.count),
-    }));
-
-    const collator = this.#formatters.collator();
-    // A name the package supplies no text for at all falls back to the symbol,
-    // which is the row's own identity and the only other stable thing about it.
-    // Without it two nameless rows would order differently on each render.
-    const key = (row: MaterialRowView): string => row.name.text ?? row.symbol;
-
-    return rows.sort((left, right) => {
-      const byRarity =
-        (left.grade ?? Number.MAX_SAFE_INTEGER) - (right.grade ?? Number.MAX_SAFE_INTEGER);
-      return byRarity === 0 ? collator.compare(key(left), key(right)) : byRarity;
-    });
-  });
+  readonly materialRows = computed<readonly MaterialLineView[]>(() =>
+    sortMaterialLines(
+      (this.#projection()?.materials?.rows ?? []).map((row) => ({
+        symbol: row.symbol,
+        name: this.#gameText.materialName(row.symbol),
+        grade: row.grade,
+        count: this.#formatters.integer(row.count),
+      })),
+      this.#formatters.collator(),
+    ),
+  );
 
   /**
    * The footer's two counts, which the canvas sets at opposite ends of the row.

@@ -117,18 +117,20 @@
   align-self: center;
 }
 
-// The canvas's amber anchor: over its own rule, and two steps up the ramp from
-// the facts it totals — 13px against their 11px, in a heavier mono weight. The
-// row is also labelled `TOTAL`, so the size and the accent add emphasis to a
-// distinction the text and the rule already make rather than carrying it
-// (WCAG 1.4.1).
+// The canvas's amber anchor: over its own rule, two steps up the ramp from
+// the facts it totals — 13px against their 11px, in a heavier mono weight, and
+// a step brighter than the block heading above it: the canvas draws amber-3
+// here against the heading's amber-2, so the anchor and the label it sits under
+// are not the same colour. The row is also labelled `TOTAL`, so the size and
+// the accent add emphasis to a distinction the text and the rule already make
+// rather than carrying it (WCAG 1.4.1).
 .cost__row--total {
   padding-block-start: var(--edsb-space-stack);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
   font-size: var(--edsb-text-size-lead);
   font-weight: var(--edsb-text-weight-emphasis);
   text-transform: uppercase;
-  color: var(--edsb-text-accent);
+  color: var(--edsb-text-accent-strong);
 }
 
 // `REBUY 5%`: the canvas sets it smaller, fainter and tracked, sitting under

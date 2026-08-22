@@ -124,6 +124,15 @@ Ordering is applied at the presentation layer, not in the projection: the
 tie-break needs the active-locale name, and the projection keeps the package's
 own `sumMaterials()` order for any consumer that wants it.
 
+Both lists call one comparator, `sortMaterialLines` in
+`src/app/ui/outfitting/material-cost-list.ts`. A second copy would be a second
+ordering of the same shopping list, which is the thing this ruling exists to
+prevent — and feature 002's original copy had already drifted: it broke ties
+with a bare `localeCompare()`, which reads the _browser's_ language rather than
+the one the application is drawing in, so the two lists disagreed for any
+Commander whose chosen language is not their browser's. The shared comparator
+takes the active-locale collator, and feature 002 now calls it.
+
 ### What survives ruling F, and why
 
 Material names render through feature 011's shared `edsb-game-text` primitive, which carries its own
@@ -141,6 +150,29 @@ canvas's _intent_ is preserved by another means. Both were already settled for f
 | `<img src="https://edassets.org/static/img/materials/grade-N.svg">` rarity icons | `edsb-material-grade`, the same fact drawn from the package | Constitution I forbids cross-origin runtime requests                               |
 | `Mcr` in 1d's module rows, and `.design/assets/merc-coin.png`                    | Locale-formatted numbers with the block's own labels        | The abbreviation is not locale-safe; the asset has no accepted provenance decision |
 | Clickable unsemantic `div`s and inline colours/sizes                             | Shared primitives and design tokens                         | Touch, screen-reader operation and one design system                               |
+
+### Text the canvas cannot draw
+
+Two strings reach a screen reader and no screen. A canvas is a picture, so it
+has no way to draw either, and neither adds anything a sighted Commander is not
+already being shown — they are the accessibility floor, not new surface.
+
+| String                                          | Where                              | Why it exists                                                                                                                                                  |
+| ----------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `credits` (`cost-materials.cost.unit`)          | Once in the `COST` block           | The canvas states the unit by the block's context alone; read aloud, four bare numbers name no currency                                                        |
+| `Build status` (`outfitting.status-rail.label`) | The status rail's scroll container | The canvas's own name for this region — 1d labels the mode `BUILD STATUS`, `WARNINGS · COST · MATERIALS` — so it still fits once feature 003 adds the warnings |
+
+The rail's tab stop needs its own note, because the criterion it looks like it
+is for is out of scope here. Keyboard operation — 2.1.1 among the seven — is
+constitutionally excluded, and no requirement in this repository may demand it.
+The in-scope requirement is the one above it: no loss of content. At the widest
+composition a long material list makes the rail taller than the viewport, and a
+sticky column with no scroll box of its own would pin with its lower rows
+permanently off-screen. The scroll box is what prevents that; `tabindex="0"` is
+what the automated axe gate requires of a scroll box, since
+`scrollable-region-focusable` carries the `wcag2a` tag the scan selects on and
+the scan has no per-criterion exclusion. Same pattern, and same reasoning,
+as `edsb-data-table` and `edsb-attribute-comparison`.
 
 ## Responsive consequence
 
