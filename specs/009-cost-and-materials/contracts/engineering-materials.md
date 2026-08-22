@@ -1,91 +1,85 @@
 # Engineering Materials Contract
 
+Binding ruling: [../design/reference-review.md](../design/reference-review.md), wave 10.
+
 ## Package boundary
 
-Use only leaf exports:
+This feature does not call the recipe helpers itself. It calls feature 002's accepted
+framework-agnostic boundary:
 
-- `getBlueprintCost` from `@elite-dangerous-almanac/core/ships/blueprint-costs`;
-- `getExperimentalEffectCost` from
-  `@elite-dangerous-almanac/core/ships/experimental-effect-costs`;
-- `sumMaterials` from `@elite-dangerous-almanac/core/ships/engineering`;
-- `getMaterialBySymbol` from `@elite-dangerous-almanac/core/materials/materials`;
-- `getMaterialName` from `@elite-dangerous-almanac/core/i18n/materials`;
-- package leaf name helpers for modules, slots, variants, blueprints and effects.
+- `engineeringCost(selection)` from `src/app/domain/outfitting/engineering-cost.ts`, which owns
+  `getBlueprintCost`, `getExperimentalEffectCost` and the fixed / Mercenary-purchase classification;
+- `materialRarity(symbol)` from the same module, which owns `getMaterialBySymbol`;
+- `sumMaterials` from `@elite-dangerous-almanac/core/ships/engineering`, to fold the per-module
+  results into one list;
+- `getMaterialName` through feature 011's game-text presenter, for row names.
 
-No application data contains recipes, roll multipliers, fixed/Mercenary identity lists, material
-grades or game-name translations.
+**No second classifier.** Feature 002 already ruled the Mercenary purchase baseline, the fixed
+reward baseline, the baked effect and the cumulative climb (waves 5 and 9, recorded in that file's
+comments). Feature 009 consumes those decisions and adds none.
 
-## Committed source extraction
+No application data contains recipes, roll multipliers, fixed or Mercenary identity lists, material
+grades, or game-name translations.
 
-Walk the captured fitted-module snapshots in their package order. A fitted engineering identity comes
-only from `FittedModule.engineering`; a fixed/purchase identity comes only from
-`FittedModule.preEngineeredVariant`.
+## Consolidation
 
-For each committed selection:
+Walk the captured fitted modules in package order. For each, build the committed
+`EngineeringSelection` from `FittedModule.engineering` and `FittedModule.preEngineeredVariant`, and
+call `engineeringCost()` once.
 
-1. No recognized variant: call
-   `getBlueprintCost(BlueprintName, Level)`.
-2. Recognized Mercenary and `Level === variant.grade`: classify the purchase baseline as
-   `mercenaryPurchaseNotCrafted`; do not call a blueprint cost helper.
-3. Recognized Mercenary and `Level > variant.grade`: call
-   `getBlueprintCost(BlueprintName, Level, variant.grade)`.
-4. Recognized non-Mercenary variant: classify its baked blueprint as `fixedNotCrafted`.
-5. If the current `ExperimentalEffect` equals `variant.experimental`, classify it as baked
-   `fixedNotCrafted`.
-6. If a current effect is present and differs from `variant.experimental`, call
-   `getExperimentalEffectCost(currentEffect)` once for that source.
-7. An absent/removed effect contributes no source and no cost.
+- A module whose `combined` cost is `known` with a non-empty list contributes that list, and counts
+  towards `blueprints`.
+- A module whose `combined` cost is `known` and empty contributes nothing and is not counted.
+- A module whose `combined` cost is `unavailable` contributes nothing, is not counted, and is not
+  named (ruled F). Feature 002's boundary already returns `unavailable` rather than a zero, so no
+  free upgrade is implied — it is simply absent from the list.
 
-A helper `null` becomes an unavailable source retaining exact slot, module, kind, fdname and grade.
-A returned `[]` remains a known empty package result. Feature 009's normal committed call shapes
-should not produce an empty blueprint climb, but the public helper does legitimately return `[]`
-when a caller's baseline is already at/above target; do not globally redefine that package result as
-a defect.
+Pass every contributing list to `sumMaterials(...lists)` exactly once. Preserve its literal
+first-seen order, symbols and counts. Do not loop grades, multiply rolls, add counts, deduplicate or
+sort before or after the package call.
 
-This classification reuses feature 002's accepted framework-agnostic cost boundary. Feature 009 does
-not maintain a second fdname/acquisition classifier.
+**Reading order is a presentation concern, not a projection one.** The projection returns the
+package's order untouched; the surface orders the rows commonest first and then by name, matching
+`edsb-material-cost-list` (ruling G). The distinction matters because the tie-break needs the active-locale name,
+which the domain does not have, and because a consumer that wanted the package's own order must
+still be able to get it.
 
-## Consolidation and traceability
+When no module contributes, the materials block is absent in whole. There is no `none` explanation,
+no fixed or purchase baseline note, and no fabricated zero row.
 
-Pass every known source list to `sumMaterials(...knownLists)` once per projection. Preserve its
-literal first-seen order, symbols, names and counts. Do not loop grades, multiply rolls, add counts,
-deduplicate or sort before/after the package call.
+## Ruled counting
 
-- Every crafted source known → `complete`.
-- One or more source costs unavailable → `incomplete`; consolidate known lists and qualify the
-  result as a lower bound naming every missing source.
-- No crafted sources → `none`; fixed/purchase explanations may remain but create no material row.
-- Unexpected package/integration exception → current-revision projection `failure`.
+Three figures the canvas draws are counted by the application over the package result (ruling D):
 
-For each consolidated row, case-insensitively join its symbol to every matching item in the retained
-source lists. Preserve each item's package count and source identity. This trace is relational
-evidence only: it never derives totals, percentages or allocations. Every consolidated row must have
-at least one contributor and repeated fitted selections remain repeated traces.
+| Figure       | Definition                                            |
+| ------------ | ----------------------------------------------------- |
+| `blueprints` | Number of fitted modules that contributed a cost list |
+| `types`      | `rows.length` of the `sumMaterials()` result          |
+| `units`      | Sum of every row's package count                      |
+
+Nothing else is derived. No percentage, share, allocation, per-row trace or readiness judgement
+exists.
 
 ## Metadata and language
 
-Resolve each consolidated symbol through `getMaterialBySymbol()`. The returned record alone supplies
-canonical identity/name, grade, category and line. If metadata is absent, keep the consolidated
-symbol, quantity and trace visible while marking name/grade unavailable and raising an upstream data
-gap; do not infer any field.
+Each consolidated symbol's rarity comes from `materialRarity()` and nothing else; a `null` grade
+means the row draws no rarity marker, and no field is inferred from a symbol, icon or colour.
 
-The presenter requests `getMaterialName(symbol, activeLocale)`. On `null`, it follows feature
-011's canonical-package-text fallback and attaches the shared visible/programmatic untranslated
-disclosure. Where the package supplies no canonical text, the name is unavailable while identity
-and quantity remain visible. Owned headings, source-kind labels, qualifications, quantities and
-accessible names use application localization and named formatters.
+Row names come from the package through feature 011's game-text presenter, which supplies the
+canonical-text fallback and untranslated disclosure the whole application uses. Feature 009 adds no
+game-text handling of its own.
 
 ## Package regression
 
-The installed Almanac reports no ordinary stock cargo-rack route for
-`CargoRack_IncreasedCapacity` and `getBlueprintCost(..., 5)` returns `null`, while the authored
-fixed variants remain package-identifiable. Cross-package tests pin that boundary. The application
-must not special-case the fdname, call it free, or substitute another recipe.
+The installed Almanac reports no ordinary stock cargo-rack route for `CargoRack_IncreasedCapacity`
+and `getBlueprintCost(..., 5)` returns `null`, while the authored fixed variants remain
+package-identifiable. The application must not special-case the fdname, call it free, or substitute
+another recipe — under this contract such a module simply contributes nothing.
 
 ## Verification
 
-Tests cover ordinary cumulative climbs, sparse grades, Mercenary purchase baseline and later grade,
-fixed blueprint/effect, changed and removed effects, one-application effect costs, repeated and
-shared materials, source `null` versus `[]`, incomplete consolidation, first-seen order,
-case-insensitive traces, missing metadata, locale fallback and the cargo-rack regression. Quantities
-are deep-equal to package outputs.
+Tests cover ordinary cumulative climbs, a Mercenary purchase baseline and a later grade, a fixed
+blueprint and baked effect, a changed and a removed effect, repeated and shared materials across
+modules, a source that costs `[]` versus one that is `unavailable`, first-seen order preservation,
+the three counts, an absent materials block, and the cargo-rack regression. Quantities are
+deep-equal to package outputs.

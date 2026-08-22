@@ -12,7 +12,7 @@ import { BlueprintChoiceList } from './blueprint-choice-list';
 import { ExperimentalEffectList } from './experimental-effect-list';
 import { GradeSelector } from './grade-selector';
 import { IngressRefusalNotice } from './ingress-refusal-notice';
-import { MaterialCostList } from './material-cost-list';
+import { MaterialCostList, sortMaterialLines } from './material-cost-list';
 import { PowerControls } from './power-controls';
 import { ShipIdentityFields } from './ship-identity-fields';
 
@@ -233,6 +233,76 @@ describe('attribute comparison', () => {
     const text = textOf(element(fixture));
     expect(text).not.toContain('▲');
     expect(text).not.toContain('▼');
+  });
+});
+
+/**
+ * The one order both material lists are read in.
+ *
+ * The Engineer panel and the status rail draw the same materials for the same
+ * build, so they share this comparator rather than each having one — ruling G,
+ * `specs/009-cost-and-materials/design/reference-review.md`.
+ */
+describe('material line order', () => {
+  const line = (symbol: string, grade: number | null, text: string | null = symbol) => ({
+    symbol,
+    name: { ...named(''), text } as GameTextPresentation,
+    grade,
+    count: '1',
+  });
+  const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+  const symbols = (lines: readonly { readonly symbol: string }[]) =>
+    lines.map((entry) => entry.symbol);
+
+  it('puts the commonest rarity first', () => {
+    const sorted = sortMaterialLines(
+      [line('Tungsten', 4), line('Iron', 1), line('Zinc', 2)],
+      collator,
+    );
+
+    expect(symbols(sorted)).toEqual(['Iron', 'Zinc', 'Tungsten']);
+  });
+
+  it('sorts a material the package grades no rarity for last', () => {
+    // An unknown rarity is not a common one. Sorting `null` as zero would head
+    // the shopping list with the material a Commander knows least about.
+    const sorted = sortMaterialLines(
+      [line('Unknown', null), line('Tungsten', 4), line('Iron', 1)],
+      collator,
+    );
+
+    expect(symbols(sorted)).toEqual(['Iron', 'Tungsten', 'Unknown']);
+  });
+
+  it('breaks a rarity tie with the collator it is given', () => {
+    // Names that order one way under the application's collator and the other
+    // way under a bare `localeCompare`. The collator is numeric-aware, so it
+    // reads the digits as numbers; string comparison puts `10` before `2`.
+    const sorted = sortMaterialLines([line('B', 2, 'Item 10'), line('A', 2, 'Item 2')], collator);
+
+    // Proves the passed collator is the one doing the work. `localeCompare`
+    // with no locale reads the *browser's* language, which is a different one
+    // from the language on screen whenever a Commander has chosen one — the
+    // drift this comparator was extracted to end.
+    expect('Item 10'.localeCompare('Item 2')).toBeLessThan(0);
+    expect(symbols(sorted)).toEqual(['A', 'B']);
+  });
+
+  it('falls back to the symbol for a material the package cannot name', () => {
+    const sorted = sortMaterialLines([line('Zinc', 3, null), line('Iron', 3, null)], collator);
+
+    // Two nameless rows would otherwise compare equal and order differently on
+    // each render. The symbol is the row's own identity and the only other
+    // stable thing about it.
+    expect(symbols(sorted)).toEqual(['Iron', 'Zinc']);
+  });
+
+  it('leaves the caller’s list alone', () => {
+    const given = [line('Tungsten', 4), line('Iron', 1)];
+
+    sortMaterialLines(given, collator);
+
+    expect(symbols(given)).toEqual(['Tungsten', 'Iron']);
   });
 });
 

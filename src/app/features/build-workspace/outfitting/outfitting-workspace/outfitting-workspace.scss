@@ -133,7 +133,8 @@
     // Canvas 1c's `392px 1fr …`: the ledger is a fixed rail and the bench takes
     // everything that is left. An even split leaves the manifest's seven columns
     // crowded while half the row stands empty beside a ledger that needed none
-    // of it.
+    // of it. The canvas's third track joins at its own threshold below, because
+    // three fixed-ish tracks need half again as much room as two.
     grid-template-columns: var(--edsb-layout-ledger-rail) minmax(22.5rem, 1fr);
     // Canvas 1c's `392px 1fr 306px` has no gap in it: the rail and the bench
     // abut and the rail's own hairline is the seam between them. A column gap
@@ -207,6 +208,40 @@
   .outfitting__bench edsb-engineering-editor {
     flex: 1 1 0;
   }
+
+  // Two columns is not yet enough room for the canvas's third track, so the
+  // rail runs under both of them instead of squeezing the bench.
+  .outfitting__status-rail {
+    grid-column: 1 / -1;
+  }
+}
+
+// The canvas's full `392px 1fr 306px`. Its own threshold, because the three
+// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side — half
+// again the two-column minimum. Below this the rail is a band under the bench,
+// which is the same content in the same order and is what the tablet widths get:
+// there is no source tablet canvas, so this composition is decided by what fits
+// rather than copied from a measurement.
+@container outfitting (min-width: 68rem) {
+  .outfitting {
+    grid-template-columns:
+      var(--edsb-layout-ledger-rail)
+      minmax(22.5rem, 1fr)
+      var(--edsb-layout-status-rail);
+  }
+
+  // The rail follows the bench rather than scrolling away from it, for the same
+  // reason and to the same bound as the two columns beside it.
+  .outfitting__status-rail {
+    position: sticky;
+    grid-column: auto;
+    inset-block-start: var(--edsb-layout-bar-height);
+    max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    overflow-y: auto;
+    // The seam on this side is drawn by the rail itself, matching the ledger's
+    // on the other side of the bench.
+    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  }
 }
 
 // The bench holds a manifest of hundreds of rows now, and a short viewport has
@@ -234,11 +269,26 @@
   .outfitting__ledger {
     overflow-y: visible;
   }
+
+  .outfitting__status-rail {
+    position: static;
+    max-block-size: none;
+    overflow-y: visible;
+  }
 }
 
 // ---------------------------------------------------------------------------
 // The regions, named
 // ---------------------------------------------------------------------------
+
+// Below the wide composition there is no third track: canvas 1d stacks these
+// blocks with everything else, in the same DOM order, which is what this
+// element already is without a grid around it.
+// No inset and no gap of its own: the blocks inside carry their own padding and
+// are ruled off one another, as the canvas draws them.
+.outfitting__status-rail {
+  min-inline-size: 0;
+}
 
 .outfitting__ledger-region {
   @include layout.stack(var(--edsb-space-stack));

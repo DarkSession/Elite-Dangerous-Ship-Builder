@@ -236,6 +236,7 @@
   "outfitting.no-build.title": "Outfitting needs an open build",
   "outfitting.no-build.description": "Mounts, modules and engineering all belong to a build. Open one and they appear here.",
   "outfitting.ledger.label": "Every mount on this hull",
+  "outfitting.status-rail.label": "Build status",
   "outfitting.category.legend": "Which mounts to show",
   "outfitting.category.all": "All",
   "outfitting.category.hardpoint": "Hardpoints",
@@ -408,5 +409,15 @@
   "outfitting.history.ident": "Change the ship ID",
   "outfitting.history.ident.cleared": "Clear the ship ID",
   "outfitting.slot.engineering": "{{blueprint}} G{{grade}}",
-  "outfitting.slot.engineered": "Engineered"
+  "outfitting.slot.engineered": "Engineered",
+  "cost-materials.cost.heading": "Cost",
+  "cost-materials.cost.hull": "Hull",
+  "cost-materials.cost.modules": "Modules",
+  "cost-materials.cost.total": "Total",
+  "cost-materials.cost.rebuy": "Rebuy 5%",
+  "cost-materials.cost.unit": "credits",
+  "cost-materials.materials.heading": "Materials",
+  "cost-materials.materials.blueprints": "{{count}} blueprints",
+  "cost-materials.materials.types": "{{count}} material types",
+  "cost-materials.materials.units": "{{count}} units total"
 }

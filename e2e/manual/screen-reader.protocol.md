@@ -89,6 +89,16 @@ disagrees or where the announcement is correct but unusable.
 12. **Touch completion.** On the touch configurations, complete one full journey
     with single touches only. Expect no hover step and no multi-pointer gesture
     to be required.
+13. **Cost and materials.** Open a build, engineer one module, and find the
+    `COST` and `MATERIALS` blocks. Expect each block to be reachable and named.
+    In `COST`, expect all four rows to be announced as label-and-value pairs —
+    hull, modules, total, rebuy — with the currency announced, and expect the
+    total and the rebuy to be distinguishable by what is said rather than by
+    how they look. In `MATERIALS`, expect the blueprint count, every material's
+    name, rarity and quantity, and the type and unit totals. Fit a Mercenary
+    article and expect its Merc Coin row to be announced by name, not by its
+    colour, and never as credits. Expect **no** control anywhere in either
+    block: nothing to expand, nothing to activate, nothing to trace.
 
 ## Recording the result
 

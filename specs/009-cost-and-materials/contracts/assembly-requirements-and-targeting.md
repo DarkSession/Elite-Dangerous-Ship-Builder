@@ -1,79 +1,34 @@
-# Assembly Requirements and Targeting Contract
+# Assembly Requirements and Targeting Contract — WITHDRAWN
 
-## Ownership
+Withdrawn by the wave 10 ruling ([../design/reference-review.md](../design/reference-review.md),
+ruling F). Retained as a record so the withdrawal is not mistaken for an omission.
 
-Feature 009 owns the committed whole-build cost/material snapshot and implements feature 003's
-planned `AssemblyRequirementsPort` with that exact projection type. Feature 003 may select compact
-fields and preserve their semantic states; it may not re-call price/material functions, add totals,
-reclassify evidence or turn Mercenary absence into zero.
+## What this contract used to freeze
 
-Feature 002 owns editor drafts, the shared cost classifier and exact-slot navigation. No feature owns
-or presents historical purchase provenance. Feature 011 owns shared components, locale/formatting,
-announcements and accessibility infrastructure.
+A compact "Assembly Requirements" summary published through feature 003's
+`AssemblyRequirementsPort<T>`, a revision-keyed `StatusRevisionContext`, a
+`retailCredits | mercCoin | materials` qualified-summary vocabulary, a `costAndMaterials` detail
+target, exact-slot targets from unpriced evidence and material traces, and the pending / stale /
+mismatched-context coherence rules that a two-surface publication needs.
 
-## Revision transaction
+## Why it is withdrawn
 
-1. Capture feature 001's `{ loadout, buildRevision }` atomically.
-2. Project retail, fitted recognition, engineering sources and consolidated material rows from that
-   captured loadout.
-3. Cache/publish the immutable result under that exact revision.
-4. Return it only for a matching feature-003 requested context; a mismatched result is never
-   restamped or shown as current.
-5. Build detail and Assembly Requirements summary from the same snapshot.
+Every surface it served is drawn nowhere on canvases 1c or 1d:
 
-The package projection is synchronous. Locale-only changes rebuild presentation, not domain
-quantities. Feature 003 viewing conditions do not affect this capability. If the owning integration
-boundary exposes pending/failure, stale figures are replaced rather than labelled with the requested
-revision.
+- There is no second, compact projection of these figures. The canvas draws one `COST` block and one
+  `MATERIALS` block, in the status rail at wide width and in the Status stack at narrow width. They
+  are the same blocks, and they are the whole capability.
+- There is no detail capability to target, so there is no detail target.
+- There is no unpriced evidence list and no material trace, so there are no exact-slot targets.
+- With one synchronous projection and one consumer, there is no revision coherence problem to solve:
+  the blocks read the active loadout directly, and there is no interval in which one surface could
+  disagree with another.
 
-## Targets
+## What replaces it
 
-```text
-CostMaterialsTarget =
-  | { kind: 'detail'; capability: 'costAndMaterials' }
-  | { kind: 'slot'; slotKey: string }
-  | { kind: 'materialTrace'; materialSymbol: string }
-```
+Nothing. Feature 009 contributes two blocks to the rail that feature 003 owns, as siblings of
+feature 003's own blocks. It holds no port, adapter, summary vocabulary, target union or revision
+cache.
 
-- `slot` exists only from an exact package key on unpriced, Mercenary or engineering-source
-  records and dispatches to feature 002.
-- `detail` reveals the complete build-workspace capability; it adds no route or URL fragment.
-- `materialTrace` expands/collapses local presentation evidence and mutates no build.
-- No target is inferred from list position, localized text or approximate identity.
-
-Target/disclosure state is memory-only and excluded from build state, edit history, storage, links,
-URLs and SLEF.
-
-## Assembly Requirements summary
-
-The adapter may expose:
-
-- retail hull/modules/rebuy semantic values plus unpriced evidence count/targets;
-- Mercenary `absent` or present package total with lower-bound evidence;
-- materials `none`, complete, incomplete or failure state plus detail target;
-- qualified summary ids exactly from feature 003's accepted
-  `retailCredits | mercCoin | materials` vocabulary.
-
-It may not expose a combined credit total, total material units, blueprint count, exchange/comparison
-or readiness judgement. `mercCoin` is omitted from qualified ids while the owner state is absent.
-
-## Contextual editor integration
-
-Canvas 1c/1d places current-selection recipe facts near the Engineer action. Feature 002 presents that
-draft/selection view through the same shared package-cost boundary, while feature 009 reads only the
-committed active build. An uncommitted draft never changes the whole-build snapshot, Status summary,
-storage or URL.
-
-## Announcements and failure
-
-After a matching revision settles, compare the prior announced semantic summary and use feature 011
-to coalesce meaningful qualification/requirement changes into one polite localized announcement.
-Initial content, unchanged results, locale-only representation and discarded stale work are silent.
-A projection failure uses one prompt error treatment and leaves the active build intact.
-
-## Verification
-
-Contract tests prove one shared snapshot/revision reaches detail and summary, mismatched contexts
-cannot publish, locale-only changes do not reproject, editor drafts do not alter committed totals,
-targets retain exact identities, summary ids follow owner states, and no derived/disclosure value
-crosses a storage, URL or export boundary.
+Feature 003 must not recompute a price, a Merc Coin total or a material quantity of its own; the
+blocks above are where those figures are presented.

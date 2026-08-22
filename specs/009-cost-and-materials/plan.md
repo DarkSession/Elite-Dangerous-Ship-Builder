@@ -6,33 +6,39 @@
 
 ## Summary
 
-Project the active `ShipLoadout` into one revision-keyed cost-and-material snapshot. The projector
-preserves `retailCredits()` verbatim, recognizes Mercenary purchases only through fitted
-`preEngineeredVariant` records, reads the one package `mercCoinCost()` total, classifies committed
-engineering selections before calling package recipe helpers, and consolidates known recipe lists
-only with `sumMaterials()`. Detail presentation and feature 003's Assembly Requirements summary
-consume the same snapshot, so credits, Merc Coin, material quantities, lower bounds and missing
-recipes cannot disagree.
+Draw the two blocks canvases 1c and 1d put in the outfitting status rail — `COST` and `MATERIALS` —
+from one pure synchronous projection of the active `ShipLoadout`. The projection preserves
+`retailCredits()` verbatim and adds the canvas's `TOTAL` row, reads `mercCoinCost()` only when a
+fitted `preEngineeredVariant` reports acquisition `mercenary`, folds feature 002's
+`engineeringCost()` results across fitted modules with one `sumMaterials()` call, and counts the
+three aggregate figures the canvas prints.
 
-The `.design/Ship Builder.dc.html` wide 1c rail, contextual engineering panel and mobile 1d Status /
-Engineer compositions establish hierarchy, not data rules. The implementation retains their
-glanceable cost-first order and narrow stack, while removing the invented combined credit total,
-truncated material list, authored aggregate counts, merged Merc Coin/material treatment,
-cross-origin icons and inaccessible interaction patterns.
+**Wave 10 ruling.** Six spec-versus-canvas collisions were surfaced before implementation and the
+design won all six; see [design/reference-review.md](./design/reference-review.md). The combined
+credit total, the `REBUY 5%` label, the Merc Coin row inside `MATERIALS` and the aggregate counts
+are all built as drawn. Everything the canvas does not draw — material traces, unpriced evidence,
+lower-bound, unavailable and missing-recipe wording, and the Assembly Requirements port that carried
+them — is not built. The material list is complete rather than truncated, the one ruling that is not
+purely the canvas.
+
+The result is a substantially smaller feature than this plan originally described: two presentation
+blocks over one projector function, with no revision cache, no port, no adapter and no new shared
+primitive.
 
 ## Technical Context
 
 **Language/Version**: TypeScript; Angular HTML and SCSS; Node.js per the repository tooling
 configuration. Full TypeScript and template strictness is a constitutional/feature-011 prerequisite
 
-**Primary Dependencies**: Angular standalone and zoneless target APIs; Angular signals; RxJS;
-`@elite-dangerous-almanac/core` leaf exports; feature 001 active-build
-revision boundary, feature 002 shared engineering-cost classifier and exact-slot actions, feature
-003 `AssemblyRequirementsPort`, and feature 011 localization/UI/accessibility contracts
+**Primary Dependencies**: Angular standalone and zoneless target APIs; Angular signals;
+`@elite-dangerous-almanac/core` leaf exports; feature 001 active build, feature 002
+`engineeringCost()` / `materialRarity()` and the `edsb-material-grade` primitive, and feature 011
+localization/UI/accessibility contracts. Feature 003 is **not** a dependency: its
+`AssemblyRequirementsPort` is withdrawn with ruling F
 
-**Storage**: None. Cost projections, material traces and disclosure state are derived and must not
-enter `localStorage`, history, build links, URLs or SLEF. `ShipLoadout.sourcePurchase` and fitted
-captured `value` are ignored historical inputs and never enter application state or backfill retail
+**Storage**: None. These figures are derived and must not enter `localStorage`, history, build
+links, URLs or SLEF. `ShipLoadout.sourcePurchase` and fitted captured `value` are ignored historical
+inputs and never enter application state or backfill retail
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% thresholds; Playwright
 and axe across desktop, tablet portrait/landscape and mobile portrait/landscape in Chromium and
@@ -43,12 +49,12 @@ browsers; offline after first load; pointer, touch and screen-reader use
 
 **Project Type**: Client-side Angular single-page application; no backend or application API
 
-**Performance Goals**: One synchronous projection for each requested active-build revision; matching
-detail and Status output visible within 100 ms of a settled build change under mobile Chromium 4x
-CPU slowdown; locale-only changes re-present without repeating package quantity calls
+**Performance Goals**: One synchronous projection per build change, memoized by the signal graph;
+locale-only changes re-present without repeating package quantity calls
 
-**Constraints**: No application-owned price, rebuy, Merc Coin, recipe, roll or material-total
-arithmetic; no currency conversion/comparison; package `null`, `[]`, zero and conditional absence
+**Constraints**: No application-owned price, rebuy, Merc Coin, recipe or roll arithmetic, apart from
+the four ruled canvas figures (`TOTAL`, blueprint count, material-type count, unit total); no
+currency conversion/comparison; package `null`, `[]`, zero and conditional absence
 remain distinct; exact game slot/symbol/fdname identities; leaf imports only; no cross-origin
 requests; no document horizontal scrolling; token-only dark design system; all owned text and
 figures localized; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
@@ -57,25 +63,26 @@ figures localized; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3
 variant supplied by the installed package. Catalogue counts are discovered by contract tests, never
 application behavior
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d; adoption and departures are
-recorded in [design/reference-review.md](./design/reference-review.md)
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1c and 1d. The canvas is the record of
+what this capability presents; the six wave 10 rulings are in
+[design/reference-review.md](./design/reference-review.md) and are binding
 
 ## Constitution Check
 
 _GATE before Phase 0: PASS. The design introduces no constitutional exception. Implementation of
 the integrated capability remains sequenced behind repository prerequisites listed below._
 
-| Principle                               | Planning evidence                                                                                                                      | Status                         |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| I. Client-Side Only                     | All inputs are the in-browser active loadout and static package/catalogue data; no persistence or network boundary is added.           | PASS                           |
-| II. Almanac Source of Truth             | Named package methods own every number and Mercenary decision; no fdname exception or consumer formula is planned.                     | PASS                           |
-| III. Domain Logic Outside UI            | A framework-agnostic projector/classifier creates immutable semantic results; components only render and emit intents.                 | PASS                           |
-| IV. Lossless, Honest Builds             | Exact, lower-bound, absent, unavailable, known-empty and non-crafted states stay distinct; historical prices remain outside the model. | PASS                           |
-| V. Desktop, Tablet and Mobile           | Complete content reflows for all orientations/zoom, uses touch and screen-reader semantics, and never relies on hover or colour.       | PASS; feature 011 prerequisite |
-| VI. Commander's Language                | App framing/figures use feature 011; game names use package locale helpers with disclosed canonical fallback.                          | PASS; feature 011 prerequisite |
-| VII. One Design System                  | The surfaces compose or extend `src/app/ui/`; `.design` supplies hierarchy only and no literal CSS/assets are copied blindly.          | PASS; feature 011 prerequisite |
-| VIII. Tested Before It Ships            | Package equality, traceability, dual-engine viewport journeys and axe/manual checks retain all existing gates.                         | PASS; feature 011 prerequisite |
-| IX. Specification Before Implementation | Every FR maps to a planned surface and contract before task generation.                                                                | PASS                           |
+| Principle                               | Planning evidence                                                                                                                                                                         | Status                         |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| I. Client-Side Only                     | All inputs are the in-browser active loadout and static package/catalogue data; no persistence or network boundary is added.                                                              | PASS                           |
+| II. Almanac Source of Truth             | Named package methods own every number and Mercenary decision; no fdname exception or consumer formula is planned.                                                                        | PASS                           |
+| III. Domain Logic Outside UI            | A framework-agnostic projector returns an immutable result; components only render it. Classification is feature 002's, not duplicated.                                                   | PASS                           |
+| IV. Lossless, Honest Builds             | Every presented figure is a package result or a ruled count over one; historical prices stay outside the model. Ruling F accepts that unpriced modules and uncostable recipes are silent. | PASS with ruled exception      |
+| V. Desktop, Tablet and Mobile           | Complete content reflows for all orientations/zoom, uses touch and screen-reader semantics, and never relies on hover or colour.                                                          | PASS; feature 011 prerequisite |
+| VI. Commander's Language                | App framing/figures use feature 011; game names use package locale helpers with disclosed canonical fallback.                                                                             | PASS; feature 011 prerequisite |
+| VII. One Design System                  | The surfaces compose or extend `src/app/ui/`; `.design` supplies hierarchy only and no literal CSS/assets are copied blindly.                                                             | PASS; feature 011 prerequisite |
+| VIII. Tested Before It Ships            | Package equality, dual-engine viewport journeys and axe/manual checks retain all existing gates.                                                                                          | PASS; feature 011 prerequisite |
+| IX. Specification Before Implementation | Every FR maps to a planned surface and contract before task generation.                                                                                                                   | PASS                           |
 
 ### Implementation prerequisites
 
@@ -83,8 +90,10 @@ the integrated capability remains sequenced behind repository prerequisites list
 buildRevision }` read boundary.
 2. Feature 002 must expose its framework-agnostic engineering-cost classification and exact-slot
    target handling.
-3. Feature 003 must accept feature 009's exact projection type through its planned
-   `AssemblyRequirementsPort` without recomputing or reclassifying it.
+3. ~~Feature 003 must accept feature 009's exact projection type through its planned
+   `AssemblyRequirementsPort`.~~ **Withdrawn (ruling F).** Feature 003 is no longer a prerequisite.
+   Feature 009 contributes two sibling blocks into the status rail that feature 003 will own; when
+   feature 003 lands it must not recompute these figures.
 4. Feature 011 must implement the shared UI, localization/formatting, announcements, Firefox,
    landscape and automated accessibility infrastructure currently absent from the repository.
 5. The installed Almanac package supplies feature 009's required data APIs and the Expanded Cargo Rack
@@ -101,7 +110,7 @@ specs/009-cost-and-materials/
 ├── data-model.md
 ├── quickstart.md
 ├── contracts/
-│   ├── assembly-requirements-and-targeting.md
+│   ├── assembly-requirements-and-targeting.md   # WITHDRAWN by ruling F
 │   ├── engineering-materials.md
 │   └── retail-and-merc-coin.md
 └── design/
@@ -118,98 +127,95 @@ specs/009-cost-and-materials/
 src/app/
 ├── domain/
 │   ├── outfitting/
-│   │   └── engineering-cost.ts             # feature 002 shared package-cost boundary
+│   │   └── engineering-cost.ts             # feature 002's boundary, consumed not duplicated
 │   └── cost-materials/
-│       ├── cost-materials-projector.ts      # pure whole-build package projection
-│       ├── cost-materials-snapshot.ts       # immutable semantic states
-│       └── engineering-requirements.ts      # committed sources, consolidation and traces
-├── application/
-│   └── cost-materials/
-│       ├── assembly-requirements.adapter.ts # feature 003 port implementation
-│       ├── cost-materials.presenter.ts      # app i18n + Almanac game-name presentation
-│       └── cost-materials.store.ts          # active-revision cache/publication
-├── features/build-workspace/
-│   └── cost-and-materials/
-│       ├── cost-and-materials-detail/
-│       ├── engineering-materials/
-│       ├── material-trace/
-│       ├── mercenary-purchases/
-│       └── retail-credits/
-├── i18n/                                    # feature 011; extended with owned messages only
-└── ui/                                      # feature 011; shared primitives only
+│       └── cost-materials.ts               # the whole pure projection
+├── features/build-workspace/outfitting/
+│   └── cost-materials/                     # the two blocks the canvas draws
+├── i18n/                                   # feature 011; extended with owned messages only
+└── ui/                                     # feature 011; shared primitives only
 
 e2e/
 └── cost-and-materials.spec.ts
 ```
 
+There is no `application/cost-materials/` layer. With one synchronous projection and one consumer
+there is nothing for a store, adapter or presenter to mediate; the component reads the projection
+through a computed signal over the active build, as feature 002's surfaces already do.
+
 Tests live beside domain, application and component sources. If feature 002's implemented shared
 classifier has a different accepted location, feature 009 consumes that export rather than creating
 a second classifier.
 
-**Structure Decision**: Keep one Angular application and one active build. A pure domain projector
-owns package reads and semantic classification; a revision-keyed application store exposes the same
-immutable snapshot to detail and feature 003; a presenter adds locale-specific text without changing
-quantities. No route, serializer, storage adapter, private catalogue or second `ShipLoadout` is added.
+**Structure Decision**: One pure domain function owns every package read; one component draws the
+two blocks. No route, store, adapter, presenter, port, serializer, storage adapter, private
+catalogue, new shared primitive or second `ShipLoadout` is added.
 
 ## Phase 0: Research Conclusions
 
-[research.md](./research.md) records the decisions and rejected alternatives. In summary:
+[research.md](./research.md) records the decisions and rejected alternatives. After the wave 10
+ruling the operative conclusions are:
 
-- `RetailCredits` is fully numeric in the installed package. Hull is exact; modules and rebuy become lower bounds
-  only when the returned ordered `unpriced` list is non-empty. No combined credit total is created.
-- Merc Coin is absent when no fitted variant is package-recognized. Otherwise per-slot optional
-  prices and the literal `mercCoinCost()` result are shown; missing prices qualify that result as a
-  lower bound.
-- Mercenary grade 1 is a non-crafted purchase baseline. Later purchase-route grades call
-  `getBlueprintCost(fdname, target, purchaseGrade)`; fixed reward engineering remains non-crafted;
-  a separately selected effect costs one package application.
-- Only `sumMaterials()` consolidates known source lists. Case-insensitive trace joins retain source
-  counts/identities without recalculating consolidated quantities or changing first-seen order.
-- Material metadata and names come from package leaf helpers; canonical package text remains visible
-  with the shared untranslated disclosure on a locale miss, and the name is unavailable when the
-  package supplies no canonical text.
-- The reference's wide rail/context and mobile Status/Engineer hierarchy is retained after removing
-  unsupported totals, truncation, merged currencies, remote assets and inaccessible interaction.
-
-All planning questions are resolved and no direct Almanac dependency remains.
+- `RetailCredits` is fully numeric in the installed package. `hull`, `modules` and `rebuy` are drawn
+  literally; `TOTAL` is `hull + modules`, the one ruled credits derivation. `unpriced` is not read.
+- Merc Coin is absent — no row, and no `mercCoinCost()` call — when no fitted variant is
+  package-recognized. Otherwise the literal build total is drawn as the last row of `MATERIALS`.
+- Feature 002's `engineeringCost()` already rules the Mercenary purchase baseline, the fixed reward
+  baseline, the baked effect and the cumulative climb. Feature 009 folds its per-module results and
+  adds no classifier.
+- Only `sumMaterials()` consolidates the contributing lists, and its order, symbols and counts are
+  preserved literally in the projection. The blueprint, type and unit counts are counted over that
+  result.
+- Reading order is the surface's, through the shared `sortMaterialLines` in
+  `ui/outfitting/material-cost-list.ts` that feature 002's Engineer panel also calls: commonest
+  rarity first, ties by active-locale name, ungraded last (ruling G). One comparator, because the
+  two lists show the same materials for the same build.
+- Material rarity comes from `materialRarity()`; names come from the package through feature 011's
+  game-text presenter, which supplies the untranslated disclosure the whole application uses.
+- The canvas's cross-origin rarity icons, `Mcr` abbreviation and unsemantic `div` controls remain
+  replaced on constitutional grounds, exactly as feature 002 already replaced them.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines the revision snapshot, exact/lower-bound/absent states,
-  source costs, package-consolidated rows and non-arithmetic traces.
-- [contracts/retail-and-merc-coin.md](./contracts/retail-and-merc-coin.md) freezes retail fields,
-  recognition, missing-price evidence and currency separation.
-- [contracts/engineering-materials.md](./contracts/engineering-materials.md) freezes committed-source
-  classification, package recipe calls, consolidation, metadata and trace behavior.
+- [data-model.md](./data-model.md) defines the projection: `CreditsView`, the optional
+  `MaterialsView` and its rows, and the optional Merc Coin figure.
+- [contracts/retail-and-merc-coin.md](./contracts/retail-and-merc-coin.md) freezes the retail and
+  Mercenary transactions and currency separation.
+- [contracts/engineering-materials.md](./contracts/engineering-materials.md) freezes consolidation
+  through feature 002's boundary, the three ruled counts and the metadata rules.
 - [contracts/assembly-requirements-and-targeting.md](./contracts/assembly-requirements-and-targeting.md)
-  freezes revision coherence, feature 003 adaptation and exact-slot/detail intents.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the build workspace,
-  Status summary, contextual editor integration and detail states.
-- [design/cost-and-materials-detail.md](./design/cost-and-materials-detail.md) defines content order,
-  responsive composition, state handling and accessible interaction.
-- [design/reference-review.md](./design/reference-review.md) records what canvases 1c/1d contribute
-  and every constitution/spec-driven departure.
-- [quickstart.md](./quickstart.md) provides runnable package, unit, integration, responsive,
-  localization, offline, performance and accessibility validation.
+  is **withdrawn** by ruling F and retained only as a record.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the two rail blocks.
+- [design/cost-and-materials-detail.md](./design/cost-and-materials-detail.md) defines the rows,
+  order, responsive composition and accessible semantics.
+- [design/reference-review.md](./design/reference-review.md) records what the canvas draws and the
+  six binding wave 10 rulings.
+- [quickstart.md](./quickstart.md) provides runnable package, unit, responsive, localization,
+  offline and accessibility validation.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 adds no server, persistence field, alternate build, private game data, local price/recipe
-formula, cross-origin asset, hard-coded application string or screen-local visual literal. Every
-spec requirement has a surface owner and validation path. Numeric zero, conditional absence,
-package `null`, `[]`, lower bounds and non-crafted baselines remain distinguishable; credits and Merc
-Coin never share a total.
+Phase 1 adds no server, persistence field, alternate build, private game data, local recipe formula,
+cross-origin asset, hard-coded application string or screen-local visual literal.
+
+Four application-owned figures now exist where the original plan permitted none — `TOTAL`, the
+blueprint count, the material-type count and the unit total. Each is addition or counting over
+package results, each is drawn by the canvas, and each is ruled (A, D). Constitution II is read as
+satisfied because no _game rule_ is owned: the application does not price, rebuy, cost or classify
+anything. Nothing else is derived.
+
+Ruling F accepts a real cost: an unpriced module lowers the `modules` figure silently, and a recipe
+the package cannot cost is silently absent from the list. This was surfaced with the ruling and
+accepted. Constitution IV is therefore marked "PASS with ruled exception" above rather than plain
+PASS, and the exception is not to be widened.
 
 Any feature-owned or repository conformance statement uses the qualified form: WCAG 2.2 AA except
 criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11. Neither automated nor manual evidence
 may shorten that exclusion list.
 
-The post-design gate remains **PASS with no exception**. Integrated implementation is blocked only
-by the repository prerequisites above, not by an unresolved feature-009 design or Almanac gap.
-
 ## Complexity Tracking
 
-No constitutional violation requires justification. The projector/store/presenter split is the
-minimum separation that keeps package projection testable, prevents mixed revisions and avoids
-re-running domain quantities on locale changes. Reusing feature 002's cost boundary avoids a second
-fixed/Mercenary classifier.
+No constitutional violation requires justification. The projector/store/presenter split the original
+plan described is withdrawn: with one synchronous projection and one consumer it separated nothing.
+One pure function and one component is the whole shape. Reusing feature 002's `engineeringCost()`
+avoids a second fixed/Mercenary classifier.

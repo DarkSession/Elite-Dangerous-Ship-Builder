@@ -236,6 +236,7 @@
   "outfitting.no-build.title": "Für die Ausrüstung muss ein Aufbau geöffnet sein",
   "outfitting.no-build.description": "Halterungen, Module und Technik gehören zu einem Aufbau. Sobald einer geöffnet ist, erscheinen sie hier.",
   "outfitting.ledger.label": "Alle Halterungen dieses Rumpfes",
+  "outfitting.status-rail.label": "Status des Aufbaus",
   "outfitting.category.legend": "Welche Halterungen angezeigt werden",
   "outfitting.category.all": "Alle",
   "outfitting.category.hardpoint": "Waffenhalterungen",
@@ -408,5 +409,15 @@
   "outfitting.history.ident": "Schiffskennung ändern",
   "outfitting.history.ident.cleared": "Schiffskennung entfernen",
   "outfitting.slot.engineering": "{{blueprint}} G{{grade}}",
-  "outfitting.slot.engineered": "Modifiziert"
+  "outfitting.slot.engineered": "Modifiziert",
+  "cost-materials.cost.heading": "Kosten",
+  "cost-materials.cost.hull": "Rumpf",
+  "cost-materials.cost.modules": "Module",
+  "cost-materials.cost.total": "Gesamt",
+  "cost-materials.cost.rebuy": "Rückkauf 5 %",
+  "cost-materials.cost.unit": "Credits",
+  "cost-materials.materials.heading": "Materialien",
+  "cost-materials.materials.blueprints": "{{count}} Blaupausen",
+  "cost-materials.materials.types": "{{count}} Materialarten",
+  "cost-materials.materials.units": "{{count}} Einheiten insgesamt"
 }

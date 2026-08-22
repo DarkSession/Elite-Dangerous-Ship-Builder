@@ -115,9 +115,10 @@ test.describe('the composition this width has room for', () => {
           .filter((name) => name.length > 0),
       );
 
-    // Feedback, then the ledger, then the selected mount's bench — the same DOM
-    // at every width, arranged differently. A composition that reordered the
-    // document would give a reader a different screen from the one drawn.
+    // Feedback, then the ledger, then the selected mount's bench, then the
+    // status rail — the same DOM at every width, arranged differently. A
+    // composition that reordered the document would give a reader a different
+    // screen from the one drawn.
     expect(order).toEqual([
       // The region's own heading, hidden because neither canvas draws one.
       'visually-hidden',
@@ -126,6 +127,11 @@ test.describe('the composition this width has room for', () => {
       'outfitting__feedback',
       'outfitting__ledger-region',
       'outfitting__bench',
+      // Canvas 1c's third track, and canvas 1d's Status stack. It is last in
+      // the document at every width: a band under the bench until there is
+      // room for the full `392px 1fr 306px` grid, and the trailing column after
+      // that (feature 009).
+      'outfitting__status-rail',
     ]);
   });
 

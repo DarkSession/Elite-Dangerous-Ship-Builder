@@ -1,109 +1,112 @@
 # Cost and Materials Detail
 
-**Parent**: active `/build` workspace
+**Parent**: the outfitting workspace status rail (canvas 1c) / Status mode (canvas 1d)
 **Requirements**: FR-001–FR-010
+**Binding ruling**: [reference-review.md](./reference-review.md), "Ruled divergences" (wave 10)
 
 ## Purpose and semantic order
 
-Explain current catalogue retail, applicable Mercenary purchases and committed engineering
-requirements without inventing totals or hiding missing package facts. DOM/read order is always:
+Present what the canvas draws, and nothing else. DOM and read order is always:
 
-1. catalogue retail credits;
-2. Mercenary purchases, only when package-recognized;
-3. consolidated engineering materials and fitted-selection traces.
+1. the `COST` block;
+2. the `MATERIALS` block, ending with the conditional Merc Coin row.
 
-Visual columns may change; semantic order and content do not.
+Visual placement changes with width; semantic order and content do not.
 
-## Retail credits
+## The COST block
 
-Compose shared section, fact-list/value and qualification primitives. Show hull, fitted modules and
-rebuy as three independent package facts. Never show the reference's combined `TOTAL` or derive
-`REBUY 5%`.
+Four rows, in the canvas's order:
 
-Hull is always exact for a successful installed-package retail projection. When `unpriced` is non-empty, mark
-modules and rebuy as lower bounds and associate the complete returned-order evidence list with both.
-Each evidence item keeps exact slot/module identity and offers a feature-002 slot action. Missing
-package display text falls back visibly to raw identity; captured purchase values are ignored and
-never fill retail.
+| Row        | Value                                      | Treatment                  |
+| ---------- | ------------------------------------------ | -------------------------- |
+| Hull       | `retailCredits().hull`                     | primary ink                |
+| Modules    | `retailCredits().modules`                  | primary ink                |
+| `TOTAL`    | `hull + modules`, added by the application | accent, the block's anchor |
+| `REBUY 5%` | `retailCredits().rebuy`                    | faint micro label, tracked |
 
-## Mercenary purchases
+`TOTAL` is the one credits figure the application computes, and `REBUY 5%` is a fixed label — the
+percentage is canvas text, not a derivation from the number beside it. Both are ruled (A, B).
 
-Render a separate region only for `present`. Each entry exposes visible package-recognized
-acquisition, module/variant, exact slot, purchase grade, current grade when different, and package
-price or unavailable. The region total is the literal `mercCoinCost()` value. Missing entry prices
-qualify it as a lower bound and associate every affected slot.
+A rule sits above `TOTAL`, as the canvas draws it. It is structure, not decoration: it is what makes
+the row read as the sum of the two above it rather than a third fact beside them. `TOTAL` is also
+two steps up the type ramp from the facts it totals and set in a heavier weight.
 
-Do not place Merc Coin in the retail or material section, abbreviate it as `Mcr`, or imply exchange,
-comparison or favourable value. An approved same-origin glyph may supplement the explicit localized
-currency label but cannot carry meaning alone.
+The whole cost row — label and figure alike — is the canvas's JetBrains Mono face, which is what
+separates this block from the material rows below it: there the names are Barlow prose. `Hull` and
+`Modules` read sentence case; `TOTAL` and `REBUY 5%` are uppercased.
 
-## Engineering materials
+The returned `unpriced` list is read by nothing. No qualification, evidence list or slot action is
+built (ruled F). Captured purchase values are never read.
 
-Render every consolidated package row in `sumMaterials()` order. Each row includes symbol-aware
-package-localized/canonical-disclosed name, textual package grade, locale-formatted quantity and a
-named trace disclosure. Category/line or a same-origin ornament may supplement these facts but never
-replace them.
+## The MATERIALS block
 
-Each expanded trace lists every matching source: package-localized module and exact slot, blueprint or
-effect identity, selected/current grade where relevant, and that exact source-list item's package
-count. A separate slot action navigates to feature 002; expanding/collapsing a trace changes no build.
+The heading carries the blueprint count opposite it, exactly as the canvas draws `14 BLUEPRINTS`.
 
-For `incomplete`, identify known rows as a lower bound and list every missing blueprint/effect
-source. For `none`, state that no ordinary craft requirement applies and optionally explain fixed or
-purchase baselines without fabricated zero rows. A metadata gap retains package symbol, quantity and
-trace while name/grade are unavailable. A whole projection failure shows no stale current figures.
+Every consolidated row, with no truncation and no top-N cut (ruled E). Each row is a rarity marker,
+the package-localised material name, and the locale-formatted quantity — the same row composition
+feature 002 already ships in `edsb-material-cost-list`.
 
-## Contextual Engineer composition
+Rows run **commonest first, then by name** within a rarity band — a shopping list in the order a
+Commander gathers one, and the order `edsb-material-cost-list` already uses for the Engineer panel.
+Both canvases draw the opposite; ruling G decided that the two material lists in the application
+should agree with each other rather than each match its own artboard. The package returns its own
+catalogue order, which is neither, so the ordering is applied at the presentation layer where the
+localised name exists — the projection keeps the literal `sumMaterials()` order. A material the
+package grades no rarity for sorts last: an unknown rarity is not a low one.
 
-The shared feature-002 Engineer view uses the same cost classification for the currently selected
-blueprint/grade/effect before Apply. A Mercenary purchase baseline is shown as a purchase, not inside
-`MATERIALS · G1`; later purchase-route grades show only the package climb above that baseline. A
-baked fixed effect is non-crafted; a newly selected different effect shows its one-application cost.
-Draft changes do not alter committed detail/Status values until Apply succeeds.
+The block is separated from `COST` by a rule, and closes with the type/unit footer over another.
+The footer's two counts sit at opposite ends of the row rather than joined into one sentence, in the
+same faint micro treatment as `REBUY 5%`. Both are counted over the consolidated package result.
+
+The Merc Coin row is last, over a rule of its own, drawn only when at least one fitted module is a
+package-recognized Mercenary article and carrying the literal `mercCoinCost()` build total in its
+own colour. It opens with the shipped 14px coin, as the canvas draws it — decorative, because the
+localized label beside it is what carries the meaning. It is excluded from the type and unit counts — it is a purchase price, not a material.
+Its rule is omitted when it is the block's only row: on a build that bought an article and crafts
+nothing there is no list above it to be ruled off.
+
+A build with no engineering draws no material rows, no blueprint count and no footer. A recipe the
+package cannot cost contributes nothing and says nothing (ruled F).
 
 ## Responsive composition
 
-- Wide desktop follows canvas 1c's intent: a compact Status rail and contextual Engineer area coexist
-  with outfitting; complete material detail uses the available central/full width.
-- Tablet portrait/landscape uses fluid one/two-column composition only while full labels and evidence
-  fit. There is no source tablet canvas, so breakpoint behavior is defined by content rather than
-  copied measurements.
-- Mobile follows canvas 1d's stacked Status and full-screen/in-document Engineer hierarchy. Detail is
-  one column; no row, qualification or trace is truncated.
-- Mobile landscape, 200% text and 400% zoom use the same complete semantic stack. A wide list may
-  scroll only within a labelled container; the document never scrolls horizontally.
-- All actions use feature 011's shared AA target-size primitive, work by touch/pointer and require no
-  hover.
+- Wide follows canvas 1c: the two blocks stack in the status rail beside the ledger and bench.
+- Mobile follows canvas 1d: the same two blocks, same order, in the Status stack.
+- Between those, and at 200% text and 400% zoom, the same single semantic column. No row, label or
+  count is truncated; the document never scrolls horizontally.
+- Nothing here is interactive, so there is no target-size or hover concern in these blocks.
 
 ## Required states
 
-| State                                           | Presentation                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------- |
-| No active build                                 | Existing workspace state; no empty cost cards                             |
-| Matching projection                             | Exact package facts for the active revision                               |
-| Mismatched/pending integration context          | No stale facts labelled as current                                        |
-| One/all modules unpriced                        | Package lower bounds plus complete returned evidence                      |
-| No Mercenary article                            | Mercenary region and summary absent                                       |
-| Complete Mercenary set                          | Every recognized entry and exact package total                            |
-| Missing Merc price                              | Entry unavailable and total lower bound with all affected slots           |
-| No crafted/fixed-only/purchase-only engineering | Non-crafted explanation; no fabricated material rows                      |
-| Complete/repeated materials                     | Full package list; traces retain repeated selections                      |
-| Missing recipe                                  | Known list visibly incomplete plus all missing sources                    |
-| Untranslated game text                          | Canonical package text plus shared untranslated disclosure                |
-| Missing material metadata                       | Symbol/quantity/trace retained; name/grade unavailable                    |
-| Projection failure                              | One localized prompt; active build remains intact; no stale current facts |
+| State                           | Presentation                                           |
+| ------------------------------- | ------------------------------------------------------ |
+| No active build                 | Existing workspace empty state; neither block is drawn |
+| Active build                    | Both blocks, from the current package result           |
+| No engineering                  | `COST` only; the materials block is absent             |
+| No recognized Mercenary article | No Merc Coin row, and no zero in its place             |
+| Recognized Mercenary article    | The Merc Coin row carrying the package build total     |
 
-## Accessibility, localization and component impact
+There is no pending, stale, mismatched-context or projection-failure treatment: the projection is a
+synchronous read of the active loadout, so there is no state between having a build and having its
+figures.
 
-Regions have localized headings. Semantic lists/tables preserve label/value and qualifier/evidence
-relationships. Lower-bound, unavailable, acquisition, grade and expansion state are exposed in text
-and programmatically, never by colour/icon/placement alone. Trace controls name the material and
-expose expanded state; slot actions name their visible destination.
+## Accessibility and localization
 
-Use feature 011's localized messages, package game-name presenters and named number/unit formatters.
-Content survives text expansion, RTL fixtures and reduced motion. Settled semantic changes produce at
-most one polite localized announcement; initial, unchanged, locale-only and stale work is silent.
+Both blocks are labelled regions with localized headings. Label/value pairs are description lists,
+so each number is associated with its label natively rather than by sitting beside it — the pattern
+`edsb-material-cost-list` already uses.
 
-Compose existing shared section, fact, qualification, disclosure, action and responsive-list
-primitives. If a row-to-many-sources trace is missing, extend `src/app/ui/` and preview all states;
-do not add screen-local colours, sizes, spacing, radii, elevation or motion.
+Material names render through feature 011's `edsb-game-text`, which carries the untranslated
+disclosure the rest of the application uses. Rarity uses `edsb-material-grade`, not the canvas's
+cross-origin icon. Every owned label comes from application messages; every number uses a named
+active-locale formatter and changes no value.
+
+Nothing in these blocks depends on colour alone: the Merc Coin row is named as well as coloured, and
+`TOTAL` is labelled as well as accented.
+
+## Component impact
+
+Compose the shared section, description-list, micro-label, `edsb-game-text` and `edsb-material-grade`
+primitives, and feature 011's active-locale collator for the name tie-break. Nothing here needs a new
+shared primitive, and no screen-local colours, sizes, spacing, radii, elevation or motion are added:
+the four rules use `--edsb-border-region` and the insets use the existing space roles.

@@ -1,0 +1,178 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's rail blocks: a tracked amber heading, label/value rows with the
+// name taking the width and a mono figure closing it, and a faint tracked
+// micro-line for the counts. Canvas 1d draws the same two blocks in its Status
+// stack, so there is one set of rules and no width branching here — the parent
+// decides how much room the region gets.
+//
+// The canvas rules this content four times — above `TOTAL`, between the two
+// blocks, above the counts, and above Merc Coin — each with a one-pixel amber
+// wash. Those rules are the block's structure rather than decoration: the one
+// above `TOTAL` is what makes it read as the sum of the two rows over it rather
+// than a third fact beside them.
+:host {
+  display: block;
+}
+
+// The blocks carry their own inset and sit flush against each other, so the
+// rule between them runs the full width of the rail as the canvas draws it.
+.block {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding: var(--edsb-space-panel);
+}
+
+.block + .block {
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline-tight);
+}
+
+.block__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+// `14 BLUEPRINTS` opposite the heading, and `18 MATERIAL TYPES · 412 UNITS
+// TOTAL` under the rows. The canvas gives both the same faint tracked
+// treatment it gives `REBUY 5%`, which is what makes them read as annotations
+// on the block rather than as more of its content.
+.block__note {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  margin: 0;
+}
+
+.cost,
+.rail-materials {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+}
+
+// Canvas 1c sets the font on the cost row itself, so a label and its figure are
+// one mono face at one size. That is the difference between this block and the
+// material rows below it, whose names the canvas sets in Barlow prose — a
+// number and the word for it belong to the same voice here.
+.cost__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-body);
+  line-height: var(--edsb-text-leading-control);
+  color: var(--edsb-text-muted);
+}
+
+.rail-material {
+  display: flex;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+}
+
+.cost__label {
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.cost__value {
+  flex: none;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail-material__name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--edsb-text-primary);
+  font-size: var(--edsb-text-size-compact);
+}
+
+.rail-material__count {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-numeric));
+
+  flex: none;
+  margin: 0;
+}
+
+// The canvas draws the coin ahead of the words, at 14px. It is decorative: the
+// row says "Merc Coins" beside it, so the picture repeats the label rather than
+// carrying it, and it is the same product asset feature 002 already ships
+// rather than the canvas's own file.
+.rail-material__coin {
+  flex: none;
+  align-self: center;
+}
+
+// The canvas's amber anchor: over its own rule, two steps up the ramp from
+// the facts it totals — 13px against their 11px, in a heavier mono weight, and
+// a step brighter than the block heading above it: the canvas draws amber-3
+// here against the heading's amber-2, so the anchor and the label it sits under
+// are not the same colour. The row is also labelled `TOTAL`, so the size and
+// the accent add emphasis to a distinction the text and the rule already make
+// rather than carrying it (WCAG 1.4.1).
+.cost__row--total {
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  font-size: var(--edsb-text-size-lead);
+  font-weight: var(--edsb-text-weight-emphasis);
+  text-transform: uppercase;
+  color: var(--edsb-text-accent-strong);
+}
+
+// `REBUY 5%`: the canvas sets it smaller, fainter and tracked, sitting under
+// the total as an aside to it.
+.cost__row--quiet {
+  font-size: var(--edsb-text-size-micro);
+  letter-spacing: var(--edsb-text-tracking-label);
+  text-transform: uppercase;
+  color: var(--edsb-text-faint);
+}
+
+// The counts the canvas sets at opposite ends of its own ruled row.
+.block__footer {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  display: flex;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline-tight);
+  margin: 0;
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// Ruled off the list above it, the way the canvas rules it — but only when
+// there is a list above it. On a build that bought an article and crafts
+// nothing, the row is the block's only content and a rule under the heading
+// would separate it from nothing.
+.rail-material--ruled {
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The canvas gives Merc Coin its own colour, because it is the one figure in
+// the block that is not a material. The row is named as well as coloured, so
+// the colour is emphasis rather than meaning.
+.rail-material--merc-coin {
+  .rail-material__name,
+  .rail-material__count {
+    color: var(--edsb-text-merc);
+  }
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
