@@ -408,5 +408,15 @@
   "outfitting.history.ident": "Schiffskennung ändern",
   "outfitting.history.ident.cleared": "Schiffskennung entfernen",
   "outfitting.slot.engineering": "{{blueprint}} G{{grade}}",
-  "outfitting.slot.engineered": "Modifiziert"
+  "outfitting.slot.engineered": "Modifiziert",
+  "cost-materials.cost.heading": "Kosten",
+  "cost-materials.cost.hull": "Rumpf",
+  "cost-materials.cost.modules": "Module",
+  "cost-materials.cost.total": "Gesamt",
+  "cost-materials.cost.rebuy": "Rückkauf 5 %",
+  "cost-materials.cost.unit": "Credits",
+  "cost-materials.materials.heading": "Materialien",
+  "cost-materials.materials.blueprints": "{{count}} Blaupausen",
+  "cost-materials.materials.types": "{{count}} Materialarten",
+  "cost-materials.materials.units": "{{count}} Einheiten insgesamt"
 }

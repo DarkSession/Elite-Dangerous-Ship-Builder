@@ -408,5 +408,15 @@
   "outfitting.history.ident": "Change the ship ID",
   "outfitting.history.ident.cleared": "Clear the ship ID",
   "outfitting.slot.engineering": "{{blueprint}} G{{grade}}",
-  "outfitting.slot.engineered": "Engineered"
+  "outfitting.slot.engineered": "Engineered",
+  "cost-materials.cost.heading": "Cost",
+  "cost-materials.cost.hull": "Hull",
+  "cost-materials.cost.modules": "Modules",
+  "cost-materials.cost.total": "Total",
+  "cost-materials.cost.rebuy": "Rebuy 5%",
+  "cost-materials.cost.unit": "credits",
+  "cost-materials.materials.heading": "Materials",
+  "cost-materials.materials.blueprints": "{{count}} blueprints",
+  "cost-materials.materials.types": "{{count}} material types",
+  "cost-materials.materials.units": "{{count}} units total"
 }

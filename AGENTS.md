@@ -100,6 +100,16 @@ planning ship loadouts.
   composes, the states it handles, and the requirements it satisfies. The
   inventory and its requirement mapping come before task breakdown; finished
   visuals may follow.
+- **Cost and materials (feature 009)** contributes the `COST` and `MATERIALS`
+  blocks to the outfitting status rail. It owns no game rule: it reuses feature
+  002's `engineeringCost()` and `materialRarity()` rather than adding a second
+  classifier, and every figure is a package result — except four the canvas
+  draws and the Almanac does not return (the `TOTAL` credits row, the blueprint
+  count, the material-type count and the unit total), which are ruled
+  exceptions recorded in `specs/009-cost-and-materials/design/reference-review.md`.
+  Out of scope, deliberately: historical purchase values, currency conversion,
+  per-row material traces, unpriced-credit evidence and material-acquisition
+  guidance.
 
 ## Commit Identity — no personal data in git metadata
 

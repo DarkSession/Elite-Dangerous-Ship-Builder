@@ -36,6 +36,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '011-interface-foundations',
   '001-ship-selection-and-loading',
   '002-module-outfitting',
+  '009-cost-and-materials',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -645,6 +646,60 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'every requirement and success-criteria id is registered in this ledger',
     ],
     manualRecord: null,
+  },
+  {
+    surfaceId: 'build/cost-block',
+    requirements: ['009/FR-001', '009/FR-002', '009/FR-003', '009/SC-001', '009/SC-003'],
+    journey: 'cost-and-materials/cost',
+    axe: true,
+    assertions: [
+      'the canvas’s four rows appear in its order: hull, modules, total, rebuy',
+      'hull, modules and rebuy equal one retailCredits() result',
+      'the total equals the package hull plus the package modules, the one ruled derivation',
+      'every row is labelled, so neither the accent nor the faint treatment carries meaning alone',
+      'each figure is associated with its label by description-list semantics',
+      'no unpriced evidence, lower-bound qualification or slot action appears (ruling F)',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/materials-block',
+    requirements: [
+      '009/FR-007',
+      '009/FR-008',
+      '009/FR-009',
+      '009/FR-010',
+      '009/SC-002',
+      '009/SC-003',
+    ],
+    journey: 'cost-and-materials/materials',
+    axe: true,
+    assertions: [
+      'the whole block is absent for a build that crafts nothing',
+      'every consolidated row is listed, with no truncation or top-N cut',
+      'rows keep the package’s sumMaterials order, symbols and counts',
+      'the blueprint, material-type and unit counts are counted over the package result',
+      'a recipe the package cannot cost contributes no row and is not named (ruling F)',
+      'no trace disclosure or contributing-selection list exists (ruling F)',
+      'rarity uses the package grade, never a cross-origin icon',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/merc-coin-row',
+    requirements: ['009/FR-004', '009/FR-005', '009/FR-006', '009/SC-004'],
+    journey: 'cost-and-materials/materials',
+    axe: true,
+    assertions: [
+      'the row exists only when a fitted variant reports acquisition mercenary',
+      'no recognised article means no row and no zero in its place',
+      'the figure is the literal mercCoinCost() build total',
+      'the row closes the materials block, after every material row',
+      'the figure is excluded from the material-type and unit counts',
+      'the row is named as well as coloured',
+      'no credit and Merc Coin figure is summed, converted or compared',
+    ],
+    manualRecord: 'screen-reader',
   },
   {
     surfaceId: 'build/outfitting-ledger',

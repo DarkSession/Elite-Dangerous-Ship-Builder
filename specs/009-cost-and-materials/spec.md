@@ -2,77 +2,103 @@
 
 ## Scope
 
-This capability presents current catalogue-retail credits, current Merc Coin costs and engineering
-materials. Historical purchase values are outside the application model.
+This capability presents current catalogue-retail credits, the current Merc Coin cost and
+engineering materials, as canvases 1c and 1d draw them. Historical purchase values are outside the
+application model.
+
+## Design ruling (wave 10, 2026-08-22)
+
+Six collisions between this specification and `.design/Ship Builder.dc.html` were surfaced and ruled
+on. **The design won all six.** The rulings are recorded in
+[design/reference-review.md](./design/reference-review.md) under "Ruled divergences" and are binding
+on every requirement below. Do not re-derive them.
+
+In summary: the canvas's `TOTAL` and `REBUY 5%` rows are drawn, the canvas's aggregate counts are
+drawn, Merc Coin stays one row at the foot of `MATERIALS`, the material list shows every
+consolidated row, and every state the canvas does not draw — material traces, unpriced evidence,
+lower-bound, unavailable and missing-recipe wording — is **not built**.
 
 ## User Scenarios
 
 ### Story 1 — Read costs (P1)
 
-1. Hull, fitted-module and rebuy credits match the package retail result.
-2. Unpriced modules remain named and affected totals are lower bounds.
-3. Each package-recognized Mercenary article shows its Merc Coin price by slot and the package build
-   total; Merc Coin is never combined with credits.
-4. An unpriced recognized article remains unavailable and makes the package total a lower bound.
-5. Builds with no recognized Mercenary article show no Merc Coin value or empty state.
+1. Hull and fitted-module credits match the package retail result, and the block shows their sum as
+   `TOTAL` and the package rebuy beneath it.
+2. When the build contains a package-recognized Mercenary article, the build's Merc Coin cost
+   appears as one row at the foot of the materials block.
+3. Builds with no recognized Mercenary article show no Merc Coin row.
 
 ### Story 2 — Read engineering materials (P1)
 
-1. One consolidated list shows material identity, package-localised name, grade and quantity.
+1. One consolidated list shows every material's package-localised name, rarity grade and quantity,
+   ordered commonest first and then by name.
 2. Blueprint cost is cumulative through the selected grade; each experimental effect contributes
    one application.
-3. Each material traces to the fitted engineering selections that supplied its package cost lists.
-4. Missing recipe cost remains unavailable; no ordinary engineering produces an empty list.
+3. The block states how many blueprints contributed, and closes with the number of material types
+   and the total number of units, set at opposite ends of the closing row.
 
 ## Requirements
 
 - **FR-001**: Every credit, Merc Coin and material quantity MUST come from
-  `@elite-dangerous-almanac/core`. The application MUST NOT calculate price, rebuy, Merc Coin or
-  material totals.
-- **FR-002**: Credits MUST use `ShipLoadout.retailCredits()` for hull, modules, rebuy and unpriced
-  slots. Non-empty `unpriced` MUST qualify module and rebuy totals as lower bounds.
-- **FR-003**: Captured or historical purchase values MUST NOT enter build state or cost presentation.
-  Catalogue retail MUST remain the sole credits estimate for the current fitted build.
+  `@elite-dangerous-almanac/core`. The application MUST NOT calculate a price, a rebuy, a Merc Coin
+  cost or a material quantity.
+
+  Ruled exception (wave 10): the four figures the canvas draws that the package does not return —
+  the `TOTAL` credits row, the blueprint count, the material-type count and the unit total — ARE
+  computed by the application, by addition and counting over package results only. No other derived
+  figure is permitted.
+
+- **FR-002**: Credits MUST use `ShipLoadout.retailCredits()` for hull, modules and rebuy. `TOTAL` is
+  the sum of the returned `hull` and `modules`. The returned `unpriced` list is not presented; the
+  canvas draws no evidence list and none is built.
+- **FR-003**: Captured or historical purchase values MUST NOT enter build state or cost
+  presentation. Catalogue retail MUST remain the sole credits estimate for the current fitted build.
 - **FR-004**: A Mercenary purchase MUST be recognized only when
   `FittedModule.preEngineeredVariant` reports acquisition `mercenary`.
-- **FR-005**: Per-slot Merc Coin price MUST use the resolved variant's `mercCoinCost`; build total
-  MUST use `ShipLoadout.mercCoinCost()`. Merc Coin MUST NOT be added to, converted into or compared
-  with credits or rebuy. A recognized article without `mercCoinCost` MUST be unavailable rather than
-  free; the package total MUST be labelled a lower bound and MUST name every unpriced slot.
-- **FR-006**: Merc Coin presentation MUST appear only while at least one fitted module is recognized
-  as a Mercenary article. Current ordinary grade MUST NOT change the package's current catalogue Merc
+- **FR-005**: The Merc Coin figure MUST be the literal `ShipLoadout.mercCoinCost()` build total,
+  presented as one row at the foot of the materials block. Merc Coin MUST NOT be added to, converted
+  into or compared with credits or rebuy, and MUST NOT be folded into the material-type or unit
+  totals. Per-slot Merc Coin pricing is not presented.
+- **FR-006**: The Merc Coin row MUST appear only while at least one fitted module is recognized as a
+  Mercenary article. Current ordinary grade MUST NOT change the package's current catalogue Merc
   Coin cost for that article.
 - **FR-007**: Blueprint costs MUST use `getBlueprintCost()` through the selected grade; effect costs
-  MUST use `getExperimentalEffectCost()`; consolidation MUST use `sumMaterials()`.
-- **FR-008**: Missing blueprint or effect cost MUST be named and MUST NOT become an empty list.
+  MUST use `getExperimentalEffectCost()`; consolidation MUST use `sumMaterials()`. This feature
+  reuses feature 002's `engineeringCost()` boundary and MUST NOT add a second classifier.
+- **FR-008**: A blueprint or effect the package cannot cost contributes nothing to the list. The
+  canvas draws no missing-recipe wording and none is built.
 - **FR-009**: Fixed pre-engineering MUST contribute no craft cost. A Mercenary purchase grade is a
   purchase, not ordinary crafted engineering; later ordinary grades retain their package material
   cost.
-- **FR-010**: Material identity, grade and localised name MUST come from the Almanac. If the package
-  lacks the active locale, its canonical package text MUST be requested and, when present, remain
-  visible and be identified as untranslated. If the package supplies no canonical text, the name
-  MUST be unavailable rather than invented, while material identity and quantity remain visible.
-  The application MUST NOT maintain game-text translations.
+- **FR-010**: Material identity, rarity grade and localised name MUST come from the Almanac.
+  Material names are rendered through feature 011's shared game-text primitive, exactly as feature
+  002's material rows already render them; this feature adds no game-text handling of its own and
+  MUST NOT maintain game-text translations.
 
 ## Edge Cases
 
-- One or every fitted module may be unpriced; package lower bounds remain useful.
+- A build with no engineering shows no material rows and no blueprint count.
 - Repeated engineering selections contribute repeatedly before package consolidation.
-- Clearing engineering may make a Mercenary variant unrecognizable; Merc Coin presentation follows
-  the resulting package state.
-- A recognized Mercenary article without a package price remains unavailable and makes the package
-  total a lower bound.
+- Clearing engineering may make a Mercenary variant unrecognizable; the Merc Coin row follows the
+  resulting package state.
 - A package Merc Coin total of zero is hidden when no Mercenary article is recognized.
+- Unpriced modules lower the package `modules` figure. The canvas draws no qualification for this
+  and none is built (ruled, wave 10).
 
 ## Almanac Coverage
 
 The package supplies `retailCredits()`, `mercCoinCost()`, fitted Mercenary recognition, blueprint
-and effect costs, `sumMaterials()` and localised material names. Every required quantity and
-recognition decision is package-owned.
+and effect costs, `sumMaterials()`, material rarity and localised material names. Every quantity and
+recognition decision except the four ruled canvas figures is package-owned.
 
 ## Success Criteria
 
-- **SC-001**: Every price and material quantity equals its Almanac result.
-- **SC-002**: Every unpriced credit or Merc Coin entry and every missing recipe cost remains visible.
-- **SC-003**: Every material traces to at least one fitted engineering selection.
-- **SC-004**: No application-owned price, total or Mercenary-recognition rule exists.
+- **SC-001**: Every price and material quantity equals its Almanac result, and `TOTAL` equals the
+  package `hull` plus the package `modules`.
+- **SC-002**: The blueprint count, material-type count and unit total are counted over the package
+  result and match it.
+- **SC-003**: The rendered blocks match canvases 1c and 1d in content, order and rules: `COST` with
+  Hull, Modules, a ruled `TOTAL` and `REBUY 5%`; then, over a rule, `MATERIALS` with its blueprint
+  count, every consolidated row in ascending rarity, a ruled type/unit footer and the conditional
+  ruled Merc Coin row behind its coin.
+- **SC-004**: No application-owned price, rebuy, Merc Coin or Mercenary-recognition rule exists.

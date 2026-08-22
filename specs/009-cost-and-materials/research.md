@@ -1,24 +1,33 @@
 # Research: Cost and Materials
 
-Research re-read the accepted feature spec and constitution, the feature 001/002/003/011
-interfaces, the current source/configuration, `.design/Ship Builder.dc.html`, and the installed
+Research re-read the accepted feature spec and constitution, the feature 001/002/011 interfaces,
+the current source/configuration, `.design/Ship Builder.dc.html`, and the installed
 `@elite-dangerous-almanac/core` declarations and runtime data. Package probes are regression
 evidence only; no application rule depends on catalogue counts.
 
+> **Superseded in part by the wave 10 ruling** ([design/reference-review.md](./design/reference-review.md)).
+> Six spec-versus-canvas collisions were surfaced to the user and the design won all six. Decisions
+> 1, 3, 4, 6, 8, 9 and 10 below are amended accordingly; each amendment is marked inline. The
+> rationale text is kept because it still records _why_ the alternative was once preferred, which is
+> worth having when the ruling is revisited.
+
 ## Decision 1: preserve the numeric `RetailCredits` contract
 
-**Decision**: Call `ShipLoadout.retailCredits()` once and preserve its numeric `hull`, `modules` and
-`rebuy` plus its returned `unpriced` sequence. Hull is exact. Modules and rebuy are exact when
-`unpriced` is empty and lower bounds naming every returned entry otherwise. Do not create a combined
-hull-plus-modules value or repeat the package's rebuy calculation.
+**Decision** _(amended, wave 10)_: Call `ShipLoadout.retailCredits()` once and preserve its numeric
+`hull`, `modules` and `rebuy`. **Add `total = hull + modules`, the canvas's `TOTAL` row** (ruling A),
+and label the rebuy `REBUY 5%` with the canvas's fixed text (ruling B) without deriving the
+percentage from the number. **Do not project `unpriced` at all** (ruling F): the canvas draws no
+evidence for it, so there is no lower-bound state and no exact/lower-bound distinction to make.
 
 **Rationale**: In the installed package all three fields are non-nullable numbers. The earlier plan's nullable hull
 and rebuy states contradicted the installed public API. A valid `ShipLoadout` already has a known
 catalogue hull; construction/projection failure is separate from retail-field semantics.
 
-**Alternatives considered**: Nullable retail fields, summing hull and modules, calculating five
-percent locally, sorting `unpriced`, or reading each module's catalogue cost independently were
-rejected because they change or duplicate the package contract.
+**Alternatives considered**: Nullable retail fields, calculating five percent locally, sorting
+`unpriced`, or reading each module's catalogue cost independently were rejected because they change
+or duplicate the package contract. Summing hull and modules was also rejected here and has since
+been **ruled in** — it is the canvas's anchor row, and addition over two package results owns no
+game rule.
 
 ## Decision 2: discard historical purchase values
 
@@ -35,14 +44,17 @@ purchase/retail total were rejected as both misleading and contrary to FR-003.
 
 ## Decision 3: create one revision-coherent projection
 
-**Decision**: A pure projector accepts one captured `{ loadout, buildRevision }`, reads fitted
-modules once, performs the package cost calls, and returns one immutable snapshot. A revision-keyed
-store/cache publishes it only for the requested active revision. Detail and feature 003 adapt that
-same value. Locale changes rebuild presentation only.
+**Decision** _(amended, wave 10)_: A pure projector accepts the active loadout, reads fitted modules
+once, performs the package cost calls, and returns one immutable result. **The revision key, the
+store/cache and the feature 003 adapter are withdrawn** (ruling F): with one consumer there is no
+second surface to disagree with, so there is no coherence problem to solve and nothing for a cache
+to key. The component reads the projection through a computed signal, and the signal graph memoizes
+it. Locale changes rebuild presentation only.
 
-**Rationale**: A single edit may change retail evidence, Mercenary recognition and multiple material
-sources. Independent component calls can display a mixed revision even when every individual number
-is correct. Package work is synchronous, so the normal settled state need not invent asynchronous
+**Rationale** _(as originally written; the premise no longer holds)_: A single edit may change
+retail evidence, Mercenary recognition and multiple material sources. Independent component calls
+can display a mixed revision even when every individual number is correct. That risk was real when
+detail and a Status summary were two surfaces; with one surface it cannot arise. Package work is synchronous, so the normal settled state need not invent asynchronous
 loading; pending is reserved for the owning integration boundary when a requested context is not yet
 available.
 
@@ -53,10 +65,12 @@ and persisted derived snapshots were rejected as hard to test, stale-prone or du
 
 **Decision**: Recognize an entry only when
 `fitted.preEngineeredVariant?.acquisition === 'mercenary'`. Preserve its exact slot, module symbol,
-variant identity, purchase grade and optional `mercCoinCost`. With no recognized entries, return
-`absent` and do not call or display a zero total. Otherwise call `ShipLoadout.mercCoinCost()` once.
-The literal total is exact when every entry is priced and a lower bound naming every missing-price
-entry otherwise.
+variant identity, purchase grade and optional `mercCoinCost`. With no recognized entries, return `null` and do not call or display a zero
+total. Otherwise call `ShipLoadout.mercCoinCost()` once and draw that literal number.
+
+_Amended, wave 10_: **per-slot Merc Coin pricing, purchase grade and current grade are not projected**
+(ruling C). The canvas draws one `Merc Coins` row at the foot of `MATERIALS`, so the projection is a
+single optional number and there is no per-entry price to be missing.
 
 **Rationale**: `mercCoinCost()` returns zero both for no recognized article and, prospectively, for a
 recognized article whose optional price is missing from the variant. Entry recognition is therefore
@@ -98,19 +112,19 @@ fixed-fdname table were rejected.
 
 ## Decision 6: consolidate only with `sumMaterials()` and retain traces
 
-**Decision**: Keep each known package-returned source list, pass all known lists to
-`sumMaterials()` once, and preserve its first-seen output order and values. Join each consolidated
-row back to every source-list item with the same case-insensitive package symbol; retain the source
-item's package count and exact selection identity. The join never derives a share or total.
+**Decision** _(amended, wave 10)_: Pass every contributing package-returned list to `sumMaterials()`
+once and preserve its first-seen output order and values. **The per-row contributor trace is
+withdrawn** (ruling F) — the canvas draws no disclosure control — and with it the retained source
+lists that existed only to build it.
 
-If every selected crafted source is known, requirements are complete. If one or more costs are
-unavailable, retain the consolidation of known lists as an explicitly incomplete lower bound and
-name every missing source. With no crafted source, return `none`; fixed and purchase baselines may be
-explained but do not manufacture empty material rows.
+A source the package cannot cost contributes nothing and is not named; a source that costs `[]`
+contributes nothing either. When nothing contributes, the whole materials block is absent rather
+than showing a `none` explanation. **Three counts are added** (ruling D): contributing modules,
+consolidated rows, and the sum of the package counts.
 
-**Rationale**: `sumMaterials()` is the only allowed arithmetic and itself matches symbols
-case-insensitively. Keeping inputs makes SC-003 observable and preserves repeated selections before
-consolidation.
+**Rationale**: `sumMaterials()` is the only _package-rule_ arithmetic and itself matches symbols
+case-insensitively. The three ruled counts are counting over its output, not a second opinion about
+what anything costs.
 
 **Alternatives considered**: A local reducer/Map, sorting the consolidated list, hiding all known
 materials after one missing recipe, or presenting a partial list without a qualification were
@@ -118,16 +132,16 @@ rejected.
 
 ## Decision 7: resolve metadata and language without private game text
 
-**Decision**: Resolve every consolidated symbol through `getMaterialBySymbol()` for canonical
-identity, name, grade, category and line. Resolve display text with `getMaterialName(symbol,
-activeLocale)`. On a locale miss, use package English/canonical text and feature 011's visible and
-programmatic untranslated disclosure. If metadata is missing, preserve the package quantity,
-symbol and trace but mark name/grade metadata unavailable; never infer it.
+**Decision** _(amended, wave 10)_: Resolve each consolidated symbol's rarity through feature 002's
+`materialRarity()`, which owns `getMaterialBySymbol()`. Resolve display text through feature 011's
+game-text presenter, which owns `getMaterialName(symbol, activeLocale)` and the canonical-text
+fallback with its untranslated disclosure — the same path feature 002's material rows already take.
 
-Application labels and numeric/unit formatting use feature 011. Slot labels are obtained by joining
-the exact key to the captured `loadout.slots()` record before calling the package slot-name helper;
-if no slot record exists, the exact raw key remains visible. Module, variant, blueprint and effect
-names use their package leaf helpers.
+A `null` rarity simply draws no marker. **The visible metadata-gap wording is withdrawn** (ruling F).
+**Slot, module, variant, blueprint and effect names are no longer needed at all**, because the
+withdrawn trace and evidence list were the only things that showed them.
+
+Application labels and numeric formatting use feature 011.
 
 **Rationale**: Recipe `EngineeringMaterial.name` is canonical source text, not active-locale text,
 and grade belongs to the material catalogue. The package locale helper intentionally returns `null`
@@ -138,18 +152,17 @@ recipe-name localization, grade inference from icons/color and invented slot lab
 
 ## Decision 8: adapt the reference at two information levels
 
-**Decision**: Retain canvas 1c's contextual engineering cost beside the editor and build-level
-cost/material rail, plus canvas 1d's full-screen Engineer and stacked Status hierarchy. Feature 002
-owns draft/current-selection cost interaction through the shared classifier; feature 009 owns the
-committed whole-build detail and feature 003 summary adapter. No route is added.
+**Decision** _(amended, wave 10)_: Feature 002 already owns the contextual per-selection cost beside
+the Engineer editor and ships it. Feature 009 owns only the build-level `COST` and `MATERIALS`
+blocks in canvas 1c's rail and canvas 1d's Status stack. No route is added, and there is no second
+information level for this feature to build.
 
-The delivered order is retail credits, conditional Mercenary purchases, then the complete
-consolidated material list and traces. Wide layout may group independent regions; narrow, landscape,
-200% text and 400% zoom use one semantic stack without dropping evidence.
+The delivered order is `COST` then `MATERIALS`, with the Merc Coin row last (ruling C). Wide layout
+places both in the rail; narrow, landscape, 200% text and 400% zoom use one semantic stack.
 
-**Rationale**: The references communicate useful proximity and progressive disclosure but only show
-happy-path mock values. They contain no tablet/intermediate design and do not cover required
-unavailable/lower-bound/trace states.
+**Rationale**: The references communicate useful proximity. They contain no tablet/intermediate
+design, so breakpoint behaviour is decided from content. What the original rationale called
+"happy-path mock values" is, under the ruling, simply the specification of what these blocks show.
 
 **Alternatives considered**: Copying the canvases, a separate costs route, making Status the only
 detail, horizontal mobile tables, hover/title-only acquisition, or an unverified Merc Coin image
@@ -157,27 +170,34 @@ dependency were rejected.
 
 ## Decision 9: reject unsupported reference calculations and assets
 
-**Decision**: Do not implement the reference's combined credit `TOTAL`, `REBUY 5%` derivation,
-blueprint/type/unit aggregates, top-five material truncation, `Mcr` abbreviation, Merc Coin inside a
-materials card, remote material-grade SVGs, Google Fonts requests, hard-coded values or literal
-styles. An approved same-origin Merc Coin ornament may supplement explicit text later, but no
-feature behavior depends on it.
+**Decision** _(largely reversed, wave 10)_. The reference treatments now split in two.
 
-**Rationale**: These treatments either violate the package boundary, merge distinct concepts,
-truncate the specified list, depend on another origin, or fail localization/accessibility.
+**Built as drawn**, by ruling: the combined credit `TOTAL` (A), the `REBUY 5%` label (B), the
+blueprint/type/unit aggregates (D) and Merc Coin as a row inside the materials block (C).
 
-**Alternatives considered**: Treating mock totals/counts as presentational arithmetic and copying the
-PNG without a provenance decision were rejected.
+**Still rejected**, on constitutional rather than specification grounds: remote `edassets.org`
+material-grade SVGs and Google Fonts requests (constitution I forbids cross-origin runtime
+requests), the `Mcr` abbreviation (not locale-safe), `.design/assets/merc-coin.png` (no accepted
+provenance decision), and hard-coded values or literal styles (one design system). Top-five material
+truncation is also still rejected, by ruling E — the list is complete.
+
+**Rationale**: The original rationale conflated two different objections. "Violates the package
+boundary" was a specification judgement the user has now overruled; "depends on another origin" and
+"fails localization" are constitutional and stand.
 
 ## Decision 10: validate package equality, revision coherence and every state
 
-**Decision**: Unit/contract tests compare every quantity to direct package results and cover priced
-and unpriced retail, Merc absence/presence/missing price, purchase baseline/later grades, baked and
-separate effects, repeated sources, `null` versus `[]`, metadata miss and stale-revision rejection.
-Cross-package regression tests characterize the installed package's Expanded Cargo Rack behavior without a consumer
-special-case. Playwright covers both stories and all meaningful states across the feature-011
-ten-project Chromium/Firefox matrix with axe, manual screen-reader/zoom/text-expansion checks,
-offline request monitoring and the 100 ms in-page performance measure.
+**Decision** _(amended, wave 10)_: Unit/contract tests compare every quantity to direct package
+results and cover retail, `total` as the package sum, Merc absence and presence, purchase baseline
+and later grades, baked and separate effects, repeated sources, a source that costs `[]` versus one
+that is `unavailable`, the three ruled counts and an absent materials block. Cross-package
+regression tests characterize the installed package's Expanded Cargo Rack behaviour without a
+consumer special-case. Playwright covers both stories across the feature-011 ten-project
+Chromium/Firefox matrix with axe, manual screen-reader/zoom/text-expansion checks and offline
+request monitoring, plus a design-fidelity assertion that no undrawn control or state text exists.
+
+The stale-revision, mixed-revision and 100 ms settled-render measures are withdrawn with the store
+(ruling F).
 
 **Rationale**: The active-build, UI, localization and complete browser/accessibility foundations are
 explicit prerequisites, not reasons to weaken the required gate.
@@ -194,4 +214,5 @@ an ordinary stock-module route; every recipe-referenced material resolves, and e
 Mercenary variant currently has a price.
 
 No planning clarification or direct feature-009 Almanac blocker remains. Repository implementation
-still depends on features 001, 002, 003 and 011 as recorded in [plan.md](./plan.md).
+depends on features 001, 002 and 011, all of which are present. Feature 003 is no longer a
+dependency (ruling F).

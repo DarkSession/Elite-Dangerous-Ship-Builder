@@ -25,6 +25,7 @@ import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-
 import { QualityCompletionNotice } from '../../../../ui/outfitting/quality-completion-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
+import { CostMaterials } from '../cost-materials/cost-materials';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
 
@@ -53,6 +54,7 @@ type Category = 'all' | SlotKind;
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [
+    CostMaterials,
     EditRefusalNotice,
     EngineeringEditor,
     IngressRefusalNotice,

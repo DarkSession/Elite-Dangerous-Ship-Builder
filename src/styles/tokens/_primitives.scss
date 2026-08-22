@@ -298,6 +298,11 @@
   // reader's text rather than pinching the ledger's own rows at 200%.
   --edsb-measure-ledger-rail: 24.5rem;
 
+  // The status rail, 306px in canvas 1c: the trailing track of the same
+  // `392px 1fr 306px` grid, where the cost and material blocks sit. In rem for
+  // the same reason as the ledger's.
+  --edsb-measure-status-rail: 19.125rem;
+
   // The command bar: one row of controls at the 44px target baseline inside the
   // bar's own block padding. The canvas draws 56px around 30px chips; the extra
   // is the target floor, which is a rule about the product rather than a

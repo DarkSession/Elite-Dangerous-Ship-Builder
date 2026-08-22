@@ -171,7 +171,7 @@ Codex CLI (`.agents/skills`).
 | [006](./specs/006-defence-profile/spec.md)            | Shields, armour, resistances, recovery and cell banks                                          |
 | [007](./specs/007-offence-profile/spec.md)            | Almanac-provided damage totals, per-weapon detail, ammunition and capacitor endurance          |
 | [008](./specs/008-mobility-and-jump/spec.md)          | Almanac-provided speed, handling, mass, capacities and jump performance by load                |
-| [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy and the engineering material bill                                               |
+| [009](./specs/009-cost-and-materials/spec.md)         | Credits, rebuy, Merc Coin and the engineering material bill                                    |
 | [010](./specs/010-hull-anatomy/spec.md)               | The build on the hull's schematics — the mount map and navigating by it                        |
 | [011](./specs/011-interface-foundations/spec.md)      | The contract every screen obeys — design tokens, one theme, screen readers, localisation       |
 | [012](./specs/012-help-and-licences/spec.md)          | Licences, attribution, versions and the answers the application's own decisions provoke        |

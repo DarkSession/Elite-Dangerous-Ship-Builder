@@ -1,0 +1,110 @@
+@if (shown()) {
+  <!--
+    Labelled rather than headed, for the same reason `edsb-material-cost-list`
+    is: these blocks sit in the rail at wide width and inside the Status stack
+    at narrow width, so a fixed heading level would jump the outline at one of
+    them (feature 011, ordered headings).
+  -->
+  <section class="block" [attr.aria-labelledby]="costHeadingId">
+    <p class="block__heading" [id]="costHeadingId">{{ costHeading() }}</p>
+
+    <dl class="cost">
+      @for (row of costRows(); track row.id) {
+        <div class="cost__row" [class]="'cost__row--' + row.weight">
+          <dt class="cost__label">{{ row.label }}</dt>
+          <dd class="cost__value" data-bidi-isolate>
+            {{ row.value }}
+            <!--
+              Neither canvas prints a unit in this block. Announced rather than
+              drawn, so a reader who cannot see the heading still knows these
+              are credits and not the Merc Coin figure further down.
+            -->
+            <span class="visually-hidden">{{ creditsUnit() }}</span>
+          </dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  @if (materialsShown()) {
+    <section class="block" [attr.aria-labelledby]="materialsHeadingId">
+      <div class="block__head">
+        <p class="block__heading" [id]="materialsHeadingId">{{ materialsHeading() }}</p>
+        @if (blueprintCount(); as blueprints) {
+          <p class="block__note">{{ blueprints }}</p>
+        }
+      </div>
+
+      @if (materialRows().length > 0) {
+        <dl class="rail-materials">
+          @for (row of materialRows(); track row.symbol) {
+            <div class="rail-material">
+              <dt class="rail-material__name">
+                <!--
+                The rarity sits inside the term rather than beside it: a `dl`
+                group may hold only `dt` and `dd`, so a third element between
+                them would break the association that is the whole reason this
+                is a description list.
+              -->
+                @if (row.grade !== null) {
+                  <edsb-material-grade class="rail-material__grade" [grade]="row.grade" />
+                }
+                <edsb-game-text
+                  [text]="row.name.text"
+                  [language]="row.name.language"
+                  [translationState]="row.name.translationState"
+                />
+              </dt>
+              <dd class="rail-material__count" data-bidi-isolate>{{ row.count }}</dd>
+            </div>
+          }
+        </dl>
+      }
+
+      <!--
+        The canvas sets these two counts at opposite ends of one ruled row, not
+        as one sentence: they are two facts about the list above, and the block
+        separates them by its own width rather than by punctuation.
+      -->
+      @if (materialTotals(); as totals) {
+        <p class="block__footer">
+          <span>{{ totals.types }}</span>
+          <span data-bidi-isolate>{{ totals.units }}</span>
+        </p>
+      }
+
+      <!--
+        Merc Coin closes the block, as both canvases draw it (ruling C). It is a
+        purchase price rather than a material, so it stays out of the list above
+        and out of the two counts — and it is named as well as coloured, because
+        nothing here may carry meaning by colour alone.
+      -->
+      @if (mercCoin(); as coins) {
+        <dl class="rail-materials">
+          <div
+            class="rail-material rail-material--merc-coin"
+            [class.rail-material--ruled]="materialRows().length > 0"
+          >
+            <dt class="rail-material__name">
+              <!--
+                Decorative: the row names the currency in words right beside it,
+                so the coin repeats the label rather than carrying it. Same
+                product asset feature 002 already ships, served from this origin
+                — the canvas's own file has no provenance decision behind it.
+              -->
+              <img
+                class="rail-material__coin"
+                src="assets/icons/merc-coin.png"
+                alt=""
+                width="14"
+                height="14"
+              />
+              {{ mercCoinLabel() }}
+            </dt>
+            <dd class="rail-material__count" data-bidi-isolate>{{ coins }}</dd>
+          </div>
+        </dl>
+      }
+    </section>
+  }
+}
