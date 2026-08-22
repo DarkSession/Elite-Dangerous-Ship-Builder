@@ -16,7 +16,10 @@ package material requirements. Draft changes do not mutate the active build unti
   route where needed.
 - Grade choices containing exactly the selected package descriptor's grades.
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect.
-- Current versus candidate package attributes without locally interpreted better/worse arrows.
+- The comparison both canvases draw, under the headings they use: `Stock` — the package's catalogue
+  record for the fitted article, which on a recognised reward is that article's own record — against
+  `Modified`, what the current selection would make of it. No locally interpreted better/worse arrows
+  (reference review, "Attribute column headings").
 - Material list separating blueprint progression, effect, combined/unavailable status and Merc Coin.
   Its heading names the grade only, as the canvas now draws it — `MATERIALS · G5`. The application
   models a completed grade, never a roll, so no surface may call the recipe a roll (constitution IV,

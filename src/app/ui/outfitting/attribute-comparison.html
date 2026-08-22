@@ -17,10 +17,10 @@
       <tr>
         <th class="comparison__column" scope="col">{{ attributeColumn() }}</th>
         <th class="comparison__column comparison__column--figure" scope="col">
-          {{ currentColumn() }}
+          {{ stockColumn() }}
         </th>
         <th class="comparison__column comparison__column--figure" scope="col">
-          {{ candidateColumn() }}
+          {{ modifiedColumn() }}
         </th>
       </tr>
     </thead>
@@ -29,10 +29,10 @@
         <tr class="comparison__row">
           <th class="comparison__attribute" scope="row">{{ row.label }}</th>
           <td class="comparison__value" data-bidi-isolate>
-            {{ row.current ?? unavailable() }}
+            {{ row.stock ?? unavailable() }}
           </td>
-          <td class="comparison__value comparison__value--candidate" data-bidi-isolate>
-            {{ row.candidate ?? unavailable() }}
+          <td class="comparison__value comparison__value--modified" data-bidi-isolate>
+            {{ row.modified ?? unavailable() }}
           </td>
         </tr>
       }

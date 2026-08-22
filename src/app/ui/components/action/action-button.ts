@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { relationId } from '../../a11y/text-equivalence';
 
 /** How prominent an action is. Emphasis never carries meaning on its own. */
 export type ActionEmphasis = 'primary' | 'secondary' | 'quiet' | 'danger';
@@ -38,6 +39,17 @@ export class ActionButton {
   /** Text announced alongside the label while busy, if the caller has one. */
   readonly busyLabel = input<string | null>(null);
 
+  /**
+   * What this action would do, for a reader who cannot see what it is next to.
+   *
+   * Invisible by design. The reference draws `↶ UNDO` and nothing else beside
+   * it, so the label is the whole of what is drawn; which decision the control
+   * would step through is the sort of thing a sighted Commander reads off the
+   * screen they are looking at, and a reader needs said (design-canvas rule,
+   * the accessibility floor).
+   */
+  readonly description = input<string | null>(null);
+
   readonly activated = output<void>();
 
   /**
@@ -53,6 +65,8 @@ export class ActionButton {
   });
 
   readonly isToggle = computed(() => this.pressed() !== null);
+
+  readonly descriptionId = relationId('action-description');
 
   activate(): void {
     if (this.disabled() || this.busy()) {

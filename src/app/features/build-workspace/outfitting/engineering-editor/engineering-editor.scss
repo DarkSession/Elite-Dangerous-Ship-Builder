@@ -39,15 +39,17 @@
   padding: var(--edsb-space-panel);
 }
 
+// Canvas 1c's panel heading: tracked mono in amber, over the panel it heads.
+.engineering__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  font-size: var(--edsb-text-size-label);
+}
+
 .engineering__state {
   margin: 0;
   color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-compact);
-}
-
-.engineering__current {
-  margin: 0;
-  color: var(--edsb-text-secondary);
   font-size: var(--edsb-text-size-compact);
 }
 

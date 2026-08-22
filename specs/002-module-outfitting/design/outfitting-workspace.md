@@ -20,12 +20,23 @@ workspace and never creates or owns a second build.
   - grouped semantic slot ledger in package outfitting order;
   - selected-slot facts and outlet for replacement/engineering;
   - composition outlet for package validation and later calculation features.
+- The replacement and engineering panels are **present, not opened**. Canvas 1c draws no control that
+  reveals either: whichever row is marked in the ledger has its `FITTING · HARDPOINT 1` panel and its
+  `ENGINEERING` panel below the anatomy, and a Commander changes what they are looking at by marking
+  a different row. `Change module` and `Engineer` are canvas 1d's controls and appear only in the
+  compact composition (reference review, "Opening controls for the two surfaces").
+- Removal is drawn once, in the fitting panel's own header beside the search, exactly as canvas 1c
+  draws `REMOVE MODULE`.
+- No screen is drawn for "nothing selected": an unset selection is the first mount, which is where
+  both canvases open.
 - Optional anatomy composition outlet owned by feature 010; the slot ledger remains complete without
   it.
 
 Slot groups follow package kinds/layout and retain exact keys. Each row/card contains separate native
-controls: a named select/edit button, enabled switch and one-based priority select. The row itself is
-not a clickable container around nested controls.
+controls: a named select/edit button, and the power chip both canvases draw at the end of the row — a
+switch and a one-based priority select, rendered as the chip's dot and its number. The number is the
+whole visible label; neither canvas writes the word _group_. The row itself is not a clickable
+container around nested controls.
 
 ## Narrow and 400%-zoom composition
 

@@ -179,6 +179,8 @@
   font-size: var(--edsb-text-size-label);
 }
 
+// Canvas 1d's sticky bar, and only canvas 1d's: at wider compositions the two
+// panels are drawn without a control that opens them.
 .outfitting__bench-actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 }
@@ -188,8 +190,7 @@
   @include layout.control-base;
 }
 
-.outfitting__bench-reason,
-.outfitting__bench-empty {
+.outfitting__bench-reason {
   margin: 0;
   font-size: var(--edsb-text-size-compact);
   font-weight: var(--edsb-text-weight-prose);

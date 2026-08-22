@@ -92,3 +92,7 @@
   background-color: var(--edsb-surface-accent-selected);
   color: var(--edsb-text-accent-strong);
 }
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

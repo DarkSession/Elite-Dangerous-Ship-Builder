@@ -45,6 +45,12 @@
   min-inline-size: 0;
 }
 
+// The workspace's identity block takes the width the plain title would have.
+.frame__screen-identity {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
 .frame__flag {
   @include layout.command-flag;
 }

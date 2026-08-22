@@ -34,6 +34,14 @@
 
       <!-- Canvas 1d's `24 FIT`: the count, drawn where the reference draws it. -->
       <p class="replacement__count">{{ countLabel() }}</p>
+
+      <!-- Canvas 1c's `REMOVE MODULE`, drawn in this panel's header beside the
+           search, which is the only place either canvas draws it. -->
+      @if (canRemove()) {
+        <button class="replacement__remove" type="button" (click)="remove()">
+          {{ removeLabel() }}
+        </button>
+      }
     </div>
   }
 

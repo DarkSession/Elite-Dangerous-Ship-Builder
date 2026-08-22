@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import type { PowerPriority } from '../../application/outfitting/build-edit-intent';
+import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 
@@ -14,16 +15,24 @@ const GROUPS: readonly PowerPriority[] = [0, 1, 2, 3, 4];
 /**
  * Whether a module is powered, and which group it drops in.
  *
- * Every ledger row on both canvases carries a priority control, and canvas 1c
- * titles it `Power priority 3`. That title is the whole accessible name there —
- * a tooltip on a `div`, on a row that is itself clickable. Here it is a named
- * `select` and a named checkbox, each naming the module *and* its mount, so a
- * reader moving down forty rows of a ledger knows which one they are on.
+ * This is the chip both canvases draw at the end of every ledger row and
+ * nowhere else: a hairline box holding a coloured dot and a bare number, with
+ * the whole of its wording in the reference's own tooltip — `Power priority 3`,
+ * and on the wide canvas `Power priority — click the dot to unpower this
+ * module`. The dot is the switch and the number is the group. There is no word
+ * `group` on either canvas and none is written here; the number is the label,
+ * exactly as the game's own outfitting panel shows it.
  *
- * The numbers are the ones the game's own outfitting panel shows: 1 to 5. The
- * package counts the same five groups from zero, and the translation happens
- * exactly here — once, at the control — so nothing downstream has to remember
- * which convention it is holding (contract, "Operations").
+ * A tooltip on a `div` is the whole accessible name in the reference, on a row
+ * that is itself clickable. Here the dot is a named checkbox and the number a
+ * named `select`, each naming the module *and* its mount, so a reader moving
+ * down forty rows of a ledger knows which one they are on. Those names are
+ * invisible and cost the design nothing (design-canvas rule).
+ *
+ * The numbers shown are 1 to 5. The package counts the same five groups from
+ * zero, and the translation happens exactly here — once, at the control — so
+ * nothing downstream has to remember which convention it is holding (contract,
+ * "Operations").
  *
  * An absent group is left absent. The package reports `undefined` for a module
  * whose source never stated one, and selecting a group on the Commander's
@@ -38,6 +47,7 @@ const GROUPS: readonly PowerPriority[] = [0, 1, 2, 3, 4];
 })
 export class PowerControls {
   readonly #messages = inject(MessageService);
+  readonly #formatters = inject(Formatters);
 
   /** The mount's drawn label, for the control names. */
   readonly slotLabel = input.required<string>();
@@ -62,13 +72,8 @@ export class PowerControls {
   /** What the switch shows. Absent reads as on, which is what the package does. */
   readonly isOn = computed(() => this.enabled() ?? true);
 
-  /** Empty until a group is chosen, so absence is never drawn as group 1. */
-  readonly selectedValue = computed(() => {
-    const priority = this.priority();
-    return priority === undefined ? '' : String(priority);
-  });
-
-  readonly absentLabel = this.#messages.messageSignal('outfitting.power.priority.absent');
+  /** What the control shows when the package states no group at all. */
+  readonly absentLabel = this.#messages.messageSignal('unavailable.value');
 
   readonly enabledLabel = computed(() =>
     this.#messages.message('outfitting.power.enabled', {
@@ -86,7 +91,7 @@ export class PowerControls {
 
   /** The group as a Commander reads it: one-based, exactly as the game shows. */
   groupLabel(group: PowerPriority): string {
-    return this.#messages.message('outfitting.power.priority.option', { group: group + 1 });
+    return this.#formatters.integer(group + 1);
   }
 
   toggle(event: Event): void {

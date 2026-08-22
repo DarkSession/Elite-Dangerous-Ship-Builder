@@ -1,4 +1,14 @@
-<section class="outfitting" [attr.aria-labelledby]="regionHeadingId">
+<!--
+  `data-composition` is state, not decoration: which arrangement the region has
+  room for is decided from the space it was given, and it is the one thing about
+  that decision a test can read without measuring pixels and re-deriving the
+  rule it is checking (responsive composition, "Verification matrix").
+-->
+<section
+  class="outfitting"
+  [attr.aria-labelledby]="regionHeadingId"
+  [attr.data-composition]="composition()"
+>
   <!--
     Neither canvas draws a heading over the outfitting region; they rule each
     mount kind and leave the region itself unlabelled. The heading is therefore
@@ -69,7 +79,7 @@
                 <edsb-slot-card
                   [slot]="slot"
                   [capabilities]="capabilitiesFor(slot)"
-                  [selected]="store.selectedSlotKey() === slot.key"
+                  [selected]="selectedSlot()?.key === slot.key"
                   [engineeringSummary]="engineeringSummaryFor(slot)"
                   (intent)="handle(slot, $event)"
                 />
@@ -81,11 +91,13 @@
     </div>
 
     <!--
-      The selected mount's bench. Canvas 1c puts it beside the ledger and titles
-      it `FITTING · HARDPOINT 1`; canvas 1d puts the same actions in a
-      persistent bar under the list. Both are this region, and both offer
-      exactly what the Almanac permits on the selected mount — never a control
-      with nothing behind it (FR-009).
+      The selected mount's bench. Canvas 1c gives it no opening control at all:
+      the fitting panel and the engineering panel are simply there, under the
+      anatomy, for whichever row is marked in the ledger. Canvas 1d is the one
+      that draws `CHANGE MODULE` and `ENGINEER` — a sticky bar of exactly two
+      actions, because at that width each of those panels is a screen of its own
+      (design-canvas rule; responsive composition, "Reference and selection
+      rule").
     -->
     <div class="outfitting__bench">
       @if (selectedSlot(); as slot) {
@@ -93,41 +105,34 @@
           <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
         </div>
 
-        <div class="outfitting__bench-actions">
-          @if (capabilitiesFor(slot).canOpenReplacement) {
-            <button
-              class="outfitting__action"
-              type="button"
-              (click)="handle(slot, { kind: 'replace' })"
-            >
-              {{ replaceLabel() }}
-            </button>
-          }
-          @if (capabilitiesFor(slot).canOpenEngineering) {
-            <button
-              class="outfitting__action"
-              type="button"
-              (click)="handle(slot, { kind: 'engineer' })"
-            >
-              {{ engineerLabel() }}
-            </button>
-          }
-          @if (capabilitiesFor(slot).canRemove) {
-            <button
-              class="outfitting__action"
-              type="button"
-              (click)="handle(slot, { kind: 'remove' })"
-            >
-              {{ removeLabel() }}
-            </button>
-          }
-        </div>
+        @if (benchIsLayer()) {
+          <div class="outfitting__bench-actions">
+            @if (capabilitiesFor(slot).canOpenReplacement) {
+              <button
+                class="outfitting__action"
+                type="button"
+                (click)="handle(slot, { kind: 'replace' })"
+              >
+                {{ replaceLabel() }}
+              </button>
+            }
+            @if (capabilitiesFor(slot).canOpenEngineering) {
+              <button
+                class="outfitting__action"
+                type="button"
+                (click)="handle(slot, { kind: 'engineer' })"
+              >
+                {{ engineerLabel() }}
+              </button>
+            }
+          </div>
+        }
 
         @if (benchReason(); as reason) {
           <p class="outfitting__bench-reason">{{ reason }}</p>
         }
 
-        @if (replacementOpen()) {
+        @if (replacementShown()) {
           <edsb-module-replacement
             [slot]="slot"
             [asLayer]="benchIsLayer()"
@@ -135,15 +140,13 @@
           />
         }
 
-        @if (engineeringOpen()) {
+        @if (engineeringShown()) {
           <edsb-engineering-editor
             [slot]="slot"
             [asLayer]="benchIsLayer()"
             (closed)="closeSurface()"
           />
         }
-      } @else {
-        <p class="outfitting__bench-empty">{{ noSelectionLabel() }}</p>
       }
     </div>
   }

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { publishedSlotKeys, sweepOutfittingState } from './accessibility';
+import { chooserOffered, editorOffered, fitCommitted, openChooser } from './outfitting-surfaces';
 
 /**
  * Fitting modules, end to end (US1).
@@ -69,7 +70,7 @@ async function fitFromChooser(
   page: Page,
   pick: (identities: readonly string[]) => number,
 ): Promise<string> {
-  await page.getByRole('button', { name: /change module/i }).click();
+  await openChooser(page);
   const rows = page.locator('.candidate');
   await expect(rows.first()).toBeVisible();
 
@@ -85,17 +86,19 @@ async function fitFromChooser(
   // label. Reaching past it to click the input asserts an interaction nobody
   // performs, and Firefox refuses it outright.
   //
-  // The module's name rather than the row's centre. A wide row's centre falls
-  // in the gap between the identity and the figures, and Firefox does not
-  // activate a label from a click that lands on no content — measured at
-  // desktop, where the row is 943px wide and the centre is empty.
+  // The module's name itself, not the row and not the identity block. A row's
+  // centre falls in the gap between the identity and the figures, and the
+  // identity block's own centre falls between its name and its code line once
+  // the panel is narrow enough to wrap them; Firefox does not activate a label
+  // from a click that lands on no content. The name is the one box in the row
+  // that is always text.
   const row = rows.nth(index);
-  await row.locator('.candidate__identity').click();
+  await row.locator('.identity__name').click();
   await expect(row.locator('input[type="radio"]')).toBeChecked();
   await page.getByRole('button', { name: /fit module/i }).click();
-  // The chooser closes on a committed fit; waiting for that is waiting for the
-  // decision to have actually been taken.
-  await expect(rows).toHaveCount(0);
+  // Waiting for the decision to have actually been taken, which each width
+  // shows differently: a layer closes, an inline panel clears the pick.
+  await fitCommitted(page);
 
   return identities[index] ?? '';
 }
@@ -138,7 +141,7 @@ test.describe('the slot ledger', () => {
     await expect(empty).toContainText(/empty/i);
     await selectMount(page, 'MediumHardpoint1');
 
-    await expect(page.getByRole('button', { name: /change module/i })).toBeVisible();
+    expect(await chooserOffered(page)).toBe(true);
   });
 
   test('fits, replaces and removes a module, one decision at a time', async ({ page }) => {
@@ -159,6 +162,9 @@ test.describe('the slot ledger', () => {
     expect(await fittedIdentityAt(page, 'MediumHardpoint1')).toBe(second);
 
     // Remove. The mount empties and stays in the ledger to be fitted again.
+    // The control is in the chooser's header, which is where canvas 1c draws
+    // it — emptying a mount is part of choosing what goes in it.
+    await openChooser(page);
     await page.getByRole('button', { name: /remove module/i }).click();
     await expect(page.locator('[data-slot-key="MediumHardpoint1"]')).toContainText(/empty/i);
   });
@@ -167,12 +173,14 @@ test.describe('the slot ledger', () => {
     await openStockBuild(page);
     await selectMount(page, 'PowerPlant');
 
-    await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
     // A missing action with no reason reads as a defect. The Almanac's reason
     // is what makes it read as a rule of the game instead.
     await expect(page.locator('.outfitting__bench-reason')).toContainText(/required/i);
-    // It stays replaceable, which is a different thing from removable.
-    await expect(page.getByRole('button', { name: /change module/i })).toBeVisible();
+    // It stays replaceable, which is a different thing from removable — and the
+    // chooser it stays replaceable through is where removal would have been.
+    expect(await chooserOffered(page)).toBe(true);
+    await openChooser(page);
+    await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
   });
 
   test('gives the cargo hatch its facts and no replacement, search or engineering', async ({
@@ -181,9 +189,9 @@ test.describe('the slot ledger', () => {
     await openStockBuild(page);
     await selectMount(page, 'CargoHatch');
 
-    await expect(page.getByRole('button', { name: /change module/i })).toHaveCount(0);
+    expect(await chooserOffered(page)).toBe(false);
     await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /^engineer$/i })).toHaveCount(0);
+    expect(await editorOffered(page)).toBe(false);
     await expect(page.locator('.outfitting__bench-reason')).toContainText(/built in/i);
     // The hatch itself is still listed with its module, not hidden away.
     await expect(page.locator('[data-slot-key="CargoHatch"]')).toContainText(/cargo hatch/i);
@@ -195,10 +203,11 @@ test.describe('the slot ledger', () => {
     // Emptying a mount leaves a build the Almanac calls incomplete. Every other
     // mount still offers everything it offered before.
     await selectMount(page, 'Slot03_Size6');
+    await openChooser(page);
     await page.getByRole('button', { name: /remove module/i }).click();
 
     await selectMount(page, 'Slot02_Size6');
-    await expect(page.getByRole('button', { name: /change module/i })).toBeVisible();
+    expect(await chooserOffered(page)).toBe(true);
   });
 
   test('publishes only the exact game slot key as shared identity', async ({ page }) => {
@@ -212,6 +221,30 @@ test.describe('the slot ledger', () => {
     for (const key of keys) {
       expect(key, 'a published identity is a bare position').not.toMatch(/^\d+$/);
     }
+
+    // And the exact key is the *only* identity published. Feature 010's anatomy
+    // exchanges mounts with this ledger, and the two have to agree on one
+    // identity: a second attribute would be a second thing to disagree about.
+    const identityAttributes = await page.locator('[data-slot-key]').evaluateAll((nodes) =>
+      nodes.flatMap((node) =>
+        [...node.attributes]
+          .map((attribute) => attribute.name)
+          // `data-selected` is drawn state, not identity: it says which row is
+          // marked, and it names nothing.
+          .filter(
+            (name) =>
+              name.startsWith('data-') && !['data-slot-key', 'data-selected'].includes(name),
+          ),
+      ),
+    );
+    expect([...new Set(identityAttributes)]).toEqual([]);
+
+    // The node number the canvas draws is text on the row, never an identity.
+    const nodes = await page
+      .locator('.slot__node')
+      .evaluateAll((elements) => elements.map((element) => element.textContent?.trim() ?? ''));
+    expect(nodes.length).toBeGreaterThan(0);
+    expect(nodes.every((node) => /^\d+$/.test(node))).toBe(true);
   });
 
   test('is accessible in every rendered ledger state', async ({ page }, testInfo) => {
@@ -222,7 +255,7 @@ test.describe('the slot ledger', () => {
     await sweepOutfittingState(page, testInfo, 'ledger/cargo-hatch selected');
 
     await selectMount(page, 'MediumHardpoint1');
-    await page.getByRole('button', { name: /change module/i }).click();
+    await openChooser(page);
     await expect(page.getByRole('radio').first()).toBeVisible();
     await sweepOutfittingState(page, testInfo, 'ledger/chooser open');
   });
@@ -276,12 +309,6 @@ test.describe('package-populated fixed mounts', () => {
  * than a blank region, and that the list is read again after a fit instead of
  * being remembered.
  */
-
-/** Opens the chooser for the selected mount and waits for its rows. */
-async function openChooser(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /change module/i }).click();
-  await expect(page.locator('.candidate').first()).toBeVisible();
-}
 
 /** The number the surface draws beside the search — canvas 1d's `24 FIT`. */
 async function drawnCount(page: Page): Promise<number> {
@@ -457,8 +484,8 @@ test.describe('power and the cargo hatch', () => {
     // Replace, search, engineer and remove are all absent — and the Almanac's
     // reason for that is published on the bench, because an action missing
     // without a reason reads as a defect (FR-009).
-    await expect(page.getByRole('button', { name: /change module/i })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /^engineer$/i })).toHaveCount(0);
+    expect(await chooserOffered(page)).toBe(false);
+    expect(await editorOffered(page)).toBe(false);
     await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
     await expect(page.locator('.outfitting__bench-reason')).toContainText(/built in/i);
   });
@@ -466,22 +493,35 @@ test.describe('power and the cargo hatch', () => {
   test('presents the package’s five groups one-based, as the game does', async ({ page }) => {
     await openStockBuild(page);
 
-    const options = page
-      .locator('[data-slot-key="PowerPlant"] .power__priority option')
-      .filter({ hasNotText: /no group/i });
+    const options = page.locator('[data-slot-key="PowerPlant"] .power__priority option');
 
-    await expect(options).toHaveCount(5);
-    await expect(options.first()).toHaveText(/group 1/i);
-    await expect(options.first()).toHaveAttribute('value', '0');
-    await expect(options.last()).toHaveText(/group 5/i);
-    await expect(options.last()).toHaveAttribute('value', '4');
+    // Six, not five: a stock build states no group at all, so the control says
+    // the value is unavailable rather than writing group 1 into it — and that
+    // entry cannot be chosen back, because no package operation unsets a group.
+    await expect(options).toHaveCount(6);
+    await expect(options.first()).toHaveText(/unavailable/i);
+    await expect(options.first()).toBeDisabled();
+
+    // The five the package publishes, as bare numbers: the reference draws a
+    // number in the chip and no word beside it.
+    const groups = options.filter({ hasNotText: /unavailable/i });
+    await expect(groups).toHaveCount(5);
+    await expect(groups.first()).toHaveText('1');
+    await expect(groups.first()).toHaveAttribute('value', '0');
+    await expect(groups.last()).toHaveText('5');
+    await expect(groups.last()).toHaveAttribute('value', '4');
   });
 
   test('leaves a module fitted when its power changes', async ({ page }) => {
     await openStockBuild(page);
     const before = await fittedIdentityAt(page, 'PowerPlant');
 
-    await page.locator('[data-slot-key="PowerPlant"] .power__priority').selectOption('2');
+    // By value, explicitly. Every option's label is now a number too, and a
+    // bare string matches whichever comes first — which is the option one group
+    // below the one this test means.
+    await page
+      .locator('[data-slot-key="PowerPlant"] .power__priority')
+      .selectOption({ value: '2' });
 
     // Still fitted, so its mass and its catalogue cost are still in the build
     // (contract, "Power and recalculation").

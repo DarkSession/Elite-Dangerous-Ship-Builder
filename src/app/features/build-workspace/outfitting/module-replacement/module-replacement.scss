@@ -70,6 +70,14 @@
   flex: none;
 }
 
+// Canvas 1c's outlined `REMOVE MODULE`, at the end of the panel header.
+.replacement__remove {
+  @include layout.control-base;
+  @include layout.control-secondary;
+
+  flex: none;
+}
+
 // The foot of a list that has more behind it: how much is built, and the way
 // to build the rest.
 .replacement__more {

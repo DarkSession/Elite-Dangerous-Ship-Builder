@@ -134,12 +134,9 @@ Found on 2026-08-21 and not covered by the 2026-08-16 rulings above.
 **Per-row change/engineer/remove actions, ruled 2026-08-21 during US1 implementation.**
 Withdrawn. An earlier draft of the slot card put `Change module`, `Engineer` and `Remove module` on
 every ledger row. Neither canvas draws them there: canvas 1c's ledger row carries a size, a node
-badge, the module's identity and its power control, and the actions live on the selected mount's
-bench under `FITTING · HARDPOINT 1`; canvas 1d's row carries the same and puts the actions in the
-persistent selected-slot bar. The row's job is to select. The actions moved to the bench at both
-widths, which is what the reference draws and what
-[outfitting-workspace.md](./outfitting-workspace.md) "Selected slot exposes explicit `Change module`
-and `Engineer` actions" already said.
+badge, the module's identity and its power control, and canvas 1d's row carries the same. The row's
+job is to select. Where the actions went is ruled separately below, because the two canvases do not
+agree on that and an earlier pass carried canvas 1d's answer to both widths.
 
 The Almanac's _reason_ a mount cannot be emptied moved with them. The row keeps a short marker —
 canvas 1d's `FIXED` on the cargo hatch — and the full sentence is published on the bench, where it
@@ -248,14 +245,102 @@ The **experimental effect** descriptions are kept exactly as drawn: `getExperime
 publishes one per effect, so `−3% ENEMY HULL RESIST · −20% AMMO` is package text rather than a claim
 of ours. Where the package has none, the row says so.
 
-**Attribute column headings, ruled 2026-08-21 during US3 implementation.** The two columns are drawn
-as the canvas draws them; their headings read `Current` and `Candidate` rather than the canvas's
-`STOCK` and `MODIFIED`. The editor holds an unapplied draft, and the question it answers is what this
-change would do to the module as it is now — which is what
-[engineering-editor.md](./engineering-editor.md) and task T070 both specify. Carrying the canvas's
-words over a different pair of numbers would be the one thing worse than changing them. The canvas's
-green/red deltas and ▲/▼ markers stay withdrawn for the reason already recorded above: the Almanac
-documents its own `LessIsGood` as unreliable and nothing else publishes a direction.
+**Attribute column headings, ruled 2026-08-21 during US3 implementation, corrected the same day.**
+Adopted as drawn. The columns read `Stock` and `Modified`, the canvas's own headings, and they hold
+the canvas's own pair: the package's catalogue record for the fitted article — `FittedModule.stats`,
+which is the resolved article record on a recognised reward — against what the selection would make
+of it. An earlier pass headed them `Current` and `Candidate` and compared the module _as it now
+stands_ instead; that was invented text over an invented pair, and it also diverged from the game's
+own engineering panel, which shows stock beside modified. Where a module is unengineered the two
+readings coincide, which is why the substitution survived a first review.
+
+The canvas's green/red deltas and ▲/▼ markers stay withdrawn for the reason already recorded above:
+the Almanac documents its own `LessIsGood` as unreliable and nothing else publishes a direction, so
+a better/worse glyph would be this application's claim rather than the package's.
+
+**Opening controls for the two surfaces, ruled 2026-08-21 after a design pass.** Canvas 1c draws no
+control that opens either surface. The fitting panel — `FITTING · HARDPOINT 1`, a search field, a
+`REMOVE MODULE` control and the candidate manifest — and the `ENGINEERING` panel below it are simply
+present, under the anatomy, for whichever row is marked in the ledger. `CHANGE MODULE` and `ENGINEER`
+exist only on canvas 1d, in a sticky bar of exactly two controls, because at that width each panel is
+a screen of its own over an inert background.
+
+An earlier pass drew canvas 1d's bar at every width. That is the mobile interface on the desktop, and
+it puts a control in front of a panel that the reference shows without one. Corrected: the bar is
+drawn only in the compact composition, and the inline compositions render both panels directly for
+the selected mount, gated on what the package permits rather than on a surface flag. The selection
+itself follows the same rule — neither canvas draws an outfitting screen with nothing selected, so an
+unset selection resolves to the first mount rather than to a bench with a sentence in it.
+
+**Undo and redo are published, not drawn, ruled 2026-08-21 during US4 implementation.** Canvas 1c
+draws `↶ UNDO` and `REDO ↷` in the command bar's action row and canvas 1d puts the same two in its
+`⋮` menu — which is exactly the pair of placements feature 011's frame already renders from one
+action list, with identical names in both. So the workspace publishes them through the shell's action
+channel rather than drawing its own pair inside the region: a second pair would be the same two
+actions twice, in a place neither canvas puts them. Task T093 named a component file for them; what
+was built is the channel, and the task text now says so.
+
+The next-action summary the contract asks for is exposed by the store and carried as the control's
+`aria-describedby` — invisible, because neither canvas draws a summary beside either control. It is
+the same accessibility floor as the ledger's hidden slot keys.
+
+**Power state the build link cannot carry, found 2026-08-21 during US4 implementation.** Recorded
+rather than resolved, because the codec is feature 001's. Both canvases draw a power chip on every
+ledger row _including the power plant_, and the package accepts `setModulePriority` there — but the
+compact link codec writes power state only for modules that draw power, so a priority set on the
+plant is dropped from the link while the local record keeps it. Reloading a page whose only unsaved
+change is a plant priority then asks "Replace the build you are working on?", because the address bar
+and the stored record disagree about the build.
+
+Feature 001's own FR-019 says a build the codec cannot represent losslessly must be _refused_ with
+the affected slot and reason rather than silently reduced, so this is a defect in that codec rather
+than a rule of this feature: nothing here fabricates or drops a value. Feature 002 keeps the chip the
+canvas draws on every row and the e2e suite exercises link and reload journeys through a mount whose
+power the codec does carry, so the suite tests this feature rather than that gap.
+
+**Short viewports take the compact composition, ruled 2026-08-21 after a design pass.** A consequence
+of the rule above, found by measurement: with the two panels inline, a 844 x 390 landscape viewport
+produced a document about 15,000 px long — the complete ledger, a page of sixty candidate rows and the
+engineering panel stacked, with the panel a Commander is trying to reach below all of it and moving
+while they scroll. The composition observer now reads the stylesheets' own `max-height: 30rem` query,
+so a short viewport selects canvas 1d's composition at any width. See
+[responsive-composition.md](./responsive-composition.md) "Declared content minimums".
+
+**`REMOVE MODULE` placement, ruled 2026-08-21 after a design pass.** Canvas 1c draws it once, in the
+fitting panel's own header beside the search. Canvas 1d draws no remove control at all: its chooser
+list ends with a `Leave empty` row that does the same thing. Emptying a mount is part of choosing
+what goes in it, so the control lives in the chooser's header at both widths — the position canvas 1c
+draws, reached at compact through the same screen that offers every other choice for the mount. The
+alternative, a third button in canvas 1d's two-control bar, would add to that canvas rather than
+follow it.
+
+**Current-state sentences in the engineering editor, ruled 2026-08-21 after a design pass.**
+Withdrawn. The editor opened with two lines above the choices — `Currently Increased range at grade
+5.` and `Experimental effect: Corrosive Shell.` — that neither canvas draws. Both canvases say the
+same thing the way an editor says it: the recipe the module carries is the marked choice and carries
+the `APPLIED` marker, the grade row shows that grade, and the effect it carries is the marked effect.
+The editor opens with exactly that selection, so the sentences restated drawn state in prose. The
+`Applied` marker is kept, because it is drawn.
+
+What stays is the purchase line — `Bought as Ax Frame Shift Drive at grade 1` — and the clear
+consequence. Neither is drawn, and neither is duplicative: the grade an article was _bought at_ is not
+the grade now applied and no choice on screen carries it, and losing the article's identity is a
+consequence of an operation this application performs rather than a fact about the module. Same carve
+out as the drawn `None — stock module · REMOVES ENGINEERING` line.
+
+**The power chip's wording, ruled 2026-08-21 after a design pass.** Both canvases draw one hairline
+chip at the end of a ledger row: a coloured dot and a bare number, `--good` when powered and `--hot`
+when not, titled `Power priority 3` and, on the wide canvas, `Power priority — click the dot to
+unpower this module`. Neither canvas writes the word _group_ anywhere. An earlier pass labelled the
+five options `Group 1`–`Group 5` with a `No group` entry above them; that is text the design does not
+have, and it names a concept the game's own outfitting panel does not name either. The options are
+the numbers `1`–`5`, the dot is the switch, and the accessible names — `Power priority for {module}
+in {mount}` — carry the wording the canvas keeps in a tooltip.
+
+Where the package reports no group at all, the control shows the shared `Unavailable` value and that
+option cannot be chosen back: the canvas draws no case for an absent group, the package publishes no
+operation that unsets one, and writing `1` there would be inventing a value the Almanac never stated
+(constitution IV).
 
 **Material rarity icons, ruled 2026-08-21 during US3 implementation.** Both canvases draw each
 material's rarity as an image from `edassets.org`. Constitution I forbids any cross-origin runtime
@@ -266,6 +351,28 @@ unchanged, and the Merc Coin line keeps its own row exactly as drawn.
 | #   | What canvas 1c/1d draws                                                                                                            | What the specification says                                      | Why it collides                                                                                               |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 1   | Canvas 1c's anatomy legend reads `SELECTED · FITTED · EMPTY · UTILITY · ENGINEERED`; canvas 1d's reads `FITTED · EMPTY · UTILITY`. | The workspace composes the shared anatomy outlet at both widths. | The two canvases disagree on the legend; feature 010 owns the resolution but feature 002 composes the result. |
+
+## Reconciliation, 2026-08-21
+
+Every collision listed above has been ruled on and closed in place, with one exception, which is
+carried rather than closed: the anatomy legend in the table below disagrees between the two canvases
+and is **feature 010's** to resolve. Feature 002 composes whatever that feature publishes and draws
+no legend of its own, so nothing here depends on the ruling.
+
+The built asset tree carries no value from the reference canvas. Checked against
+`dist/elite-dangerous-ship-builder` after a production build:
+
+| Looked for                                              | Found                                                        |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| `edassets.org` — the canvas's material rarity icons     | absent; rarity is the package's own grade, in words          |
+| `assets/merc-coin.png` — the canvas's Merc Coin icon    | absent; the Merc Coin line is text                           |
+| `2,613,410`, `18,364,200` — the canvas's mock prices    | absent                                                       |
+| `Huge Multi-Cannon`, `OVERCHARGED G5` — mock identities | absent                                                       |
+| `FD-11X` — the canvas's mock ship ID                    | absent                                                       |
+| `Pacifier` — the canvas's mock build name               | present **as the Almanac's own `Pacifier Frag-Cannon`** only |
+
+No mock module, price, stat, modifier or material value from `.design/` reaches the product. Every
+figure a Commander reads comes from the installed package or is stated as unavailable.
 
 ## Released API constraint
 

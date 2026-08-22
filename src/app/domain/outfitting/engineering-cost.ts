@@ -1,3 +1,4 @@
+import { getMaterialBySymbol } from '@elite-dangerous-almanac/core/materials/materials';
 import { getBlueprintCost } from '@elite-dangerous-almanac/core/ships/blueprint-costs';
 import {
   sumMaterials,
@@ -167,4 +168,17 @@ function sameRecipe(left: string | null, right: string | null): boolean {
     return left === right;
   }
   return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
+/**
+ * One material's rarity, as the package grades it.
+ *
+ * Both canvases draw the rarity as an icon fetched from `edassets.org`, which
+ * constitution I forbids; the grade is the same fact from the package we
+ * already depend on. It is resolved here rather than in the component that
+ * draws it, because reading a catalogue is not a presentation concern
+ * (constitution III).
+ */
+export function materialRarity(symbol: string): number | null {
+  return getMaterialBySymbol(symbol)?.grade ?? null;
 }

@@ -363,7 +363,7 @@ describe('engineering draft', () => {
   });
 
   describe('the preview', () => {
-    it('describes the candidate against the current module, from package stats', () => {
+    it('describes the modified module against the stock one, from package stats', () => {
       const loadout = defaultBuild();
       const draft = driveDraft(
         { blueprintFdname: 'FSD_LongRange', grade: 5, effectFdname: null },
@@ -374,11 +374,11 @@ describe('engineering draft', () => {
       const attributes = draft.preview.kind === 'known' ? draft.preview.attributes : [];
       expect(attributes.length).toBeGreaterThan(0);
       // Every row has at least one side, or it would not be a row.
-      expect(attributes.every((row) => row.current !== null || row.candidate !== null)).toBe(true);
-      // The current column is the module as it is now, read from the package's
-      // own resolved article rather than recomputed here.
+      expect(attributes.every((row) => row.stock !== null || row.modified !== null)).toBe(true);
+      // The stock column is the package's catalogue record for the fitted
+      // article — the reference's own `STOCK` — not the module as it stands.
       const mass = attributes.find((row) => row.attribute === 'mass');
-      expect(mass?.current).toBe(loadout.fittedModuleAt(SLOT)?.effectiveStats?.mass);
+      expect(mass?.stock).toBe(loadout.fittedModuleAt(SLOT)?.stats?.mass);
     });
 
     it('changes nothing about the build it previewed against', () => {

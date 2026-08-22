@@ -55,11 +55,19 @@ export const COMPARED_ATTRIBUTES = [
 
 export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
 
-/** One row of the comparison. Either side may be unavailable, and stays so. */
+/**
+ * One row of the comparison. Either side may be unavailable, and stays so.
+ *
+ * `stock` is the module's catalogue record — the reference's own `STOCK` column
+ * — not the module as it currently stands. Both canvases head the two columns
+ * `STOCK` and `MODIFIED`, which is also what the game's own engineering panel
+ * shows: what this article is before any recipe, and what the selection would
+ * make of it.
+ */
 export interface AttributeComparison {
   readonly attribute: ComparedAttribute;
-  readonly current: number | null;
-  readonly candidate: number | null;
+  readonly stock: number | null;
+  readonly modified: number | null;
 }
 
 /**
@@ -195,7 +203,7 @@ export function openEngineeringDraft(
     effects,
     selectedEffectFdname,
     current,
-    preview: previewOf(loadout, slotKey, resolved, current, module.effectiveArticle),
+    preview: previewOf(loadout, slotKey, resolved, current, module.article),
     cost: engineeringCost({
       blueprintFdname: resolved.blueprintFdname === NO_BLUEPRINT ? null : resolved.blueprintFdname,
       grade: selectedGrade,
@@ -381,7 +389,7 @@ export function engineeringOperation(
 }
 
 /**
- * The candidate this selection would produce, described against the current one.
+ * The candidate this selection would produce, against the stock article.
  *
  * Built on a detached copy through the same checkpoint round trip every commit
  * uses, so what the preview measures is what would actually be installed rather
@@ -393,7 +401,7 @@ function previewOf(
   slotKey: string,
   selection: EngineeringSelection,
   current: EngineeringView,
-  currentArticle: OutfittingModule | null,
+  stockArticle: OutfittingModule | null,
 ): EngineeringPreview {
   const intent = selectionIntent(slotKey, selection, current);
   if (intent === null) {
@@ -416,19 +424,19 @@ function previewOf(
     return { kind: 'unavailable' };
   }
 
-  const candidateArticle = restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
-  if (candidateArticle === null && currentArticle === null) {
+  const modifiedArticle = restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
+  if (modifiedArticle === null && stockArticle === null) {
     return { kind: 'unavailable' };
   }
 
   const attributes = COMPARED_ATTRIBUTES.map((attribute) => ({
     attribute,
-    current: currentArticle?.[attribute] ?? null,
-    candidate: candidateArticle?.[attribute] ?? null,
+    stock: stockArticle?.[attribute] ?? null,
+    modified: modifiedArticle?.[attribute] ?? null,
     // A row neither side publishes is not a row: a multi-cannon has no
     // integrity figure to compare and drawing an empty one would suggest the
     // package lost it.
-  })).filter((row) => row.current !== null || row.candidate !== null);
+  })).filter((row) => row.stock !== null || row.modified !== null);
 
   return { kind: 'known', attributes };
 }

@@ -2,6 +2,7 @@ import {
   LoadoutEditError,
   type ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { BuildSnapshotV1 } from '../build/build-snapshot';
 import {
   captureCheckpoint,
   restoreCheckpoint,
@@ -85,4 +86,43 @@ export function runEditTransaction(
   }
 
   return { kind: 'changed', candidate, previous };
+}
+
+/**
+ * One change to a modelled field the package holds read-only.
+ *
+ * The ship's name and its ID plate are `ShipLoadout` getters with no setters:
+ * the package reads them from a capture and publishes them, and there is no
+ * operation that writes one. So they are edited where they live — in the
+ * modelled snapshot — and the build is rebuilt from it, which is the same
+ * candidate-first round trip every other edit already makes (FR-019).
+ */
+export type SnapshotEdit = (snapshot: BuildSnapshotV1) => BuildSnapshotV1;
+
+/**
+ * Candidate-first editing for the fields the package will not be told about.
+ *
+ * The same five outcomes and the same no-op rule as `runEditTransaction`, so a
+ * name change is one decision, one revision and one history frame exactly like
+ * a fit. A snapshot the package can no longer rebuild is `blocked` rather than
+ * partly applied — there is no half-renamed build, because the active one is
+ * never the thing being edited.
+ */
+export function runSnapshotTransaction(
+  current: ShipLoadout,
+  edit: SnapshotEdit,
+): TransactionOutcome {
+  const previous = captureCheckpoint(current);
+  const candidate: ModeledBuildCheckpoint = { snapshot: edit(previous.snapshot) };
+
+  if (sameCheckpoint(candidate, previous)) {
+    return { kind: 'unchanged' };
+  }
+
+  const restored = restoreCheckpoint(candidate);
+  if (!restored.ok) {
+    return { kind: 'blocked', reason: restored.reason };
+  }
+
+  return { kind: 'changed', candidate: restored.loadout, previous };
 }

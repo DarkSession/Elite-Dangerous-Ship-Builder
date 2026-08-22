@@ -14,6 +14,7 @@ import {
   type CandidateStatus,
 } from '../../../../application/outfitting/candidate-query';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
+import { slotCapabilities } from '../../../../application/outfitting/slot-capabilities';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
@@ -159,6 +160,7 @@ export class ModuleReplacement {
   );
 
   readonly fitLabel = this.#messages.messageSignal('outfitting.replacement.fit');
+  readonly removeLabel = this.#messages.messageSignal('outfitting.capability.remove');
   readonly cancelLabel = this.#messages.messageSignal('action.cancel');
   // The layer's own header control, which every other layer in the product
   // names the same way. Naming it `Cancel` too would put two controls with one
@@ -183,6 +185,20 @@ export class ModuleReplacement {
   );
 
   readonly canFit = computed(() => this.selectedChoiceKey() !== null);
+
+  /**
+   * Whether the mount can be emptied, asked of the package at this revision.
+   *
+   * Canvas 1c draws `REMOVE MODULE` in this panel's own header, beside the
+   * search — not in the ledger and not in canvas 1d's action bar, which carries
+   * exactly two controls. Emptying a mount is choosing what goes in it, so it
+   * lives with the rest of that choice at both widths.
+   */
+  readonly canRemove = computed(() => {
+    this.store.revision();
+    const loadout = this.store.loadout();
+    return loadout === null ? false : slotCapabilities(loadout, this.slot()).canRemove;
+  });
 
   /** The symbol currently in the mount, so its rows can say they are fitted. */
   readonly fittedSymbol = computed(() => this.slot().module?.symbol ?? null);
@@ -246,6 +262,15 @@ export class ModuleReplacement {
     // A refusal keeps the surface open with the pick intact. The Almanac's
     // reason is published by the workspace's refusal notice; closing here would
     // take the Commander away from the thing the reason is about.
+  }
+
+  /** Empties the mount, as one decision, exactly like fitting one. */
+  remove(): void {
+    const result = this.store.dispatch({ kind: 'remove', slotKey: this.slot().key });
+    if (result.kind === 'committed' || result.kind === 'unchanged') {
+      this.#pick.set(null);
+      this.closed.emit();
+    }
   }
 
   cancel(): void {

@@ -1,0 +1,87 @@
+<div class="identity-fields">
+  <!--
+    The name is the command bar's own title, as both canvases draw it, with the
+    pencil beside it rather than a labelled field in front of it.
+  -->
+  <div class="identity-fields__line">
+    @if (editing() === 'name') {
+      <label class="visually-hidden" [attr.for]="nameFieldId">{{ nameLabel() }}</label>
+      <input
+        class="identity-fields__input"
+        type="text"
+        [id]="nameFieldId"
+        [value]="name() ?? ''"
+        #nameInput
+      />
+      <button
+        class="identity-fields__confirm"
+        type="button"
+        (click)="confirm('name', nameInput.value)"
+      >
+        {{ confirmLabel() }}
+      </button>
+      <button class="identity-fields__quiet" type="button" (click)="clear('name')">
+        {{ clearLabel() }}
+      </button>
+      <button class="identity-fields__quiet" type="button" (click)="closed.emit()">
+        {{ cancelLabel() }}
+      </button>
+    } @else {
+      @if (headingLevel() === 1) {
+        <h1 class="identity-fields__name">{{ heading() }}</h1>
+      } @else {
+        <h2 class="identity-fields__name">{{ heading() }}</h2>
+      }
+      <button
+        class="identity-fields__pencil"
+        type="button"
+        [attr.aria-label]="nameEdit()"
+        (click)="open('name')"
+      >
+        <span class="identity-fields__pencil-mark" aria-hidden="true">✎</span>
+      </button>
+    }
+  </div>
+
+  <div class="identity-fields__line identity-fields__line--detail">
+    @if (detail(); as hull) {
+      <span class="identity-fields__detail">{{ hull }}</span>
+    }
+
+    @if (editing() === 'ident') {
+      <label class="visually-hidden" [attr.for]="identFieldId">{{ identLabel() }}</label>
+      <input
+        class="identity-fields__input"
+        type="text"
+        [id]="identFieldId"
+        [value]="ident() ?? ''"
+        #identInput
+      />
+      <button
+        class="identity-fields__confirm"
+        type="button"
+        (click)="confirm('ident', identInput.value)"
+      >
+        {{ confirmLabel() }}
+      </button>
+      <button class="identity-fields__quiet" type="button" (click)="clear('ident')">
+        {{ clearLabel() }}
+      </button>
+      <button class="identity-fields__quiet" type="button" (click)="closed.emit()">
+        {{ cancelLabel() }}
+      </button>
+    } @else {
+      <button
+        class="identity-fields__ident"
+        type="button"
+        [attr.aria-label]="identEdit()"
+        (click)="open('ident')"
+      >
+        @if (ident(); as plate) {
+          <span class="identity-fields__plate" data-bidi-isolate>{{ plate }}</span>
+        }
+        <span class="identity-fields__pencil-mark" aria-hidden="true">✎</span>
+      </button>
+    }
+  </div>
+</div>

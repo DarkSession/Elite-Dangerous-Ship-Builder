@@ -33,6 +33,14 @@ inline space, at the active text size, expansion and zoom. Three regions are use
 fit. Otherwise the next composition down applies. A region that cannot reach its minimum is never
 narrowed below it — the composition changes instead.
 
+Height selects the compact composition on its own. Below the stylesheets' own `max-height: 30rem`
+query — the same one that releases the sticky feet and the bounded scrollers — an inline composition
+would stack the ledger, the fitting panel and the engineering panel into one page thousands of pixels
+long with the last of them out of practical reach. A short viewport therefore gets canvas 1d's
+composition whatever its width: the two actions, and a screen each. This is the same rule 400% zoom
+already selects by, and reading it from the CSS query rather than from a second number is what keeps
+the stylesheets and the layer decision from disagreeing.
+
 ## Wide composition
 
 At space equivalent to the 1440×900 project viewport and where all three declared minimums fit, adapt

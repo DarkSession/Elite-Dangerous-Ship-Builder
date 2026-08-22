@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import type { SlotKind } from '@elite-dangerous-almanac/core/ships/slots';
 import { engineeringView } from '../../../../application/outfitting/engineering-view';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
@@ -8,6 +15,8 @@ import { NO_SLOT_CAPABILITIES } from '../../../../application/outfitting/outfitt
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
+import { ScreenChrome } from '../../../shared/screen-chrome';
+import type { IdentityCommit, IdentityField } from '../../../../ui/outfitting/ship-identity-fields';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -61,9 +70,19 @@ export class OutfittingWorkspace {
   readonly #gameText = inject(GameTextPresenter);
   readonly store = inject(OutfittingStore);
   readonly active = inject(ActiveBuildStore);
+  readonly #chrome = inject(ScreenChrome);
 
   /** Which mounts are listed. Visibility only; never build or history state. */
   readonly category = signal<Category>('all');
+
+  /**
+   * Which identity field the command bar has open, if either.
+   *
+   * View state and nothing else: opening the field, typing in it and closing it
+   * again spend no revision and record no decision. Only confirming does
+   * (FR-018).
+   */
+  readonly editingIdentity = signal<IdentityField | null>(null);
 
   /**
    * Which composition this region has room for.
@@ -86,8 +105,8 @@ export class OutfittingWorkspace {
   readonly noBuildDescription = this.#messages.messageSignal('outfitting.no-build.description');
   readonly replaceLabel = this.#messages.messageSignal('outfitting.capability.replace');
   readonly engineerLabel = this.#messages.messageSignal('outfitting.capability.engineer');
-  readonly removeLabel = this.#messages.messageSignal('outfitting.capability.remove');
-  readonly noSelectionLabel = this.#messages.messageSignal('outfitting.bench.no-selection');
+  readonly undoLabel = this.#messages.messageSignal('outfitting.history.undo');
+  readonly redoLabel = this.#messages.messageSignal('outfitting.history.redo');
 
   /** The category controls, in the order the canvas draws them. */
   readonly categories = computed(() =>
@@ -178,13 +197,129 @@ export class OutfittingWorkspace {
     return this.#messages.message(key);
   });
 
-  readonly replacementOpen = computed(
-    () => this.store.surface() === 'replacement' && this.selectedSlot() !== null,
-  );
+  /**
+   * Whether the fitting panel is on screen, which is two different questions.
+   *
+   * Inline it is not a surface that opens at all: canvas 1c draws the panel
+   * under the anatomy for whichever row is marked, with no control that reveals
+   * it. As a layer it is one of canvas 1d's two full-screen views, and it is on
+   * screen only while a Commander has it open.
+   */
+  readonly replacementShown = computed(() => {
+    const slot = this.selectedSlot();
+    if (slot === null) {
+      return false;
+    }
+    return this.benchIsLayer()
+      ? this.store.surface() === 'replacement'
+      : this.capabilitiesFor(slot).canOpenReplacement;
+  });
 
-  readonly engineeringOpen = computed(
-    () => this.store.surface() === 'engineering' && this.selectedSlot() !== null,
-  );
+  /** The same question for the engineering panel, answered the same way. */
+  readonly engineeringShown = computed(() => {
+    const slot = this.selectedSlot();
+    if (slot === null) {
+      return false;
+    }
+    return this.benchIsLayer()
+      ? this.store.surface() === 'engineering'
+      : this.capabilitiesFor(slot).canOpenEngineering;
+  });
+
+  constructor() {
+    // Canvas 1c draws `↶ UNDO` and `REDO ↷` in the command bar's action row;
+    // canvas 1d puts the same two in the `⋮` menu. The shell already renders
+    // one list in both placements, so they are published rather than drawn
+    // again here — a second pair inside the region would be the same actions
+    // twice, in a place neither canvas puts them (FR-016).
+    // Canvas 1c and 1d both put the build's name where every other screen's
+    // name goes, with the hull and the ID plate under it. The workspace owns
+    // the values and what confirming one means; the shell places the block.
+    effect((onCleanup) => {
+      this.#chrome.setIdentity(
+        this.store.hasBuild()
+          ? {
+              identity: {
+                name: this.shipName(),
+                detail: this.hullName(),
+                ident: this.shipIdent(),
+                editing: this.editingIdentity(),
+              },
+              open: (field) => this.editingIdentity.set(field),
+              close: () => this.editingIdentity.set(null),
+              commit: (commit) => this.#commitIdentity(commit),
+            }
+          : null,
+      );
+      onCleanup(() => this.#chrome.setIdentity(null));
+    });
+
+    effect((onCleanup) => {
+      this.#chrome.setActions(
+        this.store.hasBuild()
+          ? [
+              {
+                action: {
+                  id: 'outfitting.undo',
+                  label: this.undoLabel(),
+                  disabled: !this.store.canUndo(),
+                  description: this.#named(
+                    'outfitting.history.undo.named',
+                    this.store.undoSummary(),
+                  ),
+                },
+                perform: () => void this.store.undo(),
+              },
+              {
+                action: {
+                  id: 'outfitting.redo',
+                  label: this.redoLabel(),
+                  disabled: !this.store.canRedo(),
+                  description: this.#named(
+                    'outfitting.history.redo.named',
+                    this.store.redoSummary(),
+                  ),
+                },
+                perform: () => void this.store.redo(),
+              },
+            ]
+          : [],
+      );
+      onCleanup(() => this.#chrome.setActions([]));
+    });
+  }
+
+  /** The ship's name and ID plate, re-read from the package at each revision. */
+  readonly shipName = computed(() => {
+    this.store.revision();
+    return this.store.loadout()?.shipName ?? null;
+  });
+
+  readonly shipIdent = computed(() => {
+    this.store.revision();
+    return this.store.loadout()?.shipIdent ?? null;
+  });
+
+  /** The hull the canvas draws under the name, in the Commander's language. */
+  readonly hullName = computed(() => {
+    const symbol = this.store.loadout()?.shipSymbol ?? null;
+    return symbol === null ? null : (this.#gameText.shipName(symbol).text ?? symbol);
+  });
+
+  /** One confirmed identity field, as one Commander decision (FR-019). */
+  #commitIdentity(commit: IdentityCommit): void {
+    this.editingIdentity.set(null);
+    this.store.dispatch(
+      commit.field === 'name'
+        ? { kind: 'setShipName', value: commit.value }
+        : { kind: 'setShipIdent', value: commit.value },
+    );
+  }
+
+  /** The drawn label plus what it would step through, for a reader only. */
+  #named(key: MessageKey, summary: string | null): string | undefined {
+    return summary === null ? undefined : this.#messages.message(key, { summary });
+  }
 
   /** What the package permits on one mount, re-read at the current revision. */
   capabilitiesFor(slot: SlotView) {

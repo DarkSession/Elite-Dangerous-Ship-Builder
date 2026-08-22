@@ -8,7 +8,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { getMaterialBySymbol } from '@elite-dangerous-almanac/core/materials/materials';
 import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
 import {
   NO_BLUEPRINT,
@@ -25,10 +24,15 @@ import {
 import { engineeringView } from '../../../../application/outfitting/engineering-view';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
-import type { CombinedCost, MaterialCost } from '../../../../domain/outfitting/engineering-cost';
+import {
+  materialRarity,
+  type CombinedCost,
+  type MaterialCost,
+} from '../../../../domain/outfitting/engineering-cost';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
+import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { Layer } from '../../../../ui/components/layer/layer';
 import {
   AttributeComparison,
@@ -231,8 +235,8 @@ export class EngineeringEditor {
     return preview.attributes.map((row) => ({
       key: row.attribute,
       label: this.#messages.message(`outfitting.engineering.attribute.${row.attribute}` as const),
-      current: this.#figure(row.current),
-      candidate: this.#figure(row.candidate),
+      stock: this.#figure(row.stock),
+      modified: this.#figure(row.modified),
     }));
   });
 
@@ -280,21 +284,10 @@ export class EngineeringEditor {
     this.#messages.message('outfitting.engineering.region', { slot: this.#slotLabel() }),
   );
 
-  /** What the module carries now, said in words above the choices. */
-  readonly currentSummary = computed(() => {
-    const current = this.draft()?.current;
-    if (current === undefined) {
-      return null;
-    }
-    if (current.blueprintFdname === null || current.currentGrade === null) {
-      return this.#messages.message('outfitting.engineering.unengineered');
-    }
-    return this.#messages.message('outfitting.engineering.current', {
-      blueprint:
-        this.#gameText.blueprintName(current.blueprintFdname).text ?? current.blueprintFdname,
-      grade: current.currentGrade,
-    });
-  });
+  /** Canvas 1c's panel heading, over the panel it heads. */
+  readonly panelHeading = this.#messages.messageSignal('outfitting.engineering.heading');
+
+  readonly headingId = relationId('engineering-panel');
 
   /**
    * The article the module was bought as, and the grade it was bought at.
@@ -312,15 +305,6 @@ export class EngineeringEditor {
       article: this.#gameText.preEngineeredVariantName(variant).text ?? variant.name,
       grade: variant.grade,
     });
-  });
-
-  readonly effectSummary = computed(() => {
-    const effect = this.draft()?.current.effectFdname ?? null;
-    return effect === null
-      ? null
-      : this.#messages.message('outfitting.engineering.current.effect', {
-          effect: this.#gameText.experimentalEffectName(effect).text ?? effect,
-        });
   });
 
   readonly applyLabel = this.#messages.messageSignal('outfitting.engineering.apply');
@@ -432,7 +416,7 @@ export class EngineeringEditor {
       name: this.#gameText.materialName(material.symbol),
       // The rarity the canvas draws as a remote icon, taken from the package's
       // own record instead. `null` where it carries none.
-      grade: getMaterialBySymbol(material.symbol)?.grade ?? null,
+      grade: materialRarity(material.symbol),
       count: this.#formatters.integer(material.count),
     };
   }

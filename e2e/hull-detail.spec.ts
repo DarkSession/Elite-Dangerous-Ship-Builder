@@ -199,7 +199,7 @@ test.describe('hull detail', () => {
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByText('Anaconda')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByText('New stock build')).toBeVisible();
     await expect(page.getByText('Unsaved changes')).toBeVisible();
   });
@@ -223,7 +223,7 @@ test.describe('hull detail', () => {
     // survived, and a fresh load is the strictest way to ask.
     await page.goto('/build');
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByText('Anaconda')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
   });
 
   test('replaces unsaved work once the Commander confirms', async ({ page }) => {
@@ -235,7 +235,7 @@ test.describe('hull detail', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Discard and open' }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await expect(page.getByText('Sidewinder')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Sidewinder').first()).toBeVisible();
   });
 
   test('never scrolls the document sideways', async ({ page }) => {

@@ -14,6 +14,7 @@ import { GradeSelector } from './grade-selector';
 import { IngressRefusalNotice } from './ingress-refusal-notice';
 import { MaterialCostList } from './material-cost-list';
 import { PowerControls } from './power-controls';
+import { ShipIdentityFields } from './ship-identity-fields';
 
 /**
  * What the engineering primitives promise a reader.
@@ -177,8 +178,8 @@ describe('experimental effect list', () => {
 
 describe('attribute comparison', () => {
   const ROWS = [
-    { key: 'damage', label: 'Damage', current: '5.72', candidate: '6.90' },
-    { key: 'mass', label: 'Mass t', current: null, candidate: '4.00' },
+    { key: 'damage', label: 'Damage', stock: '5.72', modified: '6.90' },
+    { key: 'mass', label: 'Mass t', stock: null, modified: '4.00' },
   ];
 
   it('relates every figure to its attribute through a row header', () => {
@@ -189,8 +190,8 @@ describe('attribute comparison', () => {
     expect(header.getAttribute('scope')).toBe('row');
     expect(queryAll(fixture, 'th[scope="col"]').map((cell) => textOf(cell))).toEqual([
       'Attribute',
-      'Current',
-      'Candidate',
+      'Stock',
+      'Modified',
     ]);
   });
 
@@ -327,16 +328,11 @@ describe('power controls', () => {
     const fixture = renderComponent(PowerControls, { ...NAMES, priority: 0 });
 
     const options = queryAll(fixture, 'option');
-    expect(options.map((option) => textOf(option))).toEqual([
-      'No group',
-      'Group 1',
-      'Group 2',
-      'Group 3',
-      'Group 4',
-      'Group 5',
-    ]);
+    // Bare numbers, because the chip the canvas draws holds a number and no
+    // word beside it. The control's name says what the number is.
+    expect(options.map((option) => textOf(option))).toEqual(['1', '2', '3', '4', '5']);
     // The package's 0 is the Commander's 1.
-    expect(options[1]?.getAttribute('value')).toBe('0');
+    expect(options[0]?.getAttribute('value')).toBe('0');
   });
 
   it('emits the package’s own number, not the one on screen', () => {
@@ -357,12 +353,16 @@ describe('power controls', () => {
     fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
 
     const select = query(fixture, '.power__priority') as HTMLSelectElement;
+    // Not group 1. The package stated no group, so the control states none —
+    // it says the value is unavailable, and that option cannot be chosen back
+    // because there is no package operation that unsets a group (FR-014).
     expect(select.value).toBe('');
+    expect(textOf(select.options[0]!)).toBe('Unavailable');
+    expect(select.options[0]!.disabled).toBe(true);
+
     select.value = '';
     select.dispatchEvent(new Event('change'));
 
-    // Selecting a group on the Commander's behalf so the control has something
-    // to show would be a decision nobody made (FR-014).
     expect(emitted).toEqual([]);
   });
 
@@ -431,3 +431,83 @@ describe('ingress refusal notice', () => {
 function queryAll<T>(fixture: ComponentFixture<T>, selector: string): HTMLElement[] {
   return [...element(fixture).querySelectorAll<HTMLElement>(selector)];
 }
+
+describe('ship identity fields', () => {
+  const NAMED = {
+    name: 'Pacifier',
+    fallbackName: 'Build',
+    detail: 'Anaconda',
+    ident: 'FD-11X',
+    editing: null,
+  };
+
+  it('draws the name as the bar’s own title, with a pencil beside it', () => {
+    const fixture = renderComponent(ShipIdentityFields, NAMED);
+
+    expect(query(fixture, 'h1').textContent?.trim()).toBe('Pacifier');
+    // The glyph is decoration; the control's whole name is words.
+    expect(accessibleName(query(fixture, '.identity-fields__pencil'))).toBe('Rename the ship');
+  });
+
+  it('reads as the screen it is on when the build has no name', () => {
+    const fixture = renderComponent(ShipIdentityFields, { ...NAMED, name: null });
+
+    expect(query(fixture, 'h1').textContent?.trim()).toBe('Build');
+  });
+
+  it('names the ID plate control with the plate it is showing', () => {
+    const fixture = renderComponent(ShipIdentityFields, NAMED);
+
+    // The plate is visible text on the control, so it has to be in the name.
+    expect(accessibleName(query(fixture, '.identity-fields__ident'))).toContain('FD-11X');
+  });
+
+  it('draws no plate where the package has none', () => {
+    const fixture = renderComponent(ShipIdentityFields, { ...NAMED, ident: null });
+
+    expect(element(fixture).querySelector('.identity-fields__plate')).toBeNull();
+    expect(accessibleName(query(fixture, '.identity-fields__ident'))).toBe('Change the ship ID');
+  });
+
+  it('commits what was typed, once, on an explicit confirm', () => {
+    const fixture = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'name' });
+    const committed: unknown[] = [];
+    fixture.componentInstance.committed.subscribe((commit) => committed.push(commit));
+
+    const field = query(fixture, '.identity-fields__input') as HTMLInputElement;
+    field.value = '  Pacifier II  ';
+    (query(fixture, '.identity-fields__confirm') as HTMLButtonElement).click();
+
+    // Trimmed, because the surrounding spaces are not part of the name.
+    expect(committed).toEqual([{ field: 'name', value: 'Pacifier II' }]);
+  });
+
+  it('clears to absence rather than to an empty string', () => {
+    const fixture = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'ident' });
+    const committed: unknown[] = [];
+    fixture.componentInstance.committed.subscribe((commit) => committed.push(commit));
+
+    const field = query(fixture, '.identity-fields__input') as HTMLInputElement;
+    field.value = '   ';
+    (query(fixture, '.identity-fields__confirm') as HTMLButtonElement).click();
+    (query(fixture, '.identity-fields__quiet') as HTMLButtonElement).click();
+
+    // Whitespace alone is absence, and so is the clear action. A build with an
+    // empty name and a build with none are different builds (constitution IV).
+    expect(committed).toEqual([
+      { field: 'ident', value: null },
+      { field: 'ident', value: null },
+    ]);
+  });
+
+  it('asks to be opened rather than opening itself', () => {
+    const fixture = renderComponent(ShipIdentityFields, NAMED);
+    const opened: unknown[] = [];
+    fixture.componentInstance.opened.subscribe((field) => opened.push(field));
+
+    (query(fixture, '.identity-fields__pencil') as HTMLButtonElement).click();
+    (query(fixture, '.identity-fields__ident') as HTMLButtonElement).click();
+
+    expect(opened).toEqual(['name', 'ident']);
+  });
+});

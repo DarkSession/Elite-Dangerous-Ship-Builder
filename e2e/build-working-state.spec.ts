@@ -38,7 +38,7 @@ test.describe('the tab’s working build', () => {
     await page.reload();
 
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByText('Anaconda')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
     // The same record, not a second one.
     expect((await storedKeys(page)).records).toEqual(before.records);
   });
@@ -94,8 +94,8 @@ test.describe('the tab’s working build', () => {
 
     // Neither page has overwritten the other's autosave.
     expect(records).toHaveLength(2);
-    await expect(first.getByText('Anaconda')).toBeVisible();
-    await expect(second.getByText('Sidewinder')).toBeVisible();
+    await expect(first.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    await expect(second.getByRole('main').getByText('Sidewinder').first()).toBeVisible();
 
     await context.close();
   });
@@ -163,7 +163,7 @@ test.describe('the tab’s working build', () => {
 
     await expect(page.getByText(/not allowing the application to store/i)).toBeVisible();
     // The build is still there and the screen still works.
-    await expect(page.getByText('Anaconda')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
 
     await context.close();
@@ -186,7 +186,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
 
     await expect(page.getByText(/storage is full/i)).toBeVisible();
-    await expect(page.getByText('Anaconda')).toBeVisible();
+    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Choose builds to discard' })).toBeVisible();
 
     await context.close();

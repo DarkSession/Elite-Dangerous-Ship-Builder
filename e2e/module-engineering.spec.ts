@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { sweepOutfittingState } from './accessibility';
+import {
+  draftAbandoned,
+  editApplied,
+  editorOffered,
+  fitCommitted,
+  openChooser,
+  openEditor as bringEditorOnScreen,
+} from './outfitting-surfaces';
 
 /**
  * Engineering a module, end to end (US3).
@@ -29,11 +37,10 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   await expect(page.locator('.outfitting__bench-title')).toBeVisible();
 }
 
-/** Opens the engineering editor for the selected mount. */
+/** Opens the engineering editor for the selected mount, at whatever width. */
 async function openEditor(page: Page, slotKey: string): Promise<void> {
   await selectMount(page, slotKey);
-  await page.getByRole('button', { name: /^engineer$/i }).click();
-  await expect(page.locator('.blueprints')).toBeVisible();
+  await bringEditorOnScreen(page);
 }
 
 /**
@@ -91,7 +98,7 @@ async function chooseGrade(page: Page, grade: number): Promise<void> {
 /** Applies the draft and waits for the editor to close on a committed edit. */
 async function applyDraft(page: Page): Promise<void> {
   await page.getByRole('button', { name: /apply blueprint/i }).click();
-  await expect(page.locator('.blueprints')).toHaveCount(0);
+  await editApplied(page);
 }
 
 /** What the ledger's code line says about one mount's engineering. */
@@ -229,7 +236,7 @@ test.describe('engineering a module', () => {
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
     await page.getByRole('button', { name: /revert/i }).click();
-    await expect(page.locator('.blueprints')).toHaveCount(0);
+    await draftAbandoned(page);
 
     // Only draft state ever changed, so there is nothing to restore (FR-018).
     expect(await ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);
@@ -241,7 +248,7 @@ test.describe('engineering a module', () => {
 
     // Not a disabled control: a control with nothing behind it is worse than no
     // control at all (FR-009).
-    await expect(page.getByRole('button', { name: /^engineer$/i })).toHaveCount(0);
+    expect(await editorOffered(page)).toBe(false);
   });
 
   test('is accessible in every editor state', async ({ page }, testInfo) => {
@@ -329,16 +336,17 @@ test.describe('purchased and reward articles', () => {
   /** Fits the first chooser row carrying one acquisition label. */
   async function fitArticle(page: Page, slotKey: string, label: RegExp): Promise<void> {
     await selectMount(page, slotKey);
-    await page.getByRole('button', { name: /change module/i }).click();
+    await openChooser(page);
     const row = page.locator('.candidate').filter({ hasText: label }).first();
     await expect(row).toBeVisible();
-    // The module's name, not the row's centre: a wide row's centre falls in the
-    // gap between the identity and the figures, and Firefox does not activate a
-    // label from a click that lands on no content.
-    await row.locator('.candidate__identity').click();
+    // The module's name itself: a row's centre falls in the gap between the
+    // identity and the figures, the identity block's centre falls between its
+    // name and its code line once the panel is narrow, and Firefox does not
+    // activate a label from a click that lands on no content.
+    await row.locator('.identity__name').click();
     await expect(row.locator('input[type="radio"]')).toBeChecked();
     await page.getByRole('button', { name: /fit module/i }).click();
-    await expect(page.locator('.candidate')).toHaveCount(0);
+    await fitCommitted(page);
   }
 
   test('keeps a reward’s identity through an effect-only change', async ({ page }) => {

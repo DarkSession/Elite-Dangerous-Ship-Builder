@@ -86,13 +86,13 @@ describe('engineering editor surface', () => {
       expect(editor.canApply()).toBe(false);
     });
 
-    it('says the module is not engineered rather than leaving it blank', () => {
+    it('draws no purchase line on a module that was never bought as an article', () => {
       commit(defaultBuild());
 
-      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
-
-      expect(editor.currentSummary()?.toLowerCase()).toContain('not engineered');
-      expect(editor.purchaseSummary()).toBeNull();
+      // What the module carries now is drawn by the choices themselves — an
+      // unengineered module has none checked — so there is no sentence here to
+      // read, and nothing about a purchase either.
+      expect(open(FIXTURE_SLOTS.frameShiftDrive).componentInstance.purchaseSummary()).toBeNull();
     });
   });
 
@@ -186,13 +186,15 @@ describe('engineering editor surface', () => {
   });
 
   describe('a purchased article', () => {
-    it('keeps the purchase grade beside the grade now applied', () => {
+    it('keeps the purchase grade, which the choices themselves cannot show', () => {
       commit(fixedRewardBuild());
 
       const editor = open(FIXED_REWARD_REGRESSION.slot).componentInstance;
 
+      // The grade it was bought at is not the grade now applied, and no drawn
+      // choice carries it — so this line stays where the current recipe's does
+      // not (FR-007).
       expect(editor.purchaseSummary()).not.toBeNull();
-      expect(editor.currentSummary()).not.toBeNull();
     });
 
     it('never prices what the article arrived with', () => {
@@ -240,7 +242,7 @@ describe('engineering editor surface', () => {
   });
 
   describe('the comparison', () => {
-    it('describes the candidate against the current module', () => {
+    it('describes the modified module against the stock one', () => {
       commit(defaultBuild());
       const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
 
@@ -250,7 +252,7 @@ describe('engineering editor surface', () => {
       const rows = editor.attributes();
       expect(rows.length).toBeGreaterThan(0);
       // Every row has at least one side; nothing is filled in for the other.
-      expect(rows.every((row) => row.current !== null || row.candidate !== null)).toBe(true);
+      expect(rows.every((row) => row.stock !== null || row.modified !== null)).toBe(true);
     });
 
     it('has nothing to show before a recipe is chosen', () => {

@@ -247,6 +247,7 @@ import { OutfittingNotice } from '../outfitting/outfitting-notice';
 import { QualityCompletionNotice } from '../outfitting/quality-completion-notice';
 import { SlotCard } from '../outfitting/slot-card';
 import { SlotGroup } from '../outfitting/slot-group';
+import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
 
 /** A state rendered from a fixture. */
@@ -2999,11 +3000,11 @@ registerPreview({
       'default',
       {
         rows: [
-          { key: 'damage', label: 'Damage', current: '5.72', candidate: '6.90' },
-          { key: 'thermalLoad', label: 'Thermal load', current: '0.34', candidate: '0.41' },
-          { key: 'powerDraw', label: 'Power draw MW', current: '0.73', candidate: '0.88' },
-          { key: 'clipSize', label: 'Clip size', current: '90', candidate: '81' },
-          { key: 'mass', label: 'Mass t', current: null, candidate: '4.00' },
+          { key: 'damage', label: 'Damage', stock: '5.72', modified: '6.90' },
+          { key: 'thermalLoad', label: 'Thermal load', stock: '0.34', modified: '0.41' },
+          { key: 'powerDraw', label: 'Power draw MW', stock: '0.73', modified: '0.88' },
+          { key: 'clipSize', label: 'Clip size', stock: '90', modified: '81' },
+          { key: 'mass', label: 'Mass t', stock: null, modified: '4.00' },
         ],
       },
       [
@@ -3236,5 +3237,85 @@ registerPreview({
     ),
     notApplicable('error', 'This notice is the error state, so it has no second one.'),
     notApplicable('disabled', 'A notice is content, not a control.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'ship-identity-fields',
+  group: 'Engineering',
+  component: ShipIdentityFields,
+  contract: contract(
+    'ship-identity-fields',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'a pencil whose whole name is words, not the glyph it draws',
+        'an ID plate control naming the plate it is showing',
+      ],
+    },
+    ['default', 'empty', 'loading'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        name: 'Pacifier',
+        fallbackName: 'Build',
+        detail: 'Anaconda',
+        ident: 'FD-11X',
+        editing: null,
+        // A section heading here: the catalogue renders several of these at
+        // once, and only the command bar's copy is the document's own name.
+        headingLevel: 2,
+      },
+      [
+        'the name is the command bar’s own title, with the pencil beside it',
+        'the hull and the ID plate sit under it, exactly as the canvas draws them',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        name: null,
+        fallbackName: 'Build',
+        detail: 'Anaconda',
+        ident: null,
+        editing: null,
+        headingLevel: 2,
+      },
+      [
+        'a build with no name of its own reads as the screen it is on',
+        'an absent ID plate is absent rather than an empty box of text',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    state(
+      'loading',
+      {
+        name: 'Pacifier',
+        fallbackName: 'Build',
+        detail: 'Anaconda',
+        ident: 'FD-11X',
+        editing: 'name',
+        headingLevel: 2,
+      },
+      [
+        'the field opens in place, with an explicit confirm beside it',
+        'clearing is offered as its own action, and sets absence',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'error',
+      'A refused rename is published by the workspace’s refusal notice, not by the field.',
+    ),
+    notApplicable(
+      'disabled',
+      'Where there is no build there is no identity to edit, so the block is absent rather than disabled.',
+    ),
   ],
 });

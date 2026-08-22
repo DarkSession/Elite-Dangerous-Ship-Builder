@@ -97,7 +97,9 @@ describe('outfitting store', () => {
 
     await coordinator.replace(() => ({ ok: true, candidate: candidateFor() }));
 
-    expect(store.selectedSlotKey()).toBeNull();
+    // Back to where the canvas opens: the first mount of the new build, not a
+    // bench with nothing in it — the reference draws no such screen.
+    expect(store.selectedSlotKey()).toBe(store.slots()[0]?.key);
     expect(store.surface()).toBe('workspace');
     expect(store.query()).toBe('');
     expect(store.lastEditFailure()).toBeNull();

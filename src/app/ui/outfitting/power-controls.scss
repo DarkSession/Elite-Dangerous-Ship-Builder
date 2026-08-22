@@ -1,15 +1,22 @@
 @use '../../../styles/responsive' as layout;
 
-// The canvas's hairline-bordered priority control at the end of a ledger row,
-// with the power switch beside it.
+// The chip the canvas draws at the end of every ledger row: one hairline box,
+// a dot in a divided cell, and the group number on an amber wash beside it.
 :host {
   display: block;
 }
 
+// One box at the size it needs and no wider than the row it sits in. At 200%
+// text the two cells stack rather than pushing the ledger sideways: a select
+// whose widest option is a word is wider than a chip drawn for a digit, and the
+// document may not scroll horizontally for it (FR-011).
 .power {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-
-  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
 }
 
 .power__switch {
@@ -20,33 +27,38 @@
   justify-content: center;
   flex: none;
   cursor: pointer;
+  padding-inline: var(--edsb-space-inline-tight);
+  border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
 }
 
-// The checkbox itself carries the state; the track is what the canvas draws.
-// It is never the only carrier: the control's own checked state and its
-// accessible name both say it too.
+// The checkbox itself carries the state; the dot is what the canvas draws. It
+// is never the only carrier: the control's own checked state and its accessible
+// name both say it too.
 .power__toggle {
   @include layout.visually-hidden;
 }
 
-.power__switch-track {
-  inline-size: var(--edsb-space-inline-loose);
-  block-size: var(--edsb-space-inline);
-  background-color: var(--edsb-surface-control-quiet);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+.power__dot {
+  inline-size: var(--edsb-space-inline-tight);
+  block-size: var(--edsb-space-inline-tight);
+  border-radius: 50%;
+  // Unpowered is the reference's `hot`; powered is its `good`.
+  background-color: var(--edsb-text-danger);
 
   .power__toggle:checked + & {
-    background-color: var(--edsb-surface-accent-solid);
-    border-color: var(--edsb-border-accent);
+    background-color: var(--edsb-text-success);
   }
 }
 
 .power__priority {
   @include layout.control-base;
-  @include layout.field-surface;
 
   flex: 0 1 auto;
   min-inline-size: 0;
+  border: 0;
+  background-color: var(--edsb-surface-accent-selected);
+  color: var(--edsb-text-accent);
+  font-family: var(--edsb-font-metric);
 }
 
 .visually-hidden {

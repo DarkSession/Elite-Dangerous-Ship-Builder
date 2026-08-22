@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { getLoadoutEditErrorMessage } from '@elite-dangerous-almanac/core/i18n/diagnostics';
 import type { EditFailure } from '../../application/outfitting/build-edit-intent';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
@@ -77,10 +76,10 @@ export class EditRefusalNotice {
     if (failure.diagnostic === null || failure.diagnostic === undefined) {
       return null;
     }
-    const presented = this.#gameText.present(
-      getLoadoutEditErrorMessage,
-      failure.diagnostic as Parameters<typeof getLoadoutEditErrorMessage>[0],
-    );
-    return presented.text;
+    // Through the presenter rather than through the package: package text has
+    // one route into this application, and a component is not it.
+    return this.#gameText.loadoutEditErrorMessage(
+      failure.diagnostic as Parameters<GameTextPresenter['loadoutEditErrorMessage']>[0],
+    ).text;
   }
 }

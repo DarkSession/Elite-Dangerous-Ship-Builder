@@ -3,17 +3,33 @@ import {
   LoadoutEditError,
   type ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import type { ModeledBuildCheckpoint } from '../../domain/build/modeled-build-checkpoint';
+import {
+  captureCheckpoint,
+  restoreCheckpoint,
+  type ModeledBuildCheckpoint,
+} from '../../domain/build/modeled-build-checkpoint';
 import {
   runEditTransaction,
+  runSnapshotTransaction,
   type EditOperation,
   type TransactionOutcome,
 } from '../../domain/outfitting/build-edit-transaction';
+import {
+  emptyHistory,
+  recordDecision,
+  redo,
+  redoSummary,
+  undo,
+  undoSummary,
+  type HistoryIntentSummary,
+  type SessionEditHistory,
+} from '../../domain/outfitting/session-edit-history';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
+import { MessageService } from '../../i18n/message.service';
 import type { BuildEditIntent, BuildEditResult, EditFailure } from './build-edit-intent';
 import {
   candidateMembership,
@@ -47,11 +63,22 @@ export class OutfittingStore {
   readonly #coordinator = inject(ReplacementCoordinator);
   readonly #gameText = inject(GameTextPresenter);
   readonly #formatters = inject(Formatters);
+  readonly #messages = inject(MessageService);
 
   readonly #selectedSlotKey = signal<string | null>(null);
   readonly #surface = signal<OutfittingSurface>('workspace');
   readonly #lastEditFailure = signal<EditFailure | null>(null);
   readonly #query = signal('');
+
+  /**
+   * The session's decisions, oldest first, and the branch undo left behind.
+   *
+   * In memory and nowhere else. Nothing serializes it, nothing publishes it and
+   * nothing restores it on reload: it is the record of what a Commander did in
+   * this session, and a session is exactly how long it lives (edit-history
+   * contract, "Boundary isolation").
+   */
+  readonly #history = signal<SessionEditHistory<ModeledBuildCheckpoint>>(emptyHistory());
 
   /**
    * The package's structured refusal from the operation that just ran.
@@ -68,12 +95,38 @@ export class OutfittingStore {
   readonly revision = this.#active.revision;
   readonly loadout = this.#active.loadout;
 
-  readonly selectedSlotKey = this.#selectedSlotKey.asReadonly();
+  /**
+   * The mount every read below is about.
+   *
+   * Neither canvas draws an outfitting screen with nothing selected: the wide
+   * one opens on `FITTING · HARDPOINT 1` with that row marked and its bench
+   * filled, and the compact one opens on the same row. So an unset selection is
+   * the first mount rather than a state of its own — there is no screen to draw
+   * for it (design-canvas rule).
+   */
+  readonly selectedSlotKey = computed<string | null>(
+    () => this.#selectedSlotKey() ?? this.slots()[0]?.key ?? null,
+  );
   readonly surface = this.#surface.asReadonly();
   readonly lastEditFailure = this.#lastEditFailure.asReadonly();
   readonly query = this.#query.asReadonly();
 
   readonly hasBuild = computed(() => this.#active.loadout() !== null);
+
+  /** Whether there is a decision to step back to, and one to step forward to. */
+  readonly canUndo = computed(() => this.#history().past.length > 0);
+  readonly canRedo = computed(() => this.#history().future.length > 0);
+
+  /**
+   * What each direction would move through, in the Commander's language.
+   *
+   * Resolved when it is read rather than when it was recorded: the tape holds a
+   * key and identities, so a Commander who changes language mid-session reads
+   * their own history in the language they are reading now (edit-history
+   * contract, "Included decisions").
+   */
+  readonly undoSummary = computed(() => this.#summaryText(undoSummary(this.#history())));
+  readonly redoSummary = computed(() => this.#summaryText(redoSummary(this.#history())));
 
   /**
    * Every mount, re-read once per revision.
@@ -90,7 +143,7 @@ export class OutfittingStore {
   });
 
   readonly selectedSlot = computed<SlotView | null>(() => {
-    const key = this.#selectedSlotKey();
+    const key = this.selectedSlotKey();
     return key === null ? null : (this.slots().find((slot) => slot.key === key) ?? null);
   });
 
@@ -111,7 +164,7 @@ export class OutfittingStore {
   readonly membership = computed<CandidateMembership | null>(() => {
     const revision = this.revision();
     const loadout = this.#active.loadout();
-    const key = this.#selectedSlotKey();
+    const key = this.selectedSlotKey();
     return loadout === null || key === null
       ? null
       : candidateMembership(loadout, key, revision, this.#gameText);
@@ -182,6 +235,71 @@ export class OutfittingStore {
     this.#surface.set('workspace');
     this.#lastEditFailure.set(null);
     this.#query.set('');
+    // Both directions, because the decisions on the tape were about a build
+    // that is no longer the one on screen. A refused incoming candidate never
+    // reaches here, so its history survives (edit-history contract, "Reset").
+    this.#history.set(emptyHistory());
+  }
+
+  /**
+   * Steps one decision back, or forward, or reports that there is none.
+   *
+   * Both directions are the same three moves: ask the tape where to go, rebuild
+   * that state through the package, and install it in one write. A rebuild that
+   * fails installs nothing and consumes no frame — the tape the store still
+   * holds is the one it had, because the transition was only ever a proposal
+   * (edit-history contract, "Restoration").
+   */
+  undo(): BuildEditResult {
+    return this.#move(undo);
+  }
+
+  redo(): BuildEditResult {
+    return this.#move(redo);
+  }
+
+  #move(
+    step: (
+      history: SessionEditHistory<ModeledBuildCheckpoint>,
+      current: ModeledBuildCheckpoint,
+    ) => {
+      restore: ModeledBuildCheckpoint;
+      next: SessionEditHistory<ModeledBuildCheckpoint>;
+    } | null,
+  ): BuildEditResult {
+    const current = this.#active.loadout();
+    const revision = this.#active.revision();
+    if (current === null) {
+      return { kind: 'unchanged', revision };
+    }
+
+    const transition = step(this.#history(), captureCheckpoint(current));
+    if (transition === null) {
+      // Nothing to step to. Not a refusal: the controls are disabled at the
+      // ends, and pressing one anyway is not something to explain.
+      return { kind: 'unchanged', revision };
+    }
+
+    const restored = restoreCheckpoint(transition.restore);
+    if (!restored.ok) {
+      return this.#refuse(
+        {
+          category: 'unexpectedPackageRefusal',
+          slotKey: null,
+          code: null,
+          constraint: null,
+          params: null,
+          diagnostic: restored.reason,
+          framingKey: 'outfitting.refusal.blocked',
+        },
+        revision,
+      );
+    }
+
+    this.#lastEditFailure.set(null);
+    this.#history.set(transition.next);
+    this.#active.installEdited(restored.loadout);
+    return { kind: 'committed', revision: this.#active.revision() };
   }
 
   // -------------------------------------------------------------------------
@@ -209,6 +327,17 @@ export class OutfittingStore {
           framingKey: 'outfitting.refusal.unavailableOperation',
         },
         this.#active.revision(),
+      );
+    }
+
+    if (intent.kind === 'setShipName' || intent.kind === 'setShipIdent') {
+      // Not a package operation: the package publishes both fields read-only,
+      // so the edit is made where they are modelled and the build is rebuilt
+      // from it (FR-019).
+      const field = intent.kind === 'setShipName' ? 'shipName' : 'shipIdent';
+      return this.#commitOutcome(
+        runSnapshotTransaction(current, (snapshot) => ({ ...snapshot, [field]: intent.value })),
+        intent,
       );
     }
 
@@ -250,7 +379,7 @@ export class OutfittingStore {
       );
     }
 
-    return this.#commitOutcome(outcome, slotKeyOf(intent));
+    return this.#commitOutcome(outcome, intent);
   }
 
   /** Reads the last structured refusal and clears it, so it is never read twice. */
@@ -266,11 +395,12 @@ export class OutfittingStore {
    * Shared with the history transitions, which produce the same outcomes by a
    * different route and must land the same way.
    */
-  #commitOutcome(outcome: TransactionOutcome, slotKey: string | null): BuildEditResult {
+  #commitOutcome(outcome: TransactionOutcome, intent: BuildEditIntent): BuildEditResult {
+    const slotKey = slotKeyOf(intent);
     switch (outcome.kind) {
       case 'changed':
         this.#lastEditFailure.set(null);
-        this.#recordDecision(outcome.previous);
+        this.#recordDecision(outcome.previous, intent);
         this.#active.installEdited(outcome.candidate);
         return { kind: 'committed', revision: this.#active.revision() };
 
@@ -314,12 +444,38 @@ export class OutfittingStore {
   /**
    * Called once per changed edit, before it is installed.
    *
-   * The history tape hooks in here (T084) rather than wrapping `dispatch`, so
-   * every route that produces a changed candidate records exactly one frame and
-   * none of them can forget.
+   * The tape hooks in here rather than around `dispatch`, so every route that
+   * produces a changed candidate records exactly one frame and none of them can
+   * forget — and a refusal, a no-op or an abandoned draft never reaches it,
+   * because none of them produce one (edit-history contract, "Exclusions").
    */
-  #recordDecision(_previous: ModeledBuildCheckpoint): void {
-    // The history tape hooks in here (T084).
+  #recordDecision(previous: ModeledBuildCheckpoint, intent: BuildEditIntent): void {
+    this.#history.set(recordDecision(this.#history(), previous, summaryOf(intent)));
+  }
+
+  /**
+   * One retained summary, in the Commander's language.
+   *
+   * The mount is named the way the ledger names it. Its exact package key is
+   * the identity on the tape and never the words: a key is what the application
+   * edits by, not something a Commander reads (FR-002).
+   */
+  #summaryText(summary: HistoryIntentSummary | null): string | null {
+    if (summary === null) {
+      return null;
+    }
+    const slotKey = summary.params['slot'];
+    const params =
+      typeof slotKey === 'string'
+        ? { ...summary.params, slot: this.#slotLabel(slotKey) }
+        : summary.params;
+    return this.#messages.message(summary.key as MessageKey, params);
+  }
+
+  /** The ledger's own label for one mount, or the package's canonical name. */
+  #slotLabel(slotKey: string): string {
+    const slot = this.slots().find((candidate) => candidate.key === slotKey);
+    return slot?.displayName.text ?? slot?.canonicalName ?? slotKey;
   }
 
   /**
@@ -448,4 +604,53 @@ function refusalOf(error: LoadoutEditError, slotKey: string | null): EditFailure
     diagnostic: error,
     framingKey: framing,
   };
+}
+
+/**
+ * What one decision was, as a key and scalars.
+ *
+ * Identities, never words: the mount is its exact package key and the group is
+ * the number a Commander reads. Storing the resolved sentence instead would fix
+ * a summary in the language it happened to be recorded in, and would put game
+ * text on a tape that must not hold any (edit-history contract, "Included
+ * decisions").
+ */
+function summaryOf(intent: BuildEditIntent): HistoryIntentSummary {
+  switch (intent.kind) {
+    case 'fitStock':
+    case 'fitVariant':
+      return { key: 'outfitting.history.fit', params: { slot: intent.slotKey } };
+    case 'remove':
+      return { key: 'outfitting.history.remove', params: { slot: intent.slotKey } };
+    case 'applyEngineering':
+      return {
+        key: 'outfitting.history.engineer',
+        params: { slot: intent.slotKey, grade: intent.grade },
+      };
+    case 'setExperimental':
+      return { key: 'outfitting.history.effect', params: { slot: intent.slotKey } };
+    case 'clearEngineering':
+      return { key: 'outfitting.history.clear', params: { slot: intent.slotKey } };
+    case 'setEnabled':
+      return {
+        key: intent.enabled ? 'outfitting.history.powered' : 'outfitting.history.unpowered',
+        params: { slot: intent.slotKey },
+      };
+    case 'setPriority':
+      return {
+        key: 'outfitting.history.priority',
+        params: { slot: intent.slotKey, group: intent.priority + 1 },
+      };
+    case 'setShipName':
+      return {
+        key: intent.value === null ? 'outfitting.history.name.cleared' : 'outfitting.history.name',
+        params: {},
+      };
+    case 'setShipIdent':
+      return {
+        key:
+          intent.value === null ? 'outfitting.history.ident.cleared' : 'outfitting.history.ident',
+        params: {},
+      };
+  }
 }

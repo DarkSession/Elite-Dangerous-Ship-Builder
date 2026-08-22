@@ -223,3 +223,38 @@ raw modifier rewrites and local fit/variant rules.
 
 Expected: the snapshot reconstruction and engineering regressions pass and the full suite is green
 once feature 001/011 prerequisites are present. A green subset is not feature completion.
+
+## Run record — 2026-08-22
+
+`pnpm run check` green end to end: 1,103 unit tests across 94 files at **83.05% statements, 82.27%
+branches, 85.88% functions, 82.58% lines**; **2,680** Playwright tests across the ten-project matrix
+(Chromium and Firefox × desktop, tablet portrait/landscape, mobile portrait/landscape) with axe over
+every rendered state; the SC-002 timing measurement; and 70 offline tests. No test is skipped,
+focused or quarantined — the policy checker fails the build on any of those forms.
+
+Each scenario above, and what executes it:
+
+| Scenario                                 | Executed by                                                                                                                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Prerequisites and package verification | `build-snapshot.*.spec.ts`, `modeled-build-checkpoint.spec.ts`, `outfitting-engineering.spec.ts`; leaf-import and component-import rules by `scripts/policy/outfitting-ownership.mjs` |
+| 2 Inspect every slot                     | `e2e/module-outfitting.spec.ts` "the slot ledger"; `slot-view.spec.ts`                                                                                                                |
+| 3 Verify fixed-mount construction        | `e2e/module-outfitting.spec.ts` "package-populated fixed mounts"; `fixed-mounts.spec.ts`                                                                                              |
+| 4 Build and search replacement choices   | `e2e/module-outfitting.spec.ts` "finding a replacement"; `candidate-query.spec.ts`; `e2e/outfitting-timing.spec.ts`                                                                   |
+| 5 Fit, replace, remove and refuse        | `e2e/module-outfitting.spec.ts` "the slot ledger"; `outfitting.store.spec.ts`                                                                                                         |
+| 6 Verify cargo hatch and power           | `e2e/module-outfitting.spec.ts` "power and the cargo hatch"; `outfitting-engineering.spec.ts`                                                                                         |
+| 7 Engineer ordinary and Mercenary        | `e2e/module-engineering.spec.ts`; `engineering-draft.spec.ts`; `engineering-cost.spec.ts`                                                                                             |
+| 8 Engineer fixed/final rewards and costs | `e2e/module-engineering.spec.ts` "purchased and reward articles"; `build-snapshot.serializer.spec.ts`                                                                                 |
+| 9 Normalize imported quality             | `e2e/module-engineering.spec.ts` "reading a build in"; `build-ingress-normalizer.spec.ts`                                                                                             |
+| 10 Exercise 100-decision undo/redo       | `e2e/outfitting-history.spec.ts`; `session-edit-history.spec.ts`; `outfitting-history.spec.ts`                                                                                        |
+| 11 Responsive, localization, a11y matrix | `e2e/outfitting-responsive.spec.ts`, `e2e/outfitting-accessibility.spec.ts`, and the per-state sweeps in the suites above                                                             |
+| 12 Final gate                            | `pnpm run check`; source rules by `scripts/policy/outfitting-ownership.mjs`                                                                                                           |
+
+The exact hundred-decision bound is proven where a decision costs no browser —
+`session-edit-history.spec.ts` walks 101 decisions and 100 steps back, and
+`outfitting-history.spec.ts` dispatches 101 real store decisions. The browser journey walks twelve
+through the controls a Commander actually presses, which is the part only a browser can answer.
+
+One flake was observed and is recorded rather than hidden: `e2e/offline-privacy.spec.ts` "keeps an
+illustration that has been seen once" failed once at `chromium-tablet-portrait` under full-matrix
+load, and passed on its own and in every other run. It belongs to feature 001's offline caching, not
+to this feature.

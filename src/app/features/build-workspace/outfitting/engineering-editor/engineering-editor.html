@@ -23,12 +23,13 @@
     }
   }
 
-  @if (currentSummary(); as summary) {
-    <p class="engineering__current">{{ summary }}</p>
-  }
-  @if (effectSummary(); as summary) {
-    <p class="engineering__current">{{ summary }}</p>
-  }
+  <!--
+    What the module carries now is drawn the way both canvases draw it: the
+    recipe it carries is the checked choice and carries the `Applied` marker,
+    the grade row shows that grade, and the effect it carries is the checked
+    effect. A sentence restating all three is text neither canvas has
+    (design-canvas rule).
+  -->
   @if (purchaseSummary(); as summary) {
     <p class="engineering__purchase">{{ summary }}</p>
   }
@@ -110,11 +111,14 @@
   </edsb-layer>
 } @else {
   <!--
-    Inline, the bench above already carries the mount's title exactly as canvas
-    1c draws it. A second visible heading here would be the same words twice.
-    The region keeps its accessible name so a reader still knows what it is for.
+    Inline, this is canvas 1c's `ENGINEERING` panel, under the fitting panel and
+    headed the way the canvas heads it. The mount is not repeated in the
+    heading: the bench above already carries it as `FITTING · HARDPOINT 1`, and
+    the region's accessible name names the mount for a reader who arrived here
+    without passing it.
   -->
   <section class="engineering" [attr.aria-label]="regionLabel()">
+    <h4 class="engineering__heading" [id]="headingId">{{ panelHeading() }}</h4>
     <ng-container [ngTemplateOutlet]="body" />
   </section>
 }

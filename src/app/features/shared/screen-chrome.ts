@@ -1,13 +1,37 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+import type { ScreenIdentity, ShellAction } from '../../ui/components/app-frame/app-frame';
+import type { IdentityCommit, IdentityField } from '../../ui/outfitting/ship-identity-fields';
+
+/** The identity block one screen publishes, and what editing it does. */
+export interface ScreenIdentityChannel {
+  readonly identity: ScreenIdentity;
+  readonly open: (field: IdentityField) => void;
+  readonly close: () => void;
+  readonly commit: (commit: IdentityCommit) => void;
+}
+
+/** One command-bar action, and what activating it does. */
+export interface ScreenAction {
+  readonly action: ShellAction;
+  readonly perform: () => void;
+}
 
 /**
- * The count the command bar shows beside the screen's own name.
+ * What the command bar shows for the screen that is open.
  *
  * The reference puts one number there and nowhere else — "48 SHIPS" on the
  * shipyard — so the screen that owns the number publishes it and the shell
  * renders it (canvas 1a/1b, "Command bar"). The screen's name itself is
  * already the page name the route title strategy publishes; this adds only
  * what the bar carries beside it.
+ *
+ * The actions are here for the same reason. The reference draws `↶ UNDO`,
+ * `REDO ↷`, `EXPORT` and `SAVE` in the command bar at wide width and in the
+ * compact overflow menu at narrow width — the frame already renders both
+ * placements from one list, so a screen publishes its actions and the shell
+ * places them. A second pair of buttons drawn inside the page would be the
+ * same actions twice, in a place neither canvas puts them (canvas 1c's command
+ * bar, canvas 1d's `⋮` menu).
  *
  * Pure presentation. Nothing here is build state and nothing is persisted.
  */
@@ -20,5 +44,48 @@ export class ScreenChrome {
 
   setCount(count: string | null): void {
     this.#count.set(count);
+  }
+
+  /** What the open screen currently offers, in the order it offers them. */
+  readonly actions = computed(() => this.#actions().map((entry) => entry.action));
+
+  setActions(actions: readonly ScreenAction[]): void {
+    this.#actions.set(actions);
+  }
+
+  /**
+   * Runs the published action with this id, and says whether there was one.
+   *
+   * The shell asks rather than deciding: it knows an action was activated and
+   * nothing about what it means, which is what keeps navigation intents and a
+   * screen's own actions from having to know about each other.
+   */
+  select(id: string): boolean {
+    const entry = this.#actions().find((candidate) => candidate.action.id === id);
+    entry?.perform();
+    return entry !== undefined;
+  }
+
+  readonly #actions = signal<readonly ScreenAction[]>([]);
+
+  readonly #identity = signal<ScreenIdentityChannel | null>(null);
+
+  /** The open screen's identity block, for the frame to draw. */
+  readonly identity = computed(() => this.#identity()?.identity ?? null);
+
+  setIdentity(channel: ScreenIdentityChannel | null): void {
+    this.#identity.set(channel);
+  }
+
+  openIdentity(field: IdentityField): void {
+    this.#identity()?.open(field);
+  }
+
+  closeIdentity(): void {
+    this.#identity()?.close();
+  }
+
+  commitIdentity(commit: IdentityCommit): void {
+    this.#identity()?.commit(commit);
   }
 }

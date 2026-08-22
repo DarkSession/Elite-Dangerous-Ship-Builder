@@ -8,23 +8,32 @@
         [attr.aria-label]="enabledLabel()"
         (change)="toggle($event)"
       />
-      <span class="power__switch-track" aria-hidden="true"></span>
+      <!--
+        The canvas's dot, and the canvas's own instruction for it: “click the
+        dot to unpower this module”. Its colour is the reference's `good` when
+        powered and `hot` when not, and it is never the only carrier — the
+        checkbox's own state and its accessible name both say it too.
+      -->
+      <span class="power__dot" aria-hidden="true"></span>
     </label>
   }
 
   @if (canSetPriority()) {
     <span class="visually-hidden" [id]="priorityId">{{ priorityLabel() }}</span>
-    <select
-      class="power__priority"
-      [attr.aria-labelledby]="priorityId"
-      [value]="selectedValue()"
-      (change)="choose($event)"
-    >
-      <!--
-        The empty option exists so an absent group has something to be. It is
-        never written back: choosing it emits nothing.
-      -->
-      <option value="">{{ absentLabel() }}</option>
+    <!--
+      Which option is current is carried by the options themselves rather than
+      by a value binding on the field: the absent case is a disabled option, and
+      a disabled option is not what a value binding lands on.
+    -->
+    <select class="power__priority" [attr.aria-labelledby]="priorityId" (change)="choose($event)">
+      @if (priority() === undefined) {
+        <!--
+          The package reports no group for this module, and the canvas draws no
+          case for that. Rather than write a group nobody chose, the control
+          says the value is unavailable and cannot be put back (constitution IV).
+        -->
+        <option value="" disabled selected>{{ absentLabel() }}</option>
+      }
       @for (group of groups; track group) {
         <option [value]="group" [selected]="priority() === group">
           {{ groupLabel(group) }}

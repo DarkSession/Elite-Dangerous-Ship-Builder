@@ -41,7 +41,7 @@ interface PendingReplacement {
 export class App {
   readonly #navigation = inject(AppNavigation);
   readonly #locale = inject(LocaleStore);
-  readonly #chrome = inject(ScreenChrome);
+  readonly chrome = inject(ScreenChrome);
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
   readonly #replacement = inject(ReplacementCoordinator);
@@ -57,7 +57,13 @@ export class App {
    * bar and the tab can never disagree.
    */
   readonly pageName = this.#locale.page;
-  readonly pageCount = this.#chrome.count;
+  readonly pageCount = this.chrome.count;
+
+  /** What the open screen publishes for the command bar, in its own order. */
+  readonly actions = this.chrome.actions;
+
+  /** The open screen's own identity block, where it publishes one. */
+  readonly identity = this.chrome.identity;
 
   readonly replacementOpen = computed(() => this.#pending() !== null);
   readonly replacementTitle = this.#messages.messageSignal('workspace.replace.title');
@@ -128,6 +134,11 @@ export class App {
 
   /** Shell actions are navigation intents; the frame never navigates itself. */
   selectAction(id: string): void {
+    // The screen's own actions first: the shell places them and knows nothing
+    // about what they mean.
+    if (this.chrome.select(id)) {
+      return;
+    }
     if (id === 'library') {
       void this.#router.navigateByUrl(NAVIGATION_ROUTES.library);
     }

@@ -28,13 +28,28 @@ const MINIMUMS = {
 } as const;
 
 /**
+ * The height below which nothing can be stacked, in the CSS's own words.
+ *
+ * The same query the stylesheets use for the sticky feet and the released
+ * bounds. Below it a viewport cannot show a ledger, a fitting panel and an
+ * engineering panel one under another and still show a row of any of them: the
+ * inline compositions become one page thousands of pixels long with the last
+ * panel unreachable in practice. So height alone selects the compact
+ * composition, exactly as 400% zoom does (responsive composition, "Reference
+ * and selection rule").
+ */
+const SHORT_VIEWPORT = '(max-height: 30rem)';
+
+/**
  * Watches the host's own inline size and reports which composition fits.
  *
- * A `ResizeObserver` rather than a media query, because the question is how much
- * space *this region* was given, not how wide the window is — the same region
- * inside a narrower shell, at 400% zoom or beside expanded text has less room
- * and should compose accordingly (responsive composition, "Reference and
- * selection rule").
+ * A `ResizeObserver` rather than a media query for the width, because the
+ * question is how much space *this region* was given, not how wide the window
+ * is — the same region inside a narrower shell, at 400% zoom or beside expanded
+ * text has less room and should compose accordingly. Height is the one part
+ * that is genuinely the viewport's rather than the region's, and it is read
+ * through the stylesheets' own query so the CSS and this decision cannot
+ * disagree.
  *
  * Most of the arrangement is done in CSS container queries, which need none of
  * this. What needs it is the one decision CSS cannot make: whether the bench is
@@ -43,12 +58,19 @@ const MINIMUMS = {
 export function observeComposition(): Signal<OutfittingComposition> {
   const host = inject(ElementRef<HTMLElement>).nativeElement;
   const composition = signal<OutfittingComposition>('compact');
+  const short = typeof matchMedia === 'function' ? matchMedia(SHORT_VIEWPORT) : null;
+  let width = 0;
 
-  const measure = (inlineSize: number): void => {
+  const measure = (): void => {
+    if (short?.matches === true) {
+      composition.set('compact');
+      return;
+    }
+
     // Read the root size each time, so a text-scale change moves the
     // thresholds with it rather than leaving them at load-time pixels.
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const rems = inlineSize / rem;
+    const rems = width / rem;
 
     if (rems >= MINIMUMS.ledger + MINIMUMS.bench + MINIMUMS.rail) {
       composition.set('wide');
@@ -59,6 +81,9 @@ export function observeComposition(): Signal<OutfittingComposition> {
     }
   };
 
+  short?.addEventListener('change', measure);
+  inject(DestroyRef).onDestroy(() => short?.removeEventListener('change', measure));
+
   if (typeof ResizeObserver === 'undefined') {
     // A renderer without the observer gets the compact composition, which is
     // the one that carries every capability in the least space.
@@ -68,11 +93,13 @@ export function observeComposition(): Signal<OutfittingComposition> {
   const observer = new ResizeObserver((entries) => {
     const entry = entries[0];
     if (entry !== undefined) {
-      measure(entry.contentRect.width);
+      width = entry.contentRect.width;
+      measure();
     }
   });
   observer.observe(host);
-  measure(host.getBoundingClientRect().width);
+  width = host.getBoundingClientRect().width;
+  measure();
 
   inject(DestroyRef).onDestroy(() => observer.disconnect());
 

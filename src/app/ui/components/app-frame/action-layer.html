@@ -24,6 +24,7 @@
       [label]="action.label"
       [emphasis]="action.emphasis ?? 'secondary'"
       [disabled]="disabled() || (action.disabled ?? false)"
+      [description]="action.description ?? null"
       (activated)="select(action)"
     />
   }
