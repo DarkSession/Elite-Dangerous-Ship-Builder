@@ -1,57 +1,44 @@
 # Screen Inventory: Ship Statistics and Status
 
-Feature 003 adds no route. Every surface belongs to the existing `/build` workspace and requires the
-active build from feature 001.
+Feature 003 adds no route and, after the wave 11 rulings, no screen. Its whole surface is two blocks at
+the head of the existing `/build` status rail, and it requires the active build from feature 001.
 
 ## Responsive inventory
 
-| Surface           | Desktop                                                 | Tablet landscape                                         | Tablet portrait                     | Mobile landscape                                                       | Mobile portrait / 400%                   |
-| ----------------- | ------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------- |
-| No active build   | Existing workspace empty state; no rail/projection      | Same reflow                                              | Same reflow                         | Same actions                                                           | Same actions                             |
-| Status rail       | Persistent compact right rail; action opens full Status | Omitted when three columns would constrain content       | Omitted                             | Omitted                                                                | Omitted                                  |
-| Status capability | Peer central workspace mode                             | Full outlet beside/after compact ledger as space permits | Full outlet below shared header/nav | Single document region; optional two-column cards only if content fits | One stacked document region              |
-| Viewing controls  | Wrapping group before structural facts/results          | Wrapping group                                           | Stacked/wrapped                     | Stacked/wrapped                                                        | Stacked controls, full-width Apply/Reset |
-| Structural/issues | Full-width semantic facts/list in Status mode           | Full-width list                                          | Full-width list                     | Full-width list                                                        | Full-width list                          |
-| Headlines         | Fluid cards, usually 2–3 columns                        | At most two columns                                      | One or two if full text fits        | One or two if full text fits                                           | One column by default                    |
-| Assembly          | Full-width sections after headlines                     | Full width                                               | Full width                          | Full width                                                             | Stacked full width                       |
-| Slot target       | Reveals exact ledger/editor slot                        | Reveals exact slot                                       | Opens exact-slot layer              | Opens exact-slot layer                                                 | Opens exact-slot layer                   |
+| Surface         | Desktop                                         | Tablet landscape                 | Tablet portrait | Mobile landscape | Mobile portrait / 400% |
+| --------------- | ----------------------------------------------- | -------------------------------- | --------------- | ---------------- | ---------------------- |
+| No active build | Existing workspace empty state; no rail         | Same reflow                      | Same reflow     | Same reflow      | Same reflow            |
+| `BUILD STATUS`  | Visible heading opening canvas 1c's 306 px rail | Heading opens the stacked region | Same            | Same             | Same                   |
+| Issue list      | Full-width list inside the rail                 | Full width                       | Full width      | Full width       | Full width             |
+| No issues       | Absent                                          | Absent                           | Absent          | Absent           | Absent                 |
 
-Portrait/landscape switch changes layout only. Content, actions, condition values and revision remain
-the same. No arrangement creates document horizontal scrolling.
+The rail's own composition — third track at wide, stacked region at compact — is feature 009's, decided
+in CSS from the space the region is given. Portrait/landscape changes layout only. No arrangement
+creates document horizontal scrolling.
 
 ## Requirement mapping
 
-| Requirement | Surface behavior                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------------------- |
-| FR-001      | No-build state defers to the existing workspace and never creates/selects a hull.                         |
-| FR-002      | Structural data and the five provider projections are the only game-bearing inputs.                       |
-| FR-003      | Complete Status shows independent literal validity/completeness facts without readiness wording.          |
-| FR-004      | Complete Status renders each package issue once, in order, with all structured data.                      |
-| FR-005      | Issue code remains package text; diagnostic helper/fallback is used; owned framing is localized.          |
-| FR-006      | Every headline/assembly value exposes locale-formatted value, unit, meaning and relevant condition.       |
-| FR-007      | Provider-owned unavailable/diagnostic states and application failure remain distinct.                     |
-| FR-008      | Provider states preserve exact zero, lower bound, incomplete, unavailable and infinity.                   |
-| FR-009      | Hardpoint control selects only state-specific provider output; package DPS remains native firing output.  |
-| FR-010      | The fixed seven headline slots consume their owning provider fields.                                      |
-| FR-011      | Assembly consumes feature 009; credits/Merc Coin stay separate and Merc Coin can be absent.               |
-| FR-012      | Package slot and provider detail targets activate in one interaction; missing issue target has no action. |
-| FR-013      | Package-defaulted fixed modules appear only as ordinary fitted state with no provenance region.           |
-| FR-014      | Status infers and persists no import/defaulting history from fixed-module state.                          |
-| FR-015      | Empty issue/qualification statements avoid readiness/quality claims.                                      |
-| FR-016      | Load control defaults unladen and offers maximum jump/unladen/laden.                                      |
-| FR-017      | Pip draft exposes 0–4 half steps, visible total and valid six-pip Apply.                                  |
-| FR-018      | Hardpoint control defaults deployed.                                                                      |
-| FR-019      | Replacement/reload reset and serialization tests prove viewing-state exclusion.                           |
-| FR-020      | Rail and capability carry one build/condition revision; pending replaces stale-context display.           |
-| FR-021      | One polite region announces settled issue/qualification count changes once.                               |
-| FR-022      | Issue code and severity are visible text independent of ornament.                                         |
+| Requirement | Surface behavior                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| FR-001      | No-build state defers to the existing workspace and never creates or selects a hull.                        |
+| FR-002      | `ShipLoadout.validation` is the only input; nothing is derived, clamped, repaired or reinterpreted.         |
+| FR-003      | `valid` and `complete` are conveyed by the issues the package raises about them, and by nothing else drawn. |
+| FR-004      | Each package issue is rendered once, in package order, with its severity in words.                          |
+| FR-005      | The diagnostic is package text through the shared presenter; only the framing around it is localized.       |
+| FR-007      | A locale miss shows canonical text with the shared untranslated disclosure.                                 |
+| FR-013      | Package-defaulted fixed modules appear only as ordinary fitted state, with no provenance region.            |
+| FR-014      | No import or defaulting history is inferred or persisted from fixed-module state.                           |
+| FR-015      | A build with no issues draws nothing, so no readiness or quality claim can be made.                         |
+| FR-022      | Severity is text beside its issue, hidden as the canvas draws none; the tiers differ by ground too.         |
+
+Requirements withdrawn or reassigned by the wave 11 rulings are listed in
+[spec.md](../spec.md#withdrawn-and-reassigned-requirements).
 
 ## Ownership boundaries
 
-- Features 005–009 own detail capabilities and result semantics; Status links but does not reproduce
-  their full analyses.
-- Feature 002 owns exact-slot editing/navigation.
-- Feature 001 owns active build/local record and no-build state.
-- Feature 011 owns workspace navigation primitives, tokens, formatting, fallback disclosure,
-  announcements and test harness.
-- Feature 010 anatomy is not part of Status composition.
+- Features 005–008 own the power block, the six metric cells and — under ruling C — the load, pip and
+  hardpoint conditions their own artboards draw.
+- Feature 009 owns `COST` and `MATERIALS`, already built.
+- Feature 002 owns slot editing and navigation. Feature 003 links to none of it.
+- Feature 001 owns the active build and the no-build state.
+- Feature 011 owns the tokens, the game-text primitive, the message layer and the test harness.
