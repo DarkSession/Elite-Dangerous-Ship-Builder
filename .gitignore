@@ -16,6 +16,7 @@ yarn-error.log
 /playwright-report
 /test-results
 /blob-report
+/all-blob-reports
 /playwright/.cache
 
 # IDEs and editors

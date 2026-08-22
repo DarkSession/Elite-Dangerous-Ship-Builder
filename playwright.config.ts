@@ -18,6 +18,26 @@ import {
 const isCI = !!process.env['CI'];
 
 /**
+ * Which slice of the suite this run covers, when CI shards it.
+ *
+ * Read from the environment rather than passed as an argument. `pnpm run e2e --
+ * --shard=1/4` forwards the bare `--` to Playwright, which then reads
+ * `--shard=1/4` as a filename filter, matches nothing and reports a green run
+ * over zero tests — the exact failure a sharded gate must not have. The shard
+ * is a property of the run, so it is declared here with the rest of them.
+ *
+ * `PLAYWRIGHT_SHARD` is the 1-based index and `E2E_SHARDS` the count; both come
+ * from the CI workflow, which states the count once so the job matrix and this
+ * cannot disagree. Absent, the run is the whole suite.
+ */
+const shardIndex = Number(process.env['PLAYWRIGHT_SHARD'] ?? '');
+const shardTotal = Number(process.env['E2E_SHARDS'] ?? '');
+const shard =
+  Number.isInteger(shardIndex) && shardIndex > 0 && Number.isInteger(shardTotal) && shardTotal > 0
+    ? { current: shardIndex, total: shardTotal }
+    : null;
+
+/**
  * Specs no run may load, whatever else it selects.
  *
  * A project that declares `testIgnore` replaces this list rather than adding to
@@ -122,6 +142,52 @@ const timingProject = {
 
 const projects = [...matrixProjects, timingProject];
 
+/**
+ * How the two applications are served to a development run.
+ *
+ * Locally that is `ng serve` for both, because a phase is a loop of edit and
+ * re-run and a watching server is what makes the second run cheap.
+ *
+ * On CI it is a **static file server over a built artifact**, because none of
+ * that is worth anything there and all of it costs. Two `ng serve` processes
+ * boot from cold, hold file watchers open and keep a compiler resident for the
+ * length of the run, on the same four vCPUs the Playwright workers need. The
+ * build is `--configuration=development`, which is the same unoptimised code
+ * the dev server hands out — and, unlike the default configuration, does
+ * **not** register a service worker, so the matrix goes on testing the
+ * application rather than a caching layer in front of it. The service worker
+ * has its own run: `pnpm run e2e:offline`.
+ */
+const developmentServers = isCI
+  ? [
+      {
+        command: `pnpm exec ng build --configuration=development && node scripts/serve-production.mjs dist/elite-dangerous-ship-builder/browser ${PRODUCT_DEV_PORT}`,
+        url: `http://localhost:${PRODUCT_DEV_PORT}`,
+        reuseExistingServer: false,
+        timeout: 300_000,
+      },
+      {
+        command: `pnpm exec ng build ui-preview --configuration=development && node scripts/serve-production.mjs dist/ui-preview/browser ${PREVIEW_PORT}`,
+        url: `http://localhost:${PREVIEW_PORT}`,
+        reuseExistingServer: false,
+        timeout: 300_000,
+      },
+    ]
+  : [
+      {
+        command: `pnpm exec ng serve --port ${PRODUCT_DEV_PORT}`,
+        url: `http://localhost:${PRODUCT_DEV_PORT}`,
+        reuseExistingServer: true,
+        timeout: 180_000,
+      },
+      {
+        command: `pnpm exec ng serve ui-preview --port ${PREVIEW_PORT}`,
+        url: `http://localhost:${PREVIEW_PORT}`,
+        reuseExistingServer: true,
+        timeout: 180_000,
+      },
+    ];
+
 export default defineConfig({
   testDir: './e2e',
   outputDir: './dist/e2e-results',
@@ -132,8 +198,16 @@ export default defineConfig({
   // run, so flakiness cannot be absorbed into a green build.
   retries: isCI ? 2 : 0,
   failOnFlakyTests: isCI,
-  workers: isCI ? 2 : undefined,
-  reporter: isCI ? [['list'], ['html', { open: 'never' }]] : [['list']],
+  // Two was the count a single CI job could afford while two `ng serve`
+  // processes and their file watchers competed for the same four vCPUs. CI now
+  // serves a built artifact from a static file server, and the matrix is sharded
+  // across jobs, so a worker is no longer bidding against a compiler.
+  workers: isCI ? 4 : undefined,
+  // A sharded run writes a blob per shard for `playwright merge-reports` to
+  // join; an unsharded one writes the HTML report directly. Each shard would
+  // otherwise emit its own partial HTML report and the last upload would win.
+  shard,
+  reporter: isCI ? [['list'], shard ? ['blob'] : ['html', { open: 'never' }]] : [['list']],
 
   use: {
     baseURL: PRODUCT_URL,
@@ -154,18 +228,5 @@ export default defineConfig({
           timeout: 300_000,
         },
       ]
-    : [
-        {
-          command: `pnpm exec ng serve --port ${PRODUCT_DEV_PORT}`,
-          url: `http://localhost:${PRODUCT_DEV_PORT}`,
-          reuseExistingServer: !isCI,
-          timeout: 180_000,
-        },
-        {
-          command: `pnpm exec ng serve ui-preview --port ${PREVIEW_PORT}`,
-          url: `http://localhost:${PREVIEW_PORT}`,
-          reuseExistingServer: !isCI,
-          timeout: 180_000,
-        },
-      ],
+    : developmentServers,
 });
