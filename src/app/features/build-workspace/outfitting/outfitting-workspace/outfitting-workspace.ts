@@ -25,6 +25,7 @@ import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-
 import { QualityCompletionNotice } from '../../../../ui/outfitting/quality-completion-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
+import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
@@ -54,6 +55,7 @@ type Category = 'all' | SlotKind;
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [
+    BuildStatus,
     CostMaterials,
     EditRefusalNotice,
     EngineeringEditor,
@@ -99,6 +101,7 @@ export class OutfittingWorkspace {
   readonly benchIsLayer = computed(() => this.composition() === 'compact');
 
   readonly regionHeadingId = relationId('outfitting-region');
+  readonly statusRailHeadingId = relationId('status-rail');
 
   readonly regionLabel = this.#messages.messageSignal('outfitting.region.label');
   readonly ledgerLabel = this.#messages.messageSignal('outfitting.ledger.label');

@@ -290,6 +290,23 @@
   min-inline-size: 0;
 }
 
+// The canvas's first block: `BUILD STATUS` over whatever the Almanac reports
+// about the build, closed by the same one-pixel amber rule that separates every
+// block below it. It carries its own inset, like its siblings, so the rule runs
+// the full width of the rail.
+.outfitting__status-head {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding: var(--edsb-space-panel);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.outfitting__status-heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
 .outfitting__ledger-region {
   @include layout.stack(var(--edsb-space-stack));
 

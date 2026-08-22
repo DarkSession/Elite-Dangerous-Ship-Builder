@@ -4,7 +4,17 @@
 
 **Input**: Feature specification from `specs/003-ship-statistics/spec.md`
 
+> **Amended 2026-08-22 (wave 11).** Three collisions between the accepted specification and
+> `.design/Ship Builder.dc.html` were surfaced before implementation and **the design won all three**
+> ([design/reference-review.md](./design/reference-review.md)). The provider envelope, the composition
+> transaction, the wide Status capability, the viewing-conditions control and the count announcer this
+> plan describes below are all withdrawn or reassigned. Sections that no longer describe what is built
+> are marked **superseded**; the surviving plan is one component at the head of feature 009's existing
+> status rail. See [tasks.md](./tasks.md#retired-tasks).
+
 ## Summary
+
+**Superseded in part.** The visual hierarchy still comes from `.design/Ship Builder.dc.html`, but the explicit desktop Status mode, viewing controls, qualified/unavailable states and detail actions named below were the spec-driven extensions the wave 11 rulings removed. What is built is the `BUILD STATUS` heading and the package validation issues beneath it, in the rail canvas 1c draws.
 
 Add one revision-coherent Status capability to the existing `/build` workspace. Feature 003 owns
 memory-only viewing conditions, the shared provider/target contracts and the composition of exact
@@ -78,6 +88,8 @@ _GATE: PASS after Phase 0 resolution; re-checked after Phase 1. No exception is 
 
 ### Contract-first delivery graph
 
+**Superseded.** Ruling C removed this feature's dependency on features 005–009 entirely, so there is no graph left to stage: feature 003 composes no owner result and passes no conditions to one. Features 005–008 own their own artboards, their own package reads and — under ruling C — the load, pip and hardpoint controls the Power capability draws.
+
 The feature is not sequenced wholesale behind 005–009, because those capabilities consume feature
 003 conditions and detail intents. Delivery is staged without a cycle:
 
@@ -123,50 +135,35 @@ specs/003-ship-statistics/
 ### Source Code (repository root)
 
 ```text
-src/app/
-├── domain/
-│   └── statistics/
-│       ├── status-projection.ts
-│       ├── status-provider.ts
-│       ├── viewing-conditions.ts
-│       └── workspace-target.ts
-├── application/
-│   └── statistics/
-│       ├── status-announcement-coordinator.ts
-│       ├── status.store.ts
-│       ├── viewing-conditions.store.ts
-│       └── workspace-target-coordinator.ts
-├── i18n/                                  # feature 011 messages/formatters
-├── ui/                                    # feature 011 primitives and previews
-└── features/
-    └── build-workspace/
-        └── status/
-            ├── assembly-requirements/
-            ├── headline-set/
-            ├── issue-list/
-            ├── status-capability/
-            ├── status-rail/
-            └── viewing-conditions/
+src/app/features/build-workspace/outfitting/
+├── build-status/                       # this feature, in full
+│   ├── almanac-validation-contract.spec.ts
+│   ├── build-status.ts
+│   ├── build-status.html
+│   ├── build-status.scss
+│   └── build-status.spec.ts
+├── cost-materials/                     # feature 009, built
+└── outfitting-workspace/               # feature 002, hosts the rail
 
 e2e/
-├── accessibility.ts                      # feature 011 shared helper
-├── ship-status.spec.ts
-├── status-fixed-defaults.spec.ts
-└── viewing-conditions.spec.ts
+└── ship-status.spec.ts
 ```
+
+No `domain/statistics/` or `application/statistics/` module exists. There is no calculation to keep
+out of the UI, no composition to make pure and no port to inject: `ShipLoadout.validation` is a field
+on the build that feature 001 already holds in memory, and the component reads it the same way
+`edsb-cost-materials` reads its own projection.
 
 Tests live beside their source. Provider implementations remain in their owning 005–009 feature
 directories and import the shared feature 003 contract; feature 003 does not create parallel area
 calculators or duplicate their presentation models.
 
-**Structure Decision**: Keep one Angular application, one mutable active `ShipLoadout` and one
-numeric active-build revision. A pure synchronous composition function invokes all five provider
-ports with one immutable context, checks returned revision stamps and creates one immutable status
-projection. One computed signal publishes `noBuild`, `pending`, `ready` or application `failure`.
-Wide and compact surfaces read that same projection. No extra route, second loadout, persistence
-adapter or asynchronous calculation pipeline is added.
+**Structure Decision**: One component, mounted in the existing rail. Nothing is added to the
+router, the stores, the persistence layer or the injection graph.
 
 ## Phase 0: Research Conclusions
+
+**Superseded in part.** The first conclusion — keep the full `LoadoutValidation`, preserve package issue order, render severity as text, use the package diagnostic helper and its disclosed canonical fallback — is what was built. Every conclusion about provider envelopes, hardpoint selection, condition defaults, the synchronous transaction and the detail-target union went with the rulings.
 
 Detailed evidence and alternatives are in [research.md](./research.md). The decisive outcomes are:
 
@@ -193,6 +190,8 @@ Detailed evidence and alternatives are in [research.md](./research.md). The deci
 All planning questions are resolved and no Almanac release blocker remains.
 
 ## Phase 1: Design Outputs
+
+**Superseded in part.** `data-model.md` and the four `contracts/` files describe the withdrawn envelope and are retained only as the record of what was ruled against. The live design outputs are [design/reference-review.md](./design/reference-review.md), [design/status-rail.md](./design/status-rail.md), [design/screen-inventory.md](./design/screen-inventory.md) and [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md).
 
 - [data-model.md](./data-model.md) defines feature-owned conditions, revision context, structural
   projection, provider composition, status lifecycle and announcement state while referencing

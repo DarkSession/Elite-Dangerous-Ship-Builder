@@ -1,0 +1,64 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's warning block, and the three canvas 1d draws above its Status
+// summary: a three-pixel inline-start marker, a quiet ground tinted to match it,
+// and the sentence set in the prose voice rather than in the mono numeric voice
+// the figures below use.
+//
+// The canvas draws three tiers. Only two of them carry a package severity —
+// tiers one and three — because the amber middle tier holds authored power and
+// heat sentences that are feature 005's and are not `LoadoutValidation` issues
+// (`design/reference-review.md`, "Rejected mock content").
+:host {
+  display: block;
+}
+
+.issues {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The tier's colour is set on the block and inherited, because the canvas sets
+// the whole warning in it — `hot-2` for tier one, `ink-66` for tier three —
+// rather than colouring a label over ink-coloured prose.
+.issue {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-info);
+  color: var(--edsb-text-info);
+}
+
+// The sentence, and the whole of what the block draws. A long canonical
+// diagnostic is several lines at rail width, and an expanded translation is
+// more. It wraps; the rail never widens and the document never
+// scrolls sideways.
+.issue__diagnostic {
+  display: block;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+// Canvas tier one: the hot marker over its own tinted ground.
+.issue--error {
+  border-inline-start-color: var(--edsb-border-danger);
+  background-color: var(--edsb-surface-danger-quiet);
+  color: var(--edsb-text-danger);
+}
+
+// Canvas tier three is the default above: the quiet marker, no tint.
+// Unreachable from a `ShipLoadout` at the pinned package version — `incomplete`
+// belongs to `missingRequiredSlot`, which a build never raises — and drawn
+// anyway, so a release that starts raising it does not fall through to an
+// unstyled block (`almanac-validation-contract.spec.ts`).
+
+// The severity's name, read aloud and never drawn. Declared per component
+// because view encapsulation scopes it — the same way `outfitting-workspace`
+// and `slot-card` declare their own.
+.visually-hidden {
+  @include layout.visually-hidden;
+}

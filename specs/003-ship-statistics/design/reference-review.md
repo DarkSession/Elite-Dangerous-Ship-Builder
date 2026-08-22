@@ -1,76 +1,151 @@
 # Design Reference Review: Ship Statistics and Status
 
-Reviewed the rendered `.design/Ship Builder.dc.html` canvases 1c (wide outfitting) and 1d (mobile
-outfitting). The reference establishes visual hierarchy and workspace relationships; the accepted
-specification, constitution and repository design system remain authoritative.
+The design source is `.design/Ship Builder.dc.html`.
 
-## Canvas trace
+- Canvas **1c** is the 1560 px wide outfitting composition: a 392 px slot ledger, a fluid central
+  anatomy/fitting area behind five capability tabs, and a 306 px status rail.
+- Canvas **1d** is the 390 px mobile composition, whose six capability tabs include one Status mode.
+- No tablet, intermediate-width, landscape or zoom composition is designed. Those are plan-owned and
+  are decided from content rather than copied measurements.
 
-### 1c — wide
+The HTML is the record of what this capability presents. It is not a source of game values, component
+code, breakpoints or assets.
 
-- Three columns: slot ledger, fluid anatomy/detail outlet and a persistent 306px status rail.
-- Central capability choices are Mounts, Power, Drives, Defence and Offence. There is no Status mode.
-- Rail order is one authored Build Status warning, power, six headline cells, cost, then
-  materials/Merc Coin.
-- Rail headline cells omit some units/conditions; the warning list is incomplete compared with 1d.
-- No load, pip or hardpoint viewing controls exist.
+## What the canvas draws
 
-### 1d — narrow
+### 1c — the wide status rail
 
-- Status is one of six peer in-memory capability tabs and replaces the anatomy/detail region.
-- Status order is three authored warnings, power, six headline cells, cost and materials/Merc Coin.
-- A second DPS/shield/jump/power dock and the slot ledger remain below Status, duplicating values.
-- The single-row six-tab control and compact cards do not meet touch, zoom or text-expansion needs.
-- No load, pip or hardpoint viewing controls exist.
+Read at byte offset 761513 and following:
 
-Tablet, both landscape arrangements and 200%/400% zoom are not shown by the reference. Their behavior
-below is a planned responsive adaptation.
+```text
+BUILD STATUS                          mono 600 10px, amber-2, .2em   padding 14/16/12
+  ▌Priority group 4 is unpowered …    Barlow 500 11px/1.4, hot-2
+                                      bg rgba(255,107,61,.1), border-left 3px var(--hot)
+────────────────────────────────────  border-bottom 1px amber-a16
+POWER            29.64 / 31.20 MW · 7.80 OFF   label mono 8.5px ink-48; value mono 11px hot
+  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░│               8px bar: 79% amber, 21% hatched hot, 2px ink marker
+  ┌──────────┬──────────┐            grid 1fr 1fr, gap 1px over amber-a12
+  │ SHIELD   │ ARMOUR   │            cells panel-2, padding 10/11
+  │ 1,842 MJ │ 3,914    │            label mono 8px ink-45 .14em; value mono 16px ink; unit 9px ink-45
+  │ DPS      │ JUMP     │
+  │ 248.6    │ 21.4 ly  │
+  │ SPEED    │ MASS     │
+  │ 200 m/s  │ 1,142 t  │
+  └──────────┴──────────┘
+────────────────────────────────────  border-bottom 1px amber-a16
+COST / MATERIALS                      feature 009, built
+```
 
-## Adopted reference elements
+### 1d — the compact Status mode
 
-- Persistent glanceable status/requirements rail at wide desktop.
-- Power-first summary followed by shield, armour, DPS, jump, speed and mass.
-- Cost/material requirements after headline results, with Merc Coin visually separate from credits.
-- Status as an in-workspace capability on narrow layouts rather than a new route.
-- Existing build identity/header and capability-navigation relationship.
+Read at byte offset 1064071 and following. The same blocks, one step down the ramp, with a three-column
+metric grid — and **three** warning blocks rather than one, in three tiers:
 
-## Spec-driven extensions
+| Tier | Treatment                                                                  | Canvas text                                                     |
+| ---- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| 1    | `border-left 3px var(--hot)`, `rgba(255,107,61,.1)`, `hot-2`               | `Priority group 4 is unpowered — 7.80 MW … above plant output.` |
+| 2    | `border-left 3px rgba(255,140,26,.55)`, `rgba(255,140,26,.08)`, `ink-8`    | `Sustained fire peaks at 131% heat — module damage above 100%.` |
+| 3    | `border-left 3px rgba(232,222,209,.28)`, `rgba(232,222,209,.04)`, `ink-66` | `2 hardpoints and 3 optional slots are empty.`                  |
 
-- Add Status as a peer desktop capability and a clear rail action to reach it. The complete Status
-  capability is the sole diagnostic record location.
-- Add load, pip and hardpoint controls before affected results.
-- Add independent validity/completeness facts, complete ordered issues,
-  qualifications, exact targets and no-issue/no-qualification states.
-- Add visible units/conditions and exact-zero, lower-bound, incomplete, unavailable, infinite,
-  pending and application-failure states.
-- Reflow/wrap capability navigation and cards; do not copy the fixed single-row tabs or 3-column
-  mobile grid.
-- Suppress the duplicate narrow summary dock and slot ledger while Status is active. Exact-slot
-  actions switch to the existing slot surface.
+Only the third is a structural fact the package reports. Tiers 1 and 2 are authored power and heat
+sentences belonging to feature 005; they are not `LoadoutValidation` issues and are not built here.
+
+### The capability selectors
+
+| Canvas | Selector                                                                                     | Status present? |
+| ------ | -------------------------------------------------------------------------------------------- | --------------- |
+| 1c     | `.anat-tab` at 349767: `MOUNTS` `POWER` `DRIVES` `DEFENCE` `OFFENCE`                         | **No.**         |
+| 1d     | six `.m-tab`s at 1223742, the last `status: ['BUILD STATUS', 'WARNINGS · COST · MATERIALS']` | Yes.            |
+
+At wide width Status is the rail and nothing else. There is no wide Status mode and no control that
+opens one.
+
+### Where the viewing conditions actually are
+
+Every condition the specification wanted inside Status is drawn inside the **Power** capability:
+
+| Condition  | Canvas                                                                                                                                                |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hardpoints | `DEPLOYED` / `RETRACTED`, a two-segment toggle at 418873, above `PRIORITY GROUPS · CUMULATIVE DRAW` in the wide Power tab                             |
+| Pips       | `POWER DISTRIBUTOR & PIP ALLOCATION` at 493763 (wide) and `PIP ALLOCATION` at 986740 (compact): SYS/ENG/WEP rows of four whole bars                   |
+| Load       | _no control anywhere._ `JUMP LADEN` (532152) and `JUMP UNLADEN` (533587) are drawn as two separate readouts; the thruster block reads `1,142 t LADEN` |
+
+The pip rows draw four whole steps per bank. There are no half-pips, no running total, no Apply, no
+Reset and no error text on either canvas.
+
+Nothing in the rail or in Status mode is interactive. There is no control, no link, no disclosure and
+no slot action in either block.
+
+## Adopt
+
+- The `BUILD STATUS` heading opening the rail and the Status mode.
+- Validation issues as the canvas's bordered blocks, in package order, directly under that heading.
+- The severity treatment: tier 1 for a package `error`, tier 3 for a package `incomplete`, and no
+  severity word on the screen, because neither canvas draws one.
+- The rail as the wide home for build status, and the stacked Status mode as the compact one.
+- Warnings → power → six metrics → cost → materials, at both widths.
+
+## Ruled divergences (wave 11, 2026-08-22)
+
+Three collisions between the accepted specification and the canvas were surfaced to the user before
+implementation. **The design won all three.** These rulings are binding; do not re-litigate them.
+
+| #   | Canvas draws                                                               | Specification wanted                                                                                                           | Ruling                                                                                                                                                                     |
+| --- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | Validation issues **in the rail**, under `BUILD STATUS`                    | The rail carrying counts only, with every issue record moved into a separate complete Status capability (former FR-004/FR-020) | **Design.** The issues are drawn where the canvas draws them. There are no counts, because the canvas draws none.                                                          |
+| B   | Five wide capability tabs, **no Status**; Status is the rail at wide width | Status added as a sixth peer desktop capability, reached by a labelled action in the rail (plan §Desktop)                      | **Design.** No wide Status mode and no opening action are built. The rail is the wide surface. The compact Status tab is 1d's own and arrives with the tabs it belongs to. |
+| C   | Load, pip and hardpoint conditions **inside the Power capability**         | A `ViewingConditionsControl` inside Status, with half-pips, a running total and Apply/Reset (former FR-016–FR-019, Story 3)    | **Design.** Feature 003 builds no condition control and owns no condition state. The surface belongs to feature 005, which draws what its own artboard draws.              |
+
+### What these rulings withdraw
+
+Not built, and not to be reintroduced without a new ruling:
+
+- `StatusCapability` as a wide-width mode, its central-selector registration and the rail's
+  open-Status action (ruling B).
+- `StructuralFacts` as a definition list of `valid` and `complete`. Neither canvas draws an
+  all-clear state; a build with no package issues draws no block, exactly as the canvas does, and so
+  makes no readiness claim of any kind (ruling A, and it is what former FR-015 asked for).
+- The issue and qualification **counts**, the qualification summary section and both none-reported
+  statements (ruling A).
+- `StatusCountAnnouncer` and `StatusAnnouncementCoordinator`. They announced count changes, and there
+  are no counts (ruling A).
+- Per-issue exact-slot actions and per-result detail actions. Nothing in either block is interactive
+  on either canvas, and at both widths the slot ledger the action would reach is already on screen
+  (rulings A and B, former FR-012).
+- `ViewingConditions`, `ViewingConditionsDraft`, `ViewingConditionsStore`, the half-pip domain and
+  the serialization-exclusion suite that existed to prove they were never persisted (ruling C).
+- The visible `LoadoutIssueCode`. The canvas draws a sentence, not a code (ruling A). The severity
+  survives, because the design system's block already names its own tone in words.
+
+A consequence accepted with ruling A: the rail is silent for a build the package reports nothing
+about. That is the canvas's behaviour, and silence claims less than an all-clear statement would.
+
+A consequence accepted with ruling C: feature 003 passes no conditions to anything. The seven
+headline results are each their owning capability's, computed under whatever conditions that
+capability's own surface offers.
 
 ## Rejected mock content
 
-- Authored power/heat warnings and optional-empty warnings; they are not structural package issues.
-- Reverse-engineered power bars, favorable/unfavorable colors, comparison arrows and thresholds.
-- Hull-plus-modules `TOTAL`, a locally explained “rebuy 5%,” and unowned blueprint/material totals.
-- Truncated/ellipsized material names and desktop/mobile diagnostic asymmetry.
-- Cross-origin `edassets.org` material images and Google Fonts runtime requests.
-- `.design/assets/merc-coin.png` until its provenance and reuse terms are established; text remains
-  complete without it.
-- Raw color literals or icon-only currency/status meaning.
+- The authored power and heat warnings (tiers 1 and 2 of 1d's three). They are feature 005 sentences,
+  not `LoadoutValidation` issues, and this application authors no diagnosis of its own.
+- The segmented power bar with its 79%/21% split, hatched overflow band and marker. It is a
+  reverse-engineered threshold, and the package publishes no such ratio.
+- Cross-origin `edassets.org` imagery and Google Fonts runtime requests.
+- Raw colour literals, and any status meaning carried by colour or ornament alone.
 
-## Accessibility and localization adaptation
+## Departures that remain, on constitutional grounds
 
-- Shared semantic controls and 44 CSS-pixel targets replace styled `div` controls.
-- Issue kind/severity and every result state are textual; color/icon remain supplemental.
-- Long canonical diagnostics, exact identities, expanded translations and RTL text wrap without
-  document overflow.
-- Units and conditions remain visible at every width. Material names are never forced to one line.
-- One polite hidden region announces settled count changes; visible content is not live.
-- Components use feature 011 tokens, local/static font assets and message/formatting services.
+| Canvas                              | Built instead                                         | Reason                                                                                                                                                  |
+| ----------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and the tiers differ by ground as well as by hue |
+| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                        |
+| Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                       |
 
-## Conclusion
+`edsb-game-text` is the design system's existing behaviour for every package string in the
+application, not a feature-003 addition — the same argument feature 009 settled under its ruling F.
 
-The reference's hierarchy is compatible after the additions above. The plan does not claim that the
-mock contains a desktop Status capability, viewing controls or responsive/accessibility states that
-it does not actually show.
+## Responsive consequence
+
+Wide 1c proximity and compact 1d stacking are the compositional intent. DOM and read order stay
+`BUILD STATUS` → issues → (feature 005's power) → (005–008's metrics) → `COST` → `MATERIALS` at
+every width. Nothing depends on hover, and the document never scrolls horizontally.

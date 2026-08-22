@@ -1,0 +1,30 @@
+<!--
+  Absent, rather than empty, when the package reports nothing. Neither canvas
+  draws an all-clear state, and a build with no issues that says so would be
+  making the readiness claim FR-015 forbids (ruling A).
+-->
+@if (issues().length > 0) {
+  <ul class="issues">
+    @for (issue of issues(); track issue.id) {
+      <li class="issue" [class]="'issue issue--' + issue.severity">
+        <!--
+          The severity in words. Hidden, because neither canvas draws it: the
+          reference carries the tier in the marker and its ground, and a word
+          the design does not draw does not go on the screen. It stays as the
+          accessibility floor — read aloud beside the sentence, costing the
+          design nothing — and the two tiers still differ visually by more than
+          hue, since tier one carries a tinted ground and tier three does not
+          (FR-022, and the design-canvas rule for what may exist unseen).
+        -->
+        <span class="visually-hidden">{{ issue.severityLabel }}</span>
+
+        <edsb-game-text
+          class="issue__diagnostic"
+          [text]="issue.diagnostic.text"
+          [language]="issue.diagnostic.language"
+          [translationState]="issue.diagnostic.translationState"
+        />
+      </li>
+    }
+  </ul>
+}

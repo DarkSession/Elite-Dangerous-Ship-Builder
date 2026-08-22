@@ -237,6 +237,8 @@
   "outfitting.no-build.description": "Mounts, modules and engineering all belong to a build. Open one and they appear here.",
   "outfitting.ledger.label": "Every mount on this hull",
   "outfitting.status-rail.label": "Build status",
+  "build-status.severity.error": "Error",
+  "build-status.severity.incomplete": "Incomplete",
   "outfitting.category.legend": "Which mounts to show",
   "outfitting.category.all": "All",
   "outfitting.category.hardpoint": "Hardpoints",
