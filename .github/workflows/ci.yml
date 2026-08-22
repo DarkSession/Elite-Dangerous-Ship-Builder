@@ -6,9 +6,12 @@
 # The end-to-end suite is **sharded across parallel jobs**, which is the one
 # thing the verification contract permits a CI run to do with the matrix: shard
 # it, never reduce it. Every shard loads the same ten projects and between them
-# they run every test exactly once. The suite is ~110 minutes of work; four
-# shards of four workers put it inside a job budget, where a single job of two
-# workers could reach only about half of it before the timeout.
+# they run every test exactly once. The suite is ~96 minutes of work; six shards
+# of two workers put it inside a job budget, where a single job of two workers
+# reached only about half of it before the timeout. The width is on the shard
+# axis rather than the worker axis because a shard is another runner with its
+# own cores, and a fourth worker on a four-vCPU box only starves the other
+# three — see the note on `workers` in `playwright.config.ts`.
 name: CI
 
 on:
@@ -27,7 +30,7 @@ env:
   # One place to change the shard count. It is read by the job matrix below and
   # by `playwright.config.ts`, and the two must agree or the run silently covers
   # a fraction of the suite while reporting green.
-  E2E_SHARDS: 4
+  E2E_SHARDS: 6
 
 jobs:
   check:
@@ -89,7 +92,7 @@ jobs:
       # else broke — which is the whole point of running the full matrix.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
 
     steps:
       - name: Check out the repository

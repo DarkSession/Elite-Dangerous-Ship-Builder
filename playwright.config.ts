@@ -194,15 +194,35 @@ export default defineConfig({
   testIgnore: NEVER_IN_A_DEVELOPMENT_RUN,
   fullyParallel: true,
   forbidOnly: isCI,
+  // The default 30 seconds is a figure calibrated on a developer machine. A CI
+  // runner's cores are slower and four workers share them, which puts the same
+  // work at roughly two to three times the wall clock — enough to time out a
+  // test that has never been near the limit anywhere else, and to report it as
+  // a product failure. The local budget stays at 30 so a genuinely slow test is
+  // felt where it is written rather than only on CI. Tests that are slow because
+  // of how much they do, rather than because of the machine, extend their own
+  // budget: see `SWEEP_BUDGET_MS` in `e2e/accessibility.ts`.
+  timeout: isCI ? 60_000 : 30_000,
   // Retries are diagnostic only: a test that passes on retry still fails the
   // run, so flakiness cannot be absorbed into a green build.
   retries: isCI ? 2 : 0,
   failOnFlakyTests: isCI,
-  // Two was the count a single CI job could afford while two `ng serve`
-  // processes and their file watchers competed for the same four vCPUs. CI now
-  // serves a built artifact from a static file server, and the matrix is sharded
-  // across jobs, so a worker is no longer bidding against a compiler.
-  workers: isCI ? 4 : undefined,
+  // Two, and the parallelism goes across runners instead.
+  //
+  // **Corrected 2026-08-22, from evidence.** Removing the two `ng serve`
+  // processes looked like it had freed room for four workers, and on a fast
+  // machine held to four cores it did. On the actual runner it did not: four
+  // Firefox instances on four vCPUs starved each other, and a first sharded run
+  // came back with seven failures and ten flaky tests, almost all of them
+  // Firefox, almost all of them a five-second wait losing a CPU race rather than
+  // anything about the product. Firefox costs about 1.7x Chromium per project
+  // here, so it is the engine that feels the shortage first.
+  //
+  // A worker on an oversubscribed box buys nothing; a shard is a whole other
+  // runner with its own cores. The throughput therefore comes from the shard
+  // count, which is stated in the CI workflow, and each job runs at the width
+  // its machine can actually sustain.
+  workers: isCI ? 2 : undefined,
   // A sharded run writes a blob per shard for `playwright merge-reports` to
   // join; an unsharded one writes the HTML report directly. Each shard would
   // otherwise emit its own partial HTML report and the last upload would win.

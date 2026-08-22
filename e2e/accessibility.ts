@@ -37,6 +37,26 @@ export const OUTFITTING_VIEWPORTS = {
 } as const;
 
 /**
+ * What one sweep is allowed to cost, added to the test's budget when it runs.
+ *
+ * Six passes over a rendered tree — an axe analysis, a heading walk, a target
+ * measurement, an overflow check and a clipping check — cost 5–7 seconds on a
+ * developer machine and roughly twice that on a CI runner, whose cores are
+ * slower and are being shared by four workers. A test that sweeps three states
+ * therefore wants around 45 seconds of the 30 the default gives it, which is how
+ * `outfitting-history` came to time out on CI while passing everywhere else.
+ *
+ * The budget is **added per sweep** rather than set to a fixed number, because
+ * what a test needs is a function of how many states it draws: one sweep gets
+ * 45 seconds, three get 75, and a test that grows a fourth state grows its
+ * allowance with it instead of quietly moving back towards the edge. Additive
+ * also means it cannot compound — `test.slow()` multiplies the current timeout,
+ * so calling it once per sweep would hand a three-state test 810 seconds and
+ * turn a genuine hang into a very long wait.
+ */
+const SWEEP_BUDGET_MS = 15_000;
+
+/**
  * The full sweep over one rendered outfitting state.
  *
  * `label` names the state in every failure message, because "axe violations"
@@ -47,6 +67,8 @@ export async function sweepOutfittingState(
   testInfo: TestInfo,
   label: string,
 ): Promise<void> {
+  testInfo.setTimeout(testInfo.timeout + SWEEP_BUDGET_MS);
+
   await settled(page);
   await expectNoAccessibilityViolations(page, testInfo, { label });
   await expectOrderedHeadings(page);

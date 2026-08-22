@@ -20,12 +20,19 @@ renaming or removing projects.
 Every primary journey runs in all ten projects. CI may shard the same matrix; it may not reduce it.
 Retries remain diagnostic only and `failOnFlakyTests` is enabled in CI.
 
-**Sharded, 2026-08-22.** CI runs the suite as four `--shard` jobs of four workers, merged back into
+**Sharded, 2026-08-22.** CI runs the suite as six `--shard` jobs of two workers, merged back into
 one report with `playwright merge-reports`. Every shard loads all ten projects and between them they
 run every test exactly once — the shard boundary is a division of the same matrix, not a selection
 from it, and the shard count is stated once in the workflow so the job matrix and the `--shard`
-argument cannot disagree. The suite is ~110 minutes of work; a single job of two workers reached only
+argument cannot disagree. The suite is ~96 minutes of work; a single job of two workers reached only
 about half of it inside a 30-minute budget.
+
+The width is on the **shard** axis, not the worker axis. Four workers per job was tried first and
+came back with seven failures and ten flaky tests on the first real run, almost all of them Firefox —
+which costs about 1.7x Chromium per project — and almost all of them a five-second wait losing a CPU
+race rather than anything about the product. Four browser instances do not fit on four vCPUs. A shard
+is another runner with its own cores, so that is where the parallelism belongs, and each job runs at
+the width its machine can sustain.
 
 **Served from a built artifact on CI, 2026-08-22.** A local run keeps `ng serve` for both
 applications, because a phase is a loop of edit and re-run. A CI run has nothing to re-run and pays
@@ -35,6 +42,16 @@ resident beside the workers on the same four vCPUs. CI therefore builds each app
 statically. That configuration deliberately does **not** register a service worker, so the matrix
 goes on measuring the application rather than a caching layer in front of it; the service worker
 keeps its own run under `pnpm run e2e:offline`.
+
+**Timeouts, ruled 2026-08-22.** Playwright's 30-second default is a figure calibrated on a developer
+machine, and a CI runner puts the same work at roughly two to three times the wall clock — enough to
+fail a test that has never been near the limit anywhere else, and to report a machine as a product
+defect. A run therefore takes its budget from two places. The **run** gets 60 seconds on CI and keeps
+30 locally, so a genuinely slow test is felt where it is written. A **test** that is slow because of
+how much it draws extends its own budget as it draws it: every call to `sweepOutfittingState` adds
+one sweep's worth, so a three-state sweep is given three sweeps' worth and a fourth state raises the
+allowance with it rather than moving the test back towards the edge. Neither is a licence to absorb a
+hang — retries stay diagnostic only and `failOnFlakyTests` stays on.
 
 ## Product and preview coverage ledger
 

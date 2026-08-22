@@ -170,6 +170,11 @@ test.describe('stepping back and forward', () => {
   });
 
   test('retains a bounded tape, and the bound is the tape’s own', async ({ page }) => {
+    // Twenty-four round trips through the controls, each awaited. That is slow
+    // on purpose — see the note below — and at 25 seconds on a developer machine
+    // it had no room left in the default 30 for a CI runner's slower cores.
+    test.slow();
+
     await openStockBuild(page, 'Sidewinder');
     // A mount that draws power, so it has a group to change. The power plant is
     // what everything else draws from and has no group at all (wave 4).
