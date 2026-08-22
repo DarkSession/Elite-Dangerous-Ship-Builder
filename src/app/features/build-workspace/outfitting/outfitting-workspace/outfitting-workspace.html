@@ -101,9 +101,26 @@
     -->
     <div class="outfitting__bench">
       @if (selectedSlot(); as slot) {
-        <div class="outfitting__bench-header">
-          <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
-        </div>
+        <!--
+          Canvas 1c writes the mount on the fitting panel's own head, beside the
+          search and `REMOVE MODULE`. Where no fitting panel is drawn — a mount
+          the Almanac takes nothing else in — the bench keeps the rule itself,
+          so the region is never nameless (wave 5).
+        -->
+        @if (!replacementShown()) {
+          <div class="outfitting__bench-header">
+            <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
+            <!--
+              Canvas 1d's hairline `FIXED` chip, for the one mount that takes no
+              other module. Without it the bench for the cargo hatch is a title
+              over an empty panel, and the Almanac's reason is spoken only
+              (wave 7).
+            -->
+            @if (benchMark(); as mark) {
+              <p class="outfitting__bench-mark">{{ mark }}</p>
+            }
+          </div>
+        }
 
         @if (benchIsLayer()) {
           <div class="outfitting__bench-actions">
@@ -132,10 +149,15 @@
           <p class="outfitting__bench-reason">{{ reason }}</p>
         }
 
+        @if (benchRestriction(); as restriction) {
+          <p class="outfitting__bench-reason">{{ restriction }}</p>
+        }
+
         @if (replacementShown()) {
           <edsb-module-replacement
             [slot]="slot"
             [asLayer]="benchIsLayer()"
+            [panelHeading]="benchIsLayer() ? null : benchTitle()"
             (closed)="closeSurface()"
           />
         }

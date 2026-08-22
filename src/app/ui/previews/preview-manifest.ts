@@ -2400,12 +2400,11 @@ registerPreview({
         capabilities: EVERY_CAPABILITY,
         selected: true,
         engineeringSummary: 'Overcharged G5 · Corrosive Shell',
-        labels: ['Powerplay reward · not ordinarily available'],
       },
       [
         'the exact game slot key is present for assistive technology and never as visible text',
         'selection is exposed as pressed state and in words, not by the marker alone',
-        'the drawn label is kind, size and node number, as the canvas writes it',
+        'a fitted row is the module over its code line; the mount is spoken, not drawn again',
       ],
       CONTROL_VARIANTS,
     ),
@@ -3051,45 +3050,30 @@ registerPreview({
     state(
       'default',
       {
-        parts: [
-          { part: 'blueprint', state: 'known', materials: ENGINEERING_MATERIALS },
-          {
-            part: 'experimental',
-            state: 'known',
-            materials: [ENGINEERING_MATERIALS[0]],
-          },
-          { part: 'combined', state: 'known', materials: ENGINEERING_MATERIALS },
-        ],
+        // One list for the whole job, the way the editor draws it: the recipe's
+        // materials and the effect's folded together (wave 9).
+        parts: [{ part: 'combined', state: 'known', materials: ENGINEERING_MATERIALS }],
         grade: 5,
-        mercCoin: '120',
-        fixedPurchase: false,
       },
       [
         'the heading names the grade and nothing calls the recipe a roll',
-        'Merc Coin sits on its own line and joins no material list',
+        'the recipe and the effect are one list, folded by the package’s own sum',
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'canonical-untranslated'],
     ),
     state(
       'empty',
       {
-        parts: [{ part: 'blueprint', state: 'known', materials: [] }],
+        parts: [{ part: 'combined', state: 'known', materials: [] }],
         grade: 3,
-        mercCoin: null,
-        fixedPurchase: true,
       },
-      [
-        'a known zero reads as nothing more needed, not as unavailable',
-        'a purchased article says its baked engineering was never crafted',
-      ],
+      ['a priced job with no materials is stated as such, never as a zero'],
     ),
     state(
       'error',
       {
-        parts: [{ part: 'blueprint', state: 'unavailable', materials: [] }],
+        parts: [{ part: 'combined', state: 'unavailable', materials: [] }],
         grade: 5,
-        mercCoin: null,
-        fixedPurchase: false,
       },
       ['an unavailable cost reads as unavailable, and never as a zero'],
     ),

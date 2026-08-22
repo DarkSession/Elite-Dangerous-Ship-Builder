@@ -53,7 +53,10 @@ canvas 1c's three visual regions:
 - right: shared package validation, cost/material and downstream status outlets.
 
 The wide header exposes the feature 002 editable ship name/ident control (FR-019) beside feature 001's
-build identity, plus direct undo/redo; export, save and help
+build identity, plus direct undo/redo. That control is an **in-place edit**, exactly as both canvases
+draw it: the title _is_ the control, it turns into a field where it stands, and leaving the field
+confirms it. Neither canvas draws a labelled field pair, a dialog or a row of Save and Cancel
+controls, so none of them exists (wave 4); export, save and help
 remain owned composition actions. Mounts anatomy may show top and bottom together. Ledger, manifest
 and center regions may scroll internally; any wide fact table has a labeled overflow container. The
 document itself never scrolls horizontally.

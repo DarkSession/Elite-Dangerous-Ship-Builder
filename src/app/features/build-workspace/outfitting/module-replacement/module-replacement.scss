@@ -52,10 +52,25 @@
   text-wrap: pretty;
 }
 
-// Canvas 1d's header row: the field takes the width and the count sits at the
-// trailing edge in faint mono.
+// The panel's header row. Canvas 1c sets a 214px field and `REMOVE MODULE`
+// against the trailing edge under the `FITTING · HARDPOINT 1` rule; canvas 1d
+// gives the field the whole width with the count after it. Same row, and which
+// one it is follows the width the panel was given.
 .replacement__toolbar {
   @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: center;
+}
+
+// Canvas 1c's `FITTING · HARDPOINT 1`, on the row with the field and
+// `REMOVE MODULE` rather than on a rule above them.
+.replacement__title {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  flex: none;
+  margin: 0;
+  margin-inline-end: auto;
+  font-size: var(--edsb-text-size-compact);
 }
 
 .replacement__search {
@@ -63,11 +78,24 @@
   min-inline-size: 0;
 }
 
+@container replacement (min-width: 34rem) {
+  .replacement__toolbar {
+    justify-content: flex-end;
+  }
+
+  // The canvas's own 214px, plus the key hint that sits beside it here rather
+  // than inside the field's box.
+  .replacement__search {
+    flex: 0 1 20rem;
+  }
+}
+
 .replacement__count {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 
   margin: 0;
   flex: none;
+  margin-inline-end: auto;
 }
 
 // Canvas 1c's outlined `REMOVE MODULE`, at the end of the panel header.
@@ -78,23 +106,13 @@
   flex: none;
 }
 
-// The foot of a list that has more behind it: how much is built, and the way
-// to build the rest.
-.replacement__more {
-  @include layout.wrapping-row(var(--edsb-space-inline));
-
-  flex: none;
-}
-
-.replacement__built {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
-
-  margin: 0;
-}
-
-.replacement__more-action {
-  @include layout.control-base;
-  @include layout.control-quiet;
+// The measure kept, the control gone. `visibility: hidden` removes it from the
+// accessibility tree and the tab order as surely as `@if` would, and unlike
+// `@if` it leaves the header row the width it had — which is what stops the
+// search field resizing under a Commander's hands as they move between a fitted
+// mount and an empty one.
+.replacement__remove--reserved {
+  visibility: hidden;
 }
 
 .replacement__no-matches {
@@ -109,12 +127,12 @@
 }
 
 // The manifest scrolls inside its own box, as canvas 1c's does. The document
-// never scrolls horizontally and never grows to two hundred rows tall.
+// never scrolls horizontally and never grows to two hundred rows tall. The box
+// that scrolls is the list's own, under its column head — this is the bound it
+// gives way against, not a second scroller around it.
 .replacement__list {
   flex: 1;
   min-block-size: 0;
-  overflow-y: auto;
-  overscroll-behavior-block: contain;
 }
 
 // Canvas 1d pins `CANCEL` and `FIT MODULE` to the foot of the screen, below the

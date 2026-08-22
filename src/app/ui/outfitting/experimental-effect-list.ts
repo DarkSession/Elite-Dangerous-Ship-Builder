@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { GameText } from '../components/game-text/game-text';
+import { SelectField, type SelectOption } from '../components/select-field/select-field';
 import { relationId } from '../a11y/text-equivalence';
 
 /** The value the explicit no-effect option carries. */
@@ -31,7 +32,7 @@ export interface ExperimentalEffectView {
  */
 @Component({
   selector: 'edsb-experimental-effect-list',
-  imports: [GameText],
+  imports: [GameText, SelectField],
   templateUrl: './experimental-effect-list.html',
   styleUrl: './experimental-effect-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +41,9 @@ export class ExperimentalEffectList {
   readonly #messages = inject(MessageService);
 
   readonly effects = input.required<readonly ExperimentalEffectView[]>();
+
+  /** True where the editor has room for canvas 1c's dropdown rather than cards. */
+  readonly asDropdown = input(false);
 
   /** The selected effect `fdname`, or `null` for the explicit no-effect. */
   readonly selected = input<string | null>(null);
@@ -53,10 +57,20 @@ export class ExperimentalEffectList {
 
   readonly legend = this.#messages.messageSignal('outfitting.engineering.effect.legend');
   readonly noneLabel = this.#messages.messageSignal('outfitting.engineering.effect.none');
-  readonly noneDescription = this.#messages.messageSignal(
-    'outfitting.engineering.effect.none-description',
-  );
   readonly appliedLabel = this.#messages.messageSignal('outfitting.engineering.applied');
+
+  /** The dropdown's options, each carrying the package's own description. */
+  readonly options = computed<readonly SelectOption[]>(() => [
+    { value: NO_EFFECT_CHOICE, label: this.noneLabel() },
+    ...this.effects().map((effect) => {
+      const name = effect.name.text ?? effect.fdname;
+      const description = effect.description.text;
+      return {
+        value: effect.fdname,
+        label: description === null ? name : `${name} · ${description}`,
+      };
+    }),
+  ]);
 
   readonly nameFor = (effect: ExperimentalEffectView): string =>
     this.#messages.message('outfitting.engineering.effect.choose', {

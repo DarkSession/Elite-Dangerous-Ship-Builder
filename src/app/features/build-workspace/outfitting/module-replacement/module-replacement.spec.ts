@@ -42,12 +42,39 @@ describe('module replacement surface', () => {
     return fixture;
   }
 
+  /**
+   * The same surface, told it is canvas 1d's full-screen layer.
+   *
+   * Set after the inline render and never re-rendered: `<dialog>.showModal()`
+   * does not exist in the test environment, and what is being checked here is
+   * the two-step the layer adds — pick, then commit — which is component state
+   * rather than anything the layer draws.
+   */
+  function asLayer(fixture: ReturnType<typeof open>) {
+    fixture.componentRef.setInput('asLayer', true);
+    return fixture;
+  }
+
   function slotFor(slotKey: string): SlotView {
     const slot = store.slots().find((candidate) => candidate.key === slotKey);
     if (slot === undefined) {
       throw new Error(`The fixture hull has no ${slotKey} mount.`);
     }
     return slot;
+  }
+
+  /**
+   * How many rows the chooser has actually built.
+   *
+   * Counted off the sections it draws rather than read from a figure on the
+   * surface: neither canvas draws one, so there is nothing there to read
+   * (design-canvas rule, wave 3).
+   */
+  function built(instance: ModuleReplacement): number {
+    return instance
+      .sections()
+      .flatMap((section) => section.groups)
+      .reduce((total, group) => total + group.choices.length, 0);
   }
 
   beforeEach(() => {
@@ -68,39 +95,30 @@ describe('module replacement surface', () => {
     expect(fixture.componentInstance.sections().length).toBeGreaterThan(0);
   });
 
-  it('builds a page at a time and never misreports how many there are', () => {
+  it('renders the whole expansion, so the scroller knows how tall it is', () => {
     const fixture = open(FIXTURE_SLOTS.hardpoint);
     const instance = fixture.componentInstance;
 
-    const total = instance.resultCount();
-    expect(total).toBeGreaterThan(instance.builtCount());
-    expect(instance.hasMore()).toBe(true);
-
-    const built = instance.builtCount();
-    instance.more();
-    fixture.detectChanges();
-
-    expect(instance.builtCount()).toBeGreaterThan(built);
-    // The count a Commander reads is how many choices there are, whatever has
-    // been built so far. A paged list that reported its page as the answer
-    // would be telling them the Almanac offers sixty modules.
-    expect(instance.resultCount()).toBe(total);
+    // Every choice, in the document, from the first frame. A list that grew as
+    // it was scrolled could not tell the browser its height, and its scrollbar
+    // shrank under the Commander every time it grew (wave 4).
+    expect(built(instance)).toBe(instance.resultCount());
+    expect(instance.resultCount()).toBeGreaterThan(100);
   });
 
-  it('starts a new query at the first page rather than keeping a grown one', () => {
+  it('narrows to the matches and back, with no page state in between', () => {
     const fixture = open(FIXTURE_SLOTS.hardpoint);
     const instance = fixture.componentInstance;
-
-    instance.more();
-    instance.more();
-    fixture.detectChanges();
-    const grown = instance.builtCount();
+    const all = instance.resultCount();
 
     instance.search('multi');
     fixture.detectChanges();
+    expect(built(instance)).toBe(instance.resultCount());
+    expect(instance.resultCount()).toBeLessThan(all);
 
-    expect(instance.builtCount()).toBeLessThan(grown);
-    expect(instance.builtCount()).toBe(Math.min(instance.resultCount(), grown));
+    instance.clear();
+    fixture.detectChanges();
+    expect(built(instance)).toBe(all);
   });
 
   it('separates a successful empty answer from a search that found nothing', () => {
@@ -133,13 +151,27 @@ describe('module replacement surface', () => {
     expect(active.revision()).toBe(revision);
   });
 
-  it('spends no revision on picking a row, and one on fitting it', () => {
+  it('takes a row as the fit where the panel is drawn without a commit control', () => {
+    // Canvas 1c draws no `FIT MODULE`: the amber row is the module in the
+    // mount, and choosing another row is the fit. One decision, one revision.
     const fixture = open(FIXTURE_SLOTS.hardpoint);
     const revision = active.revision();
     const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
 
     fixture.componentInstance.choose(choice.key);
     fixture.detectChanges();
+
+    expect(active.revision()).toBe(revision + 1);
+  });
+
+  it('spends no revision on picking a row, and one on fitting it, as a layer', () => {
+    // Canvas 1d is where the two-control bar is, because at that width the
+    // chooser is a screen of its own and leaving it has to be a decision.
+    const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
+    const revision = active.revision();
+    const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
+
+    fixture.componentInstance.choose(choice.key);
 
     expect(fixture.componentInstance.canFit()).toBe(true);
     expect(active.revision()).toBe(revision);
@@ -150,7 +182,7 @@ describe('module replacement surface', () => {
   });
 
   it('drops a pick the build has moved out from under, and says so', () => {
-    const fixture = open(FIXTURE_SLOTS.hardpoint);
+    const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
     const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
 
     fixture.componentInstance.choose(choice.key);
@@ -158,7 +190,6 @@ describe('module replacement surface', () => {
     // longer on screen, so it stops being a pick rather than becoming a fit of
     // a record the Almanac would refuse.
     store.dispatch({ kind: 'remove', slotKey: FIXTURE_SLOTS.fittedOptional });
-    fixture.detectChanges();
 
     expect(fixture.componentInstance.stale()).toBe(true);
     expect(fixture.componentInstance.selectedChoiceKey()).toBeNull();
@@ -167,7 +198,7 @@ describe('module replacement surface', () => {
   });
 
   it('leaves the build and the query alone when it is cancelled', () => {
-    const fixture = open(FIXTURE_SLOTS.hardpoint);
+    const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
     const revision = active.revision();
 
     store.setQuery('multi');
@@ -175,7 +206,6 @@ describe('module replacement surface', () => {
       fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!.key,
     );
     fixture.componentInstance.cancel();
-    fixture.detectChanges();
 
     expect(active.revision()).toBe(revision);
     expect(store.query()).toBe('');

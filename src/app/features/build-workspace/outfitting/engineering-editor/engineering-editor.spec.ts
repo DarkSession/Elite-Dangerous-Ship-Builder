@@ -42,7 +42,25 @@ describe('engineering editor surface', () => {
   let store: OutfittingStore;
   let active: ActiveBuildStore;
 
+  /**
+   * The editor over one mount, in the composition that holds a draft.
+   *
+   * Canvas 1d's layer is where choices are gathered and applied by an explicit
+   * control, so that is what the draft states are exercised through. The
+   * inline composition canvas 1c draws has no such control and commits each
+   * choice as it is made; `openInline` is how that is exercised instead.
+   *
+   * `asLayer` is set after the first render rather than before it, because the
+   * layer element opens a modal dialog the test DOM has no implementation for
+   * — and nothing here reads the rendered layer, only the signals behind it.
+   */
   function open(slotKey: string) {
+    const fixture = openInline(slotKey);
+    fixture.componentRef.setInput('asLayer', true);
+    return fixture;
+  }
+
+  function openInline(slotKey: string) {
     store.select(slotKey);
     const fixture = TestBed.createComponent(EngineeringEditor);
     fixture.componentRef.setInput('slot', slotFor(slotKey));
@@ -197,17 +215,21 @@ describe('engineering editor surface', () => {
       expect(editor.purchaseSummary()).not.toBeNull();
     });
 
-    it('never prices what the article arrived with', () => {
+    it('shows the grade it carries even when its recipe does not offer that grade', () => {
       commit(fixedRewardBuild());
 
       const editor = open(FIXED_REWARD_REGRESSION.slot).componentInstance;
 
-      expect(editor.fixedPurchase()).toBe(true);
+      // A bespoke Mercenary recipe starts at grade 2. An article bought at
+      // grade 1 still carries grade 1, and a blank bar on a plainly engineered
+      // module is the bug this guards (wave 5).
+      expect(editor.selectedGrade()).toBe(editor.draft()?.current.currentGrade ?? null);
+      expect(editor.selectedGrade()).not.toBeNull();
     });
   });
 
   describe('the cost', () => {
-    it('shows a known zero and an unavailable cost as different things', () => {
+    it('prices the recipe whatever the module already carries', () => {
       const build = defaultBuild();
       build.applyBlueprint(FIXTURE_SLOTS.frameShiftDrive, 'FSD_LongRange', {
         grade: 5,
@@ -216,14 +238,19 @@ describe('engineering editor surface', () => {
       commit(build);
       const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
 
-      // The recipe is already at grade 5, so climbing to grade 3 costs nothing
-      // — and `[]` is "nothing more to buy", not "no figure".
       editor.chooseBlueprint('FSD_LongRange');
       editor.chooseGrade(3);
 
-      const blueprint = editor.materialParts().find((part) => part.part === 'blueprint');
-      expect(blueprint?.state).toBe('known');
-      expect(blueprint?.materials).toEqual([]);
+      // Engineering always costs materials. The module already being at grade 5
+      // does not make a grade 3 job free — what the panel answers is what this
+      // job costs, and an empty list would mean the Almanac priced none of it
+      // (wave 5).
+      // One list, not one per part: the recipe and the effect are folded
+      // together because a Commander gathers them once (wave 9).
+      const [only, ...rest] = editor.materialParts();
+      expect(rest).toEqual([]);
+      expect(only?.state).toBe('known');
+      expect(only?.materials.length).toBeGreaterThan(0);
     });
 
     it('carries each material’s package rarity and count', () => {
@@ -233,11 +260,11 @@ describe('engineering editor surface', () => {
       editor.chooseBlueprint('FSD_LongRange');
       editor.chooseGrade(5);
 
-      const blueprint = editor.materialParts().find((part) => part.part === 'blueprint')!;
-      expect(blueprint.state).toBe('known');
-      expect(blueprint.materials.length).toBeGreaterThan(0);
-      expect(blueprint.materials.every((material) => material.count.length > 0)).toBe(true);
-      expect(blueprint.materials.some((material) => material.grade !== null)).toBe(true);
+      const [only] = editor.materialParts();
+      expect(only.state).toBe('known');
+      expect(only.materials.length).toBeGreaterThan(0);
+      expect(only.materials.every((material) => material.count.length > 0)).toBe(true);
+      expect(only.materials.some((material) => material.grade !== null)).toBe(true);
     });
   });
 
@@ -281,9 +308,10 @@ describe('engineering editor surface', () => {
       editor.chooseBlueprint('FSD_LongRange');
       editor.chooseGrade(5);
 
-      // Something else changes the build under the open editor.
+      // Something else changes the build under the open editor. Nothing is
+      // re-rendered: the staleness is in the signals, and the layer element
+      // would open a modal dialog the test DOM has no implementation for.
       store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.core, priority: 3 });
-      fixture.detectChanges();
 
       expect(editor.stale()).toBe(true);
       expect(editor.state()).toBe('stale');
@@ -296,6 +324,64 @@ describe('engineering editor surface', () => {
       // Rebuilt against what the module actually carries now.
       expect(editor.stale()).toBe(false);
       expect(editor.selectedBlueprint()).toBeNull();
+    });
+  });
+
+  describe('a Merc-Coin recipe', () => {
+    it('is offered on the article that was bought with it and on no other', () => {
+      commit(defaultBuild());
+
+      // The stock article's own menu. A recipe whose grades start above 1 is a
+      // purchase's, and the Almanac would refuse it here after the Commander
+      // had chosen it (wave 4).
+      const stock = openInline(FIXTURE_SLOTS.hardpoint).componentInstance;
+      expect(stock.blueprintChoices().every((choice) => choice.route === 'ordinary')).toBe(true);
+    });
+
+    it('runs its grade bar from one, with the grades it cannot reach refused', () => {
+      commit(defaultBuild());
+      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
+
+      editor.chooseBlueprint('FSD_LongRange');
+
+      // One cell per grade to the recipe's highest, and `lowestGrade` is what
+      // makes the ones below the recipe's first refuse rather than vanish.
+      expect(editor.grades()[0]).toBe(1);
+      expect(editor.grades().at(-1)).toBeGreaterThan(1);
+      expect(editor.lowestGrade()).toBe(1);
+    });
+  });
+
+  describe('the inline editor', () => {
+    it('keeps showing what the recipe did once there is nothing left to apply', () => {
+      commit(defaultBuild());
+      const fixture = openInline(FIXTURE_SLOTS.frameShiftDrive);
+      const editor = fixture.componentInstance;
+
+      editor.chooseBlueprint('FSD_LongRange');
+      fixture.componentRef.setInput('slot', slotFor(FIXTURE_SLOTS.frameShiftDrive));
+
+      // Canvas 1c draws the comparison beside a module that already carries its
+      // recipe. Emptying it the moment the recipe lands would empty it exactly
+      // when a Commander goes looking for what it did.
+      const rows = editor.attributes();
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.some((row) => row.stock !== row.modified)).toBe(true);
+    });
+
+    it('commits each choice as it is made, because the canvas draws no apply', () => {
+      commit(defaultBuild());
+      const editor = openInline(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
+
+      const revision = store.revision();
+      editor.chooseBlueprint('FSD_LongRange');
+
+      // Canvas 1c draws no apply and no revert. Inline the choice is the
+      // decision, and undo is what takes it back (design-canvas rule, wave 4).
+      expect(store.revision()).toBeGreaterThan(revision);
+      expect(
+        slotFor(FIXTURE_SLOTS.frameShiftDrive).module?.engineering?.BlueprintName?.toLowerCase(),
+      ).toBe('fsd_longrange');
     });
   });
 });

@@ -18,6 +18,14 @@ html {
   // Prevent a mobile browser inflating text in one axis and breaking the
   // audited type scale, without disabling the user's own zoom.
   text-size-adjust: 100%;
+  // One scrollbar, drawn once and not redrawn under the pointer. The user
+  // agent's own bar lightens on hover and darkens again on press — a moving
+  // colour on a surface the canvas draws as a still hairline, and the only
+  // thing on the ledger that reacts to the pointer without being a control.
+  // Naming both halves is what turns that off, so the two properties go
+  // together (wave 9).
+  scrollbar-width: thin;
+  scrollbar-color: var(--edsb-border-strong) transparent;
 }
 
 body {

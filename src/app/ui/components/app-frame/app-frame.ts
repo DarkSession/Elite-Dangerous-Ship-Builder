@@ -37,6 +37,14 @@ export interface ShellAction {
   readonly disabled?: boolean;
   /** What activating it would do, said only to a reader. Never drawn. */
   readonly description?: string;
+  /**
+   * Whether the canvas's hairline divider is drawn before this action.
+   *
+   * Canvas 1c rules one between the history pair and the committing actions —
+   * `↶ UNDO  REDO ↷ │ EXPORT  SAVE  ?`. It is decoration and is hidden from a
+   * reader, who has the actions' own names to go by.
+   */
+  readonly startsGroup?: boolean;
 }
 
 /**

@@ -516,7 +516,8 @@ export class OutfittingStore {
 
       case 'applyEngineering':
       case 'setExperimental':
-      case 'clearEngineering': {
+      case 'clearEngineering':
+      case 'restorePurchase': {
         // Re-read now rather than remembered from when the editor drew its
         // menus. A mount whose module has since been replaced offers a
         // different menu, and the package is the one that knows.
@@ -631,6 +632,8 @@ function summaryOf(intent: BuildEditIntent): HistoryIntentSummary {
       return { key: 'outfitting.history.effect', params: { slot: intent.slotKey } };
     case 'clearEngineering':
       return { key: 'outfitting.history.clear', params: { slot: intent.slotKey } };
+    case 'restorePurchase':
+      return { key: 'outfitting.history.restore', params: { slot: intent.slotKey } };
     case 'setEnabled':
       return {
         key: intent.enabled ? 'outfitting.history.powered' : 'outfitting.history.unpowered',

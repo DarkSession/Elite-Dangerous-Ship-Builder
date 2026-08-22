@@ -162,6 +162,29 @@ describe('candidate list', () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
+  it('tells two rewards of one module apart, rather than marking both', () => {
+    // The Almanac sells the same blaster through the Merc-Coin shop at grade 1
+    // and through a community goal at grade 5. They share a symbol and a name,
+    // so a row that matched on either marked two articles as the one in the
+    // mount (wave 4).
+    const sections = sectionsFor(FIXTURE_SLOTS.hardpoint);
+    const variants = sections
+      .flatMap((section) => section.groups)
+      .flatMap((group) => group.choices)
+      .filter((choice) => choice.kind === 'variant');
+    const fitted = variants[0];
+    expect(fitted).toBeDefined();
+
+    const fixture = renderComponent(CandidateList, {
+      sections,
+      label: 'Modules for this mount',
+      fittedSymbol: fitted!.module.symbol,
+      fittedVariant: fitted!.variant,
+    });
+
+    expect(element(fixture).querySelectorAll('.candidate--fitted')).toHaveLength(1);
+  });
+
   it('states the selection rather than only colouring it', () => {
     const sections = sectionsFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
     const chosen = sections[0]!.groups[0]!.choices[0]!;
@@ -175,7 +198,10 @@ describe('candidate list', () => {
     expect(radio.checked).toBe(true);
   });
 
-  it('says a fitted module is fitted, in words', () => {
+  it('says a fitted module is fitted, in words, beside the ground that shows it', () => {
+    // The canvas marks the fitted row with its amber ground and writes nothing
+    // on it. The word is here all the same and read rather than drawn, so the
+    // state is never carried by the colour alone.
     const sections = sectionsFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
     const fitted = sections[0]!.groups[0]!.choices[0]!;
     const fixture = renderComponent(CandidateList, {
@@ -184,7 +210,9 @@ describe('candidate list', () => {
       fittedSymbol: fitted.module.symbol,
     });
 
-    expect(textOf(query(fixture, '.candidate__state'))).toBe('Fitted');
+    const row = query(fixture, '.candidate--fitted');
+    expect(textOf(row)).toContain('Fitted');
+    expect(row.querySelector('.candidate__state')).toBeNull();
   });
 
   it('writes a word where the Almanac published no figure, never a zero', () => {
@@ -212,6 +240,7 @@ describe('candidate list', () => {
 
     const header = query(fixture, '.candidates__columns');
     expect(header.getAttribute('aria-hidden')).toBe('true');
-    expect(header.querySelectorAll('.candidates__column').length).toBe(6);
+    // `MODULE · CLASS` and the five figure columns, as the canvas heads them.
+    expect(header.querySelectorAll('.candidates__column').length).toBe(7);
   });
 });

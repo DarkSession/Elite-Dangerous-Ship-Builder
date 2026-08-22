@@ -50,24 +50,14 @@ describe('blueprint choice list', () => {
     // engineering, so a composition without it would be a width that cannot
     // clear (engineering editor design, "Clearing engineering").
     expect(options[0]?.classList.contains('blueprint--none')).toBe(true);
-    expect(textOf(options[0]!)).toContain('None — stock module');
-    expect(textOf(options[0]!).toLowerCase()).toContain('removes engineering');
+    // The name and nothing else: neither canvas writes a line under it.
+    expect(textOf(options[0]!)).toContain('None');
   });
 
   it('offers no separate clear control anywhere', () => {
     const fixture = renderComponent(BlueprintChoiceList, { choices: CHOICES });
 
     expect(queryAll(fixture, 'button')).toHaveLength(0);
-  });
-
-  it('names the route only where the package says it is not an ordinary one', () => {
-    const fixture = renderComponent(BlueprintChoiceList, { choices: CHOICES });
-
-    const text = textOf(element(fixture));
-    expect(text).toContain('Merc-Coin');
-    // The ordinary recipe says nothing: "this is the normal kind" is not news
-    // on a list where most of them are.
-    expect(text.match(/Merc-Coin/g)).toHaveLength(1);
   });
 
   it('states which recipe is applied rather than only colouring it', () => {
@@ -98,14 +88,23 @@ describe('blueprint choice list', () => {
 });
 
 describe('grade selector', () => {
-  it('offers exactly the grades it was given, not a fixed five', () => {
-    // A bespoke Mercenary recipe starts at grade 2. Drawing a grade 1 cell
-    // would offer a job the Almanac has no recipe for.
-    const fixture = renderComponent(GradeSelector, { grades: [2, 3, 4, 5], selected: 5 });
+  it('stripes the grades below the one a recipe starts at, and keeps them pressable', () => {
+    // A bespoke Mercenary recipe starts at the grade the article was bought
+    // at. The cells below it are still drawn — the article carries them — and
+    // refused, so the bar never says the article is a grade short (wave 4).
+    const fixture = renderComponent(GradeSelector, {
+      grades: [1, 2, 3, 4, 5],
+      lowest: 2,
+      selected: 5,
+    });
 
     const cells = queryAll(fixture, '.grade');
-    expect(cells).toHaveLength(4);
-    expect(cells.map((cell) => textOf(cell))).toEqual(['2', '3', '4', '5']);
+    expect(cells).toHaveLength(5);
+    // Striped, not refused: an article bought at grade 2 can still be taken
+    // back down to 1, so the cell has to be pressable (wave 5).
+    expect(cells[0]!.getAttribute('data-unavailable')).toBe('true');
+    expect((cells[0]!.querySelector('input') as HTMLInputElement).disabled).toBe(false);
+    expect(cells[1]!.getAttribute('data-unavailable')).toBe('false');
   });
 
   it('names each cell, so a bare number is never the whole label', () => {
@@ -117,6 +116,8 @@ describe('grade selector', () => {
   it('states the chosen grade beside the label, not by the fill alone', () => {
     const fixture = renderComponent(GradeSelector, { grades: [1, 2, 3], selected: 3 });
 
+    // The number is beside the legend, not inside the cells: the canvas draws
+    // the bar bare, and every cell still names its own grade to a reader.
     expect(textOf(query(fixture, '.grades__selected'))).toBe('3');
     expect(
       (query(fixture, '.grade[data-selected="true"] .grade__radio') as HTMLInputElement).checked,
@@ -148,7 +149,7 @@ describe('experimental effect list', () => {
 
     const options = queryAll(fixture, '.effect');
     expect(options[0]?.classList.contains('effect--none')).toBe(true);
-    expect(textOf(options[0]!)).toContain('None — remove effect');
+    expect(textOf(options[0]!)).toContain('None');
   });
 
   it('shows the package’s own description rather than one of ours', () => {
@@ -203,13 +204,35 @@ describe('attribute comparison', () => {
     expect(textOf(cells[2]!).length).toBeGreaterThan(0);
   });
 
-  it('claims no direction, because nothing published one', () => {
+  it('marks a direction the canvas’s way, and never by colour alone', () => {
+    const fixture = renderComponent(AttributeComparison, {
+      rows: [
+        { ...ROWS[0]!, direction: 'better' },
+        {
+          key: 'thermalLoad',
+          label: 'Thermal load',
+          stock: '0.33',
+          modified: '0.41',
+          direction: 'worse',
+        },
+      ],
+    });
+
+    const cells = queryAll(fixture, '.comparison__value--modified');
+    expect(cells[0]!.getAttribute('data-direction')).toBe('better');
+    expect(textOf(cells[0]!)).toContain('▲');
+    expect(textOf(cells[0]!)).toContain('Improved');
+    expect(cells[1]!.getAttribute('data-direction')).toBe('worse');
+    expect(textOf(cells[1]!)).toContain('▼');
+    expect(textOf(cells[1]!)).toContain('Worsened');
+  });
+
+  it('marks nothing where either side is unpublished', () => {
     const fixture = renderComponent(AttributeComparison, { rows: ROWS });
 
     const text = textOf(element(fixture));
     expect(text).not.toContain('▲');
     expect(text).not.toContain('▼');
-    expect(text).not.toContain('%');
   });
 });
 
@@ -243,25 +266,35 @@ describe('material cost list', () => {
     expect(textOf(query(fixture, '.material__count'))).toBe('5');
   });
 
-  it('carries the package’s own rarity rather than fetching an icon', () => {
+  it('carries the design’s own rarity mark, served from this origin', () => {
     const fixture = renderComponent(MaterialCostList, {
       parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
       grade: 5,
     });
 
-    expect(textOf(query(fixture, '.material__grade'))).toBe('Grade 4');
+    // The design's own file for the package's own grade, and the grade said in
+    // words beside it for anyone who cannot see the mark (wave 6).
+    expect(query(fixture, '.material-grade').getAttribute('src')).toBe(
+      'assets/icons/materials/grade-4.svg',
+    );
+    expect(textOf(query(fixture, '.material__grade'))).toContain('Grade 4');
     // Nothing here reaches another origin at runtime (constitution I).
-    expect(element(fixture).querySelector('img')).toBeNull();
+    for (const image of element(fixture).querySelectorAll('img')) {
+      expect(image.getAttribute('src')).toMatch(/^assets\//);
+    }
   });
 
-  it('shows a known zero as nothing more needed, not as unavailable', () => {
+  it('reads an unpriced job as unpriced, not as a free one', () => {
     const fixture = renderComponent(MaterialCostList, {
       parts: [{ part: 'blueprint', state: 'known', materials: [] }],
       grade: 3,
     });
 
+    // Engineering always costs materials. An empty list from the package is the
+    // package failing to price a job, and the row says so rather than reading
+    // as a free upgrade (wave 5).
     const text = textOf(element(fixture));
-    expect(text).toContain('Nothing more is needed');
+    expect(text).toContain('prices no materials');
     expect(text).not.toContain('publishes no material cost');
   });
 
@@ -273,7 +306,7 @@ describe('material cost list', () => {
 
     const text = textOf(element(fixture));
     expect(text).toContain('publishes no material cost');
-    expect(text).not.toContain('Nothing more is needed');
+    expect(text).not.toContain('prices no materials');
   });
 
   it('draws nothing for a part nothing is selected for', () => {
@@ -285,28 +318,17 @@ describe('material cost list', () => {
     expect(textOf(element(fixture))).not.toContain('Experimental effect');
   });
 
-  it('keeps Merc Coin out of every material list', () => {
+  it('says nothing about Merc Coin at all', () => {
     const fixture = renderComponent(MaterialCostList, {
       parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
       grade: 5,
-      mercCoin: '120',
     });
 
-    const coinList = query(fixture, '.materials__list--coin');
-    expect(textOf(coinList)).toContain('Merc Coins');
-    expect(textOf(coinList)).toContain('120');
-    // It has no material or credit equivalent, so it never joins the fold.
-    expect(textOf(query(fixture, '.materials__part'))).not.toContain('Merc');
-  });
-
-  it('says a purchased article’s baked engineering was never crafted', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [],
-      grade: null,
-      fixedPurchase: true,
-    });
-
-    expect(textOf(element(fixture))).toContain('arrived already modified');
+    // A shopping list for a job, and nothing else. The article's shop price is
+    // what it cost to buy rather than what this job costs, and standing at the
+    // foot of this list it read as the price of the engineering above it
+    // (wave 9).
+    expect(textOf(element(fixture))).not.toContain('Merc');
   });
 });
 
@@ -357,7 +379,10 @@ describe('power controls', () => {
     // it says the value is unavailable, and that option cannot be chosen back
     // because there is no package operation that unsets a group (FR-014).
     expect(select.value).toBe('');
-    expect(textOf(select.options[0]!)).toBe('Unavailable');
+    // A mark, not a word: the canvas draws one digit in this chip. The
+    // absence is spelled out in the control's own name instead (wave 4).
+    expect(textOf(select.options[0]!)).toBe('—');
+    expect(accessibleName(select)).toContain('no group published');
     expect(select.options[0]!.disabled).toBe(true);
 
     select.value = '';
@@ -445,8 +470,14 @@ describe('ship identity fields', () => {
     const fixture = renderComponent(ShipIdentityFields, NAMED);
 
     expect(query(fixture, 'h1').textContent?.trim()).toBe('Pacifier');
-    // The glyph is decoration; the control's whole name is words.
-    expect(accessibleName(query(fixture, '.identity-fields__pencil'))).toBe('Rename the ship');
+    // The title is the control, as the canvas draws it. The glyph is
+    // decoration; the control's whole name is words.
+    // The name a Commander reads aloud is the title on it, and what the control
+    // does comes after — an `aria-label` would replace the one with the other
+    // (WCAG 2.5.3).
+    const name = accessibleName(query(fixture, '.identity-fields__open--name'));
+    expect(name).toContain('Pacifier');
+    expect(name).toContain('Rename the ship');
   });
 
   it('reads as the screen it is on when the build has no name', () => {
@@ -469,14 +500,17 @@ describe('ship identity fields', () => {
     expect(accessibleName(query(fixture, '.identity-fields__ident'))).toBe('Change the ship ID');
   });
 
-  it('commits what was typed, once, on an explicit confirm', () => {
+  it('commits what was typed on leaving the field, with no control beside it', () => {
     const fixture = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'name' });
     const committed: unknown[] = [];
     fixture.componentInstance.committed.subscribe((commit) => committed.push(commit));
 
+    // The canvas draws no Save, Clear or Cancel anywhere near the title.
+    expect(query(fixture, '.identity-fields__line').querySelectorAll('button')).toHaveLength(0);
+
     const field = query(fixture, '.identity-fields__input') as HTMLInputElement;
     field.value = '  Pacifier II  ';
-    (query(fixture, '.identity-fields__confirm') as HTMLButtonElement).click();
+    field.dispatchEvent(new Event('change'));
 
     // Trimmed, because the surrounding spaces are not part of the name.
     expect(committed).toEqual([{ field: 'name', value: 'Pacifier II' }]);
@@ -489,15 +523,12 @@ describe('ship identity fields', () => {
 
     const field = query(fixture, '.identity-fields__input') as HTMLInputElement;
     field.value = '   ';
-    (query(fixture, '.identity-fields__confirm') as HTMLButtonElement).click();
-    (query(fixture, '.identity-fields__quiet') as HTMLButtonElement).click();
+    field.dispatchEvent(new Event('change'));
 
-    // Whitespace alone is absence, and so is the clear action. A build with an
-    // empty name and a build with none are different builds (constitution IV).
-    expect(committed).toEqual([
-      { field: 'ident', value: null },
-      { field: 'ident', value: null },
-    ]);
+    // Whitespace alone is absence: emptying the field is how a plate is taken
+    // off. A build with an empty name and a build with none are different
+    // builds (constitution IV).
+    expect(committed).toEqual([{ field: 'ident', value: null }]);
   });
 
   it('asks to be opened rather than opening itself', () => {
@@ -505,7 +536,7 @@ describe('ship identity fields', () => {
     const opened: unknown[] = [];
     fixture.componentInstance.opened.subscribe((field) => opened.push(field));
 
-    (query(fixture, '.identity-fields__pencil') as HTMLButtonElement).click();
+    (query(fixture, '.identity-fields__open--name') as HTMLButtonElement).click();
     (query(fixture, '.identity-fields__ident') as HTMLButtonElement).click();
 
     expect(opened).toEqual(['name', 'ident']);

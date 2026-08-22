@@ -18,11 +18,9 @@ import { RecordOpenService } from '../../application/build-library/record-open.s
 import { TabOwnershipCoordinator } from '../../application/build-library/tab-ownership.coordinator';
 import { MessageService } from '../../i18n/message.service';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
-import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
-import { ActionButton } from '../../ui/components/action/action-button';
+import { ScreenChrome } from '../shared/screen-chrome';
 import { ActionLink } from '../../ui/components/action/action-link';
-import { GameText } from '../../ui/components/game-text/game-text';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { ExportDialog } from './export.dialog';
 import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
@@ -44,10 +42,8 @@ import { PersistenceStatus } from './persistence-status';
 @Component({
   selector: 'edsb-build-workspace-page',
   imports: [
-    ActionButton,
     ActionLink,
     ExportDialog,
-    GameText,
     OutfittingWorkspace,
     PersistenceStatus,
     StatusNotice,
@@ -56,11 +52,20 @@ import { PersistenceStatus } from './persistence-status';
   templateUrl: './build-workspace.page.html',
   styleUrl: './build-workspace.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // What persistence is doing is state, not decoration. Nothing on the canvas
+  // draws it while it is working, so nothing here does either — and this is the
+  // one thing a test can read to know a write has landed without reaching into
+  // storage and re-deriving the rule it is checking (the same arrangement the
+  // outfitting region's `data-composition` uses).
+  host: {
+    '[attr.data-persistence]': 'persistence()',
+    '[attr.data-validation]': 'validationState()',
+  },
 })
 export class BuildWorkspacePage {
   readonly #messages = inject(MessageService);
-  readonly #gameText = inject(GameTextPresenter);
   readonly #active = inject(ActiveBuildStore);
+  readonly #chrome = inject(ScreenChrome);
   readonly #ownership = inject(TabOwnershipCoordinator);
   readonly #autosave = inject(AutosaveService);
   readonly #open = inject(RecordOpenService);
@@ -75,14 +80,27 @@ export class BuildWorkspacePage {
   readonly emptyTitle = this.#messages.messageSignal('workspace.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('workspace.empty.description');
   readonly emptyAction = this.#messages.messageSignal('workspace.empty.action');
-  readonly hullLabel = this.#messages.messageSignal('workspace.hull');
-  readonly provenanceLabel = this.#messages.messageSignal('workspace.provenance.label');
   readonly shareLabel = this.#messages.messageSignal('workspace.actions.share');
 
   /** Whether the export layer is open. */
   readonly exportOpen = signal(false);
 
   readonly hasBuild = computed(() => this.#active.loadout() !== null);
+
+  /** What persistence is doing, as the shared state name. */
+  readonly persistence = computed(() => this.#active.persistence());
+
+  /** The package's verdict as a state name, drawn or not. */
+  readonly validationState = computed(() => {
+    const verdict = this.#active.validation();
+    if (verdict === null) {
+      return null;
+    }
+    if (!verdict.valid) {
+      return 'invalid';
+    }
+    return verdict.complete ? 'valid' : 'incomplete';
+  });
 
   constructor() {
     // Ownership first, then restoration, then saving. The order is the one the
@@ -131,6 +149,26 @@ export class BuildWorkspacePage {
       stopPublishing?.();
     });
 
+    // Canvas 1c draws `EXPORT` in the command bar's action row, after the
+    // history pair the outfitting region publishes. It is published rather
+    // than drawn in the page, for the reason the region's own pair is: the
+    // frame already renders one list in both the wide row and the compact
+    // menu, and a button inside the page would be a second placement neither
+    // canvas has.
+    effect((onCleanup) => {
+      this.#chrome.setActions(
+        this.hasBuild()
+          ? [
+              {
+                action: { id: 'workspace.export', label: this.shareLabel() },
+                perform: () => this.exportOpen.set(true),
+              },
+            ]
+          : [],
+      );
+      onCleanup(() => this.#chrome.setActions([]));
+    });
+
     // A record discarded in another tab pauses this tab's saving rather than
     // being silently recreated by the next autosave.
     effect(() => {
@@ -156,62 +194,29 @@ export class BuildWorkspacePage {
     return failure === null ? null : this.#linkErrors.describe(failure);
   });
 
-  /** The hull's name, in the Commander's language where the package has one. */
-  readonly hull = computed(() => {
-    const symbol = this.#active.loadout()?.shipSymbol;
-    return symbol === undefined ? null : this.#gameText.shipName(symbol);
-  });
-
-  /** Where this build came from, as a sentence rather than a state name. */
-  readonly provenance = computed(() => {
-    switch (this.#active.provenance()) {
-      case 'stock':
-        return this.#messages.message('workspace.provenance.stock');
-      case 'link':
-        return this.#messages.message('workspace.provenance.link');
-      case 'named':
-        return this.#messages.message('workspace.provenance.named', {
-          name: this.#active.sourceNamed()?.recordId ?? '',
-        });
-      case 'working':
-        return this.#messages.message('workspace.provenance.working');
+  /**
+   * The package's own verdict, where it is a problem — never this application's.
+   *
+   * Two states rather than three: an incomplete build is one a Commander is
+   * still assembling and an invalid one is a build the game would refuse, and
+   * collapsing them would tell them the wrong thing about both. A valid build
+   * says nothing at all, because the canvas's build status panel reports
+   * problems and stays silent otherwise (design-canvas rule).
+   */
+  readonly validationProblem = computed(() => {
+    switch (this.validationState()) {
+      case 'invalid':
+        return {
+          tone: 'error' as const,
+          message: this.#messages.message('workspace.validation.invalid'),
+        };
+      case 'incomplete':
+        return {
+          tone: 'warning' as const,
+          message: this.#messages.message('workspace.validation.incomplete'),
+        };
       default:
         return null;
     }
-  });
-
-  /** Whether closing this tab would lose something, in words. */
-  readonly savedState = computed(() =>
-    this.#messages.message(this.#active.dirty() ? 'workspace.dirty' : 'workspace.clean'),
-  );
-
-  /**
-   * The package's own verdict, never this application's.
-   *
-   * Three distinct states rather than a boolean: an incomplete build is one a
-   * Commander is still assembling, an invalid one is a build the game would
-   * refuse, and collapsing them would tell them the wrong thing about both.
-   */
-  readonly validation = computed(() => {
-    const verdict = this.#active.validation();
-    if (verdict === null) {
-      return null;
-    }
-    if (!verdict.valid) {
-      return {
-        tone: 'error' as const,
-        message: this.#messages.message('workspace.validation.invalid'),
-      };
-    }
-    if (!verdict.complete) {
-      return {
-        tone: 'warning' as const,
-        message: this.#messages.message('workspace.validation.incomplete'),
-      };
-    }
-    return {
-      tone: 'success' as const,
-      message: this.#messages.message('workspace.validation.valid'),
-    };
   });
 }

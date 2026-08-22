@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
 import {
+  HIGHER_IS_BETTER,
   NO_BLUEPRINT,
   draftIsStale,
   engineeringIntent,
@@ -18,6 +19,7 @@ import {
   withBlueprint,
   withEffect,
   withGrade,
+  type AttributeComparison as ComparedRow,
   type EngineeringDraft,
   type EngineeringSelection,
 } from '../../../../application/outfitting/engineering-draft';
@@ -192,7 +194,7 @@ export class EngineeringEditor {
   readonly blueprintChoices = computed<readonly BlueprintChoiceView[]>(() => {
     const draft = this.draft();
     const currentFdname = draft?.current.blueprintFdname ?? null;
-    return (draft?.blueprints ?? []).map((blueprint) => ({
+    return (this.draft()?.blueprints ?? []).map((blueprint) => ({
       fdname: blueprint.fdname,
       name: this.#gameText.blueprintName(blueprint.fdname),
       route: blueprint.route,
@@ -211,15 +213,48 @@ export class EngineeringEditor {
     }));
   });
 
-  /** The grades of the selected recipe, and none at all before one is chosen. */
+  /**
+   * True where the recipe is the article's rather than a choice.
+   *
+   * A Merc-Coin article and a pre-engineered reward come with theirs. Changing
+   * it would stop the article being the article the Almanac recognises, so the
+   * grade stays editable and the recipe is stated (wave 5, FR-012).
+   */
+  readonly fixedRecipe = computed(() => this.draft()?.current.purchaseVariant != null);
+
+  /** True once a recipe is chosen. Everything under it follows from it. */
+  readonly recipeChosen = computed(() => {
+    const selected = this.draft()?.selectedBlueprintFdname ?? null;
+    return selected !== null && selected !== NO_BLUEPRINT;
+  });
+
+  /**
+   * The grades the bar runs over: one to the recipe's highest.
+   *
+   * A Merc-Coin article's bespoke recipe starts at the grade it was bought at,
+   * so the cells below that are still drawn — the article carries them — and
+   * `lowestGrade` is what makes them unselectable rather than absent. A bar
+   * that started at 2 would say the article is a grade short of what it is.
+   */
   readonly grades = computed<readonly number[]>(() => {
+    const offered = this.#selectedDescriptor()?.grades ?? [];
+    const highest = offered.at(-1);
+    return highest === undefined ? [] : Array.from({ length: highest }, (_, index) => index + 1);
+  });
+
+  /** The first grade the selected recipe actually offers. */
+  readonly lowestGrade = computed(() => this.#selectedDescriptor()?.grades[0] ?? null);
+
+  readonly #selectedDescriptor = computed(() => {
     const draft = this.draft();
     const selected = draft?.selectedBlueprintFdname ?? null;
     if (draft === null || selected === null || selected === NO_BLUEPRINT) {
-      return [];
+      return null;
     }
     return (
-      draft.blueprints.find((blueprint) => sameIdentity(blueprint.fdname, selected))?.grades ?? []
+      (this.draft()?.blueprints ?? []).find((blueprint) =>
+        sameIdentity(blueprint.fdname, selected),
+      ) ?? null
     );
   });
 
@@ -237,31 +272,34 @@ export class EngineeringEditor {
       label: this.#messages.message(`outfitting.engineering.attribute.${row.attribute}` as const),
       stock: this.#figure(row.stock),
       modified: this.#figure(row.modified),
+      direction: this.#direction(row),
     }));
   });
 
+  /**
+   * One shopping list, not three.
+   *
+   * The recipe and the effect are two halves of one job, and a Commander gathers
+   * the materials for it once. Split into `BLUEPRINT PROGRESSION`, `EXPERIMENTAL
+   * EFFECT` and `TOGETHER` the same material appeared under three headings with
+   * three different counts, and the only one worth acting on was the last
+   * (wave 9). `combined` already folds them through the package's own
+   * `sumMaterials`, and is `unavailable` whenever either half is — so nothing is
+   * lost by drawing only it.
+   */
   readonly materialParts = computed<readonly MaterialPartView[]>(() => {
     const cost = this.draft()?.cost;
     if (cost === undefined) {
       return [];
     }
-    return [
-      this.#part('blueprint', cost.blueprint),
-      this.#part('experimental', cost.experimental),
-      // The fold is only worth drawing when there are two things folded. One
-      // part repeated under a "Together" heading is the same list twice.
-      ...(cost.blueprint.kind === 'known' && cost.experimental.kind === 'known'
-        ? [this.#part('combined', cost.combined)]
-        : []),
-    ];
+    // Nothing chosen is not a job costing nothing. A `MATERIALS` heading over
+    // "the Almanac prices no materials for this" is a section about nothing
+    // (wave 4).
+    if (cost.blueprint.kind === 'notSelected' && cost.experimental.kind === 'notSelected') {
+      return [];
+    }
+    return [this.#part('combined', cost.combined)];
   });
-
-  readonly mercCoin = computed(() => {
-    const coins = this.draft()?.cost.mercCoin ?? null;
-    return coins === null ? null : this.#formatters.integer(coins);
-  });
-
-  readonly fixedPurchase = computed(() => this.draft()?.cost.fixedPurchase === 'notCrafted');
 
   /**
    * What clearing would also cost, when the package would lose something by it.
@@ -372,7 +410,12 @@ export class EngineeringEditor {
     const result = this.store.dispatch(intent);
     if (result.kind === 'committed' || result.kind === 'unchanged') {
       this.#pick.set(null);
-      this.closed.emit();
+      // Only the layer is a place to be taken out of. Inline the editor is the
+      // panel the Commander is working in, and it stays open on the module they
+      // just engineered.
+      if (this.asLayer()) {
+        this.closed.emit();
+      }
     }
     // A refusal keeps the editor open with the choices intact. The Almanac's
     // reason is published by the workspace's refusal notice, and closing here
@@ -388,6 +431,12 @@ export class EngineeringEditor {
 
   #choose(selection: EngineeringSelection): void {
     this.#pick.set({ selection, revision: this.store.revision() });
+    // Canvas 1c draws no apply control, so inline the choice is the decision —
+    // the same rule the chooser follows one panel up. Canvas 1d's editor is a
+    // screen of its own, so it keeps the bar the canvas gives it.
+    if (!this.asLayer()) {
+      this.apply();
+    }
   }
 
   #slotLabel(): string {
@@ -406,8 +455,28 @@ export class EngineeringEditor {
     return {
       part,
       state: 'known',
-      materials: cost.materials.map((material) => this.#line(material)),
+      materials: this.#sorted(cost.materials.map((material) => this.#line(material))),
     };
+  }
+
+  /**
+   * A shopping list in the order a Commander gathers one: commonest first.
+   *
+   * Rarity, then name. The package returns a recipe's materials in its own
+   * catalogue order, which is neither — so two grade-1 commons sat either side
+   * of a grade-5 rarity and the list read as unordered. A material the package
+   * grades no rarity for sorts last rather than first: an unknown rarity is not
+   * a low one (wave 9).
+   */
+  #sorted(lines: readonly MaterialLineView[]): readonly MaterialLineView[] {
+    return [...lines].sort((left, right) => {
+      const byGrade =
+        (left.grade ?? Number.MAX_SAFE_INTEGER) - (right.grade ?? Number.MAX_SAFE_INTEGER);
+      if (byGrade !== 0) {
+        return byGrade;
+      }
+      return (left.name.text ?? left.symbol).localeCompare(right.name.text ?? right.symbol);
+    });
   }
 
   #line(material: EngineeringMaterial): MaterialLineView {
@@ -419,6 +488,23 @@ export class EngineeringEditor {
       grade: materialRarity(material.symbol),
       count: this.#formatters.integer(material.count),
     };
+  }
+
+  /**
+   * Which way the recipe moved one figure.
+   *
+   * The arithmetic direction against the attribute's own sense: more damage is
+   * better, more heat is not. `null` where either side is unpublished, because
+   * there is nothing to compare and a marker would imply there was.
+   */
+  #direction(row: ComparedRow): 'better' | 'worse' | 'unchanged' | null {
+    if (row.stock === null || row.modified === null) {
+      return null;
+    }
+    if (row.modified === row.stock) {
+      return 'unchanged';
+    }
+    return row.modified > row.stock === HIGHER_IS_BETTER[row.attribute] ? 'better' : 'worse';
   }
 
   /** A package figure, formatted, or `null` where the package published none. */

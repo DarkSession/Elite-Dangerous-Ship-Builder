@@ -6,6 +6,10 @@
   display: block;
 }
 
+// No rule above the heading. The requirement sits in its own column of canvas
+// 1c's panel, with the choices beside it rather than above it, so there is
+// nothing for a rule to separate it from — it was a line drawn across the top of
+// a column (wave 9).
 .materials {
   @include layout.stack(var(--edsb-space-stack-tight));
 }
@@ -57,14 +61,6 @@
   gap: var(--edsb-space-inline-tight);
 }
 
-// The rarity the canvas draws as a remote icon, carried as the package's own
-// number instead. Same fact, no other origin.
-.material__grade {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
-
-  flex: none;
-}
-
 .material__name {
   display: flex;
   align-items: baseline;
@@ -81,4 +77,8 @@
 
   flex: none;
   margin: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
 }

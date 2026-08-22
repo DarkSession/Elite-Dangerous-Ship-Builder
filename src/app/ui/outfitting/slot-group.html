@@ -1,7 +1,18 @@
 <section class="group" [attr.aria-labelledby]="headingId">
   <div class="group__rule">
     <h3 class="group__heading" [id]="headingId">{{ heading() }}</h3>
-    <span class="group__count">{{ count() }}</span>
+    <!-- Canvas 1c's `SIZE · NODE NO.` under the hardpoint rule, naming the two
+         badges every row in that group leads with. -->
+    @if (columns(); as columns) {
+      <span class="group__columns">{{ columns }}</span>
+    }
+    <span class="group__line" aria-hidden="true"></span>
+
+    <!-- The canvas writes a bare number at the rule's trailing edge. What it
+         counts is spoken beside it rather than drawn, so the rule reads as the
+         canvas draws it and a reader still hears "8 mounts". -->
+    <span class="group__count" aria-hidden="true">{{ group().slots.length }}</span>
+    <span class="visually-hidden">{{ count() }}</span>
   </div>
 
   <!--

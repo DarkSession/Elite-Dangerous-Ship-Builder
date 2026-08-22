@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { GameText } from '../components/game-text/game-text';
+import { SelectField, type SelectOption } from '../components/select-field/select-field';
 import { relationId } from '../a11y/text-equivalence';
 
 /** The value the explicit no-blueprint option carries. */
@@ -28,10 +29,11 @@ export interface BlueprintChoiceView {
  * mirrored (engineering editor design, "Clearing engineering").
  *
  * The canvas draws the wide composition as a dropdown and the compact one as a
- * list of cards. Both are this: native radios in a named group. A dropdown that
- * has to show a description under each option is a listbox reimplemented in
- * `div`s, and the two compositions would then differ in what they offer —
- * which is exactly the asymmetry constitution V forbids.
+ * list of cards, and so does this: a native `<select>` inline, native radios in
+ * a named group in the layer. Neither is a listbox rebuilt in `div`s, and the
+ * two offer the same choices in the same order — the option's own label carries
+ * what the card draws under the name, so nothing is lost by picking one
+ * (constitution V).
  *
  * No option carries a `DAMAGE ▲ · THERMAL LOAD ▲` line. The Almanac publishes
  * no description for a blueprint and no direction for what it moves, so the
@@ -41,7 +43,7 @@ export interface BlueprintChoiceView {
  */
 @Component({
   selector: 'edsb-blueprint-choice-list',
-  imports: [GameText],
+  imports: [GameText, SelectField],
   templateUrl: './blueprint-choice-list.html',
   styleUrl: './blueprint-choice-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +52,19 @@ export class BlueprintChoiceList {
   readonly #messages = inject(MessageService);
 
   readonly choices = input.required<readonly BlueprintChoiceView[]>();
+
+  /** True where the editor has room for canvas 1c's dropdown rather than cards. */
+  readonly asDropdown = input(false);
+
+  /**
+   * True where the module's recipe is the article's own and not a choice.
+   *
+   * A Merc-Coin article and a pre-engineered reward arrive with their recipe
+   * baked in: it is what makes the article that article. Offering a menu over
+   * one offers a change that would stop it being what it is, so the recipe is
+   * stated instead (wave 5, FR-012).
+   */
+  readonly fixed = input(false);
 
   /** The selected `fdname`, `'none'`, or `null` for nothing chosen yet. */
   readonly selected = input<string | null>(null);
@@ -69,16 +84,27 @@ export class BlueprintChoiceList {
   readonly noBlueprint = NO_BLUEPRINT_CHOICE;
 
   readonly groupName = relationId('blueprint-choice');
+  readonly fixedLabelId = relationId('blueprint-fixed');
 
   readonly legend = this.#messages.messageSignal('outfitting.engineering.blueprint.legend');
   readonly noneLabel = this.#messages.messageSignal('outfitting.engineering.blueprint.none');
-  readonly noneDescription = this.#messages.messageSignal(
-    'outfitting.engineering.blueprint.none-description',
-  );
   readonly appliedLabel = this.#messages.messageSignal('outfitting.engineering.applied');
-  readonly mercenaryLabel = this.#messages.messageSignal(
-    'outfitting.engineering.blueprint.route.mercenary',
-  );
+
+  /**
+   * The dropdown's options, in the list's own order.
+   *
+   * Nothing but the recipes' own names. The canvas writes a name per option and
+   * nothing else — the route a recipe needs is not a line it draws, and a
+   * recipe that needs a purchase is now only ever offered on the article that
+   * came with it (wave 5).
+   */
+  readonly options = computed<readonly SelectOption[]>(() => [
+    { value: NO_BLUEPRINT_CHOICE, label: this.noneLabel() },
+    ...this.choices().map((choice) => ({
+      value: choice.fdname,
+      label: choice.name.text ?? choice.fdname,
+    })),
+  ]);
 
   /** True when the Commander has asked to remove the engineering. */
   readonly clearing = computed(() => this.selected() === NO_BLUEPRINT_CHOICE);

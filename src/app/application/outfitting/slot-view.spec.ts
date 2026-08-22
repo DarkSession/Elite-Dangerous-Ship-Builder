@@ -67,7 +67,7 @@ describe('slot views', () => {
     }
   });
 
-  it('reports the cargo hatch’s package reason and offers power alone', () => {
+  it('reports the cargo hatch’s package reason and offers power and its engineering panel', () => {
     const loadout = defaultBuild();
     const views = slotViews(loadout, text);
     const hatch = views.find((view) => view.key === FIXTURE_SLOTS.cargoHatch)!;
@@ -80,7 +80,10 @@ describe('slot views', () => {
       canOpenReplacement: false,
       canFitSelection: false,
       canRemove: false,
-      canOpenEngineering: false,
+      // The panel opens on anything fitted, the hatch included. Whether the
+      // Almanac offers a recipe for it is what the panel says, not what decides
+      // whether there is one to read (wave 9).
+      canOpenEngineering: true,
       canSetEnabled: true,
       canSetPriority: true,
       packageEmpty: true,

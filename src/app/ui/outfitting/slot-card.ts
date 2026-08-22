@@ -57,9 +57,6 @@ export class SlotCard {
   /** The engineering summary the code line carries, already localized. */
   readonly engineeringSummary = input<string | null>(null);
 
-  /** Acquisition and entitlement labels, already localized. */
-  readonly labels = input<readonly string[]>([]);
-
   readonly intent = output<SlotCardIntent>();
 
   readonly identityId = relationId('slot-identity');
@@ -87,6 +84,7 @@ export class SlotCard {
   );
 
   readonly emptyLabel = this.#messages.messageSignal('outfitting.slot.empty');
+  readonly engineeredLabel = this.#messages.messageSignal('outfitting.slot.engineered');
   readonly selectedLabel = this.#messages.messageSignal('outfitting.slot.selected');
   readonly replaceLabel = this.#messages.messageSignal('outfitting.capability.replace');
   readonly engineerLabel = this.#messages.messageSignal('outfitting.capability.engineer');
@@ -97,35 +95,20 @@ export class SlotCard {
   );
 
   /**
-   * The short marker the ledger carries for a mount that cannot be emptied.
+   * The one marker the ledger carries, on the one row the canvas draws it on.
    *
-   * Canvas 1d writes `FIXED` beside the cargo hatch and nothing longer: the
-   * ledger is a ledger, and a full sentence repeated down every core row is
-   * noise a Commander scrolls past rather than reads. The Almanac's whole
-   * reason is published on the selected mount's bench, where it answers the
-   * question a Commander is actually asking (FR-009).
+   * Canvas 1d writes `FIXED` beside the cargo hatch and nothing anywhere else —
+   * not on a required core internal, not on a mount at its module limit. Those
+   * are real Almanac facts and they are published on the selected mount's
+   * bench, in the Almanac's own full sentence, where they answer a question a
+   * Commander is asking rather than repeating a chip down seven rows
+   * (design-canvas rule; FR-009).
    */
-  readonly immovableMarker = computed(() => {
-    const reason = this.slot().immovableReason;
-    if (reason === null) {
-      return null;
-    }
-    const key: MessageKey = (
-      {
-        cargoHatch: 'outfitting.immovable.short.cargoHatch',
-        requiredSlot: 'outfitting.immovable.short.requiredSlot',
-        moduleLimit: 'outfitting.immovable.short.moduleLimit',
-      } as const
-    )[reason];
-    return this.#messages.message(key);
-  });
-
-  readonly restrictionText = computed(() => {
-    const restriction = this.slot().restrictionText;
-    return restriction === null || restriction.text === null
-      ? null
-      : this.#messages.message('outfitting.slot.restriction', { restriction: restriction.text });
-  });
+  readonly immovableMarker = computed(() =>
+    this.slot().immovableReason === 'cargoHatch'
+      ? this.#messages.message('outfitting.immovable.short.cargoHatch')
+      : null,
+  );
 
   /**
    * The module's name, for the power controls to name what they act on.
@@ -136,12 +119,30 @@ export class SlotCard {
    */
   readonly moduleLabel = computed(() => this.slot().module?.displayName.text ?? this.drawnLabel());
 
-  /** True where the package offers power on this mount at all. */
-  readonly showsPower = computed(
-    () =>
-      this.slot().module !== null &&
-      (this.capabilities().canSetEnabled || this.capabilities().canSetPriority),
-  );
+  /**
+   * True where the package offers power on this mount at all.
+   *
+   * A module the Almanac prices at no power draw — armour, a fuel tank — has
+   * nothing to power and nothing to group, and the canvas draws no chip on one.
+   * An article whose draw the Almanac does not publish keeps its controls: not
+   * knowing a figure is not the same as knowing it is zero (constitution IV).
+   */
+  readonly showsPower = computed(() => {
+    const module = this.slot().module;
+    if (module === null) {
+      return false;
+    }
+
+    // A module the Almanac resolves and prices at no power draw — armour, a
+    // fuel tank — has nothing to power and nothing to group. An article it
+    // cannot resolve at all keeps its controls: not having read a figure is
+    // not the same as having read a zero (constitution IV).
+    const article = module.effectiveArticle ?? module.article;
+    if (article != null && !(typeof article.powerDraw === 'number' && article.powerDraw > 0)) {
+      return false;
+    }
+    return this.capabilities().canSetEnabled || this.capabilities().canSetPriority;
+  });
 
   emit(intent: SlotCardIntent): void {
     this.intent.emit(intent);

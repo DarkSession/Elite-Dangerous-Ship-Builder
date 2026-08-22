@@ -6,6 +6,7 @@ import {
   expectOrderedHeadings,
   expectSingleVisibleH1,
 } from './accessibility/assertions';
+import { reachShellLink } from './shell';
 
 /**
  * Inspecting a hull, and asking for a stock build.
@@ -57,7 +58,7 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   // this link is the way back from anywhere but the shipyard. Waiting for it is
   // what keeps the journey behind the navigation that brought us here: without
   // it the search below can be typed into a manifest that is already leaving.
-  await page.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
+  await reachShellLink(page, 'Shipyard');
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await page
@@ -199,14 +200,16 @@ test.describe('hull detail', () => {
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
-    await expect(page.getByText('New stock build')).toBeVisible();
-    await expect(page.getByText('Unsaved changes')).toBeVisible();
+    // The hull is the command bar's identity line, as canvas 1c draws it, and
+    // the build itself is the ledger under it. A hull line, a provenance line
+    // and a saved-state line in the page were none of them on the canvas.
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
   test('confirms before replacing unsaved work, and cancelling keeps it', async ({ page }) => {
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.getByText('New stock build')).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
@@ -223,19 +226,19 @@ test.describe('hull detail', () => {
     // survived, and a fresh load is the strictest way to ask.
     await page.goto('/build');
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
   });
 
   test('replaces unsaved work once the Commander confirms', async ({ page }) => {
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.getByText('New stock build')).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Discard and open' }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await expect(page.getByRole('main').getByText('Sidewinder').first()).toBeVisible();
+    await expect(page.getByRole('banner').getByText('Sidewinder').first()).toBeVisible();
   });
 
   test('never scrolls the document sideways', async ({ page }) => {
@@ -254,7 +257,7 @@ test.describe('hull detail', () => {
 
     await page.goto(ANACONDA);
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.getByText('New stock build')).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();

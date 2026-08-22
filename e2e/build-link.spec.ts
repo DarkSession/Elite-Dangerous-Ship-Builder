@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { reachShellAction } from './shell';
 
 /**
  * A build, passed to someone else.
@@ -23,10 +24,21 @@ async function buildWithLink(page: Page, hull = 'Anaconda'): Promise<string> {
   return new URL(page.url()).hash.slice(1);
 }
 
-/** Opens the share layer on the workspace. */
+/**
+ * Opens the export layer from the command bar.
+ *
+ * Canvas 1c draws `EXPORT` in the bar's action row, so that is where it is
+ * reached — and at compact width the frame puts the same action behind the
+ * named trigger, which `reachShellAction` knows about.
+ */
 async function openShare(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Share this build' }).click();
+  await reachShellAction(page, /^export$/i);
   await expect(page.getByRole('dialog')).toBeVisible();
+}
+
+/** The workspace has a build open when its ledger has mounts in it. */
+async function buildIsOpen(page: Page): Promise<void> {
+  await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
 test.describe('publishing a build link', () => {
@@ -80,7 +92,7 @@ test.describe('restoring a build from a link', () => {
     await incoming.goto(`/build#${fragment}`);
 
     await expect(incoming.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(incoming.getByText('Opened from a build link')).toBeVisible();
+    await buildIsOpen(incoming);
 
     // A link is not a save. The named group exists as a heading either way; what
     // matters is that opening a link put nothing in it.
@@ -95,7 +107,7 @@ test.describe('restoring a build from a link', () => {
 
     const incoming = await page.context().newPage();
     await incoming.goto(`/build#${fragment}`);
-    await expect(incoming.getByText('Opened from a build link')).toBeVisible();
+    await buildIsOpen(incoming);
 
     // The package pins fixed modules, so the payload omits them and the
     // package's own construction puts them back. Nothing here repaired
@@ -110,7 +122,7 @@ test.describe('restoring a build from a link', () => {
 
     const incoming = await page.context().newPage();
     await incoming.goto(`/build#${fragment}`);
-    await expect(incoming.getByText('Opened from a build link')).toBeVisible();
+    await buildIsOpen(incoming);
     await incoming.waitForFunction(
       (expected) => window.location.hash === `#${expected}`,
       fragment,
@@ -132,7 +144,7 @@ test.describe('a link that cannot be read', () => {
   for (const refusal of refusals) {
     test(`leaves the active build untouched: ${refusal.name}`, async ({ page }) => {
       await buildWithLink(page);
-      await expect(page.getByText('Unsaved changes')).toBeVisible();
+      await buildIsOpen(page);
 
       await page.evaluate((fragment) => {
         window.location.hash = fragment;
@@ -142,7 +154,7 @@ test.describe('a link that cannot be read', () => {
       // cost them, whatever the link turns out to be.
       await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
       await expect(page.getByText('Anaconda').first()).toBeVisible();
-      await expect(page.getByText('Unsaved changes')).toBeVisible();
+      await buildIsOpen(page);
     });
   }
 

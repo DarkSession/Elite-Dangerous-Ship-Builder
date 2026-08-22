@@ -2,88 +2,147 @@
   <legend class="visually-hidden">{{ label() }}</legend>
 
   <!--
-    The canvas's single header row, drawn once above the manifest. It names the
-    columns for anyone reading the wide composition; every row restates the same
-    labels for a reader, so this is decoration and is hidden from them rather
-    than announced a second time. The compact composition removes it entirely.
+    The canvas's single header row, drawn once above the manifest: `MODULE ·
+    CLASS · DPS · MASS t · PWR MW · DRAW WEP · COST cr`. It names the columns
+    for anyone reading the wide composition; every row restates the same labels
+    for a reader, so this is decoration and is hidden from them rather than
+    announced a second time. The compact composition removes it entirely.
   -->
   <div class="candidates__columns" aria-hidden="true">
-    <!--
-      The canvas heads the first column `MODULE` and the second `CLASS`. The
-      class is drawn inside the identity cell here, on the `4A GIMBALLED` line
-      the badge already renders, so it is named once rather than given a column
-      of its own and repeated in both places.
-    -->
     <span class="candidates__column">{{ moduleColumn() }}</span>
+    <span class="candidates__column">{{ classColumn() }}</span>
     @for (column of factColumns(); track column.field) {
       <span class="candidates__column candidates__column--figure">{{ column.label }}</span>
     }
   </div>
 
-  @for (section of sections(); track section.section) {
-    <div class="candidates__section">
-      <h3 class="visually-hidden">{{ sectionLabel(section.section) }}</h3>
+  <!--
+    What scrolls is the rows, not the head above them. The head is a sibling of
+    the scroller rather than a sticky box inside it: a sticky box is placed at a
+    rounded device pixel while the rows under it move at a fractional one, so at
+    any scale factor other than 1 a sliver of the row behind it shows in the
+    seam — and nothing painted inside the scroller can cover that sliver,
+    because the scroller clips its own top edge. Taking the head out of the
+    scroller removes the seam rather than papering over it (wave 9).
+  -->
+  <div class="candidates__body">
+    @for (section of sections(); track section.section) {
+      <div class="candidates__section">
+        <h3 class="visually-hidden">{{ sectionLabel(section.section) }}</h3>
 
-      @for (group of section.groups; track group.name.text ?? $index) {
-        <div class="candidates__group">
-          <h4 class="visually-hidden">
-            {{ groupLabel(group.name.text, group.choices.length) }}
-          </h4>
+        @for (group of section.groups; track group.name.text ?? $index) {
+          <div class="candidates__group">
+            <h4 class="visually-hidden">
+              {{ groupLabel(group.name.text, group.choices.length) }}
+            </h4>
 
-          @for (choice of group.choices; track choice.key) {
-            @let resolved = row(choice);
-            <label
-              class="candidate"
-              [attr.data-selected]="selectedKey() === choice.key"
-              [class.candidate--fitted]="isFitted(choice)"
-            >
-              <input
-                class="candidate__radio"
-                type="radio"
-                name="module-choice"
-                [value]="choice.key"
-                [checked]="selectedKey() === choice.key"
-                [attr.aria-label]="resolved.actionLabel"
-                (change)="chosen.emit(choice.key)"
-              />
-
-              <span class="candidate__identity">
-                <edsb-module-identity-badge
-                  [name]="choice.presentation.name"
-                  [symbol]="choice.module.symbol"
-                  [moduleClass]="choice.presentation.class"
-                  [rating]="choice.presentation.rating"
-                  [mount]="choice.presentation.mount"
+            @for (choice of group.choices; track choice.key) {
+              @let resolved = row(choice);
+              <label
+                class="candidate"
+                [attr.data-selected]="selectedKey() === choice.key"
+                [class.candidate--fitted]="isFitted(choice)"
+              >
+                <input
+                  class="candidate__radio"
+                  type="radio"
+                  name="module-choice"
+                  [value]="choice.key"
+                  [checked]="selectedKey() === choice.key"
+                  [attr.aria-label]="resolved.actionLabel"
+                  (change)="chosen.emit(choice.key)"
                 />
 
-                <span class="candidate__state">{{ stateLabel(choice) }}</span>
+                <!--
+                  One line, as the canvas draws it: the module's name with its
+                  mount, the Merc Coin where one buys it, and the `REWARD ONLY`
+                  chip where the Almanac says it is not sold. What the row already
+                  is — fitted, pre-engineered, bought at a grade — is read rather
+                  than drawn, because the canvas draws none of it and a third line
+                  under a name is what put this manifest out of alignment.
+                -->
+                <span class="candidate__identity">
+                  <span class="candidate__name">
+                    <edsb-game-text
+                      [text]="choice.presentation.name.text"
+                      [language]="choice.presentation.name.language"
+                      [translationState]="choice.presentation.name.translationState"
+                    />
+                    @if (resolved.mount) {
+                      <span class="candidate__mount">· {{ resolved.mount }}</span>
+                    }
+                  </span>
 
-                @if (resolved.purchaseGrade; as grade) {
-                  <span class="candidate__grade">{{ grade }}</span>
-                }
+                  @if (stateLabel(choice); as state) {
+                    <span class="visually-hidden">{{ state }}</span>
+                  }
 
-                <edsb-acquisition-badge [labels]="choice.presentation.labels" />
-              </span>
+                  @if (resolved.purchaseGrade; as grade) {
+                    <span class="visually-hidden">{{ grade }}</span>
+                  }
 
-              <!--
-                The same figures at both widths. At wide they align under the
-                header row and their per-row labels are hidden visually; at
-                compact each card restates its own labels, because a bare column
-                of numbers with the header scrolled away is unreadable.
-              -->
-              <span class="candidate__facts">
-                @for (fact of resolved.facts; track fact.field) {
-                  <edsb-unavailable-fact
-                    class="candidate__fact"
-                    [label]="fact.label"
-                    [value]="fact.value"
+                  <edsb-acquisition-badge
+                    class="candidate__badge"
+                    [labels]="choice.presentation.labels"
                   />
-                }
-              </span>
-            </label>
-          }
-        </div>
-      }
-    </div>
-  }
+                </span>
+
+                <!-- The canvas's own `CLASS` column: the package's class and rating. -->
+                <span class="candidate__class">
+                  @if (resolved.code) {
+                    {{ resolved.code }}
+                    <span class="visually-hidden">{{ resolved.codeDescription }}</span>
+                  }
+                </span>
+
+                <!--
+                  The same figures at both widths. At wide they align under the
+                  header row and their per-row labels are hidden visually; at
+                  compact each card restates its own labels, because a bare column
+                  of numbers with the header scrolled away is unreadable.
+                -->
+                <span class="candidate__facts">
+                  @for (fact of resolved.facts; track fact.field) {
+                    <edsb-unavailable-fact
+                      class="candidate__fact"
+                      [label]="fact.label"
+                      [value]="fact.value"
+                    />
+                  }
+
+                  <!--
+                    The canvas's `COST` cell. A Mercenary article carries two
+                    prices and they do not add up — credits above, Merc Coin
+                    below, each with its own unit — so the coin figure sits in
+                    this cell rather than becoming a sum or a column of its own.
+                  -->
+                  <span class="candidate__cost">
+                    <edsb-unavailable-fact
+                      class="candidate__fact"
+                      [label]="resolved.cost.label"
+                      [value]="resolved.cost.value"
+                      [unit]="resolved.cost.unit ?? null"
+                    />
+                    @if (resolved.mercCoin; as coins) {
+                      <span class="candidate__merc">
+                        <span class="candidate__merc-count" data-bidi-isolate>{{ coins }}</span>
+                        <img
+                          class="candidate__merc-icon"
+                          src="assets/icons/merc-coin.png"
+                          alt=""
+                          width="15"
+                          height="15"
+                        />
+                        <span class="visually-hidden">{{ mercCoinLabel() }}</span>
+                      </span>
+                    }
+                  </span>
+                </span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
 </fieldset>

@@ -37,6 +37,17 @@ export type BuildEditIntent =
       readonly effectFdname: string | null;
     }
   | { readonly kind: 'clearEngineering'; readonly slotKey: string }
+  /**
+   * Put a purchased article back to what it was bought as.
+   *
+   * A bespoke Mercenary recipe's own table starts at grade 2, so the grade an
+   * article arrived at is a grade `applyBlueprint` cannot reach — the package
+   * refuses it outright. Coming back down to it is not a crafting job at all:
+   * it is the article again, which is what `setPreEngineeredVariant` restores.
+   * The variant itself is read off the fitted module rather than carried here,
+   * because an intent never holds a package record (wave 6).
+   */
+  | { readonly kind: 'restorePurchase'; readonly slotKey: string }
   | { readonly kind: 'setEnabled'; readonly slotKey: string; readonly enabled: boolean }
   | { readonly kind: 'setPriority'; readonly slotKey: string; readonly priority: PowerPriority }
   /** `null` clears the name to absence. An empty string is not the same thing. */

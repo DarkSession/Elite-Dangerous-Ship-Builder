@@ -12,7 +12,8 @@ import { TextField } from '../components/text-field/text-field';
  * feature 011's catalogue search already ships. So are the instructions: what
  * the search matches is not guessable from a placeholder, and a Commander who
  * types a symbol and gets nothing deserves to know why rather than concluding
- * the search is broken.
+ * the search is broken. Neither is drawn, because neither canvas draws them —
+ * the invisible accessibility floor, not a paragraph beside the design.
  *
  * The key hint is an *unrequired* affordance. Constitution V puts the keyboard
  * criteria out of scope and forbids requiring keyboard operation, so nothing
@@ -53,12 +54,10 @@ export class CandidateSearch {
   );
 
   readonly shortcutHint = computed(() =>
-    this.#messages.message('outfitting.search.shortcut', {
-      shortcut: this.#messages.message(
-        this.#navigator.applePlatform()
-          ? 'outfitting.search.shortcut.apple'
-          : 'outfitting.search.shortcut.other',
-      ),
-    }),
+    this.#messages.message(
+      this.#navigator.applePlatform()
+        ? 'outfitting.search.shortcut.apple'
+        : 'outfitting.search.shortcut.other',
+    ),
   );
 }

@@ -6,13 +6,16 @@
     [labelHidden]="true"
     [placeholder]="placeholder()"
     [description]="instructions()"
+    [descriptionHidden]="true"
     [value]="query()"
     (changed)="changed.emit($event)"
   />
 
   <!--
-    The canvas's `⌘K` beside the field. Decorative for a reader: it names a
-    convenience, and the field is already reachable and already named.
+    The canvas's `⌘K`, drawn inside the field's own box and nothing more.
+    Decorative for a reader: it names a convenience, and the field is already
+    reachable and already named. The sentence that once wrapped it — "… jumps to
+    this field." — is on neither canvas.
   -->
   <p class="search__shortcut" aria-hidden="true">{{ shortcutHint() }}</p>
 

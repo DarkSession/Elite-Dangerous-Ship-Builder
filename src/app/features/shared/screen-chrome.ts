@@ -46,11 +46,29 @@ export class ScreenChrome {
     this.#count.set(count);
   }
 
-  /** What the open screen currently offers, in the order it offers them. */
-  readonly actions = computed(() => this.#actions().map((entry) => entry.action));
+  /**
+   * What the open screen currently offers, in the order the canvas draws them.
+   *
+   * Two channels rather than one because two components publish into the same
+   * bar: canvas 1c draws `↶ UNDO  REDO ↷` — the outfitting region's — and then
+   * `EXPORT  SAVE`, which belong to the screen that owns the build. A single
+   * list would let whichever effect ran last erase the other's.
+   */
+  readonly actions = computed(() => {
+    const region = this.#regionActions().map((entry) => entry.action);
+    const screen = this.#actions().map((entry, index) =>
+      index === 0 && region.length > 0 ? { ...entry.action, startsGroup: true } : entry.action,
+    );
+    return [...region, ...screen];
+  });
 
   setActions(actions: readonly ScreenAction[]): void {
     this.#actions.set(actions);
+  }
+
+  /** What a capability region composed into the screen offers, drawn first. */
+  setRegionActions(actions: readonly ScreenAction[]): void {
+    this.#regionActions.set(actions);
   }
 
   /**
@@ -61,12 +79,15 @@ export class ScreenChrome {
    * screen's own actions from having to know about each other.
    */
   select(id: string): boolean {
-    const entry = this.#actions().find((candidate) => candidate.action.id === id);
+    const entry = [...this.#regionActions(), ...this.#actions()].find(
+      (candidate) => candidate.action.id === id,
+    );
     entry?.perform();
     return entry !== undefined;
   }
 
   readonly #actions = signal<readonly ScreenAction[]>([]);
+  readonly #regionActions = signal<readonly ScreenAction[]>([]);
 
   readonly #identity = signal<ScreenIdentityChannel | null>(null);
 

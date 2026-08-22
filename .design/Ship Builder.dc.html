@@ -5670,6 +5670,7 @@
                       "
                     >
                       <div
+                        id="exp-title"
                         style="
                           font:
                             700 13px/1 'Barlow Condensed',
@@ -6492,6 +6493,7 @@
                         style-hover="background:rgba(255,140,26,.08)"
                       >
                         <div
+                          id="d-name"
                           style="
                             font:
                               700 16px/1 'Barlow Condensed',
@@ -6552,8 +6554,8 @@
                           "
                           style-hover="border-color:var(--amber-a5);color:var(--amber-3)"
                         >
-                          FD-11X<span
-                            style="opacity: 0.5; display: inline-block; transform: scaleX(-1)"
+                          <span id="d-ident">FD-11X</span
+                          ><span style="opacity: 0.5; display: inline-block; transform: scaleX(-1)"
                             >✎</span
                           >
                         </div>
@@ -6781,17 +6783,6 @@
                             "
                           >
                             HARDPOINTS
-                          </div>
-                          <div
-                            style="
-                              font:
-                                400 8px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--ink-38);
-                              letter-spacing: 0.12em;
-                            "
-                          >
-                            SIZE · NODE NO.
                           </div>
                           <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
                           <div
@@ -7257,15 +7248,31 @@
                             4
                           </div>
                           <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  500 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--ink-2);
-                              "
-                            >
-                              Large Multi-Cannon
+                            <div style="display: flex; align-items: center; gap: 7px; min-width: 0">
+                              <div
+                                style="
+                                  font:
+                                    500 13px/1.2 Barlow,
+                                    sans-serif;
+                                  color: var(--ink-2);
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                  white-space: nowrap;
+                                "
+                              >
+                                Large Plasma Accelerator
+                              </div>
+                              <img
+                                src="assets/merc-coin.png"
+                                alt="Merc module"
+                                style="
+                                  width: 13px;
+                                  height: 13px;
+                                  flex: none;
+                                  display: block;
+                                  object-fit: contain;
+                                "
+                              />
                             </div>
                             <div
                               style="
@@ -7277,7 +7284,7 @@
                                 letter-spacing: 0.04em;
                               "
                             >
-                              3E FIXED · STOCK
+                              3E FIXED · MERC BLUEPRINT G1
                             </div>
                           </div>
                           <div
@@ -8312,15 +8319,30 @@
                             6
                           </div>
                           <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  500 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--ink-2);
-                              "
-                            >
-                              Guardian Hull Reinforcement
+                            <div style="display: flex; align-items: center; gap: 6px; min-width: 0">
+                              <div
+                                style="
+                                  font:
+                                    500 13px/1.2 Barlow,
+                                    sans-serif;
+                                  color: var(--ink-2);
+                                "
+                              >
+                                Guardian Hull Reinforcement
+                              </div>
+                              <img
+                                src="https://edassets.org/static/img/misc/tech_broker.svg"
+                                alt="Tech Broker"
+                                title="Tech Broker unlock"
+                                style="
+                                  width: 15px;
+                                  height: 15px;
+                                  flex: none;
+                                  object-fit: contain;
+                                  filter: brightness(0) invert(1) sepia(1) saturate(6)
+                                    hue-rotate(350deg);
+                                "
+                              />
                             </div>
                             <div
                               style="
@@ -15601,6 +15623,7 @@
                       </div>
 
                       <div
+                        id="fit-table"
                         style="
                           padding: 0 20px 18px;
                           display: flex;
@@ -15611,7 +15634,7 @@
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             padding: 0 12px 7px;
                             font:
                               500 8.5px/1 'JetBrains Mono',
@@ -15626,13 +15649,13 @@
                           <div style="text-align: right">MASS t</div>
                           <div style="text-align: right">PWR MW</div>
                           <div style="text-align: right">DRAW WEP</div>
-                          <div style="text-align: right">COST cr</div>
+                          <div style="text-align: right">COST</div>
                         </div>
 
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: linear-gradient(
@@ -15713,14 +15736,14 @@
                               color: var(--amber-3);
                             "
                           >
-                            2,613,410
+                            2,613,410 <span style="color: rgba(255, 176, 96, 0.55)">cr</span>
                           </div>
                         </div>
 
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: var(--panel-0);
@@ -15800,14 +15823,14 @@
                               color: var(--ink-75);
                             "
                           >
-                            2,092,000
+                            2,092,000 <span style="color: var(--ink-38)">cr</span>
                           </div>
                         </div>
 
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: #0e0e0e;
@@ -15830,8 +15853,7 @@
                             </div>
                             <img
                               src="assets/merc-coin.png"
-                              alt="Merc Coin"
-                              title="Powerplay reward module — purchased with Merc Coins"
+                              alt="Merc module"
                               style="
                                 width: 14px;
                                 height: 14px;
@@ -15897,36 +15919,111 @@
                           </div>
                           <div
                             style="
-                              font:
-                                400 11px/1 'JetBrains Mono',
-                                monospace;
-                              text-align: right;
-                              color: var(--ink-75);
+                              display: flex;
+                              flex-direction: column;
+                              align-items: flex-end;
+                              gap: 5px;
                             "
                           >
-                            15,105,700
+                            <div style="display: flex; align-items: center; gap: 5px">
+                              <div
+                                style="
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                  text-align: right;
+                                  color: var(--ink-75);
+                                "
+                              >
+                                15,105,700
+                              </div>
+                              <div
+                                style="
+                                  width: 14px;
+                                  flex: none;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--ink-38);
+                                "
+                              >
+                                cr
+                              </div>
+                            </div>
+                            <div
+                              title="Merc Coin price"
+                              style="display: flex; align-items: center; gap: 5px"
+                            >
+                              <div
+                                style="
+                                  font:
+                                    400 10px/1 'JetBrains Mono',
+                                    monospace;
+                                  text-align: right;
+                                  color: #f2003c;
+                                "
+                              >
+                                640
+                              </div>
+                              <div
+                                style="width: 14px; flex: none; display: flex; align-items: center"
+                              >
+                                <img
+                                  src="assets/merc-coin.png"
+                                  alt="Merc Coins"
+                                  style="
+                                    width: 11px;
+                                    height: 11px;
+                                    flex: none;
+                                    display: block;
+                                    object-fit: contain;
+                                  "
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
 
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: var(--panel-0);
                             border-left: 3px solid transparent;
                           "
                         >
-                          <div
-                            style="
-                              font:
-                                400 13px/1 Barlow,
-                                sans-serif;
-                              color: var(--ink-2);
-                            "
-                          >
-                            Beam Laser · Gimballed
+                          <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1 Barlow,
+                                  sans-serif;
+                                color: var(--ink-2);
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                              "
+                            >
+                              Beam Laser · Gimballed
+                            </div>
+                            <div
+                              style="height: 13px; display: flex; align-items: center; flex: none"
+                            >
+                              <img
+                                src="assets/icons/community-goal.svg"
+                                alt="Community Goal"
+                                title="Community Goal reward"
+                                style="
+                                  width: 14px;
+                                  height: 14px;
+                                  flex: none;
+                                  display: block;
+                                  object-fit: contain;
+                                "
+                              />
+                            </div>
                           </div>
                           <div
                             style="
@@ -15991,29 +16088,52 @@
                               color: var(--ink-75);
                             "
                           >
-                            12,975,700
+                            12,975,700 <span style="color: var(--ink-38)">cr</span>
                           </div>
                         </div>
 
                         <div
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: #0e0e0e;
                             border-left: 3px solid transparent;
                           "
                         >
-                          <div
-                            style="
-                              font:
-                                400 13px/1 Barlow,
-                                sans-serif;
-                              color: var(--ink-2);
-                            "
-                          >
-                            Cannon · Gimballed
+                          <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1 Barlow,
+                                  sans-serif;
+                                color: var(--ink-2);
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                              "
+                            >
+                              Cannon · Gimballed
+                            </div>
+                            <div
+                              style="height: 13px; display: flex; align-items: center; flex: none"
+                            >
+                              <img
+                                src="https://edassets.org/static/img/misc/tech_broker.svg"
+                                alt="Tech Broker"
+                                title="Tech Broker unlock"
+                                style="
+                                  width: 14px;
+                                  height: 14px;
+                                  display: block;
+                                  flex: none;
+                                  object-fit: contain;
+                                  filter: brightness(0) invert(1) sepia(1) saturate(6)
+                                    hue-rotate(350deg);
+                                "
+                              />
+                            </div>
                           </div>
                           <div
                             style="
@@ -16078,15 +16198,14 @@
                               color: var(--ink-75);
                             "
                           >
-                            6,003,140
+                            6,003,140 <span style="color: var(--ink-38)">cr</span>
                           </div>
                         </div>
 
                         <div
-                          title="Powerplay reward module — unlocked at rank 3, purchased with Merc Coins"
                           style="
                             display: grid;
-                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 92px;
+                            grid-template-columns: 2.2fr 62px 74px 74px 78px 86px 128px;
                             align-items: center;
                             padding: 11px 12px;
                             background: var(--panel-0);
@@ -16179,14 +16298,68 @@
                           </div>
                           <div
                             style="
-                              font:
-                                400 11px/1 'JetBrains Mono',
-                                monospace;
-                              text-align: right;
-                              color: var(--ink-75);
+                              display: flex;
+                              flex-direction: column;
+                              align-items: flex-end;
+                              gap: 5px;
                             "
                           >
-                            18,364,200
+                            <div style="display: flex; align-items: center; gap: 5px">
+                              <div
+                                style="
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                  text-align: right;
+                                  color: var(--ink-75);
+                                "
+                              >
+                                18,364,200
+                              </div>
+                              <div
+                                style="
+                                  width: 14px;
+                                  flex: none;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--ink-38);
+                                "
+                              >
+                                cr
+                              </div>
+                            </div>
+                            <div
+                              title="Merc Coin price"
+                              style="display: flex; align-items: center; gap: 5px"
+                            >
+                              <div
+                                style="
+                                  font:
+                                    400 10px/1 'JetBrains Mono',
+                                    monospace;
+                                  text-align: right;
+                                  color: #f2003c;
+                                "
+                              >
+                                900
+                              </div>
+                              <div
+                                style="width: 14px; flex: none; display: flex; align-items: center"
+                              >
+                                <img
+                                  src="assets/merc-coin.png"
+                                  alt="Merc Coins"
+                                  style="
+                                    width: 11px;
+                                    height: 11px;
+                                    flex: none;
+                                    display: block;
+                                    object-fit: contain;
+                                  "
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -16249,6 +16422,7 @@
                           >
                             <div style="display: flex; flex-direction: column; gap: 7px">
                               <div
+                                id="eng-bp-label"
                                 style="
                                   font:
                                     400 8.5px/1 'JetBrains Mono',
@@ -16522,9 +16696,10 @@
                                   letter-spacing: 0.14em;
                                 "
                               >
-                                <span>GRADE</span><span style="color: var(--amber-3)">5</span>
+                                <span>GRADE</span
+                                ><span id="eng-grade-val" style="color: var(--amber-3)">5</span>
                               </div>
-                              <div style="display: flex; gap: 4px">
+                              <div id="eng-grade-bar" style="display: flex; gap: 4px">
                                 <div style="flex: 1; height: 28px; background: var(--amber)"></div>
                                 <div style="flex: 1; height: 28px; background: var(--amber)"></div>
                                 <div style="flex: 1; height: 28px; background: var(--amber)"></div>
@@ -16757,107 +16932,109 @@
                                 </div>
                               </div>
                             </div>
+                            <div
+                              id="eng-attrs"
+                              style="
+                                display: flex;
+                                flex-direction: column;
+                                gap: 9px;
+                                padding-top: 11px;
+                                border-top: 1px solid var(--amber-a12);
+                              "
+                            >
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  font:
+                                    400 8.5px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--ink-38);
+                                  letter-spacing: 0.14em;
+                                  padding-bottom: 3px;
+                                "
+                              >
+                                <div>ATTRIBUTE</div>
+                                <div style="text-align: right">STOCK</div>
+                                <div style="text-align: right">MODIFIED</div>
+                              </div>
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  align-items: center;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                "
+                              >
+                                <div style="color: var(--ink-7)">Damage</div>
+                                <div style="text-align: right; color: var(--ink-5)">5.72</div>
+                                <div style="text-align: right; color: var(--good)">6.90 ▲</div>
+                              </div>
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  align-items: center;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                "
+                              >
+                                <div style="color: var(--ink-7)">DPS</div>
+                                <div style="text-align: right; color: var(--ink-5)">35.2</div>
+                                <div style="text-align: right; color: var(--good)">42.4 ▲</div>
+                              </div>
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  align-items: center;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                "
+                              >
+                                <div style="color: var(--ink-7)">Power Draw</div>
+                                <div style="text-align: right; color: var(--ink-5)">0.73</div>
+                                <div style="text-align: right; color: var(--hot)">0.88 ▼</div>
+                              </div>
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  align-items: center;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                "
+                              >
+                                <div style="color: var(--ink-7)">Clip Size</div>
+                                <div style="text-align: right; color: var(--ink-5)">90</div>
+                                <div style="text-align: right; color: var(--hot)">81 ▼</div>
+                              </div>
+                              <div
+                                style="
+                                  display: grid;
+                                  grid-template-columns: 1.4fr 1fr 1fr;
+                                  align-items: center;
+                                  font:
+                                    400 11px/1 'JetBrains Mono',
+                                    monospace;
+                                "
+                              >
+                                <div style="color: var(--ink-7)">Thermal Load</div>
+                                <div style="text-align: right; color: var(--ink-5)">0.34</div>
+                                <div style="text-align: right; color: var(--hot)">0.41 ▼</div>
+                              </div>
+                            </div>
                           </div>
                           <div
                             id="eng-right"
                             style="padding: 14px; display: flex; flex-direction: column; gap: 9px"
                           >
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                font:
-                                  400 8.5px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-38);
-                                letter-spacing: 0.14em;
-                                padding-bottom: 3px;
-                              "
-                            >
-                              <div>ATTRIBUTE</div>
-                              <div style="text-align: right">STOCK</div>
-                              <div style="text-align: right">MODIFIED</div>
-                            </div>
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                align-items: center;
-                                font:
-                                  400 11px/1 'JetBrains Mono',
-                                  monospace;
-                              "
-                            >
-                              <div style="color: var(--ink-7)">Damage</div>
-                              <div style="text-align: right; color: var(--ink-5)">5.72</div>
-                              <div style="text-align: right; color: var(--good)">6.90 ▲</div>
-                            </div>
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                align-items: center;
-                                font:
-                                  400 11px/1 'JetBrains Mono',
-                                  monospace;
-                              "
-                            >
-                              <div style="color: var(--ink-7)">DPS</div>
-                              <div style="text-align: right; color: var(--ink-5)">35.2</div>
-                              <div style="text-align: right; color: var(--good)">42.4 ▲</div>
-                            </div>
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                align-items: center;
-                                font:
-                                  400 11px/1 'JetBrains Mono',
-                                  monospace;
-                              "
-                            >
-                              <div style="color: var(--ink-7)">Power Draw</div>
-                              <div style="text-align: right; color: var(--ink-5)">0.73</div>
-                              <div style="text-align: right; color: var(--hot)">0.88 ▼</div>
-                            </div>
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                align-items: center;
-                                font:
-                                  400 11px/1 'JetBrains Mono',
-                                  monospace;
-                              "
-                            >
-                              <div style="color: var(--ink-7)">Clip Size</div>
-                              <div style="text-align: right; color: var(--ink-5)">90</div>
-                              <div style="text-align: right; color: var(--hot)">81 ▼</div>
-                            </div>
-                            <div
-                              style="
-                                display: grid;
-                                grid-template-columns: 1.4fr 1fr 1fr;
-                                align-items: center;
-                                font:
-                                  400 11px/1 'JetBrains Mono',
-                                  monospace;
-                              "
-                            >
-                              <div style="color: var(--ink-7)">Thermal Load</div>
-                              <div style="text-align: right; color: var(--ink-5)">0.34</div>
-                              <div style="text-align: right; color: var(--hot)">0.41 ▼</div>
-                            </div>
-                            <div
-                              style="
-                                margin-top: auto;
-                                padding-top: 9px;
-                                border-top: 1px solid var(--amber-a12);
-                                display: flex;
-                                flex-direction: column;
-                                gap: 9px;
-                              "
-                            >
+                            <div style="display: flex; flex-direction: column; gap: 9px">
                               <div
                                 style="
                                   display: flex;
@@ -16891,8 +17068,135 @@
                               </div>
                               <div style="display: flex; align-items: center; gap: 8px">
                                 <img
+                                  src="https://edassets.org/static/img/materials/grade-5.svg"
+                                  alt="Grade 5"
+                                  title="Grade 5"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Pharmaceutical Isolators
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  1
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-5.svg"
+                                  alt="Grade 5"
+                                  title="Grade 5"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Military Grade Alloys
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  1
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-5.svg"
+                                  alt="Grade 5"
+                                  title="Grade 5"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Exquisite Focus Crystals
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  1
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
                                   src="https://edassets.org/static/img/materials/grade-4.svg"
                                   alt="Grade 4"
+                                  title="Grade 4"
                                   style="
                                     width: 13px;
                                     height: 13px;
@@ -16918,6 +17222,9 @@
                                 </div>
                                 <div
                                   style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
                                     font:
                                       400 10px/1 'JetBrains Mono',
                                       monospace;
@@ -16931,6 +17238,91 @@
                                 <img
                                   src="https://edassets.org/static/img/materials/grade-4.svg"
                                   alt="Grade 4"
+                                  title="Grade 4"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Proto Light Alloys
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  3
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-4.svg"
+                                  alt="Grade 4"
+                                  title="Grade 4"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Configurable Components
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  4
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-4.svg"
+                                  alt="Grade 4"
+                                  title="Grade 4"
                                   style="
                                     width: 13px;
                                     height: 13px;
@@ -16956,19 +17348,23 @@
                                 </div>
                                 <div
                                   style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
                                     font:
                                       400 10px/1 'JetBrains Mono',
                                       monospace;
                                     color: var(--ink-7);
                                   "
                                 >
-                                  1
+                                  2
                                 </div>
                               </div>
                               <div style="display: flex; align-items: center; gap: 8px">
                                 <img
                                   src="https://edassets.org/static/img/materials/grade-3.svg"
                                   alt="Grade 3"
+                                  title="Grade 3"
                                   style="
                                     width: 13px;
                                     height: 13px;
@@ -16994,6 +17390,9 @@
                                 </div>
                                 <div
                                   style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
                                     font:
                                       400 10px/1 'JetBrains Mono',
                                       monospace;
@@ -17004,6 +17403,183 @@
                                 </div>
                               </div>
                               <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-3.svg"
+                                  alt="Grade 3"
+                                  title="Grade 3"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Heat Vanes
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  3
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-3.svg"
+                                  alt="Grade 3"
+                                  title="Grade 3"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Electrochemical Arrays
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  6
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-3.svg"
+                                  alt="Grade 3"
+                                  title="Grade 3"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Shielding Sensors
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  4
+                                </div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px">
+                                <img
+                                  src="https://edassets.org/static/img/materials/grade-3.svg"
+                                  alt="Grade 3"
+                                  title="Grade 3"
+                                  style="
+                                    width: 13px;
+                                    height: 13px;
+                                    flex: none;
+                                    opacity: 0.85;
+                                    object-fit: contain;
+                                  "
+                                />
+                                <div
+                                  style="
+                                    flex: 1;
+                                    min-width: 0;
+                                    font:
+                                      400 11px/1.2 Barlow,
+                                      sans-serif;
+                                    color: var(--ink-2);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                >
+                                  Tungsten
+                                </div>
+                                <div
+                                  style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
+                                    font:
+                                      400 10px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-7);
+                                  "
+                                >
+                                  8
+                                </div>
+                              </div>
+                              <div
+                                style="
+                                  display: flex;
+                                  align-items: center;
+                                  gap: 8px;
+                                  margin-top: 3px;
+                                  padding-top: 8px;
+                                  border-top: 1px solid var(--amber-a12);
+                                "
+                              >
                                 <img
                                   src="assets/merc-coin.png"
                                   alt="Merc Coin"
@@ -17032,6 +17608,9 @@
                                 </div>
                                 <div
                                   style="
+                                    width: 26px;
+                                    flex: none;
+                                    text-align: right;
                                     font:
                                       400 10px/1 'JetBrains Mono',
                                       monospace;
@@ -19279,16 +19858,6 @@
                         <div
                           style="
                             font:
-                              500 9px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--hot-2);
-                          "
-                        >
-                          −2.4 DPS
-                        </div>
-                        <div
-                          style="
-                            font:
                               400 10px/1 'JetBrains Mono',
                               monospace;
                             color: var(--ink-62);
@@ -19346,8 +19915,7 @@
                           </div>
                           <img
                             src="assets/merc-coin.png"
-                            alt="Merc Coin"
-                            title="Powerplay reward module — purchased with Merc Coins"
+                            alt="Merc module"
                             style="
                               width: 14px;
                               height: 14px;
@@ -19379,16 +19947,6 @@
                           align-items: flex-end;
                         "
                       >
-                        <div
-                          style="
-                            font:
-                              500 9px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--hot-2);
-                          "
-                        >
-                          −8.6 DPS
-                        </div>
                         <div
                           style="
                             font:
@@ -20018,6 +20576,194 @@
                     </div>
 
                     <div
+                      id="meng-xcard"
+                      style="
+                        border: 1px solid var(--amber-a2);
+                        background: var(--panel);
+                        padding: 13px 14px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 11px;
+                      "
+                    >
+                      <div
+                        style="
+                          font:
+                            600 9px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-2);
+                          letter-spacing: 0.18em;
+                        "
+                      >
+                        EXPERIMENTAL EFFECT
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 6px">
+                        <div
+                          class="meng-x"
+                          data-none="1"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            min-height: 46px;
+                            padding: 9px 11px;
+                            cursor: pointer;
+                            background: var(--panel-2);
+                            border: 1px dashed var(--ink-3);
+                          "
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-66);
+                                font-style: italic;
+                              "
+                            >
+                              None — remove effect
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-38);
+                                margin-top: 5px;
+                              "
+                            >
+                              CLEARS CORROSIVE SHELL
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          class="meng-x"
+                          data-on="1"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            min-height: 46px;
+                            padding: 9px 11px;
+                            cursor: pointer;
+                            background: var(--amber-a14);
+                            border: 1px solid var(--amber-a5);
+                          "
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--amber-3);
+                              "
+                            >
+                              Corrosive Shell
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-5);
+                                margin-top: 5px;
+                              "
+                            >
+                              −3% ENEMY HULL RESIST · −20% AMMO
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 8px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-2);
+                              letter-spacing: 0.1em;
+                            "
+                          >
+                            APPLIED
+                          </div>
+                        </div>
+                        <div
+                          class="meng-x"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            min-height: 46px;
+                            padding: 9px 11px;
+                            cursor: pointer;
+                            background: var(--panel-2);
+                            border: 1px solid var(--amber-a14);
+                          "
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-2);
+                              "
+                            >
+                              Auto Loader
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-5);
+                                margin-top: 5px;
+                              "
+                            >
+                              RELOADS WHILE FIRING · CLIP SIZE ▼
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          class="meng-x"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            min-height: 46px;
+                            padding: 9px 11px;
+                            cursor: pointer;
+                            background: var(--panel-2);
+                            border: 1px solid var(--amber-a14);
+                          "
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-2);
+                              "
+                            >
+                              Incendiary Rounds
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-5);
+                                margin-top: 5px;
+                              "
+                            >
+                              90% THERMAL DAMAGE · +200% HEAT
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
                       id="meng-result"
                       style="
                         border: 1px solid var(--amber-a2);
@@ -20209,194 +20955,6 @@
                     </div>
 
                     <div
-                      id="meng-xcard"
-                      style="
-                        border: 1px solid var(--amber-a2);
-                        background: var(--panel);
-                        padding: 13px 14px;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 11px;
-                      "
-                    >
-                      <div
-                        style="
-                          font:
-                            600 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--amber-2);
-                          letter-spacing: 0.18em;
-                        "
-                      >
-                        EXPERIMENTAL EFFECT
-                      </div>
-                      <div style="display: flex; flex-direction: column; gap: 6px">
-                        <div
-                          class="meng-x"
-                          data-none="1"
-                          style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            min-height: 46px;
-                            padding: 9px 11px;
-                            cursor: pointer;
-                            background: var(--panel-2);
-                            border: 1px dashed var(--ink-3);
-                          "
-                        >
-                          <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  400 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--ink-66);
-                                font-style: italic;
-                              "
-                            >
-                              None — remove effect
-                            </div>
-                            <div
-                              style="
-                                font:
-                                  400 8.5px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-38);
-                                margin-top: 5px;
-                              "
-                            >
-                              CLEARS CORROSIVE SHELL
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          class="meng-x"
-                          data-on="1"
-                          style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            min-height: 46px;
-                            padding: 9px 11px;
-                            cursor: pointer;
-                            background: var(--amber-a14);
-                            border: 1px solid var(--amber-a5);
-                          "
-                        >
-                          <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  500 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--amber-3);
-                              "
-                            >
-                              Corrosive Shell
-                            </div>
-                            <div
-                              style="
-                                font:
-                                  400 8.5px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-5);
-                                margin-top: 5px;
-                              "
-                            >
-                              −3% ENEMY HULL RESIST · −20% AMMO
-                            </div>
-                          </div>
-                          <div
-                            style="
-                              font:
-                                600 8px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--amber-2);
-                              letter-spacing: 0.1em;
-                            "
-                          >
-                            APPLIED
-                          </div>
-                        </div>
-                        <div
-                          class="meng-x"
-                          style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            min-height: 46px;
-                            padding: 9px 11px;
-                            cursor: pointer;
-                            background: var(--panel-2);
-                            border: 1px solid var(--amber-a14);
-                          "
-                        >
-                          <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  500 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--ink-2);
-                              "
-                            >
-                              Auto Loader
-                            </div>
-                            <div
-                              style="
-                                font:
-                                  400 8.5px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-5);
-                                margin-top: 5px;
-                              "
-                            >
-                              RELOADS WHILE FIRING · CLIP SIZE ▼
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          class="meng-x"
-                          style="
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            min-height: 46px;
-                            padding: 9px 11px;
-                            cursor: pointer;
-                            background: var(--panel-2);
-                            border: 1px solid var(--amber-a14);
-                          "
-                        >
-                          <div style="flex: 1; min-width: 0">
-                            <div
-                              style="
-                                font:
-                                  500 13px/1.2 Barlow,
-                                  sans-serif;
-                                color: var(--ink-2);
-                              "
-                            >
-                              Incendiary Rounds
-                            </div>
-                            <div
-                              style="
-                                font:
-                                  400 8.5px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-5);
-                                margin-top: 5px;
-                              "
-                            >
-                              90% THERMAL DAMAGE · +200% HEAT
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
                       id="meng-mats"
                       style="
                         border: 1px solid var(--amber-a2);
@@ -20443,6 +21001,7 @@
                           <img
                             src="https://edassets.org/static/img/materials/grade-5.svg"
                             alt="Grade 5"
+                            title="Grade 5"
                             style="
                               width: 13px;
                               height: 13px;
@@ -20468,6 +21027,93 @@
                           </div>
                           <div
                             style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            1
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-5.svg"
+                            alt="Grade 5"
+                            title="Grade 5"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Military Grade Alloys
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            1
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-5.svg"
+                            alt="Grade 5"
+                            title="Grade 5"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Exquisite Focus Crystals
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
                               font:
                                 400 10px/1 'JetBrains Mono',
                                 monospace;
@@ -20481,6 +21127,7 @@
                           <img
                             src="https://edassets.org/static/img/materials/grade-4.svg"
                             alt="Grade 4"
+                            title="Grade 4"
                             style="
                               width: 13px;
                               height: 13px;
@@ -20506,6 +21153,9 @@
                           </div>
                           <div
                             style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
                               font:
                                 400 10px/1 'JetBrains Mono',
                                 monospace;
@@ -20517,8 +21167,135 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px">
                           <img
+                            src="https://edassets.org/static/img/materials/grade-4.svg"
+                            alt="Grade 4"
+                            title="Grade 4"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Proto Light Alloys
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            3
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-4.svg"
+                            alt="Grade 4"
+                            title="Grade 4"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Configurable Components
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            4
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-4.svg"
+                            alt="Grade 4"
+                            title="Grade 4"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Selenium
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            2
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
                             src="https://edassets.org/static/img/materials/grade-3.svg"
                             alt="Grade 3"
+                            title="Grade 3"
                             style="
                               width: 13px;
                               height: 13px;
@@ -20544,6 +21321,51 @@
                           </div>
                           <div
                             style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            5
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Heat Vanes
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
                               font:
                                 400 10px/1 'JetBrains Mono',
                                 monospace;
@@ -20554,6 +21376,141 @@
                           </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Electrochemical Arrays
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            6
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Shielding Sensors
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            4
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Tungsten
+                          </div>
+                          <div
+                            style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            8
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            margin-top: 3px;
+                            padding-top: 8px;
+                            border-top: 1px solid var(--amber-a12);
+                          "
+                        >
                           <img
                             src="assets/merc-coin.png"
                             alt="Merc Coin"
@@ -20582,6 +21539,9 @@
                           </div>
                           <div
                             style="
+                              width: 26px;
+                              flex: none;
+                              text-align: right;
                               font:
                                 400 10px/1 'JetBrains Mono',
                                 monospace;
@@ -26825,15 +27785,30 @@
                         5
                       </div>
                       <div style="flex: 1; min-width: 0">
-                        <div
-                          style="
-                            font:
-                              500 14px/1.2 Barlow,
-                              sans-serif;
-                            color: var(--ink-2);
-                          "
-                        >
-                          Guardian Shield Reinforcement
+                        <div style="display: flex; align-items: center; gap: 6px; min-width: 0">
+                          <div
+                            style="
+                              font:
+                                500 14px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                            "
+                          >
+                            Guardian Shield Reinforcement
+                          </div>
+                          <img
+                            src="https://edassets.org/static/img/misc/tech_broker.svg"
+                            alt="Tech Broker"
+                            title="Tech Broker unlock"
+                            style="
+                              width: 16px;
+                              height: 16px;
+                              flex: none;
+                              object-fit: contain;
+                              filter: brightness(0) invert(1) sepia(1) saturate(6)
+                                hue-rotate(350deg);
+                            "
+                          />
                         </div>
                         <div
                           style="
@@ -27464,6 +28439,8 @@
           this.wireDeltaTips();
           this.wireMobileMenu();
           this.wireMobileIdentity();
+          this.wireDesktopIdentity();
+          this.wireFitRows();
         }
         wireMobileMenu() {
           const root = this.el || document;
@@ -28116,6 +29093,90 @@
 
         }
 
+        wireDesktopIdentity() {
+          const nameEl = document.getElementById('d-name');
+          const identEl = document.getElementById('d-ident');
+          [nameEl, identEl].forEach(el => {
+            if (!el || el.dataset.wired) return;
+            el.dataset.wired = '1';
+            el.setAttribute('contenteditable', 'plaintext-only');
+            el.setAttribute('spellcheck', 'false');
+            el.style.outline = 'none';
+            el.style.cursor = 'text';
+            let prev = el.textContent.trim();
+            el.addEventListener('focus', () => { prev = el.textContent.trim(); });
+            el.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+              if (e.key === 'Escape') { el.textContent = prev; el.blur(); }
+            });
+            el.addEventListener('blur', () => {
+              const v = el.textContent.replace(/\s+/g, ' ').trim().toUpperCase();
+              el.textContent = v || prev;
+              if (el === nameEl) {
+                const t = document.getElementById('exp-title');
+                if (t) t.textContent = 'EXPORT BUILD \u00b7 ' + el.textContent;
+              }
+            });
+          });
+        }
+
+        wireFitRows() {
+          const table = document.getElementById('fit-table');
+          if (!table || table.dataset.wired) return;
+          table.dataset.wired = '1';
+          const rows = Array.from(table.children).slice(1);
+          rows.forEach((r, i) => {
+            const cells = Array.from(r.children);
+            r.dataset.bg = i === 0 ? '#0e0e0e' : (r.style.background || '');
+            r._cols = cells.map((c, ci) => i === 0
+              ? (ci === 0 ? 'rgba(232,222,209,.82)' : ci === 1 ? 'rgba(232,222,209,.7)' : 'rgba(232,222,209,.75)')
+              : (c.style.color || ''));
+            r.dataset.merc = r.querySelector('img[src*="merc-coin"]') ? '1' : '';
+            r.style.cursor = 'pointer';
+            r.addEventListener('click', () => {
+              rows.forEach(o => {
+                const on = o === r;
+                o.style.background = on ? 'linear-gradient(90deg,var(--amber-a16),rgba(255,140,26,.02))' : o.dataset.bg;
+                o.style.borderLeftColor = on ? '#ff8c1a' : 'transparent';
+                Array.from(o.children).forEach((c, ci) => { c.style.color = on ? '#ffb060' : (o._cols[ci] || ''); });
+                const n = o.firstElementChild.querySelector('div');
+                if (n) n.style.color = on ? '#ffb060' : (o._cols[0] || '');
+              });
+              this.engMerc(r.dataset.merc === '1');
+            });
+          });
+        }
+
+        engMerc(on) {
+          const val = document.getElementById('eng-bp-val');
+          const btn = document.getElementById('eng-bp-btn');
+          const caret = document.getElementById('eng-bp-caret');
+          const label = document.getElementById('eng-bp-label');
+          const menu = document.getElementById('eng-bp-menu');
+          const gv = document.getElementById('eng-grade-val');
+          const bar = document.getElementById('eng-grade-bar');
+          if (!val || !btn) return;
+          if (this._bpOrig == null) this._bpOrig = val.textContent;
+          if (menu) menu.style.display = 'none';
+          btn.dataset.locked = on ? '1' : '';
+          btn.style.cursor = on ? 'default' : 'pointer';
+          btn.style.borderColor = on ? 'rgba(242,0,60,.45)' : 'rgba(255,140,26,.3)';
+          val.textContent = on ? 'Merc Blueprint' : this._bpOrig;
+          val.style.color = on ? '#ff6b85' : 'var(--amber-3)';
+          if (label) label.textContent = on ? 'BLUEPRINT \u00b7 FIXED' : 'BLUEPRINT';
+          if (caret) {
+            caret.textContent = on ? 'FIXED' : '\u25be';
+            caret.style.fontSize = on ? '8px' : '';
+            caret.style.letterSpacing = on ? '.14em' : '';
+          }
+          if (gv) gv.textContent = on ? '1' : '5';
+          if (bar) Array.from(bar.children).forEach((s, i) => {
+            s.style.background = on
+              ? (i === 0 ? 'repeating-linear-gradient(135deg,var(--amber) 0 3px,rgba(255,140,26,.28) 3px 6px)' : 'var(--panel-5)')
+              : 'var(--amber)';
+          });
+        }
+
         wireMobileIdentity() {
           const nameEl = document.getElementById('m-buildname');
           const identEl = document.getElementById('m-ident');
@@ -28161,6 +29222,7 @@
            .filter(g => g.btnEl && g.menuEl);
           if (!groups.length || groups[0].btnEl.dataset.wired) return;
           const closeAll = () => groups.forEach(g => {
+            if (g.btnEl.dataset.locked === '1') return;
             g.menuEl.style.display = 'none';
             document.getElementById(g.caret).textContent = '▾';
           });
@@ -28168,6 +29230,7 @@
             g.btnEl.dataset.wired = '1';
             g.btnEl.addEventListener('click', (e) => {
               e.stopPropagation();
+              if (g.btnEl.dataset.locked === '1') return;
               const open = g.menuEl.style.display !== 'none';
               closeAll();
               if (!open) {
@@ -28231,6 +29294,8 @@
           const grid = document.getElementById('eng-grid');
           if (grade) grade.style.display = stock ? 'none' : 'flex';
           if (xwrap) xwrap.style.display = stock ? 'none' : 'flex';
+          const attrs = document.getElementById('eng-attrs');
+          if (attrs) attrs.style.display = stock ? 'none' : 'flex';
           // right column hides its content but its grid track stays, so the picker never resizes
           if (right) right.style.display = stock ? 'none' : 'flex';
         }

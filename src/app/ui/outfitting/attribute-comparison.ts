@@ -11,6 +11,11 @@ export interface AttributeComparisonRow {
   /** Formatted for the active locale, or `null` where the package has none. */
   readonly stock: string | null;
   readonly modified: string | null;
+  /**
+   * Which way the recipe moved this figure, for the reader who can see the
+   * colour and the one who cannot. `null` where there is nothing to compare.
+   */
+  readonly direction?: 'better' | 'worse' | 'unchanged' | null;
 }
 
 /**
@@ -22,11 +27,11 @@ export interface AttributeComparisonRow {
  * is also the pair the game's own engineering panel shows, so a Commander
  * comparing the two screens is comparing the same two numbers.
  *
- * The canvas's green and red deltas and its ▲/▼ markers are not here. A
- * direction is a claim about which way is better, the Almanac documents its own
- * `LessIsGood` as unreliable, and nothing else publishes that semantics — so
- * deriving one would be this application inventing game meaning (FR-007,
- * engineering editor design, "Attribute and cost honesty").
+ * The canvas's green and red deltas and its ▲/▼ markers are here. Which way is
+ * better is not read off the Almanac — its `LessIsGood` is documented as
+ * unreliable — but off this application's own table beside the attributes it
+ * compares, exactly as the canvas assigns it. Never colour alone: the marker
+ * is drawn beside the figure and the direction is spoken in words.
  *
  * A table, with the attribute names as row headers, so a reader gets "Damage,
  * current, 5.72" rather than three loose numbers whose meaning is their column
@@ -54,4 +59,13 @@ export class AttributeComparison {
     'outfitting.engineering.attributes.modified',
   );
   readonly unavailable = this.#messages.messageSignal('game-text.unavailable');
+
+  /** The direction, in words, for a reader who cannot see the colour. */
+  directionLabel(direction: 'better' | 'worse'): string {
+    return this.#messages.message(
+      direction === 'better'
+        ? 'outfitting.engineering.attributes.better'
+        : 'outfitting.engineering.attributes.worse',
+    );
+  }
 }

@@ -166,13 +166,29 @@ export class OutfittingWorkspace {
     return slot === null ? null : (slot.displayName.text ?? slot.canonicalName);
   });
 
-  /** The canvas's `FITTING . HARDPOINT 1`, in the Commander's language. */
+  /**
+   * The canvas's `FITTING . HARDPOINT 1`, in the Commander's language.
+   *
+   * A hardpoint is named by the number the ledger draws beside it and the class
+   * it takes — `Fitting · Hardpoint 1 · Huge`. The package's own slot name is
+   * `Huge Hardpoint 1`, where the 1 counts huge hardpoints rather than
+   * hardpoints, so on a hull with two large mounts it names a different mount
+   * from the one the ledger marked (wave 6). Every other kind keeps the
+   * package's name, which is the name the game uses for it.
+   */
   readonly benchTitle = computed(() => {
     const slot = this.selectedSlot();
-    return slot === null
-      ? ''
-      : this.#messages.message('outfitting.bench.title', {
+    if (slot === null) {
+      return '';
+    }
+    const mountClass = slot.kind === 'hardpoint' ? hardpointClassKey(slot.size) : null;
+    return mountClass === null
+      ? this.#messages.message('outfitting.bench.title', {
           slot: slot.displayName.text ?? slot.canonicalName,
+        })
+      : this.#messages.message('outfitting.bench.title.hardpoint', {
+          node: slot.node,
+          class: this.#messages.message(mountClass),
         });
   });
 
@@ -182,6 +198,20 @@ export class OutfittingWorkspace {
    * Shown where an action is absent, because an action missing without a
    * reason reads as a defect rather than as a rule of the game (FR-009).
    */
+  /**
+   * The canvas's own mark for a mount that takes no other module.
+   *
+   * Canvas 1d writes `FIXED` in a hairline chip beside the cargo hatch rather
+   * than a sentence about it, and the bench is where a Commander is looking
+   * when they wonder why nothing opened. The Almanac's full reason stays beside
+   * it for a reader (FR-009); this is what is drawn.
+   */
+  readonly benchMark = computed(() =>
+    this.selectedSlot()?.immovableReason === 'cargoHatch'
+      ? this.#messages.message('outfitting.immovable.short.cargoHatch')
+      : null,
+  );
+
   readonly benchReason = computed(() => {
     const slot = this.selectedSlot();
     if (slot === null || slot.immovableReason === null) {
@@ -195,6 +225,22 @@ export class OutfittingWorkspace {
       } as const
     )[slot.immovableReason];
     return this.#messages.message(key);
+  });
+
+  /**
+   * What the Almanac says this mount will take, where it restricts what fits.
+   *
+   * On the bench and not in the ledger, for the same reason the immovable
+   * reason is: the canvas's ledger row is a size, a module and a power chip,
+   * and a package sentence repeated down every restricted row is noise a
+   * Commander scrolls past. Here it answers the question the panel below it is
+   * asking (reference review, "Per-row change/engineer/remove actions").
+   */
+  readonly benchRestriction = computed(() => {
+    const restriction = this.selectedSlot()?.restrictionText ?? null;
+    return restriction === null || restriction.text === null
+      ? null
+      : this.#messages.message('outfitting.slot.restriction', { restriction: restriction.text });
   });
 
   /**
@@ -255,7 +301,7 @@ export class OutfittingWorkspace {
     });
 
     effect((onCleanup) => {
-      this.#chrome.setActions(
+      this.#chrome.setRegionActions(
         this.store.hasBuild()
           ? [
               {
@@ -285,7 +331,7 @@ export class OutfittingWorkspace {
             ]
           : [],
       );
-      onCleanup(() => this.#chrome.setActions([]));
+      onCleanup(() => this.#chrome.setRegionActions([]));
     });
   }
 
@@ -410,4 +456,25 @@ function categoryKey(category: Category): MessageKey {
       cargoHatch: 'outfitting.group.cargoHatch',
     } as const
   )[category];
+}
+
+/**
+ * The class word for a hardpoint's published size, or nothing.
+ *
+ * The game's four hardpoint classes are its own vocabulary for the sizes the
+ * package publishes as 1 to 4. A size outside that range is a number nobody
+ * has a word for, so the mount keeps the package's own name instead of being
+ * given one (constitution IV).
+ */
+function hardpointClassKey(size: number | null): MessageKey | null {
+  return (
+    (
+      {
+        1: 'outfitting.slot.class.1',
+        2: 'outfitting.slot.class.2',
+        3: 'outfitting.slot.class.3',
+        4: 'outfitting.slot.class.4',
+      } as const
+    )[size ?? 0] ?? null
+  );
 }

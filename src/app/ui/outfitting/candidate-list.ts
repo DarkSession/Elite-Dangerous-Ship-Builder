@@ -1,3 +1,4 @@
+import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import type { CandidateSection } from '../../application/outfitting/acquisition-labels';
 import type { ModuleChoice } from '../../application/outfitting/candidate-membership';
@@ -5,7 +6,7 @@ import type { CandidateSectionView } from '../../application/outfitting/candidat
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { AcquisitionBadge } from './acquisition-badge';
-import { ModuleIdentityBadge } from './module-identity-badge';
+import { GameText } from '../components/game-text/game-text';
 import { UnavailableFact } from './unavailable-fact';
 
 /** One package figure, formatted, or `null` where the Almanac has none. */
@@ -13,13 +14,22 @@ interface RenderedFact {
   readonly field: string;
   readonly label: string;
   readonly value: string | null;
+  /** The unit written after the figure, where the canvas writes one. */
+  readonly unit?: string;
 }
 
 /** Everything one row draws that does not change while its records live. */
 interface RenderedRow {
   readonly actionLabel: string;
+  readonly mount: string | null;
+  readonly code: string | null;
+  readonly codeDescription: string | null;
   readonly purchaseGrade: string | null;
   readonly facts: readonly RenderedFact[];
+  /** The credit price, kept out of the loop because the coin price sits under it. */
+  readonly cost: RenderedFact;
+  /** The article's Merc Coin price, formatted, where the Almanac states one. */
+  readonly mercCoin: string | null;
 }
 
 /**
@@ -44,7 +54,7 @@ interface RenderedRow {
  */
 @Component({
   selector: 'edsb-candidate-list',
-  imports: [AcquisitionBadge, ModuleIdentityBadge, UnavailableFact],
+  imports: [AcquisitionBadge, GameText, UnavailableFact],
   templateUrl: './candidate-list.html',
   styleUrl: './candidate-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,11 +77,27 @@ export class CandidateList {
   /** The symbol currently fitted in this mount, so its rows can say so. */
   readonly fittedSymbol = input<string | null>(null);
 
+  /**
+   * The article the mount carries, where the Almanac identifies it as one of
+   * its pre-engineered rewards. `null` for an ordinary stock module.
+   *
+   * A reward shares its symbol with the stock article it is built from, and the
+   * Almanac sells more than one reward under one name — the same blaster
+   * through the Merc-Coin shop at grade 1 and through a community goal at grade
+   * 5. So the identity is the whole record, not the symbol and not the name:
+   * matching on either marked two different articles as the one in the mount
+   * (wave 4).
+   */
+  readonly fittedVariant = input<PreEngineeredVariant | null>(null);
+
   readonly chosen = output<string>();
 
   readonly moduleColumn = this.#messages.messageSignal('outfitting.column.module');
+  readonly classColumn = this.#messages.messageSignal('outfitting.column.class');
   readonly fittedLabel = this.#messages.messageSignal('outfitting.candidate.fitted');
-  readonly stockLabel = this.#messages.messageSignal('outfitting.candidate.stock');
+  readonly mercCoinLabel = this.#messages.messageSignal(
+    'outfitting.engineering.materials.merc-coin',
+  );
   readonly variantLabel = this.#messages.messageSignal('outfitting.candidate.pre-engineered');
 
   /** The figure columns, named once for the wide manifest's header row. */
@@ -98,15 +124,37 @@ export class CandidateList {
    * the canvas draws behind it.
    */
   isFitted(choice: ModuleChoice): boolean {
-    return this.fittedSymbol() !== null && choice.module.symbol === this.fittedSymbol();
+    if (this.fittedSymbol() === null || choice.module.symbol !== this.fittedSymbol()) {
+      return false;
+    }
+    // The symbol says which module; the variant record says which article of it.
+    const fitted = this.fittedVariant();
+    if (choice.kind !== 'variant') {
+      return fitted === null;
+    }
+    return (
+      fitted !== null &&
+      choice.variant.name === fitted.name &&
+      choice.variant.blueprint === fitted.blueprint &&
+      choice.variant.grade === fitted.grade
+    );
   }
 
-  /** The row's state, in words: what it is, and whether it is already in place. */
-  stateLabel(choice: ModuleChoice): string {
+  /**
+   * The row's state in words, where it has one worth drawing.
+   *
+   * `FITTED` and the pre-engineered marker are both on the canvas — one as the
+   * amber ground behind the row a mount already carries, the other as the row's
+   * reward badge — and both are stated in words because colour and a glyph are
+   * never the sole cue. An ordinary stock module is the absence of either, and
+   * the canvas writes nothing on those rows; a `STOCK` line under every one of
+   * two hundred names was a third line the manifest never had.
+   */
+  stateLabel(choice: ModuleChoice): string | null {
     if (this.isFitted(choice)) {
       return this.fittedLabel();
     }
-    return choice.kind === 'stock' ? this.stockLabel() : this.variantLabel();
+    return choice.kind === 'stock' ? null : this.variantLabel();
   }
 
   /**
@@ -166,6 +214,12 @@ export class CandidateList {
       actionLabel: this.#messages.message('outfitting.candidate.select', {
         module: parts.filter((part) => part.length > 0).join(' '),
       }),
+      mount: this.#mountLabel(presentation.mount) || null,
+      code: `${presentation.class}${presentation.rating}`,
+      codeDescription: this.#messages.message('outfitting.module.code', {
+        class: presentation.class,
+        rating: presentation.rating,
+      }),
       purchaseGrade:
         presentation.purchaseGrade === null
           ? null
@@ -177,8 +231,23 @@ export class CandidateList {
         { ...labels[1]!, value: this.#decimal(facts.mass, 1) },
         { ...labels[2]!, value: this.#decimal(facts.powerDraw, 2) },
         { ...labels[3]!, value: this.#decimal(facts.distributorDraw, 2) },
-        { ...labels[4]!, value: facts.cost === null ? null : this.#formatters.integer(facts.cost) },
       ],
+      cost: {
+        ...labels[4]!,
+        value: facts.cost === null ? null : this.#formatters.integer(facts.cost),
+        // The canvas heads the column `COST` and writes `cr` after every figure
+        // in it, in its own quieter ink and its own narrow column — which is
+        // what lines the credit figures up with the coin figures under them.
+        unit: this.#messages.message('outfitting.unit.credits'),
+      },
+      // Canvas 1c writes a Mercenary article's coin price under its credit
+      // price, in the same cell and in the Merc ink. The two are never added:
+      // Merc Coin has no credit equivalent, so a single figure would be an
+      // exchange rate the game does not have (constitution IV).
+      mercCoin:
+        choice.kind === 'variant' && typeof choice.variant.mercCoinCost === 'number'
+          ? this.#formatters.integer(choice.variant.mercCoinCost)
+          : null,
     };
   }
 

@@ -31,8 +31,18 @@
           <td class="comparison__value" data-bidi-isolate>
             {{ row.stock ?? unavailable() }}
           </td>
-          <td class="comparison__value comparison__value--modified" data-bidi-isolate>
+          <td
+            class="comparison__value comparison__value--modified"
+            [attr.data-direction]="row.direction ?? null"
+            data-bidi-isolate
+          >
             {{ row.modified ?? unavailable() }}
+            @if (row.direction === 'better' || row.direction === 'worse') {
+              <span class="comparison__marker" aria-hidden="true">{{
+                row.direction === 'better' ? '▲' : '▼'
+              }}</span>
+              <span class="visually-hidden">{{ directionLabel(row.direction) }}</span>
+            }
           </td>
         </tr>
       }

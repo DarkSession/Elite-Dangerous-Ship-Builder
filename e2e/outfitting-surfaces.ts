@@ -57,7 +57,136 @@ export async function openEditor(page: Page): Promise<void> {
   if ((await open.count()) > 0) {
     await open.click();
   }
-  await expect(page.locator('.blueprints')).toBeVisible();
+  await expect(page.locator('.engineering').first()).toBeVisible();
+}
+
+/**
+ * Takes one option from a `<select>` by the text it draws.
+ *
+ * Playwright's own `selectOption({ label })` is an exact match, and the
+ * canvas's option labels carry more than the name — the route a recipe needs,
+ * the description an effect publishes — so the label is found first and matched
+ * whole afterwards.
+ */
+async function chooseFromSelect(select: Locator, name: string | RegExp): Promise<void> {
+  const labels = await select
+    .locator('option')
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+  const match = labels.find((label) =>
+    typeof name === 'string' ? label.includes(name) : name.test(label),
+  );
+  expect(match, `no option matched ${String(name)} in ${labels.join(' | ')}`).toBeDefined();
+  await select.selectOption({ label: match });
+}
+
+/**
+ * Chooses one recipe, however this width offers them.
+ *
+ * Canvas 1c draws a dropdown and canvas 1d a list of cards, so this is where
+ * the difference lives. Both carry the same recipes in the same order and both
+ * commit the same way; only the control differs.
+ */
+export async function chooseRecipe(page: Page, name: string | RegExp): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    const row = page.locator('.blueprint:not(.blueprint--none)').filter({ hasText: name }).first();
+    await row.click();
+    await expect(row.locator('input[type="radio"]')).toBeChecked();
+    return;
+  }
+  await chooseFromSelect(page.locator('edsb-blueprint-choice-list select').first(), name);
+}
+
+/** Chooses one experimental effect, however this width offers them. */
+export async function chooseEffect(page: Page, name: string | RegExp): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    const row = page.locator('.effect:not(.effect--none)').filter({ hasText: name }).first();
+    await row.click();
+    await expect(row.locator('input[type="radio"]')).toBeChecked();
+    return;
+  }
+  await chooseFromSelect(page.locator('edsb-experimental-effect-list select').first(), name);
+}
+
+/** The first effect the package offers here, whatever it is called. */
+export async function chooseFirstEffect(page: Page): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    await page.locator('.effect:not(.effect--none)').first().click();
+    return;
+  }
+  const select = page.locator('edsb-experimental-effect-list select').first();
+  const values = await select
+    .locator('option')
+    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
+  await select.selectOption(values[1] ?? '');
+}
+
+/** Takes the no-blueprint option, however this width offers it. */
+export async function clearRecipe(page: Page): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    await page.locator('.blueprint--none').click();
+    return;
+  }
+  await page.locator('edsb-blueprint-choice-list select').first().selectOption('none');
+}
+
+/** Takes the no-effect option, however this width offers it. */
+export async function clearEffect(page: Page): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    await page.locator('.effect--none').click();
+    return;
+  }
+  await page.locator('edsb-experimental-effect-list select').first().selectOption('');
+}
+
+/**
+ * The recipe the editor currently has chosen, by the name it draws.
+ *
+ * `null` where that is the no-blueprint option — which is what "nothing is
+ * chosen" looks like at both widths, because both open the list with it.
+ */
+export async function chosenRecipe(page: Page): Promise<string | null> {
+  // A purchase's recipe is stated, not chosen: the article arrived with it and
+  // there is no other recipe it could carry, so neither composition draws a
+  // control for it (wave 5).
+  const fixed = page.locator('.blueprints__fixed');
+  if ((await fixed.count()) > 0) {
+    return (await fixed.first().textContent())?.trim() ?? null;
+  }
+  if (await surfacesAreLayers(page)) {
+    const chosen = page.locator('.blueprint[data-selected="true"]:not(.blueprint--none)');
+    return (await chosen.count()) === 0
+      ? null
+      : ((await chosen.first().textContent())?.trim() ?? null);
+  }
+  const select = page.locator('edsb-blueprint-choice-list select').first();
+  const value = await select.inputValue();
+  if (value === 'none' || value === '') {
+    return null;
+  }
+  return (await select.locator('option:checked').textContent())?.trim() ?? null;
+}
+
+/** The effects the editor is currently offering, however this width draws them. */
+export function effectOptions(page: Page): Locator {
+  return page.locator(
+    '.effect:not(.effect--none), edsb-experimental-effect-list option:not(:first-child)',
+  );
+}
+
+/**
+ * Commits the draft, wherever this width keeps the control that commits it.
+ *
+ * Canvas 1d pins it to the foot of its own screen; canvas 1c puts it in the
+ * panel head. Same control, same decision, one place that knows the difference.
+ */
+export async function applyDraft(page: Page): Promise<void> {
+  if (!(await surfacesAreLayers(page))) {
+    // Canvas 1c draws no apply and no revert: inline the choice is the
+    // decision, and it has already been taken by the time this is called.
+    return;
+  }
+  await page.getByRole('button', { name: /apply blueprint/i }).click();
+  await editApplied(page);
 }
 
 /**
@@ -71,7 +200,11 @@ export async function fitCommitted(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {
     await expect(page.locator('.candidate')).toHaveCount(0);
   } else {
-    await expect(page.locator('.replacement__fit')).toBeDisabled();
+    // The pick, cleared. Not the fitted marker: a stock record and its
+    // pre-engineered variants share a symbol, so more than one row can be the
+    // module that is in the mount.
+    await expect(page.locator('.candidate[data-selected="true"]')).toHaveCount(0);
+    await expect(page.locator('.candidate--fitted').first()).toBeVisible();
   }
 }
 
@@ -86,7 +219,9 @@ export async function editApplied(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {
     await expect(page.locator('.blueprints')).toHaveCount(0);
   } else {
-    await expect(page.locator('.engineering__apply')).toBeDisabled();
+    // Inline there is no control to go quiet: the choice was the decision, and
+    // the editor is showing what the module now carries.
+    await expect(page.locator('.engineering').first()).toBeVisible();
   }
 }
 
@@ -102,8 +237,9 @@ export async function draftAbandoned(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {
     await expect(page.locator('.blueprints')).toHaveCount(0);
   } else {
-    await expect(page.locator('.blueprint[data-selected="true"]')).toHaveCount(0);
-    await expect(page.locator('.engineering__apply')).toBeDisabled();
+    // Polled: reverting is a signal write, and the control it resets is
+    // repainted on the next frame rather than under the click.
+    await expect.poll(() => chosenRecipe(page)).toBeNull();
   }
 }
 

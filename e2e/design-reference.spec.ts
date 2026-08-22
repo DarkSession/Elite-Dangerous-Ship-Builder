@@ -141,14 +141,16 @@ test.describe('the reference visual language', () => {
     expect(rounded, 'a product surface is rounded; the reference is square').toEqual([]);
   });
 
-  test('never renders text below the lifted ramp floor', async ({ page }) => {
-    // The one deliberate departure. The canvas ramp starts at 7.5px; it is
-    // lifted uniformly so the smallest rung is 11px, which is what
-    // `--edsb-type-size-micro` resolves to at a 16px root.
+  test('never renders text below the canvas ramp floor', async ({ page }) => {
+    // The canvas ramp starts at 7.5px and is taken at 1:1: `micro` is 9px, which
+    // covers the canvas's 7.5–9.5 rung and is the smallest step the system
+    // offers. This once pinned an 11px floor, from a uniform ~1.25 lift over the
+    // canvas — the lift is gone, because the design's sizes are as much the
+    // design as its ratios are (wave 9).
     const sizes = await fontSizes(page);
 
     expect(sizes.length).toBeGreaterThan(0);
-    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(9);
   });
 
   test('fills the selected segment and quiets the rest', async ({ page }) => {

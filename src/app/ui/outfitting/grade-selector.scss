@@ -35,7 +35,12 @@
 }
 
 .grade {
-  @include layout.target-baseline;
+  // The canvas's 28px bar. Each cell is a fifth of the row and far wider than
+  // the pointer floor, so the floor is what the height has to clear — the
+  // comfortable 44px baseline would make a bar of five nearly twice what the
+  // canvas draws (wave 4).
+  min-block-size: var(--edsb-target-size-floor);
+  block-size: var(--edsb-layout-grade-cell);
 
   flex: 1 1 var(--edsb-target-size);
   min-inline-size: 0;
@@ -47,19 +52,36 @@
   color: var(--edsb-text-accent);
   cursor: pointer;
 
-  // The canvas fills the chosen cell solid. Fill is not the only carrier: the
-  // radio's own checked state and the number beside the legend both say it too.
-  &[data-selected='true'] {
+  // The canvas fills the bar up to the chosen grade rather than marking one
+  // cell, so grade 5 reads as five. Fill is not the only carrier: the radio's
+  // own checked state and the number beside the legend both say it too.
+  &[data-filled='true'] {
     background-color: var(--edsb-surface-accent-solid);
     border-color: var(--edsb-border-accent);
     color: var(--edsb-text-on-accent);
   }
 }
 
+// A grade below the one the recipe starts at. Striped rather than solid, so it
+// reads as outside the recipe's own range, and still pressable: taking a
+// Merc-Coin article back down to grade 1 is a thing a Commander may do. The
+// stripe is never the only carrier — each cell names its own grade.
+.grade[data-unavailable='true'][data-filled='true'] {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--edsb-surface-accent-solid) 0 var(--edsb-space-stack-tight),
+    transparent var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
+  );
+  background-color: var(--edsb-surface-accent-quiet);
+}
+
 .grade__radio {
   @include layout.visually-hidden;
 }
 
+// The canvas draws the cells bare and puts the chosen grade beside the legend.
+// The number stays in each cell's accessible name, so a reader still hears
+// which grade a cell is.
 .grade__number {
-  @include layout.metric-value(var(--edsb-text-size-compact), currentColor);
+  @include layout.visually-hidden;
 }

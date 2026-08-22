@@ -11,12 +11,10 @@
 // where a token below has no obvious canvas source, the extraction file names
 // the sites it was read from.
 //
-// One deliberate transform. The canvas type ramp runs from 7.5px to 22px at 1:1
-// (canvas 1b is a 390 × 844 viewport with 44px inputs, so the ramp is literal,
-// not a thumbnail artefact). The ramp is lifted uniformly by ~1.25× so the
-// smallest rung is 11px, preserving every ratio between rungs — the ratios are
-// what the hierarchy is made of. Every step is `rem`, so 200% text and 400% zoom
-// reflow the whole interface.
+// No transform. The canvas type ramp runs from 7.5px to 22px at 1:1 (canvas 1b
+// is a 390 × 844 viewport with 44px inputs, so the ramp is literal, not a
+// thumbnail artefact) and is taken at 1:1. Every step is `rem`, so 200% text and
+// 400% zoom reflow the whole interface.
 //
 // Nothing here encodes meaning. Roles live in `_semantic.scss`; components
 // consume semantic aliases only.
@@ -98,6 +96,16 @@
   --edsb-palette-good-2: #7fc46b;
   --edsb-palette-cool: #5fd0e0;
 
+  // Merc Coin's own pink. The canvas writes it `#f2003c`, which measures 3.88:1
+  // against the lightest of the nine grounds — under the 4.5:1 a figure has to
+  // clear. This is that same hue lifted to 4.67:1 rather than a different
+  // colour: the HSL hue is the canvas's to five decimal places, and only the
+  // lightness moves (canvas 1c; see the ink-wash note in `_semantic.scss`).
+  --edsb-palette-merc: #fe3063;
+
+  // The wash behind the canvas's `REWARD ONLY` chip: the same cool at .10.
+  --edsb-palette-cool-a10: rgb(95 208 224 / 0.1);
+
   // Status washes. Canvas literals: the issue badge and the destructive border.
   --edsb-palette-hot-a16: rgb(255 107 61 / 0.16);
   --edsb-palette-hot-a40: rgb(255 107 61 / 0.4);
@@ -123,17 +131,26 @@
     'Barlow Condensed', 'Barlow', 'Roboto Condensed', 'Arial Narrow', sans-serif;
   --edsb-family-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
 
-  // The lifted canvas ramp. `micro` is the smallest step the system offers;
-  // nothing smaller exists to be reached for.
-  --edsb-type-size-micro: 0.6875rem; //  canvas 7.5–9.5
-  --edsb-type-size-2xs: 0.75rem; //      canvas 10
-  --edsb-type-size-xs: 0.8125rem; //     canvas 10.5–11
-  --edsb-type-size-sm: 0.875rem; //      canvas 12
-  --edsb-type-size-md: 1rem; //          canvas 13
-  --edsb-type-size-lg: 1.125rem; //      canvas 14–15
-  --edsb-type-size-xl: 1.25rem; //       canvas 16
-  --edsb-type-size-2xl: 1.5rem; //       canvas 18
-  --edsb-type-size-3xl: 1.75rem; //      canvas 22
+  // The canvas ramp, at the canvas's own sizes.
+  //
+  // This once carried a deliberate ~1.25x lift over the canvas: the canvas sets
+  // 9px detail lines and 13px names, and a lift put every rung one step up from
+  // what the design draws. It was wrong, and wrong everywhere at once — a
+  // 13px name came out at 16px, a 9px detail at 11px, and the density the whole
+  // layout is composed at went with them. The design is the record; the ramp is
+  // now the design's own steps and nothing is scaled on the way in (wave 9).
+  //
+  // `micro` is the smallest step the system offers; nothing smaller exists to be
+  // reached for.
+  --edsb-type-size-micro: 0.5625rem; //  canvas 7.5–9.5
+  --edsb-type-size-2xs: 0.625rem; //     canvas 10
+  --edsb-type-size-xs: 0.6875rem; //     canvas 10.5–11
+  --edsb-type-size-sm: 0.75rem; //       canvas 12
+  --edsb-type-size-md: 0.8125rem; //     canvas 13
+  --edsb-type-size-lg: 0.875rem; //      canvas 14–15
+  --edsb-type-size-xl: 1rem; //          canvas 16
+  --edsb-type-size-2xl: 1.125rem; //     canvas 18
+  --edsb-type-size-3xl: 1.375rem; //     canvas 22
 
   // The canvas sets `line-height: 1` on every tracked single-line label and
   // number. `flat` is that; it is only ever correct on a line that cannot wrap.
@@ -259,6 +276,11 @@
 
   --edsb-target-min: 2.75rem;
   --edsb-target-min-compact: 2.25rem;
+  // The floor a pointer target may not go under (WCAG 2.2 AA, Target Size
+  // (Minimum)). For the dense inline chips the canvas draws at 20px, which is
+  // under it — this is as close as one of those can be drawn and still be
+  // reachable.
+  --edsb-target-min-floor: 1.5rem;
 
   // ---------------------------------------------------------------------------
   // Layout measures. The canvas's own 1320px artboard width is not one of these:
@@ -271,11 +293,35 @@
   // The inspector rail, 340px in canvas 1a.
   --edsb-measure-rail-min: 21.25rem;
 
+  // The slot ledger's rail, 392px in canvas 1c: the fixed leading track of its
+  // `392px 1fr 306px` workspace grid. Stated in rem so it grows with the
+  // reader's text rather than pinching the ledger's own rows at 200%.
+  --edsb-measure-ledger-rail: 24.5rem;
+
   // The command bar: one row of controls at the 44px target baseline inside the
   // bar's own block padding. The canvas draws 56px around 30px chips; the extra
   // is the target floor, which is a rule about the product rather than a
   // measurement taken off the drawing.
   --edsb-measure-bar-height: 4.125rem;
+
+  // The ledger row's two boxes: canvas 1c's 26px size square and 20px node
+  // badge, canvas 1d's 30px size square at touch scale.
+  --edsb-measure-mount-box: 1.75rem;
+  --edsb-measure-node-box: 1.375rem;
+
+  // The two icons the canvas draws inline in a row — the engineered mark and
+  // the Merc Coin — at 14 to 16px depending on the artboard.
+  --edsb-measure-icon: 0.9375rem;
+  // The canvas's manifest row: 13px of name between 11px of padding, plus the
+  // 2px that separates one row from the next.
+  --edsb-measure-candidate-row: 2.625rem;
+  // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
+  --edsb-measure-grade-cell: 1.75rem;
+
+  // The compact action menu, 196px in canvas 1d, and the width it may grow to
+  // before a translated label would rather wrap than push past the screen.
+  --edsb-measure-menu-min: 12.25rem;
+  --edsb-measure-menu-max: 20rem;
 
   // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export,
   // 860 library. Three named steps cover them.

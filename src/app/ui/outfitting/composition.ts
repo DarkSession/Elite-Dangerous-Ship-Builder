@@ -19,8 +19,20 @@ export type OutfittingComposition = 'wide' | 'two-pane' | 'compact';
  * reason a narrow window does.
  */
 const MINIMUMS = {
-  /** A slot card's key, one wrapped module name and its 44px controls. */
-  ledger: 20,
+  /**
+   * The ledger's rail: canvas 1c's own 392px leading track.
+   *
+   * **Corrected 2026-08-22 (wave 9): 20 to 24.5.** This was the width a slot
+   * card's wrapped name and its 44px controls need, but the wide grid's leading
+   * track is not that — it is the canvas's fixed rail, and always has been. The
+   * two thresholds this feeds therefore opened 4.5rem before the grid could hold
+   * itself, and the panes' minimums added up to more than the grid they sat in.
+   * The application frame's own side padding kept the container under the
+   * threshold at the widths it would have bitten; with that inset gone — the
+   * canvas draws no page frame — the workspace stayed wide at 1440px with
+   * doubled text and ran past the window (FR-011).
+   */
+  ledger: 24.5,
   /** A candidate row's name, class, rating, mount and a 44px fit control. */
   bench: 22.5,
   /** One validation or cost line with its number and unit, on two lines. */

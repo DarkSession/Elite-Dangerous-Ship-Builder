@@ -40,6 +40,15 @@ export class ModuleIdentityBadge {
   readonly rating = input<string | null>(null);
   readonly mount = input<string | null>(null);
 
+  /**
+   * What else the code line carries, after the mount.
+   *
+   * Canvas 1c writes one line per fitted row — `4A GIMBALLED · OVERCHARGED G5 ·
+   * CORROSIVE` — rather than a line for the article and another for what has
+   * been done to it.
+   */
+  readonly detail = input<string | null>(null);
+
   /** The canvas's `4A`: class and rating together, when the package has both. */
   readonly code = computed(() => {
     const moduleClass = this.moduleClass();
@@ -60,6 +69,25 @@ export class ModuleIdentityBadge {
       default:
         return null;
     }
+  });
+
+  /**
+   * The whole code line, as one line.
+   *
+   * Canvas 1c writes `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` as a single
+   * run of text in a single ink — not as separate chips that wrap onto lines of
+   * their own. Joining here rather than in the template is what keeps the
+   * separators inside the text: a `::before` on each part would be read aloud
+   * as well as drawn.
+   */
+  readonly codeLine = computed(() => {
+    const parts = [this.code(), this.mountLabel(), this.detail()].filter(
+      (part): part is string => part !== null && part !== '',
+    );
+    if (this.showSymbol() && this.symbol()) {
+      parts.push(this.symbol()!);
+    }
+    return parts.length === 0 ? null : parts.join(' · ');
   });
 
   /** The class and rating, spelled out for anyone reading the code aloud. */

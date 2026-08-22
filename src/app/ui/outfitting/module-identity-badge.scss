@@ -12,33 +12,28 @@
 }
 
 .identity__name {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-body);
-  font-weight: var(--edsb-text-weight-heading);
-  letter-spacing: var(--edsb-text-tracking-name);
+  // Barlow, not the condensed face: canvas 1c sets a ledger row's module name in
+  // the same `500 13px Barlow` it sets a manifest row's in, untracked. The
+  // condensed face and the tracking that came with it belong to the headings and
+  // the control labels around it, not to the name itself (wave 8).
+  font-family: var(--edsb-font-body);
+  // The canvas's 13px module name, which is this scale's `lead` step.
+  font-size: var(--edsb-text-size-lead);
+  font-weight: var(--edsb-text-weight-emphasis);
   color: var(--edsb-text-primary);
   overflow-wrap: break-word;
 }
 
 .identity__code-line {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-}
-
-.identity__code,
-.identity__mount,
-.identity__symbol {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
-}
 
-.identity__code {
-  color: var(--edsb-text-accent);
-}
-
-// A package symbol is an identity, not prose: it reads left to right whatever
-// the surrounding direction is, or two different modules can look like one.
-.identity__symbol {
-  text-transform: none;
+  display: block;
+  // The canvas's own 9px/1 mono line. It reads left to right whatever the
+  // surrounding direction is, because a package symbol and a class code are
+  // identities rather than prose — two different modules can otherwise look
+  // like one.
   unicode-bidi: isolate;
+  overflow-wrap: break-word;
 }
 
 .visually-hidden {

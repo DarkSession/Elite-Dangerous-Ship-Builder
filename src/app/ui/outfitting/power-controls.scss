@@ -6,13 +6,11 @@
   display: block;
 }
 
-// One box at the size it needs and no wider than the row it sits in. At 200%
-// text the two cells stack rather than pushing the ledger sideways: a select
-// whose widest option is a word is wider than a chip drawn for a digit, and the
-// document may not scroll horizontally for it (FR-011).
+// One box at the size it needs and no wider than the row it sits in. The two
+// cells never stack: the canvas draws one hairline chip at the end of a row, and
+// a chip that folds in half is a second row of ledger for every mount (FR-011).
 .power {
   display: flex;
-  flex-wrap: wrap;
   align-items: stretch;
   inline-size: fit-content;
   max-inline-size: 100%;
@@ -20,7 +18,7 @@
 }
 
 .power__switch {
-  @include layout.target-baseline;
+  @include layout.target-floor;
 
   display: inline-flex;
   align-items: center;
@@ -50,15 +48,32 @@
   }
 }
 
+// The canvas's second cell: the priority number on an amber wash, and nothing
+// else. It stays a native select — the options are a list and a list is what a
+// select is — but it is drawn as the cell rather than as a form control, so the
+// ledger reads as the canvas's row of chips instead of a column of dropdowns.
 .power__priority {
-  @include layout.control-base;
+  @include layout.control-base(var(--edsb-text-tracking-count));
 
+  // No disclosure caret and no field chrome: every option is a single digit, so
+  // the chip is the digit. Where the package reports no group at all the shared
+  // `Unavailable` value widens it, which is the one case the canvas has no
+  // drawing for and the honest one to draw wide.
+  appearance: none;
   flex: 0 1 auto;
-  min-inline-size: 0;
+  // The canvas's own dense cell, at the accessible floor rather than the
+  // comfortable baseline: forty ledger rows of a 44px chip is a different
+  // interface from the one the canvas draws (wave 4).
+  min-inline-size: var(--edsb-target-size-floor);
+  min-block-size: var(--edsb-target-size-floor);
+  padding-inline: var(--edsb-space-inline-tight);
+  font-size: var(--edsb-text-size-micro);
+  padding-inline: var(--edsb-space-inline-tight);
   border: 0;
   background-color: var(--edsb-surface-accent-selected);
   color: var(--edsb-text-accent);
   font-family: var(--edsb-font-metric);
+  text-align: center;
 }
 
 .visually-hidden {

@@ -14,16 +14,17 @@ interface StatusAction {
 }
 
 /**
- * What persistence is doing, in words.
+ * What is wrong with persistence, in words — and nothing when nothing is.
  *
- * Every state here is readable and none of them makes the build unusable. That
- * is the whole message: a Commander whose browser will not store anything can
- * still build, calculate, share and export — they simply have to know that
- * closing the tab will cost them the build (FR-014).
+ * None of these states makes the build unusable. That is the whole message: a
+ * Commander whose browser will not store anything can still build, calculate,
+ * share and export — they simply have to know that closing the tab will cost
+ * them the build (FR-014).
  *
  * A failure is an `alert`, because it changes what a Commander should do next.
- * Ordinary saving and saved states are statuses: repeating "saved" every few
- * seconds over the top of someone's reading is worse than silence.
+ * The working states — ready, saving, saved — draw nothing: the reference has
+ * no banner for them, and repeating "saved" every few seconds over the top of
+ * someone's reading is worse than silence.
  */
 @Component({
   selector: 'edsb-persistence-status',
@@ -82,6 +83,9 @@ export class PersistenceStatus {
         return 'info';
     }
   });
+
+  /** Whether this state is one a Commander has to know about. */
+  readonly problem = computed(() => this.tone() === 'warning' || this.tone() === 'error');
 
   readonly actions = computed<readonly StatusAction[]>(() => {
     switch (this.status()) {

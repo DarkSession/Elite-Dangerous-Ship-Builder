@@ -57,7 +57,7 @@ function slotView(overrides: Record<string, unknown> = {}): Record<string, unkno
       displayName: LOCALIZED,
       enabled: undefined,
       priority: 0,
-      article: { class: 4, rating: 'A', mount: 'Gimballed' },
+      article: { class: 4, rating: 'A', mount: 'Gimballed', powerDraw: 0.61 },
       effectiveArticle: null,
       engineering: null,
       variant: null,
@@ -119,8 +119,7 @@ describe('module identity badge', () => {
       mount: 'Gimballed',
     });
 
-    expect(textOf(query(fixture, '.identity__code'))).toBe('4A');
-    expect(textOf(query(fixture, '.identity__mount'))).toBe('Gimballed');
+    expect(textOf(query(fixture, '.identity__code-line'))).toBe('4A · Gimballed');
   });
 
   it('spells the code out for anyone reading it aloud', () => {
@@ -140,7 +139,7 @@ describe('module identity badge', () => {
       rating: null,
     });
 
-    expect(element(fixture).querySelector('.identity__code')).toBeNull();
+    expect(element(fixture).querySelector('.identity__code-line')).toBeNull();
   });
 
   it('discloses canonical package text as untranslated', () => {
@@ -155,14 +154,14 @@ describe('module identity badge', () => {
       name: LOCALIZED,
       symbol: 'Hpt_MultiCannon_Gimbal_Huge',
     });
-    expect(element(hidden).querySelector('.identity__symbol')).toBeNull();
+    expect(textOf(element(hidden))).not.toContain('Hpt_MultiCannon_Gimbal_Huge');
 
     const shown = renderComponent(ModuleIdentityBadge, {
       name: LOCALIZED,
       symbol: 'Hpt_MultiCannon_Gimbal_Huge',
       showSymbol: true,
     });
-    expect(textOf(query(shown, '.identity__symbol'))).toBe('Hpt_MultiCannon_Gimbal_Huge');
+    expect(textOf(query(shown, '.identity__code-line'))).toBe('Hpt_MultiCannon_Gimbal_Huge');
   });
 });
 
@@ -177,8 +176,26 @@ describe('slot card', () => {
     expect(row.getAttribute('data-slot-key')).toBe('HugeHardpoint1');
     expect(describedText(query(fixture, '.slot__select'))).toContain('HugeHardpoint1');
 
-    // The drawn label is what a Commander reads: kind, size and node number.
-    expect(textOf(query(fixture, '.slot__drawn-label'))).toBe('Hardpoints · Size 4 · Node 1');
+    // A fitted row is the canvas's two lines — the module's name over its code
+    // line — so the mount's own kind, size and node are spoken, not drawn a
+    // third time beside the badges that already carry them.
+    expect(query(fixture, '.slot').querySelector('.slot__drawn-label')).toBeNull();
+    expect(textOf(element(fixture))).toContain('Hardpoints · Size 4 · Node 1');
+  });
+
+  it('says only Empty on an empty row, and names the mount to a reader', () => {
+    const fixture = renderComponent(SlotCard, {
+      slot: slotView({ module: null }),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    // The size box and the node badge beside it already carry the size and the
+    // node, and the group rule above them carries the kind. Writing all three
+    // again in words under an `Empty` was a line the canvas does not draw
+    // (wave 5).
+    expect(element(fixture).querySelector('.slot__drawn-label')).toBeNull();
+    expect(textOf(query(fixture, '.slot__empty'))).toBe('Empty');
+    expect(textOf(element(fixture))).toContain('Hardpoints · Size 4 · Node 1');
   });
 
   it('states selection in words and in programmatic state, not by the marker alone', () => {
@@ -202,13 +219,21 @@ describe('slot card', () => {
     expect(textOf(query(fixture, '.slot__empty')).toLowerCase()).toBe('empty');
   });
 
-  it('marks a mount the Almanac reports as immovable', () => {
-    const fixture = renderComponent(SlotCard, {
+  it('marks the one mount the canvas marks, and no other', () => {
+    // Canvas 1d writes `FIXED` beside the cargo hatch and nothing anywhere
+    // else. A required core internal is just as immovable and the Almanac's
+    // reason for it is published on the bench, in its own full sentence.
+    const hatch = renderComponent(SlotCard, {
+      slot: slotView({ kind: 'cargoHatch', removable: false, immovableReason: 'cargoHatch' }),
+      capabilities: { ...EVERY_CAPABILITY, canRemove: false },
+    });
+    expect(textOf(query(hatch, '.slot__marker')).toLowerCase()).toContain('fixed');
+
+    const required = renderComponent(SlotCard, {
       slot: slotView({ removable: false, immovableReason: 'requiredSlot' }),
       capabilities: { ...EVERY_CAPABILITY, canRemove: false },
     });
-
-    expect(textOf(query(fixture, '.slot__marker')).toLowerCase()).toContain('required');
+    expect(element(required).querySelector('.slot__marker')).toBeNull();
   });
 
   it('emits a selection intent rather than acting on one', () => {
@@ -224,7 +249,42 @@ describe('slot card', () => {
     expect(emitted).toEqual([{ kind: 'select' }]);
   });
 
-  it('renders the mount restriction the package supplies', () => {
+  it('draws no power chip on a module the Almanac prices at no power', () => {
+    // Armour, a fuel tank: nothing to power, so nothing to group, and the
+    // canvas draws no chip on one (wave 4).
+    const armour = renderComponent(SlotCard, {
+      slot: slotView({
+        module: {
+          ...(slotView()['module'] as Record<string, unknown>),
+          article: { class: 1, rating: 'I', mount: null },
+        },
+      }),
+      capabilities: EVERY_CAPABILITY,
+    });
+    expect(element(armour).querySelector('edsb-power-controls')).toBeNull();
+
+    const drawing = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+    expect(drawing.nativeElement.querySelector('edsb-power-controls')).not.toBeNull();
+  });
+
+  it('keeps the engineered mark’s place on a row that carries none', () => {
+    // Without it the rows above and below an engineered module sit a marker's
+    // width further along than it does (canvas 1c).
+    const plain = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+    expect(element(plain).querySelector('.slot__engineered')).not.toBeNull();
+    expect(element(plain).querySelector('img.slot__engineered')).toBeNull();
+  });
+
+  it('keeps the row a row: no package sentence under it', () => {
+    // The canvas's ledger row is a size, a module and a power chip. What the
+    // mount will take is published on the bench, where it answers the question
+    // the fitting panel is asking.
     const fixture = renderComponent(SlotCard, {
       slot: slotView({
         kind: 'optional',
@@ -234,7 +294,7 @@ describe('slot card', () => {
       capabilities: EVERY_CAPABILITY,
     });
 
-    expect(textOf(query(fixture, '.slot__note'))).toContain('reinforcement packages');
+    expect(textOf(element(fixture))).not.toContain('reinforcement packages');
   });
 });
 
@@ -246,7 +306,11 @@ describe('slot group', () => {
 
     expect(textOf(query(fixture, '.group__heading'))).toBe('Hardpoints');
     expect(accessibleName(query(fixture, '.group'))).toBe('Hardpoints');
-    expect(textOf(query(fixture, '.group__count'))).toBe('2 mounts');
+    // The canvas writes a bare number at the rule's trailing edge, and names
+    // the two badges a hardpoint row leads with beside the heading.
+    expect(textOf(query(fixture, '.group__columns'))).toBe('Size · node no.');
+    expect(textOf(query(fixture, '.group__count'))).toBe('2');
+    expect(textOf(element(fixture))).toContain('2 mounts');
     expect(element(fixture).querySelector('ul')).not.toBeNull();
   });
 });

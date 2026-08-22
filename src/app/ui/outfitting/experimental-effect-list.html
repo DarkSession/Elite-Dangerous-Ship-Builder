@@ -1,49 +1,63 @@
-<fieldset class="effects">
-  <legend class="effects__legend">{{ legend() }}</legend>
+<!--
+  Canvas 1c's cool-bordered dropdown, canvas 1d's card list. The package's own
+  description rides in the option label, so the dropdown offers what the cards
+  offer rather than a shorter version of it (constitution V).
+-->
+@if (asDropdown()) {
+  <edsb-select-field
+    class="effects__field"
+    [label]="legend()"
+    [options]="options()"
+    [value]="selected() ?? noEffect"
+    (changed)="chosen.emit($event === noEffect ? null : $event)"
+  />
+} @else {
+  <fieldset class="effects">
+    <legend class="effects__legend">{{ legend() }}</legend>
 
-  <label class="effect effect--none" [attr.data-selected]="selected() === null">
-    <input
-      class="effect__radio"
-      type="radio"
-      [name]="groupName"
-      [value]="noEffect"
-      [checked]="selected() === null"
-      (change)="chosen.emit(null)"
-    />
-    <span class="effect__identity">
-      <span class="effect__name">{{ noneLabel() }}</span>
-      <span class="effect__note">{{ noneDescription() }}</span>
-    </span>
-  </label>
-
-  @for (effect of effects(); track effect.fdname) {
-    <label class="effect" [attr.data-selected]="selected() === effect.fdname">
+    <label class="effect effect--none" [attr.data-selected]="selected() === null">
       <input
         class="effect__radio"
         type="radio"
         [name]="groupName"
-        [value]="effect.fdname"
-        [checked]="selected() === effect.fdname"
-        [attr.aria-label]="nameFor(effect)"
-        (change)="chosen.emit(effect.fdname)"
+        [value]="noEffect"
+        [checked]="selected() === null"
+        (change)="chosen.emit(null)"
       />
       <span class="effect__identity">
-        <edsb-game-text
-          class="effect__name"
-          [text]="effect.name.text"
-          [language]="effect.name.language"
-          [translationState]="effect.name.translationState"
-        />
-        <edsb-game-text
-          class="effect__description"
-          [text]="effect.description.text"
-          [language]="effect.description.language"
-          [translationState]="effect.description.translationState"
-        />
-        @if (effect.applied) {
-          <span class="effect__applied">{{ appliedLabel() }}</span>
-        }
+        <span class="effect__name">{{ noneLabel() }}</span>
       </span>
     </label>
-  }
-</fieldset>
+
+    @for (effect of effects(); track effect.fdname) {
+      <label class="effect" [attr.data-selected]="selected() === effect.fdname">
+        <input
+          class="effect__radio"
+          type="radio"
+          [name]="groupName"
+          [value]="effect.fdname"
+          [checked]="selected() === effect.fdname"
+          [attr.aria-label]="nameFor(effect)"
+          (change)="chosen.emit(effect.fdname)"
+        />
+        <span class="effect__identity">
+          <edsb-game-text
+            class="effect__name"
+            [text]="effect.name.text"
+            [language]="effect.name.language"
+            [translationState]="effect.name.translationState"
+          />
+          <edsb-game-text
+            class="effect__description"
+            [text]="effect.description.text"
+            [language]="effect.description.language"
+            [translationState]="effect.description.translationState"
+          />
+          @if (effect.applied) {
+            <span class="effect__applied">{{ appliedLabel() }}</span>
+          }
+        </span>
+      </label>
+    }
+  </fieldset>
+}

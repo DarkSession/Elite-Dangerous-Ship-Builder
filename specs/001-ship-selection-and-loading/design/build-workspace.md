@@ -47,7 +47,11 @@ Modelled edits coalesce into this tab's working key. Visibility loss/pagehide re
 - Link text wraps or uses a labeled internal scroll container without document overflow.
 - Share/copy failure never removes selectable text.
 - The share-link mode always renders `/build#b.…`; the reference `/b/<name>#h=…` sample is not implemented because it puts local naming/version detail outside the canonical fragment contract.
-- Persistence status, working provenance, conflict, retention/quota and link-refusal states are added to the visual hierarchy even though the reference canvases do not depict them.
+- **Revised 2026-08-22.** Persistence status and working provenance are _not_ added to the visual
+  hierarchy: neither canvas draws either, and the standing rule is that what the design does not draw
+  is not drawn. Both remain in the accessibility layer, where a reader who has no drawn state to
+  notice still gets them. Conflict, retention/quota and link refusal keep their visible treatment —
+  those are blocking conditions a Commander has to act on, not status.
 - Preview states cover no-build, working/named/link, dirty, persistence failures, valid/invalid/refused links and confirmation at all core widths.
 
 ## Reference composition

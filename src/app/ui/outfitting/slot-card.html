@@ -29,13 +29,24 @@
           [moduleClass]="slot().module!.article?.class ?? null"
           [rating]="slot().module!.article?.rating ?? null"
           [mount]="slot().module!.article?.mount ?? null"
+          [detail]="engineeringSummary()"
         />
+        <!--
+          The canvas gives a fitted row two lines: the module's name and its
+          code line. The mount's own kind, size and node are the size box, the
+          node badge and the group's `SIZE · NODE NO.` rule above — drawing them
+          a third time in the row was the compact card's stack on a desktop, so
+          here they are spoken and not drawn.
+        -->
+        <span class="visually-hidden">{{ drawnLabel() }}</span>
       } @else {
         <span class="slot__empty">{{ emptyLabel() }}</span>
-      }
-      <span class="slot__drawn-label">{{ drawnLabel() }}</span>
-      @if (engineeringSummary()) {
-        <span class="slot__engineering">{{ engineeringSummary() }}</span>
+        <!--
+          The mount is the size box and the node badge beside it, and the group
+          rule above them. Writing `Hardpoints · Size 4 · Node 1` under an
+          `Empty` said all three a second time in words (wave 5).
+        -->
+        <span class="visually-hidden">{{ drawnLabel() }}</span>
       }
     </span>
 
@@ -64,19 +75,32 @@
     />
   }
 
-  <div class="slot__notes">
-    @if (restrictionText()) {
-      <p class="slot__note">{{ restrictionText() }}</p>
-    }
-    @if (!capabilities().canRemove && immovableMarker()) {
-      <p class="slot__marker">{{ immovableMarker() }}</p>
-    }
-    @if (labels().length > 0) {
-      <ul class="slot__labels">
-        @for (label of labels(); track label) {
-          <li class="slot__label">{{ label }}</li>
-        }
-      </ul>
-    }
-  </div>
+  <!--
+    The canvas's engineered mark, after the power chip as canvas 1c orders the
+    row's tail. Decorative: the code line above already writes `OVERCHARGED G5`
+    in words, so the icon repeats what is read rather than carrying it
+    (FR-010 of feature 011).
+  -->
+  @if (engineeringSummary()) {
+    <img
+      class="slot__engineered"
+      src="assets/icons/engineered.svg"
+      alt=""
+      [attr.title]="engineeredLabel()"
+      width="15"
+      height="15"
+    />
+  } @else {
+    <!--
+      Its place is kept whether or not the row carries one, exactly as the
+      canvas keeps it. Without this the rows above and below an engineered
+      module sit a marker's width further along than it does, and a column of
+      forty rows stops being a column (canvas 1c).
+    -->
+    <span class="slot__engineered" aria-hidden="true"></span>
+  }
+
+  @if (immovableMarker(); as marker) {
+    <p class="slot__marker">{{ marker }}</p>
+  }
 </div>

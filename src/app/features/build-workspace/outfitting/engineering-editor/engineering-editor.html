@@ -11,6 +11,13 @@
       <p class="engineering__state" role="status">{{ loadingLabel() }}</p>
     }
     @case ('packageEmpty') {
+      <!--
+        A mount the Almanac offers no engineering for keeps its panel and says
+        so. The panel is the region a Commander looks in to find out what a
+        module can be engineered to; removing it left the bench with nothing
+        where the answer belongs, and the answer — that there is none — is one
+        the ledger cannot give from the outside (wave 9, reversing wave 5).
+      -->
       <p class="engineering__state">{{ packageEmptyLabel() }}</p>
     }
     @case ('final') {
@@ -25,13 +32,13 @@
 
   <!--
     What the module carries now is drawn the way both canvases draw it: the
-    recipe it carries is the checked choice and carries the `Applied` marker,
-    the grade row shows that grade, and the effect it carries is the checked
-    effect. A sentence restating all three is text neither canvas has
-    (design-canvas rule).
+    recipe is the control's own value, the grade bar shows that grade, and the
+    effect is the effect control's value. The article it was bought as is said
+    to a reader — the blueprint the panel states is the article's name — but not
+    drawn again as a sentence neither canvas has (wave 5).
   -->
   @if (purchaseSummary(); as summary) {
-    <p class="engineering__purchase">{{ summary }}</p>
+    <p class="visually-hidden">{{ summary }}</p>
   }
 
   @if (state() === 'stale') {
@@ -42,58 +49,86 @@
     <div class="engineering__panes">
       <div class="engineering__choices">
         <edsb-blueprint-choice-list
+          [asDropdown]="!asLayer()"
+          [fixed]="fixedRecipe()"
           [choices]="blueprintChoices()"
           [selected]="selectedBlueprint()"
           [clearConsequence]="clearConsequence()"
           (chosen)="chooseBlueprint($event)"
         />
 
+        <!--
+          Everything under the recipe follows from it. A grade bar, an effect
+          menu and a materials list with no recipe behind them are controls
+          over nothing, and neither canvas draws one (design-canvas rule).
+        -->
         @if (grades().length > 0) {
           <edsb-grade-selector
             [grades]="grades()"
+            [lowest]="lowestGrade()"
             [selected]="selectedGrade()"
             (chosen)="chooseGrade($event)"
           />
         }
 
-        @if (effectChoices().length > 0) {
+        @if (recipeChosen() && effectChoices().length > 0) {
           <edsb-experimental-effect-list
+            [asDropdown]="!asLayer()"
             [effects]="effectChoices()"
             [selected]="selectedEffect()"
             (chosen)="chooseEffect($event)"
           />
         }
-      </div>
 
-      <div class="engineering__result">
+        <!--
+          Canvas 1c puts what the recipe would change directly under the
+          controls that choose it, ruled off from them, in the same column —
+          not across the rule beside the materials. The table reads as the
+          consequence of the three choices above it, which is what it is
+          (wave 8).
+        -->
         @if (attributes().length > 0) {
-          <edsb-attribute-comparison [rows]="attributes()" />
-        } @else {
-          <p class="engineering__state">{{ noAttributesLabel() }}</p>
+          <edsb-attribute-comparison class="engineering__attributes" [rows]="attributes()" />
         }
-
-        <edsb-material-cost-list
-          [parts]="materialParts()"
-          [grade]="selectedGrade()"
-          [mercCoin]="mercCoin()"
-          [fixedPurchase]="fixedPurchase()"
-        />
       </div>
+
+      <!--
+        A heading over nothing is a section about nothing. On an article bought
+        rather than crafted there is no job at the grade it was bought at, so
+        there is no list and no `MATERIALS · G1` to head one with (wave 9).
+      -->
+      @if (recipeChosen() && materialParts().length > 0) {
+        <div class="engineering__result">
+          <!--
+            One list for the whole job — the recipe's materials and the effect's
+            already folded together, because a Commander gathers them once
+            (wave 9). The article's Merc Coin price is not on it: that is what
+            buying the module costs, which the manifest row it is bought from
+            already states, and the Almanac publishes no per-grade figure that
+            would belong here instead (constitution IV).
+          -->
+          <edsb-material-cost-list [parts]="materialParts()" [grade]="selectedGrade()" />
+        </div>
+      }
     </div>
 
     <!--
-      Canvas 1d pins these to the foot of the screen; canvas 1c draws them under
-      the panel. There is no third control: clearing is the blueprint list's
-      first option, applied like any other choice.
+      Canvas 1d pins these to the foot of its own screen, because at that width
+      the editor is a screen that has to be left on purpose. Canvas 1c draws
+      neither: inline, a choice is the decision and commits as it is made — the
+      same rule the chooser follows one panel up. Undo is what takes one back
+      (design-canvas rule, wave 4).
     -->
-    <div class="engineering__actions">
-      <button class="engineering__revert" type="button" (click)="revert()">
-        {{ revertLabel() }}
-      </button>
-      <button class="engineering__apply" type="button" [disabled]="!canApply()" (click)="apply()">
-        {{ applyLabel() }}
-      </button>
-    </div>
+    @if (asLayer()) {
+      <div class="engineering__actions">
+        <button class="engineering__revert" type="button" (click)="revert()">
+          {{ revertLabel() }}
+        </button>
+        <button class="engineering__apply" type="button" [disabled]="!canApply()" (click)="apply()">
+          {{ applyLabel() }}
+        </button>
+      </div>
+    }
   }
 </ng-template>
 
@@ -117,8 +152,21 @@
     the region's accessible name names the mount for a reader who arrived here
     without passing it.
   -->
-  <section class="engineering" [attr.aria-label]="regionLabel()">
-    <h4 class="engineering__heading" [id]="headingId">{{ panelHeading() }}</h4>
-    <ng-container [ngTemplateOutlet]="body" />
+
+  <section class="engineering engineering--panel" [attr.aria-label]="regionLabel()">
+    <!--
+        Canvas 1c's own bar across the head of the panel, ruled off from the
+        body under it: the heading is not a line of text floating over the
+        choices — the panel is a bordered box and this is its head (wave 7).
+        The canvas's `CLEAR ✕` at the other end of the bar stays withdrawn: the
+        recipe menu's own first option already clears, and two controls for one
+        operation is what that ruling removed.
+      -->
+    <div class="engineering__bar">
+      <h4 class="engineering__heading" [id]="headingId">{{ panelHeading() }}</h4>
+    </div>
+    <div class="engineering__body">
+      <ng-container [ngTemplateOutlet]="body" />
+    </div>
   </section>
 }

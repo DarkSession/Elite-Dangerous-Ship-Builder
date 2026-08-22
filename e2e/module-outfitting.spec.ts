@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { publishedSlotKeys, sweepOutfittingState } from './accessibility';
-import { chooserOffered, editorOffered, fitCommitted, openChooser } from './outfitting-surfaces';
+import {
+  chooserOffered,
+  editorOffered,
+  fitCommitted,
+  openChooser,
+  openEditor,
+  surfacesAreLayers,
+} from './outfitting-surfaces';
+import { savedToBrowser } from './shell';
 
 /**
  * Fitting modules, end to end (US1).
@@ -32,7 +40,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.outfitting__bench-title')).toBeVisible();
+  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
 }
 
 /**
@@ -43,9 +51,36 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
  * and rating, and comparing names alone would call a replacement a no-op.
  */
 async function fittedIdentityAt(page: Page, slotKey: string): Promise<string | null> {
-  return page
-    .locator(`[data-slot-key="${slotKey}"]`)
-    .evaluate((node) => node.querySelector('.identity')?.textContent?.trim() ?? null);
+  return page.locator(`[data-slot-key="${slotKey}"]`).evaluate((node) => {
+    const identity = node.querySelector('.identity');
+    if (identity === null) {
+      return null;
+    }
+    // The name and the code, as the row draws them. The ledger and the manifest
+    // arrange an identity differently — the ledger writes `1D` where the
+    // manifest writes it in its own `CLASS` column — so what is compared is the
+    // module, not the arrangement.
+    const clone = identity.cloneNode(true) as HTMLElement;
+    for (const hidden of clone.querySelectorAll('.visually-hidden')) {
+      hidden.remove();
+    }
+    return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+  });
+}
+
+/**
+ * Asserts one mount now carries the module a chooser row read as.
+ *
+ * Token by token rather than string against string: the ledger and the manifest
+ * arrange an identity differently — the manifest gives the class its own column
+ * and the ledger writes it into the row's code line — so what is compared is
+ * the module, not the arrangement.
+ */
+async function expectLedgerCarries(page: Page, slotKey: string, identity: string): Promise<void> {
+  const fitted = (await fittedIdentityAt(page, slotKey))?.toLowerCase() ?? '';
+  for (const token of identity.split(/[·\s]+/).filter((part) => part.length > 1)) {
+    expect(fitted, `${slotKey} does not read as ${identity}`).toContain(token.toLowerCase());
+  }
 }
 
 /** The text a sighted Commander actually reads, with hidden text removed. */
@@ -74,8 +109,28 @@ async function fitFromChooser(
   const rows = page.locator('.candidate');
   await expect(rows.first()).toBeVisible();
 
+  // The same reading the ledger gives: the module's name and mount, with the
+  // class column folded in the way the ledger's own code line writes it.
   const identities = await rows.evaluateAll((nodes) =>
-    nodes.map((node) => node.querySelector('.identity')?.textContent?.trim() ?? ''),
+    nodes.map((node) => {
+      const drawn = (element: Element | null): string => {
+        if (element === null) {
+          return '';
+        }
+        // What a sighted Commander reads. The class cell also spells its code
+        // out for anyone who cannot see it, and the ledger has no such line.
+        const clone = element.cloneNode(true) as HTMLElement;
+        for (const hidden of clone.querySelectorAll('.visually-hidden')) {
+          hidden.remove();
+        }
+        return clone.textContent ?? '';
+      };
+      return `${drawn(node.querySelector('.candidate__name'))} ${drawn(
+        node.querySelector('.candidate__class'),
+      )}`
+        .replace(/\s+/g, ' ')
+        .trim();
+    }),
   );
   const index = pick(identities);
   expect(index, 'no choice matched what the test asked for').toBeGreaterThan(-1);
@@ -93,9 +148,13 @@ async function fitFromChooser(
   // from a click that lands on no content. The name is the one box in the row
   // that is always text.
   const row = rows.nth(index);
-  await row.locator('.identity__name').click();
+  await row.locator('.candidate__name').click();
   await expect(row.locator('input[type="radio"]')).toBeChecked();
-  await page.getByRole('button', { name: /fit module/i }).click();
+  // Canvas 1c draws no confirm control: inline, taking the row is the fit.
+  // Canvas 1d's chooser is a screen of its own, so leaving it is a decision.
+  if (await surfacesAreLayers(page)) {
+    await page.getByRole('button', { name: /fit module/i }).click();
+  }
   // Waiting for the decision to have actually been taken, which each width
   // shows differently: a layer closes, an inline panel clears the pick.
   await fitCommitted(page);
@@ -151,7 +210,7 @@ test.describe('the slot ledger', () => {
     // Fit.
     const first = await fitFromChooser(page, () => 0);
     await expect(page.locator('[data-slot-key="MediumHardpoint1"]')).not.toContainText(/empty/i);
-    expect(await fittedIdentityAt(page, 'MediumHardpoint1')).toBe(first);
+    await expectLedgerCarries(page, 'MediumHardpoint1', first);
 
     // Replace. The choice is picked by what it reads as rather than by its
     // position, so the assertion cannot pass on two rows that happen to match.
@@ -159,7 +218,7 @@ test.describe('the slot ledger', () => {
       identities.findIndex((identity) => identity !== first),
     );
     expect(second).not.toBe(first);
-    expect(await fittedIdentityAt(page, 'MediumHardpoint1')).toBe(second);
+    await expectLedgerCarries(page, 'MediumHardpoint1', second);
 
     // Remove. The mount empties and stays in the ledger to be fitted again.
     // The control is in the chooser's header, which is where canvas 1c draws
@@ -183,18 +242,23 @@ test.describe('the slot ledger', () => {
     await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
   });
 
-  test('gives the cargo hatch its facts and no replacement, search or engineering', async ({
-    page,
-  }) => {
+  test('gives the cargo hatch its facts and no replacement or search', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'CargoHatch');
 
     expect(await chooserOffered(page)).toBe(false);
     await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
-    expect(await editorOffered(page)).toBe(false);
     await expect(page.locator('.outfitting__bench-reason')).toContainText(/built in/i);
     // The hatch itself is still listed with its module, not hidden away.
     await expect(page.locator('[data-slot-key="CargoHatch"]')).toContainText(/cargo hatch/i);
+
+    // The engineering panel is drawn and says the Almanac offers none, rather
+    // than being left out of the bench (wave 9). Opened the way this width
+    // offers it: inline it is already there, and at compact width it is a
+    // screen reached from the action bar.
+    expect(await editorOffered(page)).toBe(true);
+    await openEditor(page);
+    await expect(page.locator('.engineering__state')).toContainText(/no engineering/i);
   });
 
   test('stays editable while the build is incomplete', async ({ page }) => {
@@ -272,15 +336,20 @@ test.describe('package-populated fixed mounts', () => {
     }
 
     // The validation verdict is already published, which means the calculation
-    // read happened after construction rather than before it.
-    await expect(page.getByText(/the almanac reports this build as/i)).toBeVisible();
+    // read happened after construction rather than before it. It is read as
+    // state rather than as a banner: the canvas reports a problem and is silent
+    // otherwise, so a healthy build draws nothing to look for.
+    await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
+      'data-validation',
+      /valid|incomplete|invalid/,
+    );
   });
 
   test('carry no repair provenance into anything the build is saved or shared as', async ({
     page,
   }) => {
     await openStockBuild(page);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     const stored = await page.evaluate(() =>
       Object.keys(localStorage)
@@ -312,7 +381,13 @@ test.describe('package-populated fixed mounts', () => {
 
 /** The number the surface draws beside the search — canvas 1d's `24 FIT`. */
 async function drawnCount(page: Page): Promise<number> {
-  const text = await page.locator('.replacement__count').innerText();
+  // Canvas 1d draws the count in its screen's header; canvas 1c draws none at
+  // all, and the figure is spoken instead. Either way it is one figure, read
+  // from wherever this width keeps it (wave 4).
+  const text = await page
+    .locator('.replacement__count, edsb-candidate-search [role="status"]')
+    .first()
+    .innerText();
   return Number(text.replace(/\D+/gu, ''));
 }
 
@@ -340,21 +415,41 @@ test.describe('finding a replacement', () => {
     await expect(page.getByText('Pre-engineered', { exact: true }).first()).toBeVisible();
   });
 
-  test('builds a long list a page at a time, and says how much is built', async ({ page }) => {
+  test('renders the whole expansion, so the scroller knows how tall it is', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'MediumHardpoint1');
     await openChooser(page);
 
     const drawn = await drawnCount(page);
-    const firstPage = await page.locator('.candidate').count();
+    // Every choice, in the document, from the first frame. A list that grew as
+    // it was reached could not tell the browser how tall it was, so its bar
+    // shrank under the Commander every time it grew (wave 4).
+    await expect(page.locator('.candidate')).toHaveCount(drawn);
 
-    // The whole list is longer than the page that was built for it, and the
-    // surface says so rather than letting the shortfall pass as the answer.
-    expect(drawn).toBeGreaterThan(firstPage);
-    await expect(page.locator('.replacement__built')).toContainText(String(drawn));
-
-    await page.getByRole('button', { name: /show more modules/i }).click();
-    await expect(page.locator('.candidate')).not.toHaveCount(firstPage);
+    // The manifest's own scroller, under the column head rather than around it.
+    const scroller = page.locator('.candidates__body');
+    // Read once the fonts and the row images have settled. What this test is
+    // about is the scroller's height not moving *as the list is reached* — a
+    // figure read while a webfont is still swapping in moves for a reason that
+    // has nothing to do with how the manifest is rendered.
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      await Promise.all(
+        [...document.images]
+          .filter((image) => !image.complete)
+          .map(
+            (image) =>
+              new Promise((resolve) => {
+                image.addEventListener('load', resolve, { once: true });
+                image.addEventListener('error', resolve, { once: true });
+              }),
+          ),
+      );
+    });
+    const before = await scroller.evaluate((node) => node.scrollHeight);
+    await scroller.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(page.locator('.candidate')).toHaveCount(drawn);
+    expect(await scroller.evaluate((node) => node.scrollHeight)).toBe(before);
   });
 
   test('names its sections and puts the unique rewards last', async ({ page }) => {
@@ -385,7 +480,7 @@ test.describe('finding a replacement', () => {
     await expect(page.locator('.candidate').first()).toBeVisible();
 
     const identities = await page
-      .locator('.candidate .identity')
+      .locator('.candidate .candidate__identity')
       .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
 
     expect(identities.length).toBeGreaterThan(0);
@@ -436,7 +531,9 @@ test.describe('finding a replacement', () => {
     await search(page, 'docking computer');
     const before = await page.locator('.candidate').count();
     expect(before).toBeGreaterThan(0);
-    await page.getByRole('button', { name: /cancel/i }).click();
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /cancel/i }).click();
+    }
 
     await selectMount(page, 'Slot01_Size7');
     await fitFromChooser(page, (identities) =>
@@ -466,7 +563,9 @@ test.describe('finding a replacement', () => {
     await expect(page.locator('.replacement__no-matches')).toBeVisible();
     await sweepOutfittingState(page, testInfo, 'chooser/no matches');
 
-    await page.getByRole('button', { name: /cancel/i }).click();
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /cancel/i }).click();
+    }
     await selectMount(page, 'CargoHatch');
     await sweepOutfittingState(page, testInfo, 'chooser/mount takes nothing');
   });
@@ -481,30 +580,38 @@ test.describe('power and the cargo hatch', () => {
     await expect(hatch.locator('.power__toggle')).toHaveCount(1);
     await expect(hatch.locator('.power__priority')).toHaveCount(1);
 
-    // Replace, search, engineer and remove are all absent — and the Almanac's
-    // reason for that is published on the bench, because an action missing
-    // without a reason reads as a defect (FR-009).
+    // Replace, search and remove are all absent — and the Almanac's reason for
+    // that is published on the bench, because an action missing without a
+    // reason reads as a defect (FR-009). Engineering is the one region that
+    // stays: it is drawn and says the Almanac offers none (wave 9).
     expect(await chooserOffered(page)).toBe(false);
-    expect(await editorOffered(page)).toBe(false);
     await expect(page.getByRole('button', { name: /remove module/i })).toHaveCount(0);
     await expect(page.locator('.outfitting__bench-reason')).toContainText(/built in/i);
+
+    await openEditor(page);
+    await expect(page.locator('.engineering__state')).toContainText(/no engineering/i);
   });
 
   test('presents the package’s five groups one-based, as the game does', async ({ page }) => {
     await openStockBuild(page);
 
-    const options = page.locator('[data-slot-key="PowerPlant"] .power__priority option');
+    const options = page.locator('[data-slot-key="FrameShiftDrive"] .power__priority option');
 
-    // Six, not five: a stock build states no group at all, so the control says
-    // the value is unavailable rather than writing group 1 into it — and that
-    // entry cannot be chosen back, because no package operation unsets a group.
+    // Six, not five: a stock build states no group at all, so the control holds
+    // a place for that rather than writing group 1 into it — and that entry
+    // cannot be chosen back, because no package operation unsets a group. The
+    // canvas draws one digit in this chip, so the absence is a mark here and a
+    // sentence in the control's own name (wave 4).
     await expect(options).toHaveCount(6);
-    await expect(options.first()).toHaveText(/unavailable/i);
+    await expect(options.first()).toHaveText('—');
     await expect(options.first()).toBeDisabled();
+    await expect(
+      page.locator('[data-slot-key="FrameShiftDrive"] .power__priority'),
+    ).toHaveAccessibleName(/no group published/i);
 
     // The five the package publishes, as bare numbers: the reference draws a
     // number in the chip and no word beside it.
-    const groups = options.filter({ hasNotText: /unavailable/i });
+    const groups = options.filter({ hasNotText: '—' });
     await expect(groups).toHaveCount(5);
     await expect(groups.first()).toHaveText('1');
     await expect(groups.first()).toHaveAttribute('value', '0');
@@ -514,19 +621,21 @@ test.describe('power and the cargo hatch', () => {
 
   test('leaves a module fitted when its power changes', async ({ page }) => {
     await openStockBuild(page);
-    const before = await fittedIdentityAt(page, 'PowerPlant');
+    const before = await fittedIdentityAt(page, 'FrameShiftDrive');
 
     // By value, explicitly. Every option's label is now a number too, and a
     // bare string matches whichever comes first — which is the option one group
     // below the one this test means.
     await page
-      .locator('[data-slot-key="PowerPlant"] .power__priority')
+      .locator('[data-slot-key="FrameShiftDrive"] .power__priority')
       .selectOption({ value: '2' });
 
     // Still fitted, so its mass and its catalogue cost are still in the build
     // (contract, "Power and recalculation").
-    expect(await fittedIdentityAt(page, 'PowerPlant')).toBe(before);
-    await expect(page.locator('[data-slot-key="PowerPlant"] .power__priority')).toHaveValue('2');
+    expect(await fittedIdentityAt(page, 'FrameShiftDrive')).toBe(before);
+    await expect(page.locator('[data-slot-key="FrameShiftDrive"] .power__priority')).toHaveValue(
+      '2',
+    );
   });
 
   test('switches a module off without unfitting it', async ({ page }) => {
@@ -551,8 +660,21 @@ test.describe('power and the cargo hatch', () => {
 
     // Forty rows of the same two controls: "powered" on its own says nothing
     // about which module a reader is on.
-    const toggle = page.locator('[data-slot-key="PowerPlant"] .power__toggle');
-    await expect(toggle).toHaveAttribute('aria-label', /power plant/i);
+    const toggle = page.locator('[data-slot-key="FrameShiftDrive"] .power__toggle');
+    await expect(toggle).toHaveAttribute('aria-label', /frame shift drive/i);
     await expect(toggle).toHaveAttribute('aria-label', /core internals/i);
+  });
+
+  test('draws no power group on a module the Almanac prices at no power', async ({ page }) => {
+    await openStockBuild(page);
+
+    // Armour draws nothing and the power plant is what everything else draws
+    // from. Neither has power to group, and the canvas draws no chip on one
+    // (wave 4).
+    await expect(page.locator('[data-slot-key="Armour"] edsb-power-controls')).toHaveCount(0);
+    await expect(page.locator('[data-slot-key="PowerPlant"] edsb-power-controls')).toHaveCount(0);
+    await expect(page.locator('[data-slot-key="FrameShiftDrive"] edsb-power-controls')).toHaveCount(
+      1,
+    );
   });
 });

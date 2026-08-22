@@ -52,8 +52,9 @@ and the plan uses that same compact order.
   Mercenary, tech-broker, community-goal and event-reward are not conflated.
 - Variant recognition comes only from `FittedModule.preEngineeredVariant`; purchase grade stays
   separate from current ordinary grade.
-- Design comparison arrows/colors are omitted because the package provides no trustworthy
-  better/worse direction. Exact package before/current values can still be shown.
+- Design comparison arrows/colours **are drawn**, from an application-owned direction table rather
+  than from the Almanac's unreliable `LessIsGood`. See "Attribute direction" below (revised
+  2026-08-22).
 
 ### Normalization and engineering
 
@@ -143,7 +144,10 @@ canvas 1d's `FIXED` on the cargo hatch — and the full sentence is published on
 answers a question a Commander is asking rather than repeating down seven core rows.
 
 **Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The wide composition is selected
-at the sum of the two declared content minimums plus their gap (20rem + 22.5rem + one region gap),
+at the sum of the two declared content minimums (24.5rem + 22.5rem = 47rem; **corrected 2026-08-22,
+wave 9**, from a 20rem ledger — the wide grid's leading track is canvas 1c's fixed 392px rail, not
+the width a slot card's wrapped name needs, so the composition had been opening 4.5rem before it
+could hold itself),
 not at feature 011's generic wide container step. The generic step is smaller, and granting two panes
 below the sum produces exactly the state
 [responsive-composition.md](./responsive-composition.md) rules out: both panes present and neither
@@ -254,9 +258,18 @@ stands_ instead; that was invented text over an invented pair, and it also diver
 own engineering panel, which shows stock beside modified. Where a module is unengineered the two
 readings coincide, which is why the substitution survived a first review.
 
-The canvas's green/red deltas and ▲/▼ markers stay withdrawn for the reason already recorded above:
-the Almanac documents its own `LessIsGood` as unreliable and nothing else publishes a direction, so
-a better/worse glyph would be this application's claim rather than the package's.
+**Attribute direction, ruled 2026-08-22, reversing the withdrawal recorded above.** The canvas's
+green/red and its ▲/▼ are drawn. The earlier ruling was right that the Almanac publishes no
+trustworthy direction — `LessIsGood` is documented as unreliable and is not read — and wrong to
+conclude that nothing may be said. Whether more damage is better than less is not a fact about the
+Almanac's data; it is a fact about the game, and it is the same six answers for the six attributes
+this surface compares. Those six live in `HIGHER_IS_BETTER`, beside `COMPARED_ATTRIBUTES`, owned by
+this application and stated as such.
+
+Two things follow from the canvas rather than from arithmetic. ▲ means **better** and ▼ means
+**worse** — not which way the number moved: the canvas draws a power draw that rose from 0.73 to 0.88
+with a ▼ in `--hot`, because a heavier draw is a worse module. And colour is never the only carrier:
+the glyph and a `visually-hidden` word carry the same claim.
 
 **Opening controls for the two surfaces, ruled 2026-08-21 after a design pass.** Canvas 1c draws no
 control that opens either surface. The fitting panel — `FITTING · HARDPOINT 1`, a search field, a
@@ -364,8 +377,8 @@ The built asset tree carries no value from the reference canvas. Checked against
 
 | Looked for                                              | Found                                                        |
 | ------------------------------------------------------- | ------------------------------------------------------------ |
-| `edassets.org` — the canvas's material rarity icons     | absent; rarity is the package's own grade, in words          |
-| `assets/merc-coin.png` — the canvas's Merc Coin icon    | absent; the Merc Coin line is text                           |
+| `edassets.org` — the canvas's material rarity icons     | **the five files, served from this origin** (see below)      |
+| `assets/merc-coin.png` — the canvas's Merc Coin icon    | present, served from this origin                             |
 | `2,613,410`, `18,364,200` — the canvas's mock prices    | absent                                                       |
 | `Huge Multi-Cannon`, `OVERCHARGED G5` — mock identities | absent                                                       |
 | `FD-11X` — the canvas's mock ship ID                    | absent                                                       |
@@ -373,6 +386,13 @@ The built asset tree carries no value from the reference canvas. Checked against
 
 No mock module, price, stat, modifier or material value from `.design/` reaches the product. Every
 figure a Commander reads comes from the installed package or is stated as unavailable.
+
+**Icons, ruled 2026-08-22.** The canvas points at `edassets.org/static/img/materials/grade-N.svg` and
+at a Merc Coin image. Constitution I forbids reaching another origin _at runtime_; it does not forbid
+shipping the design's own artwork. The five rarity files and the coin were taken once at build time
+and are served from `assets/`, so the mark a Commander sees is the mark the game uses. An earlier pass
+redrew the rarity mark from the idea of it — a hexagon with one blade per grade — which is a
+different icon wearing the same description, and was withdrawn.
 
 ## Released API constraint
 

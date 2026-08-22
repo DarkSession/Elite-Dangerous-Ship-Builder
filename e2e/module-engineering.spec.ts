@@ -2,12 +2,20 @@ import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { sweepOutfittingState } from './accessibility';
 import {
+  applyDraft,
+  chooseEffect,
+  chooseFirstEffect,
+  chooseRecipe,
+  chosenRecipe,
+  clearEffect,
+  clearRecipe,
   draftAbandoned,
-  editApplied,
+  effectOptions,
   editorOffered,
   fitCommitted,
   openChooser,
   openEditor as bringEditorOnScreen,
+  surfacesAreLayers,
 } from './outfitting-surfaces';
 
 /**
@@ -34,7 +42,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.outfitting__bench-title')).toBeVisible();
+  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
 }
 
 /** Opens the engineering editor for the selected mount, at whatever width. */
@@ -73,16 +81,17 @@ async function stockBuild(hull = 'Anaconda'): Promise<ShipLoadout> {
   return core.ShipLoadout.default(hull);
 }
 
-/** The recipe rows the editor is currently offering, by their drawn name. */
+/**
+ * The recipes the editor is currently offering, by their drawn name.
+ *
+ * Canvas 1c's dropdown and canvas 1d's cards, counted the same way — the
+ * dropdown's own first option is the no-blueprint one, exactly as the card list
+ * opens with it.
+ */
 function recipeRows(page: Page) {
-  return page.locator('.blueprint:not(.blueprint--none)');
-}
-
-/** Chooses one recipe row by the name it draws. */
-async function chooseRecipe(page: Page, name: string | RegExp): Promise<void> {
-  const row = recipeRows(page).filter({ hasText: name }).first();
-  await row.click();
-  await expect(row.locator('input[type="radio"]')).toBeChecked();
+  return page.locator(
+    '.blueprint:not(.blueprint--none), edsb-blueprint-choice-list option:not(:first-child)',
+  );
 }
 
 /** Chooses one grade cell. */
@@ -95,13 +104,16 @@ async function chooseGrade(page: Page, grade: number): Promise<void> {
   await expect(cell.locator('input[type="radio"]')).toBeChecked();
 }
 
-/** Applies the draft and waits for the editor to close on a committed edit. */
-async function applyDraft(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /apply blueprint/i }).click();
-  await editApplied(page);
+/** What the ledger's code line says about one mount's engineering. */
+/** The recipe line the ledger draws on one mount, as a Commander reads it. */
+async function applied(page: Page, slotKey: string): Promise<string> {
+  return (
+    (await page.locator(`[data-slot-key="${slotKey}"] .identity__code-line`).first().textContent())
+      ?.replace(/\s+/g, ' ')
+      .trim() ?? ''
+  );
 }
 
-/** What the ledger's code line says about one mount's engineering. */
 async function ledgerEngineering(page: Page, slotKey: string): Promise<string> {
   return page
     .locator(`[data-slot-key="${slotKey}"]`)
@@ -120,7 +132,14 @@ test.describe('engineering a module', () => {
     // entry is a job the Almanac would refuse after offering it.
     await expect(recipeRows(page)).toHaveCount(menu.blueprints.length);
     if (menu.effects.length > 0) {
-      await expect(page.locator('.effect:not(.effect--none)')).toHaveCount(menu.effects.length);
+      // Nothing under the recipe is drawn until there is a recipe: an effect
+      // menu over no blueprint is a control over nothing (wave 4).
+      await chooseRecipe(page, /increased range/i);
+      await expect(
+        page.locator(
+          '.effect:not(.effect--none), edsb-experimental-effect-list option:not(:first-child)',
+        ),
+      ).toHaveCount(menu.effects.length);
     }
   });
 
@@ -130,9 +149,8 @@ test.describe('engineering a module', () => {
 
     // Not the no-blueprint option either: that would be the editor proposing to
     // strip a module that has nothing to strip.
-    await expect(page.locator('.blueprint[data-selected="true"]')).toHaveCount(0);
+    await expect.poll(() => chosenRecipe(page)).toBeNull();
     await expect(page.locator('.grades')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /apply blueprint/i })).toBeDisabled();
   });
 
   test('applies blueprint, grade and effect in one confirmation', async ({ page }) => {
@@ -141,8 +159,7 @@ test.describe('engineering a module', () => {
 
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
-    const effect = page.locator('.effect:not(.effect--none)').first();
-    await effect.click();
+    await chooseFirstEffect(page);
 
     await applyDraft(page);
 
@@ -160,7 +177,7 @@ test.describe('engineering a module', () => {
 
     await openEditor(page, 'FrameShiftDrive');
     // The editor opens on what the module already carries.
-    await expect(page.locator('.blueprint[data-selected="true"]')).toHaveCount(1);
+    await expect.poll(() => chosenRecipe(page)).toMatch(/increased range/i);
     await chooseGrade(page, 5);
     await applyDraft(page);
     expect(await ledgerEngineering(page, 'FrameShiftDrive')).toMatch(/5/);
@@ -180,22 +197,23 @@ test.describe('engineering a module', () => {
     await chooseGrade(page, 4);
     await applyDraft(page);
 
-    const effects = page.locator('.effect:not(.effect--none)');
-
     await openEditor(page, 'FrameShiftDrive');
-    await effects.first().click();
+    const names = await effectOptions(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.textContent?.trim() ?? ''),
+    );
+    await chooseFirstEffect(page);
     await applyDraft(page);
     const withFirst = await ledgerEngineering(page, 'FrameShiftDrive');
     expect(withFirst).toMatch(/increased range/i);
 
     await openEditor(page, 'FrameShiftDrive');
-    await effects.nth(1).click();
+    await chooseEffect(page, names[1] ?? '');
     await applyDraft(page);
 
     await openEditor(page, 'FrameShiftDrive');
     // The explicit no-effect option, which is the only removal route and the
     // one that preserves the blueprint and grade underneath (FR-012).
-    await page.locator('.effect--none').click();
+    await clearEffect(page);
     await applyDraft(page);
 
     const line = await ledgerEngineering(page, 'FrameShiftDrive');
@@ -218,13 +236,13 @@ test.describe('engineering a module', () => {
     // control named for clearing exists at any width.
     await expect(page.getByRole('button', { name: /^clear/i })).toHaveCount(0);
 
-    await page.locator('.blueprint--none').click();
+    await clearRecipe(page);
     await applyDraft(page);
 
     expect(await ledgerEngineering(page, 'FrameShiftDrive')).not.toMatch(/increased range/i);
   });
 
-  test('abandons a draft without changing the build', async ({ page }) => {
+  test('takes a choice back without leaving a mark on the build', async ({ page }) => {
     await openStockBuild(page);
     // Read after selecting, so the comparison is about the build rather than
     // about the mount being selected — which is session state and spends no
@@ -235,20 +253,42 @@ test.describe('engineering a module', () => {
     await openEditor(page, 'FrameShiftDrive');
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
-    await page.getByRole('button', { name: /revert/i }).click();
-    await draftAbandoned(page);
 
-    // Only draft state ever changed, so there is nothing to restore (FR-018).
-    expect(await ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);
+    // The same capability, drawn as each canvas draws it. Canvas 1d holds a
+    // draft, so it carries the control that leaves it. Canvas 1c draws no such
+    // control: inline a choice *is* the decision as it is made, and undo is
+    // what takes it back — so undo is this composition's revert (wave 4,
+    // constitution V).
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /revert/i }).click();
+      await draftAbandoned(page);
+    } else {
+      // Inline the recipe and the grade are one decision, because a recipe
+      // without a grade asks the Almanac for nothing: the operation is the
+      // grade landing on it. So one undo takes it back (FR-018).
+      await page.getByRole('button', { name: /^undo/i }).click();
+    }
+
+    await expect.poll(() => ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);
   });
 
-  test('offers no engineering where the package offers none', async ({ page }) => {
+  test('says so, in the panel, where the package offers no engineering', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'CargoHatch');
 
-    // Not a disabled control: a control with nothing behind it is worse than no
-    // control at all (FR-009).
-    expect(await editorOffered(page)).toBe(false);
+    // The panel is drawn and answers the question. A bench that simply omitted
+    // the region answered it by saying nothing, and nothing outside the panel
+    // told a Commander whether the Almanac offers a recipe for the hatch or
+    // whether the panel had failed to draw (wave 9).
+    expect(await editorOffered(page)).toBe(true);
+    // Inline the panel is already on the bench; at compact width it is a screen
+    // reached from the action bar. Both draw the same sentence (constitution V).
+    await bringEditorOnScreen(page);
+    await expect(page.locator('.engineering__state')).toContainText(/no engineering/i);
+
+    // Still no control with nothing behind it: the sentence is the panel's whole
+    // content, and no recipe, grade or effect is offered (FR-009).
+    await expect(page.locator('.engineering__panes')).toHaveCount(0);
   });
 
   test('is accessible in every editor state', async ({ page }, testInfo) => {
@@ -261,7 +301,7 @@ test.describe('engineering a module', () => {
     await chooseGrade(page, 5);
     await sweepOutfittingState(page, testInfo, 'engineering/recipe chosen');
 
-    await page.locator('.blueprint--none').click();
+    await clearRecipe(page);
     await sweepOutfittingState(page, testInfo, 'engineering/clearing');
 
     await applyDraft(page);
@@ -294,13 +334,20 @@ test.describe('engineering costs', () => {
     await chooseGrade(page, 5);
 
     await expect(page.locator('.material').first()).toBeVisible();
-    await expect(page.locator('.material__grade').first()).toContainText(/grade \d/i);
+    // The canvas's rarity marker, drawn locally and carrying the package's own
+    // grade — with the grade in words beside it for anyone who cannot see it.
+    await expect(page.locator('.material__grade').first()).toHaveAttribute('data-grade', /[1-5]/);
+    await expect(page.locator('.material').first()).toContainText(/grade [1-5]/i);
     // The canvas draws these as icons from `edassets.org`. Nothing in this
     // application reaches another origin at runtime (constitution I).
-    await expect(page.locator('.materials img')).toHaveCount(0);
+    for (const source of await page
+      .locator('.materials img')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src') ?? ''))) {
+      expect(source).toMatch(/^assets\//);
+    }
   });
 
-  test('shows a completed grade as a known zero rather than as unavailable', async ({ page }) => {
+  test('prices the whole recipe, whatever the module already carries', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
     await chooseRecipe(page, /increased range/i);
@@ -310,13 +357,16 @@ test.describe('engineering costs', () => {
     await openEditor(page, 'FrameShiftDrive');
     await chooseGrade(page, 3);
 
-    // `[]` from the package is "nothing more to buy" and reads as exactly that.
+    // Engineering always costs materials. A panel that priced only what was
+    // left would read as free every time, because a choice commits as it is
+    // made — so an empty list here is a defect, not a discount (wave 5).
     const materials = page.locator('.materials');
-    await expect(materials).toContainText(/nothing more is needed/i);
+    await expect(materials.locator('.material').first()).toBeVisible();
+    await expect(materials).not.toContainText(/prices no materials/i);
     await expect(materials).not.toContainText(/publishes no material cost/i);
   });
 
-  test('claims no direction on any attribute', async ({ page }) => {
+  test('marks which way each figure moved, and says so in words', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
     await chooseRecipe(page, /increased range/i);
@@ -325,10 +375,19 @@ test.describe('engineering costs', () => {
     const comparison = page.locator('.comparison');
     await expect(comparison).toBeVisible();
     const text = (await comparison.textContent()) ?? '';
-    // The Almanac documents its own `LessIsGood` as unreliable and publishes no
-    // other direction, so deriving one would be a private claim (FR-007).
-    expect(text).not.toContain('▲');
-    expect(text).not.toContain('▼');
+    // The canvas's own green and red with its ▲/▼, off the application's table
+    // of which way is better rather than off the Almanac's unreliable
+    // `LessIsGood`. Never colour alone: the marker is drawn and the direction
+    // is spoken (wave 4).
+    expect(text).toMatch(/[▲▼]/);
+    expect(text).toMatch(/improved|worsened/i);
+    await expect(
+      page
+        .locator(
+          '.comparison__value--modified[data-direction="better"], .comparison__value--modified[data-direction="worse"]',
+        )
+        .first(),
+    ).toBeVisible();
   });
 });
 
@@ -343,9 +402,11 @@ test.describe('purchased and reward articles', () => {
     // identity and the figures, the identity block's centre falls between its
     // name and its code line once the panel is narrow, and Firefox does not
     // activate a label from a click that lands on no content.
-    await row.locator('.identity__name').click();
+    await row.locator('.candidate__name').click();
     await expect(row.locator('input[type="radio"]')).toBeChecked();
-    await page.getByRole('button', { name: /fit module/i }).click();
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /fit module/i }).click();
+    }
     await fitCommitted(page);
   }
 
@@ -354,20 +415,21 @@ test.describe('purchased and reward articles', () => {
     await fitArticle(page, 'FrameShiftDrive', /tech broker/i);
 
     await openEditor(page, 'FrameShiftDrive');
-    // The article is a package-identified purchase, so its baked engineering is
-    // stated as not crafted rather than priced.
-    await expect(page.locator('.materials')).toContainText(/arrived already modified/i);
+    // The article is a package-identified purchase, so what it arrived with is
+    // priced at nothing at all rather than quoted as a crafting job — and the
+    // recipe it carries is stated rather than offered (wave 5).
+    await expect(page.locator('.blueprints__fixed')).toBeVisible();
+    await expect(page.locator('.materials .material')).toHaveCount(0);
 
     // An effect on its own, which is `setExperimentalEffect` rather than a
     // re-roll of the recipe.
-    await page.locator('.effect:not(.effect--none)').first().click();
+    await chooseFirstEffect(page);
     await applyDraft(page);
 
     await openEditor(page, 'FrameShiftDrive');
     // Still a purchase. If the identity had been lost, this article would now
     // be an ordinary module that happens to be well rolled (FR-012).
-    await expect(page.locator('.materials')).toContainText(/arrived already modified/i);
-    await expect(page.locator('.blueprint__consequence')).toBeVisible();
+    await expect(page.locator('.blueprints__fixed')).toBeVisible();
   });
 
   test('prices a Mercenary upgrade above the grade it was bought at', async ({ page }) => {
@@ -376,16 +438,25 @@ test.describe('purchased and reward articles', () => {
 
     await openEditor(page, 'SmallHardpoint1');
 
-    // Merc Coin is on its own line from the moment the article is fitted: it is
-    // a property of the purchase, not of a job being chosen.
-    await expect(page.locator('.materials__list--coin')).toContainText(/merc coins/i);
+    // The article's Merc Coin shop price is not in this panel at all: it is what
+    // the article cost to buy, not what this job costs, and at the foot of a
+    // materials list it read as the price of the engineering above it. The
+    // Almanac publishes no per-grade Merc Coin figure to put in its place —
+    // every Mercenary row is one fixed price at grade 1 (wave 9).
+    await expect(page.locator('.materials__list--coin')).toHaveCount(0);
 
     // The bespoke recipe the article was bought with. Its own table begins
     // above the purchase grade, so the cells offered are the grades that are
     // still to climb rather than a fixed five (contract, "Engineering").
-    const applied = page.locator('.blueprint[data-selected="true"]');
-    await expect(applied).toHaveCount(1);
+    await expect.poll(() => chosenRecipe(page)).not.toBeNull();
     await page.locator('.grade').last().click();
+    // Inline this has already committed; in a layer it is a draft that has to
+    // be applied before the ledger says anything. Either way the panel is then
+    // showing the climbed article (constitution V).
+    await applyDraft(page);
+    if (await surfacesAreLayers(page)) {
+      await openEditor(page, 'SmallHardpoint1');
+    }
 
     const parts = page.locator('.materials__part');
     await expect(parts.first()).toBeVisible();
@@ -393,6 +464,19 @@ test.describe('purchased and reward articles', () => {
     // equivalent, so summing it would invent an exchange rate the game does
     // not have.
     await expect(parts).not.toContainText(/merc coin/i);
+
+    // And back down to the grade it was bought at, which the recipe's own table
+    // does not reach. The bar has to come back to 1 rather than to nothing:
+    // a blank bar on a plainly engineered article was what pressing that cell
+    // used to do, because the Almanac publishes no recipe there and the answer
+    // is to restore the article rather than to ask for one (wave 6).
+    const climbed = await applied(page, 'SmallHardpoint1');
+    await page.locator('.grade').first().click();
+    await expect(page.locator('.grades__selected')).toHaveText('1');
+    await applyDraft(page);
+
+    expect(climbed).toMatch(/G5$/);
+    await expect.poll(() => applied(page, 'SmallHardpoint1')).toMatch(/G1$/);
   });
 
   test('offers no apply on a final article', async ({ page }) => {

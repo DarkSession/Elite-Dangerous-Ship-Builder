@@ -8,7 +8,12 @@
 
   <div class="grades__cells">
     @for (grade of grades(); track grade) {
-      <label class="grade" [attr.data-selected]="selected() === grade">
+      <label
+        class="grade"
+        [attr.data-selected]="selected() === grade"
+        [attr.data-filled]="filled(grade)"
+        [attr.data-unavailable]="unavailable(grade)"
+      >
         <input
           class="grade__radio"
           type="radio"

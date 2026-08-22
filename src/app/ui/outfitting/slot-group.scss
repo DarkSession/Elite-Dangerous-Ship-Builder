@@ -1,9 +1,8 @@
 @use '../../../styles/responsive' as layout;
 
-// The canvas's section rule: a tracked heading, a hairline filling the
-// remaining width, and the mount count at the trailing edge (canvas 1c). The
-// rule is drawn by the heading's own `::after`, so the count can sit beyond it
-// the way the reference places it.
+// The canvas's section rule: a tracked heading, the column names where the
+// group has them, a hairline filling what is left, and the count at the
+// trailing edge (canvas 1c, `HARDPOINTS · SIZE · NODE NO. ———— 8`).
 :host {
   display: block;
 }
@@ -12,16 +11,37 @@
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
   flex-wrap: nowrap;
+  // Canvas 1c's `0 16px 8px`: the rule is inset to the same edge its rows are,
+  // and stands clear of the first of them.
+  padding-inline: var(--edsb-space-2xl);
+  padding-block-end: var(--edsb-space-sm);
 }
 
 .group__heading {
-  @include layout.section-rule;
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
-  flex: 1;
+  flex: 0 1 auto;
   min-inline-size: 0;
   margin: 0;
-  font-size: var(--edsb-text-size-label);
+  // The canvas's 9px group rule, which is this scale's `micro` step.
+  font-size: var(--edsb-text-size-micro);
+}
+
+// The canvas's `SIZE · NODE NO.`, quieter than the heading and after it.
+.group__columns {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+// The hairline that fills what the labels leave, drawn between them and the
+// count exactly as the canvas orders it.
+.group__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-rule-section);
 }
 
 .group__count {
@@ -31,9 +51,16 @@
 }
 
 .group__slots {
-  @include layout.stack(var(--edsb-space-rule));
+  // No gap: the canvas separates its ledger rows with their own padding, over
+  // one unbroken ground. A hairline gap over a darker rail is what drew a line
+  // under every row (wave 7).
+  @include layout.stack(0);
 
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
 }

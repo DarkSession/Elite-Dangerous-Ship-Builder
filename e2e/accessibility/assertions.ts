@@ -13,6 +13,28 @@ import { expect, type Locator, type Page } from '@playwright/test';
 /** The design target baseline, in CSS pixels. */
 export const TARGET_BASELINE_PX = 44;
 
+/** WCAG 2.2 SC 2.5.8 AA, in CSS pixels. The floor nothing may go under. */
+export const TARGET_FLOOR_PX = 24;
+
+/**
+ * The controls the canvas itself draws dense, held to the floor not the baseline.
+ *
+ * The reference draws a ledger row's power chip at 20px and its grade bar at
+ * 28px — forty rows of a 44px chip is a different interface from the one it
+ * draws. These are held to WCAG 2.2 SC 2.5.8's 24-pixel AA minimum instead,
+ * which is a floor and not a waiver: everything else on every surface stays at
+ * the project's stricter 44 (design-canvas rule, wave 4).
+ */
+const DENSE_TARGETS = [
+  '.power__switch',
+  '.power__priority',
+  '.grade',
+  '.identity-fields__open',
+  // The bar's identity block is 54px tall on the canvas, with two lines in it.
+  // A 44px field cannot be one of two lines inside 54.
+  '.identity-fields__input',
+];
+
 /**
  * Waits for every running transition to finish before a surface is measured.
  *
@@ -202,7 +224,9 @@ export async function expectTextEquivalent(carrier: Locator): Promise<void> {
  * glyphs to satisfy a bad measurement.
  *
  * The baseline applied is the project's 44 CSS-pixel design baseline, which is
- * deliberately stricter than WCAG 2.2 SC 2.5.8's 24-pixel AA minimum.
+ * deliberately stricter than WCAG 2.2 SC 2.5.8's 24-pixel AA minimum. The dense
+ * chips the canvas draws small — `DENSE_TARGETS` — are held to that AA minimum
+ * instead, and to nothing looser.
  *
  * Reports every offender rather than the first, because a layout regression
  * usually produces a family of them.
@@ -211,48 +235,56 @@ export async function expectTargetSizes(
   page: Page,
   selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"]',
 ): Promise<void> {
-  const undersized = await page.locator(selector).evaluateAll((nodes, baseline) => {
-    /** The union of a control's box and the box of any label that activates it. */
-    const effectiveBox = (element: HTMLElement): DOMRect => {
-      const boxes = [element.getBoundingClientRect()];
+  const undersized = await page.locator(selector).evaluateAll(
+    (nodes, { baseline, floor, dense }) => {
+      /** The union of a control's box and the box of any label that activates it. */
+      const effectiveBox = (element: HTMLElement): DOMRect => {
+        const boxes = [element.getBoundingClientRect()];
 
-      const id = element.getAttribute('id');
-      if (id !== null) {
-        for (const label of document.querySelectorAll(`label[for="${id}"]`)) {
-          boxes.push(label.getBoundingClientRect());
+        const id = element.getAttribute('id');
+        if (id !== null) {
+          for (const label of document.querySelectorAll(`label[for="${id}"]`)) {
+            boxes.push(label.getBoundingClientRect());
+          }
         }
-      }
-      const wrapping = element.closest('label');
-      if (wrapping !== null) {
-        boxes.push(wrapping.getBoundingClientRect());
-      }
+        const wrapping = element.closest('label');
+        if (wrapping !== null) {
+          boxes.push(wrapping.getBoundingClientRect());
+        }
 
-      const left = Math.min(...boxes.map((box) => box.left));
-      const top = Math.min(...boxes.map((box) => box.top));
-      const right = Math.max(...boxes.map((box) => box.right));
-      const bottom = Math.max(...boxes.map((box) => box.bottom));
+        const left = Math.min(...boxes.map((box) => box.left));
+        const top = Math.min(...boxes.map((box) => box.top));
+        const right = Math.max(...boxes.map((box) => box.right));
+        const bottom = Math.max(...boxes.map((box) => box.bottom));
 
-      return new DOMRect(left, top, right - left, bottom - top);
-    };
+        return new DOMRect(left, top, right - left, bottom - top);
+      };
 
-    return nodes
-      .filter((node) => {
-        const style = getComputedStyle(node as HTMLElement);
-        return style.display !== 'none' && style.visibility !== 'hidden';
-      })
-      .map((node) => {
-        const box = effectiveBox(node as HTMLElement);
-        return {
-          tag: node.tagName.toLowerCase(),
-          text: (node.textContent ?? '').trim().slice(0, 40),
-          id: node.getAttribute('id') ?? '',
-          width: Math.round(box.width),
-          height: Math.round(box.height),
-        };
-      })
-      .filter((box) => box.width > 0 && box.height > 0)
-      .filter((box) => box.width < baseline || box.height < baseline);
-  }, TARGET_BASELINE_PX);
+      return nodes
+        .filter((node) => {
+          const style = getComputedStyle(node as HTMLElement);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        })
+        .map((node) => {
+          const element = node as HTMLElement;
+          const box = effectiveBox(element);
+          const isDense = dense.some(
+            (pattern) => element.matches(pattern) || element.closest(pattern) !== null,
+          );
+          return {
+            tag: node.tagName.toLowerCase(),
+            text: (node.textContent ?? '').trim().slice(0, 40),
+            id: node.getAttribute('id') ?? '',
+            width: Math.round(box.width),
+            height: Math.round(box.height),
+            baseline: isDense ? floor : baseline,
+          };
+        })
+        .filter((box) => box.width > 0 && box.height > 0)
+        .filter((box) => box.width < box.baseline || box.height < box.baseline);
+    },
+    { baseline: TARGET_BASELINE_PX, floor: TARGET_FLOOR_PX, dense: DENSE_TARGETS },
+  );
 
   expect(undersized, `targets below the ${TARGET_BASELINE_PX} CSS-pixel baseline`).toEqual([]);
 }

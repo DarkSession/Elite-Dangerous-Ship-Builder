@@ -15,6 +15,14 @@
   @include layout.stack(var(--edsb-space-stack-loose));
 }
 
+// A notice with nothing to say takes no room at all. Left as a box it still
+// holds a stack row and the gap on either side of it, which stood the ledger
+// three quarters of an inch down the page under an empty band — canvas 1c puts
+// the regions directly under the command bar.
+.outfitting__feedback:not(:has(.notice)) {
+  display: none;
+}
+
 .outfitting__empty {
   @include layout.stack(var(--edsb-space-stack));
 
@@ -36,30 +44,58 @@
   text-wrap: pretty;
 }
 
+// Canvas 1c's segment: `padding: 11px 5px; text-align: center; font: 600 10px/1
+// 'Barlow Condensed'; letter-spacing: 0.1em; white-space: nowrap`, over the
+// panel ground. The one that is open takes the page ground instead, the bold
+// weight, the amber ink and the canvas's own 2px inset underline — which is
+// what marks it, not a wash behind the label (wave 9).
 .outfitting__category {
-  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-base(var(--edsb-text-tracking-count));
 
-  // The label and its count are one line, as the canvas draws them; the strip
-  // wraps to another row before either of them does.
-  flex-wrap: nowrap;
-  padding-inline: var(--edsb-space-inline);
+  // Five segments share the ledger's rail, so the padding is the canvas's own
+  // 5px rather than a standalone button's, and the label is kept on one line as
+  // the canvas keeps it. The strip itself never wraps — one row of segments is
+  // what both canvases draw.
+  flex: 1 1 auto;
+  // The segments share the strip by their content, so the shortest label —
+  // `ALL 39` — takes the least of it. At 320px that put it at 42 CSS px, under
+  // the target floor. The floor is a rule about the product rather than a
+  // measurement off the drawing, and it wins: five 44px segments still share one
+  // line at every width the strip is drawn at (wave 9).
+  min-inline-size: var(--edsb-target-size);
+  padding-inline: var(--edsb-space-2xs);
+  white-space: nowrap;
   background-color: var(--edsb-surface-panel-raised);
+  color: var(--edsb-text-faint);
+  border: 0;
 
   &[aria-pressed='true'] {
-    background-color: var(--edsb-surface-accent-quiet);
-    color: var(--edsb-text-accent);
+    background-color: var(--edsb-surface-root);
+    color: var(--edsb-text-accent-strong);
+    font-weight: var(--edsb-text-weight-heading);
+    box-shadow: var(--edsb-elevation-underline);
   }
 }
 
-// The count follows its label's colour rather than carrying one of its own:
-// the strip's pressed state changes the ground under it, and a fixed faint ink
-// that reads on the resting ground does not read on the pressed one.
+// The canvas gives the count no font of its own — it is a `span` inside the
+// segment at half opacity, so it takes the segment's condensed face, size and
+// tracking. Setting it in mono at the micro rung made it a second, smaller
+// typeface inside a two-word label. The ink follows the label's rather than
+// being fixed: the strip's open segment changes the ground under it, and a
+// faint ink that reads on the resting ground does not read on the open one
+// (wave 9).
 .outfitting__category-count {
-  @include layout.micro-label(currentcolor, var(--edsb-text-tracking-count));
+  font-weight: var(--edsb-text-weight-body);
+  color: currentcolor;
 }
 
 .outfitting__ledger {
-  @include layout.stack(var(--edsb-space-stack-loose));
+  // Canvas 1c's rail: one ground from the first group rule to the last row,
+  // `14px 0 22px` around them and 18px between one group and the next.
+  @include layout.stack(var(--edsb-space-panel));
+
+  padding-block: var(--edsb-space-xl) var(--edsb-space-4xl);
+  background-color: var(--edsb-surface-rail);
 }
 
 .outfitting__slot {
@@ -70,31 +106,78 @@
   @include layout.visually-hidden;
 }
 
-// Wide enough for the ledger and the selected mount's bench to sit side by
-// side, with both declared minimums met.
 // Wide enough for the ledger and the bench to sit side by side with both
-// declared content minimums met: 20rem for a slot card's wrapped name and its
-// controls, 22.5rem for a candidate row and its fit control, plus the gap
-// between them. The threshold is the sum of those minimums rather than feature
-// 011's generic wide step, because a generic step that happens to be smaller
-// would grant two panes that cannot both hold their content — which is the one
-// thing "a region is never narrowed below its minimum" rules out (responsive
-// composition, "Declared content minimums").
+// declared content minimums met: the ledger's own 24.5rem rail and 22.5rem for a
+// candidate row and its fit control. The threshold is the sum of those minimums
+// rather than feature 011's generic wide step, because a generic step that
+// happens to be smaller would grant two panes that cannot both hold their
+// content — which is the one thing "a region is never narrowed below its
+// minimum" rules out (responsive composition, "Declared content minimums").
+//
+// **Corrected 2026-08-22 (wave 9): 44rem to 47rem.** The sum was taken against a
+// 20rem ledger, but the wide grid's leading track is canvas 1c's 392px rail —
+// 24.5rem, which is what it has always been. The composition therefore opened
+// 3rem before it could hold itself, and the two panes' minimums added up to
+// 3rem more than the grid they were in. Nothing showed it while the application
+// frame's own 22px of side padding kept the container under the threshold at the
+// widths it would have bitten; with that inset gone (the canvas draws no page
+// frame) the workspace stayed wide at 1440px with doubled text and ran 64px past
+// the window.
 //
 // Stated in rem, so it moves with the reader's text size: at 200% text the same
 // pixel width no longer holds the same content, and the composition steps down
 // rather than overflowing.
-@container outfitting (min-width: 44rem) {
+@container outfitting (min-width: 47rem) {
   .outfitting {
     display: grid;
-    grid-template-columns: minmax(20rem, 1fr) minmax(22.5rem, 1fr);
-    gap: var(--edsb-space-region);
+    // Canvas 1c's `392px 1fr …`: the ledger is a fixed rail and the bench takes
+    // everything that is left. An even split leaves the manifest's seven columns
+    // crowded while half the row stands empty beside a ledger that needed none
+    // of it.
+    grid-template-columns: var(--edsb-layout-ledger-rail) minmax(22.5rem, 1fr);
+    // Canvas 1c's `392px 1fr 306px` has no gap in it: the rail and the bench
+    // abut and the rail's own hairline is the seam between them. A column gap
+    // put a stripe of the page ground down the middle of a screen the canvas
+    // draws as one continuous surface (wave 8). The row gap stays — it is what
+    // stands the notices above off the regions below them.
+    column-gap: 0;
+    row-gap: var(--edsb-space-region);
     align-items: start;
   }
 
   .outfitting__empty,
   .outfitting__feedback {
     grid-column: 1 / -1;
+  }
+
+  // Canvas 1c is one screen: the rail and the bench each scroll inside their
+  // own column, side by side, rather than the rail running the page down past
+  // the bench and leaving the bench stranded at the top of three thousand
+  // pixels of ledger. The category strip stays put above it, which is where the
+  // canvas draws it.
+  .outfitting__ledger-region {
+    position: sticky;
+    inset-block-start: var(--edsb-layout-bar-height);
+    display: flex;
+    flex-direction: column;
+    block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    min-block-size: 0;
+    // The seam between the two columns, drawn once and by the rail, as the
+    // canvas draws it. The bench drops its own leading edge below so the two do
+    // not stack into a two-pixel rule.
+    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  }
+
+  .outfitting__ledger {
+    // A containing block, so the rail actually clips what it scrolls. Every row
+    // carries text drawn only for a reader, positioned out of the page the
+    // standard way; without this their containing block is the sticky region
+    // above and the rail's own clipping never reaches them — two hundred of
+    // them then run the document down past the bench, invisibly.
+    position: relative;
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
   }
 
   // The bench follows the mount a Commander is looking at rather than scrolling
@@ -105,8 +188,24 @@
   .outfitting__bench {
     position: sticky;
     inset-block-start: var(--edsb-layout-bar-height);
-    max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    // A definite height, not a cap. The two panels below divide the bench
+    // between them from a zero basis, and a basis of zero inside a box that is
+    // still sized by its content collapses the box and both panels with it.
+    block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
     overflow: hidden;
+    border-inline-start: 0;
+  }
+
+  // Canvas 1c draws both panels down the bench at once, the manifest a little
+  // the taller of the two. The share is set from the bench rather than from
+  // what is in them: a manifest of two hundred rows measures a hundred times
+  // the editor, and anything weighed by content leaves the editor a strip.
+  .outfitting__bench edsb-module-replacement {
+    flex: 1.25 1 0;
+  }
+
+  .outfitting__bench edsb-engineering-editor {
+    flex: 1 1 0;
   }
 }
 
@@ -117,24 +216,23 @@
 @include layout.short-viewport {
   .outfitting__bench {
     position: static;
+    block-size: auto;
     max-block-size: none;
     overflow: visible;
   }
-}
 
-// Canvas 1c draws the chooser as a wide manifest, not a narrow list: seven
-// columns and a module name that is not cut. While it is open the bench takes
-// the larger share of the row so the manifest has the width its columns need
-// instead of falling back to cards on a desktop.
-//
-// The threshold is its own, above the one that puts the two panes side by side,
-// because the share only helps if the row is wide enough for the bench's 5/7 of
-// it to clear the manifest's own 44rem. Asking for that share at 44rem instead
-// would set two column minimums summing past the row and scroll the document
-// sideways — which is the thing that is never traded for a composition.
-@container outfitting (min-width: 64rem) {
-  .outfitting:has(edsb-module-replacement) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 5fr);
+  .outfitting__bench edsb-module-replacement,
+  .outfitting__bench edsb-engineering-editor {
+    flex: none;
+  }
+
+  .outfitting__ledger-region {
+    position: static;
+    block-size: auto;
+  }
+
+  .outfitting__ledger {
+    overflow-y: visible;
   }
 }
 
@@ -148,19 +246,35 @@
   min-inline-size: 0;
 }
 
-// The canvas's segmented category strip: abutted tracked labels over a hairline
-// ground, each carrying its own count (canvas 1c).
+// The canvas's segmented category strip: `display: flex; gap: 1px; background:
+// var(--amber-a14); border-bottom: 1px solid var(--amber-a18)`. The amber ground
+// showing through the one-pixel gaps is the only rule the strip has — there is
+// no box around it, and the border on its leading edge and over its labels was
+// ours, not the canvas's (wave 9).
 .outfitting__categories {
-  @include layout.ruled-group(repeat(auto-fit, minmax(9rem, 1fr)));
-
+  display: flex;
+  // One row is what both canvases draw, and at every width either of them was
+  // drawn at, one row is what this is. The wrap is the release valve for the
+  // widths neither canvas covers — 320px at 400% zoom, or 200% text — where
+  // five nowrap labels cannot share a line and the alternative is the document
+  // scrolling sideways (FR-011). The segments wrap; a label never does.
+  flex-wrap: wrap;
+  gap: var(--edsb-space-rule);
   margin: 0;
   padding: 0;
-  border-inline: 0;
+  background-color: var(--edsb-rule-grid);
+  border: 0;
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
+// Canvas 1c stacks the fitting panel and the engineering panel down the same
+// column, both on screen at once. The bench is therefore a column that divides
+// its height between them rather than a stack that runs the second one off the
+// bottom of a box it clips.
 .outfitting__bench {
-  @include layout.stack(var(--edsb-space-stack));
-
+  display: flex;
+  flex-direction: column;
+  gap: var(--edsb-space-stack);
   min-inline-size: 0;
   min-block-size: 0;
   padding: var(--edsb-space-panel);
@@ -168,15 +282,43 @@
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
+.outfitting__bench-header,
+.outfitting__bench-actions,
+.outfitting__bench-reason {
+  flex: none;
+}
+
+// Both panels scroll inside their own box, so neither can push the other off
+// the bench. Where the bench is unbounded — a narrow composition, a short
+// viewport — they keep their own height and the page scrolls instead.
+.outfitting__bench edsb-module-replacement,
+.outfitting__bench edsb-engineering-editor {
+  min-block-size: 0;
+}
+
 .outfitting__bench-header {
   @include layout.section-rule;
+}
+
+// The canvas's chip, at the size it draws it: a hairline box around a tracked
+// mono word, quieter than the title it stands beside. It follows the rule the
+// mixin draws, so the rule runs from the title to it rather than past it.
+.outfitting__bench-mark {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+
+  order: 1;
+  flex: none;
+  margin: 0;
+  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
 }
 
 .outfitting__bench-title {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
   margin: 0;
-  font-size: var(--edsb-text-size-label);
+  // The canvas's 11px panel head, which is this scale's `compact` step.
+  font-size: var(--edsb-text-size-compact);
 }
 
 // Canvas 1d's sticky bar, and only canvas 1d's: at wider compositions the two
@@ -190,10 +332,11 @@
   @include layout.control-base;
 }
 
+// Why a mount cannot be emptied, and what the Almanac restricts it to. Neither
+// canvas draws a line of either: what they draw is the absence of the control.
+// The facts stay for a reader, who has no absent control to notice (wave 4).
 .outfitting__bench-reason {
+  @include layout.visually-hidden;
+
   margin: 0;
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
-  text-wrap: pretty;
 }

@@ -35,7 +35,6 @@ export type ReplacementState = CandidateStatus | 'notReplaceable';
  * screenful, so the common case — a search that narrows to a handful — is one
  * page and no growing at all.
  */
-const PAGE = 60;
 
 /**
  * Choosing what goes in one mount.
@@ -71,6 +70,15 @@ export class ModuleReplacement {
   readonly slot = input.required<SlotView>();
 
   /**
+   * The panel's own heading, where the surface it sits in has one to give.
+   *
+   * Canvas 1c writes `FITTING · HARDPOINT 1` on the same row as the search
+   * field and `REMOVE MODULE`, so the heading belongs to this panel's head
+   * rather than to a rule above it (wave 5).
+   */
+  readonly panelHeading = input<string | null>(null);
+
+  /**
    * Whether this is a full-screen layer rather than an inline region.
    *
    * Canvas 1c draws it inline beside the ledger; canvas 1d draws it over an
@@ -95,23 +103,21 @@ export class ModuleReplacement {
   /** The pick, or nothing once it stops being about the build on screen. */
   readonly selectedChoiceKey = computed(() => (this.stale() ? null : (this.#pick()?.key ?? null)));
 
-  /** How many rows are currently built. Grows; never shrinks a Commander's view. */
-  readonly #window = signal(PAGE);
-
+  /**
+   * Every choice the mount has, in one list.
+   *
+   * The whole list, not a page of it. A scroller that grows as it is reached
+   * cannot know how tall it is, so its bar shrinks under the Commander's thumb
+   * every time it loads more — the manifest is instead rendered whole and each
+   * row declares a size the browser can add up before it lays any of them out
+   * (`content-visibility`, wave 4).
+   */
   readonly sections = computed<readonly CandidateSectionView[]>(() => {
     const query = this.query();
-    return query === null
-      ? []
-      : groupCandidates(query.results.slice(0, this.#window()), this.#formatters.collator());
+    return query === null ? [] : groupCandidates(query.results, this.#formatters.collator());
   });
 
-  /** How many choices there are — not how many are built. */
   readonly resultCount = computed(() => this.query()?.results.length ?? 0);
-
-  /** How many are built, so the surface can say which part of the list this is. */
-  readonly builtCount = computed(() => Math.min(this.resultCount(), this.#window()));
-
-  readonly hasMore = computed(() => this.resultCount() > this.#window());
   readonly canClear = computed(() => this.query()?.canClear ?? false);
 
   /**
@@ -175,14 +181,6 @@ export class ModuleReplacement {
     'outfitting.replacement.not-replaceable',
   );
   readonly clearLabel = this.#messages.messageSignal('outfitting.search.clear');
-  readonly moreLabel = this.#messages.messageSignal('outfitting.replacement.more');
-
-  readonly builtLabel = computed(() =>
-    this.#messages.message('outfitting.replacement.built', {
-      built: this.builtCount(),
-      total: this.resultCount(),
-    }),
-  );
 
   readonly canFit = computed(() => this.selectedChoiceKey() !== null);
 
@@ -203,39 +201,31 @@ export class ModuleReplacement {
   /** The symbol currently in the mount, so its rows can say they are fitted. */
   readonly fittedSymbol = computed(() => this.slot().module?.symbol ?? null);
 
+  /** And which article of it, where the Almanac identifies one. */
+  readonly fittedVariant = computed(() => this.slot().module?.variant ?? null);
+
+  /**
+   * Takes one row.
+   *
+   * Canvas 1c draws no `FIT MODULE` and no `CANCEL`: the manifest's amber row
+   * is the module in the mount, and choosing another row is the fit. Canvas 1d
+   * is where the two-control bar is, because at that width the chooser is a
+   * screen of its own over an inert background and leaving it has to be a
+   * decision (design-canvas rule).
+   */
   choose(choiceKey: string): void {
     this.#pick.set({ key: choiceKey, revision: this.store.revision() });
+    if (!this.asLayer()) {
+      this.fit();
+    }
   }
 
   search(query: string): void {
     this.store.setQuery(query);
-    // A new query is a new list. Keeping a grown window would build hundreds of
-    // rows for a search that narrowed to three.
-    this.#window.set(PAGE);
   }
 
   clear(): void {
     this.store.clearQuery();
-    this.#window.set(PAGE);
-  }
-
-  /** Builds the next page. */
-  more(): void {
-    this.#window.update((built) => built + PAGE);
-  }
-
-  /**
-   * Builds the next page as the end of the list comes into reach.
-   *
-   * One viewport of slack, so the rows are there by the time they are scrolled
-   * to rather than appearing under the Commander. The explicit control does the
-   * same thing for anyone who is not scrolling.
-   */
-  onScroll(event: Event): void {
-    const scroller = event.target as HTMLElement;
-    if (this.hasMore() && scroller.scrollTop + scroller.clientHeight * 2 >= scroller.scrollHeight) {
-      this.more();
-    }
   }
 
   /** Commits the picked row, as one decision. */
@@ -257,7 +247,12 @@ export class ModuleReplacement {
 
     if (result.kind === 'committed' || result.kind === 'unchanged') {
       this.#pick.set(null);
-      this.closed.emit();
+      // Only a layer closes. Inline the panel is simply there for the marked
+      // mount, so there is nothing to close and the manifest stays where the
+      // Commander is reading it (canvas 1c).
+      if (this.asLayer()) {
+        this.closed.emit();
+      }
     }
     // A refusal keeps the surface open with the pick intact. The Almanac's
     // reason is published by the workspace's refusal notice; closing here would

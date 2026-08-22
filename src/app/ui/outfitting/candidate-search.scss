@@ -8,27 +8,38 @@
   display: block;
 }
 
+// Canvas 1c draws the hint inside the field's own box at its trailing edge, so
+// the row is the field and the field is the box the hint sits in.
 .search {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  position: relative;
+  align-items: center;
 }
 
-// The field takes the row, as canvas 1d draws it, and the hint follows on the
-// line below rather than competing with it for width.
 .search__field {
-  flex: 1 1 100%;
+  flex: 1 1 8rem;
   min-inline-size: 0;
 }
 
+// Inside the field's box, against its trailing edge, as canvas 1c draws it.
+// Out of the flow entirely: it is decoration, it never takes a pointer, and on
+// its own line under the field it read as a sentence about the field rather
+// than as a key cap.
 .search__shortcut {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
 
+  position: absolute;
+  inset-inline-end: var(--edsb-space-control-inline);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
   margin: 0;
+  pointer-events: none;
+}
 
-  // Shrinks and wraps rather than claiming its own width. At twice the English
-  // length this hint is wider than a phone, and of everything in the row it is
-  // the one thing a Commander never has to read.
-  flex: 0 1 auto;
-  min-inline-size: 0;
+// So a long query never runs under the hint.
+.search__field ::ng-deep .field__control {
+  padding-inline-end: var(--edsb-space-2xl);
 }
 
 .search__clear {

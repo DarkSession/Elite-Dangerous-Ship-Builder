@@ -42,7 +42,7 @@ describe('engineering cost', () => {
       });
     });
 
-    it('continues from the completed grade when the recipe is the one already applied', () => {
+    it('prices the whole recipe, not what is left of it', () => {
       const cost = engineeringCost({
         ...NOTHING,
         blueprintFdname: ORDINARY_BLUEPRINT,
@@ -51,24 +51,24 @@ describe('engineering cost', () => {
         currentGrade: 3,
       });
 
+      // What the panel answers is what this engineering costs. A choice commits
+      // as it is made, so a figure for what remained would be nothing every
+      // time a Commander read it (wave 5).
       expect(cost.blueprint).toEqual({
         kind: 'known',
-        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 5, 3),
+        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 5),
       });
-      // And that is genuinely less than starting over — otherwise the
-      // continuation would be a rule with no effect.
-      const whole = getBlueprintCost(ORDINARY_BLUEPRINT, 5)!;
-      const remaining = getBlueprintCost(ORDINARY_BLUEPRINT, 5, 3)!;
-      expect(total(remaining)).toBeLessThan(total(whole));
+      expect(
+        (cost.blueprint as { materials: readonly unknown[] }).materials.length,
+      ).toBeGreaterThan(0);
     });
 
-    it('starts a replacement recipe from nothing, not from the old recipe’s grade', () => {
+    it('prices a recipe the same whatever the module already carries', () => {
       const other = 'FSD_FastBoot';
       const cost = engineeringCost({
         ...NOTHING,
         blueprintFdname: other,
         grade: 5,
-        // Grades already paid for belong to the recipe being replaced.
         currentBlueprintFdname: ORDINARY_BLUEPRINT,
         currentGrade: 4,
       });
@@ -76,22 +76,7 @@ describe('engineering cost', () => {
       expect(cost.blueprint).toEqual({ kind: 'known', materials: getBlueprintCost(other, 5) });
     });
 
-    it('matches the recipe identity the way the package matches it', () => {
-      const cost = engineeringCost({
-        ...NOTHING,
-        blueprintFdname: ORDINARY_BLUEPRINT.toLowerCase(),
-        grade: 5,
-        currentBlueprintFdname: ORDINARY_BLUEPRINT.toUpperCase(),
-        currentGrade: 4,
-      });
-
-      expect(cost.blueprint).toEqual({
-        kind: 'known',
-        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 5, 4),
-      });
-    });
-
-    it('shows a completed grade as a known zero rather than as unavailable', () => {
+    it('prices a completed grade at what that grade costs, never at nothing', () => {
       const cost = engineeringCost({
         ...NOTHING,
         blueprintFdname: ORDINARY_BLUEPRINT,
@@ -100,9 +85,12 @@ describe('engineering cost', () => {
         currentGrade: 5,
       });
 
-      // The package answers `[]`, and `[]` is "nothing left to buy". Rendering
-      // that as unavailable would hide a finished job behind a shrug.
-      expect(cost.blueprint).toEqual({ kind: 'known', materials: [] });
+      // Engineering always costs materials. An empty list from the package is
+      // the package failing to price a job, not a free one (wave 5).
+      expect(cost.blueprint).toEqual({
+        kind: 'known',
+        materials: getBlueprintCost(ORDINARY_BLUEPRINT, 3),
+      });
     });
 
     it('is not selected until both a recipe and a grade are chosen', () => {
@@ -155,14 +143,21 @@ describe('engineering cost', () => {
       expect(cost.experimental).toEqual({ kind: 'notSelected' });
     });
 
-    it('charges nothing for the effect already applied', () => {
+    it('charges the effect whether or not the module already carries it', () => {
+      // The same rule the climb follows: what the panel answers is what this
+      // effect costs, not what is left of applying it. Inline a choice commits
+      // as it is made, so "what is left" is nothing every time it is read —
+      // which made the material list unchanging whatever was picked (wave 9).
       const cost = engineeringCost({
         ...NOTHING,
         effectFdname: ORDINARY_EFFECT,
         currentEffectFdname: ORDINARY_EFFECT,
       });
 
-      expect(cost.experimental).toEqual({ kind: 'notSelected' });
+      expect(cost.experimental).toEqual({
+        kind: 'known',
+        materials: getExperimentalEffectCost(ORDINARY_EFFECT),
+      });
     });
 
     it('is unavailable for an effect the package prices nothing for', () => {
@@ -215,22 +210,75 @@ describe('engineering cost', () => {
     it('never prices a reward’s baked engineering', () => {
       const reward = fixedRewardVariant();
 
-      const cost = engineeringCost({ ...NOTHING, purchaseVariant: reward });
+      const cost = engineeringCost({
+        ...NOTHING,
+        purchaseVariant: reward,
+        blueprintFdname: reward.blueprint,
+        grade: reward.grade,
+        currentBlueprintFdname: reward.blueprint,
+        currentGrade: reward.grade,
+      });
 
       // The article arrived already modified. There is no shopping list for
       // what it came with, and quoting its recipe would quote for the wrong
       // thing entirely.
-      expect(cost.fixedPurchase).toBe('notCrafted');
       expect(cost.blueprint).toEqual({ kind: 'notSelected' });
       expect(cost.combined).toEqual({ kind: 'known', materials: [] });
     });
 
-    it('says nothing about a purchase for an ordinary module', () => {
-      expect(engineeringCost(NOTHING).fixedPurchase).toBeNull();
-      expect(engineeringCost(NOTHING).mercCoin).toBeNull();
+    it('prices engineering a reward further, like any other job', () => {
+      const merc = mercenaryVariant();
+
+      const cost = engineeringCost({
+        ...NOTHING,
+        purchaseVariant: merc,
+        blueprintFdname: merc.blueprint,
+        grade: 5,
+        currentBlueprintFdname: merc.blueprint,
+        currentGrade: merc.grade,
+      });
+
+      // Arriving modified is not a discount on the climb above it, and it stays
+      // priced once that climb is applied: what a job costs is a property of
+      // the recipe, not of how far along the article happens to be (wave 5).
+      expect(cost.blueprint.kind).toBe('known');
+      expect(
+        engineeringCost({
+          ...NOTHING,
+          purchaseVariant: merc,
+          blueprintFdname: merc.blueprint,
+          grade: 5,
+          currentBlueprintFdname: merc.blueprint,
+          currentGrade: 5,
+        }).blueprint.kind,
+      ).toBe('known');
     });
 
-    it('keeps Merc Coin separate from every material list', () => {
+    it('says nothing about a purchase price at all', () => {
+      const merc = mercenaryVariant();
+
+      // What the article cost to buy is not what this job costs. Its price is
+      // stated on the manifest row it is bought from, where it is the price of
+      // buying the module; at the foot of a shopping list it read as the price
+      // of the engineering above it (wave 9).
+      expect(
+        engineeringCost({
+          ...NOTHING,
+          blueprintFdname: merc.blueprint,
+          grade: merc.grade,
+          currentBlueprintFdname: merc.blueprint,
+          currentGrade: merc.grade,
+          purchaseVariant: merc,
+        }),
+      ).not.toHaveProperty('mercCoin');
+      // And there is no per-grade figure to put there instead: the package
+      // publishes one fixed shop price per article and says the current grade
+      // does not change it, so a figure beside a grade-5 climb would be one the
+      // game does not have (constitution IV).
+      expect(merc.mercCoinCost).toBeDefined();
+    });
+
+    it('never lets the currency reach a material list', () => {
       const merc = mercenaryVariant();
 
       const cost = engineeringCost({
@@ -240,10 +288,8 @@ describe('engineering cost', () => {
         purchaseVariant: merc,
       });
 
-      expect(cost.mercCoin).toBe(merc.mercCoinCost);
-      expect(cost.mercCoin).not.toBeNull();
-      // It is a currency with no material or credit equivalent, so it never
-      // joins the shopping list.
+      // Merc Coin has no material or credit equivalent, so summing it into a
+      // total would invent an exchange rate the game does not have.
       const combined = cost.combined;
       expect(combined.kind).toBe('known');
       expect(
@@ -268,12 +314,12 @@ describe('engineering cost', () => {
         kind: 'known',
         materials: getBlueprintCost(recipe, 5, merc.grade),
       });
-      // A bespoke recipe's own table begins above the purchase, so the package
-      // prices nothing at the grade the article arrived at. That is unavailable,
-      // and it stays unavailable — writing a zero there would claim the article
-      // is craftable from scratch when the Almanac says it is bought.
+      // At the grade it arrived at there is no job at all: the article was
+      // bought, not crafted, and its price is the Merc Coin line. Pricing its
+      // own recipe there would quote a Commander for something no engineer
+      // will do (wave 5).
       expect(engineeringCost({ ...bought, grade: merc.grade }).blueprint).toEqual({
-        kind: 'unavailable',
+        kind: 'notSelected',
       });
       // And each grade already completed takes more off the bill, so the
       // continuation is a live rule rather than a comment.

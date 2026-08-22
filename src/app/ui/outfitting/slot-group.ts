@@ -40,6 +40,13 @@ export class SlotGroup {
   readonly count = computed(() =>
     this.#messages.message('outfitting.category.count', { count: this.group().slots.length }),
   );
+
+  /** The canvas's `SIZE · NODE NO.`, on the one group whose rows carry both. */
+  readonly columns = computed(() =>
+    this.group().kind === 'hardpoint'
+      ? this.#messages.message('outfitting.column.size-node')
+      : null,
+  );
 }
 
 /** The heading one mount kind sits under. */

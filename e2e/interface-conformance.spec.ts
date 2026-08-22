@@ -15,6 +15,7 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
+import { reachShellLink } from './shell';
 
 /**
  * Every screen this feature adds, held to the same interface contract.
@@ -124,7 +125,7 @@ test.describe('cross-route semantics', () => {
   test('raises one prompt for one blocking condition, and no more', async ({ page }) => {
     await openScreen(page, 'workspace');
 
-    await page.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
+    await reachShellLink(page, 'Shipyard');
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
     await page
       .locator('[data-hull-symbol]:visible')

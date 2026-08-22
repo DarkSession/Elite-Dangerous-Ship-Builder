@@ -23,6 +23,20 @@
 
   @if (state() !== 'notReplaceable' && state() !== 'packageEmpty' && state() !== 'loading') {
     <div class="replacement__toolbar">
+      @if (panelHeading(); as heading) {
+        <h3 class="replacement__title">{{ heading }}</h3>
+      }
+
+      <!--
+        Canvas 1d's `24 FIT`, in the header of the screen it draws it in, and
+        only there: canvas 1c's panel head carries the mount, the field and
+        `REMOVE MODULE` and no count at all. It is spoken at both widths by the
+        search's own announcement (design-canvas rule, wave 4).
+      -->
+      @if (asLayer()) {
+        <p class="replacement__count">{{ countLabel() }}</p>
+      }
+
       <edsb-candidate-search
         class="replacement__search"
         [query]="query()?.query ?? ''"
@@ -32,16 +46,23 @@
         (cleared)="clear()"
       />
 
-      <!-- Canvas 1d's `24 FIT`: the count, drawn where the reference draws it. -->
-      <p class="replacement__count">{{ countLabel() }}</p>
-
-      <!-- Canvas 1c's `REMOVE MODULE`, drawn in this panel's header beside the
-           search, which is the only place either canvas draws it. -->
-      @if (canRemove()) {
-        <button class="replacement__remove" type="button" (click)="remove()">
-          {{ removeLabel() }}
-        </button>
-      }
+      <!--
+        Canvas 1c's `REMOVE MODULE`, drawn in this panel's header beside the
+        search, which is the only place either canvas draws it. Its place is
+        kept on a mount with nothing to remove rather than closed up: the canvas
+        keeps it, and without it the search field beside it grows and shrinks as
+        a Commander moves down the ledger. `visibility: hidden` is the canvas's
+        own device for this — it takes the control out of the reading order and
+        the tab order and leaves only its measure behind (wave 8).
+      -->
+      <button
+        class="replacement__remove"
+        type="button"
+        [class.replacement__remove--reserved]="!canRemove()"
+        (click)="remove()"
+      >
+        {{ removeLabel() }}
+      </button>
     </div>
   }
 
@@ -61,41 +82,35 @@
       [label]="listLabel()"
       [selectedKey]="selectedChoiceKey()"
       [fittedSymbol]="fittedSymbol()"
-      (scroll)="onScroll($event)"
+      [fittedVariant]="fittedVariant()"
       (chosen)="choose($event)"
     />
   }
 
   <!--
-    Canvas 1d pins the foot of the screen. Everything that belongs to the foot
-    is pinned together: how much of the list is built and the way to build the
-    rest sit with the two decisions, rather than at the end of two hundred rows
-    where a Commander would have to chase them down a growing page.
+    Canvas 1d pins the foot of the screen with the two decisions on it. Neither
+    canvas draws a paging control, a built count or a `Showing 60 of 478`: the
+    manifest is one list, whole, and how much of it the browser has painted is
+    not something a Commander was ever asked to think about.
+
+    The foot belongs to canvas 1d and to nothing else. At wide width, choosing a
+    row is the fit — the panel is already open beside the ledger for the marked
+    mount and there is nothing to leave — so the foot is not drawn empty either:
+    a ruled bar with nothing on it read as a divider between the manifest and
+    the engineering panel under it, which canvas 1c has none of (wave 8).
   -->
-  <div class="replacement__foot">
-    @if (showList() && hasMore()) {
-      <!--
-        Scrolling builds the next page on its own; this is the same thing said
-        out loud, for a Commander who is reading the list rather than scrolling
-        it, and it is where the size of the list is stated.
-      -->
-      <div class="replacement__more">
-        <p class="replacement__built" role="status">{{ builtLabel() }}</p>
-        <button class="replacement__more-action" type="button" (click)="more()">
-          {{ moreLabel() }}
+  @if (asLayer()) {
+    <div class="replacement__foot">
+      <div class="replacement__actions">
+        <button class="replacement__cancel" type="button" (click)="cancel()">
+          {{ cancelLabel() }}
+        </button>
+        <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
+          {{ fitLabel() }}
         </button>
       </div>
-    }
-
-    <div class="replacement__actions">
-      <button class="replacement__cancel" type="button" (click)="cancel()">
-        {{ cancelLabel() }}
-      </button>
-      <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
-        {{ fitLabel() }}
-      </button>
     </div>
-  </div>
+  }
 </ng-template>
 
 @if (asLayer()) {

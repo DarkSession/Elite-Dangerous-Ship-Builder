@@ -80,7 +80,9 @@ test.describe('the composition this width has room for', () => {
     // Waited for: the bench answers about the mount that is selected, and
     // reading it before the selection lands reads about the previous one.
     await expect(row).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('.outfitting__bench-title')).toContainText(/size 6/i);
+    await expect(
+      page.locator('.replacement__title, .outfitting__bench-title').first(),
+    ).toContainText(/size 6/i);
 
     // The same four operations, wherever this width keeps them: fit, empty,
     // engineer and power. A width that quietly offered fewer would be a
@@ -136,7 +138,9 @@ test.describe('the composition this width has room for', () => {
     // A mount with something in it: the region opens on the first mount, and
     // the Anaconda's first hardpoint is empty, so there is nothing to engineer.
     await page.locator('[data-slot-key="FrameShiftDrive"] button').first().click();
-    await expect(page.locator('.outfitting__bench-title')).toContainText(/frame shift/i);
+    await expect(
+      page.locator('.replacement__title, .outfitting__bench-title').first(),
+    ).toContainText(/frame shift/i);
     await openEditor(page);
     await sweepOutfittingState(page, testInfo, `${drawn}/engineering`);
   });

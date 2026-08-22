@@ -8,7 +8,13 @@ import {
 } from './accessibility/assertions';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { openChooser, openEditor, surfacesAreLayers } from './outfitting-surfaces';
+import {
+  chooseRecipe,
+  chosenRecipe,
+  openChooser,
+  openEditor,
+  surfacesAreLayers,
+} from './outfitting-surfaces';
 
 /**
  * The states this feature can be in, held to the same floor.
@@ -101,13 +107,13 @@ test.describe('what every control exposes', () => {
     ).toBe('true');
 
     await openEditor(page);
-    const blueprint = page.locator('.blueprint input[type="radio"]').first();
-    await expect(blueprint).not.toBeChecked();
+    expect(await chosenRecipe(page)).toBeNull();
 
-    // Nothing is carried by colour alone: the state a border shows is the state
-    // the control itself reports.
-    await page.locator('.blueprint__name').first().click();
-    await expect(blueprint).toBeChecked();
+    // Nothing is carried by colour alone: the state a fill or a border shows is
+    // the state the control itself reports — a checked radio on the card list,
+    // a selected option in the dropdown.
+    await chooseRecipe(page, /increased range/i);
+    await expect.poll(() => chosenRecipe(page)).toMatch(/increased range/i);
   });
 
   test('gives every drawn control a name that contains what it says', async ({ page }) => {
@@ -115,7 +121,12 @@ test.describe('what every control exposes', () => {
     await selectMount(page, 'FrameShiftDrive');
     await openChooser(page);
 
-    const controls = page.locator('.replacement button, .outfitting__bench button');
+    // Every control the bench draws, not only its buttons: canvas 1c's panels
+    // carry dropdowns and a search field and, on a required mount, no button at
+    // all (wave 4).
+    const controls = page.locator(
+      '.outfitting__bench button, .outfitting__bench select, .outfitting__bench a[href]',
+    );
     const total = await controls.count();
     expect(total).toBeGreaterThan(0);
     for (let index = 0; index < total; index += 1) {
@@ -176,7 +187,7 @@ test.describe('the conditions that break layouts', () => {
 
     // The requirement is not less animation: it is that no state was ever only
     // reachable through one.
-    await expect(page.locator('.blueprints')).toBeVisible();
+    await expect(page.locator('.engineering').first()).toBeVisible();
     await expectTargetSizes(page);
     await page.emulateMedia({ reducedMotion: null });
   });
@@ -230,7 +241,12 @@ test.describe('the conditions that break layouts', () => {
     await openChooser(page);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'chooser open' });
 
-    await page.locator('.replacement__cancel').click();
+    // Canvas 1d's chooser is a screen over the bench, so it is left before the
+    // editor is reached. Canvas 1c draws both panels at once and has no such
+    // control (design-canvas rule).
+    if (await surfacesAreLayers(page)) {
+      await page.locator('.replacement__cancel').click();
+    }
     await openEditor(page);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'engineering open' });
   });

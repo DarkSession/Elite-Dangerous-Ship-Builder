@@ -56,6 +56,29 @@ export const COMPARED_ATTRIBUTES = [
 export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
 
 /**
+ * Which way is better, per attribute.
+ *
+ * The canvas colours a modified figure green or red and marks it ▲ or ▼, and
+ * the direction is not the arithmetic one: it draws `Power Draw 0.88 ▼` for a
+ * figure that went up. So the direction is a property of the attribute, not of
+ * the number, and it is stated here — six fields this application chose to
+ * compare, each with the sense the canvas gives it.
+ *
+ * The Almanac's own `LessIsGood` is documented as unreliable and is not used.
+ * This table is the application's, kept beside the list it belongs to so the
+ * two cannot drift apart (wave 4; supersedes the reference review's
+ * "Attribute and cost honesty" ruling, which withdrew the markers entirely).
+ */
+export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
+  damage: true,
+  thermalLoad: false,
+  clipSize: true,
+  powerDraw: false,
+  mass: false,
+  integrity: true,
+};
+
+/**
  * One row of the comparison. Either side may be unavailable, and stays so.
  *
  * `stock` is the module's catalogue record — the reference's own `STOCK` column
@@ -160,7 +183,19 @@ export function openEngineeringDraft(
 
   const module = fittedModuleView(fitted, text);
   const current = engineeringView(module);
-  const blueprints = loadout.availableBlueprints(slotKey);
+  // The recipes this mount can actually take, filtered here rather than in the
+  // component that draws them. A recipe whose grades start above 1 is a Merc-Coin
+  // article's own: the Almanac sells it with the purchase and starts it at the
+  // grade it was bought at, so offering one on a module that was not bought that
+  // way offers a job the package would refuse after the Commander had chosen it
+  // (wave 4). It moved down here in wave 9 because `packageEmpty` has to be
+  // computed from what is actually offered — a mount whose only recipe is one
+  // nobody here can take has no engineering, and drawing a menu holding only
+  // `None` said otherwise.
+  const purchased = current.purchaseVariant !== null;
+  const blueprints = loadout
+    .availableBlueprints(slotKey)
+    .filter((blueprint) => purchased || (blueprint.grades[0] ?? 1) <= 1);
   const effects = loadout.availableExperimentalEffects(slotKey);
 
   const descriptor =
@@ -173,8 +208,19 @@ export function openEngineeringDraft(
   // A grade is only a grade if the selected descriptor offers it. Anything else
   // is a number the package never published for this recipe, and the package
   // would refuse it — after the Commander had been offered it.
+  const purchase = current.purchaseVariant;
   const selectedGrade =
-    descriptor !== null && selection.grade !== null && descriptor.grades.includes(selection.grade)
+    descriptor !== null &&
+    selection.grade !== null &&
+    (descriptor.grades.includes(selection.grade) ||
+      // A bespoke Mercenary recipe starts at grade 2, and an article bought at
+      // grade 1 carries a grade its own recipe does not offer. That grade is a
+      // grade the article really has, so it is offered like any other: the bar
+      // shows it when the article is at it, and a Commander who climbed to
+      // grade 3 can press it to come back down (wave 5, wave 6).
+      (purchase !== null &&
+        selection.grade === purchase.grade &&
+        sameIdentity(descriptor.fdname, purchase.blueprint)))
       ? selection.grade
       : null;
 
@@ -213,7 +259,13 @@ export function openEngineeringDraft(
       currentEffectFdname: current.effectFdname,
       purchaseVariant: current.purchaseVariant,
     }),
-    packageEmpty: blueprints.length === 0 && effects.length === 0,
+    // No recipe offered and none already on the module means nothing can be
+    // chosen here at all: the effect menu is drawn only once a recipe is, so an
+    // empty recipe list is an empty panel. Requiring the effect list to be empty
+    // too left a mount like a stock Abrasion Blaster — effects in the package,
+    // no ordinary blueprint for it — drawing a `BLUEPRINT` menu whose only entry
+    // was `None`, which is a control over nothing (wave 9, FR-009).
+    packageEmpty: blueprints.length === 0 && current.blueprintFdname === null,
     finalArticle: current.purchaseVariant?.engineeringLocked === true,
   };
 }
@@ -317,6 +369,22 @@ function selectionIntent(
     return { kind: 'clearEngineering', slotKey };
   }
 
+  // Back to the article as it was bought. The Almanac has no recipe at that
+  // grade — a bespoke Mercenary table starts above it — so this is the purchase
+  // being restored rather than a grade being crafted (wave 6).
+  const purchase = current.purchaseVariant;
+  if (
+    purchase !== null &&
+    selection.grade === purchase.grade &&
+    sameIdentity(selected, purchase.blueprint) &&
+    !(
+      sameIdentity(purchase.blueprint, current.blueprintFdname) &&
+      current.currentGrade === purchase.grade
+    )
+  ) {
+    return { kind: 'restorePurchase', slotKey };
+  }
+
   const effectChanged = !sameIdentity(selection.effectFdname, current.effectFdname);
 
   if (
@@ -383,6 +451,14 @@ export function engineeringOperation(
         candidate.clearEngineering(intent.slotKey);
       };
 
+    case 'restorePurchase':
+      return (candidate) => {
+        const variant = candidate.fittedModuleAt(intent.slotKey)?.preEngineeredVariant;
+        if (variant != null) {
+          candidate.setPreEngineeredVariant(intent.slotKey, variant);
+        }
+      };
+
     default:
       return null;
   }
@@ -403,29 +479,10 @@ function previewOf(
   current: EngineeringView,
   stockArticle: OutfittingModule | null,
 ): EngineeringPreview {
-  const intent = selectionIntent(slotKey, selection, current);
-  if (intent === null) {
-    return { kind: 'unavailable' };
-  }
-
-  const operation = engineeringOperation(intent);
-  if (operation === null) {
-    return { kind: 'unavailable' };
-  }
-
-  const restored = restoreCheckpoint(captureCheckpoint(loadout));
-  if (!restored.ok) {
-    return { kind: 'unavailable' };
-  }
-
-  try {
-    operation(restored.loadout);
-  } catch {
-    return { kind: 'unavailable' };
-  }
-
-  const modifiedArticle = restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
-  if (modifiedArticle === null && stockArticle === null) {
+  const modifiedArticle = modifiedArticleOf(loadout, slotKey, selection, current);
+  // No modified article is no comparison. A table with one column filled in
+  // would read as a recipe that took every figure away.
+  if (modifiedArticle === null) {
     return { kind: 'unavailable' };
   }
 
@@ -439,6 +496,62 @@ function previewOf(
   })).filter((row) => row.stock !== null || row.modified !== null);
 
   return { kind: 'known', attributes };
+}
+
+/**
+ * The article the comparison's `MODIFIED` column is about.
+ *
+ * A selection with something still to apply is measured on a detached copy
+ * through the same checkpoint round trip every commit uses, so what a Commander
+ * is shown is what would actually be installed rather than an approximation of
+ * it. A selection with nothing left to apply — which is every selection once it
+ * has been committed — is measured on the module itself: canvas 1c draws the
+ * comparison beside a module that already carries its recipe, and a panel that
+ * went blank the moment the recipe was applied would empty exactly when a
+ * Commander went looking for what it did.
+ *
+ * A refusal is not surfaced as an error. A half-chosen draft refusing is
+ * ordinary; it simply has nothing to show.
+ */
+function modifiedArticleOf(
+  loadout: ShipLoadout,
+  slotKey: string,
+  selection: EngineeringSelection,
+  current: EngineeringView,
+): OutfittingModule | null {
+  // Only where the module has engineering to compare. Stock against stock is a
+  // table of two identical columns, which says nothing and reads as though the
+  // recipe did nothing.
+  const engineered =
+    current.blueprintFdname !== null ||
+    current.effectFdname !== null ||
+    current.modifiers !== null ||
+    current.purchaseVariant !== null;
+  const fitted = () =>
+    engineered ? (loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null) : null;
+
+  const intent = selectionIntent(slotKey, selection, current);
+  if (intent === null) {
+    return fitted();
+  }
+
+  const operation = engineeringOperation(intent);
+  if (operation === null) {
+    return fitted();
+  }
+
+  const restored = restoreCheckpoint(captureCheckpoint(loadout));
+  if (!restored.ok) {
+    return null;
+  }
+
+  try {
+    operation(restored.loadout);
+  } catch {
+    return null;
+  }
+
+  return restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
 }
 
 /** Package identities are compared the way the package matches them. */

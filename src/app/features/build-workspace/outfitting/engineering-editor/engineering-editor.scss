@@ -39,7 +39,38 @@
   padding: var(--edsb-space-panel);
 }
 
-// Canvas 1c's panel heading: tracked mono in amber, over the panel it heads.
+// Inline, canvas 1c draws a bordered box rather than a heading over loose
+// content: a hairline amber edge, the panel's own ground inside it, and a ruled
+// bar across the top. What scrolls is the body under that bar, so the bar stays
+// where the canvas puts it (wave 7).
+.engineering--panel {
+  gap: 0;
+  overflow: hidden;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  background-color: var(--edsb-surface-panel);
+}
+
+.engineering__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline);
+  // Canvas 1c's `11px 14px`.
+  padding: var(--edsb-space-row) var(--edsb-space-xl);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+}
+
+.engineering__body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: var(--edsb-space-xl);
+}
+
+// Canvas 1c's panel heading: tracked mono in amber, at one end of the bar.
 .engineering__heading {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
@@ -70,9 +101,28 @@
   .engineering__panes {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: var(--edsb-space-region);
+    gap: 0;
     align-items: start;
   }
+
+  // The canvas rules the two columns apart rather than spacing them apart.
+  .engineering__choices {
+    padding-inline-end: var(--edsb-space-panel);
+    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  }
+
+  .engineering__result {
+    padding-inline-start: var(--edsb-space-panel);
+  }
+}
+
+// Canvas 1c's `padding-top: 11px; border-top: 1px solid var(--amber-a12)`: the
+// attribute table belongs to the choices column and is ruled off from the
+// controls above it.
+.engineering__attributes {
+  display: block;
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
 
 .engineering__choices,
@@ -104,4 +154,8 @@
 
   flex: 1;
   min-inline-size: 0;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
 }

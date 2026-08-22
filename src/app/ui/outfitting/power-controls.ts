@@ -72,8 +72,15 @@ export class PowerControls {
   /** What the switch shows. Absent reads as on, which is what the package does. */
   readonly isOn = computed(() => this.enabled() ?? true);
 
-  /** What the control shows when the package states no group at all. */
-  readonly absentLabel = this.#messages.messageSignal('unavailable.value');
+  /**
+   * What the control shows when the package states no group at all.
+   *
+   * A mark rather than a word: the canvas draws one digit in this chip, and
+   * spelling out `Unavailable` in it makes the chip wider than the row it sits
+   * in. The absence is said in full in the control's own name instead, so a
+   * reader still hears it (wave 4).
+   */
+  readonly absentLabel = this.#messages.messageSignal('outfitting.power.priority.absent');
 
   readonly enabledLabel = computed(() =>
     this.#messages.message('outfitting.power.enabled', {
@@ -83,10 +90,12 @@ export class PowerControls {
   );
 
   readonly priorityLabel = computed(() =>
-    this.#messages.message('outfitting.power.priority', {
-      module: this.moduleLabel(),
-      slot: this.slotLabel(),
-    }),
+    this.#messages.message(
+      this.priority() === undefined
+        ? 'outfitting.power.priority.unpublished'
+        : 'outfitting.power.priority',
+      { module: this.moduleLabel(), slot: this.slotLabel() },
+    ),
   );
 
   /** The group as a Commander reads it: one-based, exactly as the game shows. */

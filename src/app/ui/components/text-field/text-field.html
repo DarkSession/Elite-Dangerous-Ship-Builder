@@ -24,7 +24,13 @@
   />
 
   @if (description()) {
-    <p class="field__description" [id]="relations.descriptionId">{{ description() }}</p>
+    <p
+      class="field__description"
+      [class.field__description--hidden]="descriptionHidden()"
+      [id]="relations.descriptionId"
+    >
+      {{ description() }}
+    </p>
   }
 
   @if (error()) {

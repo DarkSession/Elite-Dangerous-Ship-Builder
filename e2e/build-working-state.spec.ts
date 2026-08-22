@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
+import { savedToBrowser, reachShellLink } from './shell';
 
 /**
  * Work that survives — and work that is never silently lost.
@@ -29,7 +30,7 @@ function storedKeys(page: Page) {
 test.describe('the tab’s working build', () => {
   test('is saved to one owned record and restored after a reload', async ({ page }) => {
     await createBuild(page);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     const before = await storedKeys(page);
     expect(before.records).toHaveLength(1);
@@ -38,14 +39,14 @@ test.describe('the tab’s working build', () => {
     await page.reload();
 
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
     // The same record, not a second one.
     expect((await storedKeys(page)).records).toEqual(before.records);
   });
 
   test('writes nothing outside the keys this application owns', async ({ page }) => {
     await createBuild(page);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     const keys = await page.evaluate(() => ({
       local: Object.keys(localStorage),
@@ -61,7 +62,7 @@ test.describe('the tab’s working build', () => {
 
   test('stores no calculated value, price or catalogue fact', async ({ page }) => {
     await createBuild(page);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     const stored = await page.evaluate(() => {
       const key = Object.keys(localStorage).find((candidate) =>
@@ -84,9 +85,9 @@ test.describe('the tab’s working build', () => {
     const second = await context.newPage();
 
     await createBuild(first, 'Anaconda');
-    await expect(first.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(first);
     await createBuild(second, 'SideWinder');
-    await expect(second.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(second);
 
     const records = await first.evaluate(() =>
       Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
@@ -94,8 +95,8 @@ test.describe('the tab’s working build', () => {
 
     // Neither page has overwritten the other's autosave.
     expect(records).toHaveLength(2);
-    await expect(first.getByRole('main').getByText('Anaconda').first()).toBeVisible();
-    await expect(second.getByRole('main').getByText('Sidewinder').first()).toBeVisible();
+    await expect(first.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
+    await expect(second.getByRole('banner').getByText('Sidewinder').first()).toBeVisible();
 
     await context.close();
   });
@@ -104,7 +105,7 @@ test.describe('the tab’s working build', () => {
     const context = await browser.newContext();
     const original = await context.newPage();
     await createBuild(original, 'Anaconda');
-    await expect(original.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(original);
 
     // A duplicated tab inherits the session, and so believes it owns the same
     // working record until the claim is negotiated.
@@ -114,10 +115,10 @@ test.describe('the tab’s working build', () => {
     await duplicate.evaluate((state) => sessionStorage.setItem('edsb:tab', state!), tabState);
     await duplicate.reload();
     await expect(duplicate.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await duplicate.getByRole('navigation').getByRole('link', { name: 'Shipyard' }).click();
+    await reachShellLink(duplicate, 'Shipyard');
     await duplicate.goto('/ships/SideWinder');
     await duplicate.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(duplicate.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(duplicate);
 
     const records = await original.evaluate(() =>
       Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
@@ -162,8 +163,10 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
 
     await expect(page.getByText(/not allowing the application to store/i)).toBeVisible();
-    // The build is still there and the screen still works.
-    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    // The build is still there and the screen still works. The hull is on the
+    // command bar's identity line, where canvas 1c puts it.
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
 
     await context.close();
@@ -186,7 +189,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
 
     await expect(page.getByText(/storage is full/i)).toBeVisible();
-    await expect(page.getByRole('main').getByText('Anaconda').first()).toBeVisible();
+    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Choose builds to discard' })).toBeVisible();
 
     await context.close();
@@ -194,7 +197,7 @@ test.describe('the tab’s working build', () => {
 
   test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {
     await createBuild(page);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     await expectSingleVisibleH1(page);
     await expectNoDocumentOverflow(page);

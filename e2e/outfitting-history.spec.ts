@@ -5,7 +5,9 @@ import {
   fitCommitted,
   openChooser,
   pressCommandBarAction,
+  surfacesAreLayers,
 } from './outfitting-surfaces';
+import { savedToBrowser } from './shell';
 
 /**
  * Undo and redo, end to end (US4).
@@ -71,8 +73,10 @@ test.describe('stepping back and forward', () => {
     await openChooser(page);
     const rows = page.locator('.candidate');
     await expect(rows.first()).toBeVisible();
-    await rows.first().locator('.identity__name').click();
-    await page.getByRole('button', { name: /fit module/i }).click();
+    await rows.first().locator('.candidate__name').click();
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /fit module/i }).click();
+    }
     await fitCommitted(page);
     const fitted = await fittedAt(page, 'MediumHardpoint1');
     expect(fitted).not.toHaveLength(0);
@@ -110,8 +114,6 @@ test.describe('stepping back and forward', () => {
 
   test('recomputes every package result rather than restoring one', async ({ page }) => {
     await openStockBuild(page);
-    const validation = page.locator('.workspace__summary');
-    await expect(validation).toBeVisible();
 
     await selectMount(page, 'Slot03_Size6');
     await openChooser(page);
@@ -151,19 +153,27 @@ test.describe('stepping back and forward', () => {
     await openChooser(page);
     await page.locator('input[type="search"]').fill('pulse');
     // Closed before the next part: at compact width the chooser is a screen of
-    // its own over an inert background, and the command bar is behind it.
-    await page.locator('.replacement__cancel').click();
+    // its own over an inert background, and the command bar is behind it. The
+    // wide composition draws it inline with no such control.
+    if (await surfacesAreLayers(page)) {
+      await page.locator('.replacement__cancel').click();
+    }
 
     await page.getByRole('button', { name: /rename the ship/i }).click();
-    await page.locator('.identity-fields__input').fill('Never confirmed');
-    await page.locator('.identity-fields__quiet').last().click();
+    // Typed and abandoned. Escape leaves the field as it was: the canvas draws
+    // no Cancel beside the title, so leaving without committing is Escape.
+    // Nothing is typed into the DOM value the field would commit on blur —
+    // `fill` alone does not commit, and pressing Escape closes it (wave 4).
+    await page.locator('.identity-fields__input').press('Escape');
 
     await expect(undo(page)).toBeDisabled();
   });
 
   test('retains a bounded tape, and the bound is the tape’s own', async ({ page }) => {
     await openStockBuild(page, 'Sidewinder');
-    const slot = 'PowerPlant';
+    // A mount that draws power, so it has a group to change. The power plant is
+    // what everything else draws from and has no group at all (wave 4).
+    const slot = 'FrameShiftDrive';
     const groups = chip(page, slot);
 
     // Twelve decisions here, and exactly a hundred and one in
@@ -189,8 +199,10 @@ test.describe('stepping back and forward', () => {
 test.describe('the ship’s name and ident', () => {
   async function rename(page: Page, value: string): Promise<void> {
     await page.getByRole('button', { name: /rename the ship/i }).click();
+    // The title is the field. Leaving it is confirming it, which is what the
+    // canvas's "click to rename" means — there is no control beside it.
     await page.locator('.identity-fields__input').fill(value);
-    await page.getByRole('button', { name: /^confirm$/i }).click();
+    await page.locator('.identity-fields__input').press('Enter');
   }
 
   test('names the ship, sets the ident, and undoes each back to absence', async ({ page }) => {
@@ -202,12 +214,14 @@ test.describe('the ship’s name and ident', () => {
 
     await page.getByRole('button', { name: /change the ship id/i }).click();
     await page.locator('.identity-fields__input').fill('FD-11X');
-    await page.getByRole('button', { name: /^confirm$/i }).click();
+    await page.locator('.identity-fields__input').press('Enter');
     await expect(page.locator('.identity-fields__plate')).toHaveText('FD-11X');
 
-    // Clearing sets absence, not an empty string.
+    // Clearing sets absence, not an empty string. Emptying the field is how a
+    // plate is taken off: the canvas draws no Clear beside it (wave 4).
     await page.getByRole('button', { name: /change the ship id/i }).click();
-    await page.getByRole('button', { name: /^clear$/i }).click();
+    await page.locator('.identity-fields__input').fill('');
+    await page.locator('.identity-fields__input').press('Enter');
     await expect(page.locator('.identity-fields__plate')).toHaveCount(0);
 
     await pressCommandBarAction(page, /^undo$/i);
@@ -270,7 +284,7 @@ test.describe('what resets the tape', () => {
     // for modules that draw it, so a plant-only change leaves the address bar
     // describing a different build (see reference-review.md).
     await setGroup(page, 'SmallHardpoint1', '1');
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     await page.reload();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
@@ -298,7 +312,7 @@ test.describe('boundary isolation', () => {
     await openStockBuild(page);
     await setGroup(page, 'SmallHardpoint1', '1');
     await pressCommandBarAction(page, /^undo$/i);
-    await expect(page.getByText('Saved in this browser')).toBeVisible();
+    await savedToBrowser(page);
 
     const stored = await page.evaluate(() =>
       Object.keys(localStorage)

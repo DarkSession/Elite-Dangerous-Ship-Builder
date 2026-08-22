@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { MessageService } from '../../i18n/message.service';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { UnavailableValue } from '../components/unavailable-value/unavailable-value';
 
 /**
@@ -23,8 +22,6 @@ import { UnavailableValue } from '../components/unavailable-value/unavailable-va
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UnavailableFact {
-  readonly #messages = inject(MessageService);
-
   /** What is being reported. Always drawn, present or absent. */
   readonly label = input.required<string>();
 
@@ -34,16 +31,17 @@ export class UnavailableFact {
   /** The unit, or the rating marker where a figure has none. */
   readonly unit = input<string | null>(null);
 
-  /** Why there is no value, when something more specific can be said. */
+  /**
+   * Why there is no value, when something more specific can be said.
+   *
+   * There is no default. The manifest is hundreds of rows of these cells, and a
+   * generic framing repeated in every one of them is a sentence a reader hears
+   * over and over that tells them nothing the word `Unavailable` did not.
+   */
   readonly reason = input<string | null>(null);
 
   readonly available = computed(() => {
     const value = this.value();
     return value !== null && value.length > 0;
   });
-
-  /** The framing shown beside an absence when the caller offered no reason. */
-  readonly defaultReason = computed(() =>
-    this.#messages.message('outfitting.fact.unavailable.reason'),
-  );
 }

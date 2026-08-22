@@ -1,38 +1,21 @@
-<!-- The command bar carries this screen's name; the page does not repeat it. -->
+<!--
+  Canvas 1c draws the workspace as the command bar and then the regions: the
+  build's name and hull are the bar's identity block, `EXPORT` and the history
+  controls are the bar's actions, and nothing stands between the bar and the
+  ledger. A hull line, a provenance line, a saved-state line and a "this build
+  is valid" banner were none of them drawn — the canvas reports problems and
+  says nothing when there are none (design-canvas rule).
+-->
 @if (linkFailure(); as failure) {
   <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
 }
 
 @if (hasBuild()) {
-  <dl class="workspace__summary">
-    <dt>{{ hullLabel() }}</dt>
-    <dd>
-      @if (hull(); as name) {
-        <edsb-game-text
-          [text]="name.text"
-          [language]="name.language"
-          [translationState]="name.translationState"
-        />
-      }
-    </dd>
-
-    @if (provenance(); as source) {
-      <dt>{{ provenanceLabel() }}</dt>
-      <dd>{{ source }}</dd>
-    }
-  </dl>
-
-  <p class="workspace__saved-state">{{ savedState() }}</p>
-
   <edsb-persistence-status />
 
-  @if (validation(); as verdict) {
+  @if (validationProblem(); as verdict) {
     <edsb-status-notice [tone]="verdict.tone" [message]="verdict.message" />
   }
-
-  <div class="workspace__actions">
-    <edsb-action-button [label]="shareLabel()" (activated)="exportOpen.set(true)" />
-  </div>
 
   <!--
     Where the module editors and statistics of later capabilities mount. The

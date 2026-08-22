@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
+import { savedToBrowser, reachShellLink } from './shell';
 
 /**
  * Managing what this browser is holding.
@@ -55,7 +56,7 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
 
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
-  await expect(page.getByText('Saved in this browser')).toBeVisible();
+  await savedToBrowser(page);
 }
 
 /**
@@ -84,7 +85,7 @@ test.describe('the build library', () => {
 
   test('lists a working build with its hull, time and recorded state', async ({ page }) => {
     await createBuild(page);
-    await page.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(page, 'Open saved build');
 
     await expect(library(page)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Working builds' })).toBeVisible();
@@ -95,7 +96,7 @@ test.describe('the build library', () => {
 
   test('names a working build, keeping the working record as well', async ({ page }) => {
     await createBuild(page);
-    await page.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(page, 'Open saved build');
 
     await page.getByRole('button', { name: /^Save Working build under a name$/ }).click();
     const dialog = page.getByRole('dialog');
@@ -111,7 +112,7 @@ test.describe('the build library', () => {
   test('warns about a duplicate name and still saves a separate build', async ({ page }) => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
     await createBuild(page);
-    await page.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(page, 'Open saved build');
 
     await page.getByRole('button', { name: /^Save Working build under a name$/ }).click();
     const dialog = page.getByRole('dialog');
@@ -221,7 +222,7 @@ test.describe('the build library', () => {
     await openWorkspaceWithBuild(page);
 
     await expect(page.getByText(/recoverable working builds/i)).toBeVisible();
-    await page.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(page, 'Open saved build');
     await expect(page.getByRole('heading', { name: 'Choose builds to discard' })).toBeVisible();
 
     // Nothing was removed to make room.
@@ -239,7 +240,7 @@ test.describe('the build library', () => {
       ),
     );
     await openWorkspaceWithBuild(page);
-    await page.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(page, 'Open saved build');
 
     const manager = page.getByRole('group', { name: 'Choose builds to discard' });
     await manager.getByRole('checkbox').first().check();
@@ -261,7 +262,7 @@ test.describe('the build library', () => {
     // Waiting for the save is the precondition, not a convenience: the library
     // lists what is stored, and autosave coalesces before it writes.
     await createBuild(first);
-    await first.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(first, 'Open saved build');
     await first.getByRole('button', { name: /^Save Working build under a name$/ }).click();
     await first.getByRole('dialog').getByRole('textbox', { name: 'Name' }).fill('Shared build');
     await first.getByRole('dialog').getByRole('button', { name: 'Save as a new build' }).click();
@@ -277,7 +278,7 @@ test.describe('the build library', () => {
     await expect(first).toHaveURL(/\/build(#|$)/);
 
     // One page saves; the other's baseline is now stale.
-    await second.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(second, 'Open saved build');
     await second.getByRole('button', { name: 'Rename Shared build' }).click();
     await second
       .getByRole('dialog')
@@ -288,7 +289,7 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Replace the build I opened' })
       .click();
 
-    await first.getByRole('navigation').getByRole('link', { name: 'Open saved build' }).click();
+    await reachShellLink(first, 'Open saved build');
     // By the time this page looks, the listing has already re-read storage and
     // shows the other page's name — which is the point: the *record* is the
     // same one, and this page's baseline is the stale part.

@@ -27,9 +27,12 @@ export function slotCapabilities(loadout: ShipLoadout, slot: SlotView): SlotCapa
     canOpenReplacement: !packageEmpty,
     canFitSelection: !packageEmpty,
     canRemove: slot.removable && fitted,
-    // Engineering needs a fitted module *and* a menu. A mount the package
-    // offers no blueprint for opens no editor, rather than opening an empty one.
-    canOpenEngineering: fitted && loadout.availableBlueprints(slot.key).length > 0,
+    // Engineering needs a fitted module, and nothing else. Whether the Almanac
+    // offers a blueprint for it is what the panel answers, not a condition on
+    // the panel existing: a Commander who wants to know whether a module can be
+    // engineered has nowhere else to look, and a bench that simply omits the
+    // region answers by saying nothing (wave 9).
+    canOpenEngineering: fitted,
     // Power belongs to whatever is fitted, including the cargo hatch — which is
     // exactly what the canvas draws for it.
     canSetEnabled: fitted,

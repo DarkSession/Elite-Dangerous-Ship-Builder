@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  viewChild,
+  type ElementRef,
+} from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 
@@ -18,9 +28,10 @@ export interface IdentityCommit {
  * Drawn exactly where both canvases draw them: the name is the bar's own title
  * with a pencil beside it — `PACIFIER ✎`, titled "Click to rename this build" —
  * and under it the hull and the ID plate, `ANACONDA · FD-11X ✎`. Neither canvas
- * draws a labelled field pair, a settings row or a dialog, so neither is here:
- * the pencil opens the field in place and closes when it is confirmed
- * (FR-019, canvas 1c and 1d "Command bar").
+ * draws a labelled field pair, a settings row, a dialog or a row of Save and
+ * Cancel controls, so none of them is here: the title is the control, it turns
+ * into a field where it stands, and leaving the field is confirming it — which
+ * is what "click to rename" means (FR-019, canvas 1c and 1d "Command bar").
  *
  * Both fields carry a pencil at both widths. Canvas 1d draws one on the name
  * and none on the ident, which is an omission in the reference rather than a
@@ -89,9 +100,22 @@ export class ShipIdentityFields {
       ? this.#messages.message('outfitting.identity.ident.edit')
       : this.#messages.message('outfitting.identity.ident.edit.value', { ident: plate });
   });
-  readonly confirmLabel = this.#messages.messageSignal('outfitting.identity.confirm');
-  readonly clearLabel = this.#messages.messageSignal('outfitting.identity.clear');
-  readonly cancelLabel = this.#messages.messageSignal('action.cancel');
+  protected readonly field = viewChild<ElementRef<HTMLInputElement>>('field');
+  protected readonly plateField = viewChild<ElementRef<HTMLInputElement>>('plateField');
+
+  constructor() {
+    // The field replaces the control that opened it, so focus has to follow it
+    // or a Commander who opened it from the keyboard is left on nothing.
+    // Without `preventScroll` the browser scrolls every ancestor to bring the
+    // field into view. Where the block is one of many on a page — the preview
+    // catalogue renders them all at once — that drags the whole document to it
+    // and leaves a sticky header sitting on the rows above.
+    effect(() => {
+      const open = this.editing() === 'name' ? this.field() : this.plateField();
+      open?.nativeElement.focus({ preventScroll: true });
+      open?.nativeElement.select();
+    });
+  }
 
   open(field: IdentityField): void {
     this.opened.emit(field);
@@ -107,9 +131,5 @@ export class ShipIdentityFields {
   confirm(field: IdentityField, raw: string): void {
     const value = raw.trim();
     this.committed.emit({ field, value: value.length === 0 ? null : value });
-  }
-
-  clear(field: IdentityField): void {
-    this.committed.emit({ field, value: null });
   }
 }

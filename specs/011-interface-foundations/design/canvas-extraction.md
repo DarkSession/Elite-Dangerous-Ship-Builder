@@ -55,21 +55,25 @@ and is adopted exactly.
 
 ## Type ramp
 
-The canvas ramp, and the token step each rung maps to. A single uniform lift of
-approximately 1.25× puts the smallest rung at 11 px; the ratios between rungs, which
-are what the hierarchy is made of, are preserved.
+The canvas ramp, and the token step each rung maps to. **Ruled 2026-08-22 (wave 9),
+reversing the uniform lift this table once recorded.** The ramp is the canvas's own
+sizes at 1:1. The lift — approximately 1.25×, to put the smallest rung at 11 px —
+preserved the ratios between rungs but not the sizes, and the sizes are also what the
+design is: the canvas draws a 13 px module name over a 9 px detail line, and lifting
+those to 16 px and 11 px changed the density of every surface built on them at once.
+Nothing is scaled on the way in.
 
 | Canvas px           | Token                    | rem       | Used for                                                  |
 | ------------------- | ------------------------ | --------- | --------------------------------------------------------- |
-| 7.5, 8, 8.5, 9, 9.5 | `--edsb-type-size-micro` | 0.6875rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
-| 10                  | `--edsb-type-size-2xs`   | 0.75rem   | Button labels, segment labels, column headers             |
-| 10.5, 11            | `--edsb-type-size-xs`    | 0.8125rem | Row secondary text, notes, mono values in dense rows      |
-| 12                  | `--edsb-type-size-sm`    | 0.875rem  | Body prose, manufacturer, table numerics                  |
-| 13                  | `--edsb-type-size-md`    | 1rem      | Dialog titles, name field input                           |
-| 14, 15              | `--edsb-type-size-lg`    | 1.125rem  | Compact row hull names, metric values                     |
-| 16                  | `--edsb-type-size-xl`    | 1.25rem   | Wide manifest hull names, workspace build name            |
-| 18                  | `--edsb-type-size-2xl`   | 1.5rem    | Command-bar title, hull price                             |
-| 22                  | `--edsb-type-size-3xl`   | 1.75rem   | Inspector hull name                                       |
+| 7.5, 8, 8.5, 9, 9.5 | `--edsb-type-size-micro` | 0.5625rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
+| 10                  | `--edsb-type-size-2xs`   | 0.625rem  | Button labels, segment labels, column headers             |
+| 10.5, 11            | `--edsb-type-size-xs`    | 0.6875rem | Row secondary text, notes, mono values in dense rows      |
+| 12                  | `--edsb-type-size-sm`    | 0.75rem   | Body prose, manufacturer, table numerics                  |
+| 13                  | `--edsb-type-size-md`    | 0.8125rem | Dialog titles, name field input, ledger module names      |
+| 14, 15              | `--edsb-type-size-lg`    | 0.875rem  | Compact row hull names, metric values                     |
+| 16                  | `--edsb-type-size-xl`    | 1rem      | Wide manifest hull names, workspace build name            |
+| 18                  | `--edsb-type-size-2xl`   | 1.125rem  | Command-bar title, hull price                             |
+| 22                  | `--edsb-type-size-3xl`   | 1.375rem  | Inspector hull name                                       |
 
 Weights: 300 prose, 400 mono default, 500 mono label / Barlow emphasis, 600 condensed
 secondary control, 700 condensed heading and primary control.

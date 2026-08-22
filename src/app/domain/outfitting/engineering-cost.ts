@@ -31,28 +31,19 @@ export type CombinedCost =
 export interface EngineeringCostView {
   /** The complete climb to the selected grade, from where the module already is. */
   readonly blueprint: MaterialCost;
-  /** One application of a newly selected effect. Removal costs nothing. */
+  /** One application of the selected effect. Removal costs nothing. */
   readonly experimental: MaterialCost;
   /** Both together, summed only when every selected part is known. */
   readonly combined: CombinedCost;
-  /**
-   * Present when the module is a package-identified purchase.
-   *
-   * A reward article arrives already modified. Its baked engineering was never
-   * crafted and pricing its recipe would quote a Commander for something they
-   * cannot buy with materials, so this says so instead of showing a number
-   * (FR-013, outfitting-editor contract "Engineering").
-   */
-  readonly fixedPurchase: 'notCrafted' | null;
-  /**
-   * The article's Merc Coin price, when it has one.
-   *
-   * Kept out of the material lists entirely. Merc Coin has no credit or
-   * material equivalent, and folding it into a shopping list would invent an
-   * exchange rate the game does not have.
-   */
-  readonly mercCoin: number | null;
 }
+
+// The article's Merc Coin shop price is deliberately **not** here. It is the
+// price of buying the module, which the manifest row it is bought from already
+// states; standing at the foot of a job's shopping list it read as the price of
+// that job instead. Nor is there a per-grade figure to put in its place: the
+// Almanac publishes one fixed `mercCoinCost` per Mercenary article and says the
+// current grade does not change it, so a Merc Coin figure beside a grade-5 climb
+// would be one the game does not have (wave 9, constitution IV).
 
 /** What the Commander has chosen, against what the module already carries. */
 export interface EngineeringSelection {
@@ -80,11 +71,11 @@ export interface EngineeringSelection {
  * showed "5 rolls at grade 5" would be describing a mechanic the rest of the
  * feature refuses to model (FR-013, contract "Engineering").
  *
- * The climb starts from where the module already is when the recipe is the one
- * it already carries, and from nothing when it is a different recipe. That one
- * rule is also what makes a Mercenary upgrade correct without a second branch:
- * the article was bought at grade 1, so its completed grade is 1, so upgrading
- * to grade 3 is charged for grades 2 and 3 (contract, "Engineering").
+ * The climb is the whole recipe: stock to the selected grade, every time. It is
+ * what a job costs rather than what is left of one, because a choice commits as
+ * it is made and "what is left" is nothing by the time anybody reads it. A Merc
+ * Coin article's own purchase price stays out of it altogether
+ * (wave 5, wave 9; supersedes the incremental climb this once carried).
  */
 export function engineeringCost(selection: EngineeringSelection): EngineeringCostView {
   const blueprint = blueprintCost(selection);
@@ -94,8 +85,6 @@ export function engineeringCost(selection: EngineeringSelection): EngineeringCos
     blueprint,
     experimental,
     combined: combine(blueprint, experimental),
-    fixedPurchase: selection.purchaseVariant === null ? null : 'notCrafted',
-    mercCoin: selection.purchaseVariant?.mercCoinCost ?? null,
   };
 }
 
@@ -105,6 +94,15 @@ function blueprintCost(selection: EngineeringSelection): MaterialCost {
   if (fdname === null || grade === null) {
     return { kind: 'notSelected' };
   }
+  const purchase = selection.purchaseVariant;
+  if (purchase !== null && grade === purchase.grade && sameRecipe(fdname, purchase.blueprint)) {
+    // The article as it arrived. A reward is bought, not crafted: there is no
+    // shopping list for what it came with, and pricing its recipe would quote a
+    // Commander for something no engineer will do. Its price is the Merc Coin
+    // line beside this one. Engineering it *further* costs materials like any
+    // other job, which is the branch below (wave 5).
+    return { kind: 'notSelected' };
+  }
   if (!Number.isInteger(grade) || grade < 1 || grade > 5) {
     // The package throws for a grade outside its range. A grade that is not one
     // of the package's own is not a grade this application can price, and
@@ -112,25 +110,38 @@ function blueprintCost(selection: EngineeringSelection): MaterialCost {
     return { kind: 'unavailable' };
   }
 
-  // Continuing the recipe the module already carries, or starting a new one.
-  // A replacement recipe is climbed from nothing because the grades already
-  // paid for belong to the recipe being replaced, not to this one.
-  const from = sameRecipe(fdname, selection.currentBlueprintFdname)
-    ? completedGrade(selection.currentGrade)
-    : 0;
-
-  const materials = getBlueprintCost(fdname, grade, from);
+  // The whole recipe, from stock to the selected grade. What the panel answers
+  // is "what does this engineering cost", which is a property of the recipe and
+  // the grade rather than of how far along the module happens to be — and since
+  // a choice commits as it is made, a figure for what is *left* would be zero
+  // every time it was read (wave 5, canvas 1c `MATERIALS · G5 · REQUIRED`).
+  const materials = getBlueprintCost(fdname, grade, 0);
   return materials === null ? { kind: 'unavailable' } : { kind: 'known', materials };
 }
 
 function experimentalCost(selection: EngineeringSelection): MaterialCost {
   const fdname = selection.effectFdname;
-  // Removing an effect is not a crafting job, and neither is keeping the one
-  // that is already applied. Both are "nothing to buy", not "nothing costed".
-  if (fdname === null || sameRecipe(fdname, selection.currentEffectFdname)) {
+  // Removing an effect is not a crafting job. That is "nothing to buy", not
+  // "nothing costed".
+  if (fdname === null) {
     return { kind: 'notSelected' };
   }
 
+  const purchase = selection.purchaseVariant;
+  if (purchase !== null && sameRecipe(fdname, purchase.experimental ?? null)) {
+    // The article as it arrived, exactly as the blueprint branch above treats
+    // the recipe it came with. A reward is bought, not crafted, and pricing the
+    // effect baked into it would quote a Commander for a job no engineer will
+    // do.
+    return { kind: 'notSelected' };
+  }
+
+  // What the effect costs, whether or not it is on the module already — the
+  // same rule the climb above follows, and for the same reason. Inline, a
+  // choice commits as it is made, so by the time anybody reads this figure the
+  // effect is always "already applied"; a cost that fell to nothing on being
+  // chosen was a list that never changed no matter what was picked (wave 9,
+  // canvas 1c `MATERIALS · G5 · REQUIRED`).
   const materials = getExperimentalEffectCost(fdname);
   return materials === null ? { kind: 'unavailable' } : { kind: 'known', materials };
 }
@@ -155,11 +166,6 @@ function combine(blueprint: MaterialCost, experimental: MaterialCost): CombinedC
     .map((part) => part.materials);
 
   return { kind: 'known', materials: lists.length === 0 ? [] : sumMaterials(...lists) };
-}
-
-/** The grade the climb starts above. Absent engineering has climbed nothing. */
-function completedGrade(grade: number | null): number {
-  return grade !== null && Number.isInteger(grade) && grade >= 1 && grade <= 5 ? grade : 0;
 }
 
 /** Package identities are compared the way the package matches them. */

@@ -3,6 +3,7 @@ import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 import { GameText } from '../components/game-text/game-text';
+import { MaterialGrade } from './material-grade';
 import { relationId } from '../a11y/text-equivalence';
 
 /** One material a job consumes, already resolved and formatted. */
@@ -41,16 +42,15 @@ export interface MaterialPartView {
  * (constitution VI).
  *
  * The canvas's rarity icons come from `edassets.org`. Nothing here reaches
- * another origin at runtime (constitution I), so each row carries the package's
- * own grade as text in the icon's place — the same fact, from the same source,
- * without the request.
+ * another origin at runtime (constitution I), so each row carries a mark drawn
+ * from the same idea instead — see `MaterialGrade`.
  *
  * Counts are in a description list so each number is associated with the
  * material it belongs to natively, rather than by sitting next to it.
  */
 @Component({
   selector: 'edsb-material-cost-list',
-  imports: [GameText],
+  imports: [GameText, MaterialGrade],
   templateUrl: './material-cost-list.html',
   styleUrl: './material-cost-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,22 +63,10 @@ export class MaterialCostList {
   /** The grade the heading names. `null` before one is chosen. */
   readonly grade = input<number | null>(null);
 
-  /** The article's Merc Coin price, formatted. Never joins a material list. */
-  readonly mercCoin = input<string | null>(null);
-
-  /** True when the module is a purchase whose baked engineering is not crafted. */
-  readonly fixedPurchase = input(false);
-
   readonly headingId = relationId('material-cost');
 
   readonly requiredLabel = this.#messages.messageSignal(
     'outfitting.engineering.materials.required',
-  );
-  readonly mercCoinLabel = this.#messages.messageSignal(
-    'outfitting.engineering.materials.merc-coin',
-  );
-  readonly notCraftedLabel = this.#messages.messageSignal(
-    'outfitting.engineering.materials.not-crafted',
   );
   readonly noneLabel = this.#messages.messageSignal('outfitting.engineering.materials.none');
   readonly unavailableLabel = this.#messages.messageSignal(
@@ -96,6 +84,11 @@ export class MaterialCostList {
   /** Only the parts that have something to say. A part nothing selected is not drawn. */
   readonly shown = computed(() => this.parts().filter((part) => part.state !== 'notSelected'));
 
+  /** The canvas heads the list once. Two headings only where there are two lists. */
+  readonly namesParts = computed(
+    () => this.shown().filter((part) => part.materials.length > 0).length > 1,
+  );
+
   partLabel(part: MaterialPart): string {
     return this.#messages.message(
       (
@@ -106,10 +99,5 @@ export class MaterialCostList {
         } as const satisfies Record<MaterialPart, MessageKey>
       )[part],
     );
-  }
-
-  /** The package's rarity grade, said in words for anyone who cannot see it. */
-  gradeLabel(grade: number): string {
-    return this.#messages.message('outfitting.engineering.materials.grade', { grade });
   }
 }
