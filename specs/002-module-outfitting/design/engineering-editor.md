@@ -24,8 +24,8 @@ package material requirements. Draft changes do not mutate the active build unti
   at are drawn **striped and pressable**: a bespoke Mercenary table begins at grade 2, the article
   was bought at grade 1, and that grade is one the article really has (wave 5, wave 6).
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect — drawn
-  only once a recipe is chosen. An effect menu, a `MATERIALS` heading or an "Almanac resolves no
-  values" line standing over an empty selection is a section about nothing (wave 4).
+  only once a recipe is chosen. An effect menu, a `MATERIALS` heading or a "no values are
+  resolved" line standing over an empty selection is a section about nothing (wave 4).
 - Where the mount has **no recipe to offer and none already on it**, the panel is **still drawn**,
   and what it says is that there is no engineering for this mount (wave 9, reversing wave 5).
   **Ruled 2026-08-22 (wave 9):** that condition is the recipe list alone, not the recipe list _and_

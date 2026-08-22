@@ -102,11 +102,11 @@ describe('unavailable fact', () => {
     const fixture = renderComponent(UnavailableFact, {
       label: 'Weapon draw',
       value: null,
-      reason: 'The Almanac reports no value.',
+      reason: 'No value is reported.',
     });
 
     const absence = query(fixture, '.unavailable');
-    expect(describedText(absence)).toContain('The Almanac reports no value.');
+    expect(describedText(absence)).toContain('No value is reported.');
   });
 });
 

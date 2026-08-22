@@ -875,7 +875,7 @@ registerPreview({
       {
         kind: 'unavailable',
         label: 'Total range',
-        reason: 'The Almanac supplies no value for this.',
+        reason: 'No value is available for this.',
       },
       [
         'the absence is stated in words rather than as a zero or a dash',
@@ -1535,7 +1535,7 @@ registerPreview({
     ),
     state(
       'empty',
-      { label: 'Hull specifications', facts: [], emptyLabel: 'The Almanac supplies no figures.' },
+      { label: 'Hull specifications', facts: [], emptyLabel: 'No figures are available.' },
       ['says there is nothing rather than rendering an empty list'],
     ),
     notApplicable(
@@ -2105,7 +2105,7 @@ registerPreview({
       {
         state: 'refused',
         refusal: {
-          message: 'This build link names a hull or module the installed Almanac does not carry.',
+          message: 'This build link names a hull or module that is not available here.',
           detail: 'The mount involved is Slot03_Size6.',
         },
         slefAvailable: false,
@@ -2700,7 +2700,7 @@ registerPreview({
       'default',
       {
         sections: candidateSections(FIXTURE_SLOTS.hardpoint),
-        label: 'Modules the Almanac offers for this mount',
+        label: 'Modules offered for this mount',
         fittedSymbol: null,
         selectedKey: null,
       },
@@ -2715,7 +2715,7 @@ registerPreview({
       'empty',
       {
         sections: candidateSections(FIXTURE_SLOTS.hardpoint, 'zzzz nothing'),
-        label: 'Modules the Almanac offers for this mount',
+        label: 'Modules offered for this mount',
         fittedSymbol: null,
         selectedKey: null,
       },
@@ -2865,8 +2865,7 @@ registerPreview({
       {
         choices: [blueprintChoice('RailGun_LongShot', 'Long Shot', 'mercenary', true)],
         selected: 'none',
-        clearConsequence:
-          'This also removes the Almanac’s record of the module as a purchased article.',
+        clearConsequence: 'This also removes the record of the module as a purchased article.',
       },
       ['the loss of purchase identity is disclosed on the option that would cause it'],
       ['normal', 'expanded-copy', 'rtl'],

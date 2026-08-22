@@ -81,6 +81,14 @@ var(--amber-a22)` — the page's ground for ink on solid amber, with an amber ri
 carry those nodes are not built yet, so the ledger badge is the only hardpoint number the product
 draws and the treatment belongs on it. It moves onto the plates with the numbers when they land.
 
+It takes **every kind of mount, empty included**. The canvas paints a node from its `kind` — dashed
+and withdrawn for `empty`, cyan for a utility, amber for a fitted hardpoint — but checks the
+selected branch first and lets it take all of them: `color = on ? '#0b0b0c' : (util ? … : empty ? …
+  : …)`. Our empty rule matched at the same specificity as the selected one and sat after it in the
+sheet, so it won, and an empty mount was the one row whose marker never said it was the selected
+one — the row a Commander is most often looking for. The empty treatment is now scoped to rows that
+are not selected (wave 9).
+
 **Ruled 2026-08-22 (wave 9).** The workspace is **flush to the window and to the bar above it** —
 no page inset of any kind. Both wide canvases hold the top bar and the region grid as direct children
 of the page ground with nothing between them, and every region inside carries its own padding. The
@@ -149,8 +157,8 @@ Every package slot shows:
   number the ledger draws beside the row, then the class. The package's slot name counts _huge_
   hardpoints rather than hardpoints, so it names a different mount from the one the ledger marked
   (wave 6);
-- where the Almanac reports a mount as taking no other module — the cargo hatch — the fitting panel's
-  head carries canvas 1d's own hairline `FIXED` chip after its rule. The Almanac's full reason stays
+- where a mount takes no other module — the cargo hatch — the fitting panel's
+  head carries canvas 1d's own hairline `FIXED` chip after its rule. The full reason stays
   as text for a reader, but a sentence is not what the canvas draws and, drawn only for a reader, the
   bench for that mount was a title over an empty panel (wave 7);
 - kind/size/restriction when available;

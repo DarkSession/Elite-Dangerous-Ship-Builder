@@ -362,8 +362,8 @@ test.describe('engineering costs', () => {
     // made — so an empty list here is a defect, not a discount (wave 5).
     const materials = page.locator('.materials');
     await expect(materials.locator('.material').first()).toBeVisible();
-    await expect(materials).not.toContainText(/prices no materials/i);
-    await expect(materials).not.toContainText(/publishes no material cost/i);
+    await expect(materials).not.toContainText(/no materials are priced/i);
+    await expect(materials).not.toContainText(/no material cost is published/i);
   });
 
   test('marks which way each figure moved, and says so in words', async ({ page }) => {

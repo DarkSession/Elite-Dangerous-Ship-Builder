@@ -294,8 +294,8 @@ describe('material cost list', () => {
     // package failing to price a job, and the row says so rather than reading
     // as a free upgrade (wave 5).
     const text = textOf(element(fixture));
-    expect(text).toContain('prices no materials');
-    expect(text).not.toContain('publishes no material cost');
+    expect(text).toContain('No materials are priced');
+    expect(text).not.toContain('No material cost is published');
   });
 
   it('shows an unavailable cost as unavailable, never as a zero', () => {
@@ -305,8 +305,8 @@ describe('material cost list', () => {
     });
 
     const text = textOf(element(fixture));
-    expect(text).toContain('publishes no material cost');
-    expect(text).not.toContain('prices no materials');
+    expect(text).toContain('No material cost is published');
+    expect(text).not.toContain('No materials are priced');
   });
 
   it('draws nothing for a part nothing is selected for', () => {

@@ -52,10 +52,10 @@ describe('FactList', () => {
     const fixture = renderComponent(FactList, {
       label: 'Hull specifications',
       facts: [],
-      emptyLabel: 'The Almanac supplies no figures for this hull.',
+      emptyLabel: 'No figures are available for this hull.',
     });
 
-    expect(textOf(element(fixture))).toContain('The Almanac supplies no figures');
+    expect(textOf(element(fixture))).toContain('No figures are available');
   });
 });
 

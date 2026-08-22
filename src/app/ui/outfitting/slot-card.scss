@@ -152,7 +152,14 @@
   box-shadow: 0 0 0 var(--edsb-space-2xs) var(--edsb-palette-amber-a22);
 }
 
-.slot:has(.slot__empty) .slot__node {
+// Only while it is not the selected one. The canvas paints the node from its
+// `kind` — `empty` gets the dashed edge and the withdrawn ink — but the selected
+// branch is checked first and takes every kind: `color = on ? '#0b0b0c' : (util
+// ? … : empty ? … : …)`. Without the guard this rule matched at the same
+// specificity as the selected one and, sitting after it, won — so selecting an
+// empty mount left its number dashed and faint, the one row-marker that never
+// showed which row was selected (wave 9).
+.slot:not([data-selected='true']):has(.slot__empty) .slot__node {
   border-style: dashed;
   border-color: var(--edsb-border-strong);
   color: var(--edsb-text-faint);

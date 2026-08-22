@@ -394,6 +394,14 @@ and are served from `assets/`, so the mark a Commander sees is the mark the game
 redrew the rarity mark from the idea of it — a hexagon with one blade per grade — which is a
 different icon wearing the same description, and was withdrawn.
 
+**Voice, ruled 2026-08-22 (wave 9).** Commander-facing copy no longer names the Almanac. The
+package is the source of every figure and every refusal, and the design's own drawings state facts —
+`FIXED`, `There is no engineering for this mount.` — without crediting a dependency for them. Naming
+it made a library the speaker of sentences about a Commander's ship, and the credit belongs in the
+provenance statement feature 012 owns, once per application rather than in thirty strings. The name
+stays in code comments, spec prose and diagnostics that never reach a screen, because there it says
+which system is being described.
+
 ## Released API constraint
 
 Visual implementation consumes the released Almanac operations in

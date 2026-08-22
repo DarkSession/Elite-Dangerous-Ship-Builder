@@ -311,6 +311,43 @@ test.describe('the slot ledger', () => {
     expect(nodes.every((node) => /^\d+$/.test(node))).toBe(true);
   });
 
+  test('marks an empty mount as selected the same way it marks a fitted one', async ({ page }) => {
+    // The canvas paints the node from its kind — dashed and withdrawn for
+    // `empty`, amber for a fitted mount — but checks the selected branch first
+    // and takes every kind: `color = on ? '#0b0b0c' : (util ? … : empty ? … )`.
+    // Our empty rule matched at the same specificity and sat after the selected
+    // one, so it won, and the one row a Commander is most often looking for was
+    // the one row whose marker never said it was selected (wave 9).
+    await openStockBuild(page);
+
+    const ink = (key: string) =>
+      page.locator(`[data-slot-key="${key}"] .slot__node`).evaluate((element) => {
+        const style = getComputedStyle(element);
+        return `${style.color} on ${style.backgroundColor}`;
+      });
+
+    // Only a hardpoint carries a node number, so both mounts are read off the
+    // rows that actually draw one.
+    const keyed = (selector: string) =>
+      page
+        .locator(selector)
+        .first()
+        .evaluate(
+          (element) => element.closest('[data-slot-key]')?.getAttribute('data-slot-key') ?? '',
+        );
+    const empty = await keyed('.slot:has(.slot__node):has(.slot__empty)');
+    const filled = await keyed('.slot:has(.slot__node):not(:has(.slot__empty))');
+    expect(empty).not.toBe('');
+    expect(filled).not.toBe('');
+
+    await selectMount(page, filled);
+    const marked = await ink(filled);
+    expect(await ink(empty)).not.toBe(marked);
+
+    await selectMount(page, empty);
+    expect(await ink(empty)).toBe(marked);
+  });
+
   test('is accessible in every rendered ledger state', async ({ page }, testInfo) => {
     await openStockBuild(page);
     await sweepOutfittingState(page, testInfo, 'ledger');

@@ -40,12 +40,12 @@ export class StockBuildCreator {
   #construct(symbol: string): CandidateOutcome {
     const ship = getShipBySymbol(symbol);
     if (ship === null) {
-      return { ok: false, reason: `The installed Almanac carries no hull "${symbol}".` };
+      return { ok: false, reason: `This installation carries no hull "${symbol}".` };
     }
     if (getDefaultLoadout(ship.symbol) === null) {
       return {
         ok: false,
-        reason: `The installed Almanac carries no default loadout for "${ship.symbol}".`,
+        reason: `This installation carries no default loadout for "${ship.symbol}".`,
       };
     }
 

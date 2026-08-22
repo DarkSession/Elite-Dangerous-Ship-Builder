@@ -94,11 +94,11 @@ describe('UnavailableValue', () => {
 
   it('includes a known reason in the stated value', () => {
     const fixture = renderComponent(UnavailableValue, {
-      reason: 'The Almanac supplies no value for this.',
+      reason: 'No value is available for this.',
     });
 
     expect(textOf(query(fixture, '.unavailable__text'))).toContain(
-      'The Almanac supplies no value for this.',
+      'No value is available for this.',
     );
   });
 

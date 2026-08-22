@@ -183,7 +183,7 @@ export class BuildLinkCoordinator {
       this.#failure.set(failure);
       return {
         ok: false,
-        reason: `The installed Almanac carries no hull "${loadout.shipSymbol}".`,
+        reason: `This installation carries no hull "${loadout.shipSymbol}".`,
       };
     }
 
