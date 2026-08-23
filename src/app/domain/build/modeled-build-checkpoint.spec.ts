@@ -105,7 +105,7 @@ describe('modelled build checkpoint', () => {
     if (!restored.ok) {
       return;
     }
-    expect(restored.loadout.retailCredits()).toEqual(build.retailCredits());
+    expect(restored.loadout.buildCost().credits).toEqual(build.buildCost().credits);
   });
 
   it('blocks on an impossible restore rather than returning a near miss', () => {

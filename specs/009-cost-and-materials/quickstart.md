@@ -43,13 +43,13 @@ Playwright project without skips or quarantine.
 
 ## Scenario 1: the COST block
 
-Open an active build and compare the four rendered rows to one captured `retailCredits()` result.
+Open an active build and compare the four rendered rows to one captured `buildCost().credits`
+result.
 
 Expected:
 
 - Hull and Modules equal the package's numeric fields after locale parsing;
-- `TOTAL` equals the package `hull` plus the package `modules`, and is asserted against those two
-  package values rather than a hand-written literal;
+- `TOTAL` equals the package `total` field;
 - the rebuy row shows the package's `rebuy`, labelled `REBUY 5%` with fixed canvas text;
 - the four rows appear in canvas order: Hull, Modules, `TOTAL`, `REBUY 5%`;
 - historical purchase values do not enter state or appear in the interface.
@@ -60,20 +60,20 @@ slot action. This silence is ruled (F) and is what the canvas draws.
 
 ## Scenario 2: the Merc Coin row
 
-Fit one and then several package-recognized Mercenary articles.
+Create builds whose package `buildCost().mercCoins` result is zero and non-zero.
 
 Expected:
 
-- recognition comes only from `preEngineeredVariant.acquisition === 'mercenary'`;
-- one `Merc Coins` row appears as the last row of the materials block, carrying one `mercCoinCost()`
-  result;
+- applicability comes only from the package total, never application inspection of identities;
+- one `Merc Coins` row appears as the last row of the materials block, carrying the literal
+  `buildCost().mercCoins` result;
 - the figure is excluded from the material-type and unit counts;
 - credits and Merc Coin are never summed, converted or compared;
 - later purchase-route grades retain the package's current catalogue Merc Coin cost.
 
-With no recognized article: the row is absent, no zero appears in its place, and `mercCoinCost()` is
-never called. Clear or replace engineering until recognition is lost and confirm the row disappears
-with no retained purchase history.
+With a zero package total, the row is absent and no zero appears in its place. Clear, replace or
+change engineering until the total returns to zero and confirm the row disappears with no retained
+purchase history.
 
 ## Scenario 3: the MATERIALS block
 
@@ -82,7 +82,7 @@ experimental effects.
 
 Expected:
 
-- consolidated order, symbol and count equal the literal `sumMaterials(...)` result;
+- consolidated order, symbol and count equal the literal `buildCost().materials` result;
 - every consolidated row is shown — no truncation, no top-N cut;
 - each row shows a package rarity marker, the package-localised name and the locale-formatted
   quantity;

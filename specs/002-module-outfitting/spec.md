@@ -39,6 +39,18 @@ its ship name and ident — belongs here.
   keyboard operation out of scope, and MUST NOT be the only route to search. Its hint is
   application-owned text: localized, and named for the Commander's platform.
 
+### Session 2026-08-23
+
+- Q: Is a module family the group of choices sharing a displayed package module name, or the
+  Almanac's own family taxonomy? → A: The Almanac's. `@elite-dangerous-almanac/core` 0.1.7 gives
+  every module an `OutfittingModuleIdentity.familyId` and publishes a localized name for it. The
+  family is that package value; the application groups by it and never derives one. Both outfitting
+  canvases draw a family holding two differently named articles — `Plasma Accelerator · Fixed` and
+  `Plasma Accelerator · Advanced` — which a display-name group cannot produce.
+- Q: Do the standard and unique-reward sections survive as a grouping level above families? → A: No.
+  Both canvases withdrew them. Families are the only grouping level, and a unique reward is marked by
+  its own row label inside its family. The acquisition labels themselves are unchanged.
+
 ## User Scenarios
 
 ### Story 1 — Fit modules (P1)
@@ -51,12 +63,18 @@ its ship name and ident — belongs here.
 
 ### Story 2 — Find a replacement (P1)
 
-1. Choices are grouped by module name, then class descending and package rating order ascending;
-   stock precedes variants and unique rewards form a final section.
-2. Every whitespace-separated search term must match at least one of name, class, rating or weapon
+1. Choices are grouped into collapsible families in the Almanac's own family order, then by displayed
+   module name, class descending and package rating order ascending; stock precedes variants, and a
+   unique reward is labelled where it sits rather than moved to a section of its own.
+2. When a fitted module has an available family, that family alone is open by default; otherwise all
+   families are closed. A Commander can open or close any family without editing the build.
+3. Every whitespace-separated search term must match at least one of name, class, rating or weapon
    mount type as a case- and accent-insensitive substring; a choice matches only when every term does.
-3. No matches shows an empty result with a clear-search action.
-4. Acquisition and entitlement restrictions remain visible before and after fitting.
+   Presenting changed search results opens every family containing a match where the match set is
+   within a screenful, and otherwise leaves them closed with their counts; either way no family
+   holding a match is absent.
+4. No matches shows an empty result, cleared from the search field itself.
+5. Acquisition and entitlement restrictions remain visible before and after fitting.
 
 ### Story 3 — Engineer and power a module (P1)
 
@@ -111,14 +129,36 @@ its ship name and ident — belongs here.
   experimental effect, and clearing all ordinary engineering exactly as the package permits.
   Removing only the effect MUST preserve the blueprint and grade. Availability, modified attributes
   and restrictions on further engineering MUST come from the package.
+- **FR-012a**: The engineering surface MUST present every numeric attribute the package publishes on
+  the fitted article, and only those the article itself carries. It MUST NOT present a chosen subset,
+  and MUST NOT invent, derive or estimate an attribute the package does not publish. Attribute labels
+  are application-localized; the package's own field identities MUST NOT reach a screen. The stock
+  reading MUST be shown whether or not the module is engineered; the modified reading MUST be shown
+  exactly when there is a selection or existing engineering to compare against, and a selection the
+  package refuses MUST remain unavailable rather than becoming a comparison. A published boot time of
+  zero MUST NOT be drawn: it is a real reading that reports no delay, and a row stating it tells a
+  Commander nothing. No other published figure may be suppressed, and a zero elsewhere is data. The
+  module's purchase cost is not an attribute and MUST NOT be presented as one: it is stated by the
+  choice row it is bought from and totalled for the build, not by what the article does. Attributes
+  MUST be presented for every fitted article, including one the package will accept no further
+  engineering for.
+- **FR-012b**: Where the surface draws the details and the engineering side by side, each side MUST
+  scroll independently. Reaching the end of the attribute table MUST NOT carry the recipe controls
+  off the surface. Both sides MUST keep their positions for every fitted article: where there is
+  nothing to engineer, the side that would carry the controls MUST state why, and the attributes
+  MUST stay on the side they occupy otherwise.
+- **FR-012c**: The engineering surface MUST NOT draw a materials list of its own. Material
+  requirements are stated once, as the build-wide total feature 009 draws in the status rail; that
+  total already includes what a selected recipe adds, so no figure is lost by the omission.
 - **FR-013**: Every selected ordinary grade MUST represent 100% quality. Partial imported quality on
   each supported resolved module MUST be normalised to 100% through the package and reported. If the package cannot resolve the
   engineering identity or otherwise cannot complete the grade losslessly, the entire incoming build
   MUST be refused before activation, the current build MUST remain unchanged, and the refusal MUST
   identify the affected slot and engineering identity. The application MUST NOT change only its
   quality scalar, strip engineering, retain the partial roll or fabricate modifiers.
-- **FR-014**: Engineering material costs MUST use package cost results. Fixed pre-engineering MUST
-  add no craft cost unless the package reports separately selected ordinary engineering.
+- **FR-014**: Engineering material costs MUST use package cost results, wherever they are stated.
+  Fixed pre-engineering MUST add no craft cost unless the package reports separately selected
+  ordinary engineering.
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
   MUST use the Commander's one-based priority labels.
 - **FR-016**: Undo and redo MUST restore all modelled fields exactly, recompute package results and
@@ -136,6 +176,39 @@ its ship name and ident — belongs here.
   MUST NOT hold a second copy of it, and a record's local identity remains independent of it
   (001 FR-008). An unnamed build MUST present an empty name rather than a hull-derived placeholder
   shown as a value.
+- **FR-020**: Available replacement choices MUST be presented as collapsible module families, which
+  are the only grouping level in the chooser. A choice's family MUST be the Almanac's own
+  `familyId` for that module, and its name MUST be the Almanac's localized family name; the
+  application MUST NOT derive, abbreviate, translate or override either. A variant takes the family
+  of the module it is built on. Every available choice MUST appear in exactly one family.
+- **FR-021**: When replacement choices are first presented or rebuilt, the family containing the
+  exact fitted stock or variant choice MUST be open and every other family MUST be closed. If no
+  available family contains that exact fitted choice, every family MUST be closed. Opening or closing
+  a family is view state only and MUST NOT edit the build or enter edit history.
+- **FR-022**: A Commander MUST be able to open and close each module family. Each family control MUST
+  expose its localized family name, available-choice count and open or closed state to sighted and
+  screen-reader users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.
+- **FR-023**: Applying or changing a non-empty replacement search MUST leave families without matches
+  absent. Where the search matched no more than a screenful of choices it MUST open every family
+  containing at least one matching choice; where it matched more, it MUST leave every family closed,
+  each still stating how many of the matches it holds, so the Commander narrows or opens the one they
+  want rather than being handed hundreds of rows. A Commander MAY then open or close any family.
+  Clearing the search MUST restore the default family state from FR-021.
+- **FR-024**: A unique-reward or otherwise route-restricted choice MUST be identified by its existing
+  acquisition and entitlement labels on its own row, inside its family. The chooser MUST NOT present
+  a separate standard or unique-reward section, and the removal of those sections MUST NOT remove or
+  weaken any label FR-006 requires.
+
+## Assumptions
+
+- "Family" is the Almanac's `OutfittingModuleIdentity.familyId` and its published family name, not a
+  weapon, manufacturer or application-owned classification, and not the displayed module name.
+- The Almanac names all 77 families in English and 58 of them in each other supported language. A
+  family with no name in the active language is presented under the existing canonical-text rule with
+  the untranslated disclosure already used for module names; it is never left blank or shown as a
+  raw id.
+- "Open by default" applies whenever the replacement choices are first presented or rebuilt. Manual
+  family changes are temporary viewing state and do not persist after that default is restored.
 
 ## Edge Cases
 
@@ -146,6 +219,13 @@ its ship name and ident — belongs here.
 - Loading, editing, undoing or redoing a build never restores a historical purchase price; current
   cost is recalculated from the Almanac catalogue (FR-016).
 - A module appearing through multiple acquisition routes remains one package variant per route.
+- The fitted module can have no available family after package restrictions change; in that case no
+  unrelated family is opened as a substitute.
+- A fitted unique-reward variant opens the family of the module it is built on; there is no separate
+  unique-reward section for it to open instead.
+- Changing locale relabels families and reorders choices within them without changing family
+  membership, which is a package id rather than a name, and reapplies the fitted-family default.
+- A family whose name the active language does not carry still groups, counts and opens normally.
 - Clearing Mercenary engineering can remove the package's ability to identify the purchased variant;
   the application follows the resulting package state.
 
@@ -169,3 +249,13 @@ No game rule, value or variant-recognition heuristic is application-owned.
 - **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.
 - **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
   100%; every unsupported partial-quality candidate is rejected without changing the active build.
+- **SC-006**: Across desktop, tablet and mobile, 100% of available replacement choices appear in
+  exactly one Almanac family, and opening or closing a family never changes the build.
+- **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
+  open on initial presentation and after a rebuild; when it has none, zero families are open.
+- **SC-008**: Every choice matching a newly applied or changed non-empty search is either visible
+  without the Commander opening a family manually, or counted on the closed family that holds it;
+  no family holding a match is ever absent, and clearing the search restores the fitted-family
+  default.
+- **SC-009**: Every family name and every family membership on screen is a value the installed
+  Almanac published; no family id, count or label is computed from module text.

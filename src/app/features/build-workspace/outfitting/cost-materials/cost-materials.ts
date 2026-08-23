@@ -10,10 +10,7 @@ import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { GameText } from '../../../../ui/components/game-text/game-text';
-import {
-  sortMaterialLines,
-  type MaterialLineView,
-} from '../../../../ui/outfitting/material-cost-list';
+import { sortMaterialLines, type MaterialLineView } from '../../../../ui/outfitting/material-lines';
 import { MaterialGrade } from '../../../../ui/outfitting/material-grade';
 
 /** One row of the `COST` block: a label, a figure, and how the canvas weights it. */
@@ -134,10 +131,20 @@ export class CostMaterials {
    */
   readonly creditsUnit = this.#messages.messageSignal('cost-materials.cost.unit');
 
-  /** `14 BLUEPRINTS`, opposite the materials heading. `null` when the block is absent. */
+  /**
+   * `14 BLUEPRINTS`, opposite the materials heading.
+   *
+   * `null` when the block is absent, and `null` again at zero. The count is
+   * walked from each module's own committed recipe while the rows beside it are
+   * the package's aggregate over the whole build; the two ask different
+   * questions, so a build where the package lists materials and no committed
+   * recipe prices them is reachable. `0 BLUEPRINTS` over a full shopping list
+   * is a plausible-looking figure for something nobody counted, and a note that
+   * is absent says nothing rather than something wrong (constitution IV).
+   */
   readonly blueprintCount = computed(() => {
     const materials = this.#projection()?.materials ?? null;
-    return materials === null
+    return materials === null || materials.blueprints === 0
       ? null
       : this.#messages.message('cost-materials.materials.blueprints', {
           count: this.#formatters.integer(materials.blueprints),

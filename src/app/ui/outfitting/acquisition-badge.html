@@ -1,17 +1,56 @@
 @if (rendered().length > 0) {
-  <ul class="acquisition" [attr.aria-label]="groupLabel()">
+  <!--
+    Deliberately unlabelled. An `aria-label` here would be the name of every
+    restriction under it rather than a heading over them: an accessible name
+    computed from content takes a descendant's label *in place of* that
+    descendant's own text, so a ledger row inside a button announced
+    "How this module is obtained" and never "Sold only to a pledged commander by
+    their power." The icon is the only carrier a sighted Commander has, so the
+    sentence is the only carrier anyone else has, and nothing may stand in front
+    of it (constitution V).
+  -->
+  <ul class="acquisition">
     @for (label of rendered(); track label.kind + label.packageValue) {
       <li class="acquisition__item">
         <!--
-          Both canvases draw exactly two markers on a restricted row: the cool
-          `REWARD ONLY` chip, and the Merc Coin icon beside the module's name.
-          Every other restriction is real and is carried in the sentence, which
-          is here whether or not it is drawn — the invisible floor, rather than
-          a row of chips the reference does not have (design-canvas rule).
+          Both canvases draw exactly two markers on a restricted row: the icon
+          of the route the article is earned through, and the Merc Coin icon
+          beside the module's name. Every other restriction is real and is
+          carried in the sentence, which is here whether or not it is drawn —
+          the invisible floor, rather than a row of chips the reference does not
+          have (design-canvas rule).
+
+          `alt` is empty on both because the sentence beside them says the same
+          thing in words: a marker and its own caption read as two restrictions
+          where there is one.
         -->
         @switch (label.marker) {
-          @case ('reward') {
-            <span class="acquisition__chip acquisition__chip--reward">{{ label.short }}</span>
+          @case ('communityGoal') {
+            <img
+              class="acquisition__route"
+              src="assets/icons/community-goal.svg"
+              alt=""
+              width="14"
+              height="14"
+            />
+          }
+          @case ('powerplay') {
+            <img
+              class="acquisition__route"
+              src="assets/icons/powerplay.svg"
+              alt=""
+              width="14"
+              height="14"
+            />
+          }
+          @case ('techBroker') {
+            <img
+              class="acquisition__route acquisition__route--broker"
+              src="assets/icons/tech-broker.svg"
+              alt=""
+              width="14"
+              height="14"
+            />
           }
           @case ('mercCoin') {
             <img

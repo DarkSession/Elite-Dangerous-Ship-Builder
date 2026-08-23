@@ -75,8 +75,9 @@ Expected:
 2. Compare choice membership to `modulesForSlot(slotKey)` plus every
    `getPreEngineeredVariants(symbol)` result.
 3. Use a module with multiple route-distinct variants.
-4. Verify standard and final unique-reward sections, name groups, class descending, rating ascending,
-   stock-before-variant and deterministic ties.
+4. Verify package family grouping and order, and inside a family: name groups, class descending,
+   rating ascending, stock-before-variant and deterministic ties. Confirm no section heading is drawn
+   and that a unique reward sits in the family of the module it is built on.
 5. Search with mixed case, accents and multiple whitespace-separated terms spanning name, class,
    rating and mount.
 6. Enter a no-match query and clear it.
@@ -86,12 +87,41 @@ Expected:
 Expected:
 
 - exact package membership with no deduplication or local fit candidates;
-- community-goal/event-reward variants form the final section;
+- community-goal/event-reward variants sit in their own module's family and keep their labels there;
+- every family id and name on screen came from the installed package, with no abbreviation and no
+  local rewriting of its text;
 - Mercenary/tech-broker and entitlement labels stack correctly;
 - every search term matches one of exactly four fields; symbols/stats/acquisition do not match;
 - no-match is explicit and clear restores all results;
 - result rendering settles under 100 ms for the installed package's measured maximum choice set,
   measured in the Chromium timing project at the mobile viewport under 4x CPU throttling.
+
+## 4a. Open, close and seed module families
+
+1. Open a mount whose fitted module is offered again as a choice, and confirm that its family alone is
+   open and every other family is closed.
+2. Open a mount whose fitted module has no available family — one where package restrictions have
+   withdrawn it — and confirm every family is closed and no unrelated family is opened in its place.
+3. Toggle several families open and closed by pointer and by touch. Read the build revision and the
+   undo/redo state before and after.
+4. Type a query matching choices in more than one family, then extend it so it matches in only one.
+   4b. Type a single letter, so the query matches more than a screenful, and read the family counts.
+5. Clear the query.
+6. Switch the active locale, including to one the package does not name every family in.
+7. Fit a different module, so the chooser rebuilds.
+
+Expected:
+
+- exactly one open family, or none, on first presentation and after each rebuild;
+- toggling changes no build revision, adds no history step and leaves undo/redo exactly as it was;
+- every family holding a match is present and counted on each query change and families without a
+  match are absent; where the match set is within a screenful every one of them is open and no
+  matching row is behind a closed control, and where it is larger every one of them is closed;
+- clearing the query restores the fitted-family seed rather than the set the Commander left open;
+- a locale change relabels and reorders without moving a choice between families, and a family the
+  active language does not name shows its canonical English name with the untranslated disclosure;
+- each family control exposes its name, its current count and its open state to assistive technology,
+  and each clears 44 CSS px at every viewport.
 
 ## 5. Fit, replace, remove and refuse
 
@@ -209,7 +239,11 @@ normalization and history-disabled states:
 - verify no document horizontal overflow, 200% text and 400% zoom;
 - run expanded-message and RTL fixtures;
 - run reduced-motion mode and both orientations;
-- verify wide inline and narrow full-screen compositions expose identical capability.
+- verify wide inline and narrow full-screen compositions expose identical capability;
+- exercise family open/close in every project, including the compact `FITTED HERE` block above the
+  family list;
+- re-measure SC-002 against the largest choice set now that a collapsed family draws one control
+  instead of its rows, and record the figure whether or not it clears 100 ms.
 
 Conformance wording, wherever used, is: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
@@ -224,7 +258,34 @@ raw modifier rewrites and local fit/variant rules.
 Expected: the snapshot reconstruction and engineering regressions pass and the full suite is green
 once feature 001/011 prerequisites are present. A green subset is not feature completion.
 
-## Run record — 2026-08-22
+## Run record — 2026-08-23 (wave 10, module families)
+
+`pnpm run check` green end to end, the SC-002 timing step included for the first time since that
+criterion was written: 1,365 unit tests across 109 files at **83.42% statements, 83.04% branches,
+86.25% functions, 83.16% lines**; **3,410** Playwright tests across the ten-project matrix (Chromium
+and Firefox × desktop, tablet portrait/landscape, mobile portrait/landscape) with axe over every
+rendered state, including the seeded, fully open, searched, above-a-screenful and all-closed family
+states; the timing measurement; and 90 offline tests. No test is skipped, focused or quarantined —
+the policy checker fails the build on any of those forms.
+
+**SC-002 is met at the compact composition.** On the Panther Mk II's 478-choice mount at 390 px under
+4x CPU throttling, `m mu mul mult multi` settles at 50.4, 56.8, 33.0, 33.6, 33.5 ms against a 100 ms
+budget, over three consecutive runs at 59 ms worst or better. Collapsed families alone did not do it —
+they moved the cost to the first broad search term, which built the matching families' rows cold at
+538.7 ms. What closed it is the rule that a search opens what it matched only up to a screenful of
+twenty-five choices; above that the families stand closed with their counts. FR-023 and SC-008 are
+amended to that rather than bent around it, and the diagnosis is in `design/module-replacement.md`.
+
+Three defects the wave's own new scans found, all fixed in it: the layer's foot went on sticking over
+the list at short viewports because its release was written above the rule it overrode and a media
+query carries no specificity, so rows scrolled underneath `CANCEL` and `FIT MODULE` at 844×390; the
+sticky family bar showed a sliver of the row behind it in the seam above it at fractional device
+pixels, and now sticks a hairline high to cover it; and the compact `FITTED HERE` block put a second
+radio carrying this group's name and the fitted choice's value into the list, so only one of the two
+could be checked and the row a Commander had just taken could be painted as taken while reporting
+unchecked. The pinned block carries no control at all now, which is what canvas 1d draws.
+
+### Run record — 2026-08-22
 
 `pnpm run check` green end to end: 1,103 unit tests across 94 files at **83.05% statements, 82.27%
 branches, 85.88% functions, 82.58% lines**; **2,680** Playwright tests across the ten-project matrix
@@ -240,6 +301,7 @@ Each scenario above, and what executes it:
 | 2 Inspect every slot                     | `e2e/module-outfitting.spec.ts` "the slot ledger"; `slot-view.spec.ts`                                                                                                                |
 | 3 Verify fixed-mount construction        | `e2e/module-outfitting.spec.ts` "package-populated fixed mounts"; `fixed-mounts.spec.ts`                                                                                              |
 | 4 Build and search replacement choices   | `e2e/module-outfitting.spec.ts` "finding a replacement"; `candidate-query.spec.ts`; `e2e/outfitting-timing.spec.ts`                                                                   |
+| 4a Open, close and seed module families  | `e2e/outfitting-families.spec.ts`; `candidate-query.spec.ts`; `candidate-components.spec.ts`; `e2e/outfitting-accessibility.spec.ts` "in every family state"                          |
 | 5 Fit, replace, remove and refuse        | `e2e/module-outfitting.spec.ts` "the slot ledger"; `outfitting.store.spec.ts`                                                                                                         |
 | 6 Verify cargo hatch and power           | `e2e/module-outfitting.spec.ts` "power and the cargo hatch"; `outfitting-engineering.spec.ts`                                                                                         |
 | 7 Engineer ordinary and Mercenary        | `e2e/module-engineering.spec.ts`; `engineering-draft.spec.ts`; `engineering-cost.spec.ts`                                                                                             |

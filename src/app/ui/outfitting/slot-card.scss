@@ -107,6 +107,29 @@
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
 }
 
+// The hull anatomy marks utility mounts in the cool ink and hardpoints in the
+// amber, and this badge is a reference to that drawing — so it is marked the
+// same way, or the two numberings read as one.
+// The anatomy's own blue, carried into the ledger so the two drawings agree.
+// The canvas's `paintNodes` gives every unmarked node the one dark ground and
+// turns only the ink and the edge blue; the ground is washed with the same hue
+// here as well, because a Commander scanning forty rows for their utility
+// mounts is reading the box, not the two-digit number inside it (Commander
+// request, 2026-08-23 — recorded in the reference review as a departure).
+.slot__node[data-kind='utility'] {
+  background-color: var(--edsb-surface-info-quiet);
+  color: var(--edsb-text-info);
+  border-color: var(--edsb-border-info);
+}
+
+// The route icons sit on the module's name line, projected into the identity
+// badge: the canvas's ledger row is two lines and a third would be the compact
+// card's stack on a desktop. The sentences behind them stay read-only, as
+// everywhere.
+.slot__acquisition {
+  flex: none;
+}
+
 .slot__identity {
   @include layout.stack(var(--edsb-space-stack-tight));
 

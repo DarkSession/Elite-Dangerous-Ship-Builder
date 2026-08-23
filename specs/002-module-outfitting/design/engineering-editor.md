@@ -6,16 +6,48 @@
 ## Purpose
 
 Apply or replace package-supported ordinary engineering, change only an experimental effect, clear
-ordinary engineering, compare package-provided before/current candidate attributes and show exact
-package material requirements. Draft changes do not mutate the active build until confirmed.
+ordinary engineering, and compare package-provided before/current candidate attributes. Material
+requirements are feature 009's, stated once as a build-wide total in the status rail. Draft changes
+do not mutate the active build until confirmed.
 
 ## Wide composition
 
 - The editor is a **bordered box inside the bench**, as canvas 1c draws it: a hairline amber edge,
-  the panel's own ground inside it, and a ruled bar across the top carrying the tracked `ENGINEERING`
-  heading. What scrolls is the body under that bar, so the bar stays where the canvas puts it. A
-  heading floating over loose choices is not what the canvas draws (wave 7). The canvas's `CLEAR ✕`
-  at the far end of that bar stays withdrawn — see "Clearing engineering".
+  the panel's own ground inside it, and a ruled bar across the top carrying the tracked
+  `DETAILS AND ENGINEERING` heading. What scrolls is the body under that bar, so the bar stays where
+  the canvas puts it. A heading floating over loose choices is not what the canvas draws (wave 7).
+  The canvas's `CLEAR ✕` at the far end of that bar stays withdrawn — see "Clearing engineering".
+- **The panel is two halves, and the heading names both (wave 10, Commander request).** Canvas 1c's
+  `eng-grid` is `1.1fr 1fr`: the engineering on the left — the blueprint, the grade, the effect and
+  the shopping list those three decide — and the article's own attributes on the right. This
+  supersedes wave 8, which put the attribute table under the controls in the left column on the
+  reading that it was "the consequence of the three choices above it". The canvas draws it as the
+  other half of the panel, and it is no longer only a consequence: it is drawn for a module nothing
+  has been done to yet. Nothing else stands in either column: the material list that wave 9 put
+  under the controls was withdrawn in wave 11, below.
+- **The frozen family bar keeps its own top rule. Ruled 2026-08-23 (wave 11, Commander report).**
+  The bar is pulled two pixels above the scroller's edge to cover the sliver the browser's rounding
+  leaves between them, and the scroller clips what hangs over — which took the bar's own
+  `border-block-start` with it. A Commander reported watching the list scroll through the band that
+  rule had vacated.
+
+  The overhang stays: nothing painted _at_ the edge can close a seam that opens above it. A shadow
+  reaching up from a bar frozen at `inset-block-start: 0` was tried and does not work here, and the
+  reason it works for the hull manifest's frozen column head is written beside that rule — the head
+  is frozen under the document, which has no clip. This scroller has one, so the box has to
+  overhang and whatever is drawn in its first two pixels is forfeit. The rule is therefore drawn
+  **inside** the box, set in by exactly the overhang, so the clip lands on the bar's own ground and
+  the rule sits precisely on the scroller's edge once frozen. In flow it reads two pixels into the
+  bar rather than flush against its top; that is the whole price, and it is paid against the bar's
+  own gradient.
+
+- **Each half scrolls in its own column. Ruled 2026-08-23 (wave 11, Commander request).** Side by
+  side, one shared scroller still measured both halves against the taller of them: the attribute
+  table set the height, so reaching its end carried the recipe controls off the top with it. The
+  halves are read side by side and now scroll
+  that way, each bounded by the panel rather than by the other, and the rule the canvas draws between
+  them runs the whole height. Stacked, the two halves are one column and one scroller — which is
+  what the compact canvas draws, not a fault to correct.
 - Blueprint choices from `availableBlueprints()` with localized package/canonical disclosed names,
   drawn as canvas 1c draws them: one dropdown, its value in the canvas's amber. On a
   package-identified purchase the recipe is **stated rather than offered** — the article arrived
@@ -24,8 +56,24 @@ package material requirements. Draft changes do not mutate the active build unti
   at are drawn **striped and pressable**: a bespoke Mercenary table begins at grade 2, the article
   was bought at grade 1, and that grade is one the article really has (wave 5, wave 6).
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect — drawn
-  only once a recipe is chosen. An effect menu, a `MATERIALS` heading or a "no values are
-  resolved" line standing over an empty selection is a section about nothing (wave 4).
+  only once a recipe is chosen. An effect menu or a "no values are resolved" line standing over an
+  empty selection is a section about nothing (wave 4).
+- **The details half does not depend on the engineering half. Ruled 2026-08-23 (wave 11, Commander
+  request).** `DETAILS AND ENGINEERING` names two halves, and an article the package refuses to
+  engineer further still has every attribute it was catalogued with. The grid was gated on there
+  being choices left to make, so a final article — and a mount the Almanac offers no recipe for —
+  drew its restriction sentence over an empty panel. Both halves are now drawn for any fitted
+  article. The apply and revert controls stay with the choices: they act on a selection, and there
+  is none to act on.
+
+  **Amended 2026-08-23 (same wave, Commander request):** the panel keeps both columns even when one
+  of them has no controls in it. The first correction collapsed to a single column where there was
+  nothing to engineer, which put the sentence above the table and made the panel a different shape
+  for exactly the articles a Commander cannot predict — a final reward, the cargo hatch. The
+  restriction now takes the half the controls would have taken and the table stays in the half it
+  occupies on every other article, so the canvas's rule and the two column positions are the same
+  wherever the panel is opened.
+
 - Where the mount has **no recipe to offer and none already on it**, the panel is **still drawn**,
   and what it says is that there is no engineering for this mount (wave 9, reversing wave 5).
   **Ruled 2026-08-22 (wave 9):** that condition is the recipe list alone, not the recipe list _and_
@@ -44,57 +92,29 @@ package material requirements. Draft changes do not mutate the active build unti
 - The comparison both canvases draw, under the headings they use: `Stock` — the package's catalogue
   record for the fitted article, which on a recognised reward is that article's own record — against
   `Modified`, what the current selection would make of it. No locally interpreted better/worse arrows
-  (reference review, "Attribute column headings"). It sits in the **choices column**, directly under
-  the recipe, the grade bar and the effect menu and ruled off from them — not across the rule beside
-  the materials, where it read as a second list rather than as the consequence of the three choices
-  above it (wave 8).
-- **Ruled 2026-08-22 (wave 9).** The effect's cost is **what the effect costs**, whether or not the
-  module already carries it — the same rule the climb follows, and for the same reason. Inline a
-  choice commits as it is made, so by the time anyone reads the figure the effect is always "already
-  applied"; charging nothing for it made the material list unchanging whatever was picked. The one
-  exception is the effect a reward article **arrived** with, which is not a job any engineer will do —
-  exactly as the blueprint branch treats the recipe a reward came with.
-- **Ruled 2026-08-22 (wave 9).** Where there is **no requirement, there is no requirement region** —
-  no `MATERIALS · G1`, no `REQUIRED`, nothing. On an article bought rather than crafted there is no
-  job at the grade it was bought at, so a heading naming that grade headed an empty column. Nor is
-  there a rule above the heading: the requirement stands in its own column of canvas 1c's panel with
-  the choices beside it rather than above it, so the line was drawn across the top of a column with
-  nothing on the other side of it.
-- **One material list, not one per part. Ruled 2026-08-22 (wave 9), superseding the split this line
-  once specified.** The recipe and the effect are two halves of one job and a Commander gathers the
-  materials for it once; drawn as `BLUEPRINT PROGRESSION`, `EXPERIMENTAL EFFECT` and `TOGETHER` the
-  same material appeared three times with three different counts and only the last was worth acting
-  on. The list is the package's own `sumMaterials` fold of both halves, which is `unavailable`
-  whenever either half is — so the three states stay distinct and nothing is lost by drawing only it.
-  Its heading names the grade only, as the canvas draws it — `MATERIALS · G5`. The application models
-  a completed grade, never a roll, so no surface may call the recipe a roll (constitution IV,
-  FR-013).
-- **Ruled 2026-08-22 (wave 9).** Each part's materials are ordered **by rarity, then by name** —
-  commonest first, the order a Commander gathers a list in. The package returns a recipe's materials
-  in its own catalogue order, which is neither, so two grade-1 commons sat either side of a grade-5
-  rarity. A material the package grades no rarity for sorts **last**: an unknown rarity is not a low
-  one.
-- **Ruled 2026-08-22 (wave 9), reversing wave 5's own line for it.** The article's **Merc Coin shop
-  price is not in this panel at all.** It is the price of _buying_ the module, which the manifest row
-  it is bought from already states; at the foot of a job's shopping list it read as the price of that
-  job. At the purchase grade there is therefore nothing to draw — no job, no list — which is the same
-  answer the material cost gives there, and for the same reason: the article was bought, not crafted.
+  (reference review, "Attribute column headings"). Wave 8 put it in the **choices column** under the
+  three controls, reading it as their consequence; wave 10 moved it across the rule into `eng-right`,
+  where the canvas draws it and where it is also the article's own record before anything is chosen.
+  See "The panel is two halves" above.
+- **The panel prices no job. Ruled 2026-08-23 (wave 11, Commander request), superseding every
+  materials ruling this section once carried.** Canvas 1c's `eng-grid` holds the blueprint, the grade
+  and the experimental effect on the left and the article's attributes on the right, and nothing
+  else; the only `MATERIALS` block on either canvas is the build-wide one feature 009 draws in the
+  status rail. The panel's own list was this application's addition, and the design-canvas rule
+  removes it. Waves 5 and 9 spent four rulings on how to head it, how to fold its two halves, how to
+  order its rows and where to put the Merc Coin the climb bills; all four go with the list. The
+  rulings that survive them are feature 009's, because the rail draws the same materials for the same
+  build: `sortMaterialLines` still orders commonest first and still sorts an ungraded row last, and
+  `sortMaterialLines` stays in `ui/outfitting` rather than moving into the rail, because that order
+  is how a Commander gathers a shopping list and not how one block happens to sort.
 
-  **What the climb bills, closed 2026-08-22 by Almanac 0.1.5.** The figure this section once
-  recorded as missing now exists. `getBlueprintCost(fdname, grade, currentGrade)` returns a
-  `BlueprintCost` — the materials _and_ a `mercCoins` amount, weighted for the rolls exactly as the
-  material counts are — for the 25 recipes that charge the currency: the 21 bespoke grade-2–5 recipes
-  only a Mercenary article can be taken through, plus `FuelScoop_Efficiency` and the three
-  `*Laser_ThermalPlasmaConversion`. That closes
-  [#337](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/337), so the materials panel
-  draws the Merc Coin line the canvas gives it, on its own row under the list, in the Merc ink with
-  the coin beside it and the currency named in words.
-
-  It is not folded into anything. `sumMaterials` takes materials only — Merc Coin has no credit
-  equivalent and is not a material — so the panel adds the two halves' `mercCoins` itself and shows
-  no row at all where the total is `0`. An experimental effect bills none, which the package states
-  outright. The _purchase_ price stays out, for the reason ruled above: that is what buying the
-  module cost, and the manifest row it is bought from states it.
+  **Nothing is lost by the removal, and that was checked rather than assumed.** `buildCost()` folds in
+  both the Mercenary purchase price and every ordinary recipe that charges Merc Coin — including the
+  per-grade figure Almanac 0.1.5 added for the climb
+  ([#337](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/337)) — so the rail's one row
+  states a total that already contains what this panel used to state alone. What a Commander gives up
+  is the per-module breakdown: the rail says what the build needs, not what this grade would add.
+  That is the Commander's own call, made twice and in the canvas's favour.
 
 - **No apply and no revert.** Canvas 1c draws neither, and inline there is nothing for them to act
   on: a choice _is_ the decision as it is made, and undo is what takes it back. The controls belong
@@ -105,7 +125,7 @@ package material requirements. Draft changes do not mutate the active build unti
 
 - Full-screen layer inspired by canvas 1d with associated title/module description and inert
   background.
-- Blueprint, grade, effect, attributes and materials stack in semantic sections.
+- Blueprint, grade, effect and attributes stack in semantic sections.
 - Apply/cancel remain reachable without horizontal scrolling; clearing is the blueprint list's first
   option and needs no separate confirmable control
   where loss of Mercenary identity must be explained.
@@ -127,20 +147,20 @@ remain distinct outcomes.
 
 ## States
 
-| State                                | Required presentation and behavior                                                                                                                                                                                                                                                                                    |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unengineered, package menu present   | Blueprint first; no grade/effect until applicable; no quality control.                                                                                                                                                                                                                                                |
-| Ordinary engineered                  | Current fdname/grade/effect, package values and appropriate change/clear actions.                                                                                                                                                                                                                                     |
-| Mercenary article                    | Recipe stated, not offered. The purchase's own grade is a pressable cell however far the article has since been climbed. The _purchase_ price is not priced here — the manifest row it is bought from states it — but the Merc Coin a climb above that grade bills is, on the materials list's own row (0.1.5, #337). |
-| Fixed re-engineerable reward         | Fixed route/stats retained; only package-supported later operations.                                                                                                                                                                                                                                                  |
-| Final article                        | Package restriction and current fixed state visible; no apply/clear actions.                                                                                                                                                                                                                                          |
-| Empty/incomplete/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                                                                                                                                                                                                                         |
-| Known zero cost                      | A **defect signal**, not a state to design for. Engineering always costs materials, so an empty list from the package means the wrong thing was priced (wave 5).                                                                                                                                                      |
-| Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                                                                                                                                                                                                                      |
-| Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                                                                                                                                                                                                                 |
-| Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.                                                                                                                                                                                                    |
-| Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                                                                                                                                                                                                                 |
-| Package refusal                      | Structured localized error; current build/history unchanged.                                                                                                                                                                                                                                                          |
+| State                                | Required presentation and behavior                                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unengineered, package menu present   | Blueprint first; no grade/effect until applicable; no quality control.                                                                                                                                                                                                  |
+| Ordinary engineered                  | Current fdname/grade/effect, package values and appropriate change/clear actions.                                                                                                                                                                                       |
+| Mercenary article                    | Recipe stated, not offered. The purchase's own grade is a pressable cell however far the article has since been climbed. Nothing is priced in this panel at all: both the purchase price and the Merc Coin a climb bills are read off the rail's build total (wave 11). |
+| Fixed re-engineerable reward         | Fixed route/stats retained; only package-supported later operations.                                                                                                                                                                                                    |
+| Final article                        | Package restriction and current fixed state visible; no apply/clear actions.                                                                                                                                                                                            |
+| Empty/incomplete/cargo hatch/no menu | Explain package offers no engineering; no fabricated choices.                                                                                                                                                                                                           |
+| Known zero cost                      | A **defect signal**, not a state to design for. Engineering always costs materials, so an empty list from the package means the wrong thing was priced — a judgement that now belongs to feature 009's block (wave 5, wave 11).                                         |
+| Unavailable cost                     | Explain package has no cost result from `null`; never show zero.                                                                                                                                                                                                        |
+| Partial import normalized            | Workspace notice reports original quality and 100% result; editor shows only quality-1 current state.                                                                                                                                                                   |
+| Partial import refused               | Candidate never activates and this editor never opens; the owning ingress surface names exact affected identities.                                                                                                                                                      |
+| Stale draft                          | Refuse apply, rebuild current menus/state and retain no history step.                                                                                                                                                                                                   |
+| Package refusal                      | Structured localized error; current build/history unchanged.                                                                                                                                                                                                            |
 
 ## Clearing engineering
 
@@ -161,9 +181,35 @@ that `CLEAR ✕` created by existing at wide width only.
 
 - `stats`/`effectiveStats` and package modifiers are the only attribute values.
 - Missing `stats`, missing modifiers or missing fields render unavailable.
+- **Every attribute the article carries, ruled 2026-08-23 (wave 10, Commander request).**
+  `COMPARED_ATTRIBUTES` is every numeric field the Almanac publishes on a module, and the article's
+  own record decides which of them it has — a pulse laser lists thirteen, a power distributor a
+  different eleven. An earlier pass named six fields by hand, which was this application deciding
+  that a Commander engineering a frame shift drive did not need to see its optimal mass. `class` is
+  the one number left out: it is identity, drawn in the panel's own header as `HUGE MULTI-CANNON 4A`,
+  and no recipe changes it. Each field carries an application-owned localized label, because a
+  journal modifier name (`FSDOptimalMass`) has no translation anywhere in the Almanac.
+- **A boot time of zero is left off. Ruled 2026-08-23 (wave 11, Commander request).** The Almanac
+  publishes `bootTime: 0` on 244 modules, and it is a real reading — the module has no boot delay —
+  rather than a gap. `Boot time s 0` is still a row that tells a Commander nothing, and alphabetical
+  order put it at the top of the table on every weapon. It is dropped in the application, at the same
+  filter that drops a field the article does not carry, and the package is not asked to call it
+  absent. This is the only suppressed figure: a zero elsewhere is data, and a weapon whose published
+  damage is 0 is stating something.
+- **`cost` is not an attribute. Ruled 2026-08-23 (wave 11, Commander request).** It is what the
+  module costs to buy, not something the article does and not something a recipe moves. The manifest
+  row it is bought from already states it in the canvas's own `COST cr` column, and the rail totals
+  it for the whole build. It is left out for the same reason `class` is: identity and price are
+  facts about the article, and this table is what the article does.
+- **The table is drawn before anything is chosen, and gains its second column when something is.**
+  An unengineered mount is not an unresolved one: it has every attribute it was catalogued with, and
+  the panel is where they are read. `MODIFIED` appears only once there is something to compare
+  against — a column repeating the stock figures reads as a recipe that did nothing. The one
+  remaining unavailable case is a selection the package refuses. Before this, an unengineered module
+  reported that no values could be resolved for it, which was untrue of every one of them.
 - **Ruled 2026-08-22, reversing the earlier omission.** The canvas's ▲/▼ and its green/red are drawn.
   Which way is better is an application-owned table (`HIGHER_IS_BETTER`, beside `COMPARED_ATTRIBUTES`)
-  covering exactly the six attributes this surface compares, never the Almanac's unreliable
+  covering every attribute this surface compares, never the Almanac's unreliable
   `LessIsGood`. ▲ means _better_ and ▼ means _worse_ — not which way the number moved, which is how
   the canvas draws a power draw that rose. Colour is never the only carrier: the glyph and a
   `visually-hidden` word carry it too. Percentages and modified values are still never derived.
@@ -187,7 +233,6 @@ that `CLEAR ✕` created by existing at wide width only.
 - Each option exposes current/selected/unavailable state and associated route/restriction text.
 - Attribute comparison uses headers/definition relationships and never relies on column position or
   color alone.
-- Material counts have localized number/unit labels and accessible association to material names.
 - Status updates are polite; apply/refusal is announced once. Dialog/layer titles and descriptions are
   associated; background content is inert.
 - All controls meet 44 CSS px and work by touch/pointer, except the grade bar's cells, which the

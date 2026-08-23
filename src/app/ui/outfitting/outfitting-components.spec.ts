@@ -62,6 +62,7 @@ function slotView(overrides: Record<string, unknown> = {}): Record<string, unkno
       engineering: null,
       variant: null,
       entitlement: null,
+      labels: [],
     },
     ...overrides,
   };
@@ -217,6 +218,33 @@ describe('slot card', () => {
     });
 
     expect(textOf(query(fixture, '.slot__empty')).toLowerCase()).toBe('empty');
+  });
+
+  it('numbers a utility mount as well as a hardpoint, in the anatomy\u2019s own ink', () => {
+    // The badge is a pointer at the hull anatomy, and that drawing marks both
+    // kinds — hardpoints in the amber, utility mounts in the cool. A number
+    // drawn on one and withheld from the other read as though only hardpoints
+    // were somewhere on the hull.
+    const hardpoint = renderComponent(SlotCard, {
+      slot: slotView({ kind: 'hardpoint', node: 3 }),
+      capabilities: EVERY_CAPABILITY,
+    });
+    const utility = renderComponent(SlotCard, {
+      slot: slotView({ kind: 'utility', node: 2, module: null }),
+      capabilities: EVERY_CAPABILITY,
+    });
+    const core = renderComponent(SlotCard, {
+      slot: slotView({ kind: 'core', node: 1, module: null }),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    expect(query(hardpoint, '.slot__node').getAttribute('data-kind')).toBe('hardpoint');
+    expect(query(utility, '.slot__node').getAttribute('data-kind')).toBe('utility');
+    expect(textOf(query(utility, '.slot__node'))).toBe('2');
+    expect(element(core).querySelector('.slot__node')).toBeNull();
+
+    // And spoken wherever it is drawn, never carried by the ink alone.
+    expect(textOf(element(utility))).toContain('2');
   });
 
   it('marks the one mount the canvas marks, and no other', () => {

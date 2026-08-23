@@ -11,6 +11,8 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   chooseRecipe,
   chosenRecipe,
+  closeAllFamilies,
+  openAllFamilies,
   openChooser,
   openEditor,
   surfacesAreLayers,
@@ -177,6 +179,16 @@ test.describe('the conditions that break layouts', () => {
     await expect(page.locator('.outfitting')).toHaveAttribute('data-composition', 'compact');
     await expectNoDocumentOverflow(page);
     await expectTargetSizes(page);
+
+    // And with a family open, which is the state the chooser is actually read
+    // in: the widest thing on the screen becomes a row rather than a bar.
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+    await openAllFamilies(page);
+    await settled(page);
+
+    await expectNoDocumentOverflow(page);
+    await expectTargetSizes(page, '.family');
   });
 
   test('loses nothing with motion removed', async ({ page }) => {
@@ -231,6 +243,103 @@ test.describe('the conditions that break layouts', () => {
     await expect(
       page.locator('[data-slot-key="SmallHardpoint1"] .power__toggle'),
     ).not.toBeChecked();
+  });
+
+  /**
+   * The family list, in each of the three states it can be in.
+   *
+   * The chooser opens with one family open and the rest closed, a search opens
+   * every family it matched, and a Commander can close every one of them. All
+   * three are on screen states with their own structure, and a scan of only the
+   * first would be a scan of the state the product happens to start in
+   * (FR-020–FR-023).
+   */
+  test('passes an accessibility scan in every family state', async ({ page }, testInfo) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+
+    await expect(page.locator('.family').first()).toBeVisible();
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'families seeded' });
+
+    await openAllFamilies(page);
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'families open' });
+
+    await page.locator('input[type="search"]').fill('multi');
+    await expect(page.locator('.family').first()).toBeVisible();
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'families searched' });
+
+    await page.locator('input[type="search"]').fill('');
+    await closeAllFamilies(page);
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'families all closed' });
+  });
+
+  test('gives a family control its name, its count and its open state', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+
+    const controls = page.locator('.family');
+    const total = await controls.count();
+    expect(total).toBeGreaterThan(1);
+
+    for (let index = 0; index < total; index += 1) {
+      const control = controls.nth(index);
+      const state = await programmaticState(page, `.family >> nth=${index}`);
+
+      // The open state is published rather than drawn: the caret is decoration
+      // and is hidden from a reader entirely (FR-022).
+      expect(state['expanded'], 'a family control publishes no open state').not.toBeNull();
+      expect(await control.getAttribute('aria-controls')).not.toBeNull();
+
+      // Its name is the Almanac's family name and the count as a sentence, and
+      // not the caret. The count chip beside the name is `aria-hidden`, so the
+      // figure reaches a reader only through that sentence — read from the
+      // computed name rather than from the control's own text, which would
+      // contain the chip whether or not anyone could hear it.
+      // The computed name: the control's text with its `aria-hidden` decoration
+      // removed, which is what a reader is given.
+      const name = (
+        await control.evaluate((node) => {
+          const clone = node.cloneNode(true) as HTMLElement;
+          for (const hidden of clone.querySelectorAll('[aria-hidden="true"]')) {
+            hidden.remove();
+          }
+          return clone.textContent ?? '';
+        })
+      )
+        .replace(/\s+/gu, ' ')
+        .trim();
+      const drawn = (await control.locator('.family__count').innerText()).replace(/\D+/gu, '');
+      const spoken = await control.locator('.visually-hidden').innerText();
+
+      expect(name.length).toBeGreaterThan(0);
+      expect(spoken).toContain(drawn);
+      expect(name).toContain(spoken.trim());
+      expect(name).not.toContain('\u25be');
+      expect(name).not.toContain('\u203a');
+    }
+
+    // Nothing about a family is carried by the caret alone.
+    await expect(page.locator('.family__caret').first()).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('keeps the family control a full-size target at this width', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooser(page);
+
+    // A real control at every width, and deliberately not in the dense
+    // exemption: one bar per family is a handful of controls, not forty inline
+    // chips (module-replacement design, "Accessibility"). The ten-project
+    // matrix runs this at every layout profile, touch ones included, so this is
+    // the assertion at all five widths rather than at a chosen one.
+    await expectTargetSizes(page, '.family');
+
+    await openAllFamilies(page);
+    await settled(page);
+    await expectNoDocumentOverflow(page);
+    await expectTargetSizes(page, '.family');
   });
 
   test('passes an accessibility scan with the editor open in every layer', async ({

@@ -1,3 +1,10 @@
+import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
+import {
+  OUTFITTING_FAMILIES,
+  type OutfittingFamilyId,
+} from '@elite-dangerous-almanac/core/ships/module-families';
+import { getPreEngineeredStats } from '@elite-dangerous-almanac/core/ships/pre-engineered-stats';
+import { getPreEngineeredVariants } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { ModuleEngineering } from '@elite-dangerous-almanac/core/ships/slef';
 import { reconstructFromSnapshot } from '../build/build-snapshot.reconstructor';
@@ -73,7 +80,7 @@ describe('installed Almanac acceptance', () => {
       if (!rebuilt.ok) {
         return;
       }
-      expect(rebuilt.loadout.retailCredits().modules).toBe(source.retailCredits().modules);
+      expect(rebuilt.loadout.buildCost().credits.modules).toBe(source.buildCost().credits.modules);
     });
 
     it('refuses a hull it does not carry', () => {
@@ -252,6 +259,82 @@ describe('installed Almanac acceptance', () => {
 
       expect(routes.size).toBeGreaterThan(1);
       expect(variants.length).toBe(routes.size);
+    });
+  });
+
+  /**
+   * The family taxonomy, characterized against the installed package.
+   *
+   * FR-020 says the grouping is the Almanac's and only the Almanac's. That is a
+   * promise about `modulesForSlot`, not about this application: every record it
+   * returns has to carry a family, or the chooser has a choice with nowhere to
+   * put it and the only remaining answer would be a local rule. So the promise
+   * is written down here, and a release that breaks it fails by name.
+   */
+  describe('module families', () => {
+    /** The number of families the pinned package publishes. */
+    const FAMILY_COUNT = 77;
+
+    const MOUNTS = [
+      FIXTURE_SLOTS.hardpoint,
+      FIXTURE_SLOTS.utility,
+      FIXTURE_SLOTS.optional,
+      FIXTURE_SLOTS.core,
+      FIXTURE_SLOTS.armour,
+    ] as const;
+
+    it('carries a known family on every record, across every kind of mount', () => {
+      const build = defaultBuild();
+
+      for (const slotKey of MOUNTS) {
+        const records = build.modulesForSlot(slotKey);
+        expect(records.length).toBeGreaterThan(0);
+
+        for (const record of records) {
+          expect(typeof record.familyId).toBe('string');
+          // A family the package does not also name is a family with no row
+          // heading, which is the one thing the chooser cannot render.
+          expect(OUTFITTING_FAMILIES[record.familyId]).toBeDefined();
+        }
+      }
+    });
+
+    it('leaves a pre-engineered variant in its base module\u2019s family', () => {
+      const build = defaultBuild();
+      const withVariants = build
+        .modulesForSlot(FIXTURE_SLOTS.hardpoint)
+        .map((module) => ({ module, variants: getPreEngineeredVariants(module.symbol) }))
+        .filter((entry) => entry.variants.length > 0);
+
+      expect(withVariants.length).toBeGreaterThan(0);
+
+      for (const entry of withVariants) {
+        for (const variant of entry.variants) {
+          // A reward is the module it was built on, already modified — so the
+          // package resolves it into the same family, and the chooser can put
+          // it directly under the ordinary article without a rule of its own.
+          expect(getPreEngineeredStats(variant)?.familyId).toBe(entry.module.familyId);
+        }
+      }
+    });
+
+    it('names every family it publishes, in English', () => {
+      for (const familyId of Object.keys(OUTFITTING_FAMILIES) as OutfittingFamilyId[]) {
+        expect(getOutfittingFamilyName(familyId, 'en')).toBeTruthy();
+      }
+    });
+
+    it('adds no family without this repository noticing', () => {
+      // Exhaustive over the package's own id union, and deliberately not a list
+      // of the ids: research decision 13 is that the taxonomy is 77 ids the
+      // package publishes and this repository does not copy. Writing them out
+      // here to get a compile-time tripwire would be the copy. So the type
+      // proves the package's table covers its own union, and the count is the
+      // tripwire — a release that adds a family fails this test by name rather
+      // than shipping a heading nothing accounted for.
+      const published: Readonly<Record<OutfittingFamilyId, string>> = OUTFITTING_FAMILIES;
+
+      expect(Object.keys(published).length).toBe(FAMILY_COUNT);
     });
   });
 });

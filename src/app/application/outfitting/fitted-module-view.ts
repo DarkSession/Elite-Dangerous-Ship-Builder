@@ -3,6 +3,7 @@ import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modul
 import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import type { ModuleEngineering } from '@elite-dangerous-almanac/core/ships/slef';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
+import { type AcquisitionLabel, acquisitionLabels, fittedSource } from './acquisition-labels';
 import type { PowerPriority } from './build-edit-intent';
 
 /**
@@ -41,12 +42,22 @@ export interface FittedModuleView {
   readonly variant: PreEngineeredVariant | null;
   /** Frontier's entitlement token, when the fitted article carries one. */
   readonly entitlement: string | null;
+  /**
+   * How this module is obtained, projected exactly as the chooser projects it.
+   *
+   * The same labels off the same pair, so what a Commander read on the row they
+   * took is what the ledger says afterwards. Empty for an ordinary article that
+   * anyone can buy, which is most of them.
+   */
+  readonly labels: readonly AcquisitionLabel[];
 }
 
 /** How a module name is resolved for the active locale. */
 export interface ModuleTextResolver {
   moduleName(symbol: string): GameTextPresentation;
   preEngineeredVariantName(variant: PreEngineeredVariant): GameTextPresentation;
+  /** The Almanac's own name for the family a module belongs to. */
+  outfittingFamilyName(familyId: string): GameTextPresentation;
 }
 
 /** Projects one package `FittedModule`, preserving every absence. */
@@ -69,6 +80,12 @@ export function fittedModuleView(module: FittedModule, text: ModuleTextResolver)
     // After fitting, the entitlement is the fitted article's, which is not
     // necessarily the stock record's (module-catalogue contract, "Acquisition").
     entitlement: module.stats?.entitlement ?? null,
+    labels: acquisitionLabels(
+      fittedSource({
+        entitlement: module.stats?.entitlement ?? null,
+        variant,
+      }),
+    ),
   };
 }
 

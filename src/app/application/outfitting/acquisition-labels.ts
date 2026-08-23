@@ -2,12 +2,21 @@ import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modul
 import type { PreEngineeredVariant } from '@elite-dangerous-almanac/core/ships/pre-engineered';
 import type { MessageKey } from '../../i18n/locale-registry';
 
-/** Where a choice sits in the chooser. Unique rewards are the final section. */
+/**
+ * Whether a choice is a one-off reward or an ordinary article.
+ *
+ * It was once a level of the chooser's tree, and is not any more: neither
+ * redrawn canvas has a section heading, and both mark a reward on its own row
+ * inside the family of the module it is built on. What survives is exactly the
+ * input the `uniqueReward` label is projected from — no ordering key, no
+ * heading and no place in the view (FR-024, decision 14).
+ */
 export type CandidateSection = 'standard' | 'uniqueReward';
 
 /** What one label is about. Each is a direct projection of a package value. */
 export type AcquisitionLabelKind =
   | 'entitlement'
+  | 'powerplay'
   | 'mercenary'
   | 'techBroker'
   | 'communityGoal'
@@ -77,7 +86,7 @@ const REWARD: Record<PreEngineeredVariant['acquisition'], boolean> = {
   eventReward: true,
 };
 
-/** Which section a choice belongs to. Only reward routes leave the standard one. */
+/** Whether a choice is a one-off reward. Only reward routes are. */
 export function acquisitionSection(variant: PreEngineeredVariant | null): CandidateSection {
   return variant !== null && REWARD[variant.acquisition] ? 'uniqueReward' : 'standard';
 }
@@ -120,18 +129,51 @@ export function acquisitionLabels(source: AcquisitionSource): readonly Acquisiti
   }
 
   if (source.entitlement !== null) {
-    labels.push({
-      kind: 'entitlement',
-      packageValue: source.entitlement,
-      messageKey: 'outfitting.acquisition.entitlement',
-      // The raw token is disclosed rather than translated. It is Frontier's
-      // name for the purchase, and the honest thing to show is the name the
-      // Almanac gave, not a guess at what it is called in a store.
-      params: { token: source.entitlement },
-    });
+    labels.push(
+      isPowerplayEntitlement(source.entitlement)
+        ? {
+            kind: 'powerplay',
+            packageValue: source.entitlement,
+            messageKey: 'outfitting.acquisition.powerplay',
+            params: null,
+          }
+        : {
+            kind: 'entitlement',
+            packageValue: source.entitlement,
+            messageKey: 'outfitting.acquisition.entitlement',
+            // The raw token is disclosed rather than translated. It is
+            // Frontier's name for the purchase, and the honest thing to show is
+            // the name the Almanac gave, not a guess at what it is called in a
+            // store.
+            params: { token: source.entitlement },
+          },
+    );
   }
 
   return labels;
+}
+
+/**
+ * The prefix the Almanac writes on an entitlement that is a Powerplay module.
+ *
+ * `Hpt_PlasmaAccelerator_Fixed_Large_Advanced` carries
+ * `ELITE_SPECIFIC_V_POWER_200050`, and the twelve tokens under this prefix are
+ * the twelve powers' modules. Canvas 1c draws that row with the Powerplay icon
+ * rather than the generic entitlement sentence, and this is what the icon keys
+ * on.
+ *
+ * It is the one place this application reads meaning out of a package token,
+ * and it is deliberately the smallest reading available: one prefix, no table
+ * of what the twelve mean and no name invented for any of them — the power's
+ * own id stays unread, because naming the power would be exactly the local
+ * catalogue FR-007 forbids. The durable fix is the Almanac publishing the kind
+ * of an entitlement beside its token, at which point this constant goes and the
+ * projection reads the field (module-replacement design, "Acquisition icons").
+ */
+const POWERPLAY_ENTITLEMENT = 'ELITE_SPECIFIC_V_POWER_';
+
+function isPowerplayEntitlement(token: string): boolean {
+  return token.startsWith(POWERPLAY_ENTITLEMENT);
 }
 
 /** The pre-fit source: the catalogue record's entitlement and the row's variant. */
@@ -140,4 +182,19 @@ export function catalogueSource(
   variant: PreEngineeredVariant | null,
 ): AcquisitionSource {
   return { entitlement: module.entitlement ?? null, variant };
+}
+
+/**
+ * The post-fit source: the same pair, off the module now in the mount.
+ *
+ * The other half of the pair this file's `AcquisitionSource` was written for.
+ * A Commander who read `Powerplay` on a row in the chooser and fitted it must
+ * still read it on the ledger afterwards — the restriction did not stop being
+ * true when the module moved.
+ */
+export function fittedSource(fitted: {
+  readonly entitlement: string | null;
+  readonly variant: PreEngineeredVariant | null;
+}): AcquisitionSource {
+  return { entitlement: fitted.entitlement, variant: fitted.variant };
 }

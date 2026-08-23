@@ -5,6 +5,7 @@ import {
   getPreEngineeredVariants,
   type PreEngineeredVariant,
 } from '@elite-dangerous-almanac/core/ships/pre-engineered';
+import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
 import { presentGameText } from '../../i18n/game-text.presenter';
@@ -124,6 +125,36 @@ export function fixedRewardVariant(): PreEngineeredVariant {
     );
   }
   return variant;
+}
+
+/**
+ * A build carrying an article the package locks against further engineering.
+ *
+ * Asked of the Almanac rather than named here: twelve of its pre-engineered
+ * variants report `engineeringLocked`, and which twelve is the package's
+ * business (constitution II). None of them is a hull default, so the article is
+ * fitted first and the mount comes out of the search — a release that moves one
+ * to another module keeps the fixture honest instead of failing to find it.
+ */
+export function lockedArticleBuild(): { build: ShipLoadout; slot: string } {
+  const build = ShipLoadout.default('Anaconda');
+  for (const slot of build.slots()) {
+    for (const module of build.modulesForSlot(slot.key) ?? []) {
+      const locked = (getPreEngineeredVariants(module.symbol) ?? []).find(
+        (variant) => variant.engineeringLocked === true,
+      );
+      if (locked !== undefined) {
+        build.setModule(slot.key, module);
+        build.setPreEngineeredVariant(slot.key, locked);
+        return { build, slot: slot.key };
+      }
+    }
+  }
+  throw new Error(
+    'The installed Almanac reports no fittable pre-engineered variant with ' +
+      '`engineeringLocked`. A final article is a package state; pick the ' +
+      'regression subject from the package rather than writing one here.',
+  );
 }
 
 /**
@@ -272,5 +303,6 @@ export function packageText(locale = 'en'): ModuleTextResolver {
     moduleName: (symbol) => presentGameText(getModuleName, symbol, locale),
     preEngineeredVariantName: (variant) =>
       presentGameText(getPreEngineeredVariantName, variant, locale),
+    outfittingFamilyName: (familyId) => presentGameText(getOutfittingFamilyName, familyId, locale),
   };
 }

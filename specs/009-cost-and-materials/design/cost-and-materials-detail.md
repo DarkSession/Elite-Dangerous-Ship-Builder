@@ -17,15 +17,16 @@ Visual placement changes with width; semantic order and content do not.
 
 Four rows, in the canvas's order:
 
-| Row        | Value                                      | Treatment                  |
-| ---------- | ------------------------------------------ | -------------------------- |
-| Hull       | `retailCredits().hull`                     | primary ink                |
-| Modules    | `retailCredits().modules`                  | primary ink                |
-| `TOTAL`    | `hull + modules`, added by the application | accent, the block's anchor |
-| `REBUY 5%` | `retailCredits().rebuy`                    | faint micro label, tracked |
+| Row        | Value                         | Treatment                  |
+| ---------- | ----------------------------- | -------------------------- |
+| Hull       | `buildCost().credits.hull`    | primary ink                |
+| Modules    | `buildCost().credits.modules` | primary ink                |
+| `TOTAL`    | `buildCost().credits.total`   | accent, the block's anchor |
+| `REBUY 5%` | `buildCost().credits.rebuy`   | faint micro label, tracked |
 
-`TOTAL` is the one credits figure the application computes, and `REBUY 5%` is a fixed label — the
-percentage is canvas text, not a derivation from the number beside it. Both are ruled (A, B).
+`TOTAL` is a literal package result in Almanac 0.1.6, and `REBUY 5%` is a fixed label — the
+percentage is canvas text, not a derivation from the number beside it. The original ruling A remains
+the reason the row is present; the application-owned arithmetic it once allowed is retired.
 
 A rule sits above `TOTAL`, as the canvas draws it. It is structure, not decoration: it is what makes
 the row read as the sum of the two above it rather than a third fact beside them. `TOTAL` is also
@@ -43,24 +44,26 @@ built (ruled F). Captured purchase values are never read.
 The heading carries the blueprint count opposite it, exactly as the canvas draws `14 BLUEPRINTS`.
 
 Every consolidated row, with no truncation and no top-N cut (ruled E). Each row is a rarity marker,
-the package-localised material name, and the locale-formatted quantity — the same row composition
-feature 002 already ships in `edsb-material-cost-list`.
+the package-localised material name, and the locale-formatted quantity — the row composition feature
+002 shipped in `edsb-material-cost-list`, which is now this block's alone (ruling G, amended
+2026-08-23).
 
 Rows run **commonest first, then by name** within a rarity band — a shopping list in the order a
-Commander gathers one, and the order `edsb-material-cost-list` already uses for the Engineer panel.
-Both canvases draw the opposite; ruling G decided that the two material lists in the application
-should agree with each other rather than each match its own artboard. The package returns its own
+Commander gathers one, and the order the Engineer panel's list used before it was withdrawn. Both
+canvases draw the opposite; ruling G decided that the two material lists in the application should
+agree with each other rather than each match its own artboard, and it stands now that only one is
+left (amended 2026-08-23). The package returns its own
 catalogue order, which is neither, so the ordering is applied at the presentation layer where the
-localised name exists — the projection keeps the literal `sumMaterials()` order. A material the
+localised name exists — the projection keeps the literal `buildCost().materials` order. A material the
 package grades no rarity for sorts last: an unknown rarity is not a low one.
 
 The block is separated from `COST` by a rule, and closes with the type/unit footer over another.
 The footer's two counts sit at opposite ends of the row rather than joined into one sentence, in the
 same faint micro treatment as `REBUY 5%`. Both are counted over the consolidated package result.
 
-The Merc Coin row is last, over a rule of its own, drawn only when at least one fitted module is a
-package-recognized Mercenary article and carrying the literal `mercCoinCost()` build total in its
-own colour. It opens with the shipped 14px coin, as the canvas draws it — decorative, because the
+The Merc Coin row is last, over a rule of its own, drawn only when `buildCost().mercCoins` is greater
+than zero and carrying that literal package total in its own colour. It opens with the shipped 14px
+coin, as the canvas draws it — decorative, because the
 localized label beside it is what carries the meaning. It is excluded from the type and unit counts — it is a purchase price, not a material.
 Its rule is omitted when it is the block's only row: on a build that bought an article and crafts
 nothing there is no list above it to be ruled off.
@@ -78,13 +81,13 @@ package cannot cost contributes nothing and says nothing (ruled F).
 
 ## Required states
 
-| State                           | Presentation                                           |
-| ------------------------------- | ------------------------------------------------------ |
-| No active build                 | Existing workspace empty state; neither block is drawn |
-| Active build                    | Both blocks, from the current package result           |
-| No engineering                  | `COST` only; the materials block is absent             |
-| No recognized Mercenary article | No Merc Coin row, and no zero in its place             |
-| Recognized Mercenary article    | The Merc Coin row carrying the package build total     |
+| State                        | Presentation                                           |
+| ---------------------------- | ------------------------------------------------------ |
+| No active build              | Existing workspace empty state; neither block is drawn |
+| Active build                 | Both blocks, from the current package result           |
+| No engineering               | `COST` only; the materials block is absent             |
+| Zero package Merc Coin total | No Merc Coin row, and no zero in its place             |
+| Non-zero package total       | The Merc Coin row carrying the package build total     |
 
 There is no pending, stale, mismatched-context or projection-failure treatment: the projection is a
 synchronous read of the active loadout, so there is no state between having a build and having its
@@ -94,7 +97,7 @@ figures.
 
 Both blocks are labelled regions with localized headings. Label/value pairs are description lists,
 so each number is associated with its label natively rather than by sitting beside it — the pattern
-`edsb-material-cost-list` already uses.
+`edsb-material-cost-list` established.
 
 Material names render through feature 011's `edsb-game-text`, which carries the untranslated
 disclosure the rest of the application uses. Rarity uses `edsb-material-grade`, not the canvas's

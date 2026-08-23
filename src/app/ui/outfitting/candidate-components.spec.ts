@@ -1,9 +1,9 @@
 import { candidateMembership } from '../../application/outfitting/candidate-membership';
 import {
   applyQuery,
-  groupCandidates,
+  groupFamilies,
   openCandidateQuery,
-  type CandidateSectionView,
+  type CandidateFamilyView,
 } from '../../application/outfitting/candidate-query';
 import {
   FIXTURE_SLOTS,
@@ -26,14 +26,25 @@ import { CandidateSearch } from './candidate-search';
  * What the chooser promises a reader.
  *
  * The list is rendered from the real package expansion rather than from a
- * hand-written row, because the things being asserted — that a section is
- * announced, that an absent figure is a word, that a restriction is text — are
- * only worth asserting against the shapes the Almanac actually produces.
+ * hand-written row, because the things being asserted — that a family control
+ * publishes its state, that an absent figure is a word, that a restriction is
+ * text — are only worth asserting against the shapes the Almanac produces.
  */
 
 const COLLATOR = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
 
-function sectionsFor(slotKey: string, query = ''): readonly CandidateSectionView[] {
+/**
+ * The real family list for a mount, opened as the tests need it.
+ *
+ * `open: 'all'` is the ordinary case here: most of these assertions are about
+ * what a *row* draws, and a row a closed family is holding is not in the
+ * document at all.
+ */
+function familiesFor(
+  slotKey: string,
+  query = '',
+  open: 'all' | 'none' = 'all',
+): readonly CandidateFamilyView[] {
   const state = applyQuery(
     openCandidateQuery(
       candidateMembership(defaultBuild(), slotKey, 1, packageText('en')),
@@ -42,7 +53,16 @@ function sectionsFor(slotKey: string, query = ''): readonly CandidateSectionView
     ),
     query,
   );
-  return groupCandidates(state.results, COLLATOR);
+  const ids =
+    open === 'none'
+      ? new Set<(typeof state.results)[number]['presentation']['familyId']>()
+      : new Set(state.results.map((choice) => choice.presentation.familyId));
+  return groupFamilies(state.results, ids);
+}
+
+/** Every choice a family list holds, flattened. */
+function choicesOf(families: readonly CandidateFamilyView[]) {
+  return families.flatMap((family) => family.choices);
 }
 
 describe('candidate search', () => {
@@ -123,34 +143,106 @@ describe('acquisition badge', () => {
     const items = element(fixture).querySelectorAll('.acquisition__item');
     expect(items.length).toBe(3);
 
-    // The reward marker is the canvas's chip, and its reason is present for a
-    // reader even where the sentence is not drawn.
-    expect(textOf(items[1]!)).toContain('Reward only');
+    // The reward is stated in words rather than drawn. Its chip is withdrawn —
+    // the canvas replaced it with the icon of the route the article is earned
+    // through, and that icon is on the community-goal label above it, where the
+    // package value it was projected from actually lives.
+    expect(textOf(items[1]!)).toContain('reward');
+    expect(element(fixture).querySelector('.acquisition__chip--reward')).toBeNull();
+    expect(items[0]!.querySelector('.acquisition__route')).not.toBeNull();
     expect(textOf(element(fixture))).toContain('ELITE_HORIZONS_V_PLANETARY_LANDINGS');
   });
 });
 
 describe('candidate list', () => {
-  it('names each section and each group without drawing either', () => {
+  it('names each family, counts it, and publishes whether it is open', () => {
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, '', 'none');
     const fixture = renderComponent(CandidateList, {
-      sections: sectionsFor(FIXTURE_SLOTS.hardpoint),
+      families,
       label: 'Modules for this mount',
     });
 
-    const headings = element(fixture).querySelectorAll('h3, h4');
-    expect(headings.length).toBeGreaterThan(1);
-    for (const heading of Array.from(headings)) {
-      expect(heading.classList.contains('visually-hidden')).toBe(true);
-    }
+    const controls = Array.from(element(fixture).querySelectorAll('.family'));
+    expect(controls.length).toBe(families.length);
+    expect(controls.length).toBeGreaterThan(1);
 
-    // The unique rewards are announced as their own section, which is the only
-    // place that structure is stated — the canvas draws one flat list.
-    expect(textOf(element(fixture))).toContain('Unique rewards');
+    controls.forEach((control, index) => {
+      const family = families[index]!;
+      const name = accessibleName(control as HTMLElement);
+
+      // The Almanac's own name, and the count spoken beside the drawn figure.
+      expect(name).toContain(family.name.text!);
+      expect(name).toContain(String(family.count));
+      // Closed state is programmatic, never the caret alone (FR-022).
+      expect(control.getAttribute('aria-expanded')).toBe('false');
+      expect(control.getAttribute('aria-controls')).not.toBeNull();
+    });
+
+    // A closed family contributes its control and no rows at all, which is what
+    // puts a screenful in front of a Commander instead of hundreds of cards.
+    expect(element(fixture).querySelectorAll('.candidate')).toHaveLength(0);
+  });
+
+  it('opens a family into a named region holding exactly its rows', () => {
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const fixture = renderComponent(CandidateList, {
+      families,
+      label: 'Modules for this mount',
+    });
+
+    const control = query(fixture, '.family');
+    expect(control.getAttribute('aria-expanded')).toBe('true');
+
+    const region = element(fixture).querySelector(`#${control.getAttribute('aria-controls')}`)!;
+    expect(region.getAttribute('aria-labelledby')).toBe(control.id);
+    expect(region.querySelectorAll('.candidate')).toHaveLength(families[0]!.count);
+  });
+
+  it('draws no section or group heading at all', () => {
+    const fixture = renderComponent(CandidateList, {
+      families: familiesFor(FIXTURE_SLOTS.hardpoint),
+      label: 'Modules for this mount',
+    });
+
+    // Both levels are withdrawn with their headings: a reward is marked on its
+    // own row inside its family instead (FR-024, decision 14).
+    expect(element(fixture).querySelectorAll('h3, h4')).toHaveLength(0);
+    expect(textOf(element(fixture))).not.toContain('Unique rewards');
+    expect(textOf(element(fixture))).not.toContain('Standard modules');
+
+    // And the fact the heading used to stand for is still on the row: the icon
+    // of the route the article is earned through, with the sentence that says
+    // so beside it for anyone who cannot see an icon.
+    const marked = Array.from(
+      element(fixture).querySelectorAll('.candidate:has(.acquisition__route)'),
+    );
+    expect(marked.length).toBeGreaterThan(0);
+
+    // A reward among them, marked by its route and explained in the sentence
+    // beside it. The mount also offers Powerplay articles, which carry a route
+    // icon of their own and a different sentence — so the reward is found by
+    // what it says rather than by the fact that it is marked.
+    const reward = marked.find((row) => textOf(row).includes('It is not sold anywhere'));
+    expect(reward).toBeDefined();
+  });
+
+  it('reports one family opened, and reports nothing else', () => {
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, '', 'none');
+    const toggled: string[] = [];
+    const fixture = renderComponent(CandidateList, {
+      families,
+      label: 'Modules for this mount',
+    });
+    fixture.componentInstance.familyToggled.subscribe((id: string) => toggled.push(id));
+
+    (query(fixture, '.family') as HTMLButtonElement).click();
+
+    expect(toggled).toEqual([families[0]!.familyId]);
   });
 
   it('gives every row a name that distinguishes it from its neighbours', () => {
     const fixture = renderComponent(CandidateList, {
-      sections: sectionsFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon'),
+      families: familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon'),
       label: 'Modules for this mount',
     });
 
@@ -167,29 +259,26 @@ describe('candidate list', () => {
     // and through a community goal at grade 5. They share a symbol and a name,
     // so a row that matched on either marked two articles as the one in the
     // mount (wave 4).
-    const sections = sectionsFor(FIXTURE_SLOTS.hardpoint);
-    const variants = sections
-      .flatMap((section) => section.groups)
-      .flatMap((group) => group.choices)
-      .filter((choice) => choice.kind === 'variant');
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint);
+    const variants = choicesOf(families).filter((choice) => choice.kind === 'variant');
     const fitted = variants[0];
     expect(fitted).toBeDefined();
 
     const fixture = renderComponent(CandidateList, {
-      sections,
+      families,
       label: 'Modules for this mount',
       fittedSymbol: fitted!.module.symbol,
-      fittedVariant: fitted!.variant,
+      fittedVariant: fitted!.kind === 'variant' ? fitted!.variant : null,
     });
 
     expect(element(fixture).querySelectorAll('.candidate--fitted')).toHaveLength(1);
   });
 
   it('states the selection rather than only colouring it', () => {
-    const sections = sectionsFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
-    const chosen = sections[0]!.groups[0]!.choices[0]!;
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const chosen = families[0]!.choices[0]!;
     const fixture = renderComponent(CandidateList, {
-      sections,
+      families,
       label: 'Modules for this mount',
       selectedKey: chosen.key,
     });
@@ -198,14 +287,81 @@ describe('candidate list', () => {
     expect(radio.checked).toBe(true);
   });
 
+  it('brings the fitted row to the middle of the list rather than leaving it found', () => {
+    // The seeded family can be anywhere in the Almanac's order, so the row a
+    // Commander came to see can open three quarters of the way down a list of
+    // seventy-seven. It is scrolled to, not merely rendered.
+    //
+    // What is asserted is that the list's own box is the thing scrolled. There
+    // is no layout in this environment, so the arithmetic lands on zero and the
+    // figure proves nothing; which element is written to proves the rest. A
+    // `scrollIntoView` here would walk every scrollable ancestor up to the
+    // document, and at a short viewport the document is what scrolls.
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const fitted = families[0]!.choices[0]!;
+    const scrolled: string[] = [];
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop')!;
+
+    Object.defineProperty(Element.prototype, 'scrollTop', {
+      ...descriptor,
+      set(this: Element, value: number) {
+        scrolled.push(this.className);
+        descriptor.set?.call(this, value);
+      },
+    });
+
+    try {
+      renderComponent(CandidateList, {
+        families,
+        label: 'Modules for this mount',
+        fittedSymbol: fitted.module.symbol,
+      });
+    } finally {
+      Object.defineProperty(Element.prototype, 'scrollTop', descriptor);
+    }
+
+    expect(scrolled).toEqual(['candidates__body']);
+  });
+
+  it('leaves the list where it is while a query is narrowing it', () => {
+    // A search must not drag the scroller back to a row a Commander has typed
+    // past, and the fitted row leaving and re-entering the results is exactly
+    // when that would happen.
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const fitted = families[0]!.choices[0]!;
+    const scrolled: string[] = [];
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop')!;
+
+    Object.defineProperty(Element.prototype, 'scrollTop', {
+      ...descriptor,
+      set(this: Element, value: number) {
+        scrolled.push(this.className);
+        descriptor.set?.call(this, value);
+      },
+    });
+
+    try {
+      renderComponent(CandidateList, {
+        families,
+        label: 'Modules for this mount',
+        fittedSymbol: fitted.module.symbol,
+        searching: true,
+      });
+    } finally {
+      Object.defineProperty(Element.prototype, 'scrollTop', descriptor);
+    }
+
+    expect(scrolled).toEqual([]);
+  });
+
   it('says a fitted module is fitted, in words, beside the ground that shows it', () => {
     // The canvas marks the fitted row with its amber ground and writes nothing
     // on it. The word is here all the same and read rather than drawn, so the
     // state is never carried by the colour alone.
-    const sections = sectionsFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
-    const fitted = sections[0]!.groups[0]!.choices[0]!;
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const fitted = families[0]!.choices[0]!;
     const fixture = renderComponent(CandidateList, {
-      sections,
+      families,
       label: 'Modules for this mount',
       fittedSymbol: fitted.module.symbol,
     });
@@ -219,7 +375,7 @@ describe('candidate list', () => {
     // A core internal carries no weapon damage, so the damage column is absent
     // rather than nought on every one of its rows.
     const fixture = renderComponent(CandidateList, {
-      sections: sectionsFor(FIXTURE_SLOTS.core),
+      families: familiesFor(FIXTURE_SLOTS.core),
       label: 'Modules for this mount',
     });
 
@@ -234,7 +390,7 @@ describe('candidate list', () => {
 
   it('draws the column names once, and hides them from a reader who hears them per row', () => {
     const fixture = renderComponent(CandidateList, {
-      sections: sectionsFor(FIXTURE_SLOTS.core),
+      families: familiesFor(FIXTURE_SLOTS.core),
       label: 'Modules for this mount',
     });
 

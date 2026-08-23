@@ -102,11 +102,13 @@ planning ship loadouts.
   visuals may follow.
 - **Cost and materials (feature 009)** contributes the `COST` and `MATERIALS`
   blocks to the outfitting status rail. It owns no game rule: it reuses feature
-  002's `engineeringCost()` and `materialRarity()` rather than adding a second
-  classifier, and every figure is a package result — except four the canvas
-  draws and the Almanac does not return (the `TOTAL` credits row, the blueprint
-  count, the material-type count and the unit total), which are ruled
-  exceptions recorded in `specs/009-cost-and-materials/design/reference-review.md`.
+  002's `engineeringCost()` only to count contributing blueprints and
+  `materialRarity()` to present package material grades. Credits, Merc Coin and
+  consolidated materials come from the Almanac's single `buildCost()` result.
+  The only application-computed figures are the blueprint count, material-type
+  count and unit total, which the canvas draws and the package does not return;
+  these ruled exceptions are recorded in
+  `specs/009-cost-and-materials/design/reference-review.md`.
   Out of scope, deliberately: historical purchase values, currency conversion,
   per-row material traces, unpriced-credit evidence and material-acquisition
   guidance.

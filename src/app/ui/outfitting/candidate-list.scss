@@ -41,6 +41,97 @@
   display: none;
 }
 
+// Canvas 1d's `FITTED HERE` and `FAMILIES` rules: a tracked mono label on the
+// panel ground with its counter against the trailing edge. Compact only — the
+// wide manifest passes neither heading and draws neither rule.
+.candidates__rule {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--edsb-space-inline);
+  margin: 0;
+  padding-block: var(--edsb-space-md) var(--edsb-space-xs);
+  padding-inline: var(--edsb-space-xl);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+}
+
+.candidates__rule-title {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+}
+
+// The canvas sets `FITTED HERE` in the accent and `FAMILIES` in the quiet ink,
+// which is what tells the pinned row apart from the list under it.
+.candidates__rule--fitted .candidates__rule-title {
+  color: var(--edsb-text-accent);
+}
+
+.candidates__rule-count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+}
+
+// The canvas's family bar. It is a real control at every width — 44 CSS px of
+// target, and deliberately not in `DENSE_TARGETS`: one bar per family is a
+// handful of controls, not forty inline chips, so there is nothing here the
+// exemption exists for (module-replacement design, "Accessibility").
+.family {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  inline-size: 100%;
+  min-block-size: var(--edsb-target-size);
+  margin: 0;
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-xl);
+  background-color: var(--edsb-surface-root);
+  border: 0;
+  // Canvas 1d leaves the family's own leading edge clear and marks the fitted
+  // block with it instead; canvas 1c marks the bar. The reserved edge keeps the
+  // family's text on the same line as the rows beneath it either way.
+  border-inline-start: var(--edsb-border-width-marker) solid transparent;
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  color: var(--edsb-text-primary);
+  text-align: start;
+  cursor: pointer;
+}
+
+// Canvas 1d's `Multi-Cannon`: Barlow at the compact row's own rung, in the
+// ordinary row ink. The two-letter `MC` badge beside it is withdrawn — the
+// Almanac publishes no abbreviation, and any rule that makes one is this
+// application shortening game text (module-replacement design, "Withdrawn").
+.family__name {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-heading-sm);
+  font-weight: var(--edsb-text-weight-emphasis);
+  line-height: var(--edsb-text-leading-heading);
+  color: var(--edsb-text-numeric);
+}
+
+// The count of package records in the family, and nothing else: canvas 1d's
+// `6 VARIANTS · 15.1–28.4 DPS · 4.46 MW` line is withdrawn with its ranges,
+// which are aggregates the Almanac does not publish.
+.family__count {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+
+  flex: none;
+}
+
+.family__caret {
+  @include layout.metric-value(var(--edsb-text-size-caption), var(--edsb-text-accent));
+
+  flex: none;
+  // The canvas's fixed caret column, so the glyph does not shift the count
+  // beside it as it turns from `\203a` to `\25be`.
+  inline-size: var(--edsb-space-lg);
+  text-align: center;
+}
+
+.family__choices {
+  @include layout.stack(0);
+}
+
 // The canvas's leading amber edge marks the row in hand. Never the only
 // carrier: the radio's own checked state and the row's spoken name say it too.
 .candidate {
@@ -183,8 +274,10 @@
   object-fit: contain;
 }
 
-.candidates__section:empty,
-.candidates__group:empty {
+// A family with nothing in the current results is not rendered at all, so this
+// only ever catches a family whose rows are all hidden by something else.
+.candidates__family:empty,
+.family__choices:empty {
   display: none;
 }
 
@@ -215,6 +308,76 @@
     text-align: end;
   }
 
+  // Canvas 1c's family bar: raised at the leading edge, opened by the amber
+  // marker, and its name set in the condensed uppercase the wide manifest sets
+  // every heading in. It sticks to the top of the scroller, as the canvas
+  // draws it, so the family being read is always named.
+  .family {
+    position: sticky;
+    // Above the scroller's own top edge, because nothing painted at that edge
+    // can close the seam there. The edge is placed by flex at a fractional
+    // device pixel while the browser snaps this box to a whole one, so the two
+    // miss each other and one device row of the row behind prints above the
+    // bar. A shadow cannot reach it — everything above the edge is clipped
+    // away, which is the difference between this scroller and the hull
+    // manifest's frozen head, where the same shadow does work. The box itself
+    // has to overhang. Two CSS pixels is clean from scale factor 1 through 3;
+    // four is not, because a bar that far up clears its own family early.
+    inset-block-start: calc(-1 * var(--edsb-layout-sticky-overhang));
+    z-index: 1;
+    padding-inline: var(--edsb-space-row);
+    background-color: var(--edsb-surface-root);
+    background-image: var(--edsb-surface-family);
+    border-inline-start-color: var(--edsb-marker-selected);
+    // No top border. The overhang is the clip's, and a border is the first
+    // thing inside it, so the rule above the family name went with the two
+    // pixels every time the bar froze — and the band it vacated is where a
+    // Commander watched the list scroll past. The rule is drawn below the
+    // overhang instead, where the clip cannot reach it: same hairline, same
+    // colour, and it survives being stuck.
+    border-block-start: 0;
+    border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  }
+
+  // The rule that used to be `border-block-start`, set in from the box's own
+  // top edge by exactly the overhang — so once the bar is frozen and the clip
+  // has taken those two pixels, the rule sits precisely on the scroller's edge
+  // with the bar's opaque ground behind everything above it. In flow it reads
+  // two pixels into the bar instead of flush against its top, which is the
+  // whole price of this and is not visible against the bar's own gradient.
+  .family::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: var(--edsb-layout-sticky-overhang);
+    block-size: var(--edsb-border-width-hairline);
+    background-color: var(--edsb-rule-panel);
+  }
+
+  .family__name {
+    font-family: var(--edsb-font-heading);
+    font-size: var(--edsb-text-size-lead);
+    font-weight: var(--edsb-text-weight-heading);
+    letter-spacing: var(--edsb-text-tracking-control);
+    text-transform: uppercase;
+    color: var(--edsb-text-accent-strong);
+  }
+
+  // The canvas's chip behind the count, which the compact composition draws as
+  // a bare figure on the row's own ground.
+  .family__count {
+    padding-block: var(--edsb-space-3xs);
+    padding-inline: var(--edsb-space-xs);
+    background-color: var(--edsb-surface-accent-quiet);
+    color: var(--edsb-text-subtle);
+  }
+
+  // The rows of the open family, gathered under the hairline the canvas runs
+  // down their leading edge.
+  .family__choices {
+    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  }
+
   .candidate {
     grid-template-columns: var(--edsb-layout-candidate-columns);
     // The same gap the header row sets — none — or the figures sit beside their
@@ -223,11 +386,20 @@
 
     // One line, at one height, exactly as the canvas draws it. That fixed
     // height is what lets the rows outside the scroller be skipped without the
-    // scroller's own height moving: the largest mount the Almanac offers has
-    // hundreds of choices, and every one of them is this tall whether it has
-    // been laid out or not. The card composition has no such height — a card
-    // is as tall as its own text — so it is rendered whole instead, rather
-    // than declared at a size that is only ever an estimate (wave 4).
+    // scroller's own height moving: every row is this tall whether it has been
+    // laid out or not. The card composition has no such height — a card is as
+    // tall as its own text — so it is rendered whole instead, rather than
+    // declared at a size that is only ever an estimate (wave 4).
+    //
+    // Families change what this is applied *to*, not the rule itself (wave 10).
+    // A closed family contributes its bar and no rows at all — they are not in
+    // the document — so there is nothing to skip and nothing to estimate. The
+    // open family is still whole: every one of its rows is in the document from
+    // the first frame, each declaring this height, so the scroller adds them up
+    // before it lays any of them out and its bar is right immediately. The two
+    // rules that follow are unchanged, and for the same reasons: a name too
+    // long for its column is cut rather than wrapped, and the two-price rows
+    // declare nothing and are never skipped.
     block-size: var(--edsb-layout-candidate-row);
     content-visibility: auto;
     contain-intrinsic-block-size: var(--edsb-layout-candidate-row);

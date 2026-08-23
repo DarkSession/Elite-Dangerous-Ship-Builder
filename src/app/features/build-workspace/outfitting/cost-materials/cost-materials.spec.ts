@@ -87,13 +87,13 @@ describe('cost and materials surface', () => {
 
     it('shows the package figures, formatted and not otherwise changed', () => {
       const build = defaultBuild();
-      const retail = build.retailCredits();
+      const retail = build.buildCost().credits;
       const rows = render(build).componentInstance.costRows();
 
       const digits = (value: string): string => value.replaceAll(/\D/gu, '');
       expect(digits(rows[0]!.value)).toBe(String(retail.hull));
       expect(digits(rows[1]!.value)).toBe(String(retail.modules));
-      expect(digits(rows[2]!.value)).toBe(String(retail.hull + retail.modules));
+      expect(digits(rows[2]!.value)).toBe(String(retail.total));
       expect(digits(rows[3]!.value)).toBe(String(retail.rebuy));
     });
 
@@ -272,14 +272,17 @@ describe('cost and materials surface', () => {
 
     it('draws no qualification when the catalogue cannot price a module', () => {
       const build = defaultBuild();
-      const retail = build.retailCredits();
+      const cost = build.buildCost();
       // No fixture hull produces an unpriced module, so the package's answer is
       // stood in for at the seam it is read through.
       const unpriced = build
         .fittedModules()
         .slice(0, 2)
         .map((module) => ({ slot: module.slot, symbol: module.symbol }));
-      build.retailCredits = () => ({ ...retail, unpriced });
+      build.buildCost = () => ({
+        ...cost,
+        credits: { ...cost.credits, unpriced },
+      });
       const fixture = render(build);
 
       // Whatever `unpriced` holds, the four canvas rows are all that is drawn:

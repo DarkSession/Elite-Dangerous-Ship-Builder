@@ -11,6 +11,7 @@ import { getExperimentalEffectDescription } from '@elite-dangerous-almanac/core/
 import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
 import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
 import { getMicroResourceName } from '@elite-dangerous-almanac/core/i18n/micro-resources';
+import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
 import { getShipManufacturer, getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
@@ -131,6 +132,21 @@ export class GameTextPresenter {
 
   moduleName(symbol: string): GameTextPresentation {
     return this.present(getModuleName, symbol);
+  }
+
+  /**
+   * The Almanac's own name for one outfitting family.
+   *
+   * The package names all 77 families in English and 58 of them in each other
+   * language, so the `canonical` arm of the rule above is the ordinary case
+   * here rather than the exceptional one: nineteen families read as their
+   * English name with the untranslated disclosure beside them, exactly as an
+   * untranslated module name does. There is no local table for those nineteen —
+   * a private id-to-name map would be game data owned outside the package
+   * (constitution II, FR-020).
+   */
+  outfittingFamilyName(familyId: string): GameTextPresentation {
+    return this.present(getOutfittingFamilyName, familyId);
   }
 
   blueprintName(fdname: string): GameTextPresentation {

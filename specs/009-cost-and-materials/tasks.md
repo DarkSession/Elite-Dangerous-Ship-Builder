@@ -46,11 +46,9 @@ their source as `*.spec.ts`.
 
 ## Phase 1: Setup
 
-- [x] T001 Characterize the installed Almanac contract this feature reads — `retailCredits()`
-      returning non-nullable numeric `hull`, `modules` and `rebuy`; `mercCoinCost()` returning a
-      number; `PreEngineeredVariant.acquisition`; `sumMaterials` matching symbols case-insensitively
-      and preserving first-seen order; and the leaf subpaths `ships/ship-loadout` and
-      `ships/engineering` — in `src/app/domain/cost-materials/almanac-cost-contract.spec.ts`
+- [x] T001 Characterize the installed Almanac contract this feature reads — `buildCost()` returning
+      numeric credit fields, a Merc Coin total and consolidated materials; plus the relevant leaf
+      subpaths — in `src/app/domain/cost-materials/almanac-cost-contract.spec.ts`
 - [x] T002 [P] Add the cargo-rack regression assertion — the installed Almanac reports no ordinary
       stock route for `CargoRack_IncreasedCapacity`, `getBlueprintCost(..., 5)` returns `null`, and
       the application neither special-cases the fdname nor substitutes another recipe — in
@@ -79,21 +77,17 @@ their source as `*.spec.ts`.
 the conditional Merc Coin row at the foot of the materials block.
 
 **Independent Test**: Open a build and compare each rendered figure to a captured
-`retailCredits()` result; confirm `TOTAL` equals `hull + modules`; open builds with no, one and
-several Mercenary articles and confirm the row is absent, present and carries one `mercCoinCost()`
-result, and that `mercCoinCost()` is never called when nothing is recognized.
+`buildCost().credits` result; confirm `TOTAL` equals its package field; open builds with zero and
+non-zero Merc Coin totals and confirm the row is absent or carries `buildCost().mercCoins`.
 
 ### Tests for User Story 1
 
-- [x] T005 [P] [US1] Add credits projection tests — literal `hull`, `modules` and `rebuy`, `total`
-      equal to the package `hull` plus the package `modules` and never a hand-computed literal,
-      exactly one `retailCredits()` call, `unpriced` never read, and `sourcePurchase` and fitted
+- [x] T005 [P] [US1] Add credits projection tests — literal `hull`, `modules`, `total` and `rebuy`,
+      exactly one `buildCost()` call, `unpriced` never read, and `sourcePurchase` and fitted
       captured `value` never read — in `src/app/domain/cost-materials/cost-materials.credits.spec.ts`
-- [x] T006 [P] [US1] Add Merc Coin projection tests — `null` and no `mercCoinCost()` call when no
-      fitted variant reports acquisition `mercenary`, recognition never taken from a symbol,
-      blueprint or nonzero total, exactly one `mercCoinCost()` call when one or more are recognized,
-      the literal package number preserved, and a package total of zero with no recognition still
-      yielding `null` — in `src/app/domain/cost-materials/cost-materials.mercenary.spec.ts`
+- [x] T006 [P] [US1] Add Merc Coin projection tests — `null` for a zero `buildCost().mercCoins`
+      result and the literal package number for a non-zero result, with no application recognition
+      rule — in `src/app/domain/cost-materials/cost-materials.mercenary.spec.ts`
 - [x] T007 [P] [US1] Add `COST` block surface tests — the four canvas rows in canvas order with
       their labels, `TOTAL` carrying the accent treatment and a text label rather than colour alone,
       `REBUY 5%` as fixed label text, locale-formatted numbers, and the absence of any evidence
@@ -102,13 +96,11 @@ result, and that `mercCoinCost()` is never called when nothing is recognized.
 
 ### Implementation for User Story 1
 
-- [x] T008 [US1] Implement `projectCredits(loadout)` calling `retailCredits()` exactly once,
-      preserving `hull`, `modules` and `rebuy`, computing `total` as `hull + modules`, and reading
-      neither `unpriced` nor any captured purchase value, in
+- [x] T008 [US1] Implement `projectCredits(cost)` preserving the four package credit fields and
+      reading neither `unpriced` nor any captured purchase value, in
       `src/app/domain/cost-materials/cost-materials.ts` (depends on T004)
-- [x] T009 [US1] Implement `projectMercCoin(fittedModules, loadout)` returning `null` without
-      calling the package when no fitted `preEngineeredVariant.acquisition` is `mercenary`, and the
-      literal single `mercCoinCost()` result otherwise, in
+- [x] T009 [US1] Implement `projectMercCoin(cost)` returning `null` for zero and the literal
+      `buildCost().mercCoins` result otherwise, in
       `src/app/domain/cost-materials/cost-materials.ts` (depends on T004)
 - [x] T010 [US1] Implement `CostMaterials` with the `COST` block — a labelled region and a
       description list of the four canvas rows — composing shared section, description-list and
@@ -140,15 +132,15 @@ consolidated row, the type/unit footer, and the conditional Merc Coin row last.
 **Independent Test**: Build fixtures with repeated blueprints at several grades, overlapping
 materials, a separately applied effect, a baked effect, a Mercenary purchase baseline, the same
 route at a later grade, a fixed reward and an uncostable recipe; confirm the rows deep-equal the
-literal `sumMaterials(...)` output in first-seen order, that the three counts match that result,
+literal `buildCost().materials` output, that the three counts match package results,
 that purchase and fixed baselines produce no rows, that an uncostable recipe contributes nothing and
 is not named, and that a build with no engineering draws no materials block at all.
 
 ### Tests for User Story 2
 
-- [x] T014 [P] [US2] Add consolidation tests — one `sumMaterials(...)` call preserving literal
-      first-seen order, symbols and counts with no local reducer, sorting, deduplication or
-      addition; `engineeringCost()` called once per fitted module and no second classifier present;
+- [x] T014 [P] [US2] Add consolidation tests — literal `buildCost().materials` order, symbols and
+      counts with no local reducer, sorting, deduplication or addition; `engineeringCost()` used
+      only for the contributor count and no second classifier present;
       a purchase baseline and a fixed reward contributing no rows; an `unavailable` combined cost
       contributing nothing and not counted; a `known` empty list contributing nothing and not
       counted — in `src/app/domain/cost-materials/cost-materials.materials.spec.ts`
@@ -160,15 +152,16 @@ is not named, and that a build with no engineering draws no materials block at a
 - [x] T016 [P] [US2] Add `MATERIALS` block surface tests — the blueprint count opposite the heading,
       every consolidated row in package order with rarity marker, name and quantity and no
       truncation or top-N cut, the type/unit footer, the Merc Coin row rendering last and only when
-      recognized, the whole block absent when nothing contributes, and the absence of any trace
+      the package total is non-zero, the whole block absent when nothing contributes, and the absence
+      of any trace
       control, disclosure, missing-recipe wording or metadata-gap wording — in
       `src/app/features/build-workspace/outfitting/cost-materials/cost-materials.spec.ts`
 
 ### Implementation for User Story 2
 
-- [x] T017 [US2] Implement `projectMaterials(fittedModules)` building each module's committed
-      `EngineeringSelection`, calling feature 002's `engineeringCost()` once per module, folding
-      every contributing list through one `sumMaterials(...)` call, resolving each row's rarity
+- [x] T017 [US2] Implement `projectMaterials(fittedModules, materials)` preserving the package's
+      consolidated material list, using feature 002's `engineeringCost()` only for the contributing
+      blueprint count, resolving each row's rarity
       through `materialRarity()`, and counting `blueprints`, `types` and `units`, in
       `src/app/domain/cost-materials/cost-materials.ts` (depends on T004)
 - [x] T018 [US2] Add the `MATERIALS` block to `CostMaterials` — heading with blueprint count, the
@@ -236,7 +229,7 @@ is not named, and that a build with no engineering draws no materials block at a
       `src/app/features/build-workspace/outfitting/cost-materials/` under the thresholds in
       `angular.json`
 - [x] T032 [P] Record the Cost and Materials capability, its reuse of feature 002's engineering-cost
-      boundary, the four ruled application-owned figures, and the out-of-scope historical purchase
+      boundary, the three ruled application-owned counts, and the out-of-scope historical purchase
       values, currency conversion, material traces and unpriced evidence in `AGENTS.md` and
       `README.md`
 - [x] T033 Execute every section of `specs/009-cost-and-materials/quickstart.md`, including the

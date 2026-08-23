@@ -115,8 +115,11 @@ thead th {
   background-color: var(--edsb-surface-root);
   // The seam a sticky head leaves above itself, painted over: the browser's own
   // rounding puts a fraction of a pixel between the head and what it is frozen
-  // under, and the row running past shows through it.
-  box-shadow: 0 calc(-2 * var(--edsb-border-width-hairline)) 0 0 var(--edsb-surface-root);
+  // under, and the row running past shows through it. The same overhang the
+  // chooser's family bar takes, reached with a shadow rather than by pulling the
+  // box up: this head is frozen under the document, which has no clip to hide an
+  // overhang the way that scroller does.
+  box-shadow: 0 calc(-1 * var(--edsb-layout-sticky-overhang)) 0 0 var(--edsb-surface-root);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 

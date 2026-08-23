@@ -4,6 +4,7 @@ import type { SlotView } from '../../application/outfitting/slot-view';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
+import { AcquisitionBadge } from './acquisition-badge';
 import { ModuleIdentityBadge } from './module-identity-badge';
 import { PowerControls, type PowerIntent } from './power-controls';
 
@@ -42,7 +43,7 @@ export type SlotCardIntent =
  */
 @Component({
   selector: 'edsb-slot-card',
-  imports: [ModuleIdentityBadge, PowerControls],
+  imports: [AcquisitionBadge, ModuleIdentityBadge, PowerControls],
   templateUrl: './slot-card.html',
   styleUrl: './slot-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,10 +72,12 @@ export class SlotCard {
         : this.#messages.message('outfitting.slot.size', {
             size: slot.size,
           });
+    // Spoken wherever it is drawn, so a reader is told the mount's number on the
+    // hull anatomy for the same mounts a sighted Commander can read it off.
     const node =
-      slot.kind === 'hardpoint'
-        ? this.#messages.message('outfitting.slot.node', { node: slot.node })
-        : null;
+      this.nodeKind() === null
+        ? null
+        : this.#messages.message('outfitting.slot.node', { node: slot.node });
     return [kind, size, node].filter((part): part is string => part !== null).join(' · ');
   });
 
@@ -82,6 +85,18 @@ export class SlotCard {
   readonly identityText = computed(() =>
     this.#messages.message('outfitting.slot.identity', { slot: this.slot().key }),
   );
+
+  /**
+   * Which mounts carry a node number, and in whose ink.
+   *
+   * The two kinds the hull anatomy draws on the hull, and only those: a node
+   * number is a pointer at that drawing, and there is nothing on it to point at
+   * for a power plant or a cargo rack.
+   */
+  readonly nodeKind = computed<'hardpoint' | 'utility' | null>(() => {
+    const kind = this.slot().kind;
+    return kind === 'hardpoint' || kind === 'utility' ? kind : null;
+  });
 
   readonly emptyLabel = this.#messages.messageSignal('outfitting.slot.empty');
   readonly engineeredLabel = this.#messages.messageSignal('outfitting.slot.engineered');

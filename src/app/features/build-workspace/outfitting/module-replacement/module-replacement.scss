@@ -31,10 +31,6 @@
   :host {
     max-block-size: none;
   }
-
-  .replacement__foot {
-    position: static;
-  }
 }
 
 .replacement {
@@ -119,13 +115,6 @@
   @include layout.stack(var(--edsb-space-stack-tight));
 }
 
-.replacement__clear {
-  @include layout.control-base;
-  @include layout.control-quiet;
-
-  align-self: start;
-}
-
 // The manifest scrolls inside its own box, as canvas 1c's does. The document
 // never scrolls horizontally and never grows to two hundred rows tall. The box
 // that scrolls is the list's own, under its column head — this is the bound it
@@ -152,6 +141,16 @@
   padding-block: var(--edsb-space-stack-tight);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+
+  // The other half of the short-viewport release above, and it is written here
+  // rather than beside it because a media query carries no specificity: stated
+  // before this rule it lost to it on source order, and the foot went on
+  // sticking over a list the region had already stopped bounding. Rows then
+  // scrolled underneath the fit and cancel controls, which is what an
+  // accessibility scan of a fully open list at 844x390 found (wave 10).
+  @include layout.short-viewport {
+    position: static;
+  }
 }
 
 .replacement__actions {

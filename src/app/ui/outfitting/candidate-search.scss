@@ -37,17 +37,48 @@
   pointer-events: none;
 }
 
-// So a long query never runs under the hint.
+// So a long query never runs under what stands at the field's trailing edge —
+// and reserved at the *target's* width, not the hint's. The clear control is a
+// 44px box over that edge: with only the hint's width reserved it covered 28px
+// of the field's own text, so a Commander tapping the end of their query to fix
+// a typo cleared the whole thing instead. Reserved in both states rather than
+// only where the control is drawn, or the caret would jump a control's width
+// the moment the first character was typed.
 .search__field ::ng-deep .field__control {
-  padding-inline-end: var(--edsb-space-2xl);
+  padding-inline-end: var(--edsb-target-size);
 }
 
+// In the field, where the shortcut hint stands when there is nothing to clear.
+// Its mark is small because the canvas draws nothing here at all and a second
+// control beside the field was ours, not the reference's; its *target* is the
+// field's full height, because a discreet mark is not a reason to make
+// something hard to hit (FR-022, 44 CSS px).
 .search__clear {
-  @include layout.control-base;
-  @include layout.control-quiet;
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--edsb-target-size);
+  min-block-size: var(--edsb-target-size);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--edsb-text-faint);
+  cursor: pointer;
+}
 
-  flex: 0 1 auto;
-  min-inline-size: 0;
+.search__clear:hover,
+.search__clear:focus-visible {
+  color: var(--edsb-text-accent);
+}
+
+.search__clear-mark {
+  font-family: var(--edsb-font-mono);
+  font-size: var(--edsb-text-size-caption);
+  line-height: 1;
 }
 
 .visually-hidden {

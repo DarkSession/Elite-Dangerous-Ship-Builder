@@ -50,6 +50,15 @@ export class AttributeComparison {
 
   readonly captionId = relationId('attribute-comparison');
 
+  /**
+   * Whether a second column is drawn at all.
+   *
+   * `false` for a module nothing has been done to yet: it has attributes, and
+   * they are what this panel is for, but its modified figures would be its stock
+   * figures written out twice.
+   */
+  readonly comparing = input(true);
+
   readonly caption = this.#messages.messageSignal('outfitting.engineering.attributes.legend');
   readonly attributeColumn = this.#messages.messageSignal(
     'outfitting.engineering.attributes.attribute',

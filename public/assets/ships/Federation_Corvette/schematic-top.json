@@ -2,7 +2,7 @@
  "symbol": "Federation_Corvette",
  "side": "top",
  "viewBox": "0 0 1200 800",
- "source": "10f46e26c4ca4d4e07572ea3a066e830c1e1f1a385c47ed3ef5689abbee86b05",
+ "source": "72f9962879d6333ebe17aa5e8cd579ef7437fe8c9689143f6e35ced28354df78",
  "content": {
   "x": 411.19,
   "y": 39.13,
@@ -10,6 +10,18 @@
   "height": 722.47
  },
  "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "HugeHardpoint1",
+   "x": 563.94,
+   "y": 669.567
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "HugeHardpoint2",
+   "x": 636.042,
+   "y": 669.567
+  },
   {
    "feature": "hardpoint",
    "slot": "MediumHardpoint1",
@@ -35,16 +47,16 @@
    "y": 178.06
   },
   {
-   "feature": "hardpoint",
-   "slot": "HugeHardpoint2",
-   "x": 563.94,
-   "y": 669.567
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 479.913,
+   "y": 649.249
   },
   {
-   "feature": "hardpoint",
-   "slot": "HugeHardpoint1",
-   "x": 636.042,
-   "y": 669.567
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 720.168,
+   "y": 649.249
   },
   {
    "feature": "utility_mount",
@@ -69,18 +81,6 @@
    "slot": "TinyHardpoint6",
    "x": 629.486,
    "y": 314.908
-  },
-  {
-   "feature": "utility_mount",
-   "slot": "TinyHardpoint2",
-   "x": 578.523,
-   "y": 493.347
-  },
-  {
-   "feature": "utility_mount",
-   "slot": "TinyHardpoint1",
-   "x": 621.459,
-   "y": 493.347
   }
  ]
 }

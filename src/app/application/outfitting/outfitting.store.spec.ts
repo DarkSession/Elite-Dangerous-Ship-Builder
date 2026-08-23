@@ -248,6 +248,59 @@ describe('outfitting store - fitting', () => {
     expect(store.selectedCapabilities()?.canRemove).toBe(true);
   });
 
+  /**
+   * A family toggle is looking, not deciding.
+   *
+   * It is the same promise as selecting a mount or typing a query, and it is
+   * worth its own test because the open set lives *inside* the query state:
+   * writing to it must not rebuild that state, or every toggle would re-sort
+   * and re-fold hundreds of choices (FR-021, decision 15).
+   */
+  describe('module families', () => {
+    it('spends no revision, no history step and no rebuilt index on a toggle', () => {
+      store.select(FIXTURE_SLOTS.fittedHardpoint);
+      const revision = active.revision();
+      const before = store.candidateQuery()!;
+      const familyId = [...before.openFamilies][0]!;
+
+      store.toggleFamily(familyId);
+      const after = store.candidateQuery()!;
+
+      expect(after.openFamilies.has(familyId)).toBe(false);
+      expect(active.revision()).toBe(revision);
+      expect(store.canUndo()).toBe(false);
+      expect(store.canRedo()).toBe(false);
+      // The ordered choices and the folded index are the same objects: a toggle
+      // reads nothing from the package and rebuilds nothing.
+      expect(after.choices).toBe(before.choices);
+      expect(after.index).toBe(before.index);
+      expect(after.results).toBe(before.results);
+    });
+
+    it('opens the fitted module\u2019s family and no other', () => {
+      store.select(FIXTURE_SLOTS.fittedHardpoint);
+      const state = store.candidateQuery()!;
+
+      expect(state.fittedFamilyId).not.toBeNull();
+      expect([...state.openFamilies]).toEqual([state.fittedFamilyId]);
+    });
+
+    it('discards the Commander\u2019s open set on a rebuild, for the seed again', () => {
+      store.select(FIXTURE_SLOTS.fittedHardpoint);
+      const seeded = [...store.candidateQuery()!.openFamilies];
+      const closed = store.candidateQuery()!.openFamilies.values().next().value!;
+
+      store.toggleFamily(closed);
+      expect([...store.candidateQuery()!.openFamilies]).toEqual([]);
+
+      // Anything that rebuilds the chooser reseeds it: the open set belongs to
+      // the presentation, and that presentation is gone.
+      active.touch();
+
+      expect([...store.candidateQuery()!.openFamilies]).toEqual(seeded);
+    });
+  });
+
   it('leaves the snapshot, revision and derived results untouched after a refusal', () => {
     store.select(FIXTURE_SLOTS.hardpoint);
     const before = captureCheckpoint(active.loadout()!);

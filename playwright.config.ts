@@ -222,7 +222,13 @@ export default defineConfig({
   // runner with its own cores. The throughput therefore comes from the shard
   // count, which is stated in the CI workflow, and each job runs at the width
   // its machine can actually sustain.
-  workers: isCI ? 2 : undefined,
+  //
+  // Locally, eight rather than Playwright's default of half the cores. A
+  // development box here has 32 of them, and sixteen browsers plus the dev
+  // server contend for the same memory and GPU-less rasteriser — the same
+  // starvation the runner showed, reached from the other direction. Eight is
+  // where a full local run stops producing timeouts that are about the machine.
+  workers: isCI ? 2 : 8,
   // A sharded run writes a blob per shard for `playwright merge-reports` to
   // join; an unsharded one writes the HTML report directly. Each shard would
   // otherwise emit its own partial HTML report and the last upload would win.

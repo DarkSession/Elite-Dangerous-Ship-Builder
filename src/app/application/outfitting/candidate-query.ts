@@ -1,8 +1,30 @@
-import type { CandidateSection } from './acquisition-labels';
-import type { CandidateMembership, ModuleChoice } from './candidate-membership';
+import {
+  OUTFITTING_FAMILIES,
+  type OutfittingFamilyId,
+} from '@elite-dangerous-almanac/core/ships/module-families';
+import {
+  isFittedChoice,
+  type CandidateMembership,
+  type FittedArticle,
+  type ModuleChoice,
+} from './candidate-membership';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import { compareRating } from './rating-order';
 import { fold, foldQuery } from './text-folding';
+
+/**
+ * The package's own family order, as a rank.
+ *
+ * `OUTFITTING_FAMILIES` is a `Record` the Almanac writes in its own order —
+ * armour, then the core mounts, then the optionals, then the weapons — and that
+ * order is the one the chooser lists families in. Sorting the names instead
+ * would be this application deciding that `Beam Lasers` comes before
+ * `Cannons` in every language, which is a rule about game text we do not own
+ * (FR-020).
+ */
+const FAMILY_RANK: ReadonlyMap<string, number> = new Map(
+  Object.keys(OUTFITTING_FAMILIES).map((familyId, rank) => [familyId, rank]),
+);
 
 /**
  * What the chooser is currently doing, as one distinguishable state.
@@ -50,18 +72,36 @@ export interface CandidateQueryState {
   readonly status: CandidateStatus;
   /** Whether clearing the query is a route out of the current state. */
   readonly canClear: boolean;
+  /**
+   * The family of the exact choice already in the mount, where it has one.
+   *
+   * `null` when the mount is empty, or when the article it carries is not among
+   * the choices offered back — the package does not always offer a fitted
+   * reward again. It is carried rather than recomputed because it is the seed
+   * the default open state is restored from every time a query is cleared
+   * (FR-021, FR-023).
+   */
+  readonly fittedFamilyId: OutfittingFamilyId | null;
+  /**
+   * Which families are open right now.
+   *
+   * Seeded, not remembered. It is replaced wholesale on every rebuild and on
+   * every query change, and a Commander's toggle lives only until the next one
+   * — which is what FR-021 and FR-023 describe and what keeps the open set from
+   * needing an invalidation rule of its own (decision 15).
+   */
+  readonly openFamilies: ReadonlySet<OutfittingFamilyId>;
 }
 
-/** One run of choices the package names the same thing. */
-export interface CandidateGroup {
+/** One package family, with the choices it holds in the list's own order. */
+export interface CandidateFamilyView {
+  readonly familyId: OutfittingFamilyId;
+  /** The Almanac's name for the family, presented for the reading language. */
   readonly name: GameTextPresentation;
+  /** How many of the current results this family holds. */
+  readonly count: number;
+  readonly open: boolean;
   readonly choices: readonly ModuleChoice[];
-}
-
-/** One section of the chooser, in the order it is listed. */
-export interface CandidateSectionView {
-  readonly section: CandidateSection;
-  readonly groups: readonly CandidateGroup[];
 }
 
 /**
@@ -82,6 +122,7 @@ export function openCandidateQuery(
   membership: CandidateMembership,
   locale: string,
   collator: Intl.Collator,
+  fitted: FittedArticle | null = null,
 ): CandidateQueryState {
   const choices = orderChoices(membership.choices, collator);
 
@@ -96,6 +137,9 @@ export function openCandidateQuery(
       results: choices,
       status: 'ready',
       canClear: false,
+      fittedFamilyId:
+        choices.find((choice) => isFittedChoice(choice, fitted))?.presentation.familyId ?? null,
+      openFamilies: new Set(),
     },
     '',
   );
@@ -124,7 +168,53 @@ export function applyQuery(
     status: override ?? intrinsicStatus(state.choices.length, terms.length, matched.length),
     // Clearing is only a way out while there is something to clear.
     canClear: query.length > 0,
+    // A search that narrowed the list to something readable opens everything it
+    // found, so no match is hidden behind a control a Commander would have to
+    // guess at. A search that matched more than a screenful opens nothing: at
+    // that width the families themselves are the answer — which one holds what
+    // was asked for, and how many — and opening them all draws hundreds of rows
+    // a Commander is about to type past anyway (FR-023). An empty query goes
+    // back to the fitted module's family alone (FR-021).
+    openFamilies:
+      terms.length === 0
+        ? seedFamilies(state)
+        : matched.length > OPEN_ON_SEARCH_LIMIT
+          ? new Set()
+          : familiesOf(matched),
   };
+}
+
+/** Opens or closes exactly one family, and changes nothing else. */
+export function toggleFamily(
+  state: CandidateQueryState,
+  familyId: OutfittingFamilyId,
+): CandidateQueryState {
+  const open = new Set(state.openFamilies);
+  if (!open.delete(familyId)) {
+    open.add(familyId);
+  }
+  return { ...state, openFamilies: open };
+}
+
+/**
+ * How many matches a search may open at once.
+ *
+ * Above it the families stay closed. The figure is a screenful rather than an
+ * arithmetic bound: 25 rows is more than any supported viewport shows at once,
+ * so a Commander whose search opened everything can always still see that it
+ * did, while the first letter of a broad term — which matches most of a
+ * 478-choice mount — stops building hundreds of cards that are about to be
+ * typed past (module-replacement design, "Module families").
+ */
+const OPEN_ON_SEARCH_LIMIT = 25;
+
+/** The default: the fitted choice's family alone, or nothing at all. */
+function seedFamilies(state: CandidateQueryState): ReadonlySet<OutfittingFamilyId> {
+  return state.fittedFamilyId === null ? new Set() : new Set([state.fittedFamilyId]);
+}
+
+function familiesOf(choices: readonly ModuleChoice[]): ReadonlySet<OutfittingFamilyId> {
+  return new Set(choices.map((choice) => choice.presentation.familyId));
 }
 
 /** Whether a state describes the build and language currently on screen. */
@@ -140,37 +230,42 @@ export function isCurrent(
 }
 
 /**
- * The results as sections and name groups, for rendering.
+ * The results as the package's families, for rendering.
  *
- * Derived rather than stored: the ordering already puts each section's choices
- * together and each name's choices together inside it, so this walks the list
- * once and marks where it changes. Storing a second, parallel shape would be
- * two things to keep in step.
+ * Derived rather than stored: the ordering already puts each family's choices
+ * together, so this walks the list once and marks where the family changes.
+ * Storing a second, parallel shape would be two things to keep in step.
+ *
+ * A family with nothing in the current results is simply not here. A search
+ * that matched nothing in `Beam Lasers` must not draw a `Beam Lasers` control
+ * with nothing behind it, so absence is how a family without a match is shown
+ * (FR-023).
  */
-export function groupCandidates(
+export function groupFamilies(
   results: readonly ModuleChoice[],
-  collator: Intl.Collator,
-): readonly CandidateSectionView[] {
-  const sections: CandidateSectionView[] = [];
+  openFamilies: ReadonlySet<OutfittingFamilyId>,
+): readonly CandidateFamilyView[] {
+  const families: CandidateFamilyView[] = [];
 
   for (const choice of results) {
-    const section = choice.presentation.section;
-    let current = sections.at(-1);
-    if (current === undefined || current.section !== section) {
-      current = { section, groups: [] };
-      sections.push(current);
+    const familyId = choice.presentation.familyId;
+    let current = families.at(-1);
+    if (current === undefined || current.familyId !== familyId) {
+      current = {
+        familyId,
+        name: choice.presentation.family,
+        count: 0,
+        open: openFamilies.has(familyId),
+        choices: [],
+      };
+      families.push(current);
     }
 
-    const groups = current.groups as CandidateGroup[];
-    const last = groups.at(-1);
-    if (last !== undefined && collator.compare(nameOf(last.choices[0]!), nameOf(choice)) === 0) {
-      (last.choices as ModuleChoice[]).push(choice);
-    } else {
-      groups.push({ name: choice.presentation.name, choices: [choice] });
-    }
+    (current.choices as ModuleChoice[]).push(choice);
+    (current as { count: number }).count += 1;
   }
 
-  return sections;
+  return families;
 }
 
 /**
@@ -182,25 +277,23 @@ export function groupCandidates(
  * the same decision the search folding makes, taken by the locale's own rules
  * rather than by ours.
  *
- * Sections first, so the unique rewards are the final block however they sort
- * inside it. Then the name a Commander reads, compared with the active
- * locale's own rules at base sensitivity so `Multi-Cannon` and `multi-cannon`
- * are one group rather than two. Then class descending — the biggest module a
- * mount takes is the one being looked for — rating ascending, and the stock
- * article before the rewards built on it. The package's own ordinals settle the
- * rest, so two indistinguishable rows still come out in the order the Almanac
- * published them (module-catalogue contract, "Sections, groups and order").
+ * The package's family first, in the package's own order, so every choice in a
+ * family is one run and the runs come out as the Almanac lists them. Then the
+ * name a Commander reads, compared with the active locale's own rules at base
+ * sensitivity so `Multi-Cannon` and `multi-cannon` sort as one module rather
+ * than two. Then class descending — the biggest module a mount takes is the one
+ * being looked for — rating ascending, and the stock article before the rewards
+ * built on it. The package's own ordinals settle the rest, so two
+ * indistinguishable rows still come out in the order the Almanac published them
+ * (module-catalogue contract, "Families and order").
  */
 export function orderChoices(
   choices: readonly ModuleChoice[],
   collator: Intl.Collator,
 ): readonly ModuleChoice[] {
-  const sectionRank: Record<CandidateSection, number> = { standard: 0, uniqueReward: 1 };
-
   return [...choices].sort((left, right) => {
-    const bySection =
-      sectionRank[left.presentation.section] - sectionRank[right.presentation.section];
-    if (bySection !== 0) return bySection;
+    const byFamily = familyRank(left) - familyRank(right);
+    if (byFamily !== 0) return byFamily;
 
     const byName = collator.compare(nameOf(left), nameOf(right));
     if (byName !== 0) return byName;
@@ -283,6 +376,17 @@ function intrinsicStatus(total: number, terms: number, matched: number): Candida
  */
 function nameOf(choice: ModuleChoice): string {
   return choice.presentation.name.text ?? '';
+}
+
+/**
+ * Where a choice's family sits in the package's own list.
+ *
+ * A family the pinned package's rank table does not know sorts last rather than
+ * being dropped: the choice is still one the Almanac offered for this mount,
+ * and losing it from the list would be worse than listing it at the end.
+ */
+function familyRank(choice: ModuleChoice): number {
+  return FAMILY_RANK.get(choice.presentation.familyId) ?? FAMILY_RANK.size;
 }
 
 function kindRank(choice: ModuleChoice): number {

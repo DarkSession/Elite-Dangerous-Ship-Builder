@@ -1,6 +1,7 @@
 # Implementation Plan: Module Outfitting and Engineering
 
-**Branch**: `002-module-outfitting` | **Date**: 2026-08-21 | **Spec**: [spec.md](./spec.md)
+**Branch**: `002-module-families-almanac-upgrade` | **Date**: 2026-08-21, revised 2026-08-23 |
+**Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/002-module-outfitting/spec.md`
 
@@ -14,6 +15,17 @@ the control and routes it through the same transaction and history path as any o
 models and dispatch intents. Pure TypeScript services query and edit package-owned detached
 `ShipLoadout` candidates reconstructed from feature 001's modelled snapshot boundary; only a
 successful, changed candidate atomically replaces the active build.
+
+**Wave 10 (2026-08-23) adds module families to the chooser and withdraws its two sections.** Both
+outfitting canvases were redrawn around collapsible families, and `@elite-dangerous-almanac/core`
+0.1.7 — pinned in the same change — supplies the grouping they draw: every module now carries an
+`OutfittingModuleIdentity.familyId`, and `getOutfittingFamilyName` names all 77 families in English
+and 58 of them in each other supported language. Grouping is therefore a package read, not an
+application taxonomy: FR-020 through FR-024 add a collapsible level keyed on that id, seeded open at
+the fitted module's family, reseeded from search, and the standard/unique-reward sections come out
+because neither canvas draws them any more. The work is confined to the replacement surface — one
+presenter method, one grouping function, one piece of query state and the family control — and
+touches no transaction, ingress, engineering, cost or history path.
 
 The design follows `.design/Ship Builder.dc.html` canvases 1c and 1d: a dense wide workspace with an
 inline fitting bench and responsive narrow full-screen replacement/engineering layers. The source's
@@ -35,12 +47,15 @@ configuration. Full TypeScript/template strictness through the shared foundation
 implementation prerequisite
 
 **Primary Dependencies**: Angular standalone/zoneless APIs and signals; RxJS;
-`@elite-dangerous-almanac/core`; feature 001's active-build snapshot/reconstruction/swap
+`@elite-dangerous-almanac/core` **0.1.7** (from 0.1.6: `OutfittingModuleIdentity.family: string | null`
+is replaced by `familyId: OutfittingFamilyId`, `ships/module-families` and `i18n/module-families` are
+new, and `GameLocale` gains `pt`; the repository referenced none of these, so the pin bump typechecks
+clean); feature 001's active-build snapshot/reconstruction/swap
 boundary; feature 011's UI, localization, announcement and verification foundations
 
 **Storage**: One observable committed `ShipLoadout`; modelled `BuildSnapshotV1` checkpoints in session
-memory only. Selection, queries, editor drafts, refusals and history are never serialized. Historical
-purchase values are neither modelled nor retained
+memory only. Selection, queries, open family state, editor drafts, refusals and history are never
+serialized. Historical purchase values are neither modelled nor retained
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
 function and line thresholds; Playwright with `@axe-core/playwright` scans across desktop, tablet
@@ -67,8 +82,10 @@ package's largest discovered chooser; exactly the newest 100 Commander decisions
 surfaces composed within `/build`
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1c (1560px wide reference) and 1d
-(390px, minimum 844px-high mobile reference). Adoption and intentional departures are recorded in
-[design/reference-review.md](./design/reference-review.md).
+(390px, minimum 844px-high mobile reference), both redrawn 2026-08-23. Adoption and intentional
+departures are recorded in [design/reference-review.md](./design/reference-review.md); the wave 10
+family rulings, including the two withdrawals, are in
+[design/module-replacement.md](./design/module-replacement.md).
 
 ## Constitution Check
 
@@ -76,17 +93,17 @@ _GATE: **PASS with no exception**. Historical purchase values remain outside the
 construction always populates fixed mounts, so no local substitute is required. Implementation
 remains sequenced behind features 001 and 011._
 
-| Principle                               | Plan evidence                                                                                                                                                                                                                                       | Status                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                                                                                                                                    | PASS                       |
-| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including fixed-mount defaults at import.                                                                                                                                                | PASS                       |
-| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                                                                                                                               | PASS                       |
-| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and package construction always populates fixed mounts.                                                                                                                                      | PASS                       |
-| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.                                                                                                           | PASS; 011 prerequisite     |
-| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                                                                                                                          | PASS; 011 prerequisite     |
-| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                                                                                                                        | PASS; 011 prerequisite     |
-| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                                                                                                                      | PASS; harness prerequisite |
-| IX. Specification Before Implementation | The 2026-08-18 and 2026-08-21 clarifications resolve unsupported partial ingress, ship name/ident ownership, slot display, clear-all duplication, roll wording and the unrequired search shortcut before this redesign; every FR maps to a surface. | PASS                       |
+| Principle                               | Plan evidence                                                                                                                                                                                                                                                                                | Status                     |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| I. Client-Side Only                     | Queries, transactions and history use installed code and browser memory; no new network or persistence boundary.                                                                                                                                                                             | PASS                       |
+| II. Almanac Source of Truth             | All game behavior and reconstruction remain package-owned, including fixed-mount defaults at import and the whole family taxonomy and its names; the badge and the DPS/power range the canvas draws are withdrawn rather than computed locally.                                              | PASS                       |
+| III. Domain Logic Outside UI            | Query, ingress, transaction and history services are render-free; the signal store orchestrates them.                                                                                                                                                                                        | PASS                       |
+| IV. Lossless, Honest Builds             | Resolved modelled fields restore; unknown hulls refuse and package construction always populates fixed mounts.                                                                                                                                                                               | PASS                       |
+| V. Desktop, Tablet and Mobile           | Wide, tablet and narrow contracts retain every action; zoom, touch, orientation, screen reader and no-overflow verification are explicit.                                                                                                                                                    | PASS; 011 prerequisite     |
+| VI. Commander's Language                | App prose uses feature 011; package nouns, slot labels and diagnostics use package i18n with disclosed canonical fallback.                                                                                                                                                                   | PASS; 011 prerequisite     |
+| VII. One Design System                  | Screens compose/extend `src/app/ui/`; `.design` supplies hierarchy rather than CSS literals.                                                                                                                                                                                                 | PASS; 011 prerequisite     |
+| VIII. Tested Before It Ships            | Domain tests and ten Playwright projects with axe are required without lowering coverage or omitting browsers.                                                                                                                                                                               | PASS; harness prerequisite |
+| IX. Specification Before Implementation | The 2026-08-18, 2026-08-21 and 2026-08-23 clarifications resolve unsupported partial ingress, ship name/ident ownership, slot display, clear-all duplication, roll wording, the unrequired search shortcut and now the family definition and section withdrawal; every FR maps to a surface. | PASS                       |
 
 Feature 001's canonical `BuildSnapshotV1` supplies detached reconstruction, its name/ident fields and
 modelled session checkpoints; feature 002 owns the name/ident control that writes them. Reconstruction goes back through `ShipLoadout`; raw-module overlays,
@@ -150,7 +167,7 @@ src/app/
 ├── application/
 │   ├── active-build/                       # feature 001; integrated, not duplicated
 │   └── outfitting/
-│       ├── candidate-query.ts            # locale-dependent projection/search
+│       ├── candidate-query.ts            # locale-dependent projection/search/family grouping
 │       └── outfitting.store.ts
 ├── i18n/                                      # feature 011 package/app text presenter
 ├── ui/                                        # feature 011 primitives extended here
@@ -196,6 +213,11 @@ The full decisions and alternatives are in [research.md](./research.md):
   material and diagnostic source text. App localization owns framing and controls only.
 - In-memory `BuildSnapshotV1` checkpoints implement undo/redo through package reconstruction; inverse
   commands and captured `LoadoutEvent` snapshots are not used.
+- The chooser groups on the package's `familyId` and labels with its family lookup; a displayed-name
+  group cannot reproduce either canvas, and no local family table, abbreviation or aggregate is added
+  (decisions 13 and 14).
+- Open family state is one seeded set inside `CandidateQueryState`, replaced on every rebuild and
+  every query change rather than remembered across them (decision 15).
 
 No `NEEDS CLARIFICATION` marker remains.
 
@@ -219,12 +241,23 @@ No `NEEDS CLARIFICATION` marker remains.
 ## Post-Design Constitution Re-check
 
 Phase 1 adds no server, private catalogue, local game calculation, component-owned build, persisted
-history, hard-coded display string, visual literal or hidden unavailable value. Every FR, including
+history, hard-coded display string, visual literal or hidden unavailable value. The wave 10 family
+work adds no local taxonomy: the grouping key, the family order and every family name are package
+values, and the two canvas elements that would have needed a local rule — the two-letter badge and
+the per-family DPS/power range — are withdrawn on the record rather than invented. Every FR, including
 the FR-013 rejection path, has a surface owner and validation scenario. The direct feature gate is
 **PASS**; implementation remains sequenced behind the planned 001/011 foundations.
 
 ## Complexity Tracking
 
 No constitutional violation is accepted. A temporary reconstructed candidate is not a second
-observable build. The tablet composition document closes a reference gap rather than introducing
+observable build. `openFamilies` is not a second build state: it is seeded from the build and
+discarded with the query state it lives in, and it never reaches the snapshot, history, persistence
+or the fragment. SC-002 is met at the compact composition as of
+2026-08-23, which it had not been since the criterion was first measured: collapsed families alone did
+not close the gap — they moved it, the first broad search term building the matching families' rows
+cold at 539 ms — and the rule that closed it is that a search opens what it matched only up to a
+screenful of twenty-five choices, above which every family stays closed with its own count. FR-023
+and SC-008 are amended to that; the figures are in the module-replacement design under "Module
+families". The tablet composition document closes a reference gap rather than introducing
 another product surface. Historical purchase provenance remains outside the application model.

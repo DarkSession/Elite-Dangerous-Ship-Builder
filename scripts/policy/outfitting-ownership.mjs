@@ -45,6 +45,46 @@ export const SEALED = [
 /** What a checkpoint or tape is called, wherever it is imported from. */
 const HISTORY_MODULES = ['session-edit-history', 'modeled-build-checkpoint'];
 
+/**
+ * Where the Almanac's family taxonomy may be *read*.
+ *
+ * Two places and no third: the presenter, which turns a family id into the
+ * package's own name for the reading language, and the application layer that
+ * orders and groups by it. A component that read it would be deciding what a
+ * family is instead of rendering what it was handed, and anywhere else in the
+ * repository is a second taxonomy by definition (FR-020).
+ *
+ * A type-only import is not a reading. `OutfittingFamilyId` is how a signature
+ * says "this is the package's id and not a string of ours"; it carries no
+ * names, no order and no membership, and forbidding it would push every
+ * boundary between these files back to `string`. Specs and fixtures are
+ * excluded for the reason every other rule here excludes them: their job is to
+ * characterize the installed package.
+ */
+const FAMILY_MODULE = 'module-families';
+const FAMILY_READERS = ['src/app/i18n/game-text.presenter.ts', 'src/app/application/outfitting/'];
+
+/** Where a repository-wide rule looks. Specs and fixtures characterize the package. */
+const SOURCE_ROOTS = ['src/app', 'scripts'];
+
+/** How many family ids in one literal make it a table rather than a mention. */
+const TABLE_THRESHOLD = 3;
+
+/** What shortening game text looks like, whatever it is called. */
+const SHORTENING = new Set([
+  'slice',
+  'substring',
+  'substr',
+  'charAt',
+  'split',
+  'match',
+  'replace',
+  'replaceAll',
+]);
+
+/** What an aggregate over a run of rows looks like. */
+const AGGREGATING = new Set(['min', 'max', 'reduce', 'sort']);
+
 /** The package's own module symbols. Application code never names one. */
 const MODULE_SYMBOL = /^(?:Int_|Hpt_|Armour_)/i;
 
@@ -53,6 +93,13 @@ const COLOUR_LITERAL = /(#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|color-mix)\s*\()/i;
 
 /** A length in pixels. Every spacing and size step is a token here. */
 const PIXEL_LITERAL = /(?<![\w-])-?\d*\.?\d+px\b/;
+
+/** Every family id the installed package publishes, read from the package. */
+const FAMILY_IDS = new Set(
+  Object.keys(
+    (await import('@elite-dangerous-almanac/core/ships/module-families')).OUTFITTING_FAMILIES,
+  ),
+);
 
 async function* walk(directory) {
   let entries;
@@ -93,6 +140,42 @@ function parse(source, name) {
   return ts.createSourceFile(name, source, ts.ScriptTarget.ESNext, true);
 }
 
+/** Whether a token appears anywhere in the function or block a node sits in. */
+function nearestScope(file, node) {
+  let scope = node.parent;
+  while (
+    scope !== undefined &&
+    !ts.isFunctionLike(scope) &&
+    !ts.isClassDeclaration(scope) &&
+    !ts.isSourceFile(scope)
+  ) {
+    scope = scope.parent;
+  }
+  return (scope ?? file).getText(file);
+}
+
+/** `family` named anywhere in the same function as an abbreviating call. */
+function familyNear(file, node) {
+  return /family/i.test(nearestScope(file, node));
+}
+
+function factsIn(text) {
+  // `.facts` however it is reached: a property, an index, a destructure. The
+  // dot is what makes it the projection's cell rather than a local named facts.
+  return /presentation\.facts|\.facts\b/.test(text);
+}
+
+/**
+ * The package's figures read anywhere in the same function as an aggregate.
+ *
+ * The two-step range is the natural way to write the thing this forbids —
+ * `const dps = family.choices.map((c) => c.presentation.facts.damage)` and then
+ * `Math.min(...dps)` — and neither half mentions both tokens on its own.
+ */
+function factsNear(file, node) {
+  return factsIn(nearestScope(file, node));
+}
+
 function lineOf(file, node) {
   return file.getLineAndCharacterOfPosition(node.getStart(file)).line + 1;
 }
@@ -110,7 +193,179 @@ function imports(file) {
   }));
 }
 
+/** Every `.ts` file under the repository's own source, specs included. */
+async function sourceFiles() {
+  const files = [];
+  for (const directory of SOURCE_ROOTS) {
+    for await (const path of walk(resolve(ROOT, directory))) {
+      if (extname(path) === '.ts' || extname(path) === '.mts') {
+        files.push(relative(ROOT, path));
+      }
+    }
+  }
+  return files.sort();
+}
+
+/** Every string literal directly inside one array or object literal. */
+function literalStrings(node) {
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.filter(ts.isStringLiteral).map((element) => element.text);
+  }
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.properties.flatMap((property) => {
+      const name = property.name;
+      if (name === undefined) return [];
+      if (ts.isIdentifier(name)) return [name.text];
+      if (ts.isStringLiteral(name)) return [name.text];
+      if (ts.isComputedPropertyName(name) && ts.isStringLiteral(name.expression)) {
+        return [name.expression.text];
+      }
+      return [];
+    });
+  }
+  return [];
+}
+
 const RULES = [
+  {
+    name: 'the family taxonomy is read in two places',
+    async run(violations) {
+      for (const name of await sourceFiles()) {
+        if (name.includes('.spec.') || name.includes('.fixtures.')) {
+          continue;
+        }
+        const source = await readFile(resolve(ROOT, name), 'utf8');
+        if (!source.includes(FAMILY_MODULE)) {
+          continue;
+        }
+        const file = parse(source, name);
+        // A reader may read. What no file may do — a reader least of all, since
+        // it is the one holding the taxonomy — is pass it on: one re-export
+        // from here would hand it to any component through a specifier the
+        // import rule below never looks at, and `await import(…)` is not an
+        // import declaration at all. So this walk runs everywhere.
+        const reach = (node) => {
+          const escaped =
+            (ts.isExportDeclaration(node) &&
+              node.moduleSpecifier !== undefined &&
+              node.moduleSpecifier.getText(file).includes(FAMILY_MODULE) &&
+              node.isTypeOnly !== true) ||
+            (ts.isCallExpression(node) &&
+              node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+              node.getText(file).includes(FAMILY_MODULE));
+          if (escaped) {
+            violations.push({
+              file: name,
+              line: lineOf(file, node),
+              reason:
+                `passes the family taxonomy on from "${FAMILY_MODULE}"; re-exporting it or ` +
+                'importing it dynamically is the same reading through a different door, and a ' +
+                'reader doing it hands the taxonomy to every file that imports the reader',
+            });
+          }
+          ts.forEachChild(node, reach);
+        };
+        ts.forEachChild(file, reach);
+
+        if (FAMILY_READERS.some((reader) => name.startsWith(reader))) {
+          continue;
+        }
+        for (const entry of imports(file)) {
+          if (entry.specifier.includes(FAMILY_MODULE) && !entry.typeOnly) {
+            violations.push({
+              file: name,
+              line: lineOf(file, entry.node),
+              reason:
+                `imports "${entry.specifier}" outside ${FAMILY_READERS.join(' and ')}; ` +
+                'the family taxonomy is read where it is presented and where it is grouped, nowhere else',
+            });
+          }
+        }
+      }
+    },
+  },
+  {
+    name: 'no local family-id table',
+    async run(violations) {
+      for (const name of await ownedFiles(['.ts'])) {
+        const file = parse(await readFile(resolve(ROOT, name), 'utf8'), name);
+        const visit = (node) => {
+          const named = literalStrings(node).filter((value) => FAMILY_IDS.has(value));
+          if (named.length >= TABLE_THRESHOLD) {
+            violations.push({
+              file: name,
+              line: lineOf(file, node),
+              reason:
+                `writes ${named.length} Almanac family ids into a literal; the taxonomy is the ` +
+                "package's 77 ids and this repository does not copy, extend or abbreviate it",
+            });
+          }
+          ts.forEachChild(node, visit);
+        };
+        ts.forEachChild(file, visit);
+      }
+    },
+  },
+  {
+    name: 'no derived family abbreviation and no per-family aggregate',
+    async run(violations) {
+      for (const name of await ownedFiles(['.ts'])) {
+        const file = parse(await readFile(resolve(ROOT, name), 'utf8'), name);
+        const visit = (node) => {
+          if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+            const method = node.expression.name.text;
+            const receiver = node.expression.expression.getText(file);
+            const whole = node.getText(file);
+
+            // Canvas 1d's `MC` chip. The Almanac publishes no abbreviation, so
+            // any rule that produces one is this application shortening game
+            // text — and it has no answer at all for the 19 families whose only
+            // name is English (module-replacement design, "Withdrawn").
+            //
+            // Matched on the enclosing statement rather than on the receiver
+            // alone, because one alias would otherwise defeat it: `const label =
+            // family.name.text; label.slice(0, 2)` produces exactly the chip
+            // this exists to stop and mentions no family anywhere near the call.
+            if (SHORTENING.has(method) && (/family/i.test(receiver) || familyNear(file, node))) {
+              violations.push({
+                file: name,
+                line: lineOf(file, node),
+                reason: `derives a family abbreviation with "${method}"; the package's own family name ships whole`,
+              });
+            }
+
+            // Canvas 1d's `15.1–28.4 DPS`. A min-max across a family is an
+            // aggregate the Almanac does not publish, over figures that are
+            // null for any choice it has no stats for (constitution IV).
+            if (AGGREGATING.has(method) && (factsIn(whole) || factsNear(file, node))) {
+              violations.push({
+                file: name,
+                line: lineOf(file, node),
+                reason: `aggregates package figures with "${method}"; a range across a family is a value nobody published`,
+              });
+            }
+          }
+
+          if (
+            ts.isCallExpression(node) &&
+            ts.isPropertyAccessExpression(node.expression) &&
+            node.expression.expression.getText(file) === 'Math' &&
+            AGGREGATING.has(node.expression.name.text) &&
+            (factsIn(node.getText(file)) || factsNear(file, node))
+          ) {
+            violations.push({
+              file: name,
+              line: lineOf(file, node),
+              reason: `aggregates package figures with "Math.${node.expression.name.text}"; a range across a family is a value nobody published`,
+            });
+          }
+
+          ts.forEachChild(node, visit);
+        };
+        ts.forEachChild(file, visit);
+      }
+    },
+  },
   {
     name: 'Almanac subpath imports',
     async run(violations) {

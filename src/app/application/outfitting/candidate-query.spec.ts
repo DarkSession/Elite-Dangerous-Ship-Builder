@@ -1,3 +1,4 @@
+import { OUTFITTING_FAMILIES } from '@elite-dangerous-almanac/core/ships/module-families';
 import {
   FIXTURE_SLOTS,
   ROUTE_DISTINCT_SYMBOL,
@@ -5,12 +6,14 @@ import {
   packageText,
   routeDistinctVariants,
 } from '../../domain/outfitting/outfitting.fixtures';
-import { candidateMembership, type ModuleChoice } from './candidate-membership';
+import { candidateMembership, type FittedArticle, type ModuleChoice } from './candidate-membership';
 import {
   applyQuery,
   buildIndex,
+  groupFamilies,
   isCurrent,
   openCandidateQuery,
+  toggleFamily,
   type CandidateQueryState,
 } from './candidate-query';
 import { compareRating } from './rating-order';
@@ -24,20 +27,63 @@ import { compareRating } from './rating-order';
  * between neighbouring rows, which is what the contract actually fixes.
  */
 
-/** Anything outside ASCII: the accented package names the folding has to reach. */
-const NON_ASCII = /[^\u0000-\u007f]/u;
-
 function collatorFor(locale: string): Intl.Collator {
   return new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
 }
 
-function open(slotKey: string, locale = 'en', revision = 1): CandidateQueryState {
+function open(
+  slotKey: string,
+  locale = 'en',
+  revision = 1,
+  fitted: FittedArticle | null = null,
+): CandidateQueryState {
   const loadout = defaultBuild();
   return openCandidateQuery(
     candidateMembership(loadout, slotKey, revision, packageText(locale)),
     locale,
     collatorFor(locale),
+    fitted,
   );
+}
+
+/**
+ * How many matches a search may open, mirrored from the module under test.
+ *
+ * Written here rather than imported because it is what the test is asserting
+ * about: a change to the figure has to be a deliberate change to this file too.
+ */
+const SCREENFUL = 25;
+
+/**
+ * A query narrow enough that everything it matched opens.
+ *
+ * Terms are tried longest-first until one lands inside the screenful, so the
+ * test asserts the open-everything rule against a real package result rather
+ * than against a term that happened to be narrow on the day it was written.
+ */
+function narrowSearch(state: CandidateQueryState): CandidateQueryState {
+  const words = new Set(
+    state.choices.flatMap((choice) => (choice.presentation.name.text ?? '').split(/\s+/u)),
+  );
+
+  for (const word of words) {
+    if (word.length < 3) {
+      continue;
+    }
+    const searched = applyQuery(state, word);
+    const families = new Set(searched.results.map((choice) => choice.presentation.familyId));
+    if (searched.results.length <= SCREENFUL && families.size > 1) {
+      return searched;
+    }
+  }
+  throw new Error('no word in the fixture mount matched more than one family inside a screenful');
+}
+
+/** The package's own family order, which is the order the chooser lists them in. */
+const FAMILY_ORDER = Object.keys(OUTFITTING_FAMILIES);
+
+function rankOf(choice: ModuleChoice): number {
+  return FAMILY_ORDER.indexOf(choice.presentation.familyId);
 }
 
 function nameOf(choice: ModuleChoice): string {
@@ -48,7 +94,7 @@ describe('candidate ordering', () => {
   const slots = [FIXTURE_SLOTS.hardpoint, FIXTURE_SLOTS.core, FIXTURE_SLOTS.optional];
 
   for (const slotKey of slots) {
-    it(`orders ${slotKey} by section, name, class, rating and then the package's own ordinals`, () => {
+    it(`orders ${slotKey} by family, name, class, rating and then the package's own ordinals`, () => {
       const collator = collatorFor('en');
       const choices = open(slotKey).choices;
 
@@ -58,11 +104,10 @@ describe('candidate ordering', () => {
         const previous = choices[index - 1]!;
         const current = choices[index]!;
 
-        // Unique rewards are the final block, so a standard choice never
-        // follows one.
-        if (previous.presentation.section !== current.presentation.section) {
-          expect(previous.presentation.section).toBe('standard');
-          expect(current.presentation.section).toBe('uniqueReward');
+        // Families come out in the package's own order, and each is one run.
+        const byFamily = rankOf(previous) - rankOf(current);
+        expect(byFamily).toBeLessThanOrEqual(0);
+        if (byFamily !== 0) {
           continue;
         }
 
@@ -103,16 +148,43 @@ describe('candidate ordering', () => {
     });
   }
 
-  it('puts every unique reward after every standard choice', () => {
-    const choices = open(FIXTURE_SLOTS.hardpoint).choices;
-    const firstReward = choices.findIndex(
-      (choice) => choice.presentation.section === 'uniqueReward',
+  it('puts every choice in exactly one family, in the package\u2019s own order', () => {
+    const state = open(FIXTURE_SLOTS.hardpoint);
+    const families = groupFamilies(state.results, new Set());
+
+    expect(families.length).toBeGreaterThan(1);
+    // Every choice is accounted for once, which is what "exactly one family"
+    // means: nothing is dropped and nothing is listed twice (FR-020, SC-006).
+    expect(families.reduce((total, family) => total + family.choices.length, 0)).toBe(
+      state.results.length,
+    );
+    expect(new Set(families.map((family) => family.familyId)).size).toBe(families.length);
+    expect(families.map((family) => FAMILY_ORDER.indexOf(family.familyId))).toEqual(
+      [...families.map((family) => FAMILY_ORDER.indexOf(family.familyId))].sort(
+        (left, right) => left - right,
+      ),
     );
 
-    expect(firstReward).toBeGreaterThan(0);
-    expect(
-      choices.slice(firstReward).every((choice) => choice.presentation.section === 'uniqueReward'),
-    ).toBe(true);
+    for (const family of families) {
+      expect(family.count).toBe(family.choices.length);
+      expect(family.name.text).toBe(OUTFITTING_FAMILIES[family.familyId]);
+      expect(
+        family.choices.every((choice) => choice.presentation.familyId === family.familyId),
+      ).toBe(true);
+    }
+  });
+
+  it('keeps a unique reward in its base module\u2019s family, not a section of its own', () => {
+    const state = open(FIXTURE_SLOTS.hardpoint);
+    const reward = state.choices.find((choice) => choice.presentation.section === 'uniqueReward')!;
+    const base = state.choices.find(
+      (choice) => choice.kind === 'stock' && choice.module.symbol === reward.module.symbol,
+    )!;
+
+    expect(reward.presentation.familyId).toBe(base.presentation.familyId);
+    // And its labels are untouched: the heading went, the row's marking did not
+    // (FR-024).
+    expect(reward.presentation.labels.map((label) => label.kind)).toContain('uniqueReward');
   });
 
   it('keeps route-distinct variants distinct and in the package order', () => {
@@ -125,14 +197,150 @@ describe('candidate ordering', () => {
     expect(choices.length).toBe(variants.length);
     expect(new Set(choices.map((choice) => choice.key)).size).toBe(choices.length);
 
-    // Within one section the package's ordinal decides, so two rows that are
-    // otherwise identical never swap.
-    for (const section of ['standard', 'uniqueReward'] as const) {
-      const ordinals = choices
-        .filter((choice) => choice.presentation.section === section)
-        .map((choice) => (choice.kind === 'variant' ? choice.variantOrdinal : -1));
-      expect([...ordinals].sort((left, right) => left - right)).toEqual(ordinals);
-    }
+    // Every route-distinct row of one module shares that module's family, and
+    // inside it the package's ordinal decides — so two rows that are otherwise
+    // identical never swap.
+    expect(new Set(choices.map((choice) => choice.presentation.familyId)).size).toBe(1);
+    const ordinals = choices.map((choice) =>
+      choice.kind === 'variant' ? choice.variantOrdinal : -1,
+    );
+    expect([...ordinals].sort((left, right) => left - right)).toEqual(ordinals);
+  });
+});
+
+/**
+ * The open set: three seeds, one toggle, and no memory across a rebuild.
+ *
+ * Everything here is about `openFamilies` being *derived* rather than
+ * remembered. It is replaced wholesale on every rebuild and every query change,
+ * which is what FR-021 and FR-023 describe and what means there is no second
+ * lifetime to invalidate (decision 15).
+ */
+describe('open families', () => {
+  /** The mount the default build arrives with something already fitted in. */
+  const FITTED = FIXTURE_SLOTS.fittedHardpoint;
+
+  function fittedArticleOf(state: CandidateQueryState): FittedArticle {
+    const choice = state.choices.find((candidate) => candidate.kind === 'stock')!;
+    return { symbol: choice.module.symbol, variant: null };
+  }
+
+  it('opens the fitted choice\u2019s family, and only that one', () => {
+    const bare = open(FITTED);
+    const fitted = fittedArticleOf(bare);
+    const state = open(FITTED, 'en', 1, fitted);
+
+    const expected = state.choices.find(
+      (choice) => choice.kind === 'stock' && choice.module.symbol === fitted.symbol,
+    )!.presentation.familyId;
+
+    expect(state.fittedFamilyId).toBe(expected);
+    expect([...state.openFamilies]).toEqual([expected]);
+  });
+
+  it('opens nothing when no available family holds that exact choice', () => {
+    // An empty mount, and a mount whose fitted article the package does not
+    // offer back, are the same case: there is no family to open (FR-021).
+    const empty = open(FITTED);
+    expect(empty.fittedFamilyId).toBeNull();
+    expect([...empty.openFamilies]).toEqual([]);
+
+    const unknown = open(FITTED, 'en', 1, { symbol: 'not-a-symbol', variant: null });
+    expect(unknown.fittedFamilyId).toBeNull();
+    expect([...unknown.openFamilies]).toEqual([]);
+  });
+
+  it('opens every family a narrow query matched, and drops the rest', () => {
+    const state = open(FIXTURE_SLOTS.hardpoint);
+    const searched = narrowSearch(state);
+
+    expect(searched.results.length).toBeGreaterThan(0);
+    expect(searched.results.length).toBeLessThanOrEqual(SCREENFUL);
+    const matchedFamilies = new Set(searched.results.map((choice) => choice.presentation.familyId));
+    expect(matchedFamilies.size).toBeGreaterThan(1);
+    expect(new Set(searched.openFamilies)).toEqual(matchedFamilies);
+
+    // Every family that survives the grouping is open, so no match is behind a
+    // closed control, and a family with no match is absent rather than empty.
+    const families = groupFamilies(searched.results, searched.openFamilies);
+    expect(families.every((family) => family.open)).toBe(true);
+    expect(families.every((family) => family.count > 0)).toBe(true);
+  });
+
+  it('opens nothing when a query matched more than a screenful, and still counts it', () => {
+    // A term that matches most of a mount has not answered anything a Commander
+    // can read. What they can read is which families hold the matches and how
+    // many, so the families stand closed with their counts and the rows are not
+    // drawn — which is what brought SC-002 inside its budget (FR-023).
+    const state = open(FIXTURE_SLOTS.hardpoint);
+    const broad = applyQuery(state, 'a');
+
+    expect(broad.results.length).toBeGreaterThan(SCREENFUL);
+    expect([...broad.openFamilies]).toEqual([]);
+
+    const families = groupFamilies(broad.results, broad.openFamilies);
+    expect(families.every((family) => !family.open)).toBe(true);
+    expect(families.every((family) => family.count > 0)).toBe(true);
+    // Not one family holding a match went missing; only the rows are withheld.
+    expect(families.reduce((running, family) => running + family.count, 0)).toBe(
+      broad.results.length,
+    );
+  });
+
+  it('restores the fitted-family seed when the query goes back to empty', () => {
+    const bare = open(FITTED);
+    const state = open(FITTED, 'en', 1, fittedArticleOf(bare));
+    const seed = [...state.openFamilies];
+
+    const searched = narrowSearch(state);
+    expect([...searched.openFamilies]).not.toEqual(seed);
+
+    expect([...applyQuery(searched, '').openFamilies]).toEqual(seed);
+  });
+
+  it('changes exactly one id per toggle, and nothing else about the state', () => {
+    const state = narrowSearch(open(FIXTURE_SLOTS.hardpoint));
+    const first = [...state.openFamilies][0]!;
+
+    const closed = toggleFamily(state, first);
+    expect(closed.openFamilies.has(first)).toBe(false);
+    expect(new Set([...state.openFamilies].filter((id) => id !== first))).toEqual(
+      new Set(closed.openFamilies),
+    );
+    // Nothing else moved: same records, same order, same index, same status.
+    expect(closed.choices).toBe(state.choices);
+    expect(closed.index).toBe(state.index);
+    expect(closed.results).toBe(state.results);
+    expect(closed.status).toBe(state.status);
+    expect(closed.query).toBe(state.query);
+
+    expect([...toggleFamily(closed, first).openFamilies].sort()).toEqual(
+      [...state.openFamilies].sort(),
+    );
+  });
+
+  it('keeps membership across a language change that relabels and reorders', () => {
+    const english = open(FIXTURE_SLOTS.hardpoint);
+    const german = open(FIXTURE_SLOTS.hardpoint, 'de');
+
+    const membershipOf = (state: CandidateQueryState) =>
+      new Map(state.choices.map((choice) => [choice.key, choice.presentation.familyId]));
+
+    // Same choice, same family, whatever it is called and wherever the locale's
+    // collator puts it (SC-009).
+    expect(membershipOf(german)).toEqual(membershipOf(english));
+
+    const germanFamilies = groupFamilies(german.results, new Set());
+    const englishFamilies = groupFamilies(english.results, new Set());
+    expect(germanFamilies.map((family) => family.familyId)).toEqual(
+      englishFamilies.map((family) => family.familyId),
+    );
+    // At least one family really is named differently, or this proves nothing.
+    expect(
+      germanFamilies.some(
+        (family, index) => family.name.text !== englishFamilies[index]!.name.text,
+      ),
+    ).toBe(true);
   });
 });
 
@@ -178,7 +386,10 @@ describe('candidate search', () => {
 
   it('ignores case and accents on both sides of the comparison', () => {
     const state = open(FIXTURE_SLOTS.hardpoint, 'de');
-    const accented = state.choices.find((choice) => NON_ASCII.test(nameOf(choice)));
+    const accented = state.choices.find((choice) => {
+      const name = nameOf(choice);
+      return name.normalize('NFKD').replace(/\p{M}/gu, '') !== name;
+    });
 
     expect(accented).toBeDefined();
 

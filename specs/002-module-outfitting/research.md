@@ -296,9 +296,92 @@ The current harness does not yet provide them, so green Chromium-only subsets ar
 **Alternatives considered**: Visual comparison to `.design`, axe alone, desktop-only tests or
 lowering coverage cannot prove the behavioral contract.
 
+## Decision 13: the family is `familyId`, not a name group
+
+**Decision**: Group replacement choices by `OutfittingModuleIdentity.familyId` and label them with
+`getOutfittingFamilyName(familyId, locale)`, both new in `@elite-dangerous-almanac/core` 0.1.7.
+A variant takes the family of the base `OutfittingModule` it was expanded from, which is the record
+`candidateMembership` already retains, so the id is available on both arms of `ModuleChoice` with no
+extra package call. The presenter gains one method, `outfittingFamilyName`, alongside the twelve
+leaves it already resolves — the lookup has the package's usual `(identity, locale) => string | null`
+shape, so `presentGameText` covers it unchanged.
+
+**Rationale**: The grouping the canvases draw cannot be produced from displayed names. Canvas 1c's
+Plasma Accelerator family holds `Plasma Accelerator · Fixed` and `Plasma Accelerator · Advanced`;
+the second is a pre-engineered variant whose own package name differs, and the existing `nameOf`
+grouping splits it into a family of one. Measured against the installed package, `familyId` produces
+exactly the canvas grouping. It also settles FR-020's "no application-owned taxonomy" clause in the
+strongest available way: the taxonomy is 77 ids the package publishes and this repository does not
+copy, extend or abbreviate.
+
+**Localization**: measured on the installed 0.1.7 — all 77 families have an English name, and 58 of
+77 have one in each other supported language. `presentGameText` therefore never reaches its
+`unavailable` state for a family: a missing translation resolves to the canonical English name with
+the existing `game-text.untranslated.description` disclosure, exactly as a module name does. The 19
+unnamed families are upstream [#320](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/320)
+and need no local handling.
+
+**Alternatives considered**: The existing `CandidateGroup` name run is a smaller diff and was
+rejected — it does not reproduce the design and would leave the "family" word meaning two different
+things across the repository and the package. A local id-to-name table for the 19 untranslated
+families was rejected as private game data (constitution II).
+
+**Naming note**: the package writes families in the plural (`Multi-cannons`), the canvas draws them
+in the singular (`Multi-Cannon`). The package text ships; the canvas's casing is not copied over it.
+
+## Decision 14: the standard and unique-reward sections are withdrawn
+
+**Decision**: Families are the only grouping level. `CandidateSection` survives only as the input to
+the `uniqueReward` acquisition label already defined in `acquisition-labels.ts`; it stops being an
+ordering key, a heading and a level of the view tree. `groupCandidates` is replaced by `groupFamilies`, which returns a flat ordered list
+of families instead of sections of name groups.
+
+**Rationale**: Neither redrawn canvas has a section heading. Both mark a reward on its own row,
+inside the family of the module it is built on — canvas 1c draws `Plasma Accelerator · Advanced`
+marked directly beneath `Plasma Accelerator · Fixed`. Keeping the sections would put a heading on the
+screen the design does not draw, and would split one package family across two places whenever a
+reward and its base module are both fittable. (The mark itself was a `REWARD ONLY` chip when this was
+decided and is now the icon of the route the article is earned through; see the module-replacement
+design, "Acquisition icons". Which mark it is does not bear on the section ruling.)
+
+**What is not lost**: FR-006's labels are untouched. A reward is still identified as a unique reward,
+and Mercenary and tech-broker choices as not ordinarily available; the identification moves from a
+heading to the row, which is where the canvas puts it and where a screen reader reaches it without
+having to hold a section in mind.
+
+**Alternatives considered**: Nesting families inside the two sections preserves every shipped
+ordering assertion and was rejected under the standing rule that the design is the record.
+
+## Decision 15: open state is derived per presentation, not stored across rebuilds
+
+**Decision**: `CandidateQueryState` carries one `openFamilies: ReadonlySet<string>` of family ids.
+`openCandidateQuery` seeds it with the fitted choice's family, or with nothing when no available
+family contains that exact choice. `applyQuery` replaces it wholesale whenever the query goes from
+empty to non-empty or changes, seeding it with every family holding a match; when the query returns
+to empty it re-seeds the fitted-family default. A toggle intent adds or removes one id and touches
+nothing else.
+
+**Rationale**: FR-021 and FR-023 both describe a _seed_, not a memory: the default is reapplied on
+every rebuild, and the spec says a manual change is temporary viewing state. Deriving it as part of
+the state the query already rebuilds on slot, revision and locale change means there is no second
+lifetime to keep in step, and the stale/refused paths inherit the behaviour for free.
+
+**Consequence for SC-002**: this is the first change that can close the compact timing gap recorded
+in `design/module-replacement.md`. The Panther Mk II's 478-choice mount currently lays out and paints
+478 cards at 390 px and settles at ~113 ms against the 100 ms allowed. With one family open, the rows
+in the DOM are that family's rows plus one collapsed control per family. The criterion is still
+stated as unmet until it is measured in the Chromium timing project; the measurement is a task, not
+an assumption, and the whole-list rule that governs the open family is unchanged.
+
+**Alternatives considered**: A store-owned open-set outside the query state was rejected — it needs
+its own invalidation on every slot, revision and locale change, which is the exact bookkeeping the
+query state exists to hold. Native `<details>` open state was rejected as the source of truth for the
+same reason: FR-023 has to reseed it from outside on every query change, so the state has to be ours.
+
 ## Research status
 
 No product clarification remains. Historical purchase values are outside the model. The package
 supplies fixed defaults at construction, and unknown-module compatibility is not a product
 requirement. Features 001 and 011 remain repository prerequisites. No application-side repair is
-permitted.
+permitted. The 2026-08-23 family additions are resolved against `@elite-dangerous-almanac/core`
+0.1.7 and both redrawn outfitting canvases; no `NEEDS CLARIFICATION` marker remains.

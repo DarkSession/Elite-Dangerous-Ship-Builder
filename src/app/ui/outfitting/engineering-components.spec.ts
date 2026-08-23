@@ -12,7 +12,7 @@ import { BlueprintChoiceList } from './blueprint-choice-list';
 import { ExperimentalEffectList } from './experimental-effect-list';
 import { GradeSelector } from './grade-selector';
 import { IngressRefusalNotice } from './ingress-refusal-notice';
-import { MaterialCostList, sortMaterialLines } from './material-cost-list';
+import { sortMaterialLines } from './material-lines';
 import { PowerControls } from './power-controls';
 import { ShipIdentityFields } from './ship-identity-fields';
 
@@ -303,102 +303,6 @@ describe('material line order', () => {
     sortMaterialLines(given, collator);
 
     expect(symbols(given)).toEqual(['Tungsten', 'Iron']);
-  });
-});
-
-describe('material cost list', () => {
-  const MATERIAL = {
-    symbol: 'ConductivePolymers',
-    name: named('Conductive Polymers'),
-    grade: 4,
-    count: '5',
-  };
-
-  it('heads the requirement with the grade, and never calls it a roll', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
-      grade: 5,
-    });
-
-    const text = textOf(element(fixture));
-    expect(text).toContain('Materials · G5');
-    expect(text.toLowerCase()).not.toContain('roll');
-  });
-
-  it('associates each count with the material it belongs to', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
-      grade: 5,
-    });
-
-    expect(query(fixture, '.material__name').tagName).toBe('DT');
-    expect(query(fixture, '.material__count').tagName).toBe('DD');
-    expect(textOf(query(fixture, '.material__count'))).toBe('5');
-  });
-
-  it('carries the design’s own rarity mark, served from this origin', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
-      grade: 5,
-    });
-
-    // The design's own file for the package's own grade, and the grade said in
-    // words beside it for anyone who cannot see the mark (wave 6).
-    expect(query(fixture, '.material-grade').getAttribute('src')).toBe(
-      'assets/icons/materials/grade-4.svg',
-    );
-    expect(textOf(query(fixture, '.material__grade'))).toContain('Grade 4');
-    // Nothing here reaches another origin at runtime (constitution I).
-    for (const image of element(fixture).querySelectorAll('img')) {
-      expect(image.getAttribute('src')).toMatch(/^assets\//);
-    }
-  });
-
-  it('reads an unpriced job as unpriced, not as a free one', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'known', materials: [] }],
-      grade: 3,
-    });
-
-    // Engineering always costs materials. An empty list from the package is the
-    // package failing to price a job, and the row says so rather than reading
-    // as a free upgrade (wave 5).
-    const text = textOf(element(fixture));
-    expect(text).toContain('No materials are priced');
-    expect(text).not.toContain('No material cost is published');
-  });
-
-  it('shows an unavailable cost as unavailable, never as a zero', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'unavailable', materials: [] }],
-      grade: 3,
-    });
-
-    const text = textOf(element(fixture));
-    expect(text).toContain('No material cost is published');
-    expect(text).not.toContain('No materials are priced');
-  });
-
-  it('draws nothing for a part nothing is selected for', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'experimental', state: 'notSelected', materials: [] }],
-      grade: null,
-    });
-
-    expect(textOf(element(fixture))).not.toContain('Experimental effect');
-  });
-
-  it('says nothing about Merc Coin at all', () => {
-    const fixture = renderComponent(MaterialCostList, {
-      parts: [{ part: 'blueprint', state: 'known', materials: [MATERIAL] }],
-      grade: 5,
-    });
-
-    // A shopping list for a job, and nothing else. The article's shop price is
-    // what it cost to buy rather than what this job costs, and standing at the
-    // foot of this list it read as the price of the engineering above it
-    // (wave 9).
-    expect(textOf(element(fixture))).not.toContain('Merc');
   });
 });
 

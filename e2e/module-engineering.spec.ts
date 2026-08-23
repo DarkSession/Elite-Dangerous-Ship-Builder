@@ -13,7 +13,7 @@ import {
   effectOptions,
   editorOffered,
   fitCommitted,
-  openChooser,
+  openChooserRows,
   openEditor as bringEditorOnScreen,
   surfacesAreLayers,
 } from './outfitting-surfaces';
@@ -286,9 +286,23 @@ test.describe('engineering a module', () => {
     await bringEditorOnScreen(page);
     await expect(page.locator('.engineering__state')).toContainText(/no engineering/i);
 
-    // Still no control with nothing behind it: the sentence is the panel's whole
-    // content, and no recipe, grade or effect is offered (FR-009).
-    await expect(page.locator('.engineering__panes')).toHaveCount(0);
+    // Still no control with nothing behind it: no recipe, grade or effect is
+    // offered (FR-009). The details half stays — the hatch has the attributes
+    // it was catalogued with whether or not anything will ever engineer them,
+    // and FR-009 requires its facts to be exposed (wave 11).
+    await expect(page.locator('edsb-blueprint-choice-list')).toHaveCount(0);
+    await expect(page.locator('edsb-grade-selector')).toHaveCount(0);
+    await expect(page.locator('edsb-experimental-effect-list')).toHaveCount(0);
+    await expect(page.locator('.engineering__attributes')).toBeVisible();
+
+    // And the panel keeps its shape: the sentence takes the half the controls
+    // would have taken and the attributes stay in the half they are in on
+    // every other article, rather than the table sliding under the sentence
+    // into a one-column panel of its own (wave 11, Commander request).
+    await expect(page.locator('.engineering__choices .engineering__state')).toContainText(
+      /no engineering/i,
+    );
+    await expect(page.locator('.engineering__result .engineering__attributes')).toBeVisible();
   });
 
   test('is accessible in every editor state', async ({ page }, testInfo) => {
@@ -311,59 +325,35 @@ test.describe('engineering a module', () => {
 });
 
 test.describe('engineering costs', () => {
-  test('names the grade in the requirement and never calls it a roll', async ({ page }) => {
+  test('prices no job of its own — the rail states the build’s materials', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
-
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
 
-    const materials = page.locator('.materials');
-    await expect(materials).toContainText(/G5/);
+    // Neither canvas draws a materials list inside `DETAILS AND ENGINEERING`:
+    // `eng-grid` is the recipe, the grade and the effect on the left and the
+    // article's attributes on the right, and the only `MATERIALS` block on
+    // either canvas is the build-wide one in the rail (wave 11, Commander
+    // request, reversing waves 5 and 9). Its rarity marks, its ordering, its
+    // counts and its Merc Coin row are covered where it lives, in
+    // `cost-and-materials.spec.ts`.
+    const editor = page.locator('.engineering').first();
+    await expect(editor.locator('.materials, edsb-material-cost-list')).toHaveCount(0);
+    await expect(editor).not.toContainText(/materials/i);
     // A completed grade is the only thing this application models, so no
     // surface calls the recipe a roll (FR-013, reference review).
-    await expect(materials).not.toContainText(/roll/i);
-  });
+    await expect(editor).not.toContainText(/roll/i);
 
-  test('carries each material’s package rarity without reaching another origin', async ({
-    page,
-  }) => {
-    await openStockBuild(page);
-    await openEditor(page, 'FrameShiftDrive');
-    await chooseRecipe(page, /increased range/i);
-    await chooseGrade(page, 5);
-
-    await expect(page.locator('.material').first()).toBeVisible();
-    // The canvas's rarity marker, drawn locally and carrying the package's own
-    // grade — with the grade in words beside it for anyone who cannot see it.
-    await expect(page.locator('.material__grade').first()).toHaveAttribute('data-grade', /[1-5]/);
-    await expect(page.locator('.material').first()).toContainText(/grade [1-5]/i);
-    // The canvas draws these as icons from `edassets.org`. Nothing in this
-    // application reaches another origin at runtime (constitution I).
-    for (const source of await page
-      .locator('.materials img')
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src') ?? ''))) {
-      expect(source).toMatch(/^assets\//);
-    }
-  });
-
-  test('prices the whole recipe, whatever the module already carries', async ({ page }) => {
-    await openStockBuild(page);
-    await openEditor(page, 'FrameShiftDrive');
-    await chooseRecipe(page, /increased range/i);
-    await chooseGrade(page, 5);
+    // Gone from the panel, not from the build: once the job is on the module,
+    // the rail states its materials. Counted rather than seen — at compact
+    // width the editor is a screen over the workspace and the rail is behind
+    // it, so this is read after leaving the editor, and the rail's own block
+    // may sit inside the Status stack there (feature 009).
     await applyDraft(page);
-
-    await openEditor(page, 'FrameShiftDrive');
-    await chooseGrade(page, 3);
-
-    // Engineering always costs materials. A panel that priced only what was
-    // left would read as free every time, because a choice commits as it is
-    // made — so an empty list here is a defect, not a discount (wave 5).
-    const materials = page.locator('.materials');
-    await expect(materials.locator('.material').first()).toBeVisible();
-    await expect(materials).not.toContainText(/no materials are priced/i);
-    await expect(materials).not.toContainText(/no material cost is published/i);
+    await expect
+      .poll(() => page.locator('edsb-cost-materials .rail-material').count())
+      .toBeGreaterThan(0);
   });
 
   test('marks which way each figure moved, and says so in words', async ({ page }) => {
@@ -389,13 +379,54 @@ test.describe('engineering costs', () => {
         .first(),
     ).toBeVisible();
   });
+
+  test('scrolls the details and the engineering apart, each in its own column', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+    await chooseRecipe(page, /increased range/i);
+    await chooseGrade(page, 5);
+
+    const panes = page.locator('.engineering__panes');
+    await expect(panes).toBeVisible();
+    if ((await panes.evaluate((node) => getComputedStyle(node).display)) !== 'grid') {
+      // Stacked, the two halves are one column and one scroller — which is the
+      // composition the canvas draws at that width, not a fault to assert on.
+      return;
+    }
+
+    // Side by side, the halves have to scroll apart. Under one scroller the
+    // attribute table set the height of both columns, so reaching the end of
+    // it carried the recipe controls and the material list off the top with
+    // it — a Commander choosing a grade could not see what it would cost.
+    const moved = await panes.evaluate((node) => {
+      const choices = node.querySelector('.engineering__choices') as HTMLElement;
+      const result = node.querySelector('.engineering__result') as HTMLElement;
+      const before = choices.getBoundingClientRect().top;
+      result.scrollTop = result.scrollHeight;
+      return {
+        resultScrolled: result.scrollTop > 0,
+        choicesOverflow: getComputedStyle(choices).overflowY,
+        choicesMoved: Math.abs(choices.getBoundingClientRect().top - before),
+        choicesScrollTop: choices.scrollTop,
+      };
+    });
+
+    expect(moved.resultScrolled).toBe(true);
+    expect(moved.choicesScrollTop).toBe(0);
+    expect(moved.choicesMoved).toBeLessThanOrEqual(1);
+    // And the left column is a scroller in its own right rather than a box the
+    // panel scrolls for it, whether or not its own content overflows today.
+    expect(moved.choicesOverflow).toBe('auto');
+  });
 });
 
 test.describe('purchased and reward articles', () => {
   /** Fits the first chooser row carrying one acquisition label. */
   async function fitArticle(page: Page, slotKey: string, label: RegExp): Promise<void> {
     await selectMount(page, slotKey);
-    await openChooser(page);
+    await openChooserRows(page);
     const row = page.locator('.candidate').filter({ hasText: label }).first();
     await expect(row).toBeVisible();
     // The module's name itself: a row's centre falls in the gap between the
@@ -415,11 +446,9 @@ test.describe('purchased and reward articles', () => {
     await fitArticle(page, 'FrameShiftDrive', /tech broker/i);
 
     await openEditor(page, 'FrameShiftDrive');
-    // The article is a package-identified purchase, so what it arrived with is
-    // priced at nothing at all rather than quoted as a crafting job — and the
-    // recipe it carries is stated rather than offered (wave 5).
+    // The recipe the article arrived with is stated rather than offered
+    // (wave 5).
     await expect(page.locator('.blueprints__fixed')).toBeVisible();
-    await expect(page.locator('.materials .material')).toHaveCount(0);
 
     // An effect on its own, which is `setExperimentalEffect` rather than a
     // re-roll of the recipe.
@@ -438,18 +467,17 @@ test.describe('purchased and reward articles', () => {
 
     await openEditor(page, 'SmallHardpoint1');
 
-    // The article's Merc Coin shop price is not in this panel at all: it is what
-    // the article cost to buy, not what this job costs, and at the foot of a
-    // materials list it read as the price of the engineering above it. The
-    // Almanac publishes no per-grade Merc Coin figure to put in its place —
-    // every Mercenary row is one fixed price at grade 1 (wave 9).
-    await expect(page.locator('.materials__list--coin')).toHaveCount(0);
-
     // The bespoke recipe the article was bought with. Its own table begins
     // above the purchase grade, so the cells offered are the grades that are
     // still to climb rather than a fixed five (contract, "Engineering").
     await expect.poll(() => chosenRecipe(page)).not.toBeNull();
     await page.locator('.grade').last().click();
+    // Waited out before applying, the way the climb back down below is. A
+    // click resolves when the event is dispatched, and applying a draft the
+    // panel has not finished answering commits the grade that was there
+    // before it — which is the article's purchase grade, and reads as a climb
+    // that never happened.
+    await expect(page.locator('.grades__selected')).toHaveText('5');
     // Inline this has already committed; in a layer it is a draft that has to
     // be applied before the ledger says anything. Either way the panel is then
     // showing the climbed article (constitution V).
@@ -458,19 +486,16 @@ test.describe('purchased and reward articles', () => {
       await openEditor(page, 'SmallHardpoint1');
     }
 
-    const parts = page.locator('.materials__part');
-    await expect(parts.first()).toBeVisible();
     // The climb's own Merc Coin, which Almanac 0.1.5 publishes per grade
-    // (upstream #337): stated on its own row rather than folded into anything.
-    // It joins no material list — Merc Coin has no credit or material
-    // equivalent, so summing it would invent an exchange rate the game does not
-    // have — so the figure is its own row and not one of the counts above it.
-    const coins = page.locator('.material--merc-coin');
+    // (upstream #337). The editor prices no job of its own any more, so the
+    // figure is read where the build's costs are: `buildCost()` folds the
+    // climb's coins in with the purchase's, and the rail's one row states the
+    // total. It joins no material list even there — Merc Coin has no credit or
+    // material equivalent, so summing it into one would invent an exchange rate
+    // the game does not have (wave 11).
+    const coins = page.locator('edsb-cost-materials .rail-material--merc-coin');
     await expect(coins).toHaveCount(1);
     await expect(coins).toContainText(/merc coin/i);
-    // The *purchase* price is still not here: this row is what the climb above
-    // the bought grade bills, and what buying the article cost is stated by the
-    // manifest row it is bought from.
 
     // And back down to the grade it was bought at, which the recipe's own table
     // does not reach. The bar has to come back to 1 rather than to nothing:

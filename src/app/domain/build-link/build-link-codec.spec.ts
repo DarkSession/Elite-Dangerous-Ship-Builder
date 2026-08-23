@@ -396,7 +396,7 @@ describe('build-link codec', () => {
       expect(decodedModule.preEngineeredVariant).toEqual(variant);
       expect(decodedModule.engineering?.Level).toBe(variant.grade);
       expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
-      expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+      expect(decoded.buildCost().mercCoins).toBe(source.buildCost().mercCoins);
       expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     }
   });
@@ -516,7 +516,7 @@ describe('build-link codec', () => {
 
         expect(decodedModule.engineering?.Level).toBe(grade);
         expect(decodedModule.preEngineeredVariant).toEqual(variant);
-        expect(decoded.mercCoinCost()).toBe(source.mercCoinCost());
+        expect(decoded.buildCost().mercCoins).toBe(source.buildCost().mercCoins);
         expect(minimalState(decoded)).toEqual(minimalState(source));
         expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
         // The crafted grade must survive as engineering, not merely as a number: the decoded

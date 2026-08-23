@@ -36,6 +36,11 @@ import { fittedModuleView } from './fitted-module-view';
 
 const TEXT = packageText();
 const SLOT = FIXTURE_SLOTS.frameShiftDrive;
+const NO_SELECTION: EngineeringSelection = {
+  blueprintFdname: null,
+  grade: null,
+  effectFdname: null,
+};
 
 /** A draft over the fixture hull's drive, at revision 1. */
 function driveDraft(
@@ -392,12 +397,80 @@ describe('engineering draft', () => {
       expect(loadout.fittedModuleAt(SLOT)?.engineering).toEqual(before);
     });
 
-    it('is unavailable rather than invented when the package refuses the selection', () => {
+    it('lists the article and does not compare it when no recipe has been chosen', () => {
       const loadout = defaultBuild();
 
       const draft = driveDraft({ blueprintFdname: null, grade: null, effectFdname: null }, loadout);
 
-      expect(draft.preview).toEqual({ kind: 'unavailable' });
+      // An unengineered mount is not an unresolved one. It has every attribute
+      // the Almanac catalogued it with, and the panel is where a Commander reads
+      // them — but there is nothing yet to compare them against, so there is no
+      // second column and no modified figure on any row.
+      expect(draft.preview.kind).toBe('known');
+      const preview = draft.preview.kind === 'known' ? draft.preview : null;
+      expect(preview?.comparing).toBe(false);
+      expect(preview?.attributes.length).toBeGreaterThan(0);
+      expect(preview?.attributes.every((row) => row.modified === null)).toBe(true);
+      const mass = preview?.attributes.find((row) => row.attribute === 'mass');
+      expect(mass?.stock).toBe(loadout.fittedModuleAt(SLOT)?.stats?.mass);
+    });
+
+    it('shows every attribute the package publishes for the article, not a chosen few', () => {
+      const loadout = defaultBuild();
+
+      const draft = driveDraft({ blueprintFdname: null, grade: null, effectFdname: null }, loadout);
+
+      const stats = loadout.fittedModuleAt(SLOT)?.stats;
+      const published = Object.entries(stats ?? {})
+        // `class` is identity and `cost` is a price, and neither is an
+        // attribute of the article — see `COMPARED_ATTRIBUTES`.
+        .filter(([field, value]) => typeof value === 'number')
+        .filter(([field]) => field !== 'class' && field !== 'cost')
+        // A boot time of zero is the one published figure the panel leaves
+        // off, and the rule it is left off by is its own test below.
+        .filter(([field, value]) => !(field === 'bootTime' && value === 0))
+        .map(([field]) => field)
+        .sort();
+      const drawn =
+        draft.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string).sort()
+          : [];
+
+      // Not "at least these": exactly these. A field the Almanac publishes on
+      // this article and the panel leaves out is a figure a Commander cannot
+      // read anywhere, and one the panel invents is a figure nobody measured.
+      expect(drawn).toEqual(published);
+    });
+
+    it('leaves off a boot time of zero, and keeps one that is not', () => {
+      const loadout = defaultBuild();
+
+      const rows = new Map(
+        Object.entries(FIXTURE_SLOTS)
+          .map(([, slotKey]) => {
+            const draft = openEngineeringDraft(loadout, slotKey, 1, NO_SELECTION, TEXT);
+            const preview = draft?.preview;
+            if (preview === undefined || preview.kind !== 'known') {
+              return null;
+            }
+            const published = loadout.fittedModuleAt(slotKey)?.stats?.bootTime ?? null;
+            const drawn = preview.attributes.some((row) => row.attribute === 'bootTime');
+            return [slotKey, { published, drawn }] as const;
+          })
+          .filter((entry) => entry !== null),
+      );
+
+      // Both halves of the rule have to be witnessed on the fixture hull, or
+      // "hide it" and "hide the row entirely" would pass the same suite.
+      const zeros = [...rows.values()].filter((row) => row.published === 0);
+      const others = [...rows.values()].filter(
+        (row) => typeof row.published === 'number' && row.published !== 0,
+      );
+      expect(zeros.length).toBeGreaterThan(0);
+      expect(others.length).toBeGreaterThan(0);
+
+      expect(zeros.every((row) => !row.drawn)).toBe(true);
+      expect(others.every((row) => row.drawn)).toBe(true);
     });
   });
 });

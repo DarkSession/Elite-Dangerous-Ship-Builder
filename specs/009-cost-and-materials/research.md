@@ -11,13 +11,18 @@ evidence only; no application rule depends on catalogue counts.
 > rationale text is kept because it still records _why_ the alternative was once preferred, which is
 > worth having when the ruling is revisited.
 
-## Decision 1: preserve the numeric `RetailCredits` contract
+> **Reconciled with Almanac 0.1.6 on 2026-08-23.** The package replaced the separate retail and Merc
+> Coin queries with one `ShipLoadout.buildCost()` result containing four credit fields, Merc Coin
+> and consolidated materials. That result supersedes the operative parts of Decisions 1, 4 and 6:
+> the application now reads it once, derives no `TOTAL`, performs no Merc Coin recognition and does
+> no material consolidation. Historical rationale below remains a record of the 0.1.5 contract.
 
-**Decision** _(amended, wave 10)_: Call `ShipLoadout.retailCredits()` once and preserve its numeric
-`hull`, `modules` and `rebuy`. **Add `total = hull + modules`, the canvas's `TOTAL` row** (ruling A),
-and label the rebuy `REBUY 5%` with the canvas's fixed text (ruling B) without deriving the
-percentage from the number. **Do not project `unpriced` at all** (ruling F): the canvas draws no
-evidence for it, so there is no lower-bound state and no exact/lower-bound distinction to make.
+## Decision 1: preserve the package credit result
+
+**Decision** _(amended for Almanac 0.1.6)_: Call `ShipLoadout.buildCost()` once and preserve
+`credits.hull`, `credits.modules`, `credits.total` and `credits.rebuy`. Label the rebuy `REBUY 5%`
+with the canvas's fixed text (ruling B) without deriving the percentage from the number. Do not
+project `unpriced` (ruling F).
 
 **Rationale**: In the installed package all three fields are non-nullable numbers. The earlier plan's nullable hull
 and rebuy states contradicted the installed public API. A valid `ShipLoadout` already has a known
@@ -27,7 +32,8 @@ catalogue hull; construction/projection failure is separate from retail-field se
 `unpriced`, or reading each module's catalogue cost independently were rejected because they change
 or duplicate the package contract. Summing hull and modules was also rejected here and has since
 been **ruled in** — it is the canvas's anchor row, and addition over two package results owns no
-game rule.
+game rule. Under Almanac 0.1.6 that temporary application sum is retired because `credits.total` is
+the package answer.
 
 ## Decision 2: discard historical purchase values
 
@@ -63,21 +69,20 @@ and persisted derived snapshots were rejected as hard to test, stale-prone or du
 
 ## Decision 4: recognize and price Mercenary purchases through the package
 
-**Decision**: Recognize an entry only when
-`fitted.preEngineeredVariant?.acquisition === 'mercenary'`. Preserve its exact slot, module symbol,
-variant identity, purchase grade and optional `mercCoinCost`. With no recognized entries, return `null` and do not call or display a zero
-total. Otherwise call `ShipLoadout.mercCoinCost()` once and draw that literal number.
+**Decision** _(amended for Almanac 0.1.6)_: Read `buildCost().mercCoins`. Display the literal number
+when greater than zero and omit the row when zero. Do not infer applicability from module or
+engineering identity.
 
 _Amended, wave 10_: **per-slot Merc Coin pricing, purchase grade and current grade are not projected**
 (ruling C). The canvas draws one `Merc Coins` row at the foot of `MATERIALS`, so the projection is a
 single optional number and there is no per-entry price to be missing.
 
-**Rationale**: `mercCoinCost()` returns zero both for no recognized article and, prospectively, for a
+**Historical rationale (Almanac 0.1.5)**: `mercCoinCost()` returns zero both for no recognized article and, prospectively, for a
 recognized article whose optional price is missing from the variant. Entry recognition is therefore
 the applicability boundary. All installed Mercenary variants are priced, but the public optional
 field and FR-005 require the missing-price state.
 
-**Alternatives considered**: Symbol/blueprint allowlists, total-nonzero recognition, summing variant
+**Historical alternatives considered (Almanac 0.1.5)**: Symbol/blueprint allowlists, total-nonzero recognition, summing variant
 prices, remembering purchase identity after the package loses it, and converting/comparing Merc Coin
 with credits were rejected.
 
@@ -110,19 +115,17 @@ grades.
 recipe, treating all pre-engineered articles as forever free, looping grades/rolls, or keeping a local
 fixed-fdname table were rejected.
 
-## Decision 6: consolidate only with `sumMaterials()` and retain traces
+## Decision 6: preserve package-consolidated materials
 
-**Decision** _(amended, wave 10)_: Pass every contributing package-returned list to `sumMaterials()`
-once and preserve its first-seen output order and values. **The per-row contributor trace is
-withdrawn** (ruling F) — the canvas draws no disclosure control — and with it the retained source
-lists that existed only to build it.
+**Decision** _(amended for Almanac 0.1.6)_: Preserve `buildCost().materials` order, identities and
+quantities. The per-row contributor trace remains withdrawn (ruling F).
 
 A source the package cannot cost contributes nothing and is not named; a source that costs `[]`
 contributes nothing either. When nothing contributes, the whole materials block is absent rather
 than showing a `none` explanation. **Three counts are added** (ruling D): contributing modules,
 consolidated rows, and the sum of the package counts.
 
-**Rationale**: `sumMaterials()` is the only _package-rule_ arithmetic and itself matches symbols
+**Historical rationale (Almanac 0.1.5)**: `sumMaterials()` is the only _package-rule_ arithmetic and itself matches symbols
 case-insensitively. The three ruled counts are counting over its output, not a second opinion about
 what anything costs.
 
@@ -172,8 +175,8 @@ dependency were rejected.
 
 **Decision** _(largely reversed, wave 10)_. The reference treatments now split in two.
 
-**Built as drawn**, by ruling: the combined credit `TOTAL` (A), the `REBUY 5%` label (B), the
-blueprint/type/unit aggregates (D) and Merc Coin as a row inside the materials block (C).
+**Built as drawn**, by ruling: the package's combined credit `TOTAL` (A), the `REBUY 5%` label (B),
+the blueprint/type/unit aggregates (D) and Merc Coin as a row inside the materials block (C).
 
 **Still rejected**, on constitutional rather than specification grounds: remote `edassets.org`
 material-grade SVGs and Google Fonts requests (constitution I forbids cross-origin runtime

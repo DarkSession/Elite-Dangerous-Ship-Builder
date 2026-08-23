@@ -37,6 +37,12 @@ const NO_TEXT = {
     translationState: 'unavailable' as const,
     disclosureKey: null,
   }),
+  outfittingFamilyName: () => ({
+    text: null,
+    language: null,
+    translationState: 'unavailable' as const,
+    disclosureKey: null,
+  }),
 };
 
 function kinds(labels: readonly AcquisitionLabel[]): readonly string[] {
@@ -109,6 +115,38 @@ describe('acquisition labels', () => {
     expect(kinds(labels)).toEqual(['entitlement']);
     expect(labels[0]!.packageValue).toBe(gated.entitlement);
     expect(acquisitionSection(null)).toBe('standard');
+  });
+
+  it('tells a Powerplay module apart from every other entitlement', () => {
+    // Canvas 1c draws `Advanced Plasma Accelerator` with the Powerplay icon.
+    // It is not one of the package's four pre-engineered routes — it is an
+    // ordinary stock module whose entitlement names a power, which is why the
+    // route projection alone never reached it (module-replacement design,
+    // "Acquisition icons").
+    const powerplay = defaultBuild()
+      .modulesForSlot(FIXTURE_SLOTS.hardpoint)
+      .find((module) => module.entitlement?.startsWith('ELITE_SPECIFIC_V_POWER_') === true)!;
+    expect(powerplay).toBeDefined();
+
+    const labels = acquisitionLabels(catalogueSource(powerplay, null));
+
+    expect(kinds(labels)).toEqual(['powerplay']);
+    // The package's own token, whole. The power's id inside it stays unread:
+    // naming the twelve powers would be the local catalogue FR-007 forbids.
+    expect(labels[0]!.packageValue).toBe(powerplay.entitlement);
+    expect(labels[0]!.params).toBeNull();
+  });
+
+  it('leaves an entitlement that names no power as the generic one', () => {
+    const horizons = defaultBuild()
+      .modulesForSlot(FIXTURE_SLOTS.optional)
+      .find(
+        (module) =>
+          module.entitlement !== undefined &&
+          !module.entitlement.startsWith('ELITE_SPECIFIC_V_POWER_'),
+      )!;
+
+    expect(kinds(acquisitionLabels(catalogueSource(horizons, null)))).toEqual(['entitlement']);
   });
 
   it('says nothing about a stock module the package puts no restriction on', () => {

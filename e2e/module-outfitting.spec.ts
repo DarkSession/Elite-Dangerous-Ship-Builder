@@ -4,7 +4,9 @@ import {
   chooserOffered,
   editorOffered,
   fitCommitted,
+  openAllFamilies,
   openChooser,
+  openChooserRows,
   openEditor,
   surfacesAreLayers,
 } from './outfitting-surfaces';
@@ -105,7 +107,7 @@ async function fitFromChooser(
   page: Page,
   pick: (identities: readonly string[]) => number,
 ): Promise<string> {
-  await openChooser(page);
+  await openChooserRows(page);
   const rows = page.locator('.candidate');
   await expect(rows.first()).toBeVisible();
 
@@ -149,10 +151,17 @@ async function fitFromChooser(
   // that is always text.
   const row = rows.nth(index);
   await row.locator('.candidate__name').click();
-  await expect(row.locator('input[type="radio"]')).toBeChecked();
   // Canvas 1c draws no confirm control: inline, taking the row is the fit.
   // Canvas 1d's chooser is a screen of its own, so leaving it is a decision.
+  //
+  // Which is why the pick is read only where one exists to read. An inline fit
+  // commits on that click and the chooser reseeds around the module now in the
+  // mount — every family but its own closes — so the row that was taken is no
+  // longer at the index it was taken from, and there was never an intermediate
+  // state there to assert. `fitCommitted` below is what proves the decision
+  // landed at both widths.
   if (await surfacesAreLayers(page)) {
+    await expect(row.locator('input[type="radio"]')).toBeChecked();
     await page.getByRole('button', { name: /fit module/i }).click();
   }
   // Waiting for the decision to have actually been taken, which each width
@@ -324,6 +333,8 @@ test.describe('the slot ledger', () => {
     await fitFromChooser(page, () => 1);
     await openChooser(page);
 
+    // No family is opened by hand here: the chooser seeds the fitted module's
+    // own family open, so the row that was just fitted is on screen (FR-021).
     const fitted = page.locator('.candidate--fitted').first();
     await expect(fitted).toBeVisible();
 
@@ -384,7 +395,7 @@ test.describe('the slot ledger', () => {
     await sweepOutfittingState(page, testInfo, 'ledger/cargo-hatch selected');
 
     await selectMount(page, 'MediumHardpoint1');
-    await openChooser(page);
+    await openChooserRows(page);
     await expect(page.getByRole('radio').first()).toBeVisible();
     await sweepOutfittingState(page, testInfo, 'ledger/chooser open');
   });
@@ -463,13 +474,17 @@ async function search(page: Page, query: string): Promise<void> {
 test.describe('finding a replacement', () => {
   test('offers every choice the Almanac has for the mount, and says how many', async ({ page }) => {
     await openStockBuild(page);
-    // A small hardpoint's whole list is short enough to be built in one page, so
-    // the drawn count and the rendered rows are the same number here.
     await selectMount(page, 'SmallHardpoint1');
-    await openChooser(page);
+    // The count the surface publishes is the whole list; what is in the
+    // document is whatever families are open. With every family open the two
+    // are the same number, which is how "every choice" is checked (SC-006).
+    await openChooserRows(page);
 
     const drawn = await drawnCount(page);
-    const rendered = await page.locator('.candidate').count();
+    // The families' own rows. The compact composition draws canvas 1d's
+    // `FITTED HERE` block above them, which is the fitted row a second time —
+    // a duplicate of a row already counted, not another choice.
+    const rendered = await page.locator('.family__choices .candidate').count();
 
     // The count is the list, not a separate claim about it.
     expect(drawn).toBe(rendered);
@@ -483,7 +498,10 @@ test.describe('finding a replacement', () => {
   test('renders the whole expansion, so the scroller knows how tall it is', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'MediumHardpoint1');
-    await openChooser(page);
+    // Whatever is open is whole: no paging and no growing window. Families
+    // change how much is open at once, not whether what is open is complete
+    // (module-replacement design, wave 10).
+    await openChooserRows(page);
 
     const drawn = await drawnCount(page);
     // Every choice, in the document, from the first frame. A list that grew as
@@ -517,21 +535,65 @@ test.describe('finding a replacement', () => {
     expect(await scroller.evaluate((node) => node.scrollHeight)).toBe(before);
   });
 
-  test('names its sections and puts the unique rewards last', async ({ page }) => {
+  test('groups every choice into one Almanac family, in the package\u2019s order', async ({
+    page,
+  }) => {
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
-    await openChooser(page);
+    await openChooserRows(page);
 
-    const headings = await page
-      .locator('.candidates__section > h3')
-      .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+    const controls = page.locator('.family');
+    const families = await controls.count();
+    expect(families).toBeGreaterThan(1);
 
-    // Neither canvas draws these; they are the structure, named for a reader.
-    expect(headings[0]).toMatch(/standard/i);
-    expect(headings.at(-1)).toMatch(/unique reward/i);
+    // Every row belongs to exactly one family's region, and every row the
+    // surface counted is in one of them (FR-020, SC-006).
+    const drawn = await drawnCount(page);
+    const grouped = await page.locator('.family__choices > .candidate').count();
+    expect(grouped).toBe(drawn);
 
-    const rewardRow = page.locator('.candidates__section').last().locator('.candidate').first();
-    await expect(rewardRow).toContainText(/reward only/i);
+    // Nothing is drawn outside a family except canvas 1d's `FITTED HERE` block,
+    // which the compact composition pins above the list and the wide one does
+    // not draw at all.
+    const pinned = await page.locator('.candidates__pinned .candidate').count();
+    expect(await page.locator('.candidate').count()).toBe(drawn + pinned);
+
+    // The sections are gone with their headings, and nothing replaced them.
+    await expect(page.locator('.candidates__section, .candidates__group')).toHaveCount(0);
+    expect(await renderedText(page, '.candidates')).not.toMatch(/standard modules/i);
+  });
+
+  test('keeps a unique reward\u2019s labels on its own row, inside its family', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await openChooserRows(page);
+
+    // Canvas 1c marks the reward on the row itself, directly under the ordinary
+    // article it is built on — so the heading that used to carry that fact has
+    // nothing left to say (FR-024). The mark is the icon of the route the
+    // article is earned through, and the sentence beside it is what a reader
+    // gets, so the row is found by the sentence rather than by the picture.
+    const reward = page
+      .locator('.candidate')
+      .filter({ hasText: /not sold anywhere/i })
+      .first();
+    await expect(reward).toBeVisible();
+    await expect(reward.locator('.acquisition__route')).toHaveCount(1);
+
+    // It sits inside a family, and inside the same family as its base module.
+    const family = reward.locator('xpath=ancestor::*[contains(@class, "family__choices")]');
+    await expect(family).toHaveCount(1);
+
+    const rewardName = (await reward.locator('.candidate__name').innerText())
+      .split('·')[0]!
+      .trim()
+      .toLowerCase();
+    const siblings = await family
+      .locator('.candidate__name')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent?.toLowerCase() ?? ''));
+    expect(siblings.filter((name) => name.includes(rewardName)).length).toBeGreaterThan(1);
   });
 
   test('matches every term, whatever case or accents it is typed in', async ({ page }) => {
@@ -580,9 +642,14 @@ test.describe('finding a replacement', () => {
     await search(page, 'zzzz nothing');
     await expect(page.locator('.replacement__no-matches')).toContainText(/zzzz nothing/);
     await expect(page.locator('.candidate')).toHaveCount(0);
+    // Nothing matched, so no family is drawn either: a control standing in
+    // front of nothing is exactly what absence prevents (FR-023).
+    await expect(page.locator('.family')).toHaveCount(0);
 
-    await page.locator('.replacement__clear').click();
-    await expect(page.locator('.candidate').first()).toBeVisible();
+    // The way back is the mark inside the search field: the dedicated CLEAR
+    // button beside the no-match notice is withdrawn.
+    await page.locator('.search__clear').click();
+    await expect(page.locator('.family').first()).toBeVisible();
     expect(await drawnCount(page)).toBe(all);
   });
 
@@ -593,6 +660,8 @@ test.describe('finding a replacement', () => {
     // takes the rest of that family out of every other optional mount.
     await selectMount(page, 'Slot02_Size6');
     await openChooser(page);
+    // A search opens every family it matched, so the rows behind the count are
+    // all in the document without anything being opened by hand (FR-023).
     await search(page, 'docking computer');
     const before = await page.locator('.candidate').count();
     expect(before).toBeGreaterThan(0);
@@ -618,6 +687,9 @@ test.describe('finding a replacement', () => {
     await openStockBuild(page);
     await selectMount(page, 'MediumHardpoint1');
     await openChooser(page);
+    await sweepOutfittingState(page, testInfo, 'chooser/families closed');
+
+    await openAllFamilies(page);
     await sweepOutfittingState(page, testInfo, 'chooser/full');
 
     await search(page, 'multi');

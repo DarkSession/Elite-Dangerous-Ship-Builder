@@ -39,14 +39,18 @@ base symbol + blueprint fdname + purchase grade + effect fdname/absence
 The ordinal prevents a future package release with otherwise equal route records from collapsing UI
 identity. It is not exported as game identity.
 
-## Sections, groups and order
+## Families and order
 
-Sections are ordered:
+Every choice belongs to exactly one family: `module.familyId` for a stock choice, and the same value
+for each of its pre-engineered variants. The id is read from the package record membership already
+retains; it is never derived from a symbol, a display name or a slot. The family's displayed name is
+`getOutfittingFamilyName(familyId, locale)` resolved through the standard package-text rule —
+localized where the package has it, canonical English with the untranslated disclosure where it does
+not. The application keeps no family table, no abbreviation and no singular/plural rewriting of the
+package's own text.
 
-1. standard — stock, Mercenary and tech-broker choices;
-2. unique rewards — community-goal and event-reward choices.
-
-Within each section, arrange by:
+Families appear in the order the package's family declaration gives them, and there is no grouping
+level above them. Within a family, arrange by:
 
 1. displayed package module name using active-locale `Intl.Collator` with base sensitivity;
 2. numeric class descending;
@@ -55,8 +59,38 @@ Within each section, arrange by:
 5. package stock ordinal, then variant ordinal.
 
 The rating comparator is exhaustive over the imported package type. A newly introduced value fails
-type/tests and requires package review rather than being silently placed. Sorting changes only the
-view; no choice value is rewritten.
+type/tests and requires package review rather than being silently placed. `OutfittingFamilyId` is checked
+differently, and deliberately: a package release that adds a family must fail the installed-package
+acceptance test by name rather than pass unnoticed. Compilation cannot catch it — a new id widens the
+union and the package's own `OUTFITTING_FAMILIES` record together, so every exhaustive annotation
+over them widens too, and the only way to make the compiler object would be a family table written
+here, which is the one thing FR-020 forbids. The count of published families is asserted instead. Sorting changes only the view; no choice value is rewritten.
+
+Standard and unique-reward sections are withdrawn (research decision 14). A community-goal or
+event-reward choice stays in the family of the module it is built on and is identified there by the
+`uniqueReward` acquisition label defined below; `CandidateSection` remains that label's input and is
+no longer an ordering key or a heading.
+
+## Open and closed families
+
+Family open state is part of the query state and is seeded, never accumulated:
+
+- opening a chooser seeds it with the family of the exact fitted stock or variant choice, matched on
+  the whole variant as elsewhere in this contract, and with nothing at all when no available family
+  contains that exact choice;
+- a query that becomes non-empty or changes while non-empty replaces the seed with every family
+  holding at least one match where the search matched no more than a screenful, and leaves every
+  family closed where it matched more — a family holding a match is never absent either way, and a
+  closed one states its own share of the matches;
+- a query that returns to empty re-seeds the fitted-family default;
+- a Commander toggle adds or removes exactly one family id.
+
+Toggling reads nothing from the build and writes nothing to it. It is not an edit, not a decision and
+not a history step, and it never invalidates the index or the retained package records.
+
+Each family control publishes its name, its current choice count and its open state. When a search is
+active the count is the number of matches in that family, not the family's full size, because that is
+the number of rows the control is standing in front of.
 
 ## Search
 
@@ -118,7 +152,16 @@ visibly disclosed as untranslated. The app never maintains private game-name or 
 
 - For every representative slot, choice count equals stock results plus every package variant.
 - Route-distinct variants remain distinct and preserve package order.
-- Unique rewards are the final section; stock precedes variants inside a group.
+- Every choice appears in exactly one family, and every family id and name on screen came from the
+  installed package.
+- Stock precedes variants inside a family, and a reward keeps its labels on its own row now that no
+  section carries them.
+- The fitted choice's family, and only that one, is open on open and after a rebuild; none is open
+  when the fitted choice has no available family.
+- A non-empty search within a screenful leaves no match inside a closed family, and above a screenful leaves every family closed and none absent; clearing it restores the fitted default.
+- Toggling a family produces no build revision and no history step.
+- A family the active language does not name renders its canonical English name with the untranslated
+  disclosure, and still groups, counts and opens.
 - Multi-term, case- and accent-insensitive search covers exactly the four required fields.
 - A candidate list rebuilt after a fit reflects new exclusive/count limits.
 - The installed package's largest-choice fixture settles below 100 ms in the Chromium-only timing

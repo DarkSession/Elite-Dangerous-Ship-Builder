@@ -11,11 +11,11 @@ render.
 
 ## CostAndMaterials
 
-| Field       | Type                    | Rule                                                      |
-| ----------- | ----------------------- | --------------------------------------------------------- |
-| `credits`   | `CreditsView`           | One literal `retailCredits()` result plus the ruled total |
-| `materials` | `MaterialsView \| null` | `null` when no engineering contributes a cost list        |
-| `mercCoin`  | `number \| null`        | `mercCoinCost()`, or `null` when nothing is recognized    |
+| Field       | Type                    | Rule                                               |
+| ----------- | ----------------------- | -------------------------------------------------- |
+| `credits`   | `CreditsView`           | Literal `buildCost().credits` fields               |
+| `materials` | `MaterialsView \| null` | `null` when no engineering contributes a cost list |
+| `mercCoin`  | `number \| null`        | `buildCost().mercCoins`, or `null` when it is zero |
 
 The projection is a synchronous pure function of the loadout. There is no revision key, no cache
 generation and no pending or failure state: a build either exists, in which case these figures are
@@ -23,12 +23,12 @@ read from it, or it does not, in which case nothing is drawn.
 
 ## CreditsView
 
-| Field     | Type     | Rule                                                          |
-| --------- | -------- | ------------------------------------------------------------- |
-| `hull`    | `number` | Literal package `hull`                                        |
-| `modules` | `number` | Literal package `modules`                                     |
-| `total`   | `number` | `hull + modules`, the one ruled credits derivation (ruling A) |
-| `rebuy`   | `number` | Literal package `rebuy`; the `5%` in its label is fixed text  |
+| Field     | Type     | Rule                                                         |
+| --------- | -------- | ------------------------------------------------------------ |
+| `hull`    | `number` | Literal package `hull`                                       |
+| `modules` | `number` | Literal package `modules`                                    |
+| `total`   | `number` | Literal package `total`                                      |
+| `rebuy`   | `number` | Literal package `rebuy`; the `5%` in its label is fixed text |
 
 The package's `unpriced` list is not projected. There is no nullable numeric field, no captured
 purchase value and no consumer-derived percentage.
@@ -38,7 +38,7 @@ purchase value and no consumer-derived percentage.
 | Field        | Type                     | Rule                                                 |
 | ------------ | ------------------------ | ---------------------------------------------------- |
 | `blueprints` | `number`                 | Count of fitted modules that contributed a cost list |
-| `rows`       | `readonly MaterialRow[]` | Literal `sumMaterials()` order, symbols and counts   |
+| `rows`       | `readonly MaterialRow[]` | Literal `buildCost().materials` symbols and counts   |
 | `types`      | `number`                 | `rows.length`                                        |
 | `units`      | `number`                 | Sum of `rows[].count`                                |
 
@@ -58,14 +58,15 @@ not make the block absent and is not named.
 
 | Field    | Type             | Rule                                               |
 | -------- | ---------------- | -------------------------------------------------- |
-| `symbol` | `string`         | Literal `sumMaterials()` identity, in its order    |
-| `count`  | `number`         | Literal `sumMaterials()` count                     |
+| `symbol` | `string`         | Literal `buildCost().materials` identity, in order |
+| `count`  | `number`         | Literal `buildCost().materials` count              |
 | `grade`  | `number \| null` | `materialRarity(symbol)`; `null` where none exists |
 
 ## Presentation-only
 
-The surface adds package-localised material names as a `GameTextPresentation` — the same shape
-`edsb-material-cost-list` already consumes, carrying its own untranslated disclosure — plus localized
+The surface adds package-localised material names as a `GameTextPresentation` — the shape the
+Engineer panel's own list consumed before feature 002 withdrew it (ruling G, amended 2026-08-23),
+carrying its own untranslated disclosure — plus localized
 block headings and labels and active-locale number formatting. Formatting never changes a number.
 
 It also decides **reading order**: rows are drawn commonest first and then by name, using the

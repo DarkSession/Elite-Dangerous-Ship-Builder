@@ -11,7 +11,18 @@
   @include layout.stack(var(--edsb-space-stack-tight));
 }
 
+// Canvas 1c's `display: flex; align-items: center; gap: 7px` around the name
+// and its marker.
+.identity__line {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+  min-inline-size: 0;
+}
+
 .identity__name {
+  min-inline-size: 0;
+
   // Barlow, not the condensed face: canvas 1c sets a ledger row's module name in
   // the same `500 13px Barlow` it sets a manifest row's in, untracked. The
   // condensed face and the tracking that came with it belong to the headings and

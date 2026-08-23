@@ -4,6 +4,7 @@ import {
   commandBarActionState,
   fitCommitted,
   openChooser,
+  openChooserRows,
   pressCommandBarAction,
   surfacesAreLayers,
 } from './outfitting-surfaces';
@@ -70,7 +71,7 @@ test.describe('stepping back and forward', () => {
 
     // Three decisions of three different kinds.
     await selectMount(page, 'MediumHardpoint1');
-    await openChooser(page);
+    await openChooserRows(page);
     const rows = page.locator('.candidate');
     await expect(rows.first()).toBeVisible();
     await rows.first().locator('.candidate__name').click();

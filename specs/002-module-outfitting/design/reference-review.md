@@ -7,6 +7,17 @@
 > pencils are unchanged, so every ruling below still applies. `CLEAR ✕`, `G5 ROLL`, the `data-delta`
 > markers and the per-candidate delta chips have been removed from the design, matching four rulings
 > already recorded here.
+>
+> **Re-verified again against the 2026-08-23 canvas re-sync (1.20 MB, wave 10).** Both outfitting
+> canvases were redrawn around collapsible module families. Canvas 1c gains a family row — name,
+> count, caret — inside the seven-column manifest, with rows such as `Multi-Cannon · Gimballed`
+> beneath the open one. Canvas 1d gains a `FAMILIES` list with its own `5 · 24 FIT` counter, a
+> two-letter family badge, a per-family `6 VARIANTS · 15.1–28.4 DPS · 4.46 MW` summary, and a
+> `FITTED HERE` block above the list. Both canvases dropped the standard and unique-reward section
+> headings; a reward now carries, on its own row, the icon of the route it is earned through — a
+> `REWARD ONLY` chip when this was written, redrawn as a route icon the same day. Every ruling on those changes
+> — three adoptions and three withdrawals — is in
+> [module-replacement.md](./module-replacement.md), "Module families".
 
 - `.design/Ship Builder.dc.html`
 - Canvas **1c**: wide outfitting workspace, module manifest and engineering/material regions
@@ -244,6 +255,16 @@ stays the flat list the canvas draws. Same invisible accessibility floor as the 
 the slot key above, and the `REWARD ONLY` badge is kept as the visible marker the canvas gives the
 unique-reward section.
 
+**Superseded in part, 2026-08-23 (wave 10).** The canvases are no longer flat: both now draw a
+visible family control with a name, a count and a caret, so the family heading stops being an
+invisible accessibility floor and becomes the structure a Commander sees and operates. The section
+level is gone from the canvases and from the requirement with it. The `REWARD ONLY` badge does not
+survive either: canvas 1c was redrawn again later the same day and replaced it with an icon naming
+the route the article is earned through, so the badge is withdrawn and that icon is what marks a
+reward — and a route the canvas draws no icon for is marked in words only. The name group survives as
+ordering inside a family, not as a level of the tree. See
+[module-replacement.md](./module-replacement.md), "Module families" and "Acquisition icons".
+
 **Blueprint option descriptions, ruled 2026-08-21 during US3 implementation.** Withdrawn. Both
 canvases write a summary under each recipe — `DAMAGE ▲ · THERMAL LOAD ▲`, `RATE OF FIRE ▲ · ACCURACY
 ▼`. The Almanac publishes no description for a blueprint and no direction for what one moves, so
@@ -270,9 +291,10 @@ readings coincide, which is why the substitution survived a first review.
 green/red and its ▲/▼ are drawn. The earlier ruling was right that the Almanac publishes no
 trustworthy direction — `LessIsGood` is documented as unreliable and is not read — and wrong to
 conclude that nothing may be said. Whether more damage is better than less is not a fact about the
-Almanac's data; it is a fact about the game, and it is the same six answers for the six attributes
-this surface compares. Those six live in `HIGHER_IS_BETTER`, beside `COMPARED_ATTRIBUTES`, owned by
-this application and stated as such.
+Almanac's data; it is a fact about the game, and it is one answer per attribute this surface
+compares. They live in `HIGHER_IS_BETTER`, beside `COMPARED_ATTRIBUTES`, owned by this application
+and stated as such — exhaustive over that list by type, so a field the Almanac adds cannot reach the
+panel without someone stating which way is better for it.
 
 Two things follow from the canvas rather than from arithmetic. ▲ means **better** and ▼ means
 **worse** — not which way the number moved: the canvas draws a power draw that rose from 0.73 to 0.88
@@ -409,6 +431,26 @@ it made a library the speaker of sentences about a Commander's ship, and the cre
 provenance statement feature 012 owns, once per application rather than in thirty strings. The name
 stays in code comments, spec prose and diagnostics that never reach a screen, because there it says
 which system is being described.
+
+**Utility node ground, ruled 2026-08-23 (wave 10, Commander request).** The canvas's `paintNodes`
+gives every unselected node in the ledger the one dark ground — `rgba(11,11,12,.88)` — and turns only
+the number's ink and the box's edge to the anatomy's blue on a utility mount. The ground is washed
+with the same blue here as well. It is a departure, recorded rather than absorbed: the box is what a
+Commander scans forty rows for, and two digits of blue inside a ground shared with every hardpoint
+was not finding them. The selected node is unchanged and still takes the solid accent, so the mark
+that says which mount is being outfitted is not the one that says which kind it is.
+
+**Tech Broker mark, ruled 2026-08-23 (wave 10, Commander request).** Canvas 1c draws a third route
+icon beside a module's name — `edassets.org/static/img/misc/tech_broker.svg` on `Cannon · Gimballed`
+— and an earlier pass here read only the two icons under `.design/assets/` and concluded the route
+had no mark. It has one. The file is taken once at authoring time and served from this origin as
+`assets/icons/tech-broker.svg`, under the same **Icons** ruling above that brought in the rarity
+marks and the Merc Coin: Constitution I forbids reaching another origin at runtime, not shipping the
+reference's own artwork. It arrives as unpainted black line art, so the canvas's own
+`filter: brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(350deg)` comes with it, as
+`--edsb-filter-route-broker`, rather than a colour of ours being baked into the file.
+
+`eventReward` remains the one route with no mark anywhere in the reference, and still draws none.
 
 ## Released API constraint
 

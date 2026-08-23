@@ -6,30 +6,10 @@
   offer (constitution V).
 -->
 <ng-template #body>
-  @switch (state()) {
-    @case ('noModule') {
-      <p class="engineering__state" [attr.role]="emptyMount() ? null : 'status'">
-        {{ noModuleLabel() }}
-      </p>
-    }
-    @case ('packageEmpty') {
-      <!--
-        A mount the Almanac offers no engineering for keeps its panel and says
-        so. The panel is the region a Commander looks in to find out what a
-        module can be engineered to; removing it left the bench with nothing
-        where the answer belongs, and the answer — that there is none — is one
-        the ledger cannot give from the outside (wave 9, reversing wave 5).
-      -->
-      <p class="engineering__state">{{ packageEmptyLabel() }}</p>
-    }
-    @case ('final') {
-      <!--
-        A final article. The Almanac's restriction is stated and its current
-        fixed state stays visible; no apply or clear control is drawn, because
-        neither is an operation the package offers here (FR-009).
-      -->
-      <p class="engineering__state">{{ finalLabel() }}</p>
-    }
+  @if (state() === 'noModule') {
+    <p class="engineering__state" [attr.role]="emptyMount() ? null : 'status'">
+      {{ noModuleLabel() }}
+    </p>
   }
 
   <!--
@@ -47,70 +27,97 @@
     <p class="engineering__state" role="status">{{ staleLabel() }}</p>
   }
 
-  @if (showChoices()) {
+  <!--
+    Two halves, and both keep their place. `DETAILS AND ENGINEERING` names them,
+    and the details do not depend on the engineering: a final article accepts no
+    further engineering and still has every attribute it was catalogued with, as
+    does a mount the Almanac offers no recipe for.
+
+    Where there is nothing to choose, the left half states why rather than
+    standing empty, and the attributes stay on the right where they are on every
+    other article. Collapsing to one column instead — which is what this did
+    when the restriction was drawn above the grid — moved the table under a
+    sentence and made the panel a different shape for the articles a Commander
+    is least able to predict (wave 11, Commander request).
+  -->
+  @if (state() !== 'noModule') {
     <div class="engineering__panes">
       <div class="engineering__choices">
-        <edsb-blueprint-choice-list
-          [asDropdown]="!asLayer()"
-          [fixed]="fixedRecipe()"
-          [choices]="blueprintChoices()"
-          [selected]="selectedBlueprint()"
-          [clearConsequence]="clearConsequence()"
-          (chosen)="chooseBlueprint($event)"
-        />
+        @switch (state()) {
+          @case ('packageEmpty') {
+            <!--
+              A mount the Almanac offers no engineering for keeps its panel and
+              says so. The panel is the region a Commander looks in to find out
+              what a module can be engineered to; removing it left the bench
+              with nothing where the answer belongs, and the answer — that there
+              is none — is one the ledger cannot give from the outside (wave 9,
+              reversing wave 5).
+            -->
+            <p class="engineering__state">{{ packageEmptyLabel() }}</p>
+          }
+          @case ('final') {
+            <!--
+              A final article. The Almanac's restriction is stated and its
+              current fixed state stays visible; no apply or clear control is
+              drawn, because neither is an operation the package offers here
+              (FR-009).
+            -->
+            <p class="engineering__state">{{ finalLabel() }}</p>
+          }
+          @default {
+            <edsb-blueprint-choice-list
+              [asDropdown]="!asLayer()"
+              [fixed]="fixedRecipe()"
+              [choices]="blueprintChoices()"
+              [selected]="selectedBlueprint()"
+              [clearConsequence]="clearConsequence()"
+              (chosen)="chooseBlueprint($event)"
+            />
 
-        <!--
-          Everything under the recipe follows from it. A grade bar, an effect
-          menu and a materials list with no recipe behind them are controls
-          over nothing, and neither canvas draws one (design-canvas rule).
-        -->
-        @if (grades().length > 0) {
-          <edsb-grade-selector
-            [grades]="grades()"
-            [lowest]="lowestGrade()"
-            [selected]="selectedGrade()"
-            (chosen)="chooseGrade($event)"
-          />
-        }
+            <!--
+              Everything under the recipe follows from it. A grade bar or an
+              effect menu with no recipe behind it is a control over nothing,
+              and neither canvas draws one (design-canvas rule).
+            -->
+            @if (grades().length > 0) {
+              <edsb-grade-selector
+                [grades]="grades()"
+                [lowest]="lowestGrade()"
+                [selected]="selectedGrade()"
+                (chosen)="chooseGrade($event)"
+              />
+            }
 
-        @if (recipeChosen() && effectChoices().length > 0) {
-          <edsb-experimental-effect-list
-            [asDropdown]="!asLayer()"
-            [effects]="effectChoices()"
-            [selected]="selectedEffect()"
-            (chosen)="chooseEffect($event)"
-          />
-        }
-
-        <!--
-          Canvas 1c puts what the recipe would change directly under the
-          controls that choose it, ruled off from them, in the same column —
-          not across the rule beside the materials. The table reads as the
-          consequence of the three choices above it, which is what it is
-          (wave 8).
-        -->
-        @if (attributes().length > 0) {
-          <edsb-attribute-comparison class="engineering__attributes" [rows]="attributes()" />
+            @if (recipeChosen() && effectChoices().length > 0) {
+              <edsb-experimental-effect-list
+                [asDropdown]="!asLayer()"
+                [effects]="effectChoices()"
+                [selected]="selectedEffect()"
+                (chosen)="chooseEffect($event)"
+              />
+            }
+          }
         }
       </div>
 
-      <!--
-        A heading over nothing is a section about nothing. On an article bought
-        rather than crafted there is no job at the grade it was bought at, so
-        there is no list and no `MATERIALS · G1` to head one with (wave 9).
-      -->
-      @if (recipeChosen() && materialParts().length > 0) {
+      @if (attributes().length > 0) {
         <div class="engineering__result">
           <!--
-            One list for the whole job — the recipe's materials and the effect's
-            already folded together, because a Commander gathers them once
-            (wave 9). The article's Merc Coin price is not on it: that is what
-            buying the module costs, which the manifest row it is bought from
-            already states. The Merc Coin the *climb* bills is a different
-            figure and is on the list: Almanac 0.1.5 publishes it per grade
-            (upstream #337).
+            Canvas 1c's `eng-right`: the article's own attributes, across the
+            rule from the controls that change them. This supersedes wave 8,
+            which put the table under those controls in the left column on the
+            reading that it was "the consequence of the three choices above it".
+            The canvas draws it as the other half of the panel — which is what
+            `DETAILS AND ENGINEERING` names: the details on one side, the
+            engineering on the other — and the table is no longer only a
+            consequence, because it is drawn for a module nothing has been done
+            to yet.
           -->
-          <edsb-material-cost-list [parts]="materialParts()" [grade]="selectedGrade()" />
+          <edsb-attribute-comparison
+            class="engineering__attributes"
+            [rows]="attributes()"
+            [comparing]="comparingAttributes()"
+          />
         </div>
       }
     </div>
@@ -122,7 +129,7 @@
       same rule the chooser follows one panel up. Undo is what takes one back
       (design-canvas rule, wave 4).
     -->
-    @if (asLayer()) {
+    @if (asLayer() && showChoices()) {
       <div class="engineering__actions">
         <button class="engineering__revert" type="button" (click)="revert()">
           {{ revertLabel() }}

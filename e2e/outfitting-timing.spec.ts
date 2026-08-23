@@ -51,7 +51,10 @@ test.describe('candidate search timing', () => {
     await expect(row).toHaveAttribute('aria-pressed', 'true');
 
     await page.getByRole('button', { name: /change module/i }).click();
-    await expect(page.locator('.candidate').first()).toBeVisible();
+    // The family bars, not the rows: on a mount with nothing fitted every
+    // family opens closed, so there is no row to wait for. Typing below opens
+    // the families it matches, and that opening is part of what is timed.
+    await expect(page.locator('.family').first()).toBeVisible();
 
     // The fixture's claim about which mount is largest, re-proved against the
     // count the surface publishes rather than taken on trust. The count is the
@@ -102,7 +105,11 @@ test.describe('candidate search timing', () => {
     expect(
       worst,
       `input-to-rendered-result took ${worst.toFixed(1)} ms over ${offered} choices ` +
-        `in ${browser.browserType().name()} at 4x CPU throttling`,
+        `in ${browser.browserType().name()} at 4x CPU throttling ` +
+        // The whole series, because which keystroke is worst is the finding:
+        // the first broad term opens every family it matched and builds their
+        // rows cold, and the ones after it only narrow what is already drawn.
+        `(${timings.map((ms) => ms.toFixed(1)).join(', ')} over ${TYPED.join(', ')})`,
     ).toBeLessThan(BUDGET_MS);
   });
 });

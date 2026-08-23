@@ -6,7 +6,7 @@ import {
   applyDraft,
   chooseRecipe,
   fitCommitted,
-  openChooser,
+  openChooserRows,
   openEditor as bringEditorOnScreen,
   surfacesAreLayers,
 } from './outfitting-surfaces';
@@ -64,7 +64,7 @@ function digits(text: string): number {
  */
 async function packageRetail() {
   const core = await import('@elite-dangerous-almanac/core/ships/ship-loadout');
-  return core.ShipLoadout.default(HULL).retailCredits();
+  return core.ShipLoadout.default(HULL).buildCost().credits;
 }
 
 test.describe('the COST block', () => {
@@ -78,9 +78,7 @@ test.describe('the COST block', () => {
     const values = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
     expect(digits(values[0]!)).toBe(retail.hull);
     expect(digits(values[1]!)).toBe(retail.modules);
-    // Ruling A: the canvas's anchor row, and the one credits figure the
-    // application computes.
-    expect(digits(values[2]!)).toBe(retail.hull + retail.modules);
+    expect(digits(values[2]!)).toBe(retail.total);
     expect(digits(values[3]!)).toBe(retail.rebuy);
   });
 
@@ -240,7 +238,7 @@ test.describe('the Merc Coin row', () => {
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[1]);
 
     // Two recognised articles, still one row (ruling C). The figure is
-    // `mercCoinCost()` over the whole build, so it moves past what either
+    // `buildCost().mercCoins` over the whole build, so it moves past what either
     // article costs on its own — which is what tells a build total from a
     // per-article price (FR-005).
     const both = digits(
@@ -441,7 +439,7 @@ async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
   await mount.click();
   await expect(mount).toHaveAttribute('aria-pressed', 'true');
 
-  await openChooser(page);
+  await openChooserRows(page);
   // Both labels: several Merc-Coin articles fit this mount, and the module's
   // own name is what tells this one from the rest.
   const row = page

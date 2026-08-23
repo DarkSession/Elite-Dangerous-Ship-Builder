@@ -1,7 +1,7 @@
 # Module Replacement Surface
 
 **Parent route**: `/build` application state  
-**Requirements**: FR-002, FR-004–FR-008
+**Requirements**: FR-002, FR-004–FR-008, FR-020–FR-024
 
 ## Purpose
 
@@ -25,8 +25,11 @@ the build.
   exactly as canvas 1d shows, with no hint. The hint is application-owned text, so it resolves through
   localization (constitution VI) and names the modifier for the Commander's platform — `⌘K` is
   macOS-only and MUST NOT ship as a literal on Windows or Linux.
-- Standard-choice section followed by explicit unique-reward section.
-- Responsive semantic manifest grouped by localized package module name and ordered by class/rating.
+- Collapsible family rows carrying the package family name, the family's choice count and an open or
+  closed caret, with the open family's rows drawn beneath it on the same seven-column grid. No
+  section heading above them: see "Module families" below.
+- Responsive semantic manifest grouped by package family and ordered inside a family by localized
+  module name, then class/rating.
 - Rows expose explicit fitted/stock/variant state, class/rating/mount, acquisition and entitlement
   labels, and package-provided DPS, mass, power, weapon draw, credit and other in-scope facts where
   available. Unavailable columns/facts remain labeled unavailable rather than zero.
@@ -135,11 +138,121 @@ that is wrong for even a handful of rows moves the bar as those rows are reached
 thing the figure exists to prevent — so those rows declare nothing and are never skipped. They are a
 handful out of hundreds, and their real height is counted from the first frame like every card's.
 
+## Module families
+
+**Ruled 2026-08-23 (wave 10).** Both canvases were redrawn around collapsible families, and both are
+adopted. Canvas 1c draws them inside the seven-column manifest — a family row of name, count and
+caret, with `Multi-Cannon · Gimballed` and its siblings beneath the open one. Canvas 1d draws the
+same list under a `FAMILIES` heading with its own `5 · 24 FIT` counter, a fitted-module block pinned
+above it under `FITTED HERE`, and one family open.
+
+**The family is the Almanac's, not ours.** `@elite-dangerous-almanac/core` 0.1.7 gives every module
+an `OutfittingModuleIdentity.familyId` and publishes a localized name for each of the 77. That is the
+grouping, and it is the only thing that reproduces the canvas: canvas 1c's Plasma Accelerator family
+holds both `Plasma Accelerator · Fixed` and `Plasma Accelerator · Advanced`, and the second is a
+pre-engineered variant with a different package name of its own. Grouping by displayed name — which
+is what the shipped `CandidateGroup` does — splits that family in two.
+
+**The package's own words ship, including where they read oddly.** The Almanac writes families in the
+plural, `Multi-cannons`, where the canvas letters them `Multi-Cannon`. The canvas's casing is a
+mock-up of a value the package now supplies, and constitution II settles which one is on screen. The
+19 of 77 families the package has not yet named outside English fall to the canonical English name
+with the untranslated disclosure module names already use; there is no local table for them.
+
+**Withdrawn: the standard and unique-reward sections.** Neither canvas draws them any more. A reward
+is marked where it sits — canvas 1c puts a `REWARD ONLY` chip on `Plasma Accelerator · Advanced`
+directly under the ordinary article it is built on — so the heading has nothing left to say that the
+row does not. Every FR-006 label survives unchanged; only the level of the tree that carried them is
+gone. Sorting no longer has a section key, and `CandidateSection` narrows to being the input the
+`uniqueReward` label is projected from.
+
+**Withdrawn: the two-letter family badge.** Canvas 1d draws `MC`, `PA`, `BL`, `CN`, `FC` in a filled
+square beside each family name. The Almanac publishes no abbreviation, and any rule that produces
+`MC` from `Multi-cannons` is this application shortening game text — a private naming rule in a two
+character box, and one with no answer at all for the 19 families whose only name is English. The
+square is not drawn. The family name, count and caret carry the row.
+
+**Withdrawn: the family summary line.** Canvas 1d writes `6 VARIANTS · 15.1–28.4 DPS · 4.46 MW`
+beneath each family name. The count survives — it is a count of package records. The DPS and power
+ranges do not: a min–max across a family is an aggregate the Almanac does not publish, drawn from
+figures that are `null` for any choice the package has no stats for, and a range whose ends come from
+two different articles invites a comparison neither of them supports. The count stands alone.
+
+**What this does to SC-002. Measured 2026-08-23, and with one rule added it is met at last.** With
+one family open the compact composition lays out that family's rows and one control per family
+instead of all 478 cards. On its own that was not enough: opening every family a search matched moved
+the cost rather than removing it, because the first letter of a broad term matches nearly everything
+and built several hundred cards cold in one keystroke — 538.7 ms on the Panther Mk II's 478-choice
+mount at 390 px under 4x CPU throttling, against the 113 ms the sectioned list recorded on
+2026-08-22 and the 100 ms the criterion allows.
+
+**Ruled: a search opens what it matched only up to a screenful, twenty-five choices.** Above that
+every family stays closed, each still stating how many of the matches it holds. A search that matched
+three hundred choices has not answered anything a Commander can read; what they can read is which
+families hold them and how many, which is the same information the closed list already carries. So
+the rows are not drawn, and the Commander narrows the term or opens the family they meant. FR-023 and
+SC-008 are amended to this rather than the rule being bent around them: a family holding a match is
+never absent at either size, which is the part that mattered.
+
+Measured with that rule, `m mu mul mult multi` settles at **50.4, 56.8, 33.0, 33.6, 33.5 ms** —
+three consecutive runs at 59 ms worst or better, against a 100 ms budget. **SC-002 is met at the
+compact composition.**
+
+The diagnosis recorded above is unchanged and still the reason this works: what is expensive is the
+browser laying out and painting hundreds of compact cards, so the fix that counts is painting fewer
+of them. The one declared compact card height canvas 1d draws is still what a list of _open_ rows
+would need, and is still not built. The rule above is unchanged too: whatever is open is whole — no
+paging, no growing window — and the scroller still knows its own height.
+
+## Acquisition icons
+
+**Ruled 2026-08-23 (wave 10).** Canvas 1c was redrawn again and the `REWARD ONLY` chip is gone from
+it: where a row carried that chip it now carries a small icon naming the _route_ the article is
+earned through — `community-goal.svg` on `Beam Laser · Gimballed`, `powerplay.svg` on
+`Plasma Accelerator · Advanced`. The icon is adopted and the chip is withdrawn with it. "You cannot
+buy this" is the smaller half of what "this is a community goal reward" already says, and the chip
+was only ever short for a sentence that is still beside it.
+
+**Both icons ship. Powerplay is keyed on the entitlement, not on a route.** The Almanac publishes
+four acquisition routes — `mercenary`, `communityGoal`, `techBroker`, `eventReward` — and Powerplay is
+not among them, which is why an earlier pass here recorded the icon as undrawable. That was looking
+in one place only. Powerplay is published, on the other axis: an `OutfittingModule.entitlement` of
+`ELITE_SPECIFIC_V_POWER_*` names it, and 0.1.7 carries twelve of them — `Advanced Plasma Accelerator`
+among them, which is the article the canvas draws the icon on. The rule is the token's own prefix and
+no table of game data: the application decides nothing about which articles are Powerplay rewards, it
+reads the entitlement the package already states. A Powerplay entitlement takes the icon and its own
+sentence; every other entitlement keeps the generic sentence with the raw token, unchanged.
+
+**`techBroker` has a mark too, and it was missed.** Canvas 1c draws
+`edassets.org/static/img/misc/tech_broker.svg` beside `Cannon · Gimballed`, at the same 14px and in
+the same place as the other two route icons. An earlier pass here read only the files under
+`.design/assets/icons/` — where the community-goal and Powerplay marks live — and concluded the route
+had none, then wrote down the consequence as the canvas's to accept: that a tech-broker row stands in
+its family beside the stock article it was built on with nothing to tell them apart, and reads as
+absent. The row was never absent — every package variant is emitted and counted — but it was
+unreadable, and the fix was in the reference all along. The file is vendored under the reference
+review's **Icons** ruling; see there for the origin and the canvas's own recolouring filter.
+
+**`eventReward` alone is marked in words only.** It has no mark anywhere in the reference, so it gets
+none here; its sentence is unchanged and is what a reader is given either way. `mercenary` already
+had its own mark, the Merc Coin, and keeps it. This is the same floor the rest of this component
+works to: the drawn markers are a subset of the spoken ones, never the other way round.
+
+**The mark sits on the name's own line, in the ledger as in the manifest.** Canvas 1c draws the
+fitted `Advanced Plasma Accelerator` with its Powerplay mark 7px after the name and the
+`FIXED · 51.7 DPS · 1.97 MW · 24.0 t` code line under both. The ledger row therefore projects the
+marker into the identity badge rather than placing it after the badge, where it fell under the code
+line and made a third line the canvas does not have.
+
 ## Narrow and 400%-zoom composition
 
 - Full-screen layer inspired by canvas 1d with associated title/slot description and back/cancel.
 - Sticky or persistent labeled search and textual result count.
-- Choices become semantic cards preserving section/group order and every label.
+- Choices become semantic cards preserving family order and every label, beneath the same family
+  controls the wide composition uses.
+- Canvas 1d's `FITTED HERE` block stands above the family list, showing the module currently in the
+  mount. It is the same fitted row the family list marks `FITTED`, drawn twice on purpose: at 390 px
+  the family holding it may be scrolled far below the fold.
 - A choice expands/selects with native radio/button semantics; a separate full-width fit action
   confirms the decision.
 - Background workspace is inert while the layer is open. Closing it returns to the same selected slot
@@ -147,18 +260,19 @@ handful out of hundreds, and their real height is counted from the first frame l
 
 ## States
 
-| State                | Required presentation and behavior                                                              |
-| -------------------- | ----------------------------------------------------------------------------------------------- |
-| Loading/rebuilding   | Existing committed build remains visible; chooser is busy and cannot fit stale records.         |
-| Ready                | All and only current package choices, ordered and labeled.                                      |
-| Search results       | Every term matched against name/class/rating/mount; result count announced politely.            |
-| No matches           | Retain query, explain no match, expose clear action; no empty-slot ambiguity.                   |
-| Empty package result | Explain no replacement offered; this is distinct from search no-match.                          |
-| Stale revision       | Discard selection, rebuild from current loadout and explain that choices changed.               |
-| Fit success          | Commit once, close/return to selected slot, refresh every package result, add one history step. |
-| Structured refusal   | Localized code/constraint/params; keep active build/history; rebuild choices.                   |
-| Removable            | Explicit remove action and package consequences; one successful decision.                       |
-| Non-removable        | Reason visible; remove absent.                                                                  |
+| State                | Required presentation and behavior                                                                                                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading/rebuilding   | Existing committed build remains visible; chooser is busy and cannot fit stale records.                                                                                                                                    |
+| Ready                | All and only current package choices, ordered and labeled.                                                                                                                                                                 |
+| Search results       | Every term matched against name/class/rating/mount; result count announced politely. Every family holding a match is present and counted, open where the match set is within a screenful; families without one are absent. |
+| Family toggled       | One family opens or closes. No build revision, no history step, no rebuilt index.                                                                                                                                          |
+| No matches           | Retain query, explain no match, expose clear action; no empty-slot ambiguity.                                                                                                                                              |
+| Empty package result | Explain no replacement offered; this is distinct from search no-match.                                                                                                                                                     |
+| Stale revision       | Discard selection, rebuild from current loadout and explain that choices changed.                                                                                                                                          |
+| Fit success          | Commit once, close/return to selected slot, refresh every package result, add one history step.                                                                                                                            |
+| Structured refusal   | Localized code/constraint/params; keep active build/history; rebuild choices.                                                                                                                                              |
+| Removable            | Explicit remove action and package consequences; one successful decision.                                                                                                                                                  |
+| Non-removable        | Reason visible; remove absent.                                                                                                                                                                                             |
 
 ## Candidate facts and labels
 
@@ -168,12 +282,13 @@ handful out of hundreds, and their real height is counted from the first frame l
 - A fitted row is matched on the **whole variant** — name, blueprint and grade — not on the module
   symbol alone. A stock article and its pre-engineered variant share a symbol, and two rewards can
   share a variant name, so anything less marks two rows fitted for one fitted module (wave 4).
-- Community-goal/event-reward choices appear only in the final unique section.
+- Community-goal/event-reward choices sit in the family of the module they are built on, marked on their own row.
 - Mercenary/tech-broker variants show route plus not-ordinarily-available.
 - Entitlement adds another label and does not replace acquisition.
 - Missing translation uses canonical package text plus untranslated disclosure.
-- Canvas 1d's weapon-family chips are intentionally omitted. Required AND search covers only the
-  package-localized name, class, rating and mount; no local family taxonomy is introduced.
+- Search still covers only the package-localized module name, class, rating and mount. A family name
+  is not a fifth search field: a term that matches a family but no row inside it would open a control
+  in front of nothing.
 
 Do not show invented suitability rankings, “recommended” badges, inferred compatibility, local
 comparison deltas or design-mock purchase labels. Choosing a package record is not proof it can still
@@ -183,8 +298,11 @@ fit after another tab/component edit; the detached transaction remains final aut
 
 - Search has visible label/instructions; result count is a polite live region; no-match is a status,
   not just blank content.
-- Group/section headings describe list structure. Selected state and acquisition restrictions are
-  text/programmatic, not border/icon/color only.
+- Family controls describe list structure: each publishes its name, its current choice count and its
+  open or closed state programmatically, not by caret glyph alone. Selected state and acquisition
+  restrictions are text/programmatic, not border/icon/color only.
+- A family control is a real control at every width: at least 44 CSS px of target, operable by touch
+  and pointer, and not part of the `DENSE_TARGETS` exemption.
 - Candidate action names include module form and class/rating context needed to distinguish choices.
 - Targets are at least 44 CSS px, except the dense inline chips the canvas itself draws small — a
   ledger row's power cell is 20px there, and forty rows of a 44px chip is a different interface.

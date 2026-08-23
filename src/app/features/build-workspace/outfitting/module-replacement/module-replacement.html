@@ -66,24 +66,41 @@
     </div>
   }
 
+  <!--
+    The no-match state says what did not match and nothing else. The way back is
+    the mark inside the search field, which is where a Commander's hand already
+    is and which is on screen in this state like every other — a second control
+    saying the same thing, in a box that appears only when the list is empty, is
+    the dedicated button this replaced.
+  -->
   @if (state() === 'noMatches') {
     <div class="replacement__no-matches" role="status">
       <p class="replacement__state">{{ noMatchesLabel() }}</p>
-      <button class="replacement__clear" type="button" (click)="clear()">
-        {{ clearLabel() }}
-      </button>
     </div>
   }
 
+  <!--
+    Canvas 1d draws the family list under a `FAMILIES` rule with its own
+    `5 · 24 FIT` counter, and pins the mount's current module above it under
+    `FITTED HERE`. Canvas 1c draws neither: the manifest sits beside the ledger
+    under its own column head, and the fitted row is a scroll away rather than a
+    screen away. So both headings are passed only where that composition is on
+    screen (module-replacement design, "Module families").
+  -->
   @if (showList()) {
     <edsb-candidate-list
       class="replacement__list"
-      [sections]="sections()"
+      [families]="families()"
+      [searching]="canClear()"
       [label]="listLabel()"
+      [fittedHeading]="asLayer() ? fittedHereLabel() : null"
+      [familiesHeading]="asLayer() ? familiesLabel() : null"
+      [familiesSummary]="asLayer() ? familiesSummary() : null"
       [selectedKey]="selectedChoiceKey()"
       [fittedSymbol]="fittedSymbol()"
       [fittedVariant]="fittedVariant()"
       (chosen)="choose($event)"
+      (familyToggled)="toggleFamily($event)"
     />
   }
 

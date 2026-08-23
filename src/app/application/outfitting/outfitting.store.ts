@@ -1,4 +1,5 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import type { OutfittingFamilyId } from '@elite-dangerous-almanac/core/ships/module-families';
 import {
   LoadoutEditError,
   type ShipLoadout,
@@ -36,7 +37,12 @@ import {
   resolveChoice,
   type CandidateMembership,
 } from './candidate-membership';
-import { applyQuery, openCandidateQuery, type CandidateQueryState } from './candidate-query';
+import {
+  applyQuery,
+  openCandidateQuery,
+  toggleFamily,
+  type CandidateQueryState,
+} from './candidate-query';
 import { engineeringOperation } from './engineering-draft';
 import type { OutfittingSurface } from './outfitting-state';
 import { slotCapabilities } from './slot-capabilities';
@@ -181,16 +187,39 @@ export class OutfittingStore {
    */
   readonly #openQuery = computed<CandidateQueryState | null>(() => {
     const membership = this.membership();
-    return membership === null
-      ? null
-      : openCandidateQuery(membership, this.#gameText.locale, this.#formatters.collator());
+    if (membership === null) {
+      return null;
+    }
+    // The exact article in the mount, so the chooser can open the family that
+    // holds it and no other. The whole variant record, never the symbol, which
+    // a stock module and every reward built on it share (FR-021).
+    const fitted = this.selectedSlot()?.module ?? null;
+    return openCandidateQuery(
+      membership,
+      this.#gameText.locale,
+      this.#formatters.collator(),
+      fitted,
+    );
   });
 
-  /** The chooser as the Commander currently has it filtered. */
-  readonly candidateQuery = computed<CandidateQueryState | null>(() => {
+  /**
+   * The chooser as the Commander currently has it: filtered, and opened.
+   *
+   * A `linkedSignal` rather than a `computed`, and that is the whole mechanism
+   * behind FR-021's reseeding. The open family set is view state a Commander can
+   * change, so it has to be writable — but it must not outlive the presentation
+   * it belongs to. Recomputing the source whenever the mount, the revision, the
+   * reading language or the query changes throws the Commander's toggles away
+   * and re-seeds from the fitted family, which is exactly what the requirement
+   * asks for and is a lifetime nothing has to remember to invalidate
+   * (decision 15).
+   */
+  readonly #candidateQuery = linkedSignal<CandidateQueryState | null>(() => {
     const open = this.#openQuery();
     return open === null ? null : applyQuery(open, this.#query());
   });
+
+  readonly candidateQuery = this.#candidateQuery.asReadonly();
 
   constructor() {
     // A build that was *replaced* is a different build, so a slot key, a query
@@ -223,6 +252,18 @@ export class OutfittingStore {
   /** Restores every choice without touching selection or the build. */
   clearQuery(): void {
     this.#query.set('');
+  }
+
+  /**
+   * Opens or closes one module family.
+   *
+   * View state and nothing else: no revision is spent, no checkpoint is taken,
+   * no undo becomes available and the ordered, folded index is not rebuilt —
+   * the same state object is returned with one id added to or removed from its
+   * open set (FR-021, FR-022).
+   */
+  toggleFamily(familyId: OutfittingFamilyId): void {
+    this.#candidateQuery.update((state) => (state === null ? null : toggleFamily(state, familyId)));
   }
 
   dismissFailure(): void {

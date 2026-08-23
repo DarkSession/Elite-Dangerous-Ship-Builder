@@ -30,8 +30,8 @@ importers:
         specifier: ^22.1.3
         version: 22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.2))(rxjs@7.8.2)
       '@elite-dangerous-almanac/core':
-        specifier: 0.1.5
-        version: 0.1.5
+        specifier: 0.1.7
+        version: 0.1.7
       '@jsverse/transloco':
         specifier: ^8.4.0
         version: 8.4.0(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.2))(rxjs@7.8.2)(typescript@6.0.3)
@@ -387,8 +387,8 @@ packages:
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
 
-  '@elite-dangerous-almanac/core@0.1.5':
-    resolution: {integrity: sha512-w9cJ4IJoWtkdPOxI3QXgaFwtHn6Dmf6GnabQCcrwiwbkOb7MVnQuofATWtqVKpm3azzcVRCZHNDei+sUuodRWA==}
+  '@elite-dangerous-almanac/core@0.1.7':
+    resolution: {integrity: sha512-P3pI7wQMPGnwVzwg4Iy5WFej2PqUVSTd9UHquysKcnA9bWW1SQQPTqrL+UxtbZbpytr96CVobvxwqJzX99D4Uw==}
     engines: {node: '>=22'}
 
   '@emnapi/core@1.11.1':
@@ -3035,7 +3035,7 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@elite-dangerous-almanac/core@0.1.5': {}
+  '@elite-dangerous-almanac/core@0.1.7': {}
 
   '@emnapi/core@1.11.1':
     dependencies:

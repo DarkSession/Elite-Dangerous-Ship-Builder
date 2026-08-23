@@ -22,8 +22,15 @@
         rows too).
       -->
       <span class="slot__size">{{ slot().size }}</span>
-      @if (slot().kind === 'hardpoint') {
-        <span class="slot__node">{{ slot().node }}</span>
+      <!--
+        The mount's number on the hull anatomy. Hardpoints carry it in the
+        canvas's amber; utility mounts carry the same number in the anatomy's
+        own blue, which is how that drawing already tells the two apart. Every
+        other kind has no node to point at — a power plant is not somewhere on
+        the hull a Commander looks for.
+      -->
+      @if (nodeKind(); as kind) {
+        <span class="slot__node" [attr.data-kind]="kind">{{ slot().node }}</span>
       }
     </span>
 
@@ -36,7 +43,18 @@
           [rating]="slot().module!.article?.rating ?? null"
           [mount]="slot().module!.article?.mount ?? null"
           [detail]="engineeringSummary()"
-        />
+        >
+          <!--
+            How the module in this mount is obtained, drawn exactly as the
+            chooser draws it on the row it was taken from: canvas 1c marks the
+            fitted `Advanced Plasma Accelerator` the same way it marks the row
+            that offered it, beside the name and on the name's own line. The
+            restriction did not stop being true when the module moved, and a
+            Commander reading their build back has no chooser open to find it
+            in.
+          -->
+          <edsb-acquisition-badge class="slot__acquisition" [labels]="slot().module!.labels" />
+        </edsb-module-identity-badge>
         <!--
           The canvas gives a fitted row two lines: the module's name and its
           code line. The mount's own kind, size and node are the size box, the

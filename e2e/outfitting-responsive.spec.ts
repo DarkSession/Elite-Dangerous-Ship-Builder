@@ -1,7 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoClippedText, sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes } from './accessibility/assertions';
-import { chooserOffered, editorOffered, openChooser, openEditor } from './outfitting-surfaces';
+import {
+  chooserOffered,
+  editorOffered,
+  openChooser,
+  openChooserRows,
+  openEditor,
+} from './outfitting-surfaces';
 
 /**
  * One region, every width it is given.
@@ -66,7 +72,7 @@ test.describe('the composition this width has room for', () => {
     // Whatever this width composes — two panes side by side or one screen at a
     // time — each region has to hold its own content, or the composition should
     // have stepped down instead of narrowing below its minimum.
-    await openChooser(page);
+    await openChooserRows(page);
     await expect(page.locator('.candidate').first()).toBeVisible();
     await expectNoClippedText(page, `${drawn}/ledger and bench together`);
     await expectNoDocumentOverflow(page);

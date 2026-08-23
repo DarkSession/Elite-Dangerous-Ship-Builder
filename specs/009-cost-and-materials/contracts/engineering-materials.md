@@ -4,14 +4,12 @@ Binding ruling: [../design/reference-review.md](../design/reference-review.md), 
 
 ## Package boundary
 
-This feature does not call the recipe helpers itself. It calls feature 002's accepted
-framework-agnostic boundary:
+This feature reads the package's consolidated `buildCost().materials` result. It calls feature 002's
+accepted framework-agnostic boundary only for the blueprint count:
 
 - `engineeringCost(selection)` from `src/app/domain/outfitting/engineering-cost.ts`, which owns
   `getBlueprintCost`, `getExperimentalEffectCost` and the fixed / Mercenary-purchase classification;
 - `materialRarity(symbol)` from the same module, which owns `getMaterialBySymbol`;
-- `sumMaterials` from `@elite-dangerous-almanac/core/ships/engineering`, to fold the per-module
-  results into one list;
 - `getMaterialName` through feature 011's game-text presenter, for row names.
 
 **No second classifier.** Feature 002 already ruled the Mercenary purchase baseline, the fixed
@@ -34,13 +32,12 @@ call `engineeringCost()` once.
   named (ruled F). Feature 002's boundary already returns `unavailable` rather than a zero, so no
   free upgrade is implied — it is simply absent from the list.
 
-Pass every contributing list to `sumMaterials(...lists)` exactly once. Preserve its literal
-first-seen order, symbols and counts. Do not loop grades, multiply rolls, add counts, deduplicate or
-sort before or after the package call.
+Preserve `buildCost().materials` order, symbols and counts. Do not loop grades, multiply rolls, add
+counts, deduplicate or consolidate before or after the package call.
 
 **Reading order is a presentation concern, not a projection one.** The projection returns the
-package's order untouched; the surface orders the rows commonest first and then by name, matching
-`edsb-material-cost-list` (ruling G). The distinction matters because the tie-break needs the active-locale name,
+package's order untouched; the surface orders the rows commonest first and then by name, through the
+shared `sortMaterialLines` (ruling G). The distinction matters because the tie-break needs the active-locale name,
 which the domain does not have, and because a consumer that wanted the package's own order must
 still be able to get it.
 
@@ -54,7 +51,7 @@ Three figures the canvas draws are counted by the application over the package r
 | Figure       | Definition                                            |
 | ------------ | ----------------------------------------------------- |
 | `blueprints` | Number of fitted modules that contributed a cost list |
-| `types`      | `rows.length` of the `sumMaterials()` result          |
+| `types`      | `rows.length` of the `buildCost().materials` result   |
 | `units`      | Sum of every row's package count                      |
 
 Nothing else is derived. No percentage, share, allocation, per-row trace or readiness judgement

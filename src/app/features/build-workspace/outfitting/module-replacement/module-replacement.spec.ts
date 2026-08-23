@@ -66,15 +66,19 @@ describe('module replacement surface', () => {
   /**
    * How many rows the chooser has actually built.
    *
-   * Counted off the sections it draws rather than read from a figure on the
+   * Counted off the families it draws rather than read from a figure on the
    * surface: neither canvas draws one, so there is nothing there to read
-   * (design-canvas rule, wave 3).
+   * (design-canvas rule, wave 3). Every family's choices are counted, open or
+   * not — what a closed family withholds from the *document* is still part of
+   * the list the Commander was offered.
    */
   function built(instance: ModuleReplacement): number {
-    return instance
-      .sections()
-      .flatMap((section) => section.groups)
-      .reduce((total, group) => total + group.choices.length, 0);
+    return instance.families().reduce((total, family) => total + family.choices.length, 0);
+  }
+
+  /** The first choice the chooser offers, wherever its family puts it. */
+  function firstChoice(instance: ModuleReplacement) {
+    return instance.families()[0]!.choices[0]!;
   }
 
   beforeEach(() => {
@@ -92,7 +96,7 @@ describe('module replacement surface', () => {
 
     expect(fixture.componentInstance.state()).toBe('ready');
     expect(fixture.componentInstance.resultCount()).toBe(store.membership()?.choices.length ?? 0);
-    expect(fixture.componentInstance.sections().length).toBeGreaterThan(0);
+    expect(fixture.componentInstance.families().length).toBeGreaterThan(0);
   });
 
   it('renders the whole expansion, so the scroller knows how tall it is', () => {
@@ -156,7 +160,7 @@ describe('module replacement surface', () => {
     // mount, and choosing another row is the fit. One decision, one revision.
     const fixture = open(FIXTURE_SLOTS.hardpoint);
     const revision = active.revision();
-    const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
+    const choice = firstChoice(fixture.componentInstance);
 
     fixture.componentInstance.choose(choice.key);
     fixture.detectChanges();
@@ -169,7 +173,7 @@ describe('module replacement surface', () => {
     // chooser is a screen of its own and leaving it has to be a decision.
     const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
     const revision = active.revision();
-    const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
+    const choice = firstChoice(fixture.componentInstance);
 
     fixture.componentInstance.choose(choice.key);
 
@@ -183,7 +187,7 @@ describe('module replacement surface', () => {
 
   it('drops a pick the build has moved out from under, and says so', () => {
     const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
-    const choice = fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!;
+    const choice = firstChoice(fixture.componentInstance);
 
     fixture.componentInstance.choose(choice.key);
     // Something else edits the build. The pick was about a revision that is no
@@ -197,14 +201,51 @@ describe('module replacement surface', () => {
     expect(fixture.componentInstance.state()).toBe('stale');
   });
 
+  it('opens the fitted module\u2019s family alone, and closes it without a revision', () => {
+    const fixture = open(FIXTURE_SLOTS.fittedHardpoint);
+    const instance = fixture.componentInstance;
+    const revision = active.revision();
+
+    const open_ = instance.families().filter((family) => family.open);
+    expect(open_.length).toBe(1);
+    // It is the family holding the row the list marks as fitted (FR-021).
+    const fittedSymbol = instance.fittedSymbol();
+    expect(open_[0]!.choices.some((choice) => choice.module.symbol === fittedSymbol)).toBe(true);
+
+    instance.toggleFamily(open_[0]!.familyId);
+    fixture.detectChanges();
+
+    expect(instance.families().every((family) => !family.open)).toBe(true);
+    // View state, and nothing more: no revision, no history, no rebuilt list.
+    expect(active.revision()).toBe(revision);
+    expect(built(instance)).toBe(instance.resultCount());
+  });
+
+  it('opens every family a search matched, and reseeds when it is cleared', () => {
+    const fixture = open(FIXTURE_SLOTS.fittedHardpoint);
+    const instance = fixture.componentInstance;
+    const seeded = instance.families().filter((family) => family.open).length;
+
+    instance.search('cannon');
+    fixture.detectChanges();
+
+    const families = instance.families();
+    expect(families.length).toBeGreaterThan(0);
+    // No match is behind a closed control, and a family with none is absent.
+    expect(families.every((family) => family.open)).toBe(true);
+
+    instance.clear();
+    fixture.detectChanges();
+
+    expect(instance.families().filter((family) => family.open).length).toBe(seeded);
+  });
+
   it('leaves the build and the query alone when it is cancelled', () => {
     const fixture = asLayer(open(FIXTURE_SLOTS.hardpoint));
     const revision = active.revision();
 
     store.setQuery('multi');
-    fixture.componentInstance.choose(
-      fixture.componentInstance.sections()[0]!.groups[0]!.choices[0]!.key,
-    );
+    fixture.componentInstance.choose(firstChoice(fixture.componentInstance).key);
     fixture.componentInstance.cancel();
 
     expect(active.revision()).toBe(revision);

@@ -1,10 +1,20 @@
 <span class="identity">
-  <edsb-game-text
-    class="identity__name"
-    [text]="name().text"
-    [language]="name().language"
-    [translationState]="name().translationState"
-  />
+  <!--
+    The name and whatever marks it, on one line. Canvas 1c draws the route icon
+    of a restricted module in the name's own row — `Advanced Plasma Accelerator`
+    with the Powerplay mark 7px after it — and the code line below the two. A
+    marker projected after the whole badge landed under the code line instead,
+    which is a third line the canvas does not have.
+  -->
+  <span class="identity__line">
+    <edsb-game-text
+      class="identity__name"
+      [text]="name().text"
+      [language]="name().language"
+      [translationState]="name().translationState"
+    />
+    <ng-content />
+  </span>
 
   <!--
     One line, one ink, as canvas 1c writes it: `4A GIMBALLED · OVERCHARGED G5 ·

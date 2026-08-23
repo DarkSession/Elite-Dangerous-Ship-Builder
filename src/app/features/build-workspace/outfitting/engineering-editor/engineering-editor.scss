@@ -102,7 +102,25 @@
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 0;
-    align-items: start;
+    // Stretched rather than started, and given the height its parent has left:
+    // each column then scrolls inside itself. Under one shared scroller the
+    // attribute table — seventy rows on a weapon — pushed the material list off
+    // the bottom, so a Commander choosing a grade could not see what it cost
+    // while the controls that chose it were still on screen. The two halves of
+    // `DETAILS AND ENGINEERING` are read side by side; they now scroll that way
+    // too, and the rule between them runs the whole height (canvas 1c).
+    align-items: stretch;
+    flex: 1;
+    min-block-size: 0;
+  }
+
+  .engineering__choices,
+  .engineering__result {
+    min-block-size: 0;
+    overflow-y: auto;
+    // A column that reaches its end stops there rather than handing the scroll
+    // to the panel behind it, which would drag the other column away.
+    overscroll-behavior: contain;
   }
 
   // The canvas rules the two columns apart rather than spacing them apart.
@@ -116,11 +134,14 @@
   }
 }
 
-// Canvas 1c's `padding-top: 11px; border-top: 1px solid var(--amber-a12)`: the
-// attribute table belongs to the choices column and is ruled off from the
-// controls above it.
+// The table heads its own column, so it is ruled off only where something
+// stands above it — which is the stacked composition, where the two columns
+// become one and the choices are directly above.
 .engineering__attributes {
   display: block;
+}
+
+.engineering__attributes:not(:first-child) {
   padding-block-start: var(--edsb-space-stack);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }

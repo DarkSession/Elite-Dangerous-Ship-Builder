@@ -42,13 +42,95 @@ export async function editorOffered(page: Page): Promise<boolean> {
   );
 }
 
-/** Brings the chooser for the selected mount on screen and waits for it. */
-export async function openChooser(page: Page): Promise<void> {
-  const open = page.getByRole('button', { name: /change module/i });
+/**
+ * Brings the chooser for the selected mount on screen and waits for it.
+ *
+ * The control is named in whatever language the page is being read in, so a
+ * test running a non-English context passes that language's word for it rather
+ * than expecting the English one to be there.
+ */
+export async function openChooser(
+  page: Page,
+  name: string | RegExp = /change module/i,
+): Promise<void> {
+  const open = page.getByRole('button', { name });
   if ((await open.count()) > 0) {
     await open.click();
   }
   await expect(page.locator('.replacement').first()).toBeVisible();
+}
+
+/**
+ * Opens every family the chooser is currently showing.
+ *
+ * The chooser opens with the fitted module's family alone, and with nothing at
+ * all on a mount whose article the package does not offer back (FR-021). Every
+ * test that is about a *row* therefore has to open the families first, or it is
+ * asserting against a list that is deliberately not on screen. Tests that are
+ * about the seeding itself do not call this.
+ */
+export async function openAllFamilies(page: Page): Promise<void> {
+  await pressEveryFamily(page, 'false');
+}
+
+/** Closes every family the chooser currently has open. */
+export async function closeAllFamilies(page: Page): Promise<void> {
+  await pressEveryFamily(page, 'true');
+}
+
+/**
+ * Presses every family control in one state until none is left in it.
+ *
+ * Three things make this less obvious than it looks. The set is read again
+ * after every press rather than walked by index, because clearing a query
+ * rebuilds the whole list and reseeds it — a set of controls taken before that
+ * settles is a set that no longer exists. Each press is waited out on the
+ * control it landed on, by id: a click resolves when the event is dispatched,
+ * not when the framework has rendered the answer, so a loop that only re-counts
+ * will press a control that is already answered and then wait out the timeout
+ * on a locator that matches nothing.
+ *
+ * Nothing in the loop may auto-wait on the pending set. `count()` is a
+ * snapshot; every locator call after it waits. So a set that empties between
+ * the count and the read — the list reseeding, the last press settling late —
+ * used to leave `first()` waiting for an element that was never coming, and it
+ * waited out the whole test timeout to say so. `evaluateAll` resolves against
+ * whatever matches right now and returns nothing when nothing does, which ends
+ * the loop instead of hanging it. A set that is genuinely stuck still fails, on
+ * the count assertion below, which says how many are left rather than pointing
+ * at line one of the body.
+ *
+ * And a press can be lost. Opening or closing one family rewrites the list
+ * under all the others, and a click dispatched into a view being rebuilt is
+ * answered by nobody: the bar keeps the state it had, with nothing to say the
+ * press did not land. It is made again until the control answers rather than
+ * made once and asserted after — the same shape the build library's own
+ * `openRecord` takes, and for the same reason. A bar that never answers still
+ * fails, on the state it is stuck in.
+ */
+async function pressEveryFamily(page: Page, from: 'true' | 'false'): Promise<void> {
+  const pending = page.locator(`.family[aria-expanded="${from}"]`);
+  const answered = from === 'true' ? 'false' : 'true';
+
+  for (let guard = 0; guard < 200; guard += 1) {
+    const ids = await pending.evaluateAll((controls) => controls.map((control) => control.id));
+    if (ids.length === 0) {
+      break;
+    }
+    const control = page.locator(`#${ids[0]}`);
+    await expect(async () => {
+      await control.click();
+      await expect(control).toHaveAttribute('aria-expanded', answered, { timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
+  }
+
+  await expect(pending).toHaveCount(0);
+}
+
+/** Brings the chooser on screen with every family open, for a test about rows. */
+export async function openChooserRows(page: Page): Promise<void> {
+  await openChooser(page);
+  await openAllFamilies(page);
 }
 
 /** Brings the engineering editor for the selected mount on screen. */

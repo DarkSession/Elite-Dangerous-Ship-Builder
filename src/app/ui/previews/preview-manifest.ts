@@ -223,9 +223,9 @@ import { UnavailableValue } from '../components/unavailable-value/unavailable-va
 import { candidateMembership } from '../../application/outfitting/candidate-membership';
 import {
   applyQuery,
-  groupCandidates,
+  groupFamilies,
   openCandidateQuery,
-  type CandidateSectionView,
+  type CandidateFamilyView,
 } from '../../application/outfitting/candidate-query';
 import {
   FIXTURE_SLOTS,
@@ -238,7 +238,6 @@ import { BlueprintChoiceList } from '../outfitting/blueprint-choice-list';
 import { ExperimentalEffectList } from '../outfitting/experimental-effect-list';
 import { GradeSelector } from '../outfitting/grade-selector';
 import { IngressRefusalNotice } from '../outfitting/ingress-refusal-notice';
-import { MaterialCostList } from '../outfitting/material-cost-list';
 import { PowerControls } from '../outfitting/power-controls';
 import { CandidateList } from '../outfitting/candidate-list';
 import { CandidateSearch } from '../outfitting/candidate-search';
@@ -2393,6 +2392,7 @@ function slotFixture(overrides: Record<string, unknown> = {}): Record<string, un
       engineering: null,
       variant: null,
       entitlement: null,
+      labels: [],
     },
     ...overrides,
   };
@@ -2515,6 +2515,7 @@ registerPreview({
             engineering: null,
             variant: null,
             entitlement: null,
+            labels: [],
           },
         }),
         capabilities: HATCH_CAPABILITIES,
@@ -2673,18 +2674,25 @@ registerPreview({
  * A chooser's real contents, for the candidate previews.
  *
  * Built from the Almanac rather than written out: the states worth previewing
- * are an ordered manifest, a searched subset and an empty result, and a
+ * are an ordered family list, a searched subset and an empty result, and a
  * hand-shaped row would let all three drift from what the product renders.
  *
  * Taken as a specimen rather than whole. A hardpoint's expansion is hundreds of
  * rows; every catalogue sweep reads every one of them for its target size and
  * its contrast, and one component would then cost more than the rest of the
- * catalogue together. The slice is taken after ordering, so the sections, the
- * groups and the order within them are the product's own.
+ * catalogue together. The slice is taken after ordering, so the families and
+ * the order within them are the product's own.
  */
 const PREVIEW_ROWS = 12;
 
-function candidateSections(slotKey: string, query = ''): readonly CandidateSectionView[] {
+/** How the specimen's families are opened, for the states worth previewing. */
+type PreviewOpening = 'seeded' | 'all' | 'none';
+
+function candidateFamilies(
+  slotKey: string,
+  query = '',
+  opening: PreviewOpening = 'seeded',
+): readonly CandidateFamilyView[] {
   const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
   const state = applyQuery(
     openCandidateQuery(
@@ -2694,14 +2702,24 @@ function candidateSections(slotKey: string, query = ''): readonly CandidateSecti
     ),
     query,
   );
-  // The rewards are the last section and one of the states worth seeing, so the
-  // specimen takes from both ends rather than the first twelve rows.
+  // The rewards are among the states worth seeing and they sit inside their own
+  // family, so the specimen takes from both ends rather than the first twelve.
   const results = state.results;
   const specimen =
     results.length <= PREVIEW_ROWS
       ? results
       : [...results.slice(0, PREVIEW_ROWS - 4), ...results.slice(-4)];
-  return groupCandidates(specimen, collator);
+
+  const open =
+    opening === 'none'
+      ? new Set<(typeof specimen)[number]['presentation']['familyId']>()
+      : new Set(
+          specimen
+            .filter((choice, index) => opening === 'all' || index === 0)
+            .map((choice) => choice.presentation.familyId),
+        );
+
+  return groupFamilies(specimen, open);
 }
 
 registerPreview({
@@ -2757,7 +2775,7 @@ registerPreview({
       exposedStates: ['selected'],
       relationships: ['label'],
       textEquivalents: [
-        'the section and group structure, named for a reader',
+        'each family\u2019s name, choice count and open state, for a reader',
         'the fitted, stock and pre-engineered state, in words',
         'every acquisition restriction, as text beside its chip',
         'an absent package figure, as a word rather than a zero',
@@ -2769,13 +2787,14 @@ registerPreview({
     state(
       'default',
       {
-        sections: candidateSections(FIXTURE_SLOTS.hardpoint),
+        families: candidateFamilies(FIXTURE_SLOTS.hardpoint),
         label: 'Modules offered for this mount',
         fittedSymbol: null,
         selectedKey: null,
       },
       [
-        'the unique rewards are the final section and are named as one',
+        'one family is open and its rows are whole; the rest draw a control only',
+        'a unique reward keeps its labels on its own row, inside its family',
         'each row is named well enough to tell it from its neighbours',
         'a package figure the Almanac never published is a word, never a zero',
       ],
@@ -2784,7 +2803,7 @@ registerPreview({
     state(
       'empty',
       {
-        sections: candidateSections(FIXTURE_SLOTS.hardpoint, 'zzzz nothing'),
+        families: candidateFamilies(FIXTURE_SLOTS.hardpoint, 'zzzz nothing'),
         label: 'Modules offered for this mount',
         fittedSymbol: null,
         selectedKey: null,
@@ -2803,6 +2822,95 @@ registerPreview({
       'disabled',
       'A mount the Almanac takes no module in renders its own sentence instead of a disabled list.',
     ),
+  ],
+});
+
+/**
+ * The same list with nothing open, and the same list after a search.
+ *
+ * Two more registrations rather than two more states, because a preview has
+ * five state slots and these are two more *compositions* of the default one.
+ * Both belong in the catalogue sweep: the closed list is the only place the
+ * family control is measured on its own — its 44 CSS px target, its contrast
+ * and its collapsed state under expanded copy and right-to-left — and the
+ * searched list is the state FR-023 describes, with every matching family open
+ * and the families that matched nothing simply absent.
+ */
+registerPreview({
+  componentId: 'candidate-list-collapsed',
+  group: 'Outfitting',
+  component: CandidateList,
+  contract: contract(
+    'candidate-list-collapsed',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['expanded'],
+      relationships: ['label'],
+      textEquivalents: ['each family\u2019s name and choice count, with no rows behind it'],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        families: candidateFamilies(FIXTURE_SLOTS.hardpoint, '', 'none'),
+        label: 'Modules offered for this mount',
+        fittedSymbol: null,
+        selectedKey: null,
+      },
+      [
+        'every family draws its control, its name and its count, and no rows at all',
+        'the closed state is published programmatically, never by the caret alone',
+        'the control clears the 44 CSS px target at every width',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated'],
+    ),
+    notApplicable(
+      'empty',
+      'An empty result renders no families; that is the list\u2019s own empty state.',
+    ),
+    notApplicable('loading', 'The list renders what it is given; the surface owns the busy state.'),
+    notApplicable('error', 'A refusal belongs to the edit that was attempted, not to the list.'),
+    notApplicable('disabled', 'A family control is never offered and disabled at the same time.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'candidate-list-searched',
+  group: 'Outfitting',
+  component: CandidateList,
+  contract: contract(
+    'candidate-list-searched',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['expanded', 'selected'],
+      relationships: ['label'],
+      textEquivalents: ['the open state of every family a search matched'],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        families: candidateFamilies(FIXTURE_SLOTS.hardpoint, 'multi', 'all'),
+        label: 'Modules offered for this mount',
+        fittedSymbol: null,
+        selectedKey: null,
+      },
+      [
+        'every family holding a match is open, so no match is behind a closed control',
+        'a family that matched nothing is absent rather than drawn empty',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable('empty', 'A search that matched nothing is the list\u2019s own empty state.'),
+    notApplicable('loading', 'The list renders what it is given; the surface owns the busy state.'),
+    notApplicable('error', 'A refusal belongs to the edit that was attempted, not to the list.'),
+    notApplicable('disabled', 'A family control is never offered and disabled at the same time.'),
   ],
 });
 
@@ -2849,7 +2957,7 @@ registerPreview({
       },
       [
         'restrictions stack rather than replace one another',
-        'the reward marker is the canvas’s chip and its reason is a sentence',
+        'the reward marker is the canvas’s route icon and its reason is a sentence',
         'the raw entitlement token is disclosed, not translated away',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
@@ -3093,61 +3201,6 @@ registerPreview({
       'A selection the package refuses has no candidate to describe, which the editor states instead.',
     ),
     notApplicable('disabled', 'A comparison is content, not a control.'),
-  ],
-});
-
-registerPreview({
-  componentId: 'material-cost-list',
-  group: 'Engineering',
-  component: MaterialCostList,
-  contract: contract(
-    'material-cost-list',
-    {
-      role: 'group',
-      visibleNameMatchesAccessibleName: false,
-      exposedStates: [],
-      relationships: ['label'],
-      textEquivalents: [
-        'each count associated with its material through a description list',
-        'a known zero and an unavailable cost, as two different sentences',
-        'each material’s package rarity, as a number rather than a remote icon',
-      ],
-    },
-    ['default', 'empty', 'error'],
-  ),
-  states: [
-    state(
-      'default',
-      {
-        // One list for the whole job, the way the editor draws it: the recipe's
-        // materials and the effect's folded together (wave 9).
-        parts: [{ part: 'combined', state: 'known', materials: ENGINEERING_MATERIALS }],
-        grade: 5,
-      },
-      [
-        'the heading names the grade and nothing calls the recipe a roll',
-        'the recipe and the effect are one list, folded by the package’s own sum',
-      ],
-      ['normal', 'expanded-copy', 'rtl', 'german-format', 'canonical-untranslated'],
-    ),
-    state(
-      'empty',
-      {
-        parts: [{ part: 'combined', state: 'known', materials: [] }],
-        grade: 3,
-      },
-      ['a priced job with no materials is stated as such, never as a zero'],
-    ),
-    state(
-      'error',
-      {
-        parts: [{ part: 'combined', state: 'unavailable', materials: [] }],
-        grade: 5,
-      },
-      ['an unavailable cost reads as unavailable, and never as a zero'],
-    ),
-    notApplicable('loading', 'Costs come from the package catalogues synchronously.'),
-    notApplicable('disabled', 'A requirement is content, not a control.'),
   ],
 });
 

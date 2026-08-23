@@ -104,7 +104,9 @@ object from the matching build revision.
 | `class`         | package number                | Never parsed from identity/text                             |
 | `rating`        | package `ModuleRating`        | Exact package value                                         |
 | `mount`         | package `ModuleMount \| null` | Exact package value; indexed when present                   |
-| `section`       | `standard \| uniqueReward`    | Unique only for community/event acquisition                 |
+| `familyId`      | package `OutfittingFamilyId`  | `module.familyId`; a variant takes its base module's        |
+| `family`        | `GameText`                    | `getOutfittingFamilyName`, canonical fallback disclosed     |
+| `section`       | `standard \| uniqueReward`    | Label input only; no longer a grouping or ordering level    |
 | `labels`        | readonly `AcquisitionLabel[]` | Route and entitlement may stack                             |
 | `purchaseGrade` | package grade/null            | Variant purchase state, not current grade                   |
 | `facts`         | readonly package values       | Only in-scope values; unavailable remains explicit          |
@@ -122,16 +124,42 @@ Application-localized explanations of exact package enum/token values.
 
 ## CandidateQueryState
 
-| Field           | Type                                                                | Rule                                                     |
-| --------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
-| `slotKey`       | string                                                              | Exact selected mount                                     |
-| `buildRevision` | integer                                                             | Invalidates every retained choice after edit/replacement |
-| `locale`        | BCP 47 tag                                                          | Invalidates display/index                                |
-| `query`         | string                                                              | Retained Commander input                                 |
-| `choices`       | readonly `ModuleChoice[]`                                           | Full ordered package expansion                           |
-| `index`         | readonly `CandidateSearchEntry[]`                                   | Four-field immutable index                               |
-| `results`       | readonly `ModuleChoice[]`                                           | Current ordered matches                                  |
-| `status`        | `loading \| ready \| noMatches \| packageEmpty \| stale \| refused` | Distinct observable state                                |
+| Field            | Type                                                                | Rule                                                     |
+| ---------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
+| `slotKey`        | string                                                              | Exact selected mount                                     |
+| `buildRevision`  | integer                                                             | Invalidates every retained choice after edit/replacement |
+| `locale`         | BCP 47 tag                                                          | Invalidates display/index                                |
+| `query`          | string                                                              | Retained Commander input                                 |
+| `choices`        | readonly `ModuleChoice[]`                                           | Full ordered package expansion                           |
+| `index`          | readonly `CandidateSearchEntry[]`                                   | Four-field immutable index                               |
+| `results`        | readonly `ModuleChoice[]`                                           | Current ordered matches                                  |
+| `status`         | `loading \| ready \| noMatches \| packageEmpty \| stale \| refused` | Distinct observable state                                |
+| `canClear`       | boolean                                                             | Whether there is a query to clear                        |
+| `fittedFamilyId` | `OutfittingFamilyId \| null`                                        | The family the mount's own module is in; the FR-021 seed |
+| `openFamilies`   | `ReadonlySet<OutfittingFamilyId>`                                   | Which families are open right now (FR-021, FR-023)       |
+
+`openFamilies` is seeded, never accumulated. Opening a query seeds it with the fitted choice's family
+and nothing else, or with nothing at all when no available family holds that exact choice. A query
+that becomes or changes while non-empty replaces it with every family holding a match, or — where it
+matched more than a screenful of choices — with nothing at all, the families then standing closed
+with their counts; a query that returns to empty re-seeds the fitted-family default. A toggle adds or removes exactly one id. It is
+view state: it never reaches the build, the snapshot, history, persistence or the fragment.
+
+## CandidateFamilyView
+
+The chooser's whole result tree, derived from the ordered results rather than stored beside them.
+
+| Field      | Type                         | Rule                                                            |
+| ---------- | ---------------------------- | --------------------------------------------------------------- |
+| `familyId` | package `OutfittingFamilyId` | The package id; view identity and toggle argument               |
+| `name`     | `GameText`                   | Package family name for the active locale or disclosed fallback |
+| `count`    | integer                      | Choices currently in this family — matches only, when searching |
+| `open`     | boolean                      | Membership of `openFamilies`                                    |
+| `choices`  | readonly `ModuleChoice[]`    | This family's choices in contract order                         |
+
+A family with no current choices is absent, not empty. The previous `CandidateSectionView` and
+`CandidateGroup` shapes are withdrawn: there is no section level, and a name run is no longer a
+structural level of its own.
 
 Each `CandidateSearchEntry` contains folded displayed name, decimal class, rating and mount plus its
 choice key. Every folded query term must occur in at least one of those fields. `noMatches` retains a

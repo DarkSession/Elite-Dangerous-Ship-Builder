@@ -26,119 +26,81 @@
     scroller removes the seam rather than papering over it (wave 9).
   -->
   <div class="candidates__body">
-    @for (section of sections(); track section.section) {
-      <div class="candidates__section">
-        <h3 class="visually-hidden">{{ sectionLabel(section.section) }}</h3>
+    <!--
+      Canvas 1d's `FITTED HERE` block, above the families. It is the same row
+      the family list marks `FITTED`, drawn a second time on purpose: at 390 px
+      the family holding it may be scrolled far below the fold. The wide
+      composition passes no heading and draws none of this.
+    -->
+    @if (fittedHeading(); as heading) {
+      @if (fittedChoice(); as choice) {
+        <p class="candidates__rule candidates__rule--fitted">
+          <span class="candidates__rule-title">{{ heading }}</span>
+        </p>
+        <div class="candidates__pinned">
+          <ng-container
+            [ngTemplateOutlet]="candidate"
+            [ngTemplateOutletContext]="{ $implicit: choice, pinned: true }"
+          />
+        </div>
+      }
+    }
 
-        @for (group of section.groups; track group.name.text ?? $index) {
-          <div class="candidates__group">
-            <h4 class="visually-hidden">
-              {{ groupLabel(group.name.text, group.choices.length) }}
-            </h4>
+    <!-- Canvas 1d's `FAMILIES` rule, with its own `5 · 24 FIT` counter. -->
+    @if (familiesHeading(); as heading) {
+      <p class="candidates__rule">
+        <span class="candidates__rule-title">{{ heading }}</span>
+        @if (familiesSummary(); as summary) {
+          <span class="candidates__rule-count">{{ summary }}</span>
+        }
+      </p>
+    }
 
-            @for (choice of group.choices; track choice.key) {
-              @let resolved = row(choice);
-              <label
-                class="candidate"
-                [attr.data-selected]="selectedKey() === choice.key"
-                [class.candidate--fitted]="isFitted(choice)"
-              >
-                <input
-                  class="candidate__radio"
-                  type="radio"
-                  name="module-choice"
-                  [value]="choice.key"
-                  [checked]="selectedKey() === choice.key"
-                  [attr.aria-label]="resolved.actionLabel"
-                  (change)="chosen.emit(choice.key)"
-                />
+    @for (family of families(); track family.familyId) {
+      <div class="candidates__family">
+        <!--
+          The canvas's family bar: the Almanac's own name, the count in its
+          chip, and the caret. The caret is decoration — the open state is
+          published as `aria-expanded` on the control itself, because a glyph is
+          never the only carrier of a state (FR-022).
 
-                <!--
-                  One line, as the canvas draws it: the module's name with its
-                  mount, the Merc Coin where one buys it, and the `REWARD ONLY`
-                  chip where the Almanac says it is not sold. What the row already
-                  is — fitted, pre-engineered, bought at a grade — is read rather
-                  than drawn, because the canvas draws none of it and a third line
-                  under a name is what put this manifest out of alignment.
-                -->
-                <span class="candidate__identity">
-                  <span class="candidate__name">
-                    <edsb-game-text
-                      [text]="choice.presentation.name.text"
-                      [language]="choice.presentation.name.language"
-                      [translationState]="choice.presentation.name.translationState"
-                    />
-                    @if (resolved.mount) {
-                      <span class="candidate__mount">· {{ resolved.mount }}</span>
-                    }
-                  </span>
+          Canvas 1d draws a two-letter badge and a `6 VARIANTS · 15.1–28.4 DPS ·
+          4.46 MW` summary line here. Both are withdrawn: the Almanac publishes
+          no abbreviation, and a min–max across a family is an aggregate it does
+          not publish either (module-replacement design, "Module families").
+        -->
+        <button
+          class="family"
+          type="button"
+          [id]="familyControlId(family.familyId)"
+          [attr.aria-expanded]="family.open"
+          [attr.aria-controls]="familyRegionId(family.familyId)"
+          (click)="familyToggled.emit(family.familyId)"
+        >
+          <span class="family__name">
+            <edsb-game-text
+              [text]="family.name.text"
+              [language]="family.name.language"
+              [translationState]="family.name.translationState"
+            />
+          </span>
+          <span class="family__count" aria-hidden="true">{{ family.count }}</span>
+          <span class="visually-hidden">{{ familyCountLabel(family.count) }}</span>
+          <span class="family__caret" aria-hidden="true">{{ family.open ? '▾' : '›' }}</span>
+        </button>
 
-                  @if (stateLabel(choice); as state) {
-                    <span class="visually-hidden">{{ state }}</span>
-                  }
-
-                  @if (resolved.purchaseGrade; as grade) {
-                    <span class="visually-hidden">{{ grade }}</span>
-                  }
-
-                  <edsb-acquisition-badge
-                    class="candidate__badge"
-                    [labels]="choice.presentation.labels"
-                  />
-                </span>
-
-                <!-- The canvas's own `CLASS` column: the package's class and rating. -->
-                <span class="candidate__class">
-                  @if (resolved.code) {
-                    {{ resolved.code }}
-                    <span class="visually-hidden">{{ resolved.codeDescription }}</span>
-                  }
-                </span>
-
-                <!--
-                  The same figures at both widths. At wide they align under the
-                  header row and their per-row labels are hidden visually; at
-                  compact each card restates its own labels, because a bare column
-                  of numbers with the header scrolled away is unreadable.
-                -->
-                <span class="candidate__facts">
-                  @for (fact of resolved.facts; track fact.field) {
-                    <edsb-unavailable-fact
-                      class="candidate__fact"
-                      [label]="fact.label"
-                      [value]="fact.value"
-                    />
-                  }
-
-                  <!--
-                    The canvas's `COST` cell. A Mercenary article carries two
-                    prices and they do not add up — credits above, Merc Coin
-                    below, each with its own unit — so the coin figure sits in
-                    this cell rather than becoming a sum or a column of its own.
-                  -->
-                  <span class="candidate__cost">
-                    <edsb-unavailable-fact
-                      class="candidate__fact"
-                      [label]="resolved.cost.label"
-                      [value]="resolved.cost.value"
-                      [unit]="resolved.cost.unit ?? null"
-                    />
-                    @if (resolved.mercCoin; as coins) {
-                      <span class="candidate__merc">
-                        <span class="candidate__merc-count" data-bidi-isolate>{{ coins }}</span>
-                        <img
-                          class="candidate__merc-icon"
-                          src="assets/icons/merc-coin.png"
-                          alt=""
-                          width="15"
-                          height="15"
-                        />
-                        <span class="visually-hidden">{{ mercCoinLabel() }}</span>
-                      </span>
-                    }
-                  </span>
-                </span>
-              </label>
+        @if (family.open) {
+          <div
+            class="family__choices"
+            role="group"
+            [id]="familyRegionId(family.familyId)"
+            [attr.aria-labelledby]="familyControlId(family.familyId)"
+          >
+            @for (choice of family.choices; track choice.key) {
+              <ng-container
+                [ngTemplateOutlet]="candidate"
+                [ngTemplateOutletContext]="{ $implicit: choice }"
+              />
             }
           </div>
         }
@@ -146,3 +108,117 @@
     }
   </div>
 </fieldset>
+
+<!--
+  One row, drawn wherever a row is drawn: inside its family, and again in the
+  compact composition's `FITTED HERE` block. Writing it once is what keeps the
+  two identical — a second copy is where a label goes missing on one of them.
+-->
+<ng-template #candidate let-choice let-pinned="pinned">
+  @let resolved = row(choice);
+  <label
+    class="candidate"
+    [attr.data-selected]="!pinned && selectedKey() === choice.key"
+    [class.candidate--fitted]="isFitted(choice)"
+  >
+    <!--
+      Canvas 1d's `FITTED HERE` block is a statement of what is in the mount,
+      not a second way to choose it, so the pinned copy carries no control.
+      Two radios sharing this group's name and this choice's value would be one
+      option written twice: only one of them can be checked, so the row a
+      Commander had just taken would be painted as taken while reporting
+      unchecked — the state carried by the ground alone. The choice itself is
+      one row down, inside its own family, where the group has it once.
+    -->
+    @if (!pinned) {
+      <input
+        class="candidate__radio"
+        type="radio"
+        name="module-choice"
+        [value]="choice.key"
+        [checked]="selectedKey() === choice.key"
+        [attr.aria-label]="resolved.actionLabel"
+        (change)="chosen.emit(choice.key)"
+      />
+    }
+
+    <!--
+      One line, as the canvas draws it: the module's name with its mount, the
+      Merc Coin where one buys it, and the icon of the route it is earned
+      through where the Almanac names one. What the row already is — fitted, pre-engineered,
+      bought at a grade — is read rather than drawn, because the canvas draws
+      none of it and a third line under a name is what put this manifest out of
+      alignment.
+    -->
+    <span class="candidate__identity">
+      <span class="candidate__name">
+        <edsb-game-text
+          [text]="choice.presentation.name.text"
+          [language]="choice.presentation.name.language"
+          [translationState]="choice.presentation.name.translationState"
+        />
+        @if (resolved.mount) {
+          <span class="candidate__mount">· {{ resolved.mount }}</span>
+        }
+      </span>
+
+      @if (stateLabel(choice); as state) {
+        <span class="visually-hidden">{{ state }}</span>
+      }
+
+      @if (resolved.purchaseGrade; as grade) {
+        <span class="visually-hidden">{{ grade }}</span>
+      }
+
+      <edsb-acquisition-badge class="candidate__badge" [labels]="choice.presentation.labels" />
+    </span>
+
+    <!-- The canvas's own `CLASS` column: the package's class and rating. -->
+    <span class="candidate__class">
+      @if (resolved.code) {
+        {{ resolved.code }}
+        <span class="visually-hidden">{{ resolved.codeDescription }}</span>
+      }
+    </span>
+
+    <!--
+      The same figures at both widths. At wide they align under the header row
+      and their per-row labels are hidden visually; at compact each card
+      restates its own labels, because a bare column of numbers with the header
+      scrolled away is unreadable.
+    -->
+    <span class="candidate__facts">
+      @for (fact of resolved.facts; track fact.field) {
+        <edsb-unavailable-fact class="candidate__fact" [label]="fact.label" [value]="fact.value" />
+      }
+
+      <!--
+        The canvas's `COST` cell. A Mercenary article carries two prices and
+        they do not add up — credits above, Merc Coin below, each with its own
+        unit — so the coin figure sits in this cell rather than becoming a sum
+        or a column of its own.
+      -->
+      <span class="candidate__cost">
+        <edsb-unavailable-fact
+          class="candidate__fact"
+          [label]="resolved.cost.label"
+          [value]="resolved.cost.value"
+          [unit]="resolved.cost.unit ?? null"
+        />
+        @if (resolved.mercCoin; as coins) {
+          <span class="candidate__merc">
+            <span class="candidate__merc-count" data-bidi-isolate>{{ coins }}</span>
+            <img
+              class="candidate__merc-icon"
+              src="assets/icons/merc-coin.png"
+              alt=""
+              width="15"
+              height="15"
+            />
+            <span class="visually-hidden">{{ mercCoinLabel() }}</span>
+          </span>
+        }
+      </span>
+    </span>
+  </label>
+</ng-template>

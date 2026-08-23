@@ -8,9 +8,10 @@ import {
   output,
   signal,
 } from '@angular/core';
+import type { OutfittingFamilyId } from '@elite-dangerous-almanac/core/ships/module-families';
 import {
-  groupCandidates,
-  type CandidateSectionView,
+  groupFamilies,
+  type CandidateFamilyView,
   type CandidateStatus,
 } from '../../../../application/outfitting/candidate-query';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
@@ -104,17 +105,17 @@ export class ModuleReplacement {
   readonly selectedChoiceKey = computed(() => (this.stale() ? null : (this.#pick()?.key ?? null)));
 
   /**
-   * Every choice the mount has, in one list.
+   * Every choice the mount has, as the Almanac's own families.
    *
-   * The whole list, not a page of it. A scroller that grows as it is reached
-   * cannot know how tall it is, so its bar shrinks under the Commander's thumb
-   * every time it loads more — the manifest is instead rendered whole and each
-   * row declares a size the browser can add up before it lays any of them out
-   * (`content-visibility`, wave 4).
+   * Whatever is open is whole: no paging, no growing window. A scroller that
+   * grew as it was reached could not know how tall it was, so its bar shrank
+   * under the Commander's thumb every time it loaded more. What families change
+   * is how much is open at once, not whether what is open is complete
+   * (`content-visibility`, wave 4; module-replacement design, wave 10).
    */
-  readonly sections = computed<readonly CandidateSectionView[]>(() => {
+  readonly families = computed<readonly CandidateFamilyView[]>(() => {
     const query = this.query();
-    return query === null ? [] : groupCandidates(query.results, this.#formatters.collator());
+    return query === null ? [] : groupFamilies(query.results, query.openFamilies);
   });
 
   readonly resultCount = computed(() => this.query()?.results.length ?? 0);
@@ -180,7 +181,16 @@ export class ModuleReplacement {
   readonly notReplaceableLabel = this.#messages.messageSignal(
     'outfitting.replacement.not-replaceable',
   );
-  readonly clearLabel = this.#messages.messageSignal('outfitting.search.clear');
+  readonly fittedHereLabel = this.#messages.messageSignal('outfitting.family.fitted');
+  readonly familiesLabel = this.#messages.messageSignal('outfitting.family.heading');
+
+  /** Canvas 1d's `5 · 24 FIT`, on the rule above the family list. */
+  readonly familiesSummary = computed(() =>
+    this.#messages.message('outfitting.family.summary', {
+      families: this.families().length,
+      count: this.resultCount(),
+    }),
+  );
 
   readonly canFit = computed(() => this.selectedChoiceKey() !== null);
 
@@ -222,6 +232,18 @@ export class ModuleReplacement {
 
   search(query: string): void {
     this.store.setQuery(query);
+  }
+
+  /**
+   * Opens or closes one family.
+   *
+   * Straight through to the query state and nowhere near the transaction: no
+   * revision, no checkpoint, no rebuilt index. What a Commander opens lives
+   * until the next rebuild or the next query change, which is where FR-021's
+   * seed takes over again.
+   */
+  toggleFamily(familyId: OutfittingFamilyId): void {
+    this.store.toggleFamily(familyId);
   }
 
   clear(): void {

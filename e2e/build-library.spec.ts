@@ -66,6 +66,23 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
  * the honest status is that nothing was written, so waiting for "saved" would
  * be waiting for the bug.
  */
+/**
+ * Opens a stored build from the library and waits for the workspace.
+ *
+ * The listing is built from storage after the page is up, so a press can land
+ * on the row the framework is about to replace: the click resolves against a
+ * node that is detached a frame later, its handler never runs, and the page
+ * simply stays on the library with nothing to say it did not work. The press is
+ * retried until the workspace is reached rather than made once and asserted
+ * after.
+ */
+async function openRecord(page: Page, name: string): Promise<void> {
+  await expect(async () => {
+    await page.getByRole('button', { name }).click();
+    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+}
+
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await page.getByRole('button', { name: 'Build stock hull' }).click();
@@ -176,9 +193,8 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a')]);
     await page.goto('/builds');
 
-    await page.getByRole('button', { name: 'Open Build a' }).click();
+    await openRecord(page, 'Open Build a');
 
-    await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByText('Anaconda').first()).toBeVisible();
   });
 
@@ -270,12 +286,10 @@ test.describe('the build library', () => {
 
     // The other page opens the same named record, so both hold the same baseline.
     await second.goto('/builds');
-    await second.getByRole('button', { name: 'Open Shared build' }).click();
-    await expect(second).toHaveURL(/\/build(#|$)/);
+    await openRecord(second, 'Open Shared build');
 
     await first.goto('/builds');
-    await first.getByRole('button', { name: 'Open Shared build' }).click();
-    await expect(first).toHaveURL(/\/build(#|$)/);
+    await openRecord(first, 'Open Shared build');
 
     // One page saves; the other's baseline is now stale.
     await reachShellLink(second, 'Open saved build');

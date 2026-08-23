@@ -1,8 +1,8 @@
 @use '../../../styles/responsive' as layout;
 
-// The canvas's two restriction markers: the cool `REWARD ONLY` chip and the
-// Merc Coin icon (canvas 1c/1d). Nothing else is drawn — the sentences beside
-// them carry every other restriction.
+// The canvas's two restriction markers: the route icon and the Merc Coin
+// (canvas 1c/1d). Nothing else is drawn — the sentences beside them carry every
+// other restriction.
 :host {
   display: block;
 }
@@ -19,17 +19,23 @@
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 }
 
-// The canvas's chip: a cool marker on a cool wash inside a cool hairline.
-.acquisition__chip--reward {
-  @include layout.micro-label(var(--edsb-text-info), var(--edsb-text-tracking-code));
-
+// The canvas's route icon, beside the module's name at the size it draws it.
+// It replaced the `REWARD ONLY` chip that used to stand here: an icon naming
+// how the article is earned already says the chip's whole sentence.
+.acquisition__route {
   flex: none;
-  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
-  background-color: var(--edsb-surface-info-quiet);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-info);
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  object-fit: contain;
 }
 
 // The canvas's Merc Coin, beside the module's name at the size it draws it.
+// The reference's Tech Broker mark is unpainted line art. The canvas's own
+// filter is what makes it read on this ground; see the token.
+.acquisition__route--broker {
+  filter: var(--edsb-filter-route-broker);
+}
+
 .acquisition__coin {
   flex: none;
   inline-size: var(--edsb-layout-icon-size);

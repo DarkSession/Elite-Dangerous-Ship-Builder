@@ -36,21 +36,101 @@ export interface EngineeringSelection {
 /**
  * One package module field the editor compares.
  *
+ * Every numeric field the Almanac publishes on a module, and the module's own
+ * record decides which of them it has: `previewOf` drops any row neither side
+ * carries, so a pulse laser lists its thirteen and a power distributor lists a
+ * different seven. There is no shorter list to draw. An earlier pass named six
+ * fields by hand, which was this application deciding that a Commander
+ * engineering a frame shift drive did not need to see its optimal mass.
+ *
  * A fixed, ordered table rather than whatever the package's modifier block
  * happens to name. A journal modifier label — `FSDOptimalMass`, `DamagePerSecond`
  * — is a package identity with no translation anywhere in the Almanac, and
  * echoing one as a column heading would ship an untranslatable English string
- * into a German screen. These are the fields the canvas's panel draws, each
- * carrying an application-owned localized label the way the chooser's columns
- * already do (FR-020, localization contract).
+ * into a German screen. Each field carries an application-owned localized label
+ * the way the chooser's columns already do (FR-020, localization contract).
+ *
+ * Two numbers are left out. `class` is the article's identity, drawn in the
+ * panel's own header as `HUGE MULTI-CANNON 4A`, and no recipe changes it.
+ * `cost` is a price rather than an attribute: it is what the module costs to
+ * buy, which the manifest row it is bought from states as its own `COST cr`
+ * column and which the rail totals for the whole build — not something the
+ * article does, and not something a recipe moves (wave 11, Commander request).
+ * The package's non-numeric fields are identity or restriction rather than
+ * attributes, and are carried elsewhere on the row that states them.
  */
 export const COMPARED_ATTRIBUTES = [
-  'damage',
-  'thermalLoad',
+  'ammoMaximum',
+  'armourPiercing',
+  'bootTime',
+  'burstInterval',
+  'burstRateOfFire',
+  'burstRounds',
+  'cargoCapacity',
+  'causticResistance',
+  'chargeTime',
   'clipSize',
-  'powerDraw',
-  'mass',
+  'damage',
+  'distributorDraw',
+  'engineHeatRate',
+  'enginesCapacity',
+  'enginesRecharge',
+  'explosiveResistance',
+  'falloffRange',
+  'fsdHeatRate',
+  'fuelCapacity',
+  'fuelMul',
+  'fuelPower',
+  'heatEfficiency',
+  'hullBoost',
+  'hullReinforcement',
   'integrity',
+  'interdictorFacingLimit',
+  'interdictorRange',
+  'jitter',
+  'jumpBoost',
+  'kineticResistance',
+  'mass',
+  'maxFuel',
+  'maxMass',
+  'maxMultiplier',
+  'maxRotationMultiplier',
+  'maxSpeedMultiplier',
+  'maximumRange',
+  'minMass',
+  'minMultiplier',
+  'minRotationMultiplier',
+  'minSpeedMultiplier',
+  'moduleProtection',
+  'optMass',
+  'optMultiplier',
+  'optRotationMultiplier',
+  'optSpeedMultiplier',
+  'powerCapacity',
+  'powerDraw',
+  'probeRadius',
+  'rateOfFire',
+  'refuelRate',
+  'reloadTime',
+  'roundsPerShot',
+  'scanAngle',
+  'scanTime',
+  'scannerRange',
+  'shieldAddition',
+  'shieldBankDuration',
+  'shieldBankHeat',
+  'shieldBankReinforcement',
+  'shieldBankSpinUp',
+  'shieldBoost',
+  'shieldBrokenRegenRate',
+  'shieldRegenRate',
+  'shotSpeed',
+  'systemsCapacity',
+  'systemsRecharge',
+  'thermalLoad',
+  'thermalResistance',
+  'weaponsCapacity',
+  'weaponsRecharge',
 ] as const;
 
 export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
@@ -68,14 +148,83 @@ export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
  * This table is the application's, kept beside the list it belongs to so the
  * two cannot drift apart (wave 4; supersedes the reference review's
  * "Attribute and cost honesty" ruling, which withdrew the markers entirely).
+ *
+ * It is exhaustive over `ComparedAttribute` by type, so a field the Almanac adds
+ * to a module cannot reach the panel without someone stating which way is better
+ * for it — which is the whole point of the table being written down.
  */
 export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
-  damage: true,
-  thermalLoad: false,
+  ammoMaximum: true,
+  armourPiercing: true,
+  bootTime: false,
+  burstInterval: false,
+  burstRateOfFire: true,
+  burstRounds: true,
+  cargoCapacity: true,
+  causticResistance: true,
+  chargeTime: false,
   clipSize: true,
-  powerDraw: false,
-  mass: false,
+  damage: true,
+  distributorDraw: false,
+  engineHeatRate: false,
+  enginesCapacity: true,
+  enginesRecharge: true,
+  explosiveResistance: true,
+  falloffRange: true,
+  fsdHeatRate: false,
+  fuelCapacity: true,
+  fuelMul: false,
+  fuelPower: false,
+  heatEfficiency: false,
+  hullBoost: true,
+  hullReinforcement: true,
   integrity: true,
+  interdictorFacingLimit: true,
+  interdictorRange: true,
+  jitter: false,
+  jumpBoost: true,
+  kineticResistance: true,
+  mass: false,
+  maxFuel: true,
+  maxMass: true,
+  maxMultiplier: true,
+  maxRotationMultiplier: true,
+  maxSpeedMultiplier: true,
+  maximumRange: true,
+  minMass: true,
+  minMultiplier: true,
+  minRotationMultiplier: true,
+  minSpeedMultiplier: true,
+  moduleProtection: true,
+  optMass: true,
+  optMultiplier: true,
+  optRotationMultiplier: true,
+  optSpeedMultiplier: true,
+  powerCapacity: true,
+  powerDraw: false,
+  probeRadius: true,
+  rateOfFire: true,
+  refuelRate: true,
+  reloadTime: false,
+  roundsPerShot: true,
+  scanAngle: true,
+  scanTime: false,
+  scannerRange: true,
+  shieldAddition: true,
+  shieldBankDuration: true,
+  shieldBankHeat: false,
+  shieldBankReinforcement: true,
+  shieldBankSpinUp: false,
+  shieldBoost: true,
+  shieldBrokenRegenRate: true,
+  shieldRegenRate: true,
+  shotSpeed: true,
+  systemsCapacity: true,
+  systemsRecharge: true,
+  thermalLoad: false,
+  thermalResistance: true,
+  weaponsCapacity: true,
+  weaponsRecharge: true,
 };
 
 /**
@@ -102,7 +251,20 @@ export interface AttributeComparison {
  */
 export type EngineeringPreview =
   | { readonly kind: 'unavailable' }
-  | { readonly kind: 'known'; readonly attributes: readonly AttributeComparison[] };
+  | {
+      readonly kind: 'known';
+      /**
+       * Whether there is a second column to draw at all.
+       *
+       * An unengineered module with nothing chosen has attributes but no
+       * *comparison*: its modified figures would be its stock figures copied,
+       * and a column of numbers repeated is a recipe that appears to have done
+       * nothing. The panel states what the article is, and gains the second
+       * column the moment there is something to compare it against.
+       */
+      readonly comparing: boolean;
+      readonly attributes: readonly AttributeComparison[];
+    };
 
 /**
  * One mount's engineering editor, as a value.
@@ -479,10 +641,16 @@ function previewOf(
   current: EngineeringView,
   stockArticle: OutfittingModule | null,
 ): EngineeringPreview {
-  const modifiedArticle = modifiedArticleOf(loadout, slotKey, selection, current);
-  // No modified article is no comparison. A table with one column filled in
-  // would read as a recipe that took every figure away.
-  if (modifiedArticle === null) {
+  const modified = modifiedArticleOf(loadout, slotKey, selection, current);
+  // A selection the package will not resolve has nothing to describe. This is
+  // the only unavailable case: a module with no engineering on it yet is not
+  // one of them — it has every attribute it was catalogued with.
+  if (modified.kind === 'refused') {
+    return { kind: 'unavailable' };
+  }
+
+  const modifiedArticle = modified.kind === 'article' ? modified.article : null;
+  if (stockArticle === null && modifiedArticle === null) {
     return { kind: 'unavailable' };
   }
 
@@ -493,9 +661,28 @@ function previewOf(
     // A row neither side publishes is not a row: a multi-cannon has no
     // integrity figure to compare and drawing an empty one would suggest the
     // package lost it.
-  })).filter((row) => row.stock !== null || row.modified !== null);
+  }))
+    .filter((row) => row.stock !== null || row.modified !== null)
+    .filter((row) => !silentZero(row));
 
-  return { kind: 'known', attributes };
+  return { kind: 'known', comparing: modifiedArticle !== null, attributes };
+}
+
+/**
+ * A published figure that says nothing, and is left off rather than drawn.
+ *
+ * Only `bootTime`, and only where no side of the row is a non-zero number. The
+ * Almanac publishes `0` on 244 modules that simply have no boot delay — it is a
+ * real value, not a gap, which is why it is filtered here rather than turned
+ * into an absence upstream. `Boot time s 0` is a row a Commander reads and
+ * learns nothing from, and on a weapon list it was the first row in the table.
+ *
+ * Deliberately not a general "hide every zero" rule. A zero is data everywhere
+ * else on this surface — constitution IV keeps `[]` as a known zero — and a
+ * module whose damage really is 0 is stating something.
+ */
+function silentZero(row: AttributeComparison): boolean {
+  return row.attribute === 'bootTime' && (row.stock ?? 0) === 0 && (row.modified ?? 0) === 0;
 }
 
 /**
@@ -513,22 +700,38 @@ function previewOf(
  * A refusal is not surfaced as an error. A half-chosen draft refusing is
  * ordinary; it simply has nothing to show.
  */
+/**
+ * What, if anything, the second column would hold.
+ *
+ * `none` and `refused` were one `null` before, and collapsing them cost the
+ * panel every attribute of every unengineered module: "nothing is engineered
+ * here yet" was answered the same way as "the package will not resolve this
+ * selection", so a stock pulse laser reported that no values could be resolved
+ * for it. They are different answers and the panel draws them differently.
+ */
+type ModifiedArticle =
+  | { readonly kind: 'none' }
+  | { readonly kind: 'refused' }
+  | { readonly kind: 'article'; readonly article: OutfittingModule };
+
 function modifiedArticleOf(
   loadout: ShipLoadout,
   slotKey: string,
   selection: EngineeringSelection,
   current: EngineeringView,
-): OutfittingModule | null {
-  // Only where the module has engineering to compare. Stock against stock is a
-  // table of two identical columns, which says nothing and reads as though the
-  // recipe did nothing.
+): ModifiedArticle {
   const engineered =
     current.blueprintFdname !== null ||
     current.effectFdname !== null ||
     current.modifiers !== null ||
     current.purchaseVariant !== null;
-  const fitted = () =>
-    engineered ? (loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null) : null;
+  const fitted = (): ModifiedArticle => {
+    if (!engineered) {
+      return { kind: 'none' };
+    }
+    const article = loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
+    return article === null ? { kind: 'refused' } : { kind: 'article', article };
+  };
 
   const intent = selectionIntent(slotKey, selection, current);
   if (intent === null) {
@@ -542,16 +745,17 @@ function modifiedArticleOf(
 
   const restored = restoreCheckpoint(captureCheckpoint(loadout));
   if (!restored.ok) {
-    return null;
+    return { kind: 'refused' };
   }
 
   try {
     operation(restored.loadout);
   } catch {
-    return null;
+    return { kind: 'refused' };
   }
 
-  return restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
+  const article = restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
+  return article === null ? { kind: 'refused' } : { kind: 'article', article };
 }
 
 /** Package identities are compared the way the package matches them. */

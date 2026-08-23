@@ -7,11 +7,10 @@
 ## Summary
 
 Draw the two blocks canvases 1c and 1d put in the outfitting status rail — `COST` and `MATERIALS` —
-from one pure synchronous projection of the active `ShipLoadout`. The projection preserves
-`retailCredits()` verbatim and adds the canvas's `TOTAL` row, reads `mercCoinCost()` only when a
-fitted `preEngineeredVariant` reports acquisition `mercenary`, folds feature 002's
-`engineeringCost()` results across fitted modules with one `sumMaterials()` call, and counts the
-three aggregate figures the canvas prints.
+from one pure synchronous projection of the active `ShipLoadout`. The projection reads
+`buildCost()` once and preserves its credits, Merc Coin and consolidated materials verbatim. It
+reuses feature 002's `engineeringCost()` only to count contributing blueprints, then counts the
+material types and units the canvas prints.
 
 **Wave 10 ruling.** Six spec-versus-canvas collisions were surfaced before implementation and the
 design won all six; see [design/reference-review.md](./design/reference-review.md). The combined
@@ -53,7 +52,7 @@ browsers; offline after first load; pointer, touch and screen-reader use
 locale-only changes re-present without repeating package quantity calls
 
 **Constraints**: No application-owned price, rebuy, Merc Coin, recipe or roll arithmetic, apart from
-the four ruled canvas figures (`TOTAL`, blueprint count, material-type count, unit total); no
+the three ruled canvas counts (blueprint count, material-type count, unit total); no
 currency conversion/comparison; package `null`, `[]`, zero and conditional absence
 remain distinct; exact game slot/symbol/fdname identities; leaf imports only; no cross-origin
 requests; no document horizontal scrolling; token-only dark design system; all owned text and
@@ -156,18 +155,17 @@ catalogue, new shared primitive or second `ShipLoadout` is added.
 [research.md](./research.md) records the decisions and rejected alternatives. After the wave 10
 ruling the operative conclusions are:
 
-- `RetailCredits` is fully numeric in the installed package. `hull`, `modules` and `rebuy` are drawn
-  literally; `TOTAL` is `hull + modules`, the one ruled credits derivation. `unpriced` is not read.
-- Merc Coin is absent — no row, and no `mercCoinCost()` call — when no fitted variant is
-  package-recognized. Otherwise the literal build total is drawn as the last row of `MATERIALS`.
+- `buildCost().credits` is fully numeric. `hull`, `modules`, `total` and `rebuy` are drawn literally;
+  `unpriced` is not read.
+- Merc Coin is absent when `buildCost().mercCoins` is zero. Otherwise that literal build total is
+  drawn as the last row of `MATERIALS`.
 - Feature 002's `engineeringCost()` already rules the Mercenary purchase baseline, the fixed reward
   baseline, the baked effect and the cumulative climb. Feature 009 folds its per-module results and
   adds no classifier.
-- Only `sumMaterials()` consolidates the contributing lists, and its order, symbols and counts are
-  preserved literally in the projection. The blueprint, type and unit counts are counted over that
-  result.
+- `buildCost().materials` owns consolidation, order, symbols and quantities. The blueprint, type and
+  unit counts are counted over package results.
 - Reading order is the surface's, through the shared `sortMaterialLines` in
-  `ui/outfitting/material-cost-list.ts` that feature 002's Engineer panel also calls: commonest
+  `ui/outfitting/material-lines.ts` that feature 002's Engineer panel also calls: commonest
   rarity first, ties by active-locale name, ungraded last (ruling G). One comparator, because the
   two lists show the same materials for the same build.
 - Material rarity comes from `materialRarity()`; names come from the package through feature 011's
@@ -198,11 +196,11 @@ ruling the operative conclusions are:
 Phase 1 adds no server, persistence field, alternate build, private game data, local recipe formula,
 cross-origin asset, hard-coded application string or screen-local visual literal.
 
-Four application-owned figures now exist where the original plan permitted none — `TOTAL`, the
-blueprint count, the material-type count and the unit total. Each is addition or counting over
-package results, each is drawn by the canvas, and each is ruled (A, D). Constitution II is read as
-satisfied because no _game rule_ is owned: the application does not price, rebuy, cost or classify
-anything. Nothing else is derived.
+Three application-owned counts remain where the original plan permitted none — blueprint count,
+material-type count and unit total. Each counts package results, each is drawn by the canvas, and
+each is ruled (D). Almanac 0.1.6 retired ruling A's temporary arithmetic by supplying `TOTAL`
+directly. Constitution II is satisfied because the application does not price, rebuy, cost,
+recognize or consolidate anything. Nothing else is derived.
 
 Ruling F accepts a real cost: an unpriced module lowers the `modules` figure silently, and a recipe
 the package cannot cost is silently absent from the list. This was surfaced with the ruling and

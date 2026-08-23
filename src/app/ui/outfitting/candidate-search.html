@@ -12,17 +12,29 @@
   />
 
   <!--
-    The canvas's `⌘K`, drawn inside the field's own box and nothing more.
-    Decorative for a reader: it names a convenience, and the field is already
-    reachable and already named. The sentence that once wrapped it — "… jumps to
-    this field." — is on neither canvas.
+    One box at the field's trailing edge, holding whichever of the two belongs
+    there. The `⌘K` is the canvas's, decorative for a reader: it names a
+    convenience, and the field is already reachable and already named. A field
+    with something in it has no use for an invitation to jump to it, and that is
+    the moment the clear control needs the space — so they take turns rather
+    than sharing a row.
   -->
-  <p class="search__shortcut" aria-hidden="true">{{ shortcutHint() }}</p>
-
   @if (canClear()) {
-    <button class="search__clear" type="button" (click)="cleared.emit()">
-      {{ clearLabel() }}
+    <!--
+      Discreet, and still a real control: the glyph is decoration and the button
+      carries the sentence as its name, and its target is the full height of the
+      field however small the mark inside it is drawn.
+    -->
+    <button
+      class="search__clear"
+      type="button"
+      [attr.aria-label]="clearLabel()"
+      (click)="cleared.emit()"
+    >
+      <span class="search__clear-mark" aria-hidden="true">✕</span>
     </button>
+  } @else {
+    <p class="search__shortcut" aria-hidden="true">{{ shortcutHint() }}</p>
   }
 </div>
 

@@ -69,6 +69,9 @@
   // The wash that runs from the leading edge of a selected row.
   --edsb-surface-row-selected: var(--edsb-texture-selected);
 
+  // The bar a collapsible module family sits on, in the wide manifest.
+  --edsb-surface-family: var(--edsb-texture-family);
+
   // The hatched plate behind hull artwork.
   --edsb-surface-plate: var(--edsb-texture-plate);
 
@@ -254,6 +257,10 @@
 
   // What a region has to clear to sit below the sticky command bar.
   --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+
+  // What a bar frozen to the top of a scroller is pulled up by, so the scroller
+  // clips the seam instead of showing the row behind through it.
+  --edsb-layout-sticky-overhang: var(--edsb-measure-sticky-overhang);
 
   // What a manifest's frozen column headers have to clear: the command bar,
   // then one target-height row of toolbar controls inside the hairline the

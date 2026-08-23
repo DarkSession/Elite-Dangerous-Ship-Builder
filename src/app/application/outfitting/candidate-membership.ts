@@ -1,3 +1,4 @@
+import type { OutfittingFamilyId } from '@elite-dangerous-almanac/core/ships/module-families';
 import type {
   ModuleMount,
   ModuleRating,
@@ -42,9 +43,28 @@ export interface CandidateFacts {
 /** One row's presentation values, all projected straight from the package. */
 export interface ChoicePresentation {
   readonly name: GameTextPresentation;
+  /**
+   * The Almanac's own family for this choice, and the only grouping there is.
+   *
+   * Read off the `OutfittingModule` the row was expanded from, so a variant
+   * takes the family of the module it is built on: canvas 1c draws
+   * `Plasma Accelerator · Advanced` directly under `Plasma Accelerator · Fixed`,
+   * and grouping by the displayed name — which is what the withdrawn
+   * `CandidateGroup` did — splits that family in two (FR-020, decision 13).
+   */
+  readonly familyId: OutfittingFamilyId;
+  /** That family's name for the reading language, from the package alone. */
+  readonly family: GameTextPresentation;
   readonly class: number;
   readonly rating: ModuleRating;
   readonly mount: ModuleMount | null;
+  /**
+   * Whether the choice is a one-off reward, for its own row's label.
+   *
+   * Not a grouping and not an order: families are the only level the chooser
+   * has, and a reward sits under the module it is built on with its
+   * route icon beside its name (FR-024, decision 14).
+   */
   readonly section: CandidateSection;
   readonly labels: readonly AcquisitionLabel[];
   /**
@@ -85,6 +105,41 @@ export type ModuleChoice =
       readonly variantOrdinal: number;
       readonly presentation: ChoicePresentation;
     };
+
+/**
+ * The exact article a mount currently carries, for matching it in the list.
+ *
+ * The whole variant record, never the symbol alone. A stock article and its
+ * pre-engineered variants share a symbol, and the Almanac sells more than one
+ * reward under one name, so anything less marks two rows as the one fitted
+ * module (wave 4).
+ */
+export interface FittedArticle {
+  readonly symbol: string;
+  readonly variant: PreEngineeredVariant | null;
+}
+
+/**
+ * Whether one offered choice is the article already in the mount.
+ *
+ * One rule, two readers: the row that says `FITTED` and the family that opens
+ * on it. Two copies of this comparison is two chances for the chooser to open a
+ * family the marked row is not in (FR-021).
+ */
+export function isFittedChoice(choice: ModuleChoice, fitted: FittedArticle | null): boolean {
+  if (fitted === null || choice.module.symbol !== fitted.symbol) {
+    return false;
+  }
+  if (choice.kind !== 'variant') {
+    return fitted.variant === null;
+  }
+  return (
+    fitted.variant !== null &&
+    choice.variant.name === fitted.variant.name &&
+    choice.variant.blueprint === fitted.variant.blueprint &&
+    choice.variant.grade === fitted.variant.grade
+  );
+}
 
 /** Everything the chooser holds for one mount at one build revision. */
 export interface CandidateMembership {
@@ -168,6 +223,8 @@ function presentationOf(
   return {
     name:
       variant === null ? text.moduleName(module.symbol) : text.preEngineeredVariantName(variant),
+    familyId: module.familyId,
+    family: text.outfittingFamilyName(module.familyId),
     // Class, rating and mount identify the *mount fit*, which a variant shares
     // with its base module: a reward is that module, already modified.
     class: module.class,

@@ -1,8 +1,9 @@
-import {
-  sumMaterials,
-  type EngineeringMaterial,
-} from '@elite-dangerous-almanac/core/ships/engineering';
-import type { FittedModule, ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
+import type {
+  BuildCost,
+  FittedModule,
+  ShipLoadout,
+} from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   engineeringCost,
   materialRarity,
@@ -33,15 +34,7 @@ export interface CostAndMaterials {
 export interface CreditsView {
   readonly hull: number;
   readonly modules: number;
-  /**
-   * `hull + modules`. The one credits figure the package does not return.
-   *
-   * `RetailCredits` has no combined field, so this is the application's own
-   * addition — permitted by ruling A because it is arithmetic over two package
-   * results and owns no game rule. Nothing else about credits is derived: the
-   * `5%` in the rebuy label is the canvas's fixed text, not this number's
-   * relationship to that one.
-   */
+  /** Package catalogue total for the hull and fitted modules. */
   readonly total: number;
   readonly rebuy: number;
 }
@@ -73,31 +66,30 @@ export interface MaterialRow {
  * signal graph memoises the call for free.
  */
 export function projectCostAndMaterials(loadout: ShipLoadout): CostAndMaterials {
-  // Enumerated once and passed down, so both projections below describe the
-  // same fitted state even if the caller mutates the loadout between them.
   const fitted = loadout.fittedModules();
+  const cost = loadout.buildCost();
 
   return Object.freeze({
-    credits: projectCredits(loadout),
-    materials: projectMaterials(fitted),
-    mercCoin: projectMercCoin(fitted, loadout),
+    credits: projectCredits(cost),
+    materials: projectMaterials(fitted, cost.materials),
+    mercCoin: projectMercCoin(cost),
   });
 }
 
 /**
- * The `COST` block, from one `retailCredits()` call.
+ * The `COST` block, from one `buildCost()` result.
  *
  * The returned `unpriced` list is deliberately not read. The canvas draws no
  * evidence for it and ruling F declined to invent any, which means an unpriced
  * module lowers `modules` silently — a cost accepted with that ruling.
  */
-export function projectCredits(loadout: ShipLoadout): CreditsView {
-  const retail = loadout.retailCredits();
+export function projectCredits(cost: BuildCost): CreditsView {
+  const retail = cost.credits;
 
   return {
     hull: retail.hull,
     modules: retail.modules,
-    total: retail.hull + retail.modules,
+    total: retail.total,
     rebuy: retail.rebuy,
   };
 }
@@ -105,33 +97,29 @@ export function projectCredits(loadout: ShipLoadout): CreditsView {
 /**
  * The build's Merc Coin cost, or `null` when no article was bought with it.
  *
- * Recognition comes only from the package's own `acquisition`, never from a
- * symbol, a blueprint or a non-zero total — `mercCoinCost()` returns `0` both
- * for a build with no Mercenary article and for one whose article has no
- * published price, so the total cannot tell those apart and is not asked.
+ * `buildCost()` includes both Mercenary articles and ordinary engineering-menu
+ * recipes that charge this currency. Zero means the package reports no charge,
+ * so the canvas row is absent rather than displaying a fabricated absence.
  */
-export function projectMercCoin(
-  fitted: readonly FittedModule[],
-  loadout: ShipLoadout,
-): number | null {
-  const recognised = fitted.some(
-    (module) => module.preEngineeredVariant?.acquisition === 'mercenary',
-  );
-
-  return recognised ? loadout.mercCoinCost() : null;
+export function projectMercCoin(cost: BuildCost): number | null {
+  return cost.mercCoins > 0 ? cost.mercCoins : null;
 }
 
 /**
- * The `MATERIALS` block, folded from feature 002's per-module cost boundary.
+ * The `MATERIALS` block, from the package's consolidated build-cost result.
  *
  * That boundary already rules the Mercenary purchase baseline, the fixed reward
  * baseline, the baked effect and the cumulative climb (waves 5 and 9). Asking
- * it once per module and summing the answers is the whole job here; a second
- * classifier would be a second opinion about game rules this application does
- * not own (constitution II).
+ * it once per module identifies the contributing blueprints the canvas asks us
+ * to count; a second classifier would be a second opinion about game rules this
+ * application does not own (constitution II). Material identities and quantities
+ * remain the package's already-consolidated answer.
  */
-export function projectMaterials(fitted: readonly FittedModule[]): MaterialsView | null {
-  const lists: EngineeringMaterial[][] = [];
+export function projectMaterials(
+  fitted: readonly FittedModule[],
+  consolidated: readonly EngineeringMaterial[],
+): MaterialsView | null {
+  let blueprints = 0;
 
   for (const module of fitted) {
     const cost = engineeringCost(committedSelection(module));
@@ -140,17 +128,14 @@ export function projectMaterials(fitted: readonly FittedModule[]): MaterialsView
     // row, and neither is named: the canvas draws no missing-recipe wording
     // and ruling F declined to add any.
     if (cost.combined.kind === 'known' && cost.combined.materials.length > 0) {
-      lists.push([...cost.combined.materials]);
+      blueprints += 1;
     }
   }
 
-  if (lists.length === 0) {
+  if (consolidated.length === 0) {
     return null;
   }
 
-  // One package call. Its order, symbols and counts are the answer — nothing
-  // here sorts, deduplicates or adds.
-  const consolidated = sumMaterials(...lists);
   const rows = consolidated.map((material) => ({
     symbol: material.symbol,
     count: material.count,
@@ -158,7 +143,7 @@ export function projectMaterials(fitted: readonly FittedModule[]): MaterialsView
   }));
 
   return {
-    blueprints: lists.length,
+    blueprints,
     rows,
     types: rows.length,
     units: rows.reduce((running, row) => running + row.count, 0),

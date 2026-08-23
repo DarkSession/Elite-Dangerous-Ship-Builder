@@ -1,5 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
+import {
+  OUTFITTING_FAMILIES,
+  type OutfittingFamilyId,
+} from '@elite-dangerous-almanac/core/ships/module-families';
 import { getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
 import { provideIsolatedLocaleEnvironment } from './testing/localization-harness';
 import { GameTextPresenter, presentGameText } from './game-text.presenter';
@@ -15,6 +20,10 @@ import { provideLocalization } from './i18n.providers';
 const LOCALIZED_MODULE = 'Int_Hyperdrive_Size6_Class5';
 const CANONICAL_ONLY_MODULE = 'Int_LargeCargoRack_Size8_class1';
 const UNKNOWN_MODULE = 'Not_A_Real_Module_Symbol';
+const UNKNOWN_FAMILY = 'notAFamilyTheAlmanacPublishes';
+
+/** Every family id the installed package publishes, in its own order. */
+const FAMILY_IDS = Object.keys(OUTFITTING_FAMILIES) as readonly OutfittingFamilyId[];
 
 describe('presentGameText', () => {
   it('presents package text in the active locale when the package has it', () => {
@@ -109,5 +118,50 @@ describe('GameTextPresenter', () => {
     );
     expect(presented.engineeringGroupName('not-a-group').translationState).toBe('unavailable');
     expect(presented.shipManufacturer('not-a-ship').translationState).toBe('unavailable');
+  });
+
+  /**
+   * Families are the one leaf where the canonical arm is ordinary, not rare.
+   *
+   * Nineteen of the seventy-seven have no name outside English, so a chooser in
+   * German reads them in English with the untranslated disclosure — the same
+   * thing a module name does. What must never happen is the third arm: a blank
+   * heading or a raw `plasmaAccelerators` on screen (FR-020, decision 13).
+   */
+  it('names every family the package publishes, in the reading language', () => {
+    const presented = presenter();
+
+    expect(FAMILY_IDS.length).toBeGreaterThan(0);
+    for (const familyId of FAMILY_IDS) {
+      const presentation = presented.outfittingFamilyName(familyId);
+
+      expect(presentation.translationState).toBe('localized');
+      expect(presentation.text).toBe(getOutfittingFamilyName(familyId, 'en'));
+      expect(presentation.disclosureKey).toBeNull();
+    }
+  });
+
+  it('reads a family the language does not name as canonical English, disclosed', () => {
+    const untranslated = FAMILY_IDS.filter((id) => getOutfittingFamilyName(id, 'de') === null);
+    expect(untranslated.length).toBeGreaterThan(0);
+
+    for (const familyId of untranslated) {
+      const presentation = presentGameText(getOutfittingFamilyName, familyId, 'de');
+
+      expect(presentation.translationState).toBe('canonical');
+      expect(presentation.text).toBe(getOutfittingFamilyName(familyId, 'en'));
+      expect(presentation.text).not.toBe('');
+      expect(presentation.text).not.toBe(familyId);
+      expect(presentation.language).toBe('en');
+      expect(presentation.disclosureKey).toBe('game-text.untranslated.description');
+    }
+  });
+
+  it('states an unknown family as unavailable rather than echoing its id', () => {
+    const presentation = presenter().outfittingFamilyName(UNKNOWN_FAMILY);
+
+    expect(presentation.translationState).toBe('unavailable');
+    expect(presentation.text).toBeNull();
+    expect(presentation.disclosureKey).toBe('game-text.unavailable');
   });
 });

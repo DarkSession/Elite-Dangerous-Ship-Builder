@@ -245,6 +245,22 @@
   // The wash that marks a selected row, run from the leading edge.
   --edsb-texture-selected: linear-gradient(90deg, var(--edsb-palette-amber-a16), transparent);
 
+  // Canvas 1c's family bar: raised at the leading edge and falling back to the
+  // manifest's own ground, which is what separates a family from its rows
+  // without a rule drawn between them.
+  --edsb-texture-family: linear-gradient(
+    90deg,
+    var(--edsb-palette-panel-6),
+    var(--edsb-palette-panel-2)
+  );
+
+  // The canvas's own recolouring of the Tech Broker mark, which arrives from
+  // the reference's icon set as unpainted black line art and would otherwise be
+  // invisible on this ground. Copied from canvas 1c's own `filter` on that
+  // image rather than baked into the file, because the file is the reference's
+  // artwork and this is the reference's treatment of it.
+  --edsb-filter-route-broker: brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(350deg);
+
   // What makes neutral package line art read as amber instrumentation.
   --edsb-filter-artwork: grayscale(1) sepia(1) hue-rotate(-18deg) saturate(1.6) brightness(0.95)
     contrast(1.05);
@@ -323,6 +339,21 @@
   // is the target floor, which is a rule about the product rather than a
   // measurement taken off the drawing.
   --edsb-measure-bar-height: 4.125rem;
+
+  // What a sticky bar has to overhang the edge it is frozen against by so
+  // nothing prints above it. The edge is placed at a fractional device pixel
+  // while the browser snaps the bar to a whole one, and the two can miss each
+  // other by a device row. Measured across scale factors 1 through 3, on both
+  // the manifest head and the module family bar.
+  //
+  // Pixels, and the only measure on this sheet that is. Everything a Commander
+  // reads is set in `rem` so it grows with their text size, but this is not
+  // something anybody reads: it is the width of the browser's own rounding
+  // error, which is one device pixel whatever the text is set at. In `rem` it
+  // would resolve to 4px at the 200% text the constitution requires — the value
+  // measured as *broken*, because a bar overhanging that far clears its own
+  // family early.
+  --edsb-measure-sticky-overhang: 2px;
 
   // The ledger row's two boxes: canvas 1c's 26px size square and 20px node
   // badge, canvas 1d's 30px size square at touch scale.

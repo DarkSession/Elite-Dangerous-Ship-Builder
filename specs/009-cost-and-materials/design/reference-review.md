@@ -91,6 +91,12 @@ implementation. **The design won all six.** These rulings are binding; do not re
 | E   | Five material rows out of eighteen                      | Every consolidated row (Story 2)                                                                                                                                                                        | **Split: every row, and keep the counts.** The list is complete; the canvas's aggregate footer stays. This is the one ruling that is not purely the canvas — truncation was rejected because a Commander cannot shop from a list that hides thirteen of its entries. |
 | F   | _(nothing)_                                             | Per-row material trace disclosure (SC-003 as written), the unpriced-module evidence list with slot actions (FR-002), and lower-bound / unavailable / missing-recipe / untranslated wording (FR-008/010) | **Design — remove all of it.** Roughly half of the specified surface is drawn nowhere on either canvas and is not built. The former SC-002 and SC-003 are withdrawn with it.                                                                                         |
 
+**Almanac 0.1.7 reconciliation (2026-08-23).** Ruling A still requires the `TOTAL` row, but the
+package now returns it as `buildCost().credits.total`; the temporary application addition is
+retired. Ruling D now has three application-owned counts only: blueprint count, material-type count
+and unit total. The package's same `buildCost()` result also owns the consolidated material list and
+the complete Merc Coin total, so no application recognition or consolidation rule remains.
+
 ### What ruling F withdraws
 
 Not built, and not to be reintroduced without a new ruling:
@@ -122,16 +128,26 @@ sorts last: an unknown rarity is not a low one.
 
 Ordering is applied at the presentation layer, not in the projection: the
 tie-break needs the active-locale name, and the projection keeps the package's
-own `sumMaterials()` order for any consumer that wants it.
+own `buildCost().materials` order for any consumer that wants it.
 
-Both lists call one comparator, `sortMaterialLines` in
-`src/app/ui/outfitting/material-cost-list.ts`. A second copy would be a second
+Both lists called one comparator, `sortMaterialLines` in
+`src/app/ui/outfitting/material-lines.ts`. A second copy would be a second
 ordering of the same shopping list, which is the thing this ruling exists to
 prevent — and feature 002's original copy had already drifted: it broke ties
 with a bare `localeCompare()`, which reads the _browser's_ language rather than
 the one the application is drawing in, so the two lists disagreed for any
 Commander whose chosen language is not their browser's. The shared comparator
-takes the active-locale collator, and feature 002 now calls it.
+takes the active-locale collator, and feature 002 called it.
+
+**Amended 2026-08-23 (feature 002 wave 11, Commander request).** There is now one
+list, not two: neither outfitting canvas draws a `MATERIALS` block inside
+`DETAILS AND ENGINEERING`, so feature 002 withdrew the Engineer panel's list and
+`edsb-material-cost-list` with it. This block is the application's only statement
+of material requirements. The ruling stands unchanged — the order is still the
+shopping list's and still not the artboard's — and `sortMaterialLines` stays in
+`ui/outfitting/material-lines.ts` rather than moving in here, because it is how a
+Commander gathers a list and not how this block happens to sort. The comparison
+that motivated the ruling is now against the artboard alone.
 
 ### What survives ruling F, and why
 

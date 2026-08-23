@@ -11,6 +11,7 @@ import {
   FIXTURE_SLOTS,
   defaultBuild,
   fixedRewardBuild,
+  lockedArticleBuild,
 } from '../../../../domain/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
@@ -228,68 +229,31 @@ describe('engineering editor surface', () => {
     });
   });
 
-  describe('the cost', () => {
-    it('prices the recipe whatever the module already carries', () => {
-      const build = defaultBuild();
-      build.applyBlueprint(FIXTURE_SLOTS.frameShiftDrive, 'FSD_LongRange', {
-        grade: 5,
-        quality: 1,
-      });
-      commit(build);
-      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
-
-      editor.chooseBlueprint('FSD_LongRange');
-      editor.chooseGrade(3);
-
-      // Engineering always costs materials. The module already being at grade 5
-      // does not make a grade 3 job free — what the panel answers is what this
-      // job costs, and an empty list would mean the Almanac priced none of it
-      // (wave 5).
-      // One list, not one per part: the recipe and the effect are folded
-      // together because a Commander gathers them once (wave 9).
-      const [only, ...rest] = editor.materialParts();
-      expect(rest).toEqual([]);
-      expect(only?.state).toBe('known');
-      expect(only?.materials.length).toBeGreaterThan(0);
-    });
-
-    it('carries each material’s package rarity and count', () => {
-      commit(defaultBuild());
-      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
-
-      editor.chooseBlueprint('FSD_LongRange');
-      editor.chooseGrade(5);
-
-      const [only] = editor.materialParts();
-      expect(only.state).toBe('known');
-      expect(only.materials.length).toBeGreaterThan(0);
-      expect(only.materials.every((material) => material.count.length > 0)).toBe(true);
-      expect(only.materials.some((material) => material.grade !== null)).toBe(true);
-    });
-
-    it('lists them commonest first, in the one shared order', () => {
-      commit(defaultBuild());
-      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
-
-      editor.chooseBlueprint('FSD_LongRange');
-      editor.chooseGrade(5);
-
-      // The package returns its own catalogue order, which is neither. This
-      // panel and the status rail draw the same materials for the same build,
-      // so both read them through `sortMaterialLines` — and nothing but an
-      // assertion here holds this caller to it (ruling G,
-      // `specs/009-cost-and-materials/design/reference-review.md`).
-      const grades = editor
-        .materialParts()[0]!
-        .materials.map((material) => material.grade ?? Number.MAX_SAFE_INTEGER);
-
-      expect(grades.length).toBeGreaterThan(1);
-      expect(new Set(grades).size).toBeGreaterThan(1);
-      expect(grades).toEqual([...grades].sort((left, right) => left - right));
-    });
-  });
-
   describe('the comparison', () => {
+    it('still draws the details of an article the package will not engineer', () => {
+      const { build, slot } = lockedArticleBuild();
+      commit(build);
+      const mounted = open(slot);
+      const editor = mounted.componentInstance;
+
+      // `DETAILS AND ENGINEERING` names two halves and the details do not
+      // depend on the engineering. A final article accepts no further
+      // engineering and still has every attribute it was catalogued with;
+      // gating the whole grid on there being choices left the panel stating a
+      // restriction over nothing at all (wave 11, Commander request).
+      expect(editor.state()).toBe('final');
+      expect(editor.showChoices()).toBe(false);
+      expect(editor.attributes().length).toBeGreaterThan(0);
+
+      // The restriction takes the half the controls would have taken, and the
+      // table stays in the half it is in on every other article.
+      const host = mounted.nativeElement as HTMLElement;
+      expect(host.querySelector('.engineering__choices .engineering__state')?.textContent).toMatch(
+        /final article/i,
+      );
+      expect(host.querySelector('.engineering__result .engineering__attributes')).not.toBeNull();
+    });
+
     it('describes the modified module against the stock one', () => {
       commit(defaultBuild());
       const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
@@ -303,10 +267,19 @@ describe('engineering editor surface', () => {
       expect(rows.every((row) => row.stock !== null || row.modified !== null)).toBe(true);
     });
 
-    it('has nothing to show before a recipe is chosen', () => {
+    it('lists the article’s attributes before a recipe is chosen, without a second column', () => {
       commit(defaultBuild());
 
-      expect(open(FIXTURE_SLOTS.frameShiftDrive).componentInstance.attributes()).toEqual([]);
+      const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
+
+      // The panel is `DETAILS AND ENGINEERING`: the details are the article's
+      // own attributes and they are readable the moment the mount is opened.
+      // What is not there yet is the comparison — nothing has been chosen to
+      // compare against, and a modified column repeating the stock one reads as
+      // a recipe that did nothing.
+      expect(editor.attributes().length).toBeGreaterThan(0);
+      expect(editor.comparingAttributes()).toBe(false);
+      expect(editor.attributes().every((row) => row.modified === null)).toBe(true);
     });
   });
 

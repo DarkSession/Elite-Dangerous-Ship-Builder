@@ -1,9 +1,8 @@
 @if (shown()) {
   <!--
-    Labelled rather than headed, for the same reason `edsb-material-cost-list`
-    is: these blocks sit in the rail at wide width and inside the Status stack
-    at narrow width, so a fixed heading level would jump the outline at one of
-    them (feature 011, ordered headings).
+    Labelled rather than headed: these blocks sit in the rail at wide width and
+    inside the Status stack at narrow width, so a fixed heading level would jump
+    the outline at one of them (feature 011, ordered headings).
   -->
   <section class="block" [attr.aria-labelledby]="costHeadingId">
     <p class="block__heading" [id]="costHeadingId">{{ costHeading() }}</p>

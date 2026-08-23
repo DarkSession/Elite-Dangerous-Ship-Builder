@@ -152,13 +152,17 @@ slot offers a reason instead of remove.
 
 ## Phase 4: User Story 2 - Find a replacement (Priority: P1)
 
-**Goal**: Replacement choices are grouped by module name and ordered class descending, rating
-ascending, stock before variants, with unique rewards as a final section; four-field case- and
-accent-insensitive AND search settles under 100 ms; no matches is explicit with a clear action; and
-acquisition and entitlement labels stay visible before and after fitting.
+**Goal**: Replacement choices are grouped and ordered class descending, rating ascending, stock
+before variants; four-field case- and accent-insensitive AND search settles under 100 ms; no matches
+is explicit with a clear action; and acquisition and entitlement labels stay visible before and after
+fitting.
 
-**Independent Test**: Open the largest chooser, confirm grouping, ordering and the final unique-reward
-section against the package records, search with mixed case, accents and multiple terms spanning name,
+**Superseded in part by Phase 8.** This phase shipped a section split and name groups. Wave 10
+replaces both with the Almanac's own module families (FR-020–FR-024); the tasks below are kept as the
+delivery record and are not re-run.
+
+**Independent Test**: Open the largest chooser, confirm grouping and ordering against the package
+records, search with mixed case, accents and multiple terms spanning name,
 class, rating and mount, confirm symbol and stats never match, clear a no-match query, and measure
 input-to-rendered-result below 100 ms for the installed package's largest slot-choice fixture at the
 mobile viewport under 4× CPU slowdown.
@@ -313,6 +317,99 @@ proof, coverage registration and the documented validation run.
 
 ---
 
+## Phase 8: Wave 10 — Module families (User Story 2 extension, Priority: P1)
+
+**Goal**: The chooser groups every available choice into the Almanac's own collapsible module
+families, opens exactly the fitted module's family, reopens from search, and drops the standard and
+unique-reward sections — with no family id, name, abbreviation or aggregate computed locally
+(FR-020–FR-024, SC-006–SC-009).
+
+**Independent Test**: Open a mount whose fitted module is offered again, confirm its family alone is
+open and every other closed; toggle families by pointer and touch and confirm the build revision and
+undo/redo state do not move; type a query matching two families and confirm both open with no match
+behind a closed control; clear it and confirm the fitted-family seed returns; switch to German and
+confirm the 19 unnamed families read as canonical English with the untranslated disclosure while
+membership does not change.
+
+**Reference**: [design/module-replacement.md](./design/module-replacement.md) "Module families";
+[research.md](./research.md) decisions 13–15; canvases 1c and 1d as re-synced 2026-08-23.
+
+### Package boundary and family text
+
+- [x] T108 [P] [US2] Add `outfittingFamilyName(familyId)` resolving `getOutfittingFamilyName` through the existing `present()` rule, imported from the `@elite-dangerous-almanac/core/i18n/module-families` leaf and not a barrel, in `src/app/i18n/game-text.presenter.ts`
+- [x] T109 [US2] Add presenter unit tests proving every one of the 77 ids resolves `localized` in English, that a family the active language does not name resolves `canonical` with `game-text.untranslated.description` rather than blank or a raw id, and that an unknown id resolves `unavailable`, in `src/app/i18n/game-text.presenter.spec.ts` (depends on T108)
+- [x] T110 [P] [US2] Extend the installed-package acceptance contract with `familyId` present and non-null on every `modulesForSlot` record across representative mounts, a pre-engineered variant taking its base module's family, and the published family count asserted so a package release that adds a family fails this test by name (compilation cannot catch it: a new id widens the union and the package's own record together), in `src/app/domain/outfitting/almanac-acceptance.spec.ts`
+
+### Membership, ordering and grouping
+
+- [x] T111 [US2] Project `familyId` from `module.familyId` and `family` from the presenter onto `ChoicePresentation` for both the stock and variant arms, leaving every other projected value untouched, in `src/app/application/outfitting/candidate-membership.ts` (depends on T108)
+- [x] T112 [US2] Replace the leading `sectionRank` key in `orderChoices` with the package's family order, keeping displayed name, class descending, rating ascending, stock-before-variant and the two package ordinals as the remaining keys, in `src/app/application/outfitting/candidate-query.ts` (depends on T111)
+- [x] T113 [US2] Replace `groupCandidates` and the `CandidateSectionView`/`CandidateGroup` shapes with a `groupFamilies` walk returning `CandidateFamilyView[]` — family id, presented name, current choice count, open state and the family's choices in contract order, with an empty family absent rather than rendered — in `src/app/application/outfitting/candidate-query.ts` (depends on T112)
+- [x] T114 [US2] Add `openFamilies` to `CandidateQueryState` with its three seed rules — the fitted choice's family alone on open and rebuild, nothing when that choice has no available family, every matching family on each non-empty query change, and the fitted-family seed again when the query returns to empty — plus a `toggleFamily` that adds or removes exactly one id, in `src/app/application/outfitting/candidate-query.ts` (depends on T113)
+- [x] T115 [US2] Narrow `CandidateSection` to the input of the `uniqueReward` acquisition label only, removing its use as an ordering key and a heading while leaving `acquisitionSection` and every label projection unchanged, in `src/app/application/outfitting/acquisition-labels.ts` and `src/app/application/outfitting/acquisition-labels.spec.ts` (depends on T112)
+- [x] T116 [US2] Rewrite the ordering and grouping unit tests for families — every choice in exactly one family, a reward sharing its base module's family rather than a section, family order from the package, within-family order unchanged, the three open-state seeds, a toggle changing one id and nothing else, and membership surviving a locale change that relabels and reorders — in `src/app/application/outfitting/candidate-query.spec.ts` (depends on T114)
+
+### Store
+
+- [x] T117 [US2] Add the family-toggle intent, routed to `toggleFamily` on the retained query state and to nothing else, in `src/app/application/outfitting/outfitting.store.ts` (depends on T114)
+- [x] T118 [US2] Add store tests proving a toggle produces no build revision, no history checkpoint, no undo enablement and no index rebuild, and that a rebuild discards the Commander's open set for the fitted-family seed, in `src/app/application/outfitting/outfitting.store.spec.ts` (depends on T117)
+
+### Shared components
+
+- [x] T119 [US2] Replace the section and group levels with one family disclosure per family — the package family name, its current choice count and its caret, publishing open state programmatically rather than by glyph, controlling the region holding that family's rows, and clearing 44 CSS px at every width without joining `DENSE_TARGETS` — in `src/app/ui/outfitting/candidate-list.html`, `src/app/ui/outfitting/candidate-list.ts` and `src/app/ui/outfitting/candidate-list.scss` (depends on T113)
+- [x] T120 [US2] Re-derive the row-skipping rule for the collapsed list: a closed family contributes its control and no rows, the open family keeps the whole-expansion rule and its declared `contain-intrinsic-block-size`, and the two-price rows still declare nothing, in `src/app/ui/outfitting/candidate-list.scss` (depends on T119)
+- [x] T121 [US2] Update the shared-component tests for the family control's name, count, open state and target size, and for the withdrawal of the section and group headings, in `src/app/ui/outfitting/candidate-components.spec.ts` (depends on T119)
+
+### Feature composition
+
+- [x] T122 [US2] Compose the family list in the replacement surface at both compositions, add canvas 1d's `FITTED HERE` block above it at the compact width, and dispatch the toggle intent, in `src/app/features/build-workspace/outfitting/module-replacement/module-replacement.ts`, `module-replacement.html` and `module-replacement.scss` (depends on T117, T119)
+- [x] T123 [US2] Add the family-control message keys — accessible name, choice count and the compact fitted-block heading — with reviewed English and German wording and matching interpolation variables, to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json` (depends on T122)
+- [x] T124 [US2] Update the replacement preview declarations for the family compositions — one open family, all closed, a search opening several, a family with no name in the active locale — and remove the unique-reward-section preview, in `src/app/ui/previews/preview-manifest.ts` (depends on T122)
+- [x] T125 [US2] Update the replacement component tests for family rendering, the seeded open state and the removed section headings, in `src/app/features/build-workspace/outfitting/module-replacement/module-replacement.spec.ts` (depends on T122)
+
+### Verification
+
+- [x] T126 [US2] Add the family suite covering the fitted-family seed, the no-available-family case, pointer and touch toggling with no build or history change, search opening every matching family, clearing restoring the seed, and a locale change relabelling without moving a choice between families, in `e2e/outfitting-families.spec.ts` (depends on T122)
+- [x] T127 [US2] Replace the section and group-order assertions with family membership and order, and assert a unique reward keeps its labels on its own row inside its base module's family, in `e2e/module-outfitting.spec.ts` (depends on T126)
+- [x] T128 [US2] Extend the accessibility suite with axe over the open, all-closed and searched family states, the family control's role, name, count and expanded relationship, its 44 CSS px target under touch, and no document horizontal overflow at 400% zoom with a family open, in `e2e/outfitting-accessibility.spec.ts` (depends on T122)
+- [x] T129 [US2] Re-measure the SC-002 settle time against the largest slot-choice fixture now that a closed family draws one control instead of its rows, and record the measured figure in `specs/002-module-outfitting/design/module-replacement.md` whether or not it clears 100 ms, in `e2e/outfitting-timing.spec.ts` (depends on T122)
+- [x] T130 [US2] Register the FR-020–FR-024 and SC-006–SC-009 surfaces, journeys, axe flags and named assertions in the coverage ledger in `e2e/coverage-ledger.ts` (depends on T126, T128)
+- [x] T131 [P] [US2] Extend the ownership policy check to reject a local family-id table, a derived family abbreviation, a per-family aggregate over choice facts and any `module-families` import outside `src/app/i18n/game-text.presenter.ts` and `src/app/application/outfitting/`, in `scripts/policy/outfitting-ownership.mjs`
+- [x] T132 [US2] Run `pnpm run check` and execute Scenarios 4, 4a and 11 of `specs/002-module-outfitting/quickstart.md`, confirming coverage stays at or above 80% in every dimension, every Playwright project and axe scan runs, and no test is skipped or quarantined, then update the run record in `specs/002-module-outfitting/quickstart.md` (depends on all prior wave 10 tasks)
+
+**Checkpoint**: the chooser groups by package family at every width, opens and closes on the
+Commander's terms, and carries no application-owned taxonomy.
+
+---
+
+## Wave 11 — the panel says what the article is (Commander request, 2026-08-23)
+
+- [x] T133 [US3] Widen `COMPARED_ATTRIBUTES` from six hand-named fields to every numeric field the Almanac publishes on a module, with `HIGHER_IS_BETTER` exhaustive over it and `class` excluded as identity, in `src/app/application/outfitting/engineering-draft.ts`
+- [x] T134 [P] [US3] Add an application-localized label for every one of those attributes to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`, carrying the unit the way the existing labels do (depends on T133)
+- [x] T135 [US3] Split "nothing has been engineered here yet" from "the package refuses this selection" in `previewOf`, so an unengineered article lists its attributes with no modified column instead of reporting that no values resolve, in `src/app/application/outfitting/engineering-draft.ts` (depends on T133)
+- [x] T136 [US3] Draw the second column only when there is something to compare against, through a `comparing` input on `src/app/ui/outfitting/attribute-comparison.ts` (depends on T135)
+- [x] T137 [US3] Move the attribute table to canvas 1c's `eng-right` and rename the panel heading to `DETAILS AND ENGINEERING`, in `src/app/features/build-workspace/outfitting/engineering-editor/` (depends on T136)
+- [x] T138 [P] [US2] Vendor the canvas's Tech Broker mark to `public/assets/icons/tech-broker.svg` and draw it for the `techBroker` route, with the canvas's own recolouring filter as `--edsb-filter-route-broker`
+- [x] T139 [US3] Give each half of the panel its own scroller in the wide composition, so the attribute table cannot carry the recipe controls off the surface, in `src/app/features/build-workspace/outfitting/engineering-editor/engineering-editor.scss` (depends on T137)
+- [x] T140 [US3] Drop a published `bootTime` of zero from the comparison — the one suppressed figure, filtered where a field the article does not carry is filtered — in `src/app/application/outfitting/engineering-draft.ts` (depends on T133)
+- [x] T141 [US3] Withdraw the panel's own materials list: neither canvas draws one inside `eng-grid`, and feature 009's rail block is the application's only statement of material requirements. Delete `edsb-material-cost-list` and its dead message keys, keep `sortMaterialLines` for the rail as `src/app/ui/outfitting/material-lines.ts`, and drop `materialParts` from the editor (depends on T137)
+- [x] T142 [US3] Exclude `cost` from `COMPARED_ATTRIBUTES`: it is the price of buying the module, stated by the choice row and totalled in the rail, not something the article does (depends on T133)
+- [x] T143 [US3] Draw the details half whenever the article has attributes, independently of whether any engineering is offered, so a final article and the cargo hatch state what they are instead of a restriction over an empty panel (depends on T137)
+
+- [x] T144 [US3] Keep both columns for an article with nothing to engineer — the restriction in the
+      half the controls would take, the attributes in the half they always occupy — rather than
+      collapsing the grid, in `src/app/features/build-workspace/outfitting/engineering-editor/`
+      (depends on T143)
+- [x] T145 [US3] Keep the frozen family bar's overhang and draw its top rule inside the box, set in
+      by the overhang, so the scroller's clip lands on ground rather than on the rule, in
+      `src/app/ui/outfitting/candidate-list.scss` (Commander report, 2026-08-23)
+
+**Checkpoint**: opening any mount states what the article is before anything is chosen, the
+comparison appears when there is something to compare, and neither half of the panel can push the
+other off the surface.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -326,6 +423,9 @@ proof, coverage registration and the documented validation run.
 - **User Story 3 (Phase 5)**: Depends on Foundational only; T074 edits the same slot card as T033, so sequence those two if US1 and US3 run concurrently
 - **User Story 4 (Phase 6)**: Depends on Foundational only; it records whichever decisions the completed stories dispatch
 - **Polish (Phase 7)**: Depends on the user stories being complete
+- **Wave 10 module families (Phase 8)**: Depends on Phases 4 and 7 having shipped. It is one
+  increment on User Story 2 and touches no transaction, ingress, engineering, cost or history path,
+  so it is demonstrable and revertible on its own
 
 ### User Story Dependencies
 
@@ -333,6 +433,7 @@ proof, coverage registration and the documented validation run.
 - **US2 (P1)**: Builds on US1's membership and replacement shell. Ordering, search, labels and performance add no requirement to US1 and are demonstrable with US1 alone in place.
 - **US3 (P1)**: Independent. Engineering, power and quality normalization operate on any fitted module, including one placed by a test harness.
 - **US4 (P2)**: Independent. The tape records any successful changed decision the store dispatches, so it is testable with a single edit kind.
+- **US2 wave 10 (P1)**: Extends US2. Family grouping and open state are a projection and a piece of view state over the membership US1 and US2 already deliver; no other story changes.
 
 ### Within Each User Story
 
@@ -353,14 +454,19 @@ proof, coverage registration and the documented validation run.
 
 ### Shared-File Sequencing
 
-- `src/app/application/outfitting/outfitting.store.ts`: T016 → T030 (US1) → T063, T064 (US3) → T084, T085 (US4)
-- `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`: T015 → T053, T076, T095, T088
+- `src/app/application/outfitting/outfitting.store.ts`: T016 → T030 (US1) → T063, T064 (US3) → T084, T085 (US4) → T117 (wave 10)
+- `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`: T015 → T053, T076, T095, T088 → T123
 - `src/app/ui/outfitting/slot-card.ts`: T033 → T074
 - `HardpointCoverage`: T004 (type) → T026 (adapter)
 - `src/app/features/.../outfitting-workspace/outfitting-workspace.ts`: T037 → T075 → T094 → T087
-- `src/app/features/.../module-replacement/module-replacement.ts`: T038 → T052
-- `e2e/module-outfitting.spec.ts`: T040 → T041, T055, T081, T102
-- `src/app/ui/previews/preview-manifest.ts`: T022 → T023, T039, T054, T077, T096
+- `src/app/features/.../module-replacement/module-replacement.ts`: T038 → T052 → T122
+- `e2e/module-outfitting.spec.ts`: T040 → T041, T055, T081, T102 → T127
+- `src/app/ui/previews/preview-manifest.ts`: T022 → T023, T039, T054, T077, T096 → T124
+- `src/app/application/outfitting/candidate-query.ts`: T044 → T112 → T113 → T114, a strict chain in one file
+- `src/app/ui/outfitting/candidate-list.*`: T050 → T119 → T120
+- `src/app/i18n/game-text.presenter.ts`: feature 011's presenter → T108
+- `e2e/outfitting-accessibility.spec.ts`: T100 → T101 → T128
+- `e2e/coverage-ledger.ts`: T103 → T130
 - `playwright.config.ts`: T056 only; the ten existing projects are feature 011's and are not edited
 
 ### Parallel Opportunities
@@ -372,6 +478,7 @@ proof, coverage registration and the documented validation run.
 - US3: the seven shared components T066–T072 in parallel; T058 alongside T060
 - US4: T093, T095, T086 and T088 in parallel with the domain tape work
 - Polish: T099, T100, T101, T102, T104 and T105 in parallel
+- Wave 10: T108, T110 and T131 in parallel; everything else is a chain through `candidate-query.ts`, then the components, then the suites
 - After Foundational completes, US1, US3 and US4 can be staffed concurrently, with US2 following US1's membership
 
 ---
@@ -389,6 +496,20 @@ Task: "Implement the slot card in src/app/ui/outfitting/slot-card.ts"
 Task: "Implement the module identity badge in src/app/ui/outfitting/module-identity-badge.ts"
 Task: "Implement the quality-completion notice in src/app/ui/outfitting/quality-completion-notice.ts"
 Task: "Implement the structured edit-refusal notice in src/app/ui/outfitting/edit-refusal-notice.ts"
+```
+
+---
+
+## Parallel Example: Wave 10 Module Families
+
+```bash
+# The three independent starts:
+Task: "Add outfittingFamilyName to src/app/i18n/game-text.presenter.ts"
+Task: "Extend the acceptance contract with familyId in src/app/domain/outfitting/almanac-acceptance.spec.ts"
+Task: "Extend the ownership policy check in scripts/policy/outfitting-ownership.mjs"
+
+# Then the single chain through the query, which cannot be parallelised:
+# T111 → T112 → T113 → T114 → T116, all in src/app/application/outfitting/
 ```
 
 ---
@@ -411,6 +532,7 @@ Task: "Implement the structured edit-refusal notice in src/app/ui/outfitting/edi
 4. Add US3 → engineering, power and quality normalization → validate Scenarios 6–9 → demo
 5. Add US4 → 100-decision undo and redo → validate Scenario 10 → demo
 6. Polish → Scenarios 11–12, policy proof and coverage registration
+7. Wave 10 → package families replace the section split → validate Scenario 4a → re-measure SC-002
 
 ### Parallel Team Strategy
 
@@ -433,8 +555,14 @@ Task: "Implement the structured edit-refusal notice in src/app/ui/outfitting/edi
   precede any calculation read
 - `null` remains unavailable and `[]` remains known zero everywhere a package result is presented
 - Historical purchase values are never modelled, restored or displayed; current catalogue cost is recomputed after every revision
-- SC-002 is measured only in the Chromium timing project (T056/T057): CPU throttling is a CDP
-  capability with no Firefox equivalent. The search behaviour itself stays covered by T055 in all ten
-  projects, so no required journey loses an engine and nothing is skipped at runtime
+- SC-002 is measured only in the Chromium timing project (T056/T057, re-measured at T129): CPU
+  throttling is a CDP capability with no Firefox equivalent. The search behaviour itself stays covered
+  by T055 in all ten projects, so no required journey loses an engine and nothing is skipped at runtime
+- Wave 10's family grouping is expected to close the compact SC-002 gap because a closed family draws
+  one control instead of its rows. T129 measures it and records whatever it finds; no task claims the
+  criterion met in advance
+- No wave 10 task derives a family id, name, abbreviation or aggregate. The grouping key, the family
+  order and every family name are values `@elite-dangerous-almanac/core` 0.1.7 publishes, and T131
+  fails the build if one appears locally
 - Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

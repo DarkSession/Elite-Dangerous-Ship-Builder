@@ -1,4 +1,5 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
 import {
@@ -30,6 +31,7 @@ const text: SlotTextResolver = {
   moduleName: (symbol) => presentGameText(getModuleName, symbol, 'en'),
   preEngineeredVariantName: (variant) =>
     presentGameText(getPreEngineeredVariantName, variant, 'en'),
+  outfittingFamilyName: (familyId) => presentGameText(getOutfittingFamilyName, familyId, 'en'),
 };
 
 describe('slot views', () => {

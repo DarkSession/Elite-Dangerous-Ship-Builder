@@ -8,7 +8,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
 import {
   HIGHER_IS_BETTER,
   NO_BLUEPRINT,
@@ -26,11 +25,6 @@ import {
 import { engineeringView } from '../../../../application/outfitting/engineering-view';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
-import {
-  materialRarity,
-  type CombinedCost,
-  type MaterialCost,
-} from '../../../../domain/outfitting/engineering-cost';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
@@ -50,13 +44,6 @@ import {
   type ExperimentalEffectView,
 } from '../../../../ui/outfitting/experimental-effect-list';
 import { GradeSelector } from '../../../../ui/outfitting/grade-selector';
-import {
-  MaterialCostList,
-  sortMaterialLines,
-  type MaterialLineView,
-  type MaterialPart,
-  type MaterialPartView,
-} from '../../../../ui/outfitting/material-cost-list';
 
 /** What the editor is showing, as one value. */
 export type EngineeringState =
@@ -91,7 +78,6 @@ export type EngineeringState =
     ExperimentalEffectList,
     GradeSelector,
     Layer,
-    MaterialCostList,
     NgTemplateOutlet,
   ],
   templateUrl: './engineering-editor.html',
@@ -263,6 +249,12 @@ export class EngineeringEditor {
   readonly selectedGrade = computed(() => this.draft()?.selectedGrade ?? null);
   readonly selectedEffect = computed(() => this.draft()?.selectedEffectFdname ?? null);
 
+  /** Whether the panel has a second column to draw. See `EngineeringPreview`. */
+  readonly comparingAttributes = computed<boolean>(() => {
+    const preview = this.draft()?.preview;
+    return preview !== undefined && preview.kind === 'known' && preview.comparing;
+  });
+
   readonly attributes = computed<readonly AttributeComparisonRow[]>(() => {
     const preview = this.draft()?.preview;
     if (preview === undefined || preview.kind !== 'known') {
@@ -275,31 +267,6 @@ export class EngineeringEditor {
       modified: this.#figure(row.modified),
       direction: this.#direction(row),
     }));
-  });
-
-  /**
-   * One shopping list, not three.
-   *
-   * The recipe and the effect are two halves of one job, and a Commander gathers
-   * the materials for it once. Split into `BLUEPRINT PROGRESSION`, `EXPERIMENTAL
-   * EFFECT` and `TOGETHER` the same material appeared under three headings with
-   * three different counts, and the only one worth acting on was the last
-   * (wave 9). `combined` already folds them through the package's own
-   * `sumMaterials`, and is `unavailable` whenever either half is — so nothing is
-   * lost by drawing only it.
-   */
-  readonly materialParts = computed<readonly MaterialPartView[]>(() => {
-    const cost = this.draft()?.cost;
-    if (cost === undefined) {
-      return [];
-    }
-    // Nothing chosen is not a job costing nothing. A `MATERIALS` heading over
-    // "the Almanac prices no materials for this" is a section about nothing
-    // (wave 4).
-    if (cost.blueprint.kind === 'notSelected' && cost.experimental.kind === 'notSelected') {
-      return [];
-    }
-    return [this.#part('combined', cost.combined)];
   });
 
   /**
@@ -457,38 +424,6 @@ export class EngineeringEditor {
   #slotLabel(): string {
     const slot = this.slot();
     return slot.displayName.text ?? slot.canonicalName;
-  }
-
-  /** One part's requirement, with the package's own three answers preserved. */
-  #part(part: MaterialPart, cost: MaterialCost | CombinedCost): MaterialPartView {
-    if (cost.kind === 'unavailable') {
-      return { part, state: 'unavailable', materials: [], mercCoins: null };
-    }
-    if (cost.kind === 'notSelected') {
-      return { part, state: 'notSelected', materials: [], mercCoins: null };
-    }
-    return {
-      part,
-      state: 'known',
-      materials: sortMaterialLines(
-        cost.materials.map((material) => this.#line(material)),
-        this.#formatters.collator(),
-      ),
-      // `0` is the package saying this recipe bills no currency — a real
-      // amount, and not one worth a row that says so on every other job.
-      mercCoins: cost.mercCoins === 0 ? null : this.#formatters.integer(cost.mercCoins),
-    };
-  }
-
-  #line(material: EngineeringMaterial): MaterialLineView {
-    return {
-      symbol: material.symbol,
-      name: this.#gameText.materialName(material.symbol),
-      // The rarity the canvas draws as a remote icon, taken from the package's
-      // own record instead. `null` where it carries none.
-      grade: materialRarity(material.symbol),
-      count: this.#formatters.integer(material.count),
-    };
   }
 
   /**
