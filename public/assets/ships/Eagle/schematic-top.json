@@ -1,0 +1,20 @@
+{
+ "symbol": "Eagle",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "a1acd88096fecaf2063c496f7c725c26c359891c9c8970cfcfa7af68fafde1fa",
+ "content": {
+  "x": 254.552,
+  "y": 38.4,
+  "width": 690.896,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 600.002,
+   "y": 396.189
+  }
+ ]
+}

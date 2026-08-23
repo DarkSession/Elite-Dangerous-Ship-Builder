@@ -1,0 +1,575 @@
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import englishMessages from '../src/app/i18n/locales/en.json';
+import { sweepOutfittingState } from './accessibility';
+import {
+  expectEquivalentControls,
+  expectNoDocumentOverflow,
+  settled,
+} from './accessibility/assertions';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+import { openChooser } from './outfitting-surfaces';
+
+/**
+ * Hull anatomy, end to end.
+ *
+ * The unit suites already prove what the projection admits and what the parser
+ * refuses. What only a browser can show is the rest: that the package's own
+ * geometry actually renders, that a mount drawn ten pixels across is still a
+ * target a thumb can hit, that selecting one reaches the ledger and back, and
+ * that a plate which cannot load takes nothing else on the screen with it.
+ */
+
+const HULL = 'Anaconda';
+
+/** A hull the package draws the same mount on both sides of. */
+const REPEATED = { hull: 'Federation_Corvette', slot: 'MediumHardpoint1' } as const;
+
+async function openStockBuild(page: Page, hull: string = HULL): Promise<void> {
+  await page.goto(`/ships/${hull}`);
+  await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+  await expect(page).toHaveURL(/\/build(#|$)/);
+}
+
+/** Every mount control the plates currently draw, on whichever sides are shown. */
+function mounts(page: Page) {
+  return page.locator('edsb-hull-anatomy .schematic__mount:visible');
+}
+
+/** The text of the polite outlet, which is where a side change is announced. */
+async function politeText(page: Page): Promise<string> {
+  return (await page.locator('[data-announcement-outlet="polite"]').textContent()) ?? '';
+}
+
+/** No plate scrolls: the whole document is in view, at the document's own ratio. */
+async function expectNoPlateScrolling(page: Page): Promise<void> {
+  const overflowing = await page
+    .locator('edsb-hull-anatomy .schematic')
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter(
+          (node) =>
+            node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1,
+        ).length,
+    );
+  expect(overflowing).toBe(0);
+}
+
+test.describe('the plates', () => {
+  test('draw both package schematics from the hull own geometry', async ({ page }) => {
+    await openStockBuild(page);
+
+    const plates = page.locator('edsb-hull-anatomy .schematic[data-state="ready"]');
+    await expect(plates.first()).toBeVisible();
+
+    // Canvas 1c lays the hull on its side in a frame of the hull's own shape.
+    // The package draws every hull nose-up, so the frame is wider than it is
+    // tall and the drawing is turned once to match — one transform over the
+    // package's own paths, which are written out unchanged.
+    const drawing = page.locator('edsb-hull-anatomy .schematic__drawing').first();
+    const viewBox = (await drawing.getAttribute('viewBox')) ?? '';
+    const [, , width, height] = viewBox.split(' ').map(Number);
+    expect(width / height).toBeCloseTo(720 / 292, 2);
+    await expect(drawing.locator('.schematic__artwork')).toHaveAttribute(
+      'transform',
+      /^translate\(-?[\d.]+ -?[\d.]+\) rotate\(-90\)$/,
+    );
+
+    // The picture is the package's own document, rasterised, drawn inside that
+    // same turned group and at the `viewBox` the extract carries. Both halves
+    // were made from one SVG at build time, which is why they line up.
+    for (const side of ['top', 'bottom']) {
+      await expect(
+        page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__artwork image`),
+      ).toHaveAttribute('href', `assets/ships/${HULL}/schematic-${side}.png`);
+    }
+  });
+
+  test('name every mount with its slot, kind, side and state', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const name = await mounts(page).first().getAttribute('aria-label');
+    // Named the way the ledger row names it, not by the package's slot key.
+    expect(name).toMatch(/Hardpoint \d/);
+    expect(name).not.toMatch(/[A-Za-z]Hardpoint\d/);
+    expect(name).toMatch(/hardpoint|utility mount/);
+    expect(name).toMatch(/Top|Bottom/);
+    expect(name).toMatch(/fitted|empty/);
+    expect(name).toMatch(/engineered|stock/);
+  });
+
+  test('present a utility as a utility, never as a hardpoint', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const utilities = page.locator(
+      'edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible',
+    );
+    expect(await utilities.count()).toBeGreaterThan(0);
+    expect(await utilities.first().getAttribute('aria-label')).toContain('utility mount');
+  });
+
+  test('give no geometry to a core, optional, armour or cargo-hatch slot', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const keys = await mounts(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-slot') ?? ''),
+    );
+    expect(keys.length).toBeGreaterThan(0);
+    expect(keys.every((key) => /Hardpoint\d+$/u.test(key))).toBe(true);
+  });
+
+  test('publish no provenance control of their own', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // Neither canvas draws a provenance or help control on the anatomy panel;
+    // canvas 1d draws `HELP & FAQ` once, in the application menu, and that is
+    // feature 012's. The only controls in the region are the mounts, the mode
+    // strip, the side selector and a retry on a plate that did not arrive
+    // (FR-011).
+    const controls = page.locator(
+      'edsb-hull-anatomy a, edsb-hull-anatomy button, edsb-hull-anatomy [role="button"], edsb-hull-anatomy [role="link"]',
+    );
+    const names = await controls.evaluateAll((nodes) =>
+      nodes
+        .filter((node) => !node.classList.contains('schematic__mount'))
+        .map((node) => (node.getAttribute('aria-label') ?? node.textContent ?? '').trim()),
+    );
+
+    expect(
+      names.every((name) =>
+        /^(top|bottom|try again|mounts|power|drives|defence|offence)$/i.test(name),
+      ),
+    ).toBe(true);
+    expect(await page.locator('edsb-hull-anatomy a[href]').count()).toBe(0);
+  });
+
+  test('draw the legend the reference draws, and only that', async ({ page }) => {
+    await openStockBuild(page);
+
+    const entries = page.locator('edsb-hull-anatomy .anatomy__legend-entry');
+    await expect(entries).toHaveText([/Selected/i, /Fitted/i, /Empty/i, /Utility/i, /Engineered/i]);
+  });
+});
+
+test.describe('moving between geometry and the ledger', () => {
+  test('selecting a mount reaches its exact slot, in one interaction', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const mount = mounts(page).first();
+    const key = await mount.getAttribute('data-slot');
+    await mount.click();
+
+    await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator(`edsb-slot-card [data-slot-key="${key}"]`)).toHaveAttribute(
+      'data-selected',
+      'true',
+    );
+    expect(page.url()).not.toContain(key ?? '');
+  });
+
+  test('selecting a slot in the ledger marks it on the plates', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const key = await mounts(page).nth(1).getAttribute('data-slot');
+    await page.locator(`edsb-slot-card [data-slot-key="${key}"] .slot__select`).first().click();
+
+    await expect(
+      page.locator(`edsb-hull-anatomy .schematic__mount[data-slot="${key}"]`).first(),
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('a mount drawn on both sides stays one identity in the same state', async ({ page }) => {
+    await openStockBuild(page, REPEATED.hull);
+    const drawings = page.locator(
+      `edsb-hull-anatomy .schematic__mount[data-slot="${REPEATED.slot}"]`,
+    );
+    await expect(drawings).toHaveCount(2);
+
+    await drawings.first().click();
+
+    // Both, not just the one that was pressed: two drawings of one mount are
+    // one build identity, so the second is marked by the same selection.
+    await expect(drawings.first()).toHaveAttribute('aria-pressed', 'true');
+    await expect(drawings.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('selecting an internal slot marks nothing on the plates', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    await page.locator('edsb-slot-card [data-slot-key="PowerPlant"] .slot__select').first().click();
+
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic__mount[aria-pressed="true"]'),
+    ).toHaveCount(0);
+  });
+
+  test('neither the fragment, the stored build nor the shown side is recorded', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    // Feature 004 publishes the build's fragment and feature 001 writes its
+    // working record a moment after the build opens. Both are waited for, so
+    // what is compared below is what selection did and not a race with two
+    // publishers this feature does not own.
+    await expect(page).toHaveURL(/#b\./);
+    await expect
+      .poll(() => page.evaluate(() => Object.keys(localStorage).length))
+      .toBeGreaterThan(0);
+    const url = page.url();
+    const stored = await page.evaluate(() => JSON.stringify(localStorage));
+
+    await mounts(page).first().click();
+    await mounts(page).nth(1).click();
+    const sides = page.locator('edsb-hull-anatomy .anatomy__sides button');
+    if (await sides.first().isVisible()) {
+      await sides.nth(1).click();
+    }
+
+    // Looking is free: no fragment, no revision, nothing written down. The side
+    // a Commander is looking at is not part of their build either (FR-004 of
+    // feature 004, and this feature's privacy assertions).
+    expect(page.url()).toBe(url);
+    expect(await page.evaluate(() => JSON.stringify(localStorage))).toBe(stored);
+    for (const marker of ['schematic', 'anatomy', 'visibleSide', 'selectedSlot']) {
+      expect(stored).not.toContain(marker);
+    }
+  });
+});
+
+test.describe('when a schematic does not arrive', () => {
+  test('says so and leaves the ledger and the editor whole', async ({ page }) => {
+    await page.route('**/assets/ships/**/schematic-bottom.json', (route) => route.abort());
+    await openStockBuild(page);
+
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+    ).toHaveCount(1);
+    await expect(page.locator('edsb-slot-card').first()).toBeVisible();
+    // The peer side is unaffected.
+    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(1);
+  });
+
+  test('states a document that is not this build own as a defect rather than drawing it', async ({
+    page,
+  }) => {
+    // The package contract is checked where the extract is made, so what can
+    // still arrive wrong here is a deployment serving something else. Retrying
+    // does not fix that, and it is not stated as though it might.
+    await page.route('**/assets/ships/**/schematic-top.json', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ symbol: 'Anaconda', side: 'top', mounts: 'all of them' }),
+      }),
+    );
+    await openStockBuild(page);
+
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+    ).toHaveCount(1);
+    await expect(page.locator('edsb-slot-card').first()).toBeVisible();
+  });
+
+  test('asks again by itself when connectivity returns', async ({ page }) => {
+    await page.route('**/assets/ships/**/schematic-*.json', (route) => route.abort());
+    await openStockBuild(page);
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+    ).toHaveCount(2);
+
+    await page.unroute('**/assets/ships/**/schematic-*.json');
+    // The browser's own `online` transition, not a reload and not a second
+    // press: a Commander who walks back into signal should not have to ask.
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
+    await expect(mounts(page).first()).toBeVisible();
+  });
+
+  test('does not ask again for a document that arrived wrong', async ({ page }) => {
+    await page.route('**/assets/ships/**/schematic-top.json', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ symbol: 'Anaconda', side: 'top', mounts: 'all of them' }),
+      }),
+    );
+    await openStockBuild(page);
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+    ).toHaveCount(1);
+
+    await page.unroute('**/assets/ships/**/schematic-top.json');
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+    // The file arrived and was wrong. Asking for it again returns the same
+    // wrong file, so the plate keeps saying what it found, and offers no retry.
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"] edsb-action-button'),
+    ).toHaveCount(0);
+  });
+
+  test('leaves every slot reachable when neither schematic arrives', async ({ page }) => {
+    await page.route('**/assets/ships/**/schematic-*.json', (route) => route.abort());
+    await openStockBuild(page);
+
+    await expect(page.locator('edsb-hull-anatomy .schematic__mount')).toHaveCount(0);
+    expect(await page.locator('edsb-slot-card').count()).toBeGreaterThan(20);
+  });
+});
+
+test.describe('targets and accessibility', () => {
+  test('keeps nearby mounts separately operable', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // Every mount, activated on its own.
+    //
+    // The Almanac draws real mounts closer together than a mark is wide — the
+    // Anaconda's two small hardpoints are six CSS pixels apart on the plate two
+    // columns have room for — so marks overlap and a pointer landing between
+    // them reaches whichever is in front. Separately operable therefore means
+    // from the keyboard, where each mark is its own stop in its own order and
+    // nothing can be in front of anything (spec, Edge Cases;
+    // design/hull-anatomy.md, "Divergence from FR-012").
+    const keys = await mounts(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-slot') ?? ''),
+    );
+    expect(keys.length).toBeGreaterThan(1);
+
+    for (const key of keys) {
+      const mount = page
+        .locator(`edsb-hull-anatomy .schematic__mount[data-slot="${key}"]:visible`)
+        .first();
+      await mount.focus();
+      await expect(mount).toBeFocused();
+      await mount.press('Enter');
+      await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
+  test('brings the mount being worked with to the front of the ones it overlaps', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // A pointer landing on a stack of marks reaches one of them, never none of
+    // them, and the one selected is then drawn as the whole square rather than
+    // the sliver its neighbour left uncovered.
+    const mount = mounts(page).first();
+    await mount.click();
+    await expect(mount).toHaveAttribute('aria-pressed', 'true');
+
+    const [selected, plain] = await mounts(page).evaluateAll((nodes) => [
+      Number(getComputedStyle(nodes[0]).zIndex),
+      Number(getComputedStyle(nodes[1]).zIndex),
+    ]);
+    expect(selected).toBeGreaterThan(plain);
+  });
+
+  test('offers every drawn mount at the full baseline in the ledger', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // What lets the mounts take SC 2.5.8's Equivalent exception at all: the
+    // same function, on the same screen, at the size the criterion asks for.
+    await expectEquivalentControls(page);
+  });
+
+  test('the capability passes an accessibility scan', async ({ page }, testInfo: TestInfo) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    await sweepOutfittingState(page, testInfo, 'build/hull-anatomy');
+  });
+});
+
+test.describe('what is fetched', () => {
+  test('asks for the active hull two schematics, once each, and no others', async ({ page }) => {
+    const asked: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/assets/ships/') && request.url().endsWith('.json')) {
+        asked.push(new URL(request.url()).pathname);
+      }
+    });
+
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // Two extracts, for the hull that is open. The package ships ninety-six
+    // schematics, and asking for a hull nobody opened is work nobody wanted.
+    expect(asked.sort()).toEqual([
+      `/assets/ships/${HULL}/schematic-bottom.json`,
+      `/assets/ships/${HULL}/schematic-top.json`,
+    ]);
+  });
+
+  test('asks again for nothing when the build is edited', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    // Every plate, and every plate's picture. A side is two fetches, and where
+    // two plates are drawn the first one's marks appear while the second one's
+    // extract is still on its way — so a listener installed on the marks alone
+    // records the second picture's *first* request as a re-request.
+    await page.waitForLoadState('networkidle');
+
+    const asked: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/assets/ships/')) {
+        asked.push(request.url());
+      }
+    });
+
+    // Emptying a fitted mount: the same hull, a new build revision, and the
+    // same two documents, which are about the hull rather than the build.
+    const key = await page
+      .locator('.schematic__mount[data-fitted="true"]')
+      .first()
+      .getAttribute('data-slot');
+    await page.locator(`[data-slot-key="${key}"] button`).first().click();
+    // `REMOVE MODULE` lives on the fitting panel's head, which is a layer at a
+    // compact width and inline at a wide one (`e2e/outfitting-surfaces.ts`).
+    await openChooser(page);
+    await page.getByRole('button', { name: /remove module/i }).click();
+    await settled(page);
+
+    await expect(page.locator(`.schematic__mount[data-slot="${key}"]`).first()).toHaveAttribute(
+      'data-fitted',
+      'false',
+    );
+    expect(asked).toEqual([]);
+  });
+});
+
+test.describe('the conditions that break layouts', () => {
+  test('holds the whole hull in view at doubled text', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The plate holds its document at the document's own ratio, so there is
+    // nothing to pan and nothing to cut off — at any text size.
+    await expectNoDocumentOverflow(page);
+    await expectNoPlateScrolling(page);
+  });
+
+  test('reflows to one plate at 400% zoom rather than scrolling sideways', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 256 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // One plate and the selector that chooses it — canvas 1d's arrangement,
+    // reached by the space the region was given rather than by a device name.
+    await expect(
+      page.locator('edsb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)'),
+    ).toHaveCount(1);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expectNoDocumentOverflow(page);
+    await expectNoPlateScrolling(page);
+  });
+
+  test('mirrors the layout without mirroring the hull or renaming a mount', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    const before = await mounts(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-slot')),
+    );
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await settled(page);
+
+    const after = await mounts(page).evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-slot')),
+    );
+    expect(after).toEqual(before);
+
+    // A mirrored hull would put the port hardpoints to starboard. The reading
+    // direction flips; the drawing does not.
+    const mirrored = await page
+      .locator('edsb-hull-anatomy .schematic__drawing')
+      .first()
+      .evaluate((node) => {
+        const transform = getComputedStyle(node).transform;
+        return transform !== 'none' && transform.startsWith('matrix(-');
+      });
+    expect(mirrored).toBe(false);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('loses no mount and no state with motion removed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const mount = mounts(page).first();
+    const key = await mount.getAttribute('data-slot');
+    await mount.click();
+
+    // The requirement is not less animation: it is that no state was ever only
+    // reachable through one.
+    await expect(page.locator(`[data-slot-key="${key}"] button`).first()).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    await page.emulateMedia({ reducedMotion: null });
+  });
+});
+
+test.describe('what is said out loud', () => {
+  test('says nothing about the state the plates arrive in', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // A reader arriving at the region reads its state in place. Announcing the
+    // plates that loaded normally would be noise on every build ever opened.
+    expect((await politeText(page)).trim()).toBe('');
+  });
+
+  test('says once when a side stops working, and once when it comes back', async ({ page }) => {
+    await page.route('**/assets/ships/**/schematic-bottom.json', (route) => route.abort());
+    await openStockBuild(page);
+    await expect(
+      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+    ).toHaveCount(1);
+
+    const failure = await politeText(page);
+    expect(failure).toMatch(/bottom/i);
+    // One announcement for the side, not one per mount that is no longer drawn.
+    expect(failure.match(/bottom/gi)?.length).toBe(1);
+
+    await page.unroute('**/assets/ships/**/schematic-bottom.json');
+    // Through the browser's own `online` transition rather than the plate's
+    // retry, because at a single-plate width the failed side is the one not on
+    // screen — and recovery has to be announced there too.
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
+
+    const recovery = await politeText(page);
+    expect(recovery).not.toBe(failure);
+    expect(recovery).toMatch(/bottom/i);
+  });
+
+  test('says nothing when only the shown side changes', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    expect((await politeText(page)).trim()).toBe('');
+
+    await page.locator('edsb-hull-anatomy .anatomy__sides button').nth(1).click();
+    await settled(page);
+
+    // Choosing which side to look at changes nothing about the build and
+    // nothing about what is available; feature 002 announces the selection.
+    expect((await politeText(page)).trim()).toBe('');
+  });
+});

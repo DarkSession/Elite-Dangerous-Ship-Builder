@@ -1,0 +1,26 @@
+{
+ "symbol": "SideWinder",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "f84106254b44ba34bb1e6fd7b62b74023f25fd0f4a453585374dfd0906dd8620",
+ "content": {
+  "x": 58.4,
+  "y": 41.807,
+  "width": 1083.2,
+  "height": 716.387
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 486.609,
+   "y": 266.579
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 713.267,
+   "y": 265.941
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "symbol": "Mandalay",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "257d4b5da895b063f2bd4b6d3c68238b67d3788e76d02b44893180a4fdf3f2a2",
+ "content": {
+  "x": 58.4,
+  "y": 58.618,
+  "width": 1083.2,
+  "height": 682.765
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 752.894,
+   "y": 497.886
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint4",
+   "x": 447.101,
+   "y": 497.886
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 666.721,
+   "y": 235.088
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 533.279,
+   "y": 235.087
+  }
+ ]
+}

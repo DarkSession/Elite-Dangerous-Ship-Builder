@@ -1,0 +1,38 @@
+{
+ "symbol": "Explorer_NX",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "fe549bbcf3f11c3578c0f079bcb4492b807bebe1ec8650dbd873c9a5d0ac649e",
+ "content": {
+  "x": 347.223,
+  "y": 38.4,
+  "width": 505.554,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 624.474,
+   "y": 122.491
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 575.542,
+   "y": 122.481
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 637.144,
+   "y": 277.67
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 562.854,
+   "y": 277.67
+  }
+ ]
+}

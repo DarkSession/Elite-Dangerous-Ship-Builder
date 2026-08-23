@@ -1,0 +1,56 @@
+{
+ "symbol": "Federation_Dropship_MkII",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "986547de492adf082dae1e3e338595ea759522218a3b6374eee1a9d32dd3e1ce",
+ "content": {
+  "x": 349.2,
+  "y": 38.4,
+  "width": 501.601,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 664.368,
+   "y": 305.431
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 535.361,
+   "y": 305.431
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 600.024,
+   "y": 185.414
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 664.638,
+   "y": 528.694
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 535.361,
+   "y": 528.694
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 664.638,
+   "y": 368.672
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 537.946,
+   "y": 375.095
+  }
+ ]
+}

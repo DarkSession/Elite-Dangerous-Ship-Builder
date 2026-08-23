@@ -1,0 +1,26 @@
+{
+ "symbol": "Hauler",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "51a1762cbb22fab9009ab042630e58008d6e5ecdb45da4ecef16c4318ea0e9c7",
+ "content": {
+  "x": 269.559,
+  "y": 38.4,
+  "width": 660.881,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 445.988,
+   "y": 455.211
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 753.868,
+   "y": 455.211
+  }
+ ]
+}

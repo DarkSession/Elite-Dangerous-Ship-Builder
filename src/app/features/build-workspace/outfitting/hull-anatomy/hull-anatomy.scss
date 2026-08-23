@@ -1,0 +1,165 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c draws this block on the page ground rather than on the fitting
+// panel beneath it: `background: var(--bg-deep)`, no box, the plates carrying
+// their own hairlines. Canvas 1d does the same and closes the block with one
+// rule before the ledger below it.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: anatomy;
+  min-inline-size: 0;
+  min-block-size: 0;
+  background-color: var(--edsb-surface-root);
+}
+
+// Canvas 1c pads the block on all four sides: `16px 20px 6px` around the header
+// row, `10px 20px 14px` around the plates and `0 20px 14px` around the legend.
+// Without it the plates run to the column's own edges and the hull sits against
+// the ledger beside it.
+.anatomy {
+  @include layout.stack(var(--edsb-space-inline));
+
+  min-block-size: 0;
+  padding-block: var(--edsb-space-2xl) var(--edsb-space-xl);
+  padding-inline: var(--edsb-space-region);
+}
+
+// The rule on one side, the mode strip on the other, wrapping rather than
+// squeezing when there is not room for both on one line.
+.anatomy__header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: center;
+  justify-content: space-between;
+}
+
+.anatomy__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+// Canvas 1d runs the strip the full width of the block under the rule, its five
+// segments sharing that width equally. Canvas 1c sets it beside the rule at the
+// width of its own labels. Both are below, the second in the same container
+// query that draws the second plate.
+.anatomy__modes {
+  inline-size: 100%;
+}
+
+// The plates take their height from the hull they hold, the way canvas 1c's
+// `aspect-ratio` frame does. That is what keeps the region honest in a bounded
+// column: the anatomy asks for the height its ships need and no more, and
+// everything left over is the bench's.
+.anatomy__plates {
+  display: grid;
+  flex: none;
+  align-items: start;
+  gap: var(--edsb-space-inline);
+  min-inline-size: 0;
+}
+
+// Canvas 1d puts the selector over the plate, in its top corner. Here it is a
+// strip of its own above the plate: over the drawing it would sit on whatever
+// the package happens to draw in that corner, and at 200% text it would cover a
+// third of the hull.
+.anatomy__sides {
+  inline-size: 100%;
+}
+
+.anatomy__plate {
+  min-inline-size: 0;
+}
+
+// Canvas 1d's own arrangement — `display: none` on the side that is not shown.
+// Removed rather than hidden: a plate nobody can see is not a plate a reader
+// should meet, and the side selector and the complete ledger both reach every
+// mount it drew.
+.anatomy__plate--hidden {
+  display: none;
+}
+
+// Canvas 1c's `grid-template-columns: 1fr 1fr`, at the width two plates can
+// actually hold: a plate below 20rem draws a hull too small to aim at, and two
+// of them plus the gap between is what this threshold is. Stated in rem, so
+// doubled text steps down to one plate for the same reason a phone does
+// (responsive composition, "Declared content minimums").
+//
+// Both plates are drawn there, so there is nothing for the selector to choose
+// and it goes with them.
+@container anatomy (min-width: 41rem) {
+  .anatomy__plates {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  // Canvas 1c's strip: beside the rule rather than under it, and sized by its
+  // own five labels rather than by the block.
+  .anatomy__modes {
+    inline-size: auto;
+  }
+
+  .anatomy__sides {
+    display: none;
+  }
+
+  .anatomy__plate--hidden {
+    display: block;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The legend
+// ---------------------------------------------------------------------------
+
+.anatomy__legend {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.anatomy__legend-entry {
+  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-label));
+
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+}
+
+// The same four treatments the mounts carry, at the size the canvas draws its
+// swatches: the mount's own outline, and nothing inside it. The canvas fills
+// exactly one of the five — `SELECTED`, which is the one the mount fills too.
+.anatomy__legend-mark {
+  inline-size: var(--edsb-layout-node-box);
+  block-size: var(--edsb-layout-node-box);
+  flex: none;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-accent);
+
+  &[data-mark='selected'] {
+    border-color: var(--edsb-surface-accent-solid);
+    background-color: var(--edsb-surface-accent-solid);
+  }
+
+  &[data-mark='empty'] {
+    border-style: dashed;
+    border-color: var(--edsb-border-quiet);
+    background-color: transparent;
+  }
+
+  &[data-mark='utility'] {
+    border-color: var(--edsb-border-info);
+  }
+}
+
+// Canvas 1c's fifth swatch is not a square at all: it is the engineering icon
+// itself, which is what the plates hang off an engineered mount and what the
+// ledger row draws beside an engineered module. A drawn square here explained a
+// mark that appears nowhere.
+.anatomy__legend-icon {
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  flex: none;
+  object-fit: contain;
+}

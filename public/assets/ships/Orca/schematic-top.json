@@ -1,0 +1,26 @@
+{
+ "symbol": "Orca",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "ec948ae437ada7ec75233edc1da9277a636e68d30272c5a4bb5745f5b0ff07eb",
+ "content": {
+  "x": 458.175,
+  "y": 38.4,
+  "width": 283.65,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 607.343,
+   "y": 504.064
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 592.657,
+   "y": 504.064
+  }
+ ]
+}

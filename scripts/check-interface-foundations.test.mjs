@@ -823,3 +823,85 @@ describe('production output', () => {
     assert.deepEqual(found, []);
   });
 });
+
+describe('extracted schematics', () => {
+  const installed = {
+    'Anaconda/schematic-top.svg': 'aaa',
+    'Anaconda/schematic-bottom.svg': 'bbb',
+  };
+
+  it('accepts an extract made from the installed package', () => {
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { ...installed },
+      tracked: ['src/assets/icons/logo.svg'],
+    });
+
+    assert.deepEqual(found, []);
+  });
+
+  it('fails when there is nothing to inspect', () => {
+    assert.deepEqual(
+      ruleIds(rules.copiedSchematicViolations({ installed: {}, extracted: {}, tracked: [] })),
+      ['copied-schematics'],
+    );
+  });
+
+  it('rejects a hull the package ships and nobody extracted', () => {
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { 'Anaconda/schematic-top.svg': 'aaa' },
+      tracked: [],
+    });
+
+    assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+
+  it('rejects an extract left behind by a package upgrade', () => {
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { ...installed, 'Anaconda/schematic-top.svg': 'the previous release' },
+      tracked: [],
+    });
+
+    assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+
+  it('rejects an unreadable extract the same way as a missing one', () => {
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { ...installed, 'Anaconda/schematic-top.svg': null },
+      tracked: [],
+    });
+
+    assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+
+  it('rejects an extract for a hull the pinned package no longer ships', () => {
+    // A rename or a withdrawal upstream leaves a file that is still served and
+    // that no script can reproduce — the private geometry catalogue by another
+    // route. Comparing only installed-to-extract never sees it.
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { ...installed },
+      committed: [
+        'Anaconda/schematic-top.json',
+        'Anaconda/schematic-bottom.json',
+        'Sidewinder/schematic-top.json',
+      ],
+      tracked: [],
+    });
+
+    assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+
+  it('rejects a package schematic kept in the repository', () => {
+    const found = rules.copiedSchematicViolations({
+      installed,
+      extracted: { ...installed },
+      tracked: ['public/assets/ships/Anaconda/schematic-top.svg'],
+    });
+
+    assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+});

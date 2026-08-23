@@ -1,0 +1,68 @@
+{
+ "symbol": "Federation_Dropship",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "065e00abb715b040b3d6639b0eb3151ba17cd7fc3754e10d00b90c082e9ec122",
+ "content": {
+  "x": 338.291,
+  "y": 38.4,
+  "width": 523.418,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 664.368,
+   "y": 305.431
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 535.361,
+   "y": 305.431
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 600.024,
+   "y": 185.414
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint4",
+   "x": 478.151,
+   "y": 355.013
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 721.85,
+   "y": 355.013
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 664.638,
+   "y": 528.694
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 535.361,
+   "y": 528.694
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 537.942,
+   "y": 375.201
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 664.638,
+   "y": 368.672
+  }
+ ]
+}

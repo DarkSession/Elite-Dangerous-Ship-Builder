@@ -181,18 +181,43 @@
     overflow-y: auto;
   }
 
-  // The bench follows the mount a Commander is looking at rather than scrolling
-  // away from it, and is bounded by what is left of the viewport below the
-  // command bar so its manifest scrolls inside itself rather than growing the
-  // page to two hundred rows. `svh` is layout syntax, not a measurement taken
-  // off the canvas.
-  .outfitting__bench {
+  // The middle column follows the mount a Commander is looking at rather than
+  // scrolling away from it, and is bounded by what is left of the viewport
+  // below the command bar so the bench's manifest scrolls inside itself rather
+  // than growing the page to two hundred rows. `svh` is layout syntax, not a
+  // measurement taken off the canvas.
+  .outfitting__centre {
     position: sticky;
     inset-block-start: var(--edsb-layout-bar-height);
-    // A definite height, not a cap. The two panels below divide the bench
-    // between them from a zero basis, and a basis of zero inside a box that is
-    // still sized by its content collapses the box and both panels with it.
+    // A definite height, not a cap. The bench below divides what is left after
+    // the plates between its two panels from a zero basis, and a basis of zero
+    // inside a box that is still sized by its content collapses the box and
+    // both panels with it.
     block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+  }
+
+  // The plates ask for the height their hulls need; the bench takes the rest.
+  //
+  // Canvas 1c draws each plate at the hull's own proportions, so the anatomy
+  // asks for exactly the height its two ships need at the column's width and
+  // never stretches to fill what is left. Everything left over is the bench's,
+  // down to its own minimum: the two panels each need a heading, a field and a
+  // few rows before they are a panel rather than a strip, which is 26rem
+  // together.
+  .outfitting__centre edsb-hull-anatomy {
+    flex: none;
+  }
+
+  // Named through the column so the base rule below, which resets both of these
+  // for the unbounded compositions, does not win on source order.
+  .outfitting__centre .outfitting__bench {
+    // A zero basis, not the bench's content: with a basis of `auto` a bench
+    // holding an open chooser asks for a thousand rows, and the shrink that
+    // follows takes them out of the plates as well as out of the bench. From
+    // zero the bench takes what the plates leave, down to its own minimum, and
+    // the column looks the same whether a mount is selected or not.
+    flex: 1 1 0;
+    min-block-size: min(26rem, 100%);
     overflow: hidden;
     border-inline-start: 0;
   }
@@ -249,11 +274,25 @@
 // which is less than one candidate card. It releases with the command bar, at
 // the command bar's own threshold, and the page scrolls instead.
 @include layout.short-viewport {
-  .outfitting__bench {
+  .outfitting__centre {
     position: static;
     block-size: auto;
+  }
+
+  // Matched to the bounded column's own selector: a short viewport releases the
+  // column, and a release that lost on specificity would pin the bench at a
+  // minimum taller than the screen.
+  .outfitting__centre .outfitting__bench,
+  .outfitting__bench {
+    flex: none;
+    block-size: auto;
+    min-block-size: 0;
     max-block-size: none;
     overflow: visible;
+  }
+
+  .outfitting__centre edsb-hull-anatomy {
+    flex: none;
   }
 
   .outfitting__bench edsb-module-replacement,
@@ -347,6 +386,17 @@
   padding: var(--edsb-space-panel);
   background-color: var(--edsb-surface-panel);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The canvas's middle column: the anatomy plates on the page ground, the bench
+// panel under them. One column at every width, because that is the order both
+// canvases draw and the bench is the selected mount's facts.
+.outfitting__centre {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edsb-space-region);
+  min-inline-size: 0;
+  min-block-size: 0;
 }
 
 .outfitting__bench-header,

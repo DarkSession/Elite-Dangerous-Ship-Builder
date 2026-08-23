@@ -141,6 +141,21 @@ Two details make the deployment behave on Pages:
   survives every deployment. `<base href="/">` in
   [`src/index.html`](./src/index.html) is correct for a domain of our own and
   needs no rewriting.
+- The hull schematics ship as two committed files per side rather than as the
+  package's SVG: a PNG rasterised by `scripts/convert-ship-artwork.mjs`, and
+  about a kilobyte of JSON written by `scripts/extract-schematic-mounts.mts` —
+  the drawing's box, the rectangle it draws in and the middle of every annotated
+  mount. Ninety kilobytes of sub-pixel path data per side is work a fixed-ratio
+  plate would redo on every resize, and only those few hundred bytes of it are
+  ever read. Both scripts read the installed `@elite-dangerous-almanac/core`,
+  and the extractor runs the application's own parser, so the contract being
+  checked and the geometry being written cannot drift.
+- Neither file is a private geometry catalogue, and the policy checker is what
+  makes that a fact rather than a promise: each extract records the SHA-256 of
+  the package SVG it was made from, `pnpm run policy` recomputes it against the
+  installed file, and a package SVG tracked under `public/` or `src/` fails
+  outright. Re-run both scripts after moving the package pin;
+  [spec 010](./specs/010-hull-anatomy/spec.md) is where the rule is written.
 - `index.html` is copied to `404.html` before upload. Pages answers any path that
   is not a file with its own 404 page, which would break a deep link into a
   client-side route; serving the application from `404.html` hands those paths to

@@ -111,6 +111,64 @@ planning ship loadouts.
   per-row material traces, unpriced-credit evidence and material-acquisition
   guidance.
 
+- **Hull anatomy (feature 010)** contributes the `HULL ANATOMY` plates to the
+  outfitting workspace, between the ledger and the fitting bench. It owns no
+  game data: every mount's identity and position is read out of the installed
+  package's own `schematic-top.svg` / `schematic-bottom.svg`, and a mount exists
+  only where a package `data-journal-slot` resolves to a hardpoint or utility
+  slot on the active hull. What is _drawn_ is the same file rasterised — see
+  below — inside the same coordinate space, never a second geometry. The package draws every hull nose-up in a
+  mostly empty 1200x800 box; canvas 1c frames it lying down at the hull's own
+  proportions, which is one `transform` and one `viewBox` computed from the
+  coordinates the package published. Nothing is measured off the rendered
+  document — no `getBBox`, no `getScreenCTM`, no `getBoundingClientRect` — and
+  no path is rewritten. A mount is the canvas's numbered mark, a named button at
+  the canvas's own `clamp(14px, 3.06cqw, 22px)`; the package sets real mounts
+  six CSS pixels apart, so marks overlap, the one being worked with is raised
+  above them, and the size criterion is met by SC 2.5.8's Equivalent exception
+  through feature 002's ledger rather than by the project's 44-pixel baseline
+  (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from
+  FR-012"). Selecting a mount selects feature 002's slot and nothing else: the
+  plates publish no second detail surface, no second mount list and no power
+  state, which belongs to feature 005's mode over the same plates.
+  - The plate is canvas 1c's `aspect-ratio: 720/292` frame in every state,
+    drawn before anything is fetched, so the region reserves its height once and
+    a late schematic does not resize the workspace. While it is on its way the
+    plate carries the hull illustration's own loading mark.
+  - The five-mode strip — `MOUNTS`, `POWER`, `DRIVES`, `DEFENCE`, `OFFENCE` — is
+    canvas 1c's, and is drawn whole at every width. Only `MOUNTS` exists; the
+    other four are the same plates read by features 005 to 008 and their
+    segments are disabled until those land. Canvas 1d's six-segment strip is a
+    different control — it switches whole compact screens, the anatomy being one
+    of them — and building it is feature 002's composition
+    (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas
+    1d — the sixth segment").
+  - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel
+    path data, and a plate reads a few hundred bytes of it. Both halves are made
+    from the installed package at build time and committed under
+    `public/assets/ships/<symbol>/`: `scripts/convert-ship-artwork.mjs`
+    rasterises `illustration.svg` and both `schematic-*.svg` to PNG, and
+    `scripts/extract-schematic-mounts.mts` writes `schematic-<side>.json` — the
+    package's own `viewBox`, the rectangle the file draws in, and the middle of
+    every annotated mount. Re-run both after moving the package pin.
+  - The extractor runs the application's own `schematic-svg-parser.ts` under
+    Node's type stripping with a jsdom `DOMParser`, so the contract being
+    checked and the geometry being written are one piece of code; a file the
+    parser refuses fails extraction by name. Each extract records the SHA-256 of
+    the SVG it came from, and the policy checker's `copied-schematics` rule
+    recomputes it against the installed file, failing on a missing, stale or
+    unreadable extract and on any package SVG tracked under `public/` or `src/`.
+    A hand-written coordinate file in this repository is the private geometry
+    catalogue FR-009 exists to forbid; the digest is what keeps the extract from
+    becoming one.
+  - What is left at runtime is not the package contract but the deployment: the
+    JSON is validated field by field, and a single malformed mount refuses the
+    whole file rather than being dropped, because a plate missing one mount
+    looks exactly like a hull that has none there.
+  - Out of scope, deliberately: geometry for internal, armour and cargo-hatch
+    slots, weapon metrics, mount direction, convergence and any coordinate,
+    offset or distance derived from the drawing.
+
 ## Commit Identity — no personal data in git metadata
 
 **Commit as whoever git is already configured as. Never set an identity yourself.** The environment configures `user.name` / `user.email` (and, where signing is enabled, the signing key) before you start. Do not pass `-c user.name=…` / `-c user.email=…` to `git commit`, do not `git config` a different one, and do not use `--reset-author` to change _who_ a commit is by. An agent that substitutes its own choice produces commits GitHub marks **Unverified**, because the identity no longer matches the key that signed them.

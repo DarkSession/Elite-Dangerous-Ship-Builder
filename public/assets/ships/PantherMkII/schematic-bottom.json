@@ -1,0 +1,62 @@
+{
+ "symbol": "PantherMkII",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "98437d76a4dc29819b053350194a22c476dc49e97d767372860da4b3f24f8adb",
+ "content": {
+  "x": 312.585,
+  "y": 38.4,
+  "width": 574.829,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 599.999,
+   "y": 108.913
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 599.999,
+   "y": 351.398
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint3",
+   "x": 547.339,
+   "y": 372.521
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint4",
+   "x": 652.659,
+   "y": 372.317
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 702.907,
+   "y": 481.219
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 497.093,
+   "y": 481.219
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint5",
+   "x": 647.033,
+   "y": 310.238
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint6",
+   "x": 552.966,
+   "y": 310.238
+  }
+ ]
+}

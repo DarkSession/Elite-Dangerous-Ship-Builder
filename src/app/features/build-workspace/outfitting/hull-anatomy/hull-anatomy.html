@@ -1,0 +1,74 @@
+<!--
+  Canvas 1c: `HULL ANATOMY` in tracked mono, the plates, then the legend. Canvas 1d is the same four blocks stacked, with
+  the side selector over the single plate. Both are this DOM in this order;
+  which one appears is decided in CSS from the space the region is given, so a
+  400% zoom selects the compact arrangement for the same reason a phone does.
+-->
+<section class="anatomy" [attr.aria-labelledby]="headingId">
+  <!--
+    Canvas 1c's header row: the rule on one side, the mode strip on the other.
+    Canvas 1d runs the same strip full width under the rule instead, which is
+    the arrangement's decision and is made in CSS.
+    All five of the canvas's modes are drawn and in its order; the four that
+    features 005 to 008 will draw on these same plates are disabled until they
+    exist, because a segment that opened an empty panel would be a reading of
+    the hull nobody has made (design/hull-anatomy.md, "The mode strip").
+  -->
+  <div class="anatomy__header">
+    <h3 class="anatomy__heading" [id]="headingId">{{ heading() }}</h3>
+
+    <edsb-tab-group
+      class="anatomy__modes"
+      [label]="modeLabel()"
+      [tabs]="modes()"
+      [selectedId]="activeMode"
+      presentation="segmented"
+    />
+  </div>
+
+  <div class="anatomy__plates">
+    <!--
+      The side selector belongs to the single-plate arrangement: where both
+      plates are drawn there is nothing to choose between. It is removed rather
+      than dimmed at wide widths, because a control whose two states show the
+      same screen is a control that does nothing.
+    -->
+    <edsb-tab-group
+      class="anatomy__sides"
+      [label]="sideLabel()"
+      [tabs]="sideChoices()"
+      [selectedId]="visibleSide()"
+      presentation="segmented"
+      (selected)="showSide($event)"
+    />
+
+    @for (plate of plates(); track plate.side) {
+      <edsb-hull-schematic
+        class="anatomy__plate"
+        [class.anatomy__plate--hidden]="plate.side !== visibleSide()"
+        [view]="plate"
+        (slotActivated)="openSlot($event)"
+        (retryRequested)="retry(plate.side)"
+      />
+    }
+  </div>
+
+  <!--
+    Canvas 1c's five entries, each drawing the same mark as the mounts it
+    explains. The mark is decoration: the words beside it are what is read, and
+    every one of them also appears in the mounts own accessible names.
+  -->
+  <ul class="anatomy__legend" [attr.aria-label]="legendLabel()">
+    @for (entry of legend(); track entry.id) {
+      <li class="anatomy__legend-entry">
+        @if (entry.id === 'engineered') {
+          <!-- The canvas's own icon, which is the mark this entry explains. -->
+          <img class="anatomy__legend-icon" src="assets/icons/engineered.svg" alt="" />
+        } @else {
+          <span class="anatomy__legend-mark" [attr.data-mark]="entry.id" aria-hidden="true"></span>
+        }
+        {{ entry.label }}
+      </li>
+    }
+  </ul>
+</section>

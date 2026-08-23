@@ -1,0 +1,38 @@
+{
+ "symbol": "Federation_Gunship",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "e8ea882771160d3cf95d0166301d64e5e1ede79b407d0a63d62fa4095dc8f3e2",
+ "content": {
+  "x": 340.702,
+  "y": 38.4,
+  "width": 518.596,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 580.508,
+   "y": 310.036
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 619.434,
+   "y": 310.032
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 514.264,
+   "y": 447.121
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 685.646,
+   "y": 446.641
+  }
+ ]
+}

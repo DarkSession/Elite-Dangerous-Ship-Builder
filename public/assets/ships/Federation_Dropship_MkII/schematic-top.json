@@ -1,0 +1,20 @@
+{
+ "symbol": "Federation_Dropship_MkII",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "5f850a055f78c8a0ec8f3f73316f69eebd65b339aff0e15886c253e97aeb0f82",
+ "content": {
+  "x": 349.2,
+  "y": 38.4,
+  "width": 501.601,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 599.996,
+   "y": 279.176
+  }
+ ]
+}

@@ -153,6 +153,9 @@
   --edsb-text-size-micro: var(--edsb-type-size-micro);
   --edsb-text-size-caption: var(--edsb-type-size-2xs);
   --edsb-text-size-label: var(--edsb-type-size-2xs);
+  // The one size on the plate that is not on the type scale: the node mark's
+  // number is sized against the hull it is drawn on, not against the interface.
+  --edsb-text-size-node-mark: var(--edsb-measure-node-mark-text);
   --edsb-text-size-compact: var(--edsb-type-size-xs);
   --edsb-text-size-body: var(--edsb-type-size-sm);
   --edsb-text-size-lead: var(--edsb-type-size-md);
@@ -201,6 +204,12 @@
   --edsb-space-stack-loose: var(--edsb-space-2xl);
   --edsb-space-control-inline: var(--edsb-space-lg);
   --edsb-space-control-block: var(--edsb-space-md);
+
+  // The block padding of a control the canvas draws dense: 7px around canvas
+  // 1c's segmented strip against the 10px it gives a field. Six is the step
+  // below on this scale, and a segment lands on SC 2.5.8's 24-pixel floor from
+  // there rather than above it.
+  --edsb-space-control-block-dense: var(--edsb-space-xs);
   --edsb-space-row: var(--edsb-space-lg);
   --edsb-space-panel: var(--edsb-space-3xl);
   --edsb-space-region: var(--edsb-space-4xl);
@@ -235,6 +244,7 @@
   --edsb-target-size-floor: var(--edsb-target-min-floor);
 
   --edsb-artwork-filter: var(--edsb-filter-artwork);
+  --edsb-schematic-filter: var(--edsb-filter-schematic);
 
   --edsb-layout-content-max: var(--edsb-measure-content-max);
   --edsb-layout-prose-max: var(--edsb-measure-prose-max);
@@ -280,6 +290,9 @@
 
   --edsb-layout-mount-box: var(--edsb-measure-mount-box);
   --edsb-layout-node-box: var(--edsb-measure-node-box);
+  --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
+  --edsb-layout-node-mark: var(--edsb-measure-node-mark);
+  --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);
   --edsb-layout-menu-max: var(--edsb-measure-menu-max);

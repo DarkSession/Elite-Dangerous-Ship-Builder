@@ -1,0 +1,20 @@
+{
+ "symbol": "DiamondBackXL",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "b904b9ae97e44ea13a67afdca6591f76e012d6c312053f7ffdcd0f0ce964620c",
+ "content": {
+  "x": 379.442,
+  "y": 38.4,
+  "width": 441.116,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 599.634,
+   "y": 289.522
+  }
+ ]
+}

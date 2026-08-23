@@ -1,0 +1,38 @@
+{
+ "symbol": "Mamba",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "531eb094caf5f7c398681c1f95aaa19feb7923a4f8ba367b74a06a711cdec06b",
+ "content": {
+  "x": 363.118,
+  "y": 38.464,
+  "width": 473.765,
+  "height": 723.136
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 693.979,
+   "y": 318.688
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 506.021,
+   "y": 318.688
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 469.589,
+   "y": 667.924
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 730.411,
+   "y": 667.924
+  }
+ ]
+}

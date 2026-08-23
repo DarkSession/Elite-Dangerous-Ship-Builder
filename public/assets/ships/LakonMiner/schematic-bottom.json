@@ -1,0 +1,38 @@
+{
+ "symbol": "LakonMiner",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "62896bb47adc2609810e8b833e4cf6e81eb820e7f9495d048a08e4b0f5f3cdb3",
+ "content": {
+  "x": 306.418,
+  "y": 38.463,
+  "width": 587.163,
+  "height": 723.137
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint3",
+   "x": 557.067,
+   "y": 585.408
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint4",
+   "x": 642.93,
+   "y": 585.408
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 587.069,
+   "y": 576.184
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 600,
+   "y": 590.32
+  }
+ ]
+}

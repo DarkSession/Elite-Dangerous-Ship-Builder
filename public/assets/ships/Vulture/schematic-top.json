@@ -1,0 +1,38 @@
+{
+ "symbol": "Vulture",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "1b5304100b877e986121bf4d2f2bba992b25cce121e0b6ff7ce66277a11c2c16",
+ "content": {
+  "x": 308.067,
+  "y": 38.407,
+  "width": 583.866,
+  "height": 723.193
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 486.833,
+   "y": 322.298
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 713.168,
+   "y": 322.298
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 487.34,
+   "y": 457.095
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 712.656,
+   "y": 457.095
+  }
+ ]
+}

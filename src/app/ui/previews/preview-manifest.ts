@@ -201,6 +201,7 @@ import { SavedBuildCard } from '../components/saved-build-card/saved-build-card'
 import { ShareLinkPanel } from '../components/share-link-panel/share-link-panel';
 import { FactList } from '../components/fact-list/fact-list';
 import { HullArtwork } from '../components/hull-artwork/hull-artwork';
+import { HullSchematic } from '../outfitting/hull-schematic';
 import { HullSummaryCard } from '../components/hull-summary-card/hull-summary-card';
 import { ActionLink } from '../components/action/action-link';
 import { ActionLayer } from '../components/app-frame/action-layer';
@@ -600,6 +601,75 @@ registerPreview({
         disabled: true,
       },
       ['every tab exposes the disabled state'],
+    ),
+  ],
+});
+
+/**
+ * The same component in its other presentation, which is the only one the
+ * product uses: canvas 1c's segmented strip, drawn by the anatomy's mode strip
+ * and by its `TOP`/`BOTTOM` side selector alike.
+ *
+ * A second registration rather than a second state, because a preview state
+ * name comes from a closed vocabulary and "segmented" is not a state — it is a
+ * different control, with a different role, a different selected attribute and
+ * a different target floor. Registering it is what puts the filled segment, the
+ * dense height and the disabled-is-never-filled rule under the catalogue's own
+ * contrast and expansion sweep.
+ */
+registerPreview({
+  componentId: 'tab-group-segmented',
+  group: 'Navigation',
+  component: TabGroup,
+  contract: contract(
+    'tab-group-segmented',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['pressed', 'disabled'],
+      relationships: [],
+      textEquivalents: ['selected state'],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Anatomy view',
+        presentation: 'segmented',
+        selectedId: 'mounts',
+        selectedLabel: 'Selected',
+        tabs: [
+          { id: 'mounts', label: 'Mounts' },
+          { id: 'power', label: 'Power', disabled: true },
+          { id: 'drives', label: 'Drives', disabled: true },
+        ],
+      },
+      [
+        'the chosen segment exposes aria-pressed rather than aria-selected',
+        'the chosen segment is filled and says so in text as well',
+        'a segment nobody can reach is never the filled one',
+      ],
+    ),
+    state('empty', { label: 'Anatomy view', presentation: 'segmented', selectedId: '', tabs: [] }, [
+      'renders with no segments and keeps its accessible name',
+    ]),
+    notApplicable(
+      'loading',
+      'A strip renders the set it is given; loading belongs to what the choice filters.',
+    ),
+    notApplicable('error', 'A strip reports no error; what it filters does.'),
+    state(
+      'disabled',
+      {
+        label: 'Anatomy view',
+        presentation: 'segmented',
+        selectedId: 'mounts',
+        tabs: [{ id: 'mounts', label: 'Mounts' }],
+        disabled: true,
+      },
+      ['every segment exposes the disabled state, and none is filled'],
     ),
   ],
 });
@@ -3299,6 +3369,171 @@ registerPreview({
     notApplicable(
       'disabled',
       'Where there is no build there is no identity to edit, so the block is absent rather than disabled.',
+    ),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 010 — hull anatomy
+//
+// One component: the schematic plate. The side selector is feature 011's
+// `edsb-tab-group` in its segmented presentation and the legend is five static
+// rows in the capability's own template, so neither is a new export
+// (design/hull-anatomy.md, "Component-system impact").
+// ---------------------------------------------------------------------------
+
+/**
+ * A schematic the catalogue can hold.
+ *
+ * The plate renders a *validated document*, and the product only ever gets one
+ * by fetching a build-time extract. A fixture cannot await that, so this is the
+ * frame that extract describes, written out: a real hull symbol, because the
+ * picture the plate draws is the rasterised package document and a made-up
+ * symbol would be a broken image, and that hull's own box because the marks are
+ * placed inside it.
+ *
+ * Four numbers of a published extent is not the private geometry catalogue
+ * feature 010's FR-009 forbids — nothing is served from here and no mount is identified by
+ * it. The mounts over the picture are the synthetic ones below, which is what
+ * this preview is for: every treatment the legend explains, on one plate.
+ */
+function schematicDocument(side: 'top' | 'bottom'): Record<string, unknown> {
+  return {
+    side,
+    symbol: 'Anaconda',
+    viewBox: '0 0 1200 800',
+    // The Anaconda's own extent inside that box: nose-up, 292 units of ship in
+    // 1200 units of frame, which is what the quarter turn and the centring are
+    // there to deal with.
+    content: { x: 454, y: 40, width: 292, height: 720 },
+    // The plate draws its mounts from the occurrences it is handed, which is
+    // how one item stays one identity across two sides; the document's own
+    // annotations are the projector's input, not the plate's.
+    annotations: [],
+  };
+}
+
+function mountOccurrence(
+  key: string,
+  kind: 'hardpoint' | 'utility',
+  fitted: boolean,
+  engineered: boolean,
+  node: number,
+  centre: { x: number; y: number },
+): Record<string, unknown> {
+  return {
+    item: {
+      key,
+      name: key.replace(/([a-z])([A-Z])/g, '$1 $2'),
+      kind,
+      node,
+      fitted,
+      engineered,
+      sides: ['top'],
+    },
+    side: 'top',
+    centre,
+  };
+}
+
+registerPreview({
+  componentId: 'hull-schematic',
+  group: 'Outfitting',
+  component: HullSchematic,
+  contract: contract(
+    'hull-schematic',
+    {
+      role: 'figure',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['pressed'],
+      relationships: ['label', 'description'],
+      textEquivalents: [
+        'each mount names its slot, kind, side, fitted state and engineering in words',
+        'selection is exposed as pressed state, not by the fill alone',
+        'a side that did not arrive says so in place of the drawing',
+      ],
+    },
+    ['default', 'empty', 'loading', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        view: {
+          side: 'top',
+          state: { kind: 'ready', document: schematicDocument('top') },
+          occurrences: [
+            mountOccurrence('SmallHardpoint1', 'hardpoint', true, true, 1, { x: 520, y: 300 }),
+            mountOccurrence('SmallHardpoint2', 'hardpoint', true, false, 2, { x: 680, y: 300 }),
+            mountOccurrence('MediumHardpoint1', 'hardpoint', false, false, 3, { x: 520, y: 520 }),
+            mountOccurrence('TinyHardpoint1', 'utility', true, false, 1, { x: 680, y: 520 }),
+          ],
+          selectedKey: 'SmallHardpoint1',
+          hullName: 'Anaconda',
+        },
+      },
+      [
+        'every state the legend explains is drawn at once: selected, fitted, empty, utility, engineered',
+        'no mount state is carried by colour, dash or fill alone',
+        'each mount is a named button carrying its node number, as the canvas draws it',
+        "the plate holds the whole hull at the hull's own ratio, so nothing pans or scrolls",
+      ],
+      CONTROL_VARIANTS,
+    ),
+    state(
+      'empty',
+      {
+        view: {
+          side: 'bottom',
+          state: { kind: 'ready', document: schematicDocument('bottom') },
+          occurrences: [],
+          selectedKey: null,
+          hullName: 'Anaconda',
+        },
+      },
+      [
+        'a side the package annotates no mount on draws its artwork and claims nothing',
+        'the complete outfitting ledger beside it is still the route to every slot',
+      ],
+      ['normal', 'rtl', 'reduced-motion'],
+    ),
+    state(
+      'loading',
+      {
+        view: {
+          side: 'top',
+          state: { kind: 'loading' },
+          occurrences: [],
+          selectedKey: null,
+          hullName: 'Anaconda',
+        },
+      },
+      [
+        'the pending state is stated in text, in place of the drawing',
+        'the side is still named, so a peer plate reads as one of two',
+      ],
+    ),
+    state(
+      'error',
+      {
+        view: {
+          side: 'bottom',
+          state: { kind: 'temporarilyUnavailable' },
+          occurrences: [],
+          selectedKey: null,
+          hullName: 'Anaconda',
+        },
+      },
+      [
+        'the absence is explained as temporary and never as a hull without geometry',
+        'a retry is offered that does not reload the page',
+        'a package defect renders the same way without the retry, because retrying cannot fix it',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'A plate is a drawing of mounts, not a control that gates anything; a mount that cannot be acted on is absent from the schematic, and its ledger row states why.',
     ),
   ],
 });

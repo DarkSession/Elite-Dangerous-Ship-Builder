@@ -49,7 +49,7 @@ const shard =
  */
 const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
   ? []
-  : ['**/offline.spec.ts', '**/offline-privacy.spec.ts'];
+  : ['**/offline.spec.ts', '**/offline-privacy.spec.ts', '**/schematic-offline.spec.ts'];
 
 /**
  * Escape hatches for environments whose preinstalled browser build does not

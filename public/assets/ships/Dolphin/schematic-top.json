@@ -1,0 +1,26 @@
+{
+ "symbol": "Dolphin",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "cbe68e1c51a63400e7938d46f69c53adf6ef29253a1253e3d0088abaf89ff38d",
+ "content": {
+  "x": 453.663,
+  "y": 38.4,
+  "width": 292.674,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 580.947,
+   "y": 548.165
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 619.172,
+   "y": 548.165
+  }
+ ]
+}

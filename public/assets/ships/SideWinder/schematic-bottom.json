@@ -1,0 +1,26 @@
+{
+ "symbol": "SideWinder",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "5315e4b9478ab06a3a85631de8e68c5a7754d924fb0c4b3f7d098232a3d495ef",
+ "content": {
+  "x": 58.4,
+  "y": 41.807,
+  "width": 1083.2,
+  "height": 716.387
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 1046.373,
+   "y": 665.985
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 153.495,
+   "y": 665.987
+  }
+ ]
+}

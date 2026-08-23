@@ -1,0 +1,32 @@
+{
+ "symbol": "Python_NX",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "e3d54ecd8215e126adf966bb6e94fe97b039e897033c831bc92ce4c9bbb53090",
+ "content": {
+  "x": 323.112,
+  "y": 38.4,
+  "width": 553.777,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint3",
+   "x": 599.999,
+   "y": 121.05
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 781.932,
+   "y": 559.419
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 418.068,
+   "y": 559.419
+  }
+ ]
+}

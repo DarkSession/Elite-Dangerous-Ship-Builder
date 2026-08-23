@@ -1,0 +1,38 @@
+{
+ "symbol": "BelugaLiner",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "5e4f49d4125ebec31adcf4acfc6cea4ed1860e6dd867106608ed19b2020f6858",
+ "content": {
+  "x": 402.083,
+  "y": 38.4,
+  "width": 395.834,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 586.169,
+   "y": 519.408
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 613.832,
+   "y": 519.408
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 488.138
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 600,
+   "y": 707.403
+  }
+ ]
+}

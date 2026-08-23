@@ -99,6 +99,24 @@ disagrees or where the announcement is correct but unusable.
     article and expect its Merc Coin row to be announced by name, not by its
     colour, and never as credits. Expect **no** control anywhere in either
     block: nothing to expand, nothing to activate, nothing to trace.
+14. **Hull anatomy.** Open a build and find the `HULL ANATOMY` region. Expect
+    each plate to be reachable and announced with the hull's name and which way
+    up it is. Move through the mounts: expect each one to be announced as a
+    button naming the mount the way the ledger row beside it names it, its kind
+    — hardpoint or utility mount — which side it is on, whether it is fitted or
+    empty, and whether it is engineered or stock. Expect nothing about a mount
+    to depend on its colour, its dashes or where it sits on the hull. Activate
+    one and expect the matching ledger row to become selected, and the anatomy
+    mount to be announced as pressed; expect **no second reading** of the same
+    facts anywhere else on the screen. On `Federation_Corvette`, find
+    `Medium Hardpoint 1`, which the package draws on both sides: expect two
+    occurrences that differ only in the side they name, and expect selecting
+    either to press both. Select an internal mount from the ledger and expect
+    nothing on the plates to change. Finally, with the developer tools offline
+    or the network disconnected, open a hull whose schematics have not been
+    seen: expect each plate to announce that it is temporarily unavailable and
+    to offer a retry, expect one announcement per side rather than one per
+    mount, and expect the complete ledger to remain fully operable.
 
 ## Recording the result
 

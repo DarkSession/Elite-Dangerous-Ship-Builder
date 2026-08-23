@@ -1,0 +1,38 @@
+{
+ "symbol": "Adder",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "5f5502c84efba3edd58238e54776adf6ba71a0f344d4ac36bc02ca6d8482aa2f",
+ "content": {
+  "x": 269.159,
+  "y": 38.4,
+  "width": 661.682,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 490.33,
+   "y": 308.409
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 709.923,
+   "y": 308.415
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 660.013,
+   "y": 673.51
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 536.803,
+   "y": 674.074
+  }
+ ]
+}

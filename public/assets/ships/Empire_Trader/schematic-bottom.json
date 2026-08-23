@@ -1,0 +1,38 @@
+{
+ "symbol": "Empire_Trader",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "5d24fa50237f28fbf94de4fd7112f64403f0ec0d9a7061cf5a37c970f0f7739f",
+ "content": {
+  "x": 248.63,
+  "y": 38.4,
+  "width": 702.74,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 741.724,
+   "y": 509.935
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 458.525,
+   "y": 509.935
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 497.607,
+   "y": 471.429
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 703.005,
+   "y": 471.81
+  }
+ ]
+}

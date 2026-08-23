@@ -1,0 +1,38 @@
+{
+ "symbol": "Viper",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "547c98b86cf68c9566ff2c87e7006e9fcf08713673e4139b2bacdc92a4729634",
+ "content": {
+  "x": 304.027,
+  "y": 38.4,
+  "width": 591.947,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 543.317,
+   "y": 155.436
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 656.755,
+   "y": 155.333
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 529.982,
+   "y": 705.033
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 670.055,
+   "y": 704.986
+  }
+ ]
+}

@@ -134,6 +134,36 @@ describe('pseudoInputs', () => {
     expect(inputs['tag']).toBe('de');
   });
 
+  it('leaves a plate’s own structure alone, however deep it sits', () => {
+    // A schematic plate reads `side` to place a mount and `kind` to treat it.
+    // Expand either and the mount takes the wrong treatment or none — a failure
+    // the pseudo-locale would have created rather than exposed.
+    const inputs = pseudoInputs(
+      {
+        view: {
+          side: 'top',
+          hullName: 'Anaconda',
+          occurrences: [
+            { item: { key: 'SmallHardpoint1', kind: 'hardpoint', sides: ['top'] }, side: 'top' },
+          ],
+        },
+      },
+      'expanded-copy',
+    );
+
+    const view = inputs['view'] as {
+      side: string;
+      hullName: string;
+      occurrences: { item: { kind: string; sides: string[] }; side: string }[];
+    };
+    expect(view.side).toBe('top');
+    expect(view.occurrences[0]?.side).toBe('top');
+    expect(view.occurrences[0]?.item.kind).toBe('hardpoint');
+    expect(view.occurrences[0]?.item.sides).toEqual(['top']);
+    // The hull's name is language, and still expands.
+    expect(view.hullName).not.toBe('Anaconda');
+  });
+
   it('leaves non-string values alone', () => {
     const inputs = pseudoInputs({ count: 3, selected: true }, 'rtl');
 

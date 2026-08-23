@@ -1,0 +1,26 @@
+{
+ "symbol": "Vulture",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "a4bc031cade767d368d46fead07650a0dd1d85069b862518305bcd7cf638fd37",
+ "content": {
+  "x": 308.067,
+  "y": 38.407,
+  "width": 583.866,
+  "height": 723.193
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 692.311,
+   "y": 155.113
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 507.688,
+   "y": 155.113
+  }
+ ]
+}

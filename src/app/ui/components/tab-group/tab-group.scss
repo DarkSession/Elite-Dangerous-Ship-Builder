@@ -1,69 +1,96 @@
 @use '../../../../styles/responsive' as layout;
 
+// The strip is sized by whoever places it, and it is never a size container:
+// canvas 1c sets it beside a rule at the width of its own five labels, and an
+// element with inline-size containment cannot be that width — its contents stop
+// contributing to its intrinsic size, so a content-based `auto` resolves to
+// nothing.
 :host {
   display: block;
-  container-type: inline-size;
-  container-name: tab-group;
+  max-inline-size: 100%;
 }
 
+// One amber hairline showing between the segments, and nothing around them:
+// `display: flex; gap: 1px; background: var(--amber-a16)` on both canvases.
+//
+// The row scrolls inside itself rather than pushing the document into
+// horizontal overflow, because the segments do not wrap: they share the line
+// they are given, so a line too short for them would overflow it.
 .tab-group {
-  @include layout.wrapping-row(var(--edsb-space-rule));
+  @include layout.bounded-scroller;
 
+  display: flex;
+  gap: var(--edsb-space-rule);
   background-color: var(--edsb-rule-grid);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
+// Canvas 1c sets each segment to the width of its own label (`flex: none`) and
+// canvas 1d shares a full-width strip between them (`flex: 1 1 0`). Growing
+// from the label width rather than from zero is both at once: given no room to
+// spare each segment is exactly its label, and given a full width they divide
+// what is left over. Which one happens is decided by the width whoever places
+// the strip gives it.
+// The canvases draw this strip dense and never at the project's 44-pixel
+// baseline: 23.5px for canvas 1c's mode strip, 30px for canvas 1d's, 25px for
+// 1d's side selector, 38px for canvas 1a's catalogue filter. A 44-pixel segment
+// is a different control from the one they draw, and beside a heading it is a
+// band rather than a strip. Flat leading inside a dense control's block padding
+// asks for 22 and canvas 1c draws 23.5; WCAG 2.2 SC 2.5.8's AA floor raises
+// both to 24, which is where this stops. That is a floor and not a waiver.
 .tab {
-  @include layout.target-baseline;
+  @include layout.target-floor;
 
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
   flex: 1 1 auto;
+  padding-block: var(--edsb-space-control-block-dense);
+  padding-inline: var(--edsb-space-control-inline);
   border: 0;
-  background-color: var(--edsb-surface-layer);
+  background-color: var(--edsb-surface-control-quiet);
   color: var(--edsb-text-subtle);
   font-family: var(--edsb-font-heading);
   font-size: var(--edsb-text-size-label);
   font-weight: var(--edsb-text-weight-control);
   letter-spacing: var(--edsb-text-tracking-heading);
+  line-height: var(--edsb-text-leading-flat);
+  text-align: center;
   text-transform: uppercase;
   cursor: pointer;
   transition:
     background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
 }
 
+// The chosen segment is filled, not outlined: both canvases draw it as solid
+// amber carrying the ground colour as its text.
 .tab[aria-selected='true'],
 .tab[aria-pressed='true'] {
-  background-color: var(--edsb-surface-root);
-  color: var(--edsb-text-accent-strong);
+  background-color: var(--edsb-surface-accent-solid);
+  color: var(--edsb-text-on-accent);
   font-weight: var(--edsb-text-weight-heading);
-  box-shadow: var(--edsb-elevation-current);
 }
 
-// The selected state's text equivalent. Small, but present — the border and
-// colour above are a supplement to it, never the only signal.
+// The selected state's text equivalent. Small, but present — the fill above is
+// a supplement to it, never the only signal. It rides on the fill, so it takes
+// the fill's own ink.
 .tab__state {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--edsb-text-on-accent), var(--edsb-text-tracking-count));
 
   text-transform: none;
 }
 
+// A segment that cannot be chosen is not filled, whichever one is selected.
+// Disabled ink on the accent fill is 1.34:1, and the fill means "this is the
+// mode you are in" — which a control nobody can reach is not. The selected
+// state survives as `aria-pressed` and as the strip's own text equivalent.
 .tab:disabled {
+  background-color: var(--edsb-surface-control-quiet);
   color: var(--edsb-text-disabled);
   cursor: not-allowed;
-}
 
-// In a narrow container the strip scrolls inside itself rather than pushing the
-// document into horizontal overflow. Every choice stays reachable.
-@include layout.container-compact(tab-group) {
-  .tab-group {
-    @include layout.bounded-scroller;
-
-    flex-wrap: nowrap;
+  .tab__state {
+    color: var(--edsb-text-disabled);
   }
 }

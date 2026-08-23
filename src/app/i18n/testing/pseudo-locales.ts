@@ -111,15 +111,16 @@ const PLACEHOLDER = /(\{\{[^}]*\}\})/g;
 /**
  * Input names whose values are structure rather than something a reader reads.
  *
- * Two kinds live here: values that address an element — an id, a column key, a
- * URL — where transforming one side of a relationship silently breaks it; and
+ * Two kinds live here: values that address an element — an id, a column key,
+ * a URL — where transforming one side of a relationship silently breaks it;
  * values that select a behaviour from a fixed set — a tone, an emphasis, a
- * presentation — where an unrecognised string quietly turns the behaviour off.
- * Either way the result would be a failure the pseudo-locale invented rather
- * than one it exposed.
+ * kind, a side — where an unrecognised string quietly turns the behaviour off.
+ * A schematic plate is the second kind: expand the `side` a mount is drawn on
+ * or the `kind` it is, and the mount takes the wrong treatment or none. Both
+ * would be a failure the pseudo-locale invented rather than one it exposed.
  */
 const STRUCTURAL_KEY =
-  /^(?:id|for|href|src|address|key|role|type|state|tone|urgency|variant|emphasis|presentation|direction|lang|language|locale|tag|translationState|.*Id|.*Ids|.*Key|.*Keys)$/;
+  /^(?:id|for|href|src|address|key|kind|kinds|side|sides|role|type|state|tone|urgency|variant|emphasis|presentation|direction|lang|language|locale|tag|translationState|.*Id|.*Ids|.*Key|.*Keys)$/;
 
 /**
  * Expands one string to roughly twice its length.

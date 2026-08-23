@@ -1,0 +1,20 @@
+{
+ "symbol": "Type6",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "389b12b0a86fa239e0e91f5d7ab840ee355c094c5f9d59dc47d95a370a6afcae",
+ "content": {
+  "x": 387.589,
+  "y": 38.4,
+  "width": 424.822,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 185.851
+  }
+ ]
+}

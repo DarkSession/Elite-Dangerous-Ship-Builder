@@ -1,0 +1,38 @@
+{
+ "symbol": "Independant_Trader",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "68de425f8c28e9051a073b15dca9e5a248521d0f1212482dd40fc3a1ac8fb8ee",
+ "content": {
+  "x": 295.895,
+  "y": 38.4,
+  "width": 608.209,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 502.683,
+   "y": 139.352
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 696.853,
+   "y": 139.352
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 599.726,
+   "y": 185.235
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 599.726,
+   "y": 654.539
+  }
+ ]
+}

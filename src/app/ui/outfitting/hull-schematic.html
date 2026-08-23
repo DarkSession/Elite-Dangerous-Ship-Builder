@@ -1,0 +1,122 @@
+<!--
+  The canvases label each plate in its own corner and leave the drawing to fill
+  the frame. `data-side` and `data-state` are the two things a test would
+  otherwise have to re-derive from colour, which is exactly what the states are
+  forbidden from being carried by.
+-->
+<figure
+  class="schematic"
+  [attr.data-side]="view().side"
+  [attr.data-state]="plateState()"
+  [attr.aria-labelledby]="headingId"
+>
+  <figcaption class="schematic__side" [id]="headingId">{{ sideLabel() }}</figcaption>
+
+  <!--
+    Canvas 1c's frame: a box of the plate's own proportions, holding the drawing
+    and the mount marks over it. It is drawn in every state and at one ratio, so
+    the region reserves its height before anything is fetched and a schematic
+    arriving late moves nothing on the page. It is also the positioning
+    container for the marks, and its own container query is what scales them.
+  -->
+  <div class="schematic__frame">
+    @if (showsDrawing()) {
+      <!--
+        The hull, turned a quarter turn and centred in the plate. `viewBox` and
+        `transform` are arithmetic on the coordinates the package published;
+        nothing here reads a coordinate off anything rendered (FR-003).
+
+        A picture with a text equivalent, because that is now what it is: every
+        mount is a real button in the overlay above, so the drawing itself
+        carries no control and no fact that is not also written down.
+      -->
+      <svg
+        class="schematic__drawing"
+        [attr.viewBox]="frame().viewBox"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        [attr.aria-label]="description()"
+      >
+        <!--
+          The whole document, as one picture, at the package's own `viewBox`
+          inside the same turned group the marks are placed from — so the hull
+          and the marks over it cannot drift apart. The file is ninety
+          kilobytes of sub-pixel path data that a fixed-ratio plate would
+          otherwise re-rasterise on every resize, so neither this nor the marks
+          come from it at run time: both are made from it at build time, which
+          is what keeps them in one coordinate space.
+
+          Pushed into the interface's own hue by the same filter the hull
+          illustrations use, so a nine-colour technical drawing does not arrive
+          as nine colours nobody chose.
+        -->
+        <g class="schematic__artwork" [attr.transform]="frame().transform">
+          <image
+            [attr.href]="artworkSource()"
+            [attr.x]="artworkBox().x"
+            [attr.y]="artworkBox().y"
+            [attr.width]="artworkBox().width"
+            [attr.height]="artworkBox().height"
+            (error)="pictureUnavailable()"
+          />
+        </g>
+      </svg>
+
+      @for (occurrence of view().occurrences; track occurrence.item.key) {
+        <!--
+          Canvas 1c's `hp-node`: a small square carrying the mount's node
+          number, set on the hull at that mount's own position. A real button
+          rather than the reference's `div`, so it is reachable, pressable and
+          named; `data-kind`, `data-fitted`, `data-engineered` and `aria-pressed`
+          carry the same four facts the treatment draws and the name says.
+        -->
+        <button
+          class="schematic__mount"
+          type="button"
+          [style.left.%]="leftOf(occurrence)"
+          [style.top.%]="topOf(occurrence)"
+          [attr.data-slot]="occurrence.item.key"
+          [attr.data-kind]="occurrence.item.kind"
+          [attr.data-fitted]="occurrence.item.fitted"
+          [attr.data-engineered]="occurrence.item.engineered"
+          [attr.aria-label]="nameOf(occurrence)"
+          [attr.aria-pressed]="isSelected(occurrence)"
+          (click)="slotActivated.emit(occurrence.item.key)"
+        >
+          {{ occurrence.item.node }}
+          @if (occurrence.item.engineered) {
+            <!--
+              The canvas hangs the engineering icon off the node's top corner.
+              Decoration: the button's own name already says the module is
+              engineered, in words.
+            -->
+            <img class="schematic__engineered" src="assets/icons/engineered.svg" alt="" />
+          }
+        </button>
+      }
+    } @else if (isLoading()) {
+      <!--
+        The same mark the hull illustration carries while it is on its way, in
+        the place the drawing will be. The words are spoken rather than drawn,
+        because a line of prose here and a hull there is a plate that changes
+        height when the fetch lands.
+      -->
+      <p class="schematic__loading">
+        <img class="schematic__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <span class="schematic__spoken">{{ statusText() }}</span>
+      </p>
+    } @else {
+      <!--
+        The reference draws one hull that is always there. When it is not, the
+        plate says so in words in its place — never a blank frame, and never a
+        claim that the hull has no geometry (FR-010).
+      -->
+      <div class="schematic__status">
+        <p class="schematic__status-text">{{ statusText() }}</p>
+        @if (canRetry()) {
+          <edsb-action-button [label]="retryLabel()" emphasis="quiet" (activated)="retry()" />
+        }
+      </div>
+    }
+  </div>
+</figure>

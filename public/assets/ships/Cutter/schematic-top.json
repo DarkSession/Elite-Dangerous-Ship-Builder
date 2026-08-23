@@ -1,0 +1,62 @@
+{
+ "symbol": "Cutter",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "1b1af90a3063a681ea387ee4e1fb45c47bfd4bdd3ebbc58b1beabcb774bfd420",
+ "content": {
+  "x": 390.167,
+  "y": 38.4,
+  "width": 419.665,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 611.702,
+   "y": 318.133
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 588.299,
+   "y": 318.133
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 787.601,
+   "y": 576.929
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint4",
+   "x": 412.4,
+   "y": 576.929
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 658.21,
+   "y": 564.025
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 541.852,
+   "y": 564.11
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint7",
+   "x": 642.883,
+   "y": 405.302
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint8",
+   "x": 557.033,
+   "y": 405.32
+  }
+ ]
+}

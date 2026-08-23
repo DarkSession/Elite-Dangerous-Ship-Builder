@@ -1,0 +1,56 @@
+{
+ "symbol": "Type9_Military",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "6d468dc1e1a5119b0e4f5047d933aaa76f0ae5ed19a7cebae5e68dbd2932e0bc",
+ "content": {
+  "x": 187.661,
+  "y": 38.4,
+  "width": 824.678,
+  "height": 723.174
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 599.872,
+   "y": 231.932
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint3",
+   "x": 817.364,
+   "y": 321.6
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint4",
+   "x": 382.647,
+   "y": 321.6
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 714.595,
+   "y": 586.044
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 485.359,
+   "y": 586.044
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint7",
+   "x": 456.11,
+   "y": 193.975
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint8",
+   "x": 744.086,
+   "y": 193.949
+  }
+ ]
+}

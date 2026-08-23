@@ -115,10 +115,10 @@ test.describe('the composition this width has room for', () => {
           .filter((name) => name.length > 0),
       );
 
-    // Feedback, then the ledger, then the selected mount's bench, then the
-    // status rail — the same DOM at every width, arranged differently. A
-    // composition that reordered the document would give a reader a different
-    // screen from the one drawn.
+    // Feedback, then the ledger, then the middle track, then the status rail —
+    // the same DOM at every width, arranged differently. A composition that
+    // reordered the document would give a reader a different screen from the
+    // one drawn.
     expect(order).toEqual([
       // The region's own heading, hidden because neither canvas draws one.
       'visually-hidden',
@@ -126,13 +126,21 @@ test.describe('the composition this width has room for', () => {
       'outfitting__feedback',
       'outfitting__feedback',
       'outfitting__ledger-region',
-      'outfitting__bench',
+      // Canvas 1c's middle track and canvas 1d's middle band: the hull anatomy
+      // over the selected mount's bench, in one column so the bench stays under
+      // the plates (feature 010).
+      'outfitting__centre',
       // Canvas 1c's third track, and canvas 1d's Status stack. It is last in
       // the document at every width: a band under the bench until there is
       // room for the full `392px 1fr 306px` grid, and the trailing column after
       // that (feature 009).
       'outfitting__status-rail',
     ]);
+
+    const centre = await page
+      .locator('.outfitting__centre > *')
+      .evaluateAll((nodes) => nodes.map((node) => node.tagName.toLowerCase()));
+    expect(centre).toEqual(['edsb-hull-anatomy', 'div']);
   });
 
   test('is accessible in the composition this width draws', async ({ page }, testInfo) => {

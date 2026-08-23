@@ -1,120 +1,92 @@
 # Slot Targeting and Integration Contract
 
+Three boundaries this contract planned were withdrawn when the reference canvases were read against
+it: an intent object of this capability's own, the unique located-mount list it would also have been
+emitted from, and a provenance intent for a control the canvas does not draw. Feature 005's
+generalized mount-power port is not consumed either, because the `POWER` mode that would read it is
+not built here (design/hull-anatomy.md, "Divergence from FR-004 and SC-003", "Divergence from
+FR-005 and the legend", "Divergence from FR-011").
+
 ## Shared slot identity
 
-Feature 010 owns no editor selection. It consumes feature 002's generic exact slot selection and
-emits the same intent used by the complete ledger:
+Feature 010 owns no selection. There is one selected key in the workspace, feature 002's, and a mount
+on a plate selects it the same way a ledger row does:
 
 ```ts
-interface OpenSlotIntent {
-  readonly kind: 'openSlot';
-  readonly slotKey: string;
-  readonly source: 'anatomyGeometry' | 'anatomyList';
-}
+this.#outfitting.select(slotKey);
 ```
 
-Feature 002 validates/opens the exact package slot, selects the appropriate ledger category/row and
-opens its existing narrow exact-slot surface. Feature 010 never calls `ShipLoadout` mutation methods.
+The argument is the canonical item's exact package slot key and nothing else. There is no intent
+object, no source discriminator and no second call: an anatomy activation and a ledger activation are
+indistinguishable downstream, which is what makes them one selection rather than two that must be
+kept in step. SVG ids, element order, module identity, node numbers and coordinates never form a
+target. Feature 010 never calls a `ShipLoadout` mutation method.
 
-## Geometry and list activation
+## Geometry activation
 
-Activating a valid hardpoint or utility occurrence, or its unique text item, emits one
-`OpenSlotIntent`. The intent uses only the canonical item key. SVG ids, element order, module
-identity, node labels and coordinates never form a target.
+Each admitted occurrence is a named button. Activating it selects its canonical item's key. Both
+drawings of a mount that appears top and bottom carry the same item by reference, so either one
+selects the same slot and the ledger row, the bench and every occurrence show it selected together.
 
-If feature 002 refuses a stale/missing key, anatomy refreshes from the current revision and presents
-the owner-localized failure. It never redirects to a similarly named slot.
+A key that feature 002 does not have is never drawn: an item only exists because a slot view for it
+does, so there is no stale key to refuse. When the build changes, the projection changes with it.
 
 ## Ledger-to-anatomy reveal
 
-When feature 002 selects a hardpoint or utility that has a known occurrence:
+When feature 002's selection moves to a mount a plate draws, the store moves the shown side to one
+that draws it — the current side if it already does, otherwise the first the item lists (FR-006).
+The rule is bounded three ways:
 
-- wide composition identifies every top/bottom occurrence;
-- narrow composition keeps the current side when it contains the slot;
-- otherwise narrow composition chooses top, then bottom;
-- the nearest rendered occurrence uses native `scrollIntoView`; and
-- selected facts and the unique text item reference the same selected key.
+- **once per selection, not per projection.** A side finishing its load changes the projection; the
+  reveal must not undo a side the Commander chose while it was loading.
+- **not on the first selection a hull sees.** Feature 002 opens a build on its first slot, which
+  nobody chose; revealing it would flip the shown side on every hull whose first hardpoint is
+  underneath. The first selection is recorded rather than acted on.
+- **nothing to reveal moves nothing.** An internal, unlocated, pending or undrawn mount leaves the
+  shown side alone: there is no side to choose, and changing to one would suggest the mount is there.
 
-If the selected slot is pending, temporarily unavailable or defective, keep the current side and
-state that location cannot currently be revealed. If an internal/unlocated slot is selected, no
-geometry is falsely selected; the complete ledger/editor remains active.
+At the wide composition both plates are on screen and the reveal is only the selected treatment. No
+scrolling is performed: the plates fit their own frames, and nothing pans, zooms or scrolls inside
+one.
 
-Side choice and internal scroll position are memory-only. They do not enter build state, storage,
-history, URL, SLEF or undo/redo.
-
-## Generalized mount-power observation
-
-Feature 005 owns this generalized exact-slot boundary from inception; feature 010 only consumes it:
-
-```ts
-interface MountPowerObservationRead {
-  readonly buildRevision: number;
-  readonly conditionsRevision: number;
-  readonly slotKey: string;
-  readonly deploymentState: 'deployed' | 'retracted';
-  readonly observation: MountPowerObservation;
-}
-
-interface MountPowerObservationPort {
-  observe(
-    context: StatusRevisionContext,
-    slotKey: string,
-    deploymentState: 'deployed' | 'retracted',
-  ): MountPowerObservationRead;
-}
-```
-
-The owner accepts exact hardpoint and utility keys plus an explicit observation state. Feature 010
-passes `context.conditions.hardpoints`, derives no state itself and receives the result from one
-`ShipLoadout.powerBudget()` consumer/band result with normalized priority. Feature 010 requires exact
-revision and returned-state equality and copies the observation unchanged. It does not inspect raw
-fitted `on`/`priority`, consumers, bands, modifiers or module families.
-
-Availability of this feature-005-owned generalized port is a sequencing dependency. The installed
-Almanac already supplies utility consumers; no local fallback or upstream fix is required.
+Side choice is memory-only. It does not enter build state, storage, history, the URL fragment, a
+build link, SLEF or undo/redo.
 
 ## Complete-ledger fallback
 
 Feature 002's complete slot ledger remains mounted and usable while:
 
-- either/both schematics load or fail;
-- a document is rejected as unsafe/invalid;
-- an annotation key is unknown, wrong-kind or duplicated;
-- package geometry is missing; or
-- anatomy projection reports an unexpected failure.
+- either or both sides load, fail to arrive, or arrive as a package defect;
+- an annotation key is unknown, wrong-kind or duplicated on one side; or
+- a mount has no geometry at all.
 
-Every core, optional, armour, cargo-hatch and unlocated/defective slot remains available only through
-the ledger. Feature 010 never invents geometry for it.
+Every core, optional, armour, cargo-hatch and unlocated mount remains available only through the
+ledger, and every located one remains available there too. Feature 010 never invents geometry for a
+mount no side draws.
 
-## Provenance and package defects
+## Package provenance
 
-The anatomy heading exposes a contextual intent to feature 012's accepted in-place modal:
-
-```ts
-interface OpenAnatomyProvenanceIntent {
-  readonly kind: 'openHelpModal';
-  readonly context: 'packageArtworkAndData';
-}
-```
-
-It does not hard-code a `/help` route. The modal remains build-independent and preserves the current
-capability. Any package-defect issue-tracker navigation remains owned by feature 012, is deliberate,
-is labelled as leaving the app and contains no build/hull/slot/module/storage data.
+The anatomy heading publishes no provenance control: neither canvas draws one, and feature 012 owns
+where the application says what its data is made of. No external navigation, issue-tracker link or
+`/help` route is introduced here.
 
 ## Accessibility and feedback
 
-- SVG occurrences expose localized mount name, kind, selected state and complete current state;
-  each relates to the selected facts when selected.
-- The unique HTML list uses native semantic controls with independent 44 CSS-pixel targets.
-- Geometry and list activation produce one coalesced selected-slot announcement for the matching
-  revision; repeated occurrences do not announce twice.
-- Side failure/recovery and package defects use visible localized status plus one revision-keyed
-  announcement. Initial/unchanged state is silent.
+- Each occurrence is a named button, separately operable from the keyboard, whose name opens with the
+  node number it draws and then states the mount, its kind, its side, its fitted state and its
+  engineering (SC 2.5.3).
+- Occurrences are drawn at the plate's own scale, below the 44-pixel baseline; feature 002's ledger
+  beside them is the same targets at full size, which is SC 2.5.8's Equivalent exception and how the
+  axe gate is configured to read them.
+- A side failing and a side recovering each announce once, politely, keyed per side and numbered by
+  transition rather than by build revision. The state a region already has when it is first read is
+  not announced.
 - Nothing essential depends on hover, smooth motion, custom drag or geometry alone.
 
 ## Verification
 
-Contract and E2E tests cover geometry-to-ledger and ledger-to-geometry movement for both mount kinds,
-cross-side repeats, narrow deterministic reveal, internal/unlocated selection, stale-key refusal,
-fragment/storage stability, missing-art fallback, generalized power observations and in-place modal
-provenance without data-bearing external URLs.
+`hull-anatomy.spec.ts` and `e2e/hull-anatomy.spec.ts` cover geometry-to-ledger and ledger-to-geometry
+movement for both mount kinds, cross-side repeats, the deterministic reveal and its three bounds, an
+internal selection revealing nothing, missing-art fallback with editing intact, and side failure,
+retry and recovery. No spec asserts an intent object, a provenance control or a power observation,
+because none is built.

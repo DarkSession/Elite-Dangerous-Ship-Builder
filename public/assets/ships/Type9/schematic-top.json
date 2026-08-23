@@ -1,0 +1,50 @@
+{
+ "symbol": "Type9",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "9198546389c8e57865dbb4e7fe7d088aeedc17a139bad2abecc1b67b5f943b58",
+ "content": {
+  "x": 244.364,
+  "y": 38.4,
+  "width": 711.273,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 572.58,
+   "y": 89.587
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 627.572,
+   "y": 89.587
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 398.012,
+   "y": 303.93
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 801.937,
+   "y": 303.934
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 405.541,
+   "y": 415.642
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 794.488,
+   "y": 415.596
+  }
+ ]
+}

@@ -1,0 +1,44 @@
+{
+ "symbol": "Orca",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "bc7012da275cb133295d866ae8bc5a25f7c0154737ae19483921af707da70aa0",
+ "content": {
+  "x": 458.175,
+  "y": 38.4,
+  "width": 283.65,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 600,
+   "y": 157.589
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 558.433,
+   "y": 292.532
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 641.569,
+   "y": 292.532
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 198.931
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 600,
+   "y": 687.206
+  }
+ ]
+}

@@ -1,0 +1,50 @@
+{
+ "symbol": "Python",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "21f04ab76866f0312d3f10102c05bcb52a93d36044310b75ef0cc3b544adb865",
+ "content": {
+  "x": 360.519,
+  "y": 38.4,
+  "width": 478.961,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 521.958,
+   "y": 384.103
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 678.033,
+   "y": 384.102
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 547.265,
+   "y": 230.326
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 652.738,
+   "y": 230.326
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 585.744,
+   "y": 261.202
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 614.258,
+   "y": 261.202
+  }
+ ]
+}

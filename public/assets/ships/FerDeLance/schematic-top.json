@@ -1,0 +1,50 @@
+{
+ "symbol": "FerDeLance",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "a998d5828b716e1002635f1367ae50112c6822758d54350410317af9d77a3dcd",
+ "content": {
+  "x": 336.647,
+  "y": 38.4,
+  "width": 526.706,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 640.231,
+   "y": 205.097
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 559.689,
+   "y": 205.148
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 500.446,
+   "y": 329.975
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint4",
+   "x": 699.652,
+   "y": 330.382
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint5",
+   "x": 543.271,
+   "y": 561.677
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint6",
+   "x": 656.653,
+   "y": 561.677
+  }
+ ]
+}

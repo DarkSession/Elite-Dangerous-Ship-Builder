@@ -9,10 +9,13 @@ composition references only; their markup, CSS, data and assets are not implemen
 - Wide layout may show labelled top and bottom plates together with one shared selected mount.
 - Narrow/zoomed layout uses a labelled top/bottom selector and one bounded plate.
 - A concise legend explains visible mount state.
-- Geometry and ledger selection synchronize.
-- Selected facts remain close to the plates without becoming a second editor.
-- Native internal overflow may contain a large schematic without page horizontal scrolling.
-- Compact anatomy precedes the slot list/editor on narrow layouts.
+- Geometry and ledger selection synchronize: selecting a node marks the ledger row and titles the
+  fitting bench, and nothing else on the screen restates it.
+- A `MOUNTS` mode carries kind, fitted, empty, engineered and selected state, and no power state.
+- The plates hold one whole hull each at their own ratio; nothing pans and nothing scrolls.
+- Compact anatomy precedes the bench. It follows the slot ledger rather than preceding it, which is
+  the workspace grid's source order and a deviation recorded in `hull-anatomy.md`, "Narrow, mobile and
+  zoomed".
 
 ## Critical utility correction
 
@@ -26,40 +29,45 @@ Almanac `data-feature="utility_mount"` plus an exact resolved package `kind === 
 
 ## Required adaptations
 
-| Reference detail                                    | Planned correction                                                                              |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Fixed 1560px and separate 390px canvases            | One container-responsive capability covering all five required layouts, zoom and text expansion |
-| Hard-coded Anaconda technical SVGs                  | Exact active package symbol and installed `schematic-top/bottom.svg` copied to build output     |
-| Percentage coordinates and numbered `data-hp` nodes | Exact package path/circle geometry and `data-journal-slot`; no measured/stored coordinates      |
-| `Number(hp) > 6` utility logic                      | Exact `utility_mount` annotation plus matching package utility slot                             |
-| Mock utility nodes on weapon geometry               | Discard; render all real Almanac utility occurrences                                            |
-| Mock fitted, engineering, priority and power values | Same-revision feature 002 slot view and generalized feature 005 observation                     |
-| Node-number/size badges                             | Exact package key/kind/size semantics; utility is not class zero                                |
-| Small 14–30px nodes and hover titles                | Exact-shape 44px hit clones plus independent 44px semantic list controls                        |
-| Color/dash/icon-only state                          | Complete visible/programmatic text, selected facts and unique text equivalent                   |
-| Hover scaling and unconditional transition          | Optional supplementary hover only; reduced-motion-aware tokenized motion                        |
-| `MOUNTS/POWER/DRIVES/DEFENCE/OFFENCE/STATUS` modes  | Feature 010 owns mounts only; other capability surfaces retain their data                       |
-| Fitting/engineering bench below anatomy             | Remains feature 002; feature 010 adds selected facts, not another editor                        |
-| Mock convergence/offset/direction measurements      | Remove; FR-008 permits no such facts and package geometry is not measured                       |
-| Inline colors/type/spacing/durations                | Shared feature 011 tokens/components only                                                       |
-| Google Fonts preconnect and remote font CSS         | No automatic cross-origin request; use shared same-origin/system typography                     |
-| Hard-coded English/title-only labels                | Feature 011 localization/game text and semantic names/relationships                             |
-| No loading/offline/schema/defect states             | Independent side lifecycle, retry/recovery and ledger-preserving defect surfaces                |
-| Generic/incomplete help licence overlay             | Context action opens feature 012's accepted in-place artwork/data provenance modal              |
+| Reference detail                                    | Planned correction                                                                                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixed 1560px and separate 390px canvases            | One container-responsive capability covering all five required layouts, zoom and text expansion                                                                         |
+| Hard-coded Anaconda technical SVGs                  | Exact active package symbol; the installed `schematic-top/bottom.svg` rasterised to PNG and its mounts extracted to JSON at build time, and the SVG itself never served |
+| A private hull image already lying nose-left        | The package's own nose-up document, turned a quarter turn and cropped to the hull, at the hull's own proportions                                                        |
+| Percentage coordinates and numbered `data-hp` nodes | The canvas's numbered mark, placed from the annotation's own published coordinates and named by `data-journal-slot`; nothing measured off the DOM, nothing stored       |
+| `Number(hp) > 6` utility logic                      | Exact `utility_mount` annotation plus matching package utility slot                                                                                                     |
+| Mock utility nodes on weapon geometry               | Discard; render all real Almanac utility occurrences                                                                                                                    |
+| Mock fitted and engineering values                  | Same-revision feature 002 slot view; the mock's priority and power belong to the `POWER` mode                                                                           |
+| Node-number/size badges                             | Exact package key/kind/size semantics; utility is not class zero                                                                                                        |
+| Small 14–30px nodes and hover titles                | The canvas's own `clamp(14px, 3.06cqw, 22px)` mark as a named button; keyboard operation per mount and SC 2.5.8's Equivalent exception, proved (FR-012)                 |
+| Color/dash/icon-only state                          | Every occurrence's accessible name states kind, side, fitted state and engineering in words                                                                             |
+| Hover scaling and unconditional transition          | Optional supplementary hover only; reduced-motion-aware tokenized motion                                                                                                |
+| `MOUNTS/POWER/DRIVES/DEFENCE/OFFENCE/STATUS` modes  | All five drawn in the canvas's order; feature 010 owns `MOUNTS`, and the other four are disabled until features 005 to 008 draw them                                    |
+| Fitting/engineering bench below anatomy             | Remains feature 002, and is the selected mount's facts; feature 010 adds no second detail block                                                                         |
+| Engineered icon offset from a node                  | The canvas's own offset icon on the mark, from the mark's own box rather than from the drawing; the legend carries the same icon rather than a square                   |
+| `HELP & FAQ` in the application menu (1d)           | Stays feature 012's; feature 010 draws no provenance control (design/hull-anatomy.md, FR-011)                                                                           |
+| Mock convergence/offset/direction measurements      | Remove; the design draws no such facts and package geometry is not measured                                                                                             |
+| Inline colors/type/spacing/durations                | Shared feature 011 tokens/components only                                                                                                                               |
+| Google Fonts preconnect and remote font CSS         | No automatic cross-origin request; use shared same-origin/system typography                                                                                             |
+| Hard-coded English/title-only labels                | Feature 011 localization/game text and semantic names/relationships                                                                                                     |
+| No loading/offline/schema/defect states             | Independent side lifecycle, retry/recovery and ledger-preserving defect surfaces                                                                                        |
+| Generic/incomplete help licence overlay             | Feature 012 owns it; feature 010 emits no help intent and hard-codes no route                                                                                           |
 
 ## Accessibility gaps corrected
 
 - Clickable `div` nodes/tabs/rows become shared semantic controls or explicitly named SVG controls
   with state and relationships.
 - Both sides have visible headings and accessible image descriptions.
-- One semantic list represents every hardpoint and utility exactly once in package order.
-- Side availability, selected state, current power and defects are text and announced once.
+- Feature 002's ledger already represents every hardpoint and utility exactly once in package
+  order, and remains the route to every slot with or without artwork.
+- Side availability, selected state and side failure are text, and a side change is announced once.
 - Geometry state is never conveyed by color/shape/position alone.
-- 44px direct and list targets, native pan and non-hover operation support touch/pointer.
+- Every occurrence is a named button, operable by keyboard and pointer without hover, and raised
+  above the marks it overlaps while it is being worked with.
 - Desktop, tablet/mobile portrait/landscape, 200% text, actual 400% zoom, RTL expansion and reduced
   motion are explicit preview/test states.
-- Axe runs in Chromium and Firefox; manual screen-reader checks verify geometry/list/detail and
-  duplicate relationships.
+- Axe runs in Chromium and Firefox; manual screen-reader checks verify the plates, occurrence names
+  and cross-side duplicate relationships.
 
 The result keeps the reference's dense technical-instrument character and wide/narrow hierarchy
 while removing every fabricated game assertion, private asset and inaccessible interaction.

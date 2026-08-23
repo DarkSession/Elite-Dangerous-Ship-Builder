@@ -1,0 +1,26 @@
+{
+ "symbol": "CobraMkIV",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "f55c655d92d6953f8f5f2024e3c4438ed177652406e457395f844d9390f54990",
+ "content": {
+  "x": 73.738,
+  "y": 38.4,
+  "width": 1052.524,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 198.922,
+   "y": 527.191
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 1000.783,
+   "y": 525.805
+  }
+ ]
+}

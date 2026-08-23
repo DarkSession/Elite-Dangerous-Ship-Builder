@@ -1,0 +1,50 @@
+{
+ "symbol": "Empire_Courier",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "dda16d4d059c924da0c27b967e4c6be21a18f7777d78234c8c2ec222d5596abf",
+ "content": {
+  "x": 360.694,
+  "y": 38.4,
+  "width": 478.611,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 808.195,
+   "y": 337.205
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 391.8,
+   "y": 337.237
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 383.643
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 600,
+   "y": 536.796
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 807.16,
+   "y": 451.59
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 392.838,
+   "y": 451.59
+  }
+ ]
+}

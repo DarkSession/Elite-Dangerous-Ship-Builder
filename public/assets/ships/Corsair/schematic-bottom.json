@@ -1,0 +1,32 @@
+{
+ "symbol": "Corsair",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "0c4012b9398c3b196504a5c82ef278f85fa6a308d6c5b3c4acbfdd547f169869",
+ "content": {
+  "x": 311.4,
+  "y": 38.508,
+  "width": 577.2,
+  "height": 723.092
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 600,
+   "y": 522.998
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 644.45,
+   "y": 532.721
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 555.55,
+   "y": 532.721
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "symbol": "Krait_MkII",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "280dbfd3dbc2432ef2129bb250bc577c88a22f10e55b67e3a0060c413168840f",
+ "content": {
+  "x": 244.628,
+  "y": 38.4,
+  "width": 710.743,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 653.993,
+   "y": 81.983
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 545.517,
+   "y": 81.983
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 656.585,
+   "y": 368.134
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 543.415,
+   "y": 368.134
+  }
+ ]
+}

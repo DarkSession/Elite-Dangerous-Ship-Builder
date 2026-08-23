@@ -1,0 +1,38 @@
+{
+ "symbol": "SmallCombat01_NX",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "e4e6cddf2258deb2f4511cdd59a012087d3d449da3dc034851332b6abb9151bc",
+ "content": {
+  "x": 307.197,
+  "y": 38.4,
+  "width": 585.605,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 672.074,
+   "y": 293.38
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint3",
+   "x": 527.978,
+   "y": 293.38
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 600,
+   "y": 309.507
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 600,
+   "y": 585.354
+  }
+ ]
+}

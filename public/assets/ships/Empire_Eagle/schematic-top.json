@@ -1,0 +1,20 @@
+{
+ "symbol": "Empire_Eagle",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "fad7a5ffef5556827fa55421b1669a49f1c3e6f7d1f680be444c7dea20759e7f",
+ "content": {
+  "x": 197.597,
+  "y": 38.4,
+  "width": 804.806,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 599.931,
+   "y": 395.519
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "symbol": "CobraMkV",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "a57549ce5215363bfa5ab17a3bbd0fe7d17bafbe9de2e9c61b53fce5f9eafe96",
+ "content": {
+  "x": 122.061,
+  "y": 38.4,
+  "width": 955.878,
+  "height": 723.04
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 704.434,
+   "y": 100.22
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 495.455,
+   "y": 100.198
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 888.545,
+   "y": 479.215
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 311.454,
+   "y": 479.19
+  }
+ ]
+}

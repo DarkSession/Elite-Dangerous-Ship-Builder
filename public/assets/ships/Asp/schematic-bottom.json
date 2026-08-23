@@ -1,0 +1,44 @@
+{
+ "symbol": "Asp",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "a8bbab437df46feae4bde1cfdff6bf36f5d471c78f4dc70fcfa45faa3656719b",
+ "content": {
+  "x": 272.101,
+  "y": 38.4,
+  "width": 655.798,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 544.086,
+   "y": 121.969
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 655.919,
+   "y": 121.969
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint3",
+   "x": 588.871,
+   "y": 139.17
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint4",
+   "x": 611.123,
+   "y": 139.17
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 599.998,
+   "y": 669.045
+  }
+ ]
+}

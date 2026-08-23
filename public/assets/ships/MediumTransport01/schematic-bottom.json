@@ -1,0 +1,44 @@
+{
+ "symbol": "MediumTransport01",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "75c1da716b5f2eac5576a2df0153eb4276b345a698074c00da63d152fddf982f",
+ "content": {
+  "x": 405.436,
+  "y": 38.4,
+  "width": 388.975,
+  "height": 734.181
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 666.688,
+   "y": 124.629
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 533.312,
+   "y": 124.641
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 782.982,
+   "y": 542.481
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint4",
+   "x": 416.864,
+   "y": 542.496
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 146.26
+  }
+ ]
+}

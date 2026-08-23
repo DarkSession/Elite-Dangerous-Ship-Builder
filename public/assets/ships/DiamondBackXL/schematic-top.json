@@ -1,0 +1,50 @@
+{
+ "symbol": "DiamondBackXL",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "0ef0b212be8126ed042dd67ae90d900db19691e6528e59c1297bd9a02546b856",
+ "content": {
+  "x": 379.442,
+  "y": 38.4,
+  "width": 441.116,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 535.052,
+   "y": 179.987
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 664.948,
+   "y": 179.987
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 600,
+   "y": 142.212
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 600,
+   "y": 730.353
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint3",
+   "x": 403.727,
+   "y": 387.798
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint4",
+   "x": 796.294,
+   "y": 387.798
+  }
+ ]
+}

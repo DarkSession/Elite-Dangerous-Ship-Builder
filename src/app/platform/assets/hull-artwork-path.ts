@@ -34,3 +34,35 @@ export function hullArtworkUrl(symbol: string, baseHref: string): string {
   const base = baseHref.endsWith('/') ? baseHref : `${baseHref}/`;
   return `${base}${hullArtworkPath(symbol)}`;
 }
+
+/**
+ * The path to one of a hull's two schematics, as the mounts on it.
+ *
+ * The Almanac's own `schematic-<side>.svg` is never fetched. It is ninety
+ * kilobytes of sub-pixel path data, and what a plate needs out of it is the
+ * drawing's box, the rectangle it draws in and the middle of each annotated
+ * mount — a few hundred bytes, extracted from the installed package by
+ * `scripts/extract-schematic-mounts.mts` and committed beside the illustration.
+ * The application still keeps no geometry of its own: the extract is
+ * reproducible from the package and `pnpm run policy` fails if it was made from
+ * a different file than the installed one (feature 010, FR-009).
+ *
+ * The symbol is URI-encoded as one path segment, so nothing a symbol could
+ * contain can climb out of the artwork root or name another host.
+ */
+export function hullSchematicPath(symbol: string, side: 'top' | 'bottom'): string {
+  return `${ARTWORK_ROOT}/${encodeURIComponent(symbol)}/schematic-${side}.json`;
+}
+
+/**
+ * The path to the same schematic as a picture.
+ *
+ * The extract above is what the application *reads*; this is what the plate
+ * *draws*. The same package document rasterised by
+ * `scripts/convert-ship-artwork.mjs`, drawn inside the `viewBox` the extract
+ * carries, so the picture and the marks over it share one coordinate space and
+ * neither can drift from the other.
+ */
+export function hullSchematicImagePath(symbol: string, side: 'top' | 'bottom'): string {
+  return `${ARTWORK_ROOT}/${encodeURIComponent(symbol)}/schematic-${side}.png`;
+}

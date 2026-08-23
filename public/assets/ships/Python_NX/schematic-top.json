@@ -1,0 +1,68 @@
+{
+ "symbol": "Python_NX",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "f2bb16e3ddd804b9bac77ea9edb200d10e9d02b9354d16b30329e88bdf229b5c",
+ "content": {
+  "x": 323.112,
+  "y": 38.4,
+  "width": 553.777,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint2",
+   "x": 523.529,
+   "y": 385.795
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 676.477,
+   "y": 385.805
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint4",
+   "x": 600.001,
+   "y": 385.729
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 546.836,
+   "y": 232.576
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 653.149,
+   "y": 232.576
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint6",
+   "x": 408.148,
+   "y": 631.597
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint5",
+   "x": 791.854,
+   "y": 631.603
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint2",
+   "x": 589.891,
+   "y": 216.209
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 610.109,
+   "y": 216.21
+  }
+ ]
+}

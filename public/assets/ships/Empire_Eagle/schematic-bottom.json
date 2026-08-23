@@ -1,0 +1,32 @@
+{
+ "symbol": "Empire_Eagle",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "37df44ff5c894e852dbd896b339c08057910ac2230ca3ebb7f61d4c876eb8f8c",
+ "content": {
+  "x": 197.597,
+  "y": 38.4,
+  "width": 804.806,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 623.083,
+   "y": 467.393
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 576.937,
+   "y": 467.393
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 454.442,
+   "y": 629.77
+  }
+ ]
+}

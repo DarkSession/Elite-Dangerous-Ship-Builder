@@ -1,0 +1,44 @@
+{
+ "symbol": "Federation_Corvette",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "1b519d241e88d5c3a41442adb584b59074554526a4e185ad17229f9e934e8a63",
+ "content": {
+  "x": 411.19,
+  "y": 39.13,
+  "width": 377.619,
+  "height": 722.47
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "LargeHardpoint1",
+   "x": 600.01,
+   "y": 236.465
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 681.59,
+   "y": 358.192
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 518.428,
+   "y": 358.192
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint7",
+   "x": 623.83,
+   "y": 352.102
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint8",
+   "x": 576.188,
+   "y": 352.102
+  }
+ ]
+}

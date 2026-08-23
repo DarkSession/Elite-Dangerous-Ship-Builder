@@ -1,109 +1,110 @@
 # Anatomy Projection Contract
 
+Three things this contract planned were withdrawn when the reference canvases were read against it,
+and the design record says why: feature 005's generalized mount-power observation belongs to the
+`POWER` mode, the unique located-mount list to a second text surface canvas 1c does not draw, and
+the localized package-defect framing to a provenance control it does not publish
+(design/hull-anatomy.md, "Divergence from FR-005 and the legend", "Divergence from FR-004 and
+SC-003", "Divergence from FR-011"). They are absent below, because they are not built.
+
 ## Inputs
 
-The pure projector receives one coherent context:
+`projectAnatomy(slots, sides)` is a pure function of two values and nothing else — no signals, no
+injection, no `ShipLoadout` (constitution III):
 
-- feature 001 active `ShipLoadout`, exact resolved hull symbol and `buildRevision`;
-- feature 003 settled hardpoint condition and `conditionsRevision`;
-- feature 002 immutable exact slot views and `selectedSlotKey`;
-- top/bottom side states and validated annotations for that hull; and
-- feature 005 generalized located-mount power observations for the same revision pair.
+- feature 002's immutable exact slot views for the active build; and
+- the two side states the store holds, each `loading`, `ready`, `temporarilyUnavailable` or
+  `contractDefect`.
 
-Any hull or revision mismatch refuses publication. Locale is a presentation input and never changes
-mount identity or revisions.
+There is no revision argument. The store derives the projection from feature 002's own signal, so a
+build edit reprojects and a stale pair cannot be published: there is no snapshot to hold. The one
+selected key is feature 002's, read where the plate is drawn rather than joined in here. Locale is a
+presentation input and never changes mount identity.
 
 ## Canonical items
 
-Read `ShipLoadout.slots()` once for the captured build revision. Keep entries with exact package kind
-`hardpoint` or `utility`, preserving returned outfitting order. Create one item keyed by the package
-slot key with:
+One item per slot view whose exact package kind is `hardpoint` or `utility`, in the order those
+views arrive, carrying:
 
-- exact kind and package size semantics;
-- feature 002's empty/resolved fitted state;
-- exact module symbol and feature 011 game-text presentation;
-- package/feature 002 engineering presence;
-- focused state from the one exact selected key; and
-- generalized feature 005 priority/current-power observation.
+- the exact package slot key, which is the only identity anything exchanges;
+- feature 002's resolved display name, so the plate and the ledger row say the same word;
+- the kind;
+- feature 002's display ordinal as the canvas's `NODE NO.`;
+- empty or fitted at this revision;
+- engineering presence; and
+- the sides whose annotations were admitted for that key.
 
-No item is created from an SVG annotation. No package item is removed because geometry is pending,
-unavailable or defective.
+No item is created from an annotation, and no package mount is removed because its geometry is
+pending, unavailable or defective.
 
 ## Annotation admission
 
-For every validated group carrying `data-journal-slot`:
+For every annotation the extract records:
 
-1. `data-feature="hardpoint"` expects a canonical `hardpoint` item;
-2. `data-feature="utility_mount"` expects a canonical `utility` item;
-3. every other feature remains inert artwork, even if malformed content adds a journal key;
-4. the journal key must resolve to the exact package-enumerated active-hull item;
-5. unknown keys and feature/kind mismatches are omitted and recorded as defects; and
-6. a second occurrence for the same key on one side is a contract defect and no occurrence is chosen
-   by order.
+1. its `data-journal-slot` must be the exact key of a canonical item;
+2. its `data-feature` word must be the one the package uses for that item's kind — `hardpoint` for a
+   hardpoint, `utility_mount` for a utility;
+3. a key drawn twice on one side is dropped from that side entirely, rather than resolved by taking
+   the first — choosing between two drawings by their order in the file is the positional identity
+   FR-003 refuses; and
+4. everything else the file draws stays inert artwork.
 
-Key prefixes such as `TinyHardpoint`, translated/canonical labels, module symbols, ids, drawing order,
-coordinates and model sockets never classify or resolve a mount.
+Key prefixes such as `TinyHardpoint`, translated or canonical labels, module symbols, ids, drawing
+order, coordinates and model sockets never classify or resolve a mount.
+
+Admission runs before the items are built, because `MountItem.sides` is a statement about which
+occurrences were admitted: a wrong-kind annotation must not leave a side listed on the item it was
+dropped from.
 
 ## Occurrences and duplicates
 
-A valid occurrence is `(slotKey, side, exact package shapes)`. It references its canonical item and
-owns no build state. The package allows one occurrence on each side; top and bottom instances for the
-same key both render identical fitted, engineering, focused and power state.
+An occurrence is its canonical item by reference, the side, and that side's centre for the mount. It
+owns no build state, so both drawings of a mount that appears top and bottom show the same fitted,
+engineering and selected state from one place — there is no second copy that could disagree
+(FR-007).
 
-After both valid sides settle, a package hardpoint/utility without an occurrence becomes a
-`missingContractGeometry` defect. If one side is unavailable, absence remains pending/temporarily
-unavailable instead of being reported as permanent.
+A package mount that no admitted annotation draws is not a defect and is not reported as one. Its
+item is published with no sides, the ledger beside the plates still lists it, and it is still
+selectable and editable there.
 
 ## State projection
 
-| State                  | Source and rule                                                          |
-| ---------------------- | ------------------------------------------------------------------------ |
-| Mount kind/key/size    | Exact package slot snapshot                                              |
-| Empty/fitted           | Feature 002 slot view from the same build revision                       |
-| Module identity        | Exact `FittedModule.symbol`; no recovery lookup                          |
-| Module name            | Feature 011 over Almanac i18n; canonical/unavailable disclosure retained |
-| Engineering            | Package/feature 002 presence only                                        |
-| Focused                | Feature 002's one `selectedSlotKey`                                      |
-| Priority/current power | Feature 005 located-mount observation, unchanged                         |
-| Geometry location      | Settled valid occurrences and side availability                          |
+| State              | Source and rule                                                        |
+| ------------------ | ---------------------------------------------------------------------- |
+| Mount kind/key     | Exact package slot view                                                |
+| Name and node      | Feature 002's resolved display name and display ordinal                |
+| Empty/fitted       | Feature 002's slot view for the current build                          |
+| Engineering        | Package/feature 002 presence only                                      |
+| Selected           | Feature 002's one `selectedSlotKey`, read at the plate                 |
+| Geometry location  | The sides whose annotations were admitted                              |
+| Priority and power | Not projected. The `POWER` mode is feature 005's and is not built here |
 
-An unavailable priority, power verdict, module name or geometry state stays unavailable. Empty does
-not imply disabled or zero draw. Missing power participation is `notApplicable`, not powered.
+## Text equivalence
 
-## Text-equivalent order and content
-
-The unique located-mount list uses canonical package order and contains every hardpoint and utility
-once, including pending/unavailable/defective geometry. Each item exposes as text:
-
-- mount kind and exact slot key;
-- class size or package-documented not-class-sized/unavailable state;
-- empty or resolved module name/symbol state;
-- engineered/stock/unavailable state;
-- focused state;
-- effective priority or unavailable;
-- current named power state under deployed/retracted conditions; and
-- top, bottom, both, pending, temporarily unavailable or package-defect location.
-
-Visual colour, stroke, fill, dash, shape, icon and position are supplementary. Duplicate geometry
-never duplicates the semantic list item.
+Every mount on a plate is a named button whose name carries, as words, everything its treatment
+shows: the node number it draws, the mount, its kind, which side of the hull it is on, whether it is
+fitted and whether it is engineered. Feature 002's complete ledger beside the plates is the stable
+list of every slot, located or not, and this capability publishes no second one. Colour, stroke,
+fill, dash and position are supplementary, and a cross-side repeat never becomes a second list item.
 
 ## Projection lifecycle
 
-- No active build publishes `noBuild` and no asset request.
-- A new active hull clears prior geometry/items, starts both side loads and creates current package
-  items immediately.
-- A same-hull build edit reprojects item state without refetching a valid cached document.
-- A condition change refreshes only owner power observations and revision-stamped presentation.
-- Side completion updates occurrences/location only when hull/request identity still matches.
-- Selection changes reproject focused state without a build revision.
-- Unexpected projector failure publishes no stale prior-hull snapshot; the complete ledger and
-  active build remain owned/usable outside anatomy.
+- No active build publishes no items and makes no asset request.
+- A new active hull aborts the previous hull's requests, resets both sides to loading and starts
+  both loads.
+- A same-hull build edit reprojects item state and refetches nothing: the hull is read off the
+  loadout rather than off a revision.
+- Side completion publishes only while the per-side request counter still matches, so a stale
+  response is dropped rather than relabelled.
+- Selection changes reproject the selected mount without touching either side's state.
+- A rejected or absent document leaves feature 002's complete ledger and editing untouched.
 
 ## Verification
 
-Tests cover both mount kinds, empty removable/resolved articles, package-populated fixed mounts,
-engineering presence, all power
-states, every location state, package order, cross-side repeats, wrong-kind/unknown/same-side
-defects, partial side readiness, stale revisions and selection changes. Regression fixtures include
-the current Federal Corvette and Lynx cross-side duplicates and at least one utility with
-always-powered and deployed-only behavior.
+`anatomy-projector.spec.ts` covers both mount kinds, empty and fitted mounts, engineering presence,
+package order, cross-side repeats, wrong-kind, unknown-key and same-side-duplicate annotations, a
+mount no side draws, and partial side readiness. `almanac-anatomy-contract.spec.ts` reads the pinned
+package's own `schematic-*.svg` files directly, over every catalogued hull and both sides, and is
+what reports a journal key absent from the hull's catalogue, one resolving to the wrong kind, one
+repeated on a side, and a package mount no side draws — as a failed test rather than as anything a
+Commander sees. It includes a hull with cross-side duplicates.

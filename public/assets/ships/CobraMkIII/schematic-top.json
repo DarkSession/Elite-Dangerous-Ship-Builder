@@ -1,0 +1,26 @@
+{
+ "symbol": "CobraMkIII",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "f4314b613427ce5a3d116b9613b69015b8c366396054a3c11fb8d8eb4788fa12",
+ "content": {
+  "x": 58.4,
+  "y": 93.983,
+  "width": 1083.2,
+  "height": 612.033
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 521.171,
+   "y": 156.734
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 678.831,
+   "y": 156.965
+  }
+ ]
+}

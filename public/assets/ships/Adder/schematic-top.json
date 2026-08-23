@@ -1,0 +1,20 @@
+{
+ "symbol": "Adder",
+ "side": "top",
+ "viewBox": "0 0 1200 800",
+ "source": "3fdf56bbb25678b3c4211d93f33bb7ec9e2d74affc82b6264169d53c85259f73",
+ "content": {
+  "x": 269.159,
+  "y": 38.4,
+  "width": 661.682,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 600.001,
+   "y": 458.871
+  }
+ ]
+}

@@ -28,6 +28,7 @@ import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-gr
 import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
+import { HullAnatomy } from '../hull-anatomy/hull-anatomy';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
 
 /** The category controls the canvas draws above the ledger. */
@@ -58,6 +59,7 @@ type Category = 'all' | SlotKind;
     BuildStatus,
     CostMaterials,
     EditRefusalNotice,
+    HullAnatomy,
     EngineeringEditor,
     IngressRefusalNotice,
     ModuleReplacement,

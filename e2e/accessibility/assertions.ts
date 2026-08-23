@@ -33,7 +33,30 @@ const DENSE_TARGETS = [
   // The bar's identity block is 54px tall on the canvas, with two lines in it.
   // A 44px field cannot be one of two lines inside 54.
   '.identity-fields__input',
+  // A segmented strip is drawn dense everywhere it appears: 23.5px beside
+  // canvas 1c's `HULL ANATOMY` rule, 30px under canvas 1d's, 25px for 1d's side
+  // selector and 38px for canvas 1a's catalogue filter. At 44 it stops being a
+  // strip beside a heading and becomes a band across the region.
+  '.tab',
 ];
+
+/**
+ * Controls that take SC 2.5.8's **Equivalent** exception rather than a size.
+ *
+ * One control does, and it is not a chip drawn small: a mount on a hull
+ * schematic is the package's own geometry at the package's own spacing. The
+ * Almanac puts real mounts nineteen units apart on a twelve-hundred-unit hull —
+ * six CSS pixels on the plate a tablet has room for — so no band wide enough to
+ * be a target leaves the neighbouring mount pressable, and widening the gap
+ * would mean moving package geometry, which feature 010's FR-003 refuses.
+ *
+ * The exception is only available because the equivalent exists and is on the
+ * same screen: feature 002's complete outfitting ledger carries every one of
+ * these mounts at the full 44-pixel baseline, in package order, whether or not
+ * the artwork arrived. `expectEquivalentControls` is what proves that, and this
+ * list is inert without it.
+ */
+const EQUIVALENT_TARGETS = ['.schematic__mount'];
 
 /**
  * Waits for every running transition to finish before a surface is measured.
@@ -236,7 +259,7 @@ export async function expectTargetSizes(
   selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"]',
 ): Promise<void> {
   const undersized = await page.locator(selector).evaluateAll(
-    (nodes, { baseline, floor, dense }) => {
+    (nodes, { baseline, floor, dense, equivalent }) => {
       /** The union of a control's box and the box of any label that activates it. */
       const effectiveBox = (element: HTMLElement): DOMRect => {
         const boxes = [element.getBoundingClientRect()];
@@ -271,6 +294,9 @@ export async function expectTargetSizes(
           const isDense = dense.some(
             (pattern) => element.matches(pattern) || element.closest(pattern) !== null,
           );
+          const isEquivalent = equivalent.some(
+            (pattern) => element.matches(pattern) || element.closest(pattern) !== null,
+          );
           return {
             tag: node.tagName.toLowerCase(),
             text: (node.textContent ?? '').trim().slice(0, 40),
@@ -278,15 +304,49 @@ export async function expectTargetSizes(
             width: Math.round(box.width),
             height: Math.round(box.height),
             baseline: isDense ? floor : baseline,
+            exempt: isEquivalent,
           };
         })
+        .filter((box) => !box.exempt)
         .filter((box) => box.width > 0 && box.height > 0)
         .filter((box) => box.width < box.baseline || box.height < box.baseline);
     },
-    { baseline: TARGET_BASELINE_PX, floor: TARGET_FLOOR_PX, dense: DENSE_TARGETS },
+    {
+      baseline: TARGET_BASELINE_PX,
+      floor: TARGET_FLOOR_PX,
+      dense: DENSE_TARGETS,
+      equivalent: EQUIVALENT_TARGETS,
+    },
   );
 
   expect(undersized, `targets below the ${TARGET_BASELINE_PX} CSS-pixel baseline`).toEqual([]);
+}
+
+/**
+ * Every exempt control has the equivalent that exempts it.
+ *
+ * SC 2.5.8's Equivalent exception is not a waiver — it is a claim that the same
+ * function is reachable through another control on the same page that does meet
+ * the criterion. This checks the claim: every mount drawn on a schematic has a
+ * ledger row for the same slot, and that row is at least the baseline.
+ */
+export async function expectEquivalentControls(page: Page): Promise<void> {
+  const missing = await page.evaluate((baseline) => {
+    const drawn = [...document.querySelectorAll('.schematic__mount')].map(
+      (node) => node.getAttribute('data-slot') ?? '',
+    );
+
+    return [...new Set(drawn)].filter((key) => {
+      const row = document.querySelector(`[data-slot-key="${key}"] button`);
+      if (row === null) {
+        return true;
+      }
+      const box = row.getBoundingClientRect();
+      return box.width < baseline || box.height < baseline;
+    });
+  }, TARGET_BASELINE_PX);
+
+  expect(missing, 'a drawn mount has no full-size equivalent in the ledger').toEqual([]);
 }
 
 /**

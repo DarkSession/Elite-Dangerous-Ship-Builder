@@ -18,6 +18,8 @@
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TmplAstText, TmplAstTextAttribute, parseTemplate } from '@angular/compiler';
@@ -45,6 +47,8 @@ export const SCOPE = {
   conformanceDocuments: ['README.md', 'AGENTS.md'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/elite-dangerous-ship-builder/browser',
+  /** Where the build is configured to place the copied hull schematics. */
+  extractedSchematics: 'public/assets/ships',
   previewManifest: 'src/app/ui/previews/preview-manifest.ts',
   uiComponents: 'src/app/ui/components',
   specs: 'specs',
@@ -848,6 +852,7 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkConformanceClaims(sources);
   await checkLedgerReconciliation();
   await checkProductionOutput();
+  await checkCopiedSchematics();
 
   return [...violations];
 }
@@ -866,6 +871,69 @@ async function checkProductionOutput() {
   }
 
   violations.push(...productionOutputViolations(contents));
+}
+
+/**
+ * IO wrapper: audits the committed mount extracts against the installed package.
+ *
+ * Reads the installed package's schematics, hashes each one, reads the extract
+ * committed beside the rasterised drawing, and walks the repository for a
+ * tracked copy of a package SVG.
+ *
+ * The rendering itself carries no digest and is not compared. The two
+ * reproduction scripts are run together after a pin move and read the same SVG,
+ * so a stale extract and a stale rendering arrive together and the extract's
+ * digest is the signal for both.
+ */
+async function checkCopiedSchematics() {
+  const packageRoot = resolve(ROOT, SCHEMATIC_SOURCE);
+  if (!existsSync(packageRoot)) {
+    violations.push(...copiedSchematicViolations({ installed: {}, extracted: {}, tracked: [] }));
+    return;
+  }
+
+  const installed = {};
+  for (const file of await walk(SCHEMATIC_SOURCE, ['.svg'])) {
+    const key = relative(packageRoot, file).split('\\').join('/');
+    if (SCHEMATIC_FILE.test(key)) {
+      installed[key] = createHash('sha256')
+        .update(await readFile(file))
+        .digest('hex');
+    }
+  }
+
+  const extracted = {};
+  for (const key of Object.keys(installed)) {
+    const file = resolve(ROOT, SCOPE.extractedSchematics, key.replace(/\.svg$/, '.json'));
+    if (!existsSync(file)) {
+      continue;
+    }
+    try {
+      extracted[key] = JSON.parse(await readFile(file, 'utf8')).source;
+    } catch {
+      extracted[key] = null;
+    }
+  }
+
+  // Everything committed, so a hull the package has *dropped* is caught too.
+  // Comparing only installed-to-extract leaves an orphan behind after a rename
+  // or a withdrawal: a file still served that no script can reproduce from the
+  // pinned package, which is the private geometry catalogue by another route.
+  const committed = (await walk(SCOPE.extractedSchematics, ['.json']))
+    .map((file) => relative(resolve(ROOT, SCOPE.extractedSchematics), file).split('\\').join('/'))
+    .filter((key) => SCHEMATIC_FILE.test(key.replace(/\.json$/, '.svg')));
+
+  // A private copy is a *tracked* package file: the extract and the rasterised
+  // drawing are this repository's own output, reproducible from the package,
+  // and the SVG itself is what may not be kept.
+  const tracked = execFileSync('git', ['ls-files', '-z', '--', 'public', 'src'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  })
+    .split('\u0000')
+    .filter((file) => file.endsWith('.svg'));
+
+  violations.push(...copiedSchematicViolations({ installed, extracted, committed, tracked }));
 }
 
 /** IO wrapper: reconciles the ledger with the routes, components, previews and projects. */
@@ -994,6 +1062,91 @@ const CROSS_ORIGIN_REQUEST = [
   /@import\s+(?:url\()?["']?(https?:\/\/[^"')]+)/gi,
   /url\(\s*["']?(https?:\/\/[^"')]+)/gi,
 ];
+
+// ---------------------------------------------------------------------------
+// Rule: the hull schematics are extracted from the package, never kept
+// ---------------------------------------------------------------------------
+
+/** Where the installed Almanac package keeps its per-hull assets. */
+export const SCHEMATIC_SOURCE = 'node_modules/@elite-dangerous-almanac/core/assets/ships';
+
+/** The two files per hull the anatomy capability renders. */
+export const SCHEMATIC_FILE = /^[^/]+\/schematic-(?:top|bottom)\.svg$/;
+
+/**
+ * Checks that every committed mount extract was made from the installed package.
+ *
+ * Feature 010's FR-009 says a hull's mounts come from the installed package and that no
+ * private copy or geometry catalogue is maintained. The extract under
+ * `public/assets/ships` is neither: it is written by
+ * `scripts/extract-schematic-mounts.mts` from the installed SVG and carries that
+ * file's digest, so "reproducible from the package" is a fact this rule can
+ * check rather than a claim in a comment.
+ *
+ * Three ways it can go wrong, all of them silent without this: a package
+ * upgrade that nobody re-extracted leaves every mount on the previous
+ * release's coordinates; a hull added by the package has no extract at all and
+ * draws no mounts; and a well-meant "fixed" SVG committed under `public/` is
+ * exactly the private copy the requirement forbids — it would keep working, and
+ * would stop tracking the package at the next release.
+ *
+ * `installed` is `{ [relative path]: sha256 }` of the package's own files,
+ * `extracted` is `{ [the same path]: the digest the committed extract records }`
+ * and `tracked` is every `.svg` git has under `public/` and `src/`. An empty
+ * input is itself a violation: a rule that passes when there is nothing to
+ * inspect is not a gate.
+ */
+export function copiedSchematicViolations({ installed, extracted, committed, tracked }) {
+  const found = [];
+  const file = SCOPE.extractedSchematics;
+  const fail = (where, message) =>
+    found.push({ file: where, line: 0, rule: 'copied-schematics', message });
+
+  const names = Object.keys(installed ?? {});
+  if (names.length === 0) {
+    fail(
+      SCHEMATIC_SOURCE,
+      'No installed hull schematics were found to audit. Install dependencies before running this check.',
+    );
+    return found;
+  }
+
+  for (const name of names) {
+    const recorded = (extracted ?? {})[name];
+    const target = `${file}/${name.replace(/\.svg$/, '.json')}`;
+    if (recorded === undefined) {
+      fail(
+        target,
+        `No mount extract for "${name}". Run \`node scripts/extract-schematic-mounts.mts\`.`,
+      );
+    } else if (recorded !== installed[name]) {
+      fail(
+        target,
+        'The mount extract was made from a different file than the installed package ships. Re-run `node scripts/extract-schematic-mounts.mts`.',
+      );
+    }
+  }
+
+  for (const key of committed ?? []) {
+    if (installed[key.replace(/\.json$/, '.svg')] === undefined) {
+      fail(
+        `${file}/${key}`,
+        'This extract is for a hull the pinned package does not ship. Nothing can reproduce it; delete it.',
+      );
+    }
+  }
+
+  for (const path of tracked ?? []) {
+    if (SCHEMATIC_FILE.test(path.split('/').slice(-2).join('/'))) {
+      fail(
+        path,
+        'A package hull schematic is tracked in the repository. Only the extract and the rendering are kept.',
+      );
+    }
+  }
+
+  return found;
+}
 
 /**
  * Checks the built output rather than the source.
@@ -1224,6 +1377,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'hullDetail.fact.boost': 'The in-game term, used untranslated in the German community.',
     'hullDetail.slots.group.hardpoint':
       'The in-game term, used untranslated in the German community.',
+    'anatomy.mount.name':
+      'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'outfitting.power.priority.absent':
       'A dash standing in for a group the package never published; not a word in either language.',
     'outfitting.search.shortcut.apple':
@@ -1481,6 +1636,7 @@ export const rules = {
   conformanceClaimViolations,
   ledgerReconciliationViolations,
   productionOutputViolations,
+  copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,
   previewCoverageViolations,

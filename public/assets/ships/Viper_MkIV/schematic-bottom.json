@@ -1,0 +1,26 @@
+{
+ "symbol": "Viper_MkIV",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "1c1db35435ff0da7ac43ab4dd10c3c80738ae884a1c7e15061dd861fe62e1554",
+ "content": {
+  "x": 296.298,
+  "y": 38.4,
+  "width": 607.404,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint1",
+   "x": 729.349,
+   "y": 450.66
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint2",
+   "x": 470.651,
+   "y": 450.66
+  }
+ ]
+}

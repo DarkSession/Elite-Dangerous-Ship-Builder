@@ -1,0 +1,26 @@
+{
+ "symbol": "Asp_Scout",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "aa61d2a2396e30a7f11f52c518d27a0328c5b7e7c667ae8167ac56d8dd08b6cd",
+ "content": {
+  "x": 207.867,
+  "y": 38.4,
+  "width": 784.267,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint1",
+   "x": 588.51,
+   "y": 142.51
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 611.484,
+   "y": 142.508
+  }
+ ]
+}

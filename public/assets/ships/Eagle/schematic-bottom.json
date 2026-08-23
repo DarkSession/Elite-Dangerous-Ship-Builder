@@ -1,0 +1,32 @@
+{
+ "symbol": "Eagle",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "4b5dd79410512ca0f4e6ceab9c200d140bd5cf331bc58c01454e08059e59bf11",
+ "content": {
+  "x": 254.552,
+  "y": 38.4,
+  "width": 690.896,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint2",
+   "x": 623.073,
+   "y": 467.393
+  },
+  {
+   "feature": "hardpoint",
+   "slot": "SmallHardpoint3",
+   "x": 576.926,
+   "y": 467.393
+  },
+  {
+   "feature": "utility_mount",
+   "slot": "TinyHardpoint1",
+   "x": 454.432,
+   "y": 629.77
+  }
+ ]
+}

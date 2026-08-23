@@ -1,0 +1,20 @@
+{
+ "symbol": "Empire_Courier",
+ "side": "bottom",
+ "viewBox": "0 0 1200 800",
+ "source": "f81556e36d02648f4eef08a3c261165ec42a74ece5bf6916bd0cc1eb9ccde88b",
+ "content": {
+  "x": 360.694,
+  "y": 38.4,
+  "width": 478.611,
+  "height": 723.2
+ },
+ "mounts": [
+  {
+   "feature": "hardpoint",
+   "slot": "MediumHardpoint3",
+   "x": 600,
+   "y": 165.006
+  }
+ ]
+}
