@@ -784,6 +784,22 @@ describe('production output', () => {
     assert.deepEqual(ruleIds(found), ['production-output']);
   });
 
+  it('rejects a reference format the application cannot actually produce', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/main.js': 'const label = "MARKDOWN TABLE";',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+  });
+
+  it('rejects the repository manifest leaking into the bundle', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/main.js': 'const pkg = { "devDependencies": {} };',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+  });
+
   it('rejects preview markers that survived into the shipped bundle', () => {
     const found = rules.productionOutputViolations({
       'dist/app/browser/main.js': 'el.setAttribute("data-preview-address", a);',

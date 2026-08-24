@@ -1,0 +1,60 @@
+@use '../../../styles/responsive' as layout;
+
+// The reference draws no diagnostic list — it draws one status line. This is
+// the surface the review's "Add ... semantic exact package diagnostic list"
+// adaptation calls for, built out of the same rules the rest of the system
+// uses: a grid of one-pixel gaps over the panel ground, tracked micro-labels,
+// and every technical value in the metric face.
+
+:host {
+  display: block;
+}
+
+.diagnostics {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diagnostics__item {
+  padding: var(--edsb-space-control-block) var(--edsb-space-control-inline);
+  background-color: var(--edsb-surface-inset);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
+}
+
+.diagnostics__fields {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline-tight);
+  margin: 0;
+}
+
+.diagnostics__term {
+  @include layout.micro-label(var(--edsb-text-subtle));
+}
+
+.diagnostics__value {
+  margin: 0;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-primary);
+  // A long path owns its own overflow rather than widening the layer.
+  overflow-wrap: anywhere;
+  unicode-bidi: isolate;
+}
+
+.diagnostics__reason {
+  margin: 0;
+  font-size: var(--edsb-text-size-compact);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.diagnostics__disclosure {
+  margin-block-start: var(--edsb-space-stack-tight);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-subtle);
+}

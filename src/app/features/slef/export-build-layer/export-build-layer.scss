@@ -1,0 +1,42 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+/*
+ * The content pane of canvas 1c: a column of payload, explanation and one
+ * footer row. The 236px format sidebar beside it belongs to the layer that
+ * hosts both modes, not to the SLEF mode alone.
+ */
+.slef-export {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.slef-export__link {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+/*
+ * Metadata and actions share one row where there is room, as drawn, and stack
+ * where there is not. `wrapping-row` is what makes 200% text and a narrow
+ * sheet reflow instead of pushing the actions off the edge.
+ */
+.slef-export__footer {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slef-export__meta {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-meta));
+
+  font-family: var(--edsb-font-metric);
+}
+
+.slef-export__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

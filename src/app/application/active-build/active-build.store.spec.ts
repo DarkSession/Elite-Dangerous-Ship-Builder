@@ -128,13 +128,13 @@ describe('ActiveBuildStore', () => {
     active.commit(incoming);
 
     active.setPersistence('quota-full');
-    active.setLink({ kind: 'published', fragment: 'b.abc' });
+    active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
     active.setWorkingRecordId('w1');
 
     expect(active.state()).toMatchObject({
       loadout: incoming.loadout,
       persistence: 'quota-full',
-      link: { kind: 'published', fragment: 'b.abc' },
+      link: { kind: 'published', fragment: 'b.abc', revision: 1 },
       workingRecordId: 'w1',
     });
   });

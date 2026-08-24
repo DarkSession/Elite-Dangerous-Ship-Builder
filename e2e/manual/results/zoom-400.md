@@ -32,3 +32,15 @@ measurement. These rows record that confirmation.
 
 Capability features add their own rows as they land; the shell rows above are the foundation's own
 and are the ones this feature is accountable for.
+
+## The exchange layers (feature 004)
+
+Both layers carry a monospaced field that can hold more than the viewport, which is exactly the
+composition step 6 is about. Each is its own observation.
+
+| Date | OS  | Browser  | Build | Viewport | Orientation | Capability / state           | Expected                                                                        | Actual | Result  |
+| ---- | --- | -------- | ----- | -------- | ----------- | ---------------------------- | ------------------------------------------------------------------------------- | ------ | ------- |
+| —    | —   | Chromium | —     | —        | landscape   | import layer / diagnostics   | Full height; field scrolls inside itself; no sideways page scroll; actions kept | —      | not run |
+| —    | —   | Chromium | —     | —        | portrait    | export layer / whole payload | As above                                                                        | —      | not run |
+| —    | —   | Firefox  | —     | —        | landscape   | import layer / diagnostics   | As above                                                                        | —      | not run |
+| —    | —   | Firefox  | —     | —        | portrait    | export layer / whole payload | As above                                                                        | —      | not run |

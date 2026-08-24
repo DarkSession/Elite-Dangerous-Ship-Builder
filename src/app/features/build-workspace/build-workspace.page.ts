@@ -12,6 +12,7 @@ import { ActiveBuildStore } from '../../application/active-build/active-build.st
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
+import { SLEF_FALLBACK } from '../../application/build-link/slef-fallback.port';
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
@@ -22,7 +23,6 @@ import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome } from '../shared/screen-chrome';
 import { ActionLink } from '../../ui/components/action/action-link';
 import { StatusNotice } from '../../ui/components/status/status-notice';
-import { ExportDialog } from './export.dialog';
 import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
 import { PersistenceStatus } from './persistence-status';
 
@@ -41,14 +41,7 @@ import { PersistenceStatus } from './persistence-status';
  */
 @Component({
   selector: 'edsb-build-workspace-page',
-  imports: [
-    ActionLink,
-    ExportDialog,
-    OutfittingWorkspace,
-    PersistenceStatus,
-    StatusNotice,
-    RouterLink,
-  ],
+  imports: [ActionLink, OutfittingWorkspace, PersistenceStatus, StatusNotice, RouterLink],
   templateUrl: './build-workspace.page.html',
   styleUrl: './build-workspace.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,6 +66,15 @@ export class BuildWorkspacePage {
   readonly #link = inject(BuildLinkCoordinator);
   readonly #publisher = inject(FragmentPublisher);
   readonly #linkErrors = inject(LinkErrorMapper);
+  /**
+   * How the workspace opens the exchange layer.
+   *
+   * The one seam feature 001 has onto feature 004, and the reason the layer's
+   * own component is not imported here: the workspace says "export this build"
+   * and knows nothing about which formats exist or how one is produced
+   * (build-link contract, "Active-edit synchronization").
+   */
+  readonly #exchange = inject(SLEF_FALLBACK);
   readonly #location = inject(HistoryLocationAdapter);
 
   readonly catalogueRoute = NAVIGATION_ROUTES.catalogue;
@@ -83,7 +85,6 @@ export class BuildWorkspacePage {
   readonly shareLabel = this.#messages.messageSignal('workspace.actions.share');
 
   /** Whether the export layer is open. */
-  readonly exportOpen = signal(false);
 
   readonly hasBuild = computed(() => this.#active.loadout() !== null);
 
@@ -161,7 +162,7 @@ export class BuildWorkspacePage {
           ? [
               {
                 action: { id: 'workspace.export', label: this.shareLabel() },
-                perform: () => this.exportOpen.set(true),
+                perform: () => this.#exchange.export(),
               },
             ]
           : [],

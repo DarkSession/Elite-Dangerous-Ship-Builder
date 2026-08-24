@@ -1,0 +1,24 @@
+@use '../../../../styles/responsive' as layout;
+
+/*
+ * The reference's two-column layer: a fixed format list beside the content
+ * (canvas 1c, `grid-template-columns: 236px 1fr`). Below the medium breakpoint
+ * the list becomes the mode strip canvas 1d draws above the payload, which is
+ * the same choice group in one column.
+ */
+.export-dialog {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--edsb-space-section);
+}
+
+.export-dialog__content {
+  min-width: 0;
+}
+
+@include layout.medium-up {
+  .export-dialog {
+    grid-template-columns: var(--edsb-layout-menu-max) 1fr;
+    align-items: start;
+  }
+}

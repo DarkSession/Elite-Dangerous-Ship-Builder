@@ -13,6 +13,16 @@
   <router-outlet />
 </edsb-app-frame>
 
+<!--
+  Loaded when a Commander asks for one, not before. Both layers are deferred
+  together because they share the store the shell already holds, and because
+  the first of them to be opened pays the load either way.
+-->
+@defer (when exchangeWanted()) {
+  <edsb-slef-import-dialog />
+  <edsb-slef-export-dialog />
+}
+
 <edsb-confirm-dialog
   [open]="replacementOpen()"
   [title]="replacementTitle()"

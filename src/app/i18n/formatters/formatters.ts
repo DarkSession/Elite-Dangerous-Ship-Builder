@@ -16,6 +16,8 @@ export type FormatterKind =
   | 'percent'
   | 'metres'
   | 'kilometres'
+  | 'bytes'
+  | 'kilobytes'
   | 'date'
   | 'date-time'
   | 'collator'
@@ -119,6 +121,33 @@ export class Formatters {
       minimumFractionDigits: fractionDigits,
       maximumFractionDigits: fractionDigits,
     }).format(value);
+  }
+
+  /**
+   * A payload size, in the locale's own byte units.
+   *
+   * Below a kilobyte the exact byte count is what a Commander needs — it is the
+   * figure the 64-KiB gate is measured against — so it is stated exactly.
+   * Above it, a rounded kilobyte reading is what the reference draws beside a
+   * payload (canvas 1c, `exp-meta`), and an exact 68,514-byte figure there
+   * would be precision nobody asked for.
+   */
+  bytes(value: number): string {
+    this.#assertFinite('integer', value);
+    if (Math.abs(value) < 1000) {
+      return this.#numberFormat('bytes', {
+        style: 'unit',
+        unit: 'byte',
+        unitDisplay: 'short',
+        maximumFractionDigits: 0,
+      }).format(value);
+    }
+    return this.#numberFormat('kilobytes', {
+      style: 'unit',
+      unit: 'kilobyte',
+      unitDisplay: 'short',
+      maximumFractionDigits: 1,
+    }).format(value / 1000);
   }
 
   /** Credits, as a localized message pattern around a locale-formatted number. */

@@ -201,6 +201,26 @@ describe('TextareaField', () => {
 
     expect(query(fixture, 'textarea').getAttribute('rows')).toBe('8');
   });
+
+  it('marks a technical payload monospaced and direction-isolated', () => {
+    const fixture = renderComponent(TextareaField, { label: 'SLEF payload', technical: true });
+    const control = query(fixture, 'textarea');
+
+    expect(control.classList.contains('field__control--technical')).toBe(true);
+    expect(control.hasAttribute('data-bidi-isolate')).toBe(true);
+  });
+
+  it('keeps a readonly payload selectable rather than disabling it', () => {
+    const fixture = renderComponent(TextareaField, {
+      label: 'SLEF payload',
+      value: '[]',
+      readonly: true,
+    });
+    const control = query(fixture, 'textarea') as HTMLTextAreaElement;
+
+    expect(control.readOnly).toBe(true);
+    expect(control.disabled).toBe(false);
+  });
 });
 
 describe('ChoiceGroup', () => {

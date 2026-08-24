@@ -30,8 +30,9 @@ The source is a visual/interaction reference, not executable behavior or authori
   actions reachable.
 - Add visible labels/instructions, exact UTF-8 usage/limit, over-limit, inspecting, cardinality,
   semantic diagnostics, candidate/replacement and normalization-refusal states to import.
-- Keep import exact and atomic. The workspace owns the post-commit outcome so quality-completion
-  feedback and remaining incomplete state survive the input layer transition.
+- Keep import exact and atomic. The workspace owns what happens after the commit: feature 002's
+  quality-completion notice and feature 003's build-status rail survive the input layer transition,
+  and feature 004 adds no report beside them (see [import-outcome.md](./import-outcome.md)).
 - Add true package validation/incomplete warnings, exact-revision artifact/link behavior and real
   localized metadata to SLEF export.
 - Desktop Download and mobile Share File are not equivalent reference actions: Download is always
@@ -65,7 +66,7 @@ Shared host action
 │   ├── exact labelled draft + byte state
 │   ├── status + package diagnostic/candidate content
 │   ├── explicit actions
-│   └── shared replacement confirmation -> commit -> Import Outcome
+│   └── shared replacement confirmation -> commit -> workspace (002 notice, 003 rail)
 └── Export Build layer (active build only)
     ├── Share Link mode (feature 001)
     └── SLEF mode (feature 004)
@@ -73,3 +74,58 @@ Shared host action
         ├── metadata/status
         └── Download + Copy + optional Share
 ```
+
+## What was built, against what was drawn
+
+Written after the implementation, so the record is what happened rather than what was intended.
+
+### Adopted, as drawn
+
+- **One exchange layer per direction**, opened from the command bar and adding no route and no
+  history entry. The import layer is a 560px dialog on the desktop canvas and a bottom sheet on the
+  compact ones; the export layer is a 760px dialog with the format list down its leading edge. Both
+  are the shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS.
+- **The import layer's own composition**: description, one monospaced editable field, one status line
+  that never says two things at once, and a ruled footer with what is accepted on one side and the
+  actions on the other.
+- **The export layer's own composition**: format list, readonly monospaced payload, one metadata line
+  (`SLEF v1 · n modules · size`), and the actions on the same row.
+- **Download and Copy together**, with Copy emphasised, exactly as `exp-dl`/`exp-copy` are drawn.
+
+### Adapted, with the reason
+
+- **Two formats, not four.** `JOURNAL LOADOUT` and `MARKDOWN TABLE` are drawn and are not
+  capabilities this application has. A control for a format that cannot be produced is worse than no
+  control; the bundle is checked for their labels so neither can return by accident.
+- **Share is added by capability, never in place of Download.** The compact canvas draws `SHARE FILE`
+  where the desktop draws `DOWNLOAD`. Treating them as the same control would take the always-working
+  action away from exactly the platforms most likely to need it.
+- **The package's verdict and the link's absence are said in the layer.** The canvas draws neither. An
+  export that silently omits a link, or that hands over an invalid build without saying so, would be
+  the "fake delivery feedback" this review already rejected. Both are ordinary status lines in the
+  drawn content column — not new regions beside it.
+- **A stale payload says why it went away.** The canvas has no state for a build edited after its
+  export was made. An empty field with no explanation reads as broken.
+- **The one status line carries every import state.** The canvas draws `AWAITING INPUT`; the same line
+  says the byte count, the inspection, and how a cancelled or superseded attempt ended.
+- **The refusal is said once, by the field.** `edsb-textarea-field` renders it and associates it, so a
+  reader who lands on the payload hears why it was refused. A second copy beside it was written,
+  measured against the canvas, and removed.
+- **Import lives in the shell, not in four screens.** The canvas draws `IMPORT` in the command bar of
+  the shipyard; the same action is published once by the shell so every screen offers it identically.
+
+### Rejected, and why
+
+- **The Clear control.** Not drawn. The canvas's footer is `CANCEL` and `LOAD BUILD`; a third control
+  that empties a field the Commander can select and delete is a control for nothing.
+- **The candidate summary panel.** Not drawn. When confirmation is unnecessary feature 001 commits
+  immediately, and when it is necessary feature 001's own confirmation names the incoming hull. A
+  summary in the layer would say the same thing twice.
+- **The import outcome surface.** Not drawn, and both facts it would carry — completed partial rolls,
+  and the package's verdict — are already drawn by feature 002's completion notice and feature 003's
+  build-status rail. See [import-outcome.md](./import-outcome.md), "Divergence".
+- **The export-unavailable panel.** Not drawn. With no active build the Export action is not
+  published, which is the honest state; the workspace's own empty state already says what to do and
+  the shell's Import action is one control away.
+- **Fixed pixel widths, the mock parser, immediate mutation and the fabricated metadata** — all as
+  recorded above, none of them present in the delivered surfaces.

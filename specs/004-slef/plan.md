@@ -167,8 +167,7 @@ src/app/
 ├── ui/                                       # feature 011/shared extensions
 └── features/slef/
     ├── export-build-layer/
-    ├── import-build-layer/
-    └── import-outcome/
+    └── import-build-layer/
 
 e2e/
 ├── accessibility.ts
@@ -198,8 +197,9 @@ See [research.md](./research.md). The decisive outcomes are:
 - Preserve one immutable artifact for selectable text, download, clipboard and capability-gated
   share. Download reports dispatch/setup, not an unverifiable disk-save success.
 - Treat `.design` as hierarchy/interaction reference. The complete surface inventory includes the
-  import layer, shared replacement state, post-layer import outcome, export-unavailable host state
-  and active-build export layer.
+  import layer, shared replacement state, export-unavailable host state and active-build export
+  layer. The canvas draws no post-commit import report, so feature 004 builds none; feature 002's
+  completion notice and feature 003's build-status rail already say what one would have said.
 
 All planning questions are resolved. Implementation remains sequenced behind the planned 001, 002
 and 011 boundaries.
@@ -207,7 +207,7 @@ and 011 boundaries.
 ## Phase 1: Design Outputs
 
 - [data-model.md](./data-model.md) defines exact drafts, inspection/failure state, normalized
-  candidates, revision-bound reports/artifacts and delivery outcomes.
+  candidates, revision-bound artifacts and delivery outcomes.
 - [contracts/slef-import.md](./contracts/slef-import.md) freezes the byte, cardinality, package,
   normalization-order and atomic replacement pipeline.
 - [contracts/slef-export.md](./contracts/slef-export.md) freezes serialization options, current-retail
@@ -217,7 +217,8 @@ and 011 boundaries.
 - [contracts/routes-and-ui.md](./contracts/routes-and-ui.md) freezes host entry points, intent
   boundaries, integrated feature 001 share-link mode, semantics, localization and verification.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every requirement to a named
-  surface/state; adjacent files define import, outcome and export composition.
+  surface/state; adjacent files define import and export composition, and record the one design
+  divergence.
 - [design/reference-review.md](./design/reference-review.md) records `.design` evidence and every
   adopted, adapted and rejected behavior.
 - [quickstart.md](./quickstart.md) provides runnable package, atomicity, round-trip, delivery,

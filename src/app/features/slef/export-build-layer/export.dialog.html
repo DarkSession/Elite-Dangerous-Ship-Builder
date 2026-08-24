@@ -1,0 +1,45 @@
+<edsb-layer
+  [title]="title()"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  (dismissed)="slef.closeLayer()"
+>
+  <!--
+    Canvas 1c: the format list on the leading edge, the chosen format's content
+    beside it. Both modes are the same layer, because passing a build on is one
+    decision with two answers rather than two screens.
+  -->
+  <div class="export-dialog">
+    <edsb-choice-group
+      class="export-dialog__modes"
+      [legend]="modeLegend()"
+      [choices]="modes()"
+      [selected]="selectedModes()"
+      (changed)="selectMode($event)"
+    />
+
+    <div class="export-dialog__content">
+      @if (selectedMode() === 'slef') {
+        <edsb-slef-export-layer
+          [view]="slef.exportView()"
+          (copyRequested)="slef.copy()"
+          (downloadRequested)="slef.download()"
+          (shareRequested)="slef.share()"
+        />
+      } @else {
+        <edsb-share-link-panel
+          [state]="link.state()"
+          [url]="link.url()"
+          [refusal]="link.refusal()"
+          [feedback]="link.feedback()"
+          [shareAvailable]="link.shareAvailable"
+          [slefAvailable]="true"
+          (copyRequested)="link.copy()"
+          (shareRequested)="link.share()"
+          (retryRequested)="link.retry()"
+          (slefRequested)="chooseSlef()"
+        />
+      }
+    </div>
+  </div>
+</edsb-layer>

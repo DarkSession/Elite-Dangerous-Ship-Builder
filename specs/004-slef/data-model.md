@@ -46,7 +46,6 @@ this shape.
 | `unknownHull`              | exact source hull identity                            | Package catalogue lookup/construction cannot resolve the hull; no invented package diagnostic   |
 | `construction`             | generic app failure category                          | Unexpected package construction failure; raw exception remains logs-only                        |
 | `normalizationUnsupported` | exact package code/params plus source slot/identity   | `completeEngineeringGrade()` returned structured package refusal                                |
-| `correlationFailure`       | expected/observed source slot and identity context    | App-owned stable category; no package code is invented                                          |
 | `packageContractFailure`   | source context and exact structured result if present | Unexpected unchanged/refused/result shape; retain package `reason` when that is what it returns |
 
 `superseded` and `cancelled` are terminal no-op operation outcomes, not error presentations. Every
@@ -112,21 +111,20 @@ Incoming `appCustomProperties` and `appURL` are neither executed nor carried int
 presentation. Empty header values simply produce no attribution; they are not used to classify the
 input as journal or envelope.
 
-## SlefImportOutcome
+## No import outcome model
 
-Revision-bound presentation after feature 001 accepts the candidate.
+There is none. The design canvas draws no feature-004 report of an accepted import, and both facts
+one would have carried are already modelled and drawn elsewhere
+([design/import-outcome.md](./design/import-outcome.md), "Divergence").
 
-| Field                | Type                                          | Rules                                                              |
-| -------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| `activeRevision`     | opaque revision                               | Outcome disappears when it no longer describes the active revision |
-| `qualityCompletions` | readonly completion records                   | Transient/dismissible; never persisted                             |
-| `validationIssues`   | readonly package validation issue projections | Package-owned code/params/text rules for remaining resolved state  |
-| `validation`         | package `LoadoutValidation`                   | Exact accepted final state, including invalid/incomplete           |
-| `dismissed`          | boolean                                       | Presentation only; dismissal is not a build edit                   |
+The candidate's `qualityCompletions` become feature 001's own `qualityNotices` on the candidate it
+hands over, which is what feature 002's revision-bound, dismissible completion notice reads. The
+package verdict is `loadout.validation`, which feature 003's build-status rail already renders for
+whatever build is active. Feature 004 holds neither after the handoff.
 
-The detailed outcome, quality outcomes, validation issue list and full validation presentation do
-not enter `BuildSnapshotV1`, the fragment, SLEF or edit history. Feature 001 independently persists
-the accepted revision's existing `valid`/`complete` summary booleans.
+Quality completions and the detailed validation issue list stay transient: neither enters
+`BuildSnapshotV1`, the fragment, SLEF or edit history. Feature 001 independently persists the
+accepted revision's existing `valid`/`complete` summary booleans.
 
 ## ActiveExportSnapshot | null
 

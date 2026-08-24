@@ -39,6 +39,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '009-cost-and-materials',
   '003-ship-statistics',
   '010-hull-anatomy',
+  '004-slef',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -953,6 +954,145 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'removing motion removes no mount, no state and no announcement',
     ],
     manualRecord: 'actual-zoom',
+  },
+  {
+    surfaceId: 'shell/slef-import-layer',
+    requirements: [
+      '004/FR-007',
+      '004/FR-008',
+      '004/FR-009',
+      '004/FR-011',
+      '004/FR-014',
+      '004/SC-003',
+    ],
+    journey: 'product/slef-import',
+    axe: true,
+    assertions: [
+      'Import opens from ship selection, hull detail, the workspace and the library, with no active build',
+      'the exact draft survives every refusal, cancellation and supersession',
+      'an over-limit draft names the actual and limit bytes and never reaches the inspector',
+      'zero, two and mixed observed entries are refused whole, naming the exactly-one rule',
+      'every package diagnostic keeps its own index, path, code, constraint and reason',
+      'no application parser, trim, repair or heuristic decode runs on the draft',
+      'no state is carried by colour alone, and the draft JSON is never announced',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'shell/slef-import-replacement',
+    requirements: ['004/FR-010'],
+    journey: 'product/slef-import',
+    axe: true,
+    assertions: [
+      'a ready candidate replaces dirty work only after the shared confirmation is accepted',
+      'cancelling leaves the active build, its revision, records, fragment and history identical',
+      'a superseded candidate cannot commit after a newer submit, close or route change',
+      'a successful import is exactly one replacement, one autosave and one link synchronization',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/slef-import-aftermath',
+    requirements: ['004/FR-006', '004/FR-010', '004/FR-012', '004/FR-013', '004/SC-002'],
+    journey: 'product/slef-import',
+    axe: true,
+    assertions: [
+      'an imported completed partial roll is named by feature 002’s own completion notice, with its slot, article and source quality',
+      'a retained incomplete or invalid verdict is the build-status rail’s, unchanged by where the build came from',
+      'feature 004 draws no second report of either: each fact appears exactly once on the workspace',
+      'a package-defaulted fixed mount is ordinary build state with no provenance of its own',
+      'a later revision retires the completion notice and changes nothing about the build',
+      'a refused import leaves the workspace, the rail and the notice exactly as they were',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/slef-export-layer',
+    requirements: [
+      '004/FR-001',
+      '004/FR-002',
+      '004/FR-003',
+      '004/FR-005',
+      '004/FR-006',
+      '004/FR-013',
+      '004/SC-001',
+    ],
+    journey: 'product/slef-export',
+    axe: true,
+    assertions: [
+      'the layer generates one entry for the exact active revision and shows its metadata',
+      'an invalid or incomplete build still exports, with the package verdict stated in words',
+      'the exact-revision canonical link is included, and its omission is explained rather than failing',
+      'credit figures are the package catalogue retail values, never a captured purchase',
+      'a modelled edit invalidates the artifact before any delivery is attempted',
+      'the Share Link and SLEF modes are the only two, and the selected one is exposed as such',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/slef-export-delivery',
+    requirements: ['004/FR-004', '004/FR-014'],
+    journey: 'product/slef-export',
+    axe: true,
+    assertions: [
+      'the payload stays selectable and Download stays available through every failure',
+      'Copy reports copied only after the clipboard promise resolves',
+      'Download reports dispatched, never saved',
+      'Share appears only where the platform provides it, and a cancellation is neutral',
+      'no application request leaves the origin during generation or delivery',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    // No panel: the canvas draws none, so with no build to pass on the Export
+    // action is simply not published. The workspace's own empty state says what
+    // to do next and the shell's Import action is always one control away
+    // (`specs/004-slef/design/reference-review.md`, "Rejected").
+    surfaceId: 'build/slef-export-unavailable',
+    requirements: ['004/FR-001'],
+    journey: 'product/slef-export',
+    axe: true,
+    assertions: [
+      'with no active build the Export action is not offered and the layer cannot open',
+      'the workspace’s own empty state is the recovery, and the shell Import action is present',
+      'no stale payload survives a build being cleared',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'product/slef-interchange-performance',
+    requirements: ['004/SC-004'],
+    journey: 'product/slef-export',
+    axe: false,
+    assertions: [
+      'the package maximum-slot hull, fully fitted, imports and exports in under 500 ms each',
+      'the measurement runs as a domain operation with no application network request',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'preview/technical-text-field',
+    requirements: ['004/FR-008', '004/FR-009'],
+    journey: 'preview/sweep',
+    axe: true,
+    assertions: [
+      'a monospaced payload field keeps its visible label, description and error relationship',
+      'a readonly payload stays selectable and owns its own wrapping and overflow',
+      'byte and limit metadata is associated with the control rather than only drawn beside it',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'preview/diagnostic-list',
+    requirements: ['004/FR-011'],
+    journey: 'preview/sweep',
+    axe: true,
+    assertions: [
+      'every diagnostic renders as a list item carrying index, path, code, constraint and reason',
+      'a long identity or path wraps or scrolls inside the list rather than widening the page',
+      'paths, codes and identities are direction-isolated',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'preview/hull-schematic',

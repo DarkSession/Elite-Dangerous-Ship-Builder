@@ -1,0 +1,104 @@
+[
+  {
+    "header": {
+      "appName": "elite-dangerous-ship-builder",
+      "appVersion": "0.0.0"
+    },
+    "data": {
+      "event": "Loadout",
+      "Ship": "sidewinder",
+      "HullValue": 4588,
+      "ModulesValue": 50040,
+      "UnladenMass": 42.89999999999999,
+      "CargoCapacity": 4,
+      "MaxJumpRange": 8.14950560966617,
+      "FuelCapacity": {
+        "Main": 2,
+        "Reserve": 0.3
+      },
+      "Rebuy": 2731,
+      "Modules": [
+        {
+          "Slot": "SmallHardpoint1",
+          "Item": "hpt_pulselaser_gimbal_small",
+          "Value": 6600
+        },
+        {
+          "Slot": "SmallHardpoint2",
+          "Item": "hpt_pulselaser_gimbal_small",
+          "Value": 6600
+        },
+        {
+          "Slot": "Armour",
+          "Item": "sidewinder_armour_grade1",
+          "Value": 0
+        },
+        {
+          "Slot": "PowerPlant",
+          "Item": "int_powerplant_size2_class1",
+          "Value": 1977
+        },
+        {
+          "Slot": "MainEngines",
+          "Item": "int_engine_size2_class1",
+          "Value": 1978
+        },
+        {
+          "Slot": "FrameShiftDrive",
+          "Item": "int_hyperdrive_size2_class1",
+          "Value": 1978
+        },
+        {
+          "Slot": "LifeSupport",
+          "Item": "int_lifesupport_size1_class1",
+          "Value": 517
+        },
+        {
+          "Slot": "PowerDistributor",
+          "Item": "int_powerdistributor_size1_class1",
+          "Value": 517
+        },
+        {
+          "Slot": "Radar",
+          "Item": "int_sensors_size1_class1",
+          "Value": 517
+        },
+        {
+          "Slot": "FuelTank",
+          "Item": "int_fueltank_size1_class3",
+          "Value": 1000
+        },
+        {
+          "Slot": "Slot01_Size2",
+          "Item": "int_shieldgenerator_size2_class1",
+          "Value": 1978
+        },
+        {
+          "Slot": "Slot02_Size2",
+          "Item": "int_cargorack_size2_class1",
+          "Value": 3250
+        },
+        {
+          "Slot": "Slot05_Size1",
+          "Item": "int_supercruiseassist",
+          "Value": 9121
+        },
+        {
+          "Slot": "Slot06_Size1",
+          "Item": "int_dockingcomputer_advanced",
+          "Value": 13507
+        },
+        {
+          "Slot": "PlanetaryApproachSuite",
+          "Item": "int_planetapproachsuite_advanced",
+          "Value": 500
+        },
+        {
+          "Slot": "CargoHatch",
+          "Item": "modularcargobaydoor",
+          "Value": 0
+        }
+      ]
+    }
+  }
+]

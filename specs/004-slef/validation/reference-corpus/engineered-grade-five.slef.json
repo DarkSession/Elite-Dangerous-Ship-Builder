@@ -1,0 +1,146 @@
+[
+  {
+    "header": {
+      "appName": "elite-dangerous-ship-builder",
+      "appVersion": "0.0.0"
+    },
+    "data": {
+      "event": "Loadout",
+      "Ship": "anaconda",
+      "HullValue": 142456440,
+      "ModulesValue": 4522132,
+      "UnladenMass": 1064,
+      "CargoCapacity": 114,
+      "MaxJumpRange": 9.661616924962207,
+      "FuelCapacity": {
+        "Main": 32,
+        "Reserve": 1.07
+      },
+      "Rebuy": 7348928,
+      "Modules": [
+        {
+          "Slot": "SmallHardpoint1",
+          "Item": "hpt_pulselaser_fixed_small",
+          "Value": 2200,
+          "Engineering": {
+            "BlueprintName": "PulseLaser_ThermalPlasmaConversion",
+            "Level": 5,
+            "Quality": 1,
+            "Modifiers": [
+              {
+                "Label": "PowerDraw",
+                "Value": 0.546,
+                "OriginalValue": 0.39
+              },
+              {
+                "Label": "DamagePerSecond",
+                "Value": 7.017308,
+                "OriginalValue": 7.884615
+              },
+              {
+                "Label": "Damage",
+                "Value": 1.8245,
+                "OriginalValue": 2.05
+              },
+              {
+                "Label": "$Thermal;",
+                "Value": 84.5,
+                "OriginalValue": 100
+              },
+              {
+                "Label": "$Absolute;",
+                "Value": 15.5,
+                "OriginalValue": 0
+              }
+            ]
+          }
+        },
+        {
+          "Slot": "SmallHardpoint2",
+          "Item": "hpt_pulselaser_fixed_small",
+          "Value": 2200
+        },
+        {
+          "Slot": "Armour",
+          "Item": "anaconda_armour_grade1",
+          "Value": 0
+        },
+        {
+          "Slot": "PowerPlant",
+          "Item": "int_powerplant_size8_class1",
+          "Value": 1441233
+        },
+        {
+          "Slot": "MainEngines",
+          "Item": "int_engine_size7_class1",
+          "Value": 633199
+        },
+        {
+          "Slot": "FrameShiftDrive",
+          "Item": "int_hyperdrive_size6_class1",
+          "Value": 199747
+        },
+        {
+          "Slot": "LifeSupport",
+          "Item": "int_lifesupport_size5_class1",
+          "Value": 31778
+        },
+        {
+          "Slot": "PowerDistributor",
+          "Item": "int_powerdistributor_size8_class1",
+          "Value": 697584
+        },
+        {
+          "Slot": "Radar",
+          "Item": "int_sensors_size8_class1",
+          "Value": 697584
+        },
+        {
+          "Slot": "FuelTank",
+          "Item": "int_fueltank_size5_class3",
+          "Value": 97754
+        },
+        {
+          "Slot": "Slot01_Size7",
+          "Item": "int_cargorack_size6_class1",
+          "Value": 362591
+        },
+        {
+          "Slot": "Slot02_Size6",
+          "Item": "int_cargorack_size5_class1",
+          "Value": 111566
+        },
+        {
+          "Slot": "Slot03_Size6",
+          "Item": "int_shieldgenerator_size6_class1",
+          "Value": 199747
+        },
+        {
+          "Slot": "Slot05_Size5",
+          "Item": "int_cargorack_size4_class1",
+          "Value": 34328
+        },
+        {
+          "Slot": "Slot13_Size2",
+          "Item": "int_cargorack_size1_class1",
+          "Value": 1000
+        },
+        {
+          "Slot": "Slot14_Size1",
+          "Item": "int_supercruiseassist",
+          "Value": 9121
+        },
+        {
+          "Slot": "PlanetaryApproachSuite",
+          "Item": "int_planetapproachsuite_advanced",
+          "Value": 500
+        },
+        {
+          "Slot": "CargoHatch",
+          "Item": "modularcargobaydoor",
+          "Value": 0
+        }
+      ]
+    }
+  }
+]

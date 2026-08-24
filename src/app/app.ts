@@ -8,8 +8,14 @@ import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { ScreenChrome } from './features/shared/screen-chrome';
 import { LocaleStore } from './i18n/locale.store';
+import { SlefStore } from './application/slef/slef.store';
+import { ExportDialog } from './features/slef/export-build-layer/export.dialog';
+import { ImportDialog } from './features/slef/import-build-layer/import.dialog';
 import { AppFrame, type NavigationEntry } from './ui/components/app-frame/app-frame';
 import { ConfirmDialog } from './ui/components/confirm-dialog/confirm-dialog';
+
+/** The shell action that opens the import layer, named once. */
+export const IMPORT_ACTION = 'slef.import';
 
 /** A replacement question waiting for an answer. */
 interface PendingReplacement {
@@ -33,7 +39,7 @@ interface PendingReplacement {
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ConfirmDialog, RouterOutlet],
+  imports: [AppFrame, ConfirmDialog, ExportDialog, ImportDialog, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +51,7 @@ export class App {
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
   readonly #replacement = inject(ReplacementCoordinator);
+  readonly #slef = inject(SlefStore);
 
   readonly #path = signal(this.#router.url);
   readonly #pending = signal<PendingReplacement | null>(null);
@@ -59,11 +66,39 @@ export class App {
   readonly pageName = this.#locale.page;
   readonly pageCount = this.chrome.count;
 
-  /** What the open screen publishes for the command bar, in its own order. */
-  readonly actions = this.chrome.actions;
+  /**
+   * What the command bar shows: the open screen's own actions, then Import.
+   *
+   * Import is last and always present. The reference draws it in the command
+   * bar of the shipyard, and a Commander can paste a build from any screen —
+   * including one with no build at all — so it belongs to the shell rather than
+   * to four screens that would each have to remember to offer it.
+   */
+  readonly actions = computed(() => {
+    const screen = this.chrome.actions();
+    return [
+      ...screen,
+      {
+        id: IMPORT_ACTION,
+        label: this.#messages.message('slef.import.title'),
+        emphasis: 'secondary' as const,
+        startsGroup: screen.length > 0,
+      },
+    ];
+  });
 
   /** The open screen's own identity block, where it publishes one. */
   readonly identity = this.chrome.identity;
+
+  /**
+   * Whether either exchange layer is wanted.
+   *
+   * The shell holds the state; the layers themselves are deferred. Neither one
+   * is on screen in most sessions, and loading the Almanac's serializer, the
+   * inspector and the delivery ports at startup for a control nobody pressed is
+   * a megabyte spent on nothing.
+   */
+  readonly exchangeWanted = computed(() => this.#slef.layer() !== 'none');
 
   readonly replacementOpen = computed(() => this.#pending() !== null);
   readonly replacementTitle = this.#messages.messageSignal('workspace.replace.title');
@@ -137,6 +172,10 @@ export class App {
     // The screen's own actions first: the shell places them and knows nothing
     // about what they mean.
     if (this.chrome.select(id)) {
+      return;
+    }
+    if (id === IMPORT_ACTION) {
+      this.#slef.openLayer('import');
       return;
     }
     if (id === 'library') {

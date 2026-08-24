@@ -1,0 +1,60 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.slef-import {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.slef-import__description {
+  font-weight: var(--edsb-text-weight-prose);
+  color: var(--edsb-text-secondary);
+  text-wrap: pretty;
+}
+
+/*
+ * The canvas keeps this line's height whether or not it says anything, so the
+ * field and the footer do not jump apart when a status arrives.
+ */
+.slef-import__status {
+  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-meta));
+
+  min-height: var(--edsb-text-size-body);
+  font-family: var(--edsb-font-metric);
+}
+
+.slef-import__refusals {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  padding-inline-start: var(--edsb-space-lg);
+  overflow-wrap: anywhere;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-compact);
+  color: var(--edsb-text-secondary);
+  list-style: disc;
+}
+
+/*
+ * Ruled off from the body, as drawn: what is accepted on one side, the actions
+ * on the other, stacking rather than clipping when the room runs out.
+ */
+.slef-import__footer {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: center;
+  justify-content: space-between;
+  padding-block-start: var(--edsb-space-xs);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+}
+
+.slef-import__accepted {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-meta));
+
+  font-family: var(--edsb-font-metric);
+}
+
+.slef-import__actions {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+}

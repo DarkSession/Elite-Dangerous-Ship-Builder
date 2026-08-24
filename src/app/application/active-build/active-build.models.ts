@@ -47,7 +47,22 @@ export type LinkFailureCode = BuildLinkCodecErrorCode | 'tooLong';
 export type LinkPublicationState =
   | { readonly kind: 'absent' }
   | { readonly kind: 'encoding' }
-  | { readonly kind: 'published'; readonly fragment: string }
+  | {
+      readonly kind: 'published';
+      readonly fragment: string;
+      /**
+       * The revision this fragment encodes.
+       *
+       * Recorded at publication so a later reader can tell "the link for this
+       * build" from "the link for the build this one used to be". Publication
+       * is asynchronous: a modelled edit bumps the revision before the encode
+       * that follows it has run, and for that moment the published fragment is
+       * a correct link to a build nobody is looking at any more. A SLEF export
+       * has to omit it rather than point a consumer at it (export contract,
+       * "Package invocation").
+       */
+      readonly revision: number;
+    }
   | {
       readonly kind: 'refused';
       readonly code: LinkFailureCode;

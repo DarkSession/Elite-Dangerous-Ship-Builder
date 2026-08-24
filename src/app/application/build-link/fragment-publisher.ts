@@ -80,6 +80,9 @@ export class FragmentPublisher {
     // who leaves the build while one is in flight must not arrive at the
     // shipyard with a build link stamped on it.
     const document = this.#location.currentDocument();
+    // Read with the loadout, before the await: this is the revision the
+    // fragment about to be encoded describes.
+    const revision = untracked(() => this.#active.revision());
     this.#active.setLink({ kind: 'encoding' });
 
     let fragment: string;
@@ -108,7 +111,7 @@ export class FragmentPublisher {
 
     this.#ingress.markPublished(fragment);
     this.#location.replaceFragment(fragment);
-    this.#active.setLink({ kind: 'published', fragment });
+    this.#active.setLink({ kind: 'published', fragment, revision });
   }
 
   /** The canonical shareable address for what is currently published. */

@@ -1,43 +1,55 @@
 # Import Outcome
 
-## Purpose and lifecycle
+## Divergence
 
-Keep the result of an accepted import understandable after the input layer closes. The outcome is
-ordinary workspace content bound to the exact active revision, not a modal, build field or edit. It
-appears only after feature 001 commits and disappears on dismissal or when a later active revision no
-longer matches.
+**The design canvas draws no import-outcome surface, so this feature builds none.**
 
-## Composition
+The reference review found `imp-modal`, `simp-modal`, `mimp-modal`, `exp-modal` and `mexp-modal` on
+`.design/Ship Builder.dc.html`, and nothing else for feature 004. There is no drawn panel, banner,
+notice or region that reports what an accepted import did. What such a surface would have said is
+already drawn twice over, by screens that exist:
 
-- localized summary stating the build was imported and whether package validation is valid/complete;
-- grouped quality-completion notices with exact slot/module/blueprint/effect identities and source to
-  completed quality;
-- retained incomplete/invalid package issue list for resolved state with package locale/canonical disclosure;
-- Dismiss action that changes presentation only.
+- **the completed partial rolls** — feature 002's quality-completion notice in the build workspace,
+  which reads `ActiveBuildStore.qualityCompletionNotices`, is bound to the active revision and is
+  dismissible;
+- **the package verdict, issue by issue** — feature 003's build-status rail, which renders the
+  package's own validation issues for whatever build is active, permanently.
 
-Quality completion, the detailed issue list and full validation presentation are transient. Feature 001 independently persists the accepted
-revision's `valid`/`complete` booleans. None of the detailed outcome enters `BuildSnapshotV1`, link,
-SLEF or edit history.
+Neither cares where the build came from, which is the point: an imported build is a build. Adding a
+third surface beside them would have said the same fact twice on the same screen, and would have been
+an addition beside the design rather than the design.
 
-## States
+So the import path hands its quality completions to feature 001 as ordinary `qualityNotices` on the
+candidate, and feature 004 publishes no report of its own. There is no `SlefImportOutcome`, no
+`importOutcome` state, no `slef.outcome.*` message and no feature-004 component under
+`src/app/features/slef/import-outcome/`.
 
-| State                       | Presentation                                                                          |
-| --------------------------- | ------------------------------------------------------------------------------------- |
-| No modeled normalization    | Concise import success/final validation; no empty groups                              |
-| Quality completed           | One row per source partial normalized by the package to quality 1                     |
-| Retained incomplete/invalid | Package issue detail and final validation remain visible, not converted to zero/valid |
-| Combined                    | Groups remain separately headed so causes are not collapsed into one color/status     |
-| Dismissed                   | Outcome removed; build/revision/dirty/history/persistence unchanged                   |
-| Revision changed            | Stale outcome removed and never announced against the new build                       |
+FR-006, FR-010, FR-012, FR-013 and SC-002 are unchanged as requirements; only the surface that
+evidences them changed. They are registered in `e2e/coverage-ledger.ts` under
+`build/slef-import-aftermath`, whose assertions name the two reused surfaces and require that each
+fact appear exactly once.
 
-## Responsive, semantic and localization behavior
+`specs/004-slef/spec.md` and `specs/004-slef/design/screen-inventory.md` were updated to match: the
+design wins.
 
-The notice reflows in the build workspace at every width; long identities/paths wrap or own internal
-overflow without widening the page. It uses headings/list semantics and one concise polite summary;
-details remain navigable rather than all announced. Every app label is localized, package names/
-messages follow package locale rules, numbers use named formatters and technical identities are
-direction-isolated. State has textual equivalents, shared contrast/target tokens and no motion
-dependency.
+## What the two reused surfaces must show, after an import
 
-Previews cover every state at desktop/tablet/mobile widths plus expanded, RTL and reduced-motion
-variants. Requirements: FR-006, FR-010, FR-012 and FR-013.
+| Situation                   | Where it is read                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| No modelled normalization   | Nothing new. The workspace draws the build; no empty notice and no all-clear line         |
+| Quality completed           | Feature 002's completion notice, one row per source partial normalized to quality 1       |
+| Retained incomplete/invalid | Feature 003's build-status rail, the package's own issues in the package's own words      |
+| Combined                    | Both, in their own regions on their own screens — never merged into one status            |
+| Dismissed                   | The completion notice's own dismissal; build, revision, dirty state and history unchanged |
+| Revision changed            | The completion notice retires with the revision it described; the rail follows the build  |
+| Import refused              | Nothing changes anywhere: no notice, no rail change, no build (FR-010)                    |
+
+Nothing here is new behaviour. Both surfaces already do it for feature 002's own edits; feature 004
+adds no state and no presentation, only a build for them to describe.
+
+## What never leaves the session
+
+Quality completion is transient. Feature 001 independently persists the accepted revision's
+`valid`/`complete` booleans; nothing about a completion enters `BuildSnapshotV1`, the build link, a
+SLEF payload or edit history. The export payload assertions in
+`src/app/application/slef/slef-export-artifact.spec.ts` hold that line.

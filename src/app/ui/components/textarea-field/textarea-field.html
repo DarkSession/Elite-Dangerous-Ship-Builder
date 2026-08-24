@@ -5,6 +5,8 @@
 
   <textarea
     class="field__control"
+    [class.field__control--technical]="technical()"
+    [attr.data-bidi-isolate]="technical() ? '' : null"
     [id]="relations.controlId"
     [rows]="rows()"
     [value]="value()"
@@ -14,6 +16,7 @@
     [attr.aria-describedby]="relations.describedBy()"
     [attr.aria-busy]="busy() ? 'true' : null"
     [disabled]="disabled()"
+    [readOnly]="readonlyValue()"
     (input)="onInput($event)"
   ></textarea>
 

@@ -90,4 +90,64 @@ describe('NavigatorAdapter', () => {
       expect(share).toHaveBeenCalledWith({ title: 'Build', url: '/b#b.abc' });
     });
   });
+
+  describe('handing a payload to the platform', () => {
+    it('reports a clipboard only where there is one to try', () => {
+      expect(
+        adapterFor({ clipboard: { writeText: () => Promise.resolve() } }).clipboardAvailable(),
+      ).toBe(true);
+      expect(adapterFor({ clipboard: {} }).clipboardAvailable()).toBe(false);
+      expect(adapterFor({}).clipboardAvailable()).toBe(false);
+      expect(adapterFor(null).clipboardAvailable()).toBe(false);
+    });
+
+    it('asks the platform about the actual file, not about files in general', () => {
+      const file = new File(['[]'], 'build.slef.json', { type: 'application/json' });
+      const canShare = vi.fn().mockReturnValue(true);
+
+      expect(adapterFor({ share: () => Promise.resolve(), canShare }).canShareFiles([file])).toBe(
+        true,
+      );
+      expect(canShare).toHaveBeenCalledWith({ files: [file] });
+    });
+
+    it('refuses file sharing where the platform has no share sheet or no canShare', () => {
+      const file = new File(['[]'], 'build.slef.json', { type: 'application/json' });
+
+      expect(adapterFor({ canShare: () => true }).canShareFiles([file])).toBe(false);
+      expect(adapterFor({ share: () => Promise.resolve() }).canShareFiles([file])).toBe(false);
+      expect(
+        adapterFor({
+          share: () => Promise.resolve(),
+          canShare: () => {
+            throw new Error('no');
+          },
+        }).canShareFiles([file]),
+      ).toBe(false);
+    });
+
+    it('tells a dismissed share sheet apart from a failed one', async () => {
+      const abort = Object.assign(new Error('dismissed'), { name: 'AbortError' });
+
+      expect(await adapterFor({ share: vi.fn().mockRejectedValue(abort) }).shareData({})).toBe(
+        'cancelled',
+      );
+      expect(
+        await adapterFor({ share: vi.fn().mockRejectedValue(new Error('boom')) }).shareData({}),
+      ).toBe('failed');
+      expect(await adapterFor({ share: vi.fn().mockResolvedValue(undefined) }).shareData({})).toBe(
+        'shared',
+      );
+      expect(await adapterFor({}).shareData({})).toBe('failed');
+    });
+
+    it('hands the payload straight to the platform, with nothing awaited first', async () => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      const data = { title: 'Build', text: '[]' };
+
+      await adapterFor({ share }).shareData(data);
+
+      expect(share).toHaveBeenCalledWith(data);
+    });
+  });
 });

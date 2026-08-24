@@ -68,7 +68,11 @@ technically intact but practically unusable.
 5. **Sticky regions release.** The banner must not occupy a large share of the viewport. At 400%
    the viewport is short, so the banner is expected to scroll away with the page.
 6. **Layers stay usable.** Open a layer. It must present full height rather than as a centred
-   dialog whose content is cut off, and dismissing it must return to the invoking control.
+   dialog whose content is cut off, and dismissing it must return to the invoking control. Include
+   the two exchange layers: the import layer with a refusal and a full diagnostic list on screen,
+   and the export layer with its format list and a whole SLEF payload. In both, the monospaced
+   field may scroll inside itself; the page may not scroll sideways, and the actions must stay
+   present with visible text.
 7. **Targets stay reachable.** Every control can be activated by pointer, and by a single touch on
    a touch device, without a hover step and without a two-finger gesture.
 8. **Focus stays visible.** The focus ring is visible against the surface under it and is not

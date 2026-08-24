@@ -118,6 +118,32 @@ disagrees or where the announcement is correct but unusable.
     to offer a retry, expect one announcement per side rather than one per
     mount, and expect the complete ledger to remain fully operable.
 
+15. **Importing and exporting a build.** Find the `IMPORT` action from the
+    shipyard, with no build open. Activate it and expect a dialog announced by
+    name, with its description read, and the page behind it unreachable. Find
+    the payload field: expect its visible label to be announced, and expect the
+    one status line to be reachable and to say what the draft measures against
+    the limit. Paste something that is not JSON and submit: expect the refusal
+    to be announced **once**, expect it to be associated with the field so
+    landing on the payload reads it, and expect the field to be announced as
+    invalid. Paste a payload the Almanac rejects: expect each diagnostic to be
+    announced as five labelled facts — entry, property, code, constraint and
+    reason — expect the property path and the code to be read left to right
+    even in a right-to-left interface, and expect an untranslated reason to be
+    announced in the language it is actually in with its disclosure. Import a
+    valid payload: expect one polite announcement naming the hull, expect
+    **no** announcement of the payload itself or of the diagnostic list, and
+    expect to land in the workspace. Then open `EXPORT`: expect the format list
+    to be announced as a group with the selected format's state said in words,
+    expect the payload field to be announced as read-only rather than
+    unavailable, and expect the entry count and size to be reachable. Activate
+    `COPY` and expect one polite announcement of the result — never the payload
+    — and expect the same result not to be announced twice. Activate
+    `DOWNLOAD` and expect it to be announced as handed to the browser, never as
+    saved. Where the platform offers `SHARE`, expect a cancelled share to be
+    announced as nothing sent. In every one of these states expect the payload
+    to remain reachable and selectable.
+
 ## Recording the result
 
 Append one row per configuration and step to `results/screen-reader.md`, with

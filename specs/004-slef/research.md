@@ -107,7 +107,9 @@ rejected.
 
 ## Decision 7: keep detailed quality outcome transient
 
-**Decision**: Bind the accepted import outcome to the committed active revision. Quality completion,
+**Decision**: Bind what an accepted import reports to the committed active revision — through
+feature 002's completion notice and feature 003's rail, not a feature-004 surface
+([design/import-outcome.md](./design/import-outcome.md), "Divergence"). Quality completion,
 remaining validation issue details and full validation presentation are transient/dismissible
 workspace feedback. Feature 001 independently persists the accepted revision's `valid`/`complete`
 booleans as ordinary record-list metadata. Fixed defaults need no outcome or provenance. The detailed

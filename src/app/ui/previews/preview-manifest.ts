@@ -249,6 +249,9 @@ import { SlotCard } from '../outfitting/slot-card';
 import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
+import { DiagnosticList } from '../technical/diagnostic-list';
+import { ExportBuildLayer } from '../../features/slef/export-build-layer/export-build-layer';
+import { ImportBuildLayer } from '../../features/slef/import-build-layer/import-build-layer';
 
 /** A state rendered from a fixture. */
 function state(
@@ -474,16 +477,43 @@ registerPreview({
   states: [
     state(
       'default',
-      { label: 'SLEF payload', value: '{"header":{"appName":"EDSB"}}' },
-      ['label is programmatically associated', 'stays resizable so 200% text does not clip'],
+      {
+        label: 'SLEF payload',
+        value: '[\n  {\n    "header": { "appName": "EDSB", "appVersion": "0.1.0" }\n  }\n]',
+        description: '1 entry · 41 modules · 4.1 kB',
+        technical: true,
+        readonly: true,
+      },
+      [
+        'label is programmatically associated',
+        'stays resizable so 200% text does not clip',
+        'a readonly payload is still selectable and still a labelled control',
+        'monospaced payload text is direction-isolated',
+        'byte and entry metadata is associated with the control, not only drawn beside it',
+      ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
     ),
-    state('empty', { label: 'SLEF payload', value: '' }, ['renders empty and keeps its label']),
+    state(
+      'empty',
+      {
+        label: 'SLEF payload',
+        value: '',
+        description: '0 of 65,536 bytes used',
+        technical: true,
+      },
+      ['renders empty and keeps its label', 'an editable payload field owns its own overflow'],
+    ),
     state('loading', { label: 'SLEF payload', value: '', busy: true }, ['exposes aria-busy']),
-    state('error', { label: 'SLEF payload', value: '{', error: 'This is not valid SLEF.' }, [
-      'exposes aria-invalid',
-      'error text is associated with the control',
-    ]),
+    state(
+      'error',
+      {
+        label: 'SLEF payload',
+        value: '{',
+        technical: true,
+        error: 'This draft is 70,001 bytes; the limit is 65,536.',
+      },
+      ['exposes aria-invalid', 'error text is associated with the control'],
+    ),
     state('disabled', { label: 'SLEF payload', value: '', disabled: true }, [
       'exposes the disabled state natively',
     ]),
@@ -3588,5 +3618,310 @@ registerPreview({
       'disabled',
       'A plate is a drawing of mounts, not a control that gates anything; a mount that cannot be acted on is absent from the schematic, and its ledger row states why.',
     ),
+  ],
+});
+
+registerPreview({
+  componentId: 'diagnostic-list',
+  group: 'Technical',
+  component: DiagnosticList,
+  contract: contract(
+    'diagnostic-list',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'every diagnostic names its own entry, property, code, constraint and reason',
+        'a reason the package had no translation for says so beside it',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'What the Almanac rejected',
+        diagnostics: [
+          {
+            id: '0',
+            index: '1',
+            path: 'entries[1].header.appName',
+            code: 'invalidHeader',
+            constraint: 'stringRequired',
+            reason: 'entries[1].header.appName must be a string',
+            disclosure: null,
+            reasonLanguage: 'en',
+          },
+          {
+            id: '1',
+            index: '2',
+            path: 'entries[2].Modules[14].Engineering.Quality',
+            code: 'invalidEngineering',
+            constraint: 'unitInterval',
+            reason: 'entries[2].Modules[14].Engineering.Quality must be between 0 and 1',
+            disclosure:
+              'Shown in its original language, because no German text is available for it.',
+            reasonLanguage: 'en',
+          },
+        ],
+      },
+      [
+        'each diagnostic is one list item carrying all five package facts',
+        'a package index is shown as the package gave it, never renumbered',
+        'a long property path wraps inside the list rather than widening the page',
+        'every technical value is direction-isolated',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    state('empty', { label: 'What the Almanac rejected', diagnostics: [] }, [
+      'nothing rejected renders no rows at all',
+    ]),
+    notApplicable(
+      'loading',
+      'Diagnostics are the inspector’s finished answer; the layer owns the state while it is being read.',
+    ),
+    notApplicable('error', 'This list is the error detail, so it has no second error state.'),
+    notApplicable('disabled', 'A list of diagnostics is content, not a control.'),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 004 — the exchange layers themselves.
+//
+// The two surfaces a Commander actually sees, previewed as their own states
+// rather than only through their parts. A field and a diagnostic list that each
+// look right on their own can still stack into a layer that clips at 200% text.
+// ---------------------------------------------------------------------------
+
+const SLEF_PAYLOAD = `[
+  {
+    "header": { "appName": "Ship Builder", "appVersion": "0.1.0" },
+    "data": {
+      "event": "Loadout",
+      "Ship": "anaconda",
+      "Modules": [{ "Slot": "MainEngines", "Item": "int_engine_size7_class5", "On": true }]
+    }
+  }
+]`;
+
+const IMPORT_VIEW = {
+  title: 'Import build',
+  description:
+    'Paste a SLEF export or a journal Loadout event. The hull is selected from the loadout.',
+  accepted: 'SLEF v1 · Journal Loadout event',
+  fieldLabel: 'SLEF payload',
+  draft: '',
+  status: 'Awaiting input',
+  busy: false,
+  failure: null,
+  submitLabel: 'Load build',
+  cancelLabel: 'Cancel',
+  canSubmit: false,
+} as const;
+
+registerPreview({
+  componentId: 'slef-import-layer',
+  group: 'Exchange',
+  component: ImportBuildLayer,
+  contract: contract(
+    'slef-import-layer',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['invalid', 'busy'],
+      relationships: ['label', 'description', 'error'],
+      textEquivalents: [
+        'the draft’s size against the limit, in words',
+        'why an import was refused, in the application’s own framing',
+        'what the Almanac rejected, fact by fact',
+      ],
+    },
+    ['default', 'empty', 'loading', 'error'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        view: {
+          ...IMPORT_VIEW,
+          draft: SLEF_PAYLOAD,
+          status: '284 byte of 65.5 kB used',
+          canSubmit: true,
+        },
+      },
+      [
+        'the payload is monospaced, direction-isolated and editable',
+        'the size and the limit are one line, in the reader’s own language',
+        'Cancel and Load build are the only controls, as the canvas draws them',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    state('empty', { view: IMPORT_VIEW }, [
+      'an empty draft says what is awaited rather than showing a bare box',
+      'Load build is unavailable until there is something to load',
+    ]),
+    state(
+      'loading',
+      { view: { ...IMPORT_VIEW, draft: SLEF_PAYLOAD, busy: true, status: 'Reading this payload' } },
+      [
+        'the draft stays readable while it is being inspected',
+        'the busy state is named in text, not only shown as motion',
+      ],
+    ),
+    state(
+      'error',
+      {
+        view: {
+          ...IMPORT_VIEW,
+          draft: '[{ "header": {}, "data": {} }]',
+          status: '30 byte of 65.5 kB used',
+          failure: {
+            message: 'The Almanac rejected this entry.',
+            diagnosticsLabel: 'What the Almanac rejected',
+            refusals: [],
+            diagnostics: [
+              {
+                id: '0',
+                index: '0',
+                path: 'entries[0].header.appName',
+                code: 'invalidHeader',
+                constraint: 'stringRequired',
+                reason: 'entries[0].header.appName must be a string',
+                disclosure: null,
+                reasonLanguage: 'en',
+              },
+            ],
+          },
+        },
+      },
+      [
+        'the refusal is said in words and the field is marked invalid',
+        'the exact draft survives the refusal',
+        'the package’s diagnostics are listed beneath, unflattened',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable(
+      'disabled',
+      'The layer is either open and usable or not mounted; a disabled import layer would be a dialog nobody can leave.',
+    ),
+  ],
+});
+
+const EXPORT_VIEW = {
+  title: 'Export build · Anaconda',
+  modeLabel: 'Format',
+  modes: [
+    {
+      mode: 'link',
+      label: 'Share link',
+      description: 'Read-only link to this exact loadout.',
+      selected: false,
+    },
+    {
+      mode: 'slef',
+      label: 'SLEF JSON',
+      description: 'Interchange format read by Coriolis, EDSY and Inara.',
+      selected: true,
+    },
+  ],
+  fieldLabel: 'SLEF payload',
+  payload: SLEF_PAYLOAD,
+  metadata: 'SLEF v1 · 41 modules · 4.1 kB',
+  generating: null,
+  stale: null,
+  validation: null,
+  link: 'The export carries a link back to this exact build.',
+  actions: [
+    { action: 'download', label: 'Download', status: null, failed: false },
+    { action: 'copy', label: 'Copy', status: null, failed: false },
+  ],
+} as const;
+
+registerPreview({
+  componentId: 'slef-export-layer',
+  group: 'Exchange',
+  component: ExportBuildLayer,
+  contract: contract(
+    'slef-export-layer',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['disabled'],
+      relationships: ['label'],
+      textEquivalents: [
+        'what the payload is, and how large',
+        'whether a link travelled with it, and why not when it did not',
+        'what each delivery action reported',
+      ],
+    },
+    ['default', 'empty', 'loading', 'error', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      { view: EXPORT_VIEW },
+      [
+        'the payload is present and selectable before anything is pressed',
+        'Download and Copy are both offered, and Share only where the platform has it',
+        'the metadata and the actions share one row, and stack rather than clip',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    state(
+      'empty',
+      {
+        view: {
+          ...EXPORT_VIEW,
+          payload: '',
+          metadata: null,
+          link: null,
+          stale: 'This build has changed since the export was made. Make it again.',
+        },
+      },
+      [
+        'an artifact dropped because the build moved on says so rather than leaving a blank field',
+        'no delivery is offered for a payload that is not there',
+      ],
+    ),
+    state(
+      'loading',
+      {
+        view: { ...EXPORT_VIEW, payload: '', metadata: null, generating: 'Preparing this export' },
+      },
+      ['the pending state is named in text'],
+    ),
+    state(
+      'error',
+      {
+        view: {
+          ...EXPORT_VIEW,
+          validation: 'The Almanac reports this build as invalid. It is exported exactly as it is.',
+          link: 'The export carries no link, because this build cannot be shared as one.',
+          actions: [
+            { action: 'download', label: 'Download', status: null, failed: false },
+            {
+              action: 'copy',
+              label: 'Copy',
+              status:
+                'The payload could not be copied. Select the text above and copy it yourself.',
+              failed: true,
+            },
+          ],
+        },
+      },
+      [
+        'an invalid build is still exported, with the verdict said out loud',
+        'a refused clipboard leaves the payload on screen and names the way round it',
+        'the failure is named in words, never by colour alone',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    state('disabled', { view: { ...EXPORT_VIEW, payload: '', metadata: null, link: null } }, [
+      'every delivery control is unavailable while there is no payload to deliver',
+    ]),
   ],
 });

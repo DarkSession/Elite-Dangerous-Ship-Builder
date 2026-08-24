@@ -40,15 +40,19 @@ export interface IngressNotice {
 /**
  * Why one module's partial engineering could not be completed.
  *
- * `packageResult` carries the package's own refusal. The other two are contract
- * failures: the package produced a build whose modules do not line up with what
- * the source said, or answered a completion request in a way the released
- * contract says it cannot. Both are defects worth surfacing as such rather than
- * treating as an ordinary "this build is unsupported".
+ * `packageResult` carries the package's own refusal. `packageContract` is a
+ * defect: the package answered a completion request in a way the released
+ * contract says it cannot, which is worth surfacing as such rather than as an
+ * ordinary "this build is unsupported".
+ *
+ * A partial whose module did not survive construction is neither. It is not
+ * here at all: the module is gone, so there is no roll left to complete, and a
+ * mount the package populated with the hull default is ordinary build state
+ * (FR-010).
  */
 export interface PartialEngineeringFailure {
   readonly source: SourcePartialEngineering;
-  readonly reason: 'packageResult' | 'correlationMismatch' | 'packageContract';
+  readonly reason: 'packageResult' | 'packageContract';
   /** The package's stable normalization code, when the package gave one. */
   readonly code: EngineeringNormalizationCode | null;
   readonly params: LoadoutIssueParams | null;

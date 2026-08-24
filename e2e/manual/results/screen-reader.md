@@ -24,9 +24,21 @@ equivalents for every visual carrier.
 
 | Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
 | ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
-| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 1–13 | As stated in the protocol | —      | not run |
-| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 1–13 | As stated in the protocol | —      | not run |
-| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 1–13 | As stated in the protocol | —      | not run |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 1–15 | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 1–15 | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 1–15 | As stated in the protocol | —      | not run |
 
 Capability features append their own rows as they land; the rows above are the
 foundation's own and are the ones this feature is accountable for.
+
+## The exchange layers (feature 004)
+
+Step 15 covers the import and export layers. Their composition materially
+differs between the desktop dialog and the compact bottom sheet — the format
+list moves, the actions wrap — so each is its own observation.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 15   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 15   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 15   | As stated in the protocol | —      | not run |

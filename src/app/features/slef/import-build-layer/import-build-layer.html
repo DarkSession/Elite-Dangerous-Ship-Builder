@@ -1,0 +1,61 @@
+<div class="slef-import">
+  <p class="slef-import__description">{{ view().description }}</p>
+
+  <edsb-textarea-field
+    [label]="view().fieldLabel"
+    [value]="view().draft"
+    [rows]="8"
+    [technical]="true"
+    [busy]="view().busy"
+    [error]="view().failure?.message ?? null"
+    (changed)="changed.emit($event)"
+  />
+
+  <!--
+    The canvas's one status line. It says what the draft measures, what the
+    reader is waiting for, or how the last attempt ended — never two of them.
+  -->
+  <p class="slef-import__status" data-bidi-isolate>{{ view().status }}</p>
+
+  <!--
+    The refusal is said once, by the field it is about: `edsb-textarea-field`
+    renders it visibly and associates it with the control, so a reader who lands
+    on the payload hears why it was refused. A second copy of the same sentence
+    beside it would be the same fact twice on one screen.
+  -->
+  @if (view().failure; as failure) {
+    @if (failure.refusals.length > 0) {
+      <ul class="slef-import__refusals">
+        @for (refusal of failure.refusals; track refusal) {
+          <li data-bidi-isolate>{{ refusal }}</li>
+        }
+      </ul>
+    }
+
+    @if (failure.diagnostics.length > 0) {
+      <edsb-diagnostic-list
+        [label]="failure.diagnosticsLabel"
+        [diagnostics]="failure.diagnostics"
+      />
+    }
+  }
+
+  <div class="slef-import__footer">
+    <p class="slef-import__accepted">{{ view().accepted }}</p>
+
+    <div class="slef-import__actions">
+      <edsb-action-button
+        [label]="view().cancelLabel"
+        emphasis="secondary"
+        (activated)="cancelled.emit()"
+      />
+      <edsb-action-button
+        [label]="view().submitLabel"
+        emphasis="primary"
+        [busy]="view().busy"
+        [disabled]="!view().canSubmit"
+        (activated)="submitted.emit()"
+      />
+    </div>
+  </div>
+</div>

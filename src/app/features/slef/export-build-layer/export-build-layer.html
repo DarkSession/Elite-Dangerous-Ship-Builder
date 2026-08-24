@@ -1,0 +1,48 @@
+<div class="slef-export">
+  @if (view().generating; as preparing) {
+    <edsb-status-notice tone="loading" [message]="preparing" />
+  }
+
+  @if (view().stale; as stale) {
+    <edsb-status-notice tone="warning" [message]="stale" />
+  }
+
+  <edsb-textarea-field
+    [label]="view().fieldLabel"
+    [value]="view().payload"
+    [rows]="12"
+    [readonly]="true"
+    [technical]="true"
+  />
+
+  @if (view().validation; as warning) {
+    <edsb-status-notice tone="warning" [message]="warning" />
+  }
+
+  @if (view().link; as link) {
+    <p class="slef-export__link">{{ link }}</p>
+  }
+
+  <div class="slef-export__footer">
+    @if (view().metadata; as metadata) {
+      <p class="slef-export__meta" data-bidi-isolate>{{ metadata }}</p>
+    }
+
+    <div class="slef-export__actions">
+      @for (action of view().actions; track action.action) {
+        <edsb-action-button
+          [label]="action.label"
+          [emphasis]="action.action === 'copy' ? 'primary' : 'secondary'"
+          [disabled]="!ready()"
+          (activated)="request(action.action)"
+        />
+      }
+    </div>
+  </div>
+
+  @for (action of view().actions; track action.action) {
+    @if (action.status; as status) {
+      <edsb-status-notice [tone]="action.failed ? 'error' : 'info'" [message]="status" />
+    }
+  }
+</div>

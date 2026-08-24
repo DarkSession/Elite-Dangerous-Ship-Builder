@@ -70,10 +70,12 @@ wait for a released fix.
 6. **Normalization order**: Cover absent or unusable fixed entries, then
    ordinary/Mercenary/identified partials on resolved modules. Package construction populates fixed
    mounts first and partial completion follows. Unsupported resolved partials refuse whole.
-7. **Outcome/persistence split**: After acceptance, the workspace reports transient quality and
-   final validation. Dismissal edits nothing. Feature 001 persists the accepted revision's
-   `valid`/`complete` booleans; the detailed quality/issue/outcome presentation does not persist, and none enters
-   link/SLEF/history.
+7. **Aftermath/persistence split**: After acceptance, the workspace reports the transient quality
+   completions through feature 002's own completion notice and the final validation through feature
+   003's build-status rail. Feature 004 draws no report of its own — the canvas has none, and each
+   fact appears exactly once (`design/import-outcome.md`, "Divergence"). Dismissal edits nothing.
+   Feature 001 persists the accepted revision's `valid`/`complete` booleans; the detailed
+   quality/issue presentation does not persist, and none enters link/SLEF/history.
 8. **Stable package-model round trip**: Include false enabled, priority zero, name/ident, ordinary and
    identified pre-engineering/effect plus absent fixed entries. Compare package-modelled state after
    export/import/export under completed quality, fixed defaults, identity
@@ -87,7 +89,8 @@ wait for a released fix.
     hidden, text, file, resolved, cancelled and failed with mocked ports. Download says dispatched or
     setup failed, never saved. A revision change invalidates the artifact before every action.
 11. **Independent-consumer/network contract**: Generate a versioned reference-export corpus from the
-    current application and record successful import of every artifact into both Coriolis and EDSY.
+    current application with `pnpm run slef:corpus`, then record successful import of every artifact
+    into both Coriolis and EDSY.
     Record each consumer's exact release/build identifier, corpus hash, date and result in
     `validation/consumer-compatibility.md`; use a locally pinned release when distributable, otherwise
     perform the deliberate manual check with synthetic/non-personal data. Package inspection and

@@ -110,6 +110,19 @@ describe('pseudoInputs', () => {
     expect(actions[0]?.label).not.toBe('Save build');
   });
 
+  it('leaves a language tag alone, whatever the input is called', () => {
+    const inputs = pseudoInputs(
+      { language: 'en', reasonLanguage: 'en', sourceLocale: 'de' },
+      'expanded-copy',
+    );
+
+    // An expanded `lang` is not a language, and a reader's software is right to
+    // reject it — a failure the pseudo-locale would have invented.
+    expect(inputs['language']).toBe('en');
+    expect(inputs['reasonLanguage']).toBe('en');
+    expect(inputs['sourceLocale']).toBe('de');
+  });
+
   it('leaves values that address an element alone', () => {
     const inputs = pseudoInputs({ id: 'metric-1', href: '/builds', key: 'mass' }, 'expanded-copy');
 

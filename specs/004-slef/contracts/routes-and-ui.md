@@ -32,7 +32,7 @@ layer/confirmation is active.
 
 Presentation components receive immutable localized view models and emit typed intents only:
 
-- import: edit draft, clear, submit, cancel/close, accept/cancel shared replacement, dismiss outcome;
+- import: edit draft, clear, submit, cancel/close, accept/cancel shared replacement;
 - exchange layer: select SLEF/Share Link mode and close;
 - SLEF export: generate/retry, select payload, copy, download and share.
 
@@ -51,9 +51,11 @@ Compose or extend feature 011 `src/app/ui/` contracts for:
   concise announcement events;
 - feature 001 replacement confirmation and no-build recovery state.
 
-The import outcome remains as workspace content after the import layer transitions away. A
-missing technical-text field or diagnostic component extends `src/app/ui/`; no feature-local visual
-language is created. Previews cover every meaningful default/populated/empty/loading/error/disabled/
+After the import layer transitions away, what the import did is read on the workspace surfaces that
+already draw it — feature 002's quality-completion notice and feature 003's build-status rail.
+Feature 004 composes no report of its own (see
+[design/import-outcome.md](../design/import-outcome.md), "Divergence"). A missing technical-text
+field or diagnostic component extends `src/app/ui/`; no feature-local visual language is created. Previews cover every meaningful default/populated/empty/loading/error/disabled/
 success/cancelled/unavailable state at desktop, tablet and mobile widths plus expanded, RTL and
 reduced-motion variants.
 
@@ -74,7 +76,7 @@ reduced-motion variants.
 
 ## Verification
 
-Every primary journey and relevant layer/confirmation/outcome/unavailable/delivery state runs in
+Every primary journey and relevant layer/confirmation/aftermath/unavailable/delivery state runs in
 feature 011's ten Chromium/Firefox viewport-orientation projects with axe, landmark/heading/name/
 state/relationship assertions, target sizing, no page overflow, doubled copy, RTL, 200% text and
 reduced motion. Actual 400% browser zoom and NVDA/Firefox, TalkBack/Chromium and materially distinct

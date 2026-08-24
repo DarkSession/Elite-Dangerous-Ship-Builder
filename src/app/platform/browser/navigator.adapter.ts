@@ -81,6 +81,57 @@ export class NavigatorAdapter {
     return typeof this.#window?.navigator?.share === 'function';
   }
 
+  /** Whether an async clipboard exists to try. A hint; the call may still fail. */
+  clipboardAvailable(): boolean {
+    return typeof this.#window?.navigator?.clipboard?.writeText === 'function';
+  }
+
+  /**
+   * Whether this platform would accept these files through the share sheet.
+   *
+   * Asked with the real file rather than with an empty probe, because
+   * `canShare` answers about the payload: a platform that shares files at all
+   * may still refuse this type or this size (delivery contract, "Platform
+   * share").
+   */
+  canShareFiles(files: readonly File[]): boolean {
+    const navigator = this.#window?.navigator;
+    if (typeof navigator?.canShare !== 'function' || typeof navigator.share !== 'function') {
+      return false;
+    }
+    try {
+      return navigator.canShare({ files: [...files] });
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Opens the share sheet and says which of the three things happened.
+   *
+   * `copyText` and `share` above collapse a dismissal into a failure, because
+   * for a link both mean "it did not leave this way". A SLEF export has to tell
+   * them apart: a Commander who dismissed the chooser did not hit a problem,
+   * and reporting one would be an error message about a decision they made
+   * (delivery contract, "Platform share").
+   *
+   * The payload is built by the caller and handed straight to `share`, with no
+   * awaited step in between, so the gesture's transient activation is still
+   * live when the sheet is asked for.
+   */
+  async shareData(data: ShareData): Promise<'shared' | 'cancelled' | 'failed'> {
+    const navigator = this.#window?.navigator;
+    if (typeof navigator?.share !== 'function') {
+      return 'failed';
+    }
+    try {
+      await navigator.share(data);
+      return 'shared';
+    } catch (error) {
+      return error instanceof Error && error.name === 'AbortError' ? 'cancelled' : 'failed';
+    }
+  }
+
   /**
    * Opens the platform share sheet.
    *

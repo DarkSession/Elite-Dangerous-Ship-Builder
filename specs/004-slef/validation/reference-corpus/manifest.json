@@ -1,0 +1,82 @@
+{
+  "corpusVersion": 1,
+  "producer": {
+    "appName": "elite-dangerous-ship-builder",
+    "appVersion": "0.0.0"
+  },
+  "almanacVersion": "0.1.7",
+  "serialization": {
+    "moduleOrder": "fitted",
+    "explicitPower": false,
+    "indent": 2
+  },
+  "artifacts": [
+    {
+      "id": "stock-small-hull",
+      "describes": "A stock hull, every fixed mount populated by the Almanac.",
+      "filename": "stock-small-hull.slef.json",
+      "ship": "SideWinder",
+      "modules": 16,
+      "utf8Bytes": 2497,
+      "valid": true,
+      "complete": true,
+      "sha256": "d6a063b9dd9b1895c732551458fd4391ab5eb3ed0a938c7c5febd2dc02382062"
+    },
+    {
+      "id": "stock-large-hull",
+      "describes": "The largest ordinary hull, stock, for a consumer’s slot handling.",
+      "filename": "stock-large-hull.slef.json",
+      "ship": "Anaconda",
+      "modules": 18,
+      "utf8Bytes": 2767,
+      "valid": true,
+      "complete": true,
+      "sha256": "eeeea0cc497aa6df7c65136174e79e162d5c59b8184adfa82bbdab2c07eef439"
+    },
+    {
+      "id": "named-and-identified",
+      "describes": "A ship name and ident, as a producer would carry them.",
+      "filename": "named-and-identified.slef.json",
+      "ship": "python",
+      "modules": 18,
+      "utf8Bytes": 2826,
+      "valid": true,
+      "complete": true,
+      "sha256": "e5e3ccc765754f64b895f37065d4d5e7046ddb04836deb2df20b44b44b381acb"
+    },
+    {
+      "id": "disabled-and-prioritised",
+      "describes": "A module switched off and another at priority zero.",
+      "filename": "disabled-and-prioritised.slef.json",
+      "ship": "Anaconda",
+      "modules": 18,
+      "utf8Bytes": 2815,
+      "valid": true,
+      "complete": true,
+      "sha256": "1909dbee3817667bcd67d7b066529b97f340f3d919c07ece9fb0276c3a26ac81"
+    },
+    {
+      "id": "engineered-grade-five",
+      "describes": "A completed grade-five roll, with the Almanac’s own modifiers.",
+      "filename": "engineered-grade-five.slef.json",
+      "ship": "Anaconda",
+      "modules": 18,
+      "utf8Bytes": 3675,
+      "valid": true,
+      "complete": true,
+      "sha256": "b76521b051000f1d8916cba4fe1204e123ff2e4c2bcd7d28013ec5b59731ae65"
+    },
+    {
+      "id": "emptied-optional-mounts",
+      "describes": "Every optional mount left empty, exported exactly as it is.",
+      "filename": "emptied-optional-mounts.slef.json",
+      "ship": "Anaconda",
+      "modules": 11,
+      "utf8Bytes": 1854,
+      "valid": true,
+      "complete": true,
+      "sha256": "c7d46282463f66c811d8d5b361274185a5d31108df36c5e4fca6d7ab31f4db0b"
+    }
+  ],
+  "corpusHash": "c05ffde0565383d775c72a5b44726e5e956d274e291ab273665681c951fa7921"
+}

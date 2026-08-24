@@ -159,7 +159,7 @@ describe('an encode that is refused', () => {
     slow.resolve('b.stale');
     await first;
 
-    expect(active.link()).toEqual({ kind: 'published', fragment: 'b.newest' });
+    expect(active.link()).toEqual({ kind: 'published', fragment: 'b.newest', revision: 2 });
   });
 });
 

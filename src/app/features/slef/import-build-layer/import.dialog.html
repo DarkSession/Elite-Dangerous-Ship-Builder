@@ -1,0 +1,13 @@
+<edsb-layer
+  [title]="view().title"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  (dismissed)="presenter.closeLayer()"
+>
+  <edsb-slef-import-layer
+    [view]="view()"
+    (changed)="presenter.edit($event)"
+    (submitted)="submit()"
+    (cancelled)="presenter.closeLayer()"
+  />
+</edsb-layer>

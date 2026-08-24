@@ -45,6 +45,16 @@ export const SCOPE = {
   serviceWorkerConfig: 'ngsw-config.json',
   /** Files that may state the conformance target on the project's behalf. */
   conformanceDocuments: ['README.md', 'AGENTS.md'],
+  /**
+   * Feature documentation whose conformance statements are also qualified.
+   *
+   * A specification that claims the target for its own surfaces is a statement
+   * about those surfaces, and an unqualified one there is as strong a claim as
+   * an unqualified one in the README. The list is per feature rather than all
+   * of `specs/` because four earlier features still carry unqualified
+   * paragraphs; each joins as its documents are qualified.
+   */
+  conformanceSpecs: ['specs/004-slef'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/elite-dangerous-ship-builder/browser',
   /** Where the build is configured to place the copied hull schematics. */
@@ -1002,6 +1012,15 @@ async function checkConformanceClaims(sources) {
       contents[document] = await readFile(path, 'utf8');
     }
   }
+  for (const directory of SCOPE.conformanceSpecs) {
+    const path = resolve(ROOT, directory);
+    if (!existsSync(path)) {
+      continue;
+    }
+    for (const file of await walk(path, ['.md'])) {
+      contents[relative(ROOT, file).split('\\').join('/')] = await readFile(file, 'utf8');
+    }
+  }
 
   violations.push(...conformanceClaimViolations(contents));
 }
@@ -1050,6 +1069,24 @@ async function checkServiceWorkerOwnership(sources) {
  * and would stop matching the moment the build changed its mangling.
  */
 const PREVIEW_MARKERS = ['data-preview-address', 'data-preview-isolated', 'data-preview-stage'];
+
+/**
+ * Strings that only exist in a shipped bundle by mistake.
+ *
+ * The first two are reference formats the canvas lists in the export layer and
+ * this application cannot produce: a bundle that carries their labels is a
+ * bundle offering a Commander something that does not work. The last two are
+ * the repository's own manifest — the export metadata imports two named values
+ * out of `package.json`, and a bundler that stopped tree-shaking it would ship
+ * the dependency list, the scripts and whatever else it holds
+ * (specs/004-slef tasks T089).
+ */
+const BUNDLE_REMNANTS = [
+  'JOURNAL LOADOUT',
+  'MARKDOWN TABLE',
+  '"devDependencies"',
+  'onlyBuiltDependencies',
+];
 
 /** Origins that appear as namespace or documentation strings, never as requests. */
 const NON_REQUEST_ORIGINS = [/^https?:\/\/www\.w3\.org\//];
@@ -1197,6 +1234,17 @@ export function productionOutputViolations(contents) {
           message: `The preview catalogue is bundled: "${marker}" is present in the shipped output.`,
         });
         break;
+      }
+    }
+
+    for (const marker of BUNDLE_REMNANTS) {
+      if (text.includes(marker)) {
+        found.push({
+          file,
+          line: 0,
+          rule: 'production-output',
+          message: `The shipped output carries "${marker}", which no delivered capability puts there.`,
+        });
       }
     }
 
@@ -1385,6 +1433,13 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The Apple command key and a letter; the glyph is the key itself, not a word.',
     'outfitting.acquisition.short.mercenary':
       'Merc-Coin is the in-game currency name and is not translated.',
+    'slef.import.refusal.module':
+      'A composition pattern: every part is a variable, and the separator is language-neutral.',
+    'slef.announce.delivery':
+      'A composition pattern: both parts are variables, and the colon is language-neutral.',
+    'slef.diagnostic.code': '"Code" is the ordinary German word.',
+    'slef.export.mode.label': '"Format" is the ordinary German word.',
+    'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
       'Merc Coins is the in-game currency name and is not translated.',
     'outfitting.slot.engineering':

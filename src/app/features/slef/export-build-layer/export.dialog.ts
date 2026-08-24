@@ -1,0 +1,99 @@
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { LinkSharePresenter } from '../../../application/build-link/link-share.presenter';
+import { SlefPresenter } from '../../../application/slef/slef.presenter';
+import { MessageService } from '../../../i18n/message.service';
+import { ChoiceGroup, type Choice } from '../../../ui/components/choice-group/choice-group';
+import { Layer } from '../../../ui/components/layer/layer';
+import { ShareLinkPanel } from '../../../ui/components/share-link-panel/share-link-panel';
+import { ExportBuildLayer } from './export-build-layer';
+
+/**
+ * Passing a build on: one layer, two formats.
+ *
+ * Canvas 1c draws a single Export layer with the formats listed down its
+ * leading edge, so a share link and a SLEF payload are two answers to one
+ * question rather than two screens. Feature 001 owns the link and feature 004
+ * owns the payload; this composes both and owns neither.
+ *
+ * It lives in feature 004 because the arrows point one way. Feature 001's
+ * workspace opens the layer through the `SLEF_FALLBACK` seam it already has —
+ * an import back from feature 001 into this directory would make the two one
+ * feature, which is exactly what the ownership policy forbids.
+ *
+ * The dialog owns the intents; neither panel owns any of them. Copying,
+ * sharing, retrying an encode and generating a payload can each fail in their
+ * own way, and each failure has to leave the value itself on screen and
+ * selectable — which is only true if the panels never depend on any of them
+ * having worked.
+ */
+@Component({
+  selector: 'edsb-slef-export-dialog',
+  imports: [ChoiceGroup, ExportBuildLayer, Layer, ShareLinkPanel],
+  templateUrl: './export.dialog.html',
+  styleUrl: './export.dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ExportDialog {
+  readonly #messages = inject(MessageService);
+  readonly slef = inject(SlefPresenter);
+  readonly link = inject(LinkSharePresenter);
+
+  readonly open = computed(() => this.slef.layer() === 'export');
+
+  constructor() {
+    // The layer is loaded on demand, so it arrives after the request that
+    // opened it. Preparing on arrival is what makes the payload be there when
+    // the Commander looks, without the shell having had to load the serializer
+    // to find that out.
+    effect(() => {
+      // Reading the artifact is what makes this self-healing: a build replaced
+      // from another tab while the layer is open drops the artifact, and this
+      // makes the next one rather than leaving a message telling the Commander
+      // to do something the layer offers no control for.
+      this.slef.exportArtifactRevision();
+      if (this.open()) {
+        this.slef.prepareExport();
+      }
+    });
+  }
+
+  readonly title = computed(() => this.slef.exportView().title);
+  readonly dismissLabel = this.#messages.messageSignal('action.close');
+
+  /**
+   * The formats the layer offers, as the reference sidebar draws them.
+   *
+   * Two, not four. The canvas lists Journal Loadout and Markdown Table beside
+   * them; neither is a capability this application has, and drawing a format
+   * that cannot be produced is worse than not drawing it
+   * (`specs/004-slef/design/reference-review.md`).
+   */
+  readonly modeLegend = computed(() => this.slef.exportView().modeLabel);
+
+  readonly modes = computed<readonly Choice[]>(() =>
+    this.slef.exportView().modes.map((mode) => ({
+      value: mode.mode,
+      label: mode.label,
+      description: mode.description,
+    })),
+  );
+
+  readonly selectedMode = computed(
+    () => this.slef.exportView().modes.find((mode) => mode.selected)?.mode ?? 'link',
+  );
+
+  readonly selectedModes = computed<readonly string[]>(() => [this.selectedMode()]);
+
+  selectMode(values: readonly string[]): void {
+    this.slef.selectMode(values[0] === 'slef' ? 'slef' : 'link');
+  }
+
+  /**
+   * The link panel's own way out of a refusal: the other format, in the same
+   * layer. Before this feature landed it was a button for a capability that did
+   * not exist; now it is the mode beside it.
+   */
+  chooseSlef(): void {
+    this.slef.selectMode('slef');
+  }
+}

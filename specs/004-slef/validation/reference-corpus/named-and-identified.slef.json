@@ -1,0 +1,116 @@
+[
+  {
+    "header": {
+      "appName": "elite-dangerous-ship-builder",
+      "appVersion": "0.0.0"
+    },
+    "data": {
+      "event": "Loadout",
+      "Ship": "python",
+      "ShipName": "Reference Build",
+      "ShipIdent": "REF-001",
+      "HullValue": 55324684,
+      "ModulesValue": 1662616,
+      "UnladenMass": 664,
+      "CargoCapacity": 82,
+      "MaxJumpRange": 8.608684706273927,
+      "FuelCapacity": {
+        "Main": 32,
+        "Reserve": 0.83
+      },
+      "Rebuy": 2849365,
+      "Modules": [
+        {
+          "Slot": "MediumHardpoint1",
+          "Item": "hpt_pulselaser_fixed_small",
+          "Value": 2200
+        },
+        {
+          "Slot": "MediumHardpoint2",
+          "Item": "hpt_pulselaser_fixed_small",
+          "Value": 2200
+        },
+        {
+          "Slot": "Armour",
+          "Item": "python_armour_grade1",
+          "Value": 0
+        },
+        {
+          "Slot": "PowerPlant",
+          "Item": "int_powerplant_size7_class1",
+          "Value": 480411
+        },
+        {
+          "Slot": "MainEngines",
+          "Item": "int_engine_size6_class1",
+          "Value": 199747
+        },
+        {
+          "Slot": "FrameShiftDrive",
+          "Item": "int_hyperdrive_size5_class1",
+          "Value": 63012
+        },
+        {
+          "Slot": "LifeSupport",
+          "Item": "int_lifesupport_size4_class1",
+          "Value": 11349
+        },
+        {
+          "Slot": "PowerDistributor",
+          "Item": "int_powerdistributor_size7_class1",
+          "Value": 249137
+        },
+        {
+          "Slot": "Radar",
+          "Item": "int_sensors_size6_class1",
+          "Value": 88978
+        },
+        {
+          "Slot": "FuelTank",
+          "Item": "int_fueltank_size5_class3",
+          "Value": 97754
+        },
+        {
+          "Slot": "Slot01_Size6",
+          "Item": "int_cargorack_size5_class1",
+          "Value": 111566
+        },
+        {
+          "Slot": "Slot02_Size6",
+          "Item": "int_cargorack_size5_class1",
+          "Value": 111566
+        },
+        {
+          "Slot": "Slot03_Size6",
+          "Item": "int_shieldgenerator_size6_class1",
+          "Value": 199747
+        },
+        {
+          "Slot": "Slot04_Size5",
+          "Item": "int_cargorack_size4_class1",
+          "Value": 34328
+        },
+        {
+          "Slot": "Slot09_Size2",
+          "Item": "int_cargorack_size1_class1",
+          "Value": 1000
+        },
+        {
+          "Slot": "Slot10_Size1",
+          "Item": "int_supercruiseassist",
+          "Value": 9121
+        },
+        {
+          "Slot": "PlanetaryApproachSuite",
+          "Item": "int_planetapproachsuite_advanced",
+          "Value": 500
+        },
+        {
+          "Slot": "CargoHatch",
+          "Item": "modularcargobaydoor",
+          "Value": 0
+        }
+      ]
+    }
+  }
+]

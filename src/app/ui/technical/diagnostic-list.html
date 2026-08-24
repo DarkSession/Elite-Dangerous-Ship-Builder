@@ -1,0 +1,28 @@
+<ul class="diagnostics" [attr.aria-label]="label()">
+  @for (diagnostic of diagnostics(); track diagnostic.id) {
+    <li class="diagnostics__item">
+      <dl class="diagnostics__fields">
+        <dt class="diagnostics__term">{{ entryLabel() }}</dt>
+        <dd class="diagnostics__value" data-bidi-isolate>{{ diagnostic.index }}</dd>
+
+        <dt class="diagnostics__term">{{ pathLabel() }}</dt>
+        <dd class="diagnostics__value" data-bidi-isolate>{{ diagnostic.path }}</dd>
+
+        <dt class="diagnostics__term">{{ codeLabel() }}</dt>
+        <dd class="diagnostics__value" data-bidi-isolate>{{ diagnostic.code }}</dd>
+
+        <dt class="diagnostics__term">{{ constraintLabel() }}</dt>
+        <dd class="diagnostics__value" data-bidi-isolate>{{ diagnostic.constraint }}</dd>
+
+        <dt class="diagnostics__term">{{ reasonLabel() }}</dt>
+        <dd class="diagnostics__reason" [attr.lang]="diagnostic.reasonLanguage">
+          {{ diagnostic.reason }}
+        </dd>
+      </dl>
+
+      @if (diagnostic.disclosure; as disclosure) {
+        <p class="diagnostics__disclosure">{{ disclosure }}</p>
+      }
+    </li>
+  }
+</ul>

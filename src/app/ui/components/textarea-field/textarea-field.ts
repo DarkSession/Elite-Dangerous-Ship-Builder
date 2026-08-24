@@ -8,6 +8,13 @@ import { createFieldRelations } from '../field/field-relations';
  * build note. It stays vertically resizable: a fixed height that clips content
  * at 200% text is a reflow failure, and the platform's own resize handle is the
  * simplest correct answer.
+ *
+ * `technical` is the payload mode the reference draws for both exchange layers
+ * (canvases 1a–1d): monospaced, so a JSON structure reads as a structure, and
+ * direction-isolated, so a right-to-left interface cannot reorder a path or a
+ * URL inside it. Combined with `readonly` it is the export payload — selectable
+ * and copyable, but not editable, and still a real form control with a real
+ * label rather than a block of text pretending to be one.
  */
 @Component({
   selector: 'edsb-textarea-field',
@@ -24,6 +31,18 @@ export class TextareaField {
   readonly required = input(false);
   readonly disabled = input(false);
   readonly busy = input(false);
+
+  /**
+   * Readable and selectable, but not editable.
+   *
+   * `readonly` rather than `disabled`: a disabled control is skipped by a
+   * screen reader's form navigation and cannot be selected, which is exactly
+   * what an export payload has to allow (export contract, "Artifact lifecycle").
+   */
+  readonly readonlyValue = input(false, { alias: 'readonly' });
+
+  /** Monospaced and direction-isolated, for a payload rather than prose. */
+  readonly technical = input(false);
 
   readonly changed = output<string>();
 

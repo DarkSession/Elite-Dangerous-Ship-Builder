@@ -1,0 +1,451 @@
+import { expect, test, type Page } from '@playwright/test';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
+import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { reachShellAction } from './shell';
+
+/**
+ * A build arriving from somewhere else.
+ *
+ * Everything here is about the same promise: an import either becomes the
+ * active build in one step, or changes nothing at all. The interesting cases
+ * are the refusals, because a refusal that half-replaced a build would be
+ * indistinguishable on screen from one that did not.
+ */
+
+/** One valid journal Loadout event, the smallest thing the Almanac accepts. */
+const JOURNAL_EVENT = JSON.stringify({
+  event: 'Loadout',
+  Ship: 'anaconda',
+  Modules: [],
+});
+
+/** The same build inside a SLEF envelope, as another application would export it. */
+const SLEF_ENVELOPE = JSON.stringify([
+  { header: { appName: 'EDSY', appVersion: '2.0' }, data: JSON.parse(JOURNAL_EVENT) },
+]);
+
+/** The one gate, in bytes. Named here so the journey states it rather than implies it. */
+const LIMIT_BYTES = 65_536;
+
+async function openImport(page: Page): Promise<void> {
+  await reachShellAction(page, /^import build$/i);
+  await expect(page.getByRole('dialog', { name: /import build/i })).toBeVisible();
+}
+
+function layer(page: Page) {
+  return page.getByRole('dialog', { name: /import build/i });
+}
+
+async function paste(page: Page, payload: string): Promise<void> {
+  await layer(page)
+    .getByLabel(/slef payload/i)
+    .fill(payload);
+}
+
+async function submit(page: Page): Promise<void> {
+  await layer(page)
+    .getByRole('button', { name: /^load build$/i })
+    .click();
+}
+
+/** A build already open in the workspace, so a replacement has something to replace. */
+async function withStockBuild(page: Page): Promise<void> {
+  await page.goto('/ships/Anaconda');
+  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  // Waits for the published fragment, not merely the route: publication is
+  // asynchronous, and a hash captured before it lands would compare unequal to
+  // itself a moment later.
+  await expect(page).toHaveURL(/\/build#b\./);
+}
+
+test.describe('importing a build', () => {
+  test('is offered from every screen, with no build and no chosen hull', async ({ page }) => {
+    for (const route of ['/ships', '/ships/Anaconda', '/build', '/builds']) {
+      await page.goto(route);
+      await openImport(page);
+      await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
+      await page
+        .getByRole('button', { name: /^close$/i })
+        .first()
+        .click();
+    }
+  });
+
+  test('turns a bare journal event into the active build', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JOURNAL_EVENT);
+    await submit(page);
+
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+  });
+
+  test('accepts a one-entry SLEF envelope the same way', async ({ page }) => {
+    await page.goto('/builds');
+    await openImport(page);
+    await paste(page, SLEF_ENVELOPE);
+    await submit(page);
+
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+  });
+
+  test('adds no route and no history entry of its own', async ({ page }) => {
+    await page.goto('/ships');
+    const before = await page.evaluate(() => history.length);
+
+    await openImport(page);
+    await expect(page).toHaveURL(/\/ships$/);
+    await page.getByRole('button', { name: /^cancel$/i }).click();
+
+    expect(await page.evaluate(() => history.length)).toBe(before);
+  });
+});
+
+test.describe('what the layer refuses, and what it leaves alone', () => {
+  test('refuses one byte over the limit, naming the size and the limit', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    const padding = 'a'.repeat(LIMIT_BYTES);
+    await paste(page, JSON.stringify({ event: 'Loadout', Ship: 'anaconda', Pad: padding }));
+    await submit(page);
+
+    await expect(layer(page).getByText(/most that can be imported/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/ships$/);
+  });
+
+  test('measures bytes rather than characters', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    // Half the limit in characters; one and a half times it in bytes.
+    await paste(page, '€'.repeat(LIMIT_BYTES / 2));
+    await submit(page);
+
+    await expect(layer(page).getByText(/most that can be imported/i)).toBeVisible();
+  });
+
+  test('says malformed JSON in its own words, with no package prose', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, '{ not json');
+    await submit(page);
+
+    await expect(layer(page).getByText(/not valid JSON/i)).toBeVisible();
+    // No exception message, no stack, no parser internals.
+    await expect(layer(page).getByText(/unexpected token/i)).toHaveCount(0);
+  });
+
+  test('refuses zero and refuses two, rather than choosing one', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    await paste(page, '[]');
+    await submit(page);
+    await expect(layer(page).getByText(/exactly one build/i)).toBeVisible();
+
+    await paste(page, JSON.stringify([JSON.parse(SLEF_ENVELOPE)[0], JSON.parse(SLEF_ENVELOPE)[0]]));
+    await submit(page);
+    await expect(layer(page).getByText(/exactly one build/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/ships$/);
+  });
+
+  test('lists the Almanac’s own diagnostics, fact by fact', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JSON.stringify([{ header: {}, data: {} }]));
+    await submit(page);
+
+    const list = layer(page).getByRole('list', { name: /rejected/i });
+    await expect(list).toBeVisible();
+    // The package's own five facts, not a summary of them.
+    await expect(list.getByText(/entries\[0\]/).first()).toBeVisible();
+  });
+
+  test('names the exact hull the Almanac does not carry', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JSON.stringify({ event: 'Loadout', Ship: 'Nonexistent_Hull', Modules: [] }));
+    await submit(page);
+
+    await expect(layer(page).getByText(/Nonexistent_Hull/)).toBeVisible();
+  });
+
+  test('keeps the exact draft through every refusal', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    const draft = '  { not json  ';
+    await paste(page, draft);
+    await submit(page);
+
+    await expect(layer(page).getByLabel(/slef payload/i)).toHaveValue(draft);
+  });
+
+  test('leaves the open build byte-identical when it refuses', async ({ page }) => {
+    await withStockBuild(page);
+    const before = await page.evaluate(() => location.hash);
+
+    await openImport(page);
+    await paste(page, '[]');
+    await submit(page);
+    await page.getByRole('button', { name: /^cancel$/i }).click();
+
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+    expect(await page.evaluate(() => location.hash)).toBe(before);
+  });
+
+  test('asks before replacing unsaved work, and cancelling changes nothing', async ({ page }) => {
+    await withStockBuild(page);
+    const before = await page.evaluate(() => location.hash);
+
+    await openImport(page);
+    await paste(page, JOURNAL_EVENT);
+    await submit(page);
+
+    const question = page.getByRole('dialog', { name: /replace/i });
+    await expect(question).toBeVisible();
+    await question
+      .getByRole('button', { name: /cancel|keep/i })
+      .first()
+      .click();
+
+    expect(await page.evaluate(() => location.hash)).toBe(before);
+    await expect(layer(page).getByLabel(/slef payload/i)).toHaveValue(JOURNAL_EVENT);
+  });
+});
+
+test.describe('the layer itself', () => {
+  test('is a named modal dialog with no accessibility violations', async ({ page }, testInfo) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    await expectNoAccessibilityViolations(page, testInfo);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('holds its refusal and its diagnostics without widening the page', async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JSON.stringify([{ header: {}, data: {} }]));
+    await submit(page);
+
+    await expectNoDocumentOverflow(page);
+    await expectNoAccessibilityViolations(page, testInfo);
+  });
+});
+
+test.describe('the network', () => {
+  test('sends nothing anywhere while a build is imported', async ({ page }) => {
+    await page.goto('/ships');
+    const origin = new URL(page.url()).origin;
+    const foreign: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== origin) {
+        foreign.push(request.url());
+      }
+    });
+
+    await openImport(page);
+    await paste(page, JOURNAL_EVENT);
+    await submit(page);
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+
+    expect(foreign).toEqual([]);
+  });
+});
+
+test.describe('the layer’s semantics', () => {
+  test('names and describes itself, and makes the page behind it inert', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    const dialog = layer(page);
+    await expect(dialog).toHaveJSProperty('open', true);
+    // The native element, so the inertness is the browser's rather than an
+    // attribute the application manages and could get wrong.
+    await expect(dialog).toHaveJSProperty('nodeName', 'DIALOG');
+    await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible();
+
+    // Modal in the browser's own sense, which is what makes the page behind it
+    // inert without the application managing an attribute it could get wrong.
+    expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
+  });
+
+  test('labels the payload field visibly and associates its refusal with it', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    const field = layer(page).getByLabel(/slef payload/i);
+    await expect(field).toBeVisible();
+
+    await paste(page, '{ not json');
+    await submit(page);
+
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    const describedBy = await field.getAttribute('aria-describedby');
+    expect(describedBy).not.toBeNull();
+    const described = page.locator(
+      (describedBy ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((id) => `#${id}`)
+        .join(', '),
+    );
+    await expect(described.filter({ hasText: /json/i }).first()).toBeVisible();
+  });
+
+  test('says the size and the state on one line, in words', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    const status = layer(page).locator('p[data-bidi-isolate]').first();
+
+    await expect(status).toHaveText(/awaiting input/i);
+
+    await paste(page, JOURNAL_EVENT);
+
+    await expect(status).toHaveText(/\d/);
+    // One line, one fact: the byte count replaces the prompt rather than
+    // joining it.
+    await expect(status).not.toHaveText(/awaiting input/i);
+  });
+
+  test('gives every diagnostic its five facts, each labelled', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JSON.stringify([{ header: {}, data: {} }]));
+    await submit(page);
+
+    const list = layer(page)
+      .getByRole('list', { name: /diagnostic|almanac/i })
+      .first();
+    await expect(list).toBeVisible();
+    const entry = list.getByRole('listitem').first();
+    for (const label of [/^entry$/i, /^property$/i, /^code$/i, /^constraint$/i, /^reason$/i]) {
+      await expect(entry.getByText(label).first()).toBeVisible();
+    }
+  });
+
+  test('announces the result once, politely, and never the payload', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    // Recorded as the outlet changes, because the workspace announces things of
+    // its own once the build lands and the outlet holds only the latest.
+    await page.evaluate(() => {
+      const outlet = document.querySelector('[data-announcement-outlet="polite"]');
+      const seen: string[] = [];
+      (window as unknown as { __announced: string[] }).__announced = seen;
+      new MutationObserver(() => seen.push(outlet?.textContent?.trim() ?? '')).observe(
+        outlet as Node,
+        { childList: true, characterData: true, subtree: true },
+      );
+    });
+
+    await paste(page, JOURNAL_EVENT);
+    await submit(page);
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+
+    const announced = await page.evaluate(
+      () => (window as unknown as { __announced: string[] }).__announced,
+    );
+    const imported = announced.filter((text) => /anaconda imported/i.test(text));
+    expect(imported.length).toBeGreaterThan(0);
+    // Bounded: the outlet never carries the payload or a diagnostic list.
+    expect(announced.join(' ')).not.toContain('Modules');
+    // One revision, one sentence: the same announcement is not repeated.
+    expect(new Set(imported).size).toBe(1);
+  });
+
+  test('keeps technical strings in their own direction under a right-to-left page', async ({
+    page,
+  }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await paste(page, JSON.stringify([{ header: {}, data: {} }]));
+    await submit(page);
+
+    // A JSON path that reordered under RTL would point somewhere else.
+    const isolated = layer(page).locator('[data-bidi-isolate]');
+    expect(await isolated.count()).toBeGreaterThan(0);
+    await expectNoDocumentOverflow(page);
+
+    await page.evaluate(() => document.documentElement.removeAttribute('dir'));
+  });
+
+  test('stays readable at doubled text size, with nothing cut off', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '200%';
+    });
+    await paste(page, JSON.stringify([{ header: {}, data: {} }]));
+    await submit(page);
+
+    await expect(layer(page).getByRole('button', { name: /^load build$/i })).toBeVisible();
+    await expect(layer(page).getByRole('button', { name: /^cancel$/i })).toBeVisible();
+    await expectNoDocumentOverflow(page);
+
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '';
+    });
+  });
+
+  test('gives its actions the baseline target size', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+
+    for (const name of [/^load build$/i, /^cancel$/i]) {
+      const box = await layer(page).getByRole('button', { name }).boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+  });
+});
+
+test.describe('what is never trusted', () => {
+  test('renders a producer’s own text as text, never as markup', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    const hostile = '<img src=x onerror="window.__pwned = true">';
+    await paste(
+      page,
+      JSON.stringify([
+        { header: { appName: hostile, appVersion: hostile }, data: JSON.parse(JOURNAL_EVENT) },
+      ]),
+    );
+    await submit(page);
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+
+    expect(await page.evaluate(() => '__pwned' in window)).toBe(false);
+    await expect(page.locator('img[src="x"]')).toHaveCount(0);
+  });
+
+  test('never follows a URL the payload named', async ({ page }) => {
+    await page.goto('/ships');
+    const origin = new URL(page.url()).origin;
+    const foreign: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== origin) {
+        foreign.push(request.url());
+      }
+    });
+
+    await openImport(page);
+    await paste(
+      page,
+      JSON.stringify([
+        {
+          header: { appName: 'EDSY', appVersion: '2.0', appURL: 'https://elsewhere.test/build' },
+          data: JSON.parse(JOURNAL_EVENT),
+        },
+      ]),
+    );
+    await submit(page);
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+
+    expect(foreign).toEqual([]);
+    await expect(page.getByRole('link', { name: /elsewhere/i })).toHaveCount(0);
+  });
+});

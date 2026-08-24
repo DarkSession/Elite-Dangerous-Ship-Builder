@@ -13,7 +13,6 @@ creates a hull.
 - visibly labelled editable monospaced multiline field whose exact draft is preserved;
 - programmatically associated localized UTF-8 byte usage and 64-KiB limit/status;
 - concise status/announcement summary plus semantic exact package diagnostic list;
-- candidate summary using safe package hull/name/validation presentation;
 - Clear, Cancel/Close and Inspect/Import actions;
 - feature 001 shared replacement confirmation when dirty work exists.
 
@@ -22,22 +21,22 @@ renders an immutable view and emits draft/clear/submit/cancel intents.
 
 ## States and action behavior
 
-| State                           | Presentation and enabled actions                                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Empty                           | Exact empty/whitespace draft and byte count; submit disabled; Clear disabled when truly empty                      |
-| Editing within limit            | Draft and localized byte use; submit enabled; no stale failure after a newer edit unless still applicable          |
-| Over limit                      | Associated invalid state names actual/limit bytes; submit unavailable and package inspector is not called          |
-| Inspecting                      | Draft stays readable; duplicate submit disabled; cancel/close invalidates request token                            |
-| Syntax                          | Localized app summary only; no raw exception, invented path or code; edit/resubmit available                       |
-| Zero/multiple/mixed cardinality | Observed count and exactly-one rule; all package diagnostics retained for mixed input                              |
-| Package diagnostic              | Entry/path/code/constraint/params and package-locale/canonical-disclosed reason in a semantic list                 |
-| Unknown hull/construction       | Exact source hull where safe plus generic app framing; no fabricated package diagnostic                            |
-| Normalization unsupported       | Exact source slot/module context and package code/params returned by `completeEngineeringGrade()`                  |
-| Correlation/package failure     | Stable app-owned category, exact source context and only the structured package reason/result actually returned    |
-| Candidate ready                 | Incoming hull/name/final validation summary; direct commit only when feature 001 says confirmation unnecessary     |
-| Awaiting replacement            | Layer remains behind shared confirmation; candidate/token cannot commit independently                              |
-| Cancelled/superseded            | Draft/current work remain; concise no-op status, no stale announcement/commit                                      |
-| Committed transition            | After one confirmed commit, move to `/build` when needed and expose Import Outcome before removing the input layer |
+| State                           | Presentation and enabled actions                                                                                                                                                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Empty                           | Exact empty/whitespace draft and byte count; submit disabled; Clear disabled when truly empty                                                                                                                                                                |
+| Editing within limit            | Draft and localized byte use; submit enabled; no stale failure after a newer edit unless still applicable                                                                                                                                                    |
+| Over limit                      | Associated invalid state names actual/limit bytes; submit unavailable and package inspector is not called                                                                                                                                                    |
+| Inspecting                      | Draft stays readable; duplicate submit disabled; cancel/close invalidates request token                                                                                                                                                                      |
+| Syntax                          | Localized app summary only; no raw exception, invented path or code; edit/resubmit available                                                                                                                                                                 |
+| Zero/multiple/mixed cardinality | Observed count and exactly-one rule; all package diagnostics retained for mixed input                                                                                                                                                                        |
+| Package diagnostic              | Entry/path/code/constraint/params and package-locale/canonical-disclosed reason in a semantic list                                                                                                                                                           |
+| Unknown hull/construction       | Exact source hull where safe plus generic app framing; no fabricated package diagnostic                                                                                                                                                                      |
+| Normalization unsupported       | Exact source slot/module context and package code/params returned by `completeEngineeringGrade()`                                                                                                                                                            |
+| Correlation/package failure     | Stable app-owned category, exact source context and only the structured package reason/result actually returned                                                                                                                                              |
+| Candidate ready                 | Not drawn. The canvas has no candidate panel: when confirmation is unnecessary feature 001 commits straight away, and when it is necessary feature 001's own confirmation names the incoming hull. A second summary beside it would say the same thing twice |
+| Awaiting replacement            | Layer remains behind shared confirmation; candidate/token cannot commit independently                                                                                                                                                                        |
+| Cancelled/superseded            | Draft/current work remain; concise no-op status, no stale announcement/commit                                                                                                                                                                                |
+| Committed transition            | After one confirmed commit, move to `/build` when needed and remove the input layer; the workspace's own notice and rail describe the build that arrived                                                                                                     |
 
 ## Responsive behavior
 

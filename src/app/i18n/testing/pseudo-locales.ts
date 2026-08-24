@@ -115,12 +115,15 @@ const PLACEHOLDER = /(\{\{[^}]*\}\})/g;
  * a URL — where transforming one side of a relationship silently breaks it;
  * values that select a behaviour from a fixed set — a tone, an emphasis, a
  * kind, a side — where an unrecognised string quietly turns the behaviour off.
+ * A language tag is the first kind twice over: `lang="[éñ ëẋ]"` is not a
+ * language, and a reader's software is entitled to say so — which is a failure
+ * the pseudo-locale invented rather than one it found.
  * A schematic plate is the second kind: expand the `side` a mount is drawn on
  * or the `kind` it is, and the mount takes the wrong treatment or none. Both
  * would be a failure the pseudo-locale invented rather than one it exposed.
  */
 const STRUCTURAL_KEY =
-  /^(?:id|for|href|src|address|key|kind|kinds|side|sides|role|type|state|tone|urgency|variant|emphasis|presentation|direction|lang|language|locale|tag|translationState|.*Id|.*Ids|.*Key|.*Keys)$/;
+  /^(?:id|for|href|src|address|key|kind|kinds|side|sides|role|type|state|tone|urgency|variant|emphasis|presentation|direction|lang|language|locale|tag|translationState|.*Id|.*Ids|.*Key|.*Keys|.*Language|.*Locale)$/;
 
 /**
  * Expands one string to roughly twice its length.

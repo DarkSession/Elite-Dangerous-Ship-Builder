@@ -21,14 +21,20 @@ do not parse, trim, measure, normalize, construct or commit.
    `ShipLoadout` through the package boundary.
 9. Correlate every retained partial to the constructed slot and exact module identity. Call
    `completeEngineeringGrade(slot)` only for those partials. Every must return `normalized`;
-   `unsupported`, missing/mismatched correlation or unexpected `unchanged` refuses the entire import.
-10. Read final package validation/issues, then create the detached candidate/outcome data. Read no
-    calculation before construction and quality handling complete.
+   `unsupported` or an unexpected `unchanged` refuses the entire import. A partial whose module did
+   **not** come back — dropped as unresolvable, or replaced by the hull default in a fixed mount —
+   is not completed and is not a refusal: the module is gone, so there is no roll left to complete,
+   and a package-defaulted mount is ordinary build state (FR-010). An earlier draft of this step
+   refused there; it would have refused builds the constitution says are fine, so the vocabulary for
+   it was removed rather than left unreachable.
+10. Read final package validation, then create the detached candidate. Read no calculation before
+    construction and quality handling complete.
 11. Give candidate/token to feature 001's replacement coordinator. The SLEF feature
     performs no direct active-state, persistence, URL, provenance or history mutation.
 12. On acceptance, feature 001 commits once as working provenance, navigates to `/build` when needed,
     autosaves the tab working record and synchronizes its link; feature 002 resets history. Clear the
-    draft only after commit and publish the revision-bound outcome.
+    draft only after commit. The completions travel on the candidate as feature 001's own
+    `qualityNotices`; feature 004 publishes no report of its own.
 
 ## Cardinality and diagnostics
 
@@ -57,7 +63,8 @@ and SLEF ingress. Feature 004 supplies inspected source evidence; it does not im
 
 ## Report and persistence split
 
-- Quality completions and final validation are revision-bound transient outcome presentation.
+- Quality completions and final validation are transient, and are presented by feature 002's
+  completion notice and feature 003's build-status rail rather than by anything feature 004 owns.
 - Feature 001 independently persists the accepted revision's `valid`/`complete` booleans in its
   working/local-record metadata; the detailed validation issue list remains transient.
 - Neither path enters the modelled build snapshot, URL, SLEF payload or edit history.
@@ -73,8 +80,14 @@ Before/after every failure, cancellation and supersession compare equal:
 - undo/redo tape.
 
 Draft text also remains exact. A successful import is one replacement; persistence/link/history
-effects occur only after commit. A stale token cannot commit after close, new submit, route change or
-newer replacement decision.
+effects occur only after commit. A stale token cannot commit: the candidate supplier is where it is
+checked, and feature 001 calls that supplier before it asks the Commander anything, so a superseded
+request never becomes a candidate at all. What the token does **not** undo is an answer already
+given: once the Commander has confirmed the replacement for this exact candidate and feature 001 has
+committed, a close, a newer submit or a route change that lands afterwards cannot un-commit the
+build, and reporting anything but `committed` would describe the active build as one that never
+arrived. The dangerous case — a slow paste landing on a build opened since — is a _newer
+replacement_, which feature 001's own token supersedes before it commits.
 
 ## Package boundary
 
