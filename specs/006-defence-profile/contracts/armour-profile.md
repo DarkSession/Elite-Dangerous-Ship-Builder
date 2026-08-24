@@ -1,5 +1,10 @@
 # Armour, Hardness and Module Protection Contract
 
+> **Reconciled at implementation, 2026-08-24.** Canvas 1c writes three protection facts —
+> `HARDNESS`, `MODULE PROT.` and `INTEGRITY` — and no explanation beside them. `INTEGRITY` is the
+> module armour. The armour role groups carry the package's own aggregate and no action, because the
+> canvas draws none.
+
 ## Boundary
 
 For one captured active-build revision call `loadout.armourMetrics()` and resolve the exact active
@@ -13,20 +18,20 @@ or invented armour-unavailable state is permitted.
 
 ## Complete mapping
 
-| Presentation fact       | Package source                                         | Unit/meaning                      |
-| ----------------------- | ------------------------------------------------------ | --------------------------------- |
-| total hull hit points   | `ArmourMetrics.hitPoints`                              | hull points                       |
-| bulkhead aggregate      | `ArmourMetrics.bulkheads`                              | hull points                       |
-| reinforcement aggregate | `ArmourMetrics.reinforcement`                          | hull points                       |
-| damage resistances      | `resistances.kinetic/thermal/explosive/caustic`        | signed fraction                   |
-| effective hull pools    | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | hull points of raw damage         |
-| module armour           | `moduleArmour`                                         | module-protection hit points      |
-| module protection       | `moduleProtection`                                     | fraction                          |
-| hull hardness           | `Ship.hardness`                                        | armour-piercing comparison rating |
+| Presentation fact       | Package source                                         | Unit/meaning                 |
+| ----------------------- | ------------------------------------------------------ | ---------------------------- |
+| total hull hit points   | `ArmourMetrics.hitPoints`                              | hull points                  |
+| bulkhead aggregate      | `ArmourMetrics.bulkheads`                              | hull points                  |
+| reinforcement aggregate | `ArmourMetrics.reinforcement`                          | hull points                  |
+| damage resistances      | `resistances.kinetic/thermal/explosive/caustic`        | signed fraction              |
+| effective hull pools    | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | hull points of raw damage    |
+| module armour           | `moduleArmour`                                         | module-protection hit points |
+| module protection       | `moduleProtection`                                     | fraction                     |
+| hull hardness           | `Ship.hardness`                                        | the hull's own rating        |
 
-Armour effective hit points are never labeled MJ. Hardness receives adjacent text explaining that
-weapon armour piercing is compared with the rating. No weapon matchup, piercing factor, averaged
-attack, damage percentage or combined defence score is calculated.
+Armour effective hit points are never labelled MJ. Hardness is drawn as the package's own value. No
+weapon matchup, piercing factor, averaged attack, damage percentage or combined defence score is
+calculated, and no explanation is added beside it — the canvas writes the label and the figure.
 
 ## Separation and fitted identity
 
@@ -38,11 +43,13 @@ attack, damage percentage or combined defence score is calculated.
 - Other fitted-role records use a package-resolved `engineeringGroup` classification. A module with
   unavailable role/stat data yields no guessed record; unsupported module identities are outside this
   boundary because ingress accepts only package-resolved identities.
-- A role record states what is fitted and where, not whether or how much the facade counted.
+- A role group is named by what is fitted in it and closed by the package's own aggregate; no member
+  is given a share of that figure.
 - Direct `FittedModule.on` may be shown as enabled, disabled or unspecified; no local shedding verdict
   is attached.
 
-Every role action emits the exact package slot key to feature 002. Duplicate symbols remain separate.
+There is no action in a role group: the canvas draws none. Duplicate symbols remain separate members
+of their group.
 
 ## Numeric semantics
 
@@ -55,11 +62,11 @@ Every role action emits the exact package slot key to feature 002. Duplicate sym
 
 - Hull contributions, damage rows, hardness, module armour and module protection use distinct
   labelled groups.
-- Damage values use a semantic table when roomy and complete labelled cards when stacked.
-- Hardness explanation and every negative/unbounded/zero state are visible text, not color-only.
+- Damage values use a semantic table that scrolls inside its own labelled container when narrow.
+- Every negative, unbounded and zero state is visible text, not colour alone.
 - Application labels/units use feature 011; module/hull/slot game text uses Almanac leaf helpers with
   shared canonical-language disclosure.
-- A missing shield does not alter heading order, availability or actions in the armour region.
+- A missing shield does not alter heading order or availability in the armour card.
 
 ## Verification
 
@@ -67,7 +74,7 @@ Every role action emits the exact package slot key to feature 002. Duplicate sym
 - Compare hardness directly with the exact package hull record.
 - Assert armour EHP formats as hull points, not MJ.
 - Assert module armour/protection never enter hull hit points or each other's format.
-- Assert the actual non-stock fitted bulkhead targets its exact slot.
+- Assert the actual non-stock fitted bulkhead is named from its own package slot.
 - Assert the stock calculation fallback never fabricates a fitted bulkhead row.
 - Assert missing/disabled/shed shields leave the complete armour region available.
 - Assert unknown hull ingress is rejected before projection; a lookup invariant failure has no local

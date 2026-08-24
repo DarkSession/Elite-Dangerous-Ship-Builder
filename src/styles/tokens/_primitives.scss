@@ -399,6 +399,13 @@
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
 
+  // Canvas 1c's defence rows: the 46px resistance column and the 56px value
+  // column every figure in the two cards is right-aligned inside. They are
+  // minimums rather than fixed widths here, and they are what holds a short
+  // figure off the end of the bar it is read against.
+  --edsb-measure-defence-resist: 2.875rem; // 46
+  --edsb-measure-defence-value: 3.5rem; //    56
+
   // The compact action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
   --edsb-measure-menu-min: 12.25rem;

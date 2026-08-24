@@ -15,12 +15,33 @@ import {
   type SchematicSide,
   type SideAssetState,
 } from '../../../../domain/anatomy/anatomy-model';
+import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { AnnouncementService } from '../../../../ui/announcements/announcement.service';
 import { TabGroup } from '../../../../ui/components/tab-group/tab-group';
 import { HullSchematic, type HullSchematicView } from '../../../../ui/outfitting/hull-schematic';
+import { DefenceAnalysis } from '../defence-analysis/defence-analysis';
 import { PowerThermals } from '../power-thermals/power-thermals';
+
+/** The modes of the strip that open something. The other two are disabled. */
+const ANATOMY_MODES = ['mounts', 'power', 'defence'] as const;
+
+type AnatomyMode = (typeof ANATOMY_MODES)[number];
+
+/**
+ * The region's rule per mode, from canvas 1c's own switching script:
+ * `HULL ANATOMY`, `POWER & THERMALS`, `DEFENCE ANALYSIS`.
+ */
+const MODE_HEADINGS = {
+  mounts: 'anatomy.heading',
+  power: 'power.heading',
+  defence: 'defence.heading',
+} as const satisfies Record<AnatomyMode, MessageKey>;
+
+function isAnatomyMode(value: string): value is AnatomyMode {
+  return (ANATOMY_MODES as readonly string[]).includes(value);
+}
 
 /**
  * The hull anatomy panel inside feature 001's `/build`.
@@ -34,20 +55,21 @@ import { PowerThermals } from '../power-thermals/power-thermals';
  * (design/hull-anatomy.md, "Divergence from FR-008").
  *
  * The strip is drawn whole, with the five modes the canvas names and in its
- * order. `MOUNTS` is this capability's own; `POWER` is feature 005's, which
- * retitles the region `POWER & THERMALS` and replaces the plates entirely — the
- * canvas's switching script hides the plate container outside `mounts`, so the
- * side selector and the legend go with them. `DRIVES`, `DEFENCE` and `OFFENCE`
- * are the same plates read by features 006 to 008, and until those land their
- * segments are disabled rather than invented — a segment that opened an empty
- * panel would be this capability claiming a reading of the hull that nothing has
- * made (design/hull-anatomy.md, "The mode strip";
+ * order. `MOUNTS` is this capability's own; `POWER` is feature 005's and
+ * `DEFENCE` feature 006's, each of which retitles the region — `POWER &
+ * THERMALS`, `DEFENCE ANALYSIS` — and replaces the plates entirely, because the
+ * canvas's switching script hides the plate container outside `mounts` and the
+ * side selector and the legend go with them. `DRIVES` and `OFFENCE` are the same
+ * plates read by features 007 and 008, and until those land their segments are
+ * disabled rather than invented — a segment that opened an empty panel would be
+ * this capability claiming a reading of the hull that nothing has made
+ * (design/hull-anatomy.md, "The mode strip";
  * specs/005-power-and-heat/design/canvas-contract.md, "Where the capability
  * lives").
  */
 @Component({
   selector: 'edsb-hull-anatomy',
-  imports: [HullSchematic, PowerThermals, TabGroup],
+  imports: [DefenceAnalysis, HullSchematic, PowerThermals, TabGroup],
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -65,11 +87,15 @@ export class HullAnatomy {
   #transition = 0;
 
   /** The mode the strip has open. Nothing about it is persisted or routed. */
-  readonly #mode = signal<'mounts' | 'power'>('mounts');
+  readonly #mode = signal<AnatomyMode>('mounts');
 
   readonly activeMode = this.#mode.asReadonly();
 
   readonly isPower = computed(() => this.#mode() === 'power');
+  readonly isDefence = computed(() => this.#mode() === 'defence');
+
+  /** Whether the mode replaces the plates with a capability of its own. */
+  readonly isDashboard = computed(() => this.isPower() || this.isDefence());
 
   /**
    * The region's own rule, which the mode renames.
@@ -80,9 +106,7 @@ export class HullAnatomy {
    * tell which layer they were looking at, and a line under it explaining the
    * panel is not something the artboard draws.
    */
-  readonly heading = computed(() =>
-    this.#messages.message(this.isPower() ? 'power.heading' : 'anatomy.heading'),
-  );
+  readonly heading = computed(() => this.#messages.message(MODE_HEADINGS[this.#mode()]));
   readonly modeLabel = this.#messages.messageSignal('anatomy.mode.label');
   readonly sideLabel = this.#messages.messageSignal('anatomy.side.label');
   readonly legendLabel = this.#messages.messageSignal('anatomy.legend.label');
@@ -99,10 +123,10 @@ export class HullAnatomy {
   /**
    * Canvas 1c's five modes, in its order.
    *
-   * `mounts` is this feature's; the other four are the same plates read by
-   * features 005 to 008 and are disabled until one of them ships. The one that
-   * is open is exposed as pressed state and named in words as well, so the
-   * canvas's amber ground is never the only thing that says so.
+   * `mounts` is this feature's, `power` is feature 005's and `defence` feature
+   * 006's; the two features 007 and 008 will draw are disabled until they ship.
+   * The one that is open is exposed as pressed state and named in words as well,
+   * so the canvas's amber ground is never the only thing that says so.
    */
   readonly modes = computed(() =>
     (
@@ -110,7 +134,7 @@ export class HullAnatomy {
         { id: 'mounts', key: 'anatomy.mode.mounts', enabled: true },
         { id: 'power', key: 'anatomy.mode.power', enabled: true },
         { id: 'drives', key: 'anatomy.mode.drives', enabled: false },
-        { id: 'defence', key: 'anatomy.mode.defence', enabled: false },
+        { id: 'defence', key: 'anatomy.mode.defence', enabled: true },
         { id: 'offence', key: 'anatomy.mode.offence', enabled: false },
       ] as const
     ).map((mode) => ({
@@ -190,7 +214,7 @@ export class HullAnatomy {
    * active build: it is which layer of the same two plates is being read.
    */
   showMode(mode: string): void {
-    if (mode === 'mounts' || mode === 'power') {
+    if (isAnatomyMode(mode)) {
       this.#mode.set(mode);
     }
   }

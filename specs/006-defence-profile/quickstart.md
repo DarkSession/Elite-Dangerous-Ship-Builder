@@ -18,10 +18,10 @@ Before feature acceptance, confirm:
 - the installed `@elite-dangerous-almanac/core` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
 - feature 001 supplies `/build` and one active loadout/revision;
-- feature 003 supplies settled SYS half-pips, revision/provider envelopes and `defenceProfile` target;
-- feature 002 supplies exact-slot reveal through its accepted modelled-snapshot boundary;
-- feature 011 enables strict compilation, shared UI/i18n/previews, five layouts in Chromium and
-  Firefox and automated axe scans.
+- feature 005 supplies the SYS allocation, already in the package's `[0, 4]` units;
+- feature 010 supplies the anatomy mode strip and the space its plates leave;
+- feature 011 enables strict compilation, shared UI/i18n, five layouts in Chromium and Firefox and
+  automated axe scans.
 
 Expected: feature 006 introduces no local formula, hull fallback, generator-state reconstruction,
 power-band inference, aggregate apportionment, private game text or new persistence field.
@@ -29,24 +29,24 @@ power-band inference, aggregate apportionment, private game text or new persiste
 ## 2. Run focused tests
 
 ```bash
-pnpm test -- --include 'src/app/domain/defence/**/*.spec.ts' --include 'src/app/application/defence/**/*.spec.ts' --include 'src/app/features/build-workspace/defence-profile/**/*.spec.ts'
-pnpm exec playwright test e2e/defence-profile.spec.ts
+pnpm exec ng test --no-coverage --include 'src/app/domain/defence/**/*.spec.ts'
+pnpm exec ng test --no-coverage --include 'src/app/features/build-workspace/outfitting/defence-*/**/*.spec.ts'
+pnpm exec playwright test e2e/defence.spec.ts
 ```
 
-Expected: unit tests compare real package results/issues and provider revisions; browser tests run the
-full configured dual-engine layout matrix with accessibility scans.
+Expected: unit tests compare real package results and issues; browser tests run the full configured
+dual-engine layout matrix with accessibility scans.
 
 ## 3. Validate shield strength and SYS pips
 
 1. Open a package-backed build with generator, boosters and shield reinforcement.
-2. Select Defence from the workspace or feature 003 shield/armour headline.
-3. Compare `strength`, `generator`, `boosters`, `reinforcement`, `massCurveMultiplier`,
-   `boostMultiplier`, `systemsResistance`, all four resistances and all four EHP values directly with
-   `shieldMetricsResult({ systemsPips })` for the settled pips.
-4. Apply valid 0, fractional, 2 and 4 SYS values through feature 003 and repeat.
+2. Open the anatomy region's `DEFENCE` mode.
+3. Compare `strength`, the three role aggregates, all four resistances and all four EHP values
+   directly with `shieldMetricsResult({ systemsPips })` for the standing pips.
+4. Move the pips on the `POWER` dashboard and repeat.
 
-Expected: every value equals the same-revision package field. The same explicit pips feed recovery;
-conditions never enter history, persistence, URL or SLEF.
+Expected: every value equals the package field at that allocation. The same explicit pips feed
+recovery; the allocation never enters history, persistence, URL or SLEF.
 
 ## 4. Validate shield/recovery unavailable issues
 
@@ -56,7 +56,7 @@ disabled plant and unresolved draw cases.
 Expected:
 
 - shield and recovery preserve their own complete ordered issue arrays;
-- issue field/reason/slot/symbol remain exact, and slot-bearing issues reveal that slot;
+- issue field/reason/slot/symbol remain exact, and nothing stands in their place;
 - plant/draw issues are not relabeled as generator states;
 - a generator powered with hardpoints retracted remains package-complete even if deployment would
   shed its group;
@@ -65,28 +65,27 @@ Expected:
 
 ## 5. Validate recovery and non-finite meanings
 
-Compare `regenRate`, `brokenRegenRate`, `recoveryTime` and `regenTime` independently with
-`shieldRecoveryResult({ systemsPips })`. Use presentation fixtures for a phase that cannot reach 50%,
-a phase that cannot reach full and an unbounded EHP value.
+Compare `regenRate`, `recoveryTime` and `regenTime` independently with
+`shieldRecoveryResult({ systemsPips })` — the three readings the canvas draws. Use a zero-pip
+projection for a phase that does not finish, and a fixture for an unbounded EHP value.
 
-Expected: both rates and both durations remain separate. The two infinite durations and infinite EHP
-receive three different localized meanings; finite zero stays numeric and no raw/clamped infinity is
-shown.
+Expected: the rate and the two phases remain separate. A phase that does not finish and an unbounded
+pool read as their own phrases; finite zero stays numeric and no raw or clamped infinity is shown.
 
 ## 6. Validate cell banks
 
 Use builds for no banks, powered banks, mixed power, all banks unpowered and duplicate bank
 symbols.
 
-For every bank compare slot, symbol, reinforcement, cells, spin-up, duration, heat and powered state
-with `cellBanks().banks`; compare both totals directly.
+For every bank compare cells, reinforcement and powered state with `cellBanks().banks`; compare the
+restorable total directly.
 
 Expected:
 
-- no banks has a dedicated empty state;
-- fitted/all-unpowered retains every bank beside exact zero totals;
+- no bank fitted draws no reserve line at all;
+- all banks unpowered retains every bank in the line and says so in words;
 - powered means the returned hardpoints-deployed verdict;
-- each action reveals the exact returned slot in one interaction.
+- the figure on the line is the package total and is never assembled from the banks.
 
 ## 7. Validate armour, hardness and module protection
 
@@ -99,49 +98,46 @@ Expected:
 
 - armour EHP uses hull points, not MJ;
 - hull HP, module armour, module protection and hardness remain distinct;
-- hardness explains the armour-piercing comparison without a matchup;
-- actual fitted-role rows target exact slots but carry no apportioned contribution;
+- hardness is the package's own value, with no matchup generated from it;
+- role rows carry the package's own aggregate and no apportioned share;
 - a stock calculation fallback never fabricates a fitted bulkhead row;
 - shield state never hides armour.
 
-## 8. Validate fitted-role and issue targeting
+## 8. Validate the role groups
 
-Use duplicate boosters/reinforcements plus generator, actual bulkhead and slot-bearing issues.
+Use duplicate boosters and reinforcements plus a generator and a non-stock bulkhead.
 
-Expected: package-resolved roles appear in package slot order; unavailable role/stat data produces no
-guessed record and only supported module identities; duplicate symbols retain independent exact-slot
-actions; wide and narrow actions deliver the original key; no role row claims numeric facade
-provenance. Any package issue reason `unresolved` remains calculation feedback only.
+Expected: package-resolved roles appear in package slot order; a group of one module is named by
+that module and a group of unlike modules by its role; a repeated module is counted; unavailable
+role or stat data produces no guessed record; no row is a control, and no row carries a share of the
+group's aggregate. Any package issue reason `unresolved` remains calculation feedback only.
 
-## 9. Validate revision and Status integration
+## 9. Validate the status rail block
 
-1. Trigger rapid accepted module edits and settled SYS changes.
-2. Observe provider build/condition revisions and the rendered test seam.
-3. Open Defence through feature 003's headline/detail target.
+1. Trigger accepted module edits and pip changes.
+2. Compare the rail's two cells with the two card headlines.
 
-Expected: no stale projection is published under a newer context; shield/recovery share pips; Status
-shield/armour equals the detail projection; the target is exactly `defenceProfile`; the
-`shieldStrength` identity is exported exactly when that summary is unavailable and never for armour. The Status-provider update meets feature 003's 100 ms mobile-throttled
-criterion.
+Expected: the two figures agree with the cards at every revision; a refused shield reads as
+unavailable in both places; the block holds no control.
 
 ## 10. Validate `.design` composition responsively
 
 Run at 1440×900, 834×1112, 1112×834, 390×844 and 844×390 in Chromium and Firefox.
 
-Expected: wide layouts may show complete shield/armour peers; constrained layouts stack the same
-complete semantic content. Mobile never drops resistance percentages, multipliers, recovery, bank
-fields, hardness or protection. The page has no horizontal overflow, and exact-slot actions retain
-feature 002 return behavior.
+Expected: wide layouts show complete shield/armour peers; constrained layouts stack the same
+complete semantic content. Mobile never drops resistance percentages, recovery, the reserve,
+hardness or protection. The page has no horizontal overflow.
 
-## 11. Validate accessibility and previews
+## 11. Validate accessibility
 
-Render every state in [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md)
+Render every state in [design/screen-inventory.md](./design/screen-inventory.md), "Required states",
 and every primary journey.
 
 - Run axe and fail every in-scope violation.
 - Check landmarks, headings, definition/table/card relationships and role/name/state semantics.
 - Check visible text equivalents for every supplemental bar/icon.
-- Check pointer/touch and the shared 44 CSS-pixel target baseline.
+- Check the mode strip that opens the layer by pointer and by touch, against the shared 44
+  CSS-pixel target baseline.
 - Check 200% text, actual 400% zoom, doubled copy, RTL, long package identities and reduced motion.
 - Complete the three stories with NVDA/Firefox desktop and TalkBack/Chromium mobile protocols.
 
@@ -159,7 +155,7 @@ Expected:
 - canonical package text is visibly disclosed when the requested package locale is unavailable;
 - no raw message key, blank placeholder, parsed English diagnostic or private game translation is
   displayed;
-- numbers, percentages, multipliers, counts and durations use the active locale.
+- numbers, percentages, counts and durations use the active locale.
 
 ## 13. Run the full gate
 

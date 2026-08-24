@@ -1,0 +1,11 @@
+@if (shown()) {
+  <!--
+    The rail insets its own groups: the rail band itself carries no side
+    padding, so a block that drew straight onto it would run its cells into both
+    seams. This is the same inset feature 003's issue group, feature 005's power
+    line and the cost block on either side of it take.
+  -->
+  <div class="block">
+    <edsb-metric-group [label]="railLabel()" [metrics]="cells()" />
+  </div>
+}

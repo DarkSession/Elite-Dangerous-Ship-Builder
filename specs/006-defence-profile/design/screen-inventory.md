@@ -1,56 +1,81 @@
 # Screen and Surface Inventory
 
-Feature 006 adds no top-level route. Its one complete Defence Profile composes inside feature 001's
-`/build` workspace. Feature 003 selects it and supplies SYS pips; feature 002 reveals exact slots.
+> **Rewritten at implementation, 2026-08-24.** The original inventory was written against a shared
+> viewing-condition surface, a per-bank collection, exact-slot actions in the source rows and a
+> hardness explanation. None of those is drawn by either canvas, and under the standing rule that
+> the reference is the template they are withdrawn. See
+> [reference-review.md](./reference-review.md), "Required departures".
 
-## Layout inventory
+Feature 006 adds no route and no top-level screen. It adds one mode to a region feature 010 already
+draws, and one read-only block to the status rail feature 003 already draws. The SYS allocation it
+is read at is the one feature 005's dashboard already owns.
 
-| Surface/state              | Desktop 1440×900                                      | Tablet portrait/landscape                             | Mobile portrait/landscape and 400% zoom          | Requirements           |
-| -------------------------- | ----------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ---------------------- |
-| Defence capability         | Complete shield/armour peers when both remain legible | Fluid two-column or complete stack by available space | One complete semantic stack                      | FR-001–FR-009          |
-| Shared SYS condition       | Existing feature 003 condition surface before results | Same complete condition surface                       | Full-width before results                        | FR-002, FR-004         |
-| Shield profile             | Total, contributions, multipliers and damage table    | Same facts; table or complete cards                   | Same facts as labelled cards                     | FR-002, FR-003, FR-005 |
-| Shield recovery            | Four labelled facts adjacent to shield                | Four labelled facts                                   | Four labelled facts; no footer abbreviation      | FR-004, FR-005         |
-| Fitted shield-role records | Role-grouped exact-slot actions                       | Same complete collection                              | Same complete action cards                       | FR-003, FR-009         |
-| Cell banks                 | Totals and complete responsive bank collection        | Same complete collection                              | Same bank fields as stacked cards                | FR-006, FR-009         |
-| Armour profile             | Total, contributions and damage table                 | Same facts; table or complete cards                   | Same facts as labelled cards                     | FR-007                 |
-| Hardness/module protection | Three distinct labelled facts and hardness help       | Same distinct facts                                   | Same distinct facts and explanation              | FR-007, FR-008         |
-| Fitted armour-role records | Role-grouped exact-slot actions                       | Same complete collection                              | Same complete action cards                       | FR-008, FR-009         |
-| Existing outfitting slot   | Inline ledger/editor selects exact slot               | Existing responsive selection behavior                | Existing selected-slot layer with return context | FR-009                 |
-| Status headline/target     | Feature 003 rail/capability summary                   | Feature 003 Status capability                         | Feature 003 Status capability                    | FR-001–FR-003, FR-007  |
+| Surface                                   | Wide/tablet presentation                                                            | Narrow/zoomed presentation                | Requirements           |
+| ----------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------- |
+| [Defence analysis](./defence-profile.md)  | The anatomy region's `DEFENCE` mode: two cards in the space the hull plates leave   | The same two in one semantic column       | FR-001–FR-009          |
+| Shield card                               | Identity, headline pool, four damage rows, three recovery facts, sources, reserve   | The same blocks in the same order         | FR-002–FR-006, FR-009  |
+| Damage relationship                       | One row per returned damage type: the type, its bar, its resistance, its pool       | The same rows, scrolling inside their box | FR-002, FR-005, FR-007 |
+| Armour card                               | Identity, headline pool, four damage rows, three protection facts, sources          | The same blocks in the same order         | FR-007–FR-009          |
+| Cell-bank reserve                         | One line under the shield sources, and every kind of bank behind it listed under it | The same lines, wrapped                   | FR-006                 |
+| Status rail defence block (feature 003's) | Between the power block and the cost cells                                          | The same block in canvas 1d's Status mode | FR-002, FR-007         |
 
-Wide visual columns never change the semantic order defined in
-[defence-profile.md](./defence-profile.md). Only an inner semantic table may receive local horizontal
-overflow; the document never does.
+## Requirement ownership
 
-## Requirement mapping
+| Requirement | Behaviour                                                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One pure projection calls only the four `ShipLoadout` methods; every surface reads that one result at one revision.         |
+| FR-002      | The shield card presents the returned strength, role aggregates, resistances and effective pools at the standing SYS pips.  |
+| FR-003      | A refused shield states every package issue in order; missing, disabled and shed stay distinguishable by the reason given.  |
+| FR-004      | Recovery keeps the regeneration rate, the regeneration time and the recovery time as three separate readings.               |
+| FR-005      | Field-specific presentation distinguishes an unbounded effective pool and a recovery phase that does not finish.            |
+| FR-006      | The reserve distinguishes no bank fitted from a fitted bank, carries the package total, and lists every bank aboard.        |
+| FR-007      | The armour card presents the returned hit points, aggregates, resistances, effective pools, module armour and protection.   |
+| FR-008      | Hardness comes from the exact hull record; the bulkhead is named from the package slot rather than from a stock assumption. |
+| FR-009      | Each role group is named by the package identity of what it holds; the aggregate stays whole and no row is a control.       |
 
-| Requirement | Surface behavior                                                                                                                 |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One revision-coherent projector copies package results; every surface consumes the same immutable projection.                    |
-| FR-002      | Shield region presents every `ShieldMetrics` field under the selected shared SYS pips.                                           |
-| FR-003      | Shield/recovery unavailable states preserve ordered issues and exact package reason/target while armour remains present.         |
-| FR-004      | Recovery region keeps raised/broken rates and collapse-to-raise/raise-to-full durations separate.                                |
-| FR-005      | Field-specific presentation distinguishes unbounded EHP and the two non-finishing recovery phases.                               |
-| FR-006      | Bank region distinguishes no banks from fitted zero totals and shows every returned bank field and powered state.                |
-| FR-007      | Armour region presents every `ArmourMetrics` field with correct hull/module units and separation.                                |
-| FR-008      | Hardness comes from the exact hull record; the actual fitted bulkhead is a distinct navigation record.                           |
-| FR-009      | Every bank, issue and resolved fitted-role action delivers its original package slot; aggregate values remain outside role rows. |
+## Cross-feature composition
 
-## State ownership
+- Feature 001 owns the active build, its revision and the `/build` workspace.
+- Feature 002 owns enabled/priority mutations and exact-slot selection. Feature 006 selects nothing:
+  the canvas draws no action inside either card.
+- Feature 003 owns the status rail's heading and its validation issues. Feature 006 adds one block.
+- Feature 005 owns the SYS pip allocation. Feature 006 reads it and sets none.
+- Feature 010 owns the plates, their side selector, their legend and the mode strip. Feature 006
+  enables one segment of that strip and takes the space the plates occupy while it is open.
+- Feature 011 owns tokens, components, localization, formatters, the game-text presenter and the
+  accessibility and browser harness.
 
-| State                             | Owning presentation                                          |
-| --------------------------------- | ------------------------------------------------------------ |
-| no active build                   | feature 001/003 workspace no-build state; no defence call    |
-| current revision pending/failure  | feature 003 provider envelope                                |
-| complete or unavailable shield    | Shield Profile                                               |
-| complete or unavailable recovery  | Shield Recovery                                              |
-| no/fitted/all-unpowered banks     | Cell Banks                                                   |
-| armour/hardness/module protection | Armour Profile; ready inside every successful projection     |
-| source/issue/bank slot activation | feature 002 exact-slot selection                             |
-| unknown hull ingress              | feature 001/004 construction boundary; no Defence projection |
+## Required states
 
-## Conformance statement
+- no active build;
+- a complete shield and a complete hull, read at the standing allocation;
+- a shield the package refuses, with every reason it gave, beside a hull that stays whole;
+- a generator that is missing, that is switched off, that the plant has shed, and one the package
+  cannot resolve;
+- recovery refused while the strength stands, and the reverse;
+- a recovery phase that does not finish;
+- an unbounded effective pool;
+- a zero resistance and a negative one;
+- no cell bank fitted, banks with power, and banks with none;
+- a role group of one module, a group of several of the same module, and a group of unlike modules;
+- a bulkhead the package resolved and one it did not.
 
-Where conformance is stated, use the complete wording: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
-2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
+## Responsive, accessibility and localization baseline
+
+- The workspace supplies the one `main` and the one `h1`; these cards nest under the region heading
+  feature 010 draws.
+- Wide columns never alter DOM or read order. At narrow widths, both landscape orientations, 200%
+  text and 400% zoom, the two cards stack with no document horizontal scrolling.
+- A semantic table scrolls only inside its own labelled container.
+- The panel holds no control of its own, and nothing it reports depends on hover, colour, a bar's
+  length, an icon, a fixed position or motion.
+- Weakness, unpowered, unavailable and unbounded are text, visible and programmatic.
+- Owned strings use messages; megajoules, megajoules per second, hull points, percentages and
+  durations use the active-locale formatters.
+- Module and slot text comes from the Almanac through feature 011's presenter, with its canonical
+  fallback disclosed.
+- Every state is exercised in Chromium and Firefox across the five layout profiles, with axe plus
+  the manual screen-reader and zoom protocols.
+
+Where conformance is stated, use "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+2.4.7 and 2.4.11."

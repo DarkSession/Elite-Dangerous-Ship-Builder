@@ -14,6 +14,7 @@ export type FormatterKind =
   | 'integer'
   | 'decimal'
   | 'percent'
+  | 'duration'
   | 'metres'
   | 'kilometres'
   | 'bytes'
@@ -32,6 +33,9 @@ export type FormatterKind =
  * it happened.
  */
 export const ABSOLUTE_TIMEZONE = 'UTC';
+
+/** Where a duration stops being read in seconds and starts being read in minutes. */
+const SECONDS_PER_MINUTE = 60;
 
 /** Raised when a value that is not a finite number reaches a numeric formatter. */
 export class UnformattableValueError extends Error {
@@ -97,6 +101,33 @@ export class Formatters {
       minimumFractionDigits: fractionDigits,
       maximumFractionDigits: fractionDigits,
     }).format(fraction);
+  }
+
+  /**
+   * A duration in seconds, as canvas 1c sets one.
+   *
+   * Two readings, and the artboard draws both: `51 s` under a minute, `12:47`
+   * at or above one. Which appears is the length of the duration rather than a
+   * caller's choice, so a recovery that crosses a minute does not change shape
+   * between two figures a reader is comparing.
+   *
+   * The seconds inside the second form are padded through `Intl` rather than
+   * with a literal zero, because the padding digit belongs to the locale's own
+   * numbering system.
+   */
+  duration(value: number): string {
+    this.#assertFinite('duration', value);
+    const seconds = Math.round(value);
+    if (seconds < SECONDS_PER_MINUTE) {
+      return this.#messages.message('format.seconds', { value: this.integer(seconds) });
+    }
+    return this.#messages.message('format.minutes', {
+      minutes: this.integer(Math.floor(seconds / SECONDS_PER_MINUTE)),
+      seconds: this.#numberFormat('duration', {
+        minimumIntegerDigits: 2,
+        maximumFractionDigits: 0,
+      }).format(seconds % SECONDS_PER_MINUTE),
+    });
   }
 
   /** A distance in metres, with the locale's own unit presentation. */

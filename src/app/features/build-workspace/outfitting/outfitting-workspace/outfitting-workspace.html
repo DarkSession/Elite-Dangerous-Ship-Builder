@@ -187,7 +187,7 @@
       `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
       the order below — the heading, what the Almanac reports about the build,
       then cost and materials. Features 005 to 008 add the power line and the six
-      metric cells between them.
+      metric cells between them; 005's line and 006's two cells are there now.
 
       A group with a tab stop, not a bare overflow box. At the widest
       composition a long material list makes this column taller than the
@@ -224,6 +224,14 @@
         "The status rail").
       -->
       <edsb-power-summary />
+
+      <!--
+        Feature 006's two cells of canvas 1c's six-cell rail grid — `SHIELD` and
+        `ARMOUR` — under the power line and above the cost block, which is where
+        the canvas draws them. Features 007 and 008 add the remaining four
+        (`design/defence-profile.md`, "The status rail").
+      -->
+      <edsb-defence-summary />
 
       <edsb-cost-materials />
     </div>

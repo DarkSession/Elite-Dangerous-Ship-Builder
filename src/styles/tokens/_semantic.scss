@@ -71,6 +71,10 @@
   --edsb-surface-bank-systems: var(--edsb-palette-cool);
   --edsb-surface-bank-engines: var(--edsb-palette-good-2);
   --edsb-surface-bank-weapons: var(--edsb-palette-amber);
+  // Canvas 1c draws every shield figure and every shield source bar in the cool
+  // ink, against the amber the hull's own figures take: the two defence cards
+  // are told apart by what they are made of before a single label is read.
+  --edsb-surface-shield: var(--edsb-palette-cool);
   // What a heat bar is drawn in past the module-damage threshold.
   --edsb-surface-overheat: var(--edsb-texture-overheat);
   --edsb-surface-info-quiet: var(--edsb-palette-cool-a10);
@@ -303,6 +307,8 @@
     minmax(5.375rem, 0.86fr) minmax(8rem, 1.28fr);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
+  --edsb-layout-defence-resist: var(--edsb-measure-defence-resist);
+  --edsb-layout-defence-value: var(--edsb-measure-defence-value);
 
   --edsb-layout-mount-box: var(--edsb-measure-mount-box);
   --edsb-layout-node-box: var(--edsb-measure-node-box);

@@ -123,6 +123,33 @@ describe('Formatters', () => {
     expect(german.lightYears(20.45)).toContain('Lj');
   });
 
+  it('reads a duration under a minute in seconds', () => {
+    const english = setup('en');
+
+    expect(english.duration(51)).toBe('51 s');
+  });
+
+  it('reads a duration of a minute or more as minutes and padded seconds', () => {
+    const english = setup('en');
+
+    expect(english.duration(767)).toBe('12:47');
+    expect(english.duration(605)).toBe('10:05');
+    expect(english.duration(60)).toBe('1:00');
+  });
+
+  it('rounds to the second rather than printing a fraction of one', () => {
+    const english = setup('en');
+
+    expect(english.duration(50.6)).toBe('51 s');
+  });
+
+  it('uses the German number presentation for a duration', () => {
+    const german = setup('de');
+
+    expect(german.duration(51)).toBe(`${german.integer(51)} s`);
+    expect(german.duration(767)).toBe('12:47');
+  });
+
   it('formats absolute dates in UTC, not the viewer timezone', () => {
     const formatters = setup('en');
     const instant = new Date(Date.UTC(3311, 0, 15, 23, 30));
@@ -247,6 +274,7 @@ describe('Formatters', () => {
       expect(() => formatters.kilometres(value as number)).toThrow(UnformattableValueError);
       expect(() => formatters.credits(value as number)).toThrow(UnformattableValueError);
       expect(() => formatters.lightYears(value as number)).toThrow(UnformattableValueError);
+      expect(() => formatters.duration(value as number)).toThrow(UnformattableValueError);
     });
 
     it('refuses an invalid date', () => {

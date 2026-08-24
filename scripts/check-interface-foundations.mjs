@@ -1469,6 +1469,33 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'power.format.megajoules': 'A value and the SI symbol for the megajoule, identical in German.',
     'power.format.megajoules-per-second':
       'A value and the SI symbol for megajoules per second, identical in German.',
+    'format.seconds': 'A value and the SI symbol for the second, identical in German.',
+    'format.minutes':
+      'Two variables and a colon, which is how both languages write minutes and seconds.',
+    'defence.damage.column.megajoules': 'The SI symbol for the megajoule, identical in German.',
+    'defence.damage.column.hull-points':
+      'HP is the in-game abbreviation for hull points and is used untranslated in the German community.',
+    'defence.damage.unbounded':
+      'The mathematical symbol for infinity; not a word in either language.',
+    'defence.recovery.never':
+      'The mathematical symbol for infinity; not a word in either language.',
+    'defence.source.count':
+      'A multiplication sign and a variable, counting the mounts one row stands for; not a word in either language.',
+    'defence.source.added':
+      'A plus sign and a variable, marking a figure that adds to the one above it; not a word in either language.',
+    'defence.banks.detail':
+      'A cell count, a multiplication sign and a reinforcement figure; all variables and a symbol, not a word in either language.',
+    'defence.module.code':
+      'A size and a grade letter, both of them variables; neither is a word in either language.',
+    'defence.module.separator':
+      'A middot between the parts of a module\u2019s name; not a word in either language.',
+    'defence.format.megajoules':
+      'A value and the SI symbol for the megajoule, identical in German.',
+    'defence.format.megajoules-per-second':
+      'A value and the SI symbol for megajoules per second, identical in German.',
+    'defence.format.hull-points':
+      'A value and the in-game abbreviation for hull points, used untranslated in the German community.',
+    'defence.rail.megajoules': 'The SI symbol for the megajoule, identical in German.',
   },
 };
 

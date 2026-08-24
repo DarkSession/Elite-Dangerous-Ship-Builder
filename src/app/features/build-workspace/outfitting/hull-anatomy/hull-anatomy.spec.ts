@@ -120,12 +120,13 @@ describe('HullAnatomy', () => {
       'Defence',
       'Offence',
     ]);
-    // `DRIVES`, `DEFENCE` and `OFFENCE` are the same plates read by features
-    // 006 to 008. Until one of them ships, its segment is disabled rather than
-    // opening a panel with nothing in it.
+    // `DRIVES` and `OFFENCE` are the same plates read by features 007 and 008.
+    // Until one of them ships, its segment is disabled rather than opening a
+    // panel with nothing in it.
     expect(tabs[0].getAttribute('aria-pressed')).toBe('true');
     expect(tabs[1].hasAttribute('disabled')).toBe(false);
-    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(3);
+    expect(tabs[3].hasAttribute('disabled')).toBe(false);
+    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(2);
   });
 
   describe('the power mode', () => {
@@ -197,6 +198,66 @@ describe('HullAnatomy', () => {
       const mount = element.querySelector<HTMLElement>('.schematic__mount');
       expect(mount?.hasAttribute('data-power')).toBe(false);
       expect(mount?.textContent?.trim()).toMatch(/^\d+$/u);
+    });
+  });
+
+  describe('the defence mode', () => {
+    /** Opens `DEFENCE` on a plate that has arrived, and returns the rendered DOM. */
+    async function openDefence(): Promise<{ element: HTMLElement; detect: () => void }> {
+      TestBed.inject(AnatomyStore);
+      TestBed.inject(ActiveBuildStore).commit(candidate());
+      TestBed.tick();
+      await loader.settle('top', {
+        kind: 'ready',
+        document: documentFor('top', FIXTURE_SLOTS.fittedHardpoint),
+      });
+      const rendered = render();
+      rendered.element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[3]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      rendered.detect();
+      return rendered;
+    }
+
+    it('retitles the region with the canvas’s own title for the mode', async () => {
+      const { element } = await openDefence();
+
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe(
+        'Defence analysis',
+      );
+      expect(element.querySelectorAll('.anatomy__title p')).toHaveLength(0);
+    });
+
+    it('replaces the plates with the two cards, and gives them back on the way out', async () => {
+      const { element, detect } = await openDefence();
+
+      expect(element.querySelector('edsb-defence-analysis')).not.toBeNull();
+      expect(element.querySelector('edsb-power-thermals')).toBeNull();
+      const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
+      expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
+      expect(element.querySelector('.anatomy__plates')).toBeNull();
+      expect(element.querySelector('.anatomy__legend')).toBeNull();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      expect(element.querySelector('.anatomy__plates')).not.toBeNull();
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
+    });
+
+    it('draws one capability at a time, never both', async () => {
+      const { element, detect } = await openDefence();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[1]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
     });
   });
 

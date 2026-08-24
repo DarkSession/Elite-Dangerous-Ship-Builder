@@ -9,10 +9,10 @@
     Canvas 1c's header row: the rule on one side, the mode strip on the other.
     Canvas 1d runs the same strip full width under the rule instead, which is
     the arrangement's decision and is made in CSS.
-    All five of the canvas's modes are drawn and in its order. `MOUNTS` and
-    `POWER` open; the three that features 006 to 008 will draw on these same
-    plates are disabled until they exist, because a segment that opened an empty
-    panel would be a reading of the hull nobody has made
+    All five of the canvas's modes are drawn and in its order. `MOUNTS`,
+    `POWER` and `DEFENCE` open; the two that features 007 and 008 will draw on
+    these same plates are disabled until they exist, because a segment that
+    opened an empty panel would be a reading of the hull nobody has made
     (design/hull-anatomy.md, "The mode strip").
   -->
   <div class="anatomy__header">
@@ -38,7 +38,7 @@
     draws in the space they leave (design/canvas-contract.md, "Where the
     capability lives").
   -->
-  @if (!isPower()) {
+  @if (!isDashboard()) {
     <div class="anatomy__plates">
       <!--
       The side selector belongs to the single-plate arrangement: where both
@@ -88,12 +88,19 @@
         </li>
       }
     </ul>
-  } @else {
+  } @else if (isPower()) {
     <!--
       The capability the mode opened, in the space the plates left. Canvas 1c
       gives its panel `min-height: 328px` and lays it out as a 2x2 grid; that is
       the panel's own business, not this region's.
     -->
     <edsb-power-thermals class="anatomy__dashboard" />
+  } @else {
+    <!--
+      Feature 006's two cards, in the same space. Canvas 1c gives its panel
+      `min-height: 300px` and lays it out as an equal pair; that is the panel's
+      own business, not this region's.
+    -->
+    <edsb-defence-analysis class="anatomy__dashboard" />
   }
 </section>

@@ -1,0 +1,388 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c draws the two cards as equal columns in the space the plates leave,
+// on the same panel ground the anatomy region uses. Canvas 1d stacks them.
+// Which arrangement appears is decided from the region's own inline size rather
+// than the viewport's, so a 400% zoom and an expanded translation choose the
+// stacked one for the same reason a phone does.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: defence;
+  min-inline-size: 0;
+}
+
+.defence {
+  @include layout.stack(var(--edsb-space-region));
+
+  min-inline-size: 0;
+}
+
+@include layout.container-medium-up(defence) {
+  .defence {
+    display: grid;
+    // Two equal columns, as the canvas draws them: the shields and the hull are
+    // read against each other, and a fluid pair that gave one more room than the
+    // other would make one of the two headline pools look like the larger one.
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    // Stretched so the two cards square up against each other, and no taller:
+    // canvas 1c gives the pair a `min-height` its own sample build happens to
+    // fill, and holding a real build to it would leave a card ruled off around
+    // empty ground.
+    align-items: stretch;
+    gap: var(--edsb-space-region);
+  }
+}
+
+// Each card is a bounded plate on the panel ground, with the same border and the
+// same padding the canvas gives it: `1px solid var(--amber-a2)` over
+// `var(--panel)` at `16px 18px`.
+.card {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-2xl);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The canvas's header row: the card's name against the article it is reading.
+.card__head {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.card__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+// The fitted article, named beside the heading. A name and a code on one line,
+// as the canvas writes `BI-WEAVE 7C`; it wraps rather than truncating, because a
+// long module name at rail width has nowhere else to go.
+.card__identity {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.micro-label;
+
+  margin: 0;
+  min-inline-size: 0;
+  text-transform: none;
+  overflow-wrap: break-word;
+}
+
+// The headline pool: the figure at display size with its unit set against it.
+.card__pool {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  margin: 0;
+  align-items: baseline;
+}
+
+.card__pool-value {
+  @include layout.metric-value(var(--edsb-text-size-display));
+}
+
+.card__pool-unit {
+  @include layout.micro-label;
+}
+
+// The shields read in the cool ink and the hull in the amber one, which is how
+// the canvas tells the two cards apart before a single label is read. It is
+// decoration over labelled figures: every card is headed in words as well.
+.card--shield .card__pool-value {
+  color: var(--edsb-text-info);
+}
+
+.card--armour .card__pool-value {
+  color: var(--edsb-text-accent-strong);
+}
+
+// The canvas's hairline between the blocks of a card. A rule across the whole
+// card, not the heading-and-rule pair the section mixin draws: there is no
+// heading beside this one, and that mixin's rule is the part of it that grows
+// to fill what a heading leaves — given no heading, it collapses to a dot.
+.card__rule {
+  margin: 0;
+  border: 0;
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-rule-section);
+}
+
+.card__facts {
+  display: block;
+  min-inline-size: 0;
+}
+
+// ---------------------------------------------------------------------------
+// The damage table
+
+// The table scrolls inside its own box rather than widening the card: three
+// columns of figures at 200% text in an expanded translation are wider than a
+// 306px column, and a card that grew instead would push its neighbour off.
+.table-scroller {
+  @include layout.bounded-scroller;
+}
+
+.damage {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.damage th,
+.damage td {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-tight);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.damage thead th {
+  @include layout.micro-label;
+}
+
+// The canvas's row: the damage type, the bar drawn for it, the resistance and
+// the pool that resistance leaves, in that order across one line.
+.damage__type {
+  min-inline-size: 0;
+  color: var(--edsb-text-muted);
+  font-weight: var(--edsb-text-weight-body);
+  overflow-wrap: break-word;
+}
+
+// Right-aligned inside a column at least as wide as the canvas draws it. The
+// minimum is what holds a short figure off the end of the bar beside it: a
+// column sized to its own text puts `41%` hard against the track it was read
+// from, and the two then look like one reading.
+.damage__cell--numeric {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  // The cell is the containing block for the word a weakness carries. That word
+  // is positioned out of sight, and an absolute box whose containing block sits
+  // outside the scroller escapes the scroller's clip: on a table wide enough to
+  // scroll, a 1px span nobody can see was widening the document.
+  position: relative;
+  min-inline-size: var(--edsb-layout-defence-resist);
+  text-align: end;
+  white-space: nowrap;
+}
+
+// The bar's own column takes whatever the three columns of text leave it: the
+// figures are read exactly and must never wrap for the sake of a drawing that
+// carries no reading of its own.
+.damage__bar {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.damage__track {
+  position: relative;
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+// Where the scale crosses zero, marked only on a table that reaches below it.
+// It is what says which side of nothing a length is drawn on, for a reader who
+// is looking at the bars rather than reading the signed figure beside them.
+.damage__zero {
+  position: absolute;
+  // Standing a little proud of the track at both ends, as the canvas draws it:
+  // a tick flush inside the ground reads as a sliver of fill rather than as the
+  // mark the fills are measured from.
+  inset-block: calc(var(--edsb-space-3xs) * -1);
+  inline-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-border-strong);
+}
+
+// Drawn from where its own reading starts rather than from the leading edge, so
+// a weakness runs back from the zero mark and a resistance runs on from it.
+.damage__fill {
+  position: absolute;
+  inset-block: 0;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+.card--shield .damage__fill {
+  background-color: var(--edsb-surface-shield);
+}
+
+// A resistance below zero. The canvas hatches its length and reddens its
+// figure; the hatch is what tells it from a resistance for a reader who cannot
+// tell amber from red, and the row says "weakness" in words as well, because a
+// state carried by a pattern alone is carried by nothing a reader can name.
+.damage__row--weak {
+  .damage__fill {
+    background-color: transparent;
+    background-image: var(--edsb-surface-overheat);
+  }
+
+  .damage__cell--numeric {
+    color: var(--edsb-text-danger);
+  }
+}
+
+// The canvas's scale under the bars: an end, a hairline, the other end. It
+// names what every bar above it is measured against and carries no figure of
+// its own — each row's own resistance is set beside it in the table. It is the
+// bar column's own width, because it is the bar column it describes.
+.scale {
+  @include layout.micro-label;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+  min-inline-size: 0;
+}
+
+.scale__rule {
+  flex: 1 1 var(--edsb-space-2xl);
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-border-decorative);
+}
+
+// Zero, standing over the mark rather than at either end. A box of no width
+// centring what it holds, so the label straddles the mark without a transform
+// that would have to know which way the document runs.
+.scale__zero {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scale__zero-label {
+  padding-inline: var(--edsb-space-3xs);
+  background-color: var(--edsb-surface-panel);
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// The source rows
+
+// Three columns owned by the list rather than by each row: what is fitted, the
+// bar, and the figure that closes it. Rows that each sized their own tracks
+// started their bars in different places down one column of figures.
+.sources,
+.reserve {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
+      var(--edsb-layout-defence-value),
+      auto
+    );
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-inline-size: 0;
+  margin: 0;
+}
+
+// The reserve line is the first row of the block rather than a line of its own,
+// so it and every bank under it take their columns from the same grid: one
+// activation of one bank is read against the whole reserve, and two grids that
+// happened to be the same width would still not put those two figures in the
+// same place.
+.reserve {
+  row-gap: var(--edsb-space-stack-tight);
+}
+
+.reserve__banks {
+  display: contents;
+}
+
+.source__name {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+.source__role {
+  @include layout.micro-label(var(--edsb-text-secondary), var(--edsb-text-tracking-name));
+
+  text-transform: none;
+}
+
+.source__detail,
+.source__count {
+  @include layout.micro-label;
+}
+
+.source__track {
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+// Nothing at all where there is no scale to draw against: an empty track reads
+// as a reserve of nothing, which is not what an unavailable pool means.
+.source__track-absent {
+  display: block;
+}
+
+.source__fill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+.card--shield .source__fill {
+  background-color: var(--edsb-surface-shield);
+}
+
+.source__value {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+  white-space: nowrap;
+}
+
+// A reserve with nothing switched on. The canvas hatches its length; the word
+// is on every bank listed under it, so the hatch is never what carries the
+// state.
+.source--off .source__fill {
+  background-color: transparent;
+  background-image: var(--edsb-surface-overheat);
+}
+
+// ---------------------------------------------------------------------------
+// The unavailable states
+
+// Every reason the package gave, in the order it gave them. Prose voice, not
+// the mono numeric voice of the figures these stand in for.
+.issues {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.issue {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
+  background-color: var(--edsb-surface-danger-quiet);
+  color: var(--edsb-text-danger);
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

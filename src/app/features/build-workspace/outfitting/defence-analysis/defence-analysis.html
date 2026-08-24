@@ -1,0 +1,365 @@
+<!--
+  Canvas 1c's `DEFENCE ANALYSIS` panel: the `SHIELDS` card beside the `ARMOUR`
+  card, each of them a head with the fitted article named beside it, the
+  headline pool, the four damage lines over their `0%`–`100%` scale, three
+  labelled facts and the source rows underneath. Canvas 1d stacks the same two
+  cards. This is that DOM at both widths; which arrangement appears is decided
+  in CSS from the space the region is given, so a 400% zoom picks the stacked
+  one for the same reason a phone does.
+-->
+@if (shown()) {
+  <div class="defence">
+    <section class="card card--shield" [attr.aria-labelledby]="shieldHeadingId">
+      <div class="card__head">
+        <h4 class="card__heading" [id]="shieldHeadingId">{{ shieldHeading() }}</h4>
+        @if (shieldIdentity(); as identity) {
+          <p class="card__identity">
+            <edsb-game-text
+              [text]="identity.name.text"
+              [language]="identity.name.language"
+              [translationState]="identity.name.translationState"
+            />
+            @if (identity.code; as code) {
+              <span data-bidi-isolate>{{ code }}</span>
+            }
+          </p>
+        }
+      </div>
+
+      @if (shieldAvailable()) {
+        <p class="card__pool">
+          <span class="card__pool-value" data-bidi-isolate>{{ shieldPool() }}</span>
+          <span class="card__pool-unit">{{ shieldPoolLabel() }}</span>
+        </p>
+
+        <!--
+          The canvas's damage table. A real table, because every line reads two
+          figures against one heading pair and a reader moving down the
+          resistances is moving down a column.
+        -->
+        <ng-container
+          [ngTemplateOutlet]="damage"
+          [ngTemplateOutletContext]="{ table: shieldDamage(), pool: megajoulesColumn() }"
+        />
+      } @else {
+        <!--
+          Every reason the package gave, in the order it gave them and in its own
+          words. No headline, no table and no source rows stand in for them: the
+          package produced no shield, so neither does this.
+        -->
+        <edsb-unavailable-value [label]="shieldUnavailableLabel()" />
+        <ul class="issues">
+          @for (issue of shieldIssues(); track issue.id) {
+            <li class="issue">
+              <edsb-game-text
+                [text]="issue.message.text"
+                [language]="issue.message.language"
+                [translationState]="issue.message.translationState"
+              />
+            </li>
+          }
+        </ul>
+      }
+
+      <hr class="card__rule" />
+
+      @if (recoveryFacts().length > 0) {
+        <edsb-metric-group
+          class="card__facts"
+          [label]="recoveryLabel()"
+          [metrics]="recoveryFacts()"
+        />
+      } @else {
+        <!--
+          The recovery is diagnosed on its own: a shield the package could not
+          read and a recovery it could not read are two answers, and either can
+          arrive without the other.
+        -->
+        <edsb-unavailable-value [label]="recoveryLabel()" />
+        <ul class="issues">
+          @for (issue of recoveryIssues(); track issue.id) {
+            <li class="issue">
+              <edsb-game-text
+                [text]="issue.message.text"
+                [language]="issue.message.language"
+                [translationState]="issue.message.translationState"
+              />
+            </li>
+          }
+        </ul>
+      }
+
+      @if (shieldSources().length > 0) {
+        <hr class="card__rule" />
+        <ng-container
+          [ngTemplateOutlet]="sources"
+          [ngTemplateOutletContext]="{ rows: shieldSources(), label: shieldSourceLabel() }"
+        />
+      }
+
+      @if (bankRow(); as reserve) {
+        <hr class="card__rule" />
+        <!--
+          The canvas's bank line, and under it every kind of bank aboard on a
+          line of its own: banks that differ in what they restore, in how many
+          cells they carry or in whether they are switched on are not one
+          reserve, and a single line summing them would describe none of them.
+          The reserve and its banks share the source rows' three columns, so
+          what the whole reserve puts back and what one activation of one bank
+          puts back are read against each other rather than side by side on
+          two different scales.
+        -->
+        <div class="reserve">
+          <p class="source source--bank" [class.source--off]="reserve.unpowered">
+            <span class="source__name">
+              <span class="source__role">{{ reserve.label }}</span>
+            </span>
+            @if (reserve.fill !== null) {
+              <span class="source__track" aria-hidden="true">
+                <span class="source__fill" [style.inline-size.%]="reserve.fill * 100"></span>
+              </span>
+            } @else {
+              <!-- Nothing aboard restores anything, so there is nothing to draw. -->
+              <span class="source__track-absent" aria-hidden="true"></span>
+            }
+            <span class="source__value" data-bidi-isolate>{{ reserve.restorable }}</span>
+          </p>
+
+          <!--
+            The banks are laid out in the reserve's own columns rather than in a
+            grid of their own, so what the whole reserve puts back and what one
+            activation of one bank puts back start and end in the same places.
+            `display: contents` is what lets the list's rows join that grid; the
+            role keeps the list a list where a browser drops it.
+          -->
+          <ul class="reserve__banks" role="list" [attr.aria-label]="reserve.label">
+            @for (bank of reserve.banks; track bank.id) {
+              <li class="source" [class.source--off]="bank.unpowered">
+                <span class="source__name">
+                  <edsb-module-identity-badge
+                    [name]="bank.name"
+                    [moduleClass]="bank.moduleClass"
+                    [rating]="bank.rating"
+                    [detail]="bank.detail"
+                  >
+                    @if (bank.count; as count) {
+                      <span class="source__count" data-bidi-isolate>{{ count }}</span>
+                    }
+                  </edsb-module-identity-badge>
+                </span>
+
+                <!--
+                  What one activation puts back, on the same scale the reserve
+                  is drawn on. A bank the plant does not feed is hatched, and
+                  says so in the last word of its own code line as well.
+                -->
+                @if (bank.fill !== null) {
+                  <span class="source__track" aria-hidden="true">
+                    <span class="source__fill" [style.inline-size.%]="bank.fill * 100"></span>
+                  </span>
+                } @else {
+                  <span class="source__track-absent" aria-hidden="true"></span>
+                }
+                <span class="source__value" data-bidi-isolate>{{ bank.reinforcement }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+
+    <section class="card card--armour" [attr.aria-labelledby]="armourHeadingId">
+      <div class="card__head">
+        <h4 class="card__heading" [id]="armourHeadingId">{{ armourHeading() }}</h4>
+        @if (armourIdentity(); as identity) {
+          <p class="card__identity">
+            <edsb-game-text
+              [text]="identity.name.text"
+              [language]="identity.name.language"
+              [translationState]="identity.name.translationState"
+            />
+          </p>
+        }
+      </div>
+
+      <p class="card__pool">
+        <span class="card__pool-value" data-bidi-isolate>{{ armourPool() }}</span>
+        <span class="card__pool-unit">{{ armourPoolLabel() }}</span>
+      </p>
+
+      <ng-container
+        [ngTemplateOutlet]="damage"
+        [ngTemplateOutletContext]="{ table: armourDamage(), pool: hullPointsColumn() }"
+      />
+
+      <hr class="card__rule" />
+
+      <edsb-metric-group
+        class="card__facts"
+        [label]="armourFactsLabel()"
+        [metrics]="armourFacts()"
+      />
+
+      @if (armourSources().length > 0) {
+        <hr class="card__rule" />
+        <ng-container
+          [ngTemplateOutlet]="sources"
+          [ngTemplateOutletContext]="{ rows: armourSources(), label: armourSourceLabel() }"
+        />
+      }
+    </section>
+  </div>
+}
+
+<!--
+  The four damage lines and the scale under them. Both cards draw the same
+  table; only the pool column's unit differs, because a shield holds megajoules
+  and a hull holds hull points.
+-->
+<ng-template #damage let-table="table" let-pool="pool">
+  <div class="table-scroller" role="group" tabindex="0" [attr.aria-label]="damageLabel()">
+    <table class="damage">
+      <caption class="visually-hidden">
+        {{
+          damageLabel()
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <!--
+            The canvas heads neither the name nor the bar: the row is named by
+            its own damage type and the bar is that row's resistance drawn out.
+            The name's column is still headed for anyone reading the table
+            through its structure rather than looking at it, and the bar's is
+            left empty, because it holds no figure to head.
+          -->
+          <th scope="col">
+            <span class="visually-hidden">{{ typeColumn() }}</span>
+          </th>
+          <td class="damage__bar"></td>
+          <th scope="col" class="damage__cell--numeric">{{ resistColumn() }}</th>
+          <th scope="col" class="damage__cell--numeric">{{ pool }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of table.rows; track row.id) {
+          <tr [class.damage__row--weak]="row.weakness">
+            <th scope="row" class="damage__type">{{ row.label }}</th>
+            <td class="damage__bar">
+              <!--
+                The bar carries no reading of its own: the resistance beside it
+                is what it was drawn from. A resistance runs right from zero and
+                a weakness runs back from it, over the scale printed underneath;
+                the hatch and the ink say which, and the row says "weakness" in
+                a word as well.
+              -->
+              <span class="damage__track" aria-hidden="true">
+                @if (table.signed) {
+                  <span
+                    class="damage__zero"
+                    [style.inset-inline-start.%]="table.zeroAt * 100"
+                  ></span>
+                }
+                <span
+                  class="damage__fill"
+                  [style.inset-inline-start.%]="row.barStart * 100"
+                  [style.inline-size.%]="row.barLength * 100"
+                ></span>
+              </span>
+            </td>
+            <td class="damage__cell--numeric" data-bidi-isolate>
+              {{ row.resistance }}
+              @if (row.weaknessLabel; as weakness) {
+                <span class="visually-hidden">{{ weakness }}</span>
+              }
+            </td>
+            <td class="damage__cell--numeric" data-bidi-isolate>
+              @if (row.pool !== null) {
+                {{ row.pool }}
+              } @else {
+                {{ row.unbounded }}
+                <span class="visually-hidden">{{ row.unboundedMeaning }}</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+      <!--
+        The canvas's scale, in the table so that it is the bar column's own
+        width at every width the column takes: the whole point of it is that a
+        length above it can be read off it, and a scale that started at the
+        card's edge instead would be measuring something else. It is hidden
+        from assistive technology because it states nothing the rows above do
+        not already state in figures.
+      -->
+      <tfoot aria-hidden="true">
+        <tr>
+          <td></td>
+          <td class="damage__bar">
+            <span class="scale">
+              <span>{{ table.floor }}</span>
+              <span class="scale__rule"></span>
+              <span>{{ table.ceiling }}</span>
+              @if (table.signed) {
+                <!--
+                  Zero, at the mark the bars are actually measured from. A scale
+                  that only named its ends would leave a table reaching below
+                  zero without the one point on it that says which of its bars
+                  are resistances and which are weaknesses.
+                -->
+                <span class="scale__zero" [style.inset-inline-start.%]="table.zeroAt * 100">
+                  <span class="scale__zero-label">{{ table.zero }}</span>
+                </span>
+              }
+            </span>
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</ng-template>
+
+<!--
+  The source rows. Each is a role, what is fitted in it, and the package's own
+  aggregate for the whole role — never a share worked out per module, because
+  the Almanac publishes no such split.
+-->
+<ng-template #sources let-rows="rows" let-label="label">
+  <ul class="sources" [attr.aria-label]="label">
+    @for (row of rows; track row.id) {
+      <li class="source">
+        <span class="source__name">
+          @if (row.name; as name) {
+            <edsb-module-identity-badge
+              [name]="name"
+              [moduleClass]="row.moduleClass"
+              [rating]="row.rating"
+              [detail]="row.detail"
+            >
+              @if (row.count; as count) {
+                <span class="source__count" data-bidi-isolate>{{ count }}</span>
+              }
+            </edsb-module-identity-badge>
+          } @else {
+            <span class="source__role">{{ row.roleLabel }}</span>
+            @if (row.count; as count) {
+              <span class="source__count" data-bidi-isolate>{{ count }}</span>
+            }
+          }
+        </span>
+
+        <!--
+          The bar carries no reading of its own: the figure beside it is what it
+          was drawn from, measured against the largest row in the same list.
+        -->
+        <span class="source__track" aria-hidden="true">
+          <span class="source__fill" [style.inline-size.%]="row.fill * 100"></span>
+        </span>
+
+        <span class="source__value" data-bidi-isolate>{{ row.contribution }}</span>
+      </li>
+    }
+  </ul>
+</ng-template>

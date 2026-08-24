@@ -1,0 +1,14 @@
+// Canvas 1c's `SHIELD` and `ARMOUR` cells in the 306px rail, and the same two in
+// canvas 1d's Status mode. The grid itself is the shared metric group, which
+// already draws the canvas's cells-on-a-hairline-ground: this block only places
+// them in the rail.
+:host {
+  display: block;
+}
+
+// The rail draws one ground with no side padding of its own, so each group it
+// stacks carries its own inset — the same one the power line above and the cost
+// block below take.
+.block {
+  padding: var(--edsb-space-panel);
+}

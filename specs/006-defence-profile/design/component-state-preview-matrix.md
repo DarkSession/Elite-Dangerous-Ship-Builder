@@ -1,32 +1,18 @@
-# Component State Preview Matrix
+# Component State and Preview Matrix
 
-Feature 011's tooling-only preview target renders the production components below. Every applicable
-state is declared; “not applicable” requires a typed rationale rather than omission.
+> **Withdrawn at implementation, 2026-08-24.** This matrix listed preview declarations for
+> `DefenceProfile`, `ShieldProfile`, `ShieldRecovery`, `CellBankList`, `ArmourProfile`,
+> `DefenceSourceList`, `CalculationIssueList`, `DamageDefenceCollection` and
+> `DefenceStatusSummary`.
 
-| Component                 | Populated/default                                           | Empty/unavailable                                     | Loading/error/disabled                                  | Stress variants                                                        |
-| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `DefenceProfile`          | complete shield, banks, armour, role records                | no active build owned by workspace                    | current revision pending; projection failure            | one/two columns, long build name, RTL, doubled copy                    |
-| `ShieldProfile`           | all fields and four finite damage rows                      | ordered missing/disabled/shed/unresolved issue states | parent pending/failure; slot action unavailable if none | zero/negative resistance, unbounded EHP, 0/2/4 SYS pips                |
-| `ShieldRecovery`          | two rates and two finite durations                          | ordered unavailable issues                            | parent pending/failure                                  | threshold infinite; full-regeneration infinite; both finite zero cases |
-| `CellBankList`            | powered; mixed; multiple duplicate symbols                  | none fitted; fitted/all-unpowered zero totals         | parent pending/failure                                  | long names/slots, large list                                           |
-| `ArmourProfile`           | every field, non-stock bulkhead and all role types          | zero module armour/protection; no actual bulkhead row | parent pending/failure                                  | negative resistance, unbounded EHP, long hardness explanation          |
-| `DefenceSourceList`       | every role, duplicate symbols, enabled/disabled/unspecified | no resolved role records                              | parent pending/failure; action absent without slot      | adjacent package issue, long localized names, exact-slot context       |
-| `CalculationIssueList`    | multiple ordered reasons, targeted and untargeted           | not applicable when calculation complete              | parent pending/failure                                  | canonical-language disclosure, long params                             |
-| `DamageDefenceCollection` | four signed resistance/EHP pairs                            | not applicable inside complete metric                 | parent pending/failure                                  | table/cards, negative/zero/infinite, bars absent/present truthfully    |
-| `DefenceStatusSummary`    | ready shield/armour and detail target                       | shield unavailable with its identity                  | provider pending/failure                                | ready without identity; unavailable with identity                      |
+The preview manifest covers the shared primitives in `src/app/ui/`, and the repository policy
+checker reconciles it against the components exported from there. Every component this feature adds
+is a feature block under `src/app/features/build-workspace/outfitting/`, composed out of primitives
+that already carry their own preview states — the same position features 003, 009 and 005 reached
+before it.
 
-## Viewport and cross-cutting matrix
-
-Every row runs at desktop, tablet and mobile widths, with portrait and landscape where applicable.
-Relevant rows also run with:
-
-- 200% text and actual 400% browser zoom protocol;
-- doubled application copy and long unbroken package identities;
-- RTL document direction;
-- reduced motion;
-- pointer and touch;
-- Chromium and Firefox;
-- automated axe, semantic/name/state, 44px target baseline and document-overflow assertions.
-
-Preview-only fixtures may construct finite/negative/infinite presentation values. They are clearly
-presentation fixtures and are never used as game expectations or package calculation substitutes.
+Nothing this feature adds to `src/app/ui/` therefore needs a preview declaration, because it adds
+nothing there. The states this matrix used to enumerate are covered where they can actually be
+observed: in the component suites beside their source, and in the journeys in
+`e2e/defence.spec.ts`. They are listed in [design/screen-inventory.md](./screen-inventory.md),
+"Required states".

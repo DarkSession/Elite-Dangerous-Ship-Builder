@@ -8,21 +8,25 @@ used.
 
 ## Decision 1: project one revision without owning its lifecycle
 
-**Decision**: A pure `DefenceProjector` receives the active `ShipLoadout` and feature 003's
-`StatusRevisionContext`. It converts the integer SYS half-pips to the package value once, calls the
-four defence facade methods, reads the package hull and fitted snapshots, and returns one immutable
-`DefenceProjection`. Feature 003's provider envelope owns `noBuild`, `pending`, `ready` and `failure`;
-the domain projection does not duplicate those lifecycle states.
+> **Revised at implementation.** Feature 003 publishes no provider envelope, and feature 005's store
+> already holds the SYS pips in the package's own `[0, 4]` units. `projectDefence` is therefore a
+> pure function of the loadout and one condition, recomputed by its reader at the reader's own
+> revision — which is what a `computed` over the active build already guarantees.
+
+**Decision**: A pure `projectDefence(loadout, { systemsPips })` calls the four defence facade
+methods, reads the package hull and fitted snapshots, and returns one immutable `Defence`. It owns
+no lifecycle state: the workspace's own no-build and pending states wrap it.
 
 **Rationale**: The mutable loadout has no public revision, while build and condition changes must not
-produce a mixed display. Reusing the accepted provider envelope avoids a second revision protocol.
+produce a mixed display. Recomputing at the reader's revision means there is no payload to go
+stale.
 
 **Alternatives considered**:
 
 - Component-level calls can mix revisions and put domain behavior in presentation.
 - Persisting projections or SYS pips creates stale derived state.
-- A feature-local loading/error union duplicates feature 003 and previously confused package
-  unavailability with application failure.
+- A feature-local loading/error union would confuse package unavailability with application
+  failure.
 
 ## Decision 2: preserve shield and recovery results, including their issues
 
@@ -59,10 +63,15 @@ deployed power would shed it, so deployed/retracted agreement is not required.
 hit-point values. Copy all `ShieldRecovery` fields: `regenRate`, `brokenRegenRate`, `recoveryTime`
 and `regenTime`.
 
-Raw snapshots retain JavaScript numbers unchanged. The presenter distinguishes finite values from
+Raw snapshots retain JavaScript numbers unchanged. The component distinguishes finite values from
 positive infinity without serializing them. Infinite EHP means unbounded raw damage of that type;
-infinite `recoveryTime` means the collapsed shield cannot reach 50%; infinite `regenTime` means the
-raised shield cannot reach full. Negative resistance stays signed and zero stays numeric.
+an infinite duration means that phase does not finish at the allocation being read. Negative
+resistance stays signed and zero stays numeric.
+
+> **Revised at implementation.** Copying every field is still the rule, and the projection does. Of
+> the copied fields, the mass-curve multiplier, the boost multiplier, the SYS resistance and the
+> broken regeneration rate are not drawn: neither canvas writes them, and a figure the reference
+> does not draw is not this feature's to add.
 
 **Rationale**: These infinities have different package meanings. A generic infinity/unavailable label
 or clamped bar would erase a valid result.
@@ -147,32 +156,36 @@ the list.
 
 ## Decision 7: integrate through existing workspace contracts
 
-**Decision**: Add no route. Defence is a capability inside `/build`. Feature 003 supplies settled SYS
-pips, revision context, capability selection and a `defenceProfile` detail target. Feature 006 exports
-the matching status provider for shield strength and armour. Feature 002 receives
-`{ kind: 'slot', slotKey }` intents. Feature 001 owns active-build replacement; feature 011 owns shared
-UI, game-text presentation, formatting and announcements.
+> **Revised at implementation.** Defence is a mode of feature 010's anatomy strip, not a peer
+> workspace capability, and the SYS allocation belongs to feature 005's dashboard. There is no
+> detail target, no status provider and no slot intent: canvas 1c draws no control inside either
+> card.
+
+**Decision**: Add no route. Defence is one mode of the anatomy region inside `/build`. Feature 005
+supplies the SYS pips, feature 010 the mode strip and the space its plates leave, feature 001
+active-build replacement and feature 011 shared UI, game-text presentation and formatting. The
+status rail gains one read-only block.
 
 **Rationale**: This matches the accepted cross-feature contracts and the `.design` workspace. It
-keeps one active build, one condition store and one selection model.
+keeps one active build and one allocation.
 
 **Alternatives considered**:
 
 - A `/defence` route duplicates workspace navigation.
-- A feature-local pip store can diverge from Status and other providers.
-- Importing feature 003 components into the provider reverses the contract-first dependency.
-- Depending on feature 005 for power data is unnecessary; the package call is a feature-006 read.
+- A feature-local pip store would diverge from the dashboard a Commander just set.
+- A second panel on the same plates would claim a reading of the hull nothing has made.
 
 ## Decision 8: adapt the reference without copying its data reduction
 
-**Decision**: Keep the wide peer shield/armour regions, damage-type row relationship, recovery-near-
-shield grouping, adjacent fitted-role rows and mobile stacked order from canvases 1c/1d. Use a fluid
-container decision: two complete columns only while each remains legible, otherwise one complete
-semantic stack. Tables may become complete labelled cards. Supplemental bars are optional and must
-have a truthful scale and full text equivalent; signed and non-finite cases may omit them.
+**Decision**: Keep everything the canvases draw — the wide peer shield/armour regions, the
+damage-type row relationship, the recovery facts beside the shields, the role rows and their
+aggregates, the reserve line and the mobile stacked order. Use a fluid container decision: two
+complete columns only while each remains legible, otherwise one complete semantic stack.
+Supplemental bars carry a declared scale, with both of its ends printed, and a full text equivalent.
 
-**Rationale**: The reference communicates hierarchy well but is fixed-width, inaccessible and
-incomplete. The specification requires identical information on every form factor.
+**Rationale**: The reference communicates hierarchy well but is fixed-width, inaccessible and drops
+figures on its narrow canvas. The specification requires identical information on every form
+factor.
 
 **Alternatives considered**:
 
@@ -185,13 +198,11 @@ incomplete. The specification requires identical information on every form facto
 
 **Decision**: Unit tests compare every projected field and ordered issue directly with real
 package-backed results. Presentation-only fixtures cover difficult finite/infinite/negative/empty
-combinations without pretending to be game expectations. Provider tests prove exact revision and
-detail targets; workspace tests prove exact slot keys. Playwright exercises every relevant state at
-five layouts in Chromium and Firefox with axe, semantic, target-size, overflow, localization and
-announcement checks, plus manual screen-reader and actual-zoom protocols.
+combinations without pretending to be game expectations. Playwright exercises every relevant state
+at five layouts in Chromium and Firefox with axe, semantic, overflow and localization checks, plus
+manual screen-reader and actual-zoom protocols.
 
-Only the Status-provider path inherits feature 003's 100 ms criterion; feature 006 adds no invented
-performance success criterion.
+Feature 006 adds no performance success criterion of its own.
 
 **Rationale**: Direct equality catches drift without hand-maintained calculations. Presentation
 fixtures are appropriate for sentinel rendering but not for Almanac truth.

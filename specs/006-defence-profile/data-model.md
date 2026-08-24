@@ -1,30 +1,43 @@
 # Data Model: Defence Profile
 
+> **Reconciled at implementation, 2026-08-24.** Three structures below described a shape the build
+> does not have: a `revision` field feature 003 never published, a `SemanticNumber` presentation
+> union and a `DefenceStatusProjection` envelope. Each is marked where it stands. The SYS pips are
+> taken from feature 005's own store, which already publishes the package's `[0, 4]` units, so the
+> halving this document specified is not applied.
+
 Every game-bearing value is an immutable, memory-only projection of one
 `@elite-dangerous-almanac/core` `ShipLoadout`. Feature 006 owns no fitted state, persisted metric,
-power rule, defence formula or catalogue. Feature 001 owns the active build revision; feature 003
-owns conditions, provider lifecycle and condition revision.
+power rule, defence formula or catalogue. Feature 001 owns the active build revision; feature 005
+owns the SYS allocation this projection is read at.
 
-## DefenceProjection
+## Defence
 
-One successful same-revision package read.
+One synchronous package read, built from a `ShipLoadout` and one condition.
 
-| Field               | Type                                | Rule                                                                  |
-| ------------------- | ----------------------------------- | --------------------------------------------------------------------- |
-| `revision`          | `StatusRevisionContext`             | Captured feature 003 build/condition revision                         |
-| `systemsPips`       | number in `[0, 4]`                  | `revision.conditions.pips.systems / 2`, passed to both shield calls   |
-| `shield`            | `CalculationView<ShieldSnapshot>`   | Complete value or all ordered package issues                          |
-| `recovery`          | `CalculationView<RecoverySnapshot>` | Independent complete value or all ordered package issues              |
-| `cellBanks`         | `CellBankCollection`                | Exact package collection and explicit empty/fitted distinction        |
-| `armour`            | `ArmourSnapshot`                    | Non-nullable package result copied exactly                            |
-| `hardness`          | number                              | Active package hull's exact hardness rating                           |
-| `shieldRoleRecords` | readonly `FittedDefenceRole[]`      | Resolved fitted shield-role/navigation records; no contribution claim |
-| `armourRoleRecords` | readonly `FittedDefenceRole[]`      | Actual fitted armour/reinforcement navigation records                 |
+| Field         | Type                                | Rule                                                            |
+| ------------- | ----------------------------------- | --------------------------------------------------------------- |
+| `systemsPips` | number in `[0, 4]`                  | The standing allocation, passed to both shield calls            |
+| `shield`      | `CalculationView<ShieldSnapshot>`   | Complete value or all ordered package issues                    |
+| `recovery`    | `CalculationView<RecoverySnapshot>` | Independent complete value or all ordered package issues        |
+| `cellBanks`   | `CellBankCollection`                | Exact package collection and explicit empty/fitted distinction  |
+| `armour`      | `ArmourSnapshot`                    | Non-nullable package result copied exactly                      |
+| `hardness`    | number                              | Active package hull's exact hardness rating                     |
+| `shieldRoles` | readonly `DefenceRoleGroup[]`       | The package's own shield aggregates, each with what produced it |
+| `armourRoles` | readonly `DefenceRoleGroup[]`       | The package's own armour aggregates, each with what produced it |
+
+The one condition is the allocation:
+
+```ts
+interface DefenceConditions {
+  readonly systemsPips: number;
+}
+```
 
 Invariants:
 
-- Every field belongs to the same captured revision; a stale projection is never published under a
-  newer revision.
+- The projection is pure and synchronous: it is recomputed from the loadout at the revision its
+  reader is on, and never held across one.
 - Both shield calls receive the same explicit SYS pips despite their different package defaults.
 - Shield and recovery completeness remain independent and retain their own issue order.
 - Shield unavailability never suppresses banks, armour, hardness or module protection.
@@ -39,19 +52,11 @@ type CalculationView<T> =
   { kind: 'complete'; value: T } | { kind: 'unavailable'; issues: readonly CalculationIssueView[] };
 
 interface CalculationIssueView {
-  readonly field:
-    | 'mass'
-    | 'cargoCapacity'
-    | 'fuelCapacity'
-    | 'frameShiftDrive'
-    | 'powerCapacity'
-    | 'powerDraw'
-    | 'thrusters'
-    | 'shieldGenerator';
-  readonly reason: 'missing' | 'unresolved' | 'disabled' | 'shed' | 'invalid';
-  readonly slot?: string;
-  readonly symbol?: string;
-  readonly params?: Readonly<Record<string, string | number>>;
+  readonly field: CalculationIssue['field'];
+  readonly reason: CalculationIssue['reason'];
+  readonly slot: string | undefined;
+  readonly symbol: string | undefined;
+  readonly params: CalculationIssue['params'];
   readonly packageIssue: CalculationIssue;
 }
 ```
@@ -62,7 +67,11 @@ Rules:
   input; it accepts only package-resolved module identities;
 - `packageIssue` is retained for `getCalculationIssueMessage()`; application code does not parse its
   English `message`.
-- `slot` and `symbol` remain exact package identities and may authorize a workspace slot target.
+- `field` and `reason` are the package's own unions rather than a copy of them, so a package that
+  adds a field does not silently fall outside this view. The package's field list is `mass`,
+  `fuelCapacity`, `frameShiftDrive`, `powerCapacity`, `powerDraw`, `thrusters` and
+  `shieldGenerator`; it has no `cargoCapacity`.
+- `slot` and `symbol` remain exact package identities.
 - No issue is collapsed, reordered, deduplicated or relabeled.
 - Incomplete shield/recovery is a valid package state, not a failed `DefenceProjection`.
 
@@ -119,20 +128,15 @@ Rules:
 - `Infinity` remains in the raw snapshot. The presenter maps it to a field-specific semantic state;
   it is never JSON-serialized, clamped or replaced.
 
-## SemanticNumber
+## Non-finite values
 
-The presentation boundary prevents generic formatting from erasing non-finite meaning:
+> **Withdrawn at implementation.** A `SemanticNumber` union was specified here as a presentation
+> boundary. It was a second copy of the projection's numbers, and the surface reads the raw fields
+> instead: the projection keeps `Infinity` exactly as the package returned it, and the component
+> decides, per field, which phrase stands in its place.
 
-```ts
-type SemanticNumber =
-  | { kind: 'finite'; value: number }
-  | { kind: 'unboundedEffectiveHitPoints' }
-  | { kind: 'cannotReachRecoveryThreshold' }
-  | { kind: 'cannotRegenerateToFull' };
-```
-
-Only positive infinity in its owning field maps to a sentinel. Finite negative and zero values remain
-`finite` with their exact values.
+`Infinity` is never JSON-serialized, clamped or replaced. Only positive infinity in its owning field
+reads as a sentinel; finite negative and zero values are drawn as themselves.
 
 ## CellBankCollection
 
@@ -149,6 +153,7 @@ type CellBankCollection =
 interface CellBankView {
   readonly slotKey: string;
   readonly symbol: string;
+  readonly identity: ModuleIdentity | null;
   readonly reinforcement: number;
   readonly cells: number;
   readonly spinUp: number;
@@ -163,6 +168,9 @@ Rules:
 - `noneFitted` is selected only by `summary.banks.length === 0`.
 - A non-empty all-unpowered list remains `fitted`, even when both totals are zero.
 - Bank order and every field come directly from `cellBanks()`.
+- `identity` is the exception: the summary carries no class or rating, so the canvas's `5A` is read
+  off the fitted record found under the exact `slotKey` the summary reported. It is `null` where the
+  package resolved no effective stats for that mount.
 - `reinforcement` is MJ from one complete activation, not a rate.
 - `powered` is the package's enabled-and-fed verdict with hardpoints deployed.
 
@@ -191,38 +199,44 @@ Separation invariants:
 - `hardness` is stored beside, not inside, armour and is neither a percentage nor hit points.
 - The package stock-armour calculation fallback does not create a fitted role record.
 
-## FittedDefenceRole
+## DefenceRoleGroup
 
 ```ts
 type DefenceRole =
-  | 'shieldGenerator'
-  | 'shieldBooster'
-  | 'shieldReinforcement'
-  | 'bulkhead'
-  | 'hullReinforcement'
-  | 'moduleReinforcement';
+  'shieldGenerator' | 'shieldBooster' | 'shieldReinforcement' | 'bulkhead' | 'hullReinforcement';
 
-interface FittedDefenceRole {
+interface DefenceRoleGroup {
   readonly role: DefenceRole;
+  readonly contribution: number;
+  readonly modules: readonly FittedDefenceModule[];
+}
+
+interface FittedDefenceModule {
   readonly slotKey: string;
   readonly symbol: string;
   readonly enabled: boolean | 'unspecified';
+  readonly identity: ModuleIdentity | null;
 }
 ```
 
-Classification uses the actual armour slot or a package-resolved `engineeringGroup`. Only resolved
-modules enter this role list; unavailable role or stat data produces no guessed record. Exact package
-calculation issues may separately use reason `unresolved`, but that is not a fitted identity state.
-These are fitted-role/navigation records, not facade-input provenance:
+There is no `moduleReinforcement` role: the package reports module armour as a figure on
+`ArmourMetrics` and returns no module-reinforcement group to classify. Guardian and ordinary hull
+reinforcements are one group, because the package publishes one aggregate for the pair.
 
-- they carry no allocated contribution, resistance share or local power verdict;
+Classification uses the actual armour slot or a package-resolved `engineeringGroup`. Only resolved
+modules enter a group; unavailable role or stat data produces no guessed record.
+
+- `contribution` is the package's own aggregate for the role. It is never divided among `modules`;
 - duplicate symbols remain distinct by `slotKey`;
 - package slot order is preserved within stable role groups;
-- a bank is not duplicated here because `CellBankView` already supplies its exact identity/action.
+- a bank is not duplicated here because `CellBankView` already supplies its exact identity.
 
-## DefenceStatusProjection
+## The status rail block
 
-Feature 006 exports the area-owned value consumed by feature 003's generic provider envelope:
+> **Withdrawn at implementation.** The envelope below was specified against a feature 003 provider
+> that does not exist. The rail block reads the same `Defence` projection the cards read and draws
+> the two pools from it, which is what canvas 1c's Status rail holds. The original shape is kept
+> here for the record:
 
 ```ts
 interface DefenceStatusProjection {
@@ -235,21 +249,18 @@ interface DefenceStatusProjection {
 }
 ```
 
-The enclosing feature 003 provider adds the captured build/condition revisions. `shieldStrength` is
-included exactly when its own value is `unavailable`, which is feature 003's rule for an unavailable
-summary. `armour` is never included because the package armour result is non-nullable. Feature 006
-adds no qualification of its own to an exact package value.
+What survives of it is the rule: a refused shield reads as unavailable in the rail exactly as it
+does in the card, the armour figure is always present because the package armour result is
+non-nullable, and the block adds no qualification of its own to an exact package value.
 
 ## State transitions
 
 ```text
 no active build
-  -> feature 003 noBuild
+  -> the workspace's own no-build state; no package read
 
-new build or settled condition revision
-  -> feature 003 pending(current revision; no stale payload)
-  -> ready(DefenceProjection + DefenceStatusProjection)
-  -> failure(current revision; no fabricated partial snapshot)
+a new build revision, or a new SYS allocation
+  -> the projection is recomputed from the loadout at that revision
 
 complete shield/recovery
   <-> unavailable(ordered package issues)
@@ -259,5 +270,5 @@ no banks
   <-> fitted/all-unpowered with zero totals
 ```
 
-Changing locale or selected surface re-presents the same projection and changes no build/condition
-revision. Exact-slot activation changes workspace selection only and never changes the projection.
+Changing locale or the open mode re-presents the same projection and changes no build revision. The
+surface holds no control, so nothing in it can change the projection at all.
