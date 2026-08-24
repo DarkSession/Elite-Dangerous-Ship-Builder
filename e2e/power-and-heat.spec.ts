@@ -80,14 +80,27 @@ async function press(page: Page, segment: Locator): Promise<void> {
 }
 
 /**
- * Presses one of a bank's four pip blocks.
+ * Presses one of a bank's four pip blocks and waits for the bank to say so.
  *
  * Not `press`: a block is not a toggle with a pressed state. The six pips are
  * shared, so asking for three in one bank can leave another at a pip and a half,
- * and no block stands for that.
+ * and no block stands for that. What the bank does publish is the name of the
+ * group the blocks sit in — the allocation it stands at — drawn from the same
+ * signal as the recharge in the cell beside it, so once that name has moved the
+ * figures in the row have been drawn again too.
+ *
+ * `settled` is not enough on its own here, for the reason given over `press`
+ * and measurably so: in a loop that presses and reads, better than a third of
+ * the reads come back as the allocation from before the press. It stays,
+ * because a press the panel has answered may still be animating.
  */
 async function pressPip(page: Page, block: Locator): Promise<void> {
+  const bank = block.locator('xpath=..');
+  const standing = await bank.getAttribute('aria-label');
+  expect(standing, 'the pip group is named with the allocation it stands at').not.toBeNull();
+
   await block.click();
+  await expect(bank).not.toHaveAttribute('aria-label', standing ?? '');
   await settled(page);
 }
 
