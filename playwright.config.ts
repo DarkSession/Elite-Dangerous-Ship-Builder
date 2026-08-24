@@ -204,9 +204,11 @@ export default defineConfig({
   // budget: see `SWEEP_BUDGET_MS` in `e2e/accessibility.ts`.
   timeout: isCI ? 60_000 : 30_000,
   // Retries are diagnostic only: a test that passes on retry still fails the
-  // run, so flakiness cannot be absorbed into a green build.
+  // run, so flakiness cannot be absorbed into a green build. Ungated, so that a
+  // local run given retries holds the same line CI does rather than reporting a
+  // flake as a pass.
   retries: isCI ? 2 : 0,
-  failOnFlakyTests: isCI,
+  failOnFlakyTests: true,
   // Two, and the parallelism goes across runners instead.
   //
   // **Corrected 2026-08-22, from evidence.** Removing the two `ng serve`

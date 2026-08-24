@@ -242,6 +242,16 @@
     var(--edsb-palette-panel-0) 0.375rem 0.75rem
   );
 
+  // Canvas 1c's overheat hatch: the part of a heat bar past the damage
+  // threshold, and the key that names it. A hatch rather than a second flat
+  // fill, because the difference between the two halves of a bar cannot be
+  // carried by colour alone.
+  --edsb-texture-overheat: repeating-linear-gradient(
+    135deg,
+    var(--edsb-palette-hot) 0 0.25rem,
+    var(--edsb-palette-hot-a40) 0.25rem 0.5rem
+  );
+
   // The wash that marks a selected row, run from the leading edge.
   --edsb-texture-selected: linear-gradient(90deg, var(--edsb-palette-amber-a16), transparent);
 
@@ -373,6 +383,10 @@
   // to keep its size against the hull, which is the one thing on the plate that
   // is not on the type scale.
   --edsb-measure-node-mark: clamp(0.875rem, 3.06cqw, 1.375rem);
+
+  // Canvas 1c's power panel: `min-height: 328px`, and the 16px bars its
+  // priority groups, module draws and heat scenarios are all drawn with.
+  --edsb-measure-power-bar: 0.5625rem; // 9
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 

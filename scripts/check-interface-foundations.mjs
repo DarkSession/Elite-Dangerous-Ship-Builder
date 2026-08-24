@@ -1429,6 +1429,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'outfitting.power.priority.absent':
       'A dash standing in for a group the package never published; not a word in either language.',
+    'power.heat.does-not-settle':
+      'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
       'The Apple command key and a letter; the glyph is the key itself, not a word.',
     'outfitting.acquisition.short.mercenary':
@@ -1444,6 +1446,29 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'Merc Coins is the in-game currency name and is not translated.',
     'outfitting.slot.engineering':
       'A composition of a package-supplied recipe name and the grade; G is the in-game grade marker and is not a word.',
+    'power.hardpoints.label': 'The in-game term, used untranslated in the German community.',
+    'power.distributor.column.bank': '"Bank" is the ordinary German word.',
+    'power.distributor.column.pips':
+      'Pips is the in-game term for a capacitor allocation step and is not translated.',
+    'power.modules.count':
+      'A multiplication sign and a variable, counting the mounts one line stands for; not a word in either language.',
+    'power.heat.sinks.breakdown':
+      'Two variables and a multiplication sign; not a word in either language.',
+    'power.distributor.bank.systems':
+      'SYS is the in-game abbreviation on the pip display and is not translated.',
+    'power.distributor.bank.engines':
+      'ENG is the in-game abbreviation on the pip display and is not translated.',
+    'power.distributor.bank.weapons':
+      'WEP is the in-game abbreviation on the pip display and is not translated.',
+    'power.distributor.module':
+      'A size and a grade letter, both of them variables; neither is a word in either language.',
+    'power.distributor.module.separator':
+      'A middot between the parts of a module\u2019s name; not a word in either language.',
+    'power.unit.megawatts': 'The SI symbol for the megawatt, identical in German.',
+    'power.format.megawatts': 'A value and the SI symbol for the megawatt, identical in German.',
+    'power.format.megajoules': 'A value and the SI symbol for the megajoule, identical in German.',
+    'power.format.megajoules-per-second':
+      'A value and the SI symbol for megajoules per second, identical in German.',
   },
 };
 

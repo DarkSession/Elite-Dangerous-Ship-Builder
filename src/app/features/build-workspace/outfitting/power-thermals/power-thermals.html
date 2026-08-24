@@ -1,0 +1,276 @@
+<!--
+  Canvas 1c's `POWER & THERMALS` panel: the conditions, the priority groups over
+  their summary, the module draw list, the heat profile and the distributor
+  table, in that order. Canvas 1d stacks the same five blocks. This is that DOM
+  at both widths; which arrangement appears is decided in CSS from the space the
+  region is given, so a 400% zoom picks the stacked one for the same reason a
+  phone does.
+-->
+@if (shown()) {
+  <div class="power">
+    <section class="power__block power__block--bands" [attr.aria-labelledby]="bandsHeadingId">
+      <!--
+        The canvas's own header row — the block's name against `CUMULATIVE
+        DRAW`, the column the percentages fill — and the hardpoint condition on
+        the line under it, hard against the leading edge. The condition lives
+        here rather than over the panel because that is where the canvas puts
+        it, and it switches figures inside this block rather than owning a
+        panel of its own.
+      -->
+      <div class="power__head">
+        <h4 class="power__heading" [id]="bandsHeadingId">{{ bandsHeading() }}</h4>
+        <p class="power__note power__note--inline">{{ cumulativeLabel() }}</p>
+      </div>
+
+      <edsb-tab-group
+        class="power__hardpoints"
+        [label]="hardpointsLabel()"
+        [tabs]="hardpointChoices()"
+        [selectedId]="hardpoints()"
+        presentation="segmented"
+        (selected)="showHardpoints($event)"
+      />
+
+      <ol class="power__bands">
+        @for (band of bandRows(); track band.id) {
+          <li class="power__band" [class.power__band--offline]="band.offline">
+            <span class="power__band-group">{{ band.group }}</span>
+            <span class="power__band-draw" data-bidi-isolate>{{ band.draw }}</span>
+            <!--
+              The bar carries no reading of its own: every figure it draws is
+              the text on either side of it, which is what a reader who cannot
+              see the fill gets instead.
+            -->
+            <span class="power__band-track" aria-hidden="true">
+              <span class="power__band-fill" [style.inline-size.%]="band.fill * 100"></span>
+            </span>
+            @if (band.offline) {
+              <span class="power__band-state">{{ offlineLabel() }}</span>
+            } @else {
+              <span class="power__band-share" data-bidi-isolate>{{ band.share }}</span>
+            }
+          </li>
+        }
+      </ol>
+
+      <edsb-metric-group
+        class="power__summary"
+        [label]="summaryLabel()"
+        [metrics]="summaryMetrics()"
+      />
+    </section>
+
+    <section class="power__block power__block--modules" [attr.aria-labelledby]="modulesHeadingId">
+      <div class="power__head">
+        <h4 class="power__heading" [id]="modulesHeadingId">{{ modulesHeading() }}</h4>
+        @if (modulesTotal(); as total) {
+          <p class="power__note power__note--inline" data-bidi-isolate>{{ total }}</p>
+        }
+      </div>
+
+      <ol class="modules">
+        @for (row of moduleRows(); track row.id) {
+          <li class="module" [class.module--offline]="row.offline">
+            <span class="module__name">
+              @if (row.name; as name) {
+                <edsb-game-text
+                  [text]="name.text"
+                  [language]="name.language"
+                  [translationState]="name.translationState"
+                />
+              } @else {
+                {{ row.fallbackName }}
+              }
+              @if (row.count; as count) {
+                <span class="module__count" data-bidi-isolate>{{ count }}</span>
+              }
+              @if (row.group; as group) {
+                <span class="module__group">{{ group }}</span>
+              }
+              @if (row.state; as state) {
+                <span class="module__group">{{ state }}</span>
+              }
+            </span>
+
+            <!--
+              The bar carries no reading of its own: what it is drawn from is
+              the figure on its right, which is what a reader who cannot see the
+              fill gets instead.
+            -->
+            <span class="module__track" aria-hidden="true">
+              <span class="module__fill" [style.inline-size.%]="row.fill * 100"></span>
+            </span>
+
+            <span class="module__draw" data-bidi-isolate>{{ row.draw }}</span>
+          </li>
+        }
+      </ol>
+    </section>
+
+    <section class="power__block power__block--heat" [attr.aria-labelledby]="heatHeadingId">
+      <div class="power__head">
+        <h4 class="power__heading" [id]="heatHeadingId">{{ heatCaption() }}</h4>
+      </div>
+
+      @if (heatAvailable()) {
+        <div class="heat">
+          <!--
+            The bars and the caption in one grid, so the caption's offset is a
+            share of the track it names rather than of the block around it.
+          -->
+          <div class="heat__profile">
+            <ol class="heat__bars">
+              @for (bar of heatBars(); track bar.id) {
+                <li class="heat__bar" [class.heat__bar--over]="bar.overheats">
+                  <span class="heat__name">{{ bar.label }}</span>
+
+                  <!--
+                  Two lengths and a line, and no reading of its own: the level on
+                  the right is what the bar was drawn from, and it is what a
+                  reader who cannot see the fill gets instead.
+                -->
+                  <span class="heat__track" aria-hidden="true">
+                    <span class="heat__within" [style.inline-size.%]="bar.within * 100"></span>
+                    <span
+                      class="heat__over"
+                      [style.inset-inline-start.%]="heatThreshold() * 100"
+                      [style.inline-size.%]="bar.over * 100"
+                    ></span>
+                    <span
+                      class="heat__threshold"
+                      [style.inset-inline-start.%]="heatThreshold() * 100"
+                    ></span>
+                  </span>
+
+                  <span class="heat__level" data-bidi-isolate>
+                    {{ bar.level }}
+                    @if (bar.levelMeaning; as meaning) {
+                      <!--
+                      The symbol is the reading the canvas draws; the words are
+                      what it stands for, kept for a reader who is told the
+                      value rather than shown it.
+                    -->
+                      <span class="visually-hidden">{{ meaning }}</span>
+                    }
+                  </span>
+                </li>
+              }
+            </ol>
+
+            <!-- The canvas's caption on the line the bars are measured against. -->
+            <p class="heat__threshold-label" [style.inset-inline-start.%]="heatThreshold() * 100">
+              {{ heatThresholdLabel() }}
+            </p>
+          </div>
+
+          <edsb-metric-group class="power__facts" [label]="heatCaption()" [metrics]="heatFacts()" />
+
+          <!--
+            The canvas's key. It names both fills in words, because the whole
+            difference between them is a colour and a hatch.
+          -->
+          <ul class="heat__legend">
+            @for (key of heatLegend(); track key.id) {
+              <li class="heat__key">
+                <span class="heat__swatch" [class.heat__swatch--over]="key.over" aria-hidden="true">
+                </span>
+                {{ key.label }}
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <!--
+          One unavailable group, with no diagnosis: the package returns a whole
+          `null` and does not say which of the reasons it was, so neither does
+          this. No hull figure and no catalogue figure stands in for it.
+        -->
+        <edsb-unavailable-value [label]="heatUnavailableLabel()" />
+      }
+    </section>
+
+    <section
+      class="power__block power__block--distributor"
+      [attr.aria-labelledby]="distributorHeadingId"
+    >
+      <div class="power__head">
+        <h4 class="power__heading" [id]="distributorHeadingId">{{ distributorCaption() }}</h4>
+        @if (distributorIdentity(); as identity) {
+          <p class="power__note power__note--inline">{{ identity }}</p>
+        }
+      </div>
+
+      @if (distributorAvailable()) {
+        <div
+          class="table-scroller"
+          role="group"
+          tabindex="0"
+          [attr.aria-label]="distributorCaption()"
+        >
+          <!--
+            No caption: the block's own heading a few lines above says the same
+            words, and a table repeating its heading is the heading twice.
+          -->
+          <table class="distributor" [attr.aria-labelledby]="distributorHeadingId">
+            <thead>
+              <tr>
+                <th scope="col">{{ distributorColumns().bank }}</th>
+                <th scope="col" class="distributor__cell--numeric">
+                  {{ distributorColumns().capacity }}
+                </th>
+                <th scope="col" class="distributor__cell--numeric">
+                  {{ distributorColumns().rated }}
+                </th>
+                <th scope="col">{{ distributorColumns().pips }}</th>
+                <th scope="col" class="distributor__cell--numeric">
+                  {{ distributorColumns().recharge }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bank of bankRows(); track bank.kind) {
+                <tr [attr.data-bank]="bank.kind">
+                  <th scope="row" class="distributor__bank">{{ bank.name }}</th>
+                  <td class="distributor__cell--numeric" data-bidi-isolate>{{ bank.capacity }}</td>
+                  <td class="distributor__cell--numeric" data-bidi-isolate>
+                    {{ bank.ratedRecharge }}
+                  </td>
+                  <td class="distributor__pips">
+                    <!--
+                      The canvas's four blocks, and the control as well: pressing
+                      one asks for that many pips in this bank, and the six there
+                      are between the three banks move the other two to pay for
+                      it. The group is named with the allocation it stands at, so
+                      the reading is there for anyone who cannot see the blocks.
+                    -->
+                    <div class="pips" role="group" [attr.aria-label]="bank.pipsLabel">
+                      @for (step of bank.steps; track step.id) {
+                        <button
+                          class="pips__step"
+                          type="button"
+                          [attr.aria-label]="step.label"
+                          (click)="setPips(bank.kind, step.value)"
+                        >
+                          <span
+                            class="pips__fill"
+                            aria-hidden="true"
+                            [style.inline-size.%]="step.fill * 100"
+                          ></span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                  <td class="distributor__cell--numeric" data-bidi-isolate>
+                    {{ bank.rechargeRate }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <edsb-unavailable-value [label]="distributorUnavailableLabel()" />
+      }
+    </section>
+  </div>
+}

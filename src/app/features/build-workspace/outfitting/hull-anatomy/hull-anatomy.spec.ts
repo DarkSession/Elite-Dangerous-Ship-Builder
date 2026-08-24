@@ -108,7 +108,7 @@ describe('HullAnatomy', () => {
     expect(element.querySelector('.anatomy__sides')).not.toBeNull();
   });
 
-  it('draws the canvas’s five modes, with only the one that exists operable', () => {
+  it('draws the canvas’s five modes, with only the ones that exist operable', () => {
     const { element } = render();
 
     const strip = element.querySelector('.anatomy__modes');
@@ -120,11 +120,84 @@ describe('HullAnatomy', () => {
       'Defence',
       'Offence',
     ]);
-    // `POWER`, `DRIVES`, `DEFENCE` and `OFFENCE` are the same plates read by
-    // features 005 to 008. Until one of them ships, its segment is disabled
-    // rather than opening a panel with nothing in it.
+    // `DRIVES`, `DEFENCE` and `OFFENCE` are the same plates read by features
+    // 006 to 008. Until one of them ships, its segment is disabled rather than
+    // opening a panel with nothing in it.
     expect(tabs[0].getAttribute('aria-pressed')).toBe('true');
-    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(4);
+    expect(tabs[1].hasAttribute('disabled')).toBe(false);
+    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(3);
+  });
+
+  describe('the power mode', () => {
+    /** Opens `POWER` on a plate that has arrived, and returns the rendered DOM. */
+    async function openPower(): Promise<{ element: HTMLElement; detect: () => void }> {
+      TestBed.inject(AnatomyStore);
+      TestBed.inject(ActiveBuildStore).commit(candidate());
+      TestBed.tick();
+      await loader.settle('top', {
+        kind: 'ready',
+        document: documentFor('top', FIXTURE_SLOTS.fittedHardpoint),
+      });
+      const rendered = render();
+      rendered.element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[1]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      rendered.detect();
+      return rendered;
+    }
+
+    it('retitles the region, and adds nothing under the title', async () => {
+      const { element } = await openPower();
+
+      // The canvas's switching script carries a title per mode and nothing
+      // else: a line under it explaining the panel is not something it draws.
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe(
+        'Power and thermals',
+      );
+      expect(element.querySelectorAll('.anatomy__title p')).toHaveLength(0);
+    });
+
+    it('replaces the plates rather than drawing under them', async () => {
+      const { element, detect } = await openPower();
+
+      // The canvas's switching script sets the plate container to
+      // `display: none` for every mode but `mounts`, so the side selector and
+      // the legend that belong to the plates go with them and the panel is what
+      // the region draws (design/canvas-contract.md).
+      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
+      const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
+      expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
+      expect(element.querySelector('.anatomy__plates')).toBeNull();
+      expect(element.querySelector('.anatomy__sides')).toBeNull();
+      expect(element.querySelector('.anatomy__legend')).toBeNull();
+      expect(element.querySelector('.schematic__mount')).toBeNull();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-power-thermals')).toBeNull();
+      expect(element.querySelector('.anatomy__plates')).not.toBeNull();
+      expect(element.querySelector('.anatomy__legend')).not.toBeNull();
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
+    });
+
+    it('leaves the mounts layer exactly as the mounts mode drew it', async () => {
+      const { element, detect } = await openPower();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      // Coming back from POWER draws the node number and no power attribute:
+      // the layer the canvas authors over the plates is never revealed, so
+      // nothing this capability does survives the trip.
+      const mount = element.querySelector<HTMLElement>('.schematic__mount');
+      expect(mount?.hasAttribute('data-power')).toBe(false);
+      expect(mount?.textContent?.trim()).toMatch(/^\d+$/u);
+    });
   });
 
   it('lists the reference legend, entry for entry', () => {

@@ -64,6 +64,15 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
+  --edsb-surface-danger-solid: var(--edsb-palette-hot);
+
+  // Canvas 1c gives each capacitor bank its own colour on the pip display, the
+  // same three the game does.
+  --edsb-surface-bank-systems: var(--edsb-palette-cool);
+  --edsb-surface-bank-engines: var(--edsb-palette-good-2);
+  --edsb-surface-bank-weapons: var(--edsb-palette-amber);
+  // What a heat bar is drawn in past the module-damage threshold.
+  --edsb-surface-overheat: var(--edsb-texture-overheat);
   --edsb-surface-info-quiet: var(--edsb-palette-cool-a10);
 
   // The wash that runs from the leading edge of a selected row.
@@ -299,6 +308,7 @@
   --edsb-layout-node-box: var(--edsb-measure-node-box);
   --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
   --edsb-layout-node-mark: var(--edsb-measure-node-mark);
+  --edsb-layout-power-bar: var(--edsb-measure-power-bar);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);

@@ -322,7 +322,7 @@ export class HullSchematic {
    */
   nameOf(occurrence: MountOccurrence): string {
     const item = occurrence.item;
-    return this.#messages.message('anatomy.mount.name', {
+    const parameters = {
       node: item.node,
       slot: item.name,
       kind: this.#messages.message(
@@ -333,7 +333,9 @@ export class HullSchematic {
       engineering: this.#messages.message(
         item.engineered ? 'anatomy.state.engineered' : 'anatomy.state.stock',
       ),
-    });
+    };
+
+    return this.#messages.message('anatomy.mount.name', parameters);
   }
 
   isSelected(occurrence: MountOccurrence): boolean {

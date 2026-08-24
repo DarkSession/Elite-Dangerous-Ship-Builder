@@ -1,372 +1,281 @@
 # Data Model: Power and Heat
 
 Every game-bearing value is an immutable projection of one
-`@elite-dangerous-almanac/core` `ShipLoadout`. Feature 005 owns no build,
-viewing-condition persistence, game formula or catalogue fallback.
+`@elite-dangerous-almanac/core` `ShipLoadout`. Feature 005 owns no build, no
+persisted state, no game formula and no catalogue fallback.
 
-The types below map the installed Almanac result fields exactly. They do not add a local detector.
+> **Rewritten 2026-08-24 (wave 13).** The original model described a
+> `PowerHeatProjectionState` store with revision keys, a snapshot, a failure
+> state, feature 003's shared draft conditions, an owner-private
+> `MountPowerObservationIndex`, a `PowerStatusProjection` provider envelope and a
+> `MountPowerObservation` union for features 007 and 010. Feature 003's rulings
+> withdrew the shared conditions and the provider; wave 13's reading of the
+> artboard withdrew the mount overlay along with the plates it drew on, and with
+> it the observation index. What is modelled here is what the code holds.
 
-## PowerHeatProjectionState
+## Shape
+
+One pure synchronous function over one loadout and the two conditions it is read
+under:
 
 ```ts
-type PowerHeatProjectionState =
-  | { readonly state: 'noBuild' }
-  | {
-      readonly state: 'pending';
-      readonly buildRevision: number;
-      readonly conditionsRevision: number;
-    }
-  | { readonly state: 'ready'; readonly snapshot: PowerHeatSnapshot }
-  | {
-      readonly state: 'failure';
-      readonly buildRevision: number;
-      readonly conditionsRevision: number;
-      readonly messageKey: 'projectionFailed';
-    };
+function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditions): PowerAndHeat;
 ```
 
-Package nulls are not application failures. A ready snapshot may contain an
-unavailable distributor or unavailable heat. `failure` is
-reserved for an unexpected exception, missing required `ShipLoadout` consumer
-identity, missing required priority-band match or revision-contract violation.
+There is no store around it, no cache, no revision key, no pending state and no
+failure state. The loadout is already in memory, the three `ShipLoadout` calls
+are synchronous, and Angular's signal graph memoizes the result for every
+surface that reads it. Package `null` is not a failure: a returned projection may
+carry an unavailable distributor or an unavailable heat profile and still be a
+complete answer for the build.
 
-## PowerHeatSnapshot
+## PowerConditions
 
-| Field                | Type                    | Rule                                            |
-| -------------------- | ----------------------- | ----------------------------------------------- |
-| `buildRevision`      | non-negative integer    | Exact feature 001 active revision               |
-| `conditionsRevision` | non-negative integer    | Exact settled feature 003 revision              |
-| `hardpointState`     | `deployed \| retracted` | Exact settled feature 003 condition             |
-| `power`              | `PowerBudgetView`       | Selected fields from one `powerBudget()` result |
-| `modules`            | `ModulePowerCollection` | Exact participating `budget.consumers`          |
-| `distributor`        | `DistributorView`       | Exact package result or unavailable             |
-| `heat`               | `HeatProfileView`       | Exact package result or unavailable             |
-
-Invariants:
-
-- every field belongs to the same captured revision pair;
-- a newer build or settled conditions revision invalidates the whole pending
-  publication;
-- selected hardpoints change only selected power presentation;
-- pips change only the distributor call and its returned view;
-- heat depends only on the build revision because `heatMetrics()` accepts no
-  viewing options;
-- no snapshot is serialized, persisted or placed in history, a URL or SLEF.
-
-## Owner-private power observation index
-
-The pure projection transaction retains one owner-private index beside the
-published snapshot so the shared observation adapter can answer either state
-without another package call:
+The two questions the dashboard asks about a build, neither of which changes it:
 
 ```ts
-interface PowerHeatProjection {
-  readonly snapshot: PowerHeatSnapshot;
-  readonly mountPowerIndex: MountPowerObservationIndex;
+type HardpointState = 'deployed' | 'retracted';
+
+interface DistributorPipAllocation {
+  readonly systems: number;
+  readonly engines: number;
+  readonly weapons: number;
 }
 
-type MountPowerObservationIndex = ReadonlyMap<string, MountPowerObservationIndexEntry>;
-
-interface MountPowerObservationIndexEntry {
-  readonly slotKey: string;
-  readonly symbol: string;
-  readonly enabled: boolean;
-  readonly priority: PowerPriority;
-  readonly deployedOnly: boolean;
-  readonly poweredDeployed: boolean;
-  readonly poweredRetracted: boolean;
+interface PowerConditions {
+  readonly hardpoints: HardpointState;
+  readonly pips: DistributorPipAllocation;
 }
 ```
 
-The index is built from the same immutable `PowerBudget` used for
-`PowerBudgetView`: its exact consumer labels key the entries, and each entry
-retains the matching package band's two powered verdicts. It is memoized by the
-captured revision pair but is not part of `PowerHeatSnapshot`, presentation
-state or any feature 003/007/010 contract. Only feature 005's
-`MountPowerObservationAdapter` can read it. It is never serialized, cloned or
-exposed as a second calculation boundary.
+`PowerConditionsStore` holds both. Neither reaches the loadout, spends a build
+revision, or is persisted — no storage, no history, no URL fragment, no build
+link, no SLEF. Reopening the workspace opens on `deployed` and `2 · 2 · 2`.
 
-## Shared ViewingConditions input
+Pips are `0`–`4` per bank on a half-pip step, six between the three. The package
+accepts any fraction in range and imposes no total; the six are the ship's rule,
+so setting one bank moves the other two — the remainder is split evenly between
+them, and each lands on a half pip. There is no
+draft, no Apply, no Reset, no running total and no validation.
 
-Feature 005 imports feature 003's type instead of redefining it:
+## PowerAndHeat
 
-```ts
-interface ViewingConditions {
-  readonly load: 'maximumJump' | 'unladen' | 'laden';
-  readonly pips: {
-    readonly systems: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-    readonly engines: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-    readonly weapons: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-  };
-  readonly hardpoints: 'deployed' | 'retracted';
-}
-```
+| Field         | Type                       | Rule                                            |
+| ------------- | -------------------------- | ----------------------------------------------- |
+| `hardpoints`  | `HardpointState`           | The state every selected figure was read under  |
+| `power`       | `PowerView`                | Selected fields of one `powerBudget()` result   |
+| `modules`     | `readonly ModuleDrawRow[]` | `budget.consumers`, heaviest first              |
+| `heat`        | `HeatView \| null`         | `null` exactly when `heatMetrics()` returned it |
+| `distributor` | `DistributorView \| null`  | `null` exactly when `distributorMetrics()` did  |
 
-The three pip values total 12 integer half-pips and default to `4/4/4`.
-Feature 005 divides them by two only while constructing
-`DistributorOptions`. It neither validates nor stores a second tuple.
-`load` is retained in the shared revision context but does not affect feature
-005 package calls.
+The object is frozen. Nothing about it is serialized, persisted or placed in
+history, a URL or SLEF.
 
-## Utilisation
+## PowerView
 
 ```ts
-type UtilisationValue =
-  | { readonly kind: 'finite'; readonly value: number }
-  | { readonly kind: 'drawWithZeroAvailableOutput' };
-```
-
-Every figure `powerBudget()` returns is exact, so no power value carries a qualification.
-
-`drawWithZeroAvailableOutput` is the package meaning of infinite utilisation.
-It does not assert why capacity is zero.
-
-## PowerBudgetView
-
-```ts
-interface PowerBudgetView {
-  readonly selectedState: 'deployed' | 'retracted';
+interface PowerView {
   readonly available: number;
-  readonly selectedDraw: number;
-  readonly deployedSummary: DeployedPowerSummary | null;
+  readonly draw: number;
   readonly bands: readonly PowerBandView[];
+  readonly poweredDraw: number;
+  readonly unpowered: number;
+  readonly bar: PowerDrawBar;
 }
 ```
 
-| Field             | Package source/rule                                                  |
-| ----------------- | -------------------------------------------------------------------- |
-| `available`       | Exact `PowerBudget.available`                                        |
-| `selectedDraw`    | Exact selected `deployed` or `retracted` value                       |
-| `deployedSummary` | Package `headroom`, `utilisation`, `withinBudget` only when deployed |
-| `bands`           | All five package bands in returned order                             |
+| Field         | Source/rule                                                        |
+| ------------- | ------------------------------------------------------------------ |
+| `available`   | Exact `PowerBudget.available`. `0` is a real zero                  |
+| `draw`        | Exact selected `deployed` or `retracted` total                     |
+| `bands`       | The groups this build puts something in, in package order          |
+| `unpowered`   | The selected-state draw of every group the plant does not keep lit |
+| `poweredDraw` | `draw` less `unpowered`                                            |
+| `bar`         | Three lengths on one track, for the status rail                    |
 
-### DeployedPowerSummary
+`headroom`, `utilisation` and `withinBudget` are not read. Neither canvas draws
+a headroom figure, a utilisation percentage or a within-budget verdict, so the
+projection publishes none — nothing downstream can blank, dash or zero a field
+it never receives, and the package's infinite utilisation on a plant of zero
+never has to be worded. What such a build states instead is a plant of nothing
+with the whole demand in `UNPOWERED`.
 
-| Field          | Type               | Rule                            |
-| -------------- | ------------------ | ------------------------------- |
-| `headroom`     | number             | Exact package number            |
-| `utilisation`  | `UtilisationValue` | Exact package fraction/sentinel |
-| `withinBudget` | boolean            | Exact package verdict           |
-
-This type has no retracted variant.
+`poweredDraw` and `unpowered` are the canvas's `POWERED DRAW 29.64 MW` and
+`UNPOWERED 7.80 MW` beside a module list totalling `37.44`: the same build, once
+with the dark groups counted and once without. The package states each group's
+draw and whether it is lit; which are dark and what they add to is this
+projection's reading of that, and it is one of the readings
+`scripts/policy/power-heat-ownership.mjs` allows only here.
 
 ### PowerBandView
 
-```ts
-type PowerPriority = 1 | 2 | 3 | 4 | 5;
-```
+| Field             | Type             | Source/rule                                         |
+| ----------------- | ---------------- | --------------------------------------------------- |
+| `priority`        | number           | Exact `PowerBand.priority`, `1`–`5`                 |
+| `draw`            | number           | This group's own draw in the selected state         |
+| `cumulativeDraw`  | number           | Its and every higher group's, in the selected state |
+| `cumulativeShare` | `number \| null` | That over plant output; `null` with no output       |
+| `powered`         | boolean          | The selected state's package verdict                |
 
-| Field            | Type            | Source                    |
-| ---------------- | --------------- | ------------------------- |
-| `priority`       | `PowerPriority` | `PowerBand.priority`      |
-| `draw`           | number          | Selected own-band field   |
-| `cumulativeDraw` | number          | Selected cumulative field |
-| `powered`        | boolean         | Selected package verdict  |
+The package always returns five bands, because five is what the game has. A
+group nothing is assigned to is not a reading of _this_ build — it is an empty
+row saying `0.00 MW` about a group that does not exist here — so groups with no
+consumer in them are left out, and the drawn rows keep the package's ascending
+order. No field is calculated from another; a plant of zero has no share to state
+rather than an infinite one.
 
-No field is calculated from another. Zero-draw bands remain present.
+### PowerDrawBar
 
-## ModulePowerCollection
+| Field       | Rule                                                   |
+| ----------- | ------------------------------------------------------ |
+| `powered`   | The lit draw as a share of the track, in `[0, 1]`      |
+| `unpowered` | The dark draw, running on from where the lit draw ends |
+| `plant`     | Where plant output falls on the same track             |
 
-```ts
-interface ModulePowerCollection {
-  readonly rows: readonly ModulePowerView[];
-}
-```
+Canvas 1c draws the status rail's `POWER` figures over a bar of `79%`, `21%` and
+a mark at `83.3%`, which are the artboard's own numbers over its own demand:
+`29.64 / 37.44`, `7.80 / 37.44` and `31.20 / 37.44`. The track is therefore the
+whole demand — scaled to whichever of demand and plant is larger, so a build the
+plant covers marks the plant at the end of the track rather than off it. A build
+with no plant and nothing fitted draws an empty track rather than a division by
+nothing.
+
+## ModuleDrawRow
+
+| Field      | Type             | Source/rule                                                         |
+| ---------- | ---------------- | ------------------------------------------------------------------- |
+| `id`       | string           | The symbol, group and enabled state this row stands for             |
+| `symbol`   | `string \| null` | Exact `consumer.symbol`; `null` where the package published none    |
+| `slotKey`  | `string \| null` | Exact `consumer.label`; `null` where the row is more than one mount |
+| `count`    | number           | How many mounts the row stands for                                  |
+| `draw`     | number           | What those mounts draw _in the selected state_                      |
+| `priority` | number           | Exact package `1`–`5`                                               |
+| `offline`  | boolean          | Whether the plant leaves this row's group dark                      |
+| `disabled` | boolean          | Whether every mount on the line is switched off                     |
+| `share`    | number           | `draw` over the list's own total; decoration for the bar            |
 
 Rules:
 
-- one row corresponds to one `PowerConsumerResult`;
-- rows may sort by draw descending with source ordinal as the stable tie break;
-- disabled consumers remain visible;
-- identical modules in different slots never merge;
-- passive and zero-draw fittings absent from `budget.consumers` are not
-  fabricated into this collection;
-- each row's slot action emits the exact returned label.
+- `budget.consumers` is the sole per-module source;
+- mounts carrying the same symbol in the same group and the same enabled state
+  are one line with the canvas's `x2` count, which is what the artboard prints;
+  a consumer with no symbol stands alone under its own ordinal, because two
+  unnamed mounts are not known to be the same thing;
+- `draw` is the selected state's own draw, so a stowed hardpoint and a
+  switched-off module both read a real `0.00` and each state's list adds up to
+  that state's own package total;
+- a disabled consumer keeps its line rather than disappearing from it;
+- passive and zero-draw fittings the package omits are never fabricated;
+- rows are heaviest first, with source order as the tie break;
+- the list carries no action: it is a reading, and feature 002's ledger is where
+  a mount is selected.
 
-### ModulePowerView
+## HeatView
 
-```ts
-type DeploymentState = 'deployedOnly' | 'always';
-```
+`null` exactly when `heatMetrics()` returned `null`, with no hull or catalogue
+figure standing in and no diagnosis of why.
 
-| Field           | Type                 | Source/rule                                                  |
-| --------------- | -------------------- | ------------------------------------------------------------ |
-| `slotKey`       | string               | Exact `consumer.label`; required for this facade projection  |
-| `symbol`        | string               | Exact `consumer.symbol`; required for game-text presentation |
-| `displayName`   | `LocalizedGameText`  | Feature 011 Almanac module-name presentation                 |
-| `draw`          | number               | Exact `consumer.draw`                                        |
-| `enabled`       | boolean              | Exact `consumer.enabled`                                     |
-| `priority`      | `PowerPriority`      | Exact normalized package priority                            |
-| `deployedOnly`  | `DeploymentState`    | Exact package state                                          |
-| `sourceOrdinal` | non-negative integer | Returned order; presentation tie break                       |
-
-The row does not claim its own powered verdict. Band powered state belongs to
-the priority-band result. Feature 010 receives the separately defined
-observation adapter below.
-
-## DistributorView
+| Field                 | Type                          | Source/rule                                   |
+| --------------------- | ----------------------------- | --------------------------------------------- |
+| `efficiency`          | number                        | Exact package figure                          |
+| `hullHeatCapacity`    | number                        | Exact package figure                          |
+| `hullHeatDissipation` | number                        | Exact package figure                          |
+| `scenarios`           | `readonly HeatScenarioView[]` | The five package scenarios, in package order  |
+| `thresholdAt`         | number                        | Where the damage threshold falls on the track |
+| `shieldBankSpike`     | `HeatSpikeView \| null`       | The canvases' sixth bar, or no bank fitted    |
+| `heatSinks`           | `HeatSinkView`                | What the build carries to drop its own heat   |
 
 ```ts
-type DistributorView =
-  | { readonly kind: 'unavailable' }
-  | {
-      readonly kind: 'ready';
-      readonly pips: ReturnedPips;
-      readonly capacitors: readonly [CapacitorView, CapacitorView, CapacitorView];
-    };
-```
+type HeatScenarioKey = 'idle' | 'thrusters' | 'fsdCharging' | 'firingDrained' | 'firingSustained';
 
-`unavailable` maps exactly from package null and carries no inferred cause.
-The tuple is SYS, ENG, WEP.
-
-### ReturnedPips
-
-| Field     | Type   | Source                            |
-| --------- | ------ | --------------------------------- |
-| `systems` | number | `DistributorMetrics.pips.systems` |
-| `engines` | number | `DistributorMetrics.pips.engines` |
-| `weapons` | number | `DistributorMetrics.pips.weapons` |
-
-### CapacitorView
-
-```ts
-type CapacitorKind = 'systems' | 'engines' | 'weapons';
-```
-
-| Field           | Type            | Source                    |
-| --------------- | --------------- | ------------------------- |
-| `kind`          | `CapacitorKind` | Stable presentation key   |
-| `capacity`      | number          | Matching `.capacity`      |
-| `ratedRecharge` | number          | Matching `.ratedRecharge` |
-| `rechargeRate`  | number          | Matching `.rechargeRate`  |
-| `pips`          | number          | Matching returned pip     |
-
-Zero recharge is ready numeric data.
-
-## HeatProfileView
-
-```ts
-type HeatProfileView =
-  | { readonly kind: 'unavailable' }
-  | {
-      readonly kind: 'ready';
-      readonly heatEfficiency: number;
-      readonly hullHeatCapacity: number;
-      readonly hullHeatDissipation: number;
-      readonly scenarios: readonly HeatScenarioView[];
-    };
-```
-
-`unavailable` maps exactly from `heatMetrics() === null`. A ready profile is a complete answer for
-the build: every scenario carries the package's own figures, and none is a bound or a projection.
-
-### HeatScenarioView
-
-```ts
-type HeatScenarioKey = 'idle' | 'thrusters' | 'fsdCharging' | 'firingSustained' | 'firingDrained';
 type HeatLevelValue =
-  { readonly kind: 'finite'; readonly value: number } | { readonly kind: 'doesNotSettle' };
+  { readonly kind: 'level'; readonly value: number } | { readonly kind: 'doesNotSettle' };
+
 type OverheatTime =
   { readonly kind: 'seconds'; readonly value: number } | { readonly kind: 'neverOverheats' };
 ```
 
-| Field            | Type              | Source/rule                                |
-| ---------------- | ----------------- | ------------------------------------------ |
-| `key`            | `HeatScenarioKey` | Fixed semantic order                       |
-| `thermalLoad`    | number            | Exact `HeatState.thermalLoad`              |
-| `heatLevel`      | `HeatLevelValue`  | Exact finite value or infinite sentinel    |
-| `gauge`          | `HeatLevelValue`  | Exact finite fraction or infinite sentinel |
-| `overheats`      | boolean           | Exact package verdict                      |
-| `timeToOverheat` | `OverheatTime`    | Exact number or null sentinel              |
+`Infinity` means the load exceeds what the hull can shed, so heat settles
+nowhere. It is its own statement, distinct from a high number and from an absent
+profile, and a bar for it fills the track to the end because the package says it
+climbs without stopping. `null` seconds means the gauge never reaches 100% under
+that scenario: a fact about the build, never a zero and never unavailable.
 
-The five scenarios always exist in a ready profile, including with no weapons.
+### HeatScenarioView
 
-## PowerStatusProjection
+| Field             | Type              | Source/rule                                           |
+| ----------------- | ----------------- | ----------------------------------------------------- |
+| `key`             | `HeatScenarioKey` | Package order                                         |
+| `thermalLoad`     | number            | Exact `HeatState.thermalLoad`                         |
+| `heatLevel`       | `HeatLevelValue`  | Exact level or the non-settling statement             |
+| `gauge`           | `HeatLevelValue`  | Exact gauge or the non-settling statement             |
+| `overheats`       | boolean           | Exact package verdict                                 |
+| `timeToOverheat`  | `OverheatTime`    | Exact seconds or the never statement                  |
+| `within` / `over` | number            | Bar lengths either side of the threshold, in `[0, 1]` |
 
-Feature 005's feature 003 contribution:
+All five scenarios exist in a ready profile, including on a build with no
+weapons.
 
-```ts
-interface PowerStatusProjection {
-  readonly hardpointState: 'deployed' | 'retracted';
-  readonly available: number;
-  readonly selectedDraw: number;
-}
-```
+### HeatSpikeView
 
-The provider envelope is ready for the captured revision pair, targets
-`powerAndHeat` and returns an empty `qualifiedSummaryIds`, because every figure
-`powerBudget()` returns is exact. Feature 003 does not reinterpret the value.
+The canvases draw a sixth bar, `Shield cell bank`. `heatMetrics()` publishes five
+scenarios and says outright that this is not one of them: a bank states heat per
+_activation_ rather than per second, and the package's own remedy is to divide
+that by the bank's spin-up, add it to the build's load and run it for the
+spin-up's duration — with the package's own `heatLevelAtTime` doing the running.
+That is one of the readings the ownership policy allows only in this module. The
+bar is absent, not zero, where no bank is fitted.
 
-## MountPowerObservation
+### HeatSinkView
 
-Feature 005's contribution to features 007 and 010, defined once over any
-package slot key — hardpoint, utility or core internal:
+| Field       | Type             | Rule                                                        |
+| ----------- | ---------------- | ----------------------------------------------------------- |
+| `launchers` | number           | Fitted launchers. `0` is a real answer and the tile says it |
+| `charges`   | `number \| null` | Charges one launcher carries, or `null` where they differ   |
+| `total`     | number           | Charges carried between them                                |
 
-```ts
-type MountPowerObservation =
-  | { readonly kind: 'notApplicable' }
-  | { readonly kind: 'disabled'; readonly priority: PowerPriority }
-  | { readonly kind: 'inactiveRetracted'; readonly priority: PowerPriority }
-  | { readonly kind: 'powered'; readonly priority: PowerPriority }
-  | { readonly kind: 'shed'; readonly priority: PowerPriority }
-  | { readonly kind: 'unavailable' };
-```
+The canvases' `HEAT SINKS 6` over `2 x 3`. It comes from `fittedModules()` rather
+than from `heatMetrics()`, which models no sink at all: a sink removes heat, and
+every load the package accepts is non-negative. The `2 x 3` breakdown is absent
+where the launchers do not all carry the same number, because two unlike
+launchers are not one multiplication.
 
-Selection rules use one revision-keyed projection:
+## DistributorView
 
-1. the current projection is pending and its index is not ready → `unavailable`;
-2. a ready index has no returned consumer for the exact slot → `notApplicable`;
-3. disabled consumer → `disabled`;
-4. requested retracted plus `deployedOnly === true` → `inactiveRetracted`;
-5. otherwise select the matching package band's requested-state powered boolean.
+`null` exactly when `distributorMetrics()` returned `null` — an absent,
+switched-off, unresolvable or retracted-shed distributor — carrying no inferred
+cause and no catalogue figure. Power, heat and the conditions stay usable.
 
-A failed projection is propagated as failure, not converted to `unavailable`.
-Missing required package identities or priority bands therefore never enter
-the observation union.
+| Field        | Type                          | Rule                                     |
+| ------------ | ----------------------------- | ---------------------------------------- |
+| `capacitors` | `readonly CapacitorView[]`    | `SYS`, `ENG`, `WEP`, in the canvas order |
+| `identity`   | `DistributorIdentity \| null` | What the fitted distributor is           |
 
-`inactiveRetracted` is reachable only for a mount the package reports as
-`deployedOnly`, so a core internal never selects it. Consumers state their own
-vocabulary over this union — feature 007 presents `notApplicable` as absent —
-and none widens or narrows it.
+### CapacitorView
 
-The port accepts an explicit `deploymentState: 'deployed' | 'retracted'` and
-stamps that state plus the build and condition revisions outside this union.
-Feature 010 passes the selected `context.conditions.hardpoints`; feature 007
-passes `deployed` regardless of selected viewing state. Consumers accept no
-stale or state-mismatched read.
+| Field           | Type            | Source                                                 |
+| --------------- | --------------- | ------------------------------------------------------ |
+| `kind`          | `CapacitorKind` | Stable presentation key                                |
+| `capacity`      | number          | Matching `.capacity`                                   |
+| `ratedRecharge` | number          | Matching `.ratedRecharge`                              |
+| `pips`          | number          | The allocation the **result** carries, not the request |
+| `rechargeRate`  | number          | Matching `.rechargeRate`                               |
 
-## LocalizedGameText
+Zero recharge is ready numeric data, not an unavailable one. Capacity and rated
+recharge are properties of the fitted distributor and do not move with pips.
 
-```ts
-type LocalizedGameText =
-  | {
-      readonly kind: 'text';
-      readonly text: string;
-      readonly translation: 'localized' | 'canonicalFallback';
-    }
-  | { readonly kind: 'unavailable' };
-```
+### DistributorIdentity
 
-Canonical fallback triggers a localized untranslated disclosure. If the package
-supplies neither localized nor canonical text, the name is unavailable. No
-private game translation or raw application fallback is added.
+`8A · CHARGE ENHANCED G5 · SUPER CONDUITS`, as the canvases name it beside the
+heading: a size, a grade letter, the applied recipe's journal name and grade, and
+the experimental effect's journal name. Every part is an identity rather than a
+figure, so nothing here is a reading about the build, and each part is absent
+where the build has none. Blueprint and effect names come from feature 011's
+game-text presenter.
 
-## Intents and transitions
+## Text
 
-Feature 005 emits only shared viewing/navigation intent:
-
-```ts
-type PowerHeatIntent =
-  | { readonly kind: 'editViewingConditions' }
-  | { readonly kind: 'applyViewingConditions' }
-  | { readonly kind: 'resetViewingConditions' }
-  | { readonly kind: 'openSlot'; readonly slotKey: string };
-```
-
-- Viewing intents delegate to feature 003's one draft/Apply/Reset state machine.
-- `openSlot` delegates the exact returned key to feature 002.
-- A changed accepted condition advances `conditionsRevision` once and
-  reprojects atomically.
-- A committed edit/replacement advances `buildRevision`; no part of the old
-  snapshot is relabelled.
-- Loss of the active build discards the snapshot and renders `noBuild`.
+Owned application text comes from feature 011's messages; module, blueprint and
+effect names come from the Almanac through its game-text presenter, with its own
+canonical-fallback disclosure. No private game translation and no raw application
+fallback is added. Numbers and units use active-locale formatters.

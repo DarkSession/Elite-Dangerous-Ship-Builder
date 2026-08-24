@@ -15,7 +15,7 @@
     "ui:preview": "ng serve ui-preview",
     "e2e:preview": "playwright test ui-preview.spec.ts",
     "e2e:offline": "E2E_PRODUCTION=1 playwright test offline.spec.ts offline-privacy.spec.ts schematic-offline.spec.ts",
-    "policy": "node scripts/check-interface-foundations.mjs && node scripts/policy/outfitting-ownership.mjs && node scripts/policy/anatomy-ownership.mjs && node scripts/policy/slef-ownership.mjs",
+    "policy": "node scripts/check-interface-foundations.mjs && node scripts/policy/outfitting-ownership.mjs && node scripts/policy/anatomy-ownership.mjs && node scripts/policy/slef-ownership.mjs && node scripts/policy/power-heat-ownership.mjs",
     "codec:tables": "node scripts/generate-build-link-codec-tables.mjs && prettier --write src/app/domain/build-link/codec-table-1.json",
     "codec:capacity": "node scripts/build-link-codec-capacity.mjs",
     "slef:corpus": "node scripts/generate-slef-reference-corpus.mjs",

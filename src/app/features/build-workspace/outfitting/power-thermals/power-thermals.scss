@@ -1,0 +1,514 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c draws the dashboard in the space the plates leave, on the same page
+// ground the anatomy region uses: the priority groups beside the module list in
+// two fluid columns, then the heat profile and the distributor each across the
+// full width beneath them. Canvas 1d stacks all four. Which arrangement appears
+// is decided from the region's own inline size rather than the viewport's, so a
+// 400% zoom and an expanded translation choose the stacked one for the same
+// reason a phone does.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: power;
+  min-inline-size: 0;
+}
+
+.power {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+// The wide arrangement. The pair the canvas draws is a grid rather than a
+// wrapping row, because a pair that wraps mid-block would put the module list
+// under the summary tiles it does not belong to. The two blocks below the pair
+// run the full width, as the canvas runs them.
+@include layout.container-medium-up(power) {
+  .power {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    // Stretched so the groups and the list square up against each other, and no
+    // taller than that: canvas 1c gives the pair a `min-height` its own sample
+    // build happens to fill, and holding a real build to it would leave one
+    // plate ruled off around empty ground.
+    align-items: stretch;
+    gap: var(--edsb-space-region);
+  }
+
+  .power__block--heat,
+  .power__block--distributor {
+    grid-column: 1 / -1;
+  }
+}
+
+// The condition sits inside the priority groups, on its own line under that
+// block's header and hard against its leading edge, which is where the canvas
+// draws it: it switches the figures in this block rather than governing the
+// panel, and it is a small control rather than a banner over everything.
+.power__hardpoints {
+  inline-size: auto;
+  align-self: start;
+}
+
+// Each of the canvas's four blocks is a bounded plate on the panel ground, with
+// the same border and the same padding: `1px solid var(--amber-a2)` over
+// `var(--panel)` at `16px 18px`.
+.power__block {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-2xl);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// Canvas 1c's labelled rule: a tracked mono label with the hairline running out
+// to the block's trailing edge, and the total set against it.
+.power__head {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+}
+
+.power__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+// The sentence standing where the three deployed-only summaries would be, and
+// the module list's total. Prose voice, not the mono numeric voice of the
+// figures above it.
+.power__note {
+  margin: 0;
+  color: var(--edsb-text-muted);
+  text-wrap: pretty;
+}
+
+.power__note--inline {
+  color: var(--edsb-text-faint);
+}
+
+.power__table,
+.power__summary,
+.power__facts {
+  display: block;
+  min-inline-size: 0;
+}
+
+// One line per kind of consumer, heaviest first: the name, a bar drawn to its
+// share of the heaviest draw, and the draw itself hard against the trailing
+// edge. The canvas draws them as a dense unruled list.
+// The list owns the columns and every line borrows them, so the names, the bars
+// and the draws each stand in one column of their own. A row that sized its own
+// tracks let a longer draw on one line pull that line's bar shorter than the bar
+// above it, which reads as a difference in draw when it is only a difference in
+// digits.
+.modules {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The name column is fixed in the canvas and fluid here: a long module name at
+// rail width, at 200% text or in an expanded translation would be cut off at a
+// fixed width, and this list has no second line to run onto. The tracks come
+// from the list above, so every line is measured against the same three.
+.module {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.module__name {
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+.module__count,
+.module__group {
+  @include layout.micro-label;
+}
+
+.module__track {
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+.module__fill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+.module__draw {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+}
+
+// A line whose group the plant does not feed. The canvas hatches its length at
+// 135 degrees, which is what tells it from a lit one for a reader who cannot
+// tell amber from red; the group is named on the line as well, because a state
+// carried by a pattern alone is a state carried by nothing a reader can name.
+.module--offline {
+  .module__fill {
+    background-color: transparent;
+    background-image: var(--edsb-surface-overheat);
+  }
+
+  .module__group {
+    color: var(--edsb-text-danger);
+  }
+}
+
+// Canvas 1c lays the heat block out as the bars beside their tiles, and stacks
+// the two at every width that cannot hold both.
+.heat {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+@include layout.container-medium-up(power) {
+  // One box split down the middle: the bars and the caption that belongs to them
+  // on one side, the four tiles on the other, and the key across the foot of
+  // both. Every position is stated, because leaving the tiles to auto-placement
+  // puts them under the bars rather than beside them the moment anything in the
+  // first column takes two rows.
+  .heat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: var(--edsb-space-region);
+    row-gap: var(--edsb-space-stack);
+  }
+
+  .heat__profile {
+    grid-area: 1 / 1;
+  }
+
+  .power__facts {
+    grid-area: 1 / 2;
+  }
+
+  .heat__legend {
+    grid-area: 2 / 1 / auto / -1;
+  }
+}
+
+// The bars and the caption under them share one set of columns, so every track
+// starts and ends on the same two lines and the caption sits under the threshold
+// drawn through all of them. Rows that each sized their own tracks let a
+// three-digit gauge pull its own track narrower than the one above it, and left
+// the caption measured against the whole block rather than against the track it
+// names.
+.heat__profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
+}
+
+.heat__bars {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  row-gap: var(--edsb-space-stack-tight);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heat__bar {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+.heat__name {
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+.heat__track {
+  position: relative;
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+.heat__within,
+.heat__over {
+  position: absolute;
+  inset-block: 0;
+  display: block;
+}
+
+.heat__within {
+  inset-inline-start: 0;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// The part of the bar past the threshold. The canvas hatches it; the hatch is
+// what tells the two fills apart for a reader who cannot tell amber from red,
+// and the key beside them names both in words as well.
+.heat__over {
+  background-image: var(--edsb-surface-overheat);
+}
+
+// The line the whole block is measured against, drawn through every bar.
+.heat__threshold {
+  position: absolute;
+  inset-block: calc(var(--edsb-border-width-hairline) * -2);
+  display: block;
+  inline-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-text-muted);
+}
+
+.heat__level {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+.heat__bar--over .heat__level {
+  color: var(--edsb-text-danger);
+}
+
+// The caption under the line, set from the line rather than from the block, so
+// it stays under it whatever the track is scaled to.
+// In the track's own column of the profile grid, so the percentage it is offset
+// by is a percentage of the track rather than of the whole block.
+.heat__threshold-label {
+  @include layout.micro-label;
+
+  position: relative;
+  grid-column: 2;
+  margin: 0;
+  transform: translateX(-50%);
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+// The offset above is logical and the translation that centres the caption on
+// it is physical, so the two disagree the moment the page is mirrored: both
+// move the caption the same way and it ends up half a caption off the page.
+// Mirroring the translation is what CSS leaves to the stylesheet — there is no
+// logical form of it to write instead.
+:host-context([dir='rtl']) .heat__threshold-label {
+  transform: translateX(50%);
+}
+
+.heat__legend {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heat__key {
+  @include layout.micro-label;
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  align-items: center;
+}
+
+.heat__swatch {
+  display: block;
+  inline-size: var(--edsb-layout-power-bar);
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+.heat__swatch--over {
+  background-color: transparent;
+  background-image: var(--edsb-surface-overheat);
+}
+
+// The distributor table. Its own element rather than the shared data table,
+// because one of its cells is a control and the shared one takes formatted
+// strings — and the control is the point of the block.
+.table-scroller {
+  @include layout.bounded-scroller;
+}
+
+.distributor {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.distributor th,
+.distributor td {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-tight);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.distributor thead th {
+  @include layout.micro-label;
+}
+
+.distributor tbody th {
+  color: var(--edsb-text-accent);
+}
+
+.distributor__cell--numeric {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+}
+
+// The pip column takes what its four blocks need and no more: given the row's
+// spare width it would take it all, and the recharge beside it would be wrapping
+// two digits at a time while the blocks sat in a strip wider than the table's
+// figures put together.
+.distributor__pips {
+  inline-size: var(--edsb-border-width-hairline);
+}
+
+// Every figure in this table is short and none of them reads as two lines.
+.distributor__cell--numeric {
+  white-space: nowrap;
+}
+
+// The canvas's own colour per bank, on the bank's name and on its pip blocks.
+// It is decoration on top of the reading: the group is named with the allocation
+// it stands at, and the recharge beside it is the figure that matters.
+@mixin bank-colour($colour) {
+  .distributor__bank {
+    color: $colour;
+  }
+
+  .pips__fill {
+    background-color: $colour;
+  }
+
+  .pips__step:hover {
+    border-color: $colour;
+  }
+}
+
+[data-bank='systems'] {
+  @include bank-colour(var(--edsb-surface-bank-systems));
+}
+
+[data-bank='engines'] {
+  @include bank-colour(var(--edsb-surface-bank-engines));
+}
+
+[data-bank='weapons'] {
+  @include bank-colour(var(--edsb-surface-bank-weapons));
+}
+
+// Four blocks side by side, each of them the control for that many pips.
+.pips {
+  display: flex;
+  gap: var(--edsb-space-inline-tight);
+  inline-size: max-content;
+}
+
+// Each block stretches with the column, but never below the target baseline:
+// four of them at a phone's width would otherwise come out at 27px apiece. The
+// row they sit in scrolls inside the table's own scroller when the four no
+// longer fit, which is what that scroller is there for.
+.pips__step {
+  @include layout.target-baseline;
+
+  position: relative;
+  flex: 0 0 var(--edsb-target-size);
+  padding: 0;
+  background-color: var(--edsb-surface-inset);
+  border: var(--edsb-border-width-hairline) solid transparent;
+  cursor: pointer;
+}
+
+// Filled from the leading edge, so half a pip fills half a block.
+.pips__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: block;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// ---------------------------------------------------------------------------
+// The priority groups, as bars
+
+// The canvas's four columns: the group, its draw, the track the cumulative
+// share fills, and the share itself — or `OFFLINE` where the plant leaves the
+// group dark.
+// Four columns owned by the list rather than by each row: the group, its draw,
+// the bar, and the reading that closes it. `4.68 MW` and `18.72 MW` are
+// different widths, and rows that each sized their own tracks started their bars
+// in different places down one column of figures.
+.power__bands {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.power__band {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+.power__band-group {
+  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-heading));
+}
+
+.power__band-draw,
+.power__band-share {
+  font: var(--edsb-font-metric);
+  color: var(--edsb-text-numeric);
+  text-align: end;
+}
+
+// The word the canvas prints in place of a shed group's percentage. It is the
+// reading, not a colour: a reader who cannot tell amber from grey gets it here.
+.power__band-state {
+  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-heading));
+
+  text-align: end;
+}
+
+.power__band-track {
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+.power__band-fill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// A group the plant does not feed keeps its bar, hatched the way the canvas
+// hatches the shed length of its own: the length still says how much demand sits
+// there, and the hatch says the plant is not carrying it.
+.power__band--offline .power__band-fill {
+  background-color: transparent;
+  background-image: var(--edsb-surface-overheat);
+}

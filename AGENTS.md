@@ -138,9 +138,9 @@ planning ship loadouts.
     a late schematic does not resize the workspace. While it is on its way the
     plate carries the hull illustration's own loading mark.
   - The five-mode strip — `MOUNTS`, `POWER`, `DRIVES`, `DEFENCE`, `OFFENCE` — is
-    canvas 1c's, and is drawn whole at every width. Only `MOUNTS` exists; the
-    other four are the same plates read by features 005 to 008 and their
-    segments are disabled until those land. Canvas 1d's six-segment strip is a
+    canvas 1c's, and is drawn whole at every width. `MOUNTS` is this feature's
+    and `POWER` is feature 005's; the other three are the same plates read by
+    features 006 to 008 and their segments are disabled until those land. Canvas 1d's six-segment strip is a
     different control — it switches whole compact screens, the anatomy being one
     of them — and building it is feature 002's composition
     (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas
@@ -170,6 +170,59 @@ planning ship loadouts.
   - Out of scope, deliberately: geometry for internal, armour and cargo-hatch
     slots, weapon metrics, mount direction, convergence and any coordinate,
     offset or distance derived from the drawing.
+
+- **Power and thermals (feature 005)** is the anatomy region's `POWER` mode: it
+  retitles the region `POWER & THERMALS`, removes the plates, their side
+  selector and their legend exactly as the artboard's own switching script does,
+  draws its four-block dashboard in the space they leave, and adds one read-only
+  block to the outfitting status rail. Nothing is drawn on a mount. It owns no
+  game rule and computes no figure the package publishes.
+  `ShipLoadout.powerBudget()`, `.distributorMetrics()` and `.heatMetrics()` are
+  asked once each, in `src/app/domain/power-heat/power-heat.ts`, and both
+  screens read that one projection.
+  `scripts/policy/power-heat-ownership.mjs` keeps it that way: the Almanac is
+  reached only through `ships/ship-loadout`, `ships/power`, `ships/distributor`
+  and `ships/heat`; nothing outside the projection asks the package those three
+  questions; and no package figure is arithmetically combined anywhere the
+  projection is read.
+  - The capability owns two viewing conditions, both in memory only and neither
+    reaching the route, the fragment, history, storage, the saved build or the
+    export: the `DEPLOYED` / `RETRACTED` hardpoint state, and each capacitor's
+    whole `0`–`4` pips. There is no draft, no Apply, no Reset, no running total
+    across the three banks and no error state — the artboard draws none, and a
+    selection that takes effect immediately needs none. The pips shown are the
+    pips the package returned, not the ones that were pressed. Six pips is what
+    the ship has, so setting one bank moves the other two to pay for it, on the
+    half step: from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of the
+    others.
+  - **`headroom`, `utilisation` and `withinBudget` are not read at all.** Neither
+    canvas draws a headroom figure, a utilisation percentage or a within-budget
+    verdict, so the projection never takes them and nothing downstream can blank,
+    dash or zero one. The package's infinite utilisation on a plant of zero
+    therefore never has to be worded: such a build states a plant of `0.00 MW`
+    with the whole demand in `UNPOWERED`.
+  - Two package sentinels, each read off its own field and never inferred from
+    another: an `Infinity` heat level or gauge is a load that never settles, and
+    a `null` time to overheat is a scenario that never gets there. A `null`
+    distributor or heat result is one unavailable group, with no catalogue figure
+    and no diagnosis of which of the package's reasons it was in its place.
+  - Four readings the canvases draw and the package does not publish are worked
+    out once, in the projection, which is the only place the ownership policy
+    permits it: the powered/unpowered split of the draw, each group's share of
+    plant output, what a kind of module draws across its mounts, and the shield
+    cell bank's sixth heat bar — the last by the package's own documented remedy,
+    with its own `heatLevelAtTime` doing the running. `HEAT SINKS` is counted
+    from `fittedModules()`, because `heatMetrics()` models no sink at all.
+  - Groups this build puts nothing in are left out of `PRIORITY GROUPS`: an
+    empty row saying `0.00 MW` about a group that does not exist here is not a
+    reading of this build. Module lines state the selected state's own draw, so a
+    stowed hardpoint and a switched-off module each read a real zero and each
+    state's list adds up to that state's own package total.
+  - Out of scope, deliberately: the artboard's `data-anat-layer="power"` mount
+    overlay, which its own switching script never shows because it hides the
+    plate container for every mode but `mounts`; and its cruise, weapons-alpha
+    and WEP-net figures, which have no package result behind them
+    (`specs/005-power-and-heat/design/reference-review.md`, wave 13).
 
 ## Commit Identity — no personal data in git metadata
 

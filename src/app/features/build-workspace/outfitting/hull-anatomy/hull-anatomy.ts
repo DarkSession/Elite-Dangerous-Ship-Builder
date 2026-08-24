@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  signal,
   untracked,
 } from '@angular/core';
 import { AnatomyStore } from '../../../../application/anatomy/anatomy.store';
@@ -19,6 +20,7 @@ import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { AnnouncementService } from '../../../../ui/announcements/announcement.service';
 import { TabGroup } from '../../../../ui/components/tab-group/tab-group';
 import { HullSchematic, type HullSchematicView } from '../../../../ui/outfitting/hull-schematic';
+import { PowerThermals } from '../power-thermals/power-thermals';
 
 /**
  * The hull anatomy panel inside feature 001's `/build`.
@@ -32,15 +34,20 @@ import { HullSchematic, type HullSchematicView } from '../../../../ui/outfitting
  * (design/hull-anatomy.md, "Divergence from FR-008").
  *
  * The strip is drawn whole, with the five modes the canvas names and in its
- * order. Only `MOUNTS` has anything to draw: `POWER`, `DRIVES`, `DEFENCE` and
- * `OFFENCE` are the same plates read by features 005 to 008, and until those
- * land their segments are disabled rather than invented — a segment that opened
- * an empty panel would be this capability claiming a reading of the hull that
- * nothing has made (design/hull-anatomy.md, "The mode strip").
+ * order. `MOUNTS` is this capability's own; `POWER` is feature 005's, which
+ * retitles the region `POWER & THERMALS` and replaces the plates entirely — the
+ * canvas's switching script hides the plate container outside `mounts`, so the
+ * side selector and the legend go with them. `DRIVES`, `DEFENCE` and `OFFENCE`
+ * are the same plates read by features 006 to 008, and until those land their
+ * segments are disabled rather than invented — a segment that opened an empty
+ * panel would be this capability claiming a reading of the hull that nothing has
+ * made (design/hull-anatomy.md, "The mode strip";
+ * specs/005-power-and-heat/design/canvas-contract.md, "Where the capability
+ * lives").
  */
 @Component({
   selector: 'edsb-hull-anatomy',
-  imports: [HullSchematic, TabGroup],
+  imports: [HullSchematic, PowerThermals, TabGroup],
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,7 +64,25 @@ export class HullAnatomy {
   /** Monotonic across every side transition this session announces. */
   #transition = 0;
 
-  readonly heading = this.#messages.messageSignal('anatomy.heading');
+  /** The mode the strip has open. Nothing about it is persisted or routed. */
+  readonly #mode = signal<'mounts' | 'power'>('mounts');
+
+  readonly activeMode = this.#mode.asReadonly();
+
+  readonly isPower = computed(() => this.#mode() === 'power');
+
+  /**
+   * The region's own rule, which the mode renames.
+   *
+   * Canvas 1c's switching script carries a title per mode, and it carries only
+   * a title: a region whose plates changed what they mean while the rule above
+   * them still said `HULL ANATOMY` would be the one place a reader could not
+   * tell which layer they were looking at, and a line under it explaining the
+   * panel is not something the artboard draws.
+   */
+  readonly heading = computed(() =>
+    this.#messages.message(this.isPower() ? 'power.heading' : 'anatomy.heading'),
+  );
   readonly modeLabel = this.#messages.messageSignal('anatomy.mode.label');
   readonly sideLabel = this.#messages.messageSignal('anatomy.side.label');
   readonly legendLabel = this.#messages.messageSignal('anatomy.legend.label');
@@ -83,7 +108,7 @@ export class HullAnatomy {
     (
       [
         { id: 'mounts', key: 'anatomy.mode.mounts', enabled: true },
-        { id: 'power', key: 'anatomy.mode.power', enabled: false },
+        { id: 'power', key: 'anatomy.mode.power', enabled: true },
         { id: 'drives', key: 'anatomy.mode.drives', enabled: false },
         { id: 'defence', key: 'anatomy.mode.defence', enabled: false },
         { id: 'offence', key: 'anatomy.mode.offence', enabled: false },
@@ -94,9 +119,6 @@ export class HullAnatomy {
       disabled: !mode.enabled,
     })),
   );
-
-  /** The one mode this capability draws. Nothing can change it yet. */
-  readonly activeMode = 'mounts';
 
   /** The five entries canvas 1c draws, in the order it draws them. */
   readonly legend = computed(() => [
@@ -159,6 +181,18 @@ export class HullAnatomy {
         }
       });
     });
+  }
+
+  /**
+   * Opens one mode of the strip.
+   *
+   * Nothing about it touches the route, the fragment, history, storage or the
+   * active build: it is which layer of the same two plates is being read.
+   */
+  showMode(mode: string): void {
+    if (mode === 'mounts' || mode === 'power') {
+      this.#mode.set(mode);
+    }
   }
 
   /** Selects the mount's exact package slot key. Feature 002 owns what happens next. */

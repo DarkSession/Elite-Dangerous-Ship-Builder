@@ -1,18 +1,20 @@
 # Distributor Metrics Contract
 
+> **Rewritten 2026-08-24 (wave 13).** Feature 003's ruling C withdrew the shared
+> `ViewingConditions`, so there are no integer half-pips to halve and no shared
+> draft to settle. Feature 005 owns the allocation itself, in pips, and the
+> artboard's own four blocks are the control.
+
 ## Boundary
 
-Feature 003 owns settled pips as integer half-pips. For one captured revision
-pair, feature 005 divides each by two exactly once and calls:
+Feature 005 holds the allocation in `PowerConditionsStore` and calls:
 
 ```ts
-const options: DistributorOptions = {
-  systemsPips: conditions.pips.systems / 2,
-  enginesPips: conditions.pips.engines / 2,
-  weaponsPips: conditions.pips.weapons / 2,
-};
-
-const result = loadout.distributorMetrics(options);
+const result = loadout.distributorMetrics({
+  systemsPips: conditions.pips.systems,
+  enginesPips: conditions.pips.engines,
+  weaponsPips: conditions.pips.weapons,
+});
 ```
 
 Use `DistributorOptions` from
@@ -22,16 +24,22 @@ calls the standalone calculator or recharge scaler.
 
 ## Input ownership
 
-Feature 003 validates and settles one complete draft:
+The package takes any fraction from `0` to `4` per bank and asks for no total, so
+what it does not impose, the store does — because it is what happens in the ship:
 
-- integer half-pips `0..8` for SYS, ENG and WEP;
-- total exactly 12 half-pips;
-- default `4/4/4` half-pips (displayed as `2/2/2`);
-- one condition revision for one changed Apply;
-- no automatic redistribution.
+- `0`–`4` per bank on a half-pip step, six between the three;
+- the opening allocation is an even `2 · 2 · 2`, which favours no bank. The
+  artboard draws a different allocation in each canvas — `2 · 1 · 3` on 1c and
+  `3 · 1 · 2` on 1d — so neither is _the_ opening state, and both come to six;
+- setting one bank moves the other two to pay for it: from `2 · 2 · 2`, three in
+  `SYS` leaves `1.5` in each of the others. The remainder is split in the
+  evenly between them, and each lands on a half pip;
+- pressing the block a bank already stands on steps it back one, which is the only
+  way down to none through four blocks that each name a count.
 
-Feature 005 accepts only settled state. It does not validate a second tuple or
-persist pips.
+There is no draft, no Apply, no Reset, no running total, no validation and no
+error state: every change takes effect immediately, and every allocation the
+control can reach is one the package answers for. Nothing is persisted.
 
 ## Ready mapping
 
@@ -66,29 +74,32 @@ A returned zero capacity or recharge is genuine ready data.
 
 ## UI intent
 
-Feature 005 reuses feature 003's
-`editViewingConditions | applyViewingConditions | resetViewingConditions`
-intents. Invalid draft Apply retains the previous settled result and revision.
-No condition enters persistence, history, URL, link or SLEF.
+One intent: set a bank to a pip count. The store moves the other two and the
+package decides what that does to a recharge. No condition enters persistence,
+history, URL, a build link or SLEF.
 
 ## Accessibility and localization
 
-- The shared controls expose capacitor names, draft values, six-pip total,
-  errors and Apply/Reset relationships with shared semantic controls and
-  target-size tokens.
-- Capacitor groups expose capacity, rated recharge, actual recharge and
-  returned pips as labelled text at every size.
+- Each bank's four blocks form one named group carrying the allocation the bank
+  stands at in words, so the reading is there for anyone who cannot see four
+  rectangles; each block names its bank and the count it asks for.
+- Every block meets the shared target-size token at every width, and the figures
+  keep their columns beside them: the blocks take the space they need and no more.
+- The table's rows and columns expose capacity, rated recharge, returned pips and
+  recharge rate as labelled text at every size. The block's heading names it once;
+  the table adds no caption repeating it.
 - MJ, MJ/s and pip values use active-locale formatters.
 - Zero and unavailable have distinct visual and programmatic meaning.
-- One accepted change receives one coalesced polite announcement; unchanged
-  values are not repeated.
+- Nothing here is announced: the control reports its own state and the figures it
+  changes are on screen beside it.
 
 ## Required verification
 
-- Exact SYS/ENG/WEP equality at zero, half and whole displayed pip values.
-- Integer half-pips divide by two only at the package boundary.
+- Exact SYS/ENG/WEP equality at zero, half and whole pip values.
+- The three banks always come to six, however the halving fell, and no bank ever
+  leaves `0`–`4`.
+- The pips shown are the pips the result carries, not the ones pressed.
+- Capacity and rated recharge never move with an allocation.
 - Zero-pip recharge remains numeric zero.
 - Every package null renders unavailable without catalogue values or inferred
-  cause.
-- Invalid draft values never call the package or advance conditions revision.
-- Rapid revision changes never publish stale returned pips or capacitor values.
+  cause, and power, heat and the conditions stay usable beside it.

@@ -3,9 +3,10 @@
 ## Scope
 
 This capability presents power generation and draw, priority shedding, distributor capacitors and
-the heat scenarios returned by the Almanac. Module power edits belong to
-[002](../002-module-outfitting/spec.md); viewing conditions belong to
-[003](../003-ship-statistics/spec.md).
+the heat scenarios returned by the Almanac, together with the hardpoint state and pip allocation
+those results are read under. Module power edits belong to
+[002](../002-module-outfitting/spec.md). Feature 003's wave 11 ruling C moved the hardpoint and pip
+conditions here, because the design draws them inside this capability and nowhere else.
 
 ## User Scenarios
 
@@ -33,17 +34,26 @@ the heat scenarios returned by the Almanac. Module power edits belong to
 - **FR-001**: Every numeric value and calculation MUST come from
   `@elite-dangerous-almanac/core` without local recomputation.
 - **FR-002**: Power MUST use `ShipLoadout.powerBudget()` for plant capacity, the selected hardpoint
-  state's total draw, its per-band draw, cumulative draw and powered state. Package `headroom`, `utilisation` and `withinBudget` MUST appear only for deployed hardpoints,
-  whose state those fields describe; the application MUST NOT derive retracted equivalents.
+  state's total draw, and the per-group draw, cumulative draw and powered state of every priority
+  group this build puts something in. A group nothing is assigned to MUST NOT be drawn. Package
+  `headroom`, `utilisation` and `withinBudget` MUST NOT be shown in either state: neither canvas
+  draws any of the three (design wins, wave 13).
 - **FR-003**: The power budget MUST show only one hardpoint state at a time, default to deployed and
-  allow the Commander to switch between deployed and retracted.
+  allow the Commander to switch between deployed and retracted. This capability owns that selection;
+  it is in memory only and reaches no route, history, storage, saved build or export.
 - **FR-004**: Disabled modules MUST remain visible and contribute exactly as the package reports.
 - **FR-005**: A per-module breakdown MUST use package-resolved post-engineering draw and MAY sort by
   contribution.
-- **FR-006**: Each module entry MUST show slot, enabled state, priority and deployed-only state and
-  MUST reach that slot in one interaction.
+- **FR-006**: The module list MUST state each line's draw in the selected state, so a stowed
+  hardpoint and a switched-off module each read a real zero and each state's list adds up to that
+  state's own package total. A line standing for more than one mount MUST carry its count, a line
+  the plant leaves dark MUST name its group, and a switched-off line MUST say so. The list carries
+  no action: feature 002's ledger is where a mount is selected (design wins, wave 13).
 - **FR-007**: Distributor values MUST use `ShipLoadout.distributorMetrics()` for capacity, rated
   recharge, pip-scaled recharge and the allocation used. The application MUST NOT scale recharge.
+  This capability owns the allocation: each of SYS, ENG and WEP takes a whole `0`–`4` pips, chosen
+  in place with no draft, running total or confirmation step, and the pips shown are the pips the
+  package returns.
 - **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
 - **FR-009**: Heat MUST use `ShipLoadout.heatMetrics()` and show the five returned scenarios, their
@@ -52,6 +62,16 @@ the heat scenarios returned by the Almanac. Module power edits belong to
   result.
 - **FR-011**: Infinity MUST be expressed by its package meaning, such as never settling or never
   overheating, rather than as an unexplained number.
+- **FR-012**: **Withdrawn (wave 13).** The artboard's own switching script hides the plate container
+  for every mode but `mounts`, so the `POWER` mode replaces the plates rather than annotating them
+  and no mount carries a power state.
+- **FR-013**: The build status rail MUST carry one sentence per priority group the package reports
+  unpowered with the hardpoints deployed, each naming its group and its own deployed draw; the
+  canvas's `POWER` line carrying the lit draw against plant output, with its unpowered remainder
+  named after it only where something is dark; and the canvas's bar under it, drawing those same
+  figures over the whole demand with a mark where the plant runs out. Each MUST name only fields the
+  package returned, no severity word MUST stand beside a sentence, no heat sentence MUST be drawn
+  here, and none of it MUST be interactive.
 
 ## Edge Cases
 
@@ -67,10 +87,17 @@ here. The application only formats, orders and links returned data.
 
 ## Current Almanac Limit
 
-`powerBudget()` supplies retracted draw and per-band powered state, but its `headroom`, `utilisation`
-and `withinBudget` fields describe deployed hardpoints only. Retracted presentation therefore omits
-those three summaries. Showing retracted equivalents would require new package results; the
-application MUST NOT calculate them.
+`powerBudget()`'s `headroom`, `utilisation` and `withinBudget` fields describe deployed hardpoints
+only, and the package publishes no retracted equivalent. The limit no longer reaches the screen:
+neither canvas draws any of the three, so none is read in either state and none has to be blanked,
+dashed or explained. The application MUST NOT calculate a retracted equivalent, and MUST NOT
+reintroduce the deployed ones without the design drawing them.
+
+`heatMetrics()` publishes five scenarios and states outright that a shield cell bank's heat is not
+one of them, because a bank states heat per _activation_. The canvases draw a sixth bar for it, and
+the package's own documented remedy — divide by the bank's spin-up, add it to the build's load, run
+it for that duration with `heatLevelAtTime` — is what draws it. `heatMetrics()` also models no heat
+sink, so the canvases' `HEAT SINKS` tile is counted from `fittedModules()` rather than derived.
 
 ## Success Criteria
 
@@ -79,3 +106,5 @@ application MUST NOT calculate them.
   shedding without leaving the capability.
 - **SC-003**: Every package result reported as unavailable is presented as unavailable, with no
   catalogue figure or inferred cause in its place.
+- **SC-004**: Every figure and state this capability contributes to the status rail equals the
+  corresponding Almanac field for the same active build, read with the hardpoints deployed.

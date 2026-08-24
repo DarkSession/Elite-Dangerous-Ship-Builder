@@ -128,19 +128,36 @@ test.describe('hull detail', () => {
   // hull being asked for, and holding the old picture up until the new one
   // decodes shows the wrong ship.
   test('shows the loader alone while an illustration is on its way', async ({ page }) => {
-    await page.route('**/assets/ships/**', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    // The picture is held until this test lets it go, rather than for a fixed
+    // stretch: a stretch has to be guessed long enough to outlast the slowest
+    // start-up, and whatever is guessed the picture can still arrive before the
+    // state it hides has been read. Held this way the state lasts exactly as
+    // long as the reading takes. Only the illustration is held, because only
+    // the illustration is what the plate is waiting for.
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/assets/ships/**/illustration.png', async (route) => {
+      await held;
       await route.continue();
     });
     // `commit` rather than the default: waiting for load would wait for the
     // very request being held, and the state under test would be over.
     await page.goto(ANACONDA, { waitUntil: 'commit' });
 
+    // Committing gets the document, not the running application, so this first
+    // reading also waits out the start-up. It can afford to: the picture is
+    // held until the line below lets it go, so the loader cannot slip away
+    // while the wait is on.
     const image = page.locator('.artwork__image');
-    await expect(page.locator('.artwork__loader')).toBeVisible();
+    await expect(page.locator('.artwork__loader')).toBeVisible({ timeout: 15_000 });
     await expect(image).toBeHidden();
 
-    await page.unroute('**/assets/ships/**');
+    // Letting go here, rather than dropping the interception: taking the
+    // pattern away releases the request that is still being held, and the hold
+    // then finishes onto a route the run has already dealt with.
+    release();
     await expect(image).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('.artwork__loader')).toHaveCount(0);
   });

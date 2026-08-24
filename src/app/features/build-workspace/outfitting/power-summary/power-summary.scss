@@ -1,0 +1,96 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c's power block in the 306 px rail, and the same block in canvas 1d's
+// Status mode. The sentence takes the three-pixel marker and quiet tinted ground
+// feature 003's issue list established, in the one tier the canvas draws for it:
+// hot, for a group the plant cannot keep lit. There is no second tier here — the
+// canvas prints one sentence in this block and no other.
+:host {
+  display: block;
+}
+
+// The rail draws one ground with no side padding of its own, so each group it
+// stacks carries its own inset — the same one feature 003's issue group above
+// and the cost block below take. Without it the sentence's tinted band, the
+// figures and the bar all run into both seams.
+.block {
+  padding: var(--edsb-space-panel);
+}
+
+.statements {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statement {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
+  background-color: var(--edsb-surface-danger-quiet);
+  color: var(--edsb-text-danger);
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+// The label at one end of the block and the figures at the other, which is how
+// the canvas sets them: two facts separated by the rail's own width rather than
+// by punctuation. It wraps before either truncates.
+.rail-power {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  margin: 0;
+  margin-block-start: var(--edsb-space-stack);
+  justify-content: space-between;
+}
+
+.rail-power__label {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+}
+
+.rail-power__figures {
+  @include layout.metric-value(var(--edsb-text-size-body));
+}
+
+// The canvas's bar under the figures: what the plant keeps lit, the rest of the
+// demand hatched on from where that ends, and the mark where the plant's own
+// output falls. Each length is set from the projection, so a build the plant
+// covers draws one fill and a mark at the end of the track.
+.rail-bar {
+  position: relative;
+  display: block;
+  block-size: var(--edsb-layout-power-bar);
+  margin-block-start: var(--edsb-space-stack-tight);
+  background-color: var(--edsb-surface-inset);
+  overflow: hidden;
+}
+
+.rail-bar__powered,
+.rail-bar__unpowered,
+.rail-bar__plant {
+  position: absolute;
+  inset-block: 0;
+  display: block;
+}
+
+.rail-bar__powered {
+  inset-inline-start: 0;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// Hatched rather than only reddened, so the two lengths are told apart by their
+// pattern as well as their hue.
+.rail-bar__unpowered {
+  background-image: var(--edsb-surface-overheat);
+}
+
+// Drawn just inside its own position rather than starting at it, so the mark
+// for a plant that covers the whole demand lands at the end of the track
+// instead of three pixels past it. A logical margin, so it holds mirrored.
+.rail-bar__plant {
+  inline-size: var(--edsb-border-width-marker);
+  margin-inline-start: calc(var(--edsb-border-width-marker) * -1);
+  background-color: var(--edsb-text-numeric);
+}

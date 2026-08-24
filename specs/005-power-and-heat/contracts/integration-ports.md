@@ -1,137 +1,74 @@
 # Integration Ports Contract
 
-Feature 005 owns the power semantics consumed by features 003, 007 and 010.
-These ports expose owner projections, not alternate calculation APIs.
+> **Rewritten 2026-08-23 (wave 12).** Feature 003's ruling B withdrew `StatusProvider<T, I>`, the
+> provider envelope and the `powerAndHeat` detail target, and its ruling C withdrew
+> `ViewingConditions` and the shared revision context these ports were written against. Feature 003
+> composes nothing and receives nothing. See [reference-review.md](../design/reference-review.md),
+> wave 12.
+>
+> **Rewritten again 2026-08-24 (wave 13).** The artboard's own switching script hides the plate
+> container outside `mounts`, so there is no mount power overlay to feed: `POWER` replaces the
+> plates rather than annotating them. `mountPowerState` and `MountPowerState` are withdrawn with it.
+> See [reference-review.md](../design/reference-review.md), wave 13.
 
-## Shared revision context
+Feature 005 owns every power, distributor and heat semantic in the application. One other feature
+draws something from that ownership, and it receives no service: it reads the same pure projection
+this feature exports, exactly as feature 009's rail block reads its own.
 
-Both ports consume feature 003's exact context:
+## What is exported
 
 ```ts
-interface StatusRevisionContext {
-  readonly loadout: ShipLoadout;
-  readonly buildRevision: number;
-  readonly conditions: ViewingConditions;
-  readonly conditionsRevision: number;
+// src/app/domain/power-heat/power-heat.ts
+export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditions): PowerAndHeat;
+
+export interface PowerConditions {
+  readonly hardpoints: 'deployed' | 'retracted';
+  /** Whole pips per bank, 0–4 each, as the artboard draws them. */
+  readonly pips: DistributorPipAllocation;
 }
 ```
 
-Every ready result repeats the same revision pair. Consumers reject stale or
-mismatched results rather than relabel them.
+`projectPowerHeat` is pure and synchronous. It calls `powerBudget()` once, `distributorMetrics()`
+once and `heatMetrics()` once, and returns one frozen result. There is no store, no cache, no
+revision key and no lifecycle: the loadout is already in memory, and the signal graph memoises the
+call for the surfaces that read it.
 
-## Feature 003 PowerStatusProvider
+## Feature 010 — the mode, and nothing on the plates
 
-```ts
-interface PowerStatusProjection {
-  readonly hardpointState: 'deployed' | 'retracted';
-  readonly available: number;
-  readonly selectedDraw: number;
-}
+Feature 010 owns the plates, their side selector, their legend and the five-segment mode strip.
+Feature 005 enables one of those segments, and takes the space the plates occupy:
 
-interface PowerStatusProvider extends StatusProvider<PowerStatusProjection, never> {}
-```
+- selecting `POWER` retitles the region `POWER & THERMALS` and removes the plate container, the side
+  selector and the legend, exactly as the artboard's switching script does — it sets
+  `[data-anat-plates]` to `display: none` for every mode but `mounts`;
+- `edsb-power-thermals` is drawn in the space they leave;
+- leaving the mode restores the mounts layer as it was, side selection included.
 
-The adapter:
+Nothing is drawn on a mount. There is no overlay, no per-mount priority mark and no observation of
+any kind: the groups are read in `PRIORITY GROUPS` and the mounts in `DRAW BY MODULE`, both inside
+the panel. Feature 010 joins no consumer to a band and reads no power field.
 
-1. calls/selects feature 005's power projection for the exact context;
-2. returns selected state, exact `budget.available` and the exact selected package draw;
-3. stamps `buildRevision` and `conditionsRevision`;
-4. always returns
-   `detailTarget: { kind: 'detail', capability: 'powerAndHeat' }`;
-5. returns an empty `qualifiedSummaryIds`, because every figure `powerBudget()` returns is exact.
+## Feature 003 — the status rail
 
-Zero capacity/draw remains an exact numeric summary. Retracted selection does
-not create or require deployed-only summary fields. Feature 003 copies this
-value unchanged.
+Feature 003 owns the rail's heading and its validation issues, and nothing else in it. Feature 005's
+three contributions are its own components mounted into that rail, reading `projectPowerHeat`
+directly. Feature 003 passes nothing to them and receives nothing from them.
 
-An unexpected package/projection exception is allowed to propagate to feature
-003's `projectionFailed` boundary. Package unavailable heat/distributor states
-do not affect this power provider.
+The rail's blocks and their order are recorded in
+[`specs/003-ship-statistics/design/status-rail.md`](../../003-ship-statistics/design/status-rail.md).
 
-## Features 007 and 010 MountPowerObservationPort
+## Feature 007 — the deployed distributor
 
-```ts
-interface MountPowerObservationRead {
-  readonly buildRevision: number;
-  readonly conditionsRevision: number;
-  readonly slotKey: string;
-  readonly deploymentState: 'deployed' | 'retracted';
-  readonly observation: MountPowerObservation;
-}
+Feature 007's weapon endurance uses `weaponsCapacitorMetrics()`, which applies the deployed power
+budget itself. It needs nothing from this feature; the former deployed-distributor observation was
+a consequence of the withdrawn shared-context design and is not built.
 
-interface MountPowerObservationPort {
-  observe(
-    context: StatusRevisionContext,
-    slotKey: string,
-    deploymentState: 'deployed' | 'retracted',
-  ): MountPowerObservationRead;
-}
-```
+## Verification
 
-`slotKey` is any exact package slot key. Feature 010 observes hardpoint and
-utility mounts and passes `context.conditions.hardpoints` as `deploymentState`;
-feature 007 observes the power distributor's core slot and always passes
-`deployed`, independently of the selected viewing state. The read repeats the
-requested `deploymentState` so consumers can reject a mismatched observation.
-
-The adapter uses the owner-private revision-keyed observation index projected
-from the same `PowerBudget` call as the detail view. That index retains the exact
-`PowerBudget.consumers` label and both verdicts from its matching returned band:
-
-- current revision projection still pending, so its index is not ready →
-  `unavailable`;
-- ready index with no consumer for the exact key → `notApplicable`;
-- disabled → `disabled`;
-- requested retracted plus package `deployedOnly: true` →
-  `inactiveRetracted`;
-- otherwise the matching requested package band becomes `powered` or `shed`.
-
-A failed current projection propagates its revision/projection failure rather
-than being relabelled `unavailable`; malformed package identities or missing
-bands therefore never enter this union.
-
-Priority is the package-normalized one-based value.
-
-Consumers own their own subject matter and pass an exact package slot key.
-Feature 010 owns empty/fitted/engineering state and geometry; feature 007 owns
-capacitor endurance. Neither reads raw `On`, `Priority`, modifiers or bands, and
-neither infers a power cause from a capacitor or distributor value.
-
-## Identity rules
-
-- Consumer `label` is the returned game slot identity and is preserved.
-- Consumer `symbol` remains the returned package module identity.
-- No array index, module name, symbol prefix, display string or SVG annotation
-  becomes a power identity.
-- Missing `ShipLoadout` labels/symbols are package regressions and cause
-  projection failure; no local target is inferred.
-
-## Dependency direction
-
-- Feature 005 imports feature 003 provider/context contracts through type-only
-  domain leaves.
-- Feature 003's final provider bundle imports only feature 005's exported
-  `PowerStatusProjection`/provider type, not components or internal
-  projectors.
-- Features 007 and 010 import only `MountPowerObservationPort` and observation
-  types.
-- Feature 007 additionally imports feature 002's type-only `HardpointCoverage`
-  leaf; feature 002 owns and derives that value.
-- Runtime instances are supplied through application composition/injection so
-  no domain module forms a runtime circular dependency.
-
-## Required verification
-
-- Both ports receive and return the identical revision pair.
-- Status selected draw and capacity exactly equal the detailed power projection.
-- Exact hardpoint, utility and core-internal slot keys reach their corresponding
-  consumer observations.
-- A fixture whose matching band has different `poweredDeployed` and
-  `poweredRetracted` verdicts proves the explicit requested state selects the
-  correct boolean and is repeated on the read.
-- Pending-index unavailable, missing consumer, disabled, inactive, powered and
-  shed states remain distinct; a failed projection propagates instead of
-  becoming unavailable.
-- Feature 003, 007 and 010 tests prove they do not recalculate or reinterpret
-  power; feature 007 specifically proves a selected retracted context still
-  requests and receives the deployed distributor verdict.
+- Selecting `POWER` leaves no plate, side selector or legend in the document, and leaving it
+  restores all three unchanged.
+- The dashboard and the rail read one `projectPowerHeat` result and agree for the same build; a band
+  whose `poweredDeployed` and `poweredRetracted` differ reads its own verdict in each state.
+- No consumer of the export calls `powerBudget`, `distributorMetrics` or `heatMetrics`, and only
+  `src/app/domain/power-heat` combines package figures arithmetically, which
+  `scripts/policy/power-heat-ownership.mjs` enforces by path.

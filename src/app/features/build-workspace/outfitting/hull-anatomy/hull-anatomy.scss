@@ -34,6 +34,15 @@
   justify-content: space-between;
 }
 
+// The rule and, in the power mode, the subtitle canvas 1d sets under it. A
+// block of its own so the strip beside it stays aligned to the pair rather than
+// to whichever of the two lines happens to be taller.
+.anatomy__title {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
 .anatomy__heading {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
@@ -162,4 +171,10 @@
   block-size: var(--edsb-layout-icon-size);
   flex: none;
   object-fit: contain;
+}
+
+// Feature 005's dashboard, under the plates and inside the same padded block.
+.anatomy__dashboard {
+  display: block;
+  min-inline-size: 0;
 }

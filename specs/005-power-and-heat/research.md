@@ -1,5 +1,12 @@
 # Research: Power and Heat
 
+> **Amended 2026-08-24 (wave 13).** Three of the conclusions below were overturned by the artboard
+> itself: the deployed-only summaries are drawn nowhere and are no longer read; the revision
+> architecture and its consumer ports are withdrawn along with the store and the mount overlay; and
+> the shield cell bank, resting/peak heat and heat sinks the design draws are stated from package
+> results rather than refused. Each is marked in place. See
+> [design/reference-review.md](./design/reference-review.md), waves 12 and 13.
+
 ## Package boundary and leaf imports
 
 **Decision**: Consume and characterize the installed
@@ -29,12 +36,16 @@ broad `ships` barrel was rejected by the constitution's leaf-import rule.
 | deployed       | `budget.deployed`  | `band.deployed`  | `band.deployedTotal`  | `band.poweredDeployed`  |
 | retracted      | `budget.retracted` | `band.retracted` | `band.retractedTotal` | `band.poweredRetracted` |
 
-Always copy `available`. Show `headroom`, `utilisation` and
-`withinBudget` only for deployed.
+Always copy `available`.
 
-**Rationale**: Those three summary fields describe deployed hardpoints. The
-package exposes no retracted equivalents, while all five bands expose both
-states.
+**Overturned in wave 13**: `headroom`, `utilisation` and `withinBudget` are not read in either
+state. Neither canvas draws a headroom figure, a utilisation percentage or a within-budget verdict,
+so the question of a retracted equivalent never arises — and the package's infinite utilisation on a
+plant of zero never has to be worded. What the canvas draws instead, and what is now selected, is
+each group's share of plant output and the powered/unpowered split of the draw.
+
+**Rationale**: Those three summary fields describe deployed hardpoints, and the package exposes no
+retracted equivalents, while every band exposes both states.
 
 **Alternatives considered**: Showing both states simultaneously conflicts with
 FR-003. Subtracting or dividing to create retracted summaries conflicts with
@@ -42,9 +53,9 @@ FR-001/FR-002 and the current Almanac limit.
 
 ## Exact power figures
 
-**Decision**: Present every `powerBudget()` figure — capacity, selected draw, band draw and
-cumulative draw, headroom, utilisation, `withinBudget` and the band powered states — as the exact
-package value, with no bound, projection or qualification attached.
+**Decision**: Present every `powerBudget()` figure it draws — capacity, selected draw, each group's
+own and cumulative draw and each group's powered state — as the exact package value, with no bound,
+projection or qualification attached.
 
 **Rationale**: Every consumer the package returns carries a resolved draw, so each total answers for
 the whole build. A badge qualifying an exact figure would misdescribe it.
@@ -126,55 +137,44 @@ manifest or diagnosing package null locally were rejected because both contradic
 
 **Decision**: A ready `heatMetrics()` result copies plant efficiency, hull
 heat capacity/dissipation and exactly these five scenarios in order:
-`idle`, `thrusters`, `fsdCharging`, `firingSustained`,
-`firingDrained`. Each preserves `thermalLoad`, `heatLevel`, `gauge`,
+`idle`, `thrusters`, `fsdCharging`, `firingDrained`,
+`firingSustained`. Each preserves `thermalLoad`, `heatLevel`, `gauge`,
 `overheats` and `secondsToOverheat`. Package null is unavailable; a ready profile is a complete
 answer for the build.
 
 Convert only sentinel meaning for presentation:
 
 - infinite heat level or gauge → does not settle;
-- null seconds to overheat → never overheats;
-- infinite deployed utilisation → draw with zero available plant output.
+- null seconds to overheat → never overheats.
 
 **Rationale**: The build facade already applies plant efficiency, powered
 priority bands, thruster/FSD heat, sustained weapon heat and capacitor state.
 Heat accepts no viewing-condition options. A no-weapons build still returns all
 five scenarios.
 
-**Alternatives considered**: Peaks, shield-cell, heat-sink or alpha summaries
-from `.design`; clamping infinity; generic “N/A”; JSON cloning; or hiding
-equal scenarios were rejected.
+**Overturned in wave 13** for three of them: the canvases draw `RESTING HEAT` (the `idle` gauge),
+`PEAK SUSTAINED` (the hottest bar drawn beside it), `HEAT SINKS` (counted from `fittedModules()`,
+because `heatMetrics()` models no sink) and a sixth `Shield cell bank` bar the package's own
+documented remedy assembles from published figures. Each has a source; each is drawn.
+
+**Alternatives considered**: Alpha and WEP-net summaries from `.design`, which have no package
+result behind them; clamping infinity; generic “N/A”; JSON cloning; or hiding equal scenarios were
+rejected.
 
 ## Revision architecture and consumer ports
 
-**Decision**: Build a pure projection from feature 003's
-`StatusRevisionContext`, then expose:
+**Withdrawn in waves 12 and 13.** Feature 003's ruling B removed the provider envelope and its
+revision context; wave 13 removed the mount overlay and with it the observation index and port. What
+is left is one pure synchronous function over a loadout that is already in memory, memoized by the
+signal graph — no store, no cache, no revision key, no lifecycle and no failure state. Package
+`null` remains data rather than an error.
 
-1. a detailed `PowerHeatSnapshot`;
-2. `PowerStatusProvider` with selected draw and capacity for feature 003; and
-3. a feature-005-owned generalized `MountPowerObservationPort` that accepts any
-   exact package slot key plus an explicit deployed/retracted observation state
-   and selects the matching returned consumer/band fields. Feature 010 requests
-   its selected viewing state for hardpoints/utilities; feature 007 always
-   requests deployed for the distributor core slot.
+**Rationale**: The three package calls are synchronous and the loadout is already resolved, so
+nothing here has a lifecycle to stamp. One projection read directly by the two surfaces that draw it
+cannot go out of step with itself.
 
-Use computed signals/memoization keyed by build and condition revision. Outer
-detail lifecycle is `noBuild | pending | ready | failure`; distributor/heat
-unavailability remains data inside a ready snapshot. The same single
-`powerBudget()` result also produces an owner-private exact-slot observation
-index retaining both band verdicts; the public snapshot keeps only its selected
-view, while both consumer adapters read the private index without a second
-package call.
-
-**Rationale**: This keeps calculations render-free, prevents mixed revisions
-and gives cross-feature consumers owner-authored power semantics. Feature 003
-requires a synchronous revision-stamped provider; features 007 and 010 must not
-reconstruct power applicability, priority or shedding.
-
-**Alternatives considered**: Component calls, independently settled unversioned
-stores, a second loadout, persisted metric caches or duplicated feature
-003/007/010 calculations were rejected.
+**Alternatives considered**: The revision-stamped store, the status provider and the observation
+port above, each rejected once the surfaces that needed them were withdrawn.
 
 ## Design, responsive, accessibility and localization
 
@@ -185,10 +185,13 @@ supplements to semantic text. All owned strings and sentinel phrases use
 messages; numbers/units use active-locale formatters; module/slot text uses
 Almanac localization with disclosed canonical fallback.
 
-**Rationale**: The reference contains useful adjacency and dark-theme direction
-but only desktop/mobile samples, hard-coded English/literals, tiny div controls,
-hover meanings, four power groups, incomplete mobile data and unsupported heat
-content.
+**Overturned in wave 13**: the canvases are the template, not a source of "hierarchy" to adapt.
+Their blocks, their order and their contents are what is built; what is not copied is their sample
+data, their hard-coded English and their dead markup — the `data-anat-layer="power"` overlay their
+own switching script never shows.
+
+**Rationale**: The reference carries the dark-theme direction, the block structure and the readings
+each block states. Its sample numbers are a screenshot of one build, not a game-data contract.
 
 **Alternatives considered**: Copying the HTML/CSS, truncating mobile content,
 color-only bars, remote fonts/assets, page overflow, a feature-local theme or
@@ -196,8 +199,8 @@ private game translations were rejected.
 
 ## Verification
 
-**Decision**: Unit-test exact package field equality, every sentinel union,
-revision matching and both integration ports. Add Playwright journeys for all three stories in feature 011's
+**Decision**: Unit-test exact package field equality and every sentinel union. Add Playwright
+journeys for all three stories in feature 011's
 ten-project matrix with automated axe checks and manual screen-reader/zoom
 protocols.
 

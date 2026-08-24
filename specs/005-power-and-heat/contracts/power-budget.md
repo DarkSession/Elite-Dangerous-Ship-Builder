@@ -1,14 +1,19 @@
 # Power Budget Contract
 
+> **Rewritten 2026-08-24 (wave 13).** The observation index and the mount overlay
+> it fed are withdrawn: the artboard's switching script hides the plates outside
+> `mounts`, so nothing is drawn on a mount. Headroom, utilisation and
+> within-budget are withdrawn with them — neither canvas prints any of the three,
+> so the projection does not read them. What the canvas does draw, and this now
+> states, is the powered/unpowered split of the draw and each group's share of
+> plant output.
+
 ## Boundary
 
-For one captured build revision, the feature 005 projector calls
-`ShipLoadout.powerBudget()` once and retains that immutable result while
-selecting the settled hardpoint state and building an owner-private
-revision-keyed observation index that retains both powered verdicts for every
-exact consumer slot. Components and features 003, 007 and 010 do not call the
-package or reconstruct a second budget; both mount-power consumers use the
-owner observation port.
+The feature 005 projector calls `ShipLoadout.powerBudget()` once per read and
+selects from that one immutable result. Components do not call the package or
+reconstruct a second budget. There is no store, no cache and no revision key: the
+call is synchronous and the signal graph memoizes it.
 
 Production imports:
 
@@ -26,89 +31,101 @@ boundary.
 
 ## Selected-state mapping
 
-| View field      | Deployed               | Retracted               |
-| --------------- | ---------------------- | ----------------------- |
-| total draw      | `budget.deployed`      | `budget.retracted`      |
-| band draw       | `band.deployed`        | `band.retracted`        |
-| cumulative draw | `band.deployedTotal`   | `band.retractedTotal`   |
-| powered state   | `band.poweredDeployed` | `band.poweredRetracted` |
-| headroom        | `budget.headroom`      | omitted                 |
-| utilisation     | `budget.utilisation`   | omitted                 |
-| within budget   | `budget.withinBudget`  | omitted                 |
+| View field      | Deployed                                                                 | Retracted               |
+| --------------- | ------------------------------------------------------------------------ | ----------------------- |
+| total draw      | `budget.deployed`                                                        | `budget.retracted`      |
+| band draw       | `band.deployed`                                                          | `band.retracted`        |
+| cumulative draw | `band.deployedTotal`                                                     | `band.retractedTotal`   |
+| powered state   | `band.poweredDeployed`                                                   | `band.poweredRetracted` |
+| module draw     | `consumer.draw`, or a real `0` where the mount is stowed or switched off |
 
-`budget.available` is always the exact plant capacity returned by the
-package. No sum, subtraction, division, clamp or alternate verdict is permitted
-in the projector.
+`budget.available` is always the exact plant capacity returned by the package.
+
+`budget.headroom`, `budget.utilisation` and `budget.withinBudget` are not read at
+all. Neither canvas draws a headroom figure, a utilisation percentage or a
+within-budget verdict, so nothing downstream can print, blank, dash or zero one —
+and the package's infinite utilisation on a plant of zero never has to be worded.
+
+Three readings the canvas draws are not package fields, and
+`scripts/policy/power-heat-ownership.mjs` permits them only inside
+`src/app/domain/power-heat`:
+
+| Reading           | Rule                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| `unpowered`       | The selected state's draw of every group the plant does not keep lit |
+| `poweredDraw`     | The selected total less `unpowered`                                  |
+| `cumulativeShare` | A group's cumulative draw over plant output; `null` with no output   |
+
+No other sum, subtraction, division, clamp or alternate verdict is permitted.
 
 ## Exactness
 
-Every consumer the package returns carries a resolved draw, so selected, band and cumulative values,
-the deployed summary fields, and the powered and within-budget verdicts are all exact. The
-application attaches no bound, projection or qualification to any of them.
+Every consumer the package returns carries a resolved draw, so the selected total, each group's own
+and cumulative draw and each group's powered verdict are all exact. The application attaches no
+bound, projection or qualification to any of them.
 
 ## No or unavailable plant output
 
 The power result remains present when the package returns zero capacity. Draw,
-bands and consumers remain visible. Infinite utilisation receives the
-field-specific text “draw with zero available plant output”; it does not claim
-whether the plant is absent, disabled or unresolved. If draw and capacity are
-both zero, package utilisation remains numeric zero.
+groups and consumers remain visible. A plant of zero has no share to state rather
+than an infinite one, so a group's `cumulativeShare` is `null` and its percentage
+column is not drawn. Nothing claims whether the plant is absent, disabled or
+unresolved. What such a build states is a plant of `0.00 MW` with the whole demand
+in `UNPOWERED`.
 
 ## Module collection
 
 `budget.consumers` is the sole per-module source:
 
-1. require the exact returned `label` and `symbol` from the
-   `ShipLoadout` facade contract;
-2. preserve one row per returned consumer and its source ordinal;
-3. show exact draw, enabled, normalized one-based priority and deployed-only;
-4. optionally sort by draw descending with source ordinal as the tie break;
-5. retain disabled consumers;
+1. take the exact returned `label`, `symbol`, `draw`, `enabled`, `priority` and
+   `deployedOnly`, and nothing else;
+2. draw the mounts carrying the same symbol in the same group and the same
+   enabled state as one line with the canvas's `x2` count — a consumer with no
+   symbol stands alone under its own ordinal, because two unnamed mounts are not
+   known to be the same thing;
+3. state each line's draw _in the selected state_, so a stowed hardpoint and a
+   switched-off module each read a real `0.00` and every state's list adds up to
+   that state's own package total;
+4. sort by draw descending with source ordinal as the tie break;
+5. retain disabled consumers, marked as such;
 6. never add passive or zero-draw fittings omitted by the package;
-7. never merge identical module symbols or names;
-8. emit `openSlot` with the exact returned label.
+7. carry no action: the list is a reading, and feature 002's ledger is where a
+   mount is selected.
 
 Raw journal modifiers, effective-stat joins, symbol/slot parsing, aggregate
 differences and positional indices are prohibited inputs.
 
 ## UI intents
 
-```ts
-type PowerBudgetIntent =
-  | { readonly kind: 'editViewingConditions' }
-  | { readonly kind: 'applyViewingConditions' }
-  | { readonly kind: 'resetViewingConditions' }
-  | { readonly kind: 'openSlot'; readonly slotKey: string };
-```
-
-Viewing intents delegate to feature 003. Slot intent delegates to feature 002.
-None mutates the loadout directly or enters edit history.
+One intent: read the build with the hardpoints out, or stowed. It changes no
+build, spends no revision, is not persisted, and reaches neither history nor a
+URL, a build link or SLEF.
 
 ## Accessibility and localization
 
-- The shared condition group exposes visible localized hardpoint state, pip
-  drafts, errors and Apply/Reset state.
-- Capacity and selected draw form a semantic definition group.
-- All five bands use a semantic table where it fits and equivalent labelled
-  cards when stacked.
-- Every numeric/bar relationship has nearby text. Powered, shed, disabled and
-  deployed-only do not depend on color, pattern or position.
-- Every slot action's visible and accessible name distinguishes module and
-  exact slot and uses the shared target-size token.
-- MW/percentages use active-locale formatters. Application text uses messages;
-  module/slot text uses Almanac localization and canonical fallback disclosure.
+- The hardpoint control names both of its states in words and reports which is
+  selected; it stands on its own line under the block's heading, where the canvas
+  puts it.
+- `PLANT OUTPUT`, `POWERED DRAW` and `UNPOWERED` form a semantic definition group.
+- Every group is a labelled row carrying its own draw and either its cumulative
+  share or the canvas's `OFFLINE`; every bar is decoration with the figures beside
+  it as its text equivalent.
+- Powered, shed, disabled and stowed never depend on colour, pattern or position:
+  each is worded on the line it belongs to.
+- MW and percentages use active-locale formatters. Application text uses messages;
+  module text uses Almanac localization with canonical-fallback disclosure.
 
 ## Required verification
 
-- Exact field equality for both states and all five bands.
-- No retracted headroom, utilisation or within-budget field.
-- Disabled consumers stay visible and contribute exactly as the package reports.
-- No/zero plant output preserves exact numbers and semantic infinity.
-- Every consumer row and action preserves original package identities.
-- The selected view and owner-private observation index come from one identical
-  `PowerBudget` object; opposite-state observations cause no second package
-  call.
-- Feature 007's deployed distributor and feature 010's selected-state mount
-  reads both resolve from that index, including a divergent-band fixture.
-- Missing label/symbol, unexpected exception and stale revision publish failure,
-  never partial/stale figures.
+- Exact field equality for both states, and for every group the build uses.
+- One row per group this build puts something in, in ascending order; a group with
+  no consumer is left out rather than drawn empty.
+- No headroom, utilisation or within-budget field is read or published at all.
+- A disabled consumer keeps its line and reads the nothing it draws; a stowed
+  hardpoint reads a real zero while retracted.
+- Each state's module lines add up to that state's own package total.
+- No/zero plant output preserves exact numbers with no infinity to word.
+- A band whose `poweredDeployed` and `poweredRetracted` differ reads its own
+  verdict in each state.
+- Every consumer row preserves the package's own identities: no match by index,
+  by name, by symbol prefix or by display string.

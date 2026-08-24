@@ -1,0 +1,58 @@
+@if (shown()) {
+  <!--
+    The rail insets its own groups: the rail band itself carries no side
+    padding, so a block that drew straight onto it would run its sentence, its
+    figures and its bar into both seams. This is the same inset feature 003's
+    issue group and the cost block on either side of it take.
+  -->
+  <div class="block">
+    <!--
+      The sentence first, as the canvas stacks it under feature 003's issues, and
+      then the `POWER` line. A build with a plant that covers everything draws
+      only the line: silence about a group says strictly less than an all-clear
+      would, and that is what it has to say.
+    -->
+    @if (statements().length > 0) {
+      <ul class="statements">
+        @for (statement of statements(); track statement.id) {
+          <li class="statement">{{ statement.text }}</li>
+        }
+      </ul>
+    }
+
+    <!--
+      Canvas 1c's `POWER` block: the label, the figures, and the bar of the same
+      figures again — what is lit, what is not, and where the plant runs out.
+    -->
+    <p class="rail-power">
+      <span class="rail-power__label" [id]="powerLabelId">{{ powerLabel() }}</span>
+      <span class="rail-power__figures" data-bidi-isolate>{{ figures() }}</span>
+    </p>
+
+    @if (bar(); as bar) {
+      <!--
+        The bar carries no reading of its own: it is the line above it drawn out.
+        It is labelled all the same, because a bar with no name is a shape a
+        reader is left to guess at.
+      -->
+      <span class="rail-bar" role="img" [attr.aria-label]="bar.label">
+        <span
+          class="rail-bar__powered"
+          aria-hidden="true"
+          [style.inline-size.%]="bar.powered * 100"
+        ></span>
+        <span
+          class="rail-bar__unpowered"
+          aria-hidden="true"
+          [style.inset-inline-start.%]="bar.powered * 100"
+          [style.inline-size.%]="bar.unpowered * 100"
+        ></span>
+        <span
+          class="rail-bar__plant"
+          aria-hidden="true"
+          [style.inset-inline-start.%]="bar.plant * 100"
+        ></span>
+      </span>
+    }
+  </div>
+}

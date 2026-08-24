@@ -27,6 +27,7 @@ import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-ca
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
 import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
+import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { HullAnatomy } from '../hull-anatomy/hull-anatomy';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
@@ -58,6 +59,7 @@ type Category = 'all' | SlotKind;
   imports: [
     BuildStatus,
     CostMaterials,
+    PowerSummary,
     EditRefusalNotice,
     HullAnatomy,
     EngineeringEditor,
