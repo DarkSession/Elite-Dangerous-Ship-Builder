@@ -69,6 +69,7 @@ describe('the export layer’s host', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     });
   }

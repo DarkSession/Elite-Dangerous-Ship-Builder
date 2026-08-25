@@ -67,6 +67,7 @@ function commit(active: ActiveBuildStore): void {
     provenance: 'working',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
 }

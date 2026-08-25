@@ -43,6 +43,7 @@ function commitAnaconda(active: ActiveBuildStore, hull = 'Anaconda'): void {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
 }
@@ -257,7 +258,7 @@ describe('the link payload allowlist', () => {
     expect([...FIELDS_EXCLUDED_FROM_LINKS]).toEqual([
       'hullName',
       'provenance',
-      'workingRecordId',
+      'autosaveRecordId',
       'sourceNamed',
       'baselineFingerprint',
       'dirty',
@@ -280,7 +281,7 @@ describe('the link payload allowlist', () => {
     await publisher.publish();
     const published = active.link();
 
-    active.setWorkingRecordId('record-42');
+    active.setAutosaveRecordId('record-42');
     active.markSaved({ recordId: 'record-42', baseRevisionId: 'revision-7' });
     active.setPersistence('saved');
     await publisher.publish();

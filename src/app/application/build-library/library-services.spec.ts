@@ -93,6 +93,7 @@ function seedWorkingRecords(storage: MemoryStorage, count: number): void {
           modules: [],
         },
         sourceNamed: null,
+        autosaveRecordId: null,
       }),
     );
   }
@@ -229,7 +230,7 @@ describe('RecordOpenService', () => {
     expect(active.dirty()).toBe(false);
   });
 
-  it('opens a working record as unsaved work', async () => {
+  it('takes an unnamed record over, clean, rather than copying it', async () => {
     const { open, active } = setup((storage) =>
       storage.setItem(recordKey(FIXTURE_IDS.working), WORKING_RECORD_V1),
     );
@@ -237,7 +238,24 @@ describe('RecordOpenService', () => {
     await open.open(FIXTURE_IDS.working);
 
     expect(active.provenance()).toBe('working');
-    expect(active.dirty()).toBe(true);
+    // The page autosaves into the record it opened rather than a copy beside
+    // it, and it arrives clean: nothing is owed, so nothing is written, so the
+    // seven days the entry is counting down do not restart (FR-008, FR-013).
+    expect(active.autosaveRecordId()).toBe(FIXTURE_IDS.working);
+    expect(active.dirty()).toBe(false);
+  });
+
+  it('holds a named record without making it an autosave target', async () => {
+    const { open, active } = setup((storage) =>
+      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
+    );
+
+    await open.open(FIXTURE_IDS.named);
+
+    // Autosave has no path to a named record. The first modelled edit forks an
+    // unnamed one, and the save stays exactly where its Commander put it
+    // (FR-008, ruled 2026-08-25).
+    expect(active.autosaveRecordId()).toBeNull();
   });
 
   it('cannot replace active work with a record that fails to open', async () => {
@@ -341,6 +359,7 @@ describe('RecordDuplicationService', () => {
       validation: { valid: true, complete: true },
       build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
       sourceNamed: null,
+      autosaveRecordId: null,
     };
 
     expect(duplication.copy(source, 'Saved at last', NOW).ok).toBe(true);

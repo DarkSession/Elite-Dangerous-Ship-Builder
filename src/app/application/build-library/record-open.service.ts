@@ -23,9 +23,12 @@ import {
  * Commander loses nothing by trying to open something that turns out to be
  * unopenable (build-library design, "Operation rules").
  *
- * Opening never converts or mutates the source record. A named build opened
- * here is copied into this tab's working record; the named one stays exactly
- * as it was until an explicit save replaces it.
+ * Opening never converts or mutates the source record, and never writes to one.
+ * An unnamed record is taken over, because it is already what autosave writes
+ * to. A named one is only held: this page writes nothing to it, forks an
+ * unnamed record at the first modelled edit, and leaves the save exactly as it
+ * was until the Commander asks for it to be replaced (FR-008, ruled
+ * 2026-08-25).
  */
 @Injectable({ providedIn: 'root' })
 export class RecordOpenService {
@@ -68,13 +71,12 @@ export class RecordOpenService {
       return { ok: false, reason: refusalReason(ingress.failures) };
     }
 
-    // A named record is the baseline it was opened at, so it starts clean; a
-    // working record has no version a Commander could return to, so it starts
-    // dirty and is protected by the replacement question like any other
-    // unsaved build.
+    // Every opened record is the state it was stored at, so every one of them
+    // starts clean. A named record is clean because a save put it there; an
+    // unnamed one is clean because autosave did, and rewriting it on open would
+    // restart the seven days it is counting down (FR-013).
     const provenance: BuildProvenance = record.kind === 'named' ? 'named' : 'working';
-    const baseline =
-      record.kind === 'named' ? baselineFingerprint(toBuildSnapshotV1(rebuilt.loadout)) : null;
+    const baseline = baselineFingerprint(toBuildSnapshotV1(rebuilt.loadout));
 
     return {
       ok: true,
@@ -87,6 +89,10 @@ export class RecordOpenService {
           record.kind === 'named'
             ? { recordId: record.id, baseRevisionId: record.revisionId }
             : record.sourceNamed,
+        // An unnamed record is already an autosave target, so opening one takes
+        // it over. A named record is never one: this page holds it, writes
+        // nothing to it, and forks at the first modelled edit (FR-008).
+        autosaveRecordId: record.kind === 'working' ? record.id : null,
         baseline,
       },
     };

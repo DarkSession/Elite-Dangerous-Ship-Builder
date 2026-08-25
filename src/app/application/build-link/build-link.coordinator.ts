@@ -233,6 +233,7 @@ export class BuildLinkCoordinator {
         provenance: 'link',
         qualityNotices: ingress.notices,
         sourceNamed: null,
+        autosaveRecordId: null,
         // A link build is saved nowhere a Commander could get it back from, so
         // it arrives dirty and the next replacement asks before discarding it.
         baseline: null,

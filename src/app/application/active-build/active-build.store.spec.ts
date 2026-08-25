@@ -19,6 +19,7 @@ function candidate(overrides: Partial<BuildCandidate> = {}): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
     ...overrides,
   };
@@ -129,13 +130,13 @@ describe('ActiveBuildStore', () => {
 
     active.setPersistence('quota-full');
     active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
-    active.setWorkingRecordId('w1');
+    active.setAutosaveRecordId('w1');
 
     expect(active.state()).toMatchObject({
       loadout: incoming.loadout,
       persistence: 'quota-full',
       link: { kind: 'published', fragment: 'b.abc', revision: 1 },
-      workingRecordId: 'w1',
+      autosaveRecordId: 'w1',
     });
   });
 

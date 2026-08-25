@@ -30,6 +30,7 @@ describe('cost and materials surface', () => {
       provenance: 'stock',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

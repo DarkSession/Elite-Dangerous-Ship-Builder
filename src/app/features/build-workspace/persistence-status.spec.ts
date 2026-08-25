@@ -48,6 +48,7 @@ function render(status: Status) {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
   active.setPersistence(status);

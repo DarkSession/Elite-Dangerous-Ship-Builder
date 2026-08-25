@@ -34,7 +34,7 @@ export class ActiveBuildStore {
   readonly #hullName = signal<string | null>(null);
   readonly #revision = signal(0);
   readonly #provenance = signal<BuildProvenance>('none');
-  readonly #workingRecordId = signal<string | null>(null);
+  readonly #autosaveRecordId = signal<string | null>(null);
   readonly #sourceNamed = signal<NamedSource | null>(null);
   readonly #baseline = signal<string | null>(null);
   readonly #persistence = signal<PersistenceStatus>('ready');
@@ -46,7 +46,7 @@ export class ActiveBuildStore {
   /** The active hull's name in the Commander's language, as committed. */
   readonly hullName = this.#hullName.asReadonly();
   readonly provenance = this.#provenance.asReadonly();
-  readonly workingRecordId = this.#workingRecordId.asReadonly();
+  readonly autosaveRecordId = this.#autosaveRecordId.asReadonly();
   readonly sourceNamed = this.#sourceNamed.asReadonly();
   readonly baselineFingerprint = this.#baseline.asReadonly();
   readonly persistence = this.#persistence.asReadonly();
@@ -93,7 +93,7 @@ export class ActiveBuildStore {
     loadout: this.#loadout(),
     hullName: this.#hullName(),
     provenance: this.#provenance(),
-    workingRecordId: this.#workingRecordId(),
+    autosaveRecordId: this.#autosaveRecordId(),
     sourceNamed: this.#sourceNamed(),
     baselineFingerprint: this.#baseline(),
     dirty: this.dirty(),
@@ -112,6 +112,7 @@ export class ActiveBuildStore {
    */
   commit(candidate: BuildCandidate): void {
     this.#loadout.set(candidate.loadout);
+    this.#autosaveRecordId.set(candidate.autosaveRecordId);
     this.#hullName.set(candidate.hullName);
     this.#provenance.set(candidate.provenance);
     this.#sourceNamed.set(candidate.sourceNamed);
@@ -153,9 +154,15 @@ export class ActiveBuildStore {
     this.#revision.update((revision) => revision + 1);
   }
 
-  /** The tab-owned record autosave writes to. */
-  setWorkingRecordId(recordId: string | null): void {
-    this.#workingRecordId.set(recordId);
+  /**
+   * The unnamed record autosave writes to, or `null` while there is none.
+   *
+   * Null is an ordinary state rather than a missing one: a build opened from a
+   * named save has no record of its own until its first edit forks one, and
+   * autosave has no path to the named record it came from (FR-008).
+   */
+  setAutosaveRecordId(recordId: string | null): void {
+    this.#autosaveRecordId.set(recordId);
   }
 
   /**
@@ -199,6 +206,7 @@ export class ActiveBuildStore {
     this.#loadout.set(null);
     this.#hullName.set(null);
     this.#provenance.set('none');
+    this.#autosaveRecordId.set(null);
     this.#sourceNamed.set(null);
     this.#baseline.set(null);
     this.#notices.set([]);

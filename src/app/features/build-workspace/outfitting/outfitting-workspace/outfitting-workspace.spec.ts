@@ -27,6 +27,7 @@ function candidateFor(loadout: ShipLoadout): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   };
 }

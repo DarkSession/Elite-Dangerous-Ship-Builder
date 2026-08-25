@@ -48,7 +48,7 @@ function session(active: ActiveBuildStore, outfitting: OutfittingStore): string 
     revision: active.revision(),
     hullName: active.hullName(),
     provenance: active.provenance(),
-    workingRecordId: active.workingRecordId(),
+    workingRecordId: active.autosaveRecordId(),
     sourceNamed: active.sourceNamed(),
     baseline: active.baselineFingerprint(),
     dirty: active.dirty(),
@@ -82,9 +82,10 @@ describe('what an import that does not happen costs', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: { recordId: 'record-1', baseRevisionId: 'rev-1' },
+      autosaveRecordId: null,
       baseline: null,
     });
-    active.setWorkingRecordId('working-1');
+    active.setAutosaveRecordId('working-1');
     active.markSaved({ recordId: 'record-1', baseRevisionId: 'rev-1' });
     outfitting.select(FIXTURE_SLOTS.hardpoint);
     const choice = outfitting.candidateQuery()?.choices[0];
@@ -243,6 +244,7 @@ describe('what an import that does not happen costs', () => {
         provenance: 'stock',
         qualityNotices: [],
         sourceNamed: null,
+        autosaveRecordId: null,
         baseline: null,
       };
       store.setDraft(VALID);

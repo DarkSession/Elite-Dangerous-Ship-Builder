@@ -48,6 +48,7 @@ describe('OffenceSummary', () => {
       provenance: 'stock',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

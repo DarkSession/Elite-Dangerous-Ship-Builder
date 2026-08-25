@@ -102,6 +102,14 @@ export interface BuildCandidate {
   /** The named record this candidate came from, when it came from one. */
   readonly sourceNamed: NamedSource | null;
   /**
+   * The unnamed record this candidate already lives in, when it came from one.
+   *
+   * Only an unnamed record can be one: autosave has no path to a named record,
+   * so a build opened from a named save arrives with `null` here and forks its
+   * own record at the first modelled edit (FR-008).
+   */
+  readonly autosaveRecordId: string | null;
+  /**
    * The fingerprint this candidate is already saved against, or `null`.
    *
    * A candidate opened from a named record arrives clean; a freshly created
@@ -125,7 +133,7 @@ export interface ActiveBuildState {
   readonly loadout: ShipLoadout | null;
   readonly hullName: string | null;
   readonly provenance: BuildProvenance;
-  readonly workingRecordId: string | null;
+  readonly autosaveRecordId: string | null;
   readonly sourceNamed: NamedSource | null;
   readonly baselineFingerprint: string | null;
   readonly dirty: boolean;

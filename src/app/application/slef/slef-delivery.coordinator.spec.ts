@@ -85,6 +85,7 @@ describe('SLEF delivery', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     });
     TestBed.inject(SlefExportCoordinator).generate();

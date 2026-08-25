@@ -108,12 +108,19 @@ export class BuildWorkspacePage {
     // workspace contract states: this tab has to know which record is its own
     // before it can restore from it, and has to have restored before an
     // incoming link is treated as a replacement for something.
-    const workingRecordId = this.#ownership.claim();
+    const heldRecordId = this.#ownership.claim();
     this.#ownership.onFork(() => this.#autosave.adoptForkedRecord());
 
+    // A page with no record behind it has nothing to restore, which is the
+    // ordinary state of a fresh tab rather than a failure. Opening the record
+    // is what decides whether it becomes this page's autosave target: an
+    // unnamed one is taken over, a named one is only held (FR-008).
     const restored =
-      this.#active.loadout() === null ? this.#open.open(workingRecordId) : Promise.resolve(null);
+      this.#active.loadout() === null && heldRecordId !== null
+        ? this.#open.open(heldRecordId)
+        : Promise.resolve(null);
 
+    const stopTracking = this.#ownership.track();
     const stopOwnership = this.#ownership.listen();
     const stopAutosave = this.#autosave.start();
     const stopInvalidation = this.#invalidation.listen();
@@ -143,6 +150,7 @@ export class BuildWorkspacePage {
       // another screen cannot cost an edit.
       live = false;
       this.#autosave.flush();
+      stopTracking();
       stopOwnership();
       stopAutosave();
       stopInvalidation();
@@ -174,7 +182,7 @@ export class BuildWorkspacePage {
     // being silently recreated by the next autosave.
     effect(() => {
       const deleted = this.#invalidation.deleted();
-      const mine = this.#ownership.workingRecordId();
+      const mine = this.#ownership.autosaveRecordId();
       if (mine !== null && deleted.includes(mine)) {
         this.#autosave.pauseAfterExternalDelete();
         this.#invalidation.acknowledgeDeleted(mine);

@@ -25,6 +25,7 @@ function seedActive(active: ActiveBuildStore): void {
     provenance: 'working',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
 }
@@ -92,7 +93,7 @@ describe('the one path from a draft to an active build', () => {
       // Both belong to feature 001's sinks. Feature 004 committing either would
       // be the second replacement path the coordinator exists to prevent.
       expect(active.link()).toEqual({ kind: 'absent' });
-      expect(active.workingRecordId()).toBeNull();
+      expect(active.autosaveRecordId()).toBeNull();
     });
   });
 
@@ -226,6 +227,7 @@ describe('the one path from a draft to an active build', () => {
         provenance: 'stock' as const,
         qualityNotices: [],
         sourceNamed: null,
+        autosaveRecordId: null,
         baseline: null,
       };
       store.setDraft(VALID);

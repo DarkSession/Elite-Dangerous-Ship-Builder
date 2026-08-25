@@ -78,6 +78,7 @@ export class StockBuildCreator {
         // ingress gate has nothing to complete and nothing to report.
         qualityNotices: [],
         sourceNamed: null,
+        autosaveRecordId: null,
         // A build that exists only in this tab, with no copy anywhere: unsaved
         // by definition, so the next replacement asks before discarding it.
         baseline: null,

@@ -27,6 +27,7 @@ function candidateFor(loadout = defaultBuild()): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   };
 }

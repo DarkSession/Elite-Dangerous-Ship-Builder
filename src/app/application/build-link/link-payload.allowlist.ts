@@ -14,7 +14,7 @@ import type { ActiveBuildState } from '../active-build/active-build.models';
 export const FIELDS_EXCLUDED_FROM_LINKS = [
   'hullName',
   'provenance',
-  'workingRecordId',
+  'autosaveRecordId',
   'sourceNamed',
   'baselineFingerprint',
   'dirty',

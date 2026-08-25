@@ -138,6 +138,7 @@ export class SlefImportCoordinator {
         quality: completion.quality,
       })),
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

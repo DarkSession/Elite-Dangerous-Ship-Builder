@@ -67,6 +67,7 @@ function commitAnaconda(active: ActiveBuildStore): void {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
 }
