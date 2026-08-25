@@ -7,6 +7,15 @@ browser and share builds by URL. SLEF import and export are specified in
 [004](../004-slef/spec.md); build statistics are specified in
 [003](../003-ship-statistics/spec.md).
 
+## Clarifications
+
+### Session 2026-08-25
+
+- Q: When a Commander creates or loads a build whose modelled state is identical to an unnamed record
+  they already have, should the application reuse that record instead of storing a second copy of
+  it? → A: Reuse — an ingress whose modelled state matches an existing unnamed record takes that
+  record over instead of minting one.
+
 ## User Scenarios
 
 ### Story 1 — Create a stock build (P1)
@@ -65,11 +74,13 @@ browser and share builds by URL. SLEF import and export are specified in
   is available, creation MUST be unavailable; the application MUST NOT invent one.
 - **FR-008**: The active build MUST be recoverable from a stored record at all times, without being
   asked for and without a Commander action, and MUST be restored after reload. A build that has no
-  record yet MUST be autosaved to an unnamed record of its own from the moment it becomes active. A
-  build opened from an existing record MUST be autosaved to an unnamed record of its own from its
-  first modelled edit. Autosave MUST NEVER write to a named record. Creating, opening or loading
-  another build MUST NOT overwrite or discard the record of the build before it. Records MUST use
-  local identities independent of their display names.
+  record yet MUST be autosaved to an unnamed record of its own from the moment it becomes active,
+  unless its modelled state is identical to an unnamed record already stored, in which case it MUST
+  take that record over rather than store a second copy of it. A build opened from an existing record
+  MUST be autosaved to an unnamed record of its own from its first modelled edit. Autosave MUST NEVER
+  write to a named record. Creating, opening or loading another build MUST NOT overwrite or discard
+  the record of the build before it. Records MUST use local identities independent of their display
+  names.
 
   **Ruled 2026-08-25 (Commander request).** Autosave used to target one record per tab, which every
   new build wrote over — so the application had to ask before replacing work, and what stood behind
@@ -97,9 +108,9 @@ browser and share builds by URL. SLEF import and export are specified in
   and the validation state recorded at that time. A build MAY have one local note.
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
-- **FR-012**: Two live pages MUST NOT autosave to one record. Each page's autosave target is a
-  record it minted for itself; a page that finds another live page claiming that identity MUST fork
-  under a fresh one before either page next writes. Two pages MAY hold the same named record open,
+- **FR-012**: Two live pages MUST NOT autosave to one record. Each page's autosave target is an
+  unnamed record it minted or took over for itself; a page that finds another live page claiming that
+  identity MUST fork under a fresh one before either page next writes. Two pages MAY hold the same named record open,
   because neither autosaves into it; concurrent manual writes to one record MUST offer overwrite,
   keep both and cancel.
 - **FR-013**: Retention of unnamed records MUST have a finite documented limit and MUST NOT delete
@@ -141,6 +152,9 @@ browser and share builds by URL. SLEF import and export are specified in
   input and receive no application-owned compatibility behavior.
 - A build replaced in the workspace is not gone: it is the record it was being autosaved to, and the
   library still lists it.
+- Creating the same stock hull twice, or opening one link twice, leaves one record rather than two:
+  an ingress identical to an unnamed record already stored takes that record over. The FR-013 limit
+  therefore counts builds a Commander has, not actions they took.
 - Editing a build opened from a named record changes nothing in that record. The edits are an
   unnamed record of their own, listed as such, until the Commander saves them somewhere.
 - Opening a named build and not editing it writes nothing at all.
@@ -163,6 +177,7 @@ storage and the versioned URL codec; none calculates an Elite Dangerous value.
 - **SC-001**: Every hull fact and stock build matches the installed Almanac package.
 - **SC-002**: Stored and linked builds preserve every recognized modelled field, always reconstruct
   fixed mounts with package defaults, never allow one tab to silently overwrite another tab's work,
-  and lose no build a Commander has worked on except to an explicit, confirmed deletion.
+  and lose no build a Commander has worked on except to an explicit, confirmed deletion or to the
+  manual save that consumes it.
 - **SC-003**: Every published link reconstructs an equivalent build and remains decodable.
 - **SC-004**: No automatic request sends build data or contacts another origin.
