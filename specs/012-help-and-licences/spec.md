@@ -117,12 +117,14 @@ to the repository's `LICENSE` on GitHub.
   summary names Frontier for the game data and imagery. That is where a Commander now meets both,
   and it satisfies the standing feature 002 ruling of 2026-08-22 that the credit belongs to this
   feature, once per application.
-- **FR-009**: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
+- `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support
   route rather than help content. The modal offers no replacement destination and, since FR-003's
   repository-`LICENSE` link was withdrawn on the same day, no external navigation of any kind. The
   identifier is retained rather than reused so references elsewhere in this feature stay
-  resolvable.
+  resolvable. The id is unbolded here on purpose, following feature 003's convention: an unbolded id
+  is not declared, so the repository policy checker no longer requires coverage-ledger evidence for
+  a requirement that no longer exists.
 - **FR-010**: Help MUST describe accepted current behaviour only. Its accepted behaviour-topic set
   MUST contain exactly one answer for each of these seven topics: build-link privacy; absence of
   accounts, uploads and telemetry; persistence and storage clearing; offline assets; completed

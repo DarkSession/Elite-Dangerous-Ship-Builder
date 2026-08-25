@@ -110,7 +110,7 @@ capability or applicable surface is a release failure; representative sampling i
 | Outfitting workspace ledger                  | 002   | visible               | FR-002                 |
 | Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
 | Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
-| Incoming-build normalisation refusal         | 002   | visible               | FR-011                 |
+| Incoming-build normalisation refusal         | 002   | obscured, dismissible | FR-011                 |
 | Workspace quality-completion notice          | 002   | visible               | FR-011                 |
 | Status rail                                  | 003   | visible               | FR-002, FR-008         |
 | Import Build layer                           | 004   | obscured, dismissible | FR-011                 |
@@ -123,12 +123,20 @@ capability or applicable surface is a release failure; representative sampling i
 | Cost and Materials blocks                    | 009   | visible               | FR-002, FR-008         |
 | Hull Anatomy plates and mount facts          | 010   | visible               | FR-002, FR-008         |
 | Hull Anatomy side availability/defect state  | 010   | visible               | FR-011                 |
-| Application frame                            | 011   | owns the action       | FR-001                 |
+| Application frame                            | 011   | visible               | FR-001                 |
 | Global feedback/announcement host            | 011   | visible               | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
 owns the surface. The shared replacement confirmation is feature 001's overlay reused by feature
-004's import hosts, so it is owned by 001.
+004's import hosts, so it is owned by 001. The application frame's own row records `visible` like any
+other: it is the surface that draws the action, which the Owner column already says, and a third
+frame-entry value describing the same availability would be one the transcription could not carry.
+
+**Two rows corrected 2026-08-25**, by the two-way reconciliation rather than by reading: the
+incoming-build normalisation refusal is reported inside the layer the payload was pasted into, so
+the frame is obscured there and help is reached from the workspace once that layer is dismissed; and
+the application frame's own entry was written as `owns the action`, which is the Owner column's
+fact rather than this column's.
 
 **Rows removed 2026-08-25**, each because the surface does not exist in the shipped application and a
 ledger row for a surface nobody ships is drift in the other direction:
