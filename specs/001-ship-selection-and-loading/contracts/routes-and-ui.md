@@ -21,7 +21,7 @@ Required intent entry points:
 - catalogue: change search/facet/sort, open hull;
 - detail: back to catalogue, retry artwork, request stock creation;
 - workspace: save/name, share/copy, open library, retry persistence;
-- library: search, open, name/rename, duplicate, delete, resolve conflict, manage/discard, retry, close.
+- library: search, choose a record, open, name/rename, duplicate, delete, resolve conflict, manage/discard, retry, close. The reference commits from a footer, so choosing a row is its own intent and the footer's actions act on what was chosen (revised 2026-08-25).
 
 Stock creation, record open, link load and SLEF import all call the same ingress coordinator, which constructs a candidate first and commits exactly once. Candidate failure cannot mutate active state. Since 2026-08-25 the coordinator asks nothing before committing: every build it replaces is already recoverable from a record (FR-008, FR-009). A candidate with no record of its own mints one at commit; a candidate opened from a record writes nothing until the first edit forks one, so autosave never reaches a named record.
 
