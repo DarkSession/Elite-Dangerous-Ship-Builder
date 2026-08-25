@@ -1311,6 +1311,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'the recharge rate and both recovery durations are three separate readings',
+      'the allocation the power dashboard is set to is the allocation the recovery is read at',
       'a phase that never finishes is said in words, never drawn as a very large duration',
       'an unbounded effective pool is said in words, never clamped to a number',
       'recovery is refused on its own terms: a complete shield keeps its figures either way',

@@ -23,7 +23,7 @@ is read at is the one feature 005's dashboard already owns.
 
 | Requirement | Behaviour                                                                                                                                                                                                         |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One pure projection calls only the four `ShipLoadout` methods; every surface reads that one result at one revision.                                                                                               |
+| FR-001      | One pure projection makes the five `BuildMetrics` calls and the hull lookup, and nothing else; every surface reads that one result at one revision.                                                               |
 | FR-002      | The shield card presents the returned strength, role aggregates, base resistances and bare effective pools, and closes each row with the same pool read at the standing SYS allocation under a heading naming it. |
 | FR-003      | A refused shield states every package issue in order; missing, disabled and shed stay distinguishable by the reason given.                                                                                        |
 | FR-004      | Recovery keeps the regeneration rate, the regeneration time and the recovery time as three separate readings.                                                                                                     |

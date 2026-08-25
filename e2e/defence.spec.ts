@@ -11,7 +11,8 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
  * The unit suites already prove what the projection selects and what each
  * sentinel means. What only a browser can show is the rest: that the mode strip
  * actually opens the layer, that the allocation the power dashboard is read at
- * is the allocation these cards are read at, and that the whole panel survives a
+ * is the allocation the pip column and the recovery are read at — while the
+ * bare four columns beside them stand still — and that the whole panel survives a
  * phone, a doubled text size and a 400% zoom without losing a figure or
  * scrolling the document sideways.
  *
@@ -311,7 +312,7 @@ test.describe('reading the build', () => {
   });
 });
 
-test.describe('the allocation the cards are read at', () => {
+test.describe('the allocation the pip column and the recovery are read at', () => {
   test('moves the pip column alone, and leaves the bare shield where it is', async ({ page }) => {
     await openDefence(page);
     const heading = page.locator('edsb-defence-analysis .card--shield .damage thead th').last();
@@ -334,6 +335,12 @@ test.describe('the allocation the cards are read at', () => {
     // was read at, and it is the only thing on the table that follows the pips.
     expect(after.map((row) => row[3])).not.toEqual(before.map((row) => row[3]));
     expect(await heading.innerText()).not.toEqual(column);
+    // Named, not merely moved. The fourth block on systems is four pips, and
+    // the heading says so: a figure that follows the allocation is never drawn
+    // without the allocation it was read at (FR-002).
+    expect(caps(await heading.innerText())).toBe(
+      caps(englishMessages['defence.damage.column.megajoules-at-pips'].replace('{{pips}}', '4')),
+    );
     // The pool itself is not a function of the allocation, and the package says
     // so by returning the same strength.
     expect(digits(await pool(page, 'card--shield').innerText())).toBe(digits(strength));

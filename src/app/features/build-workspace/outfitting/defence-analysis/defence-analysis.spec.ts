@@ -116,7 +116,7 @@ describe('DefenceAnalysis', () => {
   });
 
   describe('the shield card', () => {
-    it('heads the pool with the package strength at the standing allocation', () => {
+    it('heads the pool with the package strength, which no allocation moves', () => {
       const build = fullyFittedBuild();
       const { component } = render(build);
       const expected = BuildMetrics.of(build).shieldMetricsResult().value!;
@@ -192,7 +192,42 @@ describe('DefenceAnalysis', () => {
       // column with it: repeating the bare pool under a heading naming an
       // allocation nobody read would be this application answering in the
       // package's place (FR-001, FR-002).
+      //
+      // The distributor is what the capacitor reading needs and the bare shield
+      // does not, so an unresolved one is the state where the two results
+      // actually diverge.
+      const bare = render(fullyFittedBuild()).component.shieldDamage();
       vi.spyOn(BuildMetrics.prototype, 'shieldCapacitorMetricsResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [
+          {
+            field: 'powerDistributor',
+            reason: 'unresolved',
+            message: 'The fitted power distributor could not be resolved.',
+          },
+        ],
+      });
+      const { component } = render(fullyFittedBuild());
+      const table = component.shieldDamage();
+
+      expect(table.pipColumn).toBeNull();
+      expect(table.rows.every((row) => row.poolAtPips === undefined)).toBe(true);
+      // The four bare columns are untouched, figure for figure: an unavailable
+      // capacitor is not a shield the package refused, and the table it sat
+      // beside stays exactly what it was.
+      expect(table.rows.map((row) => [row.resistance, row.pool])).toEqual(
+        bare.rows.map((row) => [row.resistance, row.pool]),
+      );
+      expect(table.rows).toHaveLength(4);
+    });
+
+    it('draws no table at all when the bare shield is refused, capacitor or no', () => {
+      // The other direction of the same rule, which the contract states and
+      // nothing proved: a shield the package declined is not answered with the
+      // capacitor's figures, even though that result stands. There is nothing
+      // for a fifth column to sit beside, so there is no column and no row.
+      vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult').mockReturnValue({
         value: null,
         complete: false,
         issues: [
@@ -206,12 +241,11 @@ describe('DefenceAnalysis', () => {
       const { component } = render(fullyFittedBuild());
       const table = component.shieldDamage();
 
+      expect(table.rows).toHaveLength(0);
       expect(table.pipColumn).toBeNull();
-      expect(table.rows.every((row) => row.poolAtPips === undefined)).toBe(true);
-      // The four bare columns are untouched: an unavailable capacitor is not a
-      // shield the package refused, and the table it sat beside stays whole.
-      expect(table.rows).toHaveLength(4);
-      expect(table.rows.every((row) => row.pool !== null)).toBe(true);
+      // And the refusal is stated in the package's own terms rather than drawn
+      // as an empty table nobody explained.
+      expect(component.shieldIssues().length).toBeGreaterThan(0);
     });
 
     it('pairs every damage type with the package resistance and both pools it returned', () => {

@@ -238,7 +238,19 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
       the one carried field that would be a defect if drawn — the resistances with the pips folded
       in, on a table whose `RESIST` column is a base value — so its exclusion is stated rather than
       left to inference
-- [x] T086 Prove the two results are independent, which the contract asserted and nothing verified:
-      a refused capacitor withdraws the fifth column and leaves the four bare ones whole, in
-      `defence-analysis.spec.ts`. Add the `afterEach` restore the seam needs, matching
-      `defence.spec.ts`, and extend the contract's own verification list to require it
+- [x] T086 Prove the two results are independent in both directions, which the contract asserted and
+      nothing verified: a refused capacitor withdraws the fifth column and leaves the four bare ones
+      whole figure for figure, and a refused bare shield draws no table for the capacitor to sit
+      beside. Both in `defence-analysis.spec.ts`, with the `afterEach` restore the `BuildMetrics`
+      seam needs, matching `src/app/domain/defence/defence.spec.ts`. Extend the contract's own
+      verification list to require both
+- [x] T087 Give the fifth column the fence the other four answers have, in
+      `scripts/policy/defence-ownership.mjs`: `shieldCapacitorMetricsResult(` joins `PACKAGE_CALLS`
+      so a second call site cannot appear, and `effectiveResistances`, `capacity` and `rechargeRate`
+      join `FIGURE_FIELDS` so arithmetic on the field T085 declared undrawable is caught by the
+      build rather than by a reading of the contract
+- [x] T088 Correct the two places the revision's own staleness survived in the suites: the unit
+      test named for a pool read "at the standing allocation", which no allocation moves, and
+      `e2e/defence.spec.ts`'s preamble and describe block, which still said the cards are read at
+      the allocation when only the pip column and the recovery are
+- [x] T089 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
