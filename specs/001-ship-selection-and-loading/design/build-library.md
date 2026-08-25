@@ -75,6 +75,10 @@ Two of these are more than visual. The absent search is a capability the referen
 - Naming an unnamed record writes the name onto that record: same identity, fresh revision, nothing
   left behind and nothing removed. Rename/duplicate preserve build and validation snapshot. Duplicate
   creates new record/revision IDs even when retaining the same display name.
+- Deleting the record the workspace is holding clears the workspace to its no-build state, and the
+  library stays open on the rest of the list. The current-record marker simply has nowhere to sit.
+  The same delete performed in another page leaves that page's build alone and pauses its autosave
+  instead (FR-012).
 - Two things remove a record and no third: a confirmed deletion, and the manual save that writes an
   unnamed record's build into the record it came from, which removes the unnamed one once that write
   has succeeded. A third removes one without a Commander pressing anything: the seven-day expiry of

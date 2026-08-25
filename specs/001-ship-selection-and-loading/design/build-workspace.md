@@ -18,18 +18,18 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 
 ## States
 
-| State                              | Required presentation and behavior                                                                             |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship.                         |
-| Unnamed stock/link build           | Title from the build's ship name, ident or hull, as the library titles it, set apart from a given name.        |
-| Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.          |
-| Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.  |
-| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                    |
-| Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                   |
-| Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance. |
-| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                |
-| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                    |
-| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.         |
+| State                              | Required presentation and behavior                                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship. Reached by deleting the record this page holds, and not treated as an error when it is. |
+| Unnamed stock/link build           | Title from the build's ship name, ident or hull, as the library titles it, set apart from a given name.                                                                        |
+| Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.                                                                          |
+| Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.                                                                  |
+| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                                                                                    |
+| Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                                                                                   |
+| Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance.                                                                 |
+| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                                                                                |
+| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                                                                                    |
+| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.                                                                         |
 
 ## URL lifecycle
 

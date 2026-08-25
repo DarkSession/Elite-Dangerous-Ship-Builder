@@ -21,6 +21,9 @@ browser and share builds by URL. SLEF import and export are specified in
 - Q: What should the library show as the title of an unnamed record? → A: The build's own ship name if
   it has one, else its ident, else the hull name — marked as not a name the Commander gave the
   record.
+- Q: What should happen when a Commander deletes the record the workspace is currently working in? →
+  A: The workspace clears to its no-build state. The record is gone and so is the build in it. A
+  deletion in another page keeps its existing behaviour.
 
 ## User Scenarios
 
@@ -106,7 +109,9 @@ browser and share builds by URL. SLEF import and export are specified in
 
 - **FR-009**: Duplicate names MUST be allowed after warning. Removing a record MUST require a
   confirmed deletion, the manual save that consumes it, or the expiry FR-013 defines, and nothing
-  else may remove one. A manual
+  else may remove one. Deleting the record this page is autosaving into MUST clear the active build
+  to the no-build state rather than leave it on screen with nowhere to write: the Commander asked for
+  that build to go, and the confirmation named it. A manual
   save MUST consume the unnamed record it saved from and MUST leave no copy of it behind: naming an
   unnamed record MUST name that same local identity, and writing the build into an existing record
   MUST delete the unnamed record afterwards. Saving a copy under another name MUST create a further
@@ -120,11 +125,16 @@ browser and share builds by URL. SLEF import and export are specified in
   distinguished from a name the Commander gave the record. A build MAY have one local note.
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
-- **FR-012**: Two live pages MUST NOT autosave to one record. Each page's autosave target is an
+- **FR-012**: A record deleted by another live page MUST NOT clear that page's active build. The
+  build MUST remain usable, autosave MUST pause, and resuming MUST be an explicit Commander action,
+  because nobody at this page decided anything.
+
+  Two live pages MUST NOT autosave to one record. Each page's autosave target is an
   unnamed record it minted or took over for itself; a page that finds another live page claiming that
   identity MUST fork under a fresh one before either page next writes. Two pages MAY hold the same named record open,
   because neither autosaves into it; concurrent manual writes to one record MUST offer overwrite,
   keep both and cancel.
+
 - **FR-013**: An unnamed record MUST expire seven days after it was last modified, and MUST then be
   removed. The seven days MUST run from last modification, so a build a Commander keeps working on
   never expires under them. Naming a record MUST stop the clock: a named record MUST NOT expire, and
@@ -200,6 +210,11 @@ browser and share builds by URL. SLEF import and export are specified in
   which naming becomes necessary.
 - An unnamed entry's title follows the build: renaming the ship retitles the entry, because the title
   is read from the build rather than written onto the record.
+- Deleting the record the workspace is working in clears the workspace. Deleting the same record from
+  another page does not: there the build stays, autosave pauses, and the Commander resumes it. The
+  difference is who decided, not what was deleted.
+- A cleared workspace is the ordinary no-build state, not an error. It explains how to select a hull,
+  open a save or paste a link, exactly as it does before a Commander has built anything.
 - Two unnamed entries may carry the same title, because two ships may share a name. Hull,
   last-modified time and remaining life still tell them apart, and neither is treated as a duplicate
   of the other.
