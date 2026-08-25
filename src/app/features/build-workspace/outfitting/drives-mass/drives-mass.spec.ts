@@ -316,9 +316,11 @@ describe('DrivesMass', () => {
     });
 
     it('qualifies each segment with what the canvas sets under its label', () => {
-      // The canvas's `ANACONDA · MILITARY GRADE`, `22 FITTED`, `TANK 32 T +
-      // RESERVE`. Every one is a package identity, count or capacity, drawn
-      // beside the mass rather than in place of it.
+      // The canvas's `ANACONDA · MILITARY GRADE`, `22 FITTED`, `TANK`. The
+      // first two are a package identity and a count of package rows; the
+      // third names which of the ship's two fuel stores this part of the mass
+      // is, and states no capacity at all — the revision of 2026-08-25 cut the
+      // `32 T + RESERVE` that once stood beside the word.
       const loadout = build();
       const { element, component } = render(loadout);
 
@@ -326,12 +328,24 @@ describe('DrivesMass', () => {
       expect(details).toHaveLength(3);
       expect(details[0]).toContain(HULL);
       expect(details[1]).toContain(formatters.integer(loadout.fittedModules().length));
-      // Both tanks at the canvas's own fuel precision: a Sidewinder's real
-      // 0.3 t reserve rounds to `0 t` at the mass bar's, and a fabricated zero
-      // over a real quantity is exactly what constitution IV forbids.
-      expect(details[2]).toContain(fuelTonnes(loadout.fuelCapacity.main));
-      expect(details[2]).toContain(fuelTonnes(loadout.fuelCapacity.reserve));
+      expect(details[2]).toBe('Tank');
       expect(component.massSegments().map((segment) => segment.detail)).toEqual(details);
+    });
+
+    it('states no tank capacity beside the fuel segment, and reads none', () => {
+      // `fuelCapacity` is a real package figure that no canvas draws any more,
+      // so this screen does not read it. The guard is the figures themselves:
+      // neither tank's capacity appears anywhere on the card, at the fuel
+      // precision the card would have printed it at. A Sidewinder's real 0.3 t
+      // reserve is the case that makes this worth asserting — it rounds to
+      // `0 t` at the mass bar's whole tonnes, so a capacity slipping back in
+      // could read as a fabricated zero over a real quantity.
+      const loadout = build();
+      const { element } = render(loadout);
+      const fuelRow = texts(card(element, 'thrusters'), '.drives__legend-detail')[2];
+
+      expect(fuelRow).not.toContain(fuelTonnes(loadout.fuelCapacity.main));
+      expect(fuelRow).not.toContain(fuelTonnes(loadout.fuelCapacity.reserve));
     });
 
     it('scales every part against the thrusters’ own maximum mass', () => {

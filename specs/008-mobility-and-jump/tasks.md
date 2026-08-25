@@ -477,7 +477,7 @@ Task: "Jump performance journey in e2e/mobility-and-jump.spec.ts"
 Canvas 1d was redrawn as canvas 1c's two cards, which is what this feature already builds from one
 DOM — so almost none of the revision reaches it. Two items do.
 
-- [ ] T070 Cut the fuel row's qualifier to the canvas's `TANK` and stop reading `fuelCapacity`
+- [x] T070 Cut the fuel row's qualifier to the canvas's `TANK` and stop reading `fuelCapacity`
       altogether: it is no longer drawn anywhere, and a package field no canvas draws is not read
       (`design/reference-review.md`, amendment of 2026-08-25). Withdraw
       `drives.thrusters.fuel.tanks` from both catalogues. The row's own figure is untouched — it is

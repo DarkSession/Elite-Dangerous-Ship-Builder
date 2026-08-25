@@ -14,8 +14,9 @@ DRIVE`; the five stacked components and the per-module mass list described below
 >    See [design/reference-review.md](./design/reference-review.md) and
 >    [design/mobility-and-jump-profile.md](./design/mobility-and-jump-profile.md).
 > 3. **Only what the canvas draws.** The two mass-curve multipliers, a Guardian booster's jump bonus,
->    `unladenMass` and `cargoCapacity` are real package figures neither canvas has, so none is read
->    or drawn. See FR-004 and FR-006 in [spec.md](./spec.md).
+>    `unladenMass`, `cargoCapacity` and — since the revision of 2026-08-25, which cut the fuel legend
+>    row's qualifier to the bare word `TANK` — `fuelCapacity` are real package figures neither canvas
+>    has, so none is read or drawn. See FR-004 and FR-006 in [spec.md](./spec.md).
 >
 > Where this document and those disagree, those decide.
 

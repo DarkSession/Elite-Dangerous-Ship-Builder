@@ -20,11 +20,11 @@ const MASS_DIGITS = 0;
 /**
  * Fuel to two, as the canvas sets every fuel figure — its `MAX FUEL 8.30 t`.
  *
- * The mass bar's own precision would not do here. A Sidewinder carries a 0.3 t
- * reserve, which whole tonnes print as `0 t`, and draws 0.6 t a jump, which
- * they print as `1 t`. Both are figures this application would have invented
- * over a real quantity the package stated exactly, which is what constitution
- * IV forbids.
+ * The mass bar's own precision would not do here. A Sidewinder draws 0.6 t a
+ * jump, which whole tonnes print as `1 t` — a figure this application would
+ * have invented over a real quantity the package stated exactly, which is what
+ * constitution IV forbids. Its 0.3 t reserve tank was the other example, until
+ * the canvas revision of 2026-08-25 took every tank capacity off this card.
  */
 const FUEL_DIGITS = 2;
 /**
@@ -308,7 +308,7 @@ export class DrivesMass {
     if (!view) {
       return [];
     }
-    const { mass, fuelCapacity, fittedModuleCount } = view.thrusters;
+    const { mass, fittedModuleCount } = view.thrusters;
 
     return [
       {
@@ -335,12 +335,14 @@ export class DrivesMass {
         id: 'fuel',
         tone: 'deep',
         label: this.#messages.message('drives.thrusters.fuel'),
-        // The canvas's `TANK 32 T + RESERVE`: which tank this figure is, since
-        // the reserve is carried too and is not in it.
-        detail: this.#messages.message('drives.thrusters.fuel.tanks', {
-          main: this.#fuelTonnes(fuelCapacity.main),
-          reserve: this.#fuelTonnes(fuelCapacity.reserve),
-        }),
+        // The canvas's `TANK`: which of the ship's two stores this part of the
+        // mass is. The revision of 2026-08-25 cut the capacities that stood
+        // beside the word, so `fuelCapacity` is no longer drawn anywhere and by
+        // this project's own rule is no longer read either. The figure at the
+        // row's end is untouched — it is the fuel part of the one
+        // `buildMass(load)` answer the whole legend comes from, never a tank
+        // capacity.
+        detail: this.#messages.message('drives.thrusters.fuel.tank'),
         value: mass ? this.#tonnes(mass.fuel) : null,
       },
     ];

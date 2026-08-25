@@ -189,13 +189,6 @@ export interface ThrusterLoadView {
    */
   readonly mass: BuildMass | null;
   /**
-   * Main and reserve tank capacities, in tonnes.
-   *
-   * The canvas's `TANK 32 T + RESERVE` beside the fuel segment, which is the
-   * only place either capacity appears on it.
-   */
-  readonly fuelCapacity: { readonly main: number; readonly reserve: number };
-  /**
    * Where this build sits on the thruster curve — the canvas's
    * `91% OF OPTIMAL MASS` — as a fraction of the curve's optimal mass, or
    * `null` where either figure is missing.
@@ -327,7 +320,6 @@ function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadV
     issues: (mobility?.complete === false ? mobility : capacitor)?.issues ?? EMPTY_ISSUES,
     curve,
     mass: mass ? Object.freeze({ ...mass }) : null,
-    fuelCapacity: Object.freeze({ ...loadout.fuelCapacity }),
     massCurvePosition: readCurvePosition(mobility?.complete ? mobility.value : null, curve),
   });
 }
