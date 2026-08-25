@@ -75,11 +75,13 @@
   text-transform: none;
 }
 
-// The elements are named in the selector because `.table th, .table td` above
-// is one class and one type, which outweighs a bare class. The `thead th` rule
-// below already carries its own compound selector and so was never defeated;
-// the body cells under it were, which left a declared numeric column drawn
-// aligned to its start with its own heading right-aligned above it.
+// The elements are named in the selector because the rule they have to beat
+// carries a type, and a bare class does not outweigh one class plus one type.
+// The `thead th` rule below re-applies the heading treatment on its own
+// compound selector and so was never defeated; the body cells under it were,
+// which left a declared numeric column drawn aligned to its start with its own
+// heading right-aligned above it. That explicit re-application is what a
+// component should do rather than rely on the scoping attribute's arithmetic.
 .table th.table__cell--numeric,
 .table td.table__cell--numeric {
   @include layout.metric-value(var(--edsb-text-size-body), var(--edsb-text-secondary));

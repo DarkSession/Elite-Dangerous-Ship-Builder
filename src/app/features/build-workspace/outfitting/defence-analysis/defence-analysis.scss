@@ -158,11 +158,16 @@
 // column sized to its own text puts `41%` hard against the track it was read
 // from, and the two then look like one reading.
 //
-// The element is named in the selector because the rule above it is `.damage
-// th, .damage td` — one class and one type, which outweighs a bare class and
-// left every figure in this table aligned to its start. A column of figures
-// that do not share a right edge cannot be compared down its length, which is
-// the whole reason the table sets them in tabular numerals.
+// The element is named in the selector because the rule it has to beat carries a
+// type: a bare class does not outweigh one class plus one type, so `text-align:
+// end` never applied and a column of figures had no shared edge to be read down.
+//
+// Count these with Angular's scoping attribute in mind, not from the source as
+// written: every compound selector is emitted with an `[_ngcontent-…]`, so
+// `.damage th.damage__cell--numeric` is (0,4,1) against `.damage thead th`'s (0,4,2). That extra
+// type is the only reason the headings keep their micro-label treatment here,
+// and it is why the shared table re-applies its own `thead th` rule explicitly
+// rather than trusting the arithmetic.
 .damage th.damage__cell--numeric,
 .damage td.damage__cell--numeric {
   @include layout.metric-value(var(--edsb-text-size-body));
@@ -228,8 +233,11 @@
   }
 
   // The element is named here for the same reason it is named on the rule that
-  // right-aligns these cells: that selector carries a type, and this one has to
-  // match it or the weakness figure loses the danger ink to the numeric colour.
+  // right-aligns these cells: without it a bare class loses the danger ink to
+  // that rule's numeric colour. Note this one only ties with it — both are
+  // (0,4,1) once scoped — and wins on being later in the file, so moving it
+  // above would quietly take the red away again. The e2e suite asserts the ink
+  // and the alignment together for that reason.
   th.damage__cell--numeric,
   td.damage__cell--numeric {
     color: var(--edsb-text-danger);

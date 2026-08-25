@@ -1346,6 +1346,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the four armour damage rows read in hull points rather than megajoules',
       'hardness, module protection and module armour are three facts and no fourth',
       'the hull card stays whole when the shield result is unavailable',
+      'every hull figure is set flush to the end of its own column',
     ],
     manualRecord: 'screen-reader',
   },

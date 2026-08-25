@@ -137,24 +137,39 @@ test.describe('component preview catalogue', () => {
           const style = getComputedStyle(node);
           const box = node.getBoundingClientRect();
           const rtl = style.direction === 'rtl';
-          // The cell's own trailing content edge, inside its padding. A
-          // figure flush to it is aligned to the end; one that is not, is
-          // not — which a comparison between sibling figures cannot tell,
-          // because equal-width figures share an edge whichever way the
-          // column is aligned.
+          // The cell's own trailing content edge, inside its padding. Text
+          // flush to it is aligned to the end; text that is not, is not —
+          // which a comparison between sibling cells cannot tell, because
+          // equal-width text shares an edge whichever way a column is aligned.
           const edge = rtl
             ? box.left + parseFloat(style.paddingInlineEnd)
             : box.right - parseFloat(style.paddingInlineEnd);
-          const range = node.ownerDocument.createRange();
-          range.selectNodeContents(node);
-          const drawn = range.getBoundingClientRect();
-          return { edge, figure: rtl ? drawn.left : drawn.right };
+
+          // Each run of text on its own, rather than one range over the cell.
+          // A heading holds its unit in a block-level span, and a block fills
+          // the cell whatever its text does inside it: a range over the whole
+          // cell would measure that box and report every alignment as flush.
+          const walker = node.ownerDocument.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+          const runs: number[] = [];
+          for (let text = walker.nextNode(); text !== null; text = walker.nextNode()) {
+            if ((text.textContent ?? '').trim() === '') {
+              continue;
+            }
+            const range = node.ownerDocument.createRange();
+            range.selectNodeContents(text);
+            const drawn = range.getBoundingClientRect();
+            runs.push(rtl ? drawn.left : drawn.right);
+          }
+          return { edge, runs };
         }),
       );
 
     expect(cells.length, 'the catalogue renders a table with a numeric column').toBeGreaterThan(0);
     for (const cell of cells) {
-      expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
+      expect(cell.runs.length, 'every numeric cell draws text to measure').toBeGreaterThan(0);
+      for (const run of cell.runs) {
+        expect(Math.abs(run - cell.edge)).toBeLessThanOrEqual(1);
+      }
     }
   });
 
