@@ -227,7 +227,11 @@
     background-image: var(--edsb-surface-overheat);
   }
 
-  .damage__cell--numeric {
+  // The element is named here for the same reason it is named on the rule that
+  // right-aligns these cells: that selector carries a type, and this one has to
+  // match it or the weakness figure loses the danger ink to the numeric colour.
+  th.damage__cell--numeric,
+  td.damage__cell--numeric {
     color: var(--edsb-text-danger);
   }
 }

@@ -151,16 +151,17 @@ test.describe('reading the build', () => {
     );
   });
 
-  test('sets every figure column against one right edge', async ({ page }) => {
+  test('sets every figure flush to the end of its own column', async ({ page }) => {
     // A column of figures is read down its length, so the digits have to line
-    // up: `1,085` and `904` compared against different edges are two numbers a
-    // reader has to measure by eye. The table already sets them in tabular
-    // numerals for the same reason.
+    // up. Measured against each cell's own trailing content edge rather than
+    // against the figures beside it: `32.0` over `32.0` shares an edge whether
+    // the column is aligned to its start or its end, so a test that only
+    // compares siblings cannot see the thing it is named for.
     //
-    // Measured rather than asserted on a style, because the rule that draws it
-    // was present and outweighed for as long as this table has existed: the
-    // cell rule beside it carries a type selector, and a bare class does not
-    // beat one. Reading the boxes is what notices that.
+    // Measured at all — rather than asserted on a style — because the rule that
+    // draws this was present and outweighed for as long as the table has
+    // existed: the cell rule beside it carries a type selector, and a bare
+    // class does not beat one.
     await openDefence(page);
 
     for (const card of ['card--shield', 'card--armour'] as const) {
@@ -168,6 +169,17 @@ test.describe('reading the build', () => {
         .locator(`edsb-defence-analysis .${card} .damage tbody .damage__cell--numeric`)
         .evaluateAll((nodes) =>
           nodes.map((node) => {
+            const style = getComputedStyle(node);
+            const box = node.getBoundingClientRect();
+            const rtl = style.direction === 'rtl';
+            // The cell's own trailing content edge, inside its padding. A
+            // figure flush to it is aligned to the end; one that is not, is
+            // not — which a comparison between sibling figures cannot tell,
+            // because equal-width figures share an edge whichever way the
+            // column is aligned.
+            const edge = rtl
+              ? box.left + parseFloat(style.paddingInlineEnd)
+              : box.right - parseFloat(style.paddingInlineEnd);
             // The figure itself, not the cell's contents: a weakness and an
             // unbounded pool each carry a word for a screen reader, positioned
             // out of sight, and a range over the whole cell would union that
@@ -175,30 +187,54 @@ test.describe('reading the build', () => {
             const figure = [...node.childNodes].find(
               (child) => child.nodeType === 3 && (child.textContent ?? '').trim() !== '',
             );
+            if (figure === undefined) {
+              throw new Error(`no figure text node in ${node.className}`);
+            }
             const range = node.ownerDocument.createRange();
-            range.selectNodeContents(figure ?? node);
-            return {
-              column: Math.round(node.getBoundingClientRect().right),
-              text: Math.round(range.getBoundingClientRect().right),
-            };
+            range.selectNodeContents(figure);
+            const drawn = range.getBoundingClientRect();
+            return { edge, figure: rtl ? drawn.left : drawn.right };
           }),
         );
       expect(cells.length).toBeGreaterThan(0);
-
-      // Grouped by the column each cell ends in, every figure in that column
-      // ends where its neighbours do.
-      const byColumn = new Map<number, number[]>();
       for (const cell of cells) {
-        byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
-      }
-      for (const [column, edges] of byColumn) {
-        expect(edges.length).toBeGreaterThan(1);
-        expect(
-          Math.max(...edges) - Math.min(...edges),
-          `column ending at ${column}`,
-        ).toBeLessThanOrEqual(1);
+        expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
       }
     }
+  });
+
+  test('keeps the danger ink on a weakness figure, not only the hatch on its bar', async ({
+    page,
+  }) => {
+    // The selector that right-aligns these cells carries a type, so the rule
+    // that reddens a weakness has to carry one too or it loses the colour to
+    // the numeric ink. The two facts live on the same cell and a regression in
+    // either is invisible from the other, so they are asserted together.
+    //
+    // Compared against the token rather than a literal: this suite may not
+    // write down a colour any more than it may write down a megajoule.
+    await openDefence(page);
+
+    const ink = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const swatch = document.createElement('span');
+      swatch.style.color = root.getPropertyValue('--edsb-text-danger');
+      document.body.append(swatch);
+      const resolved = getComputedStyle(swatch).color;
+      swatch.remove();
+
+      const weak = [...document.querySelectorAll('.damage__row--weak .damage__cell--numeric')];
+      return {
+        danger: resolved,
+        drawn: [...new Set(weak.map((cell) => getComputedStyle(cell).color))],
+        aligned: [...new Set(weak.map((cell) => getComputedStyle(cell).textAlign))],
+        count: weak.length,
+      };
+    });
+
+    expect(ink.count, 'the stock hull draws at least one weakness').toBeGreaterThan(0);
+    expect(ink.drawn).toEqual([ink.danger]);
+    expect(ink.aligned).toEqual(['end']);
   });
 
   test('draws the four damage types with a resistance and a pool apiece', async ({ page }) => {

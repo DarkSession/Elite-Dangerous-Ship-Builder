@@ -254,37 +254,37 @@ test.describe('reading the build', () => {
     expect(facts).toContain(caps(englishMessages['power.heat.sinks']));
   });
 
-  test('sets every distributor figure against one right edge', async ({ page }) => {
-    // Three capacitors read down a column, so their digits have to line up.
-    // Measured rather than asserted on a style: the rule that right-aligns
-    // these cells was present and outweighed by the `.distributor th, td` rule
-    // beside it, which carries a type selector a bare class does not beat.
+  test('sets every distributor figure flush to the end of its own column', async ({ page }) => {
+    // Measured against each cell's own trailing content edge, not against the
+    // figures beside it: this table's three banks draw equal-width figures down
+    // every column, so siblings share an edge whichever way the column is
+    // aligned and a comparison between them proves nothing.
     await openPower(page);
 
     const cells = await page
       .locator('.distributor tbody .distributor__cell--numeric')
       .evaluateAll((nodes) =>
         nodes.map((node) => {
+          const style = getComputedStyle(node);
+          const box = node.getBoundingClientRect();
+          const rtl = style.direction === 'rtl';
+          // The cell's own trailing content edge, inside its padding. A
+          // figure flush to it is aligned to the end; one that is not, is
+          // not — which a comparison between sibling figures cannot tell,
+          // because equal-width figures share an edge whichever way the
+          // column is aligned.
+          const edge = rtl
+            ? box.left + parseFloat(style.paddingInlineEnd)
+            : box.right - parseFloat(style.paddingInlineEnd);
           const range = node.ownerDocument.createRange();
           range.selectNodeContents(node);
-          return {
-            column: Math.round(node.getBoundingClientRect().right),
-            text: Math.round(range.getBoundingClientRect().right),
-          };
+          const drawn = range.getBoundingClientRect();
+          return { edge, figure: rtl ? drawn.left : drawn.right };
         }),
       );
     expect(cells.length).toBeGreaterThan(0);
-
-    const byColumn = new Map<number, number[]>();
     for (const cell of cells) {
-      byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
-    }
-    for (const [column, edges] of byColumn) {
-      expect(edges.length).toBeGreaterThan(1);
-      expect(
-        Math.max(...edges) - Math.min(...edges),
-        `column ending at ${column}`,
-      ).toBeLessThanOrEqual(1);
+      expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
     }
   });
 

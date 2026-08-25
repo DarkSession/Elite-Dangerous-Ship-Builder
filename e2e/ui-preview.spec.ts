@@ -123,34 +123,38 @@ test.describe('component preview catalogue', () => {
     }
   });
 
-  test('sets a declared numeric column against one right edge', async ({ page }) => {
+  test('sets a declared numeric column flush to the end of its cells', async ({ page }) => {
     // A column a caller declares numeric is read down its length, so its digits
     // have to line up — and the heading above them was right-aligned while the
     // figures under it were not, because the `thead th` rule carries its own
     // compound selector and the cell rule was a bare class the `.table td` rule
-    // beside it outweighed. Measured, because that is what notices it.
-    const cells = await page.locator('.table tbody .table__cell--numeric').evaluateAll((nodes) =>
-      nodes.map((node) => {
-        const range = node.ownerDocument.createRange();
-        range.selectNodeContents(node);
-        return {
-          column: Math.round(node.getBoundingClientRect().right),
-          text: Math.round(range.getBoundingClientRect().right),
-        };
-      }),
-    );
+    // beside it outweighed. The heading is measured with the body for exactly
+    // that reason.
+    const cells = await page
+      .locator('.table :is(thead, tbody) .table__cell--numeric')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const style = getComputedStyle(node);
+          const box = node.getBoundingClientRect();
+          const rtl = style.direction === 'rtl';
+          // The cell's own trailing content edge, inside its padding. A
+          // figure flush to it is aligned to the end; one that is not, is
+          // not — which a comparison between sibling figures cannot tell,
+          // because equal-width figures share an edge whichever way the
+          // column is aligned.
+          const edge = rtl
+            ? box.left + parseFloat(style.paddingInlineEnd)
+            : box.right - parseFloat(style.paddingInlineEnd);
+          const range = node.ownerDocument.createRange();
+          range.selectNodeContents(node);
+          const drawn = range.getBoundingClientRect();
+          return { edge, figure: rtl ? drawn.left : drawn.right };
+        }),
+      );
 
     expect(cells.length, 'the catalogue renders a table with a numeric column').toBeGreaterThan(0);
-
-    const byColumn = new Map<number, number[]>();
     for (const cell of cells) {
-      byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
-    }
-    for (const [column, edges] of byColumn) {
-      expect(
-        Math.max(...edges) - Math.min(...edges),
-        `column ending at ${column}`,
-      ).toBeLessThanOrEqual(1);
+      expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
     }
   });
 
