@@ -168,6 +168,76 @@ Build and deployment → Source** set to **GitHub Actions**, and a DNS `CNAME`
 record for `sb.edct.dev` pointing at `darksession.github.io`. Enable **Enforce
 HTTPS** once GitHub has issued the certificate.
 
+### Pull request previews
+
+Every pull request raised from a branch of this repository is built a second
+time and published as a browsable preview, so a change can be looked at before
+it is merged. A sticky comment on the pull request carries the link, the preview
+is replaced on every push and removed when the pull request closes.
+
+Previews are published to
+**[Elite-Dangerous-Ship-Builder-Preview](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder-Preview)**,
+not to this repository, because this repository's Pages site _is_ the production
+site: `public/CNAME` points it at `sb.edct.dev`, and a repository serves exactly
+one Pages site. A preview published from here would land on the production
+domain. The preview repository has no custom domain, so its previews reach the
+account's default Pages host instead:
+
+```
+https://darksession.github.io/Elite-Dangerous-Ship-Builder-Preview/pr-preview/pr-<number>/
+```
+
+The [`preview` job in `ci.yml`](./.github/workflows/ci.yml) publishes them and
+the [`preview-cleanup.yml`](./.github/workflows/preview-cleanup.yml) workflow
+removes them, both through
+[`pr-preview-action`](https://github.com/rossjrw/pr-preview-action), pinned to a
+commit because it is handed a token that can write to another repository. Four
+things are worth knowing about them:
+
+- **A preview waits only for the `Check` job**, not for the end-to-end matrix,
+  so it is there to look at while the shards are still running. It gates
+  nothing: the production `deploy` job does not need it, and a preview that
+  fails cannot hold up a merge.
+- **A preview is built separately from the checked build**, because it is served
+  from a sub-path rather than from the root of a domain and `<base href>` is
+  written into the bundle at build time. The build is otherwise the production
+  one, service worker included — the base href reaches `ngsw.json` too.
+- **Nothing the application asks for at runtime may be a root-absolute path.**
+  A leading `/` looks past the deployment base and misses the file, which is
+  invisible at the root of a domain and fatal one directory down. So the locale
+  catalogues are `i18n/<tag>.json` relative to the base — `fetch` resolves a
+  relative path against the document's base URL — and the `@font-face` sources
+  in [`src/styles/_fonts.scss`](./src/styles/_fonts.scss) are
+  `fonts/<family>/…woff2` relative to the stylesheet, which is emitted at the
+  base. `externalDependencies: ["fonts/*"]` in
+  [`angular.json`](./angular.json) is what keeps the bundler from resolving
+  those at build time and leaves the relative URL in the emitted CSS. At the
+  root of a domain all of them resolve exactly as the absolute paths they
+  replaced, so production is unchanged.
+- **`public/CNAME` is deleted from the preview** before it is published. Pages
+  reads a `CNAME` only at the root of the published branch, so a copy in a
+  preview directory is inert, but a file claiming the production domain has no
+  business in a preview.
+- **Previews share one origin.** `darksession.github.io` is the origin for every
+  preview, so saved builds in `localStorage` are visible across them. Each
+  preview's service worker is scoped to its own directory and cannot serve
+  another.
+
+Pull requests from forks are not previewed: a fork's workflow run cannot read
+the deployment token. Their checks still run in full.
+
+Two things have to be set up once, in addition to the production settings above:
+in the preview repository, **Settings → Pages → Build and deployment → Source**
+set to **Deploy from a branch**, with the branch `gh-pages` and folder `/ (root)`
+— the branch is created by the first preview, so publish one before setting
+this. And in this repository, a secret named `PREVIEW_PAGES_TOKEN` holding a
+fine-grained personal access token whose only resource owner is
+`Elite-Dangerous-Ship-Builder-Preview` and whose only permission is **Contents:
+Read and write**. It needs nothing in this repository; the comment on the pull
+request is written with the run's own `GITHUB_TOKEN`. If the secret is missing
+or expired, the preview job says so in a warning and does nothing else — a
+missing preview never fails a run.
+
 Angular CLI usage analytics are disabled in [`angular.json`](./angular.json)
 (`cli.analytics: false`), so no build — local or in CI — reports to Google. The
 application itself sends no telemetry either; the constitution forbids it.

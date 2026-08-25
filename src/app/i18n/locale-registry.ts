@@ -24,7 +24,18 @@ export interface ShippedLocale {
   readonly language: string;
   /** Writing direction, published together with the catalogue. */
   readonly direction: 'ltr' | 'rtl';
-  /** Same-origin asset path. English is additionally bundled. */
+  /**
+   * Same-origin catalogue path, relative to the deployment base.
+   *
+   * Relative rather than root-absolute, for the same reason `hullArtworkPath`
+   * is: a preview is served from a sub-path of a Pages site, and a leading
+   * slash would look for every catalogue at the host root. `fetch` resolves a
+   * relative path against the document's base URL, so `<base href>` alone
+   * decides where these are read from and no caller has to join anything.
+   * It is also the stricter same-origin guarantee (FR-019): a root-absolute
+   * path still admits a protocol-relative `//host/...`, and this does not.
+   * English is additionally bundled and never requested at all.
+   */
   readonly assetPath: string;
   /**
    * Key resolving to the language's own name, in that language.
@@ -93,14 +104,14 @@ export const SHIPPED_LOCALES: readonly ShippedLocale[] = [
     tag: 'en',
     language: 'en',
     direction: 'ltr',
-    assetPath: '/i18n/en.json',
+    assetPath: 'i18n/en.json',
     fallback: true,
   },
   {
     tag: 'de',
     language: 'de',
     direction: 'ltr',
-    assetPath: '/i18n/de.json',
+    assetPath: 'i18n/de.json',
     fallback: false,
   },
 ];

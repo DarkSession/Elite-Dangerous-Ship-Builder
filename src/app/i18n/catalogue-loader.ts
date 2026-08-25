@@ -122,8 +122,11 @@ export class CatalogueLoader {
    *
    * English needs no request: it is imported into the initial bundle, which is
    * what makes complete fallback text available with no network at all. Every
-   * other locale is a same-origin static asset under `/i18n/` — nothing here
-   * ever reaches another origin (constitution I).
+   * other locale is a same-origin static asset under the deployment's own
+   * `i18n/` directory — nothing here ever reaches another origin
+   * (constitution I). The path is base-relative, so `fetch` resolves it
+   * against the document's base URL and a build served from a sub-path finds
+   * its catalogues where that build actually put them.
    */
   async load(locale: ShippedLocale): Promise<LocaleCandidate> {
     if (locale.tag === FALLBACK_LOCALE) {

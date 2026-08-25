@@ -1,0 +1,84 @@
+# Removes a pull request's preview once the pull request is closed.
+#
+# The preview itself is built and published by the `preview` job in `ci.yml`.
+# This is its other half, and it is a separate workflow only because of the
+# trigger: `ci.yml` runs on a pull request being opened, pushed to and reopened,
+# and running the whole gate again on `closed` to reach one deletion would be
+# the most expensive way to remove a directory.
+#
+# Nothing is built here and no repository code runs. The step replaces the
+# preview directory in the preview repository with an empty one and updates the
+# comment `ci.yml` left on the pull request.
+name: Preview cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  remove:
+    name: Remove preview
+    # The same two conditions the `preview` job publishes under: a fork cannot
+    # read the deployment token, and never had a preview to remove.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Shared with the `preview` job in `ci.yml`. A removal never cancels: the
+    # publication it is queued behind is the one that would otherwise be left
+    # standing after the pull request closed.
+    concurrency:
+      group: preview-${{ github.event.number }}
+      cancel-in-progress: false
+
+    permissions:
+      contents: read
+      # The sticky comment, which is rewritten rather than deleted so the pull
+      # request keeps saying what happened to its preview.
+      pull-requests: write
+
+    env:
+      # Must match the `preview` job in `ci.yml`, or a closed pull request
+      # leaves its preview published for good.
+      PREVIEW_REPOSITORY: DarkSession/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_PAGES_BASE_URL: darksession.github.io/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_UMBRELLA_DIR: pr-preview
+
+    steps:
+      - name: Look for the deployment token
+        id: token
+        env:
+          PREVIEW_PAGES_TOKEN: ${{ secrets.PREVIEW_PAGES_TOKEN }}
+        run: |
+          if [ -n "$PREVIEW_PAGES_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Preview not removed::The PREVIEW_PAGES_TOKEN secret is not set. If this pull request ever had a preview, remove it by hand from $PREVIEW_REPOSITORY."
+          fi
+
+      # The base branch rather than the pull request: a closed pull request's
+      # merge ref may already be gone, and none of this needs the branch's code
+      # anyway. The checkout is here because the publishing action runs its git
+      # operations inside the workspace.
+      - name: Check out the base branch
+        if: ${{ steps.token.outputs.available == 'true' }}
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      # Pinned to the same commit as the publication step in `ci.yml`. Move both
+      # together: a removal that lays out preview directories differently from
+      # the publication would delete nothing and report success.
+      - name: Remove the preview
+        if: ${{ steps.token.outputs.available == 'true' }}
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          deploy-repository: ${{ env.PREVIEW_REPOSITORY }}
+          pages-base-url: ${{ env.PREVIEW_PAGES_BASE_URL }}
+          umbrella-dir: ${{ env.PREVIEW_UMBRELLA_DIR }}
+          token: ${{ secrets.PREVIEW_PAGES_TOKEN }}
+          action: remove

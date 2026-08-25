@@ -35,7 +35,8 @@
                 "output": "i18n"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/styles.scss"],
+            "externalDependencies": ["fonts/*"]
           },
           "configurations": {
             "production": {
@@ -121,7 +122,8 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/styles.scss"],
+            "externalDependencies": ["fonts/*"]
           },
           "configurations": {
             "production": {
