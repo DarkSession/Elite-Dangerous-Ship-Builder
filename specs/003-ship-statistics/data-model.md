@@ -3,7 +3,12 @@
 > **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
 > specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
 > design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
-> and its half-pip domain went to feature 005 with ruling C. The provider envelope, the revision
+> went to feature 005 with ruling C, but **its half-pip domain did not go with it**: that was
+> withdrawn outright, because the artboard draws four whole steps per bank and there is no half-pip
+> left to convert. `HalfPips` twelve lines below is not a type feature 005 holds under another name
+> — it holds whole pips, 0 to 4 a bank
+> ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
+> `specs/005-power-and-heat/contracts/integration-ports.md`). The provider envelope, the revision
 > context, the composition transaction and the status lifecycle were **withdrawn rather than
 > reassigned**, and went nowhere: ruling B took the wide Status capability they were assembled for,
 > and ruling C removed this feature's dependency on features 005–009, so there is no owner result
