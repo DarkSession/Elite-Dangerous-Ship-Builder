@@ -199,8 +199,11 @@ licence summary names and the generator still audits at build time.
 
 ## Dialog semantics and responsive behavior
 
-- Use feature 011's shared modal layer with `role="dialog"`, `aria-modal="true"`, a visible labelled
-  title and isolated background content.
+- Use feature 011's shared modal layer with `role="dialog"`, modal semantics, a visible labelled
+  title and isolated background content. **Corrected 2026-08-25:** the layer is a native `dialog`
+  opened with `showModal()`, so modality is the element's own `:modal` state and `aria-modal` is
+  deliberately not set — the attribute would duplicate what the platform already says, and the
+  journey asserts the state rather than the attribute.
 - Wide layouts center a readable-width dialog with bounded block size and an internal vertical
   content scroller. Narrow layouts present a full-width bottom sheet; constrained landscape/400%-zoom
   layouts may fill the viewport.

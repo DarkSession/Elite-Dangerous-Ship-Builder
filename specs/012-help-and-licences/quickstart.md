@@ -82,11 +82,26 @@ SHIP_BUILDER_RELEASE_TAG=latest pnpm run help:manifest   # expect non-zero exit,
 ```
 
 Note that root `package.json#version` declares `major.minor.0` and CI stamps the patch before it
-builds (`scripts/resolve-build-version.mjs`), so case 2 succeeds here against the committed
-declaration while the value a deployed build actually carries is `major.minor.<commit count>`. Run
-case 2 against that value too — `SHIP_BUILDER_RELEASE_TAG="v$(node scripts/resolve-build-version.mjs)"`
-— since that is the version release automation would have to agree with. Repeat case 3 with `v0.0.0`,
-`HEAD`, `undefined` and a mismatched version to confirm each fails and writes no partial output.
+builds (`scripts/resolve-build-version.mjs --write`), so case 2 succeeds here against the committed
+declaration while the value a deployed build actually carries is `major.minor.<commit count>`.
+
+Run case 2 against that value too, since it is the version release automation would have to agree
+with — but run it the way CI does, with the stamp actually written, because the generator compares
+the tag against `package.json#version` and nothing else:
+
+```bash
+# Stamp first, exactly as ci.yml does, then declare the stamped version.
+version="$(node scripts/resolve-build-version.mjs --write)"
+SHIP_BUILDER_RELEASE_TAG="v$version" pnpm run help:manifest   # expect release $version
+git checkout package.json                                     # the stamp is never committed
+```
+
+Declaring the resolved version **without** writing the stamp is a failure, and the correct one: the
+tree still says `major.minor.0`, so the tag and the shipped version genuinely disagree. **Corrected
+2026-08-25** — an earlier revision of this section asked for exactly that and called it a pass.
+
+Repeat case 3 with `v0.0.0`, `HEAD`, `undefined` and a mismatched version to confirm each fails and
+writes no partial output.
 
 ## 3. Open and close without navigation or mutation
 

@@ -15,7 +15,7 @@
     "help:artifacts": "pnpm run help:manifest && pnpm run help:topics",
     "help:artifacts:check": "pnpm run help:manifest:check && pnpm run help:topics:check",
     "legal:sync": "node scripts/generate-help-manifest.mjs --sync",
-    "e2e": "pnpm run help:artifacts && playwright test --grep-invert \"candidate search timing\"",
+    "e2e": "pnpm run help:artifacts && playwright test --grep-invert \"candidate search timing|help first-frame timing\"",
     "e2e:timing": "pnpm run help:artifacts && playwright test --project=chromium-mobile-timing --workers=1",
     "e2e:ui": "pnpm run help:artifacts && playwright test --ui",
     "e2e:report": "playwright show-report",

@@ -186,7 +186,7 @@ readable measure and internal vertical scrolling; narrow layouts use a full-widt
 a persistent header/close action. At 400% zoom or constrained landscape height, the same single
 column may fill the viewport. DOM and reading order never change.
 
-The shared dialog supplies `role="dialog"`, `aria-modal="true"`, a visible labelled title and
+The shared dialog supplies `role="dialog"`, native modal semantics, a visible labelled title and
 background isolation. Every entry and close/external action has a visible localised name and at least
 the shared 44 CSS-pixel target.
 The exact disclaimer is text in a region with `lang="en"`; the “original English” sentence that

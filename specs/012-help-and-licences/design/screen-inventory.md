@@ -58,8 +58,11 @@ AA contrast and target size), FR-015 (conformance statements name the excluded c
 principles V, VI and VII. They are listed here so every task that exists to satisfy them maps to an
 accepted requirement rather than to nothing.
 
-- One `dialog` with `aria-modal="true"`, a visible accessible name and an always-available close.
+- One `dialog` with modal semantics, a visible accessible name and an always-available close.
+  **Corrected 2026-08-25:** the layer is a native `dialog` opened with `showModal()`, so the modality is the element's own `:modal` state. The attribute is not set and should not be: it would duplicate what the platform already says.
+
   The dialog is a nested landmark over the capability, never a replacement `main`.
+
 - Semantic order is title, then `ABOUT`, `FAQ` and `LICENCE` — the reference's own order, the same at
   every viewport and in every locale.
 - Wide viewports use a centered bounded modal; narrow viewports use a full-width bottom sheet. Both

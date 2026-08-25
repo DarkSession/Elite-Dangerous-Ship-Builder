@@ -154,7 +154,10 @@ referred to, because a conformance claim a reader has to follow a link to qualif
 gets quoted without its qualification. The exclusions are the keyboard and focus-order criteria the
 application does not claim; everything below is claimed.
 
-- One labelled `role="dialog"` with `aria-modal="true"`; background content is isolated while open.
+- One labelled dialog; background content is isolated while open. The layer is a native `dialog`
+  opened with `showModal()`, so modality is the element's own `:modal` state rather than an
+  `aria-modal` attribute — the same semantics, said by the platform rather than duplicated on top of
+  it, and asserted that way in the journey.
 - Heading levels create a complete order for ABOUT, FAQ and LICENCE.
 - Heading levels nest: each `FAQ` question is a heading under the section's own, so heading
   navigation reaches the seven questions.
@@ -166,9 +169,11 @@ application does not claim; everything below is claimed.
 - At 200% text and actual 400% zoom there is no lost content, clipped action or document horizontal
   overflow.
 - Any visual transition honors `prefers-reduced-motion`.
-- Manual screen-reader verification covers discovery, dialog isolation, heading order, identity
-  distinctions, disclaimer language/source, the licence warning and the underlying capability after
-  close.
+- Manual screen-reader verification covers discovery, dialog isolation, heading order, the two
+  identity facts, the excerpt's declared language and the underlying capability after close. There
+  is no licence warning to verify: the modal has no external action. It is step 17 of the shared
+  protocol, and [screen-reader-record.md](./screen-reader-record.md) is this feature's record of it —
+  including that no run has been performed, and what the automated suite covers in its place.
 
 ## Component-system impact
 
