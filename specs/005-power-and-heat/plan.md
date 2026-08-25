@@ -213,7 +213,8 @@ No planning ambiguity or Almanac dependency remains.
   selected-state mapping, module ordering and exact-slot intent.
 - [contracts/distributor-metrics.md](./contracts/distributor-metrics.md) freezes exact result
   mapping and null and zero behaviour. Its half-pip conversion is withdrawn: the artboard draws
-  whole pips (wave 12).
+  whole pips (wave 12), and the owner's ruling of 2026-08-25 settled what "whole pips" costs the
+  other two banks — half a pip each (wave 14).
 - [contracts/heat-profile.md](./contracts/heat-profile.md) freezes the five
   scenarios, all returned fields and the null/non-finite meanings.
 - [contracts/integration-ports.md](./contracts/integration-ports.md) freezes the one exported

@@ -1,8 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
-import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
-import { projectPowerHeat, type PowerAndHeat } from '../../../../domain/power-heat/power-heat';
+import {
+  PowerConditionsStore,
+  TOTAL_PIPS,
+} from '../../../../application/power-heat/power-conditions.store';
+import {
+  CAPACITOR_KINDS,
+  projectPowerHeat,
+  type CapacitorKind,
+  type PowerAndHeat,
+} from '../../../../domain/power-heat/power-heat';
 import { Formatters } from '../../../../i18n/formatters/formatters';
+import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 
@@ -21,8 +30,40 @@ interface BarView {
   readonly label: string;
 }
 
+/** One bank of the rail's pip control: its name, its reading and its blocks. */
+interface PipSetView {
+  readonly kind: CapacitorKind;
+  readonly name: string;
+  /** The bank's allocation, said in words for a reader who cannot see the blocks. */
+  readonly label: string;
+  readonly steps: readonly PipStepView[];
+}
+
+/** One of the four blocks a bank's pips are drawn and set with. */
+interface PipStepView {
+  readonly id: string;
+  /** The pip count pressing it asks for. */
+  readonly value: number;
+  /** How much of this block the bank's allocation fills, in `[0, 1]`. */
+  readonly fill: number;
+  readonly label: string;
+}
+
+/** The bank names, written out rather than composed: `MessageKey` is a union. */
+const BANK_LABELS = {
+  systems: 'power.distributor.bank.systems',
+  engines: 'power.distributor.bank.engines',
+  weapons: 'power.distributor.bank.weapons',
+} as const satisfies Record<CapacitorKind, MessageKey>;
+
+/** The four blocks the canvas draws each bank's allocation across. */
+const PIP_STEPS = [1, 2, 3, 4] as const;
+
 /** Megawatts to two places, as the canvas sets every power figure. */
 const MW_DIGITS = 2;
+
+/** Pips to one place, because a bank paying for another lands on the half. */
+const PIP_DIGITS = 1;
 
 /**
  * What the plant is doing, in the outfitting status rail.
@@ -31,12 +72,13 @@ const MW_DIGITS = 2;
  * and the six metric cells features 006 to 008 own: the sentence about a group
  * the plant cannot keep lit, the `POWER` line — `29.64 / 31.20 MW · 7.80 OFF`
  * over a bar of the same four figures — and, since the 2026-08-25 revision, the
- * `SYS` / `ENG` / `WEP` pip control. **Two of the three are built.** The pips
- * are this feature's own open task (`specs/005-power-and-heat/tasks.md`, T074;
- * `design/power-and-heat-detail.md`, "The rail's pip control"), and they belong
- * in this component when they land, because the allocation is one viewing
- * condition and this is the rail's half of it. Canvas 1d draws the first two in
- * its Status mode and no pip control at all.
+ * `SYS` / `ENG` / `WEP` pip control. **All three are built**: the pips were
+ * this feature's open T074 and landed here, because the allocation is one
+ * viewing condition and this is the rail's half of it
+ * (`design/power-and-heat-detail.md`, "The rail's pip control"). Canvas 1d
+ * draws the first two in its Status mode and no pip control at all; the
+ * application builds one DOM at both widths, and withdrawing the control at one
+ * of them would be the capability going missing there (constitution V).
  *
  * No severity word and no all-clear line, because neither canvas draws either.
  * And no heat sentence — but that one is absent by ruling rather than for want
@@ -50,11 +92,17 @@ const MW_DIGITS = 2;
  * from the projection rather than reverse-engineered, and the projection is
  * where the division is done.
  *
- * Nothing **built** here is interactive yet. That is the pip control being
- * absent rather than a rule: feature 003's issue list above it is not
- * interactive by ruling, but this block's third contribution is a control, and
- * the tests asserting the block holds none hold only until T074. At both widths
- * the dashboard these sentences describe is a segment away.
+ * The sentence, the `POWER` line and the bar are read-only by ruling, exactly
+ * as feature 003's issue list above them is: the canvas draws no control in any
+ * of them, and at both widths the dashboard these sentences describe is a
+ * segment away. The pips under them are this block's one control.
+ *
+ * They edit the **same** viewing condition the distributor table's cell edits,
+ * through the same store action: one allocation, shown in two places, never a
+ * second state and never a draft. The rail is on screen in every anatomy mode
+ * while that table is only in `POWER`, and features 006 and 007 both read
+ * figures at an allocation — so this is where a Commander can move the pips
+ * without leaving the region whose figures move with them.
  *
  * The sentence is this application's own, not a package diagnostic, so it is
  * translated like every other string it owns and does not go through
@@ -75,6 +123,7 @@ export class PowerSummary {
   readonly powerLabelId = relationId('rail-power');
 
   readonly powerLabel = this.#messages.messageSignal('power.rail.label');
+  readonly pipsLabel = this.#messages.messageSignal('power.rail.pips');
 
   /**
    * The projection, always read with the hardpoints deployed.
@@ -175,6 +224,66 @@ export class PowerSummary {
           }),
         };
   });
+
+  /**
+   * `SYS`, `ENG` and `WEP`, each over the four blocks the canvas draws.
+   *
+   * Drawn from the standing allocation rather than from a distributor result:
+   * the rail is on screen for builds with no distributor fitted at all, and the
+   * pips are a question about the ship being asked rather than a figure the
+   * package returned for it. What each allocation *does* to a recharge is the
+   * distributor table's reading, and that is where a `null` result is stated.
+   */
+  readonly pipSets = computed<readonly PipSetView[]>(() => {
+    if (this.#projection() === null) {
+      return [];
+    }
+
+    const allocation = this.#conditions.pips();
+
+    return CAPACITOR_KINDS.map((kind) => {
+      const name = this.#messages.message(BANK_LABELS[kind]);
+      const pips = allocation[kind];
+
+      return {
+        kind,
+        name,
+        // The blocks carry the allocation as a picture; this carries it as a
+        // reading, which is what a reader who cannot see four rectangles gets.
+        label: this.#messages.message('power.distributor.pips.label', {
+          bank: name,
+          pips: this.#formatters.decimal(pips, PIP_DIGITS),
+          total: this.#formatters.integer(TOTAL_PIPS),
+        }),
+        steps: PIP_STEPS.map((step) => ({
+          id: String(step),
+          value: step,
+          // A block is full once the allocation reaches it and empty until it
+          // does; a bank paying for another lands on a half and fills half of
+          // one. There is no half-pip block: four blocks, filled from the
+          // leading edge, exactly as the distributor's cell draws them.
+          fill: Math.min(1, Math.max(0, pips - (step - 1))),
+          label: this.#messages.message('power.distributor.pips.set', {
+            bank: name,
+            pips: this.#formatters.integer(step),
+          }),
+        })),
+      };
+    });
+  });
+
+  /**
+   * Asks for that many pips in that bank. The store moves the other two.
+   *
+   * The same action the distributor cell calls, so the two surfaces cannot
+   * drift: there is one allocation, and both of them draw it. Pressing the
+   * block a bank already stands on steps it back one, which is the only way
+   * down to none through four blocks that each name a count.
+   */
+  setPips(bank: CapacitorKind, step: number): void {
+    const standing = this.#conditions.pips()[bank];
+    this.#conditions.setPips(bank, standing === step ? step - 1 : step);
+  }
 
   #megawatts(value: number): string {
     return this.#messages.message('power.format.megawatts', {

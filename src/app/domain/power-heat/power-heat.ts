@@ -305,29 +305,6 @@ export type CapacitorKind = (typeof CAPACITOR_KINDS)[number];
 
 export interface DistributorView {
   readonly capacitors: readonly CapacitorView[];
-  /**
-   * The fitted distributor, as the canvases name it beside the heading:
-   * `8A · CHARGE ENHANCED G5 · SUPER CONDUITS`.
-   *
-   * `null` where no distributor could be identified. Every part of it is an
-   * identity rather than a figure — a size, a grade letter, a recipe's name and
-   * an effect's — so nothing here is a reading about the build.
-   */
-  readonly identity: DistributorIdentity | null;
-}
-
-/** What the fitted distributor is, in the parts the canvases name it by. */
-export interface DistributorIdentity {
-  /** The module's size, `1`-`8`. */
-  readonly size: number;
-  /** Its grade letter, `A` best. */
-  readonly rating: string;
-  /** The applied recipe's journal name, or `null` where none is applied. */
-  readonly blueprint: string | null;
-  /** That recipe's grade, `1`-`5`, or `null` alongside no recipe. */
-  readonly grade: number | null;
-  /** The experimental effect's journal name, or `null` where none is applied. */
-  readonly experimental: string | null;
 }
 
 export interface CapacitorView {
@@ -397,7 +374,7 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
     power: projectPower(budget, conditions.hardpoints),
     modules: projectModuleDraws(budget, conditions.hardpoints === 'deployed'),
     heat: heat === null ? null : projectHeat(heat, fitted),
-    distributor: distributor === null ? null : projectDistributor(distributor, fitted),
+    distributor: distributor === null ? null : projectDistributor(distributor),
   });
 }
 
@@ -672,30 +649,6 @@ function shieldBankSpike(
   };
 }
 
-/**
- * The fitted distributor, in the parts the canvases name it by.
- *
- * `null` where nothing is fitted, and `null` again where the fitted module's
- * stats did not resolve — a size and a grade nobody stated are not a size and a
- * grade of zero.
- */
-function distributorIdentity(fitted: readonly FittedModule[]): DistributorIdentity | null {
-  const module = fitted.find((entry) => /powerdistributor/iu.test(entry.symbol));
-  const stats = module?.effectiveStats ?? null;
-  if (module === undefined || stats === null) {
-    return null;
-  }
-
-  const engineering = module.engineering;
-  return {
-    size: stats.class,
-    rating: stats.rating,
-    blueprint: engineering?.BlueprintName ?? null,
-    grade: engineering?.Level ?? null,
-    experimental: engineering?.ExperimentalEffect ?? null,
-  };
-}
-
 /** Every fitted heat sink launcher, and the charges they carry between them. */
 export function projectHeatSinks(fitted: readonly FittedModule[]): HeatSinkView {
   // Matched on the symbol because the symbol is the module's identity: the
@@ -734,12 +687,8 @@ function projectScenario(key: HeatScenarioKey, state: HeatState, scale: number):
  * for. They are the same today; reading them back is what keeps the screen
  * honest if the package ever normalises an allocation (FR-007).
  */
-export function projectDistributor(
-  metrics: DistributorMetrics,
-  fitted: readonly FittedModule[],
-): DistributorView {
+export function projectDistributor(metrics: DistributorMetrics): DistributorView {
   return {
-    identity: distributorIdentity(fitted),
     capacitors: CAPACITOR_KINDS.map((kind) => ({
       kind,
       capacity: metrics[kind].capacity,

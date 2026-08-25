@@ -52,11 +52,21 @@ interface PowerConditions {
 revision, or is persisted — no storage, no history, no URL fragment, no build
 link, no SLEF. Reopening the workspace opens on `deployed` and `2 · 2 · 2`.
 
-Pips are `0`–`4` per bank on a half-pip step, six between the three. The package
-accepts any fraction in range and imposes no total; the six are the ship's rule,
-so setting one bank moves the other two — the remainder is split evenly between
-them, and each lands on a half pip. There is no
-draft, no Apply, no Reset, no running total and no validation.
+Pips are `0`–`4` per bank, six between the three. The package accepts any
+fraction in range and imposes no total; the six are the ship's rule, and so is
+how they move.
+
+A Commander assigns a **whole** pip count to one bank, `0`–`4`, and the other two
+pay for it **half a pip each** — the ship's own rule (owner's ruling,
+2026-08-25). A bank with nothing left to give pays nothing and the other pays the
+whole of it, which is what makes `4 · 2 · 0` reachable without a bank ever going
+negative. Taking pips back out of a bank runs the same rule backwards: half a pip
+to each of the other two, and all of it to one where the other is already full.
+The bank being set therefore always stands on a whole pip and the two paying for
+it land on the half step — which is exactly what four blocks filled from the
+leading edge draw.
+
+There is no draft, no Apply, no Reset, no running total and no validation.
 
 ## PowerAndHeat
 
@@ -246,10 +256,9 @@ launchers are not one multiplication.
 switched-off, unresolvable or retracted-shed distributor — carrying no inferred
 cause and no catalogue figure. Power, heat and the conditions stay usable.
 
-| Field        | Type                          | Rule                                     |
-| ------------ | ----------------------------- | ---------------------------------------- |
-| `capacitors` | `readonly CapacitorView[]`    | `SYS`, `ENG`, `WEP`, in the canvas order |
-| `identity`   | `DistributorIdentity \| null` | What the fitted distributor is           |
+| Field        | Type                       | Rule                                     |
+| ------------ | -------------------------- | ---------------------------------------- |
+| `capacitors` | `readonly CapacitorView[]` | `SYS`, `ENG`, `WEP`, in the canvas order |
 
 ### CapacitorView
 

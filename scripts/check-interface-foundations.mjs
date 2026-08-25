@@ -1472,10 +1472,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'ENG is the in-game abbreviation on the pip display and is not translated.',
     'power.distributor.bank.weapons':
       'WEP is the in-game abbreviation on the pip display and is not translated.',
-    'power.distributor.module':
-      'A size and a grade letter, both of them variables; neither is a word in either language.',
-    'power.distributor.module.separator':
-      'A middot between the parts of a module\u2019s name; not a word in either language.',
     'power.unit.megawatts': 'The SI symbol for the megawatt, identical in German.',
     'power.format.megawatts': 'A value and the SI symbol for the megawatt, identical in German.',
     'power.format.megajoules': 'A value and the SI symbol for the megajoule, identical in German.',

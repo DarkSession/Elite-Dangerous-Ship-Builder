@@ -125,8 +125,13 @@ Pip rules, as stated by the repository owner:
 
 - Six pips in total, at most four to any one bank.
 - The allocation starts at `2 / 2 / 2`.
-- Raising one bank takes the pips from the other two evenly, in half-pip steps:
-  moving SYS to 3 gives `3 / 1.5 / 1.5`.
+- A Commander assigns a **whole** pip to one bank, and the other two pay **half a
+  pip each**: moving SYS to 3 gives `3 / 1.5 / 1.5`. Where only one of the two
+  has pips left to give it pays the whole of it — from `1 / 4 / 1`, SYS to 4
+  gives `4 / 2 / 0`. Taking pips back runs the same rule backwards, all of it to
+  one bank where the other is already at four. (Restated 2026-08-25; the earlier
+  wording said only "evenly, in half-pip steps", which the build had read as
+  redistributing the remainder rather than charging each of the other two.)
 
 The package accepts fractional pips in `[0, 4]` per bank and computes
 `ratedRecharge * (pips / 4) ^ 1.1`, so every allocation above is answerable.

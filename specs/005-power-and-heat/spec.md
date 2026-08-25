@@ -51,9 +51,19 @@ conditions here, because the design draws them inside this capability and nowher
   no action: feature 002's ledger is where a mount is selected (design wins, wave 13).
 - **FR-007**: Distributor values MUST use `BuildMetrics.distributorMetrics()` for capacity, rated
   recharge, pip-scaled recharge and the allocation used. The application MUST NOT scale recharge.
-  This capability owns the allocation: each of SYS, ENG and WEP takes a whole `0`–`4` pips, chosen
-  in place with no draft, running total or confirmation step, and the pips shown are the pips the
-  package returns.
+  This capability owns the allocation: a Commander assigns a whole `0`–`4` pips to one of SYS, ENG
+  and WEP, chosen in place with no draft, running total or confirmation step, and the pips shown are
+  the pips the package returns.
+
+  > **Ruled 2026-08-25 — what the other two banks pay.** Six pips between the three is the ship's
+  > rule, and so is how they move: every whole pip assigned to one bank MUST be taken **half a pip
+  > from each of the other two**. Where only one of the two has pips left to give, that bank MUST
+  > pay the whole of it rather than the other going negative; taking pips back out of a bank MUST
+  > run the same rule backwards, all of it going to one bank where the other is already at four. It
+  > follows that the bank being set always stands on a whole pip while the two paying for it stand
+  > on the half step, and that four blocks filled from the leading edge draw every allocation the
+  > control can reach. No control MUST offer a half pip directly.
+
 - **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
 - **FR-009**: Heat MUST use `BuildMetrics.heatMetrics()` and show the five returned scenarios, their
@@ -77,9 +87,10 @@ conditions here, because the design draws them inside this capability and nowher
   > drew three `.pipset` groups under the rail's `POWER` bar — `SYS`, `ENG` and `WEP`, each over four
   > blocks filled to that bank's standing allocation, each with `cursor: pointer`. The rail MUST
   > carry them as a control. It edits the same single viewing condition FR-007's distributor cell
-  > edits, under the same six-pip rule, and MUST NOT become a second allocation, a draft or a
-  > running total; each bank MUST expose the allocation it stands at in words, and the blocks shown
-  > MUST be the pips the package returned rather than the ones that were pressed. The three
+  > edits, through the same action and under the same six-pip rule, and MUST NOT become a second
+  > allocation, a draft or a running total; each bank MUST expose the allocation it stands at in
+  > words, and the blocks shown MUST be the pips the package returned rather than the ones that were
+  > pressed. The three
   > read-only contributions above stay read-only.
   >
   > The rail is on screen in every anatomy mode while the distributor table is only in `POWER`, and

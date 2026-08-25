@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { relationId } from '../../a11y/text-equivalence';
 
 /** One tab. */
 export interface TabItem {
@@ -37,10 +38,31 @@ export type TabPresentation = 'tabs' | 'segmented';
   templateUrl: './tab-group.html',
   styleUrl: './tab-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tab-group-host--labelled]': 'labelVisible()' },
 })
 export class TabGroup {
   /** What the set of tabs is for. Becomes the group's accessible name. */
   readonly label = input.required<string>();
+
+  /**
+   * Whether {@link label} is drawn in front of the strip as well as exposed.
+   *
+   * Off by default, because most strips are named by what they sit under: the
+   * anatomy's mode strip is the region's own heading said twice if it prints a
+   * label, and the same goes for the `TOP` / `BOTTOM` side selector.
+   *
+   * On, the label becomes a visible caption and the group is named by it
+   * through `aria-labelledby` rather than by a string only a screen reader
+   * gets. That is the stronger of the two: the visible name and the accessible
+   * name are then the same words by construction, which is what WCAG 2.5.3
+   * asks for and what the preview contract already claims for this component.
+   * Feature 005's `H-PTS` caption in front of its `DEPLOYED` / `RETRACTED`
+   * segments is the canvas that asked for it.
+   */
+  readonly labelVisible = input(false);
+
+  /** Ties the visible caption to the group that it names. */
+  readonly labelId = relationId('tab-group-label');
   readonly tabs = input.required<readonly TabItem[]>();
   readonly selectedId = input.required<string>();
   readonly presentation = input<TabPresentation>('tabs');

@@ -1,8 +1,18 @@
+@if (labelVisible()) {
+  <!--
+    The canvas's own caption in front of the strip. It is the group's name
+    rather than a decoration beside it, so the words a reader sees and the
+    words a screen reader announces are the same words by construction.
+  -->
+  <span class="tab-group__label" [id]="labelId">{{ label() }}</span>
+}
+
 <div
   class="tab-group"
   [class.tab-group--segmented]="!isTabs()"
   [attr.role]="isTabs() ? 'tablist' : 'group'"
-  [attr.aria-label]="label()"
+  [attr.aria-label]="labelVisible() ? null : label()"
+  [attr.aria-labelledby]="labelVisible() ? labelId : null"
 >
   @for (tab of tabs(); track tab.id) {
     <button

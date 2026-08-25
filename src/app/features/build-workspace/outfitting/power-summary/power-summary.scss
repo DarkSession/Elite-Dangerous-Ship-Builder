@@ -89,3 +89,81 @@
   margin-inline-start: calc(var(--edsb-border-width-marker) * -1);
   background-color: var(--edsb-text-numeric);
 }
+
+// Canvas 1c's three `.pipset` groups under the bar: a bank name in that bank's
+// own ink over four blocks. They wrap rather than scroll, because the rail is
+// narrow and three groups of four targets do not share a 306-pixel line at a
+// doubled text size.
+.pipsets {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  margin-block-start: var(--edsb-space-stack);
+}
+
+.pipset {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
+// Decoration on top of the reading: the group beneath is named with the
+// allocation it stands at, and this is the canvas's label for the eye.
+.pipset__name {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+}
+
+// Four blocks side by side, each of them the control for that many pips — the
+// same control the distributor's cell draws, at the same target size, so the
+// two places a Commander can set the pips are the same size to press.
+.pips {
+  display: flex;
+  gap: var(--edsb-space-inline-tight);
+  inline-size: max-content;
+}
+
+.pips__step {
+  @include layout.target-baseline;
+
+  position: relative;
+  flex: 0 0 var(--edsb-target-size);
+  padding: 0;
+  background-color: var(--edsb-surface-inset);
+  border: var(--edsb-border-width-hairline) solid transparent;
+  cursor: pointer;
+}
+
+.pips__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: block;
+}
+
+// The canvas's own colour per bank, on the bank's name and on its blocks. It is
+// decoration on top of the reading, exactly as it is in the distributor table:
+// each group is named with the allocation it stands at.
+@mixin bank-colour($colour) {
+  .pipset__name {
+    color: $colour;
+  }
+
+  .pips__fill {
+    background-color: $colour;
+  }
+
+  .pips__step:hover {
+    border-color: $colour;
+  }
+}
+
+[data-bank='systems'] {
+  @include bank-colour(var(--edsb-surface-bank-systems));
+}
+
+[data-bank='engines'] {
+  @include bank-colour(var(--edsb-surface-bank-engines));
+}
+
+[data-bank='weapons'] {
+  @include bank-colour(var(--edsb-surface-bank-weapons));
+}

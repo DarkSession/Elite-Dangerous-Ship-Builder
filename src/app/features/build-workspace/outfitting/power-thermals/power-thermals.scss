@@ -106,14 +106,47 @@
 // tracks let a longer draw on one line pull that line's bar shorter than the bar
 // above it, which reads as a difference in draw when it is only a difference in
 // digits.
-.modules {
+// The heads, the lines and the total share one set of tracks. The block owns
+// them and each of the three borrows them, so `MODULE` stands over the names and
+// `MW` over the figures whatever either column turns out to measure. The head
+// and the total are their own rows rather than list items: an `ol` takes
+// modules, and neither of those is one.
+.modules-block,
+.modules,
+.modules__head,
+.modules__total {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   column-gap: var(--edsb-space-inline);
   row-gap: var(--edsb-space-stack-tight);
   margin: 0;
   padding: 0;
+}
+
+.modules,
+.modules__head,
+.modules__total {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
   list-style: none;
+}
+
+.modules__head-draw,
+.modules__total-draw {
+  grid-column: 3;
+  text-align: end;
+}
+
+// The total is ruled off from the lines it adds up, which is the one thing that
+// makes it read as their sum rather than as another module.
+.modules__total {
+  padding-block-start: var(--edsb-space-stack-tight);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+}
+
+.modules__total-label {
+  grid-column: 1 / 3;
 }
 
 // The name column is fixed in the canvas and fluid here: a long module name at
@@ -134,7 +167,10 @@
 }
 
 .module__count,
-.module__group {
+.module__group,
+.modules__head-name,
+.modules__head-draw,
+.modules__total-label {
   @include layout.micro-label;
 }
 
@@ -150,7 +186,8 @@
   background-color: var(--edsb-surface-accent-solid);
 }
 
-.module__draw {
+.module__draw,
+.modules__total-draw {
   @include layout.metric-value(var(--edsb-text-size-body));
 
   text-align: end;
@@ -179,10 +216,15 @@
 
 @include layout.container-medium-up(power) {
   // One box split down the middle: the bars and the caption that belongs to them
-  // on one side, the four tiles on the other, and the key across the foot of
-  // both. Every position is stated, because leaving the tiles to auto-placement
-  // puts them under the bars rather than beside them the moment anything in the
-  // first column takes two rows.
+  // down one side, and the key over the four tiles down the other. Every
+  // position is stated, because leaving the tiles to auto-placement puts them
+  // under the bars rather than beside them the moment anything in the first
+  // column takes two rows.
+  //
+  // The key sits above the tiles rather than across the foot of both since the
+  // 2026-08-25 canvas revision, which is also the order the stacked arrangement
+  // reads it in: it explains the bars, and it explained them from below four
+  // figures that do not use it.
   .heat {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -192,15 +234,15 @@
   }
 
   .heat__profile {
-    grid-area: 1 / 1;
-  }
-
-  .power__facts {
-    grid-area: 1 / 2;
+    grid-area: 1 / 1 / span 2 / auto;
   }
 
   .heat__legend {
-    grid-area: 2 / 1 / auto / -1;
+    grid-area: 1 / 2;
+  }
+
+  .power__facts {
+    grid-area: 2 / 2;
   }
 }
 
@@ -237,6 +279,16 @@
 .heat__name {
   min-inline-size: 0;
   overflow-wrap: break-word;
+}
+
+// The gloss under the scenario's name, in the quieter ink. Drawn, not hovered:
+// it is the one thing a scenario name does not say, and hover-only meaning is
+// unreachable by touch (011 FR-006).
+.heat__description {
+  display: block;
+  color: var(--edsb-text-faint);
+  font-size: var(--edsb-text-size-micro);
+  text-wrap: pretty;
 }
 
 .heat__track {

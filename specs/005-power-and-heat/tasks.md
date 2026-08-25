@@ -303,26 +303,45 @@ surface owns, with the full browser matrix at the end of the phase.
 Recorded in `design/power-and-heat-detail.md`, "Canvas revision, 2026-08-25". Nothing here is a new
 package call: every figure is one the projection already returns.
 
-- [ ] T069 Draw the `H‑PTS` label in front of the two condition segments, and make it the group's
-      accessible name rather than a hidden string beside them
-- [ ] T070 Re-lay `DRAW BY MODULE`: withdraw the header's `MW · TOTAL n` note and
+> **Ruled 2026-08-25 (the owner), before T074 was built.** The specs disagreed with each other about
+> the pip step: `spec.md` FR-007 and wave 12's ruling C said whole pips, while `design/` and the
+> store said "half a pip at a time". The ruling settles it and is now FR-007's own block: **a
+> Commander assigns a whole pip, and the other two banks pay half a pip each** — or one of them pays
+> the whole of it where the other has nothing left to give, and the same rule runs backwards when
+> pips come back out. `PowerConditionsStore.setPips` was rebuilt to it (it had been redistributing
+> the _remainder_ evenly, which does not preserve where the other two stood), and `spec.md`,
+> `data-model.md`, `contracts/distributor-metrics.md`, `quickstart.md` and
+> `design/power-and-heat-detail.md` were corrected together.
+
+- [x] T069 Draw the `H‑PTS` label in front of the two condition segments, and make it the group's
+      accessible name rather than a hidden string beside them.
+      _Built through a new `labelVisible` input on the shared `edsb-tab-group` (feature 011's
+      layer), which swaps `aria-label` for `aria-labelledby` on the caption, so the visible name and
+      the accessible name are one string by construction. Drawn as the whole word rather than the
+      canvas's abbreviation, which is what this application already does with `GRP 1` and its column
+      heads — see `design/power-and-heat-detail.md`, "One departure from the drawing"._
+- [x] T070 Re-lay `DRAW BY MODULE`: withdraw the header's `MW · TOTAL n` note and
       `power.modules.total` with it, head the list `MODULE` against `MW` over the row tracks with
       the bar column unheaded, and close it with a `TOTAL DRAW` row carrying the same total. Canvas
       1d's second footer figure, `POWERED`, is not built — the priority-group block already draws it
-- [ ] T071 Move the heat key above the four tiles
-- [ ] T072 Add a description under each of the six heat scenario names, drawn rather than hovered
+- [x] T071 Move the heat key above the four tiles
+- [x] T072 Add a description under each of the six heat scenario names, drawn rather than hovered
       (011 FR-006), through the localization layer in both catalogues. The canvas's six `data-tip`
       strings are quoted in `design/power-and-heat-detail.md`, "Heat profile"
-- [ ] T073 Rename `power.distributor.heading` to `Power distributor and pips` in both catalogues, and
+- [x] T073 Rename `power.distributor.heading` to `Power distributor and pips` in both catalogues, and
       withdraw `distributorIdentity()` and its template line — the canvas no longer draws the fitted
-      distributor beside the heading
-- [ ] T074 Build the rail's pip control (FR-013's 2026-08-25 extension): three bank groups under
+      distributor beside the heading.
+      _`DistributorView.identity`, the `DistributorIdentity` type and the projection helper behind
+      them are withdrawn with it, on T037's precedent: nothing read them once the template line
+      went. `power.distributor.module` and its separator are gone from both catalogues and from the
+      translation-review ledger._
+- [x] T074 Build the rail's pip control (FR-013's 2026-08-25 extension): three bank groups under
       the `POWER` bar, four blocks each, filled from the leading edge, editing the one condition through the same store
       action the distributor cell uses. No half-pip block, no running total, no draft. Each group is
       named with the allocation it stands at
-- [ ] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
+- [x] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
       one condition — setting from the rail changes what the distributor table reads, and the reverse
-- [ ] T076 [P] Assert the rail control's target size and touch operation at all five layout
+- [x] T076 [P] Assert the rail control's target size and touch operation at all five layout
       profiles, on the same `--edsb-target-size` baseline the distributor cell holds
-- [ ] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
+- [x] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
