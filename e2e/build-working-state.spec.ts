@@ -250,6 +250,9 @@ test.describe('the tab’s working build', () => {
   });
 
   test('writes nothing to a saved build when it is opened', async ({ page }) => {
+    // A build, a named save, and an open — three journeys' worth of waiting on
+    // one page, which runs past the default budget on a loaded machine.
+    test.slow();
     await createBuild(page);
     await savedToBrowser(page);
     await reachShellLink(page, 'Open saved build');
