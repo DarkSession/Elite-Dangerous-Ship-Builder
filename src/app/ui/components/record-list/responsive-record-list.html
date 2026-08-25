@@ -11,47 +11,51 @@
   </div>
 
   <div class="records__body">
-    @for (group of groups(); track group.id) {
-      <section
-        class="records__group"
-        [attr.data-record-group]="group.id"
-        [attr.aria-labelledby]="groupId(group.id)"
-      >
-        <h3 class="records__heading" [id]="groupId(group.id)">{{ group.label }}</h3>
+    @if (noMatch(); as sentence) {
+      <p class="records__no-match">{{ sentence }}</p>
+    } @else {
+      @for (group of groups(); track group.id) {
+        <section
+          class="records__group"
+          [attr.data-record-group]="group.id"
+          [attr.aria-labelledby]="groupId(group.id)"
+        >
+          <h3 class="records__heading" [id]="groupId(group.id)">{{ group.label }}</h3>
 
-        @if (group.builds.length > 0) {
+          @if (group.builds.length > 0) {
+            <ul class="records__list">
+              @for (build of group.builds; track build.id) {
+                <li [attr.data-record-id]="build.id">
+                  <edsb-saved-build-card
+                    [build]="build"
+                    [chosen]="build.id === chosen()"
+                    (chose)="chose.emit($event)"
+                  />
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="records__empty">{{ group.emptyLabel }}</p>
+          }
+        </section>
+      }
+
+      @if (hasUnavailable() && unavailableLabel()) {
+        <section class="records__group" [attr.aria-labelledby]="groupId('unavailable')">
+          <h3 class="records__heading" [id]="groupId('unavailable')">{{ unavailableLabel() }}</h3>
           <ul class="records__list">
-            @for (build of group.builds; track build.id) {
-              <li [attr.data-record-id]="build.id">
-                <edsb-saved-build-card
-                  [build]="build"
-                  [chosen]="build.id === chosen()"
-                  (chose)="chose.emit($event)"
+            @for (record of unavailable(); track record.id) {
+              <li [attr.data-record-id]="record.id">
+                <edsb-status-notice
+                  tone="warning"
+                  [message]="record.explanation"
+                  [detail]="record.detail"
                 />
               </li>
             }
           </ul>
-        } @else {
-          <p class="records__empty">{{ group.emptyLabel }}</p>
-        }
-      </section>
-    }
-
-    @if (hasUnavailable() && unavailableLabel()) {
-      <section class="records__group" [attr.aria-labelledby]="groupId('unavailable')">
-        <h3 class="records__heading" [id]="groupId('unavailable')">{{ unavailableLabel() }}</h3>
-        <ul class="records__list">
-          @for (record of unavailable(); track record.id) {
-            <li [attr.data-record-id]="record.id">
-              <edsb-status-notice
-                tone="warning"
-                [message]="record.explanation"
-                [detail]="record.detail"
-              />
-            </li>
-          }
-        </ul>
-      </section>
+        </section>
+      }
     }
   </div>
 </div>

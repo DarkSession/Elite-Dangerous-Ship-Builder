@@ -68,6 +68,16 @@ export class ResponsiveRecordList {
   /** The heading for the unavailable group, when there is one. */
   readonly unavailableLabel = input<string | null>(null);
 
+  /**
+   * The one sentence to draw instead of the groups when a search matched
+   * nothing.
+   *
+   * On the body's own ground, with no panel and nothing else removed: every
+   * control stays where it was, so widening the search needs no separate action
+   * (build-library design, "No match").
+   */
+  readonly noMatch = input<string | null>(null);
+
   readonly chose = output<string>();
 
   readonly listId = relationId('record-list');

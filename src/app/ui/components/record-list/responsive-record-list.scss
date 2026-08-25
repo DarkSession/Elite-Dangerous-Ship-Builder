@@ -64,6 +64,16 @@
   }
 }
 
+// One centred sentence on the body's own ground: no panel, and nothing else
+// removed, so widening the search needs no separate action.
+.records__no-match {
+  padding-block: var(--edsb-space-section);
+  margin: 0;
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
+}
+
 .records__empty {
   padding-block: var(--edsb-space-section);
   font-weight: var(--edsb-text-weight-prose);

@@ -39,10 +39,6 @@
         <h2>{{ emptyTitle() }}</h2>
         <p>{{ emptyDescription() }}</p>
       </div>
-    } @else if (noMatch()) {
-      <!-- One sentence on the body's own ground. Every control stays reachable,
-           so widening the search needs no separate action. -->
-      <p class="library__no-match">{{ noMatchText() }}</p>
     } @else {
       <edsb-responsive-record-list
         [label]="listLabel()"
@@ -51,6 +47,7 @@
         [chosen]="chosen()"
         [unavailable]="unavailable()"
         [unavailableLabel]="unavailableLabel()"
+        [noMatch]="noMatch() ? noMatchText() : null"
         (chose)="chooseRecord($event)"
       />
     }

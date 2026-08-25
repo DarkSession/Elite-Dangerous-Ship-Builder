@@ -51,16 +51,6 @@
   color: var(--edsb-text-subtle);
 }
 
-// One centred sentence on the body's own ground. No panel, and nothing else
-// removed: widening the search needs no separate action.
-.library__no-match {
-  padding-block: var(--edsb-space-section);
-  margin: 0;
-  font-weight: var(--edsb-text-weight-prose);
-  text-align: center;
-  color: var(--edsb-text-subtle);
-}
-
 // The committing footer both canvases draw, on its own plate above the surface's
 // edge: the destructive action on the leading edge, the opening action on the
 // trailing one, with everything else between them.

@@ -73,7 +73,8 @@ describe('SavedBuildCard', () => {
 
     expect(row.getAttribute('aria-current')).toBe('true');
     expect(textOf(element(fixture))).toContain('Current build');
-    expect(row.getAttribute('aria-label')).toContain('Current build');
+    // Named by its own words rather than by an aria-label over the top of them.
+    expect(row.hasAttribute('aria-label')).toBe(false);
   });
 
   it('draws no marker on a record the workspace is not holding', () => {
@@ -88,7 +89,10 @@ describe('SavedBuildCard', () => {
     });
 
     expect(textOf(query(fixture, '.record__issues'))).toBe('2');
-    expect(query(fixture, 'button').getAttribute('aria-label')).toContain('2 issues recorded');
+    // The plate is decoration; the count's own words are in the row's text, so
+    // a reader is told what a colour and a number alone would not say.
+    expect(query(fixture, '.record__issues').getAttribute('aria-hidden')).toBe('true');
+    expect(textOf(element(fixture))).toContain('2 issues recorded');
   });
 
   it('states remaining life where a record has a deadline', () => {
@@ -97,7 +101,6 @@ describe('SavedBuildCard', () => {
     });
 
     expect(textOf(element(fixture))).toContain('Deleted in 6 days');
-    expect(query(fixture, 'button').getAttribute('aria-label')).toContain('Deleted in 6 days');
   });
 
   it('shows a local note when there is one', () => {

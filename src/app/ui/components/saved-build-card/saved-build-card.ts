@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type { GameTextPresentation } from '../../../i18n/game-text.presenter';
 import { relationId } from '../../a11y/text-equivalence';
 import { GameText } from '../game-text/game-text';
@@ -66,19 +66,6 @@ export class SavedBuildCard {
   readonly chose = output<string>();
 
   readonly cardId = relationId('saved-build');
-
-  /** Everything a reader needs from the row, in one accessible name. */
-  readonly accessibleName = computed(() => {
-    const build = this.build();
-    return [
-      build.chooseLabel,
-      build.current ? build.currentLabel : null,
-      build.issues?.label ?? null,
-      build.remaining,
-    ]
-      .filter((part): part is string => part !== null)
-      .join('. ');
-  });
 
   choose(): void {
     this.chose.emit(this.build().id);

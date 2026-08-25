@@ -107,10 +107,26 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
  * "Reference composition").
  */
 async function chooseRecord(page: Page, title: string): Promise<void> {
-  // Anchored, because a row's accessible name carries its states after the
-  // title: "Choose Anaconda" would otherwise also match "Anaconda explorer".
+  // A row is named by its own words, so it is found by its title — anchored,
+  // because "Anaconda" would otherwise also match "Anaconda explorer".
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  await page.getByRole('button', { name: new RegExp(`^Choose ${escaped}(\\.|$)`) }).click();
+  const row = page.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
+  // Retried, because the listing re-reads storage after a write and the row a
+  // press was aimed at can be replaced a frame later: the click then resolves
+  // against a detached node and its handler never runs.
+  await expect(async () => {
+    await row.click({ timeout: 2_000 });
+    await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+}
+
+/** Chooses the first row of the unnamed group, whatever it is titled. */
+async function chooseFirstUnnamed(page: Page): Promise<void> {
+  const row = page.locator('[data-record-group="working"] .record').first();
+  await expect(async () => {
+    await row.click({ timeout: 2_000 });
+    await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
 }
 
 /**
@@ -186,7 +202,9 @@ test.describe('the build library', () => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
-    await chooseRecord(page, 'Anaconda');
+    // The seeded save is also titled "Anaconda …", so the row is taken from the
+    // unnamed group rather than by a title both rows start with.
+    await chooseFirstUnnamed(page);
     await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
     const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
@@ -286,8 +304,8 @@ test.describe('the build library', () => {
     await expect
       .poll(() => page.locator('.library__count').innerText(), { timeout: 5_000 })
       .toBe('1 of 2 builds shown');
-    await expect(page.getByText('Python trader')).toBeVisible();
-    await expect(page.getByText('Anaconda explorer')).toHaveCount(0);
+    await expect(page.locator('[data-record-id="b"]')).toBeVisible();
+    await expect(page.locator('[data-record-id="a"]')).toHaveCount(0);
     // Narrowing changes no record and removes nothing.
     expect(await recordCount(page)).toBe(2);
   });
@@ -304,7 +322,7 @@ test.describe('the build library', () => {
     // with what was typed still in it.
     await expect(search).toHaveValue('nothing like this');
     await search.fill('anaconda');
-    await expect(page.getByText('Anaconda explorer')).toBeVisible();
+    await expect(page.locator('[data-record-id="a"]')).toBeVisible();
   });
 
   test('counts the issues a record was saved with, in words as well as a number', async ({
@@ -317,9 +335,11 @@ test.describe('the build library', () => {
 
     const row = page.locator('[data-record-id="a"] button');
     await expect(row).toContainText('Invalid');
-    // The count is on its own plate; the words are in the row's name, so the
+    // The plate carries the number; the words are in the row's own text, so the
     // plate is never the only carrier.
-    expect(await row.getAttribute('aria-label')).toContain('issues recorded');
+    await expect(row.locator('.record__issues')).toHaveText('2');
+    await expect(row.locator('.record__issues')).toHaveAttribute('aria-hidden', 'true');
+    await expect(row).toContainText('issues recorded');
   });
 
   test('states how long an unnamed record has left, and drops one that ran out', async ({

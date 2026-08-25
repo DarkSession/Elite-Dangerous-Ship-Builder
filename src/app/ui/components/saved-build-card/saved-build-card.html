@@ -1,7 +1,9 @@
 <!--
   A button, because choosing a row is an action and the footer acts on what was
-  chosen. The visible text is the row itself; the accessible name adds what the
-  marker and the plate say without words (FR-010).
+  chosen. Its accessible name is the row's own words rather than an `aria-label`
+  over the top of them: a name that replaced the visible text would be a name a
+  Commander reading aloud could not match to what they see (WCAG 2.5.3). What
+  the plate and the marker say without words is added as text of its own.
 -->
 <button
   type="button"
@@ -9,7 +11,6 @@
   [class.record--chosen]="chosen()"
   [attr.aria-current]="build().current ? 'true' : null"
   [attr.aria-pressed]="chosen() ? 'true' : 'false'"
-  [attr.aria-label]="accessibleName()"
   [attr.data-record-current]="build().current ? 'true' : null"
   (click)="choose()"
 >
@@ -21,6 +22,7 @@
 
       @if (build().issues; as issues) {
         <span class="record__issues" aria-hidden="true">{{ issues.count }}</span>
+        <span class="visually-hidden">{{ issues.label }}</span>
       }
     </span>
 
@@ -50,4 +52,7 @@
   </span>
 
   <span class="record__modified">{{ build().modified }}</span>
+
+  <!-- The verb, after the row's own words rather than instead of them. -->
+  <span class="visually-hidden">{{ build().chooseLabel }}</span>
 </button>

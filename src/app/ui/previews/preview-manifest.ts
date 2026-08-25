@@ -2148,6 +2148,8 @@ registerPreview({
       [
         'the column headers are drawn once over the body rather than into every row',
         'each group carries its own heading and stays in one reading order',
+        'the record the workspace holds is marked in words as well as in the wash',
+        'an unnamed row states which save its edits are of, and how long it has left',
         'the narrow and wide compositions present the same records in the same order',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
@@ -2157,6 +2159,7 @@ registerPreview({
       {
         label: 'Saved builds',
         columns: RECORD_COLUMNS,
+        noMatch: 'Nothing here matches “neutron”.',
         groups: [
           {
             id: 'named',
@@ -2166,11 +2169,15 @@ registerPreview({
           },
         ],
       },
-      ['an empty group says so in text rather than collapsing to nothing'],
+      [
+        'a search that matched nothing says so in one centred sentence on the body’s own ground',
+        'nothing else is removed, so widening the search needs no separate action',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
     ),
     notApplicable(
       'loading',
-      'The list renders the records it is given; reading them from storage belongs to the library store.',
+      'The list renders the records it is given; reading them from storage belongs to the library store. A narrowed list is the default state with fewer rows — the search changes no order and moves no record — and a search that matched nothing is the empty state above.',
     ),
     state(
       'error',
