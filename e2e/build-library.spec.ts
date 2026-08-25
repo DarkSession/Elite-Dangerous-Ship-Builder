@@ -54,6 +54,32 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
   }, entries);
 }
 
+/**
+ * Fills this origin's local storage, so the next record write has nowhere to go.
+ *
+ * Under a key this application does not own, and added after the records a test
+ * seeds, so what runs out is the browser's room rather than anything the
+ * application decided. The quota is the only bound left on records since the
+ * twenty-record limit was withdrawn on 2026-08-25 (FR-013).
+ */
+async function fillStorage(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    // Coarse first, then finer, so what is left over is smaller than anything
+    // the application would write. A megabyte of headroom would leave the store
+    // full in name only.
+    for (const size of [64 * 1024, 1024, 64, 1]) {
+      const chunk = 'x'.repeat(size);
+      for (let index = 0; ; index += 1) {
+        try {
+          localStorage.setItem(`filler:${size}:${index}`, chunk);
+        } catch {
+          break;
+        }
+      }
+    }
+  });
+}
+
 /** How many records this browser is holding, whatever their kind. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
@@ -236,33 +262,51 @@ test.describe('the build library', () => {
     expect(stored.broken).not.toBeNull();
   });
 
-  test('offers explicit discard when twenty working records already exist', async ({ page }) => {
+  test('offers explicit discard when the browser store is full', async ({ page }) => {
     await seed(
       page,
       Array.from({ length: 20 }, (_, index) =>
-        seedRecord(`w${index}`, { kind: 'working', name: null }),
+        // Edited just now: an unnamed record has seven days, and a record
+        // stamped with the fixture's own instant would be swept before this
+        // journey reached the library (FR-013).
+        seedRecord(`w${index}`, {
+          kind: 'working',
+          name: null,
+          modifiedAt: new Date().toISOString(),
+        }),
       ),
     );
+    await fillStorage(page);
     await openWorkspaceWithBuild(page);
 
-    await expect(page.getByText(/recoverable working builds/i)).toBeVisible();
+    await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
+      'data-persistence',
+      'quota-full',
+    );
+    await expect(page.getByText(/storage is full/i)).toBeVisible();
     await reachShellLink(page, 'Open saved build');
     await expect(page.getByRole('heading', { name: 'Choose builds to discard' })).toBeVisible();
 
-    // Nothing was removed to make room.
-    const stored = await page.evaluate(
-      () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
-    );
-    expect(stored).toBe(20);
+    // Nothing was removed to make room, and expiry is never offered as a way
+    // out of a full store.
+    expect(await recordCount(page)).toBe(20);
   });
 
   test('discards only the records explicitly selected', async ({ page }) => {
     await seed(
       page,
       Array.from({ length: 20 }, (_, index) =>
-        seedRecord(`w${index}`, { kind: 'working', name: null }),
+        // Edited just now: an unnamed record has seven days, and a record
+        // stamped with the fixture's own instant would be swept before this
+        // journey reached the library (FR-013).
+        seedRecord(`w${index}`, {
+          kind: 'working',
+          name: null,
+          modifiedAt: new Date().toISOString(),
+        }),
       ),
     );
+    await fillStorage(page);
     await openWorkspaceWithBuild(page);
     await reachShellLink(page, 'Open saved build');
 
@@ -270,10 +314,7 @@ test.describe('the build library', () => {
     await manager.getByRole('checkbox').first().check();
     await page.getByRole('button', { name: 'Delete this build' }).click();
 
-    const stored = await page.evaluate(
-      () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
-    );
-    expect(stored).toBe(19);
+    expect(await recordCount(page)).toBe(19);
   });
 
   test('offers overwrite, keep both and cancel when two pages save one build', async ({

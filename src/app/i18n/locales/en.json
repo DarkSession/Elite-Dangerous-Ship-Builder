@@ -147,7 +147,6 @@
   "persistence.ready": "Ready to save",
   "persistence.saving": "Saving",
   "persistence.saved": "Saved in this browser",
-  "persistence.retention-limit": "There are already {{limit}} recoverable working builds, so this one is not being saved. Editing still works; discard one to make room.",
   "persistence.quota-full": "This browser's storage is full, so nothing is being saved. Editing still works; discard a build to make room.",
   "persistence.unavailable": "This browser is not allowing the application to store anything, so builds will not survive a reload. Everything else still works.",
   "persistence.write-failed": "The last save did not go through. The build is unchanged and editing still works.",

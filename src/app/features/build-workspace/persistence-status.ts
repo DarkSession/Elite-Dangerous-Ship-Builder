@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { AutosaveService } from '../../application/build-library/autosave.service';
-import { WORKING_RECORD_LIMIT } from '../../application/build-library/retention.service';
-import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { StatusNotice, type StatusTone } from '../../ui/components/status/status-notice';
@@ -37,7 +35,6 @@ export class PersistenceStatus {
   readonly #active = inject(ActiveBuildStore);
   readonly #autosave = inject(AutosaveService);
   readonly #messages = inject(MessageService);
-  readonly #formatters = inject(Formatters);
 
   readonly label = this.#messages.messageSignal('persistence.label');
 
@@ -49,10 +46,6 @@ export class PersistenceStatus {
         return this.#messages.message('persistence.saving');
       case 'saved':
         return this.#messages.message('persistence.saved');
-      case 'retention-limit':
-        return this.#messages.message('persistence.retention-limit', {
-          limit: this.#formatters.integer(WORKING_RECORD_LIMIT),
-        });
       case 'quota-full':
         return this.#messages.message('persistence.quota-full');
       case 'unavailable':
@@ -72,7 +65,6 @@ export class PersistenceStatus {
         return 'loading';
       case 'saved':
         return 'success';
-      case 'retention-limit':
       case 'quota-full':
       case 'record-deleted-externally':
         return 'warning';
@@ -93,7 +85,6 @@ export class PersistenceStatus {
       case 'unavailable':
         return [{ id: 'retry', label: this.#messages.message('persistence.retry') }];
       case 'quota-full':
-      case 'retention-limit':
         return [
           { id: 'manage', label: this.#messages.message('persistence.manage') },
           { id: 'retry', label: this.#messages.message('persistence.retry') },

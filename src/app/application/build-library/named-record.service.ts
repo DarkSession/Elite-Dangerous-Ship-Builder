@@ -4,7 +4,7 @@ import type { LocalRecordV1, RecordValidation } from '../../domain/build/stored-
 import { LocksUnavailableError, WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
-import { namedRecordLockName } from '../../platform/storage/storage-keys';
+import { recordLockName } from '../../platform/storage/storage-keys';
 import type { StorageFailureCode } from '../../platform/storage/web-storage.port';
 
 /** What a named write is trying to do. */
@@ -116,7 +116,7 @@ export class NamedRecordService {
     }
 
     try {
-      const promoted = await this.#locks.request(namedRecordLockName(request.recordId), async () =>
+      const promoted = await this.#locks.request(recordLockName(request.recordId), async () =>
         this.#promoteIfUnnamed(request),
       );
       return promoted ?? this.#mintThenConsume(request);
@@ -149,7 +149,7 @@ export class NamedRecordService {
     }
 
     try {
-      const result = await this.#locks.request(namedRecordLockName(request.recordId), async () =>
+      const result = await this.#locks.request(recordLockName(request.recordId), async () =>
         this.#writeIfCurrent(request),
       );
       if (result.kind === 'saved') {

@@ -12,7 +12,6 @@ import { recordKey } from '../../platform/storage/storage-keys';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { AutosaveService } from './autosave.service';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
-import { WORKING_RECORD_LIMIT } from './retention.service';
 
 /** A lifecycle adapter a test can fire on demand. */
 class FakeLifecycle {
@@ -79,6 +78,39 @@ function commitBuild(
     baseline: null,
   });
   return loadout;
+}
+
+/** One stored named record, as a Commander's own save. */
+function storedNamedRecord(id: string): string {
+  return storedWorkingRecord(id)
+    .replace('"kind":"working"', '"kind":"named"')
+    .replace('"name":null', '"name":"Their save"');
+}
+
+/** One stored unnamed record, in the shape the repository writes. */
+function storedWorkingRecord(id: string): string {
+  return JSON.stringify({
+    format: 'edsb.local-record',
+    version: 1,
+    id,
+    kind: 'working',
+    revisionId: 'r',
+    createdAt: '2026-01-02T03:04:05.000Z',
+    modifiedAt: '2026-01-02T03:04:05.000Z',
+    name: null,
+    note: null,
+    hullSymbol: 'Anaconda',
+    validation: { valid: true, complete: true },
+    build: {
+      format: 'edsb.build',
+      version: 1,
+      shipSymbol: 'Anaconda',
+      shipName: null,
+      shipIdent: null,
+      modules: [],
+    },
+    sourceNamed: null,
+  });
 }
 
 describe('AutosaveService', () => {
@@ -178,34 +210,14 @@ describe('AutosaveService', () => {
     expect(active.loadout()).not.toBeNull();
   });
 
-  it('writes nothing and deletes nothing at the retention limit', () => {
+  it('writes however many records already exist, refusing nothing', () => {
+    // The twenty-record limit was withdrawn on 2026-08-25: nothing refuses to
+    // store a build because many are stored, and no number evicts anything. The
+    // bound that replaced it is the seven-day expiry, which the sweep applies
+    // and autosave knows nothing about (FR-013).
     const { autosave, active, storage } = setup((store) => {
-      for (let index = 0; index < WORKING_RECORD_LIMIT; index += 1) {
-        store.setItem(
-          recordKey(`existing-${index}`),
-          JSON.stringify({
-            format: 'edsb.local-record',
-            version: 1,
-            id: `existing-${index}`,
-            kind: 'working',
-            revisionId: 'r',
-            createdAt: '2026-01-02T03:04:05.000Z',
-            modifiedAt: '2026-01-02T03:04:05.000Z',
-            name: null,
-            note: null,
-            hullSymbol: 'Anaconda',
-            validation: { valid: true, complete: true },
-            build: {
-              format: 'edsb.build',
-              version: 1,
-              shipSymbol: 'Anaconda',
-              shipName: null,
-              shipIdent: null,
-              modules: [],
-            },
-            sourceNamed: null,
-          }),
-        );
+      for (let index = 0; index < 25; index += 1) {
+        store.setItem(recordKey(`existing-${index}`), storedWorkingRecord(`existing-${index}`));
       }
     });
     const before = storage.entries.size;
@@ -213,8 +225,35 @@ describe('AutosaveService', () => {
 
     autosave.flush();
 
-    expect(active.persistence()).toBe('retention-limit');
-    expect(storage.entries.size).toBe(before);
+    expect(active.persistence()).toBe('saved');
+    expect(storage.entries.size).toBe(before + 1);
+  });
+
+  it('leaves the named record it came from untouched when the store is full', () => {
+    // The fork has nowhere to go, and the answer is a persistence state rather
+    // than a write somewhere else: the save the build was opened from is not a
+    // fallback target, then or ever (FR-008, FR-013, T153b).
+    const { autosave, active, storage } = setup((store) =>
+      store.setItem(recordKey('their-save'), storedNamedRecord('their-save')),
+    );
+    const before = storage.entries.get(recordKey('their-save'));
+    // A build opened from that save and then edited: it holds no record of its
+    // own yet, so this write is the fork.
+    active.commit({
+      loadout: ShipLoadout.default('Anaconda'),
+      hullName: 'Anaconda',
+      provenance: 'named',
+      qualityNotices: [],
+      sourceNamed: { recordId: 'their-save', baseRevisionId: 'r' },
+      autosaveRecordId: null,
+      baseline: null,
+    });
+    storage.writeError = quotaError();
+
+    autosave.flush();
+
+    expect(active.persistence()).toBe('quota-full');
+    expect(storage.entries.get(recordKey('their-save'))).toBe(before);
     expect(active.loadout()).not.toBeNull();
   });
 

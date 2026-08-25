@@ -191,7 +191,7 @@ describe('NamedRecordService', () => {
 
     await named.overwriteNamed(overwrite(created.record.id, created.record.revisionId));
 
-    expect(locks.held).toEqual([`edsb:named:${created.record.id}`]);
+    expect(locks.held).toEqual([`edsb:record:${created.record.id}`]);
   });
 
   it('refuses an in-place replacement when locking is unavailable', async () => {
@@ -281,7 +281,7 @@ describe('NamedRecordService', () => {
 
     await named.nameHeldRecord({ ...request(), recordId: 'held' });
 
-    expect(locks.held).toEqual(['edsb:named:held']);
+    expect(locks.held).toEqual(['edsb:record:held']);
   });
 
   it('mints a record rather than replacing one named while the dialog was open', async () => {

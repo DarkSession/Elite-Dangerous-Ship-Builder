@@ -2,7 +2,7 @@ import {
   EDSB_BROADCAST_CHANNEL,
   EDSB_RECORD_KEY_PREFIX,
   EDSB_TAB_KEY,
-  namedRecordLockName,
+  recordLockName,
   recordIdFromKey,
   recordKey,
 } from './storage-keys';
@@ -22,8 +22,8 @@ describe('owned key space', () => {
   });
 
   it('locks per record rather than globally', () => {
-    expect(namedRecordLockName('a')).not.toBe(namedRecordLockName('b'));
-    expect(namedRecordLockName('a')).toBe('edsb:named:a');
+    expect(recordLockName('a')).not.toBe(recordLockName('b'));
+    expect(recordLockName('a')).toBe('edsb:record:a');
   });
 
   it('keeps the tab and channel names stable', () => {

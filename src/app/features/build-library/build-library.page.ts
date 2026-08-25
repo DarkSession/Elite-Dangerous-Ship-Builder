@@ -16,10 +16,6 @@ import { RecordDuplicationService } from '../../application/build-library/record
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
 import {
-  RetentionService,
-  WORKING_RECORD_LIMIT,
-} from '../../application/build-library/retention.service';
-import {
   SaveConflictService,
   type ConflictChoice,
 } from '../../application/build-library/save-conflict.service';
@@ -87,7 +83,6 @@ export class BuildLibraryPage {
   readonly #duplication = inject(RecordDuplicationService);
   readonly #conflicts = inject(SaveConflictService);
   readonly #invalidation = inject(RecordInvalidationService);
-  readonly #retention = inject(RetentionService);
   readonly #records = inject(LocalRecordRepository);
   readonly #active = inject(ActiveBuildStore);
   readonly #messages = inject(MessageService);
@@ -251,14 +246,18 @@ export class BuildLibraryPage {
       .filter(present),
   );
 
+  /**
+   * Why the Commander is being offered the list to choose from.
+   *
+   * Only ever a full browser store. The count limit that also raised this was
+   * withdrawn on 2026-08-25, and expiry never raises it: expiry is not a way out
+   * of a full quota, and offering it as one would suggest the application had
+   * removed something to make room (FR-013).
+   */
   readonly manageReason = computed(() =>
     this.#active.persistence() === 'quota-full'
       ? this.#messages.message('persistence.quota-full')
-      : this.#retention.workingCount() >= WORKING_RECORD_LIMIT
-        ? this.#messages.message('persistence.retention-limit', {
-            limit: this.#formatters.integer(WORKING_RECORD_LIMIT),
-          })
-        : null,
+      : null,
   );
 
   readonly #selectedForDiscard = signal<readonly string[]>([]);
@@ -366,6 +365,11 @@ export class BuildLibraryPage {
       this.#failure.set(this.#messages.message('persistence.write-failed'));
       return;
     }
+
+    // If that was the record this page is autosaving into, the workspace goes
+    // back to holding no build. The library stays open on the rest of the list:
+    // the current-record marker simply has nowhere to sit (FR-009).
+    this.#active.clearIfHolding(pending.recordId);
 
     this.#invalidation.announceDelete(pending.recordId);
     this.#library.refresh();
@@ -486,6 +490,9 @@ export class BuildLibraryPage {
     for (const id of ids) {
       const removed = this.#records.remove(id);
       if (removed.ok) {
+        // Selected deliberately, one by one, so the same rule applies as to a
+        // single confirmed deletion.
+        this.#active.clearIfHolding(id);
         this.#invalidation.announceDelete(id);
       }
     }

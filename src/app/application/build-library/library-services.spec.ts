@@ -21,7 +21,9 @@ import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinat
 import { BuildLibraryStore } from './build-library.store';
 import { RecordDuplicationService } from './record-duplication.service';
 import { RecordOpenService } from './record-open.service';
-import { RetentionService, WORKING_RECORD_LIMIT } from './retention.service';
+import { RetentionService, UNNAMED_RECORD_LIFETIME_MS } from './retention.service';
+import { ClockAdapter } from '../../platform/browser/clock.adapter';
+import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 class SilentChannel {
   readonly available = false;
@@ -42,9 +44,28 @@ class CountingUuid {
 
 const NOW = '2026-01-02T03:04:05.000Z';
 
+/** A clock a test can move, so an eight-day-old record takes no eight days. */
+class FixedClock {
+  instant = new Date(NOW);
+
+  now(): Date {
+    return this.instant;
+  }
+
+  timestamp(): string {
+    return this.now().toISOString();
+  }
+
+  /** Moves the clock forward by whole days. */
+  advanceDays(days: number): void {
+    this.instant = new Date(this.instant.getTime() + days * 24 * 60 * 60 * 1000);
+  }
+}
+
 function setup(seed: (storage: MemoryStorage) => void = () => {}) {
   const storage = new MemoryStorage();
   seed(storage);
+  const clock = new FixedClock();
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -53,21 +74,24 @@ function setup(seed: (storage: MemoryStorage) => void = () => {}) {
       ...provideMemoryStorage(storage),
       { provide: BroadcastChannelAdapter, useValue: new SilentChannel() },
       { provide: UuidAdapter, useValue: new CountingUuid() },
+      { provide: ClockAdapter, useValue: clock },
     ],
   });
   return {
     storage,
+    clock,
     library: TestBed.inject(BuildLibraryStore),
     open: TestBed.inject(RecordOpenService),
     duplication: TestBed.inject(RecordDuplicationService),
     retention: TestBed.inject(RetentionService),
+    ownership: TestBed.inject(TabOwnershipCoordinator),
     records: TestBed.inject(LocalRecordRepository),
     active: TestBed.inject(ActiveBuildStore),
     coordinator: TestBed.inject(BuildIngressCoordinator),
   };
 }
 
-/** Seeds one working record per index, so the retention limit can be reached. */
+/** Seeds one unnamed record per index, each stamped a second apart. */
 function seedWorkingRecords(storage: MemoryStorage, count: number): void {
   for (let index = 0; index < count; index += 1) {
     storage.setItem(
@@ -164,51 +188,167 @@ describe('BuildLibraryStore', () => {
   });
 });
 
+describe('the listing and the expiry together', () => {
+  it('sweeps expired records before the listing is read', () => {
+    // The two are deliberately joined: a row is gone when the list is drawn
+    // rather than disappearing under a Commander reading it (FR-013).
+    const { library, storage, clock } = setup((store) => seedWorkingRecords(store, 2));
+    expect(library.total()).toBe(2);
+
+    clock.advanceDays(8);
+    library.refresh();
+
+    expect(library.total()).toBe(0);
+    expect([...storage.entries.keys()]).toEqual([]);
+  });
+
+  it('leaves the listing alone while nothing has expired', () => {
+    const { library, clock } = setup((store) => seedWorkingRecords(store, 2));
+
+    clock.advanceDays(6);
+    library.refresh();
+
+    expect(library.total()).toBe(2);
+  });
+});
+
 describe('RetentionService', () => {
-  it('allows a new working record below the limit', () => {
-    const { retention } = setup((storage) => seedWorkingRecords(storage, 3));
+  /** The one unnamed record the expiry tests act on. */
+  function seedOne(storage: MemoryStorage): void {
+    seedWorkingRecords(storage, 1);
+  }
 
-    expect(retention.workingCount()).toBe(3);
-    expect(retention.mayWrite('a-new-record')).toEqual({ allowed: true });
-  });
+  const remainingIds = (storage: MemoryStorage) =>
+    [...storage.entries.keys()].filter((key) => key.startsWith('edsb:record:')).sort();
 
-  it('always allows an existing record to be updated, even at the limit', () => {
-    const { retention } = setup((storage) => seedWorkingRecords(storage, WORKING_RECORD_LIMIT));
+  it('gives an unnamed record seven days from the instant it was last edited', () => {
+    const { retention, records } = setup(seedOne);
+    const record = records.open('working-0');
+    if (!record.ok || record.value === null) {
+      throw new Error('expected the seeded record');
+    }
 
-    expect(retention.mayWrite('working-0')).toEqual({ allowed: true });
-  });
+    const deadline = retention.expiresAt(record.value.record);
 
-  it('refuses a record beyond the limit without deleting anything', () => {
-    const { retention, storage } = setup((store) =>
-      seedWorkingRecords(store, WORKING_RECORD_LIMIT),
+    expect(deadline?.getTime()).toBe(
+      Date.parse(record.value.record.modifiedAt) + UNNAMED_RECORD_LIFETIME_MS,
     );
-    const before = storage.entries.size;
-
-    expect(retention.mayWrite('one-too-many')).toEqual({
-      allowed: false,
-      reason: 'retention-limit',
-      limit: WORKING_RECORD_LIMIT,
-    });
-    expect(storage.entries.size).toBe(before);
   });
 
-  it('does not count named records against the working limit', () => {
-    const { retention } = setup((storage) => {
-      seedWorkingRecords(storage, WORKING_RECORD_LIMIT - 1);
-      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
-    });
+  it('gives a named record no deadline at all', () => {
+    // Naming ends the expiry outright. Named saves are bounded by the browser's
+    // own quota and by nothing this application decides (FR-013).
+    const { retention, records } = setup((storage) =>
+      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
+    );
+    const record = records.open(FIXTURE_IDS.named);
+    if (!record.ok || record.value === null) {
+      throw new Error('expected the seeded record');
+    }
 
-    expect(retention.workingCount()).toBe(WORKING_RECORD_LIMIT - 1);
-    expect(retention.mayWrite('one-more')).toEqual({ allowed: true });
+    expect(retention.expiresAt(record.value.record)).toBeNull();
+    expect(retention.remaining(record.value.record)).toBeNull();
+    expect(retention.hasExpired(record.value.record)).toBe(false);
   });
 
-  it('allows the write when storage cannot even be listed', () => {
-    const { retention, storage } = setup();
+  it('removes an unnamed record once its seven days have run out', () => {
+    const { retention, storage, clock } = setup(seedOne);
+    clock.advanceDays(8);
+
+    retention.sweep();
+
+    expect(remainingIds(storage)).toEqual([]);
+  });
+
+  it('removes nothing while the deadline has not passed', () => {
+    const { retention, storage, clock } = setup(seedOne);
+    clock.advanceDays(6);
+
+    retention.sweep();
+
+    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+  });
+
+  it('leaves a named record alone however old it is', () => {
+    const { retention, storage, clock } = setup((store) => {
+      seedWorkingRecords(store, 1);
+      store.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
+    });
+    clock.advanceDays(400);
+
+    retention.sweep();
+
+    expect(remainingIds(storage)).toEqual([`edsb:record:${FIXTURE_IDS.named}`]);
+  });
+
+  it('leaves the record a live page is autosaving into', () => {
+    // A build open for a week without an edit is still a build someone has
+    // open. Removing the record under it is the one loss a countdown on a row
+    // nobody is looking at could not warn about (FR-012, FR-013).
+    const { retention, storage, clock, active } = setup(seedOne);
+    active.commit({
+      loadout: ShipLoadout.default('Anaconda'),
+      hullName: 'Anaconda',
+      provenance: 'working',
+      qualityNotices: [],
+      sourceNamed: null,
+      autosaveRecordId: 'working-0',
+      baseline: null,
+    });
+    clock.advanceDays(30);
+
+    retention.sweep();
+
+    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+  });
+
+  it('leaves an unreadable record listed rather than removing it', () => {
+    // Its instant cannot be read, so its age is a guess — and a guess is not
+    // something to delete a Commander's work on.
+    const { retention, storage, clock } = setup((store) =>
+      store.setItem(recordKey('broken'), MALFORMED_RECORD),
+    );
+    clock.advanceDays(400);
+
+    retention.sweep();
+
+    expect(remainingIds(storage)).toEqual(['edsb:record:broken']);
+  });
+
+  it('removes nothing when storage cannot even be listed', () => {
+    const { retention, storage } = setup(seedOne);
     storage.accessError = new DOMException('denied', 'SecurityError');
 
-    // The write itself will report the real failure; refusing here would add a
-    // second, wrong explanation.
-    expect(retention.mayWrite('anything')).toEqual({ allowed: true });
+    expect(() => retention.sweep()).not.toThrow();
+
+    storage.accessError = null;
+    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+  });
+
+  it('carries on when one removal fails, and leaves that record whole', () => {
+    const { retention, storage, clock } = setup((store) => seedWorkingRecords(store, 3));
+    clock.advanceDays(8);
+    storage.removeError = new DOMException('denied', 'SecurityError');
+
+    expect(() => retention.sweep()).not.toThrow();
+
+    // Nothing was half-removed: every key is either gone or exactly as it was.
+    expect(remainingIds(storage)).toHaveLength(3);
+    storage.removeError = null;
+    retention.sweep();
+    expect(remainingIds(storage)).toEqual([]);
+  });
+
+  it('does not restart the clock by reading it', () => {
+    // The deadline is derived from `modifiedAt` and never written, so a sweep
+    // that removes nothing leaves every record byte-identical (FR-013).
+    const { retention, storage, clock } = setup((store) => seedWorkingRecords(store, 2));
+    const before = new Map(storage.entries);
+    clock.advanceDays(3);
+
+    retention.sweep();
+
+    expect([...storage.entries]).toEqual([...before]);
   });
 });
 

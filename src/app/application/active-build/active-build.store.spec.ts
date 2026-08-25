@@ -170,4 +170,22 @@ describe('ActiveBuildStore', () => {
     active.commit(candidate());
     expect(active.qualityCompletionNotices()).toEqual([]);
   });
+
+  it('clears the build when the record it lives in is deleted here', () => {
+    const active = store();
+    active.commit(candidate({ autosaveRecordId: 'held' }));
+
+    expect(active.clearIfHolding('held')).toBe(true);
+    expect(active.loadout()).toBeNull();
+    expect(active.autosaveRecordId()).toBeNull();
+  });
+
+  it('keeps the build when some other record is deleted', () => {
+    const active = store();
+    active.commit(candidate({ autosaveRecordId: 'held' }));
+
+    expect(active.clearIfHolding('someone-elses')).toBe(false);
+    expect(active.loadout()).not.toBeNull();
+    expect(active.autosaveRecordId()).toBe('held');
+  });
 });

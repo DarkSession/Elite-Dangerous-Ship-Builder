@@ -186,6 +186,87 @@ describe('TabOwnershipCoordinator', () => {
     expect(coordinator.autosaveRecordId()).toBe('id-held');
   });
 
+  it('knows the record it is holding is live, so the sweep leaves it alone', () => {
+    const { coordinator, active } = setup();
+    hold(active, 'id-held');
+
+    expect(coordinator.heldLive('id-held')).toBe(true);
+    expect(coordinator.heldLive('someone-elses-record')).toBe(false);
+  });
+
+  it('knows a record another live page announced', () => {
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.listen();
+
+    channel.deliver({
+      kind: 'working-claim',
+      workingRecordId: 'their-record',
+      pageNonce: 'another-page',
+    });
+
+    expect(coordinator.heldLive('their-record')).toBe(true);
+  });
+
+  it('forgets a record another page has stepped off', () => {
+    // Held by page, not as a growing set of ids: a page that forks stops
+    // protecting the record it left behind, which is free to expire.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    coordinator.listen();
+
+    channel.deliver({ kind: 'working-claim', workingRecordId: 'first', pageNonce: 'them' });
+    channel.deliver({ kind: 'working-claim', workingRecordId: 'second', pageNonce: 'them' });
+
+    expect(coordinator.heldLive('first')).toBe(false);
+    expect(coordinator.heldLive('second')).toBe(true);
+  });
+
+  it('answers a page it has not heard from before, so its own record is known', () => {
+    // Claims are made once, when a page takes a record. Without this answer a
+    // page that started first would be invisible to one that started later, and
+    // the later page's sweep would expire a record still being written.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    const stop = coordinator.track();
+    TestBed.tick();
+    coordinator.listen();
+    channel.sent.length = 0;
+
+    channel.deliver({ kind: 'working-claim', workingRecordId: 'theirs', pageNonce: 'newcomer' });
+    channel.deliver({ kind: 'working-claim', workingRecordId: 'theirs', pageNonce: 'newcomer' });
+
+    // Once per newly seen page, and never in answer to itself.
+    expect(channel.sent).toEqual([
+      { kind: 'working-claim', workingRecordId: 'id-held', pageNonce: coordinator.pageNonce },
+    ]);
+    stop();
+  });
+
+  it('answers a collision by forking rather than by re-announcing', () => {
+    // Answering first would tell the duplicate to fork as well, and both pages
+    // would step off the record, leaving it held by nobody.
+    const { coordinator, active, channel } = setup();
+    hold(active, 'id-held');
+    const stop = coordinator.track();
+    TestBed.tick();
+    coordinator.listen();
+    channel.sent.length = 0;
+
+    channel.deliver({ kind: 'working-claim', workingRecordId: 'id-held', pageNonce: 'duplicate' });
+    TestBed.tick();
+
+    expect(coordinator.autosaveRecordId()).not.toBe('id-held');
+    expect(channel.sent).toEqual([
+      {
+        kind: 'working-claim',
+        workingRecordId: coordinator.autosaveRecordId(),
+        pageNonce: coordinator.pageNonce,
+      },
+    ]);
+    stop();
+  });
+
   it('leaves the collided record alone rather than deleting it', () => {
     const { coordinator, active, session } = setup();
     hold(active, 'id-held');

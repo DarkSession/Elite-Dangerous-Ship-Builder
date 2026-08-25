@@ -1,74 +1,112 @@
 import { Injectable, inject } from '@angular/core';
+import type { LocalRecordV1 } from '../../domain/build/stored-build';
+import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
+import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 /**
- * How many working records this browser will keep.
+ * How long an unnamed record is kept.
  *
- * Working records are autosaves, and an abandoned tab leaves one behind. A
- * finite limit stops those accumulating without bound; twenty is generous
- * enough that a Commander reaches it only by genuinely working on twenty
- * builds, and small enough to be a list they can look through (research,
- * "Working ownership and retention").
+ * Seven days from the last modelled edit, which is long enough that a Commander
+ * who comes back to a build on the following weekend still has it, and short
+ * enough that a browser is not carrying a year of abandoned autosaves
+ * (clarification 2026-08-25).
  *
- * Named saves do not count against it. Those are deliberate, and are bounded
- * by the browser's own quota rather than by a number chosen here.
+ * Naming a record ends this outright. Named saves are deliberate and are
+ * bounded by the browser's own quota rather than by a number chosen here.
  */
-export const WORKING_RECORD_LIMIT = 20;
-
-/** Whether a new working record can be created, and what to do if not. */
-export type RetentionVerdict =
-  | { readonly allowed: true }
-  | { readonly allowed: false; readonly reason: 'retention-limit'; readonly limit: number };
+export const UNNAMED_RECORD_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
- * The retention rule, and nothing else.
+ * The seven-day expiry of unnamed records, and nothing else.
  *
- * There is deliberately no eviction here — no age, no count, no least-recently
- * used, no "the tab closed so it must be abandoned". Every one of those
- * deletes a Commander's work on a guess about what they meant, and the answer
- * to a full library is to show them the list and let them choose (FR-013).
+ * **Replaced the twenty-record limit on 2026-08-25 (Commander request,
+ * FR-013).** A count refused to store the twenty-first build; a clock removes
+ * the ones nobody came back to. The trade is deliberate and is the one place in
+ * this feature where work is removed without a Commander pressing anything, so
+ * it is built as narrowly as that deserves:
  *
- * Note what *is* allowed at the limit: updating any record that already
- * exists. A Commander at twenty working builds can carry on editing all
- * twenty; only creating a twenty-first is refused.
+ *   * the deadline is **derived**, never stored. A written deadline outlives a
+ *     clock change and a migration as a stale fact, while `modifiedAt` is
+ *     already the instant the row displays;
+ *   * the sweep runs at application start and whenever the listing is read, and
+ *     is deliberately **not** a timer. A row vanishing under a Commander who is
+ *     reading the library is the one removal this design cannot make visible,
+ *     and seven days does not need that precision;
+ *   * a named record is never touched, and neither is a record a live page is
+ *     autosaving into. Both are evaluated at the moment of the sweep;
+ *   * nothing is written and nothing is announced when it runs. The remaining
+ *     time each row states beforehand is the whole of the notice (FR-010).
+ *
+ * There is no count limit any more. Nothing refuses to store a record because
+ * many already exist, and no number evicts anything.
  */
 @Injectable({ providedIn: 'root' })
 export class RetentionService {
   readonly #records = inject(LocalRecordRepository);
+  readonly #clock = inject(ClockAdapter);
+  readonly #ownership = inject(TabOwnershipCoordinator);
 
-  /** How many working records exist right now. Unreadable ones still occupy one. */
-  workingCount(): number {
-    const listed = this.#records.list();
-    if (!listed.ok) {
-      return 0;
+  /**
+   * When this record stops being recoverable, or `null` when it never does.
+   *
+   * A named record has no deadline. Neither does one whose stored instant
+   * cannot be read as a date: a record nobody can date is not a record anyone
+   * can prove is old.
+   */
+  expiresAt(record: LocalRecordV1): Date | null {
+    if (record.kind !== 'working') {
+      return null;
     }
-    return listed.value.filter((entry) => !entry.available || entry.record.kind === 'working')
-      .length;
+    const modified = Date.parse(record.modifiedAt);
+    return Number.isFinite(modified) ? new Date(modified + UNNAMED_RECORD_LIFETIME_MS) : null;
   }
 
   /**
-   * Whether this record may be written.
+   * How long this record has left, in milliseconds, or `null` for no deadline.
    *
-   * An existing record always may. It is only the creation of one beyond the
-   * limit that is refused — and refused by writing nothing at all, rather than
-   * by making room.
+   * Negative once the deadline has passed, which is an ordinary state: the
+   * sweep runs at two moments rather than continuously, so a record can outlive
+   * its deadline until one of them comes round.
    */
-  mayWrite(recordId: string): RetentionVerdict {
+  remaining(record: LocalRecordV1): number | null {
+    const deadline = this.expiresAt(record);
+    return deadline === null ? null : deadline.getTime() - this.#clock.now().getTime();
+  }
+
+  /** Whether this record's seven days have run out, as of right now. */
+  hasExpired(record: LocalRecordV1): boolean {
+    const remaining = this.remaining(record);
+    return remaining !== null && remaining <= 0;
+  }
+
+  /**
+   * Removes every unnamed record nobody is holding whose seven days have run
+   * out.
+   *
+   * One `removeItem` per expired key. A failure on one key stops neither the
+   * others nor the listing that provoked the sweep, and leaves no partial
+   * record behind — `removeItem` either removed the value or it did not.
+   *
+   * An unreadable record is never removed here. Its instant cannot be read, so
+   * its age is a guess, and a guess is not something to delete a Commander's
+   * work on: it stays listed, exactly as it stays listed everywhere else.
+   */
+  sweep(): void {
     const listed = this.#records.list();
     if (!listed.ok) {
-      return { allowed: true };
+      return;
     }
 
-    const working = listed.value.filter(
-      (entry) => !entry.available || entry.record.kind === 'working',
-    );
-    const exists = working.some((entry) =>
-      entry.available ? entry.record.id === recordId : entry.id === recordId,
-    );
-
-    if (exists || working.length < WORKING_RECORD_LIMIT) {
-      return { allowed: true };
+    for (const entry of listed.value) {
+      if (!entry.available) {
+        continue;
+      }
+      const record = entry.record;
+      if (!this.hasExpired(record) || this.#ownership.heldLive(record.id)) {
+        continue;
+      }
+      this.#records.remove(record.id);
     }
-    return { allowed: false, reason: 'retention-limit', limit: WORKING_RECORD_LIMIT };
   }
 }

@@ -33,12 +33,17 @@ export function recordIdFromKey(key: string): string | null {
 }
 
 /**
- * The Web Lock guarding writes to one named record.
+ * The Web Lock guarding deliberate writes to one record.
  *
  * Scoped per record rather than globally: two Commanders' tabs saving two
  * different builds have nothing to serialize between them, and a single lock
  * would make one wait on the other for no reason.
+ *
+ * **Renamed 2026-08-25** from `edsb:named:`. It guards any record now — naming
+ * an unnamed one is a write to that same key — and a Web Locks name is a name
+ * held in memory for the length of one operation, never stored bytes, so
+ * changing it migrates nothing.
  */
-export function namedRecordLockName(recordId: string): string {
-  return `edsb:named:${recordId}`;
+export function recordLockName(recordId: string): string {
+  return `edsb:record:${recordId}`;
 }

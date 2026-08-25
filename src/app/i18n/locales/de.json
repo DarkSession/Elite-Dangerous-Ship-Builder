@@ -147,7 +147,6 @@
   "persistence.ready": "Bereit zum Speichern",
   "persistence.saving": "Wird gespeichert",
   "persistence.saved": "In diesem Browser gespeichert",
-  "persistence.retention-limit": "Es gibt bereits {{limit}} wiederherstellbare Arbeitsaufbauten, daher wird dieser nicht gespeichert. Bearbeiten funktioniert weiter; verwirf einen, um Platz zu schaffen.",
   "persistence.quota-full": "Der Speicher dieses Browsers ist voll, daher wird nichts gespeichert. Bearbeiten funktioniert weiter; verwirf einen Aufbau, um Platz zu schaffen.",
   "persistence.unavailable": "Dieser Browser lässt die Anwendung nichts speichern, daher überstehen Aufbauten kein Neuladen. Alles andere funktioniert weiter.",
   "persistence.write-failed": "Das letzte Speichern hat nicht geklappt. Der Aufbau ist unverändert und Bearbeiten funktioniert weiter.",

@@ -5,7 +5,6 @@ import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adap
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { RetentionService } from './retention.service';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 /**
@@ -34,6 +33,11 @@ const COALESCE_MS = 400;
  * is holding — a record named in another tab, or written before this rule
  * existed, cannot be reached by a coalesced edit.
  *
+ * Nothing refuses a write because many records already exist. The count limit
+ * that once did was replaced on 2026-08-25 by the seven-day expiry of unnamed
+ * records, which removes what nobody came back to rather than refusing what a
+ * Commander is working on now (FR-013).
+ *
  * Every failure state here is a persistence state, never a build state: a
  * blocked store, a full one or a failed write changes what the status says and
  * changes nothing about whether the build can be edited (FR-014).
@@ -42,7 +46,6 @@ const COALESCE_MS = 400;
 export class AutosaveService {
   readonly #active = inject(ActiveBuildStore);
   readonly #records = inject(LocalRecordRepository);
-  readonly #retention = inject(RetentionService);
   readonly #ownership = inject(TabOwnershipCoordinator);
   readonly #lifecycle = inject(PageLifecycleAdapter);
   readonly #uuid = inject(UuidAdapter);
@@ -132,14 +135,6 @@ export class AutosaveService {
     // holding. The check reads the stored record rather than this page's belief
     // about it, so a record named in another tab is covered too (FR-008).
     if (this.#records.isNamed(recordId)) {
-      return;
-    }
-
-    const verdict = this.#retention.mayWrite(recordId);
-    if (!verdict.allowed) {
-      // No write and no deletion. The build stays in memory and the library
-      // offers the Commander the list to choose from (FR-013).
-      this.#active.setPersistence('retention-limit');
       return;
     }
 

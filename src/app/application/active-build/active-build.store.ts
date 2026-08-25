@@ -201,6 +201,28 @@ export class ActiveBuildStore {
     this.#ingressFailures.set([]);
   }
 
+  /**
+   * Clears the build if it is the one living in this record, and says whether
+   * it did.
+   *
+   * The answer to a Commander deleting the record this page is autosaving into.
+   * Keeping the build on screen would leave it with nowhere to be saved and no
+   * way to say so; recreating the record behind their back would undo the
+   * deletion they just confirmed. Clearing is the only reading of that press
+   * that does what they asked (FR-009, ruled 2026-08-25).
+   *
+   * Only ever this page's own autosave record. The same deletion made in
+   * another page is a different event with a different answer: that build stays
+   * exactly where it is and its autosave pauses (FR-012).
+   */
+  clearIfHolding(recordId: string): boolean {
+    if (this.#autosaveRecordId() !== recordId) {
+      return false;
+    }
+    this.clear();
+    return true;
+  }
+
   /** Clears the active build entirely. Test support and explicit discard only. */
   clear(): void {
     this.#loadout.set(null);

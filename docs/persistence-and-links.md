@@ -15,7 +15,7 @@ migrated, repaired or removed, even when it looks like one of ours.
 | `edsb:tab`            | `sessionStorage`   | This tab's descriptor: which working record it owns.                          |
 | `edsb:catalogue`      | `sessionStorage`   | This tab's browsing position in the shipyard: search, filters, order, anchor. |
 | `edsb.persistence.v1` | `BroadcastChannel` | Working-record ownership negotiation and cross-tab invalidation.              |
-| `edsb:named:<uuid>`   | Web Locks          | Serialises writes to one named record. Per record, never global.              |
+| `edsb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.         |
 
 No index key exists on purpose. An index is a second source of truth that can disagree with the
 records it lists, and a Commander whose index was lost would have builds that are present in the

@@ -28,7 +28,6 @@ export type PersistenceStatus =
   | 'ready'
   | 'saving'
   | 'saved'
-  | 'retention-limit'
   | 'quota-full'
   | 'unavailable'
   | 'write-failed'

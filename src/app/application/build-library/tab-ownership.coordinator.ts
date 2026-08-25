@@ -52,6 +52,19 @@ export class TabOwnershipCoordinator {
   #announced: string | null = null;
 
   /**
+   * What every other live page says it is autosaving into, by page.
+   *
+   * Kept so the expiry sweep can leave those records alone: a page that has had
+   * a build open for seven days without touching it is still working on it, and
+   * removing the record under it would be the one loss a countdown could not
+   * warn about (FR-013).
+   *
+   * By page rather than as a set of ids, so a page that forks replaces its own
+   * entry instead of leaving the record it stepped off protected forever.
+   */
+  readonly #claimsElsewhere = new Map<string, string>();
+
+  /**
    * Reads back the record this page was working from before a reload.
    *
    * It returns the id and nothing more. Whether that record becomes this page's
@@ -79,11 +92,7 @@ export class TabOwnershipCoordinator {
         }
         this.#announced = id;
         this.#tab.write(id);
-        this.#channel.post({
-          kind: 'working-claim',
-          workingRecordId: id,
-          pageNonce: this.pageNonce,
-        });
+        this.#announce();
       },
       { injector: this.#injector },
     );
@@ -91,9 +100,35 @@ export class TabOwnershipCoordinator {
     return () => watcher.destroy();
   }
 
+  /** Says which record this page is autosaving into, if it is holding one. */
+  #announce(): void {
+    const id = this.autosaveRecordId();
+    if (id === null) {
+      return;
+    }
+    this.#channel.post({
+      kind: 'working-claim',
+      workingRecordId: id,
+      pageNonce: this.pageNonce,
+    });
+  }
+
   /** Registers what to do when this page forks: copy the build into the new id. */
   onFork(handler: (previousId: string, nextId: string) => void): void {
     this.#onFork = handler;
+  }
+
+  /**
+   * Whether any live page — this one included — is autosaving into this record.
+   *
+   * Asked by the expiry sweep, and answered from what pages have actually said
+   * rather than from what is stored: a record's own bytes cannot know that a
+   * tab still has it open.
+   */
+  heldLive(recordId: string): boolean {
+    return (
+      recordId === this.autosaveRecordId() || [...this.#claimsElsewhere.values()].includes(recordId)
+    );
   }
 
   /** Listens for a sibling page claiming the same record. Returns an unsubscribe. */
@@ -105,15 +140,29 @@ export class TabOwnershipCoordinator {
       if (message.pageNonce === this.pageNonce) {
         return;
       }
-      if (message.workingRecordId !== this.autosaveRecordId()) {
+
+      const known = this.#claimsElsewhere.has(message.pageNonce);
+      this.#claimsElsewhere.set(message.pageNonce, message.workingRecordId);
+
+      if (message.workingRecordId === this.autosaveRecordId()) {
+        // Another live page announced the id this page writes to. The page that
+        // hears the announcement is the earlier one still running, so it is the
+        // one that steps aside — the announcing page has just started and has
+        // nothing to preserve yet. The fork announces the new id, which is also
+        // how the newcomer learns this page is here.
+        this.fork();
         return;
       }
 
-      // Another live page announced the id this page writes to. The page that
-      // hears the announcement is the earlier one still running, so it is the
-      // one that steps aside — the announcing page has just started and has
-      // nothing to preserve yet.
-      this.fork();
+      if (!known) {
+        // A page this one had not heard from before. Announcing again is how a
+        // page that started earlier becomes known to one that started later:
+        // claims are made once, so without this, only the newest page's record
+        // would be protected from the sweep. Bounded by construction — a
+        // re-announcement is made once per newly seen page, and a page never
+        // answers its own.
+        this.#announce();
+      }
     });
   }
 
