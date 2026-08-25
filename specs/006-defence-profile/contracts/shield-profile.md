@@ -2,7 +2,7 @@
 
 > **Reconciled at implementation, 2026-08-24, and again for the 2026-08-25 revision.** Feature 005's
 > store already publishes the SYS pips in the package's own `[0, 4]` units, so no halving is applied.
-> The scalar fields the canvas does not draw — the mass-curve multiplier, the boost multiplier, and
+> The fields the canvas does not draw — the mass-curve multiplier, the boost multiplier, and
 > the capacitor's capacity, recharge rate, SYS resistance and pip-folded resistances — are carried by
 > the projection and not presented, and the broken regeneration rate goes with them: canvas 1c draws
 > the recharge rate and the two phases.

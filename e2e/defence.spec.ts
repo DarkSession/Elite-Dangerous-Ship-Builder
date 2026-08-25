@@ -321,7 +321,7 @@ test.describe('the allocation the pip column and the recovery are read at', () =
     const strength = await pool(page, 'card--shield').innerText();
 
     // The pips live on the power dashboard, and one ship has one allocation:
-    // moving them there is what these cards are read at.
+    // moving them there is what the pip column and the recovery are read at.
     await openMode(page, englishMessages['anatomy.mode.power']);
     await page.locator('.distributor tbody tr').first().locator('.pips__step').nth(3).click();
     await settled(page);

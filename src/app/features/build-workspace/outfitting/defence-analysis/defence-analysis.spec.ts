@@ -213,12 +213,11 @@ describe('DefenceAnalysis', () => {
 
       expect(table.pipColumn).toBeNull();
       expect(table.rows.every((row) => row.poolAtPips === undefined)).toBe(true);
-      // The four bare columns are untouched, figure for figure: an unavailable
-      // capacitor is not a shield the package refused, and the table it sat
-      // beside stays exactly what it was.
-      expect(table.rows.map((row) => [row.resistance, row.pool])).toEqual(
-        bare.rows.map((row) => [row.resistance, row.pool]),
-      );
+      // Everything but the fifth column is untouched — the type, both figures
+      // and the bar, which is drawn from the bare resistance and would be the
+      // first thing to move if a refused capacitor were quietly stood in for.
+      const exceptPipColumn = ({ poolAtPips: _drop, ...rest }: (typeof bare.rows)[number]) => rest;
+      expect(table.rows.map(exceptPipColumn)).toEqual(bare.rows.map(exceptPipColumn));
       expect(table.rows).toHaveLength(4);
     });
 
@@ -227,6 +226,14 @@ describe('DefenceAnalysis', () => {
       // nothing proved: a shield the package declined is not answered with the
       // capacitor's figures, even though that result stands. There is nothing
       // for a fifth column to sit beside, so there is no column and no row.
+      const build = fullyFittedBuild();
+      // The premise, asserted rather than assumed: without this the test could
+      // pass because the capacitor was refused too, which proves nothing.
+      expect(
+        BuildMetrics.of(build).shieldCapacitorMetricsResult({
+          systemsPips: conditions.pips().systems,
+        }).complete,
+      ).toBe(true);
       vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult').mockReturnValue({
         value: null,
         complete: false,
@@ -238,7 +245,7 @@ describe('DefenceAnalysis', () => {
           },
         ],
       });
-      const { component } = render(fullyFittedBuild());
+      const { component } = render(build);
       const table = component.shieldDamage();
 
       expect(table.rows).toHaveLength(0);

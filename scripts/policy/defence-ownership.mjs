@@ -2,8 +2,8 @@
 /**
  * Repository policy checks for feature 006's own source.
  *
- * Shield strength, recovery, cell banks and armour are four package answers
- * this application shows and does not have. Every rule here is about a way that
+ * Shield strength, what a SYS allocation makes of it, recovery, cell banks and
+ * armour are five package answers this application shows and does not have. Every rule here is about a way that
  * could stop being true without anything failing: a second call site would
  * still return a plausible pool, a subtraction of two package figures would
  * still print a number, and a deep import would still compile. None of them can
@@ -96,6 +96,7 @@ export const FIGURE_FIELDS = [
   // application must never draw — the resistances with the pips folded in, on a
   // table whose `RESIST` column is a base value — so combining it with anything
   // is caught here rather than left to a reading of the contract.
+  'resistances',
   'effectiveResistances',
   'capacity',
   'rechargeRate',

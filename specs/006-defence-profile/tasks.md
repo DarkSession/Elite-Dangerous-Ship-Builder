@@ -254,3 +254,7 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
       `e2e/defence.spec.ts`'s preamble and describe block, which still said the cards are read at
       the allocation when only the pip column and the recovery are
 - [x] T089 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T090 Second review round: fence the shield's own `resistances` beside the capacitor's plural,
+      compare every field but the fifth column in the capacitor-refused test so the bar is covered
+      too, assert the mirror test's premise that the capacitor stands, and correct the four places
+      still counting four package answers or calling a per-damage-type record a scalar
