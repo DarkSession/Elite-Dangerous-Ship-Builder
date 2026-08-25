@@ -73,6 +73,17 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+          # The removal step below pushes to another repository, from a
+          # worktree of this clone, with its own token on the remote URL. A
+          # credential persisted here writes an `http.https://github.com/`
+          # `.extraheader` into this clone's config, an Authorization header
+          # outranks credentials carried in a URL, and the push would go out as
+          # `github-actions[bot]` and be refused by the preview repository.
+          # `github-pages-deploy-action` tries to unset that header itself, but
+          # it clears the key older `actions/checkout` releases wrote, not the
+          # one v7 does. Nothing here needs an authenticated git operation
+          # against this repository after the checkout, so do not persist one.
+          persist-credentials: false
 
       # Pinned to the same commit as the publication step in `ci.yml`. Move both
       # together: a removal that lays out preview directories differently from
