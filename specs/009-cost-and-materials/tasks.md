@@ -300,9 +300,14 @@ is not named, and that a build with no engineering draws no materials block at a
       here, and is therefore not claimed: Firefox.** This container ships Chromium only, so the
       added assertions were exercised on `chromium-desktop`, `chromium-tablet-landscape` and
       `chromium-mobile-portrait` — three of the five layout profiles, in one engine — rather
-      than on all ten matrix projects. Nothing in them is engine-specific: they read layout
-      boxes, DOM order and text. But the ten-project claim above stands on the earlier full run,
-      not on this one, and CI is what re-establishes it.
+      than on all ten matrix projects. Two of them were written to be engine-independent
+      deliberately, after a review pointed out they had not been: text that does not fit its box
+      is measured from a `Range` over the element's contents rather than from `scrollWidth`,
+      because the engines disagree about what `scrollWidth` means for an `overflow: visible` box
+      and Gecko would have answered "nothing overflows" however far the text ran; and both sides
+      of every heading comparison are case-folded rather than trusting `innerText` to apply
+      `text-transform`. Neither has been observed under Gecko here. The ten-project claim above
+      stands on the earlier full run, not on this one, and CI is what re-establishes it.
 
 ---
 

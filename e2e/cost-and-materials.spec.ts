@@ -341,10 +341,12 @@ test.describe('accessibility and reflow', () => {
     // the rail is a column beside the bench or a stack under it. Named, not
     // counted: two headings in either order would satisfy a count, and the
     // order is the whole claim (detail design, "Purpose and semantic order").
-    expect(await headingOrder(page)).toEqual([
-      englishMessages['cost-materials.cost.heading'].toUpperCase(),
-      englishMessages['cost-materials.materials.heading'].toUpperCase(),
-    ]);
+    expect(await headingOrder(page)).toEqual(
+      [
+        englishMessages['cost-materials.cost.heading'],
+        englishMessages['cost-materials.materials.heading'],
+      ].map((heading) => heading.toLowerCase()),
+    );
   });
 });
 
@@ -493,13 +495,19 @@ test.describe('the privacy boundary', () => {
     });
 
     await openStockBuild(page);
-    await engineerTheDrive(page);
-
-    // The link is republished into the fragment after the edit, so it has to be
-    // waited for: inspecting the addresses before it is written would be
-    // inspecting the addresses this test exists to look at, minus the one that
-    // matters.
+    // The stock build already publishes a link, so waiting for one at all would
+    // be satisfied before the edit this test is about. What has to be waited
+    // for is the *re-encoded* fragment: the engineering goes into the link, so
+    // the address changes, and inspecting the addresses before it does would
+    // miss the only one that could carry a new figure.
+    // The stock build's own link is published a moment after the workspace
+    // opens, so it is waited for rather than read: `page.url()` at that instant
+    // has no fragment at all.
     await expect(page).toHaveURL(/\/build#b\./);
+    const stock = new URL(page.url()).hash;
+
+    await engineerTheDrive(page);
+    await expect.poll(() => new URL(page.url()).hash).not.toBe(stock);
 
     const figures = await ownFigures(page);
     expect(figures.length).toBeGreaterThan(0);
@@ -583,37 +591,85 @@ const READINGS = [
   .join(', ');
 
 /**
- * Every reading whose content is wider than the box it was given.
+ * Every reading whose painted text runs outside the box it was given.
  *
- * The instrument matters more than it looks. Both blocks are non-wrapping flex
- * rows, so a label and its figure are laid side by side and their border boxes
- * can never intersect however long the text grows — comparing their rectangles
- * would be an assertion that cannot fail, and would say these blocks were fine
- * at any text size whatsoever. What actually goes wrong is that a label is
- * handed a narrower box than its text needs and paints out of it, over the
- * figure beside it. That shows as content overflowing its own box, which is
- * what is measured here.
+ * The instrument matters more than it looks, and two things it must not be.
  *
- * Inline boxes are skipped for the reason `clippedText` skips them: a
- * non-replaced inline box has no client rectangle to overflow, and the engines
- * disagree on what they report for one. A one-pixel difference is sub-pixel
- * rounding; two is a box that genuinely cannot hold its content.
+ * Not a comparison of the label's box with the figure's: both blocks are
+ * non-wrapping flex rows, so those boxes are laid side by side and can never
+ * intersect however long the text grows. That assertion cannot fail, and would
+ * call these blocks sound at any text size whatsoever.
+ *
+ * Not `scrollWidth - clientWidth` either. These boxes are all `overflow:
+ * visible`, and the engines disagree about what `scrollWidth` means for one of
+ * those: Blink counts the overflowing content, Gecko reports the padding box
+ * and so would answer "nothing overflows" however far the text ran — leaving
+ * the assertion inert on half the matrix.
+ *
+ * What is measured is where the text is actually painted, from a range over
+ * each text node, which both engines answer the same way. Text that is painted
+ * nowhere is left out: the accessibility-only equivalents this application sets
+ * beside a figure — the `credits` unit, among others — are positioned out of
+ * the flow and clipped to a pixel, and counting them would report every row as
+ * broken. A one-pixel difference is sub-pixel rounding; two is text that
+ * genuinely does not fit.
  */
 async function overflowingReadings(page: Page): Promise<string[]> {
   return page.locator(READINGS).evaluateAll((nodes) =>
     nodes
-      .filter((node) => {
-        const element = node as HTMLElement;
-        return (
-          getComputedStyle(element).display !== 'inline' &&
-          element.scrollWidth - element.clientWidth > 1
-        );
-      })
       .map((node) => {
         const element = node as HTMLElement;
-        const over = element.scrollWidth - element.clientWidth;
-        return `${(element.textContent ?? '').trim().slice(0, 40)} (+${over}px)`;
-      }),
+        const box = element.getBoundingClientRect();
+        if (box.width === 0) {
+          return null;
+        }
+
+        let left = Number.POSITIVE_INFINITY;
+        let right = Number.NEGATIVE_INFINITY;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        for (let text = walker.nextNode(); text !== null; text = walker.nextNode()) {
+          if ((text.textContent ?? '').trim() === '') {
+            continue;
+          }
+
+          let painted = true;
+          for (
+            let parent = text.parentElement;
+            parent !== null && parent !== element.parentElement;
+            parent = parent.parentElement
+          ) {
+            const style = getComputedStyle(parent);
+            if (
+              style.position === 'absolute' ||
+              style.visibility === 'hidden' ||
+              style.display === 'none'
+            ) {
+              painted = false;
+              break;
+            }
+          }
+          if (!painted) {
+            continue;
+          }
+
+          const range = document.createRange();
+          range.selectNode(text);
+          const rect = range.getBoundingClientRect();
+          if (rect.width === 0) {
+            continue;
+          }
+          left = Math.min(left, rect.left);
+          right = Math.max(right, rect.right);
+        }
+
+        if (right === Number.NEGATIVE_INFINITY) {
+          return null;
+        }
+
+        const over = Math.round(Math.max(right - box.right, box.left - left, 0));
+        return over > 1 ? `${(element.textContent ?? '').trim().slice(0, 40)} (+${over}px)` : null;
+      })
+      .filter((entry): entry is string => entry !== null),
   );
 }
 
@@ -635,10 +691,17 @@ async function rowEdges(page: Page): Promise<{ name: number; count: number }[]> 
   );
 }
 
-/** The two block headings, in the order the document holds them. */
+/**
+ * The two block headings, in the order the document holds them, case-folded.
+ *
+ * The canvas uppercases these through `text-transform`, and whether that reaches
+ * `innerText` is the engine's business rather than this feature's. Both sides of
+ * every comparison are folded, so the assertion is about the order and the
+ * words, which is what it claims to be about.
+ */
 async function headingOrder(page: Page): Promise<string[]> {
   return (await page.locator('edsb-cost-materials .block__heading').allInnerTexts()).map(
-    (heading) => heading.trim(),
+    (heading) => heading.trim().toLowerCase(),
   );
 }
 
@@ -755,10 +818,12 @@ test.describe('at 400% browser zoom', () => {
     // Named in order, not counted: 320 CSS pixels is exactly where the rail
     // stops being a column and becomes the Status stack, so it is the width at
     // which a reordering would actually happen.
-    expect(await headingOrder(page)).toEqual([
-      englishMessages['cost-materials.cost.heading'].toUpperCase(),
-      englishMessages['cost-materials.materials.heading'].toUpperCase(),
-    ]);
+    expect(await headingOrder(page)).toEqual(
+      [
+        englishMessages['cost-materials.cost.heading'],
+        englishMessages['cost-materials.materials.heading'],
+      ].map((heading) => heading.toLowerCase()),
+    );
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
     expect(await overflowingReadings(page)).toEqual([]);
