@@ -352,7 +352,15 @@ describe('the help manifest generator', () => {
 
     for (const [reason, url] of REJECTED_DESTINATIONS) {
       it(`refuses a destination that ${reason}: ${url}`, () => {
-        assert.throws(() => validateLicenceDestination(url), new RegExp(reason));
+        // The reason is prose, so it is matched as prose. Compiled as a
+        // pattern it would read `github.com`'s dot as "any character", which
+        // is a test that passes on a message it was never meant to accept —
+        // and a reason that ever gained a bracket or a plus would fail to
+        // compile at all.
+        assert.throws(
+          () => validateLicenceDestination(url),
+          (error) => error instanceof Error && error.message.includes(reason),
+        );
       });
     }
 

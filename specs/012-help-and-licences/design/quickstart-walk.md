@@ -4,8 +4,8 @@ Required by T064: walk [quickstart.md](../quickstart.md) sections 1 through 8 ag
 application and record any divergence as a defect rather than as a documentation edit. Section 9 is
 T065's gate, so the two together cover the document.
 
-Walked 2026-08-25 against `654027a`, and re-walked against `75d944c` once the defect in
-finding 2 was fixed, on the container this repository builds in.
+Walked 2026-08-25 against `654027a`, and re-walked against `main` once the defect in
+finding 2 was fixed there, on the container this repository builds in.
 
 ## Result by section
 
@@ -58,7 +58,7 @@ mismatched version each exit non-zero and write no output.
 
 Found by section 8's full-matrix run rather than by reading, and it is this feature's, so it is
 recorded as a defect and not as a note. At `chromium-tablet-landscape` (1112 x 834) in German at
-200% text the frame's command bar wraps to three rows and stands 455 pixels tall while staying
+200% text the frame's command bar wraps to three rows and stands 462 pixels tall while staying
 `position: sticky`. A control scrolled to the middle of the viewport therefore lands behind the bar
 rather than under it, which is what feature 010's `hull-anatomy.spec.ts` mode-strip assertion
 reports: all five anatomy modes answer to nothing at their own centres.
@@ -76,16 +76,20 @@ query however large the text grows while the bar it is protecting doubles. The g
 | -------------------------------- | ---------- | ------------------------------ |
 | as shipped                       | 462 px     | all five answer to the banner  |
 | with this feature's entry hidden | 374 px     | all five answer to themselves  |
-| after the fix                    | 334 px     | all five answer to themselves  |
+| with the interim bound           | 334 px     | all five answer to themselves  |
 
 So the entry is what carried the bar across the middle of the window, and the defect is this
 feature's to fix rather than a condition it merely revealed.
 
-**Fixed** in `app-frame.scss`: above the compact composition the bar is bounded to `40dvh` and
-scrolls itself, so every action stays reachable and the middle of the window belongs to the
-capability. It is the same remedy, for the same reason, as finding 4's. Medium and up only — the
-compact bar is a single row that never approaches the bound, and it is the composition that hangs
-the action layer's panel off a trigger inside the bar, which a scroll container there would clip.
+**Fixed on `main`, not here.** An interim fix was made on this branch — the bar bounded to `40dvh`
+above the compact composition with its own scroller — and it is **withdrawn**. While it stood,
+`3f9b574` landed on `main` with a better answer to the same defect, reached from the
+same diagnosis: the frame now measures the bar it actually rendered and releases it to `position:
+static` when what it leaves below is no longer a viewport anything can be stacked in, and zeroes
+`--edsb-layout-bar-height` so the chrome that offsets by the bar travels with it instead of freezing
+over a gap. That is the shell's own rule enforced by measurement rather than approximated by a
+viewport share, and it is feature 011's to make. The interim commit was dropped on the rebase; two
+competing fixes for one defect would have left the bar clamped and scrolling even once released.
 
 The rejected alternative is worth recording. The reference draws its wide help control as a 34 x 34
 `?` square, and shrinking the entry to that would also have brought the bar under the midline. It
@@ -128,6 +132,39 @@ unavailable in a state a Commander can be in.
 Fixed in `src/app/ui/components/app-frame/action-layer.scss`: the panel is bounded to the viewport
 and scrolls itself. Recorded as this feature's one exception to "features 001–011 change nothing" in
 [screen-inventory.md](./screen-inventory.md#cross-feature-placement).
+
+## Section 9's gate, and the two results that needed a baseline
+
+T065 runs `pnpm run check`. Every stage is green here except as recorded below: `format:check`,
+`help:artifacts:check`, `typecheck`, `build`, `build:preview`, `policy` (seven checkers), the codec
+capacity table, 252 generator tests, and 159 unit files / 2148 tests at 85.8 / 84.18 / 89.47 / 86
+against the 80% thresholds. The five Chromium projects run 2775 tests.
+
+**Six matrix failures, all of them the machine.** The complete Chromium matrix came back 2769 passed
+and 6 failed in 35.2 minutes. Re-run serially, all six pass — 16 of 16, in two and a half minutes.
+Five were plainly the clock: four axe sweeps in feature 002's
+`outfitting-accessibility.spec.ts` exceeding the 30-second budget under eight workers, one of them
+losing its page outright, and feature 001's two-page save test timing out at mobile-portrait. The
+sixth was a state assertion — feature 008's "leaving the mode gives feature 010's plates back
+unchanged" — whose before-snapshot held one plate and whose after-snapshot held two: a settle race
+on the snapshot rather than a lost state, and it too passes alone. None is reachable from this
+feature's change: the bar's bound applies above the compact composition and only past `40dvh`, and
+at desktop with ordinary text the bar is nowhere near it.
+
+**SC-002's timing budget is missed on this container, and it is not this feature's doing.** Feature
+002's candidate search is asserted at under 100 ms from keystroke to painted rows, at 4x CPU
+throttling. Here it reports 105.7 ms, then 102.6 ms, then a pass. Feature 002 recorded 59 ms worst
+on 2026-08-22, so the gap is wide enough to be worth attributing rather than excusing, and the
+attribution was measured rather than argued: the same measurement, on the same container, at
+`342feec` — the last commit before this feature — reports **116.0 ms, then 111.3 ms, then a pass**.
+The tree with this feature in it is the faster of the two. The budget is being missed by the
+machine, and this feature moved the number the right way.
+
+Recorded here rather than fixed, because it is feature 002's assertion about feature 002's surface
+and this walk is not the place to retune another feature's budget or its code.
+
+SC-005, this feature's own timing half, passes: the modal presents its first frame inside 100 ms at
+the same throttling.
 
 ## What section 3 through 7 were walked with
 
