@@ -18,6 +18,9 @@ browser and share builds by URL. SLEF import and export are specified in
 - Q: How many unnamed records should a Commander accumulate before the application stops storing new
   ones and asks them to choose? → A: None — the limit is time, not count. An unnamed record expires
   seven days after its last modification and is then removed; naming it stops the clock.
+- Q: What should the library show as the title of an unnamed record? → A: The build's own ship name if
+  it has one, else its ident, else the hull name — marked as not a name the Commander gave the
+  record.
 
 ## User Scenarios
 
@@ -111,7 +114,10 @@ browser and share builds by URL. SLEF import and export are specified in
   because FR-008 leaves nothing to lose.
 - **FR-010**: Stored entries MUST show their name or that they have none, hull, last-modified time
   and the validation state recorded at that time. An unnamed entry MUST also show how long it has
-  before it expires. A build MAY have one local note.
+  before it expires, and MUST be titled by the build's own ship name, by its ident where there is no
+  ship name, or by the hull name where there is neither. That title MUST be read from the build
+  rather than stored on the record, MUST NOT be a name the application invented, and MUST be
+  distinguished from a name the Commander gave the record. A build MAY have one local note.
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
 - **FR-012**: Two live pages MUST NOT autosave to one record. Each page's autosave target is an
@@ -192,6 +198,11 @@ browser and share builds by URL. SLEF import and export are specified in
   record they were forked from does not expire at all.
 - Naming a record at any point before it runs out keeps it indefinitely, and there is no count at
   which naming becomes necessary.
+- An unnamed entry's title follows the build: renaming the ship retitles the entry, because the title
+  is read from the build rather than written onto the record.
+- Two unnamed entries may carry the same title, because two ships may share a name. Hull,
+  last-modified time and remaining life still tell them apart, and neither is treated as a duplicate
+  of the other.
 - Preview absence is temporary, not a catalogue failure.
 - A newer payload version is refused rather than guessed.
 - A build-link payload longer than the published 500-character limit is refused before decoding.

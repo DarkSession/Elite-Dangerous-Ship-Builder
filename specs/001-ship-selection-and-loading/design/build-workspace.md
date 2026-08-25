@@ -21,7 +21,7 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 | State                              | Required presentation and behavior                                                                             |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship.                         |
-| Unnamed stock/link build           | Show hull and that the build has no name yet; autosave status; no name is invented for it.                     |
+| Unnamed stock/link build           | Title from the build's ship name, ident or hull, as the library titles it, set apart from a given name.        |
 | Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.          |
 | Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.  |
 | Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                    |
