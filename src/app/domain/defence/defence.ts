@@ -79,7 +79,7 @@ export interface Defence {
 /** Everything the projection needs that is not the build. */
 export interface DefenceConditions {
   /**
-   * Pips to the systems capacitor, `0`–`4`, passed to both shield calls.
+   * Pips to the systems capacitor, `0`–`4`.
    *
    * Feature 005's store already holds the ship's own allocation on the half
    * step, in the units the package takes, so there is nothing to convert: the

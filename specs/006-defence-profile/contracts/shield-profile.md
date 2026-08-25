@@ -20,7 +20,8 @@ const recovery = metrics.shieldRecoveryResult({ systemsPips });
 
 Almanac 0.2.0 made the bare shield and what a SYS allocation is worth to it two calls.
 `shieldMetricsResult()` takes no allocation at all — it is the shield an outfitting screen shows —
-and every pip-dependent figure comes from `shieldCapacitorMetricsResult()`. The allocation is always
+and every pip-dependent figure on the damage table comes from `shieldCapacitorMetricsResult()`. The
+recovery is pip-dependent too, and is its own call. The allocation is always
 passed explicitly, because the package's own default is four pips and a standing allocation of none
 would otherwise be read as four. Components never call the package, and application code never calls
 standalone shield, resistance, EHP or recovery formulas.

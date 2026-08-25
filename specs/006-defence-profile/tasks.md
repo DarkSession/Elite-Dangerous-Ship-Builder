@@ -269,8 +269,14 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
 - [x] T092 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
 - [x] T093 Fourth review round. T091 claimed "the last places" and was wrong twice: the fixtures
       header still enumerated four package calls, and the unit twin of the `RESIST`/`MJ` comment
-      still read "at zero pips". The round also caught a claim this branch introduced — that the
-      capacitor is the only thing on the projection moving with the allocation, when the recovery
-      moves with it too. It was in four places, one of them written by T091 itself; all four now
-      say what is actually true, which is that the capacitor is the only thing on the damage table
+      still read "at zero pips". The round also caught a claim that the capacitor is the only thing
+      on the projection moving with the allocation, when the recovery moves with it too. Three of
+      the four places it stood came in with the 0.2.0 split and one was written by T091; the two
+      making that claim now scope it to the damage table, which is where it is true, and the other
+      two say what they were each actually about
 - [x] T094 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T095 Fifth review round: the contract's boundary said every pip-dependent figure comes from
+      the capacitor, when the recovery is pip-dependent and is its own call; `DefenceConditions`
+      still counted the pre-0.2.0 "both shield calls" in its headline while its body already named
+      the right two; and T093 credited this branch with a claim it inherited
+- [x] T096 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
