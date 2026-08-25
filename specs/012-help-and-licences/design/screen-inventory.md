@@ -82,6 +82,15 @@ accepted requirement rather than to nothing.
 - Feature 011's application frame contains the visible Help action and hosts the modal instance.
 - Features 001–011 change nothing. There is no `ContextHelpLink` and no template of theirs is
   touched — the reciprocal-entry set an earlier revision of this document required is withdrawn.
+- **One exception, 2026-08-25**, and it is a defect fix rather than an addition: feature 011's
+  compact action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
+  scrolled into view — the document scrolls the screen underneath while the banner and everything
+  anchored to it stay put. At 200% text on a phone the panel grew taller than the space below the
+  banner, which put this feature's Help entry at y 873 in an 844-pixel viewport with no way to reach
+  it. FR-001's only route was unavailable in a state a Commander can actually be in. The panel is now
+  bounded to the viewport with its own scroller in `action-layer.scss`. No template changed and no
+  help control was added anywhere; what changed is that every entry in that layer, this one included,
+  can be pressed.
 - Feature 012 owns the entry action, the modal composition, the presenter, the topic catalogue and
   the artifact manifest.
 - Feature 011 owns primitive dialog semantics, visible-name actions, tokens, localisation, previews
