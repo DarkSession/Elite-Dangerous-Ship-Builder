@@ -799,7 +799,13 @@ test.describe('the status rail', () => {
     const boxes = await cells.evaluateAll((nodes) =>
       nodes.map((node) => {
         const box = (node as HTMLElement).getBoundingClientRect();
-        return { top: Math.round(box.top), left: Math.round(box.left), width: box.width };
+        return {
+          top: Math.round(box.top),
+          left: Math.round(box.left),
+          right: Math.round(box.right),
+          bottom: Math.round(box.bottom),
+          width: box.width,
+        };
       }),
     );
 
@@ -815,6 +821,30 @@ test.describe('the status rail', () => {
     const columns = [...new Set(boxes.map((box) => box.left))].sort((a, b) => a - b);
     expect(columns).toHaveLength(2);
     expect(columns[1] - (columns[0] + boxes[0].width)).toBeLessThanOrEqual(2);
+
+    // The amber ground reaches exactly as far as the cells do. It is what rules
+    // them off each other through the one-pixel gaps, and it is nothing else —
+    // a band of it around the six would be a box the canvas draws around
+    // nothing, which is what a ground painted across the block's own inset
+    // looks like.
+    const grid = page.locator('.outfitting__status-cells');
+    const ground = await grid.evaluate((node) => {
+      const box = (node as HTMLElement).getBoundingClientRect();
+      const style = getComputedStyle(node as HTMLElement);
+      return {
+        top: Math.round(box.top),
+        left: Math.round(box.left),
+        right: Math.round(box.right),
+        bottom: Math.round(box.bottom),
+        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+      };
+    });
+
+    expect(ground.padding).toEqual(['0px', '0px', '0px', '0px']);
+    expect(ground.top).toBe(Math.min(...boxes.map((box) => box.top)));
+    expect(ground.left).toBe(Math.min(...boxes.map((box) => box.left)));
+    expect(ground.right).toBe(Math.max(...boxes.map((box) => box.right)));
+    expect(ground.bottom).toBe(Math.max(...boxes.map((box) => box.bottom)));
   });
 
   test('names each figure with its unit, and holds no control', async ({ page }) => {

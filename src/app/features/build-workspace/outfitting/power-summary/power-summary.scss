@@ -9,14 +9,6 @@
   display: block;
 }
 
-// The rail draws one ground with no side padding of its own, so each group it
-// stacks carries its own inset — the same one feature 003's issue group above
-// and the cost block below take. Without it the sentence's tinted band, the
-// figures and the bar all run into both seams.
-.block {
-  padding: var(--edsb-space-panel);
-}
-
 .statements {
   @include layout.stack(var(--edsb-space-stack-tight));
 

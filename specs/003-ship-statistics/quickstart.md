@@ -1,5 +1,23 @@
 # Quickstart: Ship Statistics and Status
 
+> **Superseded 2026-08-22 (wave 11).** Three collisions between the accepted specification and
+> `.design/Ship Builder.dc.html` were surfaced before implementation and **the design won all three**
+> ([design/reference-review.md](./design/reference-review.md)). Sections 4 to 8 and 10 below validate
+> surfaces the rulings withdrew or reassigned — provider values, viewing conditions, atomic
+> composition, the wide Status capability and its targets, the count announcements, and the
+> projection timing budget — and the evidence matrix at the foot cites requirements and stories that
+> no longer exist: `spec.md` now declares two stories, and `FR-006`, `FR-008` to `FR-012` and
+> `FR-016` to `FR-021` are withdrawn or reassigned. **Do not validate against them.**
+>
+> What is left to validate is sections 1 to 3 and 9, read against what is built rather than against
+> the composition they were written for: the package validation contract, the issue list in package
+> order with its severities, the diagnostic locale behaviour with its canonical fallback, and the
+> responsive and accessible behaviour of the rail. Those are covered by
+> `src/app/features/build-workspace/outfitting/build-status/almanac-validation-contract.spec.ts`,
+> `build-status.spec.ts`, `e2e/ship-status.spec.ts` and the `build/validation-issues` surface in
+> `e2e/coverage-ledger.ts`. The gate itself — `pnpm run check`, with coverage at or above 80% and no
+> engine, viewport, orientation or accessibility check skipped — is unchanged.
+
 This is the validation/run guide for feature 003. It assumes the contract-first delivery stages in
 [plan.md](./plan.md), not that the currently checked-in shell already implements prerequisites.
 

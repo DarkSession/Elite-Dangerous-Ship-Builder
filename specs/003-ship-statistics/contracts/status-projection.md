@@ -1,5 +1,19 @@
 # Status Projection Contract
 
+> **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
+> specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
+> design won all three** ([design/reference-review.md](../design/reference-review.md)). Ruling C
+> removed this feature's dependency on features 005–009 entirely: feature 003 composes no owner
+> result, publishes no provider envelope and passes no conditions to anyone, so the transaction, the
+> five-provider bundle and the pending/failure lifecycle frozen here have no subject. Each of
+> 005–009 reads the package for its own block and draws it into the rail directly, and feature 003
+> reads `ShipLoadout.validation()` off the build already in memory.
+>
+> This file is retained as the record of what was ruled against, which is why it is left as it was
+> written. What is built is in [design/status-rail.md](../design/status-rail.md); what the rulings
+> withdrew is listed in
+> [design/reference-review.md](../design/reference-review.md#what-these-rulings-withdraw).
+
 ## Ownership
 
 Feature 003 owns the provider envelope and atomic composition. It does not own the five provider

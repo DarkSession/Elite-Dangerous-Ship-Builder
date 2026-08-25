@@ -1,5 +1,20 @@
 # Data Model: Ship Statistics and Status
 
+> **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
+> specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
+> design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
+> and its half-pip domain went to feature 005 with ruling C; the provider envelope, the revision
+> context, the composition transaction, the status lifecycle and the announcement state went with
+> rulings A and B. Feature 003 adds no domain type, no store and no port: `ShipLoadout.validation()`
+> is a call on the build feature 001 already holds in memory, and the one component reads it the way
+> `edsb-cost-materials` reads its own projection.
+>
+> This file is retained as the record of what was ruled against, which is why it is left as it was
+> written. The live design outputs are [design/reference-review.md](./design/reference-review.md),
+> [design/status-rail.md](./design/status-rail.md),
+> [design/screen-inventory.md](./design/screen-inventory.md) and
+> [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md).
+
 Feature 003 owns viewing, composition and feedback state. Game calculations and their semantic
 result unions remain owned by features 005–009. The types below reference those contracts instead of
 copying their fields.

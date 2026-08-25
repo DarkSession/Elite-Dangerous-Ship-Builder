@@ -394,6 +394,24 @@ test.describe('the status rail', () => {
       page.locator('edsb-power-summary button, edsb-power-summary a, edsb-power-summary input'),
     ).toHaveCount(0);
   });
+
+  test('stands on the same inset as the cells it heads', async ({ page }) => {
+    await openPower(page);
+
+    // Canvas 1c draws this block and the six metric cells under it inside one
+    // padded block, which the workspace owns. So the figures start where the
+    // cells start: an inset of this block's own would be a second one inside
+    // that padding, and the reading would stand further in than the cells it
+    // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
+    // are one block").
+    const line = page.locator('edsb-power-summary .rail-power');
+    const cell = page.locator('.outfitting__status-cells .metric').first();
+    await expect(line).toBeVisible();
+    await expect(cell).toBeVisible();
+
+    const [lineBox, cellBox] = await Promise.all([line.boundingBox(), cell.boundingBox()]);
+    expect(Math.round(lineBox!.x)).toBe(Math.round(cellBox!.x));
+  });
 });
 
 test.describe('the conditions that break layouts', () => {

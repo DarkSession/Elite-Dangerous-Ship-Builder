@@ -139,14 +139,26 @@ test.describe('the BUILD STATUS block', () => {
     await expect(page.getByRole('tab', { name: /status/i })).toHaveCount(0);
   });
 
-  test('carries no viewing conditions', async ({ page }) => {
+  test('carries none of the viewing conditions ruling C withdrew', async ({ page }) => {
     await openStockBuild(page);
 
-    // Ruling C. Load, pips and hardpoints are drawn inside the Power
-    // capability, and belong to feature 005 with it.
+    // Ruling C. Feature 003 builds no condition control and owns no condition
+    // state. What it withdrew is the draft this feature would have carried —
+    // three pip fields, a running total and an Apply/Reset pair — together with
+    // the load and hardpoint controls: the canvas draws no load control
+    // anywhere, and its `DEPLOYED` / `RETRACTED` toggle is inside the Power
+    // capability rather than in this rail.
     await expect(rail(page).getByRole('button', { name: /apply|reset/i })).toHaveCount(0);
     await expect(rail(page).getByRole('spinbutton')).toHaveCount(0);
-    await expect(rail(page).getByText(/laden|pips|deployed|retracted/i)).toHaveCount(0);
+    await expect(rail(page).getByText(/laden|deployed|retracted/i)).toHaveCount(0);
+
+    // The pips are deliberately not asserted absent. They are feature 005's one
+    // viewing condition, and canvas 1c has drawn that control in this rail since
+    // its 2026-08-25 revision — so a rail without them is that feature's open
+    // task, not this feature's guarantee, and asserting their absence here would
+    // make feature 003 the thing that fails when 005 draws what the canvas draws
+    // (`design/status-rail.md`, item 4; `specs/005-power-and-heat/tasks.md`,
+    // T074).
   });
 
   test('reads with no violation, and without widening the document', async ({ page }, testInfo) => {

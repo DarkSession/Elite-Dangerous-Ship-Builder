@@ -1,5 +1,19 @@
 # Workspace Integration Contract
 
+> **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
+> specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
+> design won all three** ([design/reference-review.md](../design/reference-review.md)). Ruling A
+> withdrew every target and action — nothing in the block is interactive on either canvas — so
+> `WorkspaceTarget`, `DetailTarget` and the target coordinator are not built. Ruling B withdrew the
+> wide Status capability and the rail action that would have opened it: canvas 1c draws five
+> capability tabs and no Status mode, and at wide width the rail **is** the status surface. Ruling C
+> withdrew the shared condition control. The rail/capability relationship and the contract-first
+> delivery graph frozen here therefore have no subject.
+>
+> This file is retained as the record of what was ruled against, which is why it is left as it was
+> written. What is built is in [design/status-rail.md](../design/status-rail.md), and the withdrawn
+> capability is recorded in [design/status-capability.md](../design/status-capability.md).
+
 ## Shared target union
 
 ```ts
