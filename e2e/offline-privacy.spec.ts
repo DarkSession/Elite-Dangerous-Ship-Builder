@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { applyDraft, chooseRecipe, openEditor } from './outfitting-surfaces';
 import { openFirstHullFromManifest } from './shell';
 
 /**
@@ -109,6 +110,54 @@ test.describe('offline capability', () => {
       .click();
     await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
     await expect.poll(() => recharge.innerText()).not.toBe(chargedAt);
+
+    await context.setOffline(false);
+  });
+
+  test('reads the cost and material blocks with no network at all', async ({ page, context }) => {
+    await withWorker(page, '/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+
+    await context.setOffline(true);
+
+    // Both blocks are a synchronous read of an in-memory loadout and an
+    // installed package, so they are not merely still painted with the network
+    // gone — they still answer an edit. Engineering a mount is what proves it:
+    // the materials block is absent for a build that crafts nothing, and it has
+    // to be built from the package's consolidated result to appear at all
+    // (feature 009, quickstart scenario 6).
+    const credits = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+    await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
+
+    const mount = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
+    await mount.click();
+    await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    await openEditor(page);
+    await chooseRecipe(page, /Increased Range/i);
+    await applyDraft(page);
+
+    const rows = page.locator('edsb-cost-materials .rail-material');
+    await expect(rows.first()).toBeVisible();
+
+    // The footer counts the rows beside it, and it counted them here, offline.
+    const footer = await page.locator('edsb-cost-materials .block__footer span').allInnerTexts();
+    expect(footer).toHaveLength(2);
+    expect(Number(footer[0]?.replaceAll(/\D/gu, ''))).toBe(await rows.count());
+
+    // The credit figures are expected *not* to move: a blueprint is paid for in
+    // materials, and a module's catalogue price is what it is whether or not it
+    // has been engineered. Stated rather than left implicit, because a reader
+    // who assumed otherwise would read the line above as a bug.
+    expect(await page.locator('edsb-cost-materials .cost__value').allInnerTexts()).toEqual(credits);
+
+    // The material names and rarities came from the installed package, not from
+    // a fetch: a rarity mark drawn from another origin is exactly what
+    // constitution I forbids, and offline is where that would show.
+    await expect(rows.locator('edsb-material-grade').first()).toHaveAttribute(
+      'data-grade',
+      /^[1-5]$/,
+    );
 
     await context.setOffline(false);
   });

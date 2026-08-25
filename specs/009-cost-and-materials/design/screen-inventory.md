@@ -43,6 +43,15 @@ capability.
 - Feature 011 supplies tokens, primitives, localization, formatters and the test matrix.
 - No feature retains or presents historical purchase provenance.
 
-Each feature-009 component previews its populated, no-engineering and Merc-Coin-absent states at
-desktop, tablet and mobile widths. There are no lower-bound, unavailable, pending or error previews,
-because there are no such states.
+Feature 009 declares no preview. The preview manifest and the policy rule that enforces it scope to
+`src/app/ui/components`; `CostMaterials` is a feature component, as `EngineeringEditor` and
+`ModuleReplacement` are, and none of the three is declared there. Registering only this one would
+invent a precedent the repository does not have. Its populated, no-engineering and Merc-Coin-absent
+states are covered by `cost-materials.spec.ts` and by the ten Playwright projects instead
+([../tasks.md](../tasks.md), T013). There are no lower-bound, unavailable, pending or error states
+to cover, because there are no such states.
+
+One consequence is worth naming, because it is easy to walk into: the pseudo-locale sweeps in
+`e2e/expansion-rtl.spec.ts` run against the preview catalogue, so they do not reach these blocks.
+Expanded copy and right-to-left are exercised for this feature in `e2e/cost-and-materials.spec.ts`
+directly, the way the other capability suites do it.

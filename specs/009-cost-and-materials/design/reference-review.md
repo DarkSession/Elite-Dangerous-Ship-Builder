@@ -161,11 +161,21 @@ Removing it here would make this one surface inconsistent with the rest of the a
 These are not spec-versus-design collisions; the constitution forbids the canvas's mechanism and the
 canvas's _intent_ is preserved by another means. Both were already settled for feature 002.
 
-| Canvas                                                                           | Built instead                                               | Reason                                                                             |
-| -------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `<img src="https://edassets.org/static/img/materials/grade-N.svg">` rarity icons | `edsb-material-grade`, the same fact drawn from the package | Constitution I forbids cross-origin runtime requests                               |
-| `Mcr` in 1d's module rows, and `.design/assets/merc-coin.png`                    | Locale-formatted numbers with the block's own labels        | The abbreviation is not locale-safe; the asset has no accepted provenance decision |
-| Clickable unsemantic `div`s and inline colours/sizes                             | Shared primitives and design tokens                         | Touch, screen-reader operation and one design system                               |
+| Canvas                                                                           | Built instead                                               | Reason                                               |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| `<img src="https://edassets.org/static/img/materials/grade-N.svg">` rarity icons | `edsb-material-grade`, the same fact drawn from the package | Constitution I forbids cross-origin runtime requests |
+| `Mcr` in 1d's module rows                                                        | Locale-formatted numbers with the block's own labels        | The abbreviation is not locale-safe                  |
+| Clickable unsemantic `div`s and inline colours/sizes                             | Shared primitives and design tokens                         | Touch, screen-reader operation and one design system |
+
+**The coin is drawn, and always was (corrected 2026-08-25).** This table listed
+`.design/assets/merc-coin.png` beside `Mcr` as a departure "with no accepted provenance decision".
+That was already untrue when it was written: feature 002 had accepted the asset and shipped it from
+this origin, and recorded doing so
+(`specs/002-module-outfitting/design/reference-review.md`, the built-asset audit). This block draws
+that same shipped file at `assets/icons/merc-coin.png`, decoratively, with the row's localized label
+beside it carrying the meaning — exactly as
+[cost-and-materials-detail.md](./cost-and-materials-detail.md) describes it. Only the `Mcr`
+abbreviation was ever a departure, and it is one for the localization reason alone.
 
 ### Text the canvas cannot draw
 

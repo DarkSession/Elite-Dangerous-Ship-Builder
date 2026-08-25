@@ -1,15 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { sweepOutfittingState } from './accessibility';
+import { ZOOM_400, sweepOutfittingState } from './accessibility';
+import { clippedText, expectNoDocumentOverflow } from './accessibility/assertions';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   applyDraft,
+  chooseFirstRecipe,
   chooseRecipe,
   fitCommitted,
   openChooserRows,
   openEditor as bringEditorOnScreen,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { reachShellAction } from './shell';
 
 /**
  * The cost and material blocks, end to end.
@@ -374,6 +378,58 @@ test.describe('language and formatting', () => {
 
     await context.close();
   });
+
+  test('names every material through the shared game-text primitive', async ({
+    browser,
+    baseURL,
+  }) => {
+    // Read in German, because that is where the package's own coverage decides
+    // what a row shows: a translated name, or the canonical text carrying the
+    // disclosure the rest of the application uses for one. This feature adds no
+    // game-text handling of its own and must not (FR-010), so the assertion is
+    // that the primitive is what draws every row.
+    const context = await browser.newContext({ baseURL, locale: 'de-DE' });
+    const page = await context.newPage();
+
+    await openStockBuild(page, germanMessages);
+    await engineerTheDrive(page, germanMessages);
+
+    const names = page.locator('edsb-cost-materials .rail-material__name edsb-game-text');
+    const rows = await page
+      .locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)')
+      .count();
+    expect(rows).toBeGreaterThan(0);
+    await expect(names).toHaveCount(rows);
+
+    const drawn = await names.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const value = node.querySelector('.game-text__value');
+        const disclosure = node.querySelector('.game-text__disclosure');
+        return {
+          text: (value?.textContent ?? '').trim(),
+          language: value?.getAttribute('lang') ?? null,
+          tagged: node.querySelector('.game-text__tag') !== null,
+          describedBy: value?.getAttribute('aria-describedby') ?? null,
+          disclosureId: disclosure?.getAttribute('id') ?? null,
+        };
+      }),
+    );
+
+    for (const row of drawn) {
+      expect(row.text).not.toBe('');
+      // The language the text is actually in, so a reader switches voice for a
+      // canonical English name inside a German interface.
+      expect(row.language).not.toBeNull();
+      // Untranslated is disclosed, never silent — and the disclosure is bound to
+      // the name rather than left sitting beside it.
+      expect(row.tagged).toBe(row.describedBy !== null);
+      if (row.tagged) {
+        expect(row.describedBy).toBe(row.disclosureId);
+      }
+    }
+
+    await context.close();
+  });
 });
 
 test.describe('the privacy boundary', () => {
@@ -407,6 +463,314 @@ test.describe('the privacy boundary', () => {
     expect(stored).not.toContain(String(total));
     expect(page.url()).not.toContain(String(total));
   });
+
+  test('puts no figure of its own into a link or an address the session visits', async ({
+    page,
+  }) => {
+    // Every address this session produces, not just the one it ends on: the
+    // build link is republished into the fragment on each edit, so the figures
+    // would show up in the history entries rather than in `page.url()`.
+    const visited: string[] = [];
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) {
+        visited.push(frame.url());
+      }
+    });
+
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    const figures = await ownFigures(page);
+    expect(figures.length).toBeGreaterThan(0);
+    visited.push(page.url());
+
+    for (const address of visited) {
+      for (const figure of figures) {
+        expect(address, `${figure} reached ${address}`).not.toContain(String(figure));
+      }
+    }
+  });
+
+  test('adds nothing of its own to a SLEF export', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    // The name itself, not the whole primitive: an untranslated row also draws
+    // the disclosure tag, and that is the application's word rather than the
+    // package's material.
+    const materials = (
+      await page
+        .locator(
+          'edsb-cost-materials .rail-material:not(.rail-material--merc-coin) .game-text__value',
+        )
+        .allInnerTexts()
+    ).map((name) => name.trim());
+    expect(materials.length).toBeGreaterThan(0);
+
+    await reachShellAction(page, /^export$/i);
+    const layer = page.getByRole('dialog', { name: /export build/i });
+    await expect(layer).toBeVisible();
+    await layer.getByRole('radio', { name: /slef json/i }).check();
+    const payload = await layer.getByLabel(/slef payload/i).inputValue();
+    expect(payload).not.toBe('');
+
+    // No material, no shopping list and no count of one reaches the file: the
+    // export is a fit, and what a fit would cost to craft is read from it rather
+    // than carried by it.
+    for (const material of materials) {
+      expect(payload.toLowerCase()).not.toContain(material.toLowerCase());
+    }
+    expect(payload.toLowerCase()).not.toContain('merccoin');
+    expect(payload.toLowerCase()).not.toContain('material');
+
+    // What SLEF *does* carry is `HullValue`, `ModulesValue` and `Rebuy`: they
+    // are fields of the format, written by feature 004 from the same package
+    // call this block reads (`src/app/domain/slef/slef-export-pricing.spec.ts`).
+    // Their presence is the format, not a figure this feature persisted.
+    expect(payload).toContain('Rebuy');
+  });
+});
+
+/**
+ * The block's own figures, as the digits a leak would have to carry.
+ *
+ * Only the long ones. A material count of `12` or a type count of `10` would
+ * match a substring of almost any address or payload by coincidence, so an
+ * assertion built on them proves nothing; the credit figures run to eight and
+ * nine digits, where a match is a leak rather than an accident.
+ */
+async function ownFigures(page: Page): Promise<number[]> {
+  const values = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+  return values.map(digits).filter((figure) => String(figure).length >= 5);
+}
+
+/**
+ * Every label in both blocks that overlaps the figure it labels.
+ *
+ * Measured as an intersection rather than as "the label ends past where the
+ * figure starts", because the second test is direction-dependent and would read
+ * every row as broken the moment the document runs right to left. Two boxes
+ * that share horizontal space are painted over each other whichever way the
+ * text runs, and a reading painted over another reading is lost.
+ */
+async function overlappingPairs(page: Page): Promise<string[]> {
+  return page
+    .locator('edsb-cost-materials .cost__row, edsb-cost-materials .rail-material')
+    .evaluateAll((rows) =>
+      rows
+        .map((row) => {
+          const label = row.querySelector('.cost__label, .rail-material__name');
+          const value = row.querySelector('.cost__value, .rail-material__count');
+          if (label === null || value === null) {
+            return null;
+          }
+          const first = label.getBoundingClientRect();
+          const second = value.getBoundingClientRect();
+          const shared =
+            Math.min(first.right, second.right) - Math.max(first.left, second.left) > 1;
+          return shared ? (label.textContent ?? '').trim() : null;
+        })
+        .filter((entry): entry is string => entry !== null),
+    );
+}
+
+/** Whether the footer's two counts, set at opposite ends, have run into each other. */
+async function footerCountsCollide(page: Page): Promise<boolean> {
+  return page.locator('edsb-cost-materials .block__footer').evaluate((footer) => {
+    const [types, units] = [...footer.querySelectorAll('span')].map((span) =>
+      span.getBoundingClientRect(),
+    );
+    if (types === undefined || units === undefined) {
+      return true;
+    }
+    return Math.min(types.right, units.right) - Math.max(types.left, units.left) > 1;
+  });
+}
+
+/** The two block headings, in the order the document holds them. */
+async function headingOrder(page: Page): Promise<string[]> {
+  return (await page.locator('edsb-cost-materials .block__heading').allInnerTexts()).map(
+    (heading) => heading.trim(),
+  );
+}
+
+/**
+ * A Commander's own text size, and a reading direction that runs the other way.
+ *
+ * Both blocks are label/figure rows in a narrow column, which is the shape that
+ * fails first when text grows: the label takes the width it needs and the
+ * figure has nowhere left to go. The assertion is not that the layout looks the
+ * same — it will not — but that nothing is lost, which is the in-scope
+ * requirement (feature 011, FR-014; quickstart scenario 7).
+ */
+test.describe('reading at another text size and direction', () => {
+  test('a doubled text size loses no reading', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+    await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
+
+    expect(await overlappingPairs(page), 'a label painted over its figure').toEqual([]);
+    expect(await footerCountsCollide(page), 'the two footer counts ran together').toBe(false);
+    expect(await clippedText(page), 'content truncated with no way to read it').toEqual([]);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('the longest material name the package publishes is still read whole', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    // The canonical names this recipe draws run to forty characters — `Eccentric
+    // Hyperspace Trajectories`, `Atypical Disrupted Wake Echoes` — and a
+    // truncated one is not a cosmetic problem here: a Commander shops from these
+    // rows, and two materials can differ only in their tail.
+    const names = (
+      await page.locator('edsb-cost-materials .rail-material .game-text__value').allInnerTexts()
+    ).map((name) => name.trim());
+    expect(names.length).toBeGreaterThan(0);
+    // A guard on the fixture rather than an assertion about the product: if the
+    // catalogue ever stopped drawing a long name here, the test below would pass
+    // without having tested anything.
+    expect(Math.max(...names.map((name) => name.length))).toBeGreaterThan(20);
+
+    for (const name of names) {
+      expect(name).not.toContain('…');
+    }
+    expect(await clippedText(page)).toEqual([]);
+  });
+
+  test('right to left mirrors the blocks without reordering them', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+    const order = await headingOrder(page);
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+
+    // Direction is a visual property; the read order is the DOM, and `COST`
+    // still comes before `MATERIALS` (detail design, "Purpose and semantic
+    // order").
+    expect(await headingOrder(page)).toEqual(order);
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
+    expect(await overlappingPairs(page)).toEqual([]);
+    expect(await footerCountsCollide(page)).toBe(false);
+    expect(await clippedText(page)).toEqual([]);
+    await expectNoDocumentOverflow(page);
+  });
+});
+
+/**
+ * 400% browser zoom, as WCAG 1.4.10 defines it by equivalence.
+ *
+ * 1280x1024 zoomed to 400% is 320x256 CSS pixels, and the device scale factor
+ * is what makes `devicePixelRatio` agree with a genuinely zoomed page. This is
+ * the width at which the rail stops being a column beside the bench and becomes
+ * the Status stack, so it is where the responsive composition is actually
+ * decided.
+ */
+test.describe('at 400% browser zoom', () => {
+  test.use(ZOOM_400);
+
+  test('draws both blocks, in canvas order, with nothing cut off', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    expect(await headingOrder(page)).toHaveLength(2);
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+    expect(await overlappingPairs(page)).toEqual([]);
+    expect(await clippedText(page)).toEqual([]);
+    await expectNoDocumentOverflow(page);
+  });
+});
+
+/**
+ * German at a doubled text size, on this project's own device.
+ *
+ * `test.use` rather than a context built by hand: a hand-built context takes
+ * Playwright's defaults for everything it is not given, and this layout is
+ * decided by the viewport and touch profile the project sets.
+ *
+ * Each condition alone is fine. Together they are the pair that breaks a
+ * label/figure row: `Materialarten` and `Einheiten insgesamt` are set at
+ * opposite ends of one footer, and at twice the size there is not obviously
+ * room for both.
+ */
+test.describe('in German, at a doubled text size', () => {
+  test.use({ locale: 'de-DE' });
+
+  test('draws its own labels and lets none reach into its figure', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page, germanMessages);
+    await engineerTheDrive(page, germanMessages);
+
+    // The canvas uppercases two of the four rows, so the drawn text is compared
+    // case-insensitively against the message the catalogue actually holds.
+    const drawn = (await page.locator('edsb-cost-materials .cost__label').allInnerTexts()).map(
+      (label) => label.trim().toLocaleLowerCase('de'),
+    );
+    expect(drawn).toEqual(
+      [
+        germanMessages['cost-materials.cost.hull'],
+        germanMessages['cost-materials.cost.modules'],
+        germanMessages['cost-materials.cost.total'],
+        germanMessages['cost-materials.cost.rebuy'],
+      ].map((label) => label.toLocaleLowerCase('de')),
+    );
+
+    expect(await overlappingPairs(page)).toEqual([]);
+    expect(await footerCountsCollide(page)).toBe(false);
+    expect(await clippedText(page)).toEqual([]);
+    await expectNoDocumentOverflow(page);
+  });
+});
+
+/**
+ * The axe sweep, over each state the capability actually has.
+ *
+ * The detail design names five, and they differ in what is on screen rather
+ * than in how it is styled: a scan of the populated block says nothing about
+ * the build that crafts nothing, whose materials block is absent altogether.
+ */
+test.describe('the accessibility sweep, state by state', () => {
+  test('with no build open', async ({ page }, testInfo) => {
+    await page.goto('/build');
+    await expect(page.getByRole('main')).toBeVisible();
+
+    // Neither block is drawn without a build; the workspace already says why it
+    // is empty.
+    await expect(page.locator('edsb-cost-materials .block')).toHaveCount(0);
+    await sweepOutfittingState(page, testInfo, 'cost and materials, no build');
+  });
+
+  test('with a build that has crafted nothing', async ({ page }, testInfo) => {
+    await openStockBuild(page);
+
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
+    await sweepOutfittingState(page, testInfo, 'cost and materials, nothing engineered');
+  });
+
+  test('with no Merc-Coin article bought', async ({ page }, testInfo) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(0);
+    await sweepOutfittingState(page, testInfo, 'cost and materials, no merc coin');
+  });
+
+  test('with a Merc-Coin article bought', async ({ page }, testInfo) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+    await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
+
+    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
+    await sweepOutfittingState(page, testInfo, 'cost and materials, merc coin');
+  });
 });
 
 /**
@@ -416,16 +780,33 @@ test.describe('the privacy boundary', () => {
  * width the bench is a layer reached by an `ENGINEER` action that only exists
  * once a mount is marked, so clicking the row and asking immediately races it.
  */
-async function engineerTheDrive(page: Page): Promise<void> {
+async function engineerTheDrive(page: Page, messages = englishMessages): Promise<void> {
   const row = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
 
-  await bringEditorOnScreen(page);
-  await chooseRecipe(page, /Increased Range/i);
-  await applyDraft(page);
+  await bringEditorOnScreen(page, exactly(messages['outfitting.capability.engineer']));
+  if (messages === englishMessages) {
+    await chooseRecipe(page, /Increased Range/i);
+  } else {
+    // Blueprint names are the Almanac's game text, so a run in another language
+    // takes whichever recipe the package offers first rather than pinning this
+    // catalogue's English wording.
+    await chooseFirstRecipe(page);
+  }
+  await applyDraft(page, exactly(messages['outfitting.engineering.apply']));
   await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+}
+
+/**
+ * One drawn label, matched whole.
+ *
+ * A bare string is a substring match on the accessible name, which would let
+ * `Engineer` find `Engineering for …` and press the wrong thing.
+ */
+function exactly(label: string): RegExp {
+  return new RegExp(`^${label.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&')}$`, 'iu');
 }
 
 /**

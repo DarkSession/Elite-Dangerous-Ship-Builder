@@ -180,9 +180,14 @@ the blueprint/type/unit aggregates (D) and Merc Coin as a row inside the materia
 
 **Still rejected**, on constitutional rather than specification grounds: remote `edassets.org`
 material-grade SVGs and Google Fonts requests (constitution I forbids cross-origin runtime
-requests), the `Mcr` abbreviation (not locale-safe), `.design/assets/merc-coin.png` (no accepted
-provenance decision), and hard-coded values or literal styles (one design system). Top-five material
-truncation is also still rejected, by ruling E — the list is complete.
+requests), the `Mcr` abbreviation (not locale-safe), and hard-coded values or literal styles (one
+design system). Top-five material truncation is also still rejected, by ruling E — the list is
+complete.
+
+> **Corrected 2026-08-25.** This paragraph also listed `.design/assets/merc-coin.png` as rejected
+> for having no accepted provenance decision. It had one: feature 002 accepted the asset and ships
+> it from this origin. The Merc Coin row draws it, decoratively, beside the label that carries the
+> meaning ([design/reference-review.md](./design/reference-review.md), "The coin is drawn").
 
 **Rationale**: The original rationale conflated two different objections. "Violates the package
 boundary" was a specification judgement the user has now overruled; "depends on another origin" and
