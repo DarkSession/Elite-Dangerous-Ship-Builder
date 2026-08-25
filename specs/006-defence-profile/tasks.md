@@ -267,3 +267,10 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
       note in `defence-summary.spec.ts` — and `resistances` regrouped in `FIGURE_FIELDS` beside the
       singular it belongs with rather than under the capacitor's own fields
 - [x] T092 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T093 Fourth review round. T091 claimed "the last places" and was wrong twice: the fixtures
+      header still enumerated four package calls, and the unit twin of the `RESIST`/`MJ` comment
+      still read "at zero pips". The round also caught a claim this branch introduced — that the
+      capacitor is the only thing on the projection moving with the allocation, when the recovery
+      moves with it too. It was in four places, one of them written by T091 itself; all four now
+      say what is actually true, which is that the capacitor is the only thing on the damage table
+- [x] T094 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`

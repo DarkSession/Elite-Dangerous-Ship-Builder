@@ -53,8 +53,9 @@ export interface Defence {
    *
    * A second package call, `shieldCapacitorMetrics()`, over the same build. It
    * carries the resistance the pips contribute on their own and the effective
-   * pool behind them, and it is the only thing on this projection that moves
-   * with the allocation (FR-002's 2026-08-25 second column).
+   * pool behind them, and it is the only thing on the damage table that moves
+   * with the allocation (FR-002's 2026-08-25 second column). The recovery below
+   * moves with it too; the bare shield above does not.
    */
   readonly capacitor: CalculationView<CapacitorSnapshot>;
   /** Independently complete or unavailable: a shield may be one and this the other. */
@@ -82,7 +83,8 @@ export interface DefenceConditions {
    *
    * Feature 005's store already holds the ship's own allocation on the half
    * step, in the units the package takes, so there is nothing to convert: the
-   * value it holds is handed to the package unchanged.
+   * value it holds is handed to the package unchanged — to the capacitor and
+   * the recovery, which are the two calls that take an allocation at all.
    */
   readonly systemsPips: number;
 }

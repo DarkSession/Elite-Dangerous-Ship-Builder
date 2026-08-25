@@ -46,7 +46,8 @@ async function openMode(page: Page, label: string): Promise<void> {
  * The damage rows of one card, cell by cell.
  *
  * The bar's own cell is left out: it holds no text at all, by design, and every
- * reading on the line is in the three cells that do.
+ * reading on the line is in the cells that do — four on the shield card since
+ * the fifth column joined it, three on the hull, which pips do not reach.
  */
 async function damageRows(page: Page, card: string): Promise<string[][]> {
   return page

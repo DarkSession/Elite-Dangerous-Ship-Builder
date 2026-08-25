@@ -136,8 +136,9 @@ describe('DefenceAnalysis', () => {
 
     it('holds the bare resistances still and moves only the pip column', () => {
       // FR-002, as the 2026-08-25 revision settles it: `RESIST` and `MJ` are
-      // the shield at zero pips and do not move; the allocation is a second
-      // package call and shows up in the fifth column alone.
+      // the bare shield, which no allocation moves — the package's call for
+      // them takes none — and the allocation is a second package call that
+      // shows up in the fifth column alone.
       const build = fullyFittedBuild();
       const { component, detect } = render(build);
       const before = component.shieldDamage();
