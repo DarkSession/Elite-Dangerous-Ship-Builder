@@ -214,3 +214,31 @@ Recorded in `design/reference-review.md`, "Canvas revision, 2026-08-25".
       both allocations and the pips only as `systemsResistance`
 - [x] T082 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
+
+---
+
+## Phase: closing the 2026-08-25 revision's gaps
+
+T078–T082 delivered the fifth column and its tests, but three artefacts were left describing the
+four-column table the revision replaced, and one behaviour the contract states was never proven.
+Found by reading the delivered surface back against `spec.md` and `design/defence-profile.md`.
+
+- [x] T083 Reconcile [design/screen-inventory.md](./design/screen-inventory.md) with the revision:
+      its FR-002 ownership row still had the resistances and pools read at the standing allocation,
+      which spec.md FR-002 and the design now make the bare shield. The surface table gained the
+      fifth column, and "Required states" gained the states it has of its own — the column at no
+      pips, where it repeats the bare pool, and a capacitor refused while the bare shield stands
+- [x] T084 Replace the stale assertion on `build/defence-analysis-shields` in
+      `e2e/coverage-ledger.ts`, which claimed the cards are read at the standing allocation, with
+      the two the revision actually asks for: the bare columns holding still under a moving pip, and
+      the fifth column headed with the allocation it was read at. Both are already exercised by
+      `e2e/defence.spec.ts`, "moves the pip column alone"
+- [x] T085 Name `effectiveResistances` in the capacitor mapping in
+      [contracts/shield-profile.md](./contracts/shield-profile.md) as carried and not drawn. It is
+      the one carried field that would be a defect if drawn — the resistances with the pips folded
+      in, on a table whose `RESIST` column is a base value — so its exclusion is stated rather than
+      left to inference
+- [x] T086 Prove the two results are independent, which the contract asserted and nothing verified:
+      a refused capacitor withdraws the fifth column and leaves the four bare ones whole, in
+      `defence-analysis.spec.ts`. Add the `afterEach` restore the seam needs, matching
+      `defence.spec.ts`, and extend the contract's own verification list to require it

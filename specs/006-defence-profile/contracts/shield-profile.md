@@ -66,10 +66,13 @@ that moves when a pip moves.
 | the allocation it was read at | `systemsPips`                                          | pips, `[0, 4]`   |
 | effective shield pools        | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | MJ of raw damage |
 
-`capacity`, `rechargeRate` and `systemsResistance` are carried and not drawn, for the same reason.
-No pool is scaled, blended or apportioned between the two results: an unavailable capacitor result
-withdraws its column rather than borrowing the bare pool beside it, and an unavailable bare shield
-does not borrow the capacitor's.
+`capacity`, `rechargeRate`, `systemsResistance` and `effectiveResistances` are carried and not
+drawn, for the same reason. The last of those is the one to be careful with: it is the shield's
+resistances with the pips folded in, and drawing it anywhere would put a pip-moved percentage on a
+table whose `RESIST` column is a base value. The fifth column takes `effectiveHitPoints` and nothing
+else. No pool is scaled, blended or apportioned between the two results: an unavailable capacitor
+result withdraws its column rather than borrowing the bare pool beside it, and an unavailable bare
+shield does not borrow the capacitor's.
 
 ## Complete recovery mapping
 
@@ -114,6 +117,9 @@ No clamp, finite substitute, generic infinity label, truthiness check or mislead
   remain distinct package diagnoses.
 - Prove a retracted-powered/deployed-shed generator remains package-complete for shields.
 - Prove shield/recovery may differ without one result suppressing the other.
+- Prove the bare shield and the capacitor are independent in both directions: a refused capacitor
+  withdraws the fifth column and leaves the four bare ones whole, and neither result stands a figure
+  in for the other.
 - Prove zero, negative, unavailable, unbounded EHP and a non-finishing recovery phase remain
   distinct.
 - Prove shield unavailability never suppresses armour.

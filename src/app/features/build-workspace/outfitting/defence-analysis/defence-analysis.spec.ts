@@ -86,6 +86,13 @@ describe('DefenceAnalysis', () => {
     conditions = TestBed.inject(PowerConditionsStore);
   });
 
+  // The calculations live on `BuildMetrics`, so the seam a test reaches for is
+  // its prototype. A prototype stays mocked for every later test in this file
+  // unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('draws nothing at all without a build', () => {
     expect(render(null).element.textContent?.trim()).toBe('');
   });
@@ -177,6 +184,34 @@ describe('DefenceAnalysis', () => {
 
       expect(component.armourDamage().pipColumn).toBeNull();
       expect(component.armourDamage().rows.every((row) => row.poolAtPips === undefined)).toBe(true);
+    });
+
+    it('withdraws the fifth column when the capacitor is refused, and stands nothing in for it', () => {
+      // The bare shield and the capacitor are two package results, and neither
+      // borrows the other's figure. A capacitor the package declines takes its
+      // column with it: repeating the bare pool under a heading naming an
+      // allocation nobody read would be this application answering in the
+      // package's place (FR-001, FR-002).
+      vi.spyOn(BuildMetrics.prototype, 'shieldCapacitorMetricsResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [
+          {
+            field: 'shieldGenerator',
+            reason: 'missing',
+            message: 'No shield generator is fitted.',
+          },
+        ],
+      });
+      const { component } = render(fullyFittedBuild());
+      const table = component.shieldDamage();
+
+      expect(table.pipColumn).toBeNull();
+      expect(table.rows.every((row) => row.poolAtPips === undefined)).toBe(true);
+      // The four bare columns are untouched: an unavailable capacitor is not a
+      // shield the package refused, and the table it sat beside stays whole.
+      expect(table.rows).toHaveLength(4);
+      expect(table.rows.every((row) => row.pool !== null)).toBe(true);
     });
 
     it('pairs every damage type with the package resistance and both pools it returned', () => {
