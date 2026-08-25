@@ -54,6 +54,7 @@ const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
       '**/offline-privacy.spec.ts',
       '**/schematic-offline.spec.ts',
       '**/application-update.spec.ts',
+      '**/help-offline.spec.ts',
     ];
 
 /**

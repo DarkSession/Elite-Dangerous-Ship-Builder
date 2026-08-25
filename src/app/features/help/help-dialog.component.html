@@ -1,0 +1,58 @@
+<edsb-layer
+  [title]="view().title"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  (dismissed)="dismissed.emit()"
+>
+  <!--
+    One column, three sections, hairline-separated — the reference's own body.
+    The order is `ABOUT`, `FAQ`, `LICENCE` at every width and in every
+    language: it is the reading order, not a layout.
+  -->
+  <div class="help-dialog">
+    <!--
+      The reference's own ABOUT: one sentence saying what this is, the version
+      line under it, and then what the versions are and are not a claim about.
+    -->
+    <section class="help-dialog__section" [attr.aria-labelledby]="aboutId">
+      <h3 class="help-dialog__heading" [id]="aboutId">{{ sections().about }}</h3>
+      <p class="help-dialog__purpose">{{ view().purpose }}</p>
+
+      <edsb-version-facts [facts]="about().facts" />
+
+      <p class="help-dialog__prose">{{ about().provenance.almanacRole }}</p>
+      <p class="help-dialog__prose">{{ about().provenance.frontierOwnership }}</p>
+    </section>
+
+    <section class="help-dialog__section" [attr.aria-labelledby]="faqId">
+      <h3 class="help-dialog__heading" [id]="faqId">{{ sections().faq }}</h3>
+    </section>
+
+    <!--
+      The licence section, in the reference's own order: what this project
+      grants and what it cannot, where the notice below came from, the notice
+      itself, and then the one way out to everything else. The excerpt is last
+      before the link because the link is what a reader goes to *after* reading
+      it, and it is the modal's only external navigation.
+    -->
+    <section class="help-dialog__section" [attr.aria-labelledby]="licenceId">
+      <h3 class="help-dialog__heading" [id]="licenceId">{{ sections().licence }}</h3>
+      <p class="help-dialog__prose">{{ licence().framing }}</p>
+
+      <edsb-legal-excerpt
+        [sourceNotice]="licence().sourceNotice"
+        [languageNotice]="licence().languageNotice"
+        [text]="licence().excerpt"
+        [language]="licence().excerptLanguage"
+      />
+
+      <edsb-warned-external-link
+        [label]="licence().link.label"
+        [href]="licence().link.href"
+        [purpose]="licence().link.purpose"
+        [leavingWarning]="licence().link.leavingWarning"
+        [networkWarning]="licence().link.networkWarning"
+      />
+    </section>
+  </div>
+</edsb-layer>

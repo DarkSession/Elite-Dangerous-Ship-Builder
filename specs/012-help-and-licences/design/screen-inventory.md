@@ -1,45 +1,48 @@
 # Screen Inventory: Help, Licences and Provenance
 
-Feature 012 adds one modal layer and two embedded entry-surface patterns. It adds no route or
-standalone page. All three compose the shared feature 011 design system.
+Feature 012 adds one modal layer and one entry action on the application frame. It adds no route, no
+standalone page and no per-surface control. Both compose the shared feature 011 design system.
 
 ## Inventory
 
-| Surface                                  | Kind                   | Appears in                                                                 | Purpose                                                                 |
-| ---------------------------------------- | ---------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Application-frame Help · About entry     | persistent embedded UI | every capability, no-build state and narrow action/navigation menu         | opens the shared modal without navigation                               |
-| Contextual Help, data and licences entry | reusable embedded UI   | package-backed artwork/value regions and layers whose contracts require it | opens the same modal with optional in-memory context/topic position     |
-| Help · About modal                       | shared modal layer     | above the current capability                                               | presents help, identities, provenance, exact disclaimer and two actions |
+| Surface                      | Kind                   | Appears in                                                             | Purpose                                                      |
+| ---------------------------- | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and compact action layer | opens the shared modal without navigation                    |
+| Help · About modal           | shared modal layer     | above the current capability                                           | presents ABOUT, FAQ and LICENCE, and the one external action |
 
-The application frame owns the single modal instance. A capability may emit an open intent but may
-not embed a private modal, legal copy or route.
+The application frame owns the single modal instance and the single entry. A capability may not embed
+a private modal, legal copy, help destination or entry control of its own.
+
+**No contextual entry exists.** The design reference draws a `?` control in the wide command bar and
+a `HELP & FAQ` item in the narrow action menu, and draws no help control on any other surface across
+all four of its canvases — including the outfitting ledger, the anatomy plates and the status rail.
+The frame surrounds every capability, so the frame's action is the route from all of them.
 
 ## Requirement mapping
 
-| Requirement | Application-frame entry | Contextual entry                   | Help · About modal                                           | Build/source-distribution gate   |
-| ----------- | ----------------------- | ---------------------------------- | ------------------------------------------------------------ | -------------------------------- |
-| FR-001      | global/no-build access  | —                                  | in-place, eager, offline dialog                              | initial-bundle assertion         |
-| FR-002      | fallback access         | artwork/value access               | common provenance/legal destination                          | —                                |
-| FR-003      | —                       | —                                  | one exact excerpt and one warned GitHub `LICENSE` legal link | URL/text verification            |
-| FR-004      | —                       | —                                  | clearly separates MIT from package/Frontier rights           | package-mirror equality          |
-| FR-005      | —                       | —                                  | renders generated exact excerpt/destination                  | release fails on source mismatch |
-| FR-006      | —                       | —                                  | localised framing plus labelled English excerpt              | byte/hash verification           |
-| FR-007      | —                       | —                                  | separate app/Almanac versions and non-release ID             | manifest identity checks         |
-| FR-008      | —                       | provenance route                   | bounded catalogue/calculation statement                      | wording/manifest tests           |
-| FR-009      | —                       | package-defect route when relevant | warned Almanac issue action                                  | exact URL/no-state check         |
-| FR-010      | opens complete help     | optional topic hint                | all seven accepted topics                                    | catalogue completeness           |
-| FR-011      | universal route         | capability-specific route          | complete common destination                                  | inventory coverage check         |
+| Requirement | Application-frame entry | Help · About modal                                           | Build/source-distribution gate   |
+| ----------- | ----------------------- | ------------------------------------------------------------ | -------------------------------- |
+| FR-001      | global/no-build access  | in-place, eager, offline dialog                              | initial-bundle assertion         |
+| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy  | —                                |
+| FR-003      | —                       | one exact excerpt and one warned GitHub `LICENSE` legal link | URL/text verification            |
+| FR-004      | —                       | clearly separates MIT from package/Frontier rights           | package-mirror equality          |
+| FR-005      | —                       | renders generated exact excerpt/destination                  | release fails on source mismatch |
+| FR-006      | —                       | localised framing plus labelled English excerpt              | byte/hash verification           |
+| FR-007      | —                       | separate app/Almanac versions and non-release ID in `ABOUT`  | manifest identity checks         |
+| FR-008      | —                       | bounded catalogue/calculation statement in `ABOUT`           | wording/manifest tests           |
+| FR-009      | —                       | _withdrawn — no package-defect action is rendered_           | —                                |
+| FR-010      | opens complete help     | all seven accepted topics in `FAQ`                           | catalogue completeness           |
+| FR-011      | universal route         | complete common destination                                  | inventory coverage check         |
 
-Every FR has at least one user-facing owner or release-gate owner. No requirement depends on a
-standalone help page.
+Every live FR has at least one user-facing owner or release-gate owner. No requirement depends on a
+standalone help page or on a per-surface control.
 
 ## Shared states
 
-| Surface          | Required states                                                                                                                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frame entry      | wide visible action, narrow menu item, no-build, active-build, translated/expanded, RTL                                                            |
-| Contextual entry | artwork context, value context, layer context, long translated label, touch/pointer                                                                |
-| Modal            | release, non-release + build ID, global/contextual invocation, offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom |
+| Surface     | Required states                                                                                                      |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| Frame entry | wide row action, compact action-layer item, no-build, active-build, translated/expanded, RTL                         |
+| Modal       | release, non-release + build ID, offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom |
 
 There is no runtime loading, missing-disclaimer, destination-error or stale-artifact state. Those
 conditions fail generation/release.
@@ -55,7 +58,7 @@ accepted requirement rather than to nothing.
 
 - One `dialog` with `aria-modal="true"`, a visible accessible name and an always-available close.
   The dialog is a nested landmark over the capability, never a replacement `main`.
-- Semantic order is title, purpose, Help topics, Versions and data, then Licence — the same order at
+- Semantic order is title, then `ABOUT`, `FAQ` and `LICENCE` — the reference's own order, the same at
   every viewport and in every locale.
 - Wide viewports use a centered bounded modal; narrow viewports use a full-width bottom sheet. Both
   are responsive states of one surface. The header stays pinned over a vertically scrolling body.
@@ -73,10 +76,11 @@ accepted requirement rather than to nothing.
 
 ## Cross-feature placement
 
-- Feature 011's application frame contains the visible global action and modal host.
-- Features 001–011 use `ContextHelpLink`/open intent wherever the [Release coverage
-  ledger](#release-coverage-ledger) names a contextual entry.
-- Feature 012 owns the presenter, modal composition, topic catalogue and artifact manifest.
+- Feature 011's application frame contains the visible Help action and hosts the modal instance.
+- Features 001–011 change nothing. There is no `ContextHelpLink` and no template of theirs is
+  touched — the reciprocal-entry set an earlier revision of this document required is withdrawn.
+- Feature 012 owns the entry action, the modal composition, the presenter, the topic catalogue and
+  the artifact manifest.
 - Feature 011 owns primitive dialog semantics, visible-name actions, tokens, localisation, previews
   and the cross-browser accessibility harness.
 
@@ -84,57 +88,64 @@ accepted requirement rather than to nothing.
 
 This is the exhaustive set required by FR-011. The `helpRouteCoverage` export inside feature 011's
 shared `e2e/coverage-ledger.ts` transcribes it; it does not re-derive it, and it is the only part of
-that file this feature owns. Every row is a current capability supplied by features 001–011, a package-backed
-artwork or value surface named by an accepted screen contract, or a state that obscures the
-application frame. **Frame entry** records whether FR-001's shared route is visible in that state;
-where it is not, **contextual entry** names the route that substitutes for it under FR-011. A missing
+that file this feature owns. Every row is a current capability shipped by features 001–011, a
+package-backed artwork or value surface named by an accepted screen contract, or a state that
+obscures the application frame. **Frame entry** records whether FR-001's route is visible in that
+state; where a dismissible layer covers the frame, help is reached from the capability beneath once
+the layer is dismissed, which is what FR-011 now requires in place of a substitute route. A missing
 capability or applicable surface is a release failure; representative sampling is not sufficient.
 
-| Capability / surface                         | Owner | Frame entry                        | Contextual entry                     | Applies                |
-| -------------------------------------------- | ----- | ---------------------------------- | ------------------------------------ | ---------------------- |
-| Hull catalogue `/ships`                      | 001   | visible (wide action, narrow menu) | package hull-value region            | FR-001, FR-002, FR-011 |
-| Hull detail `/ships/:symbol`                 | 001   | visible wide; obscured narrow      | package artwork and value regions    | FR-001, FR-002, FR-011 |
-| Build workspace `/build`, including no-build | 001   | visible                            | —                                    | FR-001, FR-011         |
-| Build library `/builds`                      | 001   | visible wide; obscured narrow      | layer entry                          | FR-001, FR-011         |
-| Build-library conflict/delete confirmation   | 001   | obscured                           | layer entry                          | FR-011                 |
-| Outfitting workspace ledger                  | 002   | visible                            | package module-value region          | FR-002                 |
-| Module replacement                           | 002   | visible wide; obscured compact     | layer entry                          | FR-002, FR-011         |
-| Engineering editor                           | 002   | visible wide; obscured compact     | layer entry                          | FR-002, FR-011         |
-| Exact-slot layer (narrow)                    | 002   | obscured                           | layer entry                          | FR-011                 |
-| Incoming-build normalisation refusal         | 002   | visible                            | —                                    | FR-011                 |
-| Workspace quality-completion notice          | 002   | visible                            | `completedEngineeringGrades` hint    | FR-010                 |
-| Status rail                                  | 003   | visible                            | package value region                 | FR-002                 |
-| Status capability                            | 003   | visible                            | package value region                 | FR-002, FR-008         |
-| Import Build layer                           | 004   | obscured                           | layer entry                          | FR-011                 |
-| Export Build layer                           | 004   | obscured                           | layer entry, `buildLinkPrivacy` hint | FR-011                 |
-| Shared replacement confirmation              | 001   | obscured                           | layer entry                          | FR-011                 |
-| Import Outcome disclosure                    | 004   | visible                            | `completedEngineeringGrades` hint    | FR-010                 |
-| Power and Heat capability                    | 005   | visible                            | package value region                 | FR-002, FR-008         |
-| Defence Profile                              | 006   | visible                            | package value region                 | FR-002, FR-008         |
-| Offence Profile                              | 007   | visible                            | package value region                 | FR-002, FR-008         |
-| Drives & Mass                                | 008   | visible                            | package value region                 | FR-002, FR-008         |
-| Assembly Requirements summary                | 009   | visible                            | package value region                 | FR-002                 |
-| Cost and Materials detail                    | 009   | visible                            | package value region                 | FR-002, FR-008         |
-| Hull Anatomy schematics and mount facts      | 010   | visible                            | package artwork and value regions    | FR-002, FR-008         |
-| Hull Anatomy side availability/defect state  | 010   | visible                            | `offlineAssets` hint                 | FR-010                 |
-| Application frame                            | 011   | owns the action                    | —                                    | FR-001                 |
-| Language selector layer                      | 011   | visible wide; obscured narrow      | layer entry                          | FR-011                 |
-| Global feedback/announcement host            | 011   | visible                            | —                                    | FR-011                 |
+| Capability / surface                         | Owner | Frame entry           | Applies                |
+| -------------------------------------------- | ----- | --------------------- | ---------------------- |
+| Hull catalogue `/ships`                      | 001   | visible               | FR-001, FR-002, FR-011 |
+| Hull detail `/ships/:symbol`                 | 001   | visible               | FR-001, FR-002, FR-011 |
+| Build workspace `/build`, including no-build | 001   | visible               | FR-001, FR-011         |
+| Build library `/builds`                      | 001   | visible               | FR-001, FR-011         |
+| Save-build layer                             | 001   | obscured, dismissible | FR-011                 |
+| Build-library delete confirmation            | 001   | obscured, dismissible | FR-011                 |
+| Shared replacement confirmation              | 001   | obscured, dismissible | FR-011                 |
+| Outfitting workspace ledger                  | 002   | visible               | FR-002                 |
+| Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
+| Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
+| Incoming-build normalisation refusal         | 002   | visible               | FR-011                 |
+| Workspace quality-completion notice          | 002   | visible               | FR-011                 |
+| Status rail                                  | 003   | visible               | FR-002, FR-008         |
+| Import Build layer                           | 004   | obscured, dismissible | FR-011                 |
+| Export Build layer                           | 004   | obscured, dismissible | FR-011                 |
+| Import Outcome disclosure                    | 004   | visible               | FR-011                 |
+| Power and Thermals                           | 005   | visible               | FR-002, FR-008         |
+| Defence Analysis                             | 006   | visible               | FR-002, FR-008         |
+| Offence Analysis                             | 007   | visible               | FR-002, FR-008         |
+| Drives and Mass                              | 008   | visible               | FR-002, FR-008         |
+| Cost and Materials blocks                    | 009   | visible               | FR-002, FR-008         |
+| Hull Anatomy plates and mount facts          | 010   | visible               | FR-002, FR-008         |
+| Hull Anatomy side availability/defect state  | 010   | visible               | FR-011                 |
+| Application frame                            | 011   | owns the action       | FR-001                 |
+| Global feedback/announcement host            | 011   | visible               | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
-owns the surface — which is the feature whose template T022 changes, not necessarily the feature the
-surface appears in. The shared replacement confirmation is feature 001's overlay reused by feature
-004's import hosts, so it is owned by 001. Three rows apply only FR-010: they carry the shared route
-like every other row, and their contextual entry is a topic hint rather than an FR-011 substitute
-route. Feature 010's own inventory already
-declares its `Help/provenance modal entry (feature 012)` row; the rows above are the reciprocal set.
+owns the surface. The shared replacement confirmation is feature 001's overlay reused by feature
+004's import hosts, so it is owned by 001.
+
+**Rows removed 2026-08-25**, each because the surface does not exist in the shipped application and a
+ledger row for a surface nobody ships is drift in the other direction:
+
+- ~~_Drives & Mass_ — feature 008 is unimplemented. The row is re-added with that feature.~~ **Re-added 2026-08-25**, when feature 008 landed on `main`: the anatomy region's `DRIVES` mode is a shipped surface, and it is in the ledger above.
+- _Language selector layer_ — there is no such layer. The active locale is negotiated from the
+  browser and a fallback is reported as ordinary frame status, so there is nothing to enumerate.
+- _Exact-slot layer (narrow)_ — the narrow slot flow is the module-replacement layer already listed;
+  a second row named it twice.
+
+Three rows previously carried an FR-010 topic hint in a contextual-entry column. Topic hints and that
+column are withdrawn with the contextual entry, so those rows now carry the frame route like every
+other row and apply FR-011.
 
 **Excluded, deliberately**: feature 011's component preview application. Feature 011 registers its
 own preview-catalogue entries in the shared `e2e/coverage-ledger.ts`; those entries are outside
-`helpRouteCoverage` and their absence here is this exclusion, not a reconciliation failure. It is tooling-only, never
-appears in product navigation or production output, and is therefore not a Commander-facing
-capability. It is the only exclusion, and it is recorded here so its absence from the ledger reads as
-a decision rather than an omission.
+`helpRouteCoverage` and their absence here is this exclusion, not a reconciliation failure. It is
+tooling-only, never appears in product navigation or production output, and is therefore not a
+Commander-facing capability. It is the only exclusion, and it is recorded here so its absence from
+the ledger reads as a decision rather than an omission.
 
 A row is added whenever a feature adds a capability, package-backed surface or obscuring layer. This
 table and the `helpRouteCoverage` export of `e2e/coverage-ledger.ts` are checked against each other
@@ -146,12 +157,13 @@ Automated journeys open the modal from every row of the [Release coverage
 ledger](#release-coverage-ledger) and include at least:
 
 1. a no-build hull-catalogue capability through the wide frame action;
-2. an active workspace through the narrow menu action;
-3. a package artwork provenance entry; and
-4. a package value/calculation provenance entry.
+2. an active workspace through the compact action-layer item;
+3. a package artwork capability — hull detail, whose artwork region the frame surrounds; and
+4. a package value capability — the outfitting ledger and status rail.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return, no automatic network request, and — FR-002's prohibition — that the surface itself
-embeds no legal body and offers no help or legal destination of its own. The four classes above do not cap the ledger. All open
-states receive axe, semantic and overflow checks in the complete Chromium/Firefox
-viewport-orientation matrix.
+close return, no automatic network request, and — FR-002's prohibition — that the row's own surface
+embeds no legal body and offers no help or legal destination of its own. For an obscured row the
+journey dismisses the layer first and then opens help from the capability beneath, which is the route
+FR-011 requires there. The four classes above do not cap the ledger. All open states receive axe,
+semantic and overflow checks in the complete Chromium/Firefox viewport-orientation matrix.

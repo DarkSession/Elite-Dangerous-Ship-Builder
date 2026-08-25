@@ -8,11 +8,28 @@
   "version": "2.0.0",
   "tasks": [
     {
+      // The generated help manifest, which `src/app/app.ts` imports through
+      // the help presenter. It is git-ignored, so on a fresh clone it does not
+      // exist and anything that compiles `src/` fails to resolve it; after a
+      // `LICENSE` edit it exists and is wrong. Every package script that
+      // compiles or serves runs this first, and these editor entry points are
+      // the same commands by another route, so they run it too.
+      "label": "help artifacts",
+      "type": "shell",
+      "command": "node scripts/generate-help-manifest.mjs",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "ng serve",
       "type": "shell",
       // The CLI directly rather than through pnpm: one process, so stopping
       // the task stops the server instead of orphaning it.
       "command": "node node_modules/@angular/cli/bin/ng.js serve",
+      "dependsOn": ["help artifacts"],
       "problemMatcher": [],
       "group": {
         "kind": "build",

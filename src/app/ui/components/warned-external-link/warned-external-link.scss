@@ -1,0 +1,32 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.warned-external {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.warned-external__link {
+  @include layout.control-base;
+
+  align-self: flex-start;
+  padding-block: var(--edsb-space-control-block);
+  background-color: var(--edsb-surface-control-quiet);
+  border-color: var(--edsb-border-control-quiet);
+  color: var(--edsb-text-accent);
+  text-decoration: none;
+
+  // Long translated labels wrap rather than pushing the document sideways.
+  overflow-wrap: break-word;
+}
+
+.warned-external__warnings {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

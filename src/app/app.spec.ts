@@ -1,5 +1,5 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { App } from './app';
+import { App, HELP_ACTION } from './app';
 import {
   ApplicationUpdateAdapter,
   type VersionEvent,
@@ -9,6 +9,7 @@ import { BUNDLED_ENGLISH, type MessageCatalogue } from './i18n/locale-registry';
 import germanCatalogue from './i18n/locales/de.json';
 import { LocaleStore } from './i18n/locale.store';
 import { AnnouncementService } from './ui/announcements/announcement.service';
+import { HelpPresenter } from './application/help/help.presenter';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -78,6 +79,35 @@ describe('App', () => {
 
     expect(text).toContain(BUNDLED_ENGLISH['navigation.library']);
     expect(text).not.toMatch(/\{\{/);
+  });
+
+  it('offers exactly one way to help, from the frame and from nowhere else', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const help = fixture.componentInstance.actions().filter(({ id }) => id === HELP_ACTION);
+
+    // One entry, named and described in words a Commander reads rather than by
+    // an icon the frame would have to explain (012/FR-002, 012/FR-011).
+    expect(help.length).toBe(1);
+    expect(help[0].label).toBe(BUNDLED_ENGLISH['help.action.label']);
+    expect(help[0].description).toBe(BUNDLED_ENGLISH['help.action.description']);
+  });
+
+  it('opens the modal when the frame reports the help action, and nothing else', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const help = TestBed.inject(HelpPresenter);
+
+    expect(help.open()).toBe(false);
+
+    // A shell action nobody claims must not open it: the frame publishes one
+    // list for every capability, and the root dispatches by id.
+    fixture.componentInstance.selectAction('nothing.claims.this');
+    expect(help.open()).toBe(false);
+
+    fixture.componentInstance.selectAction(HELP_ACTION);
+    expect(help.open()).toBe(true);
   });
 
   it('mounts exactly one assertive and one polite announcement outlet', () => {

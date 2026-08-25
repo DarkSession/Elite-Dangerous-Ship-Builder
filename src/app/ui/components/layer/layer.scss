@@ -23,6 +23,14 @@
 .layer__header {
   @include layout.command-bar(var(--edsb-border-width-hairline), var(--edsb-rule-panel));
 
+  // Pinned over the body, not carried away by it. The reference draws every
+  // panel dialog as a fixed title bar above a column that scrolls under it, and
+  // a layer long enough to scroll is exactly the one whose way out must not
+  // scroll off (canvas 1a, "Panel dialog"). It has its own opaque bar surface,
+  // so nothing shows through it while the body passes beneath.
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
   flex-wrap: wrap;
   justify-content: space-between;
   padding-block: var(--edsb-space-control-block);

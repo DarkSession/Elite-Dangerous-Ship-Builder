@@ -55,3 +55,14 @@ Thumbs.db
 # Environment
 .env
 .env.*
+
+# Generated help artifacts
+#
+# Rebuilt from the repository's own artifacts rather than committed, so they are
+# always current and never reviewed in a diff. The manifest is rebuilt by
+# `pnpm run help:manifest` ahead of every Angular, Playwright and typecheck
+# command; `pnpm run help:topics` builds the topics module and joins that
+# chain when feature 012's Phase 5 lands its catalogue entries. The tracked
+# `LICENSE` and `legal/` mirrors they read from are deliberately not ignored.
+/src/app/platform/build/help-manifest.generated.ts
+/src/app/platform/build/help-topics.generated.ts

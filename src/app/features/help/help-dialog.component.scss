@@ -1,0 +1,34 @@
+@use '../../../styles/responsive' as layout;
+
+// The reference's body: one column, sections parted by a hairline, a short line
+// before the denser information it introduces (canvas 1a, "Help · About").
+// Every value is a token; nothing here is a measurement taken off the mock's
+// fixed 620-pixel box.
+.help-dialog {
+  @include layout.stack(var(--edsb-space-stack-loose));
+}
+
+.help-dialog__section {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+// The hairline the reference rules between sections. It is drawn as the border
+// of the section that follows it rather than as an element in the flow, because
+// a decorative node in the reading order is something a reader has to step over
+// to reach the next heading.
+.help-dialog__section + .help-dialog__section {
+  padding-block-start: var(--edsb-space-stack-loose);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
+}
+
+.help-dialog__heading {
+  @include layout.micro-label(var(--edsb-text-accent));
+}
+
+.help-dialog__purpose,
+.help-dialog__prose {
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}

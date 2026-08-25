@@ -1,0 +1,27 @@
+<div class="warned-external">
+  <a
+    class="warned-external__link"
+    [href]="href()"
+    target="_blank"
+    rel="noreferrer noopener"
+    [attr.aria-describedby]="descriptionId"
+  >
+    {{ label() }}
+  </a>
+
+  <!--
+    Visible and associated, not one or the other. A warning carried only in
+    `aria-describedby` is invisible to a sighted reader, and one carried only in
+    prose beside the link is never announced with it.
+  -->
+  <p class="warned-external__warnings" [id]="descriptionId">
+    <!--
+      Tracked by position. The values are catalogue strings, and a locale that
+      words two of the warnings the same way would hand Angular duplicate keys
+      and throw at render rather than draw them.
+    -->
+    @for (warning of warnings(); track $index) {
+      <span class="warned-external__warning">{{ warning }}</span>
+    }
+  </p>
+</div>

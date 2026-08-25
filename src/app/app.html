@@ -24,6 +24,19 @@
   <edsb-slef-export-dialog />
 }
 
+<!--
+  The one Help · About modal, mounted beside the frame and never inside a
+  capability. It is eager, not deferred: help has to open on the first offline
+  visit after one completed load, and a chunk fetched on activation is a
+  request waiting to fail (012/FR-001).
+-->
+<edsb-help-dialog
+  [open]="help.open()"
+  [view]="help.view()"
+  [dismissLabel]="help.dismissLabel()"
+  (dismissed)="help.closeDialog()"
+/>
+
 <edsb-confirm-dialog
   [open]="replacementOpen()"
   [title]="replacementTitle()"

@@ -18,7 +18,7 @@ pnpm install --frozen-lockfile
 - For container browsers whose executables differ from Playwright's pinned download, set
   `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` rather than changing the required project matrix.
 
-## 1. Generate and verify the help manifest
+## 1. Validate the help manifest's sources
 
 ```bash
 pnpm run help:manifest:check
@@ -31,12 +31,17 @@ Expected:
 - exactly one project-specific Frontier disclaimer is extracted from root `LICENSE`;
 - the extracted payload is non-empty and its byte count/SHA-256 match generated runtime text;
 - application and Almanac versions are distinct manifest facts;
-- the repository `LICENSE` and Almanac issues destinations match their exact allowlists and contain
-  no query/fragment;
+- the repository `LICENSE` destination matches its exact allowlist and contains no query/fragment,
+  and it is the only destination emitted;
 - installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` exactly equal tracked
-  `legal/almanac/` mirrors;
-- the generated module contains no absolute path, personal/environment identifier, build data or
-  extra legal document.
+  `legal/almanac/` mirrors.
+
+`help:manifest:check` validates those sources and writes nothing; it does not compare against the
+artifact on disk, which carries the commit id and would therefore differ after any commit for a
+change nobody made. Staleness is prevented by generation rather than by comparison: every command
+that reads the module regenerates it first. `test:scripts` is what proves the emitted module
+contains no absolute path, personal or environment identifier, build data or extra legal
+document.
 
 Run the generator's fixture suite and confirm named failures for missing/duplicate/malformed/empty
 disclaimer blocks, invalid UTF-8, one-byte mirror drift, unsafe destinations, mismatched release
@@ -87,14 +92,15 @@ pnpm start
 ```
 
 From a no-build capability, record pathname/query/fragment/history length, open Help · About from the
-frame, read it and close it. Repeat from an active build, the narrow action menu, package artwork and
-a package value/calculation surface.
+frame, read it and close it. Repeat from an active build, from the compact action layer, from hull
+detail (package artwork) and from the outfitting ledger (package values). Confirm that none of those
+surfaces carries a help control of its own.
 
 Expected:
 
 - exactly one labelled modal appears above the unchanged capability;
 - the URL, history length, build revision, selected capability/slot and stored records do not change;
-- all entries reach the same modal; contextual entry may change only its initial in-modal position;
+- the wide action and the compact action-layer item reach the same single modal;
 - close returns to the same underlying state; no focus/keyboard behavior is asserted;
 - no route chunk, help file, legal file or cross-origin request occurs on open;
 - SC-005: at the mobile viewport under 4× CPU slowdown, the first complete frame of the
@@ -114,9 +120,10 @@ Expected:
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
-- provenance says the bundled Almanac supplies catalogue data, validation and calculations;
+- provenance says the bundled Almanac supplies catalogue data, validation and calculations, and it
+  sits inside `ABOUT` with the versions, above the questions;
 - versions/provenance make no live-game/live-catalogue currency claim;
-- the issue action is explicitly limited to Almanac package data/calculation defects.
+- no issue-tracker, support or defect-reporting action appears anywhere in the modal.
 
 ## 5. Validate exact legal presentation
 
@@ -132,21 +139,20 @@ Expected:
 - exactly one action is described as the destination for all remaining terms;
 - its destination is
   `https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE`;
-- the separate Almanac issues action is not described as legal detail.
+- it is the only external action in the modal.
 
 ## 6. Verify deliberate external navigation and privacy
 
 Use Playwright interception rather than making internet requests. Before activation, assert that no
-request or popup targets GitHub. Activate each external action independently.
+request or popup targets GitHub. Then activate the one external action.
 
 Expected:
 
 - visible and accessible text says the action leaves the application and may need a network;
-- the native links use `rel="noreferrer noopener"`;
-- exact destinations contain no query, fragment, current route, build payload, SLEF, hull/module
+- the native link uses `rel="noreferrer noopener"`;
+- the exact destination contains no query, fragment, current route, build payload, SLEF, hull/module
   identity, locale or browser data;
-- licence activation targets only the repository `LICENSE`;
-- issue activation targets only the Almanac issues page.
+- licence activation targets only the repository `LICENSE`.
 
 ## 7. Verify initial-load and offline behavior
 
@@ -158,8 +164,7 @@ Expected:
 
 - all seven topics, both versions, non-release/release state and the exact disclaimer are present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
-- the licence and issue actions remain visible with their network warning but are not automatically
-  followed;
+- the licence action remains visible with its network warning but is not automatically followed;
 - uncached package artwork may be temporarily absent under its owning contract, while help remains
   complete.
 
@@ -172,8 +177,8 @@ landscape in Chromium and Firefox:
 pnpm run e2e
 ```
 
-Exercise release/non-release, global/contextual, alternate-locale, doubled-text, RTL, reduced-motion,
-200%-text and actual-400%-zoom states.
+Exercise release/non-release, alternate-locale, doubled-text, RTL, reduced-motion, 200%-text and
+actual-400%-zoom states.
 
 Expected:
 
@@ -186,10 +191,11 @@ Expected:
 - no page/modal horizontal overflow, clipped disclaimer or unreachable final action occurs;
 - axe reports no in-scope violation on the background and every open state.
 
-Complete the manual screen-reader protocol: discover global/contextual entries, hear one labelled
-modal, confirm background isolation, read headings/topics/facts, distinguish release/version facts,
-identify disclaimer source/language and external warnings, then close and verify the unchanged
-underlying capability.
+Complete the manual screen-reader protocol: discover the frame entry from a no-build and an active
+capability, hear one labelled modal, confirm background isolation, read the `ABOUT`, `FAQ` and
+`LICENCE` headings with their facts and topics, distinguish release/version facts, identify the
+disclaimer's source and language and the licence action's warnings, then close and verify the
+unchanged underlying capability.
 
 ## 9. Run the complete gate
 

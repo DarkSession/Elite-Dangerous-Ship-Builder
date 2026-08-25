@@ -9,3 +9,12 @@ public/
 .specify/
 .claude/
 .agents/
+
+# Generated help artifacts, emitted already formatted
+src/app/platform/build/help-manifest.generated.ts
+src/app/platform/build/help-topics.generated.ts
+
+# Byte-exact mirrors of the installed package's own legal documents.
+# Reformatting one would break the equality check that keeps them honest.
+legal/almanac/LICENSE
+legal/almanac/THIRD_PARTY_NOTICES.md

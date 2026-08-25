@@ -1,0 +1,37 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+// The reference's single version line, allowed to become several lines when
+// the identifiers are long or the measure is narrow.
+.version-facts {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  margin: 0;
+}
+
+.version-facts__fact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--edsb-space-inline-tight);
+  // Without this a long build id makes the flex item refuse to shrink, and the
+  // document scrolls sideways instead of the value wrapping.
+  min-inline-size: 0;
+}
+
+.version-facts__term {
+  @include layout.micro-label;
+}
+
+.version-facts__value {
+  @include layout.metric-value;
+
+  margin: 0;
+  min-inline-size: 0;
+  // Build ids and package versions are unbroken tokens; they wrap rather than
+  // widen the modal.
+  overflow-wrap: anywhere;
+}

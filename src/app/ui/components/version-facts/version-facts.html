@@ -1,0 +1,13 @@
+<dl class="version-facts">
+  @for (fact of facts(); track fact.id) {
+    <!--
+      Term and definition are wrapped together so the pair stays one unit when
+      the row wraps. A `dt` that has flowed onto the line above its own `dd` is
+      a label sitting next to somebody else's value.
+    -->
+    <div class="version-facts__fact">
+      <dt class="version-facts__term">{{ fact.term }}</dt>
+      <dd class="version-facts__value">{{ fact.value }}</dd>
+    </div>
+  }
+</dl>

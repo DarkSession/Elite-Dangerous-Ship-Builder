@@ -1563,3 +1563,224 @@ export function primaryJourneyEntries(
 ): readonly CoverageEntry[] {
   return ledger.filter((entry) => entry.journey.startsWith('product/'));
 }
+
+// ---------------------------------------------------------------------------
+// Feature 012: the release coverage ledger for the Help · About route
+// ---------------------------------------------------------------------------
+
+/**
+ * How FR-001's route presents itself while a surface is on screen.
+ *
+ * `obscured` is not a gap. A layer that covers the frame is dismissible, and
+ * help is reached from the capability beneath once it is dismissed — which is
+ * what 012/FR-011 requires there, rather than a second route inside the layer.
+ */
+export type HelpFrameEntry = 'visible' | 'obscured';
+
+/** One row of feature 012's release coverage ledger. */
+export interface HelpRouteRow {
+  /** Stable identity, used by the journey to name what it is opening. */
+  readonly id: string;
+  /** The surface as the screen inventory names it. */
+  readonly surface: string;
+  /** The feature that owns the surface, not the one that owns this ledger. */
+  readonly owner: string;
+  readonly frameEntry: HelpFrameEntry;
+  readonly requirements: readonly string[];
+}
+
+/**
+ * Every capability, package-backed surface and obscuring layer this
+ * application currently ships.
+ *
+ * Transcribed one row at a time from the Release coverage ledger in
+ * `specs/012-help-and-licences/design/screen-inventory.md`; it is not
+ * re-derived here, and the two are reconciled in both directions before
+ * release. A row is added whenever a feature adds a capability, a
+ * package-backed surface or a layer that covers the frame.
+ *
+ * This export is the only part of this file feature 012 owns. Feature 011's
+ * preview-catalogue entries are the single recorded exclusion from the Release
+ * coverage ledger, which is why they appear elsewhere in this file and not
+ * here; entries other features seeded describe their own requirements and are
+ * neither expected in that ledger nor a finding when absent from it.
+ */
+export const helpRouteCoverage: readonly HelpRouteRow[] = [
+  {
+    id: 'hull-catalogue',
+    surface: 'Hull catalogue /ships',
+    owner: '001',
+    frameEntry: 'visible',
+    requirements: ['012/FR-001', '012/FR-002', '012/FR-011'],
+  },
+  {
+    id: 'hull-detail',
+    surface: 'Hull detail /ships/:symbol',
+    owner: '001',
+    frameEntry: 'visible',
+    requirements: ['012/FR-001', '012/FR-002', '012/FR-011'],
+  },
+  {
+    id: 'build-workspace',
+    surface: 'Build workspace /build, including no-build',
+    owner: '001',
+    frameEntry: 'visible',
+    requirements: ['012/FR-001', '012/FR-011'],
+  },
+  {
+    id: 'build-library',
+    surface: 'Build library /builds',
+    owner: '001',
+    frameEntry: 'visible',
+    requirements: ['012/FR-001', '012/FR-011'],
+  },
+  {
+    id: 'save-build-layer',
+    surface: 'Save-build layer',
+    owner: '001',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'library-delete-confirmation',
+    surface: 'Build-library delete confirmation',
+    owner: '001',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'replacement-confirmation',
+    surface: 'Shared replacement confirmation',
+    owner: '001',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'outfitting-ledger',
+    surface: 'Outfitting workspace ledger',
+    owner: '002',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002'],
+  },
+  {
+    id: 'module-replacement-layer',
+    surface: 'Module replacement layer',
+    owner: '002',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-002', '012/FR-011'],
+  },
+  {
+    id: 'engineering-editor-layer',
+    surface: 'Engineering editor layer',
+    owner: '002',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-002', '012/FR-011'],
+  },
+  {
+    // Reported inside the layer the payload was pasted into: a refusal is a
+    // whole-candidate outcome, so there is no workspace state to report it on.
+    id: 'normalisation-refusal',
+    surface: 'Incoming-build normalisation refusal',
+    owner: '002',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'quality-completion-notice',
+    surface: 'Workspace quality-completion notice',
+    owner: '002',
+    frameEntry: 'visible',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'status-rail',
+    surface: 'Status rail',
+    owner: '003',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'import-layer',
+    surface: 'Import Build layer',
+    owner: '004',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'export-layer',
+    surface: 'Export Build layer',
+    owner: '004',
+    frameEntry: 'obscured',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'import-outcome',
+    surface: 'Import Outcome disclosure',
+    owner: '004',
+    frameEntry: 'visible',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'power-and-thermals',
+    surface: 'Power and Thermals',
+    owner: '005',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'defence-analysis',
+    surface: 'Defence Analysis',
+    owner: '006',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'offence-analysis',
+    surface: 'Offence Analysis',
+    owner: '007',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'drives-and-mass',
+    surface: 'Drives and Mass',
+    owner: '008',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'cost-and-materials',
+    surface: 'Cost and Materials blocks',
+    owner: '009',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'hull-anatomy',
+    surface: 'Hull Anatomy plates and mount facts',
+    owner: '010',
+    frameEntry: 'visible',
+    requirements: ['012/FR-002', '012/FR-008'],
+  },
+  {
+    id: 'hull-anatomy-side-state',
+    surface: 'Hull Anatomy side availability/defect state',
+    owner: '010',
+    frameEntry: 'visible',
+    requirements: ['012/FR-011'],
+  },
+  {
+    id: 'application-frame',
+    surface: 'Application frame',
+    owner: '011',
+    frameEntry: 'visible',
+    requirements: ['012/FR-001'],
+  },
+  {
+    id: 'feedback-host',
+    surface: 'Global feedback/announcement host',
+    owner: '011',
+    frameEntry: 'visible',
+    requirements: ['012/FR-011'],
+  },
+];

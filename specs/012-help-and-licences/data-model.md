@@ -1,8 +1,7 @@
 # Data Model: Help, Licences and Provenance
 
 Feature 012 adds no build field, saved record or browser-storage record. Its durable inputs are
-build-time artifacts; its only runtime state is whether the shared modal is open and which surface
-invoked it.
+build-time artifacts; its only runtime state is whether the shared modal is open.
 
 ## BuildIdentity
 
@@ -27,13 +26,15 @@ Validation:
 
 ## AlmanacIdentity
 
-Identity and support destination of the installed package.
+Identity of the installed package.
 
-| Field             | Type   | Source                                    | Rule                                                   |
-| ----------------- | ------ | ----------------------------------------- | ------------------------------------------------------ |
-| `packageName`     | string | installed Almanac `package.json#name`     | exactly `@elite-dangerous-almanac/core`                |
-| `version`         | string | installed Almanac `package.json#version`  | non-empty and displayed separately from app version    |
-| `issueTrackerUrl` | URL    | installed Almanac `package.json#bugs.url` | exact HTTPS issues URL; no query, fragment or userinfo |
+| Field         | Type   | Source                                   | Rule                                                |
+| ------------- | ------ | ---------------------------------------- | --------------------------------------------------- |
+| `packageName` | string | installed Almanac `package.json#name`    | exactly `@elite-dangerous-almanac/core`             |
+| `version`     | string | installed Almanac `package.json#version` | non-empty and displayed separately from app version |
+
+No issue-tracker URL is read or carried. FR-009 is withdrawn, so the installed package's `bugs.url`
+is not a manifest input and the modal has no destination sourced from it.
 
 The identity makes no live-game or live-catalogue version claim.
 
@@ -65,9 +66,9 @@ An audited, deliberate navigation that never contains application state.
 
 ```text
 ExternalDestination {
-  id: "repositoryLicense" | "almanacIssues"
+  id: "repositoryLicense"
   url: HTTPS URL
-  purpose: "completeLegalTerms" | "packageDefectReport"
+  purpose: "completeLegalTerms"
   leavesApplication: true
   mayRequireNetwork: true
 }
@@ -76,10 +77,8 @@ ExternalDestination {
 Validation:
 
 - `repositoryLicense` is the exact query/fragment-free GitHub URL for this repository's `LICENSE`
-  on `main` and is the only destination with `purpose: completeLegalTerms`.
-- `almanacIssues` is sourced from the installed package manifest and is only for package data or
-  calculation defects.
-- Neither URL can receive a current route, build fragment, SLEF, hull/module identity, search
+  on `main` and is the only destination of any kind. There is exactly one.
+- The URL cannot receive a current route, build fragment, SLEF, hull/module identity, search
   parameter or local data.
 - Visible/localised warning text is presenter state, not part of the URL.
 
@@ -110,15 +109,14 @@ HelpManifestV1 {
   disclaimer: FrontierDisclaimer
   destinations: {
     repositoryLicense: ExternalDestination
-    almanacIssues: ExternalDestination
   }
 }
 ```
 
 Invariants:
 
-- Exactly one disclaimer and one destination per ID exist.
-- `repositoryLicense` is the sole `completeLegalTerms` destination.
+- Exactly one disclaimer and one destination exist.
+- `repositoryLicense` is the sole destination, and its purpose is `completeLegalTerms`.
 - Every value is deterministic for the same repository, installed package and build evidence.
 - No absolute path, branch, account, person, machine, timestamp, random value, build payload or
   translated copy enters the manifest.
@@ -182,16 +180,12 @@ passed validation and review.
 Ephemeral origin of an open request.
 
 ```text
-HelpInvocationContext =
-  | { kind: "global" }
-  | { kind: "packageArtwork" }
-  | { kind: "packageValue" }
-  | { kind: "capabilityHelp"; topicHint?: HelpTopicId }
+HelpInvocationContext = { kind: "global" }
 ```
 
-The context may select which heading is initially positioned at the top, but FR-011 does not require
-deep-linking and every open state exposes the complete modal. It never enters the URL, storage,
-analytics, a build or an external destination.
+The frame's action is the only entry, so `global` is the only context. The shape is kept as a
+discriminated union so a later entry can be added without changing the store's transitions. It never
+enters the URL, storage, analytics, a build or an external destination.
 
 ## HelpDialogState
 
@@ -206,8 +200,11 @@ Transitions:
 ```text
 closed -- open(invocation) --> open
 open   -- open(newInvocation) --> open (replace transient invocation only)
-open   -- close(reason) --> closed
+open   -- close() --> closed
 ```
+
+Closing takes no reason: the modal looks the same however it was closed, and
+nothing reads one.
 
 Opening/closing preserves the active route, history length, query/fragment, capability selection,
 scroll restoration record, build revision, undo history, persistence and locale preference.
@@ -231,7 +228,6 @@ HelpDialogViewModel {
   disclaimer: FrontierDisclaimer
   disclaimerLanguageNotice: LocalisedText
   repositoryLicense: WarnedExternalAction
-  almanacIssues: WarnedExternalAction
 }
 ```
 
@@ -242,17 +238,17 @@ Rules:
 - Provenance says only that the bundled Almanac supplies catalogue data and calculations.
 - The disclaimer is passed unchanged to a text-only `lang="en"` region.
 - The licence action states that it leaves the app, may need a network and is the destination for all
-  remaining terms. The package-defect action has a separate, narrower purpose.
+  remaining terms. It is the view model's only action.
 - There is no runtime loading, empty, missing-artifact or legal-error view model. Those conditions
   fail generation/build.
 
 ## Relationships
 
 ```text
-root package.json --------> BuildIdentity -----------+
-installed package.json ---> AlmanacIdentity ---------+--> HelpManifestV1
+root package.json --------> BuildIdentity ----------+
+installed package.json ---> AlmanacIdentity --------+--> HelpManifestV1
 root LICENSE -------------> FrontierDisclaimer -----+
-audited destinations -----> ExternalDestination ----+
+audited destination ------> ExternalDestination ----+
 
 HelpManifestV1 + locale + BrowserHelpTopic[] --> HelpDialogViewModel
 HelpDialogState ------------------------------> shared HelpDialog visibility

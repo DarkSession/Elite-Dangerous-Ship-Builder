@@ -12,7 +12,7 @@ The generator reads only local installed/repository artifacts plus explicit rele
 | -------------------------------------------------------- | -------------------------------------------------------------- |
 | root `package.json`                                      | application name/version                                       |
 | root `LICENSE`                                           | project-specific Frontier disclaimer and distribution boundary |
-| resolved Almanac `package.json`                          | exact package name/version and `bugs.url`                      |
+| resolved Almanac `package.json`                          | exact package name and version                                 |
 | resolved Almanac `LICENSE`                               | package terms mirrored in source distribution                  |
 | resolved Almanac `THIRD_PARTY_NOTICES.md`                | package notices mirrored in source distribution                |
 | `legal/almanac/LICENSE`                                  | tracked mirror of installed package licence                    |
@@ -52,16 +52,12 @@ https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE
 ```
 
 It must parse as HTTPS with host `github.com`, the expected repository/ref/path, and no credentials,
-port, query or fragment. It is the only destination tagged `completeLegalTerms`.
+port, query or fragment. It is tagged `completeLegalTerms`, and it is the **only** destination the
+manifest carries.
 
-The Almanac issue destination comes from the installed manifest and must be exactly:
-
-```text
-https://github.com/DarkSession/Elite-Dangerous-Almanac/issues
-```
-
-It is tagged `packageDefectReport`, not legal terms. Any missing, changed or unsafe destination fails
-generation so a package/repository change receives review rather than silently widening navigation.
+No issue-tracker destination is emitted. FR-009 is withdrawn, so the installed package's `bugs.url`
+is not read and cannot become a second navigation. Any missing, changed or unsafe licence destination
+fails generation so a repository change receives review rather than silently widening navigation.
 
 ## Build identity
 
@@ -175,9 +171,9 @@ The deterministic TypeScript module contains data equivalent to:
 HelpManifestV1 {
   schemaVersion: 1
   build: BuildIdentity
-  almanac: { packageName, version, issueTrackerUrl }
+  almanac: { packageName, version }
   disclaimer: { documentId, source, language, exactText, byteLength, sha256 }
-  destinations: { repositoryLicense, almanacIssues }
+  destinations: { repositoryLicense }
 }
 ```
 

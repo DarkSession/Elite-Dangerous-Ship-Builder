@@ -1,0 +1,23 @@
+<div class="legal-excerpt">
+  <p class="legal-excerpt__notice" [id]="sourceId">{{ sourceNotice() }}</p>
+  <p class="legal-excerpt__notice" [id]="languageId">{{ languageNotice() }}</p>
+
+  <!--
+    The text is bound as text and the element has no template children at all.
+
+    `innerHTML` would let a document decide what this application renders, and a
+    legal notice is exactly the text nobody should be able to reshape on its way
+    to a reader. Interpolation is text too, but not exact text: the newline of
+    indentation before a closing tag joins the interpolated node, and Angular
+    collapses it to a single space rather than dropping it — a byte this
+    application would have added to a notice it is only carrying. The region's
+    content is compared against root `LICENSE` byte for byte, so it is bound to
+    the property that holds exactly what it is given.
+  -->
+  <blockquote
+    class="legal-excerpt__body"
+    [attr.lang]="language()"
+    [attr.aria-describedby]="describedBy()"
+    [textContent]="text()"
+  ></blockquote>
+</div>

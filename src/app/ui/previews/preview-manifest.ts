@@ -252,6 +252,11 @@ import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
 import { DiagnosticList } from '../technical/diagnostic-list';
+import { HelpDialog } from '../../features/help/help-dialog.component';
+import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
+import { LegalExcerpt } from '../components/legal-excerpt/legal-excerpt';
+import { VersionFacts } from '../components/version-facts/version-facts';
+import { WarnedExternalLink } from '../components/warned-external-link/warned-external-link';
 import { ExportBuildLayer } from '../../features/slef/export-build-layer/export-build-layer';
 import { ImportBuildLayer } from '../../features/slef/import-build-layer/import-build-layer';
 
@@ -1176,12 +1181,19 @@ registerPreview({
         actions: [
           { id: 'save', label: 'Save', emphasis: 'primary' },
           { id: 'language', label: 'Language' },
+          {
+            id: 'help.open',
+            label: 'Help & FAQ',
+            emphasis: 'quiet',
+            description: 'Opens help, version and licence information over the current view.',
+          },
         ],
       },
       [
         'exposes banner, navigation and main landmarks',
         'every action keeps visible text — never an unlabelled ellipsis',
         'the current navigation entry exposes aria-current',
+        'the Help entry is in the wide row and in the compact action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],
       // Isolated: the frame renders the banner and main landmarks, and a page
@@ -4017,5 +4029,273 @@ registerPreview({
     state('disabled', { view: { ...EXPORT_VIEW, payload: '', metadata: null, link: null } }, [
       'every delivery control is unavailable while there is no payload to deliver',
     ]),
+  ],
+});
+
+/**
+ * The licence block, carrying the build's own disclaimer rather than a sample.
+ *
+ * A preview of a legal notice that shows lorem ipsum proves the layout of a
+ * paragraph nobody ships. This is the exact text the application embeds, read
+ * from the same generated module the modal reads, so what the catalogue draws
+ * at every width and in every variant is the notice a Commander actually meets.
+ */
+const HELP_LICENCE = {
+  framing:
+    "Ship Builder's own code is under the MIT licence. That licence does not cover the Elite Dangerous game data and imagery shown here, nor the third-party data bundled with the Almanac they are read from.",
+  sourceNotice: 'The notice below is reproduced from the repository LICENSE.',
+  languageNotice: 'It stays in its original English and is not translated.',
+  excerpt: HELP_MANIFEST.disclaimer.exactText,
+  excerptLanguage: HELP_MANIFEST.disclaimer.language,
+  link: {
+    label: 'Read LICENSE on GitHub',
+    href: HELP_MANIFEST.destinations.repositoryLicense.url,
+    purpose: 'Every remaining licence and third-party term is in the repository LICENSE.',
+    leavingWarning: 'Opening it leaves Ship Builder.',
+    networkWarning: 'It may need a network connection.',
+  },
+};
+
+/**
+ * The version line, carrying this build's own identities rather than samples.
+ *
+ * Read from the generated manifest for the same reason the excerpt above is:
+ * `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3` is what the reference draws,
+ * and a catalogue that reproduced those numbers would be previewing a claim
+ * nothing in the repository can make.
+ *
+ * The build fact is therefore whatever this build is. Every build the
+ * repository produces today is a non-release with an identifier, so that is
+ * what the catalogue draws; the release wording is one word in the same shape
+ * and is asserted where the substitution is made, in the presenter's spec.
+ */
+const HELP_ABOUT_FACTS = [
+  { id: 'application', term: 'App version', value: HELP_MANIFEST.build.applicationVersion },
+  {
+    id: 'build',
+    term: 'Build',
+    value:
+      HELP_MANIFEST.build.kind === 'release'
+        ? 'Release'
+        : `Non-release · ${HELP_MANIFEST.build.buildId}`,
+  },
+  { id: 'almanac', term: 'Almanac version', value: HELP_MANIFEST.almanac.version },
+];
+
+const HELP_ABOUT = {
+  facts: HELP_ABOUT_FACTS,
+  provenance: {
+    almanacRole:
+      'The bundled Almanac supplies the catalogue data, the validation and the calculations shown here.',
+    frontierOwnership:
+      'Frontier Developments plc owns the Elite Dangerous game data and imagery it describes.',
+  },
+};
+
+const HELP_VIEW = {
+  title: 'Help · About',
+  purpose:
+    'Ship Builder is a private outfitting bench for Elite Dangerous that works offline, entirely in this browser.',
+  sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
+  about: HELP_ABOUT,
+  licence: HELP_LICENCE,
+};
+
+registerPreview({
+  componentId: 'version-facts',
+  group: 'Panels',
+  component: VersionFacts,
+  contract: contract(
+    'version-facts',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [
+        'which application version this is',
+        'whether anybody released this build, and which build it is when nobody did',
+        'which bundled Almanac version it reads',
+      ],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      { facts: HELP_ABOUT_FACTS },
+      [
+        'every value is announced with the term that says what it is',
+        'the application and the bundled Almanac are separate facts, never one line',
+        'release state is a word in a definition, not a colour, a position or a weight',
+        'a non-release build shows its identifier beside the state, never on its own',
+        'long versions and build identifiers wrap; the row never scrolls sideways',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable(
+      'empty',
+      'The identities are build evidence: a build that could not name itself fails generation rather than rendering an empty fact list.',
+    ),
+    notApplicable(
+      'loading',
+      'The values are compiled into the bundle; there is nothing to wait for.',
+    ),
+    notApplicable(
+      'error',
+      'A missing, empty or unsafe identity fails generation; it is never a state this renders.',
+    ),
+    notApplicable('disabled', 'Facts are read, never operated.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'legal-excerpt',
+  group: 'Panels',
+  component: LegalExcerpt,
+  contract: contract(
+    'legal-excerpt',
+    {
+      role: 'none',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: ['description'],
+      textEquivalents: [
+        'where the excerpt was taken from',
+        'that the excerpt stays in its original language',
+      ],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        sourceNotice: HELP_LICENCE.sourceNotice,
+        languageNotice: HELP_LICENCE.languageNotice,
+        text: HELP_LICENCE.excerpt,
+        language: HELP_LICENCE.excerptLanguage,
+      },
+      [
+        'the excerpt is the exact text of the build, rendered as text and never as markup',
+        'the region is marked in the language the notice was written in, whatever the interface is',
+        'the source and language notices are visible and associated with the region',
+        'expanded text and an RTL interface reflow the framing around an unchanged English region',
+        'the notice wraps within the measure; it never needs to be dragged sideways',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'empty',
+      'The excerpt is build evidence: a modal that reached this component with nothing to quote is a build that failed generation.',
+    ),
+    notApplicable('loading', 'The text is compiled into the bundle; there is nothing to wait for.'),
+    notApplicable(
+      'error',
+      'A missing or drifted excerpt fails generation rather than rendering an error.',
+    ),
+    notApplicable('disabled', 'A quoted document has no disabled state.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'warned-external-link',
+  group: 'Actions',
+  component: WarnedExternalLink,
+  contract: contract(
+    'warned-external-link',
+    {
+      role: 'link',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['description'],
+      textEquivalents: [
+        'that the destination is outside the application',
+        'that following it may need a network connection',
+        'what the destination is for',
+      ],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Read the full licence on GitHub',
+        href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+        purpose: 'It carries the remaining licence and third-party terms.',
+        leavingWarning: 'It leaves Ship Builder.',
+        networkWarning: 'It may need a network connection.',
+      },
+      [
+        'the three warnings are visible text and are the link’s description',
+        'the link is inert until it is activated: nothing is fetched to draw it',
+        'the target meets the shared target-size baseline at every width',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    notApplicable('empty', 'The link is only rendered where there is a destination to offer.'),
+    notApplicable('loading', 'Nothing is fetched: the destination is a compiled-in constant.'),
+    notApplicable(
+      'error',
+      'Following the link leaves the application; a failure there belongs to the browser.',
+    ),
+    notApplicable('disabled', 'A destination this application cannot offer is not rendered.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'help-dialog',
+  group: 'Layers',
+  component: HelpDialog,
+  contract: contract(
+    'help-dialog',
+    {
+      role: 'dialog',
+      visibleNameMatchesAccessibleName: true,
+      // No state of its own to expose. The modal is either mounted and open or
+      // not mounted at all — there is no collapsed form of it for an
+      // `aria-expanded` to describe, and declaring one would be describing a
+      // control this component does not draw.
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: ['open and closed state, in text rather than by dimming or motion'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { open: true, view: HELP_VIEW, dismissLabel: 'Close' },
+      [
+        'one dialog, named by its visible title, over an inert capability',
+        'ABOUT, then FAQ, then LICENCE — the reference’s own order, at every width',
+        'the header and its close stay pinned over a body that scrolls alone',
+        'wide viewports centre a bounded dialog; narrow ones raise a full-width sheet',
+        'a short viewport and 400% zoom take the full-height treatment rather than clipping',
+        'reduced motion makes open and close immediate without removing content',
+        'ABOUT names the application version, the build and the bundled Almanac as separate facts',
+        'a non-release build states so in words and carries its build identifier',
+        'the provenance sentences bound what the versions are; neither claims live currency',
+        'LICENCE carries the exact disclaimer once, framed and marked as English',
+        'the warned repository-LICENSE action is the modal’s only link, with all three warnings',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+      // Isolated: an open modal makes everything behind it inert, which is
+      // correct behaviour and incompatible with sharing a catalogue page.
+      true,
+    ),
+    state('empty', { open: false, view: HELP_VIEW, dismissLabel: 'Close' }, [
+      'a closed modal renders nothing, holds no focus and covers no capability',
+    ]),
+    notApplicable(
+      'loading',
+      'Every fact is compiled into the bundle, so there is no moment at which the modal is open and does not know what to say.',
+    ),
+    notApplicable(
+      'error',
+      'A missing or mismatched artifact fails generation; it is never a state the modal renders.',
+    ),
+    notApplicable('disabled', 'Help is either open or closed; it has no disabled state.'),
   ],
 });

@@ -8,7 +8,7 @@ or hand-maintained package wording is planned.
 ## Shared modal rather than a help route
 
 **Decision**: Mount one `HelpDialog` with the application frame and open it through an
-application-level signal store. The frame's global action and package-backed contextual actions emit
+application-level signal store. The frame's single action emits
 the same `open(source)` intent. The modal overlays the current capability; close returns to the
 unchanged underlying state. It does not invoke Angular Router, alter history or copy a build fragment.
 
@@ -84,7 +84,7 @@ was rejected by FR-006.
 
 **Decision**: Read the application version from root `package.json`. Resolve the exported leaf
 `@elite-dangerous-almanac/core/ships/ships`, walk to the installed package root and read its
-`package.json` for package name, version and `bugs.url`, matching the repository's existing codec
+`package.json` for package name and version, matching the repository's existing codec
 table generator pattern. Emit one immutable generated manifest for browser consumption.
 
 Only explicit release-workflow evidence whose release version/ref matches the non-placeholder root
@@ -113,16 +113,15 @@ only HTTPS, the exact GitHub host/repository/ref/path, and no query, fragment, c
 This is the sole modal action described as the destination for remaining licence and third-party
 terms.
 
-Read the Almanac package-defect destination from installed `package.json#bugs.url`; validate it as
-the exact query/fragment-free HTTPS issues URL. Render it in the provenance section as a separate,
-specific package-defect action, never as a second legal-details destination. Both use native links,
-visible leaving-app/network warnings and `rel="noreferrer noopener"`; nothing opens, prefetches or
-probes them before activation.
+It is also the **only** destination. FR-009's Almanac package-defect action is withdrawn (spec
+clarification 2026-08-25): the design reference draws no such control, and the installed package's
+`bugs.url` is therefore not read at all. The one link uses a native anchor, visible leaving-app and
+network warnings and `rel="noreferrer noopener"`; nothing opens, prefetches or probes it before
+activation.
 
 **Rationale**: A checked-in allowlisted repository licence location is auditable and independent of
-developer git remotes. The installed package manifest remains authoritative for its own issue
-tracker. Exact URLs make it straightforward to prove that no route, fragment, SLEF or build identity
-is appended.
+developer git remotes. An exact URL makes it straightforward to prove that no route, fragment, SLEF
+or build identity is appended.
 
 **Alternatives considered**: Deriving URLs from local git remotes, using the current page URL,
 linking package notices separately, auto-opening a new window, client-side availability probes and
@@ -209,7 +208,8 @@ localisation/reflow or screen-reader requirements.
 - Vitest covers browser-manifest invariants, presenter localisation, store transitions, view-model
   distinctions and component intents/semantics. Required content review rejects
   contradictory/unsupported claims outside automated semantic tests.
-- Playwright covers global and contextual entry from no-build and active capabilities, URL/build
+- Playwright covers the wide frame action and the compact action layer from no-build and active
+  capabilities, URL/build
   stability, all content, release/non-release fixtures, offline opening/reload, exact destinations,
   no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
   reduced motion, axe and no-overflow across feature 011's ten Chromium/Firefox projects.

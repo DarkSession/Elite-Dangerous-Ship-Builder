@@ -1528,6 +1528,12 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The in-game term, used untranslated in the German community — the same decision already recorded for hullDetail.fact.boost, which names this very reading. "Schub" is thrust, and this figure is a speed.',
     'drives.fsd.sco':
       'The in-game abbreviation for Supercruise Overcharge, printed on the drive itself and not translated; the words behind it are carried under drives.fsd.sco.description.',
+    'help.section.faq':
+      'FAQ is the same borrowed abbreviation in German, and is what a German reader scans a help modal for.',
+    'help.about.build':
+      'Build is the borrowed word German software uses for a produced artifact; the German alternatives all name something else.',
+    'help.about.build.release':
+      'Release is the borrowed word German software uses for a published version, and the same word this repository names its own with.',
   },
 };
 

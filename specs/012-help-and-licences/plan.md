@@ -6,13 +6,14 @@
 
 ## Summary
 
-Add one shared Help · About modal to the application frame. A visible global action opens it from
-every capability and no-build state, while package-backed artwork and value surfaces can dispatch
-the same open intent. Opening and closing the modal changes no route, URL fragment, build, storage or
-capability state. The modal presents current privacy/offline/engineering help, separate application
-and bundled-Almanac identities, bounded provenance, the exact project-specific Frontier disclaimer
-extracted from the root `LICENSE`, one warned external link to that `LICENSE` on GitHub, and one
-separately identified Almanac package-defect link.
+Add one shared Help · About modal to the application frame. A visible frame action opens it from
+every capability and no-build state, and it is the only entry — no other surface carries a help
+control, because the design reference draws none. Opening and closing the modal changes no route, URL
+fragment, build, storage or capability state. The modal presents the reference's own three sections
+in its own order: `ABOUT` (purpose, separate application and bundled-Almanac identities, bounded
+provenance), `FAQ` (the seven accepted help topics) and `LICENCE` (the exact project-specific
+Frontier disclaimer extracted from the root `LICENSE`, and one warned external link to that `LICENSE`
+on GitHub, which is the modal's only external action).
 
 A build-time Node generator validates the root and installed-package artifacts, extracts the one
 permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
@@ -67,17 +68,18 @@ scrolling; one dark tokenised theme; all application framing is localised; untra
 identified as English; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
 2.4.11
 
-**Scale/Scope**: One shared modal and dialog state; global plus contextual entry surfaces; exactly
-seven accepted help-topic definitions, each with unique identity and non-empty governing references;
-application, build and Almanac identity facts; one exact Frontier excerpt; one repository-licence
-destination; one Almanac package-defect destination; two required mirrored Almanac
-source-distribution artifacts
+**Scale/Scope**: One shared modal and dialog state; one frame entry surface; exactly seven accepted
+help-topic definitions, each with unique identity and non-empty governing references; application,
+build and Almanac identity facts; one exact Frontier excerpt; one repository-licence destination; two
+required mirrored Almanac source-distribution artifacts
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d. The grouped About → FAQ →
-Licence order, centered wide modal, narrow bottom sheet, persistent close control and global/mobile
-entry intent are retained. Invented versions, obsolete FAQ answers, unverified asset/typeface claims,
-fixed visual literals and title-only `?` controls are rejected in
-[design/reference-review.md](./design/reference-review.md).
+**Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d, and it governs. The grouped
+`ABOUT` → `FAQ` → `LICENCE` order with the version line inside `ABOUT`, the centered wide modal, the
+narrow bottom sheet, the persistent close control and the frame-only entry are retained as drawn.
+Invented versions, obsolete FAQ answers, unverified asset/typeface claims, fixed visual literals and
+title-only `?` controls are rejected in
+[design/reference-review.md](./design/reference-review.md), which also records the three planned
+additions withdrawn on 2026-08-25 because the reference does not draw them.
 
 ## Constitution Check
 
@@ -87,8 +89,8 @@ requested._
 | Principle                               | Design evidence                                                                                                                                         | Status                 |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.            | PASS                   |
-| II. Almanac Source of Truth             | Almanac version and issue destination come from the installed manifest; provenance claims only the package's catalogue/calculation role.                | PASS                   |
-| III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close/navigation intent.        | PASS                   |
+| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; provenance claims only the package's catalogue/calculation role.                                 | PASS                   |
+| III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close intent.                   | PASS                   |
 | IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.               | PASS                   |
 | V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract. | PASS                   |
 | VI. Commander's Language                | Owned help/framing is localised with bundled English fallback; exact disclaimer remains unchanged in a labelled English region.                         | PASS                   |
@@ -169,7 +171,7 @@ src/app/
 │   ├── help-manifest.generated.ts     # ignored deterministic artifact/identity browser input
 │   └── help-topics.generated.ts       # ignored deterministic topic-key browser input
 ├── application/help/
-│   ├── help-dialog.store.ts           # global ephemeral open/close/source state
+│   ├── help-dialog.store.ts           # ephemeral open/close state
 │   ├── help-dialog.store.spec.ts
 │   ├── help.presenter.ts              # generated facts + localised help view model
 │   └── help.presenter.spec.ts
@@ -180,12 +182,14 @@ src/app/
 │   └── help-dialog.component.spec.ts
 ├── i18n/                              # feature 011-owned help/framing message entries
 └── ui/                                # reused/extended dialog, fact, notice and external-link UI,
-                                       # each new component with a co-located spec
+                                       # each new component with a co-located spec.
+                                       # No `ContextHelpLink`: there is no contextual entry
 
 e2e/
 ├── coverage-ledger.ts                 # feature 011-owned shared ledger; this feature appends
 │                                      # one `helpRouteCoverage` export holding the exhaustive
-│                                      # FR-011 capability/surface set and owns no other row
+│                                      # FR-011 capability/surface set and owns no other row.
+│                                      # No feature 001–011 template is changed by this feature
 └── help-and-licences.spec.ts
 ```
 
@@ -194,22 +198,23 @@ service-worker, localisation, UI and E2E infrastructure is extended in its ownin
 rather than duplicated under help.
 
 **Structure Decision**: Keep one Angular application and one shared modal instance mounted by the
-application frame. Node tooling is the only boundary allowed to read package/repository files. It
+application frame, opened by one shell action and nothing else. Node tooling is the only boundary allowed to read package/repository files. It
 emits the minimal browser manifest and separately verifies exact source-distribution mirrors. A
 tooling-only help-definition module owns governing references and emits a separate generated topic
 catalogue containing only validated IDs and message keys, so references do not enter the browser
 bundle or `HelpManifestV1`. A signal store owns only ephemeral modal state, a presenter combines
 immutable facts with localised messages, and presentation components render inputs. No help route,
-mutable feature persistence, runtime legal fetch, Markdown renderer, private legal wording or second
-navigation system is added.
+mutable feature persistence, runtime legal fetch, Markdown renderer, private legal wording, second
+navigation system or per-surface help control is added.
 
 ## Phase 0: Research Conclusions
 
 All decisions and alternatives are recorded in [research.md](./research.md). The decisive outcomes
 are:
 
-- Use the reference's single grouped modal, not the old plan's `/help` route. Global and contextual
-  actions dispatch one store intent, so the current capability, URL and build remain intact.
+- Use the reference's single grouped modal, not the old plan's `/help` route, and the reference's own
+  section order. The frame action dispatches one store intent, so the current capability, URL and
+  build remain intact.
 - Keep seven accepted help topics as localised application messages derived from the constitution
   and accepted feature contracts. Each exact topic ID occurs once and carries non-empty tooling-only
   references to the governing accepted requirement or principle. Structural checks validate the
@@ -223,15 +228,16 @@ are:
   evidence in a declared release workflow produces a release identity. Builds outside a declared
   release workflow carry a sanitised CI identifier or git commit abbreviation plus optional dirty
   marker; invalid evidence in a declared release workflow fails.
-- Validate one audited, query-free GitHub `LICENSE` URL as the sole legal-details destination. Read
-  and validate the separate package-defect destination from Almanac `package.json#bugs.url`.
+- Validate one audited, query-free GitHub `LICENSE` URL as the sole external destination of any
+  kind. The Almanac `package.json#bugs.url` is not read: FR-009 is withdrawn.
 - Keep installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` as byte-exact tracked mirrors for
   source redistribution, but do not expose them as extra modal documents or links.
 - Import the generated manifest, separate generated topic catalogue and bundled English messages
   eagerly. Opening the modal never enters a loading/error state and never causes a request.
 - Compose feature 011's dialog/facts/notices/actions, with a centered wide treatment and bottom-sheet
   narrow treatment matching `.design` while meeting reflow, touch, screen-reader and reduced-motion
-  requirements.
+  requirements. The frame already renders shell actions in both a wide row and a compact action
+  layer, so the entry needs no new frame composition.
 
 No planning clarification marker or unresolved upstream dependency remains.
 
@@ -243,18 +249,20 @@ No planning clarification marker or unresolved upstream dependency remains.
 - [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) freezes source
   resolution, exact extraction, byte/hash checks, source-distribution mirrors, URL validation,
   release classification and failure behavior.
-- [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, entry
-  surfaces, information order, the exact seven accepted help records and governing-reference map,
-  legal/provenance framing, external navigation and state preservation.
+- [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, the single
+  frame entry, the reference's information order, the exact seven accepted help records and
+  governing-reference map, legal/provenance framing, the one external navigation and state
+  preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
-  entry, contextual provenance entry and shared Help · About modal; owns the exhaustive Release
+  entry and the shared Help · About modal; owns the exhaustive Release
   coverage ledger required by FR-011, which the `helpRouteCoverage` export in feature 011's shared
   `e2e/coverage-ledger.ts` transcribes rather than re-derives; and records the inherited accessibility, responsive and localisation baseline that
   feature 011's FR-011, FR-012, FR-015 and FR-021 govern.
 - [design/help-and-licences.md](./design/help-and-licences.md) defines wide/narrow composition,
   semantic order, modal states, responsive behavior and component-system impact.
-- [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`
-  and why mock facts, obsolete behavior and literal styling are excluded.
+- [design/reference-review.md](./design/reference-review.md) records what is retained from `.design`,
+  why mock facts, obsolete behavior and literal styling are excluded, and which planned additions
+  were withdrawn because the reference does not draw them.
 - [quickstart.md](./quickstart.md) supplies runnable artifact, modal-state, offline, responsive,
   localisation, external-navigation and accessibility validation scenarios.
 
@@ -278,8 +286,8 @@ traceable to the installed package; missing or contradictory inputs block releas
 degrading at runtime. The exact seven help definitions are unique, complete in every shipped locale
 and each traceable to a non-empty governing-reference set; contradictory or unsupported help blocks
 release. Every FR has an owning surface and a dual-engine responsive/accessibility validation path.
-The modal's single legal-details link and separate package-defect action are identified, allowlisted
-and free of application/build data.
+The modal's single legal-details link is identified, allowlisted and free of application/build
+data, and it is the only external action.
 
 The post-design gate remains **PASS with no exception**. Implementation is sequenced behind the
 relevant feature 001 and 011 foundations.

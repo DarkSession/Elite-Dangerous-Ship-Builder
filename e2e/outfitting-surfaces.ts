@@ -54,10 +54,18 @@ export async function openChooser(
   name: string | RegExp = /change module/i,
 ): Promise<void> {
   const open = page.getByRole('button', { name });
+  const chooser = page.locator('.replacement').first();
+
+  // Whichever of the two this width offers has to be on screen before it is
+  // counted. Selecting a mount renders its fitting afterwards, and counting is
+  // an answer rather than a wait: asked in the gap, it answers that there is no
+  // control here, and the wait that follows is then a wait for a chooser that
+  // nothing opened.
+  await expect(open.or(chooser).first()).toBeVisible();
   if ((await open.count()) > 0) {
     await open.click();
   }
-  await expect(page.locator('.replacement').first()).toBeVisible();
+  await expect(chooser).toBeVisible();
 }
 
 /**
@@ -136,10 +144,14 @@ export async function openChooserRows(page: Page): Promise<void> {
 /** Brings the engineering editor for the selected mount on screen. */
 export async function openEditor(page: Page): Promise<void> {
   const open = page.getByRole('button', { name: /^engineer$/i });
+  const editor = page.locator('.engineering').first();
+
+  // Waited for before it is counted, for the reason `openChooser` gives.
+  await expect(open.or(editor).first()).toBeVisible();
   if ((await open.count()) > 0) {
     await open.click();
   }
-  await expect(page.locator('.engineering').first()).toBeVisible();
+  await expect(editor).toBeVisible();
 }
 
 /**

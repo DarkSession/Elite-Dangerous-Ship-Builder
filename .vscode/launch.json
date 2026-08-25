@@ -9,10 +9,13 @@
       // Runs the dev server in a terminal, so the stop button stops it. Not a
       // plain node launch: that session never registered as started, which
       // left it running with no way to stop it from VS Code.
+      // The generator runs first and exits before the CLI starts, so this is
+      // still one stoppable terminal; see the `help artifacts` task for why
+      // anything compiling `src/` has to run it.
       "name": "ng serve",
       "type": "node-terminal",
       "request": "launch",
-      "command": "node node_modules/@angular/cli/bin/ng.js serve",
+      "command": "node scripts/generate-help-manifest.mjs && node node_modules/@angular/cli/bin/ng.js serve",
       "cwd": "${workspaceFolder}"
     },
     {
@@ -22,6 +25,9 @@
       "name": "ng test",
       "type": "node",
       "request": "launch",
+      // Specs import the generated manifest too, directly and through the
+      // preview catalogue, so it is built before the session starts.
+      "preLaunchTask": "help artifacts",
       "program": "${workspaceFolder}/node_modules/@angular/cli/bin/ng.js",
       "args": ["test", "--watch"],
       "console": "integratedTerminal",

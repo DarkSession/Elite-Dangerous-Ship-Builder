@@ -22,6 +22,22 @@ to the repository's `LICENSE` on GitHub.
   that topic, and any additional behavioural claim must itself be supported by such a reference or it
   blocks release. These validation references need not be displayed to the Commander.
 
+### Session 2026-08-25
+
+- Q: Where this specification and the design reference `.design/Ship Builder.dc.html` disagree, which
+  one governs? → A: The design. Its Help · About overlay is the template, and this specification is
+  updated to match it rather than the other way round.
+- Q: What is the modal's section structure? → A: The reference's own three sections in its order —
+  `ABOUT`, `FAQ`, `LICENCE` — with the application and bundled-Almanac versions inside `ABOUT`, where
+  the reference draws its version line, rather than in a separate section after the questions.
+- Q: Should package-backed artwork and value surfaces carry a contextual help entry of their own? →
+  A: No. The reference draws no such control on any of its four canvases, including the outfitting,
+  anatomy and status surfaces. The application frame's own Help action is the single route, and
+  FR-002 and FR-011 are narrowed to match.
+- Q: Which external destinations may the modal offer? → A: Exactly one — the repository `LICENSE` on
+  GitHub, which FR-003 requires and which replaces the reference's unsupported licence summary. The
+  Almanac issue-tracker action is withdrawn with FR-009.
+
 ## User Scenarios
 
 ### Story 1 — Read terms and attribution (P1)
@@ -38,7 +54,6 @@ to the repository's `LICENSE` on GitHub.
 2. A non-release build also shows a build identifier and is not presented as a release.
 3. Catalogue provenance states that the bundled Almanac supplies the data and makes no live-game
    currency claim.
-4. Package data and calculation defects can be reported to the Almanac issue tracker.
 
 ### Story 3 — Understand application behaviour (P2)
 
@@ -56,8 +71,10 @@ to the repository's `LICENSE` on GitHub.
   initial application load and, after that load has completed once, remain available without a
   network.
 - **FR-002**: Wherever package artwork or values appear, their provenance and legal information MUST
-  be content of the common help capability. A surface MUST NOT embed a private copy of that
-  information, and MUST NOT present it through a second help or legal destination of its own.
+  be content of the common help capability reached through the application frame. A surface MUST NOT
+  embed a private copy of that information, and MUST NOT present it through a second help or legal
+  destination of its own. A surface MUST NOT carry a contextual help entry of its own either: the
+  frame's Help action is the single route, and the design reference draws no per-surface control.
 - **FR-003**: Help MUST reproduce only the exact project-specific Frontier disclaimer from the
   repository `LICENSE` as its embedded legal excerpt. It MUST provide one link to that `LICENSE` on
   GitHub for all remaining licence information. The link MUST require a deliberate action, MUST be
@@ -74,8 +91,11 @@ to the repository's `LICENSE` on GitHub.
   non-release build MUST also show its build identifier.
 - **FR-008**: Neither version MUST be called the live game or live catalogue version. Provenance MUST
   say only that the bundled Almanac supplies the catalogue and calculations.
-- **FR-009**: The Almanac issue tracker MUST be offered for package defects only through a deliberate
-  external navigation identified as leaving the application; no build data may enter the URL.
+- **FR-009**: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
+  removed. The design reference draws no such control, and reporting a package defect is a support
+  route rather than help content. The modal offers no replacement destination, and FR-003's
+  repository `LICENSE` link remains its only external navigation. The identifier is retained rather
+  than reused so references elsewhere in this feature stay resolvable.
 - **FR-010**: Help MUST describe accepted current behaviour only. Its accepted behaviour-topic set
   MUST contain exactly one answer for each of these seven topics: build-link privacy; absence of
   accounts, uploads and telemetry; persistence and storage clearing; offline assets; completed
@@ -85,12 +105,12 @@ to the repository's `LICENSE` on GitHub.
   in the interface. Each answer MUST agree with its cited sources and MUST NOT add an unsupported
   behavioural claim. A missing or duplicate topic, a missing governing reference, a contradiction or
   an unsupported additional claim MUST fail the release.
-- **FR-011**: Where a capability, a package-backed surface or a state that obscures the application
-  frame leaves FR-001's common route unavailable, an equivalent route to help MUST be provided in its
-  place; neither route need open a specific answer. Release validation MUST enumerate every current
-  capability, package-backed artwork or value surface and obscuring state to which FR-001, FR-002 or
-  this requirement applies, and MUST record for each whether the common route is available or which
-  route substitutes for it. Any missing required route MUST fail the release.
+- **FR-011**: FR-001's common route — the application frame's own Help action — is the only route,
+  and it MUST NOT need to open a specific answer. Release validation MUST enumerate every current
+  capability, package-backed artwork or value surface and state that obscures the application frame,
+  and MUST record for each whether that route is available in it or, where a dismissible layer covers
+  the frame, that help is reached from the capability beneath once the layer is dismissed. A
+  capability from which help cannot be reached MUST fail the release.
 
 ## Edge Cases
 

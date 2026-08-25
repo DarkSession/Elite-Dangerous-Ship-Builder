@@ -1,0 +1,34 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.legal-excerpt {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.legal-excerpt__notice {
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The quoted document itself: set apart by the same hairline the reference uses
+// to part sections, and never given a horizontal scroller. Legal prose that has
+// to be dragged sideways to be read is legal prose a reader does not finish.
+.legal-excerpt__body {
+  margin: 0;
+  padding-inline-start: var(--edsb-space-panel);
+  border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-primary);
+
+  // No horizontal scroller and no preserved source wrapping: the notice is
+  // carried exactly in the DOM and reflowed to the reader's measure, so a
+  // narrow screen gets short lines rather than a sideways drag.
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}

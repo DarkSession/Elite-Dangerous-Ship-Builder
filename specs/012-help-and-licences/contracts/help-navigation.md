@@ -8,7 +8,7 @@ navigations it offers.
 - One shared modal instance is mounted by the eagerly loaded application frame.
 - It requires no active build, storage availability, network, authentication, route load, package
   lookup or legal fetch.
-- Global/contextual actions dispatch `open(invocation)` to the ephemeral help-dialog store. They do
+- The frame's Help action dispatches `open(invocation)` to the ephemeral help-dialog store. It does
   not invoke Angular Router or History.
 - Opening and closing preserve pathname, query, fragment, history length, active capability, build
   revision, dirty state, selected slot/hull, viewing conditions, undo history, stored records and
@@ -20,34 +20,42 @@ navigations it offers.
 
 ## Entry surfaces
 
-1. The shared application frame exposes a visible localised Help · About action on every route and
-   no-build state.
-2. Narrow navigation/action menus retain a visible Help · About item when the frame's wide action is
-   collapsed.
-3. Package-backed artwork and value regions expose the shared contextual Help, data and licences
-   action wherever their capability contract requires provenance or legal access.
-4. Full-screen/nested layers that obscure the frame retain a route to the same modal rather than
-   copying help content.
+The application frame owns the single entry, exactly as the design reference does. It draws a `?`
+control in the wide command bar and a `HELP & FAQ` item in the narrow action menu, and it draws no
+help control anywhere else on any of its four canvases.
 
-Every entry has visible text matching its accessible name, uses the shared minimum 44 CSS-pixel
-target, works by touch and pointer, and does not rely on an icon, tooltip or hover. A contextual entry
-may provide a topic hint, but the complete modal remains available and FR-011 does not require an
-exact deep link.
+1. The shared application frame exposes a visible localised Help action on every route and no-build
+   state. It is an ordinary shell action, so the frame's existing composition already places it in
+   the wide banner row.
+2. When the banner collapses, the same action moves into the frame's compact action layer, keeping
+   its visible text.
+
+There is no per-surface contextual entry. A package-backed artwork or value region routes to
+provenance by being inside the frame that carries the action, not by carrying one of its own
+(FR-002). A layer that covers the frame is dismissible, and help is reached from the capability
+beneath it once it is dismissed (FR-011); a layer never copies help content in its place.
+
+The entry has visible text matching its accessible name, uses the shared minimum 44 CSS-pixel target,
+works by touch and pointer, and does not rely on an icon, tooltip or hover. The reference's
+title-only `?` is therefore given a visible label; the glyph may remain as supplemental decoration.
 
 ## Required information order
 
-The invariant DOM/reading order is:
+The order is the design reference's own: a header, then `ABOUT`, `FAQ` and `LICENCE`, separated by
+hairline dividers in one scrolling column. The invariant DOM/reading order is:
 
-1. visible Help · About title, purpose and close action;
-2. Help topics;
-3. application/build and bundled-Almanac identity facts;
-4. catalogue/calculation/artwork provenance and package-defect reporting;
-5. Licence heading and attribution;
-6. visible original-English notice and exact project-specific Frontier disclaimer; and
-7. the warned repository-`LICENSE` action for every remaining licence and third-party term.
+1. visible `Help · About` dialog title and close action, in a header pinned above the scrolling body;
+2. the `ABOUT` section — the localised purpose sentence, then the application and bundled-Almanac
+   identity facts where the reference draws its `APP VERSION … · LIBRARY VERSION …` line, then the
+   bounded catalogue/calculation provenance statement;
+3. the `FAQ` section — the seven help topics as question/answer pairs; and
+4. the `LICENCE` section — heading and attribution, the visible original-English notice, the exact
+   project-specific Frontier disclaimer, then the warned repository-`LICENSE` action for every
+   remaining licence and third-party term.
 
-Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed, RTL
-and expanded-text states use the same complete single-column order.
+The reference puts its version line inside `ABOUT`, above the questions, and this contract follows
+it. Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed,
+RTL and expanded-text states use the same complete single-column order.
 
 ## Required help topics
 
@@ -81,8 +89,17 @@ set. References are build/review evidence only and are not displayed or bundled.
 | `browserPersistence`         | Constitution Principle I and Feature 001 FR-008, FR-013 and FR-014 |
 | `offlineAssets`              | Constitution Principle I and Feature 001 FR-006                    |
 | `completedEngineeringGrades` | Constitution Principle IV and Feature 002 FR-013                   |
-| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 003 FR-006 and FR-009               |
+| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 005 FR-003                          |
 | `almanacOwnership`           | Constitution Principle II and Feature 003 FR-002                   |
+
+**Corrected 2026-08-25, during implementation.** `hullFactsAndBuildResults` cited feature 003's
+FR-006 and FR-009. Neither is a declared requirement any more: feature 003's own "Withdrawn and
+reassigned requirements" ruling of 2026-08-22 reassigned FR-006 to features 005–008 with the values
+it governed, and FR-009 — the deployed/retracted switch — to feature 005. The topic is unchanged and
+so is its wording; what changed is which live requirement it points at, which is the whole purpose of
+this table. The viewing-condition half is now feature 005's FR-003, where that selection actually
+lives. Citing a reassigned id would make the reference resolvable only against a table of things that
+are no longer true.
 
 Build validation resolves every reference against the accepted repository artifacts and verifies
 the exact seven-ID set, uniqueness and non-empty shipped-locale messages. Required content review
@@ -117,9 +134,10 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 - Provenance says only that the bundled Almanac supplies catalogue data, validation and calculations
   and that Frontier owns the covered game data/imagery. It makes no live-game/live-catalogue currency
   claim.
-- Package-backed artwork/value regions route to this same provenance; they own no duplicated notice.
-- The package-defect action is specifically for Almanac data/calculation defects. Application
-  behavior, UI and translation defects are not directed to it.
+- Package-backed artwork/value regions route to this same provenance; they own no duplicated notice
+  and no entry control of their own.
+- The modal offers no package-defect action. FR-009 is withdrawn, and no issue tracker, support
+  address or defect-reporting destination appears in the modal.
 
 ## Legal presentation
 
@@ -139,18 +157,17 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## External navigation
 
-The repository-licence and package-defect actions:
+The modal has exactly one external navigation: the repository-licence action. It:
 
-- are native links and inert until Commander activation;
-- visibly and programmatically state that they leave the application and may require a network;
-- use `rel="noreferrer noopener"`;
-- receive their exact URLs from the generated manifest;
-- are never prefetched, probed, opened programmatically or rewritten with application state; and
-- contain no query, fragment, build URL/payload, SLEF, hull/module identity, current route, locale or
-  browser-storage value.
+- is a native link and inert until Commander activation;
+- visibly and programmatically states that it leaves the application and may require a network;
+- uses `rel="noreferrer noopener"`;
+- receives its exact URL from the generated manifest;
+- is never prefetched, probed, opened programmatically or rewritten with application state; and
+- contains no query, fragment, build URL/payload, SLEF, hull/module identity, current route, locale
+  or browser-storage value.
 
-The issue tracker is a support action, not another legal-details link. Tests intercept both
-navigations and assert exact destinations without requiring network access.
+Tests intercept the navigation and assert the exact destination without requiring network access.
 
 ## Dialog semantics and responsive behavior
 
@@ -180,10 +197,10 @@ navigations and assert exact destinations without requiring network access.
   language relationship and external warnings form a coherent screen-reader reading order.
 - Opening is announced through native/shared dialog semantics; long content is not injected into a
   live region. Closing returns to the invoking origin.
-- Axe/semantic/no-overflow checks cover closed background and open release/non-release, contextual,
+- Axe/semantic/no-overflow checks cover closed background and open release/non-release,
   alternate-locale and long-text states in every Chromium/Firefox viewport/orientation project.
 - Manual screen-reader checks verify discovery from no-build and active capabilities, dialog
-  isolation, identity distinctions, disclaimer attribution/language, warning relationships and the
+  isolation, identity distinctions, disclaimer attribution/language, the warning relationship and the
   underlying capability after close.
 - Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11.
@@ -192,11 +209,11 @@ navigations and assert exact destinations without requiring network access.
 
 Feature 011's preview catalogue must include:
 
-- closed trigger/global/contextual entry states;
+- the closed frame-entry state;
 - open release and non-release modal states;
 - all seven populated help topics;
 - long application/build/package identifiers;
-- exact disclaimer and warned external actions;
+- exact disclaimer and the warned external action;
 - desktop centered, tablet/mobile portrait and landscape sheet states;
 - doubled/expanded text, RTL framing with English disclaimer, reduced motion and 400%-zoom reflow.
 

@@ -379,6 +379,48 @@ planning ship loadouts.
     and 010 each have one in `scripts/policy/` and feature 008's is `tasks.md`
     T018, still open. Until it lands the single-projector rule is held by review
     rather than by a check.
+- **Help and licences (feature 012)** contributes the one `Help · About` modal
+  and the frame action that opens it. It owns no game data and no game rule: it
+  reads two generated modules and the locale catalogues, and nothing else.
+  - **Two generated artifacts, both ignored, both rebuilt before every Angular,
+    Playwright and typecheck command.** `src/app/platform/build/help-manifest.generated.ts`
+    comes from `scripts/generate-help-manifest.mjs` and carries the build
+    identity, the bundled Almanac's identity, the one legal excerpt and the one
+    external destination. `src/app/platform/build/help-topics.generated.ts` comes
+    from `scripts/check-help-topics.mjs` and carries the seven topic ids with
+    their message keys — and deliberately not the requirements and principles
+    each answer is justified by, which stay in
+    `scripts/help-topic-definitions.mjs` as review evidence. `pnpm run
+help:artifacts` produces the manifest and `pnpm run help:artifacts:check`
+    validates the sources it is derived from, chained into `pnpm run check`.
+    The topics module has its own `pnpm run help:topics` and joins
+    `help:artifacts` once feature 012's Phase 5 lands its catalogue entries —
+    until then a build command that ran it would refuse.
+  - **That is the opposite convention to the build-link codec table**, which is
+    committed and regenerated on demand with `pnpm run codec:tables`. The
+    difference is what the artifact is evidence of. A codec table is a shared
+    wire format: it has to be reviewable in a diff, because changing it changes
+    what every published link decodes to. A help manifest is a description of
+    one build, correct only for the commit that produced it, and committing it
+    would mean every branch carrying a stale claim about itself. Neither rule
+    generalises to the other, so check which artifact you are looking at before
+    deciding whether to commit it.
+  - **`legal/almanac/` holds byte-exact mirrors of the installed package's own
+    `LICENSE` and `THIRD_PARTY_NOTICES.md`, and ordinary builds never rewrite
+    them.** Every read-only run asserts the tracked mirror equals the installed
+    file byte for byte, and fails when the package root gains an unmirrored
+    top-level licence, notice or third-party file. `pnpm run legal:sync` is the
+    only path that writes them, it is a maintainer action, and its result is
+    reviewed in the same change as the dependency upgrade that caused it — a
+    mirror silently refreshed by a build is a redistribution obligation nobody
+    read.
+  - The modal embeds exactly one legal body: the project's own Frontier
+    media-usage disclaimer, lifted out of root `LICENSE` at build time and
+    rendered as exact text in a `lang="en"` region. It is never translated,
+    re-wrapped, linked or trimmed, and the journey compares what a browser
+    rendered against a fresh extraction from the file. Everything else — the MIT
+    grant, the Almanac's licence, the package's third-party notices — is named
+    and pointed at, never reproduced.
 
 ## Commit Identity — no personal data in git metadata
 

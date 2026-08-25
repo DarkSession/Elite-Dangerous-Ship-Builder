@@ -28,9 +28,14 @@ import {
   type ShellStatus,
 } from './ui/components/app-frame/app-frame';
 import { ConfirmDialog } from './ui/components/confirm-dialog/confirm-dialog';
+import { HelpPresenter } from './application/help/help.presenter';
+import { HelpDialog } from './features/help/help-dialog.component';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
+
+/** The shell action that opens the Help · About modal, named once. */
+export const HELP_ACTION = 'help.open';
 
 /** The shell action that starts the application over on a newer version. */
 export const UPDATE_ACTION = 'app.update';
@@ -57,7 +62,7 @@ interface PendingReplacement {
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ConfirmDialog, ExportDialog, ImportDialog, RouterOutlet],
+  imports: [AppFrame, ConfirmDialog, ExportDialog, HelpDialog, ImportDialog, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,6 +75,7 @@ export class App {
   readonly #messages = inject(MessageService);
   readonly #replacement = inject(ReplacementCoordinator);
   readonly #slef = inject(SlefStore);
+  readonly help = inject(HelpPresenter);
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
 
@@ -90,15 +96,25 @@ export class App {
    * What the command bar shows: the open screen's own actions, then Import, and
    * the restart when a newer version is waiting.
    *
-   * Import is second-to-last and always present. The reference draws it in the
-   * command bar of the shipyard, and a Commander can paste a build from any
-   * screen — including one with no build at all — so it belongs to the shell
-   * rather than to four screens that would each have to remember to offer it.
+   * Import is always present. The reference draws it in the command bar of the
+   * shipyard, and a Commander can paste a build from any screen — including one
+   * with no build at all — so it belongs to the shell rather than to four
+   * screens that would each have to remember to offer it.
+   *
+   * Help follows it, for the same reason and one more: the reference draws it
+   * at the trailing end of the wide command bar and as an item in the narrow
+   * action menu, and draws no help control anywhere else in any canvas. The
+   * frame surrounds every capability, so one action here is the route from all
+   * of them and no screen owns a second one (012/FR-002, 012/FR-011).
    *
    * The restart is last and almost never there. It sits at the trailing edge
    * where the canvas puts what a screen is asking for, and immediately before
    * the notice that explains it in reading order, so a reader meets the control
-   * and its reason together.
+   * and its reason together. That is why it comes after Help rather than the
+   * other way round: Help is a permanent fixture of the bar and this is a
+   * transient thing the page is asking for, and separating it from its own
+   * notice by a control that is always there would leave the notice explaining
+   * something a reader has already scrolled past.
    */
   readonly actions = computed(() => {
     const screen = this.chrome.actions();
@@ -110,6 +126,12 @@ export class App {
         label: this.#messages.message('slef.import.title'),
         emphasis: 'secondary' as const,
         startsGroup: screen.length > 0,
+      },
+      {
+        id: HELP_ACTION,
+        label: this.help.actionLabel(),
+        description: this.help.actionDescription(),
+        emphasis: 'quiet' as const,
       },
       ...(update === null ? [] : [update]),
     ];
@@ -303,6 +325,10 @@ export class App {
     }
     if (id === IMPORT_ACTION) {
       this.#slef.openLayer('import');
+      return;
+    }
+    if (id === HELP_ACTION) {
+      this.help.openDialog();
       return;
     }
     if (id === UPDATE_ACTION) {
