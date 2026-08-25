@@ -4,7 +4,8 @@ Required by T064: walk [quickstart.md](../quickstart.md) sections 1 through 8 ag
 application and record any divergence as a defect rather than as a documentation edit. Section 9 is
 T065's gate, so the two together cover the document.
 
-Walked 2026-08-25 against `654027a`, on the container this repository builds in.
+Walked 2026-08-25 against `654027a`, and re-walked against `75d944c` once the defect in
+finding 2 was fixed, on the container this repository builds in.
 
 ## Result by section
 
@@ -53,7 +54,7 @@ The rest of section 2 behaves exactly as written: no declaration gives `nonRelea
 version-matched declaration gives `release 0.1.0`; and `latest`, `v0.0.0`, `HEAD`, `undefined` and a
 mismatched version each exit non-zero and write no output.
 
-### 2. The sticky command bar takes 55% of a tablet-landscape viewport at 200% text — open
+### 2. The sticky command bar took 55% of a tablet-landscape viewport at 200% text — fixed
 
 Found by section 8's full-matrix run rather than by reading, and it is this feature's, so it is
 recorded as a defect and not as a note. At `chromium-tablet-landscape` (1112 x 834) in German at
@@ -69,9 +70,29 @@ resolves against the _initial_ font size, so a viewport that is 834 pixels stays
 query however large the text grows while the bar it is protecting doubles. The guard was written for
 400% zoom, which shrinks the viewport, and does not catch 200% text, which grows the chrome.
 
-Under investigation: whether the bar crosses the viewport's middle without this feature's entry, and
-what the remedy is. Recorded open rather than closed, because a section-8 pass that steps over a
-failing assertion is not a pass.
+**Measured rather than argued**, at the same profile, locale and text size:
+
+|                                  | bar height | the five mode centres at y 417 |
+| -------------------------------- | ---------- | ------------------------------ |
+| as shipped                       | 462 px     | all five answer to the banner  |
+| with this feature's entry hidden | 374 px     | all five answer to themselves  |
+| after the fix                    | 334 px     | all five answer to themselves  |
+
+So the entry is what carried the bar across the middle of the window, and the defect is this
+feature's to fix rather than a condition it merely revealed.
+
+**Fixed** in `app-frame.scss`: above the compact composition the bar is bounded to `40dvh` and
+scrolls itself, so every action stays reachable and the middle of the window belongs to the
+capability. It is the same remedy, for the same reason, as finding 4's. Medium and up only — the
+compact bar is a single row that never approaches the bound, and it is the composition that hangs
+the action layer's panel off a trigger inside the bar, which a scroll container there would clip.
+
+The rejected alternative is worth recording. The reference draws its wide help control as a 34 x 34
+`?` square, and shrinking the entry to that would also have brought the bar under the midline. It
+was not done: [reference-review.md](./reference-review.md) already settles that question the other
+way, replacing the `?`'s title-only naming with the reference's own `HELP & FAQ` wording as a
+visible label. Fixing a layout defect by withdrawing an accepted accessibility ruling would trade a
+reflow failure for a naming one.
 
 ### 3. Firefox cannot be exercised in this container — environment, not product
 
@@ -82,12 +103,20 @@ environment's network policy.
 The five Firefox projects were not run here.
 That is a property of this container, not a narrowed matrix — `playwright.config.ts` still declares
 all ten, `pnpm run check` still runs all ten, and CI runs them on a runner that has both engines.
-Recorded here so that "section 8: partial" reads as a statement about where it was walked rather
+Recorded here so that section 8's asterisk reads as a statement about where it was walked rather
 than as a suite that was quietly reduced.
+
+Two further container facts, found the same way and belonging with it. The container's Node was
+v22.22.2 by the end of this walk, below the v22.22.3 the Angular CLI requires, so `ng` refused to
+start at all; and the installed `@playwright/test` wants a Chromium build that
+`/opt/pw-browsers` does not hold and `cdn.playwright.dev` is blocked. Neither is a property of this
+repository — `.nvmrc` asks for Node 24, and CI installs its own browsers — and both were worked
+around locally without changing a tracked file. They are recorded because they are the reason the
+matrix here was run through a scratch configuration rather than through `pnpm run e2e` verbatim.
 
 No project, viewport, accessibility rule or test was skipped to obtain a pass.
 
-### 4. A defect the walk's own assertions found, and fixed
+### 4. A second defect the walk's own assertions found, and fixed
 
 Not a divergence between document and product, but the walk is where it surfaced, so it is recorded
 with the rest. Section 8's 200%-text state at the mobile profile could not be reached: feature 011's
