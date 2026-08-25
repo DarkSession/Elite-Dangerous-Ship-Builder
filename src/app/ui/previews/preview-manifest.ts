@@ -213,6 +213,7 @@ import { GameText } from '../components/game-text/game-text';
 import { Layer } from '../components/layer/layer';
 import { MetricGroup } from '../components/metric-group/metric-group';
 import { Panel } from '../components/panel/panel';
+import { RangeField } from '../components/range-field/range-field';
 import { SelectField } from '../components/select-field/select-field';
 import { StatusNotice } from '../components/status/status-notice';
 import { DataTable } from '../components/table/data-table';
@@ -455,6 +456,76 @@ registerPreview({
       'disabled',
       { label: 'Language', options: [{ value: 'en', label: 'English' }], disabled: true },
       ['exposes the disabled state natively'],
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'range-field',
+  group: 'Fields',
+  component: RangeField,
+  contract: contract(
+    'range-field',
+    {
+      role: 'slider',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['disabled'],
+      relationships: ['label', 'description'],
+      textEquivalents: ['value'],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Range',
+        min: 100,
+        max: 2000,
+        step: 25,
+        value: 600,
+        valueText: '600 m',
+        minText: '100 m',
+        maxText: '2,000 m',
+        description: 'The range the gunsight is drawn at.',
+      },
+      [
+        'label is programmatically associated',
+        'the formatted value is announced as well as drawn',
+        'the printed ends of the scale are decorative, because the slider states its own bounds',
+        'description is associated with the control',
+        'the whole track is at least the shared target size',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'german-format'],
+    ),
+    state(
+      'empty',
+      { label: 'Range', min: 100, max: 2000, step: 25, value: 100, valueText: '100 m' },
+      [
+        'keeps its label with no scale ends and no description',
+        'a value at the minimum still reads as a value, not as an empty control',
+      ],
+    ),
+    state(
+      'disabled',
+      {
+        label: 'Range',
+        min: 100,
+        max: 2000,
+        step: 25,
+        value: 600,
+        valueText: '600 m',
+        disabled: true,
+      },
+      ['exposes the disabled state natively'],
+    ),
+    notApplicable(
+      'loading',
+      'A slider has nothing to fetch: its bounds and its value are given to it, and a range with no value yet is a range with no reason to be on the screen.',
+    ),
+    notApplicable(
+      'error',
+      'Every value between the two bounds is a valid one, and the control cannot be moved outside them, so there is no invalid state to report.',
     ),
   ],
 });

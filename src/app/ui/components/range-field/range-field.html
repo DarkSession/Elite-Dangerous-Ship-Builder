@@ -1,0 +1,49 @@
+<div class="range">
+  <label class="range__label" [id]="relations.labelId" [attr.for]="relations.controlId">
+    {{ label() }}
+  </label>
+
+  <span class="range__track">
+    <!--
+      The fill behind the thumb, which the canvas draws and which carries no
+      reading of its own: the figure beside the slider is what it was drawn
+      from, and the slider already reports the same value itself.
+    -->
+    <span class="range__fill" aria-hidden="true" [style.inline-size.%]="fraction() * 100"></span>
+
+    <input
+      #control
+      type="range"
+      class="range__control"
+      [id]="relations.controlId"
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [value]="value()"
+      [attr.aria-valuetext]="valueText()"
+      [attr.aria-describedby]="relations.describedBy()"
+      [disabled]="disabled()"
+      (input)="onInput($event)"
+    />
+  </span>
+
+  <output class="range__value" [attr.for]="relations.controlId" data-bidi-isolate>
+    {{ valueText() }}
+  </output>
+
+  @if (minText() && maxText()) {
+    <!--
+      The ends of the scale, as the canvas prints them under its track. Hidden
+      from assistive technology because the slider states its own minimum and
+      maximum, and hearing each end twice says nothing the first did not.
+    -->
+    <span class="range__scale" aria-hidden="true">
+      <span>{{ minText() }}</span>
+      <span>{{ maxText() }}</span>
+    </span>
+  }
+
+  @if (description()) {
+    <p class="range__description" [id]="relations.descriptionId">{{ description() }}</p>
+  }
+</div>

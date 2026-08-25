@@ -226,12 +226,16 @@
       <edsb-power-summary />
 
       <!--
-        Feature 006's two cells of canvas 1c's six-cell rail grid — `SHIELD` and
-        `ARMOUR` — under the power line and above the cost block, which is where
-        the canvas draws them. Features 007 and 008 add the remaining four
-        (`design/defence-profile.md`, "The status rail").
+        Canvas 1c draws six metric cells under the `POWER` line, in this
+        order: `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006
+        owns the first two and feature 007 owns `DPS`, so they are drawn in that
+        order and feature 008 adds the last three
+        (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
+        composition"; `specs/007-offence-profile/design/canvas-contract.md`,
+        "The status rail cell").
       -->
       <edsb-defence-summary />
+      <edsb-offence-summary />
 
       <edsb-cost-materials />
     </div>

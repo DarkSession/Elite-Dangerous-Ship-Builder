@@ -1,0 +1,279 @@
+<!--
+  Canvas 1c's `OFFENCE ANALYSIS` panel: `WEAPONS` against `DAMAGE PROFILE` in a
+  `1fr 1fr` pair, with `SHOT CONVERGENCE` across the full width beneath them.
+  Canvas 1d stacks the same three blocks. This is that DOM at both widths; which
+  arrangement appears is decided in CSS from the space the region is given, so a
+  400% zoom picks the stacked one for the same reason a phone does.
+-->
+@if (shown()) {
+  <div class="offence">
+    <section
+      class="offence__block offence__block--weapons"
+      [attr.aria-labelledby]="weaponsHeadingId"
+    >
+      <!-- The canvas's own header row: the block's name against `5 MOUNTED`. -->
+      <div class="offence__head">
+        <h4 class="offence__heading" [id]="weaponsHeadingId">{{ weaponsHeading() }}</h4>
+        @if (mounted(); as mounted) {
+          <p class="offence__note" data-bidi-isolate>{{ mounted }}</p>
+        }
+      </div>
+
+      <!--
+        The canvas's headline: the burst total set large, over a line naming it
+        and the sustained total beside it. Both are named, because the canvas's
+        own two panels disagree about which figure the large one is.
+      -->
+      @if (headline(); as headline) {
+        <p class="headline">
+          <span class="headline__value" data-bidi-isolate>{{ headline.value }}</span>
+          <span class="headline__note" data-bidi-isolate>{{ headline.note }}</span>
+        </p>
+      }
+
+      <!--
+        What the collection means, said before it. Feature 002's coverage is
+        what answers this, never the number of weapons the package measured:
+        an empty list and empty hardpoints are different claims, and only one
+        of them is about the build (`data-model.md`, "Collection meaning").
+      -->
+      @if (collection() === 'noFittedWeapons') {
+        <p class="offence__statement">{{ emptyStatement() }}</p>
+      } @else if (collection() === 'coverageUnavailable') {
+        <p class="offence__statement">{{ unavailableStatement() }}</p>
+      }
+
+      <!--
+        The canvas's four columns, one row per returned weapon in package order.
+        The rows are inert, as the canvas draws them: no disclosure, no action
+        and no slot. A mount is opened from `HULL ANATOMY`, which is where the
+        canvas puts that control.
+
+        A list rather than a table, because a row's module cell is two lines —
+        the name over its code line, `4A GIMBALLED · OVERCHARGED G5` — and the
+        three figure cells are one each. The column heads are drawn as the canvas draws them and marked
+        decorative, because every figure under them carries the same word in its
+        own row: a reader is told which column a figure is in where the figure
+        is, rather than having to hold four heads in mind while moving down.
+      -->
+      @if (weaponRows().length > 0) {
+        <div class="weapons">
+          <!--
+            The table inside the container rather than being it: an element
+            cannot answer its own container query, so the four tracks live one
+            level in from the box whose width decides whether they appear.
+          -->
+          <div class="weapons__table">
+            <p class="weapons__columns" aria-hidden="true">
+              <span class="weapons__column">{{ columns().module }}</span>
+              <span class="weapons__column weapons__column--figure">
+                {{ columns().damagePerSecond }}
+              </span>
+              <span class="weapons__column weapons__column--figure">{{ columns().piercing }}</span>
+              <span class="weapons__column weapons__column--figure">{{ columns().falloff }}</span>
+            </p>
+
+            <ul class="weapons__list">
+              @for (row of weaponRows(); track row.id) {
+                <li class="weapon">
+                  <!--
+                    The canvas draws every row's module cell as a name over a
+                    tracked mono code line — `4A GIMBALLED · OVERCHARGED G5 ·
+                    CORROSIVE` — and that line is the ledger's own badge, drawn
+                    for the same module from the same three package values. It
+                    is composed here rather than re-set, so a weapon reads the
+                    same way in this panel as it does in the mount it came from.
+                  -->
+                  <p class="weapon__module">
+                    <edsb-module-identity-badge
+                      class="weapon__identity"
+                      [compact]="true"
+                      [name]="row.name"
+                      [moduleClass]="row.moduleClass"
+                      [rating]="row.rating"
+                      [mount]="row.mount"
+                      [detail]="row.engineering"
+                    />
+                    @if (row.off) {
+                      <span class="weapon__state">{{ row.offLabel }}</span>
+                    }
+                  </p>
+
+                  <!--
+                    Each figure carries its own column's word, said rather than
+                    drawn: the heads above are decorative, so this is where the
+                    association actually lives. In the compact arrangement the
+                    heads are gone and the word is what a reader sees. An absent
+                    piercing factor or falloff range is field-specific not-stated
+                    text — never a zero, and never a dash standing in for a
+                    number (FR-004).
+                  -->
+                  <span class="weapon__figures">
+                    @for (
+                      figure of [
+                        { id: 'dps', label: columns().damagePerSecond, value: row.damagePerSecond },
+                        { id: 'pierce', label: columns().piercing, value: row.piercing },
+                        { id: 'falloff', label: columns().falloff, value: row.falloff },
+                      ];
+                      track figure.id
+                    ) {
+                      <span class="weapon__figure">
+                        <span class="weapon__figure-label">{{ figure.label }}</span>
+                        @if (figure.value; as value) {
+                          <span data-bidi-isolate>{{ value }}</span>
+                        } @else {
+                          <span class="weapon__not-stated">{{ notStated() }}</span>
+                        }
+                      </span>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </section>
+
+    <section class="offence__block" [attr.aria-labelledby]="damageHeadingId">
+      <div class="offence__head">
+        <h4 class="offence__heading" [id]="damageHeadingId">{{ damageHeading() }}</h4>
+        <p class="offence__note">{{ damageNote() }}</p>
+      </div>
+
+      <!--
+        The canvas's stacked bar, and the legend under it. The bar is decorative:
+        every segment's amount and share are written out beside it, because a
+        length and a colour are not a reading on their own (011 FR-022). The
+        canvas's `title` tooltips are not built — hover-only meaning is
+        unreachable by touch (011 FR-006) — and the legend says the same thing
+        where everyone can read it.
+      -->
+      @if (damageSegments().length > 0) {
+        <div class="split">
+          <span class="split__bar" aria-hidden="true">
+            @for (segment of damageSegments(); track segment.id) {
+              <span
+                class="split__segment"
+                [class]="'split__segment--' + segment.id"
+                [style.inline-size.%]="segment.width * 100"
+              ></span>
+            }
+          </span>
+
+          <!--
+            A list, not a paragraph: the legend needs a name of its own — it is
+            the whole damage-by-type reading, since the bar above it is
+            decorative — and `role="paragraph"` does not take one from an
+            author, so `aria-label` on a `<p>` is dropped rather than announced.
+          -->
+          <ul class="split__legend" [attr.aria-label]="damageBarLabel()">
+            @for (segment of damageSegments(); track segment.id) {
+              <li class="split__entry" data-bidi-isolate>{{ segment.legend }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <hr class="offence__rule" />
+
+      <!--
+        `DPS BY RANGE BAND`. Each figure is the package's own `damageFalloff`
+        applied to each enabled weapon at that distance and added up, in the
+        projection. The bar is that band over the strongest band, so the four
+        are read against each other rather than against a ceiling nobody stated.
+      -->
+      <div class="bars bars--range">
+        <p class="bars__label" [id]="rangeBandsHeadingId">{{ rangeBandsHeading() }}</p>
+        <ul class="bars__list" [attr.aria-labelledby]="rangeBandsHeadingId">
+          @for (band of rangeBands(); track band.id) {
+            <li class="bar">
+              <span class="bar__label" data-bidi-isolate>{{ band.label }}</span>
+              <ng-container
+                [ngTemplateOutlet]="track"
+                [ngTemplateOutletContext]="{ fill: band.fill }"
+              />
+              <span class="bar__value" data-bidi-isolate>{{ band.value }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <hr class="offence__rule" />
+
+      <!--
+        `WEAPON CAPACITOR`. Only the draw and the recharge get a bar: they are
+        the same quantity in the same unit and which is larger is the question
+        the block answers, so they are drawn against the larger of the two. A
+        capacity in megajoules and a duration in seconds share a scale with
+        nothing here, and a length measuring nothing is not a reading
+        (`design/canvas-contract.md`, review note 6).
+      -->
+      <div class="bars bars--capacitor">
+        <p class="bars__label" [id]="capacitorHeadingId">{{ capacitorHeading() }}</p>
+        <ul class="bars__list" [attr.aria-labelledby]="capacitorHeadingId">
+          @for (row of capacitorRows(); track row.id) {
+            <li class="bar">
+              <span class="bar__label">{{ row.label }}</span>
+              <ng-container
+                [ngTemplateOutlet]="track"
+                [ngTemplateOutletContext]="{ fill: row.fill }"
+              />
+              <span class="bar__value" data-bidi-isolate>
+                {{ row.value }}
+                @if (row.meaning; as meaning) {
+                  <!--
+                    `∞` is drawn, and what it stands for is said beside it out
+                    of sight: a symbol nobody can read aloud is not a reading.
+                  -->
+                  <span class="visually-hidden">{{ meaning }}</span>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+
+        @if (capacitorAllocation(); as allocation) {
+          <p class="bars__condition">{{ allocation }}</p>
+        }
+      </div>
+    </section>
+
+    <section
+      class="offence__block offence__block--convergence"
+      [attr.aria-labelledby]="convergenceHeadingId"
+    >
+      <div class="offence__head">
+        <h4 class="offence__heading" [id]="convergenceHeadingId">{{ convergenceHeading() }}</h4>
+        <p class="offence__note">{{ convergenceNote() }}</p>
+      </div>
+
+      @if (convergenceGeometry(); as geometry) {
+        <edsb-shot-convergence [geometry]="geometry" />
+      } @else {
+        <!--
+          No gunsight for this hull, said rather than drawn as an empty plate:
+          a diagram with nothing on it reads as a build whose shots all converge,
+          which is the opposite of "we cannot place them".
+        -->
+        <p class="offence__statement">{{ convergenceUnavailable() }}</p>
+      }
+    </section>
+  </div>
+}
+
+<!--
+  One bar row's track. The fill carries no reading of its own — the figure
+  beside it is what it was drawn from — and where a row has nothing to be
+  measured against, no track is drawn at all rather than an empty one, which
+  would read as a figure of nothing.
+-->
+<ng-template #track let-fill="fill">
+  @if (fill !== null) {
+    <span class="bar__track" aria-hidden="true">
+      <span class="bar__fill" [style.inline-size.%]="fill * 100"></span>
+    </span>
+  } @else {
+    <span class="bar__track-absent" aria-hidden="true"></span>
+  }
+</ng-template>

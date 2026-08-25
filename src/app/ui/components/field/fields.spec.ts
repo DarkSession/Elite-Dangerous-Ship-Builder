@@ -1,4 +1,5 @@
 import { ChoiceGroup } from '../choice-group/choice-group';
+import { RangeField } from '../range-field/range-field';
 import { SelectField } from '../select-field/select-field';
 import { TextField } from '../text-field/text-field';
 import { TextareaField } from '../textarea-field/textarea-field';
@@ -166,6 +167,77 @@ describe('SelectField', () => {
 
     expect(element(fixture).querySelector<HTMLOptionElement>('option')?.disabled).toBe(true);
     expect((query(fixture, 'select') as HTMLSelectElement).disabled).toBe(false);
+  });
+});
+
+describe('RangeField', () => {
+  const slider = { label: 'Range', min: 100, max: 2000, step: 25, value: 600, valueText: '600 m' };
+
+  it('associates the visible label with the control', () => {
+    const fixture = renderComponent(RangeField, slider);
+    const label = query(fixture, 'label');
+    const input = query(fixture, 'input');
+
+    expect(textOf(label)).toBe('Range');
+    expect(label.getAttribute('for')).toBe(input.getAttribute('id'));
+    expect(input.getAttribute('type')).toBe('range');
+  });
+
+  it('announces the value as it is written, not as a bare number', () => {
+    const fixture = renderComponent(RangeField, slider);
+    const input = query(fixture, 'input') as HTMLInputElement;
+
+    // The slider reports `600`; a Commander reads `600 m`. Both have to say
+    // the same thing, so the formatted string is what is announced.
+    expect(input.value).toBe('600');
+    expect(input.getAttribute('aria-valuetext')).toBe('600 m');
+    expect(textOf(query(fixture, 'output'))).toBe('600 m');
+  });
+
+  it('associates a description with the control', () => {
+    const fixture = renderComponent(RangeField, {
+      ...slider,
+      description: 'The range the gunsight is drawn at.',
+    });
+
+    expect(describedText(query(fixture, 'input'))).toContain('The range the gunsight is drawn at.');
+  });
+
+  it('emits the number the Commander moved it to', () => {
+    const moved: number[] = [];
+    const fixture = renderComponent(RangeField, slider);
+    fixture.componentInstance.changed.subscribe((value: number) => moved.push(value));
+
+    const input = query(fixture, 'input') as HTMLInputElement;
+    input.value = '1200';
+    input.dispatchEvent(new Event('input'));
+
+    expect(moved).toEqual([1200]);
+  });
+
+  it('draws the fill from where the value sits on its own scale', () => {
+    const fixture = renderComponent(RangeField, { ...slider, value: 1050 });
+
+    // Halfway between 100 and 2000.
+    expect(fixture.componentInstance.fraction()).toBeCloseTo(0.5, 9);
+  });
+
+  it('keeps the ends of the scale out of the announcement, because the slider states them', () => {
+    const fixture = renderComponent(RangeField, {
+      ...slider,
+      minText: '100 m',
+      maxText: '2,000 m',
+    });
+    const scale = query(fixture, '.range__scale');
+
+    expect(scale.getAttribute('aria-hidden')).toBe('true');
+    expect(describedText(query(fixture, 'input'))).not.toContain('2,000 m');
+  });
+
+  it('exposes the disabled state natively', () => {
+    const fixture = renderComponent(RangeField, { ...slider, disabled: true });
+
+    expect((query(fixture, 'input') as HTMLInputElement).disabled).toBe(true);
   });
 });
 

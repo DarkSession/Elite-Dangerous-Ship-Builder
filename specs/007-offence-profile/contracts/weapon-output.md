@@ -2,15 +2,19 @@
 
 ## Boundary
 
-For one feature 001 active `{ loadout, buildRevision }`, call exactly once:
+For one feature 001 active `{ loadout, revision }`, call exactly once:
 
 ```ts
 const result = loadout.weaponMetrics();
 ```
 
-Retain the exact `BuildWeaponMetrics` object. Feature 007 must not call the data-free weapon
-functions, rebuild totals, join catalogue/fitted-module data to fill optional offence fields or sort
-the returned collection. A cache keyed by build revision may supply both detail and Status.
+Retain the exact `BuildWeaponMetrics` object. Feature 007 must not rebuild totals, join
+catalogue/fitted-module data to fill optional offence fields or sort the returned collection. One
+projection supplies both the panel and the status rail cell.
+
+One data-free package function is called, and only over the retained result: `damageFalloff()`, for
+the range bands (see "Range bands" below). It is the package's own falloff rule, applied to the
+package's own returned fields.
 
 ## Leaf imports
 
@@ -18,106 +22,149 @@ the returned collection. A cache keyed by build revision may supply both detail 
   `@elite-dangerous-almanac/core/ships/ship-loadout`
 - `WeaponMetrics`, `WeaponTotals`, `DamageSplit`:
   `@elite-dangerous-almanac/core/ships/weapons`
-- `AmmunitionCapacity`: `@elite-dangerous-almanac/core/ships/ammunition`
-- `ProjectileRangeBoundaries`: `@elite-dangerous-almanac/core/ships/modules`
+- `damageFalloff`: `@elite-dangerous-almanac/core/ships/weapons`
+- `ModuleMount`, `getModuleBySymbol`: `@elite-dangerous-almanac/core/ships/modules`
+- `getShipGunsight`, `projectGunsight`, `GunsightOffset`:
+  `@elite-dangerous-almanac/core/ships/gunsights`
+- `getShipSlots`: `@elite-dangerous-almanac/core/ships/ships`
+- `enumerateSlots`: `@elite-dangerous-almanac/core/ships/slots`
 
 No broad `ships` barrel is used.
 
 ## Whole-build output
 
-Present every `result.total` field with its package scope:
+Canvas 1c's `WEAPONS` headline draws two figures and both are damage. Those two, and the two damage
+splits the `DAMAGE PROFILE` block draws, are what is read from `result.total`:
 
-| Field                      | Required meaning                                |
-| -------------------------- | ----------------------------------------------- |
-| `damagePerSecond`          | Enabled returned weapons, reloads ignored       |
-| `sustainedDamagePerSecond` | Enabled returned weapons, reload averaged       |
-| `energyPerSecond`          | Enabled returned weapons' burst WEP draw        |
-| `sustainedEnergyPerSecond` | Enabled returned weapons' sustained WEP draw    |
-| `heatPerSecond`            | Enabled returned weapons' burst heat            |
-| `sustainedHeatPerSecond`   | Enabled returned weapons' sustained heat        |
-| `thermalLoad`              | Sum of included package thermal-load stats      |
-| `powerDraw`                | Enabled returned weapons' deployed plant demand |
-| `damageByType`             | Exact burst damage split                        |
-| `sustainedDamageByType`    | Exact sustained damage split                    |
+| Field                      | Required meaning                          | Drawn as                             |
+| -------------------------- | ----------------------------------------- | ------------------------------------ |
+| `damagePerSecond`          | Enabled returned weapons, reloads ignored | Canvas 1c's `248.6` / `DPS BURST`    |
+| `sustainedDamagePerSecond` | Enabled returned weapons, reload averaged | `186.4 SUSTAINED`, and the rail cell |
+| `damageByType`             | Exact burst damage split                  | The stacked bar and its legend       |
+| `sustainedDamageByType`    | Exact sustained damage split              | **Not read** — no canvas draws it    |
+
+The stacked bar partitions `damageByType`'s **conventional** members only, and its legend is the
+whole damage-by-type reading. Each segment's width is its own amount over the sum of those amounts,
+and the amount and the share are both written in the legend beside it. A conventional member the
+build does not deal has no segment and no legend line, which is what both canvases do with one.
+
+`antiXeno` is **not read**, and neither is `sustainedDamageByType`. Neither canvas draws an
+anti-xeno figure or a second damage split, so both join the fields a canvas omits and this feature
+therefore does not select — the rule feature 005 set, and the reason an earlier revision's
+enumerated type lists were withdrawn (`design/canvas-contract.md`, review note 7).
 
 The total is package-authored and never re-summed from `result.weapons`. It is not relabelled as
-powered firing output; capacitor powered draw has a different package scope.
+powered firing output.
+
+`energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond`, `sustainedHeatPerSecond`,
+`thermalLoad` and `powerDraw` are the whole-build firing cost, which no canvas draws, and are
+therefore **not read** — the rule feature 005 set for the package fields its canvases omit. The
+capacitor block's `DRAW` row is the capacitor result's own field and has a different scope
+(`capacitor-endurance.md`, "Scope separation").
+
+The count of entries in `result.weapons` is the canvas's `5 MOUNTED`. It is the one figure this
+feature works out that the package does not publish, it is a count rather than a measurement, and it
+is recorded as ruled exception 1 in `design/canvas-contract.md`.
 
 ## Per-weapon output
 
-Every returned weapon remains a separate entry in returned order. Preserve:
+Every returned weapon remains a separate entry in returned order. Canvas 1c draws four columns —
+`MODULE`, `DPS`, `PIERCE`, `FALLOFF` — and draws the row **inert**. Preserve and present:
 
 - exact `slot`, `symbol`, canonical returned `name` and `enabled`;
-- every required `WeaponMetrics` field: damage per shot; burst/sustained rates of fire; burst/
-  sustained damage, WEP draw and heat; thermal load; plant draw; both damage splits; continuous-fire
-  state;
-- exact `AmmunitionCapacity | null`;
-- optional effective maximum range, falloff range, projectile boundaries and armour piercing.
+- `metrics.damagePerSecond`, `armourPiercing` and `falloffRange`.
 
-Known weapons arrive in hull-slot order; unknown/unmapped slots follow in source order. Do not parse
-slot numbers, sort locally, merge duplicate symbols or collapse weapons into counts.
+`maximumRange` is read by `damageFalloff()` inside the package and is not presented. Every other
+`WeaponMetrics` field, `projectileRange`, and the weapon's `AmmunitionCapacity | null` are **not
+read at all**: no canvas draws them, and the row the canvas draws has nowhere to put them. The
+package's `ships/ammunition` subpath is deliberately absent from
+`scripts/policy/offence-ownership.mjs`'s allow-list, so importing it fails the gate rather than
+passing quietly. An earlier revision added a row-owned disclosure and a per-row slot action to carry
+those fields; both are withdrawn (`design/canvas-contract.md`, review note 5).
+
+Known weapons arrive in hull-slot order; the package documents unknown or unmapped slots as appended
+in source order after them, which is the package's own guarantee and not something a build this
+application can make will reach. Do not parse slot numbers, sort locally, merge duplicate symbols or
+collapse weapons into counts.
 
 ## Damage types
 
-For burst and sustained damage:
+For `damageByType`, and for that result alone:
 
-- show exact kinetic, thermal, explosive, absolute and anti-xeno numbers;
-- show optional unclassified when present; when absent, omit it or state no unclassified damage,
-  because the package omits the member exactly when zero;
-- state that anti-xeno overlays conventional damage;
-- create no share, percentage, conventional-plus-AX total, resistance result or color-only meaning.
+- draw the conventional members the build deals as one stacked bar, in the package's own field
+  order;
+- state each segment's exact amount **and** its share in words beside the bar, so nothing is carried
+  by a length or a colour;
+- give a member the build does not deal — including an `unclassified` the package omits, which is
+  how it says zero — no segment, no line and no stated zero, as both canvases do;
+- read neither `antiXeno` nor `sustainedDamageByType` at all;
+- create no conventional-plus-AX total, resistance result, target adjustment or colour-only meaning.
 
-Unclassified absence is not an unavailable result. Optional range/piercing absence is not-stated data
-and remains distinct.
+Optional range/piercing absence is a different thing entirely: it is not-stated data on a weapon
+row, it is drawn as such, and it remains distinct from a zero.
 
 ## Range and piercing
 
-- `maximumRange` and `falloffRange` use localized metre formatting only when returned.
-- `projectileRange.maximumBoundary` and `falloffBoundary` are separately named boundary parameters
-  with no invented unit; numeric zero remains present.
+- `falloffRange` uses localized metre formatting only when returned.
 - `armourPiercing` is a rating. There is no target hardness input or piercing factor.
-- No range attenuation, range-band aggregation, target simulation or convergence result is allowed.
+- No local range attenuation, target simulation or ballistic model is allowed.
 
 The installed Almanac contains the fitted projection previously tracked upstream. Do not implement a
 `fittedModuleAt()` join or catalogue fallback.
 
-## Ammunition
+## Range bands
 
-| Package value                                | Presentation meaning                       |
-| -------------------------------------------- | ------------------------------------------ |
-| `null`                                       | Weapon carries no ammunition               |
-| finite capacity                              | Exact clip, hopper and total at full rearm |
-| `unlimited: true` with infinite hopper/total | Localized unlimited wording                |
-| `unlimited: false` with hopper `0`           | Exact zero reserve, not unlimited          |
+The canvas's four distances are 500 m, 1,200 m, 1,800 m and 3,000 m. At each, for every **enabled**
+returned weapon:
 
-Do not calculate current ammunition, reload count, synthesis requirements or firing duration.
+```ts
+weapon.metrics.damagePerSecond *
+  damageFalloff({ maximumRange: weapon.maximumRange, falloffRange: weapon.falloffRange }, metres);
+```
+
+and the results are added. The multiplier is the package's own; the addition is the same addition the
+package performs for `total`, over the same set of weapons. Each band's bar is filled against the
+strongest band, and every band's own figure is written beside it whether or not it is filled.
+
+Do not model attenuation, hardness, resistance, a target or a projectile path. A weapon the package
+returns no range fields for is passed to `damageFalloff()` exactly as the package returned it, and
+the package decides what that means.
+
+## Shot convergence
+
+`getShipGunsight(shipSymbol)` publishes the hull's hardpoint offsets from the cockpit, in metres, in
+the hull's own hardpoint order. A weapon's returned `slot` is resolved to a place in that order
+through `enumerateSlots(getShipSlots(shipSymbol))`, never by parsing a number out of the key.
+
+- A hull with no published gunsight, or one whose gunsight length does not equal its hardpoint count,
+  is `unavailable`. A convergence drawn from part of the mounts is a spread nobody has.
+- `projectGunsight(offsets, metres)` places the shots at a range. No projectile path, convergence
+  point or spread formula is written locally.
+- The spans and the widest mount are distances between published offsets, and are recorded as ruled
+  exception 3 in `design/canvas-contract.md`.
+- `getModuleBySymbol(symbol)?.mount` names how a weapon is aimed. A symbol the module catalogue does
+  not carry keeps a `null` mount and stays on the plate: the geometry does not depend on it.
 
 ## Coverage and zero states
 
 Feature 002 supplies same-build-revision package-backed hardpoint coverage:
 
-| Package weapon result / coverage        | Required presentation                                      |
-| --------------------------------------- | ---------------------------------------------------------- |
-| Empty list + confirmed-empty hardpoints | No fitted weapons                                          |
-| Empty list + coverage unavailable       | No weapon result returned; no empty-build claim            |
-| Non-empty list + zero total             | Populated zero-output collection                           |
-| Non-empty list + all `enabled: false`   | Complete disabled entries and exact zero total             |
-| Real returned zero-damage weapon        | Complete entry with exact zero and all other returned data |
-| Optional range/piercing member absent   | Field not stated, never zero                               |
+| Package weapon result / coverage        | Required presentation                                |
+| --------------------------------------- | ---------------------------------------------------- |
+| Empty list + confirmed-empty hardpoints | No fitted weapons                                    |
+| Empty list + coverage unavailable       | No weapon result returned; no empty-build claim      |
+| Non-empty list + zero total             | Populated zero-output collection                     |
+| Non-empty list + all `enabled: false`   | Complete disabled entries and exact zero total       |
+| Real returned zero-damage weapon        | Complete entry with exact zero in every drawn column |
+| Optional range/piercing member absent   | Field not stated, never zero                         |
 
 Unsupported module identities are outside this boundary; ingress provides package-resolved state.
 
-## Exact-slot target
+## Inert rows
 
-Every returned entry exposes one distinct localized action carrying feature 003's shared target:
-
-```ts
-{ kind: 'slot', slotKey: weapon.slot }
-```
-
-Feature 002 owns reveal/edit behavior. Wide layout selects the existing inline outfitting context;
-narrow layout opens the selected-slot layer with a named return. The action stays available for
-disabled and zero-output weapons and never uses an index.
+A weapon row carries no control. It does not navigate, disclose or select, and activating it does
+nothing. The canvas draws the rows inert and the mount control lives in `HULL ANATOMY`, which is
+where the canvas puts it.
 
 ## Canonical and localized names
 
@@ -127,22 +174,29 @@ canonical package text; no private game translation is allowed.
 
 ## Revision and failure behavior
 
-- Capture loadout and revision together.
-- Reuse the exact cached object for detailed capability and Status projection.
-- Discard a pending result if the active build revision changes.
-- An unexpected package or integration exception publishes a current-revision application failure,
-  not old figures or a game diagnosis.
-- Package validation/incompleteness and unavailable coverage remain visible qualifications; a
+- Read the revision before the loadout, because the loadout signal holds one mutable package object
+  and an edit changes its contents without changing the reference.
+- One projection serves the panel and the rail cell, so the two can never disagree.
+- The projection is a pure synchronous read of an in-memory loadout: there is nothing to wait for,
+  no stale result to discard and no asynchronous failure to publish.
+- Package validation, incompleteness and unavailable coverage remain visible qualifications; a
   successful weapon result is not hidden merely because the build is incomplete.
 
 ## Verification
 
 - Deep-equal the retained total, every weapon and every nested field to one live package result.
 - Prove no local sum, sort, range/piercing join or positional identity exists.
+- Prove the six unread `WeaponTotals` fields appear in no projection, template or message.
+- Prove no ammunition figure and no unread `WeaponMetrics` field reaches a template or a message.
 - Cover enabled, some-disabled, all-disabled, confirmed-empty, unavailable-coverage and genuine-zero
   builds.
 - Cover all damage types, optional-unclassified presence and absent-means-zero behavior.
-- Cover finite, zero-reserve, unlimited and no-ammunition cases.
-- Cover present/absent effective ranges, boundary value zero and absent piercing.
-- Retain reverse-input and unknown-slot ordering regressions from Almanac #301.
-- Assert every slot action emits the exact original key once.
+- Prove the segments partition conventional damage only, that their shares sum to one, and that a
+  build dealing none produces no segments rather than zero-width ones.
+- Prove each band applies `damageFalloff()` to each enabled weapon, that the bands weaken with
+  distance for a falloff-carrying build, and that a zero strongest band fills nothing.
+- Cover present/absent effective ranges and absent piercing.
+- Prove convergence resolves slots through the hull layout, rejects a mismatched gunsight whole, and
+  moves every shot — and no span — when the target range moves.
+- Prove a shot outside the plate's field of view is clipped from the drawing and keeps its sentence.
+- Prove no weapon row carries a control.

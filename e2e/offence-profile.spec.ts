@@ -1,0 +1,887 @@
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import englishMessages from '../src/app/i18n/locales/en.json';
+import germanMessages from '../src/app/i18n/locales/de.json';
+import { sweepOutfittingState } from './accessibility';
+import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+
+/**
+ * The offence profile, end to end.
+ *
+ * The unit suites already prove what the projection selects and what each
+ * sentinel means. What only a browser can show is the rest: that the mode strip
+ * actually opens the layer, that the rail and the panel agree about the same
+ * build, and that the whole panel survives a phone, a doubled text size and a
+ * 400% zoom without losing a figure or scrolling the document sideways.
+ *
+ * Nothing here writes down a damage figure. Every value the suite checks is
+ * read back out of the running page and compared with another part of the same
+ * page that has to agree with it — a suite that pinned the Anaconda's damage
+ * per second would fail the day the Almanac corrected it, which is not what it
+ * is for.
+ */
+
+const HULL = 'Anaconda';
+
+/** Creates a stock build and opens the anatomy region's `OFFENCE` mode. */
+async function openOffence(page: Page, messages = englishMessages): Promise<void> {
+  await page.goto(`/ships/${HULL}`);
+  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+
+  await page
+    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .filter({ hasText: messages['anatomy.mode.offence'] })
+    .click();
+  await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+}
+
+/** Every digit in a string, so a locale's own grouping cannot change the value. */
+function digits(text: string): string {
+  return text.replace(/\D/gu, '');
+}
+
+/**
+ * Where every mark on the gunsight plate sits, as a fraction of the plate.
+ *
+ * Fractions rather than pixels, so the reading survives the plate itself being
+ * a different width in one layout than in another, and rounded, so a subpixel
+ * difference between two paints is not a mirrored diagram.
+ */
+async function plateMarks(page: Page): Promise<string[]> {
+  return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
+    const box = plate.getBoundingClientRect();
+    const place = (node: Element): string => {
+      const mark = node.getBoundingClientRect();
+      const round = (value: number): number => Math.round(value * 1000) / 1000;
+      return [
+        node.className,
+        round((mark.left - box.left) / box.width),
+        round((mark.top - box.top) / box.height),
+      ].join(' ');
+    };
+    return [...plate.querySelectorAll('.plate__dot, .plate__leader')].map(place);
+  });
+}
+
+/**
+ * Where each shot dot is put, as a fraction of the plate's own box.
+ *
+ * Outside `[0, 1]` is a mark the plate clips: the element is in the document
+ * wherever it lands, and the plate's `overflow` decides whether it is seen.
+ */
+async function dotPlacements(page: Page): Promise<{ left: number; top: number }[]> {
+  return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
+    const box = plate.getBoundingClientRect();
+    return [...plate.querySelectorAll('.plate__dot')].map((node) => {
+      const mark = node.getBoundingClientRect();
+      return {
+        left: (mark.left + mark.width / 2 - box.left) / box.width,
+        top: (mark.top + mark.height / 2 - box.top) / box.height,
+      };
+    });
+  });
+}
+
+/** One bar block's rows, as `[label, figure]`. */
+async function barRows(page: Page, selector: string): Promise<[string, string][]> {
+  return page
+    .locator(selector)
+    .evaluateAll((nodes) =>
+      nodes.map((node): [string, string] => [
+        node.querySelector('.bar__label')?.textContent?.trim() ?? '',
+        node.querySelector('.bar__value')?.textContent?.trim() ?? '',
+      ]),
+    );
+}
+
+/** Opens the anatomy region's `POWER` mode, where feature 005 draws the pips. */
+async function openPower(page: Page): Promise<void> {
+  await page
+    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .filter({ hasText: englishMessages['anatomy.mode.power'] })
+    .click();
+  await expect(page.locator('edsb-power-thermals')).toBeVisible();
+}
+
+/** Returns to `OFFENCE` from whichever mode is open. */
+async function backToOffence(page: Page): Promise<void> {
+  await page
+    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .filter({ hasText: englishMessages['anatomy.mode.offence'] })
+    .click();
+  await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+}
+
+/** Sets the WEP allocation from feature 005's own control, and waits for it. */
+async function setWeaponPips(page: Page, block: number): Promise<void> {
+  await openPower(page);
+  await page
+    .locator('.distributor tbody tr')
+    .nth(2)
+    .locator('.pips__step')
+    .nth(block - 1)
+    .click();
+  await settled(page);
+  await backToOffence(page);
+}
+
+test.describe('opening the layer', () => {
+  test('retitles the region and replaces the plates with the panel', async ({ page }) => {
+    await openOffence(page);
+
+    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+      englishMessages['offence.heading'],
+    );
+    // A title and nothing under it, which is all the canvas's switching script
+    // carries per mode. Canvas 1d's `OUTPUT, RANGE, CONVERGENCE` sub-line lives
+    // in the mobile head map, which the desktop script never reads
+    // (design/canvas-contract.md, "Where the capability lives").
+    await expect(page.locator('edsb-hull-anatomy .anatomy__title p')).toHaveCount(0);
+
+    // The plates go with the mode. The canvas's switching script hides the
+    // plate container outside `mounts`, so the side selector and the legend
+    // that belong to the plates leave with them.
+    await expect(page.locator('edsb-offence-analysis')).toBeVisible();
+    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toHaveCount(0);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toHaveCount(0);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__legend')).toHaveCount(0);
+  });
+
+  test('leaves the mounts layer exactly as it was when the mode is closed', async ({ page }) => {
+    await openOffence(page);
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.mounts'] })
+      .click();
+
+    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+      englishMessages['anatomy.heading'],
+    );
+    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toBeVisible();
+  });
+
+  test('opens one dashboard at a time', async ({ page }) => {
+    await openOffence(page);
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.power'] })
+      .click();
+
+    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
+  });
+});
+
+test.describe('reading the build', () => {
+  test('sets the burst total large, and names the sustained one beside it', async ({ page }) => {
+    await openOffence(page);
+
+    const headline = page.locator('edsb-offence-analysis .headline');
+    await expect(headline).toBeVisible();
+
+    // Both named. The canvas's own two panels disagree about which of the two
+    // its large figure is, so neither is left to a reader to infer.
+    expect(digits(await headline.locator('.headline__value').innerText())).not.toBe('');
+    expect(digits(await headline.locator('.headline__note').innerText())).not.toBe('');
+  });
+
+  test('counts the weapons the package returned beside the block heading', async ({ page }) => {
+    await openOffence(page);
+
+    const note = page.locator('.offence__block--weapons .offence__note');
+    await expect(note).toBeVisible();
+    expect(digits(await note.innerText())).not.toBe('');
+  });
+
+  test('names each damage type where the canvas names it — in the legend', async ({ page }) => {
+    await openOffence(page);
+
+    // No canvas enumerates the types with a figure each. The stacked bar's
+    // legend is the whole reading, so a type the build deals is named there and
+    // one it does not deal has no line at all.
+    // Lowered on both sides: the legend is set in the canvas's tracked mono
+    // label, which uppercases in CSS, and `innerText` reports what is rendered.
+    const entries = page.locator('edsb-offence-analysis .split__entry');
+    const legend = (await entries.allInnerTexts()).join(' ').toLowerCase();
+    const named = (['kinetic', 'thermal', 'explosive', 'absolute'] as const).filter((type) =>
+      legend.includes(englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
+    );
+
+    expect(named.length).toBeGreaterThan(0);
+
+    // And named there and nowhere else: every damage-type word on the panel is
+    // inside the legend. A second list of the types with a figure each is what
+    // was withdrawn (`design/canvas-contract.md`, review note 7), and it would
+    // show up here as a type named outside `.split__legend`.
+    const outside = await page.locator('edsb-offence-analysis').evaluate(
+      (panel, words: string[]) => {
+        const legend = panel.querySelector('.split__legend');
+        return words.filter((word) =>
+          [...panel.querySelectorAll('*')].some(
+            (node) =>
+              !legend?.contains(node) &&
+              node.children.length === 0 &&
+              (node.textContent ?? '').toLowerCase().includes(word),
+          ),
+        );
+      },
+      named.map((type) => englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
+    );
+    expect(outside).toEqual([]);
+  });
+
+  test('draws the canvas’s stacked split, and writes every segment down', async ({ page }) => {
+    await openOffence(page);
+
+    const segments = page.locator('edsb-offence-analysis .split__segment');
+    const entries = page.locator('edsb-offence-analysis .split__entry');
+    expect(await segments.count()).toBeGreaterThan(0);
+
+    // The bar is decorative: every segment's amount and share are in the
+    // legend beside it, because a length and a colour are not a reading.
+    await expect(entries).toHaveCount(await segments.count());
+    for (const entry of await entries.all()) {
+      expect(await entry.innerText()).toContain('%');
+    }
+
+    // And the legend is a list that says what it is a list of, so the reading
+    // arrives as a named group rather than as loose text under the bar.
+    await expect(
+      page.getByRole('list', { name: englishMessages['offence.damage.bar'] }),
+    ).toBeVisible();
+    await expect(entries.first()).toHaveRole('listitem');
+  });
+
+  test('draws the canvas’s four range bands, weakening with distance', async ({ page }) => {
+    await openOffence(page);
+
+    const bands = await barRows(page, 'edsb-offence-analysis .bars--range .bar');
+    expect(bands).toHaveLength(4);
+    for (const [label, value] of bands) {
+      expect(digits(label)).not.toBe('');
+      expect(digits(value)).not.toBe('');
+    }
+  });
+
+  test('gives a type the build does not deal no segment and no line', async ({ page }) => {
+    await openOffence(page);
+
+    // The stock Anaconda deals no unclassified damage, and the canvas draws a
+    // segment only for a type that has one. A legend entry always accompanies a
+    // segment, so the two counts agreeing is what says nothing was invented.
+    const segments = page.locator('edsb-offence-analysis .split__segment');
+    const entries = page.locator('edsb-offence-analysis .split__entry');
+
+    await expect(entries).toHaveCount(await segments.count());
+    expect((await entries.allInnerTexts()).join(' ').toLowerCase()).not.toContain(
+      englishMessages['offence.damage.type.unclassified'].toLowerCase(),
+    );
+  });
+});
+
+/** One weapon row's drawn cells, in the order the canvas sets them. */
+async function weaponRows(
+  page: Page,
+): Promise<{ module: string; figures: string[]; controls: number }[]> {
+  return page.locator('edsb-offence-analysis .weapon').evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      module: node.querySelector('.weapon__module')?.textContent?.trim() ?? '',
+      figures: [...node.querySelectorAll('.weapon__figure')].map(
+        (cell) => cell.textContent?.trim() ?? '',
+      ),
+      controls: node.querySelectorAll('button, a').length,
+    })),
+  );
+}
+
+test.describe('inspecting the weapons', () => {
+  test('draws one row per weapon with the canvas’s four columns', async ({ page }) => {
+    await openOffence(page);
+
+    const rows = await weaponRows(page);
+    expect(rows.length).toBeGreaterThan(0);
+
+    // The mounted count beside the block heading is the same collection said as
+    // a number, so the two readings have to agree without either being written
+    // down here.
+    const note = await page.locator('.offence__block--weapons .offence__note').innerText();
+    expect(digits(note)).toBe(String(rows.length));
+
+    for (const row of rows) {
+      expect(row.module).not.toBe('');
+      // Damage per second, piercing and falloff: three cells, every one of them
+      // saying something rather than sitting blank.
+      expect(row.figures).toHaveLength(3);
+      for (const figure of row.figures) {
+        expect(figure).not.toBe('');
+      }
+      // The canvas draws the row inert, and so does this: no disclosure, no
+      // action and no slot of its own.
+      expect(row.controls).toBe(0);
+    }
+  });
+
+  test('keeps two mounts carrying the same module as two rows', async ({ page }) => {
+    await openOffence(page);
+
+    // The stock Anaconda carries the same small pulse laser twice. The canvas
+    // draws duplicates as duplicates and this does too.
+    const modules = (await weaponRows(page)).map((row) => row.module);
+    expect(modules).toHaveLength(2);
+    expect(modules[0]).toBe(modules[1]);
+  });
+
+  test('leaves the row itself inert, and offers no control inside it', async ({ page }) => {
+    await openOffence(page);
+
+    const before = await page.locator('edsb-slot-card [data-selected="true"]').count();
+    await page.locator('edsb-offence-analysis .weapon__module').first().click();
+
+    // Nothing in a row navigates, discloses or selects: the canvas puts the
+    // mount control in `HULL ANATOMY`, and it stays there.
+    await expect(page.locator('edsb-slot-card [data-selected="true"]')).toHaveCount(before);
+    await expect(
+      page.locator('edsb-offence-analysis .weapon button, edsb-offence-analysis .weapon a'),
+    ).toHaveCount(0);
+  });
+});
+
+test.describe('the weapon row’s second line', () => {
+  test('draws the canvas’s code line under every name, mount and all', async ({ page }) => {
+    await openOffence(page);
+
+    const lines = await page
+      .locator('edsb-offence-analysis .weapon__module .identity__code-line')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const text = (node.textContent ?? '').trim();
+          return getComputedStyle(node).textTransform === 'uppercase' ? text.toUpperCase() : text;
+        }),
+      );
+
+    // One per row, never absent: the canvas draws `3E FIXED · STOCK` under an
+    // unengineered weapon too, so a row with no recipe still gets its line.
+    expect(lines).toHaveLength((await weaponRows(page)).length);
+    for (const line of lines) {
+      // A class code, then the mount joined by a space rather than by the dot —
+      // the canvas writes `4A GIMBALLED`, and takes the dot only for what comes
+      // after the mount.
+      expect(line, line).toMatch(/^\d[A-Z] (?:FIXED|GIMBALLED|TURRETED)\b/u);
+    }
+  });
+});
+
+test.describe('the status rail', () => {
+  test('carries the sustained figure the panel carries', async ({ page }) => {
+    await openOffence(page);
+
+    // The cell is composed from the design system's metric group, which is what
+    // the canvas draws all six rail cells as.
+    const cell = page.locator('edsb-offence-summary .metric');
+    await expect(cell.locator('.metric__label')).toHaveText(englishMessages['offence.rail.label']);
+
+    const railFigure = digits(await cell.locator('.metric__number').innerText());
+    // The panel's headline names the sustained total on the line beside its
+    // large burst figure, which is the rail cell's own reading.
+    const note = digits(await page.locator('edsb-offence-analysis .headline__note').innerText());
+
+    // The same projection reaches both, so the two readings have to agree
+    // without either being written down here.
+    expect(railFigure).not.toBe('');
+    expect(note).toContain(railFigure);
+  });
+
+  test('holds no control, and no qualification on a build whose coverage resolved', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    await expect(page.locator('edsb-offence-summary button, edsb-offence-summary a')).toHaveCount(
+      0,
+    );
+    await expect(page.locator('edsb-offence-summary .metric__description')).toHaveCount(0);
+  });
+
+  test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {
+    await page.goto(`/ships/${HULL}`);
+    await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+
+    // The rail is not the panel: it reports the build, not what is on screen
+    // beside it.
+    await expect(page.locator('edsb-offence-summary .metric')).toBeVisible();
+    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
+  });
+});
+
+test.describe('reading the firing endurance', () => {
+  test('draws the four capacitor fields in the package’s own units', async ({ page }) => {
+    await openOffence(page);
+
+    const drawn = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
+    // Canvas 1c's own three rows in its own order, with canvas 1d's `WEP CAP`
+    // behind them.
+    expect(drawn.map(([label]) => label)).toEqual([
+      englishMessages['offence.capacitor.draw'],
+      englishMessages['offence.capacitor.recharge'],
+      englishMessages['offence.capacitor.endurance'],
+      englishMessages['offence.capacitor.capacity'],
+    ]);
+    // Megajoules and megajoules per second. Canvas 1c labels `DRAW` and
+    // `RECHARGE` as `MW`, and both package fields are MJ/s.
+    expect(drawn[0][1]).toContain('MJ/s');
+    expect(drawn[1][1]).toContain('MJ/s');
+    expect(drawn[3][1]).toContain('MJ');
+    const capacitor = await page.locator('.bars--capacitor').innerText();
+    expect(capacitor).not.toContain('MW');
+  });
+
+  test('moves the recharge and the endurance when the allocation moves', async ({ page }) => {
+    await openOffence(page);
+    await setWeaponPips(page, 1);
+    const low = (await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).map(
+      ([, value]) => value,
+    );
+
+    await setWeaponPips(page, 4);
+    const high = (await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).map(
+      ([, value]) => value,
+    );
+
+    // The bare figures, not the labels beside them.
+    expect(low).toHaveLength(4);
+    // The draw is the weapons' and the capacity is the fitted distributor's: no
+    // allocation moves either of them. The recharge and the endurance both do,
+    // which is why the allocation is named beneath the block.
+    expect(digits(high[0])).toBe(digits(low[0]));
+    expect(digits(high[3])).toBe(digits(low[3]));
+    expect(digits(high[1])).not.toBe(digits(low[1]));
+    expect(high[2]).not.toBe(low[2]);
+  });
+
+  test('names the allocation the figures were read at, and offers no way to set it', async ({
+    page,
+  }) => {
+    await openOffence(page);
+    await setWeaponPips(page, 3);
+
+    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor');
+    // The allocation line itself, not the block: `DRAW` reads `2.31 MJ/s` at
+    // every allocation and `RECHARGE` reads `3.50 MJ/s` at this one, so a `3`
+    // anywhere in the block was true whether or not the line was drawn at all.
+    await expect(capacitor.locator('.bars__condition')).toHaveText(
+      englishMessages['offence.capacitor.allocation'].replace('{{pips}}', '3.0'),
+    );
+    // The canvas draws the pip control in `POWER`, and it stays there.
+    await expect(capacitor.locator('button, input, select')).toHaveCount(0);
+  });
+
+  test('says what a symbol stands for, and bars only what shares a scale', async ({ page }) => {
+    await openOffence(page);
+    await setWeaponPips(page, 4);
+
+    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor');
+    // The package's own sentinel never reaches the screen as a word or a
+    // number; where a recharge keeps pace the block draws `∞` instead, and
+    // says what it stands for beside it rather than leaving a glyph alone.
+    expect(await capacitor.innerText()).not.toMatch(/infinity/iu);
+    // Unconditional: four WEP pips on this hull's stock build is a recharge
+    // that outruns the load, which `offence-analysis.spec.ts` proves against
+    // the package itself. If the symbol stops being drawn this fails, which is
+    // the point of asserting it rather than asking whether it is there.
+    const endurance = capacitor.locator('.bar').nth(2);
+    await expect(endurance.locator('.bar__value')).toContainText('∞');
+    const meaning = endurance.locator('.visually-hidden');
+    await expect(meaning).toHaveText(
+      englishMessages['offence.capacitor.endurance.sustained.meaning'],
+    );
+
+    // And it is genuinely out of sight, which the assertion above cannot say:
+    // `toHaveText` reads `textContent`, so it passes identically whether the
+    // sentence is clipped or set beside the symbol in plain view. The canvas
+    // draws a figure here and no sentence, so a rendered box wider than the
+    // clip is this panel drawing words the design does not.
+    const box = await meaning.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box?.width ?? Infinity).toBeLessThanOrEqual(2);
+    expect(box?.height ?? Infinity).toBeLessThanOrEqual(2);
+
+    // The draw and the recharge are the same quantity in the same unit and get
+    // a track each. A capacity in megajoules and a duration in seconds share a
+    // scale with nothing here, so neither gets one.
+    await expect(capacitor.locator('.bar__track')).toHaveCount(2);
+    await expect(capacitor.locator('.bar__track-absent')).toHaveCount(2);
+  });
+
+  test('reads the same capacitor whatever the dashboard’s hardpoint state is', async ({ page }) => {
+    await openOffence(page);
+    const deployed = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
+
+    await openPower(page);
+    await page
+      .locator('edsb-power-thermals .power__hardpoints button')
+      .filter({ hasText: englishMessages['power.hardpoints.retracted'] })
+      .click();
+    await settled(page);
+    await backToOffence(page);
+
+    // The capacitor facade always models deployed firing, independently of what
+    // feature 005's dashboard is showing (contracts/capacitor-endurance.md).
+    expect(await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).toEqual(deployed);
+  });
+});
+
+test.describe('shot convergence', () => {
+  test('draws the gunsight, and states every shot in words beside it', async ({ page }) => {
+    await openOffence(page);
+
+    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    await expect(block).toBeVisible();
+
+    // The plate is decorative in full; the sentences under it are the reading.
+    const plate = block.locator('.plate');
+    await expect(plate).toHaveAttribute('aria-hidden', 'true');
+    const shots = block.locator('.shots__entry');
+    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+    expect(await shots.count()).toBeGreaterThan(0);
+
+    // Every mark on the plate is a sentence beside it, and the ring caption
+    // with them — the one figure the plate draws that the four cells beneath it
+    // do not repeat (FR-011).
+    expect(await shots.count()).toBe(armed + 1);
+
+    // Each armed mount is drawn as a dot where its shot lands, a numbered badge
+    // parked at the plate's nearer edge, and a leader between the two.
+    await block.locator('input[type="range"]').fill('2000');
+    await settled(page);
+    await expect(plate.locator('.plate__shot')).toHaveCount(armed);
+    await expect(plate.locator('.plate__dot')).toHaveCount(armed);
+    await expect(plate.locator('.plate__leader')).toHaveCount(armed);
+  });
+
+  test('clips a shot the field of view does not reach, and keeps its sentence', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const slider = block.locator('input[type="range"]');
+    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+
+    // The plate spans a fixed field of view, as the canvas fixes it, so the
+    // nearer the target the wider a mount's shot subtends. Counting the marks
+    // cannot show this: they are clipped by the plate's own `overflow`, so the
+    // element is there either way. What changes is where it is put — at the
+    // near end of the range the dot is placed past the bottom of the plate's
+    // box, and at the far end it is inside it (FR-011, spec.md, "A shot whose
+    // offset exceeds the plate's field of view").
+    await slider.fill(String(await slider.getAttribute('min')));
+    await settled(page);
+    const near = await dotPlacements(page);
+    const sentencesNear = await block.locator('.shots__entry').count();
+    expect(near).toHaveLength(armed);
+    expect(near.some(({ top }) => top < 0 || top > 1)).toBe(true);
+
+    await slider.fill('2000');
+    await settled(page);
+    const far = await dotPlacements(page);
+    expect(far.every(({ left, top }) => left >= 0 && left <= 1 && top >= 0 && top <= 1)).toBe(true);
+
+    // The sentence is the reading, and it is stated at both ranges alike: the
+    // field of view decides what the picture shows, never what is said.
+    expect(await block.locator('.shots__entry').count()).toBe(sentencesNear);
+    expect(sentencesNear).toBe(armed + 1);
+  });
+
+  test('leaves a hardpoint the build has not filled off the plate entirely', async ({ page }) => {
+    await openOffence(page);
+
+    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+
+    // The stock hull arms two of its hardpoints and leaves the rest empty. The
+    // canvas's own sample build does the same — `wireConvergence` carries
+    // hardpoints 1, 2, 3, 4 and 6, and the plate mapped off that array says
+    // nothing whatsoever about the fifth — so an unfilled mount takes no mark
+    // and no sentence here either (`design/canvas-contract.md`, review note 8).
+    await block.locator('input[type="range"]').fill('2000');
+    await settled(page);
+    await expect(block.locator('.plate__dot')).toHaveCount(armed);
+    await expect(block.locator('.plate__shot')).toHaveCount(armed);
+    expect(await block.locator('.shots__entry').count()).toBe(armed + 1);
+  });
+
+  test('moves the shots when the target range moves', async ({ page }) => {
+    await openOffence(page);
+
+    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const before = await block.locator('.shots__entry').allInnerTexts();
+    const spans = await block.locator('.fact__value').allInnerTexts();
+
+    const slider = block.locator('input[type="range"]');
+    await slider.fill('2000');
+    await settled(page);
+
+    // The mounts have not moved; what they subtend at the target has.
+    expect(await block.locator('.shots__entry').allInnerTexts()).not.toEqual(before);
+    expect((await block.locator('.fact__value').allInnerTexts())[0]).toBe(spans[0]);
+  });
+
+  test('announces the range as a Commander reads it, not as a bare number', async ({ page }) => {
+    await openOffence(page);
+
+    const slider = page.locator('edsb-offence-analysis input[type="range"]');
+    const announced = await slider.getAttribute('aria-valuetext');
+
+    expect(announced).not.toBeNull();
+    expect(digits(announced ?? '')).not.toBe('');
+    // The readout beside the control says exactly what is announced.
+    await expect(page.locator('edsb-offence-analysis .range__value')).toHaveText(announced ?? '');
+  });
+
+  test('names the four facts the canvas draws under the plate', async ({ page }) => {
+    await openOffence(page);
+
+    const facts = await page
+      .locator('edsb-offence-analysis .fact')
+      .evaluateAll((cells) =>
+        cells.map((cell): [string, string] => [
+          cell.querySelector('.fact__label')?.textContent?.trim() ?? '',
+          cell.querySelector('.fact__value')?.textContent?.trim() ?? '',
+        ]),
+      );
+    expect(facts.map(([label]) => label)).toEqual([
+      englishMessages['offence.convergence.lateral'],
+      englishMessages['offence.convergence.vertical'],
+      englishMessages['offence.convergence.spread'],
+      englishMessages['offence.convergence.widest'],
+    ]);
+    for (const [, value] of facts) {
+      expect(digits(value)).not.toBe('');
+    }
+  });
+});
+
+/** Every figure the panel draws, in document order, for a before-and-after. */
+async function everyFigure(page: Page): Promise<string[]> {
+  return page
+    .locator(
+      'edsb-offence-analysis .headline__value, edsb-offence-analysis .headline__note, ' +
+        'edsb-offence-analysis .weapon__figure, edsb-offence-analysis .split__entry, ' +
+        'edsb-offence-analysis .bar__value, edsb-offence-analysis .fact__value',
+    )
+    .evaluateAll((nodes) => nodes.map((node) => (node.textContent ?? '').trim()));
+}
+
+test.describe('the units on the screen', () => {
+  test('prints every unit symbol as the symbol, not as a case the label wanted', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    // `text-transform` does not touch `textContent`, so every other assertion in
+    // this file reads a unit that is right in the DOM and wrong on the screen.
+    // `M` is the mega prefix and `m` is the metre; a micro-label that uppercases
+    // its own content turns one into the other, which is a different unit.
+    const rendered = await page
+      .locator(
+        'edsb-offence-analysis .bar__label, edsb-offence-analysis .bar__value, ' +
+          'edsb-offence-analysis .fact__value, edsb-offence-analysis .plate__caption, ' +
+          'edsb-offence-analysis .range__scale span, edsb-offence-analysis .range__value',
+      )
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const text = (node.textContent ?? '').trim();
+          const transform = getComputedStyle(node).textTransform;
+          return transform === 'uppercase' ? text.toUpperCase() : text;
+        }),
+      );
+
+    expect(rendered.length).toBeGreaterThan(0);
+    for (const text of rendered) {
+      // A figure followed by an uppercased SI symbol this application never
+      // means: metres, milliradians and seconds are all lowercase.
+      expect(text, text).not.toMatch(/\d\s*(?:M|MRAD|S)\b/u);
+    }
+  });
+
+  test('keeps the case the canvas draws on a label that is a word', async ({ page }) => {
+    await openOffence(page);
+
+    // The other half of the same rule, and the reason it is scoped rather than
+    // put on the shared class: a label carrying a figure keeps its unit's case,
+    // and a label that is a word is drawn uppercase. The canvas sets `DRAW`,
+    // `RECHARGE` and `FULL FIRE` in the same 9px mono at the same tracking as
+    // `500 m` beside them, and uppercases only the words.
+    const capacitor = await page
+      .locator('edsb-offence-analysis .bars--capacitor .bar__label')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const text = (node.textContent ?? '').trim();
+          return getComputedStyle(node).textTransform === 'uppercase' ? text.toUpperCase() : text;
+        }),
+      );
+
+    expect(capacitor.length).toBeGreaterThan(0);
+    for (const label of capacitor) {
+      expect(label, label).toMatch(/\p{L}/u);
+      expect(label, label).toBe(label.toUpperCase());
+    }
+  });
+});
+
+test.describe('what the panel does not touch', () => {
+  test('changes no build, no fragment, no history entry and nothing stored', async ({ page }) => {
+    await openOffence(page);
+
+    // Read after the link is published rather than after the route resolves:
+    // feature 002 writes the fragment a moment behind the build landing, and a
+    // value captured before then would make that arrival look like a change
+    // this capability made. Only this test reads the URL, so only this test
+    // waits for it.
+    await expect(page).toHaveURL(/\/build#b\./);
+    const fragment = new URL(page.url()).hash;
+    const entries = await page.evaluate(() => window.history.length);
+
+    // Both of this screen's controls: the mode that opened the layer, and the
+    // range the plate is drawn at.
+    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
+    await expect(page.locator('edsb-offence-analysis .range__value')).not.toHaveText('');
+
+    expect(new URL(page.url()).hash).toBe(fragment);
+    expect(await page.evaluate(() => window.history.length)).toBe(entries);
+
+    // Neither the mode nor the range is part of the build, so neither reaches
+    // storage: a reload opens on the state the panel opens on.
+    const stored = await page.evaluate(() =>
+      JSON.stringify(
+        Object.entries(window.localStorage).concat(Object.entries(window.sessionStorage)),
+      ),
+    );
+    expect(stored).not.toContain('offence');
+    expect(stored).not.toContain('range');
+  });
+});
+
+test.describe('the conditions that break layouts', () => {
+  test('keeps every figure at doubled text without scrolling the document', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openOffence(page);
+
+    // The three blocks whole, not a reduced set: an abbreviated large-text data
+    // model is the omission constitution V prohibits. Every figure the panel
+    // draws still says something, rather than being squeezed to an empty cell.
+    for (const figure of await everyFigure(page)) {
+      expect(figure).not.toBe('');
+    }
+    await expectEveryBlock(page);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('stacks the three blocks at 400% zoom rather than scrolling sideways', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 256 });
+    await openOffence(page);
+
+    await expectEveryBlock(page);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('loses no figure in an expanded translation', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ baseURL, locale: 'de-DE' });
+    const page = await context.newPage();
+    await openOffence(page, germanMessages);
+
+    // German is the longer catalogue, and the labels are what grow. Every
+    // figure is still drawn, and the panel still says the same things.
+    const bands = await barRows(page, 'edsb-offence-analysis .bars--range .bar');
+    expect(bands).toHaveLength(4);
+    expect(await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).toHaveLength(4);
+    await expect(page.locator('edsb-offence-analysis .offence__block--convergence')).toContainText(
+      germanMessages['offence.convergence.heading'],
+    );
+    await expectEveryBlock(page);
+    await expectNoDocumentOverflow(page);
+
+    await context.close();
+  });
+
+  test('mirrors the layout without losing a figure', async ({ page }) => {
+    await openOffence(page);
+    const before = await everyFigure(page);
+    const plateBefore = await plateMarks(page);
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await settled(page);
+
+    // The layout mirrors; a figure and its unit do not.
+    expect(await everyFigure(page)).toEqual(before);
+
+    // Neither does the gunsight. It is a view out of the cockpit, and a
+    // right-to-left interface does not move a ship's port hardpoint to
+    // starboard, so every mark keeps its place inside the plate and every
+    // leader keeps the end it pivots about (design/offence-profile.md, "The
+    // plate never mirrors").
+    expect(await plateMarks(page)).toEqual(plateBefore);
+
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('loses no state with motion removed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openOffence(page);
+
+    // The bars and the plate are the parts a transition could have been
+    // carrying, so the figures and the sentences beside them are what is read
+    // back.
+    expect(await barRows(page, 'edsb-offence-analysis .bars--range .bar')).toHaveLength(4);
+    expect(await page.locator('edsb-offence-analysis .shots__entry').count()).toBeGreaterThan(0);
+    await page.emulateMedia({ reducedMotion: null });
+  });
+});
+
+/** The three blocks the canvas draws, each still carrying its own content. */
+async function expectEveryBlock(page: Page): Promise<void> {
+  const panel = page.locator('edsb-offence-analysis');
+  expect(await panel.locator('.weapon').count()).toBeGreaterThan(0);
+  await expect(panel.locator('.bars--range .bar')).toHaveCount(4);
+  await expect(panel.locator('.bars--capacitor .bar')).toHaveCount(4);
+  expect(await panel.locator('.split__entry').count()).toBeGreaterThan(0);
+  await expect(panel.locator('.fact')).toHaveCount(4);
+  expect(await panel.locator('.shots__entry').count()).toBeGreaterThan(0);
+  await expect(panel.locator('input[type="range"]')).toBeVisible();
+}
+
+test.describe('accessibility', () => {
+  test('the panel passes a scan at both ends of the target range', async ({
+    page,
+  }, testInfo: TestInfo) => {
+    await openOffence(page);
+    await sweepOutfittingState(page, testInfo, 'offence-analysis/near');
+
+    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
+    await settled(page);
+    await sweepOutfittingState(page, testInfo, 'offence-analysis/far');
+  });
+
+  test('says everything in words, and never only in a bar or a colour', async ({ page }) => {
+    await openOffence(page);
+    const panel = page.locator('edsb-offence-analysis');
+
+    // Every bar row states its own reading beside the track, and every segment
+    // of the stacked bar has a legend entry. A length and a colour are not a
+    // reading (spec.md FR-009). Words rather than digits: `FULL FIRE` answers
+    // with `∞` and the phrase it stands for when the recharge keeps pace, and
+    // with a sentence when the capacitor drains immediately.
+    for (const [label, value] of await barRows(page, 'edsb-offence-analysis .bar')) {
+      expect(label).not.toBe('');
+      expect(value).not.toBe('');
+    }
+    await expect(panel.locator('.split__entry')).toHaveCount(
+      await panel.locator('.split__segment').count(),
+    );
+
+    // The plate is the diagram; the sentences are the reading.
+    await expect(panel.locator('.plate')).toHaveAttribute('aria-hidden', 'true');
+    expect(await panel.locator('.shots__entry').count()).toBeGreaterThan(0);
+  });
+});

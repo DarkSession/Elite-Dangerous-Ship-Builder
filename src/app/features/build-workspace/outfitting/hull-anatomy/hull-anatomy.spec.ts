@@ -120,13 +120,13 @@ describe('HullAnatomy', () => {
       'Defence',
       'Offence',
     ]);
-    // `DRIVES` and `OFFENCE` are the same plates read by features 007 and 008.
-    // Until one of them ships, its segment is disabled rather than opening a
-    // panel with nothing in it.
+    // `DRIVES` is the same plates read by feature 008. Until it ships, its
+    // segment is disabled rather than opening a panel with nothing in it.
     expect(tabs[0].getAttribute('aria-pressed')).toBe('true');
     expect(tabs[1].hasAttribute('disabled')).toBe(false);
     expect(tabs[3].hasAttribute('disabled')).toBe(false);
-    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(2);
+    expect(tabs[4].hasAttribute('disabled')).toBe(false);
+    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(1);
   });
 
   describe('the power mode', () => {
@@ -257,6 +257,91 @@ describe('HullAnatomy', () => {
       detect();
 
       expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+    });
+  });
+
+  describe('the offence mode', () => {
+    /** Opens `OFFENCE` on a plate that has arrived, and returns the rendered DOM. */
+    async function openOffence(): Promise<{ element: HTMLElement; detect: () => void }> {
+      TestBed.inject(AnatomyStore);
+      TestBed.inject(ActiveBuildStore).commit(candidate());
+      TestBed.tick();
+      await loader.settle('top', {
+        kind: 'ready',
+        document: documentFor('top', FIXTURE_SLOTS.fittedHardpoint),
+      });
+      const rendered = render();
+      rendered.element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[4]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      rendered.detect();
+      return rendered;
+    }
+
+    it('retitles the region, and adds nothing under the title', async () => {
+      const { element } = await openOffence();
+
+      // The canvas's switching script carries a title per mode and nothing
+      // else: canvas 1d's `OUTPUT, RANGE, CONVERGENCE` sub-line is not
+      // something the desktop script draws, and two of its three words name
+      // content this feature does not build
+      // (specs/007-offence-profile/design/canvas-contract.md).
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe(
+        'Offence analysis',
+      );
+      expect(element.querySelectorAll('.anatomy__title p')).toHaveLength(0);
+    });
+
+    it('replaces the plates rather than drawing under them', async () => {
+      const { element, detect } = await openOffence();
+
+      expect(element.querySelector('edsb-offence-analysis')).not.toBeNull();
+      expect(element.querySelector('edsb-power-thermals')).toBeNull();
+      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
+      expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
+      expect(element.querySelector('.anatomy__plates')).toBeNull();
+      expect(element.querySelector('.anatomy__sides')).toBeNull();
+      expect(element.querySelector('.anatomy__legend')).toBeNull();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-offence-analysis')).toBeNull();
+      expect(element.querySelector('.anatomy__plates')).not.toBeNull();
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
+    });
+
+    it('numbers the mounts again on the way back, having never written on them', async () => {
+      const { element, detect } = await openOffence();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      // Weaker than POWER's version of this, and it should be: POWER authors a
+      // `data-power` attribute over the plates and so has something to leave
+      // behind, while OFFENCE draws its panel beside them and never touches the
+      // mounts layer at all. What is checked is that the round trip re-renders
+      // the plates rather than leaving them torn down.
+      const mount = element.querySelector<HTMLElement>('.schematic__mount');
+      expect(mount?.textContent?.trim()).toMatch(/^\d+$/u);
+    });
+
+    it('opens one dashboard at a time', async () => {
+      const { element, detect } = await openOffence();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[1]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('edsb-offence-analysis')).toBeNull();
       expect(element.querySelector('edsb-defence-analysis')).toBeNull();
     });
   });

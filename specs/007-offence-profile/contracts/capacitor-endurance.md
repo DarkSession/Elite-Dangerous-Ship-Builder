@@ -2,120 +2,111 @@
 
 ## Boundary and input ownership
 
-Feature 003 supplies one settled `StatusRevisionContext`. Its `ViewingConditions` stores SYS/ENG/WEP
-as integer half-pips `0..8`, totalling 12. For the captured revision pair, feature 007 converts WEP
-exactly once:
+Feature 005's `PowerConditionsStore` holds the WEP allocation. It already stores pips in the
+package's own `[0, 4]` range, on the game's half step, so the allocation is passed through unchanged:
 
 ```ts
 const result = loadout.weaponsCapacitorMetrics({
-  weaponsPips: context.conditions.pips.weapons / 2,
+  weaponsPips: conditions.pips.weapons,
 });
 ```
 
-Use `WeaponsOptions` from `@elite-dangerous-almanac/core/ships/ship-loadout` and
-`WeaponsCapacitorMetrics` from
-`@elite-dangerous-almanac/core/ships/weapons-capacitor`. Do not call the standalone calculator.
+Use `WeaponsCapacitorMetrics` from `@elite-dangerous-almanac/core/ships/weapons-capacitor`. The
+options object is passed as a literal and its type is inferred from the method, so `WeaponsOptions`
+is never named here. Do not call
+the standalone calculator, and do not convert, clamp or re-derive the allocation: every value that
+store can hold is one the package answers for, and a conversion at this boundary would be a rule this
+application invented.
 
-Feature 007 neither validates a second tuple nor persists pips. Invalid feature-003 drafts do not
-advance `conditionsRevision` and never call this boundary.
+Feature 007 never sets the allocation. The canvas draws the pip control in `POWER` and nowhere else.
 
 ## Exact result
 
-Retain and present all six returned fields:
+Four of the six returned fields are drawn by a canvas and are retained and presented exactly:
 
-| Package field              | Required meaning                                        |
-| -------------------------- | ------------------------------------------------------- |
-| `weaponsPips`              | Allocation actually used by the package                 |
-| `capacity`                 | Powered deployed WEP capacity in MJ                     |
-| `rechargeRate`             | Actual selected-pip recharge in MJ/s                    |
-| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw        |
-| `netDrainRate`             | Package net loss after recharge, floored at zero        |
-| `timeToDrain`              | Seconds from full to empty or package positive infinity |
+| Package field              | Required meaning                                         | Drawn as                    |
+| -------------------------- | -------------------------------------------------------- | --------------------------- |
+| `capacity`                 | Powered deployed WEP capacity in MJ                      | Canvas 1d's `WEP CAP 61 MJ` |
+| `rechargeRate`             | Actual allocation-scaled recharge in MJ/s                | Canvas 1c's `RECHARGE`      |
+| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw         | Canvas 1c's `DRAW`          |
+| `timeToDrain`              | Seconds from full to empty, or package positive infinity | Canvas 1c's `FULL FIRE`     |
 
-Display returned `weaponsPips`, not an unchecked echo of the draft or integer half-pip value. No
-field is calculated from another.
+No field is calculated from another, and none is combined with another.
+
+`netDrainRate` and `weaponsPips` are **not read**. No canvas draws a net drain, and no canvas prints
+the allocation back — so nothing downstream can blank, dash or zero either. This is the rule feature
+005 set for `headroom`, `utilisation` and `withinBudget`
+(`specs/005-power-and-heat/design/reference-review.md`).
+
+The units are the package's. Canvas 1c labels `DRAW` and `RECHARGE` as `MW`; both fields are MJ/s,
+and the package wins.
 
 ## Duration semantics
 
-| Returned state                                   | Required semantic wording                                  |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| finite `timeToDrain > 0`                         | Localized finite duration                                  |
-| `timeToDrain === 0`                              | Drains immediately                                         |
-| infinite time + positive returned sustained draw | Powered firing load can be sustained; no net drain         |
-| infinite time + zero returned sustained draw     | No draining powered firing load; no claim weapons can fire |
+`timeToDrain` carries one of three meanings, each read off its own field:
 
-No generic number formatter, JSON boundary or visual label receives `Infinity`. The semantic phrase
-is visible and programmatically associated with the field.
+| Returned state             | Required semantic wording                    |
+| -------------------------- | -------------------------------------------- |
+| finite `timeToDrain > 0`   | Localized finite duration                    |
+| `timeToDrain === 0`        | Drains immediately                           |
+| `timeToDrain === Infinity` | `∞`, standing for a recharge that keeps pace |
 
-## Zero capacity and deployed distributor context
+No generic number formatter, JSON boundary or visual label receives `Infinity`. The sustained
+meaning is drawn as the mathematical symbol for infinity, with the phrase it stands for carried in
+words beside it and kept out of sight — the pattern feature 006's unbounded damage and feature 005's
+unsettled heat already use, and the one the canvas draws. The symbol is never the package's own
+`Infinity` reaching a formatter: it is a message under its own key, and so is its reading, so both
+localize. The phrase is programmatically associated with the field either way, which is what makes
+the symbol readable rather than decorative.
 
-Capacity/recharge zero are genuine package numbers. They appear beside a separate, same-revision,
-feature-005-owned `MountPowerObservation`, read through
-`observe(context, distributorSlotKey, 'deployed')` at the power distributor's exact core slot key:
+## Zero capacity
 
-- powered;
-- disabled;
-- power-shed;
-- absent (the owner's `notApplicable`);
-- unavailable.
-
-Feature 005 T006 accepts this generalized exact-slot, explicit-state port contract-first; T034 and
-T035 implement and wire it before feature 007 composition. Feature 007 always requests `deployed`
-and rejects a read stamped with any other state. It must not infer any cause from zero capacity,
-`distributorMetrics() === null`, a symbol prefix, module priority or consumer/band joins.
-
-When both independent facts are available the UI may state them together, for example “capacity 0
-MJ” and “distributor is power-shed.” It must not say the observation caused the capacitor result
-unless a future package contract says so.
+Zero capacity and zero recharge are genuine package numbers and are shown as such. **No cause is
+stated.** The package documents several ways to reach a zero-capacity result — no powered
+distributor among them — and does not say which one applied, so neither does this application. No
+distributor observation, priority band, symbol prefix or `distributorMetrics() === null` is consulted
+or drawn beside the figure: no canvas draws one, and an adjacency a reader would read as a cause is
+the inference FR-007 forbids.
 
 ## Scope separation
 
-`weaponMetrics().total.sustainedEnergyPerSecond` and the capacitor's
-`sustainedEnergyPerSecond` need not match:
+`weaponMetrics().total.sustainedEnergyPerSecond` and the capacitor's `sustainedEnergyPerSecond` have
+deliberately different scopes:
 
-- weapon totals include enabled returned weapons;
-- capacitor draw includes powered, enabled and deployed firing weapons.
+- weapon totals include the enabled returned weapons;
+- capacitor draw includes the powered, enabled, deployed firing weapons.
 
-Label these scopes. Do not zero weapon totals for selected retracted hardpoints or plant shedding,
-replace capacitor draw with the aggregate or report the mismatch as an error. The capacitor facade
-always models deployed firing; selected hardpoint state remains separate feature-003 viewing context.
+The whole-build figure is not drawn by any canvas and is not read at all, so the two can never be
+confused on the screen. The capacitor facade always models deployed firing, independently of the
+hardpoint state feature 005's dashboard is showing.
 
 ## Empty, unavailable and disabled contexts
 
-- Confirmed-empty hardpoints retain the exact capacitor result and receive no-fitted-weapons context.
-- Unavailable hardpoint coverage qualifies completeness; omitted draw is never estimated.
-- All disabled returned weapons remain visible; zero capacitor draw and infinity receive
-  no-draining-powered-load wording.
+- Confirmed-empty hardpoints retain the exact capacitor result beside the no-fitted-weapons meaning.
+- Unavailable hardpoint coverage qualifies completeness; an omitted draw is never estimated.
+- All-disabled returned weapons stay visible; a zero capacitor draw with an infinite time to drain
+  reads as a load that never drains, not as an endurance claim.
 - A genuine zero-energy weapon is not classified as disabled.
-- Zero-capacity positive draw and zero-capacity zero draw remain different package outcomes.
-
-## Revision and failures
-
-- Capture build and settled conditions together.
-- Publish weapon, coverage, capacitor and deployed-power facts only when their revision stamps match.
-- Discard stale results instead of combining old weapon totals or power context with new pips.
-- A missing required feature-005 port produces `integrationUnavailable`; a thrown package/projection
-  error produces `projectionFailed`. Neither state changes the active build.
-- Package zero or infinity remains ready data and never selects failure.
+- Zero capacity with a positive draw and zero capacity with a zero draw remain different outcomes.
 
 ## Localization and accessibility
 
-- MJ, MJ/s, pips and seconds use feature 011 active-locale formatters.
-- Immediate, sustaining, no-load and distributor-state phrases use application message keys.
-- Feature 007 composes feature 003's shared condition control where required; it adds no WEP-only
-  state.
-- Every text value remains available at narrow widths and 400% zoom. A bar may supplement only a
-  future package-authored scale and must retain nearby complete text.
-- One accepted build/pip/context revision produces one coalesced localized announcement.
+- MJ, MJ/s and seconds use feature 011's active-locale formatters.
+- Immediate and no-drain phrases use application message keys.
+- The allocation the figures were read at is named in words beside them, without a control.
+- Every text value remains available at narrow widths and 400% zoom, and every one of the four is
+  written in words whether or not it carries a bar.
+- `DRAW` and `RECHARGE` are both MJ/s, share one scale, and are filled against the larger of the two.
+  `CAPACITY` is MJ and `FULL FIRE` is seconds; neither shares a scale with anything beside it, so
+  neither is filled (`design/canvas-contract.md`, review note 6).
 
 ## Verification
 
-- Deep-equal all six fields at displayed WEP 0, 0.5, 2 and 4.
-- Prove integer half-pips divide by two once and invalid drafts never call the package.
-- Cover finite duration, immediate drain and both infinity meanings.
-- Cover positive-draw/zero-capacity and zero-draw/zero-capacity results.
-- With selected hardpoints retracted and divergent deployed/retracted distributor band verdicts,
-  prove the owner call still requests `deployed` and publishes only that verdict.
-- Cover each owner-supplied distributor observation without changing capacitor values.
-- Prove aggregate weapon EPS and powered capacitor draw remain independent.
-- Prove stale or mismatched revision/port reads never publish.
+- Deep-equal the four fields at WEP allocations `0`, `0.5`, `2` and `4`.
+- Prove the store's allocation reaches the package unchanged, with no division, rounding or clamp.
+- Prove `netDrainRate` and `weaponsPips` appear in no projection, template or message.
+- Cover finite duration, immediate drain and the infinite result.
+- Cover positive-draw and zero-draw zero-capacity results, and prove neither states a cause.
+- Prove the capacitor result is unchanged by the dashboard's hardpoint state.
+- Prove exactly two of the four rows carry a filled track, and that the other two say so rather than
+  drawing an empty one.

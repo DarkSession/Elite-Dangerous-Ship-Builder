@@ -9,6 +9,7 @@
   <span class="identity__line">
     <edsb-game-text
       class="identity__name"
+      [class.identity__name--compact]="compact()"
       [text]="name().text"
       [language]="name().language"
       [translationState]="name().translationState"

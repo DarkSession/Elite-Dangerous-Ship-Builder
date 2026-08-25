@@ -49,6 +49,17 @@ export class ModuleIdentityBadge {
    */
   readonly detail = input<string | null>(null);
 
+  /**
+   * Whether the name is drawn at the smaller of the canvas's two scales.
+   *
+   * The same identity appears where the module is the row's subject and where it
+   * is one column of four, and the canvas sets those differently: `500 13px` on
+   * a ledger row, `400 10.5px` in the offence panel's weapon list. A named
+   * variant rather than a size passed in, so the two scales the drawing actually
+   * uses stay the only two anything can ask for.
+   */
+  readonly compact = input(false);
+
   /** The canvas's `4A`: class and rating together, when the package has both. */
   readonly code = computed(() => {
     const moduleClass = this.moduleClass();
@@ -81,7 +92,17 @@ export class ModuleIdentityBadge {
    * as well as drawn.
    */
   readonly codeLine = computed(() => {
-    const parts = [this.code(), this.mountLabel(), this.detail()].filter(
+    // The mount is joined to the code by a space, everything else by the dot.
+    // That is the canvas's own distinction and not a preference: it writes
+    // `3E FIXED · STOCK`, `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` and
+    // `3D GIMBALLED · LONG RANGE G5`, and never a dot between a class code and
+    // a mount — while a module with no mount takes the dot straight away, as in
+    // `8A · CHARGE ENHANCED G5`. The code and the mount name one thing together;
+    // what follows is a second fact about it.
+    const code = [this.code(), this.mountLabel()]
+      .filter((part): part is string => part !== null && part !== '')
+      .join(' ');
+    const parts = [code, this.detail()].filter(
       (part): part is string => part !== null && part !== '',
     );
     if (this.showSymbol() && this.symbol()) {

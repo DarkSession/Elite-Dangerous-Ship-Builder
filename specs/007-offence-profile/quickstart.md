@@ -1,203 +1,191 @@
 # Quickstart: Offence Profile Validation
 
-This guide validates feature 007 after its shared prerequisites are accepted and implemented. It is
-an end-to-end acceptance guide, not an implementation recipe.
+Runnable acceptance for the `OFFENCE` mode of the hull anatomy region and the status rail's `DPS`
+cell. [design/canvas-contract.md](./design/canvas-contract.md) is the template; every check below is
+either a package equality or a thing a canvas draws.
 
 ## Prerequisites
 
-- Node.js and pnpm versions from the repository configuration
-- `@elite-dangerous-almanac/core` from the committed lockfile
-- full TypeScript and Angular-template strictness enabled with the repository passing
-- feature 001 active build/revision and `/build` workspace
-- feature 002 accepted same-revision hardpoint coverage and exact-slot reveal boundary
-- feature 003 settled integer-half-pip conditions, Status provider and workspace targets
-- feature 005 accepted generalized power-observation port with an explicit deployed distributor read
-- feature 011 tokens/components, localization/game text, previews, axe and ten-project browser matrix
-
-Do not run feature 007 tasks by substituting private local infrastructure for any missing
-prerequisite.
-
-Install without changing the lockfile:
-
-```bash
-pnpm install --frozen-lockfile
-```
-
-When the feature-011 browser matrix is implemented, preinstalled browser paths may be supplied through
-its accepted `E2E_CHROMIUM_PATH` and `E2E_FIREFOX_PATH` configuration. The current config reads only
-the Chromium variable.
+- `pnpm install --frozen-lockfile`
+- The repository's own toolchain: Node per `.nvmrc`, pnpm per `packageManager`.
+- Feature 001's active build, feature 002's slot views and `hardpointCoverage()`, feature 005's mode
+  strip and `PowerConditionsStore`, and feature 011's design system are all in the repository. No
+  boundary is stubbed.
 
 ## Package and contract audit
 
-Confirm the installed package and public leaves:
-
 ```bash
-pnpm why @elite-dangerous-almanac/core
-pnpm exec tsc --showConfig -p tsconfig.app.json
+pnpm exec ng test --no-coverage --include 'src/app/domain/offence/**/*.spec.ts'
 ```
 
-Rerun the live leaf-import probes documented in [research.md](./research.md). Expected outcomes:
+The Angular unit-test builder, not `vitest` directly: the package's localization
+helpers are partially compiled, and only the builder runs the Angular linker over
+them. `pnpm exec vitest run` fails at import with a JIT-compiler error that says
+nothing about this feature.
 
-- the total has every documented `WeaponTotals` member;
-- returned weapons retain exact identities/order, full metrics, ammunition and sparse range/piercing;
-- disabled entries remain while package totals exclude them;
-- optional unclassified is absent when zero;
-- WEP 0, 0.5, 2 and 4 return all six capacitor fields;
-- zero/infinity, finite/zero/unlimited ammunition and boundary value zero remain distinct;
-- known slots use hull order and appended unknown slots retain source order.
+Confirms against the installed Almanac that:
 
-Fail the audit if implementation requires a catalogue/fitted-module join, local sort, weapon sum,
-power diagnosis or capacitor formula.
+- `weaponMetrics()` returns `total` with exactly ten fields, and `weapons` with each fitted entry
+  carrying an exact `slot`, `symbol`, `name` and `enabled`, and the sparse `maximumRange`,
+  `falloffRange` and `armourPiercing` left undefined rather than zero where the article has none;
+- the returned weapons arrive in the hull's own slot order, which is what the panel's rows and the
+  gunsight's badges both depend on. The package documents unknown or unmapped slots as appended in
+  source order after them; that path is the package's own to prove, and nothing here exercises it,
+  because no build this application can make reaches it;
+- `DamageSplit.unclassified` is absent exactly when it is zero, and `antiXeno` is always present;
+- `weaponsCapacitorMetrics({ weaponsPips })` accepts `0`, `2`, `2.5` and `4`, rejects `-1` and `5`,
+  and returns `Infinity` for `timeToDrain` when the recharge keeps pace;
+- `damageFalloff()` weakens with distance for a weapon carrying both range fields — exercised
+  through `projectRangeBands()` rather than called directly, because the projection is the one place
+  allowed to call it;
+- `getShipGunsight()` publishes one offset per hardpoint, in the order `enumerateSlots()` returns
+  them, and returns nothing for a hull the catalogue does not carry.
 
 ## Static and unit validation
-
-Run focused tests while developing:
-
-```bash
-pnpm exec ng test --include='src/app/**/*offence*.spec.ts'
-```
-
-Then run static checks:
 
 ```bash
 pnpm run format:check
 pnpm run typecheck
-pnpm run build
+pnpm run policy
+pnpm run test
 ```
 
-Expected:
+`pnpm run policy` runs `scripts/policy/offence-ownership.mjs`, which fails the build when:
 
-- package imports use the exact leaf paths in the contracts;
-- strict TypeScript/template checks pass;
-- no local damage/share/falloff/piercing/target/convergence/pip/recharge/drain/endurance or power-
-  shedding formula exists;
-- detail and Status select the same cached weapon projection;
-- absent optional members and infinity use field-specific semantics rather than truthiness;
-- all four coverage thresholds remain at or above 80%.
+- the Almanac is imported outside this capability's allowed leaf subpaths;
+- `weaponMetrics(`, `weaponsCapacitorMetrics(`, `damageFalloff(`, `projectGunsight(` or
+  `getShipGunsight(` appears outside `src/app/domain/offence`;
+- a package figure is arithmetically combined anywhere the projection is read;
+- `Infinity` or `Number.POSITIVE_INFINITY` is named on a surface rather than left to the
+  projection's own endurance states.
+
+The unread fields are not a policy rule: a field nobody reads has no line for a scanner to find. They
+are held by the contract suites instead, which assert the projection's own key sets
+(`offence.spec.ts`, "selects the four drawn fields, their two fills, and no others").
+
+The unit suite proves each package call happens at most once per projection, the retained result is
+identity-equal to the package's, the allocation reaches the package unchanged, ordering is preserved
+with no sort or merge, and every collection, segment, band, convergence and endurance state maps as
+[data-model.md](./data-model.md) states.
 
 ## End-to-end scenarios
 
-After feature 011 supplies the complete matrix, run:
-
 ```bash
-pnpm exec playwright test e2e/offence-profile.spec.ts
+pnpm exec playwright test offence-profile.spec.ts
 ```
 
-Every scenario runs in Chromium and Firefox at desktop, tablet portrait, tablet landscape, mobile
-portrait and mobile landscape.
+### 1. Open the mode
 
-### 1. Read complete build output
+Open a build, select `OFFENCE` on the anatomy mode strip. The region's rule reads `OFFENCE ANALYSIS`;
+the plates, the side selector and the legend are gone; the three blocks are drawn. Selecting `MOUNTS`
+restores all three exactly as they were. Nothing reached the route, the fragment, history, storage or
+the build.
 
-Open a build with multiple enabled weapons and select Offence from feature 003 Status.
+### 2. Read complete build output
 
-Expected:
+With several enabled weapons, the `WEAPONS` block states the returned weapon count and both damage
+figures, each separately labelled. Every figure parses back — for the active locale — to its exact
+`weaponMetrics().total` field. No capacitor draw, heat, thermal load or plant draw appears in this
+block.
 
-- every total and every per-weapon field appears with exact scope/unit;
-- canonical identity is preserved and localized game text/fallback is disclosed correctly;
-- no alpha, share, target-adjusted, range-band or convergence figure appears;
-- visible numbers equal the same live package result after locale-aware parsing.
+### 3. Preserve damage-type meaning
 
-### 2. Preserve damage-type meaning
+`DAMAGE PROFILE` draws one stacked bar with one segment per conventional type the build deals, and
+the legend beside it writes each segment's own exact amount and its share. That legend is the whole
+damage-by-type reading: a type the build does not deal — an `unclassified` the package omits
+included — has no segment and no line, and no anti-xeno figure and no second split appear at all.
 
-Use fixtures covering conventional, unclassified and anti-xeno output.
+`DPS BY RANGE BAND` draws the canvas's four distances, each weakening as the distance grows and each
+stated in words. No combined total, resistance result or target adjustment appears anywhere in the
+rendered output.
 
-Expected:
+### 4. Distinguish empty, unavailable, disabled and zero
 
-- burst and sustained groups show all required package fields;
-- optional unclassified presence matches the package, and absence means none/zero rather than
-  unavailable;
-- anti-xeno is described as an overlay;
-- color/position is never the sole type meaning.
+- No hardpoints occupied and coverage `confirmedEmpty`: no weapons fitted, with the package's own
+  zero totals beside it.
+- Coverage `unavailable`: an explicit qualification, and no claim that the hardpoints are empty.
+- Every weapon disabled: all rows present with their own metrics, and the package's exact zero total.
+- A genuine zero-damage weapon: a complete row including its numeric zero.
 
-### 3. Distinguish empty, unavailable, disabled and zero
+### 5. Inspect a weapon
 
-Exercise confirmed-empty hardpoints, unavailable package coverage, all returned weapons disabled and
-a genuine zero-damage weapon. Unsupported module identities are outside this feature's input contract.
+A row draws the module's localized name, the code line beneath it — `4A GIMBALLED`, and any
+engineering summary after it — damage per second, piercing and falloff. An unengineered weapon still
+gets its code line; only the summary is absent. An absent piercing or falloff reads as not stated, never as zero. A disabled weapon keeps
+its row and is marked off.
 
-Expected:
+The row carries no control. It does not navigate, disclose or select, and activating it does nothing.
 
-- only confirmed-empty coverage says no fitted weapons;
-- unavailable coverage has an explicit qualification and no invented weapon fields;
-- disabled/genuine-zero entries remain complete;
-- package totals are untouched and Status qualification appears only for incomplete/unavailable
-  coverage.
+Two mounts carrying the same module are two rows, in package order, unmerged.
 
-### 4. Inspect range, piercing and ammunition
+### 6. Read where the shots go
 
-Use fixtures with effective range, absent range, projectile boundaries including zero, absent
-piercing, no ammunition, finite capacity, zero reserve and unlimited reserve.
+`SHOT CONVERGENCE` draws the gunsight plate with, per armed hardpoint, a mark where the shot lands,
+a numbered badge at the plate's nearer edge and a leader between them — and one sentence beside the
+plate naming the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption.
+A hardpoint the build has not filled takes no mark and no sentence, which is what the canvas does
+with the empty hardpoint on its own sample build. The plate itself is hidden from assistive
+technology.
 
-Expected:
+Moving the `RANGE` control moves every shot and every sentence, leaves the two spans alone, and moves
+the apparent spread. A mount far enough off the axis is clipped from the plate at a near range and
+keeps its sentence; moving the target out brings its mark back.
 
-- effective distances come only from fitted weapon results and use metres;
-- projectile boundaries remain separately named and unitless;
-- absent optional fields remain not stated;
-- ammunition meanings stay distinct and infinity is never generic-formatted.
+On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
+hull it does carry but the build has armed nothing on, the plate is drawn with its axes and its
+rings and nothing else, and none of the four cells appears.
 
-### 5. Reach exact hardpoints
+### 7. Read endurance at an allocation
 
-Activate every returned weapon action, including duplicate symbols and disabled/zero weapons.
+`WEAPON CAPACITOR` draws four rows in the canvases' own order — sustained draw, recharge, time to
+drain, then `WEP CAP` capacity — in MJ/s and MJ, under the WEP allocation they were read at. Draw and
+recharge carry a bar each, because those two share one scale; the other two carry none. Changing WEP
+in the `POWER` mode and returning to `OFFENCE` moves recharge and time to drain and leaves capacity
+alone. The capacitor result does not change when the dashboard's hardpoint state changes.
 
-Expected:
+Finite duration reads as localized seconds; a zero reads as draining immediately; a recharge that
+keeps pace draws `∞`, with what the symbol stands for carried in words beside it and out of sight.
+`Infinity` never reaches a formatter. A zero capacity is stated as the package's own figure, with no
+cause beside it.
 
-- feature 002 receives the exact original slot key once;
-- wide layout reveals the inline slot; narrow layout opens the selected-slot layer and named return;
-- details and slot actions remain distinct touch-sized controls.
+### 8. Read the rail cell
 
-### 6. Change WEP conditions
-
-Apply valid feature-003 allocations including displayed WEP 0, 0.5, 2 and 4, plus invalid drafts.
-
-Expected:
-
-- integer half-pips divide by two exactly once;
-- displayed allocation and all capacitor fields equal the package result;
-- weapon metrics/Status sustained DPS do not change merely because WEP changes;
-- invalid drafts call no feature-007 package boundary and advance no revision.
-
-### 7. Read finite, immediate and infinite endurance
-
-Exercise draining load, positive-draw zero capacity, sustaining positive draw, all-disabled weapons,
-no weapons and plant-off/power-shed contexts.
-
-Expected:
-
-- finite seconds, immediate zero and both infinity meanings are correct;
-- zero capacity remains numeric beside the independent deployed distributor observation;
-- aggregate weapon EPS is not forced to equal powered capacitor draw;
-- no cause is inferred from zero/null.
-
-### 8. Consume Status and revisions
-
-Compare feature 003's sustained-DPS summary with the detailed capability, then rapidly alternate
-weapon edits, undo/redo, coverage changes and valid WEP changes.
-
-Expected:
-
-- Status and detail use identical package sustained DPS and the `offenceProfile` target;
-- owner qualification `sustainedDps` appears once only for incomplete/unavailable coverage;
-- every visible snapshot shares current revisions; stale projections never flash;
-- one settled change produces at most one localized announcement.
+The rail's `DPS` cell carries the same sustained figure the panel draws, from the same projection.
+It has no unit, no second figure and no control. Unavailable coverage qualifies it once; an exact
+zero does not.
 
 ## Responsive, localization and accessibility acceptance
 
-For populated, empty, unavailable-coverage, disabled, genuine-zero, optional-field, ammunition, zero-capacity,
-infinite and failure states:
+```bash
+pnpm exec playwright test offence-profile.spec.ts ui-preview.spec.ts
+```
 
-- run the shared axe scan in every browser/layout project;
-- verify no document-level horizontal scroll at each viewport, 200% text and actual 400% zoom;
-- verify content/action parity in tablet and mobile portrait/landscape;
-- verify touch/pointer controls use feature 011's target-size token and no function depends on hover;
-- verify headings, definition groups, disclosures, qualifications and exact-slot actions are
-  understandable by screen reader;
-- verify no meaning depends only on color, bar length, shape or position;
-- verify expanded-language and RTL association/wrapping;
-- verify reduced motion loses no meaning;
-- switch locales and confirm application messages/units change while package game text uses localized
-  output or disclosed canonical fallback.
+- All five layout profiles in both engines, with an axe scan over every state. Where Firefox cannot
+  be installed this command produces the five Chromium projects only; the repository's CI installs
+  both engines and shards the whole matrix, so that is where the Firefox evidence comes from — see
+  the engine-coverage note at the head of [tasks.md](./tasks.md). The requirement is not waived by
+  being unrunnable somewhere.
+- At roomy widths the first two blocks are the canvas's fluid pair and convergence runs full width
+  beneath them; at narrow widths, landscape phones, 200% text and actual 400% zoom all three stack,
+  with no document-level horizontal scroll.
+- The target-range field is a control at feature 011's target size, operable by pointer, touch and
+  keyboard, announcing the distance in words.
+- Owned strings resolve from message keys; damage rates, MJ, MJ/s, seconds, metres, milliradians,
+  percentages, counts and ratings use active-locale formatters; a German catalogue changes no package
+  number.
+- An RTL root keeps every value with its label.
+- Canonical package names are disclosed as such when the active locale has no translation.
+- Conformance is stated as "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+  2.4.11".
 
-Any conformance statement must say: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1,
-2.4.3, 2.4.7 and 2.4.11.”
+## Offline
+
+```bash
+pnpm run e2e:offline
+```
+
+Load the workspace, go offline, open `OFFENCE`, move the convergence target range and change WEP
+pips. No cross-origin request is made.
 
 ## Full gate
 
@@ -205,5 +193,10 @@ Any conformance statement must say: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
 pnpm run check
 ```
 
-Expected: formatting, three typechecks, production build, script tests, unit coverage and every
-Playwright project pass. Do not skip a browser, orientation, accessibility scan or failing test.
+Formatting, compilation, build, policy checks, unit coverage at or above 80% on all four counters,
+all ten Playwright projects and every axe scan, with nothing skipped, focused or quarantined.
+
+`pnpm run check` runs the whole matrix, so on a machine with no Firefox binary it fails at the
+`e2e` step rather than passing a narrower gate quietly. That failure is the engine-coverage note's
+subject, not a defect in the feature: run the five Chromium projects to judge the change locally,
+and read the full ten off CI, which installs both engines.

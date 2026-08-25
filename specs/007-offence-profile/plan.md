@@ -6,40 +6,38 @@
 
 ## Summary
 
-Add one complete Offence Profile capability to the existing `/build` workspace. A pure,
-revision-stamped projector retains one exact `ShipLoadout.weaponMetrics()` result for the active
-build and one exact `ShipLoadout.weaponsCapacitorMetrics()` result for the settled WEP allocation.
-Feature 003 stores pips as integer half-pips, so feature 007 divides WEP by two exactly once at the
-capacitor call boundary and then displays the package-returned allocation. No weapon total, damage
-share, range attenuation, target result, capacitor drain or endurance value is recalculated.
+Add the `OFFENCE` mode of the hull anatomy region inside feature 001's `/build` workspace, and one
+`DPS` cell to the outfitting status rail. Selecting `OFFENCE` retitles the region
+`OFFENCE ANALYSIS`, removes the plates, their side selector and their legend exactly as the
+artboard's own switching script does, and draws three blocks in the space they leave: `WEAPONS`,
+`DAMAGE PROFILE` and `SHOT CONVERGENCE`. This is the composition feature 005 already ships for
+`POWER`, on the same strip and through the same mechanism.
 
-The same package projection supplies feature 003's sustained-DPS Status provider and feature 002's
-exact-slot navigation. Same-revision hardpoint coverage qualifies an empty package weapon list
-without fabricating weapon output. Zero-capacity context consumes feature 005's accepted generalized
-power-observation contract with an explicit deployed request. Its owner implementation and wiring
-remain delivery prerequisites, not a capability feature 007 recreates.
+A pure projection reads `ShipLoadout.weaponMetrics()` once and
+`ShipLoadout.weaponsCapacitorMetrics()` once for the WEP allocation feature 005's shared
+`PowerConditionsStore` holds, and both surfaces read that one projection. It also asks the package
+for the falloff multiplier at the canvas's four range bands and for the hull's published hardpoint
+geometry. No weapon total, range attenuation, target result, capacitor drain, endurance value or
+mount offset is recalculated locally.
 
-The visual hierarchy comes from `.design/Ship Builder.dc.html` canvases 1c and 1d. The wide canvas's
-prominent burst/sustained headline and scannable weapon list, and the narrow canvas's vertical-card
-direction, are retained. The two canvases are not treated as content-equivalent: their contradictory
-sample values, damage shares, range bands, convergence, target resistance, alpha, corrosion bonus and
-normalized capacitor bars are rejected.
+[design/canvas-contract.md](./design/canvas-contract.md) is the template, and it is what settles
+scope. Everything user-facing is a thing a canvas draws. The one region rejected is the mobile
+canvas's `VS 45% RESIST` block — target simulation the package returns no result for — and the
+package fields no canvas draws are not read at all.
 
 ## Technical Context
 
 **Language/Version**: TypeScript, Angular HTML and SCSS; Angular standalone and zoneless; Node.js per
-the repository tooling configuration. Full TypeScript and Angular-template strictness is required
+the repository tooling configuration
 
-**Primary Dependencies**: Angular signals; RxJS; `@elite-dangerous-almanac/core` leaf
-exports for loadout weapon results, weapon types, capacitor results, ammunition, projectile metadata
-and game-text localization; feature 001 active-build revisions; feature 002 same-revision hardpoint
-coverage and exact-slot reveal; feature 003 viewing conditions, Status-provider envelope and
-workspace targets; feature 005 deployed module-power observation; feature 011 design-system,
-localization, preview and verification foundations
+**Primary Dependencies**: Angular signals; `@elite-dangerous-almanac/core` leaf exports for loadout
+weapon results, weapon types, capacitor results, damage falloff, ship gunsights and slot layouts,
+plus the package's own localization helpers for game text; feature 001's active build and revision; feature 002's slot views and engineering summary; feature 005's `PowerConditionsStore` WEP allocation; feature 010's
+anatomy mode strip; feature 011's design system, localization, formatters, previews and verification
+harness
 
-**Storage**: None. Package results, semantic presentation state, selected capability, expanded weapon
-details and announcements stay in memory. WEP conditions remain feature 003 state. Nothing enters
-local records, edit history, preferences, routes, links or SLEF
+**Storage**: None. Package results, semantic states and the chosen convergence target range stay in
+memory. Nothing enters local records, edit history, preferences, routes, links or SLEF
 
 **Testing**: Vitest through Angular's unit-test builder with the existing 80% statement, branch,
 function and line thresholds; Playwright with `@axe-core/playwright` over desktop, tablet portrait,
@@ -52,66 +50,58 @@ first load
 
 **Project Type**: One client-side Angular single-page application producing static files only
 
-**Performance Goals**: The feature specification sets no independent numeric target. Cache the
-weapon projection by build revision, cache the capacitor/context projection by build and settled
-condition revision, satisfy feature 003's Status update contract and preserve the production bundle
-budgets
+**Performance Goals**: The feature specification sets no independent numeric target. The projection
+is a pure synchronous read the signal graph memoises, which is the shape features 005 and 009
+already ship
 
 **Constraints**: No server, account, telemetry or cross-origin runtime request; no local weapon,
-damage share, falloff, piercing-factor, target, convergence, pip-scaling, recharge, drain or endurance
-calculation; no cause inferred from a zero or null; optional, zero, disabled, unlimited and infinite
-states retain package meaning; all owned text and figures localized; one tokenized dark theme; no
-document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
-2.4.7 and 2.4.11
+falloff, piercing-factor, target, mount-geometry, pip-scaling, recharge, drain or endurance
+calculation — a share or a bar fill over amounts stated on the same screen is presentation, not a
+measurement; no cause inferred from a zero or an infinity; optional, zero, disabled,
+unlimited and infinite states retain package meaning; all owned text and figures localized; one
+tokenized dark theme; no document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
+2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
-**Scale/Scope**: The complete installed hull and hardpoint catalogues; normal
-hull layouts contain at most 10 known hardpoint slots. The returned collection has no application cap
-because package-valid weapons in unknown/unmapped source slots are appended. One active build presents
-one package total, every returned weapon entry, one capacitor result and one compact Status
-contribution
+**Scale/Scope**: The complete installed hull and hardpoint catalogues; normal hull layouts contain at
+most 10 known hardpoint slots. The returned collection has no application cap because package-valid
+weapons in unknown or unmapped source slots are appended
 
-**Design Reference**: `.design/Ship Builder.dc.html` canvas 1c wide Offence Analysis and canvas 1d
-mobile Offence mode. Exact adoption and departures are in
-[design/reference-review.md](./design/reference-review.md)
+**Design Reference**: [design/canvas-contract.md](./design/canvas-contract.md), extracted from
+`.design/Ship Builder.dc.html` canvas 1c's `OFFENCE ANALYSIS` panel and canvas 1d's mobile
+`OFFENCE` panel. Every adoption, departure and rejection is recorded there;
+[design/reference-review.md](./design/reference-review.md) records the reasoning behind them
 
 ## Constitution Check
 
-_GATE: The design passes with no constitutional exception. Delivery is blocked by shared strictness
-and prerequisite implementations listed below._
+_GATE: The design passes with no constitutional exception._
 
-| Principle                               | Design evidence                                                                                                                                                        | Status                 |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                        | PASS                   |
-| II. Almanac Source of Truth             | Exact package facade results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                         | PASS                   |
-| III. Domain Logic Outside UI            | A framework-agnostic projector and revision/provider adapters precede input/output-only components.                                                                    | PASS                   |
-| IV. Lossless, Honest Builds             | Returned package identities are preserved; unsupported module inputs are out of scope; unavailable coverage, sparse fields, unlimited ammo and infinity stay distinct. | PASS                   |
-| V. Desktop, Tablet and Mobile           | One complete semantic flow adapts across five layouts in both engines and includes touch, screen reader, text-size, zoom, orientation and overflow verification.       | PASS; prerequisite 011 |
-| VI. Commander's Language                | Application labels/units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                   | PASS; prerequisite 011 |
-| VII. One Design System                  | The capability composes/extends `src/app/ui/`; `.design` supplies hierarchy only and every new component has the required preview matrix.                              | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                       | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every FR maps to the in-workspace capability, contracts and component-state previews before task generation.                                                           | PASS                   |
+| Principle                               | Design evidence                                                                                                                                                                      | Status |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| I. Client-Side Only                     | All reads use one in-memory loadout and the installed package; the feature adds no storage or network boundary.                                                                      | PASS   |
+| II. Almanac Source of Truth             | Exact package results own every numeric field; package ordering, optionality, zero and infinity are retained without joins or formulas.                                              | PASS   |
+| III. Domain Logic Outside UI            | A framework-agnostic projection precedes input/output-only components.                                                                                                               | PASS   |
+| IV. Lossless, Honest Builds             | Returned package identities are preserved; unavailable coverage, sparse fields, an unpublished gunsight and both infinities stay distinct.                                           | PASS   |
+| V. Desktop, Tablet and Mobile           | One semantic order adapts across five layouts in both engines, with touch, screen reader, text-size, zoom, orientation and overflow verification.                                    | PASS   |
+| VI. Commander's Language                | Application labels and units use feature 011; module names use Almanac locale helpers with disclosed canonical fallback.                                                             | PASS   |
+| VII. One Design System                  | The capability composes `src/app/ui/` and extends it with one primitive the system lacked — a range field, declared in the preview manifest. The canvas contract supplies hierarchy. | PASS   |
+| VIII. Tested Before It Ships            | Exact package-equality tests, two engines, five layouts, axe and manual assistive protocols retain the 80% gate.                                                                     | PASS   |
+| IX. Specification Before Implementation | Every FR maps to a drawn surface, a contract and a preview state before task generation.                                                                                             | PASS   |
 
-### Delivery prerequisites and blockers
+### Delivery prerequisites
 
-1. Enable the constitution's full TypeScript and Angular-template strictness through feature 011
-   and make the existing project pass. The current root configuration has neither `strict` nor
-   `strictTemplates`.
-2. Implement feature 001's active `{ loadout, buildRevision }` boundary and `/build` workspace.
-3. Implement feature 002's accepted same-revision hardpoint coverage and shared exact-slot target
-   boundary through its owner tasks T004 and T025.
-4. Implement feature 003's integer-half-pip conditions, `StatusRevisionContext`, generic
-   `StatusProvider<T, I>` and `WorkspaceTarget` contracts.
-5. Implement and wire feature 005's accepted `MountPowerObservationPort`, whose explicit
-   deployed/retracted request is independent of selected viewing state. Feature 007 passes the exact
-   distributor core slot and `deployed`; it must not infer a cause from capacitor zero/null or
-   reconstruct priority shedding. Feature 005 T006 defines the contract and T034/T035 deliver it.
-6. Implement feature 011's tokens/components, game-text presenter, localization/formatters,
-   component previews, ten-project Chromium/Firefox matrix and axe harness.
+All of them are in the repository already, which is what makes this feature buildable now:
 
-Missing prerequisites block implementation; they do not authorize feature-local substitutes.
+1. Feature 001's active `{ loadout, revision }` boundary and `/build` workspace — `ActiveBuildStore`.
+2. Feature 002's slot views and engineering summary — `OutfittingStore`, and the same-revision
+   `hardpointCoverage()` adapter over its slot views.
+3. Feature 005's `PowerConditionsStore`, which holds the WEP allocation this feature reads.
+4. Feature 010's anatomy mode strip, which already draws a disabled `OFFENCE` segment.
+5. Feature 011's tokens, components, game-text presenter, formatters, previews, ten-project
+   Chromium/Firefox matrix and axe harness.
 
-The installed Almanac package exposes fitted maximum/falloff range, projectile boundaries,
-armour piercing and documented weapon ordering; feature 007 has no remaining package blocker.
+Nothing here waits on an unimplemented port. In particular this feature does **not** consume a
+mount-power observation: no canvas draws a distributor observation beside the capacitor, so none is
+built, and a zero capacity is stated as the package's own result with no cause attached.
 
 ## Project Structure
 
@@ -128,116 +118,101 @@ specs/007-offence-profile/
 │   ├── weapon-output.md
 │   └── workspace-integration.md
 └── design/
+    ├── canvas-contract.md
     ├── component-state-preview-matrix.md
     ├── offence-profile.md
     ├── reference-review.md
     └── screen-inventory.md
 ```
 
-`tasks.md` is Phase 2 output and is intentionally not created by this command.
-
 ### Source Code (repository root)
 
 ```text
 src/app/
 ├── domain/offence/
-│   ├── offence-projector.ts
-│   ├── offence-projection.ts
-│   └── offence-semantics.ts
-├── application/offence/
-│   ├── offence.facade.ts
-│   ├── offence.presenter.ts
-│   ├── offence-status.provider.ts
-│   └── offence-workspace.adapter.ts
-└── features/build-workspace/offence-profile/
-    ├── offence-profile.component.ts
-    ├── weapon-totals.component.ts
-    ├── damage-type-output.component.ts
-    ├── capacitor-endurance.component.ts
-    └── weapon-output-list.component.ts
+│   ├── offence.ts                     # the projection and its semantic states
+│   ├── convergence.ts                 # the gunsight projection and its range view
+│   └── offence.fixtures.ts            # preview and suite fixtures
+├── ui/components/range-field/         # the native range control the canvas draws
+└── features/build-workspace/outfitting/
+    ├── offence-analysis/              # the OFFENCE mode panel
+    │   └── shot-convergence/          # the gunsight plate, its range and its facts
+    └── offence-summary/               # the status rail DPS cell
 
 e2e/
 └── offence-profile.spec.ts
 ```
 
-Unit tests live beside every projector, presenter, provider, adapter and component. Shared fact,
-notice, disclosure and exact-slot action patterns extend `src/app/ui/` through feature 011 rather
-than becoming feature-local visual primitives.
+The `OFFENCE` segment is enabled in
+`src/app/features/build-workspace/outfitting/hull-anatomy/`, which is feature 010's and is where feature 005
+enabled `POWER`. `scripts/policy/offence-ownership.mjs` keeps the package boundary.
 
-**Structure Decision**: Keep one application, one active loadout, one settled condition store and
-one workspace target model. Retain package result objects in a pure offence snapshot, adding only
-semantic discriminants and cross-feature observations that do not alter their values. The detailed
-capability and Status provider select the same cached build projection. Feature 003 owns capability
-and condition lifecycle, feature 002 owns editing/slot reveal, feature 005 owns power semantics and
-feature 011 owns shared presentation infrastructure. No route, persistence model or second loadout is
-added.
+There is no `application/offence/` layer: this feature adds no state. The one condition it reads —
+the WEP allocation — is feature 005's store, and the chosen convergence target range is the panel's
+own component state.
+
+**Structure Decision**: One projection, read by both surfaces, memoised by the signal graph, with the
+target range applied over it as a second cheaper read. Feature 001 owns the build, feature 002 owns
+slot selection and editing, feature 010 owns the mode strip, feature 005 owns the pip allocation,
+and feature 011 owns shared presentation. No route, persistence model, second loadout or new store is added.
 
 ## Phase 0: Research Conclusions
 
-The complete decisions, runtime probes and alternatives are in [research.md](./research.md). The
-decisive outcomes are:
+The complete decisions and runtime probes are in [research.md](./research.md). The decisive outcomes:
 
-- Retain the exact `BuildWeaponMetrics` object. Totals contain ten fields; each fitted entry retains
-  exact identity, enabled state, ammunition, 14-field `WeaponMetrics` and sparse range/piercing data.
+- Retain the exact `BuildWeaponMetrics` object, and read from it where each figure is drawn.
 - Disabled weapons remain in the returned list and are omitted from totals exactly as the package
   specifies. Same-revision package slot coverage distinguishes confirmed empty hardpoints from
-  unavailable hardpoint coverage omitted by the weapon facade.
-- Optional `unclassified` is absent when its amount is zero; it is omitted or described as no
-  unclassified damage, not as unavailable. Missing range, projectile metadata or piercing remains
-  not stated and is never zero-filled.
-- Anti-xeno remains an overlay. No conventional share, combined total or target-adjusted figure is
-  created.
-- Ammunition keeps `null`, finite, zero-reserve and unlimited states distinct; numeric infinity never
-  enters a generic formatter or serializer.
-- Convert integer half-pips to package pips once, then retain all six capacitor fields. Context
-  changes wording for zero/infinity but never changes a package number.
-- `weaponMetrics()` totals and capacitor firing draw have deliberately different enabled-versus-
-  powered scopes and are never forced to match.
-- Feature 005's accepted explicit-state power-observation port supplies honest distributor context;
-  feature 007 always requests `deployed` and waits for the owner adapter/wiring tasks rather than
-  supplying a substitute.
-- Feature 007 exports the missing `OffenceStatusProvider`, using exact sustained DPS and one owner
-  qualification identity when unavailable hardpoint coverage makes that Status summary incomplete.
-- Canvas 1c and 1d provide only hierarchy. Mobile omits the desktop weapon summary and contradicts
-  its sample DPS, so parity and all missing states come from the accepted feature design, not the mock.
-
-No planning clarification marker remains.
+  unavailable coverage; `weapons.length` is never a substitute.
+- Optional `unclassified` is absent when its amount is zero, so an absent member and a zero member
+  are drawn the same way: neither takes a segment or a legend line. Missing range, projectile
+  metadata or piercing is a different thing — it stays not stated on a weapon row and is never
+  zero-filled.
+- `antiXeno` and `sustainedDamageByType` are not read: no canvas draws either, so no combined total
+  and no target-adjusted figure can be reached from anywhere.
+- Numeric infinity never enters a generic formatter; the endurance meanings carry it as a state.
+- The WEP allocation is read from feature 005's store and passed to the package unchanged. That store
+  already holds pips on the game's own half step in the package's `[0, 4]` range, so there is no
+  conversion at the boundary and nothing to get wrong.
+- The canvases supply hierarchy and labels; their sample values contradict each other and are not
+  authoritative. Their shares are proportions of package amounts stated on the same screen, their
+  range bands are the package's own `damageFalloff()`, and their convergence is the package's own
+  published gunsight geometry. Only the mobile canvas's target-resistance block is out of scope.
 
 ## Phase 1: Design Outputs
 
-- [data-model.md](./data-model.md) defines the projection lifecycle, exact package result retention,
-  hardpoint coverage, capacitor semantics, deployed distributor context and Status projection.
+- [design/canvas-contract.md](./design/canvas-contract.md) is the template: every drawn element, what
+  it is built as, what is not built and why, and the fields no canvas draws.
+- [data-model.md](./data-model.md) defines the projection, exact package result retention, hardpoint
+  coverage and capacitor semantics.
 - [contracts/weapon-output.md](./contracts/weapon-output.md) freezes the one-call build boundary,
-  field inventory, ordering, damage/ammunition/absence semantics and exact-slot target.
-- [contracts/capacitor-endurance.md](./contracts/capacitor-endurance.md) freezes half-pip conversion,
-  every capacitor field, zero/infinity wording and the owner-supplied power observation.
-- [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes revisions,
-  feature 003's Status adapter, feature 002 coverage/slot handoff and announcements.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-007 to the one
-  in-workspace capability and collaborating surfaces.
-- [design/offence-profile.md](./design/offence-profile.md) defines complete information order,
-  fluid composition, exact weapon details and every semantic state.
-- [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md) records
-  populated, empty, pending, failure, disabled and special-state previews at five layouts.
-- [design/reference-review.md](./design/reference-review.md) distinguishes actual canvas behavior
-  from required extensions and records every rejected mock calculation.
-- [quickstart.md](./quickstart.md) supplies runnable API, equality, state, Status, navigation,
-  responsive, localization and accessibility validation.
+  field inventory, ordering, damage and absence semantics, the range bands and the gunsight
+  geometry.
+- [contracts/capacitor-endurance.md](./contracts/capacitor-endurance.md) freezes the WEP allocation
+  boundary, the four drawn fields and the zero/infinity wording.
+- [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes the mode strip,
+  the rail cell and the inert weapon row.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-011 to the drawn blocks, and records FR-012 as withdrawn.
+- [design/offence-profile.md](./design/offence-profile.md) defines information order, composition and
+  every semantic state.
+- [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md) records the
+  states owed at five layouts, and which of them the preview manifest reaches.
+- [quickstart.md](./quickstart.md) supplies runnable API, equality, state, navigation, responsive,
+  localization and accessibility validation.
 
 ## Post-Design Constitution Re-check
 
-Phase 1 introduces no server, persistence, new route, private game catalogue, local game formula,
-power-shedding reconstruction, target model, visual literal, hard-coded application string or reduced
-mobile data set. Canonical package names remain preserved beside localized presentation. Structural
-absence, numeric zero, disabled entries, unavailable coverage, unlimited ammunition and both infinity
-meanings remain distinct. Every requirement has a surface, preview state and dual-engine validation
-path.
+Phase 1 introduces no server, persistence, new route, new store, private game catalogue, local game
+formula, target model, visual literal, hard-coded application string or reduced mobile data set. One
+primitive joins the design system — a range field — declared in the preview manifest, which is what
+constitution VII asks of an extension. Canonical package names remain preserved beside localized
+presentation. Structural absence, numeric zero, disabled entries, unavailable coverage, an
+unpublished gunsight and both infinity meanings remain distinct. Every requirement has a drawn surface, a covered state and a dual-engine validation path.
 
-The planning gate remains **PASS with no exception**. Delivery remains **BLOCKED** until the strict
-compiler configuration and feature 001/002/003/005/011 boundaries above are accepted and available.
+The planning gate is **PASS with no exception**, and delivery is **unblocked**.
 
 ## Complexity Tracking
 
-No constitutional violation requires justification. The projector, Status adapter and cross-feature
-ports are the minimum boundaries needed to keep package results revision-coherent without duplicating
-build, condition, outfitting or power logic.
+No constitutional violation requires justification. One projection and one policy check are the
+minimum boundaries needed to keep package results coherent without duplicating build, outfitting or
+power logic.

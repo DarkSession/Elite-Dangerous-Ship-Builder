@@ -1,130 +1,111 @@
-# Workspace, Status and Slot Integration Contract
+# Workspace, Rail and Slot Integration Contract
 
 ## Ownership
 
-- Feature 001 supplies one active `{ loadout, buildRevision }` and the `/build` workspace.
-- Feature 002 supplies same-revision package hardpoint coverage and consumes exact-slot targets.
-- Feature 003 supplies settled `ViewingConditions`, `conditionsRevision`, `StatusRevisionContext`,
-  generic `StatusProvider<T, I>`, capability selection and the shared `WorkspaceTarget` union.
-- Feature 005 owns deployed distributor power semantics and must export the observation consumed here.
-- Feature 007 owns the exact weapon/capacitor projection, Status contribution and capability
-  presentation.
-- Feature 011 supplies shared components, tokens, localization/game text, announcements, previews and
-  accessibility verification.
+- Feature 001 supplies one active `{ loadout, revision }` and the `/build` workspace.
+- Feature 002 supplies same-revision package hardpoint coverage, and owns the engineering summary a
+  weapon row reuses.
+- Feature 005 owns the WEP allocation in `PowerConditionsStore`.
+- Feature 007 owns the weapon, capacitor, damage-share, range-band and convergence projections, the
+  `OFFENCE` panel and the rail's `DPS` cell.
+- Feature 010 owns the anatomy mode strip and the plates the mode replaces. It draws the strip
+  whole and left the `OFFENCE` segment disabled for this feature to enable.
+- Feature 011 supplies shared components, tokens, localization, game text, previews and the
+  accessibility verification harness.
 
-Feature 007 creates no route, build/condition/slot store, power calculation or persisted field.
+Feature 007 creates no route, no store, no persisted field and no power calculation.
 
-## Revision transaction
+## The mode strip
 
-For one projection:
+`src/app/features/build-workspace/outfitting/hull-anatomy/` already draws all five of the canvas's
+segments, with `OFFENCE` disabled. This feature enables it, and the region's rule renames to
+`OFFENCE ANALYSIS` exactly as it renames to `POWER & THERMALS` for `POWER`. The plates, the side
+selector and the legend are hidden for this mode for the same reason and by the same branch.
 
-1. Capture feature 003's exact `StatusRevisionContext`.
-2. Obtain or compute the build-revision-cached `BuildWeaponMetrics` once.
-3. Read feature 002's hardpoint coverage stamped with the same `buildRevision`.
-4. Divide settled WEP half-pips by two once and call `weaponsCapacitorMetrics()`.
-5. Call feature 005's `MountPowerObservationPort.observe(context,
-distributorSlotKey, 'deployed')` and require a deployed observation stamped
-   with the captured context.
-6. Confirm all revisions remain current and publish one immutable `OffenceSnapshot`.
+Which mode is open stays memory-only: it never reaches the route, the fragment, history, storage, the
+active build or an export. Leaving the mode restores the mounts exactly as they were.
 
-A newer build/condition discards the older transaction. A mismatched read fails the current
-transaction; it is never relabelled. The Status provider may select the cached weapon result without
-waiting on detail expansion or recalculating the build.
+## Projection
 
-## Required feature-002 boundary
+For one active build and the WEP allocation feature 005 holds, in order:
 
-Feature 002 T004 accepts a type-only read that supplies `HardpointCoverage` for one captured build
-revision. The read:
+1. read feature 001's revision, then its loadout;
+2. call `loadout.weaponMetrics()` exactly once;
+3. read feature 002's `hardpointCoverage()` over the same revision's slot views;
+4. call `loadout.weaponsCapacitorMetrics({ weaponsPips })` exactly once, with the store's allocation
+   passed through unchanged;
+5. read the hull's gunsight and slot layout once, and place the armed mounts on it;
+6. return one immutable projection.
 
-- uses package slot/fitted views rather than parsed names or array positions;
-- distinguishes empty, complete and unavailable coverage;
-- provides no weapon metric and receives only package-resolved module identities from supported
-  ingress; fixed mounts already contain their package defaults.
+It is a pure synchronous function of `(loadout, coverage, weaponsPips)`. There is no store, no cache
+key, no lifecycle and no pending or failure state: the loadout is already in memory and every package
+call is synchronous, so each surface memoises its own read of it in one `computed`. This is the shape
+features 005, 006 and 009 already ship.
 
-Feature 002 T026 derives the accepted read before feature 007 composition. That implementation is a
-sequencing dependency, not a missing or feature-local boundary.
+The chosen target range is _not_ part of it. The projection places the mounts once; where their shots
+land at a range is a second, cheaper read over that result, so moving the slider re-places the shots
+without asking the package about the build again.
 
-## Required feature-005 boundary
+The two surfaces hold one `computed` each rather than sharing a store — which is feature 006's shape
+and what "no `application/offence/` layer" means. They cannot disagree all the same, and for a
+stronger reason than a shared reference: the projection is a pure function, both call it with the
+same three arguments, and a pure function called twice with equal arguments returns equal answers.
+What that costs is one extra pair of package calls per recomputation, which is two synchronous reads
+of an in-memory loadout.
 
-Feature 005 T006 accepts the generalized `MountPowerObservationPort` contract-first. Feature 007
-passes the exact distributor core slot key and explicit `deployed` state even when
-`context.conditions.hardpoints` is `retracted`. The owner read repeats `deploymentState: 'deployed'`,
-the captured revisions and one of powered, disabled, shed, absent or unavailable; feature 005 T034
-implements the adapter and T035 wires the shared instance before feature 007 composition runs.
+## Feature-002 hardpoint coverage
 
-Feature 007 must not:
+`hardpointCoverage(views)` in `src/app/application/outfitting/` answers what this build's hardpoints
+are, from the same package-resolved slot views the ledger renders, at the same revision. It:
 
-- infer the observation from capacitor capacity/recharge;
-- interpret `distributorMetrics() === null` as a cause;
-- join consumers to priority bands itself;
-- parse a symbol, priority, validation message or slot name;
-- substitute feature 005's current `DistributorView.ready | unavailable` for a cause-specific port.
+- uses package slot views rather than parsed names or array positions;
+- distinguishes `confirmedEmpty`, `complete` and `unavailable`;
+- publishes no weapon metric.
 
-The owner contract is accepted and scheduled contract-first; its implementation and wiring remain a
-sequencing dependency, not a missing or feature-local boundary.
+`weapons.length` is never a substitute. An empty metrics list is the set of weapons the package could
+measure, not the set of mounts that carry a module.
 
-## Offence Status provider
+## The status rail cell
 
-Feature 007 exports:
+The rail's six metric cells are `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED` and `MASS`. Feature 007
+contributes `DPS` and nothing else; features 006 and 008 own the rest and are not anticipated here.
 
-```ts
-interface OffenceStatusProjection {
-  readonly sustainedDamagePerSecond: number;
-  readonly firingCondition:
-    'enabledReturnedWeapons' | 'noEnabledReturnedWeapons' | 'noFittedWeapons' | 'qualifiedCoverage';
-}
+The cell carries `weaponMetrics().total.sustainedDamagePerSecond` — a label and a bare figure, with
+no unit, no second figure and no condition, because that is what the canvas draws. Unavailable
+hardpoint coverage qualifies it once; an exact zero does not, because an exact zero is an answer.
 
-interface OffenceStatusProvider extends StatusProvider<OffenceStatusProjection, 'sustainedDps'> {}
-```
+The block draws nothing without a build, and holds no control.
 
-The provider:
+## No slot handoff
 
-1. selects exact `weaponMetrics().total.sustainedDamagePerSecond` from the shared build projection;
-2. derives only the package-native presentation condition from returned entries and accepted
-   hardpoint coverage;
-3. returns the captured build and condition revisions;
-4. returns `detailTarget: { kind: 'detail', capability: 'offenceProfile' }`;
-5. returns `qualifiedSummaryIds: ['sustainedDps']` only for unavailable coverage; otherwise `[]`.
+A weapon row carries no control and reaches no slot. Canvas 1c draws the rows inert
+(`design/canvas-contract.md`, "1. WEAPONS"), and the mount control is in `HULL ANATOMY`, where the
+canvas puts it. An earlier revision added a per-row action calling `OutfittingStore.select()`; it is
+withdrawn (`design/canvas-contract.md`, review note 5).
 
-Numeric zero does not itself qualify the summary. Selected hardpoint state and WEP pips do not alter
-sustained DPS because `weaponMetrics()` accepts neither input. Feature 003 copies the value,
-condition and qualification unchanged and performs no Almanac call.
+The one control this feature owns is the convergence block's target-range field. It sets nothing
+outside the panel: the range is a property of the drawing, held in the component, and it reaches no
+route, fragment, history entry, storage key, build or export.
 
-## Exact-slot handoff
+## Announcements
 
-```ts
-type OffenceSlotTarget = { kind: 'slot'; slotKey: string };
-```
-
-Returned weapons use exact `FittedWeaponMetrics.slot`. Feature 002 reveals/selects the slot in one interaction: inline in roomy workspace
-composition or in the existing selected-slot layer at narrow widths. Duplicate module symbols never
-target one another.
-
-Slot/capability selection changes no build, revision, persistence, history, route, link or SLEF.
-
-## Presentation and announcements
-
-- Feature 003's Offence headline opens the complete capability in one activation.
-- The capability composes feature 003's shared viewing-condition control without owning parallel
-  WEP state.
-- Canonical package weapon names remain retained; feature 011 supplies localized game text by symbol
-  and disclosed fallback.
-- One settled build/condition/coverage change emits at most one concise localized polite summary.
-- Detail expansion is silent unless it changes an explicitly announced state.
-- Exact-slot opening delegates to feature 002's selection announcement and is not announced twice.
-- A current projection/integration failure uses feature 011's blocking alert once.
-- Initial, unchanged and discarded stale projections are silent.
+Nothing in this feature announces. Both surfaces are read-only projections of the active build, every
+change to them is a change a Commander just made somewhere they can see, and neither canvas draws a
+live region. The target-range field announces itself, as a native range control does, and nothing
+else on the panel speaks.
 
 ## Verification
 
-- One identical context reaches weapon, coverage, capacitor and deployed-power boundaries.
-- A retracted selected context with divergent deployed/retracted distributor band verdicts still
-  requests `deployed`, receives the deployed verdict and rejects a read stamped `retracted`.
-- Detail and Status use the same cached `BuildWeaponMetrics` object.
-- Status sustained DPS deep-equals the package total and carries the required detail target.
-- Qualification identity appears once only for incomplete/unavailable coverage.
-- WEP/hardpoint selection does not alter the Status sustained-DPS number.
-- Every returned-weapon slot target carries the exact original key once at wide and narrow layouts.
-- Mismatched revisions/ports never publish or target stale data.
-- Capability, expansion and slot selection never enter serialization.
-- Announcements are localized, deduplicated and state-specific.
+- Prove the `OFFENCE` segment enables, retitles the region and replaces the plates, side selector and
+  legend, and that leaving it restores them.
+- Prove the mode reaches no route, fragment, history entry, storage key, build or export.
+- Prove `weaponMetrics()` and `weaponsCapacitorMetrics()` are each called at most once per projection,
+  and that the panel's figure and the rail cell's are the same figure.
+- Prove the rail cell's figure is identity-equal to the panel's sustained damage figure.
+- Prove no weapon row carries a control, and that activating a row selects nothing.
+- Prove the target-range field reaches no route, fragment, history entry, storage key or export.
+- Prove no feature-007 source outside the projection asks the package any of its questions.
+- Prove moving the target range does not re-run the projection: neither package answer is asked
+  again, and the hull's gunsight is read inside that projection, so it is not re-read either.
+  What does re-run is `projectGunsight` over offsets already in hand, which is the whole point
+  of the control.

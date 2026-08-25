@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import type { SlotKind } from '@elite-dangerous-almanac/core/ships/slots';
-import { engineeringView } from '../../../../application/outfitting/engineering-view';
+import { engineeringSummary } from '../../../../application/outfitting/engineering-summary';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
 import { slotCapabilities } from '../../../../application/outfitting/slot-capabilities';
@@ -28,6 +28,7 @@ import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-gr
 import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
 import { DefenceSummary } from '../defence-summary/defence-summary';
+import { OffenceSummary } from '../offence-summary/offence-summary';
 import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { HullAnatomy } from '../hull-anatomy/hull-anatomy';
@@ -61,6 +62,7 @@ type Category = 'all' | SlotKind;
     BuildStatus,
     CostMaterials,
     DefenceSummary,
+    OffenceSummary,
     PowerSummary,
     EditRefusalNotice,
     HullAnatomy,
@@ -403,19 +405,7 @@ export class OutfittingWorkspace {
    */
   engineeringSummaryFor(slot: SlotView): string | null {
     const module = slot.module;
-    if (module === null) {
-      return null;
-    }
-    const engineering = engineeringView(module);
-    if (engineering.blueprintFdname === null || engineering.currentGrade === null) {
-      return null;
-    }
-    return this.#messages.message('outfitting.slot.engineering', {
-      blueprint:
-        this.#gameText.blueprintName(engineering.blueprintFdname).text ??
-        engineering.blueprintFdname,
-      grade: engineering.currentGrade,
-    });
+    return module === null ? null : engineeringSummary(module, this.#gameText, this.#messages);
   }
 
   handle(slot: SlotView, intent: SlotCardIntent): void {

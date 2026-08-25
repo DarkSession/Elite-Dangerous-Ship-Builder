@@ -1,0 +1,449 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c draws the panel in the space the plates leave, on the same page
+// ground the anatomy region uses: `WEAPONS` beside `DAMAGE PROFILE` in a
+// `1fr 1fr` pair. Canvas 1d stacks the same content. Which arrangement appears
+// is decided from the region's own inline size rather than the viewport's, so a
+// 400% zoom and an expanded translation choose the stacked one for the same
+// reason a phone does.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: offence;
+  min-inline-size: 0;
+}
+
+.offence {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+// The wide arrangement. A grid rather than a wrapping row, because a pair that
+// wrapped mid-block would put the damage groups under the weapon totals they do
+// not belong to.
+@include layout.container-medium-up(offence) {
+  .offence {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    // Stretched so the two plates square up against each other, and no taller
+    // than that: canvas 1c gives the pair a `min-height` its own sample build
+    // happens to fill, and holding a real build to it would leave one plate
+    // ruled off around empty ground.
+    align-items: stretch;
+    gap: var(--edsb-space-region);
+  }
+
+  // Canvas 1c runs `SHOT CONVERGENCE` across the full width beneath the pair:
+  // the plate is a `16 / 6` box and half the panel's width would leave it too
+  // short to read a spread off.
+  .offence__block--convergence {
+    grid-column: 1 / -1;
+  }
+}
+
+// Each of the canvas's blocks is a bounded plate on the panel ground, with the
+// same border and the same padding: `1px solid var(--amber-a2)` over
+// `var(--panel)` at `16px 18px`.
+.offence__block {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-2xl);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// Canvas 1c's labelled rule: a tracked mono label with the block's own note set
+// against it at the trailing edge.
+.offence__head {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+}
+
+.offence__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+.offence__note {
+  @include layout.micro-label;
+
+  margin: 0;
+}
+
+// What the collection means, in prose voice rather than the mono numeric voice
+// of the figures above it.
+.offence__statement {
+  margin: 0;
+  color: var(--edsb-text-muted);
+  text-wrap: pretty;
+}
+
+// The canvas's headline: the burst figure set large with the line that names it
+// and the sustained figure set against its baseline, on one line
+// (`display: flex; align-items: baseline; gap: 8px`). It wraps rather than
+// overflowing, because the naming line is a sentence in the Commander's
+// language and German's is half again as long as English's.
+.headline {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: baseline;
+  margin: 0;
+}
+
+.headline__value {
+  @include layout.metric-value(var(--edsb-text-size-display), var(--edsb-text-accent-strong));
+}
+
+.headline__note {
+  @include layout.micro-label(var(--edsb-text-secondary));
+}
+
+// The canvas's hairline between the groups inside a block: a plain
+// `height: 1px; background: var(--amber-a14)` band. `section-rule` is the
+// *labelled* rule — a word with a hairline running off it — and on a bare `hr`
+// its flex box collapses to nothing, which is the full stop this drew before.
+.offence__rule {
+  block-size: var(--edsb-border-width-hairline);
+  margin: 0;
+  background-color: var(--edsb-rule-section);
+  border: 0;
+}
+
+// The rows are inert, as the canvas draws them, so the four columns are all a
+// row holds. How those four are arranged depends on the space the list is
+// actually given, which is why the list is its own container: the block sits in
+// one half of a pair that itself narrows, and a four-column table in 155px is
+// a name squeezed to nothing beside three figures.
+.weapons {
+  container-type: inline-size;
+  container-name: weapons;
+  min-inline-size: 0;
+}
+
+.weapons__table {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
+// The compact arrangement, and the default: the module on its own line with its
+// three figures labelled beneath it. The column heads are what the labels would
+// duplicate, so the heads go rather than the labels.
+.weapons__columns {
+  display: none;
+  margin: 0;
+}
+
+.weapon {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.weapon__figures {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  min-inline-size: 0;
+}
+
+.weapons__column {
+  @include layout.micro-label;
+}
+
+.weapons__column--figure {
+  text-align: end;
+}
+
+.weapons__list {
+  @include layout.stack(var(--edsb-space-stack));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Canvas 1c's four columns: `MODULE` fluid, then `DPS`, `PIERCE` and `FALLOFF`
+// hard against the trailing edge. The list owns the tracks and every row
+// borrows them, so a longer figure on one row cannot pull that row's columns
+// out of line with the row above it. It takes room the block does not always
+// have, so it is the arrangement the list promotes to rather than the one it
+// starts from.
+//
+// 18rem, not the 22rem this first carried: the block is one half of a pair
+// inside the outfitting centre column, and at a 1440px desktop the list is
+// given about 19rem — so the table the canvas draws never appeared on the
+// artboard's own width. 18rem still clears the 155px at which the module track
+// collapsed and wrapped a weapon's name one character per line.
+@container weapons (min-width: 18rem) {
+  // One grid for the whole table, borrowed by the heads and by every row
+  // through `subgrid`. Declaring the same track list on each row instead lets
+  // `auto` resolve differently per row, and four figures that do not line up
+  // vertically defeat the point of a table. The figure columns carry the
+  // canvas's own widths as floors rather than as fixed tracks, so `PIERCE` and
+  // `FALLOFF` stand apart from each other instead of collapsing to their
+  // digits and leaving the whole gap beside the module name.
+  .weapons__table {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      repeat(3, minmax(min(var(--edsb-layout-weapon-figure), 22%), auto));
+    column-gap: var(--edsb-space-inline);
+    row-gap: var(--edsb-space-stack-tight);
+  }
+
+  .weapons__columns,
+  .weapons__list,
+  .weapon {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    min-inline-size: 0;
+    margin: 0;
+  }
+
+  .weapons__columns,
+  .weapon {
+    align-items: baseline;
+  }
+
+  .weapons__list {
+    row-gap: var(--edsb-space-stack);
+  }
+
+  // The three figure cells sit in the row's own grid so they line up under the
+  // heads rather than in a nested row of their own.
+  .weapon__figures {
+    display: contents;
+  }
+
+  // The heads name the three columns once. Repeating the word on every row is
+  // what an aligned table exists to avoid — but the label stays in the
+  // accessibility tree, so a cell is never a bare number.
+  .weapon__figure-label {
+    @include layout.visually-hidden;
+  }
+}
+
+// The switched-off row keeps every figure it had: the package still measures the
+// weapon, and it is the totals it leaves it out of. The state is a word in the
+// row and nothing else — no canvas draws a switched-off weapon at all, so a
+// dimming would be an ink this application chose, and a colour could not carry
+// the state on its own in any case.
+
+.weapon__module {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  grid-column: 1;
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+// The ledger's badge draws the name and the code line under it, so the row's
+// module cell holds that and the switched-off word beside it.
+//
+// The badge is asked for its compact name rather than styled from here: a ledger
+// row's subject is the module and its name is set `500 13px`, while here the
+// name is one of four columns and the canvas sets it `400 10.5px` (design L14427
+// against L6871). Which scale a component draws itself at is the component's own
+// decision to name, not a property a neighbour reaches in and sets.
+.weapon__identity {
+  min-inline-size: 0;
+}
+
+.weapon__state {
+  @include layout.micro-label;
+
+  color: var(--edsb-text-muted);
+}
+
+// Label above figure in the compact arrangement, and figure alone against the
+// trailing edge once the heads carry the label instead.
+.weapon__figure {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  margin: 0;
+  text-align: end;
+}
+
+.weapon__figure-label {
+  @include layout.micro-label;
+}
+
+.weapon__not-stated {
+  @include layout.micro-label;
+}
+
+// ---------------------------------------------------------------------------
+// The stacked damage split, and the legend that reports it
+
+// Canvas 1c draws one flat bar divided by type, with a hairline gap between
+// segments so two adjacent colours never touch — which is what keeps the
+// division visible to a reader who cannot tell the two inks apart.
+.split {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.split__bar {
+  display: flex;
+  gap: var(--edsb-border-width-hairline);
+  // Canvas 1c's 22px band. `--edsb-layout-bar-height` is the command bar's
+  // 66px and was never this measure.
+  block-size: var(--edsb-layout-damage-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+.split__segment {
+  display: block;
+  block-size: 100%;
+  min-inline-size: 0;
+}
+
+.split__segment--kinetic {
+  background-color: var(--edsb-surface-damage-kinetic);
+}
+
+.split__segment--thermal {
+  background-color: var(--edsb-surface-damage-thermal);
+}
+
+.split__segment--explosive {
+  background-color: var(--edsb-surface-damage-explosive);
+}
+
+.split__segment--absolute {
+  background-color: var(--edsb-surface-damage-absolute);
+}
+
+.split__segment--unclassified {
+  background-color: var(--edsb-surface-damage-unclassified);
+}
+
+// The reading. Canvas 1c sets the two entries hard against the block's edges;
+// a build with more than two types wraps instead of shrinking them.
+.split__legend {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.split__entry {
+  @include layout.micro-label(var(--edsb-text-secondary));
+}
+
+// ---------------------------------------------------------------------------
+// The canvas's label-bar-figure rows
+
+.bars {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
+.bars__label {
+  @include layout.micro-label;
+
+  margin: 0;
+}
+
+// The list owns the tracks and every row borrows them through `subgrid`, so
+// every bar starts and ends in the same place down the block. Declaring the
+// same track list on each row instead lets `auto` resolve to a different width
+// per row — which is four figures that cannot be read against each other, and
+// the point of drawing them one above the other was that they could. The label
+// and figure columns take the canvas's own 104px and 62px as floors, so a
+// German label at 200% text widens the column rather than wrapping inside it.
+.bars__list {
+  display: grid;
+  // The floors are capped against the list's own width as well as stated in
+  // `rem`, because at 200% text the canvas's 104px and 62px resolve to 208px
+  // and 124px — more than a phone gives the whole block, and a floor a
+  // container cannot honour is a document that scrolls sideways.
+  grid-template-columns:
+    minmax(min(var(--edsb-layout-offence-label), 40%), auto)
+    minmax(0, 1fr)
+    minmax(min(var(--edsb-layout-offence-value), 30%), auto);
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.bar__label {
+  @include layout.micro-label(var(--edsb-text-secondary));
+
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+// The range bands label themselves with a distance rather than a word, and the
+// mixin's uppercase would print the metre as `M`, which is the mega prefix — a
+// different unit from the one the figure is in. The canvas draws `500 m` in mono
+// at this size with no transform.
+//
+// Scoped to this list and not put on `.bar__label` itself, because the capacitor
+// rows label themselves with words and the canvas draws those uppercase in the
+// same face: `DRAW`, `RECHARGE` and `FULL FIRE`, at 9px mono with the same
+// `0.06em` the bands carry.
+.bars--range .bar__label {
+  text-transform: none;
+}
+
+.bar__track {
+  display: block;
+  block-size: var(--edsb-layout-offence-bar);
+  background-color: var(--edsb-surface-inset);
+}
+
+// Nothing at all where the row has no scale to be drawn against: an empty
+// track reads as a figure of nothing, which is a different statement.
+.bar__track-absent {
+  display: block;
+}
+
+.bar__fill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+.bar__value {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+  text-align: end;
+}
+
+.bars__condition {
+  @include layout.micro-label;
+
+  margin: 0;
+}
+
+// The spoken half of a symbol. `∞` is a figure a screen reader cannot say, so
+// what it stands for is written beside it and taken out of sight — the same
+// pairing `power-thermals` and `defence-analysis` carry.
+.visually-hidden {
+  @include layout.visually-hidden;
+}

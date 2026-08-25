@@ -138,9 +138,10 @@ planning ship loadouts.
     a late schematic does not resize the workspace. While it is on its way the
     plate carries the hull illustration's own loading mark.
   - The five-mode strip — `MOUNTS`, `POWER`, `DRIVES`, `DEFENCE`, `OFFENCE` — is
-    canvas 1c's, and is drawn whole at every width. `MOUNTS` is this feature's
-    and `POWER` is feature 005's; the other three are the same plates read by
-    features 006 to 008 and their segments are disabled until those land. Canvas 1d's six-segment strip is a
+    canvas 1c's, and is drawn whole at every width. `MOUNTS` is this feature's,
+    `POWER` is feature 005's, `DEFENCE` is feature 006's and `OFFENCE` is
+    feature 007's; a segment is enabled when its feature lands, and `DRIVES`
+    is the one still waiting. Canvas 1d's six-segment strip is a
     different control — it switches whole compact screens, the anatomy being one
     of them — and building it is feature 002's composition
     (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas
@@ -223,6 +224,59 @@ planning ship loadouts.
     plate container for every mode but `mounts`; and its cruise, weapons-alpha
     and WEP-net figures, which have no package result behind them
     (`specs/005-power-and-heat/design/reference-review.md`, wave 13).
+
+- **Offence profile (feature 007)** is the anatomy region's `OFFENCE` mode: it
+  retitles the region `OFFENCE ANALYSIS`, replaces the plates the same way
+  feature 005's mode does, draws canvas 1c's three blocks — `WEAPONS` beside
+  `DAMAGE PROFILE`, and `SHOT CONVERGENCE` across the full width beneath them —
+  and adds the rail's `DPS` cell. It owns no game rule.
+  `ShipLoadout.weaponMetrics()` and `.weaponsCapacitorMetrics()` are asked once
+  each per projection, in `src/app/domain/offence/offence.ts`, and both surfaces
+  read that one pure function of the same inputs, so neither can hold a figure
+  the other does not; `damageFalloff()` and the gunsight catalogue are asked over
+  its result and nowhere else.
+  `scripts/policy/offence-ownership.mjs` keeps it that way.
+  - **The canvas contract is what settles scope.**
+    `specs/007-offence-profile/design/canvas-contract.md` records every drawn
+    element, what it is built as and what is not built. Its weapon rows are
+    **inert**: no disclosure, no action, no slot. The mount control is in
+    `HULL ANATOMY`, where the canvas puts it.
+  - Two package answers do the work the canvas's own script faked: `damageFalloff()`
+    gives `DPS BY RANGE BAND` its multiplier at 500 m, 1.2 km, 1.8 km and 3 km,
+    and `ships/gunsights` gives `SHOT CONVERGENCE` each hull's hardpoint offsets
+    from the cockpit, placed at a range by `projectGunsight()`. A weapon's slot
+    is resolved to a hardpoint through `enumerateSlots`, never by parsing the
+    key's number; a hull whose gunsight does not line up with its hardpoints is
+    reported unavailable whole, not drawn in part.
+  - The gunsight plate is a **diagram**: `aria-hidden`, with every shot restated
+    as a sentence beside it. Its field of view is the canvas's fixed 115 mrad
+    either side of the axis, six-sixteenths as tall as it is wide, so a shot far
+    enough off-axis is clipped rather than stretched — and keeps its sentence.
+    A hardpoint the build has **not** filled takes no mark and no sentence:
+    `wireConvergence` faces one on its own sample build and draws nothing for
+    it, and an earlier revision that drew them is reverted with its requirement
+    (`specs/007-offence-profile/design/canvas-contract.md`, review note 8).
+  - **A bar only where a scale exists.** The four range bands share one and are
+    filled; `DRAW` and `RECHARGE` are both MJ/s and are filled against the larger;
+    `CAPACITY` in MJ and `FULL FIRE` in seconds share a scale with nothing beside
+    them and keep their figures without a track. Every figure is written in words
+    either way. The damage shares are the same rule as a fill: one package amount
+    over another, both stated on the same screen.
+  - Fields no canvas draws are **not read at all** — the whole-build firing cost
+    on `WeaponTotals`, `netDrainRate`, the echoed `weaponsPips`, every
+    `WeaponMetrics` field beyond the row's four columns, and the ammunition
+    capacity. Nothing downstream can then blank, dash or zero one.
+  - Out of scope, deliberately: the mobile canvas's `VS 45% RESIST` block —
+    `ALPHA`, `BURST DPS`, `VS SHIELD`, `VS HULL` — and its `CORROSIVE +30%` chip.
+    The package returns no result against a target and publishes no effect bonus,
+    and the canvas states no target model to build one from.
+  - The specification's original scope line claimed the package returned nothing
+    for damage-at-range or convergence, and both regions were left unbuilt on
+    that ground. It was never checked against the package, and it was false. The
+    record is kept in `specs/007-offence-profile/spec.md`, in that feature's
+    `design/reference-review.md` and in its requirements checklist: **an
+    exclusion justified by what the package does not return has to be verified
+    against the package, not against the sentence asserting it.**
 
 ## Commit Identity — no personal data in git metadata
 

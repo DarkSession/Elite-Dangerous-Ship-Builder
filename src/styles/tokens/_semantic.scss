@@ -88,6 +88,24 @@
   // The hatched plate behind hull artwork.
   --edsb-surface-plate: var(--edsb-texture-plate);
 
+  // Damage types, where a bar splits one total across them. Canvas 1c draws
+  // kinetic in the amber it draws every hull figure in and thermal in the hot
+  // ink it draws heat in, which is the same pairing the power dashboard uses.
+  // The remaining three are the grounds already carrying a distinct meaning:
+  // explosive on the healthy green, absolute on the cool ink, unclassified on
+  // the faintest amber the scale holds. Every segment states its own amount and
+  // share in the legend beside it — the colour separates, it does not report.
+  --edsb-surface-damage-kinetic: var(--edsb-palette-amber);
+  --edsb-surface-damage-thermal: var(--edsb-palette-hot);
+  --edsb-surface-damage-explosive: var(--edsb-palette-good-2);
+  --edsb-surface-damage-absolute: var(--edsb-palette-cool);
+  --edsb-surface-damage-unclassified: var(--edsb-palette-amber-a40);
+
+  // The gunsight's own two inks: a fixed mount and an aimed one. The word is in
+  // each shot's sentence; this only tells two dots apart at a glance.
+  --edsb-surface-mount-fixed: var(--edsb-palette-amber);
+  --edsb-surface-mount-aimed: var(--edsb-palette-cool);
+
   // ---------------------------------------------------------------------------
   // Text — every role at or above 4.5:1 on all nine grounds
   // ---------------------------------------------------------------------------
@@ -315,6 +333,15 @@
   --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
   --edsb-layout-node-mark: var(--edsb-measure-node-mark);
   --edsb-layout-power-bar: var(--edsb-measure-power-bar);
+  --edsb-layout-damage-bar: var(--edsb-measure-damage-bar);
+  --edsb-layout-range-track: var(--edsb-measure-range-track);
+  --edsb-layout-offence-bar: var(--edsb-measure-offence-bar);
+  --edsb-layout-offence-label: var(--edsb-measure-offence-label);
+  --edsb-layout-offence-value: var(--edsb-measure-offence-value);
+  --edsb-layout-weapon-figure: var(--edsb-measure-weapon-figure);
+  --edsb-layout-gunsight-ratio: var(--edsb-measure-gunsight-ratio);
+  --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
+  --edsb-layout-shot-badge: var(--edsb-measure-shot-badge);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);

@@ -68,6 +68,51 @@ test.describe('offline capability', () => {
     await context.setOffline(false);
   });
 
+  test('reads the offence analysis with no network at all', async ({ page, context }) => {
+    await withWorker(page, '/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+
+    await context.setOffline(true);
+
+    // The whole capability is a synchronous read of an in-memory loadout and an
+    // installed package, so opening the mode, moving the target range and
+    // changing the WEP allocation all work with the network gone.
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Offence' })
+      .click();
+    await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+
+    const shots = page.locator('edsb-offence-analysis .shots__entry');
+    const before = await shots.allInnerTexts();
+    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
+    await expect.poll(() => shots.allInnerTexts()).not.toEqual(before);
+
+    await expect(page.locator('edsb-offence-analysis .bars--range .bar')).toHaveCount(4);
+    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor .bar');
+    await expect(capacitor).toHaveCount(4);
+
+    // The one condition this panel reads from another feature's store. Setting
+    // it goes through the `POWER` mode's own control and comes back, so the
+    // whole round trip is proven to need no network either.
+    const recharge = capacitor.nth(1).locator('.bar__value');
+    const chargedAt = await recharge.innerText();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Power' })
+      .click();
+    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await page.locator('.distributor tbody tr').nth(2).locator('.pips__step').first().click();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Offence' })
+      .click();
+    await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+    await expect.poll(() => recharge.innerText()).not.toBe(chargedAt);
+
+    await context.setOffline(false);
+  });
+
   /*
    * Two more illustration journeys belong to this contract and live in
    * `hull-detail.spec.ts` instead: an illustration that cannot be fetched

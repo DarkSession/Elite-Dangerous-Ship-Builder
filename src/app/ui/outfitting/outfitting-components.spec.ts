@@ -120,7 +120,20 @@ describe('module identity badge', () => {
       mount: 'Gimballed',
     });
 
-    expect(textOf(query(fixture, '.identity__code-line'))).toBe('4A · Gimballed');
+    // A space, not a dot: the canvas writes `4A GIMBALLED` and takes the dot
+    // only for what follows the mount (`3E FIXED · STOCK`).
+    expect(textOf(query(fixture, '.identity__code-line'))).toBe('4A Gimballed');
+  });
+
+  it('draws the name at the ledger’s scale, and at the smaller one when asked', () => {
+    const ledger = renderComponent(ModuleIdentityBadge, { name: LOCALIZED });
+    const compact = renderComponent(ModuleIdentityBadge, { name: LOCALIZED, compact: true });
+
+    // Canvas 1c sets a ledger row's module name `500 13px` and the offence
+    // panel's weapon name `400 10.5px`, the name there being one of four columns
+    // rather than the row's subject. Two scales, both the drawing's.
+    expect(query(ledger, '.identity__name')?.classList).not.toContain('identity__name--compact');
+    expect(query(compact, '.identity__name')?.classList).toContain('identity__name--compact');
   });
 
   it('spells the code out for anyone reading it aloud', () => {

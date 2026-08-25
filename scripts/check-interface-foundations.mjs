@@ -1431,6 +1431,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A dash standing in for a group the package never published; not a word in either language.',
     'power.heat.does-not-settle':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
+    'offence.capacitor.endurance.sustained':
+      'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
       'The Apple command key and a letter; the glyph is the key itself, not a word.',
     'outfitting.acquisition.short.mercenary':
@@ -1496,6 +1498,17 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'defence.format.hull-points':
       'A value and the in-game abbreviation for hull points, used untranslated in the German community.',
     'defence.rail.megajoules': 'The SI symbol for the megajoule, identical in German.',
+    'offence.format.seconds': 'A value and the SI symbol for the second, identical in German.',
+    'offence.format.megajoules':
+      'A value and the SI symbol for the megajoule, identical in German.',
+    'offence.format.megajoules-per-second':
+      'A value and the SI symbol for megajoules per second, identical in German.',
+    'offence.format.milliradians':
+      'A value and the SI symbol for the milliradian, identical in German.',
+    'offence.damage.legend':
+      'A composition pattern: every part is a variable, and the separator is language-neutral.',
+    'offence.convergence.widest.value':
+      'A composition pattern; "HP" is the abbreviation the canvas draws in this cell, a code like "4A" rather than a word, and the rest is a variable.',
   },
 };
 

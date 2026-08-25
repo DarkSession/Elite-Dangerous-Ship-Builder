@@ -9,10 +9,11 @@ configuration; and `.design/Ship Builder.dc.html` canvases 1c and 1d. No applica
 **Decision**: Retain one exact `BuildWeaponMetrics` from `loadout.weaponMetrics()` for each active
 build revision and one exact `WeaponsCapacitorMetrics` from
 `loadout.weaponsCapacitorMetrics({ weaponsPips })` for each build/condition revision. Import
-`ShipLoadout`, `WeaponsOptions`, `BuildWeaponMetrics` and `FittedWeaponMetrics` from
+`ShipLoadout`, `BuildWeaponMetrics` and `FittedWeaponMetrics` from
 `@elite-dangerous-almanac/core/ships/ship-loadout`; weapon result types from `/ships/weapons`;
-capacitor types from `/ships/weapons-capacitor`; ammunition from `/ships/ammunition`; and projectile
-boundaries from `/ships/modules`.
+capacitor types from `/ships/weapons-capacitor`; `damageFalloff` from `/ships/weapons`; module mounts
+from `/ships/modules`; hardpoint geometry from `/ships/gunsights`; and hull layouts from
+`/ships/ships` and `/ships/slots`.
 
 **Rationale**: These are the public leaf contracts. Retaining the package objects avoids a parallel
 numeric model and lets detail and Status select the same build projection.
@@ -24,10 +25,10 @@ risk.
 
 ## Complete weapon output
 
-**Decision**: Preserve the ten total fields and every returned fitted entry exactly. Each entry keeps
-`slot`, `symbol`, canonical returned `name`, `enabled`, `ammunition`, optional
-`maximumRange`/`falloffRange`/`projectileRange`/`armourPiercing`, and all 14 required
-`WeaponMetrics` fields. Preserve returned order and use the exact `slot` for navigation.
+**Decision**: Retain the whole `BuildWeaponMetrics` and read from it where each figure is drawn.
+Present the four the canvas's columns draw — name, `metrics.damagePerSecond`, `armourPiercing`,
+`falloffRange` — and preserve returned order. The rest, including `ammunition`, are unread: no canvas
+draws them, and the canvas draws its rows inert.
 
 **Rationale**: Runtime probes and declarations agree. The installed package returns known weapons in hull-slot
 order and appends unknown/unmapped slots in source order. Reversed Sidewinder input returns
@@ -57,111 +58,143 @@ rejected as dishonest.
 
 ## Damage-type semantics
 
-**Decision**: Present burst and sustained kinetic, thermal, explosive, absolute and anti-xeno values
-field-for-field. Optional `unclassified` is present only for non-zero unclassified damage; structural
-absence means no unclassified damage and may be omitted or stated as none. Anti-xeno is labelled as an
-overlay on conventional damage. Calculate no share, percentage, combined total or target result.
+**Decision**: Draw the conventional members of `damageByType` the build deals as the canvas's stacked
+bar, and state each one's exact amount and its share in the legend beside it. A member that is zero
+or absent gets no segment and no line. Read neither `antiXeno` nor `sustainedDamageByType`. Compute
+no combined total and no target result.
 
-**Rationale**: `DamageSplit` documents unclassified as absent when zero, while anti-xeno overlays the
-conventional partition. Guardian Gauss demonstrates an anti-xeno overlay; a Plasma Shock Accelerator
-variant demonstrates unclassified conventional output. Calling absent unclassified “unavailable”
-would misstate the package contract.
+**Rationale**: this is what both canvases draw and all they draw. `DamageSplit` documents
+`unclassified` as absent when zero, so an omitted member and a zero member mean the same thing and
+are drawn the same way — which is why nothing on the screen has to tell them apart. The share is one
+package amount over another with both stated, which is the form feature 006 established for a bar
+fill.
 
-**Alternatives considered**: Zero-filling optional structure, labelling it unknown, copying the
-reference's percentage bar, combining conventional and anti-xeno, and target resistance simulation
-were rejected.
+**Revised 2026-08-24.** This decision previously read: present burst _and_ sustained values
+field-for-field, with `antiXeno` labelled as an overlay and an absent `unclassified` stated as none.
+It was implemented as two enumerated lists of every member of both splits, most of them zeroes. No
+canvas draws any of that, and it was withdrawn along with the two package fields nothing draws
+(`design/canvas-contract.md`, review note 7).
+
+**Alternatives considered**: zero-filling optional structure, labelling it unknown, combining
+conventional and anti-xeno, and target resistance simulation were rejected.
 
 ## Range, projectile boundaries and piercing
 
-**Decision**: Present effective `maximumRange` and `falloffRange` in metres when returned;
-`ProjectileRangeBoundaries` as separately named unitless package parameters; and `armourPiercing` as
-a rating. Preserve every absent optional member as not stated. Boundary value zero remains present.
+**Decision**: Present `falloffRange` in metres when returned and `armourPiercing` as a rating.
+Preserve every absent optional member as not stated.
 
 **Rationale**: A subsurface-displacement missile returns projectile boundaries while omitting
-effective distances. Other records omit range or piercing entirely. The package explicitly says
-projectile boundaries are not effective distances and cannot drive attenuation.
+effective distances. Other records omit range or piercing entirely.
 
-**Alternatives considered**: `fittedModuleAt()` joins, catalogue fallback, `damageFalloff()`,
-`armourPiercingFactor()`, target hardness and range-band aggregation were rejected as duplicate or
-out-of-scope calculations.
+**Alternatives considered**: `fittedModuleAt()` joins, catalogue fallback, `armourPiercingFactor()`
+and target hardness were rejected as duplicate or out-of-scope calculations.
 
-## Ammunition semantics
+## Damage at range
 
-**Decision**: Keep package `null` as carries no ammunition. A capacity keeps exact `clipSize`,
-`hopper`, `total` and `unlimited`. Infinite hopper/total with `unlimited: true` receives localized
-unlimited wording; finite zero reserve remains numeric zero.
+**Decision**: Ask `damageFalloff({ maximumRange, falloffRange }, metres)` for each enabled weapon at
+the canvas's four distances, and add the results. The multiplier is the package's; the addition is
+the same addition the package performs for `total`, over the same weapons.
 
-**Rationale**: Probes distinguish laser `null`, finite multicannon capacity, Abrasion Blaster
-infinity/unlimited and an 18-round magazine with zero reserve. These are full-rearm capacities, not
-current journal ammunition.
+**Rationale**: An earlier revision of this research rejected `damageFalloff()` as an out-of-scope
+calculation, and the specification then placed the whole `DPS BY RANGE BAND` region out of scope on
+that basis. Both were wrong. `damageFalloff()` is a published package function that answers exactly
+the question the canvas's rows ask, and rejecting it left a third of the canvas unbuilt. The record
+is kept here because a rejection that reads as reasoned is the kind that survives review.
 
-**Alternatives considered**: Treating null as unknown, passing infinity through number formatting,
-calling zero reserve unlimited, or calculating shots/reloads/firing time were rejected.
+**Alternatives considered**: A local attenuation curve, a hardness or resistance model and a
+per-weapon target simulation were rejected — the package answers none of them, and the canvas states
+no target model.
 
-## WEP half-pips and capacitor semantics
+## Shot convergence
 
-**Decision**: Accept feature 003's settled integer half-pips and pass
-`conditions.pips.weapons / 2` exactly once to `weaponsCapacitorMetrics()`. Retain all six returned
-fields and display the returned `weaponsPips`. Map finite positive time, zero time, infinite time with
-positive draw and infinite time with zero draw to field-specific wording without replacing the
-number.
+**Decision**: Read the hull's published hardpoint offsets with `getShipGunsight(shipSymbol)`, resolve
+each weapon's returned `slot` to a place in that list through
+`enumerateSlots(getShipSlots(shipSymbol))`, and place the shots at a range with
+`projectGunsight(offsets, metres)`.
 
-**Rationale**: The package accepts any finite pips from zero to four; feature 003 deliberately narrows
-product input to half steps summing to six. Stock Sidewinder at WEP 2 returns capacity 10, recharge
-0.5598197949…, draw 2.48, net drain 1.920180205… and time 5.207844541… seconds. Distributor disabled
-with powered lasers returns zero capacity and positive draw with zero seconds. Plant off or all
-weapons disabled returns zero draw and infinity. Infinity therefore means no net drain, not by itself
-that firing is possible.
+**Rationale**: `ships/gunsights` publishes every player-flyable hull's hardpoint offsets from the
+cockpit, in metres, in the hull's own hardpoint order — the geometry the canvas's plate draws.
+Probing the catalogue confirmed the gunsight length matches the hardpoint count on the hulls checked
+(Anaconda 8, Python 5, Fer-de-Lance 5, Sidewinder 2), and `enumerateSlots` is the sanctioned
+ordering: the package documents hulls where a slot key's number and its place disagree.
 
-**Alternatives considered**: Passing integer half-pips directly, a second pip validator/store,
-recalculating recharge/net drain/time, or describing every infinity as indefinite firing were
-rejected.
+A hull the catalogue does not carry, or one whose gunsight does not line up with its hardpoints, is
+reported unavailable whole. A convergence drawn from part of the mounts is a spread nobody has.
+
+**Alternatives considered**: Parsing the slot number out of the key, deriving offsets from the hull
+schematic, modelling a projectile path and drawing the mounts the catalogue _did_ place while
+dropping the rest were all rejected.
+
+## The WEP allocation and capacitor semantics
+
+**Decision**: Read the WEP allocation from feature 005's `PowerConditionsStore` and pass it to
+`weaponsCapacitorMetrics()` unchanged. Retain the four fields a canvas draws — capacity, recharge
+rate, sustained draw and time to drain — and map finite positive time, zero time and infinite time to
+field-specific wording without replacing the number.
+
+**Rationale**: The package accepts any finite allocation from zero to four, and that store already
+holds one, on the game's own half step, in that exact range. There is nothing to convert, so there is
+no conversion to get wrong. Stock Sidewinder at WEP 2 returns capacity 10, recharge 0.5598197949…,
+draw 2.48 and time 5.207844541… seconds. A distributor disabled with powered lasers returns zero
+capacity and a positive draw with zero seconds. A plant that is off, or all weapons disabled, returns
+zero draw and infinity — so infinity means the recharge keeps pace, not by itself that firing is
+possible.
+
+`netDrainRate` and the returned `weaponsPips` are not read: no canvas draws a net drain, and no canvas
+prints the allocation back. This is the rule feature 005 set for `headroom`, `utilisation` and
+`withinBudget`.
+
+**Alternatives considered**: Converting the allocation at the boundary, a second pip store,
+recalculating recharge or time, and describing every infinity as indefinite firing were rejected.
 
 ## Weapon totals versus powered firing load
 
-**Decision**: Label `weaponMetrics().total` as enabled returned-weapon output and capacitor
-`sustainedEnergyPerSecond` as powered, enabled, deployed firing draw. Never force them to match.
+**Decision**: Read from `weaponMetrics().total` only the two damage figures and the two damage splits
+the canvases draw. The whole-build firing cost — capacitor draw, heat, thermal load and plant draw —
+is not read at all.
 
-**Rationale**: Weapon totals do not apply plant shedding; capacitor input does. Probes show shed Gauss
-weapons with positive aggregate EPS but zero capacitor draw, and a shed distributor with positive
-weapon/capacitor draw but zero capacity/immediate drain.
+**Rationale**: The two scopes genuinely differ: weapon totals do not apply plant shedding and
+capacitor input does, and probes show shed Gauss weapons with a positive aggregate EPS but zero
+capacitor draw. The canvas resolves the risk of confusing them by drawing only one of the two, in the
+capacitor block, from the capacitor result. Not reading the other is both what the canvas asks for and
+the safer answer.
 
-**Alternatives considered**: Zeroing weapon totals from power state, comparing the two EPS values as
-an error, or substituting one for the other were rejected because they change package scope.
+**Alternatives considered**: Drawing both and labelling their scopes, zeroing weapon totals from power
+state, and comparing the two as an error were rejected — the first because no canvas draws it, the
+others because they change package scope.
 
-## Distributor and hardpoint context ownership
+## Hardpoint context, and no distributor observation
 
-**Decision**: Consume two explicit same-revision boundaries: feature 002 supplies package-backed
-hardpoint coverage and shared exact-slot targets; feature 005 supplies a deployed distributor
-observation through its accepted generalized `MountPowerObservationPort`, backed by its owner-authored
-`powerBudget()` interpretation. Feature 007 passes the distributor core slot and explicit `deployed`
-state independently of the selected viewing state. Delivery waits on the owner implementations and
-wiring, not on a missing type-only contract.
+**Decision**: Consume one boundary — feature 002's `hardpointCoverage()` over the same revision's
+slot views, which answers `confirmedEmpty`, `complete` or `unavailable`. Build no distributor power
+observation, and state no cause beside a zero capacity.
 
-**Rationale**: Feature 002's accepted coverage implementation remains a sequencing dependency.
-Feature 005 now owns one exact-slot port for feature 007's core distributor and feature 010's
-hardpoint/utility reads, with the observation state explicit so a retracted viewing context cannot
-alter feature 007's deployed request. Feature 007 still cannot reconstruct priority shedding or infer
-a cause from null.
+**Rationale**: Coverage is needed because an empty weapon list is the set of weapons the package could
+measure, not the set of mounts carrying a module, and only feature 002 can tell those apart. A
+distributor observation is a different matter: no canvas draws one anywhere in the offence panel, so
+building one would put a fact on the screen the design does not have, and placing it beside a zero
+capacity would read as a cause the package never stated. A zero capacity is shown as the package's own
+result and nothing more.
 
 **Alternatives considered**: Diagnosing from capacitor zero, calling `distributorMetrics()` and
-parsing null, joining feature-005 consumers/bands locally, or hiding power context were rejected. The
-first three infer or duplicate power semantics; the last fails FR-007.
+parsing null, joining feature-005 consumers to bands, and building the planned mount-power port were
+all rejected. The first three infer power semantics this feature does not own; the last builds a
+surface the canvas does not draw.
 
-## Status-provider integration
+## The status rail cell
 
-**Decision**: Export `OffenceStatusProvider` under feature 003's generic envelope. It selects exact
-`total.sustainedDamagePerSecond`, supplies package-native firing condition, targets
-`offenceProfile`, repeats the captured revisions and returns `qualifiedSummaryIds: ['sustainedDps']`
-only when hardpoint coverage is unavailable.
+**Decision**: Contribute one cell to the rail's six-cell row: the canvas's `DPS`, carrying
+`total.sustainedDamagePerSecond` from the same projection the panel reads. A label and a bare figure,
+with no unit and no condition. Unavailable hardpoint coverage qualifies it once; an exact zero does
+not.
 
-**Rationale**: Feature 003's accepted provider bundle requires an owner-authored feature-007
-projection. Sharing the cached weapon projection prevents a second calculation model and leaves
-feature 003 responsible only for composition.
+**Rationale**: The canvas draws six cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS` — and
+`DPS` is this feature's. Its own sample value cannot settle whether the cell means burst or sustained,
+because 1c calls `248.6` burst and 1d calls it sustained; the specification settles it as sustained.
+Reading the same projection the panel reads is what stops the two disagreeing.
 
-**Alternatives considered**: Feature 003 calling Almanac itself, a second unversioned status store,
-qualifying every numeric zero, and suppressing retracted output were rejected by ownership and the
-package-native firing contract.
+**Alternatives considered**: A second calculation for the rail, qualifying every numeric zero, and
+anticipating features 006 and 008's cells were rejected.
 
 ## Canonical and localized game text
 
@@ -177,17 +210,20 @@ overwriting the snapshot's canonical field were rejected.
 
 ## Design-reference adaptation
 
-**Decision**: Use canvas 1c's first-class Offence mode, prominent burst/sustained total and scannable
-weapon identity/DPS/piercing/range adjacency. Use canvas 1d only for vertical-card and selected-slot
-layer direction. Extend both with complete field parity, exact-slot actions and all required states.
+**Decision**: Build canvas 1c's three blocks — `WEAPONS`, `DAMAGE PROFILE` and `SHOT CONVERGENCE` —
+in the composition it draws them in. Use canvas 1d only for vertical-card direction and for the
+`WEP CAP` field canvas 1c omits. Extend both only with the states no canvas draws.
 
-**Rationale**: Canvas 1c nests damage/range/capacitor beside the weapon summary; canvas 1d omits that
-weapon summary, reduces capacitor data, adds target/convergence calculations and contradicts the
-desktop sample's burst/sustained labels. The mock is not a responsive data contract.
+**Rationale**: Canvas 1c nests damage/range/capacitor beside the weapon summary and puts convergence
+full-width beneath; canvas 1d omits that weapon summary, reduces capacitor data and contradicts the
+desktop sample's burst/sustained labels. The mock is not a responsive data contract, but it is the
+contract for what is on the screen.
 
-**Alternatives considered**: Literal HTML/CSS reuse, copying mobile omissions, inferred bars,
-convergence, range bands, target resistance, alpha/corrosion values, hover meanings, external assets
-and fixed breakpoints were rejected by the spec and constitution.
+**Alternatives considered**: Literal HTML/CSS reuse, copying mobile omissions, target resistance,
+alpha/corrosion values, hover meanings, external assets and fixed breakpoints were rejected by the
+spec and constitution. Rejecting the shares, the range bands and the convergence region _as well_ was
+this feature's own error, recorded above and in
+[design/reference-review.md](./design/reference-review.md).
 
 ## Repository and verification readiness
 

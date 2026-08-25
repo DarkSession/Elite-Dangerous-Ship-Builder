@@ -142,10 +142,11 @@ and at its own label width beside it when there is room.
 
 Canvas 1d's strip is **not** the same control, and the difference is recorded below.
 
-Only `MOUNTS` has anything to draw. `POWER`, `DRIVES`, `DEFENCE` and `OFFENCE` are the same plates
-read by features 005 to 008, and until one of those ships its segment is **disabled** rather than
-opening a panel with nothing in it — a segment that switched to an empty layer would be this
-capability claiming a reading of the hull that nothing has made. The open one is exposed as pressed
+`MOUNTS` is this capability's own layer. `POWER`, `DRIVES`, `DEFENCE` and `OFFENCE` are the same
+plates read by features 005 to 008, and until one of those ships its segment is **disabled** rather
+than opening a panel with nothing in it — a segment that switched to an empty layer would be this
+capability claiming a reading of the hull that nothing has made. Features 005, 006 and 007 have
+since shipped, so `POWER`, `DEFENCE` and `OFFENCE` open; `DRIVES` waits on feature 008. The open one is exposed as pressed
 state as well as by the canvas's marker, so no segment's condition is carried by colour alone. A
 disabled segment is never the filled one, whichever is selected: the fill says "this is the mode you
 are in", which a segment nobody can reach is not, and disabled ink on it reads at 1.34:1.

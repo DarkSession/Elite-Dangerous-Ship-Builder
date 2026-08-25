@@ -387,6 +387,43 @@
   // Canvas 1c's power panel: `min-height: 328px`, and the 16px bars its
   // priority groups, module draws and heat scenarios are all drawn with.
   --edsb-measure-power-bar: 0.5625rem; // 9
+
+  // Canvas 1c's offence panel.
+  //
+  // The stacked damage bar is 22px — a band, not the 66px command bar the panel
+  // reached for before this measure existed. The label-bar-figure rows below it
+  // set their label at 104px and their figure at 62px, and the weapon table's
+  // three figure columns at 46, 44 and 60px; those are floors here rather than
+  // fixed tracks, because a German label at 200% text needs more than the
+  // canvas's English one and a column that clips its own head reads as a
+  // different figure. What the canvas is actually fixing is that the tracks
+  // agree down the block, and subgrid is what holds that.
+  --edsb-measure-damage-bar: 1.375rem;
+  // The range field's own band, at the same 22px canvas 1c draws it. Its own
+  // measure rather than the damage bar's: `edsb-range-field` is a design-system
+  // control every screen may compose, and a change to one screen's damage bar
+  // must not resize it.
+  --edsb-measure-range-track: 1.375rem;
+
+  // The six label-bar-figure tracks the offence panel draws — four range bands
+  // and the two capacitor rows that share a scale — are 11px on the canvas, not
+  // the 9px feature 005's power panel uses. Six and not the canvas's seven:
+  // `CAPACITY` and `FULL FIRE` share a scale with nothing beside them and keep
+  // their figure without a bar (`design/canvas-contract.md`, review note 6). Its own measure so that
+  // the two panels stay the sizes their own canvases draw them.
+  --edsb-measure-offence-bar: 0.6875rem; // 11
+  --edsb-measure-offence-label: 6.5rem;
+  --edsb-measure-offence-value: 3.875rem;
+  --edsb-measure-weapon-figure: 3.75rem;
+
+  // Canvas 1c's gunsight plate: `aspect-ratio: 16/6`, an 11px dot where each
+  // shot lands, and a 20px badge parked at the plate's edge with a leader line
+  // back to its dot. The badge is off the shot rather than on it because five
+  // shots converging is five marks in one place, and a numeral inside each of
+  // them is unreadable exactly when the spread is tightest.
+  --edsb-measure-gunsight-ratio: 16 / 6;
+  --edsb-measure-shot-dot: 0.6875rem;
+  --edsb-measure-shot-badge: 1.25rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 

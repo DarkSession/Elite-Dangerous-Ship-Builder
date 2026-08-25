@@ -1,0 +1,138 @@
+@use '../../../../styles/responsive' as layout;
+
+// A labelled slider with its value beside it.
+//
+// The reference draws it as a tracked monospace label, a flat inset track with
+// an amber fill behind the thumb, and the figure set large to the trailing
+// side (canvas 1c, `SHOT CONVERGENCE`). The control itself is a native range
+// input; everything here is appearance, and none of it changes what the
+// platform reports.
+
+:host {
+  display: block;
+}
+
+.range {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+}
+
+.range__label {
+  @include layout.micro-label(var(--edsb-text-subtle));
+}
+
+// Canvas 1c's flat inset band, at the canvas's own 22px — the control's own
+// measure, because this is a design-system component and a screen's damage bar
+// is not its size.
+//
+// The band is what a Commander sees; the control over it is the full target
+// height and overhangs the band above and below, so the whole of that height is
+// the pointer and touch target even though only the band is drawn (feature 011,
+// FR-006). Drawing the band at the target height instead made the slider twice
+// the weight of anything else in the block, which is a different control.
+.range__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  block-size: var(--edsb-layout-range-track);
+  background-color: var(--edsb-surface-inset);
+}
+
+.range__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: block;
+  background-color: var(--edsb-surface-accent-quiet);
+}
+
+// The control sits over its own fill, at the full target size so that the whole
+// track is the touch target rather than the thumb alone (feature 011, FR-006).
+//
+// Its own appearance is taken off it entirely. The platform draws a rounded
+// groove and a round thumb; the canvas draws a flat inset band with a thin
+// upright knob standing across it, and the groove showing through the fill
+// behind is what made the two read as different controls. Nothing here changes
+// what the platform *reports* — it stays a native range input with its own
+// value, minimum, maximum, step and keyboard.
+.range__control {
+  @include layout.target-baseline;
+
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  // Centred on the band and taller than it, so the target height is the whole
+  // of the control while the band keeps the canvas's weight.
+  margin-block: calc((var(--edsb-layout-range-track) - var(--edsb-target-size)) / 2);
+  margin-inline: 0;
+  appearance: none;
+  background: none;
+}
+
+// The canvas's knob: a 3px upright standing slightly proud of the band, rather
+// than a disc sitting in a groove. Both vendor pseudo-elements are written out
+// because neither engine accepts the other's, and a selector list containing
+// one it does not know drops the whole rule.
+@mixin knob {
+  appearance: none;
+  inline-size: var(--edsb-border-width-thick);
+  // The canvas stands its knob 3px proud of the band at each end.
+  block-size: calc(var(--edsb-layout-range-track) + 2 * var(--edsb-space-3xs));
+  background-color: var(--edsb-surface-accent-solid);
+  border: 0;
+  border-radius: 0;
+}
+
+.range__control::-webkit-slider-thumb {
+  @include knob;
+}
+
+.range__control::-moz-range-thumb {
+  @include knob;
+}
+
+// The band the knob stands on is the `.range__track` behind, so the input's own
+// runnable track carries nothing.
+.range__control::-webkit-slider-runnable-track {
+  block-size: 100%;
+  background: none;
+}
+
+.range__control::-moz-range-track {
+  block-size: 100%;
+  background: none;
+}
+
+.range__control:disabled::-webkit-slider-thumb {
+  background-color: var(--edsb-text-disabled);
+}
+
+.range__control:disabled::-moz-range-thumb {
+  background-color: var(--edsb-text-disabled);
+}
+
+.range__value {
+  @include layout.metric-value(var(--edsb-text-size-lead), var(--edsb-text-accent-strong));
+
+  text-align: end;
+}
+
+// The ends of the scale, printed under the track they belong to.
+.range__scale {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  letter-spacing: var(--edsb-text-tracking-meta);
+  color: var(--edsb-text-faint);
+}
+
+.range__description {
+  grid-column: 1 / -1;
+  font-size: var(--edsb-text-size-compact);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+}

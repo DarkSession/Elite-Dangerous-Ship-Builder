@@ -1,0 +1,214 @@
+@use '../../../../../../styles/responsive' as layout;
+
+// Canvas 1c's `SHOT CONVERGENCE`: a `16 / 6` gunsight plate, the range it is
+// drawn at, and four cells reporting the spread. The block's own frame, heading
+// and note are the panel's, and stay with it; everything here is the content
+// inside that frame.
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.convergence {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+.convergence__range {
+  display: block;
+  min-inline-size: 0;
+}
+
+// ---------------------------------------------------------------------------
+// The gunsight plate
+
+// Canvas 1c's `16 / 6` box on hatched ground, inside an amber hairline. Its own
+// ratio rather than the anatomy plate's `720 / 292`: the gunsight runs the full
+// width of the panel, and the taller box turned a band into a third of the
+// screen.
+//
+// Its own query container, because the badge numeral is sized in `cqw` against
+// the plate it is drawn on rather than against whatever box happens to enclose
+// it — the same reason `.schematic` is one.
+//
+// Every *mark* on it is placed with physical `left` and `top`, deliberately, as
+// the hull schematic places its mounts: a gunsight is a view out of the
+// cockpit, and a right-to-left interface does not move a ship's port hardpoint
+// to starboard. The leaders make it a correctness question rather than a
+// preference — `transform-origin` has no logical form, so a leader anchored by
+// its inline start would pivot about its far end under `rtl` and point away
+// from the dot it belongs to. The two captions are the exception, and are
+// placed logically: they are sentences, not geometry, and a sentence belongs at
+// the reading edge.
+.plate {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: var(--edsb-layout-gunsight-ratio);
+  overflow: hidden;
+  background: var(--edsb-surface-plate);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative-strong);
+}
+
+.plate__axis {
+  position: absolute;
+  background-color: var(--edsb-border-decorative-strong);
+}
+
+.plate__axis--vertical {
+  inset-block: 0;
+  left: 50%;
+  inline-size: var(--edsb-border-width-hairline);
+}
+
+.plate__axis--horizontal {
+  inset-inline: 0;
+  top: 50%;
+  block-size: var(--edsb-border-width-hairline);
+}
+
+// The two dashed rings, centred on the axis and sized in the angle they stand
+// for rather than in pixels, so they stay true at every plate width.
+.plate__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-decorative);
+  border-radius: 50%;
+}
+
+// Where the shot actually lands: the canvas's 11px dot, ringed in the plate's
+// own ground so it stays visible over a dashed ring or the axis.
+.plate__dot {
+  position: absolute;
+  translate: -50% -50%;
+  inline-size: var(--edsb-layout-shot-dot);
+  block-size: var(--edsb-layout-shot-dot);
+  background-color: var(--edsb-surface-mount-fixed);
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--edsb-border-width-thick) var(--edsb-surface-sunken);
+}
+
+// The leader from a badge to its dot. Drawn from the badge outwards and turned
+// onto the bearing between the two, which is why its length is a percentage of
+// the plate's width and the geometry behind it is worked in the canvas's own
+// square-unit plate space.
+.plate__leader {
+  position: absolute;
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-surface-accent-selected);
+  rotate: 0deg;
+  transform-origin: 0 50%;
+}
+
+// The mount's numbered badge, parked at the plate's nearer edge: the schematic's
+// own hardpoint node, on sunken ground so the numeral keeps its contrast
+// whichever ink the mount takes.
+.plate__shot {
+  position: absolute;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--edsb-layout-shot-badge);
+  block-size: var(--edsb-layout-shot-badge);
+  background-color: var(--edsb-surface-sunken);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-fixed);
+  color: var(--edsb-text-accent-strong);
+}
+
+// An aimed mount and a fixed one, told apart at a glance. The word is in the
+// shot's own sentence below; this only separates two marks.
+.plate__shot--aimed {
+  border-color: var(--edsb-surface-mount-aimed);
+  color: var(--edsb-text-info);
+}
+
+.plate__dot--aimed {
+  background-color: var(--edsb-surface-mount-aimed);
+}
+
+.plate__leader--aimed {
+  background-color: var(--edsb-surface-info-quiet);
+}
+
+.plate__badge {
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-node-mark);
+  font-weight: var(--edsb-text-weight-control);
+  line-height: var(--edsb-text-leading-flat);
+}
+
+.plate__caption {
+  position: absolute;
+  @include layout.micro-label(var(--edsb-text-accent));
+}
+
+.plate__caption--lead {
+  inset-block-start: var(--edsb-space-inline-tight);
+  inset-inline-start: var(--edsb-space-inline-tight);
+}
+
+.plate__caption--trail {
+  inset-block-end: var(--edsb-space-inline-tight);
+  inset-inline-end: var(--edsb-space-inline-tight);
+  color: var(--edsb-text-subtle);
+
+  // Two figures with their units, so the uppercase the mixin gives `IMPACT
+  // PLANE` beside it would print `10.0 M` and state the mega prefix instead of
+  // the metre.
+  //
+  // The canvas sets this caption uppercase apart from that one symbol —
+  // `wireConvergence` writes `'RING 2 · ' + mrad + ' MRAD · ' + metres + ' m AT
+  // THIS RANGE'` — and the mix is not reproduced. `text-transform` is
+  // all-or-nothing over a text node, and the caption is one sentence whose parts
+  // move between languages, so splitting it into a transformed span and an
+  // untransformed one would fix English word order into the markup. Sentence
+  // case is the departure taken instead: a lowercase word is a typographic
+  // difference, a metre printed `M` is a different unit
+  // (`design/canvas-contract.md`, review note 15).
+  text-transform: none;
+}
+
+// The plate in words. Kept out of sight rather than out of the document: it is
+// the reading the diagram above is a picture of.
+.shots {
+  @include layout.visually-hidden;
+}
+
+// ---------------------------------------------------------------------------
+// Canvas 1c's four cells under the plate
+
+// `repeat(4, 1fr)` with a hairline gap showing the rule through it, which is
+// how the canvas draws them: one row of label-over-figure, not a stacked list.
+// The cells fall to two and then to one as the block narrows, because four
+// columns of a German label at 200% text is four columns of wrapped fragments.
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--edsb-layout-offence-label), 100%), 1fr));
+  gap: var(--edsb-border-width-hairline);
+  margin: 0;
+  padding: 0;
+  background-color: var(--edsb-border-region);
+  list-style: none;
+}
+
+.fact {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-inline);
+  padding-inline: var(--edsb-space-inline);
+  background-color: var(--edsb-surface-inset);
+}
+
+.fact__label {
+  @include layout.micro-label;
+}
+
+.fact__value {
+  @include layout.metric-value(var(--edsb-text-size-lead));
+
+  overflow-wrap: break-word;
+}

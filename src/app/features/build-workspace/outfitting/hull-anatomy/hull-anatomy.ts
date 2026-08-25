@@ -22,21 +22,23 @@ import { AnnouncementService } from '../../../../ui/announcements/announcement.s
 import { TabGroup } from '../../../../ui/components/tab-group/tab-group';
 import { HullSchematic, type HullSchematicView } from '../../../../ui/outfitting/hull-schematic';
 import { DefenceAnalysis } from '../defence-analysis/defence-analysis';
+import { OffenceAnalysis } from '../offence-analysis/offence-analysis';
 import { PowerThermals } from '../power-thermals/power-thermals';
 
-/** The modes of the strip that open something. The other two are disabled. */
-const ANATOMY_MODES = ['mounts', 'power', 'defence'] as const;
+/** The modes of the strip that open something. `DRIVES` is still disabled. */
+const ANATOMY_MODES = ['mounts', 'power', 'defence', 'offence'] as const;
 
 type AnatomyMode = (typeof ANATOMY_MODES)[number];
 
 /**
  * The region's rule per mode, from canvas 1c's own switching script:
- * `HULL ANATOMY`, `POWER & THERMALS`, `DEFENCE ANALYSIS`.
+ * `HULL ANATOMY`, `POWER & THERMALS`, `DEFENCE ANALYSIS`, `OFFENCE ANALYSIS`.
  */
 const MODE_HEADINGS = {
   mounts: 'anatomy.heading',
   power: 'power.heading',
   defence: 'defence.heading',
+  offence: 'offence.heading',
 } as const satisfies Record<AnatomyMode, MessageKey>;
 
 function isAnatomyMode(value: string): value is AnatomyMode {
@@ -56,20 +58,20 @@ function isAnatomyMode(value: string): value is AnatomyMode {
  *
  * The strip is drawn whole, with the five modes the canvas names and in its
  * order. `MOUNTS` is this capability's own; `POWER` is feature 005's and
- * `DEFENCE` feature 006's, each of which retitles the region — `POWER &
- * THERMALS`, `DEFENCE ANALYSIS` — and replaces the plates entirely, because the
- * canvas's switching script hides the plate container outside `mounts` and the
- * side selector and the legend go with them. `DRIVES` and `OFFENCE` are the same
- * plates read by features 007 and 008, and until those land their segments are
- * disabled rather than invented — a segment that opened an empty panel would be
- * this capability claiming a reading of the hull that nothing has made
- * (design/hull-anatomy.md, "The mode strip";
+ * `DEFENCE` feature 006's and `OFFENCE` feature 007's, each of which retitles
+ * the region — `POWER & THERMALS`, `DEFENCE ANALYSIS`, `OFFENCE ANALYSIS` — and
+ * replaces the plates entirely, because the canvas's switching script hides the
+ * plate container outside `mounts` and the side selector and the legend go with
+ * them. `DRIVES` is the same plates read by feature 008, and until it lands its
+ * segment is disabled rather than invented — a segment that opened an empty
+ * panel would be this capability claiming a reading of the hull that nothing has
+ * made (design/hull-anatomy.md, "The mode strip";
  * specs/005-power-and-heat/design/canvas-contract.md, "Where the capability
  * lives").
  */
 @Component({
   selector: 'edsb-hull-anatomy',
-  imports: [DefenceAnalysis, HullSchematic, PowerThermals, TabGroup],
+  imports: [DefenceAnalysis, HullSchematic, OffenceAnalysis, PowerThermals, TabGroup],
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,9 +95,16 @@ export class HullAnatomy {
 
   readonly isPower = computed(() => this.#mode() === 'power');
   readonly isDefence = computed(() => this.#mode() === 'defence');
+  readonly isOffence = computed(() => this.#mode() === 'offence');
 
-  /** Whether the mode replaces the plates with a capability of its own. */
-  readonly isDashboard = computed(() => this.isPower() || this.isDefence());
+  /**
+   * Whether the mode the strip has open replaces the plates with a capability
+   * of its own rather than layering on them.
+   *
+   * Read off `mounts` rather than by listing the dashboards, so a mode that
+   * lands next cannot be added to the strip and left out of this by omission.
+   */
+  readonly isDashboard = computed(() => this.#mode() !== 'mounts');
 
   /**
    * The region's own rule, which the mode renames.
@@ -123,8 +132,9 @@ export class HullAnatomy {
   /**
    * Canvas 1c's five modes, in its order.
    *
-   * `mounts` is this feature's, `power` is feature 005's and `defence` feature
-   * 006's; the two features 007 and 008 will draw are disabled until they ship.
+   * `mounts` is this feature's, `power` is feature 005's, `defence` feature
+   * 006's and `offence` feature 007's; `drives` is disabled until feature 008
+   * ships.
    * The one that is open is exposed as pressed state and named in words as well,
    * so the canvas's amber ground is never the only thing that says so.
    */
@@ -135,7 +145,7 @@ export class HullAnatomy {
         { id: 'power', key: 'anatomy.mode.power', enabled: true },
         { id: 'drives', key: 'anatomy.mode.drives', enabled: false },
         { id: 'defence', key: 'anatomy.mode.defence', enabled: true },
-        { id: 'offence', key: 'anatomy.mode.offence', enabled: false },
+        { id: 'offence', key: 'anatomy.mode.offence', enabled: true },
       ] as const
     ).map((mode) => ({
       id: mode.id,

@@ -1,301 +1,269 @@
 # Data Model: Offence Profile
 
-Feature 007 owns no persisted entity. Every value is an immutable in-memory read of one active-build
-revision and, where WEP pips matter, one settled viewing-condition revision. Package result objects
-remain intact; presentation discriminants never replace their numeric fields.
+One pure projection, no store, no persisted field. Everything below lives in
+`src/app/domain/offence/offence.ts` — with the gunsight geometry in its own
+`src/app/domain/offence/convergence.ts` — and is a function of `(loadout, coverage, weaponsPips)`.
 
-## OffenceProjectionState
+## Projection
 
 ```ts
-type OffenceProjectionState =
-  | { readonly state: 'noBuild' }
+export interface Offence {
+  /** The exact `weaponMetrics()` result, retained unchanged. */
+  readonly build: BuildWeaponMetrics;
+  /** The exact returned weapons, in package order, neither sorted nor merged. */
+  readonly weapons: readonly FittedWeaponMetrics[];
+  /** What the collection means. Never inferred from `weapons.length`. */
+  readonly collection: CollectionMeaning;
+  /** The four drawn capacitor fields, and what the duration means. */
+  readonly capacitor: Capacitor;
+  /** The burst total split into the shares the canvas's stacked bar draws. */
+  readonly damageSegments: readonly DamageSegment[];
+  /** What the enabled weapons land at each of the canvas's four distances. */
+  readonly rangeBands: readonly RangeBand[];
+  /** Where those weapons' shots go, or why the hull's gunsight could not place them. */
+  readonly convergence: Convergence;
+}
+```
+
+`build` is the package object itself, not a copy: the totals a screen reads are the totals the
+package returned, and nothing between them can round, re-sum or relabel a field. `weapons` preserves
+the package's own order — hull slot order, then unknown or unmapped slots in source order — and
+neither sorts nor merges duplicate symbols.
+
+The count the canvas draws as `5 MOUNTED` is `weapons.length`. It is the one figure this feature
+works out that the package does not publish, and it is a count of a returned collection rather than a
+measurement (`design/canvas-contract.md`, ruled exception 1).
+
+## Collection meaning
+
+```ts
+export type CollectionMeaning = 'populated' | 'noFittedWeapons' | 'coverageUnavailable';
+```
+
+| Returned weapons | Feature-002 coverage | Meaning               |
+| ---------------- | -------------------- | --------------------- |
+| any              | `complete`           | `populated`           |
+| empty            | `confirmedEmpty`     | `noFittedWeapons`     |
+| empty            | `unavailable`        | `coverageUnavailable` |
+| non-empty        | `confirmedEmpty`     | `populated`           |
+| non-empty        | `unavailable`        | `coverageUnavailable` |
+
+An empty list is only ever `noFittedWeapons` when feature 002 confirms the hardpoints are empty. The
+package's weapon list is the set of weapons it could measure, which is not the set of mounts that
+carry a module, so an empty list on its own says nothing about the build.
+
+`coverageUnavailable` qualifies a populated collection rather than replacing it: the weapons the
+package did return are still real, and the qualification says only that completeness is unknown.
+
+## One weapon
+
+Nothing is projected. `weapons` is the package's own array, and a presenter
+reads `weapon.metrics.damagePerSecond` directly, so there is exactly one place a
+figure can come from.
+
+The `AmmunitionCapacity` a weapon carries is **not read**. An earlier revision
+turned it into a four-state `Ammunition` union and drew it under a row-owned
+disclosure; neither canvas draws an ammunition figure anywhere, the disclosure
+is withdrawn (`design/canvas-contract.md`, review note 5), and the field
+therefore joins the unread list rather than being projected into a state nothing
+displays.
+
+## Damage segments
+
+```ts
+export type ConventionalDamageType = Exclude<keyof DamageSplit, 'antiXeno'>;
+
+export interface DamageSegment {
+  readonly type: ConventionalDamageType;
+  /** The package's own amount, in damage per second. */
+  readonly amount: number;
+  /** That amount over the conventional total, in `[0, 1]`. */
+  readonly share: number;
+}
+```
+
+One segment per conventional type the build actually deals, in the package's own
+field order. Anti-xeno is excluded, because the package documents it as an
+overlay on conventional damage rather than a share of it, and a bar that gave it
+a slice would describe a total nobody fires. A build dealing no conventional
+damage yields no segments at all — the empty array is the state, not a set of
+zero-width ones.
+
+`share` is one package amount over the sum of the package amounts beside it.
+Both are stated on the same screen, so the proportion adds no figure a reader
+cannot check (`design/canvas-contract.md`, ruled exception 2).
+
+## Range bands
+
+```ts
+export const RANGE_BANDS = [500, 1200, 1800, 3000] as const;
+
+export interface RangeBand {
+  /** The distance to the target, in metres. */
+  readonly metres: number;
+  /** What the enabled weapons together land there, in damage per second. */
+  readonly damagePerSecond: number;
+  /**
+   * That figure over the strongest band's, in `[0, 1]` — the row's bar.
+   *
+   * `null` where the strongest band is itself zero, which is the whole set
+   * having nothing to be read against rather than a fill of nothing.
+   */
+  readonly fill: number | null;
+}
+```
+
+The four distances are the canvas's own. At each, every **enabled** weapon's
+returned `damagePerSecond` is multiplied by the package's `damageFalloff()` at
+that distance and the results are added. The multiplier is the package's; the
+addition is the same addition the package itself performs for `total`, over the
+same weapons.
+
+`fill` is each band over the strongest band, and `null` where the strongest band
+is itself zero. A build landing nothing at any distance has nothing for the four
+rows to be read against, and an empty track reads as a figure of nothing rather
+than as "there is nothing to measure this against" (FR-009).
+
+## Convergence
+
+```ts
+export type Convergence =
+  | { readonly kind: 'unavailable' }
   | {
-      readonly state: 'pending';
-      readonly buildRevision: number;
-      readonly conditionsRevision: number;
-    }
-  | { readonly state: 'ready'; readonly snapshot: OffenceSnapshot }
-  | {
-      readonly state: 'failure';
-      readonly buildRevision: number;
-      readonly conditionsRevision: number;
-      readonly messageKey: 'projectionFailed' | 'integrationUnavailable';
+      readonly kind: 'available';
+      readonly mounts: readonly ConvergenceMount[];
+      readonly lateralSpanMetres: number;
+      readonly verticalSpanMetres: number;
+      readonly widest: ConvergenceMount | null;
     };
 ```
 
-Package zero, infinity or optional absence is not an application failure. `failure` is reserved for
-an unexpected package exception, a required same-revision integration mismatch or a missing accepted
-port. A current-revision failure never displays prior-revision figures.
+`SHIP_GUNSIGHTS` publishes every player-flyable hull's hardpoint offsets from
+the cockpit, in metres. A weapon's journal slot key is resolved to its place in
+that list through `enumerateSlots`, never by reading a number out of the key —
+the package documents hulls where the two disagree. A hull the catalogue does
+not carry, or one whose gunsight length does not match its hardpoint count, is
+`unavailable`: a convergence drawn from some of the mounts would be a spread
+nobody has.
 
-## OffenceSnapshot
+Only the armed mounts are carried. An earlier revision also carried a `vacant`
+list of every hardpoint no returned weapon claimed, on the belief that the
+canvas never faces an empty one; it does, and draws nothing for it, so both the
+field and the marks it fed are withdrawn (`design/canvas-contract.md`, review
+note 8).
+
+`widest` is `null` when the build has armed nothing. That is **not**
+`unavailable`: the two are different answers, and the unavailable sentence says
+the package publishes no geometry for this hull, which for a placed hull whose
+hardpoints are merely empty would be false. A build with no armed mount keeps
+the plate — axes, rings and no marks — and is given none of the four figures
+beneath it, all of which are about a group of armed mounts.
+
+The spans are distances between two published offsets, and `widest` is the mount
+furthest from the cockpit's axis. No ballistics are modelled and no offset is
+derived (`spec.md` FR-010).
 
 ```ts
-interface OffenceSnapshot {
-  readonly buildRevision: number;
-  readonly conditionsRevision: number;
-  readonly weapons: BuildWeaponMetrics;
-  readonly hardpointCoverage: HardpointCoverage;
-  readonly capacitor: WeaponsCapacitorMetrics;
-  readonly distributorPower: MountPowerObservation;
+export const FIELD_OF_VIEW_MILLIRADIANS = 115;
+export const PLATE_ASPECT = 6 / 16;
+export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as const;
+```
+
+These are properties of the **drawing**, taken from the canvas's own script
+(`wireConvergence`). The plate keeps milliradians-per-unit uniform on both axes,
+so its vertical half-field is `115 × 6/16 = 43.125` mrad and a shot further off
+the axis than that is clipped rather than stretched to fit. The field of view
+never moves to accommodate a build, and a clipped shot keeps the sentence stated
+beside the plate (`spec.md` FR-011).
+
+`convergenceAt(convergence, metres)` asks `projectGunsight` where the shots go at
+one range and returns their positions as fractions of the plate, the diagonal of
+their spread in milliradians, and the two rings the canvas draws at a third and
+two thirds of the field of view.
+
+## Capacitor
+
+```ts
+export interface Capacitor {
+  /** Megajoules. */
+  readonly capacity: number;
+  /** Megajoules per second at the read allocation. */
+  readonly rechargeRate: number;
+  /** Megajoules per second the firing load sustains. */
+  readonly sustainedEnergyPerSecond: number;
+  /** What `timeToDrain` means. */
+  readonly endurance: Endurance;
+  /** The WEP allocation the four above were read at. */
+  readonly allocation: number;
+  /**
+   * The draw and the recharge over the larger of the two, in `[0, 1]`, and
+   * `null` for both where that larger is itself zero.
+   *
+   * Here rather than on the screen: a fill is two package amounts divided, and
+   * the projection is the one place allowed to divide them. The other two rows
+   * carry no fill, because megajoules and seconds share a scale with nothing
+   * beside them.
+   */
+  readonly drawFill: number | null;
+  readonly rechargeFill: number | null;
 }
-```
 
-| Field                | Source/rule                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| `buildRevision`      | Exact feature 001 active-build revision                                                             |
-| `conditionsRevision` | Exact feature 003 settled-condition revision                                                        |
-| `weapons`            | Exact object returned by one `weaponMetrics()` call for the build revision                          |
-| `hardpointCoverage`  | Feature 002 package-backed slot coverage for the same build revision                                |
-| `capacitor`          | Exact object returned by one `weaponsCapacitorMetrics()` call for the revision pair                 |
-| `distributorPower`   | Feature 005 owner-authored deployed distributor observation for the same captured context/revisions |
-
-The weapon result may be cached by build revision because pips do not affect it. The capacitor and
-cross-feature observations are published only with the current revision pair. A locale change
-rebuilds presentation only and advances neither revision.
-
-## Exact package weapon result
-
-`BuildWeaponMetrics` and `FittedWeaponMetrics` are imported from
-`@elite-dangerous-almanac/core/ships/ship-loadout`. The snapshot does not define local numeric copies.
-
-### `BuildWeaponMetrics.total`
-
-The exact `WeaponTotals` fields are:
-
-| Field                      | Package meaning                                      |
-| -------------------------- | ---------------------------------------------------- |
-| `damagePerSecond`          | Enabled returned weapons, while firing               |
-| `sustainedDamagePerSecond` | Enabled returned weapons, averaged over reloads      |
-| `energyPerSecond`          | Enabled returned weapons' burst WEP draw             |
-| `sustainedEnergyPerSecond` | Enabled returned weapons' reload-averaged WEP draw   |
-| `heatPerSecond`            | Enabled returned weapons' burst heat                 |
-| `sustainedHeatPerSecond`   | Enabled returned weapons' reload-averaged heat       |
-| `thermalLoad`              | Sum of included modules' package thermal-load fields |
-| `powerDraw`                | Enabled returned weapons' deployed plant demand      |
-| `damageByType`             | Exact burst `DamageSplit`                            |
-| `sustainedDamageByType`    | Exact sustained `DamageSplit`                        |
-
-The total is never reconstructed from the fitted entries. Every numeric zero remains numeric.
-
-### Each `FittedWeaponMetrics`
-
-Each entry retains:
-
-- exact `slot`, `symbol`, canonical package `name` and `enabled`;
-- exact nested `WeaponMetrics`, including all required damage, cadence, WEP, heat, thermal-load,
-  plant-draw, damage-split and continuous-fire fields;
-- exact `AmmunitionCapacity | null`;
-- optional effective `maximumRange`, `falloffRange`, `projectileRange` and `armourPiercing`.
-
-Returned order is identity-bearing presentation order: known weapons in hull-slot order, followed by
-unknown/unmapped slots in source order. The application neither sorts nor replaces slot with an
-array index.
-
-### `DamageSplit`
-
-`kinetic`, `thermal`, `explosive`, `absolute` and `antiXeno` are required numeric values.
-`unclassified` is optional and absent exactly when zero under the installed package contract. Presentation may
-omit the optional row or state that no unclassified damage exists; it must not call the absence
-unknown. Anti-xeno remains an overlay on conventional damage and is not included in a locally created
-partition or total.
-
-### Optional range and piercing
-
-- Effective `maximumRange` and `falloffRange` are metres only when present.
-- `projectileRange.maximumBoundary` is optional; zero remains present.
-- `projectileRange.falloffBoundary` is required when the parent exists.
-- Projectile boundaries have no invented unit and never drive a range calculation.
-- `armourPiercing` is an optional rating, not a percentage or target factor.
-
-Absent optional range/piercing members remain not stated; they are never zero-filled.
-
-### Ammunition
-
-```ts
-type AmmunitionMeaning =
-  | { readonly kind: 'none'; readonly source: null }
-  | { readonly kind: 'finite'; readonly source: AmmunitionCapacity }
-  | { readonly kind: 'unlimited'; readonly source: AmmunitionCapacity };
-```
-
-This is a presentation discriminator over the retained package member:
-
-- `null` means the weapon carries no ammunition;
-- finite capacity keeps exact `clipSize`, `hopper`, `total` and `unlimited: false`;
-- unlimited requires exact `unlimited: true`, retains the package object, and prevents its infinite
-  hopper/total from reaching a generic formatter;
-- finite hopper zero remains exact zero and is not unlimited.
-
-The capacity describes full rearm, not current loaded rounds.
-
-## HardpointCoverage
-
-This proposed feature-002 type-only port qualifies what the weapon facade could represent. It owns
-no offence metric.
-
-```ts
-type HardpointCoverage =
-  | { readonly kind: 'confirmedEmpty' }
-  | { readonly kind: 'complete'; readonly occupiedSlots: readonly string[] }
-  | { readonly kind: 'unavailable' };
-```
-
-Rules:
-
-- every identity comes from feature 002's same-build-revision package-resolved slot/fitted views;
-- `confirmedEmpty` is valid only when all package hardpoint slots are empty and `weapons` is empty;
-- `unavailable` prevents a no-fitted-weapons claim.
-
-## Capacitor result and semantic duration
-
-The package `WeaponsCapacitorMetrics` is retained with all six fields:
-
-| Field                      | Package meaning                                  |
-| -------------------------- | ------------------------------------------------ |
-| `weaponsPips`              | Package allocation used, from zero through four  |
-| `capacity`                 | Powered deployed WEP capacity in MJ              |
-| `rechargeRate`             | Actual selected-pip recharge in MJ/s             |
-| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw |
-| `netDrainRate`             | Package loss after recharge, floored at zero     |
-| `timeToDrain`              | Seconds from full to empty, or positive infinity |
-
-Feature 003 stores integer half-pips. Feature 007 passes
-`conditions.pips.weapons / 2` exactly once and displays returned `weaponsPips`.
-
-```ts
-type DurationMeaning =
+export type Endurance =
   | { readonly kind: 'finite'; readonly seconds: number }
-  | { readonly kind: 'immediate'; readonly seconds: 0 }
-  | { readonly kind: 'sustainingPoweredLoad' }
-  | { readonly kind: 'noDrainingPoweredLoad' };
+  | { readonly kind: 'immediate' }
+  | { readonly kind: 'sustained' };
 ```
 
-The presenter selects:
+Four of the six returned fields, because four is what the canvases draw. `netDrainRate` and the
+returned `weaponsPips` are not selected at all, so nothing downstream can blank, dash or zero one —
+the rule feature 005 set for `headroom`, `utilisation` and `withinBudget`.
 
-- finite positive `timeToDrain` -> `finite`;
-- zero -> `immediate`;
-- infinity with positive returned sustained draw -> `sustainingPoweredLoad`;
-- infinity with zero returned sustained draw -> `noDrainingPoweredLoad`.
+`CAPACITY` and `FULL FIRE` carry no bar: megajoules and seconds share a scale with nothing beside
+them. `DRAW` and `RECHARGE` are both MJ/s, share one, and are filled against the larger of the two
+(`design/canvas-contract.md`, review note 6).
 
-This classification does not recalculate drain or replace the package result. No generic formatter or
-serializer receives infinity.
+`Endurance` exists so that `Infinity` never leaves the projection as a number. A positive finite
+result carries its seconds; `0` is `immediate`; `Infinity` is `sustained`, which says the recharge
+keeps pace and does not claim the weapons can fire.
 
-## MountPowerObservation (distributor reading)
+`allocation` is the store's value, not the package's echo. It is the condition the four figures were
+read under, and is drawn as one line beneath the four rows — the panel composes no metric group,
+because canvas 1c draws none.
 
-Feature 005 owns and exports the shared `MountPowerObservation` union (see feature 005 data-model).
-Feature 007 reads it through `MountPowerObservationPort.observe(context, slotKey, 'deployed')` at the
-power distributor's exact core slot key and adds no union of its own:
+Zero capacity is a genuine package number and carries no cause. The package documents several ways to
+reach one and does not say which applied.
 
-```ts
-// owned by feature 005
-type MountPowerObservation =
-  | { readonly kind: 'notApplicable' }
-  | { readonly kind: 'disabled'; readonly priority: PowerPriority }
-  | { readonly kind: 'inactiveRetracted'; readonly priority: PowerPriority }
-  | { readonly kind: 'powered'; readonly priority: PowerPriority }
-  | { readonly kind: 'shed'; readonly priority: PowerPriority }
-  | { readonly kind: 'unavailable' };
-```
+## Damage splits
 
-The exact `slotKey`, `deploymentState: 'deployed'` and both revisions arrive on the
-`MountPowerObservationRead` wrapper rather than inside the union. Feature 007 rejects a mismatched
-state or revision. It resolves the distributor's module `symbol` from its own fitted-module view,
-which is an identity read rather than a power semantic.
+Only `build.total.damageByType` is read, and only its **conventional** members. `kinetic`,
+`thermal`, `explosive` and `absolute` are always present; `unclassified` is present exactly when it
+is non-zero, and its absence is the package's way of saying zero.
 
-Feature 007 presents `notApplicable` as _absent_; `inactiveRetracted` is unreachable for a core
-internal because the package never reports one as `deployedOnly`. Feature 005 derives every variant
-only from exact slot/fitted state and its package-owned deployed power-budget semantics. Feature 007
-displays the result adjacent to capacitor zero/unavailability but never states that one fact caused
-the other.
+A member that is zero or absent gets no segment and no legend line — which is how both canvases draw
+a type a build does not deal, and why nothing here has to distinguish a zero from an omission on the
+screen. `antiXeno` and the whole of `sustainedDamageByType` are **not selected**: no canvas draws
+either, and the rule feature 005 set is that a field no canvas draws is not read at all
+(`design/canvas-contract.md`, review note 7).
 
-## OffenceStatusProjection
+The shares are drawn over those amounts and change none of them. No combined anti-xeno total and no
+target adjustment is computed anywhere.
 
-```ts
-type NativeFiringCondition =
-  'enabledReturnedWeapons' | 'noEnabledReturnedWeapons' | 'noFittedWeapons' | 'qualifiedCoverage';
+## Lifecycle
 
-interface OffenceStatusProjection {
-  readonly sustainedDamagePerSecond: number;
-  readonly firingCondition: NativeFiringCondition;
-}
+There is none. The projection is a pure synchronous read of an in-memory loadout, so there is no
+pending state, no stale result to discard and no asynchronous failure to publish. Without a build
+there is no projection and the panel draws nothing; feature 001's workspace already says why.
 
-interface OffenceStatusProvider extends StatusProvider<OffenceStatusProjection, 'sustainedDps'> {}
-```
+The revision is read before the loadout, because the loadout signal holds one mutable package object
+and an edit changes its contents without changing the reference.
 
-The provider selects exact `weapons.total.sustainedDamagePerSecond`. It returns the captured
-revisions, `detailTarget: { kind: 'detail', capability: 'offenceProfile' }`, and:
+## What never enters this model
 
-- `qualifiedSummaryIds: []` for complete populated, confirmed-empty and all-disabled results;
-- `qualifiedSummaryIds: ['sustainedDps']` for unavailable coverage.
+The whole-build firing cost (`energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond`,
+`sustainedHeatPerSecond`, `thermalLoad`, `powerDraw` on `WeaponTotals`), `netDrainRate`, the returned
+`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's four columns, the
+`AmmunitionCapacity`, any target result, and any distributor power observation. Each is a field no
+canvas draws, so nothing downstream can blank, dash or zero one.
 
-Hardpoint deployment selection does not suppress or alter this number because `weaponMetrics()` has
-no hardpoint-state input. A numeric zero alone never qualifies the summary.
-
-## Presentation state and intents
-
-```ts
-interface OffencePresentationState {
-  readonly expandedSlots: ReadonlySet<string>;
-}
-
-type OffenceIntent =
-  | { readonly kind: 'openSlot'; readonly target: { kind: 'slot'; slotKey: string } }
-  | { readonly kind: 'editViewingConditions' }
-  | { readonly kind: 'applyViewingConditions' }
-  | { readonly kind: 'resetViewingConditions' };
-```
-
-Expanded state is keyed by exact returned slot, exists only in memory and clears on build
-replacement. Viewing-condition intents delegate to feature 003. Slot intent uses feature 003's shared
-`WorkspaceTarget` shape and delegates reveal/edit behavior to feature 002.
-
-Canonical `FittedWeaponMetrics.name` remains in the domain snapshot. The presenter obtains localized
-game text by exact symbol through feature 011 and the Almanac i18n helper, retaining disclosed
-canonical fallback separately.
-
-## Relationships
-
-```text
-feature 001 active build/revision ──> weaponMetrics() ──> exact BuildWeaponMetrics
-              │                              │
-              │                              ├──> OffenceStatusProvider ──> feature 003 Status
-              │                              └──> exact slot targets ─────> feature 002
-              ├──> feature 002 coverage ────────> honest empty/qualified context
-              └──> feature 005 deployed port ──> distributor power observation
-
-feature 003 settled WEP half-pips / revision
-              └── divide by two once ──> weaponsCapacitorMetrics()
-
-all current inputs ──atomic publication──> OffenceSnapshot
-```
-
-## Validation invariants
-
-- Snapshot revisions match the captured active build and settled conditions at publication.
-- `weaponMetrics()` is called at most once per build projection; detail and Status share it.
-- `weaponsCapacitorMetrics()` is called once per projected revision pair with WEP half-pips divided
-  by two exactly once.
-- Every package result object, field, weapon and returned order remains intact.
-- Only package-resolved module identities enter this boundary.
-- Optional unclassified absence means zero unclassified damage; optional range/piercing absence
-  remains not stated.
-- No infinity reaches generic serialization/formatting.
-- Weapon total EPS and capacitor draw remain independent package scopes.
-- Every slot action carries the exact source key once.
-- Any mismatched/stale integration read is discarded or fails the current revision; it is never
-  relabelled.
-
-## State transitions
-
-```text
-no active build -> noBuild
-activate/replace/edit build or settle conditions -> pending(captured revisions)
-  required port absent/mismatched -> failure(current revisions)
-  package/projector exception -> failure(current revisions)
-  newer revision appears -> discard and project newer context
-  all reads current -> ready(one immutable snapshot)
-active build removed -> noBuild
-```
-
-Expansion may survive an ordinary edit only while its exact slot still exists. It never survives an
-active-build replacement and never changes a build or revision.
+No attenuation model, hardness model, resistance model or projectile path is written anywhere: the
+falloff multiplier and the gunsight projection are both package calls.
