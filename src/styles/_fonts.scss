@@ -28,7 +28,10 @@ $latin-ext: 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+
     font-style: normal;
     font-weight: $weight;
     font-display: swap;
-    src: url('/fonts/#{$dir}/#{$file}-#{$subset}-#{$weight}-normal.woff2') format('woff2');
+    // Relative to the stylesheet, which is emitted at the deployment base, so
+    // this resolves under a sub-path deployment as well as at a domain root.
+    // A leading slash would send every preview's fonts to the host root.
+    src: url('fonts/#{$dir}/#{$file}-#{$subset}-#{$weight}-normal.woff2') format('woff2');
     unicode-range: #{$range};
   }
 }

@@ -392,7 +392,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/offline',
     axe: false,
     assertions: [
-      'catalogues are same-origin static assets under /i18n/',
+      'catalogues are same-origin static assets under i18n/, relative to the deployment base',
       'complete English is readable with no network at all',
       'a browser-matched catalogue loaded once stays readable offline',
       'exactly one service worker exists and it owns the only cache',

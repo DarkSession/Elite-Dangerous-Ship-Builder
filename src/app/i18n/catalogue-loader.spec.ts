@@ -161,7 +161,7 @@ describe('CatalogueLoader', () => {
     const candidate = await loader.load(GERMAN!);
 
     expect(requested).toEqual([GERMAN!.assetPath]);
-    expect(requested[0]?.startsWith('/i18n/')).toBe(true);
+    expect(requested[0]?.startsWith('i18n/')).toBe(true);
     expect(candidate.source).toBe('asset');
     expect(candidate.catalogue).not.toBeNull();
   });
@@ -208,8 +208,11 @@ describe('CatalogueLoader', () => {
 
   it('never requests another origin', () => {
     for (const locale of SHIPPED_LOCALES) {
-      expect(locale.assetPath.startsWith('/')).toBe(true);
-      expect(locale.assetPath).not.toMatch(/^https?:/);
+      // Relative to the document base, which is what keeps a sub-path
+      // deployment reading its own catalogues. A root-absolute path would
+      // still admit a protocol-relative `//host/...`; this rejects both.
+      expect(locale.assetPath.startsWith('/')).toBe(false);
+      expect(locale.assetPath).not.toMatch(/^[a-z]+:/i);
     }
   });
 });

@@ -5,14 +5,14 @@ build link, SLEF payload, active build or saved-build record.
 
 ## Shipped Locale
 
-| Field         | Type                    | Rules                                                                    |
-| ------------- | ----------------------- | ------------------------------------------------------------------------ |
-| `tag`         | canonical BCP 47 tag    | Unique production identity; initially `en` or `de`                       |
-| `language`    | base language tag       | Used only after exact browser-tag matching                               |
-| `direction`   | `ltr \| rtl`            | Published with the effective catalogue                                   |
-| `assetPath`   | same-origin path        | Under `/i18n/`; English is additionally imported into the initial bundle |
-| `selfNameKey` | application message key | Resolves through the catalogue, never component text                     |
-| `fallback`    | boolean                 | Exactly one production locale (`en`)                                     |
+| Field         | Type                    | Rules                                                                                                    |
+| ------------- | ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tag`         | canonical BCP 47 tag    | Unique production identity; initially `en` or `de`                                                       |
+| `language`    | base language tag       | Used only after exact browser-tag matching                                                               |
+| `direction`   | `ltr \| rtl`            | Published with the effective catalogue                                                                   |
+| `assetPath`   | same-origin path        | Under `i18n/`, relative to the deployment base; English is additionally imported into the initial bundle |
+| `selfNameKey` | application message key | Resolves through the catalogue, never component text                                                     |
+| `fallback`    | boolean                 | Exactly one production locale (`en`)                                                                     |
 
 Expanded-copy and RTL pseudo-locales are test providers, not shipped locale records. They are absent
 from the production registry and reachable only from the tooling-only preview application.

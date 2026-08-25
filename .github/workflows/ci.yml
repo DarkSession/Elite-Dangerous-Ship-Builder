@@ -269,6 +269,180 @@ jobs:
         if: ${{ !cancelled() && needs.e2e.result == 'failure' }}
         run: exit 1
 
+  preview:
+    name: Preview
+    # A preview is a pull-request facility only. `main` has the real deployment
+    # below, and a pull request from a fork cannot read the deployment token, so
+    # neither one builds a preview. A fork's checks still run in full; only this
+    # job is missing from them.
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    # Only the Check job. A preview is a thing to look at while the end-to-end
+    # matrix is still running, not a thing to wait an hour and a half for, so it
+    # publishes alongside the shards rather than behind them. It gates nothing:
+    # the production `deploy` job does not need it, and a preview that fails
+    # cannot hold up a merge or a deployment.
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Shared with `preview-cleanup.yml`, so a publication and a removal for the
+    # same pull request never overlap. Nothing is cancelled: `cancel-in-progress`
+    # is a property of the arriving entrant, so `true` here would mean a
+    # publication that starts while the removal is running cancels it and then
+    # republishes what the removal had just taken away. A superseded run is
+    # already cancelled whole by this workflow's own concurrency group above.
+    concurrency:
+      group: preview-${{ github.event.number }}
+      cancel-in-progress: false
+
+    permissions:
+      contents: read
+      # The sticky comment carrying the preview link.
+      pull-requests: write
+
+    env:
+      # Previews are published to a repository of their own, because this one's
+      # Pages site is the production site: `public/CNAME` points it at
+      # sb.edct.dev, and a repository serves exactly one Pages site. Anything
+      # published from here would land on the production domain, so previews go
+      # somewhere with no custom domain and reach the default Pages host
+      # instead. The path half of the base URL is the only place the preview
+      # repository's name is written down; the base href below is derived from
+      # it so the built bundle and the published location cannot disagree.
+      PREVIEW_REPOSITORY: DarkSession/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_PAGES_BASE_URL: darksession.github.io/Elite-Dangerous-Ship-Builder-Preview
+      PREVIEW_UMBRELLA_DIR: pr-preview
+
+    steps:
+      # A fine-grained token for another repository is something a person has to
+      # create, and it expires. Report its absence as a warning rather than a
+      # failure and do no further work: a missing preview is an inconvenience,
+      # and failing the run over one would make a convenience look like a gate.
+      - name: Look for the deployment token
+        id: token
+        env:
+          PREVIEW_PAGES_TOKEN: ${{ secrets.PREVIEW_PAGES_TOKEN }}
+        run: |
+          if [ -n "$PREVIEW_PAGES_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Preview not published::The PREVIEW_PAGES_TOKEN secret is not set, so no preview was built. See the Deployment section of README.md for how to create it."
+            echo "No preview was published: the \`PREVIEW_PAGES_TOKEN\` secret is not set." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check out the repository
+        if: ${{ steps.token.outputs.available == 'true' }}
+        uses: actions/checkout@v7
+        with:
+          # The build version's patch is a count of commits, resolved below for
+          # the same reason the Check job resolves it: so that what a reviewer
+          # opens states a version rather than the placeholder `0`.
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        if: ${{ steps.token.outputs.available == 'true' }}
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        if: ${{ steps.token.outputs.available == 'true' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: pnpm install --frozen-lockfile
+
+      # Production is served from the root of its own domain; a preview is a
+      # directory several levels down a shared one. Everything the application
+      # fetches at runtime is relative, so `<base href>` is the single thing
+      # that has to be right — and it is written into the bundle at build time,
+      # which is why a preview is built here rather than reusing the Check job's
+      # artifact. `pr-<number>` is the layout `pr-preview-action` publishes, and
+      # deriving the href from the same three values keeps them in step.
+      - name: Resolve the preview location
+        id: location
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: |
+          pages_path="${PREVIEW_PAGES_BASE_URL#*/}"
+          base_href="/${pages_path}/${PREVIEW_UMBRELLA_DIR}/pr-${{ github.event.number }}/"
+          echo "base-href=$base_href" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Preview base href::$base_href"
+
+      # The same stamp the Check job applies, and the same caveat: a pull
+      # request builds its merge commit, so this is that commit's count and not
+      # the number `main` resolves once the change lands.
+      - name: Stamp the build version
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: node scripts/resolve-build-version.mjs --write
+
+      # `pnpm exec ng build` rather than `pnpm run build -- --base-href=...`:
+      # the script is a chain, and pnpm forwards the bare `--` into it. That is
+      # the same footgun the end-to-end shard flag has, and here it would be
+      # silent — a build with the wrong base href succeeds and simply loads
+      # nothing.
+      - name: Build the preview
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: |
+          pnpm run help:artifacts
+          pnpm exec ng build --base-href="${{ steps.location.outputs.base-href }}"
+          # The stamp above is a build input, not a change to propose. Put the
+          # manifest back now that the build has read it, so the publishing step
+          # runs its git operations against a clean working tree.
+          git checkout -- package.json
+
+      - name: Serve client-side routes from the 404 page
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+
+      # `public/CNAME` is copied into every build by the asset glob, and it
+      # names the production domain. It is inert in a subdirectory — Pages reads
+      # a CNAME only at the root of the published branch — but a file claiming
+      # sb.edct.dev has no business in a preview, and shipping one a directory
+      # move away from taking effect is not a risk worth keeping.
+      - name: Drop the production domain from the preview
+        if: ${{ steps.token.outputs.available == 'true' }}
+        run: rm -f dist/elite-dangerous-ship-builder/browser/CNAME
+
+      # A publication is many minutes behind the event that started it, and a
+      # pull request can be merged or closed in that time. `preview-cleanup.yml`
+      # fires exactly once, on the `closed` event, so a preview published after
+      # that event has already fired is a directory nothing will ever remove:
+      # the pull request cannot be closed a second time. Ask GitHub rather than
+      # reading `github.event.pull_request.state`, which was frozen when this
+      # run started and still says `open`. Same shape as the branch-tip check
+      # the deployment jobs run before they publish.
+      - name: Confirm the pull request is still open
+        id: pr-state
+        if: ${{ steps.token.outputs.available == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.number }}" --jq '.state')"
+          if [ "$state" = "open" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Preview not published::Pull request ${{ github.event.number }} is $state, and its cleanup has already run. Publishing now would strand the preview."
+            echo "No preview was published: this pull request is \`$state\`, and its cleanup has already run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # Pinned to a commit rather than a tag: this step is handed a token that
+      # can write to another repository, and a tag can be moved. Re-pin
+      # deliberately when raising the version in the trailing comment.
+      - name: Publish the preview
+        if: ${{ steps.token.outputs.available == 'true' && steps.pr-state.outputs.open == 'true' }}
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          source-dir: dist/elite-dangerous-ship-builder/browser
+          deploy-repository: ${{ env.PREVIEW_REPOSITORY }}
+          pages-base-url: ${{ env.PREVIEW_PAGES_BASE_URL }}
+          umbrella-dir: ${{ env.PREVIEW_UMBRELLA_DIR }}
+          token: ${{ secrets.PREVIEW_PAGES_TOKEN }}
+          action: deploy
+
   deploy:
     name: Deploy
     # Pull requests run the same checks but never publish. `push` is already

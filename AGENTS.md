@@ -99,6 +99,19 @@ planning ship loadouts.
   `0` fails the resolver. It is not release evidence: a release is declared only
   by `SHIP_BUILDER_RELEASE_TAG` matching the shipped version exactly
   (`specs/012-help-and-licences/contracts/distribution-artifacts.md`).
+- **A pull request is published as a preview**, built a second time with a
+  sub-path `<base href>` and pushed to the separate
+  `Elite-Dangerous-Ship-Builder-Preview` repository, because this repository's
+  own Pages site is production (`public/CNAME` → `sb.edct.dev`). It follows that
+  **nothing the application asks for at runtime may be a root-absolute path**: a
+  leading `/` looks past the deployment base and misses the file, which is
+  invisible at the root of a domain and fatal one directory down. `fetch` paths
+  are relative to the base href — see `hullArtworkPath` and the locale
+  registry's `assetPath`, which `fetch` resolves against the document base for
+  free — and the `@font-face` sources in `src/styles/_fonts.scss` are relative
+  to the stylesheet, which is why `angular.json` carries
+  `externalDependencies: ["fonts/*"]`: without it the bundler resolves them at
+  build time and the relative URL never reaches the emitted CSS.
 - Angular is standalone and zoneless; prefer signals for state.
 - Run `pnpm run check` (format check, typecheck, build, unit tests with
   coverage, Playwright) before proposing a change.
