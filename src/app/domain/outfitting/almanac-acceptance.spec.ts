@@ -243,7 +243,7 @@ describe('installed Almanac acceptance', () => {
       const fitted = build.fittedModuleAt(slot);
       expect(fitted?.symbol).toBe(symbol);
       expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
-      expect(fitted?.preEngineeredVariant?.blueprint).toBe(variant.blueprint);
+      expect(fitted?.preEngineeredVariant?.blueprintSymbol).toBe(variant.blueprintSymbol);
 
       const result = build.completeEngineeringGrade(slot);
       expect(result.kind).toBe('unsupported');

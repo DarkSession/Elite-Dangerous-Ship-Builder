@@ -300,7 +300,7 @@ export function finalArticlePartialQuality(): {
           Slot: slot,
           Item: fitted.symbol,
           Engineering: {
-            BlueprintName: variant.blueprint,
+            BlueprintName: variant.blueprintSymbol,
             Level: variant.grade,
             Quality: FINAL_ARTICLE_SOURCE_QUALITY,
           },
