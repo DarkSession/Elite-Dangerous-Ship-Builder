@@ -331,6 +331,53 @@ test.describe('inspecting the weapons', () => {
     }
   });
 
+  test('aligns the five columns at the width the canvas draws them', async ({ page }) => {
+    // The artboard's own desktop, set here rather than left to the profile, so
+    // every project asks the same question: does the table the canvas draws
+    // actually appear at the width it was drawn for? A threshold above what the
+    // block is given at 1440px is a table this application never shows.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openOffence(page);
+
+    const table = await page
+      .locator('edsb-offence-analysis .weapons__table')
+      .evaluate((node: HTMLElement) => {
+        const head = node.querySelector('.weapons__columns');
+        const cells = (row: Element): number[] =>
+          [...row.querySelectorAll(':scope > *')].map((cell) =>
+            Math.round(cell.getBoundingClientRect().right),
+          );
+        return {
+          promoted: getComputedStyle(node).display,
+          headShown: head === null ? 'none' : getComputedStyle(head).display,
+          heads: head === null ? [] : cells(head),
+          rows: [...node.querySelectorAll('.weapon')].map((row) =>
+            [...row.querySelectorAll('.weapon__figure')].map((cell) =>
+              Math.round(cell.getBoundingClientRect().right),
+            ),
+          ),
+        };
+      });
+
+    expect(table.promoted).toBe('grid');
+    expect(table.headShown).not.toBe('none');
+    // `MODULE` and the four figure heads.
+    expect(table.heads).toHaveLength(5);
+
+    // And every row borrows the table's own tracks, so each figure ends where
+    // the head above it ends. A row that re-resolved its own tracks — which is
+    // what a subgrid with the wrong gutter does — puts each figure a few pixels
+    // off its column and defeats the point of aligning them at all.
+    const figureHeads = table.heads.slice(1);
+    expect(table.rows.length).toBeGreaterThan(0);
+    for (const row of table.rows) {
+      expect(row).toHaveLength(4);
+      for (const [index, edge] of row.entries()) {
+        expect(Math.abs(edge - (figureHeads[index] ?? 0))).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   test('keeps two mounts carrying the same module as two rows', async ({ page }) => {
     await openOffence(page);
 
@@ -878,9 +925,9 @@ test.describe('the conditions that break layouts', () => {
 
     // Neither does the gunsight. It is a view out of the cockpit, and a
     // right-to-left interface does not move a ship's port hardpoint to
-    // starboard, so every mark keeps its place inside the plate and every
-    // leader keeps the end it pivots about (design/offence-profile.md, "The
-    // plate never mirrors").
+    // starboard, so every dot keeps its place inside the plate and every
+    // hardpoint numeral keeps the side of its own dot it was placed on
+    // (design/offence-profile.md, "The plate never mirrors").
     expect(await plateMarks(page)).toEqual(plateBefore);
 
     await expectNoDocumentOverflow(page);

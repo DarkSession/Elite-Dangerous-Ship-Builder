@@ -17,11 +17,10 @@
     <span class="plate__axis plate__axis--horizontal"></span>
 
     <!--
-      The two dashed rings. Each is a circle in *angle*, and since the plate's
-      box is wider than it is tall that makes it a circle in pixels: the canvas
-      corrects a ring's height by the box's own `offsetWidth / offsetHeight`,
-      which is a height in pixels equal to its width. `aspect-ratio` is that
-      correction, without measuring anything.
+      The two dashed rings. Each is a circle in *angle*, and on a box that is
+      square that makes it a circle in pixels too: the canvas corrects a ring's
+      height by the box's own `offsetWidth / offsetHeight`, which here is one.
+      `aspect-ratio` is that correction, without measuring anything.
     -->
     @for (ring of rings(); track ring.milliradians) {
       <span class="plate__ring" [style.width.%]="ring.width * 100"></span>

@@ -402,7 +402,9 @@
   // The stacked damage bar is 22px — a band, not the 66px command bar the panel
   // reached for before this measure existed. The label-bar-figure rows below it
   // set their label at 104px and their figure at 62px, and the weapon table's
-  // three figure columns at 46, 44 and 60px; those are floors here rather than
+  // four figure columns at 46, 44, 62 and 60px — narrowed to 42, 30 and 56 where
+  // canvas 1d draws the same table at phone width, which is why the measure
+  // below sits under the widest of them; those are floors here rather than
   // fixed tracks, because a German label at 200% text needs more than the
   // canvas's English one and a column that clips its own head reads as a
   // different figure. What the canvas is actually fixing is that the tracks
@@ -423,7 +425,7 @@
   --edsb-measure-offence-bar: 0.6875rem; // 11
   --edsb-measure-offence-label: 6.5rem;
   --edsb-measure-offence-value: 3.875rem;
-  --edsb-measure-weapon-figure: 3rem;
+  --edsb-measure-weapon-figure: 2.5rem;
 
   // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
   // box square in pixels, and a 7px dot where each shot lands with the mount's

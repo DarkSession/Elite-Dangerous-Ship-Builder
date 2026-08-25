@@ -34,9 +34,10 @@
     gap: var(--edsb-space-region);
   }
 
-  // Canvas 1c runs `SHOT CONVERGENCE` across the full width beneath the pair:
-  // the plate is a `16 / 6` box and half the panel's width would leave it too
-  // short to read a spread off.
+  // Canvas 1c runs `SHOT CONVERGENCE` across the full width beneath the pair.
+  // The plate itself is a fixed square that does not grow with the block; what
+  // needs the width is the row it stands in, so the range and the four cells
+  // sit beside it rather than under it.
   .offence__block--convergence {
     grid-column: 1 / -1;
   }
@@ -192,27 +193,27 @@
 // always have, so it is the arrangement the list promotes to rather than the
 // one it starts from.
 //
-// 18rem was the threshold while there were four columns, chosen because the
-// block is one half of a pair inside the outfitting centre column and a 1440px
-// desktop gives the list about 19rem — a 22rem table never appeared on the
-// artboard's own width. The 2026-08-25 canvas revision added `RANGE`, and the
-// threshold is worked out from the fifth column rather than guessed at: the
-// module track needs the 155px below which it collapsed and wrapped a weapon's
-// name one character per line, four gaps take 40px, and four figure tracks at
-// their floor take 192px — 387px, which is the 24rem below.
+// 18rem is where it promotes, and the 2026-08-25 canvas revision's fifth column
+// does not move that: the block is one half of a pair inside the outfitting
+// centre column, and a 1440px desktop gives the list about 19rem, so a
+// threshold above it is a table the canvas draws and this application never
+// shows. 18rem still clears the 155px of list width at which the module track
+// collapsed and wrapped a weapon's name one character per line.
 //
-// The floor is the canvas's own scale rather than the widest of its columns.
-// Canvas 1c sets `DPS` 46px, `PIERCE` 44px and the two range columns 60px each,
-// and canvas 1d — which draws the *same* aligned table at phone width, not a
-// stack — narrows them to 42, 30 and 56. 3rem sits inside that range and is a
-// floor, not a width: each track is `auto` above it and grows to whatever its
-// own figures need.
+// What moves instead is the figure floor, because five columns have to fit in
+// the room four had. Canvas 1c sets `DPS` 46px, `PIERCE` 44px, `RANGE` 62px and
+// `FALLOFF` 60px; canvas 1d — which draws the *same* aligned table at phone
+// width, not a stack — narrows the three it keeps to 42, 30 and 56. 2.5rem sits
+// inside that range, and at the 18rem promotion it leaves the module track 88px
+// against four figure tracks and their gaps. It is a floor and not a width:
+// every track is `auto` above it and grows to whatever its own figures need, so
+// the room the canvas gives the module track is what a wider list gives it too.
 //
 // Below the threshold the list takes the compact arrangement, which carries the
 // same five figures with the word that names each one beside it. That is this
 // application's answer to a list too narrow to align, not the canvas's: canvas
 // 1d keeps its table and folds `FALL 1,800` under the range cell instead.
-@container weapons (min-width: 24rem) {
+@container weapons (min-width: 18rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets
   // `auto` resolve differently per row, and figures that do not line up
@@ -224,17 +225,24 @@
     display: grid;
     grid-template-columns:
       minmax(0, 1fr)
-      repeat(4, minmax(min(var(--edsb-layout-weapon-figure), 18%), auto));
+      repeat(4, minmax(min(var(--edsb-layout-weapon-figure), 15%), auto));
     column-gap: var(--edsb-space-inline);
     row-gap: var(--edsb-space-stack-tight);
   }
 
+  // A subgridded axis takes the parent's tracks but not its gutters — its own
+  // `gap` still wins, and `layout.stack` has already given every row a tight
+  // one. Without the column gap restored here each row re-resolves its tracks
+  // against a 4px gutter, so a figure sits a few pixels off the head it belongs
+  // to and overflows its own column, which is the misalignment one grid for the
+  // whole table exists to prevent.
   .weapons__columns,
   .weapons__list,
   .weapon {
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
+    column-gap: var(--edsb-space-inline);
     min-inline-size: 0;
     margin: 0;
   }
