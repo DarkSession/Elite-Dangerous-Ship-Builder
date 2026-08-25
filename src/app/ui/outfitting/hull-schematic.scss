@@ -36,6 +36,24 @@
   aspect-ratio: var(--edsb-layout-plate-ratio);
 }
 
+// A plain box around the drawing, and the element the schematic filter is on.
+//
+// It is here rather than on the `g` inside the picture because a CSS filter
+// function on an SVG container element is not applied by every engine — WebKit
+// on iPadOS leaves it off, and the plate then shows the package's own ink: hull
+// structure in the near-black navy the Almanac draws it in, over the seven
+// bright hues of its feature panels. An ordinary box is filtered everywhere.
+//
+// Absolutely positioned so the frame keeps taking its height from its own
+// `aspect-ratio` rather than from this, and inert to the pointer so the marks
+// over it are the only thing on the plate that can be pressed.
+.schematic__picture {
+  position: absolute;
+  inset: 0;
+  filter: var(--edsb-schematic-filter);
+  pointer-events: none;
+}
+
 // Fills the frame exactly, so a percentage on a mark and a coordinate in the
 // drawing land on the same point: the `viewBox` is the frame's own rectangle
 // and `preserveAspectRatio` therefore has nothing left to letterbox.
@@ -43,6 +61,31 @@
   display: block;
   inline-size: 100%;
   block-size: 100%;
+}
+
+// The leaders, in the same frame rectangle and therefore the same coordinate
+// space as the turned hull: a line drawn to a package annotation's own centre
+// lands on the mount rather than near it.
+//
+// Above the drawing and below the marks, so a hairline never crosses the number
+// it leads to. Outside the filtered picture, so it keeps the interface's own
+// colour instead of being pushed through the schematic's lift.
+.schematic__leaders {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+// One hairline, at one width whatever the plate's scale is: the frame's units
+// are the hull's, so a stroke measured in them would be four times thicker on a
+// two-column plate than on a phone. `non-scaling-stroke` in the template is
+// what makes this a CSS length rather than a drawing one.
+.schematic__leader {
+  stroke: var(--edsb-border-node-leader);
+  stroke-width: var(--edsb-border-width-hairline);
 }
 
 // Written over the drawing in the corner, as the canvas writes it. It is the
@@ -61,10 +104,8 @@
 // whose structure is drawn in a near-black navy. The schematic filter pushes
 // them all into the interface's one amber and lifts that navy off the ground it
 // is drawn on, so the ship reads as a technical drawing rather than as a shape
-// that is nearly the colour of the plate behind it.
-.schematic__artwork {
-  filter: var(--edsb-schematic-filter);
-}
+// that is nearly the colour of the plate behind it. The filter itself is on
+// `.schematic__picture` above, for the reason recorded there.
 
 // ---------------------------------------------------------------------------
 // One mount
@@ -145,11 +186,24 @@
 
 // Canvas `data-kind="sel"`: solid accent. Selection is also `aria-pressed` and
 // is repeated in the ledger row, so it is never the fill alone that says so.
+//
+// The fill says *selected* and the hue says *which kind*, which is why the two
+// compose rather than one replacing the other: a filled amber square is the
+// selected hardpoint and a filled cool one the selected utility. A utility that
+// went amber on selection would be the one place on the plate where the kind a
+// mount is stopped being legible — and the kind is the thing the plate's own
+// legend gives an entry to.
 .schematic__mount[aria-pressed='true'] {
   border-style: solid;
   border-color: var(--edsb-surface-accent-solid);
   background-color: var(--edsb-surface-accent-solid);
   color: var(--edsb-text-on-accent);
+}
+
+.schematic__mount[data-kind='utility'][aria-pressed='true'] {
+  border-color: var(--edsb-surface-info-solid);
+  background-color: var(--edsb-surface-info-solid);
+  color: var(--edsb-text-on-info);
 }
 
 // The canvas hangs the engineering icon off the node's top corner, at its own

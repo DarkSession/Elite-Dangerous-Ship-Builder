@@ -24,6 +24,25 @@ design is the record, so FR-004, FR-005, FR-008, FR-011 and FR-012 below are sta
 draws them and the withdrawn surfaces are recorded in
 [design/hull-anatomy.md](./design/hull-anatomy.md).
 
+### Session 2026-08-25 — three corrections from use
+
+Three things the reference did not answer, decided by what the built screen does on real hulls and
+real hardware.
+
+- Q: What happens where the package draws mounts so close together that their marks touch? → A: The
+  mark steps aside and a hairline ties it back to the point the package published. The anchor never
+  moves, the step is arithmetic over the package's own coordinates, and it is the same share of the
+  plate at every width. FR-012 and the overlap edge case are restated in those terms; the front-on-
+  hover rule stays for the hulls no arrangement of squares can separate.
+- Q: Should a selected utility mount take the accent fill a selected hardpoint takes? → A: No. The
+  fill says _selected_ and the hue says _which kind_, so a selected utility is filled in the
+  informational hue the legend's `UTILITY` entry draws. Selection remains carried by `aria-pressed`
+  and by the ledger row as well as by the fill.
+- Q: iPadOS draws the hulls in the package's own blue. → A: The schematic filter was declared on an
+  SVG container element, which WebKit does not apply. It moves to an ordinary box around the
+  drawing; the marks and leaders stay outside it. Recorded in
+  [design/hull-anatomy.md](./design/hull-anatomy.md), "Schematic regions".
+
 ## User Scenarios
 
 ### Story 1 — Locate hardpoints and utility mounts (P1)
@@ -77,7 +96,11 @@ draws them and the withdrawn surfaces are recorded in
 - **FR-011**: Artwork provenance and applicable media terms MUST be reachable from the application's
   help capability. Hull anatomy MUST NOT publish a provenance control of its own.
 - **FR-012**: Each interactive hardpoint and utility mount MUST be a separately operable named
-  control at the position the package published, and MUST NOT be enlarged by moving that geometry.
+  control anchored to the position the package published, and MUST NOT be enlarged by moving that
+  geometry. Where the package draws two mounts closer together than a mark is wide, a mark MAY be
+  displaced from its anchor by a deterministic amount computed from the package's own published
+  coordinates, provided the anchor is unchanged, a leader joins the mark to it, and the displacement
+  is the same at every plate size (design/hull-anatomy.md, "Marks that would touch").
   The marks are drawn at the canvas's own size, below the project's 44-pixel baseline: the size
   criterion is met through SC 2.5.8's Equivalent exception, by feature 002's complete ledger offering
   every one of the same mounts at the full baseline on the same screen, whether or not the artwork
@@ -89,7 +112,8 @@ draws them and the withdrawn surfaces are recorded in
 - A schematic slot key that does not resolve to the hull is omitted at run time and never guessed.
   Reporting it is the installed-package audit's, which fails the build rather than telling a
   Commander about a file they cannot fix.
-- Nearby or overlapping mounts remain separately operable.
+- Nearby or overlapping mounts remain separately operable, and a mark displaced to keep them so
+  still shows the mount's published position through its leader.
 - Position, colour and shape never carry mount state alone.
 - Schematic failure never removes the full slot list.
 

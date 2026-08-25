@@ -320,6 +320,40 @@ facts and ledger, and no navigation mutates the build.
 
 ---
 
+## Phase 6: Corrections from use, 2026-08-25
+
+Three things the built screen answered wrongly on real hulls and real hardware. Each is recorded as a
+clarification in `spec.md` and in `design/hull-anatomy.md`; none of them changes what this capability
+owns.
+
+- [x] T076 Displace a mark that would touch a mark already placed and tie it back to the point the
+      package published — the placement itself as a pure function over published coordinates in
+      `src/app/domain/anatomy/mount-declutter.ts` with its unit suite beside it, the anchors, marks
+      and leaders assembled in `src/app/ui/outfitting/hull-schematic.ts`, the hairline drawn in an
+      overlay in `hull-schematic.html` and painted from `--edsb-border-node-leader` in
+      `hull-schematic.scss`, `data-displaced` exposed for the end-to-end assertion, and the crowded
+      pair added to the plate's `default` preview in `src/app/ui/previews/preview-manifest.ts`.
+      FR-012 and the overlap edge case are restated in `spec.md`, the placement is written down in
+      `data-model.md`, and `design/hull-anatomy.md` gains "Marks that would touch".
+- [x] T077 Fill a selected utility mount in the informational hue rather than the accent one — the
+      `[data-kind='utility'][aria-pressed='true']` treatment in `hull-schematic.scss` over the new
+      `--edsb-surface-info-solid` and `--edsb-text-on-info` in `src/styles/tokens/_semantic.scss`,
+      with the reasoning in `design/hull-anatomy.md`, "Legend and visual language": the fill says
+      _selected_ and the hue says _which kind_.
+- [x] T078 Draw the hulls on iPadOS in the interface's own amber rather than the package's blue — the
+      schematic filter moves from the SVG group inside the picture, which WebKit does not filter, to
+      an ordinary `.schematic__picture` box around it in `hull-schematic.html` and
+      `hull-schematic.scss`, leaving the marks and the leaders outside it. Recorded in
+      `design/hull-anatomy.md`, "Schematic regions".
+- [x] T079 Cover all three in the suites that gate the build: `placeMarks` in
+      `src/app/domain/anatomy/mount-declutter.spec.ts`, the plate's own displacement, leader and
+      filtered-box assertions in `src/app/ui/outfitting/hull-schematic.spec.ts`, and the two
+      end-to-end assertions — leaders matching displaced marks on both plates, and a selected utility
+      drawn in a different fill from a selected hardpoint — in `e2e/hull-anatomy.spec.ts`, in all ten
+      projects.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase dependencies

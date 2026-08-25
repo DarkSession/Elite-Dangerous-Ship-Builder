@@ -13,6 +13,7 @@ import type {
   SchematicSide,
   SideAssetState,
 } from '../../domain/anatomy/anatomy-model';
+import { placeMarks, type PlatePoint } from '../../domain/anatomy/mount-declutter';
 import { hullSchematicImagePath } from '../../platform/assets/hull-artwork-path';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { MessageService } from '../../i18n/message.service';
@@ -40,6 +41,32 @@ export interface HullSchematicView {
  * `background-size: contain` puts it there.
  */
 const PLATE_RATIO = 720 / 292;
+
+/** One mount, and where its numbered square is drawn on the plate. */
+export interface PlateMark {
+  readonly occurrence: MountOccurrence;
+  /** The mark's position, as a share of the frame's inline size. */
+  readonly left: number;
+  /** The mark's position, as a share of the frame's block size. */
+  readonly top: number;
+  /** True when the mark stepped aside, which is when a leader is drawn to it. */
+  readonly displaced: boolean;
+}
+
+/**
+ * A hairline from a mount to the mark that stepped away from it.
+ *
+ * Drawn in the plate's own frame units, in the same coordinate space as the
+ * turned hull, so the end of the line lands on the package's own annotation
+ * rather than near it.
+ */
+export interface PlateLeader {
+  readonly key: string;
+  readonly x1: number;
+  readonly y1: number;
+  readonly x2: number;
+  readonly y2: number;
+}
 
 /** Where the hull's own rectangle sits inside the plate's, in drawing units. */
 interface SchematicPlacement {
@@ -282,29 +309,92 @@ export class HullSchematic {
   readonly loaderSource = 'assets/loader.svg';
 
   /**
-   * Where the box goes, as a share of the turned frame.
+   * A mount's own point on the turned plate, in the frame's own units.
    *
-   * The same quarter turn the drawing gets, expressed as a percentage so the
-   * box travels with the hull at every plate size. Physical `left` and `top`
-   * rather than logical properties: a hull is not mirrored by a right-to-left
-   * interface, and a mount that swapped sides with the writing direction would
-   * be pointing at the wrong part of the ship (feature 011, FR-014).
+   * The same quarter turn the drawing gets: the hull's `y` runs across the
+   * frame and its `x` up it. Arithmetic over the coordinates the package
+   * published, and the only place a mount's position is worked out (FR-003).
    */
-  leftOf(occurrence: MountOccurrence): number {
-    const laid = this.#placement();
-    return laid === null
-      ? 0
-      : ((laid.offsetX + occurrence.centre.y - laid.content.y) / laid.frameWidth) * 100;
+  #anchorOf(laid: SchematicPlacement, centre: PlatePoint): PlatePoint {
+    return {
+      x: laid.offsetX + centre.y - laid.content.y,
+      y: laid.offsetY + laid.content.x + laid.content.width - centre.x,
+    };
   }
 
-  topOf(occurrence: MountOccurrence): number {
-    const laid = this.#placement();
-    return laid === null
-      ? 0
-      : ((laid.offsetY + laid.content.x + laid.content.width - occurrence.centre.x) /
-          laid.frameHeight) *
-          100;
-  }
+  /**
+   * Every mark's drawn position, and the leaders back to the mounts that moved.
+   *
+   * The Almanac draws real mounts closer together than a mark is wide, so a
+   * mark that would touch one already placed steps aside and a hairline ties it
+   * back to the point the package published. The mount itself is not moved —
+   * the line's far end is its own annotation's centre — which is what keeps
+   * FR-003's geometry and FR-012's "at the position the package published"
+   * true of the plate while the number on the mark stays readable
+   * (design/hull-anatomy.md, "Marks that would touch").
+   *
+   * One pass for both, because the leaders are the placements that moved: two
+   * computeds over the same run would be the same arithmetic done twice and a
+   * chance for the line and the square to disagree.
+   */
+  readonly #placed = computed<{ marks: readonly PlateMark[]; leaders: readonly PlateLeader[] }>(
+    () => {
+      const laid = this.#placement();
+      const occurrences = this.view().occurrences;
+      if (laid === null) {
+        return {
+          marks: occurrences.map((occurrence) => ({
+            occurrence,
+            left: 0,
+            top: 0,
+            displaced: false,
+          })),
+          leaders: [],
+        };
+      }
+
+      const placements = placeMarks(
+        occurrences.map((occurrence) => this.#anchorOf(laid, occurrence.centre)),
+        { width: laid.frameWidth, height: laid.frameHeight },
+      );
+
+      const marks = occurrences.map((occurrence, index) => ({
+        occurrence,
+        left: (placements[index].mark.x / laid.frameWidth) * 100,
+        top: (placements[index].mark.y / laid.frameHeight) * 100,
+        displaced: placements[index].displaced,
+      }));
+
+      const leaders = placements.flatMap((placement, index) =>
+        placement.displaced
+          ? [
+              {
+                key: occurrences[index].item.key,
+                x1: placement.anchor.x,
+                y1: placement.anchor.y,
+                x2: placement.mark.x,
+                y2: placement.mark.y,
+              },
+            ]
+          : [],
+      );
+
+      return { marks, leaders };
+    },
+  );
+
+  /**
+   * The marks, in package drawing order.
+   *
+   * Physical `left` and `top` rather than logical properties: a hull is not
+   * mirrored by a right-to-left interface, and a mount that swapped sides with
+   * the writing direction would be pointing at the wrong part of the ship
+   * (feature 011, FR-014).
+   */
+  readonly marks = computed(() => this.#placed().marks);
+
+  /** The hairlines, one per mark that stepped aside. Decoration, and empty most hulls. */
+  readonly leaders = computed(() => this.#placed().leaders);
 
   /**
    * One mount's name, as it is heard.

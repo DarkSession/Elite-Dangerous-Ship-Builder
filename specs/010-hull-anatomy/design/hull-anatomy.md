@@ -63,9 +63,10 @@ plate holds its whole document at its own ratio at every width.
   included. The canvas's hull is one picture with no per-mount treatment on it, and a mount's state
   is carried by the mark set over it rather than by repainting what the package drew.
 - Every admitted occurrence is drawn as canvas 1c's `hp-node`: a small square carrying that mount's
-  node number, centred on the mount's own position and treated in the canvas's four kinds. The
-  position is the middle of the annotation's own published coordinates; nothing is moved, and
-  nothing is measured off anything rendered.
+  node number, anchored to the mount's own position and treated in the canvas's four kinds. The
+  anchor is the middle of the annotation's own published coordinates; nothing is measured off
+  anything rendered. Where two anchors are closer together than a mark is wide the mark steps aside
+  and a hairline ties it back to its anchor, which is the whole of "Marks that would touch" below.
 - Occurrence state comes from the one canonical mount item. A cross-side repeat has two side-specific
   accessible names but identical fitted/engineering/focused/power state.
 - An occurrence is named by the same localized mount name feature 002's ledger row carries, resolved
@@ -102,7 +103,14 @@ plate holds its whole document at its own ratio at every width.
   `pnpm run policy` fails if the installed package has moved past it (FR-009).
 - The drawing's own ink is a near-black navy on a near-black plate, so the schematic takes its own
   filter: an additive lift rather than a multiplied brightness, which raises the structure to a
-  legible step without blowing the package's seven bright feature hues out to white.
+  legible step without blowing the package's seven bright feature hues out to white. **The filter is
+  declared on an ordinary box around the drawing, not on a group inside it.** A CSS filter function
+  on an SVG container element is not applied by every engine — WebKit on iPadOS leaves it off, and
+  what a Commander then sees is the package's own ink, a hull drawn in that navy over the seven
+  bright hues of its feature panels. Reported as "on iPad OS the hulls are blue", and it was exactly
+  that: the drawing arriving unfiltered. On a plain box every engine applies it, and the marks and
+  the leaders stay outside that box, where they keep the interface's own colours rather than being
+  pushed through a lift meant for package ink.
 - A side that has not arrived carries the hull illustration's own loading mark, in the place the
   drawing will be, with the words spoken rather than drawn. Prose in the frame and a hull after it is
   a plate that changes height when the fetch lands.
@@ -119,7 +127,15 @@ localized words as their accessible names.
 The reference's node treatments are the mark's, not the package's own shapes: a fitted mount takes
 the accent hairline, an empty one the dashed neutral hairline, a utility one the informational hue
 the canvas gives `data-kind="util"`, a selected one the solid accent fill it gives `data-kind="sel"`,
-and an engineered one the canvas's own engineering icon hung off the mark's top corner. The icon
+and an engineered one the canvas's own engineering icon hung off the mark's top corner.
+
+The fill and the hue compose rather than one replacing the other: **the fill says _selected_ and the
+hue says _which kind_**, so a selected hardpoint is a filled amber square and a selected utility a
+filled cool one. The canvas's `data-kind="sel"` is one treatment because the canvas selects a
+hardpoint in it; a utility that went amber on selection would be the one place on the plate where
+the kind of a mount stopped being legible, and the kind is what the legend gives its fourth entry
+to. The legend's `SELECTED` swatch stays amber — it explains the fill, and the entry beside it
+explains the hue. The icon
 needs no measurement: it is placed against the mark, which the plate positions, and never against
 the package's drawing, which nothing measures (FR-003).
 
@@ -272,6 +288,58 @@ the whole application. FR-011 is restated in those terms.
 **Left open.** Until feature 012 lands there is no provenance surface at all. That is a gap in
 feature 012's delivery, not a reason for feature 010 to draw a control the design does not have.
 
+## Marks that would touch
+
+**What the reference draws.** Nodes laid on the hull where the hull puts them, and nothing else.
+Canvas 1c's Anaconda has its closest pair about five pixels apart at the plate size the canvas
+draws, and the mock simply lets them sit on each other: it is one still picture of one hull, and the
+number underneath does not have to be read.
+
+**What the built screen has to answer.** The same overlap, on ninety-six hulls, with a number in
+every square that a Commander is expected to match against a ledger row. Bringing the worked-with
+mark to the front — which the plate does, and which "Divergence from FR-012" records — answers the
+pointer half of the problem and none of the reading half: whichever mark is behind is still a sliver
+with half a digit on it.
+
+**What is drawn instead.** A mark that would touch a mark already placed steps aside, and a hairline
+runs from it back to the point the package published. Three rules keep that from becoming invented
+geometry:
+
+- **The anchor never moves.** What is displaced is the _mark_ — the canvas's own square, this
+  application's drawing over the package's — and the far end of the leader is the middle of the
+  package's own annotation. The mount's real position stays on the plate; it stops being _underneath_
+  the mark and starts being _pointed at_ by it.
+- **Nothing is measured.** The step is arithmetic over the coordinates the package published and the
+  plate's own frame, in `src/app/domain/anatomy/mount-declutter.ts` — the same kind of arithmetic
+  that turns the hull and centres it in the frame. There is no `getBBox`, no `getScreenCTM` and no
+  read off anything rendered (FR-003).
+- **The arrangement does not depend on the plate's size.** Separation is a fraction of the frame, not
+  a pixel count, and it is set at the widest share a mark ever takes: `clamp(0.875rem, 3.06cqw,
+1.375rem)` is 3.06% of a wide plate and about 4.7% of the ~300px frame a phone in portrait gives
+  it. So one hull is one arrangement at every width, and marks do not slide around under a finger as
+  a window is resized. The floating-point tolerance in that module exists for the same reason: a
+  candidate placed at exactly one separation must not be admitted on one frame size and refused on
+  another because the rounding fell differently.
+
+The order is the package's own drawing order, greedy and one pass: the first mount keeps its
+position, and each one after it keeps its position unless that would touch a mark already placed, in
+which case it takes the first clear step outward from the middle of the plate — outward, because a
+mount is on the hull and the air around the hull is where a fourteen-pixel square with a number in it
+covers nothing. Three rings, and then it gives up and keeps its own position: a mount flung far
+enough that only the leader says where it is has been made harder to read, not easier, and the
+front-on-hover rule already handles the honest overlap.
+
+Forty-one of the package's ninety-six plates move at least one mark; the Anaconda's underside moves
+five of its eight, which is the plate that put a utility inside a large hardpoint's floor.
+
+**What the leader is not.** It carries no state: it is `aria-hidden`, it is drawn in one quiet amber
+hairline whatever the mount is, and every fact about the mount is still in the button's own name. It
+is also not a convergence line, a range or any other assertion about the ship — it is one segment
+between a mark and the anchor that mark belongs to.
+
+**Left open.** Nothing. A hull whose mounts are far enough apart never displaces a mark and never
+draws a leader, which is most of them.
+
 ## Divergence from FR-012 — the size of a mount target
 
 **What the reference draws.** Nodes of 14 to 30 CSS pixels, laid on the hull where the hull puts
@@ -289,10 +357,11 @@ FR-003 refuses.
 **What survives.** Two things, and they are what FR-012 is actually for.
 
 First, every mount is separately operable at every plate size — from the keyboard, where each mark is
-its own stop in its own order and nothing can be in front of anything. Marks do overlap on the dense
-hulls, so the mark being pointed at, moved to or currently selected comes to the front: whichever
-mount a Commander is working with is the whole square rather than the sliver its neighbour left
-uncovered. That is the edge case the specification states — "nearby or overlapping mounts remain
+its own stop in its own order and nothing can be in front of anything. Marks that would touch now
+step aside and are tied back to their mounts ("Marks that would touch" above), which removes most of
+the overlap outright; where a hull is packed tighter than any arrangement of squares can separate,
+the mark being pointed at, moved to or currently selected comes to the front, so whichever mount a
+Commander is working with is the whole square rather than the sliver its neighbour left uncovered. That is the edge case the specification states — "nearby or overlapping mounts remain
 separately operable" — and `keeps nearby mounts separately operable` in `e2e/hull-anatomy.spec.ts`
 walks every drawn mount to prove it.
 
@@ -348,7 +417,9 @@ document says so in words, in place of the document, and nothing else on the scr
 
 Feature 010 adds one presentation component to the outfitting set feature 002 established in
 `src/app/ui/outfitting/`: the schematic plate, which renders one validated document, its mount
-occurrences and its side-local status. The side selector reuses feature 011's `edsb-tab-group` in
+occurrences, the leaders to any mark that stepped aside, and its side-local status. Where a mark
+goes is decided outside it, by `src/app/domain/anatomy/mount-declutter.ts` — a pure function over
+published coordinates, testable without rendering anything (constitution III). The side selector reuses feature 011's `edsb-tab-group` in
 its segmented presentation, and the legend is five static rows in the capability's own template.
 
 The plate accepts immutable view state, emits a typed slot intent, owns its own semantics and its

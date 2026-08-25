@@ -86,6 +86,10 @@
   // What a heat bar is drawn in past the module-damage threshold.
   --edsb-surface-overheat: var(--edsb-texture-overheat);
   --edsb-surface-info-quiet: var(--edsb-palette-cool-a10);
+  // The filled counterpart, for a selected control whose kind is the cool one:
+  // the anatomy plate's utility mounts, which say *selected* with the same
+  // solid fill a hardpoint takes and keep their own hue while they say it.
+  --edsb-surface-info-solid: var(--edsb-palette-cool);
 
   // The wash that runs from the leading edge of a selected row.
   --edsb-surface-row-selected: var(--edsb-texture-selected);
@@ -130,6 +134,7 @@
   --edsb-text-accent: var(--edsb-palette-amber-2); //      8.62:1 min
   --edsb-text-accent-strong: var(--edsb-palette-amber-3); // 9.33:1 min
   --edsb-text-on-accent: var(--edsb-palette-bg-deep); //   8.50:1 on amber
+  --edsb-text-on-info: var(--edsb-palette-bg-deep); //    10.92:1 on cool
   --edsb-text-merc: var(--edsb-palette-merc); //           4.67:1 min
   --edsb-text-danger: var(--edsb-palette-hot); //          5.95:1 min
   --edsb-text-danger-quiet: var(--edsb-palette-hot-2); //  8.19:1 min
@@ -166,6 +171,10 @@
   --edsb-border-region: var(--edsb-palette-amber-a18);
   --edsb-border-dialog: var(--edsb-palette-amber-a45);
   --edsb-border-quiet: var(--edsb-palette-ink-a18);
+  // The hairline from a mount to the mark that stepped aside from it, where the
+  // hull draws two mounts closer together than a mark is wide. Quiet enough not
+  // to read as hull structure, strong enough to follow across it.
+  --edsb-border-node-leader: var(--edsb-palette-amber-a40);
   --edsb-border-danger-quiet: var(--edsb-palette-hot-a40);
 
   // The one-pixel ground a grid's gaps expose as rules.

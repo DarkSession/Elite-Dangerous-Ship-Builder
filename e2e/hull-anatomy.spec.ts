@@ -381,6 +381,66 @@ test.describe('targets and accessibility', () => {
     expect(selected).toBeGreaterThan(plain);
   });
 
+  test('steps overlapping marks apart and ties each back to its own mount', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The Almanac draws real mounts closer together than a mark is wide, so on
+    // a dense hull some marks step aside. Every one that does gets a hairline
+    // back to the point the package published — the mark moved, the mount did
+    // not (design/hull-anatomy.md, "Marks that would touch").
+    for (const side of ['top', 'bottom']) {
+      const plate = page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"]`);
+      const displaced = await plate.locator('.schematic__mount[data-displaced="true"]').count();
+      expect(await plate.locator('.schematic__leader').count()).toBe(displaced);
+    }
+
+    // And the Anaconda's underside is a plate that needs it: it puts a utility
+    // inside a large hardpoint's floor. Both plates are drawn at every width —
+    // the compact arrangement hides one rather than dropping it — so this is
+    // the same assertion in all ten projects.
+    const bottom = page.locator('edsb-hull-anatomy .schematic[data-side="bottom"]');
+    expect(
+      await bottom.locator('.schematic__mount[data-displaced="true"]').count(),
+    ).toBeGreaterThan(0);
+  });
+
+  test('draws a selected utility in the utility hue, not the hardpoint one', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The fill says *selected* and the hue says *which kind*. A utility that
+    // went amber on selection would be the one place on the plate where the
+    // kind of a mount stopped being legible — and the kind is what the legend
+    // gives an entry to.
+    const utility = page
+      .locator('edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible')
+      .first();
+    await utility.click();
+    await expect(utility).toHaveAttribute('aria-pressed', 'true');
+    const selectedUtility = await utility.evaluate(
+      (node) => getComputedStyle(node).backgroundColor,
+    );
+
+    const hardpoint = page
+      .locator('edsb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible')
+      .first();
+    await hardpoint.click();
+    await expect(hardpoint).toHaveAttribute('aria-pressed', 'true');
+    const selectedHardpoint = await hardpoint.evaluate(
+      (node) => getComputedStyle(node).backgroundColor,
+    );
+
+    expect(selectedUtility).not.toBe(selectedHardpoint);
+    // Both are filled: selection is still the solid mark the canvas draws, and
+    // it is still carried by `aria-pressed` as well as by the fill.
+    const empty = await page
+      .locator('edsb-hull-anatomy .schematic__mount[aria-pressed="false"]:visible')
+      .first()
+      .evaluate((node) => getComputedStyle(node).backgroundColor);
+    expect(selectedUtility).not.toBe(empty);
+  });
+
   test('offers every drawn mount at the full baseline in the ledger', async ({ page }) => {
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();

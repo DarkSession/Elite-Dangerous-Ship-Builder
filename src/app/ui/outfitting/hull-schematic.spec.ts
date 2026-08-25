@@ -108,6 +108,66 @@ describe('HullSchematic', () => {
     expect(mount.style.top).toBe('75%');
   });
 
+  it('steps a mark aside from one it would touch, and ties it back to its mount', () => {
+    // Four drawing units apart on a hull 480 across: the Almanac's own case,
+    // where two real mounts are closer together than a mark is wide. The second
+    // mark moves; the mount it belongs to does not, and the hairline between
+    // them is what keeps the mount's real position on the plate
+    // (design/hull-anatomy.md, "Marks that would touch").
+    const fixture = renderComponent(HullSchematic, {
+      view: view({
+        occurrences: [
+          occurrence(),
+          { ...occurrence({ key: 'SmallHardpoint2', node: 2 }), centre: { x: 60, y: 124 } },
+        ],
+      }),
+    });
+
+    const marks = element(fixture).querySelectorAll<HTMLElement>('.schematic__mount');
+    expect(marks[0].getAttribute('data-displaced')).toBe('false');
+    expect(marks[1].getAttribute('data-displaced')).toBe('true');
+    expect(marks[1].style.left).not.toBe(marks[0].style.left);
+
+    const leaders = element(fixture).querySelectorAll('.schematic__leader');
+    expect(leaders.length).toBe(1);
+    // The far end is the middle of the package's own annotation, turned with
+    // the hull — the position the unmoved mark would have had.
+    expect(Number(leaders[0].getAttribute('x1'))).toBeCloseTo(179.89, 2);
+    expect(Number(leaders[0].getAttribute('y1'))).toBeCloseTo(180, 2);
+    expect(Number(leaders[0].getAttribute('x2'))).not.toBeCloseTo(179.89, 2);
+    // Decoration: the mount is a named button and the line says nothing a
+    // reader has to hear.
+    expect(query(fixture, '.schematic__leaders').getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('draws no leader when every mount has room for its own mark', () => {
+    const fixture = renderComponent(HullSchematic, {
+      view: view({
+        occurrences: [
+          occurrence(),
+          { ...occurrence({ key: 'HugeHardpoint1', node: 2 }), centre: { x: 200, y: 400 } },
+        ],
+      }),
+    });
+
+    expect(element(fixture).querySelector('.schematic__leaders')).toBeNull();
+    for (const mark of element(fixture).querySelectorAll('.schematic__mount')) {
+      expect(mark.getAttribute('data-displaced')).toBe('false');
+    }
+  });
+
+  it('filters the drawing on an ordinary box rather than on a group inside it', () => {
+    // A CSS filter function on an SVG container element is not applied by every
+    // engine — WebKit on iPadOS leaves it off and the plate then shows the
+    // package's own near-black navy. The marks and leaders stay outside the
+    // filtered box, so they keep the interface's own colours.
+    const fixture = renderComponent(HullSchematic, { view: view() });
+
+    const picture = query(fixture, '.schematic__picture');
+    expect(picture.querySelector('.schematic__drawing')).not.toBeNull();
+    expect(picture.querySelector('.schematic__mount')).toBeNull();
+  });
+
   it('names the plate by its side and describes it by hull and orientation', () => {
     const fixture = renderComponent(HullSchematic, { view: view({ side: 'bottom' }) });
 

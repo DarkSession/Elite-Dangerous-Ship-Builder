@@ -29,62 +29,101 @@
         A picture with a text equivalent, because that is now what it is: every
         mount is a real button in the overlay above, so the drawing itself
         carries no control and no fact that is not also written down.
+
+        The plain box around it is what carries the schematic filter. A CSS
+        filter function on an SVG container element is not applied by every
+        engine — WebKit on iPadOS leaves it off, and what a Commander then sees
+        is the package's own ink: a hull drawn in the near-black navy the
+        Almanac uses, over the seven bright hues of its feature panels. On an
+        ordinary box every engine applies it, and the marks and leaders stay
+        outside it where they keep the interface's own colours
+        (design/hull-anatomy.md, "Schematic regions").
       -->
-      <svg
-        class="schematic__drawing"
-        [attr.viewBox]="frame().viewBox"
-        preserveAspectRatio="xMidYMid meet"
-        role="img"
-        [attr.aria-label]="description()"
-      >
+      <div class="schematic__picture">
+        <svg
+          class="schematic__drawing"
+          [attr.viewBox]="frame().viewBox"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          [attr.aria-label]="description()"
+        >
+          <!--
+            The whole document, as one picture, at the package's own `viewBox`
+            inside the same turned group the marks are placed from — so the hull
+            and the marks over it cannot drift apart. The file is ninety
+            kilobytes of sub-pixel path data that a fixed-ratio plate would
+            otherwise re-rasterise on every resize, so neither this nor the
+            marks come from it at run time: both are made from it at build time,
+            which is what keeps them in one coordinate space.
+          -->
+          <g class="schematic__artwork" [attr.transform]="frame().transform">
+            <image
+              [attr.href]="artworkSource()"
+              [attr.x]="artworkBox().x"
+              [attr.y]="artworkBox().y"
+              [attr.width]="artworkBox().width"
+              [attr.height]="artworkBox().height"
+              (error)="pictureUnavailable()"
+            />
+          </g>
+        </svg>
+      </div>
+
+      @if (leaders().length > 0) {
         <!--
-          The whole document, as one picture, at the package's own `viewBox`
-          inside the same turned group the marks are placed from — so the hull
-          and the marks over it cannot drift apart. The file is ninety
-          kilobytes of sub-pixel path data that a fixed-ratio plate would
-          otherwise re-rasterise on every resize, so neither this nor the marks
-          come from it at run time: both are made from it at build time, which
-          is what keeps them in one coordinate space.
-
-          Pushed into the interface's own hue by the same filter the hull
-          illustrations use, so a nine-colour technical drawing does not arrive
-          as nine colours nobody chose.
+          The hairlines back to the mounts whose marks stepped aside, in the
+          plate's own frame — the same coordinate space the turned hull is
+          drawn in, so a line ends on the package's annotation rather than near
+          it. Decoration: the mount it points at is a named button, and nothing
+          about its state is carried by the line
+          (design/hull-anatomy.md, "Marks that would touch").
         -->
-        <g class="schematic__artwork" [attr.transform]="frame().transform">
-          <image
-            [attr.href]="artworkSource()"
-            [attr.x]="artworkBox().x"
-            [attr.y]="artworkBox().y"
-            [attr.width]="artworkBox().width"
-            [attr.height]="artworkBox().height"
-            (error)="pictureUnavailable()"
-          />
-        </g>
-      </svg>
+        <svg
+          class="schematic__leaders"
+          [attr.viewBox]="frame().viewBox"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+          focusable="false"
+        >
+          @for (leader of leaders(); track leader.key) {
+            <line
+              class="schematic__leader"
+              [attr.x1]="leader.x1"
+              [attr.y1]="leader.y1"
+              [attr.x2]="leader.x2"
+              [attr.y2]="leader.y2"
+              vector-effect="non-scaling-stroke"
+            />
+          }
+        </svg>
+      }
 
-      @for (occurrence of view().occurrences; track occurrence.item.key) {
+      @for (mark of marks(); track mark.occurrence.item.key) {
         <!--
           Canvas 1c's `hp-node`: a small square carrying the mount's node
-          number, set on the hull at that mount's own position. A real button
-          rather than the reference's `div`, so it is reachable, pressable and
-          named; `data-kind`, `data-fitted`, `data-engineered` and `aria-pressed`
-          carry the same four facts the treatment draws and the name says.
+          number, set on the hull at that mount's own position — or, where the
+          hull draws two mounts closer together than a mark is wide, one step
+          aside from it with a leader back to it. A real button rather than the
+          reference's `div`, so it is reachable, pressable and named;
+          `data-kind`, `data-fitted`, `data-engineered` and `aria-pressed` carry
+          the same four facts the treatment draws and the name says.
         -->
         <button
           class="schematic__mount"
           type="button"
-          [style.left.%]="leftOf(occurrence)"
-          [style.top.%]="topOf(occurrence)"
-          [attr.data-slot]="occurrence.item.key"
-          [attr.data-kind]="occurrence.item.kind"
-          [attr.data-fitted]="occurrence.item.fitted"
-          [attr.data-engineered]="occurrence.item.engineered"
-          [attr.aria-label]="nameOf(occurrence)"
-          [attr.aria-pressed]="isSelected(occurrence)"
-          (click)="slotActivated.emit(occurrence.item.key)"
+          [style.left.%]="mark.left"
+          [style.top.%]="mark.top"
+          [attr.data-slot]="mark.occurrence.item.key"
+          [attr.data-kind]="mark.occurrence.item.kind"
+          [attr.data-fitted]="mark.occurrence.item.fitted"
+          [attr.data-engineered]="mark.occurrence.item.engineered"
+          [attr.data-displaced]="mark.displaced"
+          [attr.aria-label]="nameOf(mark.occurrence)"
+          [attr.aria-pressed]="isSelected(mark.occurrence)"
+          (click)="slotActivated.emit(mark.occurrence.item.key)"
         >
-          {{ occurrence.item.node }}
-          @if (occurrence.item.engineered) {
+          {{ mark.occurrence.item.node }}
+          @if (mark.occurrence.item.engineered) {
             <!--
               The canvas hangs the engineering icon off the node's top corner.
               Decoration: the button's own name already says the module is
