@@ -51,15 +51,12 @@
   position: static;
 }
 
-// And the chrome below releases with it, rather than freezing over a gap the
-// bar is no longer filling — the same pairing the short-viewport rules make in
-// the regions themselves (FR-011). The token says what a region has to clear to
-// sit below the sticky command bar; with the bar travelling with the page there
-// is nothing to clear, and every region that offsets by it, reserves scroll
-// room for it or subtracts it from its own height follows without knowing why.
-:host(.frame--released) {
-  --edsb-layout-bar-height: 0px;
-}
+// The chrome below releases with it, rather than freezing over a gap the bar is
+// no longer filling — the same pairing the short-viewport rules make in the
+// regions themselves (FR-011). That is done by zeroing
+// `--edsb-layout-bar-height` for the released frame, and a token takes its
+// values in the token layer, so the rule lives beside the token's own
+// declaration in `styles/tokens/_semantic.scss` rather than here.
 
 // Every canvas builds the bar from exactly two groups: the screen's identity on
 // the leading edge and everything it offers on the trailing one (canvas 1a's

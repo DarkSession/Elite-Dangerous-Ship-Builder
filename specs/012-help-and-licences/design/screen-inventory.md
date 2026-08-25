@@ -94,6 +94,16 @@ accepted requirement rather than to nothing.
   bounded to the viewport with its own scroller in `action-layer.scss`. No template changed and no
   help control was added anywhere; what changed is that every entry in that layer, this one included,
   can be pressed.
+- **A second exception, 2026-08-25**, and it is a policy fix rather than a change of behaviour:
+  `main`'s own fix for the sticky command bar (`3f9b574`) zeroes `--edsb-layout-bar-height` for a
+  released frame, and it declared that token inside `app-frame.scss`. The constitution has tokens
+  defined once and only in the token layer, and `check-interface-foundations.mjs` enforces it as
+  `token-outside-source`; the rule turned `pnpm run policy` red the moment this branch rebased onto
+  it. The declaration moved verbatim to `styles/tokens/_semantic.scss`, beside the token's own, as
+  `edsb-app-frame.frame--released` — the frame already marks that state on its host element, so the
+  selector reaches exactly what `:host(.frame--released)` reached. Nothing in the frame's behaviour
+  changed and its end-to-end assertion still holds; what changed is that the layout decision lives
+  in one place again.
 - Feature 012 owns the entry action, the modal composition, the presenter, the topic catalogue and
   the artifact manifest.
 - Feature 011 owns primitive dialog semantics, visible-name actions, tokens, localisation, previews

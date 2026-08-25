@@ -18,7 +18,7 @@ finding 2 was fixed there, on the container this repository builds in.
 | 5. Validate exact legal presentation               | pass    | byte-identical excerpt; three summary lines; one legal body    |
 | 6. Verify the modal offers no way out              | pass    | no anchor, no popup, no request to any origin                  |
 | 7. Verify initial-load and offline behaviour       | pass    | production build and service worker, network disabled          |
-| 8. Validate localisation, reflow and accessibility | open    | one defect open at tablet-landscape; Firefox cannot run here   |
+| 8. Validate localisation, reflow and accessibility | pass\*  | the defect in finding 2 is fixed; Firefox cannot run here — 3  |
 
 ## Findings
 
@@ -97,6 +97,19 @@ was not done: [reference-review.md](./reference-review.md) already settles that 
 way, replacing the `?`'s title-only naming with the reference's own `HELP & FAQ` wording as a
 visible label. Fixing a layout defect by withdrawing an accepted accessibility ruling would trade a
 reflow failure for a naming one.
+
+What `main`'s fix did carry over the rebase was a policy violation: it declares
+`--edsb-layout-bar-height: 0px` inside `app-frame.scss`, and the constitution has design tokens
+defined once, in the token layer, with `check-interface-foundations.mjs` enforcing that as
+`token-outside-source`. `pnpm run policy` was green before the rebase and red after it, on a file
+this feature does not own. It was fixed here rather than left for `main`, because a red gate on this
+branch is this branch's problem whatever wrote it: the declaration moved to
+`styles/tokens/_semantic.scss` beside the token's own, selected as `edsb-app-frame.frame--released`.
+The frame already puts that class on its host element, so the new selector reaches exactly what
+`:host(.frame--released)` reached, and the released bar still takes the chrome below it with it. The
+behaviour, the unit tests over the measurement and the end-to-end assertion at 200% text are
+untouched; what moved is where the decision is written. Recorded as a second cross-feature exception
+in [screen-inventory.md](./screen-inventory.md).
 
 ### 3. Firefox cannot be exercised in this container — environment, not product
 
