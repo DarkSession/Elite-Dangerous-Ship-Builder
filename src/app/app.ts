@@ -107,6 +107,12 @@ export class App {
    * frame surrounds every capability, so one action here is the route from all
    * of them and no screen owns a second one (012/FR-002, 012/FR-011).
    *
+   * It is also the one action the bar draws as a mark. The reference sets a `?`
+   * on that trailing edge and spells the entry out in the narrow menu, and the
+   * `symbol` here is what carries that difference: the same action, the same
+   * name to a reader at both widths, drawn as the mark only where the reference
+   * draws one.
+   *
    * The restart is last and almost never there. It sits at the trailing edge
    * where the canvas puts what a screen is asking for, and immediately before
    * the notice that explains it in reading order, so a reader meets the control
@@ -130,6 +136,7 @@ export class App {
       {
         id: HELP_ACTION,
         label: this.help.actionLabel(),
+        symbol: this.help.actionSymbol(),
         description: this.help.actionDescription(),
         emphasis: 'quiet' as const,
       },

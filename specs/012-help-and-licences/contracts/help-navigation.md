@@ -21,23 +21,33 @@ navigation; the section below that once specified one now specifies its absence.
 ## Entry surfaces
 
 The application frame owns the single entry, exactly as the design reference does. It draws a `?`
-control in the wide command bar and a `HELP & FAQ` item in the narrow action menu, and it draws no
+control in the wide command bar and a spelled-out item in the narrow action menu, and it draws no
 help control anywhere else on any of its four canvases.
 
 1. The shared application frame exposes a visible localised Help action on every route and no-build
    state. It is an ordinary shell action, so the frame's existing composition already places it in
    the wide banner row.
-2. When the banner collapses, the same action moves into the frame's compact action layer, keeping
-   its visible text.
+2. When the banner collapses, the same action moves into the frame's compact action layer, where it
+   is drawn in words rather than as the mark — a list of rows is read, not scanned, and the canvas
+   spells it out there for the same reason.
 
 There is no per-surface contextual entry. A package-backed artwork or value region routes to
 provenance by being inside the frame that carries the action, not by carrying one of its own
 (FR-002). A layer that covers the frame is dismissible, and help is reached from the capability
 beneath it once it is dismissed (FR-011); a layer never copies help content in its place.
 
-The entry has visible text matching its accessible name, uses the shared minimum 44 CSS-pixel target,
-works by touch and pointer, and does not rely on an icon, tooltip or hover. The reference's
-title-only `?` is therefore given a visible label; the glyph may remain as supplemental decoration.
+The entry uses the shared minimum 44 CSS-pixel target, works by touch and pointer, and does not rely
+on a tooltip or on hover.
+
+**Corrected 2026-08-26.** An earlier revision required the entry's visible text to match its
+accessible name everywhere, and so replaced the reference's wide-bar `?` with the words `HELP & FAQ`.
+The reference's own division stands instead: the wide command bar draws the `?`, the narrow action
+menu spells the entry out, and both are the same action. What the earlier rule was protecting is kept
+without the wording: the mark is not an icon, an image, a font glyph or a shape whose meaning has to
+be learned, and the action's localised name is carried inside the control as text, so the accessible
+name is the same string at both widths and a reader is told a word rather than a symbol. The name is
+`Help` — the wide bar has no room for a phrase, and a name a reader hears has no reason to be longer
+than the thing it names.
 
 ## Required information order
 
@@ -147,9 +157,16 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## Identity and provenance
 
-- Display “Application version” and “Bundled Almanac version” as separate localised facts sourced
-  from `HelpManifestV1`. They are two facts and never one run-together line: a value without the
-  term beside it is a number, not a version.
+- Display “App version” and “Library version” as separate localised facts sourced from
+  `HelpManifestV1`. They are two facts and never one run-together line: a value without the term
+  beside it is a number, not a version.
+- **Corrected 2026-08-26.** The second term was “Bundled Almanac version”, on the reasoning that the
+  reference's own `LIBRARY VERSION` was ambiguous. The reference's wording stands instead: what the
+  fact names is the library this application was built against, which is what a Commander comparing
+  two builds is reading it for, and the package is credited by name in the `almanacOwnership` topic
+  and in the licence summary rather than in a version label. Nothing else moves: it is still the
+  installed package's own version, still a separate labelled fact, and still not a claim about the
+  live game or the live catalogue.
 - **Corrected 2026-08-25.** The modal previously drew a third fact carrying release state and, for a
   non-release build, its build ID. The reference draws two facts and no third; the display is
   withdrawn and FR-007's display half with it. Generator classification is unchanged — a

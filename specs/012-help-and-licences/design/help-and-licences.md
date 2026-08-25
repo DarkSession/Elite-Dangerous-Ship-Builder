@@ -14,10 +14,15 @@ was withdrawn on that basis, and what replaced it, is in
 
 ## Entry and exit
 
-- A visible Help action is part of the wide application frame, where the reference draws its `?`
-  control beside Import.
-- The narrow action menu contains the same visible action, matching the reference's `HELP & FAQ`
-  mobile menu item without relying on the menu's `?` icon.
+- A Help action is part of the wide application frame, drawn as the reference's own `?` beside
+  Import. The mark is what is seen; the action's localised name is carried inside the control as
+  text, so what a reader is told is the word and not the symbol.
+- The narrow action menu contains the same action, spelled out as the reference spells it out there.
+  A menu is a list of rows a Commander reads rather than a bar they scan, and the canvas draws it in
+  words for the same reason.
+- **Corrected 2026-08-26.** Both bullets previously required the words at both widths, with the `?`
+  demoted to decoration; the trade that reversed it is recorded in
+  [reference-review.md](./reference-review.md#two-departures-withdrawn-on-2026-08-26).
 - There is no contextual entry on any other surface. The reference draws none, and the frame carries
   every capability, so provenance is reached from the frame rather than from a per-surface control.
 - Opening overlays the current capability. It does not navigate, add history or change the URL.
@@ -71,8 +76,10 @@ reference FAQ's import claim and retained-partial-roll answer are not included: 
 
 A semantic fact group inside `ABOUT` presents two facts, which is what the reference draws:
 
-- Application version; and
-- Bundled Almanac version.
+- App version; and
+- Library version — the reference's own term for the bundled Almanac, adopted on 2026-08-26. The
+  package is credited by name in the `almanacOwnership` topic and in the licence summary; a version
+  label is not where that credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
 alone has been told a number, not a version.

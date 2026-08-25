@@ -11,10 +11,19 @@ export type ActionEmphasis = 'primary' | 'secondary' | 'quiet' | 'danger';
  * role, no default activation and no disabled semantics, and the reference
  * canvas's 268 clickable `div`s are exactly the pattern this replaces.
  *
- * The label is always visible text. There is no icon-only variant: an icon
- * without words is a guess for anyone who does not already know what it means,
- * and the compact layouts keep visible labels rather than collapsing to an
- * unlabelled ellipsis (shell design, "Compact/zoom composition").
+ * The label is always the accessible name, and normally it is also the visible
+ * text. There is no icon-only variant: an icon without words is a guess for
+ * anyone who does not already know what it means, and the compact layouts keep
+ * visible labels rather than collapsing to an unlabelled ellipsis (shell
+ * design, "Compact/zoom composition").
+ *
+ * `symbol` is the one narrow exception, and it is not an icon. A caller may
+ * draw a single conventional typographic mark — `?` — in place of the label,
+ * and the label is then carried as text inside the button where a reader still
+ * meets it. So the control keeps a real text name in the accessibility tree,
+ * keeps its 44-pixel target, and renders no image, no font icon and no glyph
+ * whose meaning has to be learned. A caller that has no such convention to
+ * lean on passes no symbol and gets the visible label.
  */
 @Component({
   selector: 'edsb-action-button',
@@ -25,6 +34,16 @@ export type ActionEmphasis = 'primary' | 'secondary' | 'quiet' | 'danger';
 export class ActionButton {
   /** The visible label. It is also the accessible name — they cannot differ. */
   readonly label = input.required<string>();
+
+  /**
+   * A conventional mark drawn in place of the label, or `null` for the label.
+   *
+   * Hidden from the accessibility tree: it is a second rendering of the name
+   * the button already carries, and announcing both would name the control
+   * twice. The label stays in the button as text, so the accessible name is
+   * unchanged by drawing it this way.
+   */
+  readonly symbol = input<string | null>(null);
 
   readonly emphasis = input<ActionEmphasis>('secondary');
 
@@ -65,6 +84,16 @@ export class ActionButton {
   });
 
   readonly isToggle = computed(() => this.pressed() !== null);
+
+  /**
+   * The button's own classes: its emphasis, and whether it is drawn as a mark.
+   *
+   * A mark is narrower than any word, so the variant carries a target size of
+   * its own rather than inheriting one from text that is no longer there.
+   */
+  readonly classes = computed(
+    () => `action action--${this.emphasis()}${this.symbol() ? ' action--symbol' : ''}`,
+  );
 
   readonly descriptionId = relationId('action-description');
 

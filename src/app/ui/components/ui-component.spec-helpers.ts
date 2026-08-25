@@ -55,6 +55,24 @@ export function textOf(node: Element | null): string {
 }
 
 /**
+ * The text of an element with every hidden subtree left out.
+ *
+ * `textContent` reads the whole tree, including the parts marked away from the
+ * accessibility tree. Anything under `aria-hidden="true"` is not named, so a
+ * name computed from it would assert something no reader is told.
+ */
+function namedTextOf(node: Element | null): string {
+  if (node === null) {
+    return '';
+  }
+  const copy = node.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll('[aria-hidden="true"]')) {
+    hidden.remove();
+  }
+  return textOf(copy);
+}
+
+/**
  * The text a screen reader would use to name an element.
  *
  * Not a full accessible-name computation — enough to assert the parity the
@@ -69,11 +87,11 @@ export function accessibleName(node: HTMLElement): string {
   if (labelledBy !== null) {
     return labelledBy
       .split(/\s+/)
-      .map((id) => textOf(node.ownerDocument.getElementById(id)))
+      .map((id) => namedTextOf(node.ownerDocument.getElementById(id)))
       .join(' ')
       .trim();
   }
-  return textOf(node);
+  return namedTextOf(node);
 }
 
 /** The text of the elements a control is described by. */

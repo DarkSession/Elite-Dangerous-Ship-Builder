@@ -5,8 +5,12 @@
 Commanders can open help, privacy and offline explanations, versions and licence information without
 leaving or changing their current capability. Help can be closed to resume that unchanged capability.
 The help, version information and exact project-specific Frontier disclaimer are present in the
-initial application load; the complete licence remains available through a deliberate external link
-to the repository's `LICENSE` on GitHub.
+initial application load. **Amended 2026-08-25:** this paragraph previously also promised the
+complete licence through a deliberate external link to the repository's `LICENSE` on GitHub. FR-003
+withdrew that link with the rest of the framing this feature had added around the reference's own
+licence block, and the modal now offers no external navigation at all. The repository `LICENSE`
+remains where the complete terms live, and the generator still audits its address; nothing in the
+interface points at it.
 
 ## Clarifications
 
@@ -36,17 +40,37 @@ to the repository's `LICENSE` on GitHub.
   FR-002 and FR-011 are narrowed to match.
 - Q: Which external destinations may the modal offer? → A: Exactly one — the repository `LICENSE` on
   GitHub, which FR-003 requires and which replaces the reference's unsupported licence summary. The
-  Almanac issue-tracker action is withdrawn with FR-009.
+  Almanac issue-tracker action is withdrawn with FR-009. **Superseded later the same day:** the
+  design-conformance pass found that the reference draws no control in the modal other than its
+  close, and the answer became none. FR-003, FR-005 and SC-001 carry the resolved position; this
+  answer is kept as the record of what was asked and when.
+
+### Session 2026-08-26
+
+- Q: How is the frame's Help action drawn on the wide command bar — as the reference's `?`, or as
+  words? → A: As the `?`, which is what the reference draws there. The mark is hidden from the
+  accessibility tree and the action's localised name is carried inside the control as text, so the
+  accessible name is a word rather than a symbol and is the same string at both widths. The narrow
+  action menu goes on spelling the entry out, as the reference spells it out there. FR-011 is
+  unchanged: one route, and it need not open a specific answer.
+- Q: What is the second identity fact called? → A: `Library version`, the reference's own term. It
+  names the library this build was compiled against. The Almanac keeps its once-per-application
+  credit in the `almanacOwnership` topic and in the licence summary, which is where FR-008 already
+  put it; a version label was never carrying it.
 
 ## User Scenarios
 
 ### Story 1 — Read terms and attribution (P1)
 
 1. The exact project-specific Frontier disclaimer is visible and clearly attributed in help.
-2. Help identifies the GitHub `LICENSE` link as the destination for all remaining licence and
-   third-party terms.
+2. **Amended 2026-08-25:** this scenario previously required help to identify the GitHub `LICENSE`
+   link as the destination for all remaining licence and third-party terms. The link is withdrawn
+   with FR-003's amendment. What a Commander now reads instead is the three-line summary of what
+   covers what, above the disclaimer itself.
 3. After the application has been loaded once while online, the disclaimer is available on the first
-   subsequent visit without a network; following the external link may require a connection.
+   subsequent visit without a network. **Amended 2026-08-25:** the clause about a connection being
+   needed to follow the external link is withdrawn with the link, which is what makes it moot rather
+   than unmet.
 
 ### Story 2 — Identify shipped versions and data (P1)
 

@@ -39,6 +39,35 @@ describe('ActionButton', () => {
     expect(accessibleName(button)).toContain('Working');
   });
 
+  it('draws a supplied mark and still answers to its name', () => {
+    const fixture = renderComponent(ActionButton, { label: 'Help', symbol: '?' });
+    const button = query(fixture, 'button');
+
+    // The mark is what is drawn; the name is what is announced. A reader meets
+    // "Help", never "question mark", and never both.
+    expect(textOf(button)).toContain('?');
+    expect(accessibleName(button)).toBe('Help');
+    expect(button.getAttribute('aria-label')).toBeNull();
+    expect(query(fixture, '.action__symbol').getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('carries a target size of its own rather than inheriting one from words', () => {
+    const marked = renderComponent(ActionButton, { label: 'Help', symbol: '?' });
+    const worded = renderComponent(ActionButton, { label: 'Help' });
+
+    // One glyph is narrower than any label, so the variant states the target
+    // the words used to give it (constitution V).
+    expect(query(marked, 'button').classList).toContain('action--symbol');
+    expect(query(worded, 'button').classList).not.toContain('action--symbol');
+  });
+
+  it('draws its words when no mark is supplied', () => {
+    const fixture = renderComponent(ActionButton, { label: 'Save build' });
+
+    expect(query(fixture, 'button').querySelector('.action__symbol')).toBeNull();
+    expect(query(fixture, '.action__label').textContent).toBe('Save build');
+  });
+
   it('does not claim a toggle state when it is not a toggle', () => {
     const fixture = renderComponent(ActionButton, { label: 'Save build' });
 

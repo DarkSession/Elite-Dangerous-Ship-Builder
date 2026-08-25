@@ -1183,7 +1183,8 @@ registerPreview({
           { id: 'language', label: 'Language' },
           {
             id: 'help.open',
-            label: 'Help & FAQ',
+            label: 'Help',
+            symbol: '?',
             emphasis: 'quiet',
             description: 'Opens help, version and licence information over the current view.',
           },
@@ -1191,7 +1192,7 @@ registerPreview({
       },
       [
         'exposes banner, navigation and main landmarks',
-        'every action keeps visible text — never an unlabelled ellipsis',
+        'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current navigation entry exposes aria-current',
         'the Help entry is in the wide row and in the compact action layer, and is the only one of its kind',
       ],

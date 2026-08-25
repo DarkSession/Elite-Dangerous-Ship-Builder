@@ -209,8 +209,17 @@ export class HelpPresenter {
     };
   });
 
-  /** The frame action's visible label and its description for a reader. */
+  /**
+   * The frame action's name, the mark the wide bar draws it as, and what it
+   * would do for a reader who cannot see what it sits beside.
+   *
+   * The name is the accessible name at both widths and the visible words in the
+   * compact action layer; the mark is the reference's own `?`, drawn on the
+   * wide bar in place of the words and hidden from a reader, who is told the
+   * name instead.
+   */
   readonly actionLabel = this.#messages.messageSignal('help.action.label');
+  readonly actionSymbol = this.#messages.messageSignal('help.action.symbol');
   readonly actionDescription = this.#messages.messageSignal('help.action.description');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
 

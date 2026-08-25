@@ -37,7 +37,16 @@
   inset-inline-end: 0;
   z-index: 3;
   inline-size: max-content;
-  min-inline-size: var(--edsb-layout-menu-min);
+  // The minimum yields to the viewport, because otherwise it stops being a
+  // minimum. `min-inline-size` wins over `max-inline-size` in CSS, so a
+  // rem-based floor becomes the panel's width outright once a text scale makes
+  // it wider than the screen: at 200% text on a 390-pixel phone this floor is
+  // 12.25rem — 392 pixels — and the panel, hung off the trailing edge of its
+  // trigger, puts its leading edge past the left of the viewport where nothing
+  // in it can be pressed. Bounding the floor by the same expression the
+  // ceiling uses makes the two agree instead of one quietly overriding the
+  // other (012/FR-001, 011/FR-011).
+  min-inline-size: min(var(--edsb-layout-menu-min), 100vw - 2 * var(--edsb-space-region));
   max-inline-size: min(100vw - 2 * var(--edsb-space-region), var(--edsb-layout-menu-max));
   // Bounded by the viewport rather than by its own length, with its own
   // scroller.

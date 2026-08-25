@@ -33,10 +33,21 @@ export interface NavigationEntry {
   readonly current?: boolean;
 }
 
-/** One shell action. Always has visible text — never an icon alone. */
+/** One shell action. Always has a text name — never an icon alone. */
 export interface ShellAction {
   readonly id: string;
   readonly label: string;
+  /**
+   * A conventional typographic mark drawn on the wide bar in place of the
+   * words, or absent for the words themselves.
+   *
+   * Only the reference's `?` uses it, and only where the reference draws it:
+   * on the trailing edge of the wide command bar, where a bar that is already
+   * carrying a build's name has no room for a fourth phrase. It never replaces
+   * the label — `label` remains the action's accessible name and the compact
+   * action layer goes on drawing it in words, as canvas 1d does.
+   */
+  readonly symbol?: string;
   readonly emphasis?: 'primary' | 'secondary' | 'quiet' | 'danger';
   readonly disabled?: boolean;
   /** What activating it would do, said only to a reader. Never drawn. */

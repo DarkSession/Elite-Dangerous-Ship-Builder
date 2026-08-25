@@ -93,10 +93,13 @@ competing fixes for one defect would have left the bar clamped and scrolling eve
 
 The rejected alternative is worth recording. The reference draws its wide help control as a 34 x 34
 `?` square, and shrinking the entry to that would also have brought the bar under the midline. It
-was not done: [reference-review.md](./reference-review.md) already settles that question the other
-way, replacing the `?`'s title-only naming with the reference's own `HELP & FAQ` wording as a
-visible label. Fixing a layout defect by withdrawing an accepted accessibility ruling would trade a
-reflow failure for a naming one.
+was not done here: at the time, [reference-review.md](./reference-review.md) settled that question
+the other way, and fixing a layout defect by withdrawing an accepted accessibility ruling would have
+traded a reflow failure for a naming one. **Superseded 2026-08-26:** the ruling itself has since been
+revisited on its own merits, and the wide bar now draws the `?` with the action's name carried inside
+it as text — see
+[reference-review.md](./reference-review.md#two-departures-withdrawn-on-2026-08-26). The narrower
+control is a consequence of that decision rather than a fix for this one, which stands as made.
 
 What `main`'s fix did carry over the rebase was a policy violation: it declares
 `--edsb-layout-bar-height: 0px` inside `app-frame.scss`, and the constitution has design tokens
@@ -193,3 +196,41 @@ the journeys that carry them and reading the failures. The mapping is in
 same assertions against what the manual protocol asks. Section 7 was run against the production
 build and the shipped service worker with `E2E_PRODUCTION=1`, which is the only configuration in
 which the offline claim means anything.
+
+## Re-run of 2026-08-26, for the Phase 7 wording change
+
+The two departures withdrawn on 2026-08-26 touch a shared component and two shipped catalogues, so
+the gate was walked again rather than argued about.
+
+| Stage                                               | Result                                                                      |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| `format:check`, `help:artifacts:check`, `typecheck` | pass                                                                        |
+| `build` / `build:preview`                           | pass — 403.89 kB raw, 101.94 kB transfer, inside the 500 kB warning ceiling |
+| `policy` (seven checkers) and `codec:capacity`      | pass                                                                        |
+| `test:scripts`                                      | 252 of 252                                                                  |
+| unit suite                                          | 160 files / 2176 tests, coverage 85.83 / 84.37 / 89.44 / 86.05              |
+| Chromium matrix, all five profiles                  | 2790 of 2790                                                                |
+| `e2e:offline` (Chromium)                            | 70 of 70                                                                    |
+| `e2e:timing`                                        | SC-005 passes; feature 002's keystroke budget fails — see below             |
+| Firefox matrix                                      | **not run** — the engine is still absent and still undownloadable here      |
+
+Two results need the same qualification they needed on 2026-08-25, and one is new.
+
+**Feature 002's keystroke budget fails here, and did before this change.** `outfitting-timing`
+reports 175.9 ms against its 100 ms budget for the first keystroke of the run, settling to 71–82 ms
+by the fifth. The same test on the same commit with these changes stashed reports 162.1 ms settling
+to 69 ms, so the failure is the container and not this work. It is feature 002's assertion about
+feature 002's surface, and retuning it is not this feature's to do. SC-005 — the modal's own first
+frame under the same throttling — passes.
+
+**The Firefox half is still unrun**, for the reason finding 3 records. `playwright install firefox`
+was attempted once more and failed on the download, and no system Firefox exists in the image. The
+configuration still declares all ten projects.
+
+**New: the 200%-text sweep was passing for the wrong reason.** Shortening the help action's words
+turned it red, and the panel geometry it was measuring had been wrong all along. Both causes and
+both fixes are recorded in
+[reference-review.md](./reference-review.md#a-defect-the-wide-bars-mark-exposed-2026-08-26). The
+suite now asserts the panel's own box against the viewport rather than inferring reachability from a
+click that happened to land, so the next regression fails on the geometry instead of on a label
+length.

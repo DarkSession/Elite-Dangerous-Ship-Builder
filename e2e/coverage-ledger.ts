@@ -1580,6 +1580,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'opening and closing leaves the route, fragment, history length, build and stored records unchanged',
       'opening fetches nothing: no route chunk, no document, nothing off this origin',
       'every row of the release coverage ledger reaches the modal, an obscured one from the capability beneath',
+      'the wide bar draws the entry as the reference’s mark and the compact layer draws it in words, both named the same',
+      'every entry of the compact action layer stays inside the viewport at 200% text',
     ],
     manualRecord: 'screen-reader',
   },

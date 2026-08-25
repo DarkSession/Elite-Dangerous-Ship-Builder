@@ -623,6 +623,66 @@ test.describe('the compact route the reference draws', () => {
 
     await expect(page.getByRole('button', { name: HELP_ACTION }).first()).toBeVisible();
   });
+
+  test('draws the reference’s mark on the bar and its words in the menu', async ({ page }) => {
+    await withStockBuild(page);
+
+    // Both compositions are in the document at every width; which one is drawn
+    // is a media query, and what each one draws is what this asserts. The wide
+    // command bar carries the reference's `?`: one control, the mark hidden
+    // from the accessibility tree, and the action's localised name inside the
+    // control as text rather than as the glyph.
+    const wide = page.locator('.frame__actions .action--symbol');
+    await expect(wide).toHaveCount(1);
+    await expect(wide.locator('.action__symbol')).toHaveText(englishMessages['help.action.symbol']);
+    await expect(wide.locator('.action__symbol')).toHaveAttribute('aria-hidden', 'true');
+    await expect(wide.locator('.action__label')).toHaveCount(0);
+    await expect(wide.locator('.visually-hidden')).toHaveText(englishMessages['help.action.label']);
+
+    // And it is the only control on the bar drawn that way. A row of marks is a
+    // row of guesses; one is a convention.
+    expect(await page.locator('.frame__actions .action').count()).toBeGreaterThan(1);
+
+    // The compact action layer spells the same entry out and draws no mark at
+    // all, which is what canvas 1d draws there: a menu is a list of rows a
+    // Commander reads rather than a bar they scan.
+    await expect(page.locator('.action-layer__panel .action--symbol')).toHaveCount(0);
+    await expect(
+      page
+        .locator('.action-layer__panel .action__label')
+        .filter({ hasText: englishMessages['help.action.label'] }),
+    ).toHaveCount(1);
+  });
+
+  test('keeps the frame’s actions inside the viewport at 200% text', async ({ page }) => {
+    // Whichever composition this width draws, and the compact one is the one
+    // that can escape: its panel hangs off a trigger in a wrapping sticky
+    // banner, and both of its escapes are horizontal — a rem-based
+    // `min-inline-size` wider than the screen, and a wrapped trigger sitting at
+    // the leading edge of its own row. Either one puts FR-001's only route to
+    // help off the side of the phone, where nothing can reach it, without
+    // making the document scroll sideways for anyone to notice.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await withStockBuild(page);
+
+    const trigger = page.locator('.action-layer__trigger');
+    const compact = await trigger.isVisible();
+    if (compact) {
+      await openActionLayer(page);
+    }
+
+    const drawn = compact ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
+    await expect(drawn).toBeVisible();
+
+    const width = page.viewportSize()?.width ?? 0;
+    const box = await drawn.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width);
+
+    // And the entry itself is there to be pressed, once, at this text size.
+    await expect(page.getByRole('button', { name: HELP_ACTION })).toHaveCount(1);
+  });
 });
 
 /**
