@@ -132,7 +132,15 @@ export async function acrossEveryFamily(
 ): Promise<void> {
   if ((await manifestOf(page)) === 'accordion') {
     await openAllFamilies(page);
-    await visit(revealedRows(page));
+    // One call per family, not one call with every row in it. The accordion
+    // could hand over the whole list at once, but then a journey comparing
+    // membership would be comparing one flat set at this width and a set per
+    // family at the other — and the claim it is making is about *which family*
+    // a choice is in, which a flattened reading cannot fail on.
+    const regions = await page.locator('.family__choices').count();
+    for (let index = 0; index < regions; index += 1) {
+      await visit(page.locator('.family__choices').nth(index).locator('.candidate'));
+    }
     return;
   }
 

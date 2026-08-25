@@ -598,14 +598,18 @@ test.describe('finding a replacement', () => {
     let grouped = 0;
     await acrossEveryFamily(page, async (rows) => {
       grouped += await rows.count();
-
-      // Nothing is drawn outside a family except canvas 1d's `FITTED HERE`
-      // block, which the compact composition pins above the list and the wide
-      // one does not draw at all.
-      const pinned = await page.locator('.candidates__pinned .candidate').count();
-      expect(await page.locator('.candidate').count()).toBe((await rows.count()) + pinned);
     });
     expect(grouped).toBe(drawn);
+
+    // Nothing is drawn outside a family except canvas 1d's `FITTED HERE` block,
+    // which the compact composition pins above the list and the wide one does
+    // not draw at all. Counted against what is revealed *now*, which is the
+    // whole list under the accordion and the last family the walk selected
+    // under the rail.
+    const pinned = await page.locator('.candidates__pinned .candidate').count();
+    expect(await page.locator('.candidate').count()).toBe(
+      (await revealedRows(page).count()) + pinned,
+    );
 
     // The sections are gone with their headings, and nothing replaced them.
     await expect(page.locator('.candidates__section, .candidates__group')).toHaveCount(0);
