@@ -305,10 +305,18 @@ distributor's cell draws them, filled from the leading edge so a bank standing o
 a block. Each group is named with the allocation it stands at, which is the reading for anyone who
 cannot see the blocks, and each block is named with the bank and the count pressing it asks for.
 
-The rail is on screen for a build with no distributor fitted at all, so the blocks are drawn from
-the standing allocation rather than from a `distributorMetrics()` result: the pips are a question
-being asked about the ship, and what an allocation _does_ to a recharge is the distributor table's
-reading — which is where a `null` result is stated and stays stated.
+The blocks draw **the pips the package returned**, exactly as the distributor cell draws them
+(FR-013): the projection reads them back out of `distributorMetrics()` rather than echoing the
+request, so a package that ever normalised an allocation would move both surfaces rather than leave
+the rail showing what was pressed.
+
+The standing condition stands in only where the package returned nothing to read — a distributor
+absent, switched off, unresolvable or shed by the retracted budget. The rail is on screen for those
+builds and the table is not, and the pips are still a question worth asking about them, so the
+control keeps working. Nothing is fabricated by that: the blocks show the condition being asked
+about, not a capacitor figure standing in for one the package declined to give, and what an
+allocation _does_ to a recharge is the distributor table's reading — which is where the `null` is
+stated and stays stated.
 
 Canvas 1d draws no pip control in its own rail. The application builds one DOM at both widths, and
 the control is the rail's; withdrawing it at one width would be the capability going missing at that

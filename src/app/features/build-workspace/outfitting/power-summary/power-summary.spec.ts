@@ -5,6 +5,7 @@ import type { BuildCandidate } from '../../../../application/active-build/active
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
 import {
+  distributorOffBuild,
   shedBandBuild,
   sustainedOverheatBuild,
   withinBudgetBuild,
@@ -332,6 +333,42 @@ describe('PowerSummary', () => {
       const element = render(null);
 
       expect(element.querySelectorAll('.pipset')).toHaveLength(0);
+    });
+
+    it('draws the pips the package returned, not the ones that were pressed', () => {
+      const build = withinBudgetBuild();
+      const element = render(build);
+
+      conditions.setPips('weapons', 3);
+      detect();
+
+      // FR-013: both surfaces read the allocation back out of the result. The
+      // two agree today because the package echoes what it is given — which is
+      // exactly the property this asserts, so a package that started
+      // normalising an allocation would move the rail with the table rather
+      // than leaving it showing the request.
+      const returned = BuildMetrics.of(build).distributorMetrics({
+        systemsPips: conditions.pips().systems,
+        enginesPips: conditions.pips().engines,
+        weaponsPips: conditions.pips().weapons,
+      });
+
+      expect(returned).not.toBeNull();
+      expect(
+        element.querySelector('.pipset[data-bank="weapons"] .pips')?.getAttribute('aria-label'),
+      ).toBe(`WEP, ${returned?.pips.weapons.toFixed(1)} of 6 pips`);
+    });
+
+    it('keeps working for a build the package returns no distributor for', () => {
+      // The rail is on screen for these builds and the table is not, so the
+      // condition it is asking about is what the blocks stand at. No capacitor
+      // figure is invented: the table states the unavailability, not this.
+      const element = render(distributorOffBuild());
+
+      expect(element.querySelectorAll('.pipset')).toHaveLength(3);
+      expect(
+        element.querySelector('.pipset[data-bank="systems"] .pips')?.getAttribute('aria-label'),
+      ).toBe('SYS, 2.0 of 6 pips');
     });
   });
 });

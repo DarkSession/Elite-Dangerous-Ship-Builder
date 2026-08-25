@@ -34,6 +34,8 @@ interface BarView {
 interface PipSetView {
   readonly kind: CapacitorKind;
   readonly name: string;
+  /** The allocation the blocks are drawn from: the package's, wherever it gave one. */
+  readonly pips: number;
   /** The bank's allocation, said in words for a reader who cannot see the blocks. */
   readonly label: string;
   readonly steps: readonly PipStepView[];
@@ -228,26 +230,38 @@ export class PowerSummary {
   /**
    * `SYS`, `ENG` and `WEP`, each over the four blocks the canvas draws.
    *
-   * Drawn from the standing allocation rather than from a distributor result:
-   * the rail is on screen for builds with no distributor fitted at all, and the
-   * pips are a question about the ship being asked rather than a figure the
-   * package returned for it. What each allocation *does* to a recharge is the
-   * distributor table's reading, and that is where a `null` result is stated.
+   * The pips drawn are **the ones the package returned**, exactly as the
+   * distributor cell draws them (FR-013): the projection reads them back out of
+   * `distributorMetrics()` rather than echoing the request, so if the package
+   * ever normalises an allocation both surfaces show what it actually answered
+   * for rather than what was pressed.
+   *
+   * The standing condition stands in only where the package returned nothing to
+   * read — a build with no distributor fitted, switched off, unresolvable or
+   * shed by the retracted budget. The rail is on screen for those builds and
+   * the pips are still a question worth asking about them, so the control keeps
+   * working; what an allocation *does* to a recharge is the distributor table's
+   * reading, and that is where the unavailability is stated. Nothing is
+   * fabricated either way: this is the condition being asked about, not a
+   * capacitor figure standing in for one the package declined to give.
    */
   readonly pipSets = computed<readonly PipSetView[]>(() => {
-    if (this.#projection() === null) {
+    const projection = this.#projection();
+    if (projection === null) {
       return [];
     }
 
-    const allocation = this.#conditions.pips();
+    const returned = projection.distributor?.capacitors ?? null;
+    const asked = this.#conditions.pips();
 
     return CAPACITOR_KINDS.map((kind) => {
       const name = this.#messages.message(BANK_LABELS[kind]);
-      const pips = allocation[kind];
+      const pips = returned?.find((capacitor) => capacitor.kind === kind)?.pips ?? asked[kind];
 
       return {
         kind,
         name,
+        pips,
         // The blocks carry the allocation as a picture; this carries it as a
         // reading, which is what a reader who cannot see four rectangles gets.
         label: this.#messages.message('power.distributor.pips.label', {
@@ -279,9 +293,13 @@ export class PowerSummary {
    * drift: there is one allocation, and both of them draw it. Pressing the
    * block a bank already stands on steps it back one, which is the only way
    * down to none through four blocks that each name a count.
+   *
+   * "Already stands on" is measured against the pips being *drawn*, which is
+   * what a Commander is pressing against — the package's own figure wherever it
+   * gave one.
    */
   setPips(bank: CapacitorKind, step: number): void {
-    const standing = this.#conditions.pips()[bank];
+    const standing = this.pipSets().find((set) => set.kind === bank)?.pips ?? null;
     this.#conditions.setPips(bank, standing === step ? step - 1 : step);
   }
 
