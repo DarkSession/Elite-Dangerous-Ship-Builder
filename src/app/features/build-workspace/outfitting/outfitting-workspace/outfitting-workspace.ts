@@ -296,8 +296,11 @@ export class OutfittingWorkspace {
           ? {
               identity: {
                 name: this.shipName(),
-                fallbackName: this.shipIdent() ?? this.hullName(),
-                detail: this.hullName(),
+                // An unnamed build is titled by what the build calls itself,
+                // the same way the library titles its row — and the hull then
+                // stops being repeated on the line beneath it (FR-010, T155a).
+                fallbackName: this.hullName(),
+                detail: this.shipName() === null ? null : this.hullName(),
                 ident: this.shipIdent(),
                 editing: this.editingIdentity(),
               },

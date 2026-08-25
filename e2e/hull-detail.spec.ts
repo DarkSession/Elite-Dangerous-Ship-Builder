@@ -6,7 +6,7 @@ import {
   expectOrderedHeadings,
   expectSingleVisibleH1,
 } from './accessibility/assertions';
-import { openHullFromManifest, reachShellLink } from './shell';
+import { openHullFromManifest, reachShellLink, savedToBrowser } from './shell';
 
 /**
  * Inspecting a hull, and asking for a stock build.
@@ -213,7 +213,7 @@ test.describe('hull detail', () => {
     await page.getByRole('button', { name: 'Build stock hull' }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     // The hull is the command bar's identity line, as canvas 1c draws it, and
     // the build itself is the ledger under it. A hull line, a provenance line
     // and a saved-state line in the page were none of them on the canvas.
@@ -221,38 +221,35 @@ test.describe('hull detail', () => {
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
-  test('confirms before replacing unsaved work, and cancelling keeps it', async ({ page }) => {
+  test('replaces the build on screen without asking, and keeps the one it replaced', async ({
+    page,
+  }) => {
+    // Withdrawn on 2026-08-25: the build being replaced has a record of its own,
+    // so nothing is lost and nothing is asked. What is asserted instead is that
+    // the first build is still there afterwards (FR-008, FR-009).
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+    await savedToBrowser(page);
 
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
 
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByText(/unsaved changes/i)).toBeVisible();
-
-    await dialog.getByRole('button', { name: 'Keep what I have' }).click();
-    await expect(dialog).toBeHidden();
-
-    // The reference's command bar offers no chip for the build screen, so the
-    // way back to it is its own address. The working record is what has to have
-    // survived, and a fresh load is the strictest way to ask.
-    await page.goto('/build');
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
-    await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
-  });
-
-  test('replaces unsaved work once the Commander confirms', async ({ page }) => {
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
-
-    await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Discard and open' }).click();
-
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('banner').getByText('Sidewinder').first()).toBeVisible();
+
+    // Two builds, two records: the Anaconda is on the library's list rather than
+    // gone. Polled rather than read once, because the second build's own write
+    // is coalesced and the status still reads "saved" from the first one.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+          ),
+        { timeout: 5_000 },
+      )
+      .toBe(2);
   });
 
   test('never scrolls the document sideways', async ({ page }) => {
@@ -274,7 +271,7 @@ test.describe('hull detail', () => {
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-replacement' });
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-second-build' });
   });
 });

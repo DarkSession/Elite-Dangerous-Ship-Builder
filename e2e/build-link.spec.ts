@@ -96,7 +96,7 @@ test.describe('restoring a build from a link', () => {
     const incoming = await page.context().newPage();
     await incoming.goto(`/build#${fragment}`);
 
-    await expect(incoming.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(incoming.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await buildIsOpen(incoming);
 
     // A link is not a save. The named group exists as a heading either way; what
@@ -157,7 +157,7 @@ test.describe('a link that cannot be read', () => {
 
       // The build a Commander is working on is not something a bad link may
       // cost them, whatever the link turns out to be.
-      await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
       await expect(page.getByText('Anaconda').first()).toBeVisible();
       await buildIsOpen(page);
     });

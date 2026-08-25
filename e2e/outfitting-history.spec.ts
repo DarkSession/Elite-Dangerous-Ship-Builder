@@ -213,7 +213,7 @@ test.describe('the ship’s name and ident', () => {
 
   test('names the ship, sets the ident, and undoes each back to absence', async ({ page }) => {
     await openStockBuild(page);
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
 
     await rename(page, 'Pacifier');
     await expect(page.getByRole('heading', { level: 1, name: 'Pacifier' })).toBeVisible();
@@ -237,7 +237,7 @@ test.describe('the ship’s name and ident', () => {
     await expect(page.locator('.identity-fields__plate')).toHaveCount(0);
 
     await pressCommandBarAction(page, /^undo$/i);
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await expect(undo(page)).toBeDisabled();
   });
 

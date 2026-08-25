@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openFirstHullFromManifest } from './shell';
+import { openFirstHullFromManifest, reachShellLink, savedToBrowser } from './shell';
 
 /**
  * The interface still looks like the reference canvas.
@@ -361,5 +361,96 @@ test.describe('the wide manifest', () => {
     await page.waitForTimeout(200);
 
     await expect(page.locator('.detail__name')).toBeInViewport();
+  });
+});
+
+test.describe('the saved-build surface', () => {
+  // The framed modal exists in the wide composition, so it is asserted at a
+  // width that draws one. Every project still runs it: what the reference sets
+  // for this surface does not change with the engine.
+  test.use({ viewport: { width: 1320, height: 900 } });
+
+  /**
+   * A build, and the library opened over the workspace holding it.
+   *
+   * Reached in the application rather than by address, because the marker names
+   * the record the workspace is holding — and a cold load of `/builds` has no
+   * workspace behind it and so, honestly, no current record.
+   */
+  async function withOneBuild(page: Page): Promise<void> {
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await savedToBrowser(page);
+    await reachShellLink(page, 'Open saved build');
+    await expect(page.locator('[data-record-id]').first()).toBeVisible();
+  }
+
+  /** The library's own framed layer, of the several a page may hold. */
+  const surface = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
+
+  test('frames the library as a dialog with its own title bar', async ({ page }) => {
+    // Canvas 1a: the saved-build list is a centred dialog on a near-opaque
+    // scrim, opened by a darker title bar with the title tracked 0.22em and a
+    // monospace dismiss beside it.
+    await withOneBuild(page);
+    const dialog = surface(page);
+    await expect(dialog).toBeVisible();
+
+    const title = dialog.locator('.layer__title').first();
+    const size = parseFloat(await style(title, 'font-size'));
+    expect(parseFloat(await style(title, 'letter-spacing')) / size).toBeGreaterThan(0.15);
+    expect(await style(title, 'text-transform')).toBe('uppercase');
+    expect(await style(dialog.locator('.layer__dismiss'), 'font-family')).toContain(
+      'JetBrains Mono',
+    );
+  });
+
+  test('sets the record count and the column headers in tracked monospace', async ({ page }) => {
+    // Canvas 1a's header row — a search field beside a monospace count — over
+    // column headers on a slightly lighter plate.
+    await withOneBuild(page);
+
+    const count = page.locator('.library__count');
+    await expect(count).toBeVisible();
+    expect(await style(count, 'font-family')).toContain('JetBrains Mono');
+
+    const header = page.locator('.records__columns span').first();
+    await expect(header).toBeVisible();
+    expect(await style(header, 'font-family')).toContain('JetBrains Mono');
+    expect(await style(header, 'text-transform')).toBe('uppercase');
+    const size = parseFloat(await style(header, 'font-size'));
+    expect(parseFloat(await style(header, 'letter-spacing')) / size).toBeGreaterThan(0.1);
+  });
+
+  test('opens every row with a 3px marker and fills the current one amber', async ({ page }) => {
+    // Canvas 1a: a 3px leading edge on every row, taking amber on the record
+    // the workspace is holding.
+    await withOneBuild(page);
+    const current = page.locator('.record[aria-current="true"]').first();
+    await expect(current).toBeVisible();
+
+    expect(await style(current, 'border-inline-start-width')).toBe('3px');
+    expect(await style(current, 'border-inline-start-color')).toBe(AMBER);
+    // Never the only carrier: the row says so, and so does aria-current.
+    await expect(current).toContainText('Current build');
+  });
+
+  test('commits from a footer, destructive first and opening last', async ({ page }) => {
+    // Canvas 1a and 1b both close the surface with a committing footer: the
+    // destructive action bordered warm on the leading edge, the opening action
+    // filled amber on the trailing edge.
+    await withOneBuild(page);
+    const footer = page.locator('.library__footer');
+    await expect(footer).toBeVisible();
+
+    const labels = await footer.locator('button').allInnerTexts();
+    expect(labels[0]).toMatch(/^DELETE/i);
+    expect(labels[labels.length - 1]).toMatch(/^OPEN/i);
+
+    const open = footer.locator('button').last();
+    expect(await style(open, 'background-color')).toBe(AMBER);
+    const remove = footer.locator('button').first();
+    expect(await style(remove, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(await style(remove, 'border-inline-start-width')).toBe('1px');
   });
 });

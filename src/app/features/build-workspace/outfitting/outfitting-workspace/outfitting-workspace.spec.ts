@@ -104,9 +104,10 @@ describe('the outfitting workspace’s command-bar channel', () => {
     expect(chrome.identity()).toEqual({
       name: null,
       // Titled by what the build calls itself where it has no name of its own,
-      // exactly as the library titles the same record's row (FR-010).
+      // exactly as the library titles the same record's row — and the hull is
+      // then not repeated beneath that title (FR-010).
       fallbackName: 'Anaconda',
-      detail: 'Anaconda',
+      detail: null,
       ident: null,
       editing: null,
     });

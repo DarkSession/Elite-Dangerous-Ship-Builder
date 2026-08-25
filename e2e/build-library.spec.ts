@@ -135,7 +135,9 @@ async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<vo
   await page.goto(`/ships/${hull}`);
   await page.getByRole('button', { name: 'Build stock hull' }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+  // The command bar titles an unnamed build by what the build calls itself,
+  // which for a stock hull is the hull (FR-010, ruled 2026-08-25).
+  await expect(page.getByRole('heading', { level: 1, name: new RegExp(hull, 'i') })).toBeVisible();
 }
 
 const library = (page: Page) => page.getByRole('heading', { level: 1, name: 'Saved builds' });
@@ -256,6 +258,88 @@ test.describe('the build library', () => {
     await openRecord(page, 'Build a');
 
     await expect(page.getByText('Anaconda').first()).toBeVisible();
+  });
+
+  test('narrows the list to what was searched for, and says how many are shown', async ({
+    page,
+  }) => {
+    await seed(page, [
+      seedRecord('a', { name: 'Anaconda explorer' }),
+      seedRecord('b', {
+        name: 'Python trader',
+        hullSymbol: 'Python',
+        build: {
+          format: 'edsb.build',
+          version: 1,
+          shipSymbol: 'Python',
+          shipName: null,
+          shipIdent: null,
+          modules: [],
+        },
+      }),
+    ]);
+    await page.goto('/builds');
+    await expect(page.getByText('2 builds stored')).toBeVisible();
+
+    await page.getByRole('textbox', { name: 'Search these builds' }).fill('python');
+
+    await expect
+      .poll(() => page.locator('.library__count').innerText(), { timeout: 5_000 })
+      .toBe('1 of 2 builds shown');
+    await expect(page.getByText('Python trader')).toBeVisible();
+    await expect(page.getByText('Anaconda explorer')).toHaveCount(0);
+    // Narrowing changes no record and removes nothing.
+    expect(await recordCount(page)).toBe(2);
+  });
+
+  test('says nothing matched, and leaves every control reachable', async ({ page }) => {
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+
+    const search = page.getByRole('textbox', { name: 'Search these builds' });
+    await search.fill('nothing like this');
+
+    await expect(page.getByText(/Nothing here matches/)).toBeVisible();
+    // Widening the search needs no separate action: the field is still there,
+    // with what was typed still in it.
+    await expect(search).toHaveValue('nothing like this');
+    await search.fill('anaconda');
+    await expect(page.getByText('Anaconda explorer')).toBeVisible();
+  });
+
+  test('counts the issues a record was saved with, in words as well as a number', async ({
+    page,
+  }) => {
+    await seed(page, [
+      seedRecord('a', { name: 'Broken build', validation: { valid: false, complete: false } }),
+    ]);
+    await page.goto('/builds');
+
+    const row = page.locator('[data-record-id="a"] button');
+    await expect(row).toContainText('Invalid');
+    // The count is on its own plate; the words are in the row's name, so the
+    // plate is never the only carrier.
+    expect(await row.getAttribute('aria-label')).toContain('issues recorded');
+  });
+
+  test('states how long an unnamed record has left, and drops one that ran out', async ({
+    page,
+  }) => {
+    // Ages are seeded through the store rather than waited for: seven days is
+    // not a thing to sit through, and the sweep reads `modifiedAt` (FR-013).
+    const days = (count: number) =>
+      new Date(Date.now() - count * 24 * 60 * 60 * 1000).toISOString();
+    await seed(page, [
+      seedRecord('fresh', { kind: 'working', name: null, modifiedAt: days(6) }),
+      seedRecord('stale', { kind: 'working', name: null, modifiedAt: days(8) }),
+    ]);
+    await page.goto('/builds');
+
+    // The one with a day left says so; the one that ran out is simply not
+    // there, swept before the listing was drawn and announced by nothing.
+    await expect(page.locator('[data-record-id="fresh"]')).toContainText(/Deleted in/);
+    await expect(page.locator('[data-record-id="stale"]')).toHaveCount(0);
+    expect(await recordCount(page)).toBe(1);
   });
 
   test('lists an unsupported or unreadable record without opening or removing it', async ({

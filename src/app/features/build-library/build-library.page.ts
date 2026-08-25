@@ -169,9 +169,17 @@ export class BuildLibraryPage {
     modified: this.#messages.message('library.column.modified'),
   }));
 
-  /** How many records the current search leaves listed. */
-  readonly matchCount = computed(() =>
-    this.groups().reduce((total, group) => total + group.builds.length, 0),
+  /**
+   * How many records the current search leaves listed.
+   *
+   * Records this version cannot open count too. They are listed, they occupy a
+   * row, and a header that said "3 of 4" while four rows were on screen would be
+   * counting something a Commander cannot see (FR-010).
+   */
+  readonly matchCount = computed(
+    () =>
+      this.groups().reduce((total, group) => total + group.builds.length, 0) +
+      this.unavailable().length,
   );
 
   /** True when there are records but the search matches none of them. */
@@ -245,22 +253,31 @@ export class BuildLibraryPage {
     },
   ]);
 
-  readonly unavailable = computed<readonly UnavailableRecord[]>(() =>
-    this.#library.unavailable().map((entry) => {
-      if (entry.available) {
-        return { id: 'unknown', explanation: '', detail: null };
-      }
-      return {
-        id: entry.id,
-        explanation: this.#messages.message(
-          entry.reason === 'unsupported-version'
-            ? 'library.unavailable.unsupported'
-            : 'library.unavailable.malformed',
-        ),
-        detail: entry.name ?? entry.hullSymbol,
-      };
-    }),
-  );
+  readonly unavailable = computed<readonly UnavailableRecord[]>(() => {
+    const query = this.#query();
+    return (
+      this.#library
+        .unavailable()
+        .map((entry) => {
+          if (entry.available) {
+            return { id: 'unknown', explanation: '', detail: null };
+          }
+          return {
+            id: entry.id,
+            explanation: this.#messages.message(
+              entry.reason === 'unsupported-version'
+                ? 'library.unavailable.unsupported'
+                : 'library.unavailable.malformed',
+            ),
+            detail: entry.name ?? entry.hullSymbol,
+          };
+        })
+        // Narrowed over what its own row shows, the same as every other row: a
+        // record that cannot be opened is still a record a Commander is looking
+        // for by name or by hull.
+        .filter((entry) => query.length === 0 || this.#contains(entry.detail, query))
+    );
+  });
 
   /** The record the Commander is being asked to keep, replace or duplicate. */
   readonly conflict = this.#conflicts.conflict;
@@ -744,10 +761,14 @@ export class BuildLibraryPage {
    * list a Commander could not explain (build-library design, "Searched").
    */
   #matches(build: SavedBuild, query: string): boolean {
-    const locale = this.#formatters.locale;
-    return [build.title, build.note, build.hull.text]
-      .filter((part): part is string => typeof part === 'string')
-      .some((part) => part.toLocaleLowerCase(locale).includes(query));
+    return [build.title, build.note, build.hull.text].some((part) =>
+      this.#contains(part ?? null, query),
+    );
+  }
+
+  /** Whether one field a row shows contains what is being searched for. */
+  #contains(value: string | null, query: string): boolean {
+    return value !== null && value.toLocaleLowerCase(this.#formatters.locale).includes(query);
   }
 
   /**
