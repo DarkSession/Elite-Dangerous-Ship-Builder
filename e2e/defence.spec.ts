@@ -328,8 +328,9 @@ test.describe('the allocation the pip column and the recovery are read at', () =
     await openMode(page, englishMessages['anatomy.mode.defence']);
 
     const after = await damageRows(page, 'card--shield');
-    // `RESIST` and `MJ` are the bare shield at zero pips, so a pip moving on the
-    // dashboard leaves every figure in them exactly where it was (FR-002).
+    // `RESIST` and `MJ` are the bare shield, which no allocation moves — the
+    // package's own call for them takes none — so a pip moving on the dashboard
+    // leaves every figure in them exactly where it was (FR-002).
     expect(after.map((row) => row.slice(0, 3))).toEqual(before.map((row) => row.slice(0, 3)));
     // What the allocation buys is a column of its own, headed with the count it
     // was read at, and it is the only thing on the table that follows the pips.

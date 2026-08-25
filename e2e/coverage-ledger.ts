@@ -1283,7 +1283,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the RESIST and MJ columns are the bare shield, and a pip moving leaves every figure in them',
       'the fifth column is that pool at the standing allocation, headed with the count it was read at',
       'a bar is decoration over a stated scale: every figure it draws is set beside it in text',
-      'each row reads type, bar, resistance and pool, and every block is ruled off across the card',
+      'each row reads type, bar, resistance, pool and the pool at pips, and every block is ruled off',
       'a weakness runs back from the zero mark of the scale its own table states',
       'the scale is the bar column own width, and names zero at the mark on a signed table',
       'the metric cells are set apart by their gaps, with no box drawn around the grid',

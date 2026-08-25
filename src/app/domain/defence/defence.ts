@@ -37,7 +37,7 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
  * number (constitution II and IV).
  */
 export interface Defence {
-  /** The SYS allocation every shield figure below was read at, in `[0, 4]`. */
+  /** The SYS allocation the capacitor and recovery below were read at, in `[0, 4]`. */
   readonly systemsPips: number;
   /**
    * The complete `ShieldMetrics`, or every package issue that prevented it.

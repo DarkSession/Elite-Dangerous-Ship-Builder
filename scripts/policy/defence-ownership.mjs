@@ -92,11 +92,11 @@ export const FIGURE_FIELDS = [
   'boostMultiplier',
   'systemsResistance',
   'resistance',
+  'resistances',
   // The capacitor's own measured fields. `effectiveResistances` is the one this
   // application must never draw — the resistances with the pips folded in, on a
   // table whose `RESIST` column is a base value — so combining it with anything
   // is caught here rather than left to a reading of the contract.
-  'resistances',
   'effectiveResistances',
   'capacity',
   'rechargeRate',

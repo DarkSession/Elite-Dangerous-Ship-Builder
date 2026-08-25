@@ -256,5 +256,14 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
 - [x] T089 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
 - [x] T090 Second review round: fence the shield's own `resistances` beside the capacitor's plural,
       compare every field but the fifth column in the capacitor-refused test so the bar is covered
-      too, assert the mirror test's premise that the capacitor stands, and correct the four places
-      still counting four package answers or calling a per-damage-type record a scalar
+      too, and assert the mirror test's premise that the capacitor stands. With the four stale
+      statements the round found: the policy header still counting four package answers, the
+      contract preamble calling a per-damage-type record a scalar, the inventory's FR-001 row
+      omitting the build's own slot list, and the e2e inline comment still saying the cards are
+      read at the allocation
+- [x] T091 Third review round: the last places still counting four package calls or reading the
+      bare shield at an allocation — `spec.md`'s own Almanac Coverage list, the `systemsPips` field
+      doc on the projection, the `RESIST`/`MJ` comment in `e2e/defence.spec.ts` and the rail suite's
+      note in `defence-summary.spec.ts` — and `resistances` regrouped in `FIGURE_FIELDS` beside the
+      singular it belongs with rather than under the capacitor's own fields
+- [x] T092 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
