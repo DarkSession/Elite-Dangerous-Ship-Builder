@@ -68,6 +68,27 @@ function request(overrides: Partial<NamedSaveRequest> = {}): NamedSaveRequest {
   };
 }
 
+/** Seeds an unnamed record, as autosave would have left one. */
+function seedUnnamed(records: LocalRecordRepository, id: string, createdAt = NOW): void {
+  records.write({
+    id,
+    kind: 'working',
+    revisionId: 'rev-seed',
+    createdAt,
+    modifiedAt: createdAt,
+    name: null,
+    note: null,
+    validation: { valid: true, complete: true },
+    build: build(),
+    sourceNamed: null,
+  });
+}
+
+/** Every record key this browser is holding, so "nothing left behind" is checkable. */
+function recordIds(storage: MemoryStorage): string[] {
+  return [...storage.entries.keys()].filter((key) => key.startsWith('edsb:record:')).sort();
+}
+
 /** The same request, narrowed to the record it is replacing. */
 function overwrite(
   recordId: string,
@@ -224,6 +245,150 @@ describe('NamedRecordService', () => {
     expect(await named.overwriteNamed(overwrite('never-written', 'v1'))).toEqual({
       kind: 'missing',
     });
+  });
+
+  it('names the record the build is already in, keeping its identity', async () => {
+    // The ordinary manual save of an autosaved build. Naming is a promotion,
+    // not a copy: the Commander gets one entry, not the same build twice
+    // (FR-008, ruled 2026-08-25).
+    const { named, records, storage } = setup();
+    seedUnnamed(records, 'held');
+
+    const result = await named.nameHeldRecord({
+      ...request(),
+      recordId: 'held',
+      now: LATER,
+    });
+
+    expect(result.kind).toBe('saved');
+    if (result.kind !== 'saved') {
+      return;
+    }
+    expect(result.record.id).toBe('held');
+    expect(result.record.kind).toBe('named');
+    expect(result.record.name).toBe('Anaconda explorer');
+    // A fresh revision, so a stale precondition elsewhere cannot match it.
+    expect(result.record.revisionId).not.toBe('rev-seed');
+    // Named just now, but not created just now: the work is older than the name.
+    expect(result.record.createdAt).toBe(NOW);
+    expect(result.record.modifiedAt).toBe(LATER);
+    expect(recordIds(storage)).toEqual(['edsb:record:held']);
+  });
+
+  it('takes the lock of the record it is naming', async () => {
+    const { named, records, locks } = setup();
+    seedUnnamed(records, 'held');
+
+    await named.nameHeldRecord({ ...request(), recordId: 'held' });
+
+    expect(locks.held).toEqual(['edsb:named:held']);
+  });
+
+  it('mints a record rather than replacing one named while the dialog was open', async () => {
+    // Another page named this record in the meantime. Promoting it would
+    // replace a save nobody asked to replace, so this one is left alone.
+    const { named, records, storage } = setup();
+    const theirs = await named.createNamed(request({ name: 'Their save' }));
+    if (theirs.kind !== 'saved') {
+      throw new Error('expected a save');
+    }
+
+    const result = await named.nameHeldRecord({
+      ...request({ name: 'Mine' }),
+      recordId: theirs.record.id,
+      now: LATER,
+    });
+
+    expect(result.kind === 'saved' && result.record.id).not.toBe(theirs.record.id);
+    const kept = records.open(theirs.record.id);
+    expect(kept.ok && kept.value?.record.name).toBe('Their save');
+    expect(recordIds(storage)).toHaveLength(2);
+  });
+
+  it('still saves when the record it was going to name has gone', async () => {
+    // Expired, or deleted in another page. The Commander asked for this build
+    // to be saved, so it is saved — under a new identity.
+    const { named } = setup();
+
+    const result = await named.nameHeldRecord({ ...request(), recordId: 'never-written' });
+
+    expect(result.kind).toBe('saved');
+    expect(result.kind === 'saved' && result.record.name).toBe('Anaconda explorer');
+  });
+
+  it('names a build without a lock by writing first and removing after', async () => {
+    const locks = new FakeLocks();
+    locks.available = false;
+    const { named, records, storage } = setup(locks);
+    seedUnnamed(records, 'held');
+
+    const result = await named.nameHeldRecord({ ...request(), recordId: 'held', now: LATER });
+
+    // A new identity, because an unprotected read-then-write is what the
+    // missing lock rules out — but still exactly one record.
+    expect(result.kind).toBe('saved');
+    expect(result.kind === 'saved' && result.record.id).not.toBe('held');
+    expect(recordIds(storage)).toHaveLength(1);
+  });
+
+  it('removes the unnamed record once the build is written into a saved one', async () => {
+    const { named, records, storage } = setup();
+    const saved = await named.createNamed(request({ name: 'The save' }));
+    if (saved.kind !== 'saved') {
+      throw new Error('expected a save');
+    }
+    seedUnnamed(records, 'held');
+
+    const result = await named.overwriteNamed(
+      overwrite(saved.record.id, saved.record.revisionId, { name: 'The save', now: LATER }),
+      'held',
+    );
+
+    expect(result.kind).toBe('saved');
+    expect(recordIds(storage)).toEqual([`edsb:record:${saved.record.id}`]);
+  });
+
+  it('keeps the unnamed record when the write it would replace fails', async () => {
+    // The order is the whole point: write, then remove. A failed write must
+    // never leave the build with no copy of it anywhere.
+    const { named, records, storage } = setup();
+    const saved = await named.createNamed(request({ name: 'The save' }));
+    if (saved.kind !== 'saved') {
+      throw new Error('expected a save');
+    }
+    seedUnnamed(records, 'held');
+    storage.writeError = quotaError();
+
+    const result = await named.overwriteNamed(
+      overwrite(saved.record.id, saved.record.revisionId, { now: LATER }),
+      'held',
+    );
+
+    expect(result).toEqual({ kind: 'failed', code: 'quota' });
+    const kept = records.open('held');
+    expect(kept.ok && kept.value?.record.kind).toBe('working');
+  });
+
+  it('keeps the unnamed record when the save it would replace is a conflict', async () => {
+    const { named, records } = setup();
+    const saved = await named.createNamed(request({ name: 'The save' }));
+    if (saved.kind !== 'saved') {
+      throw new Error('expected a save');
+    }
+    // Another tab writes first, so this tab's precondition is stale.
+    await named.overwriteNamed(
+      overwrite(saved.record.id, saved.record.revisionId, { name: 'Theirs', now: LATER }),
+    );
+    seedUnnamed(records, 'held');
+
+    const result = await named.overwriteNamed(
+      overwrite(saved.record.id, saved.record.revisionId, { name: 'Mine', now: LATER }),
+      'held',
+    );
+
+    expect(result.kind).toBe('conflict');
+    const kept = records.open('held');
+    expect(kept.ok && kept.value !== null).toBe(true);
   });
 
   it('reports a failed write rather than claiming a save', async () => {

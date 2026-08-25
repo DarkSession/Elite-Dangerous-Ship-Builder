@@ -389,37 +389,70 @@ export class BuildLibraryPage {
 
     const now = new Date().toISOString();
     const source = this.#active.sourceNamed();
+    // The unnamed record these edits have been autosaved into, if any. Saving
+    // consumes it: replacing a saved build removes it once that write has
+    // succeeded, and naming the build promotes it in place (FR-008).
+    const held = this.#active.autosaveRecordId();
 
     const result =
       overwrite && source !== null
-        ? await this.#conflicts.save({
-            recordId: source.recordId,
-            expectedRevisionId: source.baseRevisionId,
-            name,
-            note: null,
-            build: snapshot,
-            validation,
-            now,
-          })
-        : await this.#named.createNamed({
-            name,
-            note: null,
-            build: snapshot,
-            validation,
-            now,
-          });
+        ? await this.#conflicts.save(
+            {
+              recordId: source.recordId,
+              expectedRevisionId: source.baseRevisionId,
+              name,
+              note: null,
+              build: snapshot,
+              validation,
+              now,
+            },
+            held,
+          )
+        : held !== null
+          ? await this.#named.nameHeldRecord({
+              recordId: held,
+              name,
+              note: null,
+              build: snapshot,
+              validation,
+              now,
+            })
+          : await this.#named.createNamed({
+              name,
+              note: null,
+              build: snapshot,
+              validation,
+              now,
+            });
 
     this.#saveOpen.set(false);
 
     if (result.kind === 'saved') {
-      this.#active.markSaved({
-        recordId: result.record.id,
-        baseRevisionId: result.record.revisionId,
-      });
-      this.#invalidation.announceWrite(result.record.id, result.record.revisionId);
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
     }
 
     this.#library.refresh();
+  }
+
+  /**
+   * Takes up the named record a save produced, and lets go of the unnamed one.
+   *
+   * Letting go is the part that matters. The page now holds a named record, and
+   * autosave has no path to one — so the id it was writing to is cleared and the
+   * next modelled edit forks a fresh unnamed record, rather than autosave
+   * silently going idle against a record it is no longer allowed to touch
+   * (FR-008, persistence contract, "Autosaved records").
+   */
+  #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
+    this.#active.markSaved({ recordId, baseRevisionId: revisionId });
+    this.#active.setAutosaveRecordId(null);
+    this.#invalidation.announceWrite(recordId, revisionId);
+
+    if (held !== null && held !== recordId) {
+      // Consumed, not deleted by anyone: other pages listing it need to stop
+      // showing it, and the page that had it open is this one.
+      this.#invalidation.announceDelete(held);
+    }
   }
 
   dismissSave(): void {
@@ -427,13 +460,11 @@ export class BuildLibraryPage {
   }
 
   async resolveConflict(choice: string): Promise<void> {
+    const held = this.#active.autosaveRecordId();
     const result = await this.#conflicts.resolve(choice as ConflictChoice);
 
     if (result?.kind === 'saved') {
-      this.#active.markSaved({
-        recordId: result.record.id,
-        baseRevisionId: result.record.revisionId,
-      });
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
     }
     this.#library.refresh();
   }

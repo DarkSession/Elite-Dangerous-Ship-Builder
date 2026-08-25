@@ -86,6 +86,41 @@ describe('SaveBuildDialog', () => {
     ]);
   });
 
+  it('says what each choice does to the stored builds', () => {
+    // One of these removes an entry and the other does not. A Commander has to
+    // be able to tell which before pressing it, not after (FR-008, T150a).
+    const fixture = render({ initialName: 'A name', canOverwrite: true });
+
+    const shown = text(fixture);
+    expect(shown).toContain('The saved build is replaced by these edits');
+    expect(shown).toContain('the unsaved entry they were kept in is removed');
+    expect(shown).toContain('Both are kept');
+  });
+
+  it('associates each outcome with the button it belongs to', () => {
+    const fixture = render({ initialName: 'A name', canOverwrite: true });
+    const element = fixture.nativeElement as HTMLElement;
+
+    for (const choice of element.querySelectorAll('edsb-action-button[aria-describedby]')) {
+      const described = choice.getAttribute('aria-describedby')!;
+      expect(element.querySelector(`#${described}`)?.textContent?.trim().length).toBeGreaterThan(0);
+    }
+    expect(element.querySelectorAll('edsb-action-button[aria-describedby]')).toHaveLength(2);
+  });
+
+  it('says nothing about outcomes when there is no choice to make', () => {
+    // Nothing is being replaced, so there is no second outcome to weigh: the
+    // title already says the build is being saved.
+    const fixture = render({ initialName: 'A name' });
+
+    expect(text(fixture)).not.toContain('Both are kept');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelectorAll(
+        'edsb-action-button[aria-describedby]',
+      ),
+    ).toHaveLength(0);
+  });
+
   it('refuses to save a build with no name at all', () => {
     const fixture = render({ initialName: '' });
     const requests: unknown[] = [];

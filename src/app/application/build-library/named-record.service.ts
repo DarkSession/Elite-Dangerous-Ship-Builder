@@ -90,21 +90,72 @@ export class NamedRecordService {
   }
 
   /**
+   * Names the unnamed record the build is already in, in place.
+   *
+   * This is the ordinary manual save of an autosaved build, and it is a
+   * promotion rather than a copy: the same key gains a name and flips `kind`
+   * to `named` under its own lock, with a fresh revision and the instant of the
+   * save. Nothing is left behind, because there was never a second record —
+   * which is what stops a Commander who saves their work from finding it listed
+   * twice (persistence contract, "Autosaved records"; FR-008).
+   *
+   * Two things can have happened while the dialog was open: the record can have
+   * been deleted somewhere else, and it can have been named somewhere else.
+   * Neither refuses the save. Both mint a fresh named record instead, because
+   * the Commander asked for this build to be saved and promoting a record that
+   * is now someone else's save would replace a version nobody asked to replace.
+   */
+  async nameHeldRecord(
+    request: Omit<NamedSaveRequest, 'expectedRevisionId'> & { recordId: string },
+  ): Promise<NamedSaveResult> {
+    if (!this.#locks.available) {
+      // Without a lock, promoting in place is still an unprotected
+      // read-then-write. Minting and then consuming reaches the same end state
+      // under a new identity, and never has a moment with no copy of the build.
+      return this.#mintThenConsume(request);
+    }
+
+    try {
+      const promoted = await this.#locks.request(namedRecordLockName(request.recordId), async () =>
+        this.#promoteIfUnnamed(request),
+      );
+      return promoted ?? this.#mintThenConsume(request);
+    } catch (error) {
+      return error instanceof LocksUnavailableError
+        ? this.#mintThenConsume(request)
+        : { kind: 'failed', code: 'failed' };
+    }
+  }
+
+  /**
    * Replaces an existing named record, if it is still the revision this tab saw.
    *
    * Without a lock this is refused outright rather than attempted: an
    * unprotected read-then-write is exactly how one tab's version disappears,
    * and keep-both remains available to a Commander who needs to save anyway.
+   *
+   * `consumes` names the unnamed record these edits were autosaved into, when
+   * there is one. It is removed only after the named write has succeeded, in
+   * that order and never the other way round: a write that fails leaves the
+   * build in the record it was already recoverable from (persistence contract,
+   * "Autosaved records").
    */
-  async overwriteNamed(request: NamedSaveRequest & { recordId: string }): Promise<NamedSaveResult> {
+  async overwriteNamed(
+    request: NamedSaveRequest & { recordId: string },
+    consumes: string | null = null,
+  ): Promise<NamedSaveResult> {
     if (!this.#locks.available) {
       return { kind: 'locks-unavailable' };
     }
 
     try {
-      return await this.#locks.request(namedRecordLockName(request.recordId), async () =>
+      const result = await this.#locks.request(namedRecordLockName(request.recordId), async () =>
         this.#writeIfCurrent(request),
       );
+      if (result.kind === 'saved') {
+        this.#consume(consumes, result.record.id);
+      }
+      return result;
     } catch (error) {
       return error instanceof LocksUnavailableError
         ? { kind: 'locks-unavailable' }
@@ -143,6 +194,87 @@ export class NamedRecordService {
   async remove(recordId: string): Promise<NamedSaveResult> {
     const removed = this.#records.remove(recordId);
     return removed.ok ? { kind: 'missing' } : { kind: 'failed', code: removed.code };
+  }
+
+  /**
+   * Promotes one unnamed record, or reports that there was nothing to promote.
+   *
+   * `null` means "not an unnamed record any more" — absent, unreadable, or
+   * named while the dialog was open — and is the caller's signal to mint. It is
+   * deliberately not a failure: nothing has been lost, and the build still has
+   * to be saved.
+   */
+  #promoteIfUnnamed(
+    request: Omit<NamedSaveRequest, 'expectedRevisionId'> & { recordId: string },
+  ): NamedSaveResult | null {
+    const current = this.#records.open(request.recordId);
+    if (!current.ok || current.value === null) {
+      return null;
+    }
+
+    const observed = current.value.record;
+    if (observed.kind === 'named') {
+      return null;
+    }
+
+    const written = this.#records.write({
+      id: request.recordId,
+      kind: 'named',
+      revisionId: this.#uuid.create(),
+      // The record keeps the instant it was first written. A Commander naming
+      // an hour of work has not created it just now.
+      createdAt: observed.createdAt,
+      modifiedAt: request.now,
+      name: request.name,
+      note: request.note,
+      validation: request.validation,
+      build: request.build,
+      sourceNamed: observed.sourceNamed,
+    });
+    if (!written.ok) {
+      return { kind: 'failed', code: written.code };
+    }
+
+    const reread = this.#records.open(request.recordId);
+    return reread.ok && reread.value !== null
+      ? { kind: 'saved', record: reread.value.record }
+      : { kind: 'failed', code: 'failed' };
+  }
+
+  /** Creates the named record, then removes the unnamed one it replaces. */
+  async #mintThenConsume(
+    request: Omit<NamedSaveRequest, 'expectedRevisionId'> & { recordId: string },
+  ): Promise<NamedSaveResult> {
+    const created = await this.createNamed({
+      name: request.name,
+      note: request.note,
+      build: request.build,
+      validation: request.validation,
+      now: request.now,
+    });
+    if (created.kind === 'saved') {
+      this.#consume(request.recordId, created.record.id);
+    }
+    return created;
+  }
+
+  /**
+   * Removes the unnamed record a successful save has replaced.
+   *
+   * Only ever an unnamed one, checked against the stored bytes rather than
+   * against what the page believes it is holding: a record named in another tab
+   * while this save was being made is that tab's save now, and consuming it
+   * would delete a version nobody asked to remove.
+   *
+   * A removal that fails is not reported: the build is already stored under the
+   * name the Commander gave it, and an entry left behind expires on its own
+   * (FR-013). Telling them their save failed would be untrue.
+   */
+  #consume(recordId: string | null, savedInto: string): void {
+    if (recordId === null || recordId === savedInto || this.#records.isNamed(recordId)) {
+      return;
+    }
+    this.#records.remove(recordId);
   }
 
   /** The read-check-write that runs inside the lock. */
