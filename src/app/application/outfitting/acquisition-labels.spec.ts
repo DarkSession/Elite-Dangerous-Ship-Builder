@@ -165,7 +165,7 @@ describe('acquisition labels', () => {
     const view = fittedModuleView(fitted, NO_TEXT);
 
     expect(view.variant).not.toBeNull();
-    expect(view.variant!.blueprint).toBe(fixedRewardVariant().blueprint);
+    expect(view.variant!.blueprintSymbol).toBe(fixedRewardVariant().blueprintSymbol);
 
     const labels = acquisitionLabels({ entitlement: view.entitlement, variant: view.variant });
     expect(kinds(labels)).toContain('techBroker');

@@ -63,7 +63,7 @@ function snapshotPreEngineered(module: FittedModule): PreEngineeredIdentityV1 | 
 
   return {
     symbol: variant.symbol,
-    blueprint: variant.blueprint,
+    blueprint: variant.blueprintSymbol,
     grade: variant.grade,
     acquisition: variant.acquisition,
     // The effect the article carries *now*, not the one it was published with.

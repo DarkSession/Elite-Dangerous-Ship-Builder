@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { DistributorMetrics } from '@elite-dangerous-almanac/core/ships/distributor';
 import {
   heatLevelAtTime,
@@ -16,7 +17,7 @@ import type { FittedModule, ShipLoadout } from '@elite-dangerous-almanac/core/sh
  * What the plant makes, what the build draws, what it runs at and what its
  * distributor holds — as canvases 1c and 1d draw it in `POWER & THERMALS`.
  *
- * One pure synchronous read of three `ShipLoadout` methods, and nothing else.
+ * One pure synchronous read of three `BuildMetrics` methods, and nothing else.
  * There is no store, no cache, no revision key and no lifecycle: the loadout is
  * already in memory, the three calls are synchronous, and the signal graph
  * memoises the whole thing for the surfaces that read it. That is the shape
@@ -377,12 +378,15 @@ export function overheatTime(seconds: number | null): OverheatTime {
  * screen can disagree with anything else on it.
  */
 export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditions): PowerAndHeat {
-  const budget = loadout.powerBudget();
-  const heat = loadout.heatMetrics();
+  // Every calculation lives on `BuildMetrics`, which reads the build it is
+  // handed rather than holding a copy of it (Almanac 0.2.0).
+  const metrics = BuildMetrics.of(loadout);
+  const budget = metrics.powerBudget();
+  const heat = metrics.heatMetrics();
   // Read once and passed down. What it answers is about the build's own fitting
   // rather than about a package figure, and asking twice invites two answers.
   const fitted = loadout.fittedModules();
-  const distributor = loadout.distributorMetrics({
+  const distributor = metrics.distributorMetrics({
     systemsPips: conditions.pips.systems,
     enginesPips: conditions.pips.engines,
     weaponsPips: conditions.pips.weapons,

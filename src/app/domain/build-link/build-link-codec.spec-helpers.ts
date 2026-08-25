@@ -108,7 +108,7 @@ export function makeFullyEngineeredAnaconda(): ShipLoadout {
     loadout.applyBlueprint(module.slot, engineering.blueprint, {
       grade: engineering.grade,
       quality: 1,
-      ...(engineering.experimental ? { experimental: engineering.experimental } : {}),
+      ...(engineering.experimental ? { experimentalEffectSymbol: engineering.experimental } : {}),
     });
   }
   return loadout;

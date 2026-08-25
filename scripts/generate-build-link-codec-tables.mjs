@@ -98,7 +98,7 @@ const poweredModules = modules.flatMap((symbol, index) => {
 const blueprints = [
   ...new Set([
     ...Object.keys(BLUEPRINTS),
-    ...PRE_ENGINEERED_MODULES.map(({ blueprint }) => blueprint),
+    ...PRE_ENGINEERED_MODULES.map(({ blueprintSymbol }) => blueprintSymbol),
   ]),
 ].sort();
 const blueprintGrades = blueprints.map((fdname) => {
@@ -167,13 +167,19 @@ const fixedModulesByShip = Object.fromEntries(
 );
 
 const preEngineeredVariants = PRE_ENGINEERED_MODULES.map(
-  ({ symbol, blueprint, grade, acquisition, experimental }) => ({
+  ({
+    symbol,
+    blueprintSymbol: blueprint,
+    grade,
+    acquisition,
+    experimentalEffectSymbol: experimental,
+  }) => ({
     module: indexOf(moduleIndex, symbol, 'pre-engineered module'),
     blueprint: indexOf(blueprintIndex, blueprint, 'pre-engineered blueprint'),
     grade,
     acquisition,
     experimental:
-      experimental === undefined
+      experimental === undefined || experimental === null
         ? null
         : indexOf(experimentalIndex, experimental, 'pre-engineered experimental effect'),
   }),

@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { TestBed } from '@angular/core/testing';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
@@ -305,7 +306,7 @@ describe('outfitting store - fitting', () => {
     store.select(FIXTURE_SLOTS.hardpoint);
     const before = captureCheckpoint(active.loadout()!);
     const revision = active.revision();
-    const jump = active.loadout()!.maxJumpRange();
+    const jump = BuildMetrics.of(active.loadout()!).maxJumpRange();
 
     // A key no choice in this mount ever carried. It resolves to nothing, which
     // is a refusal rather than a guess at what was meant.
@@ -318,6 +319,6 @@ describe('outfitting store - fitting', () => {
     expect(result.kind).toBe('refused');
     expect(active.revision()).toBe(revision);
     expect(captureCheckpoint(active.loadout()!)).toEqual(before);
-    expect(active.loadout()!.maxJumpRange()).toBe(jump);
+    expect(BuildMetrics.of(active.loadout()!).maxJumpRange()).toBe(jump);
   });
 });

@@ -5,7 +5,6 @@
       "appVersion": "0.1.0"
     },
     "data": {
-      "event": "Loadout",
       "Ship": "sidewinder",
       "HullValue": 4588,
       "ModulesValue": 50040,

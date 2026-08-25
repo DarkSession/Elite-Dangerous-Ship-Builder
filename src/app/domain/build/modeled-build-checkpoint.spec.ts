@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { FIXTURE_SLOTS, defaultBuild, fixedRewardVariant } from '../outfitting/outfitting.fixtures';
 import { captureCheckpoint, restoreCheckpoint, sameCheckpoint } from './modeled-build-checkpoint';
@@ -105,7 +106,9 @@ describe('modelled build checkpoint', () => {
     if (!restored.ok) {
       return;
     }
-    expect(restored.loadout.buildCost().credits).toEqual(build.buildCost().credits);
+    expect(BuildMetrics.of(restored.loadout).buildCost().credits).toEqual(
+      BuildMetrics.of(build).buildCost().credits,
+    );
   });
 
   it('blocks on an impossible restore rather than returning a near miss', () => {

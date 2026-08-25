@@ -123,11 +123,11 @@ describe('the build status block', () => {
       const loadout = ShipLoadout.fromLoadout(TWO_UNKNOWN_SLOTS);
       const fixture = render(loadout);
 
-      expect(items(fixture)).toHaveLength(loadout.validation.issues.length);
+      expect(items(fixture)).toHaveLength(loadout.validation().issues.length);
       // Parity with the package's own order, asserted against the package
       // rather than against a written-down order that could drift from it.
       const drawn = items(fixture).map((item) => item.textContent ?? '');
-      loadout.validation.issues.forEach((issue, position) => {
+      loadout.validation().issues.forEach((issue, position) => {
         expect(drawn[position]).toContain(issue.message);
       });
     });
@@ -135,7 +135,7 @@ describe('the build status block', () => {
     it('draws each issue exactly once', () => {
       const loadout = ShipLoadout.fromLoadout(UNKNOWN_SLOT);
       const fixture = render(loadout);
-      const sentence = loadout.validation.issues[0]!.message;
+      const sentence = loadout.validation().issues[0]!.message;
 
       expect(text(fixture).split(sentence)).toHaveLength(2);
     });
@@ -153,7 +153,7 @@ describe('the build status block', () => {
 
     it('carries the package’s own sentence, with its interpolated identities', () => {
       const loadout = ShipLoadout.fromLoadout(UNKNOWN_SLOT);
-      const issue = loadout.validation.issues[0]!;
+      const issue = loadout.validation().issues[0]!;
       const fixture = render(loadout);
 
       // The package has already interpolated its parameters; nothing here
@@ -172,7 +172,7 @@ describe('the build status block', () => {
       const loadout = ShipLoadout.fromLoadout(INCOMPATIBLE_MODULE);
       const fixture = render(loadout);
 
-      expect(text(fixture)).toContain(loadout.validation.issues[0]!.message);
+      expect(text(fixture)).toContain(loadout.validation().issues[0]!.message);
     });
 
     it('shows neither the machine-readable code nor a count', () => {
@@ -215,7 +215,7 @@ describe('the build status block', () => {
       // the package's English one, and the disclosure says why it is in another
       // language — both from feature 011's shared primitive, not from here.
       const value = host(fixture).querySelector('.game-text__value');
-      expect(value?.textContent).toContain(loadout.validation.issues[0]!.message);
+      expect(value?.textContent).toContain(loadout.validation().issues[0]!.message);
       expect(value?.getAttribute('lang')).toBe('en');
       expect(host(fixture).querySelector('.game-text__disclosure')).not.toBeNull();
     });

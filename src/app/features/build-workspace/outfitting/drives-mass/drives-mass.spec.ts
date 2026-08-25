@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+import {
+  BuildMetrics,
+  type StandardLoadInputs,
+} from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
 import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
-import {
-  ShipLoadout,
-  type StandardLoadInputs,
-} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
@@ -44,6 +45,13 @@ const ENVELOPE_LOAD = 'unladen' satisfies StandardLoad;
  * assembled on this side of the boundary.
  */
 describe('DrivesMass', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   let active: ActiveBuildStore;
   let conditions: PowerConditionsStore;
   let formatters: Formatters;
@@ -132,7 +140,7 @@ describe('DrivesMass', () => {
 
   /** What the load the card is read at carries, unwrapped. */
   function carried(loadout: ShipLoadout): StandardLoadInputs {
-    const result = loadout.standardLoadResult(ENVELOPE_LOAD);
+    const result = BuildMetrics.of(loadout).standardLoadResult(ENVELOPE_LOAD);
     if (!result.complete) {
       throw new Error(
         `The installed package no longer weighs this hull at its ${ENVELOPE_LOAD} load.`,
@@ -141,9 +149,17 @@ describe('DrivesMass', () => {
     return result.value;
   }
 
-  /** What the package answers for this build at the load the card names. */
+  /** What the package answers for this build at the load and allocation the card names. */
   function mobilityAt(loadout: ShipLoadout, enginesPips: number) {
-    return loadout.mobilityMetricsResult({ ...carried(loadout), enginesPips }).value;
+    return BuildMetrics.of(loadout).mobilityCapacitorMetricsResult({
+      ...carried(loadout),
+      enginesPips,
+    }).value;
+  }
+
+  /** The four-pip envelope at that load, which is where `boost` is stated. */
+  function envelopeOf(loadout: ShipLoadout) {
+    return BuildMetrics.of(loadout).mobilityMetricsResult(carried(loadout)).value;
   }
 
   beforeEach(() => {
@@ -205,7 +221,9 @@ describe('DrivesMass', () => {
       const loadout = build();
       const { element, component } = render(loadout);
 
-      expect(component.loadedMass()).toBe(tonnes(loadout.buildMass(carried(loadout)).total));
+      expect(component.loadedMass()).toBe(
+        tonnes(BuildMetrics.of(loadout).buildMass(carried(loadout)).total),
+      );
       expect(text(element.querySelector('.drives__headline-mass'))).toBe(component.loadedMass());
     });
 
@@ -215,7 +233,7 @@ describe('DrivesMass', () => {
       const loadout = build();
       const stats = loadout.fittedModuleAt(THRUSTER_SLOT)?.effectiveStats;
       const { element, component } = render(loadout);
-      const mobility = loadout.mobilityMetricsResult({
+      const mobility = BuildMetrics.of(loadout).mobilityMetricsResult({
         ...carried(loadout),
       });
 
@@ -235,7 +253,9 @@ describe('DrivesMass', () => {
       const modules = component.massSegments().find((segment) => segment.id === 'modules');
       const part = component.massBar()?.segments.find((segment) => segment.id === 'modules');
 
-      expect(modules?.value).toBe(tonnes(loadout.buildMass(carried(loadout)).modules));
+      expect(modules?.value).toBe(
+        tonnes(BuildMetrics.of(loadout).buildMass(carried(loadout)).modules),
+      );
       expect(part?.size).toBeGreaterThan(0);
     });
 
@@ -284,7 +304,7 @@ describe('DrivesMass', () => {
           row.querySelector('.drives__legend-label')?.firstChild?.textContent?.trim(),
         ),
       ).toEqual(['Hull', 'Modules', 'Fuel']);
-      const mass = loadout.buildMass(carried(loadout));
+      const mass = BuildMetrics.of(loadout).buildMass(carried(loadout));
       expect(rows.map((row) => text(row.querySelector('.drives__legend-value')))).toEqual([
         tonnes(mass.hull),
         tonnes(mass.modules),
@@ -319,7 +339,7 @@ describe('DrivesMass', () => {
       // anything else would be a figure invented by its length.
       const loadout = build();
       const stats = loadout.fittedModuleAt(THRUSTER_SLOT)?.effectiveStats;
-      const mass = loadout.buildMass(carried(loadout));
+      const mass = BuildMetrics.of(loadout).buildMass(carried(loadout));
       const { component } = render(loadout);
       const size = (id: string): number | undefined =>
         component.massBar()?.segments.find((segment) => segment.id === id)?.size;
@@ -337,7 +357,7 @@ describe('DrivesMass', () => {
       // and the mark sits on the same scale.
       const loadout = build();
       const stats = loadout.fittedModuleAt(THRUSTER_SLOT)?.effectiveStats;
-      const mass = loadout.buildMass(carried(loadout));
+      const mass = BuildMetrics.of(loadout).buildMass(carried(loadout));
       const { element, component } = render(loadout);
       const bar = component.massBar();
 
@@ -404,7 +424,10 @@ describe('DrivesMass', () => {
   describe('the speed envelope', () => {
     it('draws the five readings the package returns, each with its unit', () => {
       const loadout = build();
+      // Four readings move with the allocation and come from the capacitor;
+      // boost ignores it and is stated on the envelope (Almanac 0.2.0).
       const mobility = mobilityAt(loadout, 2);
+      const envelope = envelopeOf(loadout);
       const { element } = render(loadout);
 
       expect(texts(element, '.drives__envelope-label')).toEqual([
@@ -416,7 +439,7 @@ describe('DrivesMass', () => {
       ]);
       expect(texts(element, '.drives__envelope-value')).toEqual([
         `${(mobility?.speed ?? 0).toFixed(0)} m/s`,
-        `${(mobility?.boost ?? 0).toFixed(0)} m/s`,
+        `${(envelope?.boost ?? 0).toFixed(0)} m/s`,
         `${(mobility?.pitch ?? 0).toFixed(0)} °/s`,
         `${(mobility?.roll ?? 0).toFixed(0)} °/s`,
         `${(mobility?.yaw ?? 0).toFixed(0)} °/s`,
@@ -462,10 +485,7 @@ describe('DrivesMass', () => {
 
       expect(element.querySelector('.drives__envelope')).toBeNull();
       expect(texts(element, '.drives__issues li')).toHaveLength(
-        loadout.mobilityMetricsResult({
-          ...carried(loadout),
-          enginesPips: 2,
-        }).issues.length,
+        BuildMetrics.of(loadout).mobilityMetricsResult(carried(loadout)).issues.length,
       );
       expect(texts(element, '.drives__issues li').join(' ').length).toBeGreaterThan(0);
     });
@@ -518,9 +538,9 @@ describe('DrivesMass', () => {
         reason: 'missing',
         message: 'The load could not be resolved.',
       };
-      const maximum = loadout.standardLoadResult('maximum');
+      const maximum = BuildMetrics.of(loadout).standardLoadResult('maximum');
 
-      vi.spyOn(loadout, 'standardLoadResult').mockImplementation((load) =>
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockImplementation((load) =>
         load === ENVELOPE_LOAD ? { complete: false, value: null, issues: [issue] } : maximum,
       );
       return loadout;
@@ -571,9 +591,9 @@ describe('DrivesMass', () => {
         reason: 'missing',
         message: 'No usable frame shift drive is fitted.',
       };
-      const resolved = loadout.standardLoadResult(ENVELOPE_LOAD);
+      const resolved = BuildMetrics.of(loadout).standardLoadResult(ENVELOPE_LOAD);
 
-      vi.spyOn(loadout, 'standardLoadResult').mockImplementation((load) =>
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockImplementation((load) =>
         load === 'maximum' ? { complete: false, value: null, issues: [issue] } : resolved,
       );
       return loadout;
@@ -642,8 +662,8 @@ describe('DrivesMass', () => {
       // empty named "why" list would be worse than none: it promises reasons
       // and shows a Commander an empty box.
       const loadout = build();
-      vi.spyOn(loadout, 'frameShiftDrive', 'get').mockImplementation(() => {
-        throw new TypeError('ShipLoadout: drive record has no jump constants');
+      vi.spyOn(BuildMetrics.prototype, 'frameShiftDrive').mockImplementation(() => {
+        throw new TypeError('BuildMetrics: drive record has no jump constants');
       });
 
       const { element, component } = render(loadout);
@@ -665,8 +685,8 @@ describe('DrivesMass', () => {
       // The envelope's own load is the one of the three that costs no jump, so
       // the drive's failure never reaches it (FR-003).
       const loadout = build();
-      vi.spyOn(loadout, 'frameShiftDrive', 'get').mockImplementation(() => {
-        throw new TypeError('ShipLoadout: drive record has no jump constants');
+      vi.spyOn(BuildMetrics.prototype, 'frameShiftDrive').mockImplementation(() => {
+        throw new TypeError('BuildMetrics: drive record has no jump constants');
       });
 
       const { element } = render(loadout);
@@ -691,7 +711,7 @@ describe('DrivesMass', () => {
       // The canvas's rows carry a load and its jump, nothing else. The whole
       // tank is its own reading and is drawn once, under the ranges.
       const loadout = build();
-      const summary = loadout.jumpRangeSummary();
+      const summary = BuildMetrics.of(loadout).jumpRangeSummary();
       const { element } = render(loadout);
 
       const rows = [...element.querySelectorAll('.drives__range')];
@@ -710,16 +730,16 @@ describe('DrivesMass', () => {
   describe('the drive’s own facts', () => {
     it('states the canvas’s legend rows under the ranges', () => {
       const loadout = build();
-      const summary = loadout.jumpRangeSummary();
+      const summary = BuildMetrics.of(loadout).jumpRangeSummary();
       const { component } = render(loadout);
       const facts = component.driveFacts();
 
       expect(facts.map((fact) => fact.id)).toEqual(['opt-mass', 'max-fuel', 'total-range']);
-      expect(facts[0].value).toBe(tonnes(loadout.frameShiftDrive.optMass));
+      expect(facts[0].value).toBe(tonnes(BuildMetrics.of(loadout).frameShiftDrive().optMass));
       // At the canvas's own fuel precision — its `MAX FUEL 8.30 t`. A
       // Sidewinder draws 0.6 t a jump, which the mass bar's whole tonnes would
       // print as `1 t`.
-      expect(facts[1].value).toBe(fuelTonnes(loadout.frameShiftDrive.maxFuel));
+      expect(facts[1].value).toBe(fuelTonnes(BuildMetrics.of(loadout).frameShiftDrive().maxFuel));
       expect(facts[2].value).toBe(`${summary.totalUnladen.range.toFixed(0)} ly`);
       // The canvas's `8 JUMPS ON A FULL TANK`: how many jumps that range is,
       // which the figure alone does not say.
@@ -732,7 +752,7 @@ describe('DrivesMass', () => {
       // jumps are the ends of the list under them, and mass lock is the hull's
       // own catalogue fact.
       const loadout = build();
-      const summary = loadout.jumpRangeSummary();
+      const summary = BuildMetrics.of(loadout).jumpRangeSummary();
       const { element, component } = render(loadout);
 
       expect(component.jumpCells().map((cell) => cell.value)).toEqual([

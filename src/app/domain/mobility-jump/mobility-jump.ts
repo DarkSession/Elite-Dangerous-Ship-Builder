@@ -1,13 +1,15 @@
-import type { FrameShiftDriveParams } from '@elite-dangerous-almanac/core/ships/jump-range';
 import type {
   BuildMass,
-  ShipLoadout,
   StandardLoadInputs,
-} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+} from '@elite-dangerous-almanac/core/ships/build-metrics';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
+import type { FrameShiftDriveParams } from '@elite-dangerous-almanac/core/ships/jump-range';
+import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type {
   CalculationIssue,
   CalculationResult,
 } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
+import type { MobilityCapacitorMetrics } from '@elite-dangerous-almanac/core/ships/mobility-capacitor';
 import type { MobilityMetrics, ThrusterParams } from '@elite-dangerous-almanac/core/ships/mobility';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 
@@ -154,8 +156,22 @@ export interface ThrusterLoadView {
   readonly source: SourceModule;
   /** The load the envelope was read at — the canvas's, stated beside it. */
   readonly envelopeLoad: StandardLoad;
-  /** The package's mobility answer, or its issues. */
+  /**
+   * The package's mobility answer at the envelope's load, or its issues.
+   *
+   * Since Almanac 0.2.0 every rate on it is stated at **four** ENG pips, and
+   * `boost` ignores the allocation entirely. What the standing allocation is
+   * worth is {@link capacitor}; only `boost`, `loadedMass` and the two curve
+   * multipliers are read off this.
+   */
   readonly mobility: MobilityMetrics | null;
+  /**
+   * The same envelope at the standing ENG allocation: speed, pitch, roll, yaw.
+   *
+   * A second package call over the same load. `null` for the same reasons
+   * {@link mobility} is, since it is derived from the same thrusters.
+   */
+  readonly capacitor: MobilityCapacitorMetrics | null;
   readonly issues: readonly CalculationIssue[];
   /** The thruster's own mass curve, where the module publishes one. */
   readonly curve: ThrusterCurve | null;
@@ -274,14 +290,21 @@ function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadV
   // Anaconda differs by two thirds of a metre per second between this profile
   // and `laden`, so a default that moved would leave the card naming one load
   // while showing another.
-  const carried = readStandardLoad(loadout, ENVELOPE_LOAD);
-  const mobility = carried?.complete
-    ? loadout.mobilityMetricsResult({ ...carried.value, enginesPips })
+  // Every calculation lives on `BuildMetrics`, which reads the build it is
+  // handed rather than holding a copy of it (Almanac 0.2.0).
+  const metrics = BuildMetrics.of(loadout);
+  const carried = readStandardLoad(metrics, ENVELOPE_LOAD);
+  const mobility = carried?.complete ? metrics.mobilityMetricsResult(carried.value) : carried;
+  // The ENG allocation is its own calculation since 0.2.0: `mobilityMetrics()`
+  // is the four-pip envelope, and this is what the standing allocation makes of
+  // it. Same load, so the two describe one ship.
+  const capacitor = carried?.complete
+    ? metrics.mobilityCapacitorMetricsResult({ ...carried.value, enginesPips })
     : carried;
   // The mass counterpart of `buildCost()`, weighed at the same load the
   // envelope was read at, so the headline and the bar describe one ship.
-  const mass = carried?.complete ? loadout.buildMass(carried.value) : null;
-  const curve = loadout.thrusters;
+  const mass = carried?.complete ? metrics.buildMass(carried.value) : null;
+  const curve = metrics.thrusters();
 
   return Object.freeze({
     source: readSource(loadout, THRUSTER_SLOT),
@@ -294,6 +317,7 @@ function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadV
     // unavailable, and is carried as the package worded it rather than
     // rephrased here.
     mobility: mobility?.complete ? mobility.value : null,
+    capacitor: capacitor?.complete ? capacitor.value : null,
     // No reasons at all where the package threw: it gives its own or it gives
     // none, and an empty list is what "none" looks like here.
     issues: mobility?.issues ?? EMPTY_ISSUES,
@@ -350,9 +374,10 @@ function readDrive(
   loadout: ShipLoadout,
   hull: ReturnType<typeof getShipBySymbol>,
 ): FrameShiftDriveView {
-  const blocked = readBlockedLoads(loadout);
-  const drive = blocked.blocked ? null : readDriveParams(loadout);
-  const jumps = drive ? readJumps(loadout) : null;
+  const metrics = BuildMetrics.of(loadout);
+  const blocked = readBlockedLoads(metrics);
+  const drive = blocked.blocked ? null : readDriveParams(metrics);
+  const jumps = drive ? readJumps(metrics) : null;
 
   return Object.freeze({
     source: readSource(loadout, DRIVE_SLOT),
@@ -385,11 +410,11 @@ function readDrive(
  * becomes is the absence of an answer rather than a refusal with empty words.
  */
 function readStandardLoad(
-  loadout: ShipLoadout,
+  metrics: BuildMetrics,
   load: StandardLoad,
 ): CalculationResult<StandardLoadInputs> | null {
   try {
-    return loadout.standardLoadResult(load);
+    return metrics.standardLoadResult(load);
   } catch {
     return null;
   }
@@ -403,11 +428,11 @@ function readStandardLoad(
  * resolves the loads, so a Commander reads why in the same order the package
  * would have failed.
  */
-function readBlockedLoads(loadout: ShipLoadout): {
+function readBlockedLoads(metrics: BuildMetrics): {
   readonly blocked: boolean;
   readonly issues: readonly CalculationIssue[];
 } {
-  const results = GUARD_LOADS.map((load) => readStandardLoad(loadout, load));
+  const results = GUARD_LOADS.map((load) => readStandardLoad(metrics, load));
   const issues = results.flatMap((result) =>
     result?.complete === false ? [...result.issues] : [],
   );
@@ -440,9 +465,9 @@ function readOvercharge(loadout: ShipLoadout): boolean | null {
  * Catching is not swallowing: the caller draws the card unavailable, and the
  * package's own reason for the load it could not resolve is what is shown.
  */
-function readDriveParams(loadout: ShipLoadout): FrameShiftDriveParams | null {
+function readDriveParams(metrics: BuildMetrics): FrameShiftDriveParams | null {
   try {
-    return loadout.frameShiftDrive;
+    return metrics.frameShiftDrive();
   } catch {
     return null;
   }
@@ -455,11 +480,11 @@ function readDriveParams(loadout: ShipLoadout): FrameShiftDriveParams | null {
  * `RANGE BY LOAD` rows of one figure each, and a single `Total range` legend
  * row under them. Asking twice would be two reads of the same answer.
  */
-function readJumps(loadout: ShipLoadout): {
+function readJumps(metrics: BuildMetrics): {
   readonly profiles: readonly LoadProfile[];
   readonly totalRange: TotalRange;
 } {
-  const summary = loadout.jumpRangeSummary();
+  const summary = metrics.jumpRangeSummary();
 
   const profiles = STANDARD_LOADS.map((load): LoadProfile => {
     // The summary names the same three loads `max`, `unladen` and `laden`; the

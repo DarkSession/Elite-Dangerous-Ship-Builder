@@ -39,8 +39,15 @@ export const SCOPE = ['src/app'];
  */
 export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/ships/ship-loadout',
+  // Almanac 0.2.0 moved every calculation off `ShipLoadout` and onto
+  // `BuildMetrics`, which is a leaf of its own. The loadout subpath stays: it
+  // is still what holds and edits the build.
+  '@elite-dangerous-almanac/core/ships/build-metrics',
   '@elite-dangerous-almanac/core/ships/ships',
   '@elite-dangerous-almanac/core/ships/shields',
+  // The bare shield and what a SYS allocation makes of it are two leaves
+  // since Almanac 0.2.0, and this capability draws both (FR-002).
+  '@elite-dangerous-almanac/core/ships/shield-capacitor',
   '@elite-dangerous-almanac/core/ships/shield-recovery',
   '@elite-dangerous-almanac/core/ships/armour',
   '@elite-dangerous-almanac/core/ships/engineering-options',

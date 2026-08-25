@@ -108,7 +108,7 @@ const CASES = [
         throw new Error('The installed Almanac offers no blueprint for any fitted module.');
       }
       const [blueprint] = loadout.availableBlueprints(slotKey);
-      loadout.applyBlueprint(slotKey, blueprint.fdname, { grade: 5, quality: 1 });
+      loadout.applyBlueprint(slotKey, blueprint.blueprintSymbol, { grade: 5, quality: 1 });
       return loadout;
     },
   },
@@ -147,8 +147,8 @@ const artifacts = CASES.map((entry) => {
     ship: loadout.shipSymbol,
     modules: loadout.fittedModules().length,
     utf8Bytes: Buffer.byteLength(payload, 'utf8'),
-    valid: loadout.validation.valid,
-    complete: loadout.validation.complete,
+    valid: loadout.validation().valid,
+    complete: loadout.validation().complete,
     sha256: sha256(payload),
     payload,
   };

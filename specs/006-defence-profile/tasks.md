@@ -199,18 +199,18 @@ change to what the reference asks for.
 
 Recorded in `design/reference-review.md`, "Canvas revision, 2026-08-25".
 
-- [ ] T078 Read the shield metrics twice in `src/app/domain/defence/defence.ts` — once at
-      `systemsPips: 0` for the bare `RESIST` and `MJ` columns, once at the standing allocation for
-      the new one — and carry both effective-hit-point sets on the shield snapshot. Both are
-      `shieldMetricsResult()`; no figure is scaled, blended or apportioned, and an unavailable
-      result at either allocation stays unavailable rather than borrowing the other
-- [ ] T079 Draw the fifth column in `defence-analysis.html`, headed with the allocation it was read
+- [x] T078 Read the shield twice in `src/app/domain/defence/defence.ts` — `shieldMetrics()` for the
+      bare `RESIST` and `MJ` columns, `shieldCapacitorMetrics({ systemsPips })` for the new one — and
+      carry both effective-hit-point sets on the projection, the second on its own `capacitor` view.
+      Almanac 0.2.0 made these two leaves; no figure is scaled, blended or apportioned, and an
+      unavailable result at either allocation stays unavailable rather than borrowing the other
+- [x] T079 Draw the fifth column in `defence-analysis.html`, headed with the allocation it was read
       at, and leave the armour table at four columns. The bar keeps being drawn from the bare
       resistance beside it, and `∞` keeps its meaning in both pool columns (FR-005)
-- [ ] T080 [P] Add the column heading to both locale catalogues, formatted with the standing pip
+- [x] T080 [P] Add the column heading to both locale catalogues, formatted with the standing pip
       count through the active-locale number formatter
-- [ ] T081 Extend `defence.spec.ts` and `almanac-defence-contract.spec.ts` for the two-allocation
+- [x] T081 Extend `defence.spec.ts` and `almanac-defence-contract.spec.ts` for the two-allocation
       read, including a build with no generator — where the package reports every pool as zero at
       both allocations and the pips only as `systemsResistance`
-- [ ] T082 Re-run the feature's e2e specs in all ten projects with the axe scan, then
+- [x] T082 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`

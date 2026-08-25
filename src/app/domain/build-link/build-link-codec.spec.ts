@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { ShipLoadout, type FittedModule } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { getBlueprintsForModule } from '@elite-dangerous-almanac/core/ships/engineering-options';
 import { PRE_ENGINEERED_MODULES } from '@elite-dangerous-almanac/core/ships/pre-engineered';
@@ -332,12 +333,12 @@ describe('build-link codec', () => {
             Slot: 'LargeHardpoint1',
             Item: variant.symbol,
             Engineering: {
-              BlueprintName: variant.blueprint,
+              BlueprintName: variant.blueprintSymbol,
               Level: variant.grade,
               Quality: 1,
-              ...(variant.experimental === undefined
+              ...(variant.experimentalEffectSymbol === undefined
                 ? {}
-                : { ExperimentalEffect: variant.experimental }),
+                : { ExperimentalEffect: variant.experimentalEffectSymbol }),
               Modifiers: getPreEngineeredJournalModifiers(variant),
             },
           },
@@ -396,7 +397,9 @@ describe('build-link codec', () => {
       expect(decodedModule.preEngineeredVariant).toEqual(variant);
       expect(decodedModule.engineering?.Level).toBe(variant.grade);
       expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
-      expect(decoded.buildCost().mercCoins).toBe(source.buildCost().mercCoins);
+      expect(BuildMetrics.of(decoded).buildCost().mercCoins).toBe(
+        BuildMetrics.of(source).buildCost().mercCoins,
+      );
       expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     }
   });
@@ -434,7 +437,7 @@ describe('build-link codec', () => {
           Slot: 'Slot01_Size6',
           Item: variant.symbol,
           Engineering: {
-            BlueprintName: variant.blueprint,
+            BlueprintName: variant.blueprintSymbol,
             Level: variant.grade,
             Quality: 1,
             ExperimentalEffect: 'special_powerdistributor_capacity',
@@ -463,8 +466,8 @@ describe('build-link codec', () => {
     const variant = mercenaryVariants().find(
       ({ symbol }) => symbol === 'Int_PowerDistributor_Size5_Class5',
     )!;
-    const experimental = 'special_powerdistributor_capacity';
-    const faithful = getPreEngineeredJournalModifiers({ ...variant, experimental });
+    const experimentalEffectSymbol = 'special_powerdistributor_capacity';
+    const faithful = getPreEngineeredJournalModifiers({ ...variant, experimentalEffectSymbol });
     expect(faithful.length).toBeGreaterThan(0);
 
     const source = ShipLoadout.fromLoadout({
@@ -474,10 +477,10 @@ describe('build-link codec', () => {
           Slot: 'Slot01_Size6',
           Item: variant.symbol,
           Engineering: {
-            BlueprintName: variant.blueprint,
+            BlueprintName: variant.blueprintSymbol,
             Level: variant.grade,
             Quality: 1,
-            ExperimentalEffect: experimental,
+            ExperimentalEffect: experimentalEffectSymbol,
             Modifiers: faithful,
           },
         },
@@ -490,7 +493,7 @@ describe('build-link codec', () => {
     const decoded = decodeBuildLinkFragment(fragment);
     const decodedModule = decoded.fittedModuleAt('Slot01_Size6')!;
 
-    expect(decodedModule.engineering?.ExperimentalEffect).toBe(experimental);
+    expect(decodedModule.engineering?.ExperimentalEffect).toBe(experimentalEffectSymbol);
     expect(decodedModule.engineering?.Modifiers).toEqual(sourceModule.engineering?.Modifiers);
     expect(decodedModule.effectiveStats).toEqual(sourceModule.effectiveStats);
     expect(decodedModule.preEngineeredVariant?.acquisition).toBe('mercenary');
@@ -501,7 +504,7 @@ describe('build-link codec', () => {
     // Every one of them, including the six the package gives no ordinary engineering menu: table 1
     // records their variants' own blueprints, so the ordinary record can name the climbed grade.
     for (const variant of mercenaryVariants()) {
-      const grades = blueprintGrades(variant.blueprint);
+      const grades = blueprintGrades(variant.blueprintSymbol);
       expect(grades).not.toContain(variant.grade);
 
       for (const grade of grades) {
@@ -516,7 +519,9 @@ describe('build-link codec', () => {
 
         expect(decodedModule.engineering?.Level).toBe(grade);
         expect(decodedModule.preEngineeredVariant).toEqual(variant);
-        expect(decoded.buildCost().mercCoins).toBe(source.buildCost().mercCoins);
+        expect(BuildMetrics.of(decoded).buildCost().mercCoins).toBe(
+          BuildMetrics.of(source).buildCost().mercCoins,
+        );
         expect(minimalState(decoded)).toEqual(minimalState(source));
         expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
         // The crafted grade must survive as engineering, not merely as a number: the decoded
@@ -568,15 +573,15 @@ describe('build-link codec', () => {
       // Nothing but its own variants' blueprints: the set exists so a climbed article can be
       // spelled, not to invent an engineering menu the package does not offer.
       const owned = PRE_ENGINEERED_MODULES.filter(({ symbol }) => symbol === variant.symbol).map(
-        ({ blueprint }) => blueprint,
+        ({ blueprintSymbol }) => blueprintSymbol,
       );
       expect([...ordinaryBlueprints(variant.symbol)].sort()).toEqual([...new Set(owned)].sort());
     }
   });
 
   it('round-trips festive modules as package-owned pre-engineered variants', async () => {
-    const cases = PRE_ENGINEERED_MODULES.filter(({ blueprint }) =>
-      blueprint.startsWith('Decorative_'),
+    const cases = PRE_ENGINEERED_MODULES.filter(({ blueprintSymbol }) =>
+      blueprintSymbol.startsWith('Decorative_'),
     );
     expect(cases).toHaveLength(3);
     for (const variant of cases) {
@@ -589,7 +594,7 @@ describe('build-link codec', () => {
       const decoded = await decodeBuildLinkFragmentOnDemand(fragment);
 
       expect(readPayloadBits(fragment, 0, 10)).toBe(1);
-      if (variant.blueprint === 'Decorative_Green') {
+      if (variant.blueprintSymbol === 'Decorative_Green') {
         expect(fragment).toBe('b.5S25TzaeHpHX!Om2.:Z');
       }
       expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
@@ -619,7 +624,7 @@ describe('build-link codec', () => {
       quality: 1,
     });
     const festive = PRE_ENGINEERED_MODULES.find(
-      ({ blueprint }) => blueprint === 'Decorative_Green',
+      ({ blueprintSymbol }) => blueprintSymbol === 'Decorative_Green',
     )!;
     source.setPreEngineeredVariant('MediumHardpoint1', festive);
     const ordinaryBefore = source.fittedModuleAt('LargeHardpoint1')!;
@@ -714,7 +719,7 @@ describe('build-link codec', () => {
     source.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
       grade: 5,
       quality: 1,
-      experimental: 'special_fsd_heavy',
+      experimentalEffectSymbol: 'special_fsd_heavy',
     });
     source.applyBlueprint('PowerPlant', 'PowerPlant_Armoured', {
       grade: 5,
@@ -788,7 +793,7 @@ describe('build-link codec', () => {
     expect(preEngineered.fittedModuleAt('LargeHardpoint1')).toMatchObject({
       preEngineeredVariant: {
         symbol: 'Hpt_Mining_AbrBlstr_Fixed_Small',
-        blueprint: 'Weapon_LongRange',
+        blueprintSymbol: 'Weapon_LongRange',
         grade: 5,
         acquisition: 'communityGoal',
       },
@@ -1169,7 +1174,7 @@ function makeImportedEngineeredBuild(includeCredits = true, quality = 1): ShipLo
   assembled.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
     grade: 5,
     quality,
-    experimental: 'special_fsd_heavy',
+    experimentalEffectSymbol: 'special_fsd_heavy',
   });
   assembled.setModuleEnabled('FrameShiftDrive', false);
   assembled.setModulePriority('FrameShiftDrive', 4);
@@ -1248,7 +1253,7 @@ function mercenaryBuild(
         Slot: 'LargeHardpoint1',
         Item: variant.symbol,
         Engineering: {
-          BlueprintName: variant.blueprint,
+          BlueprintName: variant.blueprintSymbol,
           Level: grade,
           Quality: 1,
           ...(modifiers === undefined ? {} : { Modifiers: modifiers }),

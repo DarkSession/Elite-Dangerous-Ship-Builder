@@ -136,7 +136,7 @@ export function isFittedChoice(choice: ModuleChoice, fitted: FittedArticle | nul
   return (
     fitted.variant !== null &&
     choice.variant.name === fitted.variant.name &&
-    choice.variant.blueprint === fitted.variant.blueprint &&
+    choice.variant.blueprintSymbol === fitted.variant.blueprintSymbol &&
     choice.variant.grade === fitted.variant.grade
   );
 }

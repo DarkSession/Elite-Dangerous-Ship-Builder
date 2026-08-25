@@ -48,9 +48,9 @@ export function choiceKeyOf(identity: ChoiceIdentity): string {
   return [
     'variant',
     identity.symbol,
-    variant.blueprint,
+    variant.blueprintSymbol,
     String(variant.grade),
-    variant.experimental ?? NO_EFFECT,
+    variant.experimentalEffectSymbol ?? NO_EFFECT,
     variant.acquisition,
     String(identity.sourceOrdinal),
     String(identity.variantOrdinal),

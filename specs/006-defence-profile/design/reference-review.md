@@ -133,9 +133,10 @@ when a pip moves.
 Note the canvas sample is internally inconsistent — its distributor and rail stand at SYS 2 while
 this heading reads `4`. The sample is not the requirement, and the heading follows the allocation.
 
-Two package calls, one per column, both `shieldMetricsResult()`; the second is the call this feature
-already makes. Nothing is scaled, blended or apportioned here, and `systemsResistance` is a returned
-field.
+Two package calls, one per column. Almanac 0.2.0 split them for us: `shieldMetrics()` is the bare
+shield by construction — it takes no allocation at all — and `shieldCapacitorMetrics({ systemsPips })`
+is the separate reading the fifth column draws, with `systemsResistance` among its returned fields.
+Nothing is scaled, blended or apportioned here.
 
 **Everything else on canvas 1d caught up to canvas 1c** — the `RESIST` column, the source rows with
 their module identities, `RECHARGE` / `0→100%` / `BROKEN RESET`, `HARDNESS` / `MODULE PROT.` /

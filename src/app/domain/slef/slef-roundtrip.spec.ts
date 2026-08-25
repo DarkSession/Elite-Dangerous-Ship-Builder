@@ -32,7 +32,7 @@ function modelled(build: ShipLoadout) {
         : null,
       integrity: module.effectiveStats?.integrity ?? null,
     })),
-    validation: build.validation,
+    validation: build.validation(),
   };
 }
 

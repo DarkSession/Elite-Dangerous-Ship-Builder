@@ -312,9 +312,11 @@ test.describe('reading the build', () => {
 });
 
 test.describe('the allocation the cards are read at', () => {
-  test('follows the SYS pips the power dashboard is set to', async ({ page }) => {
+  test('moves the pip column alone, and leaves the bare shield where it is', async ({ page }) => {
     await openDefence(page);
-    const before = (await damageRows(page, 'card--shield')).map((row) => row[1]);
+    const heading = page.locator('edsb-defence-analysis .card--shield .damage thead th').last();
+    const before = await damageRows(page, 'card--shield');
+    const column = await heading.innerText();
     const strength = await pool(page, 'card--shield').innerText();
 
     // The pips live on the power dashboard, and one ship has one allocation:
@@ -324,7 +326,14 @@ test.describe('the allocation the cards are read at', () => {
     await settled(page);
     await openMode(page, englishMessages['anatomy.mode.defence']);
 
-    expect((await damageRows(page, 'card--shield')).map((row) => row[1])).not.toEqual(before);
+    const after = await damageRows(page, 'card--shield');
+    // `RESIST` and `MJ` are the bare shield at zero pips, so a pip moving on the
+    // dashboard leaves every figure in them exactly where it was (FR-002).
+    expect(after.map((row) => row.slice(0, 3))).toEqual(before.map((row) => row.slice(0, 3)));
+    // What the allocation buys is a column of its own, headed with the count it
+    // was read at, and it is the only thing on the table that follows the pips.
+    expect(after.map((row) => row[3])).not.toEqual(before.map((row) => row[3]));
+    expect(await heading.innerText()).not.toEqual(column);
     // The pool itself is not a function of the allocation, and the package says
     // so by returning the same strength.
     expect(digits(await pool(page, 'card--shield').innerText())).toBe(digits(strength));

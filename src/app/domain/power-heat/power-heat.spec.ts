@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   CAPACITOR_KINDS,
@@ -31,10 +32,17 @@ function project(build: ShipLoadout, ...args: Parameters<typeof conditions>): Po
 }
 
 describe('projectPowerHeat', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('the plant summary', () => {
     it("reads the plant and each state's own total", () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
 
       expect(project(build).power.available).toBe(budget.available);
       expect(project(build).power.draw).toBe(budget.deployed);
@@ -73,7 +81,11 @@ describe('projectPowerHeat', () => {
     it('returns the groups the build uses, in package order, in either state', () => {
       const build = withinBudgetBuild();
       const used = [
-        ...new Set(build.powerBudget().consumers.map((consumer) => consumer.priority)),
+        ...new Set(
+          BuildMetrics.of(build)
+            .powerBudget()
+            .consumers.map((consumer) => consumer.priority),
+        ),
       ].sort((left, right) => left - right);
 
       for (const state of ['deployed', 'retracted'] as const) {
@@ -84,7 +96,7 @@ describe('projectPowerHeat', () => {
 
     it('leaves out a group this build puts nothing in', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const used = new Set(budget.consumers.map((consumer) => consumer.priority));
       const bands = project(build).power.bands;
 
@@ -97,7 +109,7 @@ describe('projectPowerHeat', () => {
 
     it('keeps a group whose mounts are all stowed or switched off', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const retracted = project(build, 'retracted').power.bands;
 
       // Membership is where a mount sits, not what it happens to be drawing:
@@ -111,15 +123,21 @@ describe('projectPowerHeat', () => {
 
     it('takes each band’s own draw, cumulative draw and verdict from the selected state', () => {
       const build = divergentBandBuild();
-      const used = new Set(build.powerBudget().consumers.map((consumer) => consumer.priority));
-      const packageBands = build.powerBudget().bands.filter((band) => used.has(band.priority));
+      const used = new Set(
+        BuildMetrics.of(build)
+          .powerBudget()
+          .consumers.map((consumer) => consumer.priority),
+      );
+      const packageBands = BuildMetrics.of(build)
+        .powerBudget()
+        .bands.filter((band) => used.has(band.priority));
 
       const deployed = project(build, 'deployed').power.bands;
       const retracted = project(build, 'retracted').power.bands;
 
       expect(packageBands.length).toBeGreaterThan(0);
       packageBands.forEach((band, index) => {
-        const available = build.powerBudget().available;
+        const available = BuildMetrics.of(build).powerBudget().available;
         expect(deployed[index]).toEqual({
           priority: band.priority,
           draw: band.deployed,
@@ -146,7 +164,7 @@ describe('projectPowerHeat', () => {
 
     it("reads each state's own verdict on a band whose two disagree", () => {
       const build = divergentBandBuild();
-      const band = build.powerBudget().bands.at(-1);
+      const band = BuildMetrics.of(build).powerBudget().bands.at(-1);
 
       expect(band?.poweredDeployed).toBe(false);
       expect(band?.poweredRetracted).toBe(true);
@@ -160,7 +178,7 @@ describe('projectPowerHeat', () => {
 
     it('splits the draw into what the plant keeps lit and what it does not', () => {
       const build = shedBandBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const shed = budget.bands
         .filter((band) => !band.poweredDeployed)
         .reduce((total, band) => total + band.deployed, 0);
@@ -174,7 +192,7 @@ describe('projectPowerHeat', () => {
 
     it('scales the rail bar to the demand where the plant cannot cover it', () => {
       const build = shedBandBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const bar = project(build, 'deployed').power.bar;
 
       // The artboard's `79%` amber, `21%` hatched after it and its mark at
@@ -207,7 +225,7 @@ describe('projectPowerHeat', () => {
 
     it('gathers the mounts carrying one module in one group onto a single line', () => {
       const build = withinBudgetBuild();
-      const mounted = build
+      const mounted = BuildMetrics.of(build)
         .powerBudget()
         .consumers.filter((consumer) => consumer.symbol === 'Hpt_PulseLaser_Fixed_Small');
       const lasers = project(build).modules.filter(
@@ -235,7 +253,7 @@ describe('projectPowerHeat', () => {
 
     it('adds up to the package’s own total for the state it was read in', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
 
       // Each line states what it draws in the state being read, so the list
       // comes to that state's own total — the weapons count towards one of them
@@ -288,7 +306,7 @@ describe('projectPowerHeat', () => {
     it('marks the lines the plant leaves dark, and only those', () => {
       const build = shedBandBuild();
       const dark = new Set(
-        build
+        BuildMetrics.of(build)
           .powerBudget()
           .bands.filter((band) => !band.poweredDeployed)
           .map((band) => band.priority),
@@ -312,7 +330,7 @@ describe('projectPowerHeat', () => {
   describe('the distributor', () => {
     it('returns the three capacitors in SYS, ENG, WEP order with every field', () => {
       const build = withinBudgetBuild();
-      const metrics = build.distributorMetrics({
+      const metrics = BuildMetrics.of(build).distributorMetrics({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
@@ -375,7 +393,7 @@ describe('projectPowerHeat', () => {
   describe('the heat profile', () => {
     it('returns the three profile facts and exactly the five scenarios in order', () => {
       const build = withinBudgetBuild();
-      const heat = build.heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetrics();
       const view = project(build).heat;
 
       expect(view?.efficiency).toBe(heat?.heatEfficiency);
@@ -386,7 +404,7 @@ describe('projectPowerHeat', () => {
 
     it('reads every field of every scenario from the package', () => {
       const build = withinBudgetBuild();
-      const heat = build.heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetrics();
 
       for (const scenario of project(build).heat?.scenarios ?? []) {
         const state = heat?.[scenario.key];
@@ -457,7 +475,7 @@ describe('projectPowerHeat', () => {
         (bank.effectiveStats?.shieldBankHeat ?? 0) / (bank.effectiveStats?.shieldBankSpinUp ?? 1);
       expect(spike?.seconds).toBe(bank.effectiveStats?.shieldBankSpinUp);
       expect(spike?.thermalLoad).toBeCloseTo(
-        (build.heatMetrics()?.idle.thermalLoad ?? 0) + perSecond,
+        (BuildMetrics.of(build).heatMetrics()?.idle.thermalLoad ?? 0) + perSecond,
         10,
       );
     });
@@ -496,37 +514,49 @@ describe('projectPowerHeat', () => {
 
   describe('the package boundary', () => {
     it('asks the package for each of the three answers exactly once', () => {
-      // Counted through a facade rather than by spying on the loadout itself.
-      // `heatMetrics()` and `distributorMetrics()` apply the power budget
-      // internally, so a spy on the real object also counts the package's own
-      // calls into itself. What is under test is this projection's boundary:
-      // one ask per answer, no re-derivation and no second opinion.
+      // Counted at this projection's own boundary. `heatMetrics()` and
+      // `distributorMetrics()` apply the power budget internally, so only the
+      // outermost call of each is counted: one ask per answer, no
+      // re-derivation and no second opinion. Since Almanac 0.2.0 the three
+      // calculations are on `BuildMetrics`, so the seam is its prototype;
+      // `fittedModules()` is the build's own fitting and stays on the loadout.
       const build = withinBudgetBuild();
-      const calls = { powerBudget: 0, heatMetrics: 0, distributorMetrics: 0, fittedModules: 0 };
-      const counted = {
-        fittedModules: () => {
-          calls.fittedModules += 1;
-          return build.fittedModules();
-        },
-        powerBudget: (...args: Parameters<ShipLoadout['powerBudget']>) => {
-          calls.powerBudget += 1;
-          return build.powerBudget(...args);
-        },
-        heatMetrics: (...args: Parameters<ShipLoadout['heatMetrics']>) => {
-          calls.heatMetrics += 1;
-          return build.heatMetrics(...args);
-        },
-        distributorMetrics: (...args: Parameters<ShipLoadout['distributorMetrics']>) => {
-          calls.distributorMetrics += 1;
-          return build.distributorMetrics(...args);
-        },
-      } as unknown as ShipLoadout;
+      // One depth across all three: `heatMetrics()` and `distributorMetrics()`
+      // apply the power budget internally, so a per-method depth would count
+      // the package's own call into `powerBudget()` as a second ask.
+      let depth = 0;
+      const outermost = (name: 'powerBudget' | 'heatMetrics' | 'distributorMetrics') => {
+        let calls = 0;
+        const real = BuildMetrics.prototype[name] as (...args: never[]) => unknown;
+        vi.spyOn(BuildMetrics.prototype, name).mockImplementation(function (
+          this: BuildMetrics,
+          ...args: never[]
+        ) {
+          if (depth === 0) calls += 1;
+          depth += 1;
+          try {
+            return real.apply(this, args);
+          } finally {
+            depth -= 1;
+          }
+        } as never);
+        return () => calls;
+      };
+      const powerBudget = outermost('powerBudget');
+      const heatMetrics = outermost('heatMetrics');
+      const distributorMetrics = outermost('distributorMetrics');
+      const fittedModules = vi.spyOn(build, 'fittedModules');
 
-      projectPowerHeat(counted, conditions());
+      projectPowerHeat(build, conditions());
 
       // The fourth is not a package answer: it is the build's own fitting, read
       // for the two readings `heatMetrics()` says it does not publish.
-      expect(calls).toEqual({
+      expect({
+        powerBudget: powerBudget(),
+        heatMetrics: heatMetrics(),
+        distributorMetrics: distributorMetrics(),
+        fittedModules: fittedModules.mock.calls.length,
+      }).toEqual({
         powerBudget: 1,
         heatMetrics: 1,
         distributorMetrics: 1,
@@ -536,7 +566,7 @@ describe('projectPowerHeat', () => {
 
     it('hands the allocation to the package rather than scaling anything itself', () => {
       const build = withinBudgetBuild();
-      const distributorMetrics = vi.spyOn(build, 'distributorMetrics');
+      const distributorMetrics = vi.spyOn(BuildMetrics.prototype, 'distributorMetrics');
 
       projectPowerHeat(build, conditions('deployed', { systems: 3, engines: 1, weapons: 2 }));
 

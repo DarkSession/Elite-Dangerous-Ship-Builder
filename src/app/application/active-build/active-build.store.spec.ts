@@ -110,7 +110,7 @@ describe('ActiveBuildStore', () => {
     const active = store();
     active.commit(candidate());
 
-    expect(active.validation()).toEqual(ShipLoadout.default('Anaconda').validation);
+    expect(active.validation()).toEqual(ShipLoadout.default('Anaconda').validation());
   });
 
   it('ignores an edit announcement when there is no build', () => {

@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { TestBed } from '@angular/core/testing';
 import { projectConvergence, type Convergence } from '../../../../../domain/offence/convergence';
 import {
@@ -19,7 +20,7 @@ describe('ShotConvergence', () => {
   function geometryOf(): Extract<Convergence, { kind: 'available' }> {
     const convergence = projectConvergence(
       OFFENCE_FIXTURE_HULL,
-      everyStateBuild().weaponMetrics().weapons,
+      BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons,
     );
     if (convergence.kind !== 'available') {
       throw new Error('expected an available convergence for the fixture hull');
@@ -47,7 +48,9 @@ describe('ShotConvergence', () => {
   it('places one shot per weapon the hull’s gunsight carries', () => {
     const { component } = render();
 
-    expect(component.shots()).toHaveLength(everyStateBuild().weaponMetrics().weapons.length);
+    expect(component.shots()).toHaveLength(
+      BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons.length,
+    );
   });
 
   it('states every shot in words as well as drawing it', () => {

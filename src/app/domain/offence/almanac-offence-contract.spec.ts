@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import {
   OFFENCE_DEFAULT_SLOTS,
   OFFENCE_STATE_SLOTS,
@@ -28,7 +29,7 @@ import {
 describe('the Almanac contract for weapon output and the weapons capacitor', () => {
   describe('weaponMetrics()', () => {
     it('publishes a weapon collection beside exactly the ten build totals', () => {
-      const metrics = populatedBuild().weaponMetrics();
+      const metrics = BuildMetrics.of(populatedBuild()).weaponMetrics();
 
       expect(Object.keys(metrics.total).sort()).toEqual(
         [
@@ -48,7 +49,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('returns one entry per fitted weapon, carrying its exact slot key', () => {
-      const metrics = populatedBuild().weaponMetrics();
+      const metrics = BuildMetrics.of(populatedBuild()).weaponMetrics();
 
       expect(metrics.weapons.map((weapon) => weapon.slot)).toEqual([...OFFENCE_DEFAULT_SLOTS]);
       for (const weapon of metrics.weapons) {
@@ -59,7 +60,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('publishes the fourteen per-weapon metrics, including the continuous flag', () => {
-      const weapon = populatedBuild().weaponMetrics().weapons[0];
+      const weapon = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons[0];
 
       for (const field of [
         'damagePerShot',
@@ -82,8 +83,8 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('keeps a switched-off weapon in the list and out of the totals', () => {
-      const stock = populatedBuild().weaponMetrics();
-      const metrics = partlyDisabledBuild().weaponMetrics();
+      const stock = BuildMetrics.of(populatedBuild()).weaponMetrics();
+      const metrics = BuildMetrics.of(partlyDisabledBuild()).weaponMetrics();
       const disabled = metrics.weapons.find((weapon) => weapon.slot === OFFENCE_DEFAULT_SLOTS[0]);
 
       expect(metrics.weapons).toHaveLength(stock.weapons.length);
@@ -94,7 +95,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('totals an all-disabled build at exact zero, with every row still returned', () => {
-      const metrics = allDisabledBuild().weaponMetrics();
+      const metrics = BuildMetrics.of(allDisabledBuild()).weaponMetrics();
 
       expect(metrics.weapons).toHaveLength(OFFENCE_DEFAULT_SLOTS.length);
       expect(metrics.weapons.every((weapon) => weapon.enabled)).toBe(false);
@@ -103,7 +104,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('returns an empty collection and zeroed totals for a hull with no weapons', () => {
-      const metrics = noWeaponsBuild().weaponMetrics();
+      const metrics = BuildMetrics.of(noWeaponsBuild()).weaponMetrics();
 
       expect(metrics.weapons).toEqual([]);
       expect(metrics.total.damagePerSecond).toBe(0);
@@ -113,7 +114,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
 
   describe('the damage split', () => {
     it('always carries the five required amounts', () => {
-      const split = populatedBuild().weaponMetrics().total.damageByType;
+      const split = BuildMetrics.of(populatedBuild()).weaponMetrics().total.damageByType;
 
       for (const type of ['kinetic', 'thermal', 'explosive', 'absolute', 'antiXeno'] as const) {
         expect(Number.isFinite(split[type])).toBe(true);
@@ -121,7 +122,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('omits unclassified entirely rather than reporting it as zero', () => {
-      const weapon = populatedBuild().weaponMetrics().weapons[0];
+      const weapon = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons[0];
 
       expect('unclassified' in weapon.metrics.damageByType).toBe(false);
     });
@@ -164,7 +165,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
 
   describe('weaponsCapacitorMetrics()', () => {
     it('publishes six fields and echoes the allocation it was given', () => {
-      const metrics = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 2 });
+      const metrics = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 2 });
 
       expect(Object.keys(metrics).sort()).toEqual(
         [
@@ -180,8 +181,8 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('accepts the half-pip step the game and feature 005 both use', () => {
-      const half = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 2.5 });
-      const whole = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 2 });
+      const half = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 2.5 });
+      const whole = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 2 });
 
       expect(half.rechargeRate).toBeGreaterThan(whole.rechargeRate);
     });
@@ -189,19 +190,19 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     it('rejects an allocation outside its own range rather than clamping it', () => {
       const build = populatedBuild();
 
-      expect(() => build.weaponsCapacitorMetrics({ weaponsPips: -1 })).toThrow();
-      expect(() => build.weaponsCapacitorMetrics({ weaponsPips: 5 })).toThrow();
+      expect(() => BuildMetrics.of(build).weaponsCapacitorMetrics({ weaponsPips: -1 })).toThrow();
+      expect(() => BuildMetrics.of(build).weaponsCapacitorMetrics({ weaponsPips: 5 })).toThrow();
     });
 
     it('reports infinite endurance, not a large number, when recharge keeps pace', () => {
-      const metrics = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 4 });
+      const metrics = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 4 });
 
       expect(metrics.timeToDrain).toBe(Infinity);
       expect(metrics.netDrainRate).toBe(0);
     });
 
     it('reports a finite endurance when the firing load outruns recharge', () => {
-      const metrics = drainingBuild().weaponsCapacitorMetrics({ weaponsPips: 0 });
+      const metrics = BuildMetrics.of(drainingBuild()).weaponsCapacitorMetrics({ weaponsPips: 0 });
 
       expect(Number.isFinite(metrics.timeToDrain)).toBe(true);
       expect(metrics.timeToDrain).toBeGreaterThan(0);
@@ -209,7 +210,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
     });
 
     it('still answers for a build with no weapons at all', () => {
-      const metrics = noWeaponsBuild().weaponsCapacitorMetrics({ weaponsPips: 2 });
+      const metrics = BuildMetrics.of(noWeaponsBuild()).weaponsCapacitorMetrics({ weaponsPips: 2 });
 
       expect(metrics.capacity).toBeGreaterThan(0);
       expect(metrics.sustainedEnergyPerSecond).toBe(0);
@@ -221,7 +222,7 @@ describe('the Almanac contract for weapon output and the weapons capacitor', () 
 /** The one edge-state weapon this assertion is about, from the shared build. */
 function weaponAt(state: keyof typeof OFFENCE_STATE_SLOTS) {
   const slot = OFFENCE_STATE_SLOTS[state];
-  const weapon = everyStateBuild()
+  const weapon = BuildMetrics.of(everyStateBuild())
     .weaponMetrics()
     .weapons.find((entry) => entry.slot === slot);
   if (weapon === undefined) {

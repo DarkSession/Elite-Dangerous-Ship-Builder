@@ -266,9 +266,9 @@ describe('engineering cost', () => {
       const cost = engineeringCost({
         ...NOTHING,
         purchaseVariant: reward,
-        blueprintFdname: reward.blueprint,
+        blueprintFdname: reward.blueprintSymbol,
         grade: reward.grade,
-        currentBlueprintFdname: reward.blueprint,
+        currentBlueprintFdname: reward.blueprintSymbol,
         currentGrade: reward.grade,
       });
 
@@ -285,9 +285,9 @@ describe('engineering cost', () => {
       const cost = engineeringCost({
         ...NOTHING,
         purchaseVariant: merc,
-        blueprintFdname: merc.blueprint,
+        blueprintFdname: merc.blueprintSymbol,
         grade: 5,
-        currentBlueprintFdname: merc.blueprint,
+        currentBlueprintFdname: merc.blueprintSymbol,
         currentGrade: merc.grade,
       });
 
@@ -299,9 +299,9 @@ describe('engineering cost', () => {
         engineeringCost({
           ...NOTHING,
           purchaseVariant: merc,
-          blueprintFdname: merc.blueprint,
+          blueprintFdname: merc.blueprintSymbol,
           grade: 5,
-          currentBlueprintFdname: merc.blueprint,
+          currentBlueprintFdname: merc.blueprintSymbol,
           currentGrade: 5,
         }).blueprint.kind,
       ).toBe('known');
@@ -317,9 +317,9 @@ describe('engineering cost', () => {
       expect(
         engineeringCost({
           ...NOTHING,
-          blueprintFdname: merc.blueprint,
+          blueprintFdname: merc.blueprintSymbol,
           grade: merc.grade,
-          currentBlueprintFdname: merc.blueprint,
+          currentBlueprintFdname: merc.blueprintSymbol,
           currentGrade: merc.grade,
           purchaseVariant: merc,
         }),
@@ -353,7 +353,7 @@ describe('engineering cost', () => {
 
     it('starts a Mercenary progression above the grade the article was bought at', () => {
       const merc = mercenaryVariant();
-      const recipe = merc.blueprint;
+      const recipe = merc.blueprintSymbol;
       // The purchase *is* the completed grade: the article arrived engineered.
       const bought = {
         ...NOTHING,

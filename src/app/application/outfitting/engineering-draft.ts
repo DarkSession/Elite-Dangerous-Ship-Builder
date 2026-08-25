@@ -364,7 +364,7 @@ export function openEngineeringDraft(
     selection.blueprintFdname === null || selection.blueprintFdname === NO_BLUEPRINT
       ? null
       : (blueprints.find((candidate) =>
-          sameIdentity(candidate.fdname, selection.blueprintFdname),
+          sameIdentity(candidate.blueprintSymbol, selection.blueprintFdname),
         ) ?? null);
 
   // A grade is only a grade if the selected descriptor offers it. Anything else
@@ -382,7 +382,7 @@ export function openEngineeringDraft(
       // grade 3 can press it to come back down (wave 5, wave 6).
       (purchase !== null &&
         selection.grade === purchase.grade &&
-        sameIdentity(descriptor.fdname, purchase.blueprint)))
+        sameIdentity(descriptor.blueprintSymbol, purchase.blueprintSymbol)))
       ? selection.grade
       : null;
 
@@ -396,7 +396,9 @@ export function openEngineeringDraft(
 
   const resolved: EngineeringSelection = {
     blueprintFdname:
-      selection.blueprintFdname === NO_BLUEPRINT ? NO_BLUEPRINT : (descriptor?.fdname ?? null),
+      selection.blueprintFdname === NO_BLUEPRINT
+        ? NO_BLUEPRINT
+        : (descriptor?.blueprintSymbol ?? null),
     grade: selectedGrade,
     effectFdname: selectedEffectFdname,
   };
@@ -453,7 +455,9 @@ export function withBlueprint(
     return { blueprintFdname: NO_BLUEPRINT, grade: null, effectFdname: null };
   }
 
-  const descriptor = draft.blueprints.find((candidate) => sameIdentity(candidate.fdname, fdname));
+  const descriptor = draft.blueprints.find((candidate) =>
+    sameIdentity(candidate.blueprintSymbol, fdname),
+  );
   if (descriptor === undefined) {
     return currentSelection(draft);
   }
@@ -464,7 +468,7 @@ export function withBlueprint(
       : (descriptor.grades.at(-1) ?? null);
 
   return {
-    blueprintFdname: descriptor.fdname,
+    blueprintFdname: descriptor.blueprintSymbol,
     grade,
     effectFdname: draft.selectedEffectFdname,
   };
@@ -538,9 +542,9 @@ function selectionIntent(
   if (
     purchase !== null &&
     selection.grade === purchase.grade &&
-    sameIdentity(selected, purchase.blueprint) &&
+    sameIdentity(selected, purchase.blueprintSymbol) &&
     !(
-      sameIdentity(purchase.blueprint, current.blueprintFdname) &&
+      sameIdentity(purchase.blueprintSymbol, current.blueprintFdname) &&
       current.currentGrade === purchase.grade
     )
   ) {
@@ -596,7 +600,9 @@ export function engineeringOperation(
           // Omitted rather than passed as null when there is no effect: the
           // package reads the property once, and "not asked for" is the shape
           // its own signature is written in.
-          ...(intent.effectFdname === null ? {} : { experimental: intent.effectFdname }),
+          ...(intent.effectFdname === null
+            ? {}
+            : { experimentalEffectSymbol: intent.effectFdname }),
         });
       };
 

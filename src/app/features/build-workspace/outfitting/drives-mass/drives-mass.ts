@@ -445,19 +445,24 @@ export class DrivesMass {
    * bar is the package's, and is what is read.
    */
   readonly envelope = computed<readonly EnvelopeRowView[]>(() => {
-    const mobility = this.view()?.thrusters.mobility;
-    if (!mobility) {
+    const thrusters = this.view()?.thrusters;
+    const mobility = thrusters?.mobility;
+    const capacitor = thrusters?.capacitor;
+    if (!mobility || !capacitor) {
       return [];
     }
-    const fastest = Math.max(mobility.speed, mobility.boost) || 1;
-    const quickest = Math.max(mobility.pitch, mobility.roll, mobility.yaw) || 1;
+    // Four of the five move with the ENG allocation and come from the
+    // capacitor; boost ignores the allocation and the package states it on the
+    // envelope itself (Almanac 0.2.0).
+    const fastest = Math.max(capacitor.speed, mobility.boost) || 1;
+    const quickest = Math.max(capacitor.pitch, capacitor.roll, capacitor.yaw) || 1;
 
     return [
-      this.#speedRow('speed', 'drives.thrusters.speed', mobility.speed, fastest),
+      this.#speedRow('speed', 'drives.thrusters.speed', capacitor.speed, fastest),
       this.#speedRow('boost', 'drives.thrusters.boost', mobility.boost, fastest),
-      this.#rotationRow('pitch', 'drives.thrusters.pitch', mobility.pitch, quickest),
-      this.#rotationRow('roll', 'drives.thrusters.roll', mobility.roll, quickest),
-      this.#rotationRow('yaw', 'drives.thrusters.yaw', mobility.yaw, quickest),
+      this.#rotationRow('pitch', 'drives.thrusters.pitch', capacitor.pitch, quickest),
+      this.#rotationRow('roll', 'drives.thrusters.roll', capacitor.roll, quickest),
+      this.#rotationRow('yaw', 'drives.thrusters.yaw', capacitor.yaw, quickest),
     ];
   });
 

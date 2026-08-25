@@ -142,7 +142,7 @@ describe('the one path from a draft to an active build', () => {
 
       await coordinator.submit();
 
-      expect(active.loadout()?.validation).toBeDefined();
+      expect(active.loadout()?.validation()).toBeDefined();
     });
 
     it('retires the notices with the build they described', async () => {

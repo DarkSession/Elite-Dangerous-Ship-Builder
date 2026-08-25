@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { Convergence } from '../../../../domain/offence/convergence';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { engineeringSummary } from '../../../../application/outfitting/engineering-summary';

@@ -107,7 +107,7 @@ function applyFirstBlueprint(build: ShipLoadout, slotKey: string): boolean {
     if (grade === undefined) {
       return false;
     }
-    build.applyBlueprint(slotKey, blueprint.fdname, { grade, quality: 1 });
+    build.applyBlueprint(slotKey, blueprint.blueprintSymbol, { grade, quality: 1 });
     return true;
   } catch {
     return false;

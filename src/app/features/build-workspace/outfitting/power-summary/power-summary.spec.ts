@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -59,7 +60,7 @@ describe('PowerSummary', () => {
 
   it('draws the POWER line with the lit draw against the plant output', () => {
     const build = withinBudgetBuild();
-    const budget = build.powerBudget();
+    const budget = BuildMetrics.of(build).powerBudget();
     const element = render(build);
 
     const figures = element.querySelector('.rail-power__figures')?.textContent ?? '';
@@ -70,7 +71,7 @@ describe('PowerSummary', () => {
 
   it('names the unpowered remainder after the plant output, as the canvas does', () => {
     const build = shedBandBuild();
-    const budget = build.powerBudget();
+    const budget = BuildMetrics.of(build).powerBudget();
     const shed = budget.bands
       .filter((band) => !band.poweredDeployed)
       .reduce((total, band) => total + band.deployed, 0);
@@ -96,7 +97,7 @@ describe('PowerSummary', () => {
 
   it('draws the bar the canvas draws, over the whole demand', () => {
     const build = shedBandBuild();
-    const budget = build.powerBudget();
+    const budget = BuildMetrics.of(build).powerBudget();
     const element = render(build);
 
     // The artboard's `79%`, `21%` and `83.3%` are the same figures as the line
@@ -146,7 +147,9 @@ describe('PowerSummary', () => {
 
   it('states one sentence per shed group, naming it and its own draw', () => {
     const build = shedBandBuild();
-    const shed = build.powerBudget().bands.filter((band) => !band.poweredDeployed);
+    const shed = BuildMetrics.of(build)
+      .powerBudget()
+      .bands.filter((band) => !band.poweredDeployed);
     const element = render(build);
 
     const statements = [...element.querySelectorAll('.statement')];
@@ -162,14 +165,16 @@ describe('PowerSummary', () => {
 
   it('draws no sentence the canvas does not print in this block', () => {
     const build = sustainedOverheatBuild();
-    expect(build.heatMetrics()?.firingSustained.overheats).toBe(true);
+    expect(BuildMetrics.of(build).heatMetrics()?.firingSustained.overheats).toBe(true);
     const element = render(build);
 
     // A build that cooks itself under sustained fire says so in the heat
     // profile, which is the block that draws it. The rail's block holds the
     // unpowered sentence and nothing else, however hot the build gets.
     const statements = [...element.querySelectorAll('.statement')];
-    const shed = build.powerBudget().bands.filter((band) => !band.poweredDeployed);
+    const shed = BuildMetrics.of(build)
+      .powerBudget()
+      .bands.filter((band) => !band.poweredDeployed);
     expect(statements).toHaveLength(shed.length);
   });
 
@@ -192,10 +197,12 @@ describe('PowerSummary', () => {
     // The rail states what this build does, not what the dashboard is set to:
     // a group shed with the hardpoints out is shed whether or not a Commander
     // is currently reading the stowed figures.
-    const shed = build.powerBudget().bands.filter((band) => !band.poweredDeployed);
+    const shed = BuildMetrics.of(build)
+      .powerBudget()
+      .bands.filter((band) => !band.poweredDeployed);
     expect(element.querySelectorAll('.statement')).toHaveLength(shed.length);
     expect(element.querySelector('.rail-power__figures')?.textContent).toContain(
-      build.powerBudget().available.toFixed(2),
+      BuildMetrics.of(build).powerBudget().available.toFixed(2),
     );
   });
 

@@ -115,7 +115,7 @@ export function fixedRewardVariant(): PreEngineeredVariant {
   const variant = getPreEngineeredVariants(FIXED_REWARD_REGRESSION.symbol).find(
     (candidate) =>
       candidate.acquisition === FIXED_REWARD_REGRESSION.acquisition &&
-      candidate.blueprint === FIXED_REWARD_REGRESSION.blueprint,
+      candidate.blueprintSymbol === FIXED_REWARD_REGRESSION.blueprint,
   );
   if (variant === undefined) {
     throw new Error(

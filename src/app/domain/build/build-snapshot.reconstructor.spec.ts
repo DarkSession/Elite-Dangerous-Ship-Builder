@@ -35,7 +35,7 @@ describe('snapshot reconstruction', () => {
     loadout.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
       grade: 5,
       quality: 1,
-      experimental: 'special_fsd_heavy',
+      experimentalEffectSymbol: 'special_fsd_heavy',
     });
     loadout.setModuleEnabled('Radar', false);
     loadout.setModulePriority('Radar', 3);
@@ -47,7 +47,7 @@ describe('snapshot reconstruction', () => {
   });
 
   it('round-trips a pre-engineered article from its identity alone', () => {
-    const variant = PRE_ENGINEERED_MODULES.find((candidate) => candidate.experimental)!;
+    const variant = PRE_ENGINEERED_MODULES.find((candidate) => candidate.experimentalEffectSymbol)!;
     const loadout = ShipLoadout.default('Anaconda');
     const slot = loadout
       .slots('hardpoint')

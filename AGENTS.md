@@ -56,9 +56,13 @@ planning ship loadouts.
   Keyboard operation is out of scope by constitutional exclusion (principle V
   names the criteria), so the application never claims unqualified AA — state
   the exclusion wherever conformance is stated.
-- **Identities come from the package**: `symbol` for hulls and modules, `fdname`
-  for blueprints and experimental effects, and the game's own slot keys — never
-  positional indices.
+- **Identities come from the package**: `symbol` for hulls, modules, blueprints
+  and experimental effects, and the game's own slot keys — never positional
+  indices. Almanac 0.2.0 renamed the blueprint and effect identities from
+  `fdname` to `blueprintSymbol` / `experimentalEffectSymbol`; this repository's
+  own persisted formats — build snapshots and the build-link codec — keep saying
+  `fdname`, because renaming them would change bytes a Commander has already
+  saved.
 - **Never fabricate values.** Where the package reports a value as unavailable
   or a build as invalid or incomplete, surface that; do not substitute zero or
   an estimate.

@@ -5,7 +5,6 @@
       "appVersion": "0.1.0"
     },
     "data": {
-      "event": "Loadout",
       "Ship": "python",
       "ShipName": "Reference Build",
       "ShipIdent": "REF-001",
