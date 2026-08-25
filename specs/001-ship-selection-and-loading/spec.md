@@ -24,6 +24,9 @@ browser and share builds by URL. SLEF import and export are specified in
 - Q: What should happen when a Commander deletes the record the workspace is currently working in? →
   A: The workspace clears to its no-build state. The record is gone and so is the build in it. A
   deletion in another page keeps its existing behaviour.
+- Q: When expired records are swept, should the application tell the Commander afterwards that builds
+  were removed? → A: No. The remaining time on each entry is the notice, given while there is still
+  something to do about it; nothing is said after the fact.
 
 ## User Scenarios
 
@@ -85,10 +88,11 @@ browser and share builds by URL. SLEF import and export are specified in
   is available, creation MUST be unavailable; the application MUST NOT invent one.
 - **FR-008**: The active build MUST be recoverable from a stored record at all times, without being
   asked for and without a Commander action, and MUST be restored after reload. A build that has no
-  record yet MUST be autosaved to an unnamed record of its own from the moment it becomes active,
-  unless its modelled state is identical to an unnamed record already stored, in which case it MUST
-  take that record over rather than store a second copy of it. A build opened from an existing record
-  MUST be autosaved to an unnamed record of its own from its first modelled edit. Autosave MUST NEVER
+  record yet MUST be autosaved to an unnamed record of its own from the moment it becomes active. A
+  build opened from an existing record MUST be autosaved to an unnamed record of its own from its
+  first modelled edit. Wherever a record is taken for a build — at either of those two moments — an
+  unnamed record already holding identical modelled state MUST be taken over rather than a second
+  copy of it stored. Autosave MUST NEVER
   write to a named record. Creating, opening or loading another build MUST NOT overwrite or discard
   the record of the build before it. Records MUST use local identities independent of their display
   names.
@@ -142,6 +146,10 @@ browser and share builds by URL. SLEF import and export are specified in
   expire while that page holds it. There MUST be no limit on how many records may exist inside the
   seven days.
 
+  The sweep MUST NOT be announced after it has run. FR-010's remaining time on the entry is the
+  notice, given while there is still something a Commander can do about it; a message about builds
+  that are already gone offers nothing to act on and no way back.
+
   Expiry is not a storage bound and MUST NOT be presented as one: at the browser storage quota the
   Commander MUST still be able to choose records to discard while the active in-memory build remains
   usable.
@@ -193,7 +201,10 @@ browser and share builds by URL. SLEF import and export are specified in
 - A build replaced in the workspace is not gone: it is the record it was being autosaved to, and the
   library still lists it.
 - Creating the same stock hull twice, or opening one link twice, leaves one record rather than two:
-  an ingress identical to an unnamed record already stored takes that record over.
+  a build taking a record finds the unnamed record already holding that state and takes it over.
+  Editing two saved builds into the same first change behaves the same way.
+- Two records that already exist are never merged, however alike their builds later become. The
+  take-over happens only at the moment a record is taken for a build, never on a later edit.
 - Taking a record over is not modifying it, so it does not restart the seven days. Editing does. A
   Commander who remakes a build they made six days ago and changes nothing still loses it tomorrow,
   and the entry says so.

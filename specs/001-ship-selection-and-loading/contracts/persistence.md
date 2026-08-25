@@ -50,6 +50,11 @@ which autosave reaches a named record, which is why naming one is still a decisi
   it was opened from, so opening writes nothing at all; the **first modelled edit** forks a fresh
   unnamed record, carrying `sourceNamed` where the origin was named, and every autosave from then on
   goes there. The record that was opened is not written by autosave, then or ever.
+- Both of those moments — the mint at commit and the fork at first edit — first look for an unnamed
+  record already holding identical modelled state, and take that record over instead of writing a
+  second copy of it. The comparison is the serialized snapshot, the same value the baseline
+  fingerprint uses. Records that already exist are never merged by a later edit that happens to make
+  them alike.
 - Ordinary new tabs mint different records. A duplicated tab clones `sessionStorage` and so claims an
   ID that is already live; the BroadcastChannel handshake forks the later claimant onto a fresh
   unnamed ID, with its current build copied into it, before either page next autosaves (FR-012). Two
@@ -84,6 +89,8 @@ of twenty and the rule that only a Commander action removed a record):
   the listing, and leaves no partial record behind.
 - Taking a record over does not touch `modifiedAt` and so does not restart the seven days. Only a
   modelled edit does.
+- Nothing is written or announced when the sweep runs. The remaining time each entry carries is the
+  whole of the notice (FR-010, FR-013).
 - Naming a record ends its expiry outright. Named records are bounded by storage quota alone.
 - There is no count limit. Nothing refuses to store a record because many already exist, and no
   number evicts anything.
