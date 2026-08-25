@@ -1,4 +1,4 @@
-import { element, query, renderComponent, textOf } from '../ui-component.spec-helpers';
+import { element, query, renderComponent } from '../ui-component.spec-helpers';
 import { LegalExcerpt } from './legal-excerpt';
 
 /** A two-line excerpt with the punctuation a real notice carries. */
@@ -7,12 +7,7 @@ const TEXT = [
   'Elite Dangerous, with the permission of Frontier Developments plc.',
 ].join('\n');
 
-const INPUTS = {
-  sourceNotice: 'The notice below is reproduced from the repository LICENSE.',
-  languageNotice: 'It stays in its original English and is not translated.',
-  text: TEXT,
-  language: 'en',
-};
+const INPUTS = { text: TEXT, language: 'en' };
 
 describe('LegalExcerpt', () => {
   it('renders the text it was given, exactly', () => {
@@ -27,25 +22,20 @@ describe('LegalExcerpt', () => {
     expect(query(fixture, '.legal-excerpt__body').getAttribute('lang')).toBe('en');
   });
 
-  it('associates the source and the language notice with the region', () => {
-    const fixture = renderComponent(LegalExcerpt, INPUTS);
-    const body = query(fixture, '.legal-excerpt__body');
-    const ids = (body.getAttribute('aria-describedby') ?? '').split(' ');
+  it('carries the quotation and nothing else', () => {
+    // The source and language sentences an earlier revision drew above the
+    // quotation are withdrawn: the design reference draws neither, and the
+    // language is still declared where it is a fact about the text rather than
+    // a sentence about it.
+    const root = element(renderComponent(LegalExcerpt, INPUTS));
 
-    expect(ids.length).toBe(2);
-    const described = ids.map((id) => textOf(element(fixture).querySelector(`#${id}`)));
-    expect(described).toEqual([INPUTS.sourceNotice, INPUTS.languageNotice]);
-  });
-
-  it('keeps both notices visible, not only announced', () => {
-    const fixture = renderComponent(LegalExcerpt, INPUTS);
-    const notices = [...element(fixture).querySelectorAll('.legal-excerpt__notice')];
-
-    expect(notices.map((notice) => textOf(notice))).toEqual([
-      INPUTS.sourceNotice,
-      INPUTS.languageNotice,
-    ]);
-    expect(notices.every((notice) => notice.getAttribute('aria-hidden') === null)).toBe(true);
+    expect(root.querySelectorAll('.legal-excerpt__notice').length).toBe(0);
+    expect(root.querySelectorAll('p').length).toBe(0);
+    expect(
+      query(renderComponent(LegalExcerpt, INPUTS), '.legal-excerpt__body').getAttribute(
+        'aria-describedby',
+      ),
+    ).toBeNull();
   });
 
   it('renders markup in the source as text, never as markup', () => {

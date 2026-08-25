@@ -2,9 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { DocumentAdapter } from '../../platform/browser/document.adapter';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import englishMessages from '../../i18n/locales/en.json';
+import { HELP_TOPIC_IDS } from '../../domain/help/help-topic';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
+import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import { HelpDialogStore } from './help-dialog.store';
-import { HelpPresenter, describeBuild } from './help.presenter';
+import { HelpPresenter } from './help.presenter';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
@@ -44,15 +46,8 @@ describe('HelpPresenter', () => {
       view.sections.about,
       view.sections.faq,
       view.sections.licence,
-      view.licence.framing,
-      view.licence.sourceNotice,
-      view.licence.languageNotice,
-      view.licence.link.label,
-      view.licence.link.purpose,
-      view.licence.link.leavingWarning,
-      view.licence.link.networkWarning,
-      view.about.provenance.almanacRole,
-      view.about.provenance.frontierOwnership,
+      ...view.licence.index.map((entry) => entry.text),
+      ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
@@ -68,7 +63,14 @@ describe('HelpPresenter', () => {
     // model has no member that could describe not knowing one yet.
     const view = presenter().view();
 
-    expect(Object.keys(view).sort()).toEqual(['about', 'licence', 'purpose', 'sections', 'title']);
+    expect(Object.keys(view).sort()).toEqual([
+      'about',
+      'licence',
+      'purpose',
+      'sections',
+      'title',
+      'topics',
+    ]);
   });
 
   it('opens and closes through the store it shares with the frame', () => {
@@ -85,19 +87,11 @@ describe('HelpPresenter', () => {
   });
 
   describe('the identity projection', () => {
-    /** The one fact whose value is a state rather than a version. */
-    function buildFact(view = presenter().view()) {
-      const fact = view.about.facts.find((candidate) => candidate.id === 'build');
-      if (fact === undefined) {
-        throw new Error('The ABOUT section published no build fact.');
-      }
-      return fact;
-    }
-
     it('reads the two versions off the manifest, as two separate facts', () => {
       const facts = presenter().view().about.facts;
       const byId = new Map(facts.map((fact) => [fact.id, fact]));
 
+      expect(facts.length).toBe(2);
       expect(byId.get('application')?.value).toBe(HELP_MANIFEST.build.applicationVersion);
       expect(byId.get('almanac')?.value).toBe(HELP_MANIFEST.almanac.version);
       // Separate facts, not one line: each carries its own term, and the two
@@ -107,65 +101,92 @@ describe('HelpPresenter', () => {
       expect(new Set(facts.map((fact) => fact.term)).size).toBe(facts.length);
     });
 
-    it('states the build as a fact of its own, in words', () => {
-      const fact = buildFact();
+    it('publishes no release state, which the reference draws nowhere', () => {
+      // The generator still classifies the build — that classification gates
+      // `SHIP_BUILDER_RELEASE_TAG` and fails a mismatched one — but FR-007's
+      // display half is withdrawn, so nothing in the view says which it is.
+      const view = presenter().view();
+      const everything = [
+        view.purpose,
+        ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
+      ].join(' ');
 
-      expect(fact.term.trim()).not.toBe('');
-      expect(fact.value.trim()).not.toBe('');
+      expect(view.about.facts.some((fact) => fact.id === 'build')).toBe(false);
+      expect(everything).not.toMatch(/non-release|release/i);
     });
 
-    it('always carries the build identifier when nobody released this build', () => {
-      const build = HELP_MANIFEST.build;
-      if (build.kind !== 'nonRelease') {
-        throw new Error(
-          'This repository produces non-release builds; a release manifest here means the ' +
-            'classification changed and this expectation needs revisiting.',
+    it('states nothing about a live game or a live catalogue', () => {
+      const view = presenter().view();
+      const everything = [
+        view.purpose,
+        ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
+        ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
+      ].join(' ');
+
+      expect(everything).not.toMatch(/live game|live catalogue|up to date|latest version/i);
+    });
+  });
+
+  describe('the topic projection', () => {
+    it('publishes all seven topics, once each, in the declared order', () => {
+      const topics = presenter().view().topics;
+
+      expect(topics.map((topic) => topic.id)).toEqual([...HELP_TOPIC_IDS]);
+      expect(new Set(topics.map((topic) => topic.id)).size).toBe(HELP_TOPIC_IDS.length);
+    });
+
+    it('resolves every question and answer out of the active catalogue', () => {
+      const topics = presenter().view().topics;
+
+      for (const [index, topic] of topics.entries()) {
+        const generated = HELP_TOPICS[index];
+
+        expect(topic.question).toBe(
+          englishMessages[generated?.questionKey as keyof typeof englishMessages],
+        );
+        expect(topic.answer).toBe(
+          englishMessages[generated?.answerKey as keyof typeof englishMessages],
         );
       }
-
-      expect(buildFact().value).toContain(build.buildId);
-      expect(buildFact().value).toContain(
-        englishMessages['help.about.build.nonRelease'].slice(0, 11),
-      );
     });
 
-    it('says Release for a build the generator classified as one, and only then', () => {
-      // Both branches, over values rather than over the one manifest this
-      // checkout produces. The release wording is the branch nobody sees until
-      // a release is cut, which is exactly why it is asserted here rather than
-      // left to the state the repository happens to be in.
-      const message = (key: string, params?: Record<string, string>) =>
-        Object.entries(params ?? {}).reduce(
-          (text, [name, value]) => text.replaceAll(`{{${name}}}`, value),
-          englishMessages[key as keyof typeof englishMessages],
-        );
-
-      const released = describeBuild({ kind: 'release', applicationVersion: '1.4.0' }, message);
-      const unreleased = describeBuild(
-        { kind: 'nonRelease', applicationVersion: '1.4.0', buildId: 'abc1234' },
-        message,
-      );
-
-      expect(released).toBe(englishMessages['help.about.build.release']);
-      expect(unreleased).not.toBe(released);
-      expect(unreleased).toContain('abc1234');
-      // The identifier is substituted, not left as the placeholder it came in
-      // as: a reader seeing `{{buildId}}` has been told nothing.
-      expect(unreleased).not.toContain('{{');
-      // And the released wording carries no identifier at all — there is
-      // nothing to disambiguate about a build anybody can go and get.
-      expect(released).not.toContain('abc1234');
+    it('draws no raw key, blank value, unresolved variable or markup', () => {
+      for (const topic of presenter().view().topics) {
+        for (const text of [topic.question, topic.answer]) {
+          expect(text.trim()).not.toBe('');
+          expect(text).not.toMatch(/^help\./);
+          expect(text).not.toContain('{{');
+          expect(text).not.toMatch(/<[a-z/]/i);
+        }
+      }
     });
 
-    it('bounds provenance to what the package does and who owns what it describes', () => {
-      const provenance = presenter().view().about.provenance;
+    it('carries neither the import promise nor the retained-partial-roll claim', () => {
+      // The two reference answers this application cannot make. The generator
+      // refuses a catalogue that reintroduces the second; the first is a topic
+      // feature 004 owns and is simply not one of the seven.
+      const answers = presenter()
+        .view()
+        .topics.map((topic) => topic.answer)
+        .join(' ');
 
-      expect(provenance.almanacRole).toBe(englishMessages['help.about.provenance.almanac']);
-      expect(provenance.frontierOwnership).toBe(englishMessages['help.about.provenance.frontier']);
-      // No currency claim, in either sentence: this application ships a package
-      // and knows only what that package was when it was bundled.
-      for (const sentence of [provenance.almanacRole, provenance.frontierOwnership]) {
-        expect(sentence).not.toMatch(/live|current|up to date|latest|as of/i);
+      expect(answers).not.toMatch(
+        /retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i,
+      );
+      expect(answers).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
+    });
+
+    it('publishes no governing reference to the browser', () => {
+      // The requirement and principle ids each answer is justified by are
+      // review evidence. A specification index has no business in a product
+      // download, and the generated module is where that is enforced.
+      const topics = presenter().view().topics;
+
+      for (const topic of topics) {
+        expect(Object.keys(topic).sort()).toEqual(['answer', 'id', 'question']);
+      }
+      for (const generated of HELP_TOPICS) {
+        expect(Object.keys(generated).sort()).toEqual(['answerKey', 'id', 'questionKey']);
       }
     });
   });
@@ -178,21 +199,33 @@ describe('HelpPresenter', () => {
       expect(licence.excerptLanguage).toBe(HELP_MANIFEST.disclaimer.language);
     });
 
-    it('takes the destination from the manifest rather than assembling one', () => {
+    it('summarises what covers what in the reference’s three lines', () => {
+      const index = presenter().view().licence.index;
+
+      expect(index.map((entry) => entry.id)).toEqual(['application', 'gameData', 'typefaces']);
+      expect(index.map((entry) => entry.text)).toEqual([
+        englishMessages['help.licence.index.application'],
+        englishMessages['help.licence.index.gameData'],
+        englishMessages['help.licence.index.typefaces'],
+      ]);
+    });
+
+    it('offers no destination out of the application', () => {
+      // The reference draws no link in the modal. FR-003's GitHub action is
+      // withdrawn with the rest of the framing this feature had added around
+      // the reference's own licence block.
       const licence = presenter().view().licence;
 
-      expect(licence.link.href).toBe(HELP_MANIFEST.destinations.repositoryLicense.url);
-      expect(new URL(licence.link.href).search).toBe('');
-      expect(new URL(licence.link.href).hash).toBe('');
+      expect(Object.keys(licence).sort()).toEqual(['excerpt', 'excerptLanguage', 'index']);
+      expect(JSON.stringify(licence.index)).not.toMatch(/https?:/);
     });
 
     it('keeps the excerpt out of the catalogue that would translate it', () => {
       const licence = presenter().view().licence;
 
-      // The framing is application-owned text and is resolved; the excerpt is
+      // The summary is application-owned text and is resolved; the excerpt is
       // Frontier's wording and is carried. A catalogue entry holding it would
       // be a translated legal notice waiting to happen.
-      expect(licence.framing).not.toMatch(/^help\./);
       expect(Object.values(englishMessages)).not.toContain(licence.excerpt);
     });
   });

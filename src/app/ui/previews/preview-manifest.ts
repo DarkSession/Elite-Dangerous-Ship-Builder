@@ -188,7 +188,7 @@ export function resetPreviewManifest(): void {
 // reports.
 // ---------------------------------------------------------------------------
 
-import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
+import { BUNDLED_ENGLISH, type MessageKey } from '../../i18n/locale-registry';
 import { AnnouncementOutlet } from '../announcements/announcement-outlet';
 import { ActionButton } from '../components/action/action-button';
 import { ResponsiveCatalogueView } from '../components/catalogue-view/responsive-catalogue-view';
@@ -254,9 +254,9 @@ import { UnavailableFact } from '../outfitting/unavailable-fact';
 import { DiagnosticList } from '../technical/diagnostic-list';
 import { HelpDialog } from '../../features/help/help-dialog.component';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
+import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import { LegalExcerpt } from '../components/legal-excerpt/legal-excerpt';
 import { VersionFacts } from '../components/version-facts/version-facts';
-import { WarnedExternalLink } from '../components/warned-external-link/warned-external-link';
 import { ExportBuildLayer } from '../../features/slef/export-build-layer/export-build-layer';
 import { ImportBuildLayer } from '../../features/slef/import-build-layer/import-build-layer';
 
@@ -4041,19 +4041,13 @@ registerPreview({
  * at every width and in every variant is the notice a Commander actually meets.
  */
 const HELP_LICENCE = {
-  framing:
-    "Ship Builder's own code is under the MIT licence. That licence does not cover the Elite Dangerous game data and imagery shown here, nor the third-party data bundled with the Almanac they are read from.",
-  sourceNotice: 'The notice below is reproduced from the repository LICENSE.',
-  languageNotice: 'It stays in its original English and is not translated.',
+  index: [
+    { id: 'application', text: BUNDLED_ENGLISH['help.licence.index.application'] },
+    { id: 'gameData', text: BUNDLED_ENGLISH['help.licence.index.gameData'] },
+    { id: 'typefaces', text: BUNDLED_ENGLISH['help.licence.index.typefaces'] },
+  ],
   excerpt: HELP_MANIFEST.disclaimer.exactText,
   excerptLanguage: HELP_MANIFEST.disclaimer.language,
-  link: {
-    label: 'Read LICENSE on GitHub',
-    href: HELP_MANIFEST.destinations.repositoryLicense.url,
-    purpose: 'Every remaining licence and third-party term is in the repository LICENSE.',
-    leavingWarning: 'Opening it leaves Ship Builder.',
-    networkWarning: 'It may need a network connection.',
-  },
 };
 
 /**
@@ -4064,40 +4058,44 @@ const HELP_LICENCE = {
  * and a catalogue that reproduced those numbers would be previewing a claim
  * nothing in the repository can make.
  *
- * The build fact is therefore whatever this build is. Every build the
- * repository produces today is a non-release with an identifier, so that is
- * what the catalogue draws; the release wording is one word in the same shape
- * and is asserted where the substitution is made, in the presenter's spec.
+ * Two facts, because the reference draws two. The build-state fact an earlier
+ * revision drew here is withdrawn with FR-007's display half: the generator
+ * still classifies release evidence, and the modal still says nothing about it.
  */
 const HELP_ABOUT_FACTS = [
-  { id: 'application', term: 'App version', value: HELP_MANIFEST.build.applicationVersion },
   {
-    id: 'build',
-    term: 'Build',
-    value:
-      HELP_MANIFEST.build.kind === 'release'
-        ? 'Release'
-        : `Non-release · ${HELP_MANIFEST.build.buildId}`,
+    id: 'application',
+    term: BUNDLED_ENGLISH['help.about.version.application'],
+    value: HELP_MANIFEST.build.applicationVersion,
   },
-  { id: 'almanac', term: 'Almanac version', value: HELP_MANIFEST.almanac.version },
+  {
+    id: 'almanac',
+    term: BUNDLED_ENGLISH['help.about.version.almanac'],
+    value: HELP_MANIFEST.almanac.version,
+  },
 ];
 
-const HELP_ABOUT = {
-  facts: HELP_ABOUT_FACTS,
-  provenance: {
-    almanacRole:
-      'The bundled Almanac supplies the catalogue data, the validation and the calculations shown here.',
-    frontierOwnership:
-      'Frontier Developments plc owns the Elite Dangerous game data and imagery it describes.',
-  },
-};
+const HELP_ABOUT = { facts: HELP_ABOUT_FACTS };
+
+/**
+ * All seven questions, read from the generated catalogue and the bundled
+ * English messages rather than typed in here.
+ *
+ * A catalogue page that listed its own copy of the questions would keep
+ * rendering seven of them on the day the modal started rendering six.
+ */
+const HELP_TOPIC_VIEWS = HELP_TOPICS.map((topic) => ({
+  id: topic.id,
+  question: BUNDLED_ENGLISH[topic.questionKey as MessageKey],
+  answer: BUNDLED_ENGLISH[topic.answerKey as MessageKey],
+}));
 
 const HELP_VIEW = {
-  title: 'Help · About',
-  purpose:
-    'Ship Builder is a private outfitting bench for Elite Dangerous that works offline, entirely in this browser.',
+  title: BUNDLED_ENGLISH['help.title'],
+  purpose: BUNDLED_ENGLISH['help.purpose'],
   sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
   about: HELP_ABOUT,
+  topics: HELP_TOPIC_VIEWS,
   licence: HELP_LICENCE,
 };
 
@@ -4114,7 +4112,6 @@ registerPreview({
       relationships: [],
       textEquivalents: [
         'which application version this is',
-        'whether anybody released this build, and which build it is when nobody did',
         'which bundled Almanac version it reads',
       ],
     },
@@ -4127,9 +4124,7 @@ registerPreview({
       [
         'every value is announced with the term that says what it is',
         'the application and the bundled Almanac are separate facts, never one line',
-        'release state is a word in a definition, not a colour, a position or a weight',
-        'a non-release build shows its identifier beside the state, never on its own',
-        'long versions and build identifiers wrap; the row never scrolls sideways',
+        'long version identifiers wrap; the row never scrolls sideways',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
     ),
@@ -4159,28 +4154,19 @@ registerPreview({
       role: 'none',
       visibleNameMatchesAccessibleName: false,
       exposedStates: [],
-      relationships: ['description'],
-      textEquivalents: [
-        'where the excerpt was taken from',
-        'that the excerpt stays in its original language',
-      ],
+      relationships: [],
+      textEquivalents: ['the language the quoted notice is written in'],
     },
     ['default'],
   ),
   states: [
     state(
       'default',
-      {
-        sourceNotice: HELP_LICENCE.sourceNotice,
-        languageNotice: HELP_LICENCE.languageNotice,
-        text: HELP_LICENCE.excerpt,
-        language: HELP_LICENCE.excerptLanguage,
-      },
+      { text: HELP_LICENCE.excerpt, language: HELP_LICENCE.excerptLanguage },
       [
         'the excerpt is the exact text of the build, rendered as text and never as markup',
         'the region is marked in the language the notice was written in, whatever the interface is',
-        'the source and language notices are visible and associated with the region',
-        'expanded text and an RTL interface reflow the framing around an unchanged English region',
+        'an RTL interface reflows the section around an unchanged left-to-right English region',
         'the notice wraps within the measure; it never needs to be dragged sideways',
       ],
       ['normal', 'expanded-copy', 'rtl'],
@@ -4195,52 +4181,6 @@ registerPreview({
       'A missing or drifted excerpt fails generation rather than rendering an error.',
     ),
     notApplicable('disabled', 'A quoted document has no disabled state.'),
-  ],
-});
-
-registerPreview({
-  componentId: 'warned-external-link',
-  group: 'Actions',
-  component: WarnedExternalLink,
-  contract: contract(
-    'warned-external-link',
-    {
-      role: 'link',
-      visibleNameMatchesAccessibleName: true,
-      exposedStates: [],
-      relationships: ['description'],
-      textEquivalents: [
-        'that the destination is outside the application',
-        'that following it may need a network connection',
-        'what the destination is for',
-      ],
-    },
-    ['default'],
-  ),
-  states: [
-    state(
-      'default',
-      {
-        label: 'Read the full licence on GitHub',
-        href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
-        purpose: 'It carries the remaining licence and third-party terms.',
-        leavingWarning: 'It leaves Ship Builder.',
-        networkWarning: 'It may need a network connection.',
-      },
-      [
-        'the three warnings are visible text and are the link’s description',
-        'the link is inert until it is activated: nothing is fetched to draw it',
-        'the target meets the shared target-size baseline at every width',
-      ],
-      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
-    ),
-    notApplicable('empty', 'The link is only rendered where there is a destination to offer.'),
-    notApplicable('loading', 'Nothing is fetched: the destination is a compiled-in constant.'),
-    notApplicable(
-      'error',
-      'Following the link leaves the application; a failure there belongs to the browser.',
-    ),
-    notApplicable('disabled', 'A destination this application cannot offer is not rendered.'),
   ],
 });
 
@@ -4274,11 +4214,12 @@ registerPreview({
         'wide viewports centre a bounded dialog; narrow ones raise a full-width sheet',
         'a short viewport and 400% zoom take the full-height treatment rather than clipping',
         'reduced motion makes open and close immediate without removing content',
-        'ABOUT names the application version, the build and the bundled Almanac as separate facts',
-        'a non-release build states so in words and carries its build identifier',
-        'the provenance sentences bound what the versions are; neither claims live currency',
-        'LICENCE carries the exact disclaimer once, framed and marked as English',
-        'the warned repository-LICENSE action is the modal’s only link, with all three warnings',
+        'ABOUT names the application version and the bundled Almanac as separate facts',
+        'FAQ answers all seven questions, once each, in the order they are declared',
+        'each question is a heading over its own answer, never one run of prose',
+        'LICENCE opens with the three-line summary of what covers what',
+        'LICENCE then carries the exact Frontier notice once, marked as English',
+        'the modal offers no link out of the application',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
       // Isolated: an open modal makes everything behind it inert, which is

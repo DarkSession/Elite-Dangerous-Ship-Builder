@@ -520,6 +520,125 @@ test.describe('the compact route the reference draws', () => {
   });
 });
 
+/**
+ * The seven questions, and the two the reference asks that this cannot answer.
+ *
+ * The identities and their message keys come from the generated catalogue, so
+ * a topic renamed in the definitions is a topic this suite starts asserting
+ * under its new name rather than one it silently stops checking.
+ */
+const HELP_TOPIC_KEYS = [
+  'buildLinkPrivacy',
+  'accountsUploadsTelemetry',
+  'browserPersistence',
+  'offlineAssets',
+  'completedEngineeringGrades',
+  'hullFactsAndBuildResults',
+  'almanacOwnership',
+] as const;
+
+const HELP_TOPIC_TEXT = HELP_TOPIC_KEYS.map((id) => ({
+  id,
+  question: englishMessages[`help.topic.${id}.question` as keyof typeof englishMessages],
+  answer: englishMessages[`help.topic.${id}.answer` as keyof typeof englishMessages],
+}));
+
+/** Every question and answer the FAQ section drew, in reading order. */
+async function renderedTopics(page: Page): Promise<[string, string][]> {
+  return helpModal(page)
+    .locator('.help-dialog__topic')
+    .evaluateAll((topics) =>
+      topics.map((topic) => [
+        (topic.querySelector('.help-dialog__question')?.textContent ?? '').trim(),
+        (topic.querySelector('.help-dialog__answer')?.textContent ?? '').trim(),
+      ]),
+    ) as Promise<[string, string][]>;
+}
+
+test.describe('the questions the modal answers', () => {
+  test('answers all seven, once each, in the declared order', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    expect(await renderedTopics(page)).toEqual(
+      HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
+    );
+  });
+
+  test('gives every question its own heading over its own answer', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const shape = await helpModal(page)
+      .locator('.help-dialog__topic')
+      .evaluateAll((topics) =>
+        topics.map((topic) => ({
+          heading: topic.querySelector('.help-dialog__question')?.tagName.toLowerCase() ?? '',
+          answers: topic.querySelectorAll('.help-dialog__answer').length,
+        })),
+      );
+
+    expect(shape.length).toBe(HELP_TOPIC_TEXT.length);
+    for (const topic of shape) {
+      expect(topic.heading).toBe('h4');
+      expect(topic.answers).toBe(1);
+    }
+  });
+
+  test('draws the same seven from the compact action layer', async ({ page }) => {
+    await withStockBuild(page);
+
+    const inline = page.getByRole('button', { name: HELP_ACTION });
+    if ((await inline.count()) === 0) {
+      await openActionLayer(page);
+    }
+    await page.getByRole('button', { name: HELP_ACTION }).first().click();
+    await expect(helpModal(page)).toBeVisible();
+
+    expect(await renderedTopics(page)).toEqual(
+      HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
+    );
+  });
+
+  test('carries no raw key, blank answer, unresolved variable or markup', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    for (const [question, answer] of await renderedTopics(page)) {
+      for (const text of [question, answer]) {
+        expect(text.length).toBeGreaterThan(0);
+        expect(text).not.toMatch(/^help\./);
+        expect(text).not.toContain('{{');
+        expect(text).not.toMatch(/<[a-z/]/i);
+      }
+    }
+  });
+
+  test('makes neither reference claim this application cannot support', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+    const text = (await helpModal(page).textContent()) ?? '';
+
+    // The reference FAQ says an imported module keeps its real roll, which
+    // contradicts feature 002 FR-013 and constitution IV, and promises an
+    // import behaviour feature 004 owns. Neither is a topic here.
+    expect(text).not.toMatch(/retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i);
+    expect(text).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
+  });
+
+  test('nests the questions under the FAQ heading rather than beside it', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const faq = helpModal(page).locator('.help-dialog__section').nth(1);
+
+    await expect(faq.locator('.help-dialog__heading')).toHaveText(
+      new RegExp(englishMessages['help.section.faq'], 'i'),
+    );
+    await expect(faq.locator('.help-dialog__topic')).toHaveCount(HELP_TOPIC_TEXT.length);
+  });
+});
+
 test.describe('the one legal body the modal embeds', () => {
   /**
    * A fresh extraction from the file itself, by the generator's own rules.
@@ -562,16 +681,17 @@ test.describe('the one legal body the modal embeds', () => {
     await expect(excerpt).toHaveAttribute('lang', 'en');
   });
 
-  test('frames the excerpt in the reader’s language and says it is not translated', async ({
-    page,
-  }) => {
+  test('opens the section with the reference’s three-line summary', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const modal = helpModal(page);
+    const lines = helpModal(page).locator('.help-dialog__licence-line');
 
-    await expect(modal).toContainText(englishMessages['help.licence.framing']);
-    await expect(modal).toContainText(englishMessages['help.licence.source']);
-    await expect(modal).toContainText(englishMessages['help.licence.language']);
+    await expect(lines).toHaveCount(3);
+    await expect(lines).toHaveText([
+      new RegExp(englishMessages['help.licence.index.application'], 'i'),
+      new RegExp(englishMessages['help.licence.index.gameData'], 'i'),
+      new RegExp(englishMessages['help.licence.index.typefaces'], 'i'),
+    ]);
   });
 
   test('embeds one legal body and no other document', async ({ page }) => {
@@ -609,12 +729,8 @@ test.describe('the one legal body the modal embeds', () => {
   });
 });
 
-test.describe('the modal’s one way out of the application', () => {
-  /** The exact destination the generated manifest carries. */
-  const LICENCE_URL =
-    'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE';
-
-  test('asks for nothing and opens nothing until it is activated', async ({ page, context }) => {
+test.describe('the modal offers no way out of the application', () => {
+  test('draws no link at all, and asks for nothing to draw itself', async ({ page, context }) => {
     await page.goto('/build');
     await page.waitForLoadState('networkidle');
     await settled(page);
@@ -625,54 +741,32 @@ test.describe('the modal’s one way out of the application', () => {
     context.on('page', (opened) => popups.push(opened));
 
     await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-    await expect(link).toHaveCount(1);
-    await expect(link).toBeVisible();
 
+    // The reference draws no control here, and neither does this. The
+    // remaining licence and third-party terms live in the repository
+    // `LICENSE`, which a Commander reaches from the repository.
+    await expect(helpModal(page).getByRole('link')).toHaveCount(0);
     expect(outbound.filter((url) => url.includes('github'))).toEqual([]);
     expect(popups).toEqual([]);
-    // Nothing measures or warms the destination either: no preconnect, no
-    // prefetch, no ping.
+    // Nothing measures or warms a destination either: no preconnect, no
+    // prefetch.
     expect(await page.locator('link[rel="preconnect"], link[rel="prefetch"]').count()).toBe(0);
-    expect(await link.getAttribute('ping')).toBeNull();
   });
 
-  test('carries the audited destination, and nothing about this session', async ({ page }) => {
+  test('carries no repository URL anywhere in its rendered text', async ({ page }) => {
     await withStockBuild(page);
     const fragment = new URL(await settled(page)).hash;
     expect(fragment.length).toBeGreaterThan(0);
 
     await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-    const href = (await link.getAttribute('href')) ?? '';
+    const text = (await helpModal(page).textContent()) ?? '';
 
-    expect(href).toBe(LICENCE_URL);
-    expect(await link.getAttribute('rel')).toBe('noreferrer noopener');
-
-    const destination = new URL(href);
-    expect(destination.search).toBe('');
-    expect(destination.hash).toBe('');
-    // Nothing about the open build, the route, the language or this browser's
-    // stored records rides out on it.
-    expect(href).not.toContain(fragment.slice(1));
-    expect(href).not.toContain('Anaconda');
-    expect(href).not.toContain('edsb:');
-    expect(href.toLowerCase()).not.toContain('locale');
-  });
-
-  test('says where it goes, that it leaves, and that it may need a network', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-
-    const describedBy = await link.getAttribute('aria-describedby');
-    expect(describedBy).not.toBeNull();
-    const description = helpModal(page).locator(`#${describedBy}`);
-
-    await expect(description).toBeVisible();
-    await expect(description).toContainText(englishMessages['help.licence.link.purpose']);
-    await expect(description).toContainText(englishMessages['help.external.leaving']);
-    await expect(description).toContainText(englishMessages['help.external.network']);
+    expect(text).not.toContain('https://');
+    expect(text).not.toContain('github.com');
+    // And nothing about the open build, the route or this browser's stored
+    // records is drawn either.
+    expect(text).not.toContain(fragment.slice(1));
+    expect(text).not.toContain('edsb:');
   });
 });
 
@@ -728,19 +822,14 @@ test.describe('which artifact a Commander is looking at', () => {
     );
   });
 
-  test('says this build is not a release, and which build it is', async ({ page }) => {
+  test('says nothing about release state, which the reference draws nowhere', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const facts = new Map(await identityFacts(page));
-    const build = facts.get(englishMessages['help.about.build']) ?? '';
 
-    // No workflow declares a release, so every build this repository produces
-    // is a non-release carrying its own identifier. The wording is the
-    // catalogue's, minus the identifier it interpolates.
-    const [state] = englishMessages['help.about.build.nonRelease'].split('{{');
-    expect(build).toContain(state.trim());
-    expect(build.replace(state, '').trim().length).toBeGreaterThan(0);
-    expect(build).not.toBe(englishMessages['help.about.build.release']);
+    // The generator still classifies the build — a mismatched
+    // `SHIP_BUILDER_RELEASE_TAG` fails generation — but FR-007's display half
+    // is withdrawn with the rest of what the reference does not draw.
+    await expect(helpModal(page).getByText(/non-release|release/i)).toHaveCount(0);
   });
 
   test('reads each identity as a term with its own value', async ({ page }) => {
@@ -749,8 +838,8 @@ test.describe('which artifact a Commander is looking at', () => {
     const facts = await identityFacts(page);
     const terms = facts.map(([term]) => term);
 
-    expect(facts.length).toBe(3);
-    expect(new Set(terms).size).toBe(3);
+    expect(facts.length).toBe(2);
+    expect(new Set(terms).size).toBe(2);
     for (const [term, value] of facts) {
       expect(term.length).toBeGreaterThan(0);
       expect(value.length).toBeGreaterThan(0);
@@ -760,12 +849,9 @@ test.describe('which artifact a Commander is looking at', () => {
   test('claims nothing about a live game or a live catalogue', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const modal = helpModal(page);
 
-    await expect(modal).toContainText(englishMessages['help.about.provenance.almanac']);
-    await expect(modal).toContainText(englishMessages['help.about.provenance.frontier']);
     await expect(
-      modal.getByText(/live game|live catalogue|up to date|latest version/i),
+      helpModal(page).getByText(/live game|live catalogue|up to date|latest version/i),
     ).toHaveCount(0);
   });
 
