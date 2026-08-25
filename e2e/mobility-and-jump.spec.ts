@@ -648,6 +648,19 @@ test.describe('Drives & Mass', () => {
     ).toBe(wide.facts);
 
     await expectNoDocumentOverflow(page);
+
+    // The arrangement is swept from the top of the page.
+    //
+    // Resizing keeps the scroll offset the tablet layout was left at, and the
+    // command bar is sticky: whichever row that offset happens to park behind
+    // the bar is read as an obscured target by the geometry rules. Which row
+    // that is says nothing about the stacked arrangement — it moves with every
+    // change to any height above it, and it is a different row in each of the
+    // five profiles this test runs in — so the state named here is scanned
+    // where a Commander who reached this width meets it, at its top.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await settled(page);
+
     await sweepOutfittingState(page, testInfo, 'drives and mass, stacked');
   });
 

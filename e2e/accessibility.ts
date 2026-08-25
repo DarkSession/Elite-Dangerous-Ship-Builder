@@ -61,6 +61,13 @@ const SWEEP_BUDGET_MS = 15_000;
  *
  * `label` names the state in every failure message, because "axe violations"
  * with no state attached sends whoever reads it looking through ten of them.
+ *
+ * The state includes where the page stands. Two of the rules scanned here are
+ * geometric — a target's size and its distance from its neighbours — and both
+ * are read against the viewport, so a control parked behind the sticky command
+ * bar is an obscured target for as long as the page is left at that offset. A
+ * caller that has scrolled the document, or resized it after scrolling, is
+ * therefore choosing the state it sweeps and should say where it stands.
  */
 export async function sweepOutfittingState(
   page: Page,

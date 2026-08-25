@@ -18,7 +18,7 @@
   // clips what overflows it, so a region that bounded itself any more loosely
   // would put its last rows and its fit control inside a box that shows
   // neither of them and scrolls to neither.
-  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height));
 }
 
 // A viewport this short cannot divide into a scroller and a foot and still show

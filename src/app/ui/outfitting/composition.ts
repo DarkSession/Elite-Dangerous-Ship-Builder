@@ -10,6 +10,15 @@ import { SHORT_VIEWPORT as SHORT_VIEWPORT_QUERY } from '../short-viewport';
 export type OutfittingComposition = 'wide' | 'two-pane' | 'compact';
 
 /**
+ * What a candidate row needs: its name, class, rating, mount and a 44px control.
+ *
+ * Exported because the chooser's own manifest threshold is built from it — a
+ * rail beside a pane is this minimum plus the canvas's fixed rail — and the two
+ * decisions should not be able to drift apart (`manifest.ts`).
+ */
+export const BENCH_CONTENT_MINIMUM_REM = 22.5;
+
+/**
  * The declared content minimums, in rem.
  *
  * These are the sizes recorded in the responsive-composition document, and they
@@ -35,7 +44,7 @@ const MINIMUMS = {
    */
   ledger: 24.5,
   /** A candidate row's name, class, rating, mount and a 44px fit control. */
-  bench: 22.5,
+  bench: BENCH_CONTENT_MINIMUM_REM,
   /** One validation or cost line with its number and unit, on two lines. */
   rail: 17.5,
 } as const;

@@ -55,6 +55,29 @@ draws as one continuous surface. The seam between them is a single hairline, dra
 — the bench drops its own leading edge so the two do not stack into a two-pixel rule. The row gap
 stays: it is what stands the notices above off the regions below them.
 
+**Ruled 2026-08-25 — the two seams run the whole way down.** Canvas 1c draws the workspace as one
+grid row, `392px 1fr 306px` over a `min-height: 880px`, whose three columns stretch to it: the
+ledger's `border-right` and the status rail's `border-left` reach the foot of the screen whatever
+either column holds. The build did not. The status rail was sized by its content, so on a build with
+little to report its seam stopped less than half the way down while the ledger's ran on; and both
+columns subtracted `2 x --edsb-space-region` from the viewport, which was the page inset the
+application frame carried until wave 9 removed it, leaving the pair 36px short of the foot with
+nothing to clear. Both are now the full height the bar leaves, and the status rail takes a definite
+height rather than a cap so its seam is drawn whether or not the rail has that much to say
+(Commander request 2026-08-25).
+
+**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
+at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
+does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and
+at any width where the bar wraps it is taller again. Subtracting the declared figure left the columns
+past the foot of the screen by the difference, and freezing the ledger at it put the category strip
+_behind_ the bar at tablet width — 62px of it, at 834px, once the page was scrolled. The frame
+already measures its own bar to decide whether to release it; it now republishes that reading as the
+token on its own host, so every region that clears the bar clears the bar that is there
+(`app-frame.ts`, `sticky-banner.ts`; token layer, `edsb-app-frame`). This is feature 011's shell, and
+the reading is shared: the change is recorded here because this screen is where the declared figure
+stopped being true.
+
 **Ruled 2026-08-22 (wave 9).** The **category strip** is drawn the way canvas 1c draws it and no
 other way: `display: flex; gap: 1px; background: var(--amber-a14); border-bottom: 1px solid
 var(--amber-a18)`. The amber ground showing through the one-pixel gaps is the strip's only rule —
