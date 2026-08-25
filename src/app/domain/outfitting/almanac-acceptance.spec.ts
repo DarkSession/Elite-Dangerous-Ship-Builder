@@ -22,6 +22,7 @@ import {
   UNUSABLE_FIXED_MOUNT,
   assertLargestChoiceSet,
   defaultBuild,
+  finalArticlePartialQuality,
   fixedRewardBuild,
   fixedRewardVariant,
   routeDistinctVariants,
@@ -224,6 +225,29 @@ describe('installed Almanac acceptance', () => {
       // quality: the package treats "no quality" as unsupported, which would
       // refuse a build that has nothing wrong with it.
       expect(absent.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unsupported');
+    });
+
+    it('identifies a final article and declines to complete its baked grade', () => {
+      // The promise the ingress guard is built on. A producer states the recipe
+      // a pre-engineered Guardian weapon was built with and writes `Quality: 0`
+      // beside it, because there was never a roll. The package recognises the
+      // article, applies its fixed modifiers and locks it — so `finalArticle`
+      // is the right answer to a question the application must not ask, not a
+      // reason to refuse the build.
+      const { event, slot, symbol, variant } = finalArticlePartialQuality();
+      const build = ShipLoadout.fromLoadout(event);
+
+      const fitted = build.fittedModuleAt(slot);
+      expect(fitted?.symbol).toBe(symbol);
+      expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
+      expect(fitted?.preEngineeredVariant?.blueprint).toBe(variant.blueprint);
+
+      const result = build.completeEngineeringGrade(slot);
+      expect(result.kind).toBe('unsupported');
+      expect(result.kind === 'unsupported' ? result.code : null).toBe('finalArticle');
+
+      // Declining changed nothing: the article is still the article.
+      expect(build.fittedModuleAt(slot)?.preEngineeredVariant?.engineeringLocked).toBe(true);
     });
   });
 

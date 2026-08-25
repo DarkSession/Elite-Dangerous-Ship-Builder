@@ -1,9 +1,11 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { ModuleEngineering } from '@elite-dangerous-almanac/core/ships/slef';
 import {
+  FINAL_ARTICLE_SOURCE_QUALITY,
   FIXTURE_HULL,
   FIXTURE_SLOTS,
   OMITTED_FIXED_MOUNTS,
+  finalArticlePartialQuality,
   SUPPORTED_PARTIAL_QUALITY,
   SUPPORTED_PARTIAL_SOURCE_QUALITY,
   UNKNOWN_HULL_PAYLOAD,
@@ -11,7 +13,7 @@ import {
   UNSUPPORTED_PARTIAL_SOURCE_QUALITY,
   UNUSABLE_FIXED_MOUNT,
 } from '../outfitting/outfitting.fixtures';
-import { normalizeIncomingBuild } from './build-ingress-normalizer';
+import { normalizeIncomingBuild, normalizeReconstructedBuild } from './build-ingress-normalizer';
 import { emptyFixedMounts } from './fixed-mounts';
 
 /**
@@ -178,6 +180,46 @@ describe('incoming build normalization', () => {
       return;
     }
     expect(result.notices).toEqual([]);
+  });
+
+  it('accepts a final article whose stated quality was never a roll', () => {
+    // The regression a real Guardian loadout arrives as: the game writes the
+    // baked recipe with `Quality: 0`, the package locks the article, and asking
+    // it to complete a grade answers `finalArticle`. Reading that as a
+    // normalization failure refused the whole build over a module that has
+    // nothing wrong with it.
+    const { event, slot, symbol } = finalArticlePartialQuality();
+
+    const result = normalizeIncomingBuild(event);
+
+    expect(result.kind).toBe('accepted');
+    if (result.kind !== 'accepted') {
+      return;
+    }
+    // Nothing was completed, so nothing is reported: the article is exactly the
+    // article, at the quality the package holds it at.
+    expect(result.notices).toEqual([]);
+    const fitted = result.candidate.fittedModuleAt(slot);
+    expect(fitted?.symbol).toBe(symbol);
+    expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
+    expect(fitted?.engineering?.Quality).toBe(FINAL_ARTICLE_SOURCE_QUALITY);
+  });
+
+  it('accepts a final article on the reconstructed path too', () => {
+    // Opening a record and loading a link read their partials off the built
+    // candidate rather than off a source event. One pipeline, one answer: a
+    // build that imports must also re-open.
+    const { event } = finalArticlePartialQuality();
+    const built = normalizeIncomingBuild(event);
+    expect(built.kind).toBe('accepted');
+    if (built.kind !== 'accepted') {
+      return;
+    }
+
+    const reopened = normalizeReconstructedBuild(built.candidate);
+
+    expect(reopened.kind).toBe('accepted');
+    expect(reopened.kind === 'accepted' ? reopened.notices : null).toEqual([]);
   });
 
   it('touches nothing outside the candidate it was given', () => {

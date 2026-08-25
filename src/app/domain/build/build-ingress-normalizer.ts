@@ -24,8 +24,10 @@ import type {
  * 2. construct through the package, which refuses an unknown hull and returns
  *    every fixed mount already populated with the hull default;
  * 3. correlate the recorded partials with what actually came back, by exact
- *    slot and symbol;
- * 4. complete each one through the package, accepting only `normalized`;
+ *    slot and symbol, and set aside the modules the package locked as final
+ *    articles — their engineering is the article, not a roll;
+ * 4. complete each remaining one through the package, accepting only
+ *    `normalized`;
  * 5. return the whole candidate, or refuse the whole candidate.
  *
  * There is no repair pass at step 2 and no fixed-mount branch anywhere. The
@@ -82,6 +84,21 @@ function completePartials(
     // emptied as unresolvable, or defaulted away by a fixed mount. Its partial
     // roll went with it, so there is nothing left to complete.
     if (fitted === null || !sameIdentity(fitted.symbol, source.moduleSymbol)) {
+      continue;
+    }
+
+    // A final article is not a roll. The package identifies the article the
+    // module was acquired as, bakes its fixed modifiers in during construction
+    // and locks it against further engineering, so the `Quality` the source
+    // stated is a figure the game writes for a finished module rather than a
+    // grade waiting to be completed. Asking the package to complete it answers
+    // `finalArticle` — a correct refusal of a question that should not have
+    // been asked — and treating that as a normalization failure would refuse
+    // every build carrying a pre-engineered Guardian weapon or a fixed
+    // Enzyme/AX reward. Whether an article is final is the package's own
+    // `engineeringLocked`, read from what it fitted; nothing here recognises a
+    // symbol or a blueprint (constitution II, FR-013).
+    if (fitted.preEngineeredVariant?.engineeringLocked === true) {
       continue;
     }
 

@@ -54,6 +54,11 @@ and SLEF ingress. Feature 004 supplies inspected source evidence; it does not im
 
 - Only finite source quality in `[0, 1)` requests completion. Absent or quality-1 engineering stays as
   the package modelled it and is not passed to `completeEngineeringGrade()`.
+- A module the package resolved to a final article — its `preEngineeredVariant.engineeringLocked` —
+  is never passed to `completeEngineeringGrade()` either, whatever quality the source stated beside
+  its baked recipe. Producers write `Quality: 0` for the pre-engineered Guardian weapons and the
+  fixed Enzyme/AX rewards because there was never a roll; the package answers `finalArticle`, and
+  reading that as a normalization failure would refuse an ordinary, importable build.
 - Unknown module identities are outside the supported import and feedback contract.
 - Supported ordinary, Mercenary and identified pre-engineered/effect state on remaining resolved
   modules becomes package-computed quality 1. Unsupported partials refuse before activation.
