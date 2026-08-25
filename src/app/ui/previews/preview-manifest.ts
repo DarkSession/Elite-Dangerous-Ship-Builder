@@ -2017,7 +2017,7 @@ const WORKING_BUILD = {
   id: 'record-working',
   name: null,
   note: null,
-  actions: [{ id: 'open', label: 'Open the working build', emphasis: 'primary' }],
+  actions: [{ id: 'open', label: 'Open the unnamed build', emphasis: 'primary' }],
 } as const;
 
 registerPreview({
@@ -2050,7 +2050,7 @@ registerPreview({
       'empty',
       { build: WORKING_BUILD },
       [
-        'a build with no name is shown as a working build rather than given an invented one',
+        'a build with no name is shown as an unnamed build rather than given an invented one',
         'an absent note is omitted rather than rendered as an empty field',
       ],
       ['normal', 'expanded-copy', 'rtl'],
@@ -2103,9 +2103,9 @@ registerPreview({
         groups: [
           {
             id: 'working',
-            label: 'Working builds',
+            label: 'Unnamed builds',
             builds: [WORKING_BUILD],
-            emptyLabel: 'No working builds.',
+            emptyLabel: 'No unnamed builds.',
           },
           {
             id: 'named',
@@ -2193,11 +2193,12 @@ registerPreview({
     state(
       'default',
       {
-        reason: 'This browser keeps 20 working builds. Discard one to make room for another.',
+        reason:
+          "This browser's storage is full, so nothing is being saved. Editing still works; discard a build to make room.",
         records: [
           { id: 'record-1', label: 'Anaconda explorer', detail: 'Anaconda — 12 August 2026' },
           { id: 'record-2', label: 'Krait combat', detail: 'Krait Mk II — 9 August 2026' },
-          { id: 'record-3', label: 'Working build', detail: 'Cutter — 2 August 2026' },
+          { id: 'record-3', label: 'Unnamed build', detail: 'Cutter — 2 August 2026' },
         ],
         selected: ['record-3'],
       },

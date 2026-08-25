@@ -6,7 +6,7 @@ import { StatusNotice } from '../status/status-notice';
 /** One labelled group of stored builds. */
 export interface RecordListGroup {
   readonly id: string;
-  /** The group's own heading: "Working builds", "Named builds". */
+  /** The group's own heading: "Unnamed builds", "Named builds". */
   readonly label: string;
   readonly builds: readonly SavedBuild[];
   /** Shown instead of an empty group. */

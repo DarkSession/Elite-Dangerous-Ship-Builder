@@ -38,10 +38,10 @@ describe('SavedBuildCard', () => {
     expect(text).toContain('Valid');
   });
 
-  it('says a working build is a working build, rather than inventing a name', () => {
+  it('says an unnamed build is an unnamed build, rather than inventing a name', () => {
     const fixture = renderComponent(SavedBuildCard, { build: build({ name: null }) });
 
-    expect(textOf(query(fixture, 'h3'))).toBe('Working build');
+    expect(textOf(query(fixture, 'h3'))).toBe('Unnamed build');
     expect(textOf(element(fixture))).not.toContain('Untitled');
   });
 
@@ -92,7 +92,7 @@ describe('ResponsiveRecordList', () => {
   const groups: readonly RecordListGroup[] = [
     {
       id: 'working',
-      label: 'Working builds',
+      label: 'Unnamed builds',
       builds: [build({ id: 'w1', name: null })],
       emptyLabel: 'Nothing here yet.',
     },
@@ -108,7 +108,7 @@ describe('ResponsiveRecordList', () => {
     const fixture = renderComponent(ResponsiveRecordList, { label: 'Saved builds', groups });
 
     expect([...element(fixture).querySelectorAll('h2')].map(textOf)).toEqual([
-      'Working builds',
+      'Unnamed builds',
       'Named builds',
     ]);
     expect(element(fixture).querySelectorAll('edsb-saved-build-card')).toHaveLength(2);
@@ -162,8 +162,8 @@ describe('ResponsiveRecordList', () => {
 
 describe('RecordManager', () => {
   const records: readonly ManageableRecord[] = [
-    { id: 'w1', label: 'Working build', detail: 'Anaconda · 2 Jan 2026' },
-    { id: 'w2', label: 'Working build', detail: 'Sidewinder · 3 Jan 2026' },
+    { id: 'w1', label: 'Unnamed build', detail: 'Anaconda · 2 Jan 2026' },
+    { id: 'w2', label: 'Unnamed build', detail: 'Sidewinder · 3 Jan 2026' },
   ];
 
   it('lists every record for individual selection, with nothing preselected', () => {

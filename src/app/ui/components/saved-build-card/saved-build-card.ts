@@ -18,10 +18,10 @@ export interface RecordAction {
 export interface SavedBuild {
   readonly id: string;
   /**
-   * The local name, or `null` for a working build.
+   * The local name, or `null` for a build nobody has named.
    *
-   * A working build is shown as what it is rather than given an invented name:
-   * "Working build" is true, and "Untitled" would be a name it does not have.
+   * An unnamed build is shown as what it is rather than given an invented name:
+   * "Unnamed build" is true, and "Untitled" would be a name it does not have.
    */
   readonly name: string | null;
   readonly hull: GameTextPresentation;
@@ -61,14 +61,14 @@ export class SavedBuildCard {
 
   readonly cardId = relationId('saved-build');
 
-  readonly workingLabel = this.#messages.messageSignal('library.record.working');
+  readonly unnamedLabel = this.#messages.messageSignal('library.record.unnamed');
   readonly hullLabel = this.#messages.messageSignal('library.record.hull');
   readonly modifiedLabel = this.#messages.messageSignal('library.record.modified');
   readonly validationLabel = this.#messages.messageSignal('library.record.validation');
   readonly noteLabel = this.#messages.messageSignal('library.record.note');
 
   /** The name, or the words that say it has none. */
-  readonly title = computed(() => this.build().name ?? this.workingLabel());
+  readonly title = computed(() => this.build().name ?? this.unnamedLabel());
 
   select(action: RecordAction): void {
     this.actionSelected.emit({ recordId: this.build().id, actionId: action.id });

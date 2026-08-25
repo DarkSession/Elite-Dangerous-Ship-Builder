@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import type { StoredRecordEntry } from '../../domain/build/stored-build';
+import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
@@ -46,7 +46,7 @@ interface PendingDelete {
   readonly recordId: string;
   readonly title: string;
   readonly hull: string;
-  readonly working: boolean;
+  readonly unnamed: boolean;
 }
 
 /**
@@ -130,7 +130,7 @@ export class BuildLibraryPage {
   readonly groups = computed<readonly RecordListGroup[]>(() => [
     {
       id: 'working',
-      label: this.#messages.message('library.group.working'),
+      label: this.#messages.message('library.group.unnamed'),
       builds: this.#library
         .working()
         .map((entry) => this.#toSavedBuild(entry))
@@ -215,7 +215,7 @@ export class BuildLibraryPage {
       return '';
     }
     return this.#messages.message(
-      pending.working ? 'library.discard.title' : 'library.delete.title',
+      pending.unnamed ? 'library.discard.title' : 'library.delete.title',
       { name: pending.title },
     );
   });
@@ -226,7 +226,7 @@ export class BuildLibraryPage {
       return null;
     }
     return this.#messages.message(
-      pending.working ? 'library.discard.description' : 'library.delete.description',
+      pending.unnamed ? 'library.discard.description' : 'library.delete.description',
       { hull: pending.hull },
     );
   });
@@ -238,7 +238,7 @@ export class BuildLibraryPage {
         entry.available
           ? {
               id: entry.record.id,
-              label: entry.record.name ?? this.#messages.message('library.record.working'),
+              label: entry.record.name ?? this.#messages.message('library.record.unnamed'),
               detail: `${this.#hullName(entry.record.hullSymbol)} · ${this.#instant(entry.record.modifiedAt)}`,
             }
           : null,
@@ -319,7 +319,7 @@ export class BuildLibraryPage {
         }
         this.#duplication.duplicate(
           recordId,
-          record.name ?? this.#messages.message('library.record.working'),
+          record.name ?? this.#messages.message('library.record.unnamed'),
           new Date().toISOString(),
         );
         this.#library.refresh();
@@ -340,9 +340,9 @@ export class BuildLibraryPage {
         }
         this.#pendingDelete.set({
           recordId,
-          title: record.name ?? this.#messages.message('library.record.working'),
+          title: record.name ?? this.#messages.message('library.record.unnamed'),
           hull: this.#hullName(record.hullSymbol),
-          working: record.kind === 'working',
+          unnamed: record.kind === 'working',
         });
         return;
       }
@@ -506,8 +506,8 @@ export class BuildLibraryPage {
       return null;
     }
     const record = entry.record;
-    const working = record.kind === 'working';
-    const label = record.name ?? this.#messages.message('library.record.working');
+    const unnamed = record.kind === 'working';
+    const label = record.name ?? this.#messages.message('library.record.unnamed');
 
     return {
       id: record.id,
@@ -515,7 +515,7 @@ export class BuildLibraryPage {
       hull: this.#gameText.shipName(record.hullSymbol),
       modified: this.#instant(record.modifiedAt),
       validation: this.#validationOf(record.validation),
-      note: record.note,
+      note: this.#noteFor(record),
       actions: [
         {
           id: 'open',
@@ -523,8 +523,8 @@ export class BuildLibraryPage {
           emphasis: 'secondary' as const,
         },
         {
-          id: working ? 'name' : 'rename',
-          label: this.#messages.message(working ? 'library.action.name' : 'library.action.rename', {
+          id: unnamed ? 'name' : 'rename',
+          label: this.#messages.message(unnamed ? 'library.action.name' : 'library.action.rename', {
             build: label,
           }),
         },
@@ -539,6 +539,27 @@ export class BuildLibraryPage {
         },
       ],
     };
+  }
+
+  /**
+   * The line beneath a row's name.
+   *
+   * A Commander's own note where they wrote one. Failing that, and only for an
+   * unnamed record forked from a save, the save it came from: "unsaved edits to
+   * X" is what that record is, and a row that did not say so would look like a
+   * second copy of X (FR-010, T155).
+   */
+  #noteFor(record: LocalRecordV1): string | null {
+    if (record.note !== null) {
+      return record.note;
+    }
+    if (record.kind !== 'working' || record.sourceNamed === null) {
+      return null;
+    }
+
+    const source = this.#records.read(record.sourceNamed.recordId);
+    const name = source.ok && source.value.available ? source.value.record.name : null;
+    return name === null ? null : this.#messages.message('library.record.forked-from', { name });
   }
 
   #validationOf(validation: { valid: boolean; complete: boolean }): SavedBuild['validation'] {

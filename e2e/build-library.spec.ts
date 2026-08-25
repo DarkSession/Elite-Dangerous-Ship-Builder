@@ -133,13 +133,13 @@ test.describe('the build library', () => {
     await expect(page.getByText('Nothing is stored yet')).toBeVisible();
   });
 
-  test('lists a working build with its hull, time and recorded state', async ({ page }) => {
+  test('lists an unnamed build with its hull, time and recorded state', async ({ page }) => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
     await expect(library(page)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Working builds' })).toBeVisible();
-    await expect(page.getByText('Working build', { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Unnamed builds' })).toBeVisible();
+    await expect(page.getByText('Unnamed build', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByText('Valid').first()).toBeVisible();
   });
@@ -151,14 +151,14 @@ test.describe('the build library', () => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
-    await page.getByRole('button', { name: /^Save Working build under a name$/ }).click();
+    await page.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
     await dialog.getByRole('button', { name: 'Save as a new build' }).click();
 
-    await expect(page.getByRole('heading', { name: 'Named builds' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Named builds', exact: true })).toBeVisible();
     await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
-    await expect(page.getByText('Working build', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Unnamed build', { exact: true })).toHaveCount(0);
     expect(await recordCount(page)).toBe(1);
   });
 
@@ -167,7 +167,7 @@ test.describe('the build library', () => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
-    await page.getByRole('button', { name: /^Save Working build under a name$/ }).click();
+    await page.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
 
@@ -328,7 +328,7 @@ test.describe('the build library', () => {
     // lists what is stored, and autosave coalesces before it writes.
     await createBuild(first);
     await reachShellLink(first, 'Open saved build');
-    await first.getByRole('button', { name: /^Save Working build under a name$/ }).click();
+    await first.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
     await first.getByRole('dialog').getByRole('textbox', { name: 'Name' }).fill('Shared build');
     await first.getByRole('dialog').getByRole('button', { name: 'Save as a new build' }).click();
     await expect(first.getByText('Shared build').first()).toBeVisible();
