@@ -440,8 +440,9 @@ brought to the drawing.
 
 **Goal**: close the two Commander corrections raised on 2026-08-25 after the reserved-track ruling.
 Autosave stops being one record per tab that the next build writes over and becomes one record per
-build, which withdraws the replacement question from every ingress path; and `/builds` stops being a
-grid of cards on a plain page and becomes the surface both canvases draw.
+build, minted by the page that writes it and never a named one, which withdraws the replacement
+question from every ingress path while leaving a named save exactly where its Commander put it; and
+`/builds` stops being a grid of cards on a plain page and becomes the surface both canvases draw.
 
 `spec.md` (FR-008 to FR-013), `contracts/persistence.md`, `contracts/build-link.md`,
 `contracts/routes-and-ui.md`, `data-model.md`, `quickstart.md` and the four design records were
@@ -451,15 +452,17 @@ FR-008, FR-009, FR-010, FR-012 and FR-013.
 
 ### A record for every build (FR-008, FR-009)
 
-- [ ] T148 Mint a record per build rather than per tab: `commit` in `src/app/application/active-build/active-build.store.ts` takes a fresh record identity for a build that has none, `src/app/application/build-library/autosave.service.ts` writes to the held record, and `TabDescriptorV1` carries the held record id rather than a tab-owned working one (data model, "ActiveBuildState"; persistence contract, "Autosaved records")
-- [ ] T149 Adopt on open in `src/app/application/build-library/record-open.service.ts`: a successful candidate takes over the record it was decoded from and autosaves into it, instead of copying it into a working record beside it (depends on T148)
-- [ ] T150 Name in place in `src/app/application/build-library/named-record.service.ts`: naming writes `name` onto the held record and flips `kind` under that record's own lock — same key, same id, fresh `revisionId`, nothing left behind — and "save as a copy" becomes the one operation that mints a second record (depends on T148)
+- [ ] T148 Mint a record per build rather than per tab: `commit` in `src/app/application/active-build/active-build.store.ts` mints a fresh unnamed record identity for a candidate that has none, `src/app/application/build-library/autosave.service.ts` writes only to that identity, and `TabDescriptorV1` carries it alongside the record the build was opened from (data model, "ActiveBuildState"; persistence contract, "Autosaved records")
+- [ ] T149 Fork on first edit, not on open, in `src/app/application/build-library/record-open.service.ts` and `autosave.service.ts`: opening a record writes nothing and holds it as `sourceNamed`, and the first modelled edit mints an unnamed record and directs every write there. Assert in a unit test that a named record's bytes are unchanged by opening it and unchanged by editing it (depends on T148)
+- [ ] T149a Refuse a named record as an autosave target in `src/app/application/build-library/autosave.service.ts`, whatever the page is holding, so a record named in another tab or arriving from before this ruling cannot be written by a coalesced edit (depends on T149)
+- [ ] T150 Consume the unnamed record on manual save in `src/app/application/build-library/named-record.service.ts`: naming it writes `name` onto that same key and flips `kind` under its own lock — same id, fresh `revisionId`, nothing left behind — while writing the build into the record it came from writes that record under its lock and only then `removeItem`s the unnamed one, so a failed write never leaves the build without a copy. "Save as a copy" mints a record and leaves the original where it is (depends on T148)
+- [ ] T150a Say what the save choices now do in `src/app/features/build-library/save-build.dialog.*` and both locale catalogues: "overwrite existing" replaces the saved version and discards the unsaved entry these edits were in, "save as new" keeps both (depends on T150)
 - [ ] T151 Withdraw the replacement question: delete `ReplacementConfirmer`, the `dirty()` gate and the `setConfirmer` seam from `src/app/application/active-build/replacement-coordinator.ts`, its dialog wiring in `src/app/app.ts`, and `workspace.replace.*` from both locale catalogues. Rename the coordinator for what it now does — construct, commit once, notify — and delete `src/app/domain/build/replacement-policy.ts` if nothing reads the fingerprint after T148 (depends on T148, T149)
-- [ ] T152 [P] Fork a colliding claimant in `src/app/application/build-library/tab-ownership.coordinator.ts`: announce the held record on every adoption rather than only at start, so a second page opening the record this one holds forks onto a fresh unnamed record before either writes (FR-012) (depends on T149)
-- [ ] T153 [P] Count only unnamed records against retention in `src/app/application/build-library/retention.service.ts`, release a slot when a record is named, and offer naming beside discarding in `src/app/ui/components/record-manager/` (FR-013) (depends on T150)
+- [ ] T152 [P] Announce each newly minted autosave record from `src/app/application/build-library/tab-ownership.coordinator.ts`, not only the one claimed at start, so a cloned `sessionStorage` still forks before either page writes. Two pages holding one named record open is no longer a collision and must not fork (FR-012) (depends on T149)
+- [ ] T153 [P] Count only unnamed records against retention in `src/app/application/build-library/retention.service.ts`, release a slot when a record is named or consumed by a save, and offer naming beside discarding in `src/app/ui/components/record-manager/`. An edit that cannot fork leaves the named record it came from untouched (FR-013) (depends on T150)
 - [ ] T154 [P] Rename the deliberate-write lock from `edsb:named:<record-id>` to `edsb:record:<record-id>` in the lock-name builder in `src/app/platform/storage/storage-keys.ts`, its callers in `src/app/application/build-library/`, and their tests: it guards any record now, and a Web Locks name is not stored bytes
-- [ ] T155 Say "unnamed", not "working", in `src/app/i18n/locales/{en,de}.json` and in every view model that carries the word to a Commander: a record with no name is a whole record, not a draft of one (depends on T150)
-- [ ] T156 Rewrite `e2e/build-working-state.spec.ts` and the `001/FR-007`, `001/FR-008` and `001/FR-009` assertion lines in `e2e/coverage-ledger.ts` around the new behaviour — four builds in a row leave four records, no ingress asks anything, naming leaves the count unchanged — and move `001/FR-009` off the `ships/:symbol/create-stock-build` surface, which no longer carries a dialog (depends on T151)
+- [ ] T155 Say "unnamed", not "working", in `src/app/i18n/locales/{en,de}.json` and in every view model that carries the word to a Commander, and name the record an unnamed one was forked from on its library row, so unsaved edits to a saved build read as what they are (depends on T150)
+- [ ] T156 Rewrite `e2e/build-working-state.spec.ts` and the `001/FR-007`, `001/FR-008` and `001/FR-009` assertion lines in `e2e/coverage-ledger.ts` around the new behaviour — four builds in a row leave four records, no ingress asks anything, opening a save writes nothing to it, editing one forks, naming leaves the count unchanged and overwriting returns it to where it was — and move `001/FR-009` off the `ships/:symbol/create-stock-build` surface, which no longer carries a dialog (depends on T151, T150a)
 
 ### The library the canvas draws (FR-010, FR-013)
 
@@ -470,8 +473,8 @@ FR-008, FR-009, FR-010, FR-012 and FR-013.
 - [ ] T161 [P] Replace the per-row `StatusNotice` with the reference's monospace issue count on its warm plate, keeping the recorded validation state in words (depends on T159)
 - [ ] T162 [P] Give the surface the committing footer both canvases draw — the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge — pinned at the compact composition (depends on T157)
 - [ ] T163 Register the library surface's search, no-match and current-record states in `e2e/coverage-ledger.ts`, and assert the frame, header, columns, marker, badge and footer in `e2e/design-reference.spec.ts` and `e2e/build-library.spec.ts` (depends on T158, T159, T160, T161, T162)
-- [ ] T164 Cover every new and changed state in `src/app/ui/previews/preview-manifest.ts` — current record, searched, no match, issue badge, retention with naming offered — at desktop, tablet and mobile widths (depends on T159, T163)
-- [ ] T165 Run `pnpm run check` and fix every divergence across the ten Playwright projects, then walk `quickstart.md` scenarios 2, 3, 4, 5, 7 and 10 (depends on T148, T149, T150, T151, T152, T153, T155, T156, T157, T158, T159, T163, T164)
+- [ ] T164 Cover every new and changed state in `src/app/ui/previews/preview-manifest.ts` — current record, unsaved edits to a saved build, searched, no match, issue badge, retention with naming offered — at desktop, tablet and mobile widths (depends on T159, T163)
+- [ ] T165 Run `pnpm run check` and fix every divergence across the ten Playwright projects, then walk `quickstart.md` scenarios 2, 3, 4, 5, 7 and 10 (depends on T148, T149, T149a, T150, T150a, T151, T152, T153, T155, T156, T157, T158, T159, T163, T164)
 
 ---
 
@@ -481,6 +484,6 @@ FR-008, FR-009, FR-010, FR-012 and FR-013.
 - Every game-bearing value comes from `@elite-dangerous-almanac/core`; no task adds a local hull fact, calculation or replacement rule
 - Every browser API is reached through an injected port so domain behavior stays render-free and testable
 - Candidate-first is absolute: no loader mutates active state before its candidate has parsed, constructed and validated
-- No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action; since 2026-08-25 that deletion is the only thing that removes one, and naming a record leaves no second copy of it behind
+- No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action; since 2026-08-25 exactly two things remove one — that confirmed deletion, and the manual save that consumes the unnamed record it saved from — and autosave never writes to a named record at all
 - Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

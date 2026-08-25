@@ -36,27 +36,36 @@ No operation writes an index plus a record. Delete calls one `removeItem` only a
 
 ## Autosaved records
 
-**Revised 2026-08-25 (Commander request, FR-008).** Every build a Commander works on is a record of
-its own, from the moment it becomes active. A record either carries a name or does not; both are
-autosaved the same way, both are listed, and neither is a draft of the other. There is no per-tab
-working record that the next build writes over, which is why nothing has to be confirmed before a
-build is replaced.
+**Revised 2026-08-25 (Commander request, FR-008).** Every build a Commander works on is recoverable
+from a record at all times, and the record autosave writes to is always one this page minted for
+itself and the Commander has not named. There is no per-tab working record that the next build writes
+over, which is why nothing has to be confirmed before a build is replaced — and there is no path by
+which autosave reaches a named record, which is why naming one is still a decision that holds.
 
-- `edsb:tab` supplies the record ID this top-level browsing context is holding, across reload.
-- A build with no record yet — stock creation, a decoded link, a SLEF import — mints a fresh ID and
-  is written to it before the Commander changes anything. Opening an existing record **adopts** its
-  ID: the page autosaves into that record. Nothing is copied and no working duplicate is made.
-- Ordinary new tabs hold different records. A BroadcastChannel claim collision — a duplicated tab, or
-  a second page opening the record this one holds — forks the later claimant onto a fresh unnamed ID,
-  with its current build copied into it, before either page next autosaves (FR-012).
-- Autosave targets only the held record's key and is coalesced after modelled edits. Best-effort
-  flush occurs on `pagehide` and when the document becomes hidden.
-- Naming writes the name onto the held record and flips its `kind` to `named` under that record's own
-  lock: same key, same ID, fresh `revisionId`. No second record is created and none is removed.
-  Saving a copy under another name is the separate operation that mints one, and it leaves the
-  original where it is.
-- A held record removed elsewhere enters `record-deleted-externally`; autosave pauses until the
-  Commander explicitly resumes.
+- `edsb:tab` supplies the autosave record ID this top-level browsing context is holding, across
+  reload, together with the named record it was opened from where there is one.
+- A build with no record yet — stock creation, a decoded link, a SLEF import — mints a fresh unnamed
+  ID and is written to it before the Commander changes anything.
+- Opening an existing record does **not** adopt it. The build is already recoverable from the record
+  it was opened from, so opening writes nothing at all; the **first modelled edit** forks a fresh
+  unnamed record, carrying `sourceNamed` where the origin was named, and every autosave from then on
+  goes there. The record that was opened is not written by autosave, then or ever.
+- Ordinary new tabs mint different records. A duplicated tab clones `sessionStorage` and so claims an
+  ID that is already live; the BroadcastChannel handshake forks the later claimant onto a fresh
+  unnamed ID, with its current build copied into it, before either page next autosaves (FR-012). Two
+  pages holding one named record open is not a collision, because neither writes to it.
+- Autosave targets only the held unnamed record's key and is coalesced after modelled edits.
+  Best-effort flush occurs on `pagehide` and when the document becomes hidden.
+- A manual save consumes the held unnamed record. Naming it writes the name onto that same key and
+  flips `kind` to `named` under the record's own lock — same ID, fresh `revisionId`, nothing left
+  behind. Writing the build into an existing record instead writes that record under its lock and
+  then `removeItem`s the unnamed one, in that order, so a failed write never loses the only copy.
+  Either way the page holds a named record afterwards and autosave is idle until the next edit forks
+  again. Saving a copy under another name is the separate operation that mints a record and leaves
+  the original where it is.
+- The autosave record removed elsewhere enters `record-deleted-externally`; autosave pauses until the
+  Commander explicitly resumes. A named record removed elsewhere while a page holds it as
+  `sourceNamed` makes that page's next save a fresh record rather than a silent recreation of it.
 - Package-defaulted fixed modules persist as ordinary `BuildSnapshotV1` state with no source-empty,
   repair or defaulting provenance.
 
@@ -65,7 +74,8 @@ At most 20 unnamed records may exist:
 - Existing records may always be updated, named or not.
 - Minting unnamed record 21 performs no write and no deletion. The active build remains in memory and
   the library opens record management, which offers two ways forward: discard records, or name one of
-  them.
+  them. An edit to a named build that cannot fork is in exactly this state, and the named record it
+  came from is still untouched.
 - Naming a record releases its slot. Named records do not consume this count and are bounded by
   storage quota alone.
 - Only explicit, individually selected, confirmed discard removes a record. Sort order never implies

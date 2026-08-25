@@ -50,10 +50,10 @@ Application state around one mutable package `ShipLoadout`.
 | -------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
 | `loadout`                  | `ShipLoadout \| null`                       | Only live source of build/game behavior                                           |
 | `provenance`               | `none \| stock \| working \| named \| link` | Application workflow origin, not exported                                         |
-| `recordId`                 | UUID                                        | The record this page autosaves into, named or not; local only                     |
-| `sourceNamed`              | `{ recordId; baseRevisionId } \| null`      | The record this one was forked from and the revision observed then; local only    |
-| `baselineFingerprint`      | opaque string or null                       | Compares active modelled state with the last state written to its record          |
-| `dirty`                    | boolean                                     | Modelled state has changed since the last successful write to its record          |
+| `autosaveRecordId`         | `UUID \| null`                              | The unnamed record this page autosaves into; null until the first edit forks one  |
+| `sourceNamed`              | `{ recordId; baseRevisionId } \| null`      | The record the build was opened from and the revision observed then; local only   |
+| `baselineFingerprint`      | opaque string or null                       | Compares active modelled state with the last state written to a record            |
+| `dirty`                    | boolean                                     | Modelled state has changed since the last successful write; also what forks       |
 | `persistence`              | `PersistenceStatus`                         | Does not determine whether the build is usable                                    |
 | `link`                     | `LinkPublicationState`                      | Current fragment synchronization/refusal status                                   |
 | `qualityCompletionNotices` | readonly package-derived notice[]           | Transient workflow disclosures for completed partial engineering; never persisted |
@@ -64,19 +64,26 @@ Ingress transition:
 source intent -> construct/decode candidate -> validate candidate
     failure -> explain; active state unchanged
     success -> commit candidate
-commit -> adopt the candidate's record, or mint one for it -> autosave -> synchronize fragment
+commit -> a candidate with no record of its own mints one and autosaves
+       -> a candidate opened from a record holds it as sourceNamed and writes nothing
+       -> synchronize fragment
+
+first modelled edit with no autosave record -> fork an unnamed record -> autosave there
 ```
 
 No loader mutates the active state before its candidate has completed parsing, construction and validation.
 
-There is no confirmation step in that sequence, and `dirty` is not consulted by it. The build being
-replaced is a record of its own that the library still lists, so replacing it loses nothing there is
-anything to ask about (FR-008, FR-009). `dirty` survives as a persistence fact: it says a write is
-owed, which is what the coalescing timer and the lifecycle flush act on.
+There is no confirmation step in that sequence, and `dirty` does not gate it. The build being replaced
+is recoverable from a record the library still lists, so replacing it loses nothing there is anything
+to ask about (FR-008, FR-009). `dirty` keeps two jobs instead: it says a write is owed, which the
+coalescing timer and the lifecycle flush act on, and it is the first edit after an open that forks the
+record autosave will write to.
 
-Opening a record adopts it — the page autosaves into that record rather than into a copy of it.
-Creating a stock build, decoding a link and importing a SLEF file each mint a record instead, because
-there is no existing one to adopt.
+Opening a record does **not** adopt it. A build opened from a record is already recoverable from that
+record, so nothing is written until the Commander changes something — and when they do, the change
+goes into an unnamed record of its own. Autosave never reaches a named record by any path, which is
+what keeps naming a build a decision the Commander made rather than one the next keystroke can undo
+(FR-008, ruled 2026-08-25).
 
 ## BuildSnapshotV1
 
@@ -131,7 +138,7 @@ One atomic value stored under `edsb:record:<id>`.
 | `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                                             |
 | `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                                          |
 | `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                                                  |
-| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on a record forked from another; identity and revision observed at the fork |
+| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on an unnamed record forked from another; identity and revision at the fork |
 
 Package construction owns fixed-mount defaulting. Autosave, naming and duplication store only the
 resulting modelled build; no empty-source or defaulting provenance is retained.
@@ -142,19 +149,29 @@ because that is the discriminant version 1 published and those bytes are already
 else it is read as "has no name yet". Naming flips the discriminant in place and mints no second
 record (FR-009).
 
+It is also the only thing autosave looks at. A record with `kind: 'named'` is never an autosave
+target, whatever a page is holding, so the invariant survives a migrated record, a record named in
+another tab and a record whose bytes arrived before this ruling.
+
 State transitions:
 
 ```text
+any --open--> held; nothing written
+held --first modelled edit--> a fresh unnamed record, sourceNamed set where the origin was named
 unnamed --named--> named, same ID, fresh revision; nothing left behind
+unnamed --written into its sourceNamed record--> that record takes a fresh revision; the unnamed one is removed
 unnamed --saved as a copy--> new named ID/revision; the original stays unnamed
-named --open--> adopted by this page; its edits autosave into it
 named --rename--> named (new revision)
 named --duplicate--> new named ID/revision
 any --delete confirmed--> removed
-any --claimed by a second live page--> the later page forks an unnamed copy and writes there
+autosave ID --claimed by a second live page--> the later page forks and writes there
 supported old version --lossless migration succeeds--> current version, same ID
 unsupported newer/malformed --open--> unavailable listing; bytes unchanged
 ```
+
+Removal appears twice in that list and nowhere else: a confirmed deletion, and the manual save that
+writes an unnamed record's build into the record it came from. The second is a removal a Commander
+asked for — they chose to overwrite — and it happens after that write succeeds, never before.
 
 ## TabDescriptorV1
 

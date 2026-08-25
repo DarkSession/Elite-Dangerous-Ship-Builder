@@ -12,9 +12,9 @@ This feature defines the active-build shell and persistence/share behavior. Modu
 - Active capability outlet for future outfitting/statistics screens; no component owns a second build copy.
 - Save/name and library actions.
 - `ShareLinkPanel` with generated canonical link, copy/share feedback, encoding/refusal state and feature 004 SLEF alternative.
-- Persistent `InlineNotice`/`ErrorSummary` for storage unavailable/quota, an externally deleted held record, invalid incoming link and unsupported version.
+- Persistent `InlineNotice`/`ErrorSummary` for storage unavailable/quota, an externally deleted autosave record, invalid incoming link and unsupported version.
 
-Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Since 2026-08-25 “overwrite existing” names the record the build is already being autosaved into, so it writes a name onto that record rather than producing a second copy of the build, and “save as new” is the one choice that mints a record. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF export choice, which is the one the dialog lists first and opens on; the journal and Markdown export choices the mock once drew are implemented nowhere and drawn nowhere — they were taken out of `.design` rather than left drawn beside two real ones.
+Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Since 2026-08-25 the two choices are what consumes the unnamed record the build is being autosaved into: “overwrite existing” writes the build into the record it was opened from and then removes the unnamed one, and “save as new” names the unnamed record in place. Either way the Commander is the one who decided which version survives, and nothing autosaves into a named record before or after. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF export choice, which is the one the dialog lists first and opens on; the journal and Markdown export choices the mock once drew are implemented nowhere and drawn nowhere — they were taken out of `.design` rather than left drawn beside two real ones.
 
 ## States
 
@@ -22,7 +22,8 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship.                         |
 | Unnamed stock/link build           | Show hull and that the build has no name yet; autosave status; no name is invented for it.                     |
-| Named build                        | Show the name the Commander gave the record. Autosave targets that same record.                                |
+| Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.          |
+| Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.  |
 | Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                    |
 | Persistence failed/limit/quota     | Blocking status explains that editing remains usable; manage/retry actions remain available.                   |
 | Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance. |
@@ -36,9 +37,9 @@ Restore the record this page holds first, then process an initial recognized fra
 
 ## Persistence lifecycle
 
-Modelled edits coalesce into the key of the record this page holds, named or not. Visibility loss/pagehide requests a best-effort flush. Creating, opening or loading a build mints or adopts a record before the build is editable, so there is never an active build that is not already saved somewhere — which is what withdraws the replacement question from every ingress path (FR-008, FR-009).
+Modelled edits coalesce into the key of the page's own unnamed record. A build arriving with no record mints one at commit; a build opened from a record writes nothing until its first modelled edit, which forks an unnamed record and directs every write there. Autosave has no path to a named record, so an opened save cannot move under its Commander. Either way there is never an active build that is not recoverable from storage, which is what withdraws the replacement question from every ingress path (FR-008, FR-009).
 
-Naming compares the baseline under that record's short Web Lock and writes the name onto it; conflicts delegate to the library choice dialog while the active build and its record remain intact.
+Visibility loss/pagehide requests a best-effort flush. A manual save takes the target record's short Web Lock, compares the baseline, writes, and only then removes the unnamed record it consumed; conflicts delegate to the library choice dialog while the active build and its unnamed record remain intact.
 
 ## Responsive and accessibility notes
 

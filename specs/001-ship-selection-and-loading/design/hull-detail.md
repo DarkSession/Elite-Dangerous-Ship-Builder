@@ -54,12 +54,13 @@ The viewing condition — "at 4 ENG pips" — is gone with the rotation rates an
 1. Confirm the route symbol resolves and a package default record exists.
 2. Construct `ShipLoadout.default(symbol)` as a detached candidate.
 3. Confirm every fixed mount is package-populated and read package validation.
-4. Commit to `ActiveBuildStore`, mint a record for the new build and autosave it there, publish the fragment if representable and navigate to `/build`.
+4. Commit to `ActiveBuildStore`, mint an unnamed record for the new build and autosave it there,
+   publish the fragment if representable and navigate to `/build`.
 
 No image state participates in these steps, and no step asks a question. The replacement
 confirmation this screen used to raise at step 4 is withdrawn (screen inventory, "Cross-screen
-ingress rule"; Commander request 2026-08-25): the build a Commander leaves behind here is a record
-of its own that `/builds` lists, so creating a stock hull takes nothing from them.
+ingress rule"; Commander request 2026-08-25): the build a Commander leaves behind here is recoverable
+from a record `/builds` lists, so creating a stock hull takes nothing from them.
 
 ## Responsive and accessibility notes
 

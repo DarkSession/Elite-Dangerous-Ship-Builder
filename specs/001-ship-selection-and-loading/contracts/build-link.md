@@ -30,9 +30,10 @@ Initial app start, address-bar paste, browser navigation and in-app fragment nav
 5. Refuse an unknown hull or any identity the selected codec table cannot represent. Reconstruct the
    candidate through the released package boundary, which returns every fixed mount populated with
    its hull default.
-6. Commit the candidate as link provenance, mint a record for it and autosave it there. No
-   confirmation is requested: the build being replaced has a record of its own that the library still
-   lists, so the load takes nothing away (FR-008, FR-009, revised 2026-08-25).
+6. Commit the candidate as link provenance, mint an unnamed record for it and autosave it there — a
+   decoded link has no record of its own to be recoverable from. No confirmation is requested: the
+   build being replaced is recoverable from a record the library still lists, so the load takes
+   nothing away (FR-008, FR-009, revised 2026-08-25).
 
 Any parse, integrity, version, identity or reconstruction error leaves the active and stored state unchanged. An async request token ensures a late decode cannot replace a newer navigation.
 

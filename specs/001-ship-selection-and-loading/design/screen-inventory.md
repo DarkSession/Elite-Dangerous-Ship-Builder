@@ -11,35 +11,37 @@ Feature 001 is expressed through four logical route screens. `.design/Ship Build
 
 ## Requirement coverage
 
-| Requirement | Screen/interface coverage                                                                                                                |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | Catalogue and detail consume package hull records; detail/workspace create through `ShipLoadout.default`; domain contract uses `symbol`. |
-| FR-002      | Catalogue toolbar/cards expose every displayed fact, one word-wise search, the exclusive size strip and stable bidirectional sort.       |
-| FR-003      | Catalogue session store and detail back action preserve query/facets/sort/result anchor; route/link/storage contracts exclude it.        |
-| FR-004      | Hull detail `FactList` shows the reference metric grid's eight figures with their units under a “Hull specifications” boundary.          |
-| FR-005      | Symbol route lookup; detail unknown-symbol error has no creation action and no build mutation.                                           |
-| FR-006      | Catalogue/detail `HullArtwork` uses copied same-origin package assets, textual equivalence and non-blocking absence.                     |
-| FR-007      | Detail explicit create intent checks package default then transactionally calls the package factory.                                     |
-| FR-008      | Every ingress mints or adopts a record before the build is editable; workspace autosave/restore and library listing show it.             |
-| FR-009      | Library duplicate-name warning, in-place naming and delete dialog. No screen carries a replacement dialog (revised 2026-08-25).          |
-| FR-010      | Library rows show the local name or that there is none, package hull, localized modified instant and recorded validation; note is local. |
-| FR-011      | Workspace sharing boundary and SLEF integration exclude note/local identity; persistence contract keeps them separate.                   |
-| FR-012      | Page claim coordinator forks a colliding claimant; library three-choice conflict state; persistence contract locks/revisions writes.     |
-| FR-013      | Library retention/quota manager lists explicit discard choices and offers naming as the way to keep one; workspace stays editable.       |
-| FR-014      | Library unsupported/migration/failure states; persistence version registry and lossless snapshot contract.                               |
-| FR-015      | Workspace and build-link contract put the payload only after `#`.                                                                        |
-| FR-016      | Build snapshot/link codec adapter preserve only the enumerated modelled package identities/state.                                        |
-| FR-017      | Workspace link/SLEF boundary tests forbid derived/catalogue/local fields.                                                                |
-| FR-018      | Existing codec loader/table generator; workspace refuses unsupported versions and never changes published tables.                        |
-| FR-019      | Workspace clears stale fragment, identifies refusal slot/reason and links to feature 004 SLEF.                                           |
-| FR-020      | Workspace initial/hash navigation share one candidate-first flow; edits use `replaceState`.                                              |
-| FR-021      | Existing codec bound/capacity corpus plus workspace refusal at over-limit input.                                                         |
+| Requirement | Screen/interface coverage                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-001      | Catalogue and detail consume package hull records; detail/workspace create through `ShipLoadout.default`; domain contract uses `symbol`.   |
+| FR-002      | Catalogue toolbar/cards expose every displayed fact, one word-wise search, the exclusive size strip and stable bidirectional sort.         |
+| FR-003      | Catalogue session store and detail back action preserve query/facets/sort/result anchor; route/link/storage contracts exclude it.          |
+| FR-004      | Hull detail `FactList` shows the reference metric grid's eight figures with their units under a “Hull specifications” boundary.            |
+| FR-005      | Symbol route lookup; detail unknown-symbol error has no creation action and no build mutation.                                             |
+| FR-006      | Catalogue/detail `HullArtwork` uses copied same-origin package assets, textual equivalence and non-blocking absence.                       |
+| FR-007      | Detail explicit create intent checks package default then transactionally calls the package factory.                                       |
+| FR-008      | Every ingress leaves the build recoverable from a record; the first edit of an opened build forks an unnamed one, never writing the named. |
+| FR-009      | Library duplicate-name warning, in-place naming and delete dialog. No screen carries a replacement dialog (revised 2026-08-25).            |
+| FR-010      | Library rows show the local name or that there is none, package hull, localized modified instant and recorded validation; note is local.   |
+| FR-011      | Workspace sharing boundary and SLEF integration exclude note/local identity; persistence contract keeps them separate.                     |
+| FR-012      | Autosave targets a self-minted record; the claim coordinator forks a collision; library three-choice conflict state on deliberate writes.  |
+| FR-013      | Library retention/quota manager lists explicit discard choices and offers naming as the way to keep one; workspace stays editable.         |
+| FR-014      | Library unsupported/migration/failure states; persistence version registry and lossless snapshot contract.                                 |
+| FR-015      | Workspace and build-link contract put the payload only after `#`.                                                                          |
+| FR-016      | Build snapshot/link codec adapter preserve only the enumerated modelled package identities/state.                                          |
+| FR-017      | Workspace link/SLEF boundary tests forbid derived/catalogue/local fields.                                                                  |
+| FR-018      | Existing codec loader/table generator; workspace refuses unsupported versions and never changes published tables.                          |
+| FR-019      | Workspace clears stale fragment, identifies refusal slot/reason and links to feature 004 SLEF.                                             |
+| FR-020      | Workspace initial/hash navigation share one candidate-first flow; edits use `replaceState`.                                                |
+| FR-021      | Existing codec bound/capacity corpus plus workspace refusal at over-limit input.                                                           |
 
 ## Cross-screen ingress rule
 
-**Revised 2026-08-25 (Commander request).** Stock creation, record opening, link loading and SLEF import all construct a detached candidate first, and then commit it — once, with nothing asked. Failure keeps the current route-appropriate display and active build unchanged; success adopts the record the candidate came from, or mints one for it, and navigates to `/build` where appropriate.
+**Revised 2026-08-25 (Commander request).** Stock creation, record opening, link loading and SLEF import all construct a detached candidate first, and then commit it — once, with nothing asked. Failure keeps the current route-appropriate display and active build unchanged; success navigates to `/build` where appropriate.
 
-The replacement dialog is withdrawn from every screen that carried it. It existed because one working record per tab meant the next build wrote over the last, so the question was real and its answer was irreversible. Under FR-008 the build being replaced is a record of its own that `/builds` still lists, so there is nothing to warn about and nothing to cancel — and the screen that asked has one fewer state to render, announce and scan.
+What the commit does with storage depends on where the candidate came from. A build with no record of its own — a stock hull, a decoded link, an imported file — mints an unnamed record and is autosaved into it immediately. A build opened from a record is already recoverable from that record, so the commit writes nothing; the first modelled edit forks an unnamed record and every autosave goes there. Autosave never reaches a named record, so opening a saved build and editing it cannot move the version the Commander saved.
+
+The replacement dialog is withdrawn from every screen that carried it. It existed because one working record per tab meant the next build wrote over the last, so the question was real and its answer was irreversible. Under FR-008 the build being replaced is recoverable from a record `/builds` still lists, so there is nothing to warn about and nothing to cancel — and the screen that asked has one fewer state to render, announce and scan.
 
 ## Shared responsive composition
 

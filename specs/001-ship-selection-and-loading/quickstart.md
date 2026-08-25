@@ -52,42 +52,56 @@ Expected: image absence is temporary/nonblocking; unknown symbol shows an error 
 1. Edit the active build, wait for saved status and reload.
 2. Open a second page in the same browser context, create/edit a different build and reload both pages.
 3. Duplicate one live tab to exercise cloned `sessionStorage` detection, edit both and reload.
-4. Open the same record in both pages.
+4. Open the same named record in both pages and edit in both.
 5. Simulate blocked storage and quota failure while continuing to edit.
 6. Create four builds in a row without saving anything, then open `/builds`.
+7. Open a named record, read it without changing anything, and inspect its stored bytes and
+   `modifiedAt`. Then change one module and inspect them again.
 
-Expected: each page restores the record it holds; a duplicated collision and a second page opening a held record both fork before autosave; neither page overwrites the other; storage failure is clear while the current in-memory build, link and SLEF capabilities remain usable. All four builds from step 6 are listed, none of them was asked about, and none of them replaced another.
+Expected: each page restores what it was holding; a duplicated tab forks before autosave; two pages
+editing one named record each fork an unnamed record of their own and neither writes to the named
+one; storage failure is clear while the current in-memory build, link and SLEF capabilities remain
+usable. All four builds from step 6 are listed, none of them was asked about, and none of them
+replaced another. In step 7 the named record's bytes are byte-for-byte unchanged by the reading and
+still unchanged by the edit — the edit is a new unnamed record naming the one it came from.
 
 ## Scenario 4: Manage named and unnamed records
 
 1. Name/save the current build, then open, rename and duplicate it.
 2. Count the records before and after naming one.
-3. Reuse an existing display name and exercise the warning/proceed path.
-4. Delete a record and test both cancel and confirm.
-5. Seed 20 unnamed records and create a twenty-first build.
-6. Select records in the manager, confirm deletion and retry persistence. Separately, name one of the
+3. Open a named record, edit it, and choose "overwrite existing". Count the records again and read
+   the named record's revision.
+4. Repeat step 3 and choose "save as new" instead.
+5. Reuse an existing display name and exercise the warning/proceed path.
+6. Delete a record and test both cancel and confirm.
+7. Seed 20 unnamed records and create a twenty-first build.
+8. Select records in the manager, confirm deletion and retry persistence. Separately, name one of the
    listed records instead of discarding any.
 
-Expected: IDs remain independent of names; naming leaves the record count unchanged and leaves no
-unnamed copy behind; duplicate names are preserved after warning; cancel deletes nothing; unnamed
-record 21 is memory-only until explicit management, and naming a listed record releases a slot as
-surely as discarding one; no record is automatically evicted.
+Expected: IDs remain independent of names; naming an unnamed record leaves the count unchanged and
+leaves no unnamed copy behind; overwriting takes the named record to a fresh revision and removes the
+unnamed record the edits were in, leaving the count as it was before the edit, and it does so only
+after the write succeeds; saving as new leaves the original named record untouched; duplicate names
+are preserved after warning; cancel deletes nothing; unnamed record 21 is memory-only until explicit
+management, and naming a listed record releases a slot as surely as discarding one; no record is
+automatically evicted.
 
 ## Scenario 5: Resolve a real multi-tab conflict
 
 Use two Playwright pages in one browser context so they share `localStorage` but have separate tab sessions:
 
-1. Open the same record in both. The later page forks onto an unnamed record of its own; confirm both
-   are listed and both are editable.
-2. Make divergent edits, then name page A's record and page B's under the same display name.
+1. Open the same named record in both pages and make divergent edits. Confirm each page forked an
+   unnamed record of its own, that both are listed, and that the named record is still at the
+   revision both pages opened.
+2. Save page A into the named record, then save page B into it.
 3. In separate runs choose cancel, keep both and overwrite.
 4. Before accepting overwrite, make/save a third change in page A.
 
-Expected: no page ever autosaves into a record another live page holds. Where a deliberate write does
-collide, page B receives a conflict: cancel writes nothing to the conflicted record; keep both creates
-a new UUID and retains both versions; overwrite replaces only the version shown; a third revision
-refreshes the conflict rather than disappearing. Both pages' own records remain recoverable
-throughout.
+Expected: no page ever autosaves into a record another live page holds, and neither page's autosave
+ever reaches the named record. Page B's deliberate write is what collides: cancel writes nothing to
+the conflicted record; keep both creates a new UUID and retains both versions; overwrite replaces only
+the version shown; a third revision refreshes the conflict rather than disappearing. Both pages' own
+unnamed records survive every outcome, and a cancelled or conflicted save removes none of them.
 
 ## Scenario 6: Migrations and hostile storage
 

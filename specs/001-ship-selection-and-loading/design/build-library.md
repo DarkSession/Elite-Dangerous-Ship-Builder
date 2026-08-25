@@ -10,7 +10,7 @@
 - A header row: one search field over the records, and the count of records in monospace beside it.
 - Column headers on their own lighter plate — `BUILD`, `HULL`, `Mcr`, `EDITED` — over a scrolling body, as one semantic list rather than four unrelated columns.
 - Semantic `ResponsiveRecordList` divided by labeled unnamed and named groups without changing one logical reading order.
-- `SavedBuildCard` showing the local name or that there is none, its note on one line, package hull text, locale-formatted last modification and recorded validation valid/complete state. Note presence/content is local and exposed through a named editor.
+- `SavedBuildCard` showing the local name or that there is none, its note on one line, package hull text, locale-formatted last modification and recorded validation valid/complete state. An unnamed record forked from a named one says which one, so unsaved edits to a saved build are distinguishable from a build that never had a name. Note presence/content is local and exposed through a named editor.
 - A leading 3px marker on every row, filled amber with a wash running from the leading edge on the record the workspace currently holds, and a monospace issue count on a warm plate beside the title where the recorded validation has issues.
 - Actions on a named record: open, rename, duplicate and delete. On an unnamed one: open, name it, duplicate it under a new name, and delete. Naming acts on the record itself and leaves nothing behind (persistence contract, "Autosaved records").
 - A committing footer: the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge.
@@ -39,41 +39,46 @@ Two of these are more than visual. The absent search is a capability the referen
 
 ## States
 
-| State                  | Required presentation and behavior                                                                                                                                          |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Empty                  | Explain that no recoverable records exist; application may still hold an in-memory build if persistence is unavailable.                                                     |
-| Populated              | Records are ordered by displayed modified instant with stable ID tie-breaker; ordering never implies deletion. The record the workspace holds is marked as the current one. |
-| Searched               | The search narrows the listed records over the fields a row shows and announces the count politely; it changes no record and no order.                                      |
-| No match               | One centred sentence on the body's own ground saying nothing matched; every control stays reachable so widening the search needs no separate action.                        |
-| Duplicate name         | Warning identifies existing matches; proceed remains allowed and creates/renames by local UUID.                                                                             |
-| Delete confirmation    | Identifies exact record/hull; cancel writes nothing; confirmation removes only that key.                                                                                    |
-| Conflict               | Shows that another page changed the record and offers overwrite, keep both and cancel. No lock is held while shown.                                                         |
-| Conflict changed again | Refresh observed version and ask again; never overwrite a third version silently.                                                                                           |
-| Retention limit        | Twenty unnamed records are listed for explicit selection, with naming one offered beside discarding; active memory remains usable and no automatic deletion occurs.         |
-| Quota full             | Same manager permits explicit deletion and retry; every record's bytes remain until selected.                                                                               |
-| Unsupported newer      | Listed as unavailable and retained byte-for-byte; open is unavailable without guessing.                                                                                     |
-| Malformed              | Isolated unavailable entry; valid siblings remain operable; never auto-repaired/deleted.                                                                                    |
-| Storage unavailable    | Persistent explanation and retry; no build interaction outside persistence is disabled.                                                                                     |
+| State                   | Required presentation and behavior                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Empty                   | Explain that no recoverable records exist; application may still hold an in-memory build if persistence is unavailable.                                                     |
+| Populated               | Records are ordered by displayed modified instant with stable ID tie-breaker; ordering never implies deletion. The record the workspace holds is marked as the current one. |
+| Unsaved edits to a save | An unnamed record naming the record it forked from, listed beside it. The named record shows its own saved state and is not marked edited.                                  |
+| Searched                | The search narrows the listed records over the fields a row shows and announces the count politely; it changes no record and no order.                                      |
+| No match                | One centred sentence on the body's own ground saying nothing matched; every control stays reachable so widening the search needs no separate action.                        |
+| Duplicate name          | Warning identifies existing matches; proceed remains allowed and creates/renames by local UUID.                                                                             |
+| Delete confirmation     | Identifies exact record/hull; cancel writes nothing; confirmation removes only that key.                                                                                    |
+| Conflict                | Shows that another page changed the record and offers overwrite, keep both and cancel. No lock is held while shown.                                                         |
+| Conflict changed again  | Refresh observed version and ask again; never overwrite a third version silently.                                                                                           |
+| Retention limit         | Twenty unnamed records are listed for explicit selection, with naming one offered beside discarding; active memory remains usable and no automatic deletion occurs.         |
+| Quota full              | Same manager permits explicit deletion and retry; every record's bytes remain until selected.                                                                               |
+| Unsupported newer       | Listed as unavailable and retained byte-for-byte; open is unavailable without guessing.                                                                                     |
+| Malformed               | Isolated unavailable entry; valid siblings remain operable; never auto-repaired/deleted.                                                                                    |
+| Storage unavailable     | Persistent explanation and retry; no build interaction outside persistence is disabled.                                                                                     |
 
 ## Operation rules
 
 **Revised 2026-08-25 (Commander request, FR-008/FR-009).**
 
 - Open first decodes/migrates/reconstructs a detached candidate; failure cannot replace active work.
-  Success **adopts** that record — the page autosaves into it from then on — rather than copying it
-  into a working record of its own. Nothing is asked before the current build is replaced, because
-  the current build is a record on this same list.
-- A second live page adopting the record this one holds forks the later claimant onto a fresh unnamed
-  record before either writes (FR-012).
-- Naming a record writes the name onto that record: same identity, fresh revision, nothing left
-  behind and nothing removed. Rename/duplicate preserve build and validation snapshot. Duplicate
+  Success holds that record and writes nothing: the build is already recoverable from it. Nothing is
+  asked before the current build is replaced either, because that one is on this same list.
+- Opening does **not** adopt. The first modelled edit forks an unnamed record carrying `sourceNamed`,
+  and every autosave goes there. The record that was opened is never an autosave target, so a
+  Commander who opens a saved build and changes their mind still has the version they saved.
+- Two pages may hold one named record open, because neither writes to it. Only self-minted autosave
+  records can collide, and only where `sessionStorage` was cloned, which the claim handshake forks
+  (FR-012).
+- Naming an unnamed record writes the name onto that record: same identity, fresh revision, nothing
+  left behind and nothing removed. Rename/duplicate preserve build and validation snapshot. Duplicate
   creates new record/revision IDs even when retaining the same display name.
-- Deleting is the only operation that removes a record, and it is always confirmed. Reaching the
-  retention limit removes nothing.
+- Two things remove a record and no third: a confirmed deletion, and the manual save that writes an
+  unnamed record's build into the record it came from, which removes the unnamed one once that write
+  has succeeded. Reaching the retention limit removes nothing.
 - Notes stay in local record metadata and never appear in share/SLEF serializers.
 - `storage`/BroadcastChannel invalidation causes a safe re-read; rows never assume cached bytes are
   current.
-- A page whose held record was discarded elsewhere pauses autosave and requires explicit resume
+- A page whose autosave record was discarded elsewhere pauses autosave and requires explicit resume
   rather than silently recreating it.
 
 ## Responsive and accessibility notes
