@@ -103,6 +103,9 @@ describe('the outfitting workspace’s command-bar channel', () => {
 
     expect(chrome.identity()).toEqual({
       name: null,
+      // Titled by what the build calls itself where it has no name of its own,
+      // exactly as the library titles the same record's row (FR-010).
+      fallbackName: 'Anaconda',
       detail: 'Anaconda',
       ident: null,
       editing: null,
@@ -126,6 +129,7 @@ describe('the outfitting workspace’s command-bar channel', () => {
     expect(store.loadout()?.shipName).toBe('Pacifier');
     expect(chrome.identity()).toEqual({
       name: 'Pacifier',
+      fallbackName: 'Anaconda',
       detail: 'Anaconda',
       ident: null,
       editing: null,

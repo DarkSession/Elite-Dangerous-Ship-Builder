@@ -11,34 +11,58 @@ migrated, repaired or removed, even when it looks like one of ours.
 
 | Key                   | Store              | Holds                                                                         |
 | --------------------- | ------------------ | ----------------------------------------------------------------------------- |
-| `edsb:record:<uuid>`  | `localStorage`     | One saved build, working or named. One key per record; there is no index.     |
-| `edsb:tab`            | `sessionStorage`   | This tab's descriptor: which working record it owns.                          |
+| `edsb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.               |
+| `edsb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.               |
 | `edsb:catalogue`      | `sessionStorage`   | This tab's browsing position in the shipyard: search, filters, order, anchor. |
-| `edsb.persistence.v1` | `BroadcastChannel` | Working-record ownership negotiation and cross-tab invalidation.              |
+| `edsb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.        |
 | `edsb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.         |
 
 No index key exists on purpose. An index is a second source of truth that can disagree with the
 records it lists, and a Commander whose index was lost would have builds that are present in the
 browser and invisible in the application.
 
-## Working records and the retention limit
+## A record for every build, and the seven days an unnamed one has
 
-A working record is this tab's autosave. It is written by editing, restored on reload, and belongs
-to exactly one top-level browsing context; a duplicated tab forks its own before either page next
-saves.
+**Revised 2026-08-25 (Commander request).** There is no per-tab working record that the next build
+writes over, and no count limit. Every build a Commander works on has a record of its own from the
+moment it exists, and the bound on the ones they never named is time rather than number.
 
-**This browser keeps 20 working records** (`WORKING_RECORD_LIMIT`). What happens at the limit is
-the part worth stating precisely:
+- A build with no record yet — a stock creation, a decoded link, a SLEF import — is written to a
+  freshly minted unnamed record before anything else happens to it.
+- Opening a stored record writes nothing at all. The build is already recoverable from what was
+  opened; the **first modelled edit** forks an unnamed record, carrying which named save it came
+  from, and every autosave from then on goes there.
+- Both of those moments first look for an unnamed record already holding exactly this modelled
+  state and take that record over rather than writing a second copy of it. Taking a record over
+  does not touch `modifiedAt`.
+- Autosave never writes to a named record. The check reads the stored record's own `kind` rather
+  than the page's belief about it, so a record named in another tab is covered too.
+- `edsb:tab` carries the unnamed record this page is autosaving into, across a reload. A duplicated
+  tab clones it and claims an id that is already live; the BroadcastChannel handshake forks the
+  later claimant before either page next writes. Two pages holding one _named_ record open is not a
+  collision, because neither writes to it.
 
-- an existing working record always updates, whatever the count;
-- the twenty-first _new_ working record performs **no write and no deletion**; and
-- named records are excluded from the count entirely.
+**Exactly three things remove a record**, and no fourth:
 
-There is no age eviction, no count eviction, no least-recently-used eviction and no eviction on tab
-closure. Nothing a Commander saved is discarded to make room for something else — the application
-says there is no room and offers the record manager, where each record is selected individually and
-removed only after an explicit confirmation. Deciding which of someone's builds mattered least is
-not a decision this application makes.
+1. a deletion the Commander confirmed;
+2. the manual save that consumes the unnamed record it saved from — naming it writes the name onto
+   that same key, and writing the build into an existing record removes the unnamed one only after
+   that write has succeeded;
+3. the **seven-day expiry** of an unnamed record.
+
+The expiry is the only one nobody presses, so it is built as narrowly as that deserves. The deadline
+is `modifiedAt` plus seven days, derived and never stored. The sweep runs at application start and
+before every listing read, and never on a timer — a row vanishing under a Commander reading the
+library is the one removal this design cannot make visible. It never touches a named record, and
+never touches one a live page has announced as its autosave target. It writes nothing and announces
+nothing: every unnamed row states its own remaining life beforehand, and that countdown is the whole
+of the notice. Naming a record ends its expiry outright.
+
+There is no count limit and no eviction of any other kind. Nothing a Commander saved is discarded to
+make room for something else: a full browser quota says there is no room and offers the record
+manager, where each record is selected individually and removed only after an explicit confirmation.
+Deciding which of someone's builds mattered least is not a decision this application makes, and
+expiry is never offered as a way out of a full quota.
 
 Editing continues in every persistence failure state: blocked storage, a full store, a failed write
 and a record discarded in another tab all change what the status says and change nothing about

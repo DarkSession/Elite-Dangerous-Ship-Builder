@@ -39,6 +39,31 @@ The reference rows establish the compact name/note, hull, validation badge and m
 
 Two of these are more than visual. The absent search is a capability the reference carries and the build does not, and it is the one control that makes a week of ordinary building usable — every build now has a record (FR-008), so this is the surface that has to hold a real library rather than a handful of deliberate saves. And a library with no current-record marker cannot answer "which of these am I in?", which is the first question a Commander opening it has.
 
+### Built to the canvas, and where it still differs, recorded 2026-08-25
+
+Phase 11 built the surface above: the framed layer, the header row, the column
+headers, the dense rows, the leading marker, the issue badge and the committing
+footer. Three differences from the drawing remain, deliberately:
+
+- **The `Mcr` column is not drawn.** Build cost is feature 009's package-owned
+  state and is not record metadata; drawing the column with nothing in it would
+  promise a value this surface cannot produce, and computing it would mean
+  reconstructing every stored build through the package to draw a list. The
+  column returns with the state that fills it.
+- **The record's actions are the footer's.** The reference draws rows with no
+  buttons and commits from the footer, and feature 001 needs rename, duplicate
+  and name-it as well as open and delete. All five act on the row that was
+  chosen, which is what "responsive shared actions" means here: choosing a row
+  is one press, committing is the next, and no action is hidden behind a row's
+  hover state.
+- **The compact surface is the shared layer's sheet.** `edsb-layer`'s adaptive
+  presentation resolves to a bottom sheet where the space is narrow and to a
+  full-height layer where the viewport is also short. Feature 001 does not fork
+  the shared component's responsive contract for one screen (constitution VII).
+
+The remaining life of an unnamed record is stated on its own row, and naming is
+offered by choosing that row: the footer then reads "Save <build> under a name".
+
 ## States
 
 | State                   | Required presentation and behavior                                                                                                                                                                                                                       |

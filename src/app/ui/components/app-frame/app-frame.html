@@ -22,7 +22,7 @@
       <edsb-ship-identity-fields
         class="frame__screen-identity"
         [name]="screenIdentity.name"
-        [fallbackName]="routeContext() ?? ''"
+        [fallbackName]="screenIdentity.fallbackName ?? routeContext() ?? ''"
         [detail]="screenIdentity.detail"
         [ident]="screenIdentity.ident"
         [editing]="screenIdentity.editing"

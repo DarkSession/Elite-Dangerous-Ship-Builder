@@ -72,6 +72,16 @@ export interface ShellAction {
  */
 export interface ScreenIdentity {
   readonly name: string | null;
+  /**
+   * What the bar reads when the build has no name of its own.
+   *
+   * Published by the screen rather than defaulted to the route's word, so an
+   * unnamed build is titled by what the build calls itself — its ident, else
+   * its hull — exactly as the library titles the same record's row. A Commander
+   * moving between the two surfaces reads one title, not two (FR-010, ruled
+   * 2026-08-25).
+   */
+  readonly fallbackName?: string | null;
   readonly detail: string | null;
   readonly ident: string | null;
   /** Which field is open for editing, or `null` for the drawn, idle state. */

@@ -296,6 +296,7 @@ export class OutfittingWorkspace {
           ? {
               identity: {
                 name: this.shipName(),
+                fallbackName: this.shipIdent() ?? this.hullName(),
                 detail: this.hullName(),
                 ident: this.shipIdent(),
                 editing: this.editingIdentity(),
