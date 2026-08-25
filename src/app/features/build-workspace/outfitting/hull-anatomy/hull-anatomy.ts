@@ -22,11 +22,12 @@ import { AnnouncementService } from '../../../../ui/announcements/announcement.s
 import { TabGroup } from '../../../../ui/components/tab-group/tab-group';
 import { HullSchematic, type HullSchematicView } from '../../../../ui/outfitting/hull-schematic';
 import { DefenceAnalysis } from '../defence-analysis/defence-analysis';
+import { DrivesMass } from '../drives-mass/drives-mass';
 import { OffenceAnalysis } from '../offence-analysis/offence-analysis';
 import { PowerThermals } from '../power-thermals/power-thermals';
 
 /** The modes of the strip that open something. `DRIVES` is still disabled. */
-const ANATOMY_MODES = ['mounts', 'power', 'defence', 'offence'] as const;
+const ANATOMY_MODES = ['mounts', 'power', 'drives', 'defence', 'offence'] as const;
 
 type AnatomyMode = (typeof ANATOMY_MODES)[number];
 
@@ -37,6 +38,7 @@ type AnatomyMode = (typeof ANATOMY_MODES)[number];
 const MODE_HEADINGS = {
   mounts: 'anatomy.heading',
   power: 'power.heading',
+  drives: 'drives.heading',
   defence: 'defence.heading',
   offence: 'offence.heading',
 } as const satisfies Record<AnatomyMode, MessageKey>;
@@ -57,21 +59,22 @@ function isAnatomyMode(value: string): value is AnatomyMode {
  * (design/hull-anatomy.md, "Divergence from FR-008").
  *
  * The strip is drawn whole, with the five modes the canvas names and in its
- * order. `MOUNTS` is this capability's own; `POWER` is feature 005's and
- * `DEFENCE` feature 006's and `OFFENCE` feature 007's, each of which retitles
- * the region — `POWER & THERMALS`, `DEFENCE ANALYSIS`, `OFFENCE ANALYSIS` — and
- * replaces the plates entirely, because the canvas's switching script hides the
- * plate container outside `mounts` and the side selector and the legend go with
- * them. `DRIVES` is the same plates read by feature 008, and until it lands its
- * segment is disabled rather than invented — a segment that opened an empty
- * panel would be this capability claiming a reading of the hull that nothing has
- * made (design/hull-anatomy.md, "The mode strip";
+ * order. `MOUNTS` is this capability's own; `POWER` is feature 005's, `DRIVES`
+ * feature 008's, `DEFENCE` feature 006's and `OFFENCE` feature 007's, each of
+ * which retitles the region — `POWER & THERMALS`, `DRIVES & MASS`, `DEFENCE
+ * ANALYSIS`, `OFFENCE ANALYSIS` — and replaces the plates entirely, because the
+ * canvas's switching script hides the plate container outside `mounts` and the
+ * side selector and the legend go with them. All five have landed, so none is
+ * disabled; the rule that held the unbuilt ones back stands for whatever the
+ * strip gains next — a segment that opened an empty panel would be this
+ * capability claiming a reading of the hull that nothing has made
+ * (design/hull-anatomy.md, "The mode strip";
  * specs/005-power-and-heat/design/canvas-contract.md, "Where the capability
  * lives").
  */
 @Component({
   selector: 'edsb-hull-anatomy',
-  imports: [DefenceAnalysis, HullSchematic, OffenceAnalysis, PowerThermals, TabGroup],
+  imports: [DefenceAnalysis, DrivesMass, HullSchematic, OffenceAnalysis, PowerThermals, TabGroup],
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,6 +97,7 @@ export class HullAnatomy {
   readonly activeMode = this.#mode.asReadonly();
 
   readonly isPower = computed(() => this.#mode() === 'power');
+  readonly isDrives = computed(() => this.#mode() === 'drives');
   readonly isDefence = computed(() => this.#mode() === 'defence');
   readonly isOffence = computed(() => this.#mode() === 'offence');
 
@@ -132,18 +136,18 @@ export class HullAnatomy {
   /**
    * Canvas 1c's five modes, in its order.
    *
-   * `mounts` is this feature's, `power` is feature 005's, `defence` feature
-   * 006's and `offence` feature 007's; `drives` is disabled until feature 008
-   * ships.
-   * The one that is open is exposed as pressed state and named in words as well,
-   * so the canvas's amber ground is never the only thing that says so.
+   * `mounts` is this feature's; the other four are the same region read by
+   * features 005 to 008, and every one of them has shipped, so none is
+   * disabled. The one that is open is exposed as pressed state and named in
+   * words as well, so the canvas's amber ground is never the only thing that
+   * says so.
    */
   readonly modes = computed(() =>
     (
       [
         { id: 'mounts', key: 'anatomy.mode.mounts', enabled: true },
         { id: 'power', key: 'anatomy.mode.power', enabled: true },
-        { id: 'drives', key: 'anatomy.mode.drives', enabled: false },
+        { id: 'drives', key: 'anatomy.mode.drives', enabled: true },
         { id: 'defence', key: 'anatomy.mode.defence', enabled: true },
         { id: 'offence', key: 'anatomy.mode.offence', enabled: true },
       ] as const

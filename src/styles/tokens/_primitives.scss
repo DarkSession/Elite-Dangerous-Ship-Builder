@@ -388,6 +388,15 @@
   // priority groups, module draws and heat scenarios are all drawn with.
   --edsb-measure-power-bar: 0.5625rem; // 9
 
+  // Canvas 1c's drives panel: the mass bar is a 26px band, taller than any
+  // other bar on the screen because it is one bar carrying three parts rather
+  // than one reading, and the legend under it marks each part with a 10px
+  // square. The speed and range rows beside it take the 11px the offence
+  // panel's label-bar-figure rows do, which is the height the same canvas draws
+  // them at.
+  --edsb-measure-mass-bar: 1.625rem; // 26
+  --edsb-measure-mass-swatch: 0.625rem; // 10
+
   // Canvas 1c's offence panel.
   //
   // The stacked damage bar is 22px — a band, not the 66px command bar the panel

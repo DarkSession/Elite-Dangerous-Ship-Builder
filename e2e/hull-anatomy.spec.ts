@@ -1,5 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
+import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import {
   expectEquivalentControls,
@@ -24,9 +25,13 @@ const HULL = 'Anaconda';
 /** A hull the package draws the same mount on both sides of. */
 const REPEATED = { hull: 'Federation_Corvette', slot: 'MediumHardpoint1' } as const;
 
-async function openStockBuild(page: Page, hull: string = HULL): Promise<void> {
+async function openStockBuild(
+  page: Page,
+  hull: string = HULL,
+  messages: Record<string, string> = englishMessages,
+): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 
@@ -503,6 +508,52 @@ test.describe('the conditions that break layouts', () => {
       });
     expect(mirrored).toBe(false);
     await expectNoDocumentOverflow(page);
+  });
+
+  /**
+   * The mode strip, in German at a doubled text size.
+   *
+   * `test.use` rather than a context built by hand: a hand-built context takes
+   * Playwright's defaults for everything it is not given, and both the width
+   * and the touch profile this arrangement is decided by come from the project.
+   *
+   * Each condition alone was already held. Together they were not: the segments
+   * shrank under their own labels, and a German compound has no space to wrap
+   * at, so `Verteidigung` painted across `Antriebe` beside it and took that
+   * segment's taps — a mode nobody can reach swallowing one they can.
+   */
+  test.describe('the mode strip, in German at a doubled text size', () => {
+    test.use({ locale: 'de-DE' });
+
+    test('gives every mode the taps that land on it', async ({ page }) => {
+      await withRootTextScale(page, DOUBLED_TEXT);
+      await openStockBuild(page, HULL, germanMessages);
+      const strip = page.locator('edsb-hull-anatomy .anatomy__modes .tab-group');
+      await expect(strip).toBeVisible();
+
+      // What a Commander's finger reaches at the middle of a segment. A segment
+      // whose own centre answers to a different one is a segment nobody can
+      // press, whatever its box says.
+      const stolen = await strip.evaluate((node) => {
+        const taken: string[] = [];
+        for (const button of node.querySelectorAll('button')) {
+          button.scrollIntoView({ block: 'center', inline: 'center' });
+          const box = button.getBoundingClientRect();
+          const under = document.elementFromPoint(
+            box.left + box.width / 2,
+            box.top + box.height / 2,
+          );
+          const owner = under?.closest('button')?.id ?? null;
+          if (owner !== button.id) {
+            taken.push(`${button.id} answers to ${owner ?? 'nothing'}`);
+          }
+        }
+        return taken;
+      });
+      expect(stolen).toEqual([]);
+
+      await expectNoDocumentOverflow(page);
+    });
   });
 
   test('loses no mount and no state with motion removed', async ({ page }) => {

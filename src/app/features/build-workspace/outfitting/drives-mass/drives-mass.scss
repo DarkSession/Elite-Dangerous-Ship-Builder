@@ -1,0 +1,371 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1c draws the two cards side by side in the space the plates leave;
+// canvas 1d stacks them. Which arrangement appears is decided from the region's
+// own inline size rather than the viewport's, so a 400% zoom and an expanded
+// translation choose the stacked one for the same reason a phone does.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: drives;
+  min-inline-size: 0;
+}
+
+.drives {
+  @include layout.stack(var(--edsb-space-region));
+
+  min-inline-size: 0;
+}
+
+@include layout.container-medium-up(drives) {
+  .drives {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    // Stretched so the two cards square up against each other. The canvas gives
+    // its pair a `min-height` its own sample build happens to fill; holding a
+    // real build to it would rule a card off around empty ground.
+    align-items: stretch;
+    gap: var(--edsb-space-region);
+  }
+}
+
+// Each of the canvas's cards is a bounded plate on the panel ground, with the
+// same border and padding it gives the power dashboard's blocks.
+.drives__card {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-2xl);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The canvas's identity line: the card's rule at one end, the fitted module's
+// class and blueprint at the other, on one line. It wraps rather than
+// compressing, because German sets `FRAME SHIFT DRIVE` as one unbreakable word.
+.drives__card-header {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+// The `SCO` badge rides inside this rule, on its line, so the heading is a row
+// rather than a block.
+.drives__card-heading {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  align-items: center;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+// The canvas's `7A · DIRTY DRIVES G5` and `6A · INCREASED RANGE G5`: the class,
+// rating and blueprint of the module every reading in the card comes from, set
+// quietly at the far end of the rule it qualifies.
+.drives__source {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.drives__rating {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+}
+
+.drives__state {
+  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-heading));
+}
+
+// The canvas's hairline between two blocks of a card, in the same amber the
+// metric grids show through their one-pixel gaps. Decoration, and hidden as
+// such: it separates blocks a reader already reaches by list and by heading.
+.drives__rule {
+  display: block;
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-rule-grid);
+}
+
+.drives__section-heading {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  // German compounds these headings into single words longer than the stacked
+  // card is wide — `Geschwindigkeitsbereich` has no space to wrap at. Without a
+  // break inside the word the heading pushes the whole page sideways.
+  overflow-wrap: anywhere;
+}
+
+// The canvas's `SCO` badge: an outlined mark beside the drive card's own rule,
+// on the drives that carry the capability. The letters are an abbreviation, so
+// the words behind them are in the markup beside it rather than carried by the
+// styling.
+.drives__sco {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  padding-block: var(--edsb-space-3xs);
+  padding-inline: var(--edsb-space-2xs);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+  text-decoration: none;
+}
+
+// The words behind the `SCO` abbreviation: spoken, never drawn. Component
+// styles are scoped, so the rule has to exist here — inheriting one from
+// another component's stylesheet is not something Angular does, and without it
+// the sentence renders beside the badge as unstyled visible text.
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// The canvas's whole headline on one line: `1,142 t LADEN · 91% OF OPTIMAL
+// MASS`, the mass in the largest and warmest type on either card and the two
+// qualifiers set quietly beside it.
+.drives__headline {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  margin: 0;
+  align-items: baseline;
+}
+
+.drives__headline-mass {
+  @include layout.metric-value(var(--edsb-text-size-display), var(--edsb-text-accent-strong));
+}
+
+.drives__headline-load {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+}
+
+// Where this build sits on the thruster curve, beside the load it belongs to.
+.drives__curve-position {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+}
+
+// The bar and the two marks under it are one block: the marks are the scale the
+// bar is drawn on, so they move with it.
+.drives__mass-chart {
+  @include layout.stack(var(--edsb-space-2xs));
+}
+
+// The canvas's mass bar: one 26px band carrying the build's three parts laid end
+// to end, on a track that runs from nothing to the thrusters' maximum supported
+// mass. The parts do not shrink to fit — a build heavier than its thrusters can
+// carry fills the band and is clipped by it, which is what being over the
+// maximum looks like; the exact tonnage is in the legend under it either way.
+.drives__mass-bar {
+  position: relative;
+  display: flex;
+  gap: var(--edsb-border-width-hairline);
+  block-size: var(--edsb-layout-mass-bar);
+  background-color: var(--edsb-surface-inset);
+  overflow: hidden;
+}
+
+.drives__mass-part {
+  flex: none;
+  display: block;
+  block-size: 100%;
+}
+
+// The optimal mass, marked on the same track the parts are laid on. Drawn just
+// inside its own position rather than starting at it, so a mark that falls at
+// the very end of the track lands on it instead of a pixel past it. A logical
+// margin, so it holds mirrored.
+.drives__mass-optimal {
+  position: absolute;
+  inset-block: 0;
+  display: block;
+  inline-size: var(--edsb-border-width-marker);
+  margin-inline-start: calc(var(--edsb-border-width-marker) * -1);
+  background-color: var(--edsb-text-numeric);
+}
+
+// The canvas's `OPTIMAL 1,260 t` and `MAX 1,890 t`, each under the position it
+// marks. Both stay in the flow of this row rather than being pinned over it: at
+// a doubled text size in German the pair no longer fits on one line, and a row
+// that wraps drops the maximum to a line of its own instead of painting the two
+// readings across each other.
+.drives__mass-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edsb-space-inline);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drives__mass-mark {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  min-inline-size: 0;
+  // `Optimal` is one word in both languages, but the mass beside it is not, and
+  // this row is the narrowest thing on the card.
+  overflow-wrap: anywhere;
+}
+
+.drives__mass-mark-label,
+.drives__mass-mark-value {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+}
+
+.drives__mass-mark-value {
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+}
+
+// The optimal mark is centred on its own tick, the way the canvas centres it:
+// the offset that puts it there is the margin, and the half-width that centres
+// it is the translation.
+.drives__mass-mark--pinned {
+  position: relative;
+  transform: translateX(-50%);
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+// The offset above is logical and the translation that centres the mark on it is
+// physical, so the two disagree the moment the page is mirrored: both move the
+// mark the same way and it ends up half a mark off the card. Mirroring the
+// translation is what CSS leaves to the stylesheet — there is no logical form of
+// it to write instead.
+:host-context([dir='rtl']) .drives__mass-mark--pinned {
+  transform: translateX(50%);
+}
+
+// The maximum is where the track stops, so it is set against the end of the row
+// — on the first line while the pair fits, and on its own line once it does not.
+.drives__mass-mark--end {
+  margin-inline-start: auto;
+}
+
+// The canvas's two legends — the parts of the mass bar under one card, the
+// drive's own constants under the other — and the two barred blocks on the same
+// terms: the list owns the columns and every line borrows them, so swatches,
+// names and figures each stand in one column. A row sizing its own tracks lets a
+// longer value pull its bar shorter than the one above, which reads as a
+// difference in the reading when it is only a difference in digits.
+.drives__legend {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: var(--edsb-space-2xs) var(--edsb-space-inline);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drives__envelope,
+.drives__ranges {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: var(--edsb-space-2xs) var(--edsb-space-inline);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drives__legend-row,
+.drives__envelope-row,
+.drives__range {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+// The mark the canvas puts beside each legend row, in the colour of the bar
+// segment or the constant that row explains. Decoration: the row names its
+// subject in words, so nothing here is told apart by colour alone.
+.drives__legend-swatch,
+.drives__mass-part {
+  &[data-tone='strong'] {
+    background-color: var(--edsb-surface-legend-strong);
+  }
+
+  &[data-tone='dim'] {
+    background-color: var(--edsb-surface-legend-dim);
+  }
+
+  &[data-tone='deep'] {
+    background-color: var(--edsb-surface-legend-deep);
+  }
+}
+
+.drives__legend-swatch {
+  display: block;
+  inline-size: var(--edsb-layout-mass-swatch);
+  block-size: var(--edsb-layout-mass-swatch);
+}
+
+// The canvas runs its qualifier in beside the name rather than under it, so the
+// two are one line of the row and the figure at the end stays level with them.
+.drives__legend-label {
+  color: var(--edsb-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.drives__legend-detail {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+
+  margin-inline-start: var(--edsb-space-inline-tight);
+}
+
+.drives__envelope-label,
+.drives__range-label {
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+
+  // `Höchstgeschwindigkeit` is one word and the label column is sized to its
+  // content, so a word wider than the column takes the bar and the value with
+  // it. Breaking inside the word keeps all three in the row.
+  overflow-wrap: anywhere;
+}
+
+// Every figure on either card, in the mono metric face the canvas sets them all
+// in.
+.drives__legend-value,
+.drives__envelope-value,
+.drives__range-value {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+}
+
+// The bars are decoration: every one of them has the package's own number set
+// beside it, and the track is hidden from assistive technology.
+.drives__envelope-track,
+.drives__range-track {
+  display: block;
+  block-size: var(--edsb-space-xs);
+  min-inline-size: 0;
+  background-color: var(--edsb-surface-inset);
+}
+
+.drives__envelope-fill,
+.drives__range-fill {
+  display: block;
+  block-size: 100%;
+  max-inline-size: 100%;
+  background-color: var(--edsb-text-accent);
+}
+
+// The package's own reasons a mobility reading is unavailable, in its order.
+.drives__issues {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--edsb-text-muted);
+}
+
+// The canvas's headline trio, drawn by the shared metric group. It brings its
+// own cell grid; this only stops it stretching past the card at the narrow
+// arrangement.
+.drives__cells {
+  display: block;
+  min-inline-size: 0;
+}

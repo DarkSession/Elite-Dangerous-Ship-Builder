@@ -1,21 +1,17 @@
 @if (shown()) {
   <!--
-    The rail insets its own groups: the rail band itself carries no side
-    padding, so a cell that drew straight onto it would run into both seams.
-    This is the same inset feature 005's power block above it and feature 006's
-    two cells beside it take.
-  -->
-  <div class="block">
-    <!--
-      Canvas 1c's `DPS` cell, drawn as the canvas draws all six of them: a
-      tracked micro label over a mono figure, on the grid's own hairline
-      ground. No unit and no condition, because the canvas gives it neither.
+    Canvas 1c's `DPS` cell, drawn as the canvas draws all six of them: a tracked
+    micro label over a mono figure, on the one hairline ground the six share. The
+    group runs in flow so this cell becomes an item of the rail's own grid —
+    otherwise the single cell this feature owns would be a grid of its own, ruled
+    off the two beside it instead of sitting beside them.
 
-      Unavailable coverage rides along as the cell's description, which the
-      group associates with the value programmatically — said once, and only
-      where completeness is actually unknown. A zero is an answer and carries
-      no qualification (`design/offence-profile.md`, "Status contribution").
-    -->
-    <edsb-metric-group [label]="railLabel()" [metrics]="cells()" />
-  </div>
+    No unit and no condition, because the canvas gives it neither.
+
+    Unavailable coverage rides along as the cell's description, which the group
+    associates with the value programmatically — said once, and only where
+    completeness is actually unknown. A zero is an answer and carries no
+    qualification (`design/offence-profile.md`, "Status contribution").
+  -->
+  <edsb-metric-group [flow]="true" [label]="railLabel()" [metrics]="cells()" />
 }

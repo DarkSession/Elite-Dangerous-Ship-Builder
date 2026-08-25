@@ -1,0 +1,9 @@
+@if (shown()) {
+  <!--
+    The last three of the rail's six cells, in the one grid the canvas draws all
+    six on. The group runs in flow so its cells become items of that grid: the
+    canvas's `DPS` and `JUMP` share a row, which they can only do if one grid
+    lays out every cell rather than each feature laying out its own.
+  -->
+  <edsb-metric-group [flow]="true" [label]="railLabel()" [metrics]="cells()" />
+}

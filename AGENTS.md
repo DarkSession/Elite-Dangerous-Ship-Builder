@@ -150,9 +150,9 @@ planning ship loadouts.
     plate carries the hull illustration's own loading mark.
   - The five-mode strip — `MOUNTS`, `POWER`, `DRIVES`, `DEFENCE`, `OFFENCE` — is
     canvas 1c's, and is drawn whole at every width. `MOUNTS` is this feature's,
-    `POWER` is feature 005's, `DEFENCE` is feature 006's and `OFFENCE` is
-    feature 007's; a segment is enabled when its feature lands, and `DRIVES`
-    is the one still waiting. Canvas 1d's six-segment strip is a
+    `POWER` is feature 005's, `DRIVES` is feature 008's, `DEFENCE` is feature
+    006's and `OFFENCE` is feature 007's. A segment is enabled when its feature
+    lands, and all five have. Canvas 1d's six-segment strip is a
     different control — it switches whole compact screens, the anatomy being one
     of them — and building it is feature 002's composition
     (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas
@@ -288,6 +288,97 @@ planning ship loadouts.
     `design/reference-review.md` and in its requirements checklist: **an
     exclusion justified by what the package does not return has to be verified
     against the package, not against the sentence asserting it.**
+
+- **Mobility, mass and jump (feature 008)** is the anatomy region's `DRIVES`
+  mode, on the same terms as feature 005's: it retitles the region
+  `DRIVES & MASS`, removes the plates and draws canvas 1c's two cards —
+  `THRUSTER LOAD` and `FRAME SHIFT DRIVE` — in the space they leave. Canvas 1d
+  stacks the same two, from one DOM, the arrangement chosen by a container query
+  rather than a viewport width. It also closes the status rail's six-cell grid:
+  features 006 and 007 own `SHIELD`, `ARMOUR` and `DPS`, and `JUMP`, `SPEED` and
+  `MASS` are this feature's, each the same figure a card already states, read at
+  the same load and allocation and printed at the same precision. The six are
+  one grid, not three blocks stacked: the canvas rules them two to a row through
+  the gaps of a single `1fr 1fr` container, so `.outfitting__status-cells` in
+  the workspace owns that grid and each summary flattens into it through
+  `MetricGroup`'s `flow` input (`display: contents`). Ownership does not move —
+  each feature still builds its own cells, and the `defence-ownership` and
+  `offence-ownership` policy scripts still fence them. `jumpRangeSummary()`, `mobilityMetricsResult()`,
+  `standardLoadResult()`, `buildMass()`, `frameShiftDrive`, `thrusters` and
+  `fuelCapacity` are asked in `src/app/domain/mobility-jump/mobility-jump.ts`
+  and nowhere else, and the component formats what comes back.
+  `standardLoadResult()` is asked for more than one load: the `unladen` profile
+  the card is read at, and all three that guard the drive, because
+  `jumpRangeSummary()` resolves all three and throws on the first it cannot.
+  - **One division in the readings, and it is the package's own.** Where the
+    build sits on the thruster curve — canvas 1c's `91% OF OPTIMAL MASS` — is
+    `MobilityMetrics.loadedMass` against the curve's `optMass`, which is the
+    comparison `ShipLoadout.thrusters` documents. The headline mass and the
+    whole hull/modules/fuel legend are one `buildMass(load)` answer, read at the
+    load the card names rather than summed from the parts beside it. Two
+    qualifications: the canvas's `22 FITTED` is `fittedModules().length`,
+    counted here because the package publishes the rows and not their number,
+    and it is a ruled exception recorded in
+    `specs/008-mobility-and-jump/design/reference-review.md`; and the component
+    divides package figures to length its bars, but a bar length is not a
+    reading — every track is `aria-hidden` and every figure it is drawn from is
+    printed beside or beneath it.
+  - **The mass bar is additive, because the canvas's arithmetic says so.** Its
+    `400`, `662` and `80` run 21.16%, 35.03% and 4.23% of one track whose end is
+    `MAX 1,890 t`, and its optimal mark stands at 1,260 of the same 1,890. So
+    the three parts are laid end to end on a scale that runs to the thrusters'
+    maximum supported mass, and the optimal mass is a tick on that scale rather
+    than a fact beside it. A build over the maximum fills the band and is
+    clipped; rescaling to fit would move the mark, and the mark's position is
+    the reading.
+  - **What the package returns and the canvas does not draw is not drawn.**
+    `unladenMass`, `cargoCapacity`, the two mass-curve multipliers
+    `mobilityMetricsResult()` returns, and a Guardian FSD Booster's jump bonus
+    are all real package figures that neither canvas has, so none is drawn. The
+    two aggregate getters are never called at all; the multipliers arrive inside
+    the `MobilityMetrics` the projector copies whole, and are simply not put on
+    the screen. The
+    design is the template on this feature; where the specification disagreed,
+    FR-004, FR-006 and FR-007 in `specs/008-mobility-and-jump/spec.md` carry the
+    correction rather than the screen carrying an extra reading.
+  - **One thing is drawn that neither canvas draws**, recorded under "Added to
+    it" in `specs/008-mobility-and-jump/design/reference-review.md`:
+    `Switched off` on a mount the outfitting panel has turned off, which neither
+    canvas has a state for and which changes what every reading beside it means.
+    Two further additions stood there and have been withdrawn, because an
+    addition has to earn its place against the template every time it is read:
+    the ENG allocation in the speed envelope's heading (the canvas heads that
+    block `SPEED ENVELOPE AT THIS MASS` and writes nothing beside it — the pips
+    are an input to the one `mobilityMetricsResult()` call, never a line), and
+    the fitted module's name before the rating (the card's own heading has
+    already said what it reads, so the canvas's `7A · DIRTY DRIVES G5` is the
+    class, rating and blueprint and nothing else). A third withdrawn line was a
+    gloss under each `RANGE BY LOAD` row saying what that load carries; the
+    canvas writes the three load names alone. The fitted-module count is not an
+    addition either — canvas 1c draws `22 FITTED` — it is the ruled computation
+    above, a figure the canvas draws that the package publishes as rows rather
+    than as a number.
+  - **The canvas's own blocks, ruled off its own way.** The hairlines between a
+    card's blocks are drawn where the canvas draws them: one in the thruster
+    card, two in the drive card. The `SCO` badge rides inside the drive card's
+    heading rather than on a line of its own, because it qualifies the drive the
+    heading names. Each legend row runs its qualifier in beside the part's name
+    rather than under it, and both cards' legends take the same swatch / name /
+    figure shape. The bar's `OPTIMAL` and `MAX` figures are written under the
+    positions they mark, the optimal centred on its own tick; the one departure
+    is that they stay in the flow of one row rather than being pinned over it,
+    so that in German at a doubled text size the row wraps and the maximum drops
+    to a line of its own instead of the two painting across each other.
+  - Out of scope, deliberately: the artboard's `data-anat-layer="mass"` mount
+    overlay, which its own switching script never shows because it hides the
+    plate container for every mode but `mounts` — the same reason feature 005
+    leaves the `power` overlay alone; and the canvas's `658 T OF HEADROOM` note
+    and its `CURRENT` range row, neither of which this application has a
+    package result or a viewing condition to state.
+  - No ownership policy script fences this boundary yet — features 002, 004, 005
+    and 010 each have one in `scripts/policy/` and feature 008's is `tasks.md`
+    T018, still open. Until it lands the single-projector rule is held by review
+    rather than by a check.
 
 ## Commit Identity — no personal data in git metadata
 

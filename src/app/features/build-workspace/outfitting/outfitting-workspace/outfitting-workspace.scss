@@ -346,6 +346,20 @@
   margin: 0;
 }
 
+// The canvas's six metric cells, as the one grid it draws them in: a single band
+// whose one-pixel gaps show the amber ground through as the only rules between
+// the cells. Two columns, because the rail is 306px wide and that is what the
+// canvas fits across it; the cells flow through them in the canvas's order, so
+// `DPS` and `JUMP` share a row across the two features that own them.
+//
+// The inset is here rather than on any of the three contributors, for the same
+// reason the grid is: the canvas insets the whole band once.
+.outfitting__status-cells {
+  @include layout.ruled-group(repeat(2, minmax(0, 1fr)));
+
+  padding: var(--edsb-space-panel);
+}
+
 .outfitting__ledger-region {
   @include layout.stack(var(--edsb-space-stack));
 

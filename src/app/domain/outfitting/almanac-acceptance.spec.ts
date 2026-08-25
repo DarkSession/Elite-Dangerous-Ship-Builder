@@ -166,8 +166,32 @@ describe('installed Almanac acceptance', () => {
       );
     });
 
-    it('reports quality 1 as unchanged and absent quality as unsupported', () => {
+    it('reports a stated roll at quality 1 as unchanged and absent quality as unsupported', () => {
       const complete = ShipLoadout.fromLoadout({
+        event: 'Loadout',
+        Ship: FIXTURE_HULL,
+        Modules: [
+          {
+            Slot: FIXTURE_SLOTS.thrusters,
+            Item: 'Int_Engine_Size7_Class5',
+            Engineering: {
+              BlueprintName: 'Engine_Dirty',
+              Level: 5,
+              Quality: 1,
+              Modifiers: [{ Label: 'Mass', Value: 26, OriginalValue: 20, LessIsGood: 1 }],
+            },
+          },
+        ],
+      });
+      expect(complete.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unchanged');
+
+      // A block naming a blueprint and grade at quality 1 but stating no
+      // modifiers at all is the identity-only shape SLEF permits and other
+      // tools write. The package rolls that one rather than leaving a completed
+      // capture stock, so quality alone does not decide the answer. The ingress
+      // pipeline asks neither: it guards on a partial quality first, and 1 is
+      // not one.
+      const identityOnly = ShipLoadout.fromLoadout({
         event: 'Loadout',
         Ship: FIXTURE_HULL,
         Modules: [
@@ -178,7 +202,9 @@ describe('installed Almanac acceptance', () => {
           },
         ],
       });
-      expect(complete.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unchanged');
+      expect(identityOnly.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe(
+        'normalized',
+      );
 
       // SLEF requires `Quality`, so this shape cannot be typed — but a real
       // export from another tool can still omit it, which is why the pipeline

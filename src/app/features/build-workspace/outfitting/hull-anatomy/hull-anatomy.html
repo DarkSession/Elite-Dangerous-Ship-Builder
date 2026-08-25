@@ -10,9 +10,11 @@
     Canvas 1d runs the same strip full width under the rule instead, which is
     the arrangement's decision and is made in CSS.
     All five of the canvas's modes are drawn and in its order. `MOUNTS`,
-    `POWER`, `DEFENCE` and `OFFENCE` open; the one feature 008 will draw on
-    these same plates is disabled until it exists, because a segment that
-    opened an empty panel would be a reading of the hull nobody has made
+    every one of the five opens: `MOUNTS` is this region's own and the other
+    four are capabilities that replace the plates. None is disabled any more,
+    and the rule that held the unbuilt ones back stands for whatever the strip
+    gains next — a segment that opened an empty panel would be a reading of the
+    hull nobody has made
     (design/hull-anatomy.md, "The mode strip").
   -->
   <div class="anatomy__header">
@@ -108,5 +110,13 @@
       the chain under somebody else's heading.
     -->
     <edsb-defence-analysis class="anatomy__dashboard" />
+  } @else if (isDrives()) {
+    <!--
+      Feature 008's two cards, in the same space and on the same terms. Canvas
+      1c pairs them; the panel decides that from its own width.
+
+      Named for the reason the mode above it is, not left as the final `@else`.
+    -->
+    <edsb-drives-mass class="anatomy__dashboard" />
   }
 </section>

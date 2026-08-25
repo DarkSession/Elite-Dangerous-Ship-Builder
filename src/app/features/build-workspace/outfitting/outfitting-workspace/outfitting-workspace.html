@@ -187,7 +187,7 @@
       `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
       the order below — the heading, what the Almanac reports about the build,
       then cost and materials. Features 005 to 008 add the power line and the six
-      metric cells between them; 005's line and 006's two cells are there now.
+      metric cells between them, and all of them have landed.
 
       A group with a tab stop, not a bare overflow box. At the widest
       composition a long material list makes this column taller than the
@@ -228,14 +228,25 @@
       <!--
         Canvas 1c draws six metric cells under the `POWER` line, in this
         order: `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006
-        owns the first two and feature 007 owns `DPS`, so they are drawn in that
-        order and feature 008 adds the last three
+        owns the first two, feature 007 owns `DPS` and feature 008 the last
+        three, and they are drawn in that order
         (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
         composition"; `specs/007-offence-profile/design/canvas-contract.md`,
         "The status rail cell").
+
+        One grid holds all six, because that is what the canvas draws: a single
+        band of cells whose one-pixel gaps show the amber ground through as the
+        only rules between them. Three features contribute to it and none of them
+        owns it, so the grid is declared here and each of them draws its cells
+        straight into it. Drawn as three grids the six would be ruled off each
+        other in threes — `DPS` could never share a row with `JUMP`, which is the
+        row the canvas puts them on.
       -->
-      <edsb-defence-summary />
-      <edsb-offence-summary />
+      <div class="outfitting__status-cells">
+        <edsb-defence-summary />
+        <edsb-offence-summary />
+        <edsb-drives-summary />
+      </div>
 
       <edsb-cost-materials />
     </div>

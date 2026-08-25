@@ -95,3 +95,31 @@
     grid-column: 1 / -1;
   }
 }
+
+// A group whose cells join a grid an ancestor owns.
+//
+// The canvas draws the status rail's six cells as one grid on one hairline
+// ground, and three features own two, one and three of them. Here the group
+// lays no grid of its own and generates no box, so its cells become items of
+// the rail's grid and flow across all six — which is the only way the third
+// feature's first cell can sit beside the second feature's last one.
+//
+// The list and its name survive: `display: contents` removes the box, not the
+// element, so a reader still meets three named groups of terms and definitions
+// in the order the canvas draws them. The columns below belong to whichever
+// ancestor owns the grid, so this group's own container query is not consulted
+// — it has no box to be a container of.
+:host(.metric-group--flow) {
+  display: contents;
+}
+
+:host(.metric-group--flow) .metric-group {
+  display: contents;
+}
+
+// A group in flow never widens its last cell to the row: how many cells a row
+// holds is the rail's arithmetic across all six, not this group's across its
+// own two or three.
+:host(.metric-group--flow) .metric {
+  grid-column: auto;
+}

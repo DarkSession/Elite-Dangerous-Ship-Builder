@@ -30,6 +30,14 @@
 // spare each segment is exactly its label, and given a full width they divide
 // what is left over. Which one happens is decided by the width whoever places
 // the strip gives it.
+//
+// It never shrinks below that label, which is what makes the scroller above
+// the answer to a line too short for five of them. Shrinking is the other
+// answer, and it is not one: `min-inline-size` below floors a segment at 24px,
+// a German compound has no space to wrap at, and `Verteidigung` at a doubled
+// text size overflowed its segment far enough to paint across `Antriebe` beside
+// it and swallow that segment's taps — a disabled mode taking an enabled one's.
+
 // The canvases draw this strip dense and never at the project's 44-pixel
 // baseline: 23.5px for canvas 1c's mode strip, 30px for canvas 1d's, 25px for
 // 1d's side selector, 38px for canvas 1a's catalogue filter. A 44-pixel segment
@@ -44,7 +52,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   padding-block: var(--edsb-space-control-block-dense);
   padding-inline: var(--edsb-space-control-inline);
   border: 0;

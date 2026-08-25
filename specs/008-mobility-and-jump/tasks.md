@@ -32,6 +32,105 @@ surfaces in `src/app/features/build-workspace/mobility-and-jump/`, shared primit
 `src/app/ui/`, messages and formatters in `src/app/i18n/`, end-to-end suites in `e2e/`, repository
 policy checks in `scripts/`. Unit tests live beside their source as `*.spec.ts`.
 
+## Reconciliation with the design (this branch)
+
+The `.design` canvases are the template for this feature, and where they and this plan disagreed the
+canvases decided. Six things changed as a result, and this section is the record of them so the
+remaining tasks are read against the shape actually built rather than the one planned.
+
+**One region, two cards — not five stacked surfaces.** Canvas 1c draws Drives & Mass as the `DRIVES`
+mode of the hull anatomy region, with `THRUSTER LOAD` and `FRAME SHIFT DRIVE` side by side in the
+space the plates leave; canvas 1d stacks the same two. The plan's five components
+(`jump-performance/`, `mobility-performance/`, `mass-and-capacity/`, `module-mass-list/` and a
+`drives-and-mass-capability/` container) and its separate condition-context block describe an
+arrangement the canvases do not draw. What was built is `features/build-workspace/outfitting/
+drives-mass/` reading one pure projector at `domain/mobility-jump/`, with the ENG context stated in
+the speed envelope's own heading because that is the only group it qualifies. The design's
+[reference review](./design/reference-review.md) and
+[capability profile](./design/mobility-and-jump-profile.md) have been corrected to match.
+
+**Four readings the Almanac now answers.** The canvas draws a headline loaded mass, a
+hull/modules/fuel decomposition, a position on the thruster mass curve and an `SCO` badge. The
+version of `@elite-dangerous-almanac/core` this feature started against published none of them, so
+all four were raised against the library rather than cut: cutting them would have been resolving a
+library gap by deleting a design element, and deriving them would have been this application
+calculating game values. The library answered — `buildMass()`, `MobilityMetrics.loadedMass` and
+`OutfittingModule.supercruiseOvercharge` — and all four are drawn as the ordinary package readings
+they are. SC-004 in spec.md states the rule the mass split is held to.
+
+**FR-006 named getters that do not exist.** `unladenMassResult`, `fuelCapacityResult` and
+`cargoCapacityResult` are not in the installed package and their absence is deliberate. This was a
+specification error rather than a library gap; spec.md carries the correction and it is not part of
+the upstream issue.
+
+**FR-006's aggregates are drawn only where the canvas draws them.** The requirement says how an
+aggregate is obtained, never that it is drawn. A first pass read it as a licence to add a four-row
+"Mass and capacity" group for `unladenMass`, both tanks and `cargoCapacity`; canvas 1c has no such
+group, draws no unladen mass and no cargo capacity at all, and names both tanks only in the fuel
+row's own qualifier — where that group also printed the main tank a third time on one card. The
+group is gone, `cargoCapacity` is off the projection, and spec.md, the reference review and the
+capability profile carry the narrowing.
+
+**`RANGE BY LOAD` carries one figure a row, not three.** The package publishes a single jump, a
+whole-tank total and a jump count for each of its three loads, and a first pass drew all nine. Canvas
+1c draws three rows of one figure each — `UNLADEN 26.8 ly`, `FUELLED 23.5 ly`, `FULL CARGO 15.6 ly` —
+and draws the whole tank once, as a `Total range` / `8 JUMPS ON A FULL TANK` row in the legend
+underneath, beside `FSD optimal mass` and `Fuel per jump`. Six of those nine figures were readings
+the template does not have, and the legend row it does have was missing. The rows now carry the
+single jump alone and the legend carries `Total range`, mapped to the package's `totalUnladen`
+because the canvas's qualifier names a full tank and no cargo, which is how the package words that
+summary. The reference review's adopted-direction lines described the canvas wrongly and are
+corrected.
+
+**Feature 005 is a dependency after all.** The plan recorded that it was not, on the grounds that the
+package's own mobility diagnostics own thruster power meaning. They do — but the speed envelope is
+read at an ENG allocation, and feature 005 is what settles it. This capability reads the settled pips
+read-only and publishes no distributor control of its own. The screen-inventory's ownership list and
+its FR-004 row have been corrected, along with that row's claim that the load comes from feature 003:
+the load is the canvas's own — the `unladen` profile the headline's three rows account for, per
+the rename recorded in `design/reference-review.md`.
+
+### What this branch delivered
+
+- the pure projector and its unit suite (`domain/mobility-jump/`), covering the ground T006–T011 set
+  out, in one function rather than a store-fed snapshot pipeline;
+- the `DrivesMass` component, its template, its styles and its component suite — the ground
+  T025–T029 set out, as the one region the canvases draw;
+- the `DRIVES` mode in feature 010's anatomy region (T030's intent, at the place the canvas puts it);
+- the feature's message keys in both locales, with locale parity and the reviewed-identical-value
+  justifications the policy checker requires (T017, T031);
+- `e2e/mobility-and-jump.spec.ts` and the four Drives & Mass entries in `e2e/coverage-ledger.ts`,
+  with `008-mobility-and-jump` added to `COVERED_FEATURES` so every declared id must stay registered
+  (T003, T033); and
+- the responsive composition through a container query on the region rather than viewport media
+  queries, so 400% zoom and a phone select the stacked arrangement for the same reason (T056).
+
+### What remains
+
+- the feature 003 contract-first exports and the concrete status provider (T004, T005, T016), which
+  no canvas draws and which feature 003 still waits on;
+- the store, presenter, workspace adapter and serialization-exclusion suite (T012–T014, T019) — the
+  component reads the projector directly today;
+- nothing for T015 or T060, and nothing for T023's `failure` clause: this region announces nothing
+  and has no failure state. Changing a module or a pip changes visible content in place, the control
+  reports its own state, and feature 003's ruling A already established that visible content here is
+  not live; the projection is synchronous over a loadout already in memory, so a package exception is
+  an application defect rather than a screen. Both are feature 005's ruling for the same region, now
+  recorded in `design/mobility-and-jump-profile.md` and `design/screen-inventory.md`;
+- the feature 008 boundary rules in `scripts/check-interface-foundations.mjs` (T018);
+- nothing for T032: the preview manifest holds one declaration per exported `src/app/ui/` component,
+  and `DrivesMass` is a feature region rather than a design-system component — the same reason the
+  power dashboard has no declaration either. Its states are covered by the Playwright suite;
+- the per-module mass list (T010, T044–T055), which neither canvas draws and which spec.md's FR-007
+  note now scopes to feature 002's existing ledger; and
+- the remaining polish tasks: the offline journey, the throttled measurement, the manual
+  screen-reader protocols and the full ten-project matrix run (T057–T069).
+
+Tasks below are marked `[X]` only where this branch delivered them in the design's shape. A task
+whose subject the canvases do not draw is left unticked and named above rather than quietly closed.
+
+---
+
 ## Delivery gates
 
 Feature 008 owns every jump, mobility, mass and capacity semantic in the application and adds no
@@ -47,20 +146,28 @@ calculation of its own. Four gates apply and are named on the tasks they block:
   `WorkspaceTarget` union, the `mobilityAndJump` detail target and the shared condition control) and
   feature 011 (tokens, components, localization, formatters, game-text presenter, diagnostic
   presenter, announcement primitives, preview manifest, ten Playwright projects, axe helpers).
-- **No feature 005 dependency**: the package's own `mobilityMetricsResult()` issues distinguish
-  `thrusters/missing`, `thrusters/disabled`, `thrusters/shed`, `thrusters/unresolved` and
-  `powerCapacity`/`powerDraw` failures. Feature 008 must not call `powerBudget()`, join feature 005's
-  distributor or power observations, infer a power cause from a priority band, a plant rating, a slot
-  name or a zero value, or pre-gate the mobility call with a locally computed power budget.
+- **Feature 005's ENG allocation, read-only, and nothing else of feature 005's**: the package's own
+  `mobilityMetricsResult()` issues distinguish `thrusters/missing`, `thrusters/disabled`,
+  `thrusters/shed`, `thrusters/unresolved` and `powerCapacity`/`powerDraw` failures, and that meaning
+  stays the package's. Feature 008 reads the settled ENG pips from feature 005 and passes them to the
+  package unchanged — the canvas states them above the speed envelope, so the reading cannot be taken
+  without them — and publishes no distributor control of its own. It must not call `powerBudget()`,
+  join feature 005's power observations, infer a power cause from a priority band, a plant rating, a
+  slot name or a zero value, or pre-gate the mobility call with a locally computed power budget.
+
+  > **Corrected.** This gate previously read "No feature 005 dependency". The prohibitions above are
+  > the real ones and are unchanged; the settled pips are a dependency and always were.
+
 - **Contract-first exports**: feature 003's provider bundle waits on this feature's Phase 2 type
   export (T005) and its concrete provider (T016). Those tasks must land before feature 003 can
   assemble the five-provider Status capability; feature 003 never interprets a raw Almanac jump,
   mobility, mass or capacity result itself.
 
 The installed `@elite-dangerous-almanac/core` has no known feature-008 API blocker:
-`standardLoadResult()`, `jumpRangeSummary()`, the diagnostic `mobilityMetricsResult()`, the three
-aggregate result getters, `slots('core')` discriminators and post-engineering `effectiveStats` are
-all present in the installed release.
+`standardLoadResult()`, `jumpRangeSummary()`, the diagnostic `mobilityMetricsResult()`, the plain
+`unladenMass`, `fuelCapacity` and `cargoCapacity` getters — which carry no `CalculationResult` form,
+and deliberately so; see FR-006's correction in spec.md — `slots('core')` discriminators and
+post-engineering `effectiveStats` are all present in the installed release.
 
 ---
 
@@ -71,7 +178,7 @@ before any contract lands.
 
 - [ ] T001 Characterize the installed Almanac mobility, jump, mass and slot contract this feature projects — `unladenMassResult`, `fuelCapacityResult` returning exact `{ main, reserve }` and `cargoCapacityResult` as `CalculationResult<T>` values whose incomplete form carries `value: null` and a non-empty ordered `CalculationIssue` tuple with required `field`, `reason` and `message` plus optional `slot`, `symbol` and `params`; `standardLoadResult('maximum' | 'unladen' | 'laden')` returning `CalculationResult<StandardLoadInputs>`; `jumpRangeSummary()` returning `max`, `unladen`, `laden`, `totalMax`, `totalUnladen` and `totalLaden` each with `range` and `jumps`; `frameShiftDrive` returning `FrameShiftDriveParams` including combined `jumpBoost`; `mobilityMetricsResult(StandardLoadInputs & { enginesPips })` returning all seven of `speed`, `boost`, `pitch`, `roll`, `yaw`, `massCurveMultiplier` and `rotationMassCurveMultiplier`; `slots('core')` exposing the `core` discriminators `frameShiftDrive` and `thrusters` with the exact game key `MainEngines` for thrusters; `fittedModules()` exposing exact `slot`, `symbol` and post-engineering `effectiveStats.mass`; and the leaf subpaths `ships/ship-loadout`, `ships/loadout-calculations`, `ships/mobility`, `ships/jump-range` and `ships/modules` — in `src/app/domain/mobility-jump/almanac-mobility-contract.spec.ts`
 - [ ] T002 [P] Create the feature source skeleton `src/app/domain/mobility-jump/`, `src/app/application/mobility-jump/` and the `src/app/features/build-workspace/mobility-and-jump/` subdirectories `drives-and-mass-capability/`, `jump-performance/`, `mobility-performance/`, `mass-and-capacity/` and `module-mass-list/` per plan.md
-- [ ] T003 [P] Create the feature suite `e2e/mobility-and-jump.spec.ts` importing the feature 011 axe helper from `e2e/accessibility/axe.ts` and the semantic assertions from `e2e/accessibility/assertions.ts`, and register the Drives & Mass surfaces in `e2e/coverage-ledger.ts`
+- [x] T003 [P] Create the feature suite `e2e/mobility-and-jump.spec.ts` importing the feature 011 axe helper from `e2e/accessibility/axe.ts` and the semantic assertions from `e2e/accessibility/assertions.ts`, and register the Drives & Mass surfaces in `e2e/coverage-ledger.ts`
 
 ---
 
@@ -104,8 +211,8 @@ reads.
 - [ ] T014 Implement `MobilityWorkspaceAdapter` emitting feature 003's shared `{ kind: 'slot', slotKey }` target with the exact unchanged package key for a module-mass action and exposing the fixed `{ kind: 'detail', capability: 'mobilityAndJump' }` identity, owning no route, query, fragment, history or persisted view state — with unit tests for duplicate symbols in different slots targeting their own keys and for the absence of any route change, in `src/app/application/mobility-jump/mobility-workspace.adapter.ts` and `src/app/application/mobility-jump/mobility-workspace.adapter.spec.ts` (depends on T004)
 - [ ] T015 Implement and test the announcement policy — one coalesced polite message per settled build or condition revision naming changed availability and the selected load and ENG context, silence for initial, unchanged, stale and locale-only transitions, no per-field or per-issue live-region burst, no duplicate announcement when feature 002 announces a slot opening, and one feature 011 assertive alert for a current-revision `failure` — in `src/app/application/mobility-jump/mobility-jump-announcements.ts` and `src/app/application/mobility-jump/mobility-jump-announcements.spec.ts` (depends on T012)
 - [ ] T016 Implement `MobilityStatusProvider` as a synchronous provider over the exact `StatusRevisionContext` passed by feature 003, invoking the shared pure projector with that context rather than reading the settled store, mapping `jumpRange` from the selected load's single-jump summary field, `topSpeed` from the selected-load `mobility.speed` and `unladenMass` from the exact aggregate independent of load, stamping both input revisions unchanged and returning the fixed detail target — with unit tests proving the three mappings across all three loads, that ready zero stays ready and contributes no qualification, that each unavailable field contributes its identity exactly once and nested issues add no extra identity, that a ready envelope is returned for package-unavailable values, that the provider reads the passed context rather than a store snapshot from another revision, and that an unexpected projector throw propagates to feature 003's `projectionFailed` path, in `src/app/application/mobility-jump/mobility-status.provider.ts` and `src/app/application/mobility-jump/mobility-status.provider.spec.ts` (depends on T005, T011) (contract-first export: unblocks feature 003's provider bundle)
-- [ ] T017 [P] Add the feature-owned framing message keys — the “Drives” workspace mode label, the “Drives & Mass” capability heading, the read-only selected load and ENG context labels, the maximum, unladen and laden load identities, the single range, total range and jump count labels, the blocked-guard and unavailable framing, the ready-zero phrasing, the combined build/booster `jumpBoost` label, the not-stated phrase for an absent sparse parameter, and the current-revision failure text — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T018 [P] Add the feature 008 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the five listed leaf subpaths and never a broad `ships` barrel; no file under `src/app/` outside `src/app/domain/mobility-jump/` calls `jumpRangeSummary`, `mobilityMetricsResult`, `standardLoadResult`, `unladenMassResult`, `fuelCapacityResult` or `cargoCapacityResult`; no arithmetic operator is applied to a package jump, range, count, mass, capacity, curve or multiplier field outside the single ENG half-pip division; no source references `mobilityMetrics(`, `powerBudget(` or a feature 005 module from feature 008; no source hard-codes a `Thrusters` slot key or matches a core module by symbol prefix or positional index; and feature 003 imports only the exported status contract leaf and never a feature 008 component, store or presenter — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
+- [x] T017 [P] Add the feature-owned framing message keys — the “Drives” workspace mode label, the “Drives & Mass” capability heading, the read-only selected load and ENG context labels, the maximum, unladen and laden load identities, the total range label and its jump-count qualifier, the blocked-guard and unavailable framing, the ready-zero phrasing, the not-stated phrase for an absent sparse parameter, and the current-revision failure text — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [ ] T018 [P] Add the feature 008 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the five listed leaf subpaths and never a broad `ships` barrel; no file under `src/app/` outside `src/app/domain/mobility-jump/` calls `jumpRangeSummary`, `mobilityMetricsResult`, `standardLoadResult`, `unladenMass`, `fuelCapacity` or `cargoCapacity`; no arithmetic operator is applied to a package jump, range, count, mass, capacity or curve field outside the curve position's `loadedMass / optMass`, which `ShipLoadout.thrusters` itself prescribes, and the `aria-hidden` bar lengths in the component; no source references `mobilityMetrics(` or `powerBudget(` from feature 008, and the only feature 005 surface it may reach is the settled ENG allocation; no source hard-codes a `Thrusters` slot key or matches a core module by symbol prefix or positional index; and feature 003 imports only the exported status contract leaf and never a feature 008 component, store or presenter — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
 - [ ] T019 Add the serialization-exclusion suite proving no `MobilityJumpSnapshot`, package result, guarded jump or mobility state, selected capability, disclosure state or revision pair reaches local storage, saved records, undo/redo history, preferences, the route, query or fragment, a copied build link or a SLEF export, and that no projection object is JSON-cloned, in `src/app/application/mobility-jump/mobility-jump.serialization.spec.ts` (depends on T012)
 
 **Checkpoint**: The status contract, the concrete provider, the pure projection, the store, the
@@ -136,7 +243,7 @@ Status jump range is identity-equal to the selected detail value and opens the c
 - [ ] T020 [P] [US1] Add jump performance component tests for three labelled profile groups each naming single range, total range and jump count with units, exact numeric zero retained under zero main fuel, equal unladen and laden values remaining separately labelled, no summary number under any blocked guard, blocking aggregates and standard loads named in fixed order with their exact owning issues, and the absence of any mass factor, percentage-of-optimal, headroom, fuel-per-jump, saved-build delta, bar width or inferred SCO badge, in `src/app/features/build-workspace/mobility-and-jump/jump-performance/jump-performance.component.spec.ts`
 - [ ] T021 [P] [US1] Add Frame Shift Drive source tests for the exact package slot key, localized module and slot text with disclosed canonical fallback, `empty`, `on === false` and `on === undefined` states presented distinctly, only present `optMass`, `maxFuel`, `fuelMul` and `fuelPower` rendered with absent facts stated as not present rather than zero, and combined `jumpBoost` labelled as an active-booster/build parameter separate from the fitted drive record, in `src/app/features/build-workspace/mobility-and-jump/jump-performance/frame-shift-drive-source.component.spec.ts`
 - [ ] T022 [P] [US1] Add selected-condition context tests for read-only settled load identity and ENG pips rendered before the values they qualify, the absence of any Apply, Reset, draft field or second condition store in this capability, and an old snapshot never being relabelled with new load or pip text, in `src/app/features/build-workspace/mobility-and-jump/drives-and-mass-capability/selected-condition-context.component.spec.ts`
-- [ ] T023 [P] [US1] Add capability lifecycle tests for `noBuild` deferring to feature 001's shared workspace state with no package call and no zero placeholders, `ready` composing the ten-step semantic order of design/mobility-and-jump-profile.md, and `failure` showing feature 011's shared current-revision alert with no stale or estimated numeric value while the active build stays intact and editable, in `src/app/features/build-workspace/mobility-and-jump/drives-and-mass-capability/drives-and-mass-capability.component.spec.ts`
+- [ ] T023 [P] [US1] Add capability lifecycle tests for `noBuild` deferring to feature 001's shared workspace state with no package call and no zero stand-ins, `ready` composing the ten-step semantic order of design/mobility-and-jump-profile.md, and `failure` showing feature 011's shared current-revision alert with no stale or estimated numeric value while the active build stays intact and editable, in `src/app/features/build-workspace/mobility-and-jump/drives-and-mass-capability/drives-and-mass-capability.component.spec.ts`
 - [ ] T024 [P] [US1] Add the jump performance journey — no build, a complete build compared field-for-field against the live package summary after locale-aware parsing, an incomplete mass, fuel and cargo aggregate, each incomplete standard load, a missing and a package-incomplete drive, an active-booster validation failure, zero main fuel, zero cargo with equal profiles, and feature 003's Status jump headline opening the complete capability in one activation — in `e2e/mobility-and-jump.spec.ts`
 
 ### Implementation for User Story 1
@@ -149,7 +256,7 @@ Status jump range is identity-equal to the selected detail value and opens the c
 - [ ] T030 [US1] Register Drives & Mass as the `mobilityAndJump` detail capability in the desktop capability selector and the narrow capability navigation, selected in memory through feature 003's workspace target coordinator with no route, query, fragment, history or persistence change, in `src/app/features/build-workspace/build-workspace.ts` and its template (depends on T014, T029)
 - [ ] T031 [P] [US1] Add the US1 message keys — the three load identities and their load-state descriptions, single range, total range and jump count labels, the light-year unit, the drive source and slot labels, the four sparse drive parameter labels, the combined booster parameter label, the zero-fuel and blocked-guard phrases and the Status jump headline label — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [ ] T032 [P] [US1] Add `JumpPerformanceComponent`, `FrameShiftDriveSourceComponent`, `SelectedConditionContextComponent` and `DrivesAndMassCapabilityComponent` preview declarations covering complete, zero-fuel, zero-cargo, each blocked guard, missing drive, package-incomplete drive, every sparse parameter present and absent, no-build and failure states at 1440×900, 834×1112, 1112×834, 390×844 and 844×390 with long and expanded text, RTL and high-zoom container fixtures, in `src/app/ui/previews/preview-manifest.ts`
-- [ ] T033 [US1] Add the US1 surfaces, the FR-001, FR-002, FR-003 and FR-008 ids, the Status jump contribution, journeys and axe flags to `e2e/coverage-ledger.ts`
+- [x] T033 [US1] Add the US1 surfaces, the FR-001, FR-002, FR-003 and FR-008 ids, the Status jump contribution, journeys and axe flags to `e2e/coverage-ledger.ts`
 
 **Checkpoint**: The complete three-profile jump summary, its guard behaviour and feature 003's
 selected jump headline are independently demonstrable.
@@ -235,7 +342,7 @@ three owner-authored mobility summaries.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T056 Implement the responsive composition — fluid adjacent jump and mobility regions followed by full-width mass, capacity and module-mass regions at roomy widths, chosen from available inline size rather than device-name branching, and one complete semantic single column in the order condition context, jump, mobility, mass and capacity, module masses at narrow widths, both landscape phone orientations, 200% text and 400% zoom with no shortened content, no omitted field, issue, sparse fact or module row and no page-level horizontal scrolling — in `src/app/features/build-workspace/mobility-and-jump/drives-and-mass-capability/drives-and-mass-capability.component.ts` and its template and styles (depends on T052)
+- [x] T056 Implement the responsive composition — canvas 1c's two cards side by side at roomy widths and canvas 1d's stacked pair at narrow ones, chosen from available inline size rather than device-name branching, from one DOM, holding at narrow widths, both landscape phone orientations, 200% text and 400% zoom with no shortened content, no omitted field, issue or sparse fact and no page-level horizontal scrolling — in `src/app/features/build-workspace/outfitting/drives-mass/drives-mass.ts` and its template and styles
 - [ ] T057 [P] Run the complete capability in Chromium and Firefox at desktop, tablet portrait and landscape and mobile portrait and landscape with an axe scan over every no-build, ready, failure, blocked-guard, missing-drive, zero-fuel, zero-cargo, missing, disabled, shed, package-unresolved, power-capacity, power-draw, ready-all-zero, incomplete-aggregate, unavailable-row and duplicate-symbol state, in `e2e/mobility-and-jump.spec.ts`
 - [ ] T058 [P] Assert 200% text, actual 400% browser zoom, expanded translations, long canonical module names and RTL layout with no lost content, function, result/issue/row association or document horizontal scrolling, and that a wide module-mass table becomes exact-slot cards or scrolls only inside its own labelled container with associations intact, in `e2e/mobility-and-jump.spec.ts`
 - [ ] T059 [P] Assert touch operation and shared target-size tokens for every module action and capability navigation control with no overlap at mobile width, that nothing essential depends on hover or `title`, and that `prefers-reduced-motion` changes only transitions and never content, state or announcement timing, in `e2e/mobility-and-jump.spec.ts`

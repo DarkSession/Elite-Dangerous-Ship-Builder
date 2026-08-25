@@ -1,5 +1,25 @@
 # Jump Performance Contract
 
+> **Superseded in part.** This document was written before the design review and describes an
+> arrangement and a package surface the design and the installed Almanac replaced. Three corrections
+> govern anything read here:
+>
+> 1. **Getters that do not exist.** `unladenMassResult`, `fuelCapacityResult` and
+>    `cargoCapacityResult` are not in `@elite-dangerous-almanac/core`, deliberately: the package
+>    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
+>    than a `CalculationResult` as the report. Of those three only `fuelCapacity` is read; the
+>    build's mass split comes from `buildMass(load)` and the thruster's curve from
+>    `ShipLoadout.thrusters`. See FR-006 in [spec.md](../spec.md).
+> 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
+DRIVE`; the five stacked components and the per-module mass list described below are not built.
+>    See [design/reference-review.md](../design/reference-review.md) and
+>    [design/mobility-and-jump-profile.md](../design/mobility-and-jump-profile.md).
+> 3. **Only what the canvas draws.** The two mass-curve multipliers, a Guardian booster's jump bonus,
+>    `unladenMass` and `cargoCapacity` are real package figures neither canvas has, so none is read
+>    or drawn. See FR-004 and FR-006 in [spec.md](../spec.md).
+>
+> Where this document and those disagree, those decide.
+
 ## Inputs and complete-result guard
 
 For one captured `ShipLoadout`, read exactly once:

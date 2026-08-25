@@ -28,6 +28,7 @@ import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-gr
 import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
 import { DefenceSummary } from '../defence-summary/defence-summary';
+import { DrivesSummary } from '../drives-summary/drives-summary';
 import { OffenceSummary } from '../offence-summary/offence-summary';
 import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
@@ -63,6 +64,7 @@ type Category = 'all' | SlotKind;
     CostMaterials,
     DefenceSummary,
     OffenceSummary,
+    DrivesSummary,
     PowerSummary,
     EditRefusalNotice,
     HullAnatomy,

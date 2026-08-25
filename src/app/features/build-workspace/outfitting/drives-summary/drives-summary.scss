@@ -1,0 +1,10 @@
+// Canvas 1c's `JUMP`, `SPEED` and `MASS` cells in the 306px rail, and the same
+// three in canvas 1d's Status mode.
+//
+// The cells are the shared metric group's; the grid they sit in belongs to the
+// rail, because the canvas draws one grid for all six and this feature owns the
+// last three. So this component generates no box and its cells fall straight
+// into that grid, exactly as features 006 and 007 do above it.
+:host {
+  display: contents;
+}

@@ -1414,6 +1414,12 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'format.credits': 'CR is the in-game abbreviation and is not translated.',
     'hullDetail.unit.speed': 'The SI symbol for metres per second, identical in German.',
     'hullDetail.unit.mass': 'The SI symbol for the tonne, identical in German.',
+    'drives.rail.metres-per-second': 'The SI symbol for metres per second, identical in German.',
+    'drives.thrusters.optimal-mass':
+      'The canvas’s own one-word mark under the mass bar; German writes the same word.',
+    'drives.thrusters.maximum-mass':
+      'The canvas’s own abbreviation at the end of the mass bar; German abbreviates it the same way.',
+    'drives.rail.tonnes': 'The SI symbol for the tonne, identical in German.',
     'hullDetail.unit.shield': 'The SI symbol for the megajoule, identical in German.',
     'library.save.name.label': '"Name" is the ordinary German word.',
     'catalogue.hardpoint.code.medium':
@@ -1509,6 +1515,19 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'offence.convergence.widest.value':
       'A composition pattern; "HP" is the abbreviation the canvas draws in this cell, a code like "4A" rather than a word, and the rest is a variable.',
+    'drives.format.tonnes': 'A value and the SI symbol for the tonne, identical in German.',
+    'drives.format.metres-per-second':
+      'A value and the SI symbol for metres per second, identical in German.',
+    'drives.format.degrees-per-second':
+      'A value and the SI symbol for degrees per second, identical in German.',
+    'drives.source.engineered':
+      'A composition of a package-supplied rating and recipe name and the grade; G is the in-game grade marker and is not a word.',
+    'drives.thrusters.hull.detail':
+      'Two package-supplied identities joined by a separator; the pattern holds no word in either language.',
+    'drives.thrusters.boost':
+      'The in-game term, used untranslated in the German community — the same decision already recorded for hullDetail.fact.boost, which names this very reading. "Schub" is thrust, and this figure is a speed.',
+    'drives.fsd.sco':
+      'The in-game abbreviation for Supercruise Overcharge, printed on the drive itself and not translated; the words behind it are carried under drives.fsd.sco.description.',
   },
 };
 

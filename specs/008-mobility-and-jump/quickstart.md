@@ -1,5 +1,24 @@
 # Quickstart: Mobility, Mass and Jump Validation
 
+> **Superseded in part.** This document was written before the design review and describes an
+> arrangement and a package surface the design and the installed Almanac replaced. Three corrections
+> govern anything read here:
+>
+> 1. **Getters that do not exist.** `unladenMassResult`, `fuelCapacityResult` and
+>    `cargoCapacityResult` are not in `@elite-dangerous-almanac/core`, deliberately: the package
+>    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
+>    than a `CalculationResult` as the report. The build's mass split comes from `buildMass(load)`
+>    and the thruster's curve from `ShipLoadout.thrusters`. See FR-006 in [spec.md](./spec.md).
+> 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
+DRIVE`; the five stacked components and the per-module mass list described below are not built.
+>    See [design/reference-review.md](./design/reference-review.md) and
+>    [design/mobility-and-jump-profile.md](./design/mobility-and-jump-profile.md).
+> 3. **Only what the canvas draws.** The two mass-curve multipliers, a Guardian booster's jump bonus,
+>    `unladenMass` and `cargoCapacity` are real package figures neither canvas has, so none is read
+>    or drawn. See FR-004 and FR-006 in [spec.md](./spec.md).
+>
+> Where this document and those disagree, those decide.
+
 This is the runnable acceptance guide for feature 008 after its shared prerequisites are present. It
 does not contain implementation code or hand-calculated game figures.
 
@@ -108,10 +127,12 @@ and 4; then return to/read Drives & Mass.
 
 Expected:
 
-- the detail shows read-only selected load/ENG context and does not duplicate Apply/Reset controls;
+- the ENG allocation the envelope was read under is stated in the envelope's own heading, which is
+  where the card names it, and no Apply/Reset control is duplicated;
 - `maximumJump` maps to `standardLoadResult('maximum')`;
 - the diagnostic mobility method receives exact package fuel/cargo and selected ENG pips once;
-- speed, boost, pitch, roll, yaw and both multipliers equal the package result; and
+- speed, boost, pitch, roll and yaw equal the package result, and the two multipliers it also
+  returns are not drawn; and
 - invalid feature 003 drafts change no revision or feature 008 result.
 
 ### 4. Distinguish mobility unavailable states from ready zero
@@ -124,7 +145,7 @@ Expected:
 - the package field/reason and source identity distinguish each unavailable state;
 - there is no feature 005 join or hull catalogue fallback;
 - incomplete `mobilityMetricsResult().value` remains null; and
-- above-supported-mass result remains complete numeric zero for all seven fields.
+- above-supported-mass result remains a complete numeric zero in every field the canvas draws.
 
 ### 5. Read mass and capacity diagnostics
 

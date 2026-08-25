@@ -120,13 +120,11 @@ describe('HullAnatomy', () => {
       'Defence',
       'Offence',
     ]);
-    // `DRIVES` is the same plates read by feature 008. Until it ships, its
-    // segment is disabled rather than opening a panel with nothing in it.
+    // All five are built now: `MOUNTS` is this region's own and the other four
+    // are capabilities that read the same plates. Nothing is disabled, so
+    // nothing opens a panel with nothing in it.
     expect(tabs[0].getAttribute('aria-pressed')).toBe('true');
-    expect(tabs[1].hasAttribute('disabled')).toBe(false);
-    expect(tabs[3].hasAttribute('disabled')).toBe(false);
-    expect(tabs[4].hasAttribute('disabled')).toBe(false);
-    expect(tabs.filter((tab) => tab.hasAttribute('disabled')).length).toBe(1);
+    expect(tabs.filter((tab) => tab.hasAttribute('disabled'))).toEqual([]);
   });
 
   describe('the power mode', () => {
@@ -198,6 +196,61 @@ describe('HullAnatomy', () => {
       const mount = element.querySelector<HTMLElement>('.schematic__mount');
       expect(mount?.hasAttribute('data-power')).toBe(false);
       expect(mount?.textContent?.trim()).toMatch(/^\d+$/u);
+    });
+  });
+
+  describe('the drives mode', () => {
+    /** Opens `DRIVES` on a plate that has arrived, and returns the rendered DOM. */
+    async function openDrives(): Promise<{ element: HTMLElement; detect: () => void }> {
+      TestBed.inject(AnatomyStore);
+      TestBed.inject(ActiveBuildStore).commit(candidate());
+      TestBed.tick();
+      await loader.settle('top', {
+        kind: 'ready',
+        document: documentFor('top', FIXTURE_SLOTS.fittedHardpoint),
+      });
+      const rendered = render();
+      rendered.element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[2]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      rendered.detect();
+      return rendered;
+    }
+
+    it('retitles the region, and adds nothing under the title', async () => {
+      const { element } = await openDrives();
+
+      // The canvas's switching script maps this mode to its own title and
+      // nothing else, exactly as it does for POWER.
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe(
+        'Drives and mass',
+      );
+      expect(element.querySelectorAll('.anatomy__title p')).toHaveLength(0);
+    });
+
+    it('replaces the plates rather than drawing under them', async () => {
+      const { element } = await openDrives();
+
+      expect(element.querySelector('edsb-drives-mass')).not.toBeNull();
+      const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
+      expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
+      expect(element.querySelector('.anatomy__plates')).toBeNull();
+      expect(element.querySelector('.anatomy__sides')).toBeNull();
+      expect(element.querySelector('.anatomy__legend')).toBeNull();
+    });
+
+    it('gives the plates and the title back on the way out', async () => {
+      const { element, detect } = await openDrives();
+
+      element
+        .querySelectorAll<HTMLElement>('.anatomy__modes button')[0]
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      detect();
+
+      expect(element.querySelector('edsb-drives-mass')).toBeNull();
+      expect(element.querySelector('.anatomy__plates')).not.toBeNull();
+      expect(element.querySelector('.anatomy__legend')).not.toBeNull();
+      expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
     });
   });
 

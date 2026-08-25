@@ -40,12 +40,25 @@ export interface Metric {
   templateUrl: './metric-group.html',
   styleUrl: './metric-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.metric-group--flow]': 'flow()' },
 })
 export class MetricGroup {
   /** What the group of metrics describes. */
   readonly label = input.required<string>();
   readonly metrics = input.required<readonly Metric[]>();
   readonly emptyLabel = input<string | null>(null);
+
+  /**
+   * Whether this group's cells join a grid an ancestor owns.
+   *
+   * The canvas draws the status rail's six cells as one grid on one hairline
+   * ground, and three separate features own two, one and three of them. Set
+   * here, the group stops laying its own grid and lets its cells fall into the
+   * rail's — so the six sit in one grid without any feature having to know what
+   * the other two contribute. The group keeps its list and its name either way:
+   * a reader still meets three named groups of terms and definitions.
+   */
+  readonly flow = input(false);
 
   readonly groupId = relationId('metric-group');
 

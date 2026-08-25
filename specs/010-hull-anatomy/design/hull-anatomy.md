@@ -171,7 +171,11 @@ shares a full-width strip between them (`flex: 1 1 0`). Growing each segment fro
 rather than from zero is both at once — given no room to spare each is exactly its label, given a
 full width they divide what is left over — so the shape follows from the width the region gives the
 strip, which is `100%` under the rule and `auto` beside it at the same threshold that draws the
-second plate. For that to work at all the group must stop being a size container: an element with
+second plate. A segment never shrinks under its own label, which is what makes the scroller below the
+answer to a line too short for five of them: shrinking is the other answer and it is not one. The
+segments were shrinkable at first, and in German at a doubled text size `VERTEIDIGUNG` — one word,
+with no space to wrap at — painted across `ANTRIEBE` beside it and took that segment's taps, a mode
+nobody can reach swallowing one they can. For that to work at all the group must stop being a size container: an element with
 inline-size containment does not take its width from its contents. The first attempt at this strip
 declared a width instead, which is what that containment forces and what removing it avoids. The container query it had is replaced by a scroller that is always
 there, because segments that share one line never wrap off it.
