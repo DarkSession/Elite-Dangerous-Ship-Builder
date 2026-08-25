@@ -158,10 +158,14 @@
 // ---------------------------------------------------------------------------
 // Canvas 1c's four cells under the plate
 
-// `repeat(4, 1fr)` with a hairline gap showing the rule through it, which is
-// how the canvas draws them: one row of label-over-figure, not a stacked list.
-// The cells fall to two and then to one as the block narrows, because four
-// columns of a German label at 200% text is four columns of wrapped fragments.
+// `repeat(4, 1fr)` with a hairline gap showing the rule through it: one row of
+// label-over-figure. Canvas 1c stacks the same four as label-left, value-right
+// rows down the column beside the plate; the row is this application's own
+// arrangement of them, carrying the same four labels and the same four figures,
+// and is sanctioned as a departure in `design/canvas-contract.md` under the
+// 2026-08-25 revision. The cells fall to two and then to one as the block
+// narrows, because four columns of a German label at 200% text is four columns
+// of wrapped fragments.
 .facts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(var(--edsb-layout-offence-label), 100%), 1fr));

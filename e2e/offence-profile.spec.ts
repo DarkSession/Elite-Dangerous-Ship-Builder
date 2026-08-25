@@ -331,51 +331,110 @@ test.describe('inspecting the weapons', () => {
     }
   });
 
-  test('aligns the five columns at the width the canvas draws them', async ({ page }) => {
-    // The artboard's own desktop, set here rather than left to the profile, so
-    // every project asks the same question: does the table the canvas draws
-    // actually appear at the width it was drawn for? A threshold above what the
-    // block is given at 1440px is a table this application never shows.
+  for (const [language, locale, messages] of [
+    ['English', 'en-US', englishMessages],
+    ['German', 'de-DE', germanMessages],
+  ] as const) {
+    test(`aligns the five columns, and leaves the module its room, in ${language}`, async ({
+      browser,
+      baseURL,
+    }) => {
+      // A width the table is actually promoted at, set here rather than left to
+      // the profile, so every project asks the same question — and asked in both
+      // languages, because it is the *heads* that size the figure tracks and
+      // `DURCHSCHLAG` is half again as wide as `PIERCE`. A threshold that fits
+      // one language and starves the other in the next is the regression this
+      // guards (`offence-analysis.scss`, the promotion comment).
+      const context = await browser.newContext({
+        baseURL,
+        locale,
+        viewport: { width: 1920, height: 900 },
+      });
+      const page = await context.newPage();
+      await openOffence(page, messages);
+
+      const table = await page
+        .locator('edsb-offence-analysis .weapons__table')
+        .evaluate((node: HTMLElement) => {
+          const head = node.querySelector('.weapons__columns');
+          const rights = (row: Element): number[] =>
+            [...row.querySelectorAll(':scope > *')].map((cell) =>
+              Math.round(cell.getBoundingClientRect().right),
+            );
+          return {
+            display: getComputedStyle(node).display,
+            headShown: head === null ? 'none' : getComputedStyle(head).display,
+            tracks: getComputedStyle(node)
+              .gridTemplateColumns.split(' ')
+              .map((track) => Number.parseFloat(track)),
+            heads: head === null ? [] : rights(head),
+            rows: [...node.querySelectorAll('.weapon')].map((row) =>
+              [...row.querySelectorAll('.weapon__figure')].map((cell) =>
+                Math.round(cell.getBoundingClientRect().right),
+              ),
+            ),
+          };
+        });
+
+      expect(table.display).toBe('grid');
+      expect(table.headShown).not.toBe('none');
+      // `MODULE` and the four figure heads.
+      expect(table.heads).toHaveLength(5);
+      expect(table.tracks).toHaveLength(5);
+
+      // The module track keeps the room a name over its code line needs. The
+      // figure tracks are `auto`-maxed, so a language whose heads are long takes
+      // that room out of this one — which is how it once fell to 40px.
+      expect(table.tracks[0]).toBeGreaterThanOrEqual(155);
+
+      // And every row borrows the table's own tracks, so each figure ends where
+      // the head above it ends. A row that re-resolved its own tracks — which is
+      // what a subgrid with the wrong gutter does — puts each figure a few pixels
+      // off its column and defeats the point of aligning them at all.
+      const figureHeads = table.heads.slice(1);
+      expect(table.rows.length).toBeGreaterThan(0);
+      for (const row of table.rows) {
+        expect(row).toHaveLength(4);
+        for (const [index, edge] of row.entries()) {
+          expect(Math.abs(edge - (figureHeads[index] ?? 0))).toBeLessThanOrEqual(1);
+        }
+      }
+
+      await expectNoDocumentOverflow(page);
+      await context.close();
+    });
+  }
+
+  test('keeps every figure and its word at the width the table cannot align', async ({ page }) => {
+    // The reference desktop gives this block about 300px, where five aligned
+    // columns do not fit in either language — so it draws the compact
+    // arrangement instead, and what matters is that nothing is lost by it.
     await page.setViewportSize({ width: 1440, height: 900 });
     await openOffence(page);
 
-    const table = await page
-      .locator('edsb-offence-analysis .weapons__table')
-      .evaluate((node: HTMLElement) => {
-        const head = node.querySelector('.weapons__columns');
-        const cells = (row: Element): number[] =>
-          [...row.querySelectorAll(':scope > *')].map((cell) =>
-            Math.round(cell.getBoundingClientRect().right),
-          );
-        return {
-          promoted: getComputedStyle(node).display,
-          headShown: head === null ? 'none' : getComputedStyle(head).display,
-          heads: head === null ? [] : cells(head),
-          rows: [...node.querySelectorAll('.weapon')].map((row) =>
-            [...row.querySelectorAll('.weapon__figure')].map((cell) =>
-              Math.round(cell.getBoundingClientRect().right),
-            ),
-          ),
-        };
-      });
-
-    expect(table.promoted).toBe('grid');
-    expect(table.headShown).not.toBe('none');
-    // `MODULE` and the four figure heads.
-    expect(table.heads).toHaveLength(5);
-
-    // And every row borrows the table's own tracks, so each figure ends where
-    // the head above it ends. A row that re-resolved its own tracks — which is
-    // what a subgrid with the wrong gutter does — puts each figure a few pixels
-    // off its column and defeats the point of aligning them at all.
-    const figureHeads = table.heads.slice(1);
-    expect(table.rows.length).toBeGreaterThan(0);
-    for (const row of table.rows) {
-      expect(row).toHaveLength(4);
-      for (const [index, edge] of row.entries()) {
-        expect(Math.abs(edge - (figureHeads[index] ?? 0))).toBeLessThanOrEqual(1);
+    const rows = await weaponRows(page);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.module).not.toBe('');
+      // All five of the canvas's columns are still there, each figure carrying
+      // the word that names it rather than a head it has been separated from.
+      expect(row.figures).toHaveLength(4);
+      for (const figure of row.figures) {
+        expect(figure).not.toBe('');
       }
     }
+    for (const label of [
+      englishMessages['offence.column.dps'],
+      englishMessages['offence.column.pierce'],
+      englishMessages['offence.column.range'],
+      englishMessages['offence.column.falloff'],
+    ]) {
+      await expect(
+        page.locator('edsb-offence-analysis .weapon').first().getByText(label, { exact: true }),
+      ).toBeAttached();
+    }
+
+    await expectNoDocumentOverflow(page);
   });
 
   test('keeps two mounts carrying the same module as two rows', async ({ page }) => {

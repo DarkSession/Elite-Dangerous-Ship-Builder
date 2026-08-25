@@ -172,6 +172,12 @@
 
 .weapons__column {
   @include layout.micro-label;
+
+  // A head is decorative — every figure under it carries the same word in its
+  // own row — so a long translation wraps inside its own column rather than
+  // standing over the neighbouring one.
+  min-inline-size: 0;
+  overflow-wrap: break-word;
 }
 
 .weapons__column--figure {
@@ -193,27 +199,39 @@
 // always have, so it is the arrangement the list promotes to rather than the
 // one it starts from.
 //
-// 18rem is where it promotes, and the 2026-08-25 canvas revision's fifth column
-// does not move that: the block is one half of a pair inside the outfitting
-// centre column, and a 1440px desktop gives the list about 19rem, so a
-// threshold above it is a table the canvas draws and this application never
-// shows. 18rem still clears the 155px of list width at which the module track
-// collapsed and wrapped a weapon's name one character per line.
+// 26rem, and the width is measured rather than argued. The threshold was 18rem
+// while there were four columns; the 2026-08-25 canvas revision's fifth one
+// does not fit in that room, and the figure that settles it is what the tracks
+// actually resolve to rather than what their floors are.
 //
-// What moves instead is the figure floor, because five columns have to fit in
-// the room four had. Canvas 1c sets `DPS` 46px, `PIERCE` 44px, `RANGE` 62px and
-// `FALLOFF` 60px; canvas 1d — which draws the *same* aligned table at phone
-// width, not a stack — narrows the three it keeps to 42, 30 and 56. 2.5rem sits
-// inside that range, and at the 18rem promotion it leaves the module track 88px
-// against four figure tracks and their gaps. It is a floor and not a width:
-// every track is `auto` above it and grows to whatever its own figures need, so
-// the room the canvas gives the module track is what a wider list gives it too.
+// Measured in Chromium against the stock Anaconda, this block being one half of
+// a pair inside the outfitting centre column, so a 1440px desktop gives the list
+// 300px:
 //
-// Below the threshold the list takes the compact arrangement, which carries the
-// same five figures with the word that names each one beside it. That is this
-// application's answer to a list too narrow to align, not the canvas's: canvas
-// 1d keeps its table and folds `FALL 1,800` under the range cell instead.
-@container weapons (min-width: 18rem) {
+//   en, list 300px: 83 | 40 40 50 47   — the module track at 83px
+//   de, list 300px: 40 | 40 73 67 40   — the module track at 40px
+//
+// The four figure tracks are `auto` above their floor, so they take their own
+// max-content out of the `1fr` module track — and in German the *heads* are what
+// that content is: `DURCHSCHLAG` 73px and `REICHWEITE` 67px against `PIERCE` and
+// `RANGE`. At 40px a module name renders one or two characters per line, which
+// is the failure the threshold exists to prevent and a layout that has not
+// survived translation. Capping the tracks does not rescue it either: the
+// figures themselves want about 50px for `3,000 m`, so four columns and their
+// gaps cannot cost less than about 240px whatever the heads do.
+//
+// So five aligned columns need about 415px to leave the module track the 155px
+// of list width below which it collapsed — 26rem — and below that the compact
+// arrangement carries the same five figures with the word that names each one
+// beside it. On this application's own reference desktop that is the compact
+// arrangement, not the canvas's table: canvas 1c draws its five columns in a
+// card wider than the one a 1440px viewport gives this block, and the departure
+// is recorded in `design/canvas-contract.md` under the 2026-08-25 revision
+// rather than hidden in a threshold.
+//
+// The floor stays 2.5rem, which is inside the 30–56px canvas 1d narrows its own
+// columns to; it is a floor and not a width, and every track is `auto` above it.
+@container weapons (min-width: 26rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets
   // `auto` resolve differently per row, and figures that do not line up
@@ -289,7 +307,7 @@
 //
 // The badge is asked for its compact name rather than styled from here: a ledger
 // row's subject is the module and its name is set `500 13px`, while here the
-// name is one of four columns and the canvas sets it `400 10.5px` (design L14427
+// name is one of the row's columns and the canvas sets it `400 10.5px` (design L14427
 // against L6871). Which scale a component draws itself at is the component's own
 // decision to name, not a property a neighbour reaches in and sets.
 .weapon__identity {

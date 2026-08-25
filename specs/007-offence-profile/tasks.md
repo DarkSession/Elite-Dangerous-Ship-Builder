@@ -601,7 +601,7 @@ which is one change and not two.
       name the canvas's own `Target range` (`design/component-state-preview-matrix.md`)._
 - [x] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
       `pnpm run check`.
-      _Run in the five Chromium projects — 37 journeys per profile, 185 in all, with the axe scan
+      _Run in the five Chromium projects — 41 journeys per profile, 205 in all, with the axe scan
       over every state. The five Firefox projects could not be run for the reason recorded at the
       head of this document: `playwright install firefox` is still refused by this environment's
       egress policy, and Firefox evidence is this branch's pull request's own

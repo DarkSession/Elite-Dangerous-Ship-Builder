@@ -157,8 +157,9 @@ The plate's geometry changed with it, and this is the substantive half:
 `data-m-mode="offence"`. **Rewritten by the 2026-08-25 canvas revision, and it
 is now canvas 1c stacked.** Four blocks, in canvas 1c's own order and wording:
 
-1. `WEAPONS` / `5 MOUNTED`, with the same five-column list — `MODULE` · `DPS` ·
-   `PRC` · `RANGE`, the range cell carrying `4,000 m` over `FALL 1,800`;
+1. `WEAPONS` / `5 MOUNTED`, carrying the same five figures in four columns —
+   `MODULE` · `DPS` · `PRC` · `RANGE`, the range cell carrying `4,000 m` over
+   `FALL 1,800`, which is how the compact drawing keeps an aligned table;
 2. `DAMAGE PROFILE` / `BY TYPE AND RANGE` — `248.6` over
    `DPS BURST · 186.4 SUSTAINED`, the kinetic/thermal bar with a legend that now
    carries the percentages (`KINETIC 165.8 · 67%`, `THERMAL 82.8 · 33%`), and
@@ -579,6 +580,26 @@ cells this document's own build table sanctions. That is responsive
 composition — the same four labels and the same four figures, arranged from the
 region's available space rather than from an artboard's fixed width (T033) — and
 neither arrangement carries a figure the other does not.
+
+**The weapon list's aligned table is drawn only where five columns fit, which on
+a 1440px desktop is not this block.** Canvas 1c draws its five columns in a card
+wider than the one that viewport gives the `WEAPONS` block: measured in Chromium
+against the stock Anaconda, the list is given 300px there, and the four figure
+tracks take their own content out of the module track — 83px of it left in
+English, and 40px in German, where the heads are `DURCHSCHLAG` and `REICHWEITE`
+rather than `PIERCE` and `RANGE`. A module name at 40px renders one or two
+characters per line. Capping the tracks does not rescue it: the figures
+themselves want about 50px for `3,000 m`, so four columns and their gaps cannot
+cost less than about 240px whatever the heads do.
+
+So the table promotes at 26rem, where the module track keeps the 155px below
+which it collapses, and below that the compact arrangement carries the same five
+figures with the word that names each one beside it. Nothing is dropped and no
+figure loses the label that names it; what is lost is the alignment, at widths
+where alignment would have cost the module name instead. The canvas reaches an
+aligned table at phone width by a route this list does not take — canvas 1d
+folds `FALL 1,800` under the range cell, four columns carrying five figures —
+and taking that route is the change that would put the table back at 1440px.
 
 The plate's **box** is not in that category, and is built as the canvas draws
 it: square, at the canvas's own width, in a wrapping row with the range and the
