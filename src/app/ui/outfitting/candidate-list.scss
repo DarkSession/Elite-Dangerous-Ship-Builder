@@ -30,6 +30,15 @@
 .candidates__body {
   @include layout.stack(0);
 
+  // A containing block, so the scroller actually clips what it scrolls — the
+  // same rule the ledger's rail states for the same reason. Every row carries
+  // text drawn only for a reader, positioned out of the page the standard way;
+  // without this their containing block is whatever is positioned above the
+  // bench, the bench's own clipping never reaches them, and four hundred of
+  // them run the document down past the screen, invisibly. Measured at
+  // 1112x834: a workspace whose three columns each end at the foot of the
+  // window, inside a document 1623px tall (Commander request 2026-08-25).
+  position: relative;
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;

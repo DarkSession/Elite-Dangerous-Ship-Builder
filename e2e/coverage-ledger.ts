@@ -928,6 +928,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'every capability is offered at every width',
       '400% zoom and a short viewport select the compact composition',
       'the document never scrolls horizontally and no text is cut off',
+      'every side-by-side column runs its seam to the foot of the screen',
+      'a frozen column clears the bar that is drawn, not the one the token declares',
     ],
     manualRecord: 'actual-zoom',
   },

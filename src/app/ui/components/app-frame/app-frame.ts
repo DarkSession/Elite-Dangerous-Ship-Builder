@@ -23,7 +23,7 @@ import {
 import { ActionButton } from '../action/action-button';
 import { ActionLayer } from './action-layer';
 import { StatusNotice, type StatusTone } from '../status/status-notice';
-import { observeBannerRelease } from './sticky-banner';
+import { observeBanner } from './sticky-banner';
 
 /** One entry in the primary navigation. */
 export interface NavigationEntry {
@@ -95,7 +95,10 @@ export interface ShellStatus {
   // On the host rather than on the header, because the regions below the bar
   // have to hear it too: what they have to clear is the bar's, and a released
   // bar is nothing to clear (`app-frame.scss`).
-  host: { '[class.frame--released]': 'bannerReleased()' },
+  host: {
+    '[class.frame--released]': 'bannerReleased()',
+    '[style.--edsb-layout-bar-height]': 'barHeight()',
+  },
 })
 export class AppFrame {
   readonly #messages = inject(MessageService);
@@ -161,7 +164,34 @@ export class AppFrame {
    * knows. Held here because the header is the frame's own element; every
    * screen below it goes on composing as it did.
    */
-  readonly bannerReleased = observeBannerRelease(this.banner);
+  readonly #bannerMeasurement = observeBanner(this.banner);
+
+  readonly bannerReleased = this.#bannerMeasurement.released;
+
+  /**
+   * What a region below has to clear, as the bar actually came out.
+   *
+   * The token layer declares one row of controls at the target baseline, which
+   * is what the bar is on every screen that draws a plain title. The workspace
+   * draws an identity block of two 24px targets instead, and every width where
+   * the bar wraps draws more rows than one — so the declared figure is a floor
+   * the real bar passes, not the height a sticky region under it can offset by.
+   * Published from the measurement so a region that freezes below the bar,
+   * reserves scroll room for it or subtracts it from its own height clears the
+   * bar that is there.
+   *
+   * `null` until the first reading, and while the bar is released there is
+   * nothing to clear — which is the same `0px` the token layer already gives a
+   * released frame, restated here because an inline value outranks that rule
+   * (Commander request 2026-08-25).
+   */
+  protected readonly barHeight = computed(() => {
+    if (this.bannerReleased()) {
+      return '0px';
+    }
+    const drawn = this.#bannerMeasurement.height();
+    return drawn === null ? null : `${drawn}px`;
+  });
 
   setActionsOpen(open: boolean): void {
     this.actionsOpen.set(open);

@@ -610,3 +610,18 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       their two style rules and `outfitting.immovable.short.cargoHatch` in both catalogues are gone.
       The Almanac's full sentence stays on the bench and is now the only reading
       (reference review, "The `FIXED` chip is withdrawn"; Commander request 2026-08-25)
+- [x] T156 Run the ledger's seam and the status rail's the whole way down, as canvas 1c's one grid
+      row draws them: the two columns take the full height the command bar leaves instead of
+      subtracting the page inset the frame stopped carrying in wave 9, and the status rail takes a
+      definite height rather than a cap so its seam is drawn whether or not the rail has that much to
+      say. `module-replacement.scss` and `engineering-editor.scss` follow the bench's bound, which is
+      written the same way on purpose (workspace design, "the two seams run the whole way down";
+      Commander request 2026-08-25)
+- [x] T157 Republish `--edsb-layout-bar-height` from the bar the frame actually rendered. The
+      declared token is one row of controls at the target baseline; this screen's identity block is
+      two 24px targets, and a wrapped bar is taller again, so the declared figure stood the columns
+      past the foot of the screen and froze the category strip behind the bar at tablet width.
+      `observeBannerRelease` becomes `observeBanner` and publishes the measured height beside the
+      release; the frame states it on its own host, and the token layer derives
+      `--edsb-layout-manifest-offset` again there since a custom property substitutes where it is
+      declared (`sticky-banner.ts`, `app-frame.ts`, `styles/tokens/_semantic.scss`)

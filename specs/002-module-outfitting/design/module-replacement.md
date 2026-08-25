@@ -177,6 +177,22 @@ that is wrong for even a handful of rows moves the bar as those rows are reached
 thing the figure exists to prevent — so those rows declare nothing and are never skipped. They are a
 handful out of hundreds, and their real height is counted from the first frame like every card's.
 
+## The scroller is a containing block, or it clips nothing
+
+**Ruled 2026-08-25.** Every manifest row carries text drawn only for a reader, positioned out of the
+page the standard way. An absolutely positioned box resolves against the nearest _positioned_
+ancestor, so in a scroller that is not one the box's containing block is whatever is positioned above
+the bench — the bench's own clipping never reaches it, and four hundred of them run the document down
+past the screen with nothing visible on it. Measured at 1112x834: a workspace whose three columns each
+end at the foot of the window, inside a document 1623 px tall that scrolled 789 px through blank
+ground. The ledger's rail already states this rule in its own stylesheet; the manifest's scroller and
+the engineering editor's now state it too.
+
+Two dozen pixels of that document survive it, and are not this: at that viewport the middle column
+has 760 px for plates that ask for 349 and a bench that will not go under its declared 26rem
+minimum. That is the column being asked to hold more than it has, which is a composition question
+and not a clipping one.
+
 ## Module families
 
 **Ruled 2026-08-23 (wave 10), amended 2026-08-25.** Both canvases were redrawn around families, and

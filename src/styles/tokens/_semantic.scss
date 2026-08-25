@@ -27,6 +27,20 @@
 // shifted up so its lowest rung is 0.55, and the rungs above it keep their
 // order, so the hierarchy the canvas draws survives at readable weights.
 
+// Everything measured down from the command bar.
+//
+// A custom property substitutes its own `var()`s where it is *declared*, not
+// where it is read, so a figure derived from `--edsb-layout-bar-height` has to
+// be redeclared everywhere that height is. The frame republishes the height on
+// its own host from the bar it rendered; this is written once and included at
+// both, so the derivation stays one decision wherever it lands.
+@mixin bar-derived {
+  --edsb-layout-manifest-offset: calc(
+    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
+      var(--edsb-border-width-hairline)
+  );
+}
+
 :root {
   // ---------------------------------------------------------------------------
   // Surfaces
@@ -295,7 +309,25 @@
   --edsb-layout-status-rail: var(--edsb-measure-status-rail);
 
   // What a region has to clear to sit below the sticky command bar.
+  //
+  // The declared figure is one row of controls at the target baseline, which is
+  // what the bar comes to on every screen that draws a plain title. It is a
+  // floor rather than the bar's height: the workspace draws an identity block
+  // of two 24px targets in the same bar, and any width where the bar wraps
+  // draws more rows than one. So the frame republishes this token on its own
+  // host from the bar it actually rendered (`sticky-banner.ts`), and the value
+  // here is what stands until that first reading. It stays in the token layer
+  // because the decision — *a region clears the bar* — is declared once, here;
+  // what the frame supplies is the measurement, which no query can ask for.
   --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+
+  // The bar's own floor, which is not the same job and must not be the same
+  // token. What a region clears is republished from the bar that was drawn; if
+  // the bar sized itself from that reading it would never be able to shrink —
+  // a window widened until a wrapped bar unwraps would hold the wrapped height
+  // as its own minimum, and nothing would ever measure it again. The floor is
+  // the declared figure, always, and only the clearance moves.
+  --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller
   // clips the seam instead of showing the row behind through it.
@@ -305,10 +337,7 @@
   // then one target-height row of toolbar controls inside the hairline the
   // segmented strip is ruled with and the region's own block padding. Stated
   // here rather than on the screen so the two heights stay one decision.
-  --edsb-layout-manifest-offset: calc(
-    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
-      var(--edsb-border-width-hairline)
-  );
+  @include bar-derived;
   // Canvas 1c's own `2.2fr 62px 74px 74px 78px 86px 128px`, at those measures.
   // The figure columns are fixed so they line up across the whole manifest
   // rather than being redistributed by whatever the widest cell happens to hold;
@@ -361,6 +390,20 @@
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);
 }
 
+// The bar the frame actually rendered, republished on its own host from the
+// measurement (`app-frame.ts`), because the declared height above is a floor
+// rather than a reading: the workspace draws an identity block of two 24px
+// targets in the same bar, and any width where the bar wraps draws more rows
+// than one. A region that offset by the declared figure there froze itself
+// behind the bar and stood its own foot short of the screen's by the difference
+// (Commander request 2026-08-25).
+//
+// Everything derived from that height has to be derived again beside it, since
+// a custom property substitutes its own `var()`s where it is declared.
+edsb-app-frame {
+  @include bar-derived;
+}
+
 // The command bar releases and travels with the page when what it would
 // otherwise freeze over is no longer a viewport anything can be stacked in
 // (`app-frame.scss`, `sticky-banner.ts`). With the bar travelling there is
@@ -372,7 +415,10 @@
 // The frame marks that state on its own host element. The rule is here rather
 // than in the frame's stylesheet because a token is declared in the token layer
 // and nowhere else: a component that set this one would be a second place the
-// same layout decision lives.
+// same layout decision lives. What the frame supplies inline is the
+// measurement, not the decision — and while it is released it states the same
+// nothing this rule does, because an inline value outranks a rule and the two
+// may not disagree.
 edsb-app-frame.frame--released {
   --edsb-layout-bar-height: 0px;
 }
