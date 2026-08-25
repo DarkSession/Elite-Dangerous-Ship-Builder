@@ -8,7 +8,7 @@
 >    `cargoCapacityResult` are not in `@elite-dangerous-almanac/core`, deliberately: the package
 >    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
 >    than a `CalculationResult` as the report. The build's mass split comes from `buildMass(load)`
->    and the thruster's curve from `ShipLoadout.thrusters`. See FR-006 in [spec.md](./spec.md).
+>    and the thruster's curve from `BuildMetrics.thrusters()`. See FR-006 in [spec.md](./spec.md).
 > 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
 DRIVE`; the five stacked components and the per-module mass list described below are not built.
 >    See [design/reference-review.md](./design/reference-review.md) and
@@ -323,8 +323,9 @@ feature 003 drafts do not invoke the projector. Old snapshots are never relabell
 - Each aggregate and each standard load is read once per projection.
 - `jumpRangeSummary()` and `frameShiftDrive` are read only after all three aggregates and all three
   standard loads complete.
-- `mobilityMetricsResult()` is called at most once, only after unladen mass and selected load
-  complete, with exact package load values and ENG half-pips divided once.
+- `mobilityMetricsResult()` and `mobilityCapacitorMetricsResult()` are each called at most once,
+  only after unladen mass and selected load complete, with exact package load values and ENG
+  half-pips divided once.
 - Every jump/mobility field and issue remains package-equal.
 - No `null`, missing field or unavailable row becomes zero; no ready zero becomes unavailable.
 - Core sources use `BuildSlot.core` for function and exact `BuildSlot.key` for identity.

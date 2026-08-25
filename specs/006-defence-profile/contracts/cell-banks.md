@@ -11,7 +11,8 @@
 For the captured active-build revision call:
 
 ```ts
-const summary = loadout.cellBanks();
+const metrics = BuildMetrics.of(loadout);
+const summary = metrics.cellBanks();
 ```
 
 `cellBanks()` owns every bank value, bank ordering, powered verdict and total. No band, draw or

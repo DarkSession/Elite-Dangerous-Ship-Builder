@@ -9,7 +9,7 @@
 >    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
 >    than a `CalculationResult` as the report. Of those three only `fuelCapacity` is read; the
 >    build's mass split comes from `buildMass(load)` and the thruster's curve from
->    `ShipLoadout.thrusters`. See FR-006 in [spec.md](../spec.md).
+>    `BuildMetrics.thrusters()`. See FR-006 in [spec.md](../spec.md).
 > 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
 DRIVE`; the five stacked components and the per-module mass list described below are not built.
 >    See [design/reference-review.md](../design/reference-review.md) and
@@ -54,7 +54,7 @@ feature 008 projector with that context; it never reads an independently settled
 | Status field  | Owner source                                                                         |
 | ------------- | ------------------------------------------------------------------------------------ |
 | selected jump | `maximumJump -> summary.max`, `unladen -> summary.unladen`, `laden -> summary.laden` |
-| top speed     | selected-load/ENG `mobilityMetricsResult().value.speed`                              |
+| top speed     | selected-load/ENG `mobilityCapacitorMetricsResult().value.speed`                     |
 | unladen mass  | exact `unladenMass`, independent of selected load                                    |
 
 Each field retains feature 008's ready/unavailable semantic state and exact package issues. Feature

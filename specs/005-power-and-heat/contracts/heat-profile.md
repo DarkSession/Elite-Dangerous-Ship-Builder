@@ -8,7 +8,7 @@
 
 ## Boundary
 
-For one captured build, call `ShipLoadout.heatMetrics()` once. The method accepts
+For one captured build, call `BuildMetrics.heatMetrics()` once. The method accepts
 no hardpoint or pip options; feature 005 never changes the result for a viewing
 condition.
 

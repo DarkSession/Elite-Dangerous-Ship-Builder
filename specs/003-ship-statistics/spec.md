@@ -40,7 +40,7 @@ composes none of them and passes no conditions to any of them.
 - **FR-001**: This capability MUST require an active build and MUST NOT create one.
 - **FR-002**: Structural status MUST come from `@elite-dangerous-almanac/core` for the current build.
   The application MUST NOT derive, clamp, estimate, repair or reinterpret a package result.
-- **FR-003**: Structural status MUST use only `ShipLoadout.validation.valid` and `.complete` and the
+- **FR-003**: Structural status MUST use only `ShipLoadout.validation().valid` and `.complete` and the
   issues the package raises about them, and MUST never claim that the build is flyable, ready,
   working, good or optimal.
 - **FR-004**: Every validation issue MUST appear once with its severity and its package diagnostic.
@@ -88,7 +88,7 @@ policy checker no longer requires coverage-ledger evidence for it.
 
 ## Almanac Coverage
 
-`ShipLoadout.validation` and `getLoadoutIssueMessage` provide every value, state and sentence this
+`ShipLoadout.validation()` and `getLoadoutIssueMessage` provide every value, state and sentence this
 feature presents. The application consolidates nothing and owns no game calculation or verdict.
 
 ## Success Criteria

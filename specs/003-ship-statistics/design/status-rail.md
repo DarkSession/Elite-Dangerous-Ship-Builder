@@ -10,7 +10,7 @@ so there is one status surface at every width and the compact arrangement is the
 ## Information order
 
 1. `BUILD STATUS`, the visible heading that names the region.
-2. Every `ShipLoadout.validation` issue, once, in package order.
+2. Every `ShipLoadout.validation()` issue, once, in package order.
 3. Power — feature 005.
 4. The `SYS` / `ENG` / `WEP` pip control — feature 005, added by the 2026-08-25 canvas revision.
 5. The six metric cells — features 006–008.
@@ -63,7 +63,7 @@ package diagnostic and parses none.
 ## Behavior
 
 - The block reads one active loadout at one revision. There is no projection envelope, no provider
-  port and no pending state: `ShipLoadout.validation` is a field on the build that is already in
+  port and no pending state: `ShipLoadout.validation()` is a field on the build that is already in
   memory, and reading it cannot fail or arrive late.
 - Nothing **feature 003 owns** here is interactive. Ruling A withdrew the per-issue slot action, and
   at both widths the slot ledger it would have reached is already on screen. Feature 005's pip

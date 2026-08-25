@@ -119,7 +119,7 @@ one would have carried are already modelled and drawn elsewhere
 
 The candidate's `qualityCompletions` become feature 001's own `qualityNotices` on the candidate it
 hands over, which is what feature 002's revision-bound, dismissible completion notice reads. The
-package verdict is `loadout.validation`, which feature 003's build-status rail already renders for
+package verdict is `loadout.validation()`, which feature 003's build-status rail already renders for
 whatever build is active. Feature 004 holds neither after the handoff.
 
 Quality completions and the detailed validation issue list stay transient: neither enters

@@ -32,7 +32,7 @@ module protection for the active build.
 
 - **FR-001**: Every defence value MUST come from `@elite-dangerous-almanac/core` without local
   calculation, clamping or apportionment.
-- **FR-002**: Shields MUST use `ShipLoadout.shieldMetricsResult()` and show the returned strength,
+- **FR-002**: Shields MUST use `BuildMetrics.shieldMetricsResult()` and show the returned strength,
   role contributions, resistances and **two** effective-hit-point readings per damage type: the bare
   shield, and the same shield at the standing SYS allocation. Every figure shown MUST be a returned
   field, each from its own call.
@@ -47,26 +47,28 @@ module protection for the active build.
   > number constitution IV forbids.
   >
   > The first four columns do not move with the allocation at all. `RESIST` and `MJ` are the
-  > **bare** shield at zero pips, `shieldMetricsResult({ systemsPips: 0 })` — which is what the
-  > package documents its default as ("the bare shield, as an outfitting screen shows it") — and the
-  > pip effect appears in the fifth column and nowhere else. In particular the four resistance
-  > percentages are base values and never have systems resistance folded into them.
+  > **bare** shield, `shieldMetricsResult()` — which since Almanac 0.2.0 takes no allocation at
+  > all, because the bare shield is what an outfitting screen shows — and the pip effect appears in
+  > the fifth column and nowhere else. In particular the four resistance percentages are base
+  > values and never have systems resistance folded into them.
   >
-  > The fifth column is `shieldMetricsResult({ systemsPips: <standing allocation> })`. Nothing is
+  > The fifth column is `shieldCapacitorMetricsResult({ systemsPips: <standing allocation> })`,
+  > the package's separate reading of what one SYS allocation is worth to a raised shield. The
+  > allocation is always passed: the package's own default is four pips, not none. Nothing is
   > multiplied here: both columns are `effectiveHitPoints` straight off two package results, and
   > `systemsResistance` is the package's own field.
 
 - **FR-003**: A `null` shield result MUST remain unavailable. A missing, disabled and power-shed
   generator MUST remain distinguishable through package and build state.
-- **FR-004**: Recovery MUST use `ShipLoadout.shieldRecoveryResult()` and keep the regeneration rate,
+- **FR-004**: Recovery MUST use `BuildMetrics.shieldRecoveryResult()` and keep the regeneration rate,
   the regeneration time and the recovery time separate readings.
 - **FR-005**: Infinite recovery and effective hit points MUST be expressed by their package meaning
   without changing the result.
-- **FR-006**: Cell banks MUST use `ShipLoadout.cellBanks()`. The reserve MUST be the package total,
+- **FR-006**: Cell banks MUST use `BuildMetrics.cellBanks()`. The reserve MUST be the package total,
   every returned bank MUST be listed under it with its class and rating, its cells, its
   reinforcement and its powered state, banks differing in any of those MUST be listed apart, and no
   fitted bank MUST be indistinguishable from none fitted.
-- **FR-007**: Armour MUST use `ShipLoadout.armourMetrics()` for hit points, contributions,
+- **FR-007**: Armour MUST use `BuildMetrics.armourMetrics()` for hit points, contributions,
   resistances, effective hit points, module armour and module protection.
 - **FR-008**: Fitted bulkhead and hull hardness MUST come from Almanac records.
 - **FR-009**: A fitted generator, booster, bulkhead, reinforcement or bank shown as a source MUST be

@@ -66,9 +66,9 @@ the complete stacked composition.
   heading states the allocation because a figure that moves with a condition shown without that
   condition is the misleading number constitution IV forbids. The armour table gains nothing: the
   canvas leaves it at four columns, and pips do not reach a hull.
-- **The first four columns are the bare shield and stay still.** `RESIST` is the base resistance at
-  zero pips and `MJ` the pool that follows from it — `shieldMetricsResult({ systemsPips: 0 })`, the
-  package's own default. Moving a pip changes the fifth column and nothing else on the table. A
+- **The first four columns are the bare shield and stay still.** `RESIST` is the base resistance and
+  `MJ` the pool that follows from it — `shieldMetricsResult()`, which since Almanac 0.2.0 takes no
+  allocation at all. Moving a pip changes the fifth column and nothing else on the table. A
   resistance percentage with systems resistance folded into it is not drawn anywhere.
 - The bar stays drawn from the **bare** resistance, the column it sits beside. Two lengths on one
   track, or a length drawn from one column and printed beside another, would be a reading the canvas

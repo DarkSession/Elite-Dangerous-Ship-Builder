@@ -11,12 +11,18 @@
 For the reader's active-build revision, take the standing `systemsPips` and call:
 
 ```ts
-const shield = loadout.shieldMetricsResult({ systemsPips });
-const recovery = loadout.shieldRecoveryResult({ systemsPips });
+const metrics = BuildMetrics.of(loadout);
+const shield = metrics.shieldMetricsResult();
+const capacitor = metrics.shieldCapacitorMetricsResult({ systemsPips });
+const recovery = metrics.shieldRecoveryResult({ systemsPips });
 ```
 
-Both calls receive the identical explicit pips. Components never call the package, and application
-code never calls standalone shield, resistance, EHP or recovery formulas.
+Almanac 0.2.0 made the bare shield and what a SYS allocation is worth to it two calls.
+`shieldMetricsResult()` takes no allocation at all — it is the shield an outfitting screen shows —
+and every pip-dependent figure comes from `shieldCapacitorMetricsResult()`. The allocation is always
+passed explicitly, because the package's own default is four pips and a standing allocation of none
+would otherwise be read as four. Components never call the package, and application code never calls
+standalone shield, resistance, EHP or recovery formulas.
 
 ## Calculation result contract
 
@@ -46,10 +52,24 @@ power is not compared or required to agree.
 | damage resistances      | `resistances.kinetic/thermal/explosive/caustic`        | signed fraction  |
 | effective shield pools  | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | MJ of raw damage |
 
-`massCurveMultiplier`, `boostMultiplier` and `systemsResistance` are copied into the projection and
-not drawn: neither canvas writes them, and a figure the reference does not draw is not this
-feature's to add. No application explanation claims which fields changed; the package result is the
-answer.
+`massCurveMultiplier` and `boostMultiplier` are copied into the projection and not drawn: neither
+canvas writes them, and a figure the reference does not draw is not this feature's to add. No
+application explanation claims which fields changed; the package result is the answer.
+
+## Complete capacitor mapping
+
+What the standing allocation is worth is a result of its own, and the only thing on the damage table
+that moves when a pip moves.
+
+| Presentation fact             | `ShieldCapacitorMetrics` source                        | Unit/meaning     |
+| ----------------------------- | ------------------------------------------------------ | ---------------- |
+| the allocation it was read at | `systemsPips`                                          | pips, `[0, 4]`   |
+| effective shield pools        | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | MJ of raw damage |
+
+`capacity`, `rechargeRate` and `systemsResistance` are carried and not drawn, for the same reason.
+No pool is scaled, blended or apportioned between the two results: an unavailable capacitor result
+withdraws its column rather than borrowing the bare pool beside it, and an unavailable bare shield
+does not borrow the capacitor's.
 
 ## Complete recovery mapping
 
@@ -87,7 +107,8 @@ No clamp, finite substitute, generic infinity label, truthiness check or mislead
 
 ## Verification
 
-- Compare every complete field directly with the same real package result at 0, 2 and 4 SYS pips.
+- Compare every complete field directly with the same real package result: the bare shield once, and
+  the capacitor at 0, 2 and 4 SYS pips.
 - Compare incomplete issue arrays in exact order and with exact fields/identities.
 - Prove missing generator, disabled generator, shed generator, disabled plant and unresolved power
   remain distinct package diagnoses.

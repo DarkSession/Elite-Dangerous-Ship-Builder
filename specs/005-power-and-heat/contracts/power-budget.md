@@ -10,7 +10,7 @@
 
 ## Boundary
 
-The feature 005 projector calls `ShipLoadout.powerBudget()` once per read and
+The feature 005 projector calls `BuildMetrics.powerBudget()` once per read and
 selects from that one immutable result. Components do not call the package or
 reconstruct a second budget. There is no store, no cache and no revision key: the
 call is synchronous and the signal graph memoizes it.

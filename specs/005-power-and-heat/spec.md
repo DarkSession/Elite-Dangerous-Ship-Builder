@@ -33,7 +33,7 @@ conditions here, because the design draws them inside this capability and nowher
 
 - **FR-001**: Every numeric value and calculation MUST come from
   `@elite-dangerous-almanac/core` without local recomputation.
-- **FR-002**: Power MUST use `ShipLoadout.powerBudget()` for plant capacity, the selected hardpoint
+- **FR-002**: Power MUST use `BuildMetrics.powerBudget()` for plant capacity, the selected hardpoint
   state's total draw, and the per-group draw, cumulative draw and powered state of every priority
   group this build puts something in. A group nothing is assigned to MUST NOT be drawn. Package
   `headroom`, `utilisation` and `withinBudget` MUST NOT be shown in either state: neither canvas
@@ -49,14 +49,14 @@ conditions here, because the design draws them inside this capability and nowher
   state's own package total. A line standing for more than one mount MUST carry its count, a line
   the plant leaves dark MUST name its group, and a switched-off line MUST say so. The list carries
   no action: feature 002's ledger is where a mount is selected (design wins, wave 13).
-- **FR-007**: Distributor values MUST use `ShipLoadout.distributorMetrics()` for capacity, rated
+- **FR-007**: Distributor values MUST use `BuildMetrics.distributorMetrics()` for capacity, rated
   recharge, pip-scaled recharge and the allocation used. The application MUST NOT scale recharge.
   This capability owns the allocation: each of SYS, ENG and WEP takes a whole `0`–`4` pips, chosen
   in place with no draft, running total or confirmation step, and the pips shown are the pips the
   package returns.
 - **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
-- **FR-009**: Heat MUST use `ShipLoadout.heatMetrics()` and show the five returned scenarios, their
+- **FR-009**: Heat MUST use `BuildMetrics.heatMetrics()` and show the five returned scenarios, their
   thermal load, heat level, gauge level, overheat state and time to overheat.
 - **FR-010**: `null` heat MUST remain unavailable; catalogue figures MUST NOT replace a build
   result.

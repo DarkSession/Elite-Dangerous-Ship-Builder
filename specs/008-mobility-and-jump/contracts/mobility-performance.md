@@ -9,7 +9,7 @@
 >    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
 >    than a `CalculationResult` as the report. Of those three only `fuelCapacity` is read; the
 >    build's mass split comes from `buildMass(load)` and the thruster's curve from
->    `ShipLoadout.thrusters`. See FR-006 in [spec.md](../spec.md).
+>    `BuildMetrics.thrusters()`. See FR-006 in [spec.md](../spec.md).
 > 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
 DRIVE`; the five stacked components and the per-module mass list described below are not built.
 >    See [design/reference-review.md](../design/reference-review.md) and
@@ -29,11 +29,17 @@ Consume the captured feature 003 condition exactly:
 - read `unladenMassResult`; and
 - divide the settled ENG integer half-pips by two once.
 
-Call `mobilityMetricsResult({ ...standardLoad.value, enginesPips })` exactly once only when the
-selected standard load and unladen mass are complete. Invalid feature 003 drafts do not settle a
+Call `mobilityMetricsResult(standardLoad.value)` and
+`mobilityCapacitorMetricsResult({ ...standardLoad.value, enginesPips })` exactly once each, only when
+the selected standard load and unladen mass are complete. Almanac 0.2.0 made these two calls: the
+first is the build's own flight model and owns `boost`, the second is what the ENG allocation makes
+of it and owns `speed`, `pitch`, `roll` and `yaw`. The allocation is passed explicitly, because the
+package's own default is four pips. Invalid feature 003 drafts do not settle a
 revision and therefore invoke nothing.
 
-If either guard is incomplete, do not call mobility; retain the exact owning result/issues. A throw
+If either guard is incomplete, do not call mobility; retain the exact owning result/issues. Neither
+mobility result borrows a figure from the other: if either is unavailable the envelope is
+unavailable, carrying that result's own issues. A throw
 after complete package inputs is an application failure, not an unavailable game value.
 
 ## Exact result mapping
@@ -41,13 +47,17 @@ after complete package inputs is an application failure, not an unavailable game
 A complete package result retains every field unchanged:
 
 - `speed` and `boost` in metres per second;
-- `pitch`, `roll` and `yaw` in degrees per second;
+- `pitch`, `roll` and `yaw` in degrees per second, from the capacitor result;
 - `massCurveMultiplier`; and
 - `rotationMassCurveMultiplier`.
 
+`boost` is the flight model's own and comes from `mobilityMetricsResult()`; `speed` and the three
+rotations are what the allocation makes of it and come from `mobilityCapacitorMetricsResult()`.
+
 An incomplete result retains `value: null` and its exact ordered issues. This contract uses the
 diagnostic result facade; it does not describe the result object itself as nullable. The separate
-`mobilityMetrics()` convenience method is nullable but is not used.
+`mobilityMetrics()` and `mobilityCapacitorMetrics()` convenience methods are nullable but are not
+used.
 
 ## Thruster and power meanings
 

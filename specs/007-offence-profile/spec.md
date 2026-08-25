@@ -65,7 +65,7 @@ because it is why the first implementation shipped a third of the canvas.
   proportions over package amounts — a share of a stated total, a bar filled against a stated
   strongest — are not measurements and are permitted where the canvas draws one, provided every
   amount they are drawn from is itself stated (FR-009).
-- **FR-002**: Whole-build and per-weapon values MUST use `ShipLoadout.weaponMetrics()`.
+- **FR-002**: Whole-build and per-weapon values MUST use `BuildMetrics.weaponMetrics()`.
 - **FR-003**: Every conventional damage type the build deals — kinetic, thermal, explosive,
   absolute and unclassified — MUST be stated with its exact returned amount and its share of the
   conventional total, beside the bar that draws those shares. A type the build does not deal MUST
@@ -93,7 +93,7 @@ because it is why the first implementation shipped a third of the canvas.
 
 - **FR-005**: Disabled weapons MUST remain visible and totals MUST follow the package's enabled-state
   behaviour.
-- **FR-006**: Capacitor endurance MUST use `ShipLoadout.weaponsCapacitorMetrics()` for the WEP pips
+- **FR-006**: Capacitor endurance MUST use `BuildMetrics.weaponsCapacitorMetrics()` for the WEP pips
   feature 005's shared conditions hold. The application MUST NOT calculate endurance or pip scaling.
 - **FR-007**: Infinite duration and zero capacity MUST be expressed by their package meaning, and
   MUST NOT be given a cause the package did not state.

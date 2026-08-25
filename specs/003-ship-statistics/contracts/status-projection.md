@@ -31,7 +31,7 @@ absent semantics. Feature 003 may format or place it but may not reclassify it.
 1. Capture feature 001's atomic active `{ loadout, buildRevision }` once; feature 002 advances that
    same revision for committed edits.
 2. Capture the settled `{ conditions, conditionsRevision }` once.
-3. Read `loadout.validation` once and align slot targets without changing an issue.
+3. Read `loadout.validation()` once and align slot targets without changing an issue.
 4. Invoke every provider synchronously with that exact immutable context.
 5. If any provider explicitly returns pending for the captured pair, return pending and publish no
    partial status projection. If a ready envelope returns another revision pair, return application
@@ -51,13 +51,13 @@ The provider implementations, not feature 003, own these package calls:
 
 | Visible result               | Owner/package source                                       | Feature 003 rule                            |
 | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------- |
-| Validity/completeness/issues | exact `ShipLoadout.validation`                             | retain object/order; no provider            |
+| Validity/completeness/issues | exact `ShipLoadout.validation()`                           | retain object/order; no provider            |
 | Power                        | 005: `powerBudget()`                                       | copy selected owner projection unchanged    |
-| Shield                       | 006: `shieldMetricsResult({ systemsPips })`                | copy owner state/value unchanged            |
+| Shield                       | 006: `shieldMetricsResult()`                               | copy owner state/value unchanged            |
 | Armour                       | 006: `armourMetrics().hitPoints`                           | copy owner value unchanged                  |
 | Sustained DPS                | 007: `weaponMetrics().total.sustainedDamagePerSecond`      | never zero/suppress for retracted selection |
 | Jump                         | 008: guarded `jumpRangeSummary()` selected field           | never call throwing API in 003              |
-| Speed                        | 008: `mobilityMetricsResult()` with standard load/ENG pips | copy owner state/value unchanged            |
+| Speed                        | 008: `mobilityCapacitorMetricsResult()` with load/ENG pips | copy owner state/value unchanged            |
 | Mass                         | 008: `unladenMassResult`                                   | retain fixed unladen meaning                |
 | Retail/Merc Coin/materials   | 009 package projection                                     | consume the same immutable area projection  |
 

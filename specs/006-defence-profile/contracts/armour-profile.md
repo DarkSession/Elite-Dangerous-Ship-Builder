@@ -7,7 +7,7 @@
 
 ## Boundary
 
-For one captured active-build revision call `loadout.armourMetrics()` and resolve the exact active
+For one captured active-build revision call `metrics.armourMetrics()` and resolve the exact active
 hull through `getShipBySymbol(loadout.shipSymbol)` from the ships leaf. Read actual fitted-role
 records from the loadout's package slot snapshots. Do not call standalone armour/resistance formulas
 or load a private hull/module catalogue.

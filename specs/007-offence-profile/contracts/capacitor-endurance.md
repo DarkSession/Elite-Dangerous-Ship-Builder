@@ -6,7 +6,8 @@ Feature 005's `PowerConditionsStore` holds the WEP allocation. It already stores
 package's own `[0, 4]` range, on the game's half step, so the allocation is passed through unchanged:
 
 ```ts
-const result = loadout.weaponsCapacitorMetrics({
+const metrics = BuildMetrics.of(loadout);
+const result = metrics.weaponsCapacitorMetrics({
   weaponsPips: conditions.pips.weapons,
 });
 ```
