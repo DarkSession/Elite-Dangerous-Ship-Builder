@@ -195,17 +195,23 @@
 // 18rem was the threshold while there were four columns, chosen because the
 // block is one half of a pair inside the outfitting centre column and a 1440px
 // desktop gives the list about 19rem — a 22rem table never appeared on the
-// artboard's own width. The 2026-08-25 canvas revision added `RANGE`, and a
-// fifth column does not fit in the fourth's room: the four figure tracks want
-// the canvas's own 46, 44, 60 and 60 pixels, and what is left of 18rem after
-// them is less than the 155px at which the module track collapsed and wrapped a
-// weapon's name one character per line.
+// artboard's own width. The 2026-08-25 canvas revision added `RANGE`, and the
+// threshold is worked out from the fifth column rather than guessed at: the
+// module track needs the 155px below which it collapsed and wrapped a weapon's
+// name one character per line, four gaps take 40px, and four figure tracks at
+// their floor take 192px — 387px, which is the 24rem below.
 //
-// So the threshold moves with the column rather than the floors being squeezed
-// under it: four figure tracks at their own width, a gap between each, and a
-// module track that can still hold a name over its code line. Below it the
-// compact arrangement carries the same five figures, each with its own word
-// beside it, which is what canvas 1d draws at that width anyway.
+// The floor is the canvas's own scale rather than the widest of its columns.
+// Canvas 1c sets `DPS` 46px, `PIERCE` 44px and the two range columns 60px each,
+// and canvas 1d — which draws the *same* aligned table at phone width, not a
+// stack — narrows them to 42, 30 and 56. 3rem sits inside that range and is a
+// floor, not a width: each track is `auto` above it and grows to whatever its
+// own figures need.
+//
+// Below the threshold the list takes the compact arrangement, which carries the
+// same five figures with the word that names each one beside it. That is this
+// application's answer to a list too narrow to align, not the canvas's: canvas
+// 1d keeps its table and folds `FALL 1,800` under the range cell instead.
 @container weapons (min-width: 24rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets

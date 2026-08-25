@@ -171,10 +171,13 @@ export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as c
 
 These are properties of the **drawing**, taken from the canvas's own script
 (`wireConvergence`), and the 2026-08-25 canvas revision changed both of the
-first two. The plate is square in _angle_: both axes map over the same field of
-view, and only the rings are corrected for the box's own pixel shape — which,
-on a box wider than it is tall, makes each ring a circle in pixels and is drawn
-as `aspect-ratio: 1` rather than measured.
+first two. The plate is square in _angle_ — both axes map over the same field of
+view — and the box it is drawn in is square too, which is what makes that
+mapping level: a milliradian then covers the same number of pixels up as
+across. The script's correction of a ring's height by the box's own
+`offsetWidth / offsetHeight` is one on such a box, so a ring is a circle in
+pixels as well as in angle and the plate draws it as `aspect-ratio: 1` rather
+than measuring anything.
 
 A shot further off the axis than the plate shows is **clamped** to the frame's
 own margin rather than clipped out of it: `PLATE_MARGIN_FRACTION` is the

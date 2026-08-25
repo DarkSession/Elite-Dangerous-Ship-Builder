@@ -423,15 +423,22 @@
   --edsb-measure-offence-bar: 0.6875rem; // 11
   --edsb-measure-offence-label: 6.5rem;
   --edsb-measure-offence-value: 3.875rem;
-  --edsb-measure-weapon-figure: 3.75rem;
+  --edsb-measure-weapon-figure: 3rem;
 
-  // Canvas 1c's gunsight plate: `aspect-ratio: 16/6`, an 11px dot where each
-  // shot lands, and a 20px badge parked at the plate's edge with a leader line
-  // back to its dot. The badge is off the shot rather than on it because five
-  // shots converging is five marks in one place, and a numeral inside each of
-  // them is unreadable exactly when the spread is tightest.
-  --edsb-measure-gunsight-ratio: 16 / 6;
-  --edsb-measure-shot-dot: 0.6875rem;
+  // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
+  // box square in pixels, and a 7px dot where each shot lands with the mount's
+  // hardpoint numeral set beside it.
+  //
+  // The box is square because the plate is square in *angle* — the script maps
+  // both axes over the same field of view and corrects a ring's height by the
+  // box's own `offsetWidth / offsetHeight`, which is a correction only a square
+  // box makes vanish. On a wider box the same mapping would squash every shot's
+  // height in exactly the box's proportion, which is a spread no build has, and
+  // would put a ring past the top and bottom of its own plate. The earlier
+  // drawing kept a `16 / 6` box level by dividing its vertical axis by a
+  // narrower field; the revision squares the box instead, and this follows it.
+  --edsb-measure-gunsight-plate: 10.75rem;
+  --edsb-measure-shot-dot: 0.4375rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 

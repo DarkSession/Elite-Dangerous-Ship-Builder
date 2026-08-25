@@ -570,6 +570,38 @@ test.describe('shot convergence', () => {
     await expect(plate.locator('.plate__leader')).toHaveCount(0);
   });
 
+  test('draws the plate on one scale, so a ring means the same angle on both axes', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    const drawn = await page
+      .locator('edsb-shot-convergence .plate')
+      .evaluate((plate: HTMLElement) => {
+        const rings = [...plate.querySelectorAll('.plate__ring')].map((ring) => {
+          const box = ring.getBoundingClientRect();
+          return { width: box.width, height: box.height };
+        });
+        return { plate: { width: plate.clientWidth, height: plate.clientHeight }, rings };
+      });
+
+    // The plate's own box is square, which is what makes a mapping that is
+    // square in angle level in pixels: a milliradian covers the same distance up
+    // as across. A wider box under the same mapping would squash every shot's
+    // height in exactly its own proportion.
+    expect(drawn.plate.width).toBeGreaterThan(0);
+    expect(Math.abs(drawn.plate.width - drawn.plate.height)).toBeLessThanOrEqual(1);
+
+    // And each ring is a circle that fits on it, rather than an ellipse or an
+    // arc clipped away at the top and bottom of its own plate.
+    expect(drawn.rings).toHaveLength(2);
+    for (const ring of drawn.rings) {
+      expect(Math.abs(ring.width - ring.height)).toBeLessThanOrEqual(1);
+      expect(ring.width).toBeLessThanOrEqual(drawn.plate.width + 1);
+      expect(ring.height).toBeLessThanOrEqual(drawn.plate.height + 1);
+    }
+  });
+
   test('clamps a shot the field of view does not reach, and keeps its sentence', async ({
     page,
   }) => {

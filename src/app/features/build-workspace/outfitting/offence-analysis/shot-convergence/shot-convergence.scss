@@ -1,18 +1,36 @@
 @use '../../../../../../styles/responsive' as layout;
 
-// Canvas 1c's `SHOT CONVERGENCE`: a `16 / 6` gunsight plate, the range it is
-// drawn at, and four cells reporting the spread. The block's own frame and its
-// heading line — which since the 2026-08-25 canvas revision carries the ring
-// caption — are the panel's, and stay with it; everything here is the content
-// inside that frame.
+// Canvas 1c's `SHOT CONVERGENCE`: a square gunsight plate, the range it is drawn
+// at, and four cells reporting the spread. The block's own frame and its heading
+// line — which since the 2026-08-25 canvas revision carries the ring caption —
+// are the panel's, and stay with it; everything here is the content inside that
+// frame.
 :host {
   display: block;
   min-inline-size: 0;
 }
 
+// The plate beside its readout, as the canvas sets them, and stacked when the
+// readout has no room to stand there. A wrapping row rather than a query,
+// because the only question is whether the two fit side by side — which is the
+// available space asking itself, and answers the same way for a phone, a 400%
+// zoom and an expanded translation.
 .convergence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--edsb-space-region);
+  min-inline-size: 0;
+}
+
+// The range and the four cells: one column beside the plate, and the whole
+// width beneath it once it cannot be. The basis is what it takes for the
+// canvas's four fact cells to stand as more than one column; below that the
+// row wraps rather than squeezing them.
+.convergence__readout {
   @include layout.stack(var(--edsb-space-stack));
 
+  flex: 1 1 15rem;
   min-inline-size: 0;
 }
 
@@ -24,15 +42,22 @@
 // ---------------------------------------------------------------------------
 // The gunsight plate
 
-// Canvas 1c's `16 / 6` box on hatched ground, inside an amber hairline. Its own
-// ratio rather than the anatomy plate's `720 / 292`: the gunsight runs the full
-// width of the panel, and the taller box turned a band into a third of the
-// screen.
+// Canvas 1c's `172px` square box on hatched ground, inside an amber hairline.
 //
-// The box stays wide while the plate is square in *angle*, which the
-// 2026-08-25 canvas revision made the arrangement: both axes map over the same
-// field of view and only the rings are corrected for the box's own pixel shape
+// Square in pixels because the plate is square in *angle*: the 2026-08-25
+// revision maps both axes over the same field of view, so a milliradian has to
+// cover the same number of pixels up as across, and only a square box makes
+// that true. The rings follow from it — the script sizes a ring's height by the
+// box's own `offsetWidth / offsetHeight`, which on this box is one. A wider box
+// under the same mapping would squash every shot's height in exactly its own
+// proportion and push a ring past the top and bottom of the plate, which is why
+// the earlier `16 / 6` band went with the earlier mapping that levelled it
 // (`design/canvas-contract.md`, "3. SHOT CONVERGENCE").
+//
+// It takes the canvas's own width and shrinks with the block rather than
+// growing to fill it: a square plate given a whole panel's width is a diagram
+// several screens tall, and the field of view it draws does not get wider for
+// having more room.
 //
 // Its own query container, because the hardpoint numeral is sized in `cqw`
 // against the plate it is drawn on rather than against whatever box happens to
@@ -46,8 +71,10 @@
 // that would put it back over one of them.
 .plate {
   position: relative;
+  flex: none;
   container-type: inline-size;
-  aspect-ratio: var(--edsb-layout-gunsight-ratio);
+  inline-size: min(100%, var(--edsb-layout-gunsight-plate));
+  aspect-ratio: 1;
   overflow: hidden;
   background: var(--edsb-surface-plate);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative-strong);
@@ -87,7 +114,7 @@
   border-radius: 50%;
 }
 
-// Where the shot actually lands: the canvas's 11px dot, ringed in the plate's
+// Where the shot actually lands: the canvas's 7px dot, ringed in the plate's
 // own ground so it stays visible over a dashed ring or the axis.
 .plate__dot {
   position: absolute;

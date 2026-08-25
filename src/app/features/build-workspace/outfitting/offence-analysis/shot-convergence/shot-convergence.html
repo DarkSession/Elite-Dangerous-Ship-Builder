@@ -74,31 +74,38 @@
     <li class="shots__entry">{{ ringCaption() }}</li>
   </ul>
 
-  <edsb-range-field
-    class="convergence__range"
-    [label]="rangeLabel()"
-    [min]="rangeBounds.min"
-    [max]="rangeBounds.max"
-    [step]="rangeBounds.step"
-    [value]="targetRange()"
-    [valueText]="targetRangeText()"
-    [minText]="rangeMinText()"
-    [maxText]="rangeMaxText()"
-    (changed)="setTargetRange($event)"
-  />
-
   <!--
-    Canvas 1c's four cells under the plate: one hairline-gapped row of
-    label-over-figure, not a stacked list. The two spans are the mounts'
-    own separation and do not move with the range; the spread is what that
-    separation subtends at the range the slider is set to, and says so.
+    The range and the four cells, in one column beside the plate — the canvas's
+    own arrangement, which falls beneath the plate when there is no room to
+    stand there.
   -->
-  <ul class="facts">
-    @for (fact of facts(); track fact.id) {
-      <li class="fact">
-        <span class="fact__label">{{ fact.label }}</span>
-        <span class="fact__value" data-bidi-isolate>{{ fact.value }}</span>
-      </li>
-    }
-  </ul>
+  <div class="convergence__readout">
+    <edsb-range-field
+      class="convergence__range"
+      [label]="rangeLabel()"
+      [min]="rangeBounds.min"
+      [max]="rangeBounds.max"
+      [step]="rangeBounds.step"
+      [value]="targetRange()"
+      [valueText]="targetRangeText()"
+      [minText]="rangeMinText()"
+      [maxText]="rangeMaxText()"
+      (changed)="setTargetRange($event)"
+    />
+
+    <!--
+      Canvas 1c's four cells: one hairline-gapped row of label-over-figure, not
+      a stacked list. The two spans are the mounts' own separation and do not
+      move with the range; the spread is what that separation subtends at the
+      range the slider is set to, and says so.
+    -->
+    <ul class="facts">
+      @for (fact of facts(); track fact.id) {
+        <li class="fact">
+          <span class="fact__label">{{ fact.label }}</span>
+          <span class="fact__value" data-bidi-isolate>{{ fact.value }}</span>
+        </li>
+      }
+    </ul>
+  </div>
 </div>

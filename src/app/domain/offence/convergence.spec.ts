@@ -186,6 +186,28 @@ describe('convergenceAt', () => {
     }
   });
 
+  it('puts a shot and a ring at the same angle the same distance from the axis', () => {
+    const geometry = convergence();
+
+    // Far enough out that nothing is clamped, so every mark is where its shot is.
+    const view = convergenceAt(geometry, TARGET_RANGE.max);
+
+    // One scale for the whole plate. A shot's distance from the axis, measured
+    // in half-plates across both axes together, is its own angle over the field
+    // of view — and a ring's `width` is the same fraction for the angle it
+    // stands for. So a mark landing on a ring is a mark at that ring's angle,
+    // which is the only reason the caption beside the plate means anything.
+    for (const point of view.points) {
+      const fromAxis = Math.hypot(point.horizontal, point.vertical);
+      expect(fromAxis).toBeCloseTo(point.milliradians / FIELD_OF_VIEW_MILLIRADIANS, 9);
+    }
+    for (const ring of view.rings) {
+      expect(ring.width).toBeCloseTo(ring.milliradians / FIELD_OF_VIEW_MILLIRADIANS, 9);
+      // And it fits on the plate it is drawn on, at every angle it is drawn for.
+      expect(ring.width).toBeLessThanOrEqual(1);
+    }
+  });
+
   it('sizes the outer ring at two thirds of the field, and says what it spans', () => {
     const geometry = convergence();
 

@@ -73,7 +73,7 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   its mount, then whatever else is true of it, as
   `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`. Reading that second line as an
   engineering line is what made an earlier revision draw only its last part, and
-  nothing at all under `3E FIXED · STOCK`. The three figure cells are one line
+  nothing at all under `3E FIXED · STOCK`. The four figure cells are one line
   each.
 
 The five rows, verbatim:
@@ -128,10 +128,20 @@ The plate's geometry changed with it, and this is the substantive half:
 
 - **`FOV = 40`, not `115`.** `wireConvergence` halved the field of view nearly
   threefold, so the same offsets subtend nearly three times as much of the plate.
-- **The plate is square in milliradians.** `ASPECT = 6 / 16` is gone; the script
-  now maps both axes over `±FOV` and corrects only the _rings_ for the box's
-  pixel aspect (`aspect = box.offsetWidth / box.offsetHeight`), so a ring stays
-  circular in angle while the box stays wide.
+- **The plate is square in milliradians, and its box is square too.**
+  `ASPECT = 6 / 16` is gone; the script now maps both axes over `±FOV` and
+  corrects only the _rings_ for the box's pixel aspect
+  (`aspect = box.offsetWidth / box.offsetHeight`). The box the canvas gives it is
+  `width: 172px; aspect-ratio: 1` (@15395), so that correction is one and a ring
+  is a circle in pixels as well as in angle.
+
+  The two halves are one change. A mapping square in angle over a box that is
+  not squashes every shot's height in exactly the box's own proportion, and
+  sends a ring past the top and bottom of the plate it is drawn on — which is why
+  the earlier drawing paired its `16 / 6` box with the narrower vertical field
+  that levelled it. Taking the mapping without the box is not half the revision;
+  it is a different diagram from either.
+
 - **A shot outside the field of view is clamped, not clipped.** Every dot is
   `clamp(50 ± mrad / FOV × 50, 4, 96)` — it stops at the frame's own margin
   instead of leaving it. Nothing disappears.
@@ -200,7 +210,7 @@ bare figure: the canvas gives it no unit, no second figure and no condition.
 | Canvas 1d's `WEP CAP 61 MJ`                          | `capacity`, as a fourth row of the same block.                                                                           |
 | The capacitor bars                                   | `DRAW` and `RECHARGE` only: those two share MJ/s. `CAPACITY` and `FULL FIRE` do not (review note 6).                     |
 | `SHOT CONVERGENCE` and its ring caption              | The third block's heading, with the ring caption on the heading line, across the full width.                             |
-| `#cv-ring1`, `#cv-ring2`, `#cv-dots`                 | A gunsight plate over the canvas's own **40 mrad** field of view, square in angle, dots clamped to the frame.            |
+| `#cv-ring1`, `#cv-ring2`, `#cv-dots`                 | A square gunsight plate over the canvas's own **40 mrad** field of view, dots clamped to the frame.                      |
 | The canvas's dot and numeral per mount               | Two marks: the dot where the shot lands, and its hardpoint numeral placed clear of the other dots.                       |
 | The canvas's four fact cells                         | `repeat(4, 1fr)` label-over-figure cells with a hairline between them, falling to fewer columns when narrow.             |
 | The `RING 2 · 27 MRAD · 16.0 m` caption              | The outer ring's angle, and what it spans at the chosen range, on the block's heading line.                              |
@@ -549,7 +559,7 @@ each one is built as rather than what it was waiting on.
 | `AT THIS RANGE` dropped from the ring caption                | **Built.** `offence.convergence.ring` ends at the distance.                                                  |
 | `IMPACT PLANE` rule removed                                  | **Built.** `offence.convergence.impact-plane` is withdrawn from both catalogues.                             |
 | Field of view `115 mrad` → `40 mrad`                         | **Built.** `FIELD_OF_VIEW_MILLIRADIANS = 40`.                                                                |
-| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone; the rings carry the box's pixel aspect as `aspect-ratio: 1`.              |
+| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone, and the box is the canvas's own square one, so a ring is a pixel circle.  |
 | Off-axis shots clamped to the frame, not clipped             | **Built.** `PLATE_MARGIN_FRACTION`, the canvas's `4%`–`96%`. The sentence keeps the true angle.              |
 | Edge badge and leader replaced by a numeral beside the dot   | **Built.** One dot and one numeral per mount, at the furthest of the script's four corners.                  |
 | Slider re-laid out: `TARGET RANGE` and value above the track | **Built.** `edsb-range-field` sets label and value on the row above its track.                               |
@@ -562,15 +572,19 @@ aspect, its clamping and its marks are `wireConvergence`'s own, and the built
 plate mirrored the old script exactly. It was rebuilt by re-deriving
 `convergence.ts` from the new script rather than by patching a constant.
 
-**Two things the revised drawing does that the built region deliberately does
-not.** Canvas 1c gives the plate a `172px` square box inside a `508px` block set
-to `align-self: flex-start`, and stacks the four facts as label-left,
-value-right rows down the narrow column beside it. The built region keeps the
-wide `16 / 6` plate across the full width and the `repeat(4, 1fr)` fact cells
-this document's own build table sanctions, because §3's own reading of the
-script is that the box "stays wide" while the plate goes square in _angle_ —
-which is the geometry, and the geometry is what changed. The box's shape and the
-facts' arrangement are the responsive composition, which is decided from the
-region's available space rather than from an artboard's fixed width (T033), and
-neither carries a figure the other does not. If the drawing's own box is meant
-to bind, that is a separate change to this document's build table first.
+**One thing the revised drawing does that the built region deliberately does
+not.** Canvas 1c stacks the four facts as label-left, value-right rows down the
+narrow column beside the plate; the built region keeps the `repeat(4, 1fr)`
+cells this document's own build table sanctions. That is responsive
+composition — the same four labels and the same four figures, arranged from the
+region's available space rather than from an artboard's fixed width (T033) — and
+neither arrangement carries a figure the other does not.
+
+The plate's **box** is not in that category, and is built as the canvas draws
+it: square, at the canvas's own width, in a wrapping row with the range and the
+four cells beside it. An earlier revision of this paragraph defended keeping the
+wide `16 / 6` box on the ground that §3 above said the box "stays wide". That
+was a misreading of the script and is corrected there: the box's aspect is not
+composition, because under a mapping square in angle it _is_ the drawing's
+vertical scale, and a wide box would have squashed every shot's height by
+`16 / 6` and clipped both rings.
