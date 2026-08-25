@@ -235,14 +235,18 @@ describe('projectMobilityAndJump', () => {
   });
 
   describe('mass and capacity', () => {
-    it('copies the package aggregates the canvas names, exactly', () => {
+    it('projects none of the three package aggregates the canvas does not draw', () => {
       const loadout = build();
       const { thrusters } = projectMobilityAndJump(loadout, 4);
 
-      // Both tanks, because the canvas states both beside the fuel segment.
-      // Cargo capacity is not projected: the canvas's mass card does not draw
-      // it, and a reading it does not draw is not this screen's to add.
-      expect(thrusters.fuelCapacity).toEqual({ ...loadout.fuelCapacity });
+      // `unladenMass`, `fuelCapacity` and `cargoCapacity` are real package
+      // figures, and the canvas draws none of them: the revision of 2026-08-25
+      // cut the fuel row's qualifier to the bare word `TANK`, which took the
+      // last capacity off the card. A figure no canvas draws is not read, so
+      // none of the three reaches the snapshot.
+      expect(thrusters).not.toHaveProperty('fuelCapacity');
+      expect(thrusters).not.toHaveProperty('unladenMass');
+      expect(thrusters).not.toHaveProperty('cargoCapacity');
     });
 
     it("copies the package's own mass split, weighed at the envelope's load", () => {

@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 4
+**Version**: 5
 
 ## What is automated, and what is left
 
@@ -200,6 +200,57 @@ disagrees or where the announcement is correct but unusable.
     are running, and that the game data is Frontier's and the calculations are
     the bundled Almanac's. That is a question about meaning, and no snapshot of
     the accessibility tree can answer it.
+
+18. **Drives & Mass.** Open a build and open the `DRIVES` mode of the anatomy
+    region. Expect two regions, each announced by its own heading — thruster
+    load and Frame Shift Drive — and expect each heading to carry the fitted
+    module's own identity so a Commander knows which mount the figures below it
+    belong to, without seeing them side by side.
+
+    In the thruster card, expect the headline mass to be announced with its
+    unit and with the load it was weighed at, and expect the position on the
+    curve to be announced as a share of the module's optimal mass rather than
+    as a bare percentage. Walk the three legend rows: expect each to be
+    announced as a name, the canvas's qualifier and a figure with its unit —
+    hull with the bulkhead, modules with how many are fitted, fuel with the
+    bare word `Tank` and **no** capacity beside it. Expect the bar itself to be
+    announced as nothing at all: every part of it is decoration, and its
+    meaning is the three figures already read. Then the speed envelope: expect
+    all five readings — top speed, boost, pitch, roll and yaw — each announced
+    with its own unit, and expect metres per second and degrees per second to
+    be distinguishable by what is said.
+
+    Switch the thrusters off through the ledger's own power control and come
+    back. Expect the envelope to be replaced by the package's own reasons,
+    announced as a named list; expect the card to say the mount is switched off
+    rather than absent; and expect **no** speed anywhere — a hull catalogue
+    figure standing in here would be announced as an answer and is exactly what
+    FR-005 forbids. Expect the curve marks and the drive card beside it to
+    survive: what was lost is the build's mobility, not the module's stats.
+
+    In the drive card, expect the three head cells — jump laden, jump unladen
+    and mass lock — to be announced as label-and-value pairs, and expect the
+    two jump figures to be recognisable as the ends of the three ranges read
+    below them rather than as a separate answer. Expect each range row to be
+    announced as its load and one figure in light years. Expect the legend
+    under them to be announced as three more pairs — optimal mass, fuel per
+    jump, total range with the jumps that tank makes. Where the drive is
+    Overcharge-capable, expect the badge's meaning to be announced **once**, in
+    words, and never as the three letters alone.
+
+    Finally the status rail. Find the `JUMP`, `SPEED` and `MASS` cells: expect
+    each to be announced with its unit, expect **no** control among them, and
+    expect each to say the same figure the card in the `DRIVES` mode says. Two
+    different numbers for one quantity, on one screen, both sounding like
+    answers, is the failure FR-009 exists to prevent — and a reader hearing
+    them minutes apart is the observation that catches it.
+
+    The judgment this step exists for: whether a Commander who has only heard
+    these two cards can say what their ship weighs, how fast it flies, how far
+    it jumps, and which of those the application could not answer. Every figure
+    here is a number with a unit, qualified by a load and an allocation set
+    somewhere else, and whether that survives being spoken in sequence is a
+    question no snapshot of the accessibility tree can answer.
 
 ## Recording the result
 

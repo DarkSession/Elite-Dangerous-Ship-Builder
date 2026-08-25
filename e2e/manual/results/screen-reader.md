@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 4.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 5.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -86,3 +86,30 @@ notice while the interface is in German — is a property of the reader and the
 The record feature 012 is accountable for, including what the automated suite
 does cover in its place, is
 [`specs/012-help-and-licences/design/screen-reader-record.md`](../../../specs/012-help-and-licences/design/screen-reader-record.md).
+
+## Drives & Mass (feature 008)
+
+Step 18 covers the anatomy region's `DRIVES` mode and the three status-rail
+cells that repeat three of its figures. Two states are separate observations
+rather than one: the ready cards, and the same region with the thrusters
+switched off, which replaces the speed envelope with the package's own reasons.
+They are a different DOM from each other, and what a reader makes of "the
+package declined to say how this ship moves" is the judgment FR-005 turns on.
+
+Each configuration is its own observation for the usual reason: the two cards
+stand side by side where the region has the width and stack where it does not,
+so what a reader walks past between the thruster figures and the drive figures
+differs between desktop and a phone.
+
+The automated coverage that does exist for the same requirements is
+`e2e/mobility-and-jump.spec.ts` — every figure read back out of the page and
+compared against another part of the same page that has to agree with it, the
+rail cells compared field for field against the cards, every bar asserted as
+`aria-hidden` with its number in text beside it, and an axe sweep over the
+ready, unavailable and stacked states in all ten projects.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 18   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 18   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 18   | As stated in the protocol | —      | not run |
