@@ -27,9 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    # Shared with the `preview` job in `ci.yml`. A removal never cancels: the
-    # publication it is queued behind is the one that would otherwise be left
-    # standing after the pull request closed.
+    # Shared with the `preview` job in `ci.yml`, which sets the same group and
+    # also never cancels. A removal queued behind a publication therefore waits
+    # for it and then removes what it wrote, rather than the two racing; and a
+    # publication that starts while this is running cannot cancel it. That job
+    # additionally re-checks that the pull request is still open, which is what
+    # covers the case where this workflow has already finished by the time it
+    # gets there.
     concurrency:
       group: preview-${{ github.event.number }}
       cancel-in-progress: false

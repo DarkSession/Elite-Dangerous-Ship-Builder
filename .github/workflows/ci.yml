@@ -285,11 +285,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # Shared with `preview-cleanup.yml`, so that closing a pull request cannot
-    # remove a preview while a push to the same one is still writing it.
+    # Shared with `preview-cleanup.yml`, so a publication and a removal for the
+    # same pull request never overlap. Nothing is cancelled: `cancel-in-progress`
+    # is a property of the arriving entrant, so `true` here would mean a
+    # publication that starts while the removal is running cancels it and then
+    # republishes what the removal had just taken away. A superseded run is
+    # already cancelled whole by this workflow's own concurrency group above.
     concurrency:
       group: preview-${{ github.event.number }}
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     permissions:
       contents: read
@@ -402,11 +406,34 @@ jobs:
         if: ${{ steps.token.outputs.available == 'true' }}
         run: rm -f dist/elite-dangerous-ship-builder/browser/CNAME
 
+      # A publication is many minutes behind the event that started it, and a
+      # pull request can be merged or closed in that time. `preview-cleanup.yml`
+      # fires exactly once, on the `closed` event, so a preview published after
+      # that event has already fired is a directory nothing will ever remove:
+      # the pull request cannot be closed a second time. Ask GitHub rather than
+      # reading `github.event.pull_request.state`, which was frozen when this
+      # run started and still says `open`. Same shape as the branch-tip check
+      # the deployment jobs run before they publish.
+      - name: Confirm the pull request is still open
+        id: pr-state
+        if: ${{ steps.token.outputs.available == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.number }}" --jq '.state')"
+          if [ "$state" = "open" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Preview not published::Pull request ${{ github.event.number }} is $state, and its cleanup has already run. Publishing now would strand the preview."
+            echo "No preview was published: this pull request is \`$state\`, and its cleanup has already run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # Pinned to a commit rather than a tag: this step is handed a token that
       # can write to another repository, and a tag can be moved. Re-pin
       # deliberately when raising the version in the trailing comment.
       - name: Publish the preview
-        if: ${{ steps.token.outputs.available == 'true' }}
+        if: ${{ steps.token.outputs.available == 'true' && steps.pr-state.outputs.open == 'true' }}
         uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
         with:
           source-dir: dist/elite-dangerous-ship-builder/browser

@@ -231,12 +231,20 @@ in the preview repository, **Settings → Pages → Build and deployment → Sou
 set to **Deploy from a branch**, with the branch `gh-pages` and folder `/ (root)`
 — the branch is created by the first preview, so publish one before setting
 this. And in this repository, a secret named `PREVIEW_PAGES_TOKEN` holding a
-fine-grained personal access token whose only resource owner is
-`Elite-Dangerous-Ship-Builder-Preview` and whose only permission is **Contents:
-Read and write**. It needs nothing in this repository; the comment on the pull
-request is written with the run's own `GITHUB_TOKEN`. If the secret is missing
-or expired, the preview job says so in a warning and does nothing else — a
-missing preview never fails a run.
+fine-grained personal access token owned by `DarkSession`, scoped under **Only
+select repositories** to `Elite-Dangerous-Ship-Builder-Preview` alone, with
+**Repository permissions → Contents: Read and write** as its only permission. It
+needs nothing in this repository; the comment on the pull request is written
+with the run's own `GITHUB_TOKEN`. If the secret is missing or expired, the
+preview job says so in a warning and does nothing else — a missing preview never
+fails a run.
+
+That secret is readable by any workflow run of a pull request raised from a
+branch of this repository, because a `pull_request` run executes the workflow
+file from its own head. Anyone who can push a branch here can therefore read it,
+which is why it is scoped to one repository and one permission and is worth
+rotating if branch access changes. It grants nothing over this repository or the
+production site.
 
 Angular CLI usage analytics are disabled in [`angular.json`](./angular.json)
 (`cli.analytics: false`), so no build — local or in CI — reports to Google. The
