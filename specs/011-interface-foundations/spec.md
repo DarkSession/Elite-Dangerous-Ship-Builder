@@ -49,6 +49,17 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 4. Game text unavailable in the active locale uses canonical package text and is identified as
    untranslated when that text exists; otherwise it is explicitly unavailable.
 
+### Story 4 — Read the version that was published (P2)
+
+1. A session already open when a newer version is published states that a newer one is available
+   without the Commander reloading the page.
+2. Applying it is the Commander's decision. The application never replaces what is on screen by
+   itself.
+3. A session that is never asked to apply it is served the newer version the next time the
+   application starts.
+4. A cached application the worker cannot repair says so and offers the recovery that fixes it.
+   Clearing a cache or forcing a reload from the browser is never the route back.
+
 ## Requirements
 
 ### Design System
@@ -103,6 +114,17 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
   the package supplies no canonical text, the value MUST be unavailable. The application MUST NOT
   keep a private game-text translation.
 
+### Application Delivery
+
+- **FR-025**: A session running a version that has been superseded MUST detect the newly published
+  one without a Commander-initiated reload, MUST state as visible text that a newer version is
+  available, and MUST offer a named control that applies it. The application MUST NOT apply it by
+  itself, and a session that is never asked MUST be served the newer version the next time the
+  application starts.
+- **FR-026**: A cached application in a state the worker cannot repair MUST be stated as a blocking
+  error carrying a named control that recovers it. Recovery MUST NOT depend on the Commander
+  clearing a cache or forcing a reload from outside the interface.
+
 ### Verification
 
 - **FR-021**: Every primary journey MUST run across the five layout profiles — desktop, tablet
@@ -116,8 +138,8 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 ## Almanac Coverage
 
 The package supplies game names for supported locales and an explicit missing-translation result.
-It does not own application messages, locale selection, formatting, accessibility or the design
-system.
+It does not own application messages, locale selection, formatting, accessibility, the design
+system, or how the application is delivered and updated.
 
 ## Current Almanac Limit
 
@@ -139,3 +161,6 @@ translations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
   the corresponding shipped language and an unsupported browser language selects English.
+- **SC-007**: A session left open across a deployment states that a newer version is available,
+  applies it from its own named control, and comes back on the published version — with no
+  cache-clearing reload anywhere in the journey.

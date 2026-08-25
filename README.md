@@ -46,7 +46,7 @@ pnpm start        # dev server on http://localhost:4200/
 | `pnpm test`            | Run the unit tests with coverage                                       |
 | `pnpm run e2e`         | Run the Playwright suite across all ten projects                       |
 | `pnpm run e2e:ui`      | Run Playwright in interactive UI mode                                  |
-| `pnpm run e2e:offline` | Serve the production build and run the offline journey                 |
+| `pnpm run e2e:offline` | Serve the production build and run the service-worker journeys         |
 | `pnpm run ui:preview`  | Serve the tooling-only component preview catalogue                     |
 | `pnpm run policy`      | Run the repository interface-policy checks                             |
 | `pnpm run typecheck`   | Type-check the project without emitting                                |
@@ -95,8 +95,8 @@ Every rendered product and preview state is scanned with
 against WCAG 2.0, 2.1 and 2.2 level A and AA, with no rule disabled; an in-scope
 violation fails the build and the full result is attached to the failure. On top
 of the ten projects the suite runs 200% text-scale, 320 CSS-pixel reflow,
-reduced-motion, expanded-copy and right-to-left variants, and a production
-offline journey under `pnpm run e2e:offline`.
+reduced-motion, expanded-copy and right-to-left variants, and the production
+offline and update journeys under `pnpm run e2e:offline`.
 
 CI may shard the matrix; it may not reduce it. The project names are generated
 from the same constants the coverage ledger uses

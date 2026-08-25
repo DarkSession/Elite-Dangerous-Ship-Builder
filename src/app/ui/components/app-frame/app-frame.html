@@ -91,13 +91,21 @@
   }
 </header>
 
-@if (status() ?? localeNotice(); as shellStatus) {
+<!--
+  Every notice that is standing, not the first of them. A language that could
+  not be loaded and a newer version waiting to be applied are independent facts
+  about this session, and showing one behind the other would lose whichever
+  arrived second.
+-->
+@if (notices().length > 0) {
   <div class="frame__status" [attr.aria-label]="statusLabel()">
-    <edsb-status-notice
-      [tone]="shellStatus.tone"
-      [message]="shellStatus.message"
-      [detail]="shellStatus.detail ?? null"
-    />
+    @for (notice of notices(); track notice.message) {
+      <edsb-status-notice
+        [tone]="notice.tone"
+        [message]="notice.message"
+        [detail]="notice.detail ?? null"
+      />
+    }
   </div>
 }
 

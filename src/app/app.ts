@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import {
   ReplacementCoordinator,
   type ReplacementQuestion,
 } from './application/active-build/replacement-coordinator';
+import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { ScreenChrome } from './features/shared/screen-chrome';
@@ -11,11 +20,20 @@ import { LocaleStore } from './i18n/locale.store';
 import { SlefStore } from './application/slef/slef.store';
 import { ExportDialog } from './features/slef/export-build-layer/export.dialog';
 import { ImportDialog } from './features/slef/import-build-layer/import.dialog';
-import { AppFrame, type NavigationEntry } from './ui/components/app-frame/app-frame';
+import { AnnouncementService } from './ui/announcements/announcement.service';
+import {
+  AppFrame,
+  type NavigationEntry,
+  type ShellAction,
+  type ShellStatus,
+} from './ui/components/app-frame/app-frame';
 import { ConfirmDialog } from './ui/components/confirm-dialog/confirm-dialog';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
+
+/** The shell action that starts the application over on a newer version. */
+export const UPDATE_ACTION = 'app.update';
 
 /** A replacement question waiting for an answer. */
 interface PendingReplacement {
@@ -52,6 +70,8 @@ export class App {
   readonly #messages = inject(MessageService);
   readonly #replacement = inject(ReplacementCoordinator);
   readonly #slef = inject(SlefStore);
+  readonly #updates = inject(ApplicationUpdateStore);
+  readonly #announcements = inject(AnnouncementService);
 
   readonly #path = signal(this.#router.url);
   readonly #pending = signal<PendingReplacement | null>(null);
@@ -67,15 +87,22 @@ export class App {
   readonly pageCount = this.chrome.count;
 
   /**
-   * What the command bar shows: the open screen's own actions, then Import.
+   * What the command bar shows: the open screen's own actions, then Import, and
+   * the restart when a newer version is waiting.
    *
-   * Import is last and always present. The reference draws it in the command
-   * bar of the shipyard, and a Commander can paste a build from any screen —
-   * including one with no build at all — so it belongs to the shell rather than
-   * to four screens that would each have to remember to offer it.
+   * Import is second-to-last and always present. The reference draws it in the
+   * command bar of the shipyard, and a Commander can paste a build from any
+   * screen — including one with no build at all — so it belongs to the shell
+   * rather than to four screens that would each have to remember to offer it.
+   *
+   * The restart is last and almost never there. It sits at the trailing edge
+   * where the canvas puts what a screen is asking for, and immediately before
+   * the notice that explains it in reading order, so a reader meets the control
+   * and its reason together.
    */
   readonly actions = computed(() => {
     const screen = this.chrome.actions();
+    const update = this.updateAction();
     return [
       ...screen,
       {
@@ -84,7 +111,73 @@ export class App {
         emphasis: 'secondary' as const,
         startsGroup: screen.length > 0,
       },
+      ...(update === null ? [] : [update]),
     ];
+  });
+
+  /**
+   * The restart, offered only while there is something to restart onto.
+   *
+   * Pressing it is the Commander's decision and never the application's: a
+   * reload replaces everything on screen, and taking that decision for someone
+   * in the middle of outfitting a hull is exactly what shell navigation already
+   * refuses to do. Not pressing it costs nothing — the newer version is already
+   * downloaded and the next start of the application is served it.
+   */
+  readonly updateAction = computed<ShellAction | null>(() => {
+    const state = this.#updates.state();
+    if (state === 'current') {
+      return null;
+    }
+    return {
+      id: UPDATE_ACTION,
+      label: this.#messages.message(
+        state === 'ready' ? 'update.ready.action' : 'update.unusable.action',
+      ),
+      emphasis: 'primary' as const,
+      description: this.#messages.message(
+        state === 'ready'
+          ? 'update.ready.action.description'
+          : 'update.unusable.action.description',
+      ),
+      disabled: this.#updates.applying(),
+      startsGroup: true,
+    };
+  });
+
+  /**
+   * The version outcome, as visible text.
+   *
+   * The other thing a Commander would otherwise have no way of knowing: that
+   * what they are reading is no longer what was published. It stays on the page
+   * in reading order beside the control that acts on it, to be found and
+   * re-read; the announcement below is the separate projection that interrupts,
+   * once (feedback contract).
+   *
+   * The tone decides how the notice itself is exposed, and `StatusNotice` makes
+   * that choice, not this: an error is an `alert` and everything else a
+   * `status`. The unrepairable state therefore arrives in a live region of its
+   * own, and the announcement beside it says something else rather than the
+   * same sentence again — hull detail's unknown hull is the same shape, with
+   * the summary in the outlet and the explanation on the page.
+   */
+  readonly updateStatus = computed<ShellStatus | null>(() => {
+    const state = this.#updates.state();
+    if (state === 'current') {
+      return null;
+    }
+    if (state === 'unusable') {
+      return {
+        tone: 'error' as const,
+        message: this.#messages.message('update.unusable.notice'),
+        detail: this.#messages.message('update.unusable.detail'),
+      };
+    }
+    return {
+      tone: 'info' as const,
+      message: this.#messages.message('update.ready.notice'),
+      detail: this.#messages.message('update.ready.detail'),
+    };
   });
 
   /** The open screen's own identity block, where it publishes one. */
@@ -142,6 +235,40 @@ export class App {
           });
         }),
     );
+
+    // One announcement per version revision. A waiting version is a settled,
+    // nonblocking change and waits its turn; a cached version that cannot be
+    // repaired is blocking, because nothing else on the page can be trusted to
+    // work, and interrupts (feedback contract).
+    //
+    // What each outlet carries differs by how the notice beside it is exposed.
+    // A waiting version's notice is a `status`; an unrepairable one is an
+    // `alert`, which is the stronger promise of the two, so the assertive
+    // outlet carries a summary rather than the sentence the alert already
+    // spoke, and the polite outlet repeats its notice. Which of the two roles
+    // a reader actually speaks on insertion is a judgment no scan can make:
+    // step 16 of `e2e/manual/screen-reader.protocol.md` is where it is settled,
+    // and where a reader disagreeing sends this split back for a decision.
+    //
+    // The version is the only thing this depends on. Announcing resolves a
+    // message, which reads the catalogue — tracked, that would make a committed
+    // locale re-run this effect and republish an event that already happened,
+    // over whatever the outlet was carrying.
+    effect(() => {
+      const { state, revision } = this.#updates.snapshot();
+      if (state === 'current') {
+        return;
+      }
+
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'app.update',
+          revision,
+          urgency: state === 'unusable' ? 'assertive' : 'polite',
+          messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
+        }),
+      );
+    });
   }
 
   answerReplacement(replace: boolean): void {
@@ -176,6 +303,10 @@ export class App {
     }
     if (id === IMPORT_ACTION) {
       this.#slef.openLayer('import');
+      return;
+    }
+    if (id === UPDATE_ACTION) {
+      void this.#updates.apply();
       return;
     }
     if (id === 'library') {

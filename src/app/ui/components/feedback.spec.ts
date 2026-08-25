@@ -1,7 +1,9 @@
+import { TestBed } from '@angular/core/testing';
 import { AppFrame } from './app-frame/app-frame';
 import { StatusNotice } from './status/status-notice';
 import { UnavailableValue } from './unavailable-value/unavailable-value';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
+import { LocaleStore } from '../../i18n/locale.store';
 import {
   describedText,
   element,
@@ -250,6 +252,23 @@ describe('AppFrame', () => {
 
     expect(textOf(status)).toContain('This build could not be saved.');
     expect(status.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps every standing notice, so one does not hide another', () => {
+    const fixture = renderComponent(AppFrame, {
+      status: { tone: 'info', message: 'A newer version is available.' },
+    });
+    // A language that could not be loaded and a version waiting to be applied
+    // are independent facts, and a region that showed only the first would drop
+    // the other without saying so.
+    TestBed.inject(LocaleStore).commitFallbackToEnglish('de-DE', 'load-failed', 'browser');
+    fixture.detectChanges();
+
+    const notices = query(fixture, '.frame__status').querySelectorAll('edsb-status-notice');
+
+    expect(notices.length).toBe(2);
+    expect(textOf(notices[0])).toContain('A newer version is available.');
+    expect(textOf(notices[1])).toContain('de-DE');
   });
 
   it('mounts exactly two live regions and no more', () => {

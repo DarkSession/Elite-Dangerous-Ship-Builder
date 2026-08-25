@@ -23,6 +23,7 @@
 - [x] Success criteria are measurable
 - [x] Shipped-locale completeness remains enforceable as capabilities change the owned message set
 - [x] Incomplete locale catalogues have one atomic, readable fallback outcome
+- [x] A superseded running version and an unrepairable cached one each have a stated, Commander-initiated recovery
 
 ## Almanac Integrity
 

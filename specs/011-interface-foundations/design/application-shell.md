@@ -55,17 +55,36 @@ candidate publishes readable English and one nonblocking fallback status.
 Locale resolution does not announce/recompute an unchanged build. Only a new fallback creates a
 polite event.
 
+## Version behavior
+
+The shell has no version display and states no version number. It says one thing, and only when it
+is true: that the version this session is running is no longer the published one, with one named
+control beside it that starts the application on the newer one. The control sits at the trailing
+edge of the bar, after the screen's own actions and Import, and immediately before the notice that
+explains it in reading order.
+
+Applying is the Commander's decision every time. A session that is never asked keeps working and is
+served the newer version the next time the application starts, so nothing is lost by ignoring the
+notice. A cached application the worker cannot repair is the same shape with the tones reversed: a
+blocking error and a restart that fetches a working version.
+
+The session asks whether a newer version exists on a fixed interval, when the page becomes visible
+again and when connectivity returns. None of that reaches the route, the fragment, history, storage,
+the saved build or an export.
+
 ## Shell states
 
-| State                           | Presentation/behavior                                                                   |
-| ------------------------------- | --------------------------------------------------------------------------------------- |
-| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                   |
-| Browser-matched German          | Complete catalogue/root metadata commit before German route render                      |
-| Unsupported browser language    | English appears as the ordinary default                                                 |
-| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                             |
-| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                 |
-| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable               |
-| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable |
+| State                           | Presentation/behavior                                                                                      |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                                      |
+| Browser-matched German          | Complete catalogue/root metadata commit before German route render                                         |
+| Unsupported browser language    | English appears as the ordinary default                                                                    |
+| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                                                |
+| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                                    |
+| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable                                  |
+| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable                    |
+| Newer version published         | Visible nonblocking notice, one named restart action and one polite event; nothing on screen is replaced   |
+| Cached version unrepairable     | Visible named error, one named restart action and one assertive event summarizing rather than repeating it |
 
 ## Component composition
 

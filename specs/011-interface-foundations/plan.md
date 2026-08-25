@@ -129,8 +129,10 @@ src/
     │   ├── locale-registry.ts
     │   ├── locale.store.ts
     │   └── message.service.ts         # application facade over Transloco
+    ├── application/
+    │   └── updates/                   # what this session knows about its own version
     ├── platform/
-    │   └── browser/                   # document/navigator adapters
+    │   └── browser/                   # document/navigator/worker adapters
     └── ui/
         ├── announcements/
         ├── components/
@@ -146,6 +148,7 @@ projects/ui-preview/                   # tooling-only Angular application
 e2e/
 ├── accessibility/                     # axe, semantics, target and overflow helpers
 ├── manual/                            # screen-reader and actual-zoom protocols/results
+├── application-update.spec.ts         # production-only; needs a real worker
 ├── interface-foundations.spec.ts
 └── ui-preview.spec.ts
 
@@ -163,7 +166,10 @@ English is imported into the initial bundle, while Angular asset configuration c
 to same-origin `/i18n/`. Feature 011 owns the application's single service-worker dependency,
 registration and base configuration. It eagerly caches the shell and English and lazily caches a
 secondary locale once requested. Downstream capabilities may extend that configuration with static
-asset groups but must not register another worker or introduce another cache owner. Product and
+asset groups but must not register another worker or introduce another cache owner. It owns the
+other side of that worker too: a session that keeps serving the version it installed is the cost of
+being readable offline, so the same feature reports a newly published version, offers the restart
+that applies it, and never applies one by itself. Product and
 preview applications import the same UI source and token entry point.
 
 ## Phase 0: Research Conclusions

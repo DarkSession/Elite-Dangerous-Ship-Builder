@@ -1,8 +1,8 @@
 # Manual protocol: screen-reader journeys
 
 **Protocol id**: `screen-reader`
-**Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, SC-001
-**Version**: 2
+**Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
+**Version**: 3
 
 ## What is automated, and what is left
 
@@ -143,6 +143,29 @@ disagrees or where the announcement is correct but unusable.
     saved. Where the platform offers `SHARE`, expect a cancelled share to be
     announced as nothing sent. In every one of these states expect the payload
     to remain reachable and selectable.
+
+16. **A newly published version.** With the application open, have a newer
+    version published behind it. Expect one polite announcement that a newer
+    version is available, expect it not to interrupt what is being read, and
+    expect the notice to remain findable on the page afterwards rather than
+    only having been spoken. Move to the restart: expect it to be announced as
+    a button, named the way it reads on screen, with its description. Expect
+    the announcement **not** to repeat when a further version is published
+    behind the first, and expect nothing on screen to be replaced until the
+    restart is activated.
+
+    Then the unrepairable state, which the shell exposes as an alert rather
+    than as a status. Expect the notice to be spoken once as it arrives, expect
+    the assertive outlet's summary to be heard as a second, **different**
+    sentence rather than the same one again, and expect the two together to
+    make clear both what is wrong and what to do about it. This step is the one
+    that settles a judgment the code cannot make for itself: whether a `status`
+    inserted with its text is reliably spoken and an `alert` is, which is why
+    the polite path repeats its notice in the outlet and the assertive path
+    does not. `updateStatus` in `src/app/app.ts` chooses the tone, and the
+    version effect in the same file's constructor chooses what each outlet
+    carries. If a reader disagrees on either half, record the announcement
+    verbatim — the split is a decision to revisit, not a rule.
 
 ## Recording the result
 

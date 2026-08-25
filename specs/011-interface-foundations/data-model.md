@@ -121,6 +121,36 @@ helper returns `null`. A raw identity is not display fallback.
 The dedupe identity is `(kind, revision, urgency)`. Initial content, unchanged identity, stale
 revision and unaffected values produce no outlet update. Visible feedback is separate state.
 
+## Application Version Snapshot
+
+| Field      | Type                           | Rules                                                              |
+| ---------- | ------------------------------ | ------------------------------------------------------------------ |
+| `state`    | `current \| ready \| unusable` | What this session knows about the version it is running            |
+| `revision` | monotonic integer              | Increments only when the state changes, never on a repeated report |
+
+`current` is the state a session spends nearly all its time in and the only one that says nothing on
+screen. `ready` means a newer published version has been downloaded and is waiting for the
+application to start again; `unusable` means the cached version serving the page is broken beyond
+the worker's repair. A second report of a state already held is not a second event: the revision
+does not move, so nothing is announced twice. `unusable` supersedes `ready`; `ready` never
+supersedes `unusable`.
+
+The snapshot is session memory. It is not stored, not serialized into a build, link, saved record or
+SLEF payload, and it carries no version string, build identifier or deployment timestamp — nothing
+about it is a value a Commander reads or a consumer matches on.
+
+### Version transitions
+
+```text
+current -> worker reports a downloaded version   -> ready
+current -> worker reports an unrepairable cache  -> unusable
+ready   -> worker reports an unrepairable cache  -> unusable
+ready | unusable -> Commander applies            -> the application starts again
+```
+
+Applying is the only transition the application does not make on its own, and the only one that
+replaces what is on screen.
+
 ## Design Token
 
 | Field       | Type                                                            | Rules                                                  |

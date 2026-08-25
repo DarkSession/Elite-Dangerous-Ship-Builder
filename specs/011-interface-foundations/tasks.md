@@ -261,6 +261,42 @@ almost entirely in the non-colour decisions.
 
 ---
 
+## Phase 8: User Story 4 - Read the version that was published (Priority: P2)
+
+**Goal**: a session already open when a newer version is published says so and offers the restart
+that applies it, without ever applying one by itself; a session that is never asked is served the
+newer version the next time the application starts; and a cached application the worker cannot repair
+states that and offers the recovery. Raised after the service worker installed in US3 turned out to
+have a second face: the same worker that makes the application readable offline keeps serving the
+version it installed, and nothing on screen said so.
+
+**Independent Test**: Run `pnpm run e2e:offline`: with the worker in control, a deployment stood in
+for by the test server produces a visible notice and a named restart, nothing on screen is replaced
+until that control is used, and using it brings the application back on the published version.
+
+### Tests for User Story 4
+
+- [x] T115 [P] [US4] Add version-channel unit tests over a driveable worker port — a downloaded version, an unrepairable cache, a repeated report, a released listener, a check that could not be made and a document with no window — in `src/app/platform/browser/application-update.adapter.spec.ts`
+- [x] T116 [P] [US4] Add version-policy unit tests — the moments a session asks, one event per state change, `unusable` superseding `ready`, no restart without being asked, the activate-then-restart order as a recorded sequence rather than two counts, the restart offered again when there was no page to start over, and silence where no worker caches the application — in `src/app/application/updates/application-update.store.spec.ts`
+- [x] T117 [P] [US4] Add the shell wiring tests — notice, named action, polite and assertive announcements, and the committed locale that must not republish an event that already happened — in `src/app/app.spec.ts`, and the two-standing-notices assertion in `src/app/ui/components/feedback.spec.ts`
+- [x] T118 [US4] Add the production update journey (controlled worker, a stood-in deployment, the notice and its axe sweep, no reload until asked, the restart, and the next start of a session that never asks) in `e2e/application-update.spec.ts`, and let the test server stand in for a deployment per browser in `scripts/serve-production.mjs` (depends on T088)
+
+### Implementation for User Story 4
+
+- [x] T119 [US4] Implement the worker port — version events, check, activate, restart and the repeating check — in `src/app/platform/browser/application-update.adapter.ts`, injecting `SwUpdate` optionally so a build with no worker is still constructible (depends on T088)
+- [x] T120 [US4] Add the returning-to-the-page half of the lifecycle port in `src/app/platform/browser/page-lifecycle.adapter.ts`
+- [x] T121 [US4] Implement the version policy — what a session knows, when it asks, what changes what a Commander is told, and the activate-then-restart that applies it — in `src/app/application/updates/application-update.store.ts` (depends on T119, T120)
+- [x] T122 [US4] Publish the notice and the named restart from the shell root in `src/app/app.ts` and `src/app/app.html`, with one polite event per waiting version and one assertive event for an unrepairable cache (depends on T121)
+- [x] T123 [US4] Carry every standing notice in the frame's status region rather than the first of them in `src/app/ui/components/app-frame/` (depends on T089)
+- [x] T124 [P] [US4] Add the reviewed English and German notice, detail and action messages to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
+- [x] T125 [US4] Add the update states with their FR-025, FR-026 and SC-007 ids to `e2e/coverage-ledger.ts`, and register `application-update.spec.ts` in the production run in `package.json` and `playwright.config.ts` (depends on T118, T122)
+- [x] T126 [US4] Render the unrepairable composition — the named error and the control that recovers it — as the frame's `error` declaration in `src/app/ui/previews/preview-manifest.ts`, so the one update state no journey can provoke is still scanned (depends on T122)
+- [x] T127 [US4] Keep both announcement effects dependent on their own source only, by resolving the message outside the tracking context in `src/app/app.ts` and `src/app/ui/components/app-frame/app-frame.ts`; a committed catalogue must not republish an event that already happened
+
+**Checkpoint**: the worker no longer strands a session on the build it installed.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -271,12 +307,14 @@ almost entirely in the non-colour decisions.
 - **User Story 2 (Phase 4)**: Depends on Foundational; T060–T066 and T069 extend components created in US1
 - **User Story 3 (Phase 5)**: Depends on Foundational; T087 and T089 extend the frame created in US1
 - **Polish (Phase 6)**: Depends on every story whose ledger entries and messages it reconciles
+- **User Story 4 (Phase 8)**: Depends on US3's registered worker (T088) and mounts into the US1 frame
 
 ### User Story Dependencies
 
 - **US1 (P1)**: Starts after Phase 2. No dependency on another story.
 - **US2 (P1)**: Starts after Phase 2. Its own layout, motion, direction and verification tasks are independent; the components it restyles come from US1, so run US1 first in a single-developer sequence.
 - **US3 (P2)**: Starts after Phase 2. Fully independent of US2. Its selector and fallback status mount into the US1 frame.
+- **US4 (P2)**: Starts after US3 registers the worker. Its notice and restart mount into the US1 frame beside US3's fallback status.
 
 ### Within Each User Story
 
@@ -293,6 +331,7 @@ almost entirely in the non-colour decisions.
 - Phase 3: T031–T033 run together; T036–T049 are separate component directories and run together
 - Phase 4: T055–T059 run together; T063–T068 run together
 - Phase 5: T073–T078 run together; T085 and T086 run together
+- Phase 8: T115–T117 run together; T124 runs alongside them
 - Across teams: once Phase 2 completes, one developer takes US1, another takes US3 immediately, and US2 follows US1's component work
 
 ## Parallel Example: User Story 1
@@ -332,6 +371,7 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 4. Add US3 → English and German with persistence, offline catalogues and the package-text boundary
 5. Polish → conformance wording, ledger reconciliation, manual records and a green `pnpm run check`
 6. Reference extraction → the measured canvas as the token layer, composed by every component
+7. Add US4 → a newly published version reaches a session that is already open
 
 ### Constitutional Guardrails
 

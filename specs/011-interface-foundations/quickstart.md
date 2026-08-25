@@ -74,6 +74,19 @@ Expected: shell/fonts/English work offline after first controlled load; the prev
 catalogue also works; a never-opened unavailable locale falls back atomically to readable English;
 no request targets another origin.
 
+## A newly published version
+
+```bash
+pnpm run e2e:offline
+```
+
+The same production run. Wait for the worker to control the page, ask the test server to stand in
+for a deployment, and return to the tab.
+
+Expected: the shell states that a newer version is available and offers a named restart; nothing on
+screen is replaced until that control is used; using it brings the application back on the published
+version with nothing left to say. No cache-clearing reload anywhere in the journey.
+
 ## Formatting
 
 Run named formatter tests for English and German over integers, decimals, fraction-percent, metres,

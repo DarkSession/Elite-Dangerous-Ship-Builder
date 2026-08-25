@@ -188,6 +188,7 @@ export function resetPreviewManifest(): void {
 // reports.
 // ---------------------------------------------------------------------------
 
+import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { AnnouncementOutlet } from '../announcements/announcement-outlet';
 import { ActionButton } from '../components/action/action-button';
 import { ResponsiveCatalogueView } from '../components/catalogue-view/responsive-catalogue-view';
@@ -1198,15 +1199,37 @@ registerPreview({
       'loading',
       'The frame is always present; the route inside it owns any loading state.',
     ),
+    // The composition the shell is in when the cached application cannot be
+    // repaired: a named error and, beside it, the one control that recovers the
+    // session. It is a rendered product state that no journey can provoke — the
+    // worker decides when it happens — so this is where it is scanned.
     state(
       'error',
       {
         routeContext: 'Anaconda explorer',
-        status: { tone: 'error', message: 'This build could not be saved.' },
+        // The shell's own messages rather than a copy of them. This is the one
+        // fixture claiming to be a state the product renders, and a fixture
+        // whose wording could drift from the product's would go on being
+        // scanned while evidencing a composition that no longer exists.
+        status: {
+          tone: 'error',
+          message: BUNDLED_ENGLISH['update.unusable.notice'],
+          detail: BUNDLED_ENGLISH['update.unusable.detail'],
+        },
+        actions: [
+          {
+            id: 'app.update',
+            label: BUNDLED_ENGLISH['update.unusable.action'],
+            emphasis: 'primary',
+            description: BUNDLED_ENGLISH['update.unusable.action.description'],
+          },
+        ],
       },
       [
-        'visible feedback is ordinary content in reading order, not a live region',
+        'visible feedback stays on the page to be re-read, in ordinary reading order',
         'the shell landmarks and actions remain usable',
+        'the recovery is a named control in the interface, never an instruction to clear a cache',
+        'the action carries its own description without losing its visible name',
       ],
       ['normal'],
       true,

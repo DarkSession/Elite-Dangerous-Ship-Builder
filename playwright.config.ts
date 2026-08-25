@@ -41,15 +41,20 @@ const shard =
  * Specs no run may load, whatever else it selects.
  *
  * A project that declares `testIgnore` replaces this list rather than adding to
- * it, so every project that needs its own exclusion composes it with these. The
- * offline journey needs a service worker, and a service worker only exists in a
- * production build. It runs under `pnpm run e2e:offline`, which serves the built
- * output; a development run would otherwise fail it for a reason that has
- * nothing to do with the behaviour under test.
+ * it, so every project that needs its own exclusion composes it with these.
+ * The offline and update journeys need a service worker, and a service worker
+ * only exists in a production build. They run under `pnpm run e2e:offline`,
+ * which serves the built output; a development run would otherwise fail them
+ * for a reason that has nothing to do with the behaviour under test.
  */
 const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
   ? []
-  : ['**/offline.spec.ts', '**/offline-privacy.spec.ts', '**/schematic-offline.spec.ts'];
+  : [
+      '**/offline.spec.ts',
+      '**/offline-privacy.spec.ts',
+      '**/schematic-offline.spec.ts',
+      '**/application-update.spec.ts',
+    ];
 
 /**
  * Escape hatches for environments whose preinstalled browser build does not

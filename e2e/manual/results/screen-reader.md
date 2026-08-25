@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 1.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 3.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -42,3 +42,24 @@ list moves, the actions wrap — so each is its own observation.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 15   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 15   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 15   | As stated in the protocol | —      | not run |
+
+## A newly published version (feature 011, user story 4)
+
+Step 16 covers the two states the shell is in when the version it is running is
+no longer the published one. It is the only place the split between the two
+outlets is checkable: the visible notice is a `status` for a waiting version and
+an `alert` for an unrepairable cached one, and the assertive outlet deliberately
+summarises rather than repeating what the alert already said
+(`src/app/app.ts`, the version effect in the constructor). A reader disagreeing
+on either half sends that decision back rather than recording a failure to fix
+elsewhere.
+
+Each configuration is its own observation: the restart is on the command bar
+where there is room for it and behind the named action layer where there is not,
+so what a reader walks past to reach it differs.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 16   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 16   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 16   | As stated in the protocol | —      | not run |

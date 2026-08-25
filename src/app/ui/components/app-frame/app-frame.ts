@@ -7,6 +7,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { LocaleStore } from '../../../i18n/locale.store';
 import { MessageService } from '../../../i18n/message.service';
@@ -180,23 +181,51 @@ export class AppFrame {
     return null;
   });
 
+  /**
+   * Everything the shell currently has to say, in reading order.
+   *
+   * The route's or the application's own feedback first, the locale outcome
+   * after it. Two independent facts can be true at once — a language that could
+   * not be loaded while a newer version waits to be applied — and a region that
+   * showed only the first of them would drop the other silently.
+   */
+  readonly notices = computed<readonly ShellStatus[]>(() => {
+    const standing: ShellStatus[] = [];
+    const supplied = this.status();
+    if (supplied !== null) {
+      standing.push(supplied);
+    }
+    const locale = this.localeNotice();
+    if (locale !== null) {
+      standing.push(locale);
+    }
+    return standing;
+  });
+
   constructor() {
     // One polite announcement per committed locale revision, and only when
     // there is something to say. A settled change does not interrupt current
     // speech, and the dedupe identity keeps a re-render from repeating it.
+    //
+    // The snapshot is the only thing this depends on. Announcing resolves a
+    // message, which reads the catalogue the same snapshot carries — tracked,
+    // that would be a second run for one commit, republishing an event over
+    // whatever the outlet had moved on to.
     effect(() => {
       const snapshot = this.#locale.snapshot();
       if (snapshot.status !== 'fallback') {
         return;
       }
 
-      this.#announcements.announce({
-        kind: 'locale.fallback',
-        revision: snapshot.revision,
-        urgency: 'polite',
-        messageKey: 'locale.fallback.notice',
-        params: { locale: snapshot.requestedLocale },
-      });
+      untracked(() =>
+        this.#announcements.announce({
+          kind: 'locale.fallback',
+          revision: snapshot.revision,
+          urgency: 'polite',
+          messageKey: 'locale.fallback.notice',
+          params: { locale: snapshot.requestedLocale },
+        }),
+      );
     });
   }
 

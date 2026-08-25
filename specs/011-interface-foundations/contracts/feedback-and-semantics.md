@@ -44,14 +44,21 @@ without changing their content.
 Visible status, notice and error content remains ordinary semantic content. The frame owns one hidden
 assertive outlet and one hidden polite outlet. It never makes a whole metrics panel live.
 
-| Event                      | Outlet    | Contract                                                            |
-| -------------------------- | --------- | ------------------------------------------------------------------- |
-| New blocking error         | assertive | Publish one localized bounded summary promptly                      |
-| Settled nonblocking change | polite    | Coalesce to one localized summary for the committed source revision |
-| Initial render             | none      | Content is discoverable in reading order, not announced as a change |
-| Unchanged/replayed event   | none      | Stable `(kind, revision, urgency)` identity deduplicates it         |
-| Stale async outcome        | none      | Never announce a result that no longer owns the presented revision  |
-| Unaffected values          | none      | Do not repeat surrounding content                                   |
+The visible region carries every notice that is standing, not the first of them. A language that
+could not be loaded and a newer version waiting to be applied are independent facts about one
+session, and a region that showed one behind the other would drop whichever arrived second without
+saying so.
+
+| Event                       | Outlet    | Contract                                                                                                                                                                    |
+| --------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New blocking error          | assertive | Publish one localized bounded summary promptly                                                                                                                              |
+| Settled nonblocking change  | polite    | Coalesce to one localized summary for the committed source revision                                                                                                         |
+| Initial render              | none      | Content is discoverable in reading order, not announced as a change                                                                                                         |
+| Unchanged/replayed event    | none      | Stable `(kind, revision, urgency)` identity deduplicates it                                                                                                                 |
+| Stale async outcome         | none      | Never announce a result that no longer owns the presented revision                                                                                                          |
+| Unaffected values           | none      | Do not repeat surrounding content                                                                                                                                           |
+| Newer version published     | polite    | One localized summary per version revision; a further version behind it is not a second event                                                                               |
+| Unrepairable cached version | assertive | Publish one localized summary promptly; it supersedes a waiting version. The visible notice is an alert in its own right, so the outlet summarizes rather than repeating it |
 
 Visible feedback and announcement events are separate projections. Removing translated outlet text
 during a locale switch does not replay old events. A genuinely new event afterward resolves with the

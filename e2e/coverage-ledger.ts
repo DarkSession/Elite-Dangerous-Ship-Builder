@@ -388,6 +388,45 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'shell/newer-version-published',
+    requirements: ['011/FR-025', '011/SC-007'],
+    journey: 'product/application-update',
+    axe: true,
+    assertions: [
+      'a session already open when a version is published states it without a Commander-initiated reload',
+      'the notice is visible content beside a named control that applies it',
+      'nothing on screen is replaced until that control is used',
+      'the restarted session comes back with nothing to say and is still watching for the next one',
+      'a session that never asks is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
+      'exactly one polite announcement is published per version revision',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    // The worker decides when a cached version becomes unrepairable, so no
+    // journey can provoke this state. It is covered where it can be rendered:
+    // the frame's error composition in the preview catalogue, built from the
+    // shell's own messages, which is the same notice and the same named control
+    // the shell puts on screen.
+    //
+    // What the composition cannot show is the policy that leads to it — that an
+    // unrepairable cache supersedes a waiting version and interrupts once. No
+    // rendered surface can: it is a sequence of worker reports, and it is
+    // asserted over the port in `application-update.store.spec.ts` and over the
+    // shell in `app.spec.ts`.
+    surfaceId: 'shell/unrepairable-cached-version',
+    requirements: ['011/FR-026'],
+    journey: 'preview/sweep',
+    axe: true,
+    assertions: [
+      'a cached version the worker cannot repair is stated as a blocking error',
+      'the recovery is a named control in the interface, never a cache-clearing reload',
+      'the control keeps its visible name while carrying its own description',
+      'the blocking error and the control that recovers it are rendered together, before main',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
     surfaceId: 'ui/formatted-values',
     requirements: ['011/FR-018'],
     journey: 'preview/sweep',
