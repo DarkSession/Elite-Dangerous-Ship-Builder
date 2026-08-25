@@ -123,6 +123,37 @@ test.describe('component preview catalogue', () => {
     }
   });
 
+  test('sets a declared numeric column against one right edge', async ({ page }) => {
+    // A column a caller declares numeric is read down its length, so its digits
+    // have to line up — and the heading above them was right-aligned while the
+    // figures under it were not, because the `thead th` rule carries its own
+    // compound selector and the cell rule was a bare class the `.table td` rule
+    // beside it outweighed. Measured, because that is what notices it.
+    const cells = await page.locator('.table tbody .table__cell--numeric').evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const range = node.ownerDocument.createRange();
+        range.selectNodeContents(node);
+        return {
+          column: Math.round(node.getBoundingClientRect().right),
+          text: Math.round(range.getBoundingClientRect().right),
+        };
+      }),
+    );
+
+    expect(cells.length, 'the catalogue renders a table with a numeric column').toBeGreaterThan(0);
+
+    const byColumn = new Map<number, number[]>();
+    for (const cell of cells) {
+      byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
+    }
+    for (const [column, edges] of byColumn) {
+      expect(
+        Math.max(...edges) - Math.min(...edges),
+        `column ending at ${column}`,
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+
   test('renders right-to-left without changing semantic order', async ({ page }) => {
     const order = await page
       .locator('[data-preview-address]')

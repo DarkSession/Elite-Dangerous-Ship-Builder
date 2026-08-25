@@ -151,6 +151,56 @@ test.describe('reading the build', () => {
     );
   });
 
+  test('sets every figure column against one right edge', async ({ page }) => {
+    // A column of figures is read down its length, so the digits have to line
+    // up: `1,085` and `904` compared against different edges are two numbers a
+    // reader has to measure by eye. The table already sets them in tabular
+    // numerals for the same reason.
+    //
+    // Measured rather than asserted on a style, because the rule that draws it
+    // was present and outweighed for as long as this table has existed: the
+    // cell rule beside it carries a type selector, and a bare class does not
+    // beat one. Reading the boxes is what notices that.
+    await openDefence(page);
+
+    for (const card of ['card--shield', 'card--armour'] as const) {
+      const cells = await page
+        .locator(`edsb-defence-analysis .${card} .damage tbody .damage__cell--numeric`)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            // The figure itself, not the cell's contents: a weakness and an
+            // unbounded pool each carry a word for a screen reader, positioned
+            // out of sight, and a range over the whole cell would union that
+            // box in and measure something nobody sees.
+            const figure = [...node.childNodes].find(
+              (child) => child.nodeType === 3 && (child.textContent ?? '').trim() !== '',
+            );
+            const range = node.ownerDocument.createRange();
+            range.selectNodeContents(figure ?? node);
+            return {
+              column: Math.round(node.getBoundingClientRect().right),
+              text: Math.round(range.getBoundingClientRect().right),
+            };
+          }),
+        );
+      expect(cells.length).toBeGreaterThan(0);
+
+      // Grouped by the column each cell ends in, every figure in that column
+      // ends where its neighbours do.
+      const byColumn = new Map<number, number[]>();
+      for (const cell of cells) {
+        byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
+      }
+      for (const [column, edges] of byColumn) {
+        expect(edges.length).toBeGreaterThan(1);
+        expect(
+          Math.max(...edges) - Math.min(...edges),
+          `column ending at ${column}`,
+        ).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   test('draws the four damage types with a resistance and a pool apiece', async ({ page }) => {
     await openDefence(page);
 

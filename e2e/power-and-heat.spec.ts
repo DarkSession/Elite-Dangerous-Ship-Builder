@@ -254,6 +254,40 @@ test.describe('reading the build', () => {
     expect(facts).toContain(caps(englishMessages['power.heat.sinks']));
   });
 
+  test('sets every distributor figure against one right edge', async ({ page }) => {
+    // Three capacitors read down a column, so their digits have to line up.
+    // Measured rather than asserted on a style: the rule that right-aligns
+    // these cells was present and outweighed by the `.distributor th, td` rule
+    // beside it, which carries a type selector a bare class does not beat.
+    await openPower(page);
+
+    const cells = await page
+      .locator('.distributor tbody .distributor__cell--numeric')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const range = node.ownerDocument.createRange();
+          range.selectNodeContents(node);
+          return {
+            column: Math.round(node.getBoundingClientRect().right),
+            text: Math.round(range.getBoundingClientRect().right),
+          };
+        }),
+      );
+    expect(cells.length).toBeGreaterThan(0);
+
+    const byColumn = new Map<number, number[]>();
+    for (const cell of cells) {
+      byColumn.set(cell.column, [...(byColumn.get(cell.column) ?? []), cell.text]);
+    }
+    for (const [column, edges] of byColumn) {
+      expect(edges.length).toBeGreaterThan(1);
+      expect(
+        Math.max(...edges) - Math.min(...edges),
+        `column ending at ${column}`,
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+
   test('draws the three capacitors with their own figures', async ({ page }) => {
     await openPower(page);
 

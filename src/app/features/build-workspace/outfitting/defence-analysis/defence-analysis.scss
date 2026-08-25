@@ -157,7 +157,14 @@
 // minimum is what holds a short figure off the end of the bar beside it: a
 // column sized to its own text puts `41%` hard against the track it was read
 // from, and the two then look like one reading.
-.damage__cell--numeric {
+//
+// The element is named in the selector because the rule above it is `.damage
+// th, .damage td` — one class and one type, which outweighs a bare class and
+// left every figure in this table aligned to its start. A column of figures
+// that do not share a right edge cannot be compared down its length, which is
+// the whole reason the table sets them in tabular numerals.
+.damage th.damage__cell--numeric,
+.damage td.damage__cell--numeric {
   @include layout.metric-value(var(--edsb-text-size-body));
 
   // The cell is the containing block for the word a weakness carries. That word

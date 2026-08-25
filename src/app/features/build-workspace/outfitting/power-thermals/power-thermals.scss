@@ -368,7 +368,11 @@
   color: var(--edsb-text-accent);
 }
 
-.distributor__cell--numeric {
+// The elements are named in the selector because `.distributor th, .distributor
+// td` above is one class and one type, which outweighs a bare class and left
+// every figure in this table aligned to its start.
+.distributor th.distributor__cell--numeric,
+.distributor td.distributor__cell--numeric {
   @include layout.metric-value(var(--edsb-text-size-body));
 
   text-align: end;
