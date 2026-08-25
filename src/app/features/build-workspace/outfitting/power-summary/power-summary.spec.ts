@@ -212,8 +212,11 @@ describe('PowerSummary', () => {
   it('holds no control of any kind', () => {
     const element = render(shedBandBuild());
 
-    // The canvas draws none here, and at both widths the dashboard these
-    // sentences describe is one segment away.
+    // None is built here yet. The canvas draws one — the pip control of its
+    // 2026-08-25 revision — and this feature has not reached it (T074), so this
+    // holds until that task and is the assertion it has to update. Until then
+    // the dashboard these sentences describe is one segment away at both
+    // widths.
     expect(element.querySelectorAll('button, a, input, select, textarea')).toHaveLength(0);
   });
 });

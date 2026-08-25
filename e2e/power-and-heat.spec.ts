@@ -412,11 +412,17 @@ test.describe('the status rail', () => {
     // The leading edge of the grid, not of its first cell in DOM order: the
     // cells are two to a row, so mirrored the first of them is the one in the
     // trailing column and its own edge is a column in from the block's.
-    const starts = await cells.evaluateAll((nodes) =>
-      nodes.map((node) => (node as HTMLElement).getBoundingClientRect().left),
-    );
-    const lineBox = (await line.boundingBox())!;
-    expect(Math.round(lineBox.x)).toBe(Math.round(Math.min(...starts)));
+    // Both edges are read in the page, in one call: mixing Playwright's own
+    // box with an in-page rect would round two independently-derived numbers
+    // and leave a sub-pixel difference to land on.
+    const [lineStart, gridStart] = await line.evaluate((node, selector) => {
+      const cellStarts = [...document.querySelectorAll(selector)].map(
+        (cell) => cell.getBoundingClientRect().left,
+      );
+      return [(node as HTMLElement).getBoundingClientRect().left, Math.min(...cellStarts)];
+    }, '.outfitting__status-cells .metric');
+
+    expect(Math.round(lineStart)).toBe(Math.round(gridStart));
   });
 });
 

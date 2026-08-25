@@ -3,12 +3,16 @@
 > **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
 > specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
 > design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
-> went to feature 005 with ruling C, but **its half-pip domain did not go with it**: that was
-> withdrawn outright, because the artboard draws four whole steps per bank and there is no half-pip
-> left to convert. `HalfPips` twelve lines below is not a type feature 005 holds under another name
-> — it holds whole pips, 0 to 4 a bank
-> ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
-> `specs/005-power-and-heat/contracts/integration-ports.md`). The provider envelope, the revision
+> went to feature 005 with ruling C, but the **encoding** under `## ViewingConditions` below did not
+> go with it. `HalfPips` — `0` to `8` a bank, three banks summing to `12`, halved again at each
+> provider's call boundary — was withdrawn outright with the draft, Apply, Reset and the running
+> total that were its only readers; the artboard draws four whole blocks a bank and nothing converts
+> anything ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
+> `specs/005-power-and-heat/tasks.md`, T010's retirement). What feature 005 built is not this type
+> under another name: it holds `0` to `4` a bank **on the half step**, six between the three
+> (`src/app/application/power-heat/power-conditions.store.ts`,
+> `specs/005-power-and-heat/data-model.md`). The half pip survived; counting in halves of one did
+> not. The provider envelope, the revision
 > context, the composition transaction and the status lifecycle were **withdrawn rather than
 > reassigned**, and went nowhere: ruling B took the wide Status capability they were assembled for,
 > and ruling C removed this feature's dependency on features 005–009, so there is no owner result
