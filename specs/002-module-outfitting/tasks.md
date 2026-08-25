@@ -633,3 +633,10 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       release; the frame states it on its own host, and the token layer derives
       `--edsb-layout-manifest-offset` again there since a custom property substitutes where it is
       declared (`sticky-banner.ts`, `app-frame.ts`, `styles/tokens/_semantic.scss`)
+- [x] T158 Sweep the stacked Drives & Mass state from the top of the page. Resizing a tablet-sized
+      project down to a phone keeps the offset the tablet layout was scrolled to, and the command
+      bar is sticky, so whichever ledger row that offset parks behind the bar is read as an obscured
+      target by `target-size`. The row is arbitrary — it moves with every change to any height above
+      it, and it was a different one in each profile — so the sweep is taken where a Commander who
+      reached this width meets the arrangement. `accessibility.ts` now says that the state a sweep
+      judges includes where the page stands (`e2e/mobility-and-jump.spec.ts`, `e2e/accessibility.ts`)
