@@ -38,6 +38,29 @@
   }
 }
 
+// The same release, for the case the query above cannot see.
+//
+// `rem` inside a media query is the browser's initial text size by definition,
+// so that query only ever asks about the window. It is the bar's share of the
+// window that matters, and the bar wraps: five rows of a German command bar at
+// a doubled text size is more than half a tablet held in landscape, with the
+// screen's own controls behind it. The frame measures what the bar came to and
+// sets this when what it leaves below is no longer a viewport anything can be
+// stacked in (`sticky-banner.ts`).
+.frame__banner--released {
+  position: static;
+}
+
+// And the chrome below releases with it, rather than freezing over a gap the
+// bar is no longer filling — the same pairing the short-viewport rules make in
+// the regions themselves (FR-011). The token says what a region has to clear to
+// sit below the sticky command bar; with the bar travelling with the page there
+// is nothing to clear, and every region that offsets by it, reserves scroll
+// room for it or subtracts it from its own height follows without knowing why.
+:host(.frame--released) {
+  --edsb-layout-bar-height: 0px;
+}
+
 // Every canvas builds the bar from exactly two groups: the screen's identity on
 // the leading edge and everything it offers on the trailing one (canvas 1a's
 // `OPEN SAVED BUILD · IMPORT · ?`, canvas 1c's `UNDO · REDO · EXPORT · SAVE ·

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   clippedText,
+  expectBannerLeavesAViewport,
   expectBannerReleasesShortViewport,
   expectLandmarks,
   expectNoDocumentOverflow,
@@ -71,6 +72,15 @@ test.describe('200% text scale', () => {
     for (let index = 0; index < count; index += 1) {
       await expect(controls.nth(index)).toBeVisible();
     }
+  });
+
+  test('leaves a screen under the banner rather than freezing over it', async ({ page }) => {
+    // The condition the shell's own rule is written for. At a doubled text size
+    // the command bar wraps — five rows of it in German — and a bar that keeps
+    // the top of the window while it is that tall is chrome the page is read
+    // through: on a tablet held in landscape it took more than half the screen,
+    // and the anatomy region's mode strip was behind it.
+    await expectBannerLeavesAViewport(page);
   });
 
   test('passes an accessibility scan at doubled text', async ({ page }, testInfo) => {

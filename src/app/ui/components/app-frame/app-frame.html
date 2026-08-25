@@ -4,7 +4,12 @@
   on the trailing edge (canvas 1a/1b/1c). It carries no product name, so the
   heading here is the page's `h1` rather than a second copy of one.
 -->
-<header class="frame__banner" [attr.aria-label]="bannerLabel()">
+<header
+  #banner
+  class="frame__banner"
+  [class.frame__banner--released]="bannerReleased()"
+  [attr.aria-label]="bannerLabel()"
+>
   <div class="frame__identity">
     <span class="frame__flag" aria-hidden="true"></span>
     <!--

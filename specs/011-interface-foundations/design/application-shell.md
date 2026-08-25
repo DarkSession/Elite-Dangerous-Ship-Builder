@@ -43,7 +43,10 @@ the shell emits action/navigation/language intent and does not reach into a buil
 - The action layer is a sheet when its contents are simple and a full-height layer when content/
   expansion/short landscape requires it.
 - Fixed/sticky shell regions reserve their space and never cover route content at 200% text or 400%
-  zoom.
+  zoom. The banner keeps its place only while what it leaves below is still a viewport content can
+  be stacked in; a bar that has wrapped past that — a long language, a narrow window, a doubled text
+  size — releases and travels with the page. The height it wrapped to is measured rather than
+  declared, because no media query can ask what a bar came to.
 
 ## Language behavior
 
