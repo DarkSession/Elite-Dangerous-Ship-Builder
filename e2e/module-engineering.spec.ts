@@ -15,6 +15,7 @@ import {
   fitCommitted,
   openChooserRows,
   openEditor as bringEditorOnScreen,
+  revealFamilyHolding,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 
@@ -426,8 +427,11 @@ test.describe('purchased and reward articles', () => {
   /** Fits the first chooser row carrying one acquisition label. */
   async function fitArticle(page: Page, slotKey: string, label: RegExp): Promise<void> {
     await selectMount(page, slotKey);
-    await openChooserRows(page);
-    const row = page.locator('.candidate').filter({ hasText: label }).first();
+    // Whichever family holds it, and whichever manifest is drawing: the rail
+    // draws one family's rows at a time, so the article a test names may be in
+    // a family it has not revealed yet.
+    await revealFamilyHolding(page, label);
+    const row = page.locator('.candidates__choices .candidate').filter({ hasText: label }).first();
     await expect(row).toBeVisible();
     // The module's name itself: a row's centre falls in the gap between the
     // identity and the figures, the identity block's centre falls between its

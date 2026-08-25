@@ -338,28 +338,23 @@
   // segmented strip is ruled with and the region's own block padding. Stated
   // here rather than on the screen so the two heights stay one decision.
   @include bar-derived;
-  // Canvas 1c's own `2.2fr 62px 74px 74px 78px 86px 128px`, at those measures.
-  // The figure columns are fixed so they line up across the whole manifest
-  // rather than being redistributed by whatever the widest cell happens to hold;
-  // the cost column is nearly twice a mass or a power draw because it holds nine
-  // digits and a unit.
+  // Canvas 1c's manifest, as the 2026-08-25 revision draws it: `2.6fr 70px
+  // 150px` — the module, its class and rating, and its price, and no other
+  // column. The two fixed columns are the canvas's own pixels; the name takes
+  // what is left.
   //
-  // Two departures from the literal track list, both because the bench is wider
-  // than the canvas's: canvas 1c's workspace is `392px 1fr 306px` and the third
-  // track — live stats and export — is not built yet, so the centre column holds
-  // 306px the canvas never gave it. The name is therefore **capped** at the
-  // 436px the canvas resolves `2.2fr` to, instead of taking the surplus and
-  // running to 58% of the table; and the **figure columns share what is left in
-  // the canvas's own ratio** — their `fr` values are the canvas px over 100, so
-  // cost stays twice a mass and the whole set widens together, with each canvas
-  // measure still standing as its floor. Pooling the surplus into the cost
-  // column alone spanned the panel too, but opened a void between `DRAW WEP` and
-  // `COST` the width of the missing region; sharing it equally spanned it as
-  // well, but flattened the ratios that make a nine-digit column read as one.
-  // Both come out when the third column goes in (wave 9).
-  --edsb-layout-candidate-columns: minmax(0, 27.25rem) minmax(3.875rem, 0.62fr)
-    minmax(4.625rem, 0.74fr) minmax(4.625rem, 0.74fr) minmax(4.875rem, 0.78fr)
-    minmax(5.375rem, 0.86fr) minmax(8rem, 1.28fr);
+  // **The wave-9 cap is gone with them.** The name was capped at 27.25rem
+  // because the workspace's third track was not built and the centre column
+  // held 306px the canvas never gave it, which a `2.2fr` name column took the
+  // whole of. The third track is built, and this manifest now gives 216px of
+  // its own width to the family rail before the name sees any of it, so there
+  // is no surplus left to run away with (module-replacement design, "The
+  // manifest's own columns").
+  --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
+    var(--edsb-measure-candidate-cost);
+  --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-gap: var(--edsb-measure-family-gap);
+  --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
   --edsb-layout-defence-resist: var(--edsb-measure-defence-resist);

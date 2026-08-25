@@ -69,19 +69,136 @@ export async function openChooser(
 }
 
 /**
- * Opens every family the chooser is currently showing.
+ * Which of the chooser's two manifests this width is drawing.
+ *
+ * Canvas 1c draws a family rail beside a variant pane since the 2026-08-25
+ * revision; canvas 1d still draws the accordion. They differ in kind and not
+ * only in arrangement — a rail reveals exactly one family and has no closed
+ * state at all — so a journey about families has to know which one it has.
+ *
+ * Read from the component's own published measurement rather than measured
+ * again here: a second threshold in the suite would disagree with the product's
+ * at exactly the widths that matter.
+ */
+export async function manifestOf(page: Page): Promise<'rail' | 'accordion'> {
+  const drawn = await page.locator('edsb-candidate-list').first().getAttribute('data-manifest');
+  return drawn === 'rail' ? 'rail' : 'accordion';
+}
+
+/**
+ * The rows of whichever families are revealed, in either manifest.
+ *
+ * `candidates__choices` is on the accordion's `family__choices` and on the
+ * rail's pane alike. Scoped to it rather than to `.candidate`, because canvas
+ * 1d pins the fitted row a second time above the families and a count that
+ * included it would be one too many.
+ */
+export function revealedRows(page: Page): Locator {
+  return page.locator('.candidates__choices .candidate');
+}
+
+/** Every family control, whichever shape it is drawn in. */
+export function familyControls(page: Page): Locator {
+  return page.locator('.family');
+}
+
+/**
+ * Which families are revealed right now, by their index in the list.
+ *
+ * *Revealed* is the accordion's open family and the rail's selected one, which
+ * is the word the requirements are restated in. The two publish it differently
+ * — `aria-expanded` on a disclosure, `aria-pressed` on a selection — and both
+ * are read here so a journey can assert the rule rather than the attribute.
+ */
+export async function revealedFamilies(page: Page): Promise<readonly number[]> {
+  const states = await familyControls(page).evaluateAll((nodes) =>
+    nodes.map(
+      (node) => node.getAttribute('aria-expanded') ?? node.getAttribute('aria-pressed') ?? 'false',
+    ),
+  );
+  return states.flatMap((state, index) => (state === 'true' ? [index] : []));
+}
+
+/**
+ * Brings every choice the chooser holds on screen, whichever manifest it is in.
+ *
+ * The accordion opens every family at once and the rail cannot: it draws one
+ * family's rows at a time, so the only way to see them all is to select each
+ * family in turn. `visit` is called once per family with its rows on screen.
+ */
+export async function acrossEveryFamily(
+  page: Page,
+  visit: (rows: Locator) => Promise<void>,
+): Promise<void> {
+  if ((await manifestOf(page)) === 'accordion') {
+    await openAllFamilies(page);
+    await visit(revealedRows(page));
+    return;
+  }
+
+  const ids = await familyControls(page).evaluateAll((nodes) => nodes.map((node) => node.id));
+  for (const id of ids) {
+    const control = page.locator(`#${id}`);
+    await expect(async () => {
+      await control.click();
+      await expect(control).toHaveAttribute('aria-pressed', 'true', { timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
+    await visit(revealedRows(page));
+  }
+}
+
+/**
+ * Brings the family holding a particular row on screen, in either manifest.
+ *
+ * A journey about one row — the reward with its route mark, say — should not
+ * have to know which family the Almanac put it in, nor which manifest is
+ * drawing. The accordion can simply open everything; the rail has to select
+ * each family until the row appears, and stops on the one that has it.
+ */
+export async function revealFamilyHolding(page: Page, text: RegExp): Promise<void> {
+  await openChooser(page);
+  const row = page.locator('.candidates__choices .candidate').filter({ hasText: text });
+
+  if ((await manifestOf(page)) === 'accordion') {
+    await openAllFamilies(page);
+    await expect(row.first()).toBeVisible();
+    return;
+  }
+
+  const ids = await familyControls(page).evaluateAll((nodes) => nodes.map((node) => node.id));
+  for (const id of ids) {
+    const control = page.locator(`#${id}`);
+    await expect(async () => {
+      await control.click();
+      await expect(control).toHaveAttribute('aria-pressed', 'true', { timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
+    if ((await row.count()) > 0) {
+      await expect(row.first()).toBeVisible();
+      return;
+    }
+  }
+
+  throw new Error(`No family in the chooser holds a row matching ${String(text)}.`);
+}
+
+/**
+ * Opens every family the accordion is currently showing.
  *
  * The chooser opens with the fitted module's family alone, and with nothing at
  * all on a mount whose article the package does not offer back (FR-021). Every
  * test that is about a *row* therefore has to open the families first, or it is
  * asserting against a list that is deliberately not on screen. Tests that are
  * about the seeding itself do not call this.
+ *
+ * A no-op under the rail, which has no closed family to open: there, one family
+ * is revealed at all times and `acrossEveryFamily` is how a journey reaches the
+ * rest.
  */
 export async function openAllFamilies(page: Page): Promise<void> {
   await pressEveryFamily(page, 'false');
 }
 
-/** Closes every family the chooser currently has open. */
+/** Closes every family the accordion currently has open. */
 export async function closeAllFamilies(page: Page): Promise<void> {
   await pressEveryFamily(page, 'true');
 }

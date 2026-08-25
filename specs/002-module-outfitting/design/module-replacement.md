@@ -177,6 +177,74 @@ that is wrong for even a handful of rows moves the bar as those rows are reached
 thing the figure exists to prevent — so those rows declare nothing and are never skipped. They are a
 handful out of hundreds, and their real height is counted from the first frame like every card's.
 
+## What the revision did to SC-002. Re-measured 2026-08-25
+
+**The compact figure is unchanged, and that is the finding.** The revision did
+not touch canvas 1d's composition, so the measurement was repeated to prove it
+rather than assumed. On the same machine, on the Panther Mk II's 478-choice
+mount at 390px under 4x CPU throttling, the worst keystroke measured **128.9 ms
+before the revision and 131.9 ms after** — inside the run-to-run spread the
+series itself shows (the same keystroke came out at 100.8 ms and 112.9 ms in the
+two runs). Nothing about the compact list changed, and nothing about its figure
+did.
+
+**The wide figure improves, and by about what the rail predicts.** Measured the
+same way at 1440px: **104.5 ms** worst against the accordion's 128.9 ms, and
+`104.5, 74.6, 45.0, 43.7, 40.1` across `m, mu, mul, mult, multi`. The reason is
+the one the rail was adopted for: the first broad term used to open every family
+it matched and build their rows cold, and now it selects one family and paints
+that family's rows whatever the match count. This figure is recorded rather than
+asserted — the timing project is Chromium-mobile-only, because the criterion is
+about a phone and CPU throttling has no equivalent in the other engine, and this
+revision is not a reason to add a second one.
+
+**Both were taken on a four-vCPU container that is slower than the machine wave
+10 measured on, and both exceed the 100 ms budget there.** The absolute figures
+are therefore evidence about this hardware and not about the criterion; what the
+pair of them is evidence about is the _change_, which is what a re-measurement
+is for. SC-002 stands as the design already records it: met where wave 10
+measured it, and unmet at the compact composition on the largest mount, with the
+fix still the same one — canvas 1d's own `min-height: 64px` row, which is a
+return to the canvas rather than a departure from it, and which is not built.
+The budget is not moved to meet the measurement.
+
+## Which manifest is drawing, and who decides
+
+**Ruled 2026-08-25, on implementation.** The two manifests differ in their
+**reveal rule** and not only in their arrangement: a rail selects exactly one
+family and an accordion opens any number. A rule cannot live in a stylesheet,
+and it must not live in two places — a rail drawn while the accordion's rule is
+seeding the set can be handed no family to select and paint an empty pane. So
+the chooser measures its own box once, publishes `data-manifest` on its host,
+and the stylesheet keys off that attribute instead of taking a container query
+of its own. There is one threshold rather than two, and the arrangement and the
+rule cannot disagree for a frame.
+
+**The threshold is derived, not measured off the drawing.** The pane is a
+candidate row, so it may not be narrowed below the content minimum a candidate
+row already declares — 22.5rem, the same figure the workspace's own composition
+observer uses — and the rail is canvas 1c's fixed 216px beside it with the
+canvas's 14px between them: 36.875rem. **This is lower than the 44rem the
+aligned manifest used to need**, and deliberately so: 44rem was the width seven
+columns took, the revision cut them to three, and at 44rem exactly the desktop
+profile came out one CSS pixel above the threshold, which is a coin toss between
+two manifests rather than a threshold.
+
+The two are genuinely different questions. At 1200px the workspace is already in
+its three-column composition while the bench it leaves in the middle is nowhere
+near wide enough for a rail beside a pane, so the chooser is still drawing
+cards. Of the five layout profiles the suite runs, the desktop and
+mobile-landscape ones draw the rail and the other three draw the accordion —
+which is the rule working, not a device list: mobile landscape is 844px of
+width, and the chooser takes the whole of it as a layer.
+
+**Both scrollers keep their rows' own height.** A bounded flex column gives its
+items' height up before it scrolls, and the rail is exactly that. Reading the
+screen in German is what showed it: `Unterflächenverdrängungsraketen` wraps to
+three lines, seventeen families no longer fit in the canvas's 470px, and every
+row was squeezed until the names printed over one another. A scroller is what a
+list does when it has more than it can show; shrinking its rows is not.
+
 ## The scroller is a containing block, or it clips nothing
 
 **Ruled 2026-08-25.** Every manifest row carries text drawn only for a reader, positioned out of the
