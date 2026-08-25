@@ -10,7 +10,8 @@
 Feature 005 holds the allocation in `PowerConditionsStore` and calls:
 
 ```ts
-const result = loadout.distributorMetrics({
+const metrics = BuildMetrics.of(loadout);
+const result = metrics.distributorMetrics({
   systemsPips: conditions.pips.systems,
   enginesPips: conditions.pips.engines,
   weaponsPips: conditions.pips.weapons,

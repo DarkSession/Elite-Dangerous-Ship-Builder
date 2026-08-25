@@ -6,7 +6,7 @@ import {
 import { getModuleBySymbol, type ModuleMount } from '@elite-dangerous-almanac/core/ships/modules';
 import { getShipSlots } from '@elite-dangerous-almanac/core/ships/ships';
 import { enumerateSlots } from '@elite-dangerous-almanac/core/ships/slots';
-import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 
 /**
  * `SHOT CONVERGENCE`: where this build's shots land on the plane a target sits

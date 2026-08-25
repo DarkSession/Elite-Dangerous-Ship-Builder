@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { defaultBuild } from '../outfitting/outfitting.fixtures';
 import { projectCostAndMaterials, projectCredits } from './cost-materials';
 
@@ -11,7 +12,7 @@ import { projectCostAndMaterials, projectCredits } from './cost-materials';
  */
 describe('cost and materials — credits', () => {
   it('shows every package credit figure unchanged', () => {
-    const cost = defaultBuild().buildCost();
+    const cost = BuildMetrics.of(defaultBuild()).buildCost();
 
     const credits = projectCredits(cost);
 
@@ -24,7 +25,7 @@ describe('cost and materials — credits', () => {
   });
 
   it('does not derive the total or rebuy from neighbouring figures', () => {
-    const cost = defaultBuild().buildCost();
+    const cost = BuildMetrics.of(defaultBuild()).buildCost();
     const distinct = {
       ...cost,
       credits: { ...cost.credits, total: 123, rebuy: 17 },
@@ -35,18 +36,19 @@ describe('cost and materials — credits', () => {
   });
 
   it('reads build cost exactly once for a projection', () => {
-    const build = defaultBuild();
-    const buildCost = build.buildCost.bind(build);
-    const spy = vi.fn(buildCost);
-    build.buildCost = spy;
+    // The calculations live on `BuildMetrics` since Almanac 0.2.0, and the
+    // projector makes its own view of the build, so the seam is the prototype
+    // rather than any one instance.
+    const spy = vi.spyOn(BuildMetrics.prototype, 'buildCost');
 
-    projectCostAndMaterials(build);
+    projectCostAndMaterials(defaultBuild());
 
     expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 
   it('passes through a package result without reading captured purchase values', () => {
-    const cost = defaultBuild().buildCost();
+    const cost = BuildMetrics.of(defaultBuild()).buildCost();
     const synthetic = {
       ...cost,
       credits: { hull: 11, modules: 22, total: 33, rebuy: 3, unpriced: [] },
@@ -57,7 +59,7 @@ describe('cost and materials — credits', () => {
 
   it('shows the package figures for a build the catalogue cannot fully price', () => {
     const build = defaultBuild();
-    const cost = build.buildCost();
+    const cost = BuildMetrics.of(build).buildCost();
     const unpriced = build
       .fittedModules()
       .slice(0, 2)

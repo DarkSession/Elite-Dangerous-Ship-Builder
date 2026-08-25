@@ -1,8 +1,9 @@
 import type {
   BuildWeaponMetrics,
   FittedWeaponMetrics,
-  ShipLoadout,
-} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+} from '@elite-dangerous-almanac/core/ships/build-metrics';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
+import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { damageFalloff, type DamageSplit } from '@elite-dangerous-almanac/core/ships/weapons';
 import type { WeaponsCapacitorMetrics } from '@elite-dangerous-almanac/core/ships/weapons-capacitor';
 import type { HardpointCoverage } from '../outfitting/hardpoint-coverage';
@@ -157,8 +158,9 @@ export function projectOffence(
   coverage: HardpointCoverage,
   weaponsPips: number,
 ): Offence {
-  const build = loadout.weaponMetrics();
-  const capacitor = loadout.weaponsCapacitorMetrics({ weaponsPips });
+  const metrics = BuildMetrics.of(loadout);
+  const build = metrics.weaponMetrics();
+  const capacitor = metrics.weaponsCapacitorMetrics({ weaponsPips });
   return Object.freeze({
     build,
     weapons: build.weapons,

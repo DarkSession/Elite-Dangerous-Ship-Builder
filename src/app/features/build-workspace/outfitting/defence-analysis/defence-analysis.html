@@ -239,6 +239,17 @@
           <td class="damage__bar"></td>
           <th scope="col" class="damage__cell--numeric">{{ resistColumn() }}</th>
           <th scope="col" class="damage__cell--numeric">{{ pool }}</th>
+          <!--
+            The shield's fifth column, added by the 2026-08-25 canvas revision:
+            the same pool read at the standing SYS allocation, beside the bare
+            one. The heading names the allocation, because a figure that moves
+            with a condition shown without that condition says less than
+            nothing. The hull has no such column — pips do not reach it — and
+            the heading is `null` there.
+          -->
+          @if (table.pipColumn; as pips) {
+            <th scope="col" class="damage__cell--numeric">{{ pips }}</th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -281,6 +292,16 @@
                 <span class="visually-hidden">{{ row.unboundedMeaning }}</span>
               }
             </td>
+            @if (table.pipColumn) {
+              <td class="damage__cell--numeric" data-bidi-isolate>
+                @if (row.poolAtPips !== null) {
+                  {{ row.poolAtPips }}
+                } @else {
+                  {{ row.unbounded }}
+                  <span class="visually-hidden">{{ row.unboundedMeaning }}</span>
+                }
+              </td>
+            }
           </tr>
         }
       </tbody>
@@ -315,6 +336,9 @@
           </td>
           <td></td>
           <td></td>
+          @if (table.pipColumn) {
+            <td></td>
+          }
         </tr>
       </tfoot>
     </table>

@@ -8,6 +8,7 @@ import {
   type CellBankView,
   type Defence,
   type DamageDefenceValue,
+  type DamageType,
   type DefenceRole,
   type DefenceRoleGroup,
   type ModuleIdentity,
@@ -31,6 +32,14 @@ interface DamageRowView {
   readonly resistance: string;
   /** The pool at that resistance, or `null` where the package returned no bound. */
   readonly pool: string | null;
+  /**
+   * The same pool read at the standing SYS allocation, on the shield only.
+   *
+   * `undefined` on a table that has no such column — the hull, which pips do
+   * not reach. `null` inside a table that has one carries the same meaning
+   * {@link pool}'s `null` does: the package published no bound.
+   */
+  readonly poolAtPips?: string | null;
   /** The symbol drawn in place of an unbounded pool. */
   readonly unbounded: string;
   /** What that symbol stands for, in words. */
@@ -57,6 +66,15 @@ interface DamageRowView {
  */
 interface DamageTableView {
   readonly rows: readonly DamageRowView[];
+  /**
+   * The fifth column's heading — `MJ × 2 SYS PIPS` — or `null` for a table
+   * without one.
+   *
+   * The heading names the allocation it was read at, because a figure that
+   * moves with a condition shown without that condition is the misleading
+   * number constitution IV forbids (FR-002).
+   */
+  readonly pipColumn: string | null;
   /** Where zero sits on the track, in `[0, 1]`. `0` with nothing below it. */
   readonly zeroAt: number;
   /** Whether the scale reaches below zero at all, which draws the zero mark. */
@@ -169,6 +187,14 @@ const DAMAGE_LABELS = {
 const POOL_DIGITS = 0;
 /** Rates to one place, as the canvas sets `2.4 MJ/s`. */
 const RATE_DIGITS = 1;
+/**
+ * The heading's allocation, whole where the allocation is whole.
+ *
+ * The canvas heads the column `4 SYS PIPS`, not `4.0`. The game moves pips half
+ * a step at a time, though, so a half allocation keeps its place rather than
+ * being rounded to a whole one the build is not standing at.
+ */
+const pipDigits = (pips: number): number => (Number.isInteger(pips) ? 0 : 1);
 /** Where every damage scale ends: the resistance at which a pool stops being bounded. */
 const RESISTANCE_CEILING = 1;
 
@@ -275,11 +301,41 @@ export class DefenceAnalysis {
     return armour === undefined ? null : this.#formatters.decimal(armour.hitPoints, POOL_DIGITS);
   });
 
+  /**
+   * The shield table: the bare four columns, and the pip column beside them.
+   *
+   * The first four are `shieldMetrics()`, which is pip-free — the base
+   * resistances an outfitting screen shows — and they do not move when a pip
+   * moves. The fifth is `shieldCapacitorMetrics()` at the standing allocation,
+   * and it is the only cell on the table that does (FR-002).
+   */
   readonly shieldDamage = computed<DamageTableView>(() => {
-    const shield = this.#projection()?.shield;
-    return this.#damageTable(
+    const projection = this.#projection();
+    const shield = projection?.shield;
+    const capacitor = projection?.capacitor;
+    const table = this.#damageTable(
       shield === undefined || shield.kind !== 'complete' ? [] : shield.value.damage,
     );
+    if (capacitor === undefined || capacitor.kind !== 'complete' || table.rows.length === 0) {
+      return table;
+    }
+
+    // Paired by damage type rather than by position: two package records keyed
+    // the same way, read key to key, with nothing derived from either.
+    const atPips = new Map(capacitor.value.damage.map((row) => [row.type, row]));
+    return {
+      ...table,
+      pipColumn: this.#messages.message('defence.damage.column.megajoules-at-pips', {
+        pips: this.#formatters.decimal(
+          capacitor.value.systemsPips,
+          pipDigits(capacitor.value.systemsPips),
+        ),
+      }),
+      rows: table.rows.map((row) => ({
+        ...row,
+        poolAtPips: this.#poolText(atPips.get(row.id as DamageType)?.effectiveHitPoints),
+      })),
+    };
   });
 
   readonly armourDamage = computed<DamageTableView>(() =>
@@ -416,6 +472,8 @@ export class DefenceAnalysis {
 
     return {
       rows: values.map((value) => this.#damageRow(value, span, zeroAt)),
+      // Only the shield has one, and it adds its own after this.
+      pipColumn: null,
       zeroAt,
       signed: lowest < 0,
       floor: this.#formatters.percent(lowest),
@@ -435,9 +493,7 @@ export class DefenceAnalysis {
       resistance: this.#formatters.percent(value.resistance),
       // A resistance of 100% leaves the package with no bound to publish. The
       // symbol for that is drawn instead of a number nobody could act on.
-      pool: Number.isFinite(value.effectiveHitPoints)
-        ? this.#formatters.decimal(value.effectiveHitPoints, POOL_DIGITS)
-        : null,
+      pool: this.#poolText(value.effectiveHitPoints),
       unbounded: this.#messages.message('defence.damage.unbounded'),
       unboundedMeaning: this.#messages.message('defence.damage.unbounded.meaning'),
       barStart: bar.start,
@@ -445,6 +501,13 @@ export class DefenceAnalysis {
       weakness,
       weaknessLabel: weakness ? this.#messages.message('defence.damage.weakness') : null,
     };
+  }
+
+  /** One pool, or `null` where the package published no bound for it. */
+  #poolText(hitPoints: number | undefined): string | null {
+    return hitPoints !== undefined && Number.isFinite(hitPoints)
+      ? this.#formatters.decimal(hitPoints, POOL_DIGITS)
+      : null;
   }
 
   /**

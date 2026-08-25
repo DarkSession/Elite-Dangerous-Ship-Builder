@@ -12,9 +12,11 @@ export type { SourcePartialEngineering };
  * The package's own verdict on a build.
  *
  * Taken off `ShipLoadout` rather than imported from a fifth leaf, so the type
- * this feature carries is by construction the one the package returns.
+ * this feature carries is by construction the one the package returns. Almanac
+ * 0.2.0 made `validation` a method, so it is the method's return type now — the
+ * verdict, not the call.
  */
-export type PackageValidation = ShipLoadout['validation'];
+export type PackageValidation = ReturnType<ShipLoadout['validation']>;
 
 /** The one size gate, in original UTF-8 bytes. Named once, read everywhere. */
 export const SLEF_IMPORT_LIMIT_BYTES = 65_536;

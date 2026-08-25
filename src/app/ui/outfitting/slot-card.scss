@@ -188,22 +188,10 @@
   color: var(--edsb-text-faint);
 }
 
-.slot__drawn-label,
-.slot__marker {
+.slot__drawn-label {
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
 
   margin: 0;
-}
-
-// Both shrink rather than claiming their content's width. At twice the English
-// length the marker is wider than a phone, and a row item that will not give
-// way scrolls the document sideways instead (FR-011).
-.slot__marker {
-  flex: 0 1 auto;
-  min-inline-size: 0;
-  margin: 0;
-  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
 }
 
 .slot__power {

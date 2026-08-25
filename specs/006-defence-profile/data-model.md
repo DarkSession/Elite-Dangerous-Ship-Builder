@@ -15,16 +15,17 @@ owns the SYS allocation this projection is read at.
 
 One synchronous package read, built from a `ShipLoadout` and one condition.
 
-| Field         | Type                                | Rule                                                            |
-| ------------- | ----------------------------------- | --------------------------------------------------------------- |
-| `systemsPips` | number in `[0, 4]`                  | The standing allocation, passed to both shield calls            |
-| `shield`      | `CalculationView<ShieldSnapshot>`   | Complete value or all ordered package issues                    |
-| `recovery`    | `CalculationView<RecoverySnapshot>` | Independent complete value or all ordered package issues        |
-| `cellBanks`   | `CellBankCollection`                | Exact package collection and explicit empty/fitted distinction  |
-| `armour`      | `ArmourSnapshot`                    | Non-nullable package result copied exactly                      |
-| `hardness`    | number                              | Active package hull's exact hardness rating                     |
-| `shieldRoles` | readonly `DefenceRoleGroup[]`       | The package's own shield aggregates, each with what produced it |
-| `armourRoles` | readonly `DefenceRoleGroup[]`       | The package's own armour aggregates, each with what produced it |
+| Field         | Type                                 | Rule                                                                |
+| ------------- | ------------------------------------ | ------------------------------------------------------------------- |
+| `systemsPips` | number in `[0, 4]`                   | The standing allocation, passed to the capacitor and recovery calls |
+| `shield`      | `CalculationView<ShieldSnapshot>`    | The bare shield: complete value or all ordered package issues       |
+| `capacitor`   | `CalculationView<CapacitorSnapshot>` | What the standing allocation makes of it, read separately           |
+| `recovery`    | `CalculationView<RecoverySnapshot>`  | Independent complete value or all ordered package issues            |
+| `cellBanks`   | `CellBankCollection`                 | Exact package collection and explicit empty/fitted distinction      |
+| `armour`      | `ArmourSnapshot`                     | Non-nullable package result copied exactly                          |
+| `hardness`    | number                               | Active package hull's exact hardness rating                         |
+| `shieldRoles` | readonly `DefenceRoleGroup[]`        | The package's own shield aggregates, each with what produced it     |
+| `armourRoles` | readonly `DefenceRoleGroup[]`        | The package's own armour aggregates, each with what produced it     |
 
 The one condition is the allocation:
 
@@ -38,7 +39,12 @@ Invariants:
 
 - The projection is pure and synchronous: it is recomputed from the loadout at the revision its
   reader is on, and never held across one.
-- Both shield calls receive the same explicit SYS pips despite their different package defaults.
+- The capacitor and recovery calls receive the same explicit SYS pips. The bare shield call receives
+  none: since Almanac 0.2.0 it takes no allocation at all. The allocation is always stated rather
+  than left to default, because the package's own default is four pips and a standing allocation of
+  none would otherwise read as four.
+- The capacitor's completeness is independent of the bare shield's, and neither borrows a figure
+  from the other: an unavailable capacitor withdraws its column rather than repeating the bare pool.
 - Shield and recovery completeness remain independent and retain their own issue order.
 - Shield unavailability never suppresses banks, armour, hardness or module protection.
 - No projection field enters persistence, history, preferences, routes, links or SLEF.
@@ -85,14 +91,33 @@ interface ShieldSnapshot {
   readonly reinforcement: number;
   readonly massCurveMultiplier: number;
   readonly boostMultiplier: number;
-  readonly systemsResistance: number;
   readonly damage: readonly DamageDefenceValue[];
 }
 ```
 
 All scalar values copy `ShieldMetrics`. `damage` has exactly one package-ordered presentation row for
 `kinetic`, `thermal`, `explosive` and `caustic`, each pairing the same-key resistance with effective
-hit points.
+hit points. Every figure here is the **bare** shield: `shieldMetricsResult()` takes no allocation, so
+nothing on this snapshot moves when a pip moves, and the resistances are base values.
+
+## CapacitorSnapshot
+
+What one SYS allocation is worth to a raised shield, read separately since Almanac 0.2.0.
+
+```ts
+interface CapacitorSnapshot {
+  readonly systemsPips: number;
+  readonly capacity: number;
+  readonly rechargeRate: number;
+  readonly systemsResistance: number;
+  readonly damage: readonly DamageDefenceValue[];
+}
+```
+
+All scalar values copy `ShieldCapacitorMetrics`, `systemsPips` echoed back from the package's own
+result rather than re-stated from the condition. `damage` is the same four package-ordered rows, and
+only its `effectiveHitPoints` are drawn — as the table's fifth column. `capacity`, `rechargeRate` and
+`systemsResistance` are carried and not drawn: neither canvas writes them.
 
 ## RecoverySnapshot
 

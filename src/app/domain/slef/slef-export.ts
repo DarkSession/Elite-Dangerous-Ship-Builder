@@ -50,7 +50,7 @@ export function generateSlefExportArtifact(
     mimeType: SLEF_EXPORT_MIME_TYPE,
     header,
     linkOmission: linkOmissionReason(snapshot.canonicalLink),
-    validation: snapshot.loadout.validation,
+    validation: snapshot.loadout.validation(),
   });
 }
 

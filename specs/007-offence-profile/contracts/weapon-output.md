@@ -5,7 +5,8 @@
 For one feature 001 active `{ loadout, revision }`, call exactly once:
 
 ```ts
-const result = loadout.weaponMetrics();
+const metrics = BuildMetrics.of(loadout);
+const result = metrics.weaponMetrics();
 ```
 
 Retain the exact `BuildWeaponMetrics` object. Feature 007 must not rebuild totals, join

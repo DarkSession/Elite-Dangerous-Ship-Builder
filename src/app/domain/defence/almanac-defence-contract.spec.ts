@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import {
   bankedBuild,
@@ -27,7 +28,7 @@ const DAMAGE_KEYS = ['kinetic', 'thermal', 'explosive', 'caustic'] as const;
 describe('the Almanac contract for shields, recovery, cell banks and armour', () => {
   describe('shieldMetricsResult()', () => {
     it('publishes every strength, multiplier and resistance field on a complete result', () => {
-      const result = fullyFittedBuild().shieldMetricsResult({ systemsPips: 2 });
+      const result = BuildMetrics.of(fullyFittedBuild()).shieldMetricsResult();
 
       expect(result.complete).toBe(true);
       expect(result.issues).toEqual([]);
@@ -38,7 +39,6 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
       expect(Number.isFinite(value.reinforcement)).toBe(true);
       expect(Number.isFinite(value.massCurveMultiplier)).toBe(true);
       expect(Number.isFinite(value.boostMultiplier)).toBe(true);
-      expect(Number.isFinite(value.systemsResistance)).toBe(true);
       for (const key of DAMAGE_KEYS) {
         expect(typeof value.resistances[key]).toBe('number');
         expect(typeof value.effectiveHitPoints[key]).toBe('number');
@@ -46,7 +46,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('carries no value and at least one issue on an incomplete result', () => {
-      const result = noGeneratorBuild().shieldMetricsResult({ systemsPips: 2 });
+      const result = BuildMetrics.of(noGeneratorBuild()).shieldMetricsResult();
 
       expect(result.complete).toBe(false);
       expect(result.value).toBeNull();
@@ -55,8 +55,8 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
 
     it('tells the four unavailable states apart by field and reason', () => {
       const diagnosis = (build: ReturnType<typeof readyBuild>) =>
-        build
-          .shieldMetricsResult({ systemsPips: 2 })
+        BuildMetrics.of(build)
+          .shieldMetricsResult()
           .issues.map((issue) => `${issue.field}/${issue.reason}`);
 
       expect(diagnosis(noGeneratorBuild())).toEqual(['shieldGenerator/missing']);
@@ -68,26 +68,70 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('names the exact slot and symbol of a fitted module it can name', () => {
-      const issue = disabledGeneratorBuild().shieldMetricsResult({ systemsPips: 2 }).issues[0]!;
+      const issue = BuildMetrics.of(disabledGeneratorBuild()).shieldMetricsResult().issues[0]!;
 
       expect(issue.slot).toBe('Slot03_Size6');
       expect(issue.symbol).toBe('Int_ShieldGenerator_Size6_Class1');
       expect(typeof issue.message).toBe('string');
     });
 
-    it('answers a different allocation with different resistances', () => {
+    it('answers the same bare shield whatever the allocation stands at', () => {
+      // Almanac 0.2.0 took the pips off this call entirely: `shieldMetrics()`
+      // is the shield an outfitting screen shows, and no allocation reaches it.
+      // What the pips are worth is `shieldCapacitorMetrics()`, below.
       const build = readyBuild();
-      const none = build.shieldMetricsResult({ systemsPips: 0 }).value!;
-      const full = build.shieldMetricsResult({ systemsPips: 4 }).value!;
+      const first = BuildMetrics.of(build).shieldMetricsResult().value!;
+      const second = BuildMetrics.of(build).shieldMetricsResult().value!;
+
+      expect(second.resistances).toEqual(first.resistances);
+      expect(second.effectiveHitPoints).toEqual(first.effectiveHitPoints);
+      expect(second.strength).toBe(first.strength);
+    });
+  });
+
+  describe('shieldCapacitorMetricsResult()', () => {
+    it('publishes the pips, the capacitor and both effective records', () => {
+      const value = BuildMetrics.of(fullyFittedBuild()).shieldCapacitorMetricsResult({
+        systemsPips: 2,
+      }).value!;
+
+      expect(value.systemsPips).toBe(2);
+      expect(Number.isFinite(value.capacity)).toBe(true);
+      expect(Number.isFinite(value.rechargeRate)).toBe(true);
+      expect(Number.isFinite(value.systemsResistance)).toBe(true);
+      for (const key of DAMAGE_KEYS) {
+        expect(typeof value.effectiveResistances[key]).toBe('number');
+        expect(typeof value.effectiveHitPoints[key]).toBe('number');
+      }
+    });
+
+    it('answers a different allocation with a different resistance', () => {
+      const build = readyBuild();
+      const none = BuildMetrics.of(build).shieldCapacitorMetricsResult({ systemsPips: 0 }).value!;
+      const full = BuildMetrics.of(build).shieldCapacitorMetricsResult({ systemsPips: 4 }).value!;
 
       expect(full.systemsResistance).toBeGreaterThan(none.systemsResistance);
-      expect(full.strength).toBe(none.strength);
+    });
+
+    it('leaves the bare shield alone at no pips', () => {
+      // The package documents no pips as the identity: the effective figures
+      // equal the bare ones that went in. It is the guarantee that makes the
+      // fifth column safe to draw at any allocation.
+      const build = readyBuild();
+      const bare = BuildMetrics.of(build).shieldMetricsResult().value!;
+      const none = BuildMetrics.of(build).shieldCapacitorMetricsResult({ systemsPips: 0 }).value!;
+
+      expect(none.systemsResistance).toBe(0);
+      expect(none.effectiveResistances).toEqual(bare.resistances);
+      expect(none.effectiveHitPoints).toEqual(bare.effectiveHitPoints);
     });
   });
 
   describe('shieldRecoveryResult()', () => {
     it('publishes both rates and both durations on a complete result', () => {
-      const value = fullyFittedBuild().shieldRecoveryResult({ systemsPips: 2 }).value!;
+      const value = BuildMetrics.of(fullyFittedBuild()).shieldRecoveryResult({
+        systemsPips: 2,
+      }).value!;
 
       expect(Number.isFinite(value.regenRate)).toBe(true);
       expect(Number.isFinite(value.brokenRegenRate)).toBe(true);
@@ -99,7 +143,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
       // With nothing in the SYS capacitor there is no energy to regenerate
       // with, and the package says so with `Infinity` rather than a very large
       // number of seconds.
-      const value = readyBuild().shieldRecoveryResult({ systemsPips: 0 }).value!;
+      const value = BuildMetrics.of(readyBuild()).shieldRecoveryResult({ systemsPips: 0 }).value!;
 
       expect(value.recoveryTime).toBe(Number.POSITIVE_INFINITY);
       expect(value.regenTime).toBe(Number.POSITIVE_INFINITY);
@@ -108,8 +152,8 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     it('is diagnosed independently of the shield metrics', () => {
       const build = disabledGeneratorBuild();
 
-      expect(build.shieldRecoveryResult({ systemsPips: 2 }).complete).toBe(false);
-      expect(build.shieldRecoveryResult({ systemsPips: 2 }).issues[0]?.field).toBe(
+      expect(BuildMetrics.of(build).shieldRecoveryResult({ systemsPips: 2 }).complete).toBe(false);
+      expect(BuildMetrics.of(build).shieldRecoveryResult({ systemsPips: 2 }).issues[0]?.field).toBe(
         'shieldGenerator',
       );
     });
@@ -117,7 +161,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
 
   describe('cellBanks()', () => {
     it('is an empty list and zero totals when none is fitted', () => {
-      const summary = readyBuild().cellBanks();
+      const summary = BuildMetrics.of(readyBuild()).cellBanks();
 
       expect(summary.banks).toEqual([]);
       expect(summary.totalRestorable).toBe(0);
@@ -125,7 +169,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('publishes every bank field, in slot order', () => {
-      const summary = bankedBuild().cellBanks();
+      const summary = BuildMetrics.of(bankedBuild()).cellBanks();
 
       expect(summary.banks.length).toBe(3);
       for (const bank of summary.banks) {
@@ -141,7 +185,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('keeps unpowered banks in the list while leaving both totals at zero', () => {
-      const summary = unpoweredBanksBuild().cellBanks();
+      const summary = BuildMetrics.of(unpoweredBanksBuild()).cellBanks();
 
       expect(summary.banks).toHaveLength(3);
       expect(summary.banks.every((bank) => !bank.powered)).toBe(true);
@@ -152,7 +196,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
 
   describe('armourMetrics()', () => {
     it('is never null, and publishes hull, module and resistance fields separately', () => {
-      const metrics = fullyFittedBuild().armourMetrics();
+      const metrics = BuildMetrics.of(fullyFittedBuild()).armourMetrics();
 
       expect(Number.isFinite(metrics.hitPoints)).toBe(true);
       expect(Number.isFinite(metrics.bulkheads)).toBe(true);
@@ -166,12 +210,14 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('answers a build whose shield is unavailable', () => {
-      expect(disabledGeneratorBuild().armourMetrics().hitPoints).toBeGreaterThan(0);
+      expect(BuildMetrics.of(disabledGeneratorBuild()).armourMetrics().hitPoints).toBeGreaterThan(
+        0,
+      );
     });
 
     it('reports a negative resistance as a signed weakness', () => {
       // The stock lightweight alloy is kinetically and explosively weak.
-      expect(readyBuild().armourMetrics().resistances.kinetic).toBeLessThan(0);
+      expect(BuildMetrics.of(readyBuild()).armourMetrics().resistances.kinetic).toBeLessThan(0);
     });
   });
 
@@ -180,7 +226,7 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
       const ship = getShipBySymbol(DEFENCE_FIXTURE_HULL);
 
       expect(Number.isFinite(ship?.hardness)).toBe(true);
-      expect(readyBuild().armourMetrics()).not.toHaveProperty('hardness');
+      expect(BuildMetrics.of(readyBuild()).armourMetrics()).not.toHaveProperty('hardness');
     });
 
     it('returns null for a symbol it does not carry', () => {

@@ -21,7 +21,7 @@ creates document horizontal scrolling.
 | Requirement | Surface behavior                                                                                            |
 | ----------- | ----------------------------------------------------------------------------------------------------------- |
 | FR-001      | No-build state defers to the existing workspace and never creates or selects a hull.                        |
-| FR-002      | `ShipLoadout.validation` is the only input; nothing is derived, clamped, repaired or reinterpreted.         |
+| FR-002      | `ShipLoadout.validation()` is the only input; nothing is derived, clamped, repaired or reinterpreted.       |
 | FR-003      | `valid` and `complete` are conveyed by the issues the package raises about them, and by nothing else drawn. |
 | FR-004      | Each package issue is rendered once, in package order, with its severity in words.                          |
 | FR-005      | The diagnostic is package text through the shared presenter; only the framing around it is localized.       |

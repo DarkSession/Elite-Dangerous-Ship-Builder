@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import {
   OUTFITTING_FAMILIES,
@@ -49,7 +50,7 @@ describe('installed Almanac acceptance', () => {
       source.applyBlueprint(FIXTURE_SLOTS.thrusters, 'Engine_Dirty', {
         grade: 5,
         quality: 1,
-        experimental: 'special_engine_cooled',
+        experimentalEffectSymbol: 'special_engine_cooled',
       });
       source.setPreEngineeredVariant(FIXTURE_SLOTS.frameShiftDrive, fixedRewardVariant());
 
@@ -81,7 +82,9 @@ describe('installed Almanac acceptance', () => {
       if (!rebuilt.ok) {
         return;
       }
-      expect(rebuilt.loadout.buildCost().credits.modules).toBe(source.buildCost().credits.modules);
+      expect(BuildMetrics.of(rebuilt.loadout).buildCost().credits.modules).toBe(
+        BuildMetrics.of(source).buildCost().credits.modules,
+      );
     });
 
     it('refuses a hull it does not carry', () => {
@@ -240,7 +243,7 @@ describe('installed Almanac acceptance', () => {
       const fitted = build.fittedModuleAt(slot);
       expect(fitted?.symbol).toBe(symbol);
       expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
-      expect(fitted?.preEngineeredVariant?.blueprint).toBe(variant.blueprint);
+      expect(fitted?.preEngineeredVariant?.blueprintSymbol).toBe(variant.blueprintSymbol);
 
       const result = build.completeEngineeringGrade(slot);
       expect(result.kind).toBe('unsupported');
@@ -267,8 +270,8 @@ describe('installed Almanac acceptance', () => {
       expect(added.kind).toBe('updated');
       const withEffect = build.fittedModuleAt(slot);
       expect(withEffect?.engineering?.ExperimentalEffect).toBe(effects[0]);
-      expect(withEffect?.preEngineeredVariant?.blueprint).toBe(
-        baseline?.preEngineeredVariant?.blueprint,
+      expect(withEffect?.preEngineeredVariant?.blueprintSymbol).toBe(
+        baseline?.preEngineeredVariant?.blueprintSymbol,
       );
       expect(withEffect?.engineering?.BlueprintName).toBe(baseline?.engineering?.BlueprintName);
       expect(withEffect?.engineering?.Level).toBe(baseline?.engineering?.Level);

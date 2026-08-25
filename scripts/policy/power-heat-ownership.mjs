@@ -40,6 +40,10 @@ export const SCOPE = ['src/app'];
  */
 export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/ships/ship-loadout',
+  // Almanac 0.2.0 moved every calculation off `ShipLoadout` and onto
+  // `BuildMetrics`, which is a leaf of its own. The loadout subpath stays: it
+  // is still what holds and edits the build.
+  '@elite-dangerous-almanac/core/ships/build-metrics',
   '@elite-dangerous-almanac/core/ships/power',
   '@elite-dangerous-almanac/core/ships/distributor',
   '@elite-dangerous-almanac/core/ships/heat',

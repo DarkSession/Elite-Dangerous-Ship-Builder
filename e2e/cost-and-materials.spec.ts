@@ -64,7 +64,8 @@ function digits(text: string): number {
  */
 async function packageRetail() {
   const core = await import('@elite-dangerous-almanac/core/ships/ship-loadout');
-  return core.ShipLoadout.default(HULL).buildCost().credits;
+  const metrics = await import('@elite-dangerous-almanac/core/ships/build-metrics');
+  return metrics.BuildMetrics.of(core.ShipLoadout.default(HULL)).buildCost().credits;
 }
 
 test.describe('the COST block', () => {

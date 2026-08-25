@@ -10,7 +10,8 @@
 > summaries neither canvas draws. See [reference-review.md](./reference-review.md), wave 13.
 
 Feature 005 adds no route and no top-level screen. It adds one mode to a region feature 010 already
-draws, and one read-only block to the status rail feature 003 already draws.
+draws, and to the status rail feature 003 already draws, one read-only block and — since the
+2026-08-25 canvas revision — the `SYS` / `ENG` / `WEP` pip control.
 
 | Surface                                          | Wide/tablet presentation                                                          | Narrow/zoomed presentation                | Requirements           |
 | ------------------------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------- |
@@ -24,21 +25,21 @@ draws, and one read-only block to the status rail feature 003 already draws.
 
 ## Requirement ownership
 
-| Requirement | Planned behaviour                                                                                                                                                            |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One pure projection calls only the three `ShipLoadout` methods; every surface reads that one result.                                                                         |
-| FR-002      | Selected totals and groups map directly to named package fields; headroom, utilisation and within-budget are read in neither state, because neither canvas draws them.       |
-| FR-003      | This capability owns the hardpoint selection, defaults it to deployed and shows one settled state.                                                                           |
-| FR-004      | Disabled returned consumers stay visible and contribute exactly as the package reports.                                                                                      |
-| FR-005      | Every returned consumer uses package post-engineering draw; rows may sort by draw descending with source order as the tie break.                                             |
-| FR-006      | Every line exposes its count, its group where the plant sheds it, its off state and its state-relative draw. The list holds no action: feature 002's ledger selects a mount. |
-| FR-007      | This capability owns whole `0`–`4` pips per bank; the returned allocation is what is displayed.                                                                              |
-| FR-008      | Package distributor `null` is unavailable and receives no catalogue substitute or inferred cause.                                                                            |
-| FR-009      | Ready heat shows three profile facts, exactly five scenarios and every one of their five fields.                                                                             |
-| FR-010      | Package heat `null` is unavailable and receives no catalogue substitute.                                                                                                     |
-| FR-011      | Field-specific presentation distinguishes a plant of zero, non-settling heat and never-overheating time.                                                                     |
-| FR-012      | **Withdrawn (wave 13)** — the artboard hides the plates outside `mounts`, so no mount carries a power state.                                                                 |
-| FR-013      | The rail's shed sentences, `POWER` line and bar read the same projection and name only returned fields; nothing is interactive.                                              |
+| Requirement | Planned behaviour                                                                                                                                                                                                                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One pure projection calls only the three `ShipLoadout` methods; every surface reads that one result.                                                                                                                                                                                                        |
+| FR-002      | Selected totals and groups map directly to named package fields; headroom, utilisation and within-budget are read in neither state, because neither canvas draws them.                                                                                                                                      |
+| FR-003      | This capability owns the hardpoint selection, defaults it to deployed and shows one settled state.                                                                                                                                                                                                          |
+| FR-004      | Disabled returned consumers stay visible and contribute exactly as the package reports.                                                                                                                                                                                                                     |
+| FR-005      | Every returned consumer uses package post-engineering draw; rows may sort by draw descending with source order as the tie break.                                                                                                                                                                            |
+| FR-006      | Every line exposes its count, its group where the plant sheds it, its off state and its state-relative draw. The list holds no action: feature 002's ledger selects a mount.                                                                                                                                |
+| FR-007      | This capability owns whole `0`–`4` pips per bank; the returned allocation is what is displayed.                                                                                                                                                                                                             |
+| FR-008      | Package distributor `null` is unavailable and receives no catalogue substitute or inferred cause.                                                                                                                                                                                                           |
+| FR-009      | Ready heat shows three profile facts, exactly five scenarios and every one of their five fields.                                                                                                                                                                                                            |
+| FR-010      | Package heat `null` is unavailable and receives no catalogue substitute.                                                                                                                                                                                                                                    |
+| FR-011      | Field-specific presentation distinguishes a plant of zero, non-settling heat and never-overheating time.                                                                                                                                                                                                    |
+| FR-012      | **Withdrawn (wave 13)** — the artboard hides the plates outside `mounts`, so no mount carries a power state.                                                                                                                                                                                                |
+| FR-013      | The rail's shed sentences, `POWER` line and bar read the same projection and name only returned fields; none of the three is interactive. Its `SYS` / `ENG` / `WEP` blocks edit the one pip condition the distributor cell edits, under the same six-pip rule, and name the allocation each bank stands at. |
 
 ## Cross-feature composition
 

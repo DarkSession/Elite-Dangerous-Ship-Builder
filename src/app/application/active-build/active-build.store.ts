@@ -86,7 +86,7 @@ export class ActiveBuildStore {
   /** The package's own verdict on the active build. `null` when there is none. */
   readonly validation = computed(() => {
     this.#revision();
-    return this.#loadout()?.validation ?? null;
+    return this.#loadout()?.validation() ?? null;
   });
 
   readonly state = computed<ActiveBuildState>(() => ({

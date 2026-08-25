@@ -214,20 +214,6 @@ export class OutfittingWorkspace {
    * Shown where an action is absent, because an action missing without a
    * reason reads as a defect rather than as a rule of the game (FR-009).
    */
-  /**
-   * The canvas's own mark for a mount that takes no other module.
-   *
-   * Canvas 1d writes `FIXED` in a hairline chip beside the cargo hatch rather
-   * than a sentence about it, and the bench is where a Commander is looking
-   * when they wonder why nothing opened. The Almanac's full reason stays beside
-   * it for a reader (FR-009); this is what is drawn.
-   */
-  readonly benchMark = computed(() =>
-    this.selectedSlot()?.immovableReason === 'cargoHatch'
-      ? this.#messages.message('outfitting.immovable.short.cargoHatch')
-      : null,
-  );
-
   readonly benchReason = computed(() => {
     const slot = this.selectedSlot();
     if (slot === null || slot.immovableReason === null) {

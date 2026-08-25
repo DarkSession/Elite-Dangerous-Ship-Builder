@@ -432,6 +432,7 @@ brought to the drawing.
 - [x] T144 Run `pnpm run check` and fix every divergence across the ten Playwright projects (depends on T135, T136, T137, T138, T139, T141, T142, T143)
 - [x] T145 Stop the frozen chrome travelling: start the manifest one row gap early so its header rests where it freezes, and run the inspector rail's ground up to the command bar so it does the same
 - [x] T146 [P] Draw the manifest's column headers in the reference's capitals — no engine inherits `text-transform` into a control, so the base reset states it — in the canvas's own 0.52 ink
+- [x] T147 Reserve the inspector's track at the wide composition, so opening the first hull does not reflow the manifest under the cursor. The empty inspector is still not drawn (hull-catalogue design, "The inspector's track is reserved"; Commander request 2026-08-25)
 
 ---
 

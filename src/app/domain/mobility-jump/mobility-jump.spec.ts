@@ -1,9 +1,10 @@
-import { vi } from 'vitest';
-import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
+import { afterEach, vi } from 'vitest';
 import {
-  ShipLoadout,
+  BuildMetrics,
   type StandardLoadInputs,
-} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+} from '@elite-dangerous-almanac/core/ships/build-metrics';
+import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
+import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import { projectMobilityAndJump, STANDARD_LOADS, type StandardLoad } from './mobility-jump';
@@ -32,7 +33,7 @@ function build(symbol = 'Anaconda'): ShipLoadout {
  * keeps the expectations reading as the one package answer they compare against.
  */
 function standardLoad(loadout: ShipLoadout, load: StandardLoad): StandardLoadInputs {
-  const result = loadout.standardLoadResult(load);
+  const result = BuildMetrics.of(loadout).standardLoadResult(load);
   if (!result.complete) {
     throw new Error(`The installed package no longer weighs a stock hull at its ${load} load.`);
   }
@@ -45,10 +46,17 @@ function envelopeLoad(loadout: ShipLoadout): StandardLoadInputs {
 }
 
 describe('projectMobilityAndJump', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('jump performance', () => {
     it('reads all three loads from one package summary', () => {
       const loadout = build();
-      const summary = loadout.jumpRangeSummary();
+      const summary = BuildMetrics.of(loadout).jumpRangeSummary();
       const { profiles } = projectMobilityAndJump(loadout, 4).drive;
 
       // One figure a load, as the canvas draws its rows: what this build jumps
@@ -66,7 +74,7 @@ describe('projectMobilityAndJump', () => {
       // and no cargo, which is the summary the package words "on one full
       // tank, empty hold" — not the one that carries a full hold too.
       const loadout = build();
-      const summary = loadout.jumpRangeSummary();
+      const summary = BuildMetrics.of(loadout).jumpRangeSummary();
       const { totalRange } = projectMobilityAndJump(loadout, 4).drive;
 
       expect(totalRange).toEqual({
@@ -92,8 +100,8 @@ describe('projectMobilityAndJump', () => {
       const loadout = build();
       const { drive } = projectMobilityAndJump(loadout, 4);
 
-      expect(drive.optMass).toBe(loadout.frameShiftDrive.optMass);
-      expect(drive.maxFuel).toBe(loadout.frameShiftDrive.maxFuel);
+      expect(drive.optMass).toBe(BuildMetrics.of(loadout).frameShiftDrive().optMass);
+      expect(drive.maxFuel).toBe(BuildMetrics.of(loadout).frameShiftDrive().maxFuel);
     });
 
     it('reads mass lock off the hull record', () => {
@@ -105,15 +113,26 @@ describe('projectMobilityAndJump', () => {
 
   describe('mobility', () => {
     it('passes the ENG allocation to the package unchanged', () => {
+      // Almanac 0.2.0 took the allocation off `mobilityMetrics()`, which is now
+      // the four-pip envelope, and gave it its own call. The allocation is the
+      // capacitor's, so that is where it has to arrive unchanged.
       const loadout = build();
       const carried = envelopeLoad(loadout);
 
       for (const pips of [0, 0.5, 2, 4]) {
-        const projected = projectMobilityAndJump(loadout, pips).thrusters.mobility;
+        const projected = projectMobilityAndJump(loadout, pips).thrusters.capacitor;
         expect(projected).toEqual(
-          loadout.mobilityMetricsResult({ ...carried, enginesPips: pips }).value,
+          BuildMetrics.of(loadout).mobilityCapacitorMetricsResult({ ...carried, enginesPips: pips })
+            .value,
         );
       }
+    });
+
+    it('leaves the four-pip envelope still whatever the allocation stands at', () => {
+      const loadout = build();
+      const four = projectMobilityAndJump(loadout, 4).thrusters.mobility;
+
+      expect(projectMobilityAndJump(loadout, 0).thrusters.mobility).toEqual(four);
     });
 
     it('reads the envelope at the one load the card can account for', () => {
@@ -128,7 +147,7 @@ describe('projectMobilityAndJump', () => {
 
       expect(thrusters.envelopeLoad).toBe('unladen');
       expect(thrusters.mobility).toEqual(
-        loadout.mobilityMetricsResult({ ...carried, enginesPips: 2 }).value,
+        BuildMetrics.of(loadout).mobilityMetricsResult(carried).value,
       );
       expect(thrusters.mobility?.loadedMass).toBe(thrusters.mass?.total);
     });
@@ -148,9 +167,9 @@ describe('projectMobilityAndJump', () => {
       );
       // The laden load genuinely differs, so the choice above is a decision and
       // not a coincidence of this hull.
-      expect(loadout.buildMass(standardLoad(loadout, 'laden')).total).toBeGreaterThan(
-        mass?.total ?? 0,
-      );
+      expect(
+        BuildMetrics.of(loadout).buildMass(standardLoad(loadout, 'laden')).total,
+      ).toBeGreaterThan(mass?.total ?? 0);
     });
 
     it('keeps every one of the eight returned fields', () => {
@@ -177,9 +196,29 @@ describe('projectMobilityAndJump', () => {
 
       expect(mobility).toBeNull();
       expect(issues).toEqual(
-        loadout.mobilityMetricsResult({ ...envelopeLoad(loadout), enginesPips: 4 }).issues,
+        BuildMetrics.of(loadout).mobilityMetricsResult(envelopeLoad(loadout)).issues,
       );
       expect(issues.map((issue) => issue.reason)).toEqual(['disabled']);
+    });
+
+    it('takes the reasons from whichever of the two readings withheld a figure', () => {
+      // The package documents the same diagnostics for both, because they read
+      // one build, so today the capacitor never fails on its own. That
+      // coincidence is exactly why the guard needs its own test: without it the
+      // card would go unavailable with an empty reason list the day the two
+      // diverge, and the suite would stay green.
+      const loadout = build();
+      vi.spyOn(BuildMetrics.prototype, 'mobilityCapacitorMetricsResult').mockReturnValue({
+        complete: false,
+        value: null,
+        issues: [BLOCKING_ISSUE],
+      });
+
+      const { mobility, capacitor, issues } = projectMobilityAndJump(loadout, 4).thrusters;
+
+      expect(mobility).not.toBeNull();
+      expect(capacitor).toBeNull();
+      expect(issues).toEqual([BLOCKING_ISSUE]);
     });
 
     it('substitutes no hull speed for an unavailable reading', () => {
@@ -215,7 +254,7 @@ describe('projectMobilityAndJump', () => {
       const carried = envelopeLoad(loadout);
       const { thrusters } = projectMobilityAndJump(loadout, 4);
 
-      expect(thrusters.mass).toEqual({ ...loadout.buildMass(carried) });
+      expect(thrusters.mass).toEqual({ ...BuildMetrics.of(loadout).buildMass(carried) });
       expect(thrusters.mass?.hull).toBeGreaterThan(0);
       expect(thrusters.mass?.modules).toBeGreaterThan(0);
     });
@@ -227,7 +266,7 @@ describe('projectMobilityAndJump', () => {
       const loadout = build();
       const mass = projectMobilityAndJump(loadout, 4).thrusters.mass;
 
-      expect(mass?.total).toBe(loadout.buildMass(envelopeLoad(loadout)).total);
+      expect(mass?.total).toBe(BuildMetrics.of(loadout).buildMass(envelopeLoad(loadout)).total);
     });
 
     it("takes the thruster's mass curve from the package's own getter", () => {
@@ -237,7 +276,7 @@ describe('projectMobilityAndJump', () => {
       const loadout = build();
       const { curve } = projectMobilityAndJump(loadout, 4).thrusters;
 
-      expect(curve).toEqual(loadout.thrusters);
+      expect(curve).toEqual(BuildMetrics.of(loadout).thrusters());
       expect(curve?.optMass).toBeGreaterThan(0);
       expect(curve?.maxMass).toBeGreaterThan(curve?.optMass ?? 0);
     });
@@ -312,8 +351,8 @@ describe('projectMobilityAndJump', () => {
       // Neither is reachable from today's catalogue, which is exactly why the
       // guard needs its own test: the suite would stay green either way.
       const loadout = build();
-      const summary = vi.spyOn(loadout, 'jumpRangeSummary');
-      vi.spyOn(loadout, 'standardLoadResult').mockImplementation((load) =>
+      const summary = vi.spyOn(BuildMetrics.prototype, 'jumpRangeSummary');
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockImplementation((load) =>
         load === 'maximum'
           ? { complete: false, value: null, issues: [BLOCKING_ISSUE] }
           : { complete: true, value: { fuel: 0, cargo: 0, mass: 0 }, issues: [] },
@@ -334,10 +373,13 @@ describe('projectMobilityAndJump', () => {
       // maximum load would let either of the other two throw straight out of
       // this projector and take the whole anatomy region down (FR-003).
       for (const blocked of STANDARD_LOADS) {
+        // The seam is a prototype, so the previous turn's mock has to come off
+        // before this one reads a real answer through it.
+        vi.restoreAllMocks();
         const loadout = build();
-        const summary = vi.spyOn(loadout, 'jumpRangeSummary');
-        const settled = loadout.standardLoadResult('maximum');
-        vi.spyOn(loadout, 'standardLoadResult').mockImplementation((load) =>
+        const summary = vi.spyOn(BuildMetrics.prototype, 'jumpRangeSummary');
+        const settled = BuildMetrics.of(loadout).standardLoadResult('maximum');
+        vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockImplementation((load) =>
           load === blocked ? { complete: false, value: null, issues: [BLOCKING_ISSUE] } : settled,
         );
 
@@ -359,8 +401,8 @@ describe('projectMobilityAndJump', () => {
       // no reasons to show — and the card draws the unavailable value with no
       // "why" list beside it rather than an empty one.
       const loadout = build();
-      vi.spyOn(loadout, 'frameShiftDrive', 'get').mockImplementation(() => {
-        throw new TypeError('ShipLoadout: drive record has no jump constants');
+      vi.spyOn(BuildMetrics.prototype, 'frameShiftDrive').mockImplementation(() => {
+        throw new TypeError('BuildMetrics: drive record has no jump constants');
       });
 
       const { drive } = projectMobilityAndJump(loadout, 4);
@@ -378,8 +420,8 @@ describe('projectMobilityAndJump', () => {
       // never reaches the throwing getter — which is the separation FR-003 asks
       // for, holding here without either card knowing about the other.
       const loadout = build();
-      vi.spyOn(loadout, 'frameShiftDrive', 'get').mockImplementation(() => {
-        throw new TypeError('ShipLoadout: drive record has no jump constants');
+      vi.spyOn(BuildMetrics.prototype, 'frameShiftDrive').mockImplementation(() => {
+        throw new TypeError('BuildMetrics: drive record has no jump constants');
       });
 
       const { thrusters } = projectMobilityAndJump(loadout, 4);
@@ -395,7 +437,7 @@ describe('projectMobilityAndJump', () => {
       // drive taking the speed envelope down with it would be the opposite of
       // what the design asks for.
       const loadout = build();
-      vi.spyOn(loadout, 'standardLoadResult').mockImplementation((load) =>
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockImplementation((load) =>
         load === 'maximum'
           ? { complete: false, value: null, issues: [BLOCKING_ISSUE] }
           : { complete: true, value: { fuel: 32, cargo: 0, mass: 400 }, issues: [] },
@@ -410,7 +452,7 @@ describe('projectMobilityAndJump', () => {
 
     it('reports no jump figures rather than zeroes', () => {
       const loadout = build();
-      vi.spyOn(loadout, 'standardLoadResult').mockReturnValue({
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockReturnValue({
         complete: false,
         value: null,
         issues: [BLOCKING_ISSUE],

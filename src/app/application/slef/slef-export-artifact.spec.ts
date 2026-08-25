@@ -98,7 +98,7 @@ describe('the export artifact’s life', () => {
     commit(active, loadout);
 
     expect(coordinator.generate()).toBe(true);
-    expect(store.artifact()?.validation).toEqual(loadout.validation);
+    expect(store.artifact()?.validation).toEqual(loadout.validation());
     expect(inspectSlef(store.artifact()?.payload ?? '').entries).toHaveLength(1);
   });
 

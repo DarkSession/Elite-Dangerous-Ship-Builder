@@ -106,7 +106,11 @@ function blueprintCost(selection: EngineeringSelection): MaterialCost {
     return { kind: 'notSelected' };
   }
   const purchase = selection.purchaseVariant;
-  if (purchase !== null && grade === purchase.grade && sameRecipe(fdname, purchase.blueprint)) {
+  if (
+    purchase !== null &&
+    grade === purchase.grade &&
+    sameRecipe(fdname, purchase.blueprintSymbol)
+  ) {
     // The article as it arrived. A reward is bought, not crafted: there is no
     // shopping list for what it came with, and pricing its recipe would quote a
     // Commander for something no engineer will do. Its price is the Merc Coin
@@ -141,7 +145,7 @@ function experimentalCost(selection: EngineeringSelection): MaterialCost {
   }
 
   const purchase = selection.purchaseVariant;
-  if (purchase !== null && sameRecipe(fdname, purchase.experimental ?? null)) {
+  if (purchase !== null && sameRecipe(fdname, purchase.experimentalEffectSymbol ?? null)) {
     // The article as it arrived, exactly as the blueprint branch above treats
     // the recipe it came with. A reward is bought, not crafted, and pricing the
     // effect baked into it would quote a Commander for a job no engineer will

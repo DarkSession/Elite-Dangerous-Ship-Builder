@@ -4,7 +4,7 @@
     "appName": "elite-dangerous-ship-builder",
     "appVersion": "0.1.0"
   },
-  "almanacVersion": "0.1.7",
+  "almanacVersion": "0.2.0",
   "serialization": {
     "moduleOrder": "fitted",
     "explicitPower": false,
@@ -17,10 +17,10 @@
       "filename": "stock-small-hull.slef.json",
       "ship": "SideWinder",
       "modules": 16,
-      "utf8Bytes": 2497,
+      "utf8Bytes": 2471,
       "valid": true,
       "complete": true,
-      "sha256": "363db81f8e5b30bd4033a76590ce8761b40cb998da28687ec6378de3bbdf8cf4"
+      "sha256": "ea5ca025a8eadcbaa071656c199a1939ea6d9367f06e6d7fce0f7dec1c3a156e"
     },
     {
       "id": "stock-large-hull",
@@ -28,10 +28,10 @@
       "filename": "stock-large-hull.slef.json",
       "ship": "Anaconda",
       "modules": 18,
-      "utf8Bytes": 2767,
+      "utf8Bytes": 2741,
       "valid": true,
       "complete": true,
-      "sha256": "607b43847a49b8e96e05b4cb9fcfd7a19f506ccdabacc8749f29a51b5ca07851"
+      "sha256": "bb3ea79d70b29a8e20f935523a468ab2a046529b4a702d2fbc36f174a0d8fc23"
     },
     {
       "id": "named-and-identified",
@@ -39,10 +39,10 @@
       "filename": "named-and-identified.slef.json",
       "ship": "python",
       "modules": 18,
-      "utf8Bytes": 2826,
+      "utf8Bytes": 2800,
       "valid": true,
       "complete": true,
-      "sha256": "fb9a329923cf91c37f6c0e85e8b7916bb6c26607e66eb4e8565826a3ec2f4d41"
+      "sha256": "81476d1a2f99f07a77b0110267dcbca866198bf7cd6ff9d8848ba69ce19873ed"
     },
     {
       "id": "disabled-and-prioritised",
@@ -50,10 +50,10 @@
       "filename": "disabled-and-prioritised.slef.json",
       "ship": "Anaconda",
       "modules": 18,
-      "utf8Bytes": 2815,
+      "utf8Bytes": 2789,
       "valid": true,
       "complete": true,
-      "sha256": "f2c6febfc1714803c55476f56a5cfd2578775ad564bb1471ddfbaafed928750c"
+      "sha256": "d6b04bc85fefca6d8663d36bf99bdb89c2162f25c6fc562dd72fad30de3bac7f"
     },
     {
       "id": "engineered-grade-five",
@@ -61,10 +61,10 @@
       "filename": "engineered-grade-five.slef.json",
       "ship": "Anaconda",
       "modules": 18,
-      "utf8Bytes": 3675,
+      "utf8Bytes": 3649,
       "valid": true,
       "complete": true,
-      "sha256": "4633b1c804a55426af9cab0946a661d3c599be324bf3855c748c10854fe2d3e4"
+      "sha256": "45330a7878d446cb480deb1cca36238695a53b6cf1037bfd9e72d73f0f9d68ff"
     },
     {
       "id": "emptied-optional-mounts",
@@ -72,11 +72,11 @@
       "filename": "emptied-optional-mounts.slef.json",
       "ship": "Anaconda",
       "modules": 11,
-      "utf8Bytes": 1854,
+      "utf8Bytes": 1828,
       "valid": true,
       "complete": true,
-      "sha256": "44172a1d79032c8ed6029971057bbdefda9f7ef854b767f90efd1a6117fd1a3b"
+      "sha256": "f732ba9a0547fdf8688737f7549a167026c5a3259fa33c730fefe25a75482da1"
     }
   ],
-  "corpusHash": "3a73e7cdd5d9891e4a0af5df4111540cd4ba3581bc9ffaf048c5fab1e04d597a"
+  "corpusHash": "8083bd8719c3136890071143d0e1bf7012211fa8c5a6dfe988cc787c7e3231d0"
 }

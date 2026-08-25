@@ -110,22 +110,6 @@ export class SlotCard {
   );
 
   /**
-   * The one marker the ledger carries, on the one row the canvas draws it on.
-   *
-   * Canvas 1d writes `FIXED` beside the cargo hatch and nothing anywhere else —
-   * not on a required core internal, not on a mount at its module limit. Those
-   * are real Almanac facts and they are published on the selected mount's
-   * bench, in the Almanac's own full sentence, where they answer a question a
-   * Commander is asking rather than repeating a chip down seven rows
-   * (design-canvas rule; FR-009).
-   */
-  readonly immovableMarker = computed(() =>
-    this.slot().immovableReason === 'cargoHatch'
-      ? this.#messages.message('outfitting.immovable.short.cargoHatch')
-      : null,
-  );
-
-  /**
    * The module's name, for the power controls to name what they act on.
    *
    * A ledger is forty rows of the same two controls, so "powered" on its own

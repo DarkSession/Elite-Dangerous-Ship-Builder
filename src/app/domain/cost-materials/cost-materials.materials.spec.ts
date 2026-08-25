@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getBlueprintCost } from '@elite-dangerous-almanac/core/ships/blueprint-costs';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { materialRarity } from '../outfitting/engineering-cost';
@@ -28,7 +29,9 @@ describe('cost and materials — engineering materials', () => {
 
     const materials = project(build);
 
-    expect(materials?.rows.map(bare)).toEqual(build.buildCost().materials.map(bare));
+    expect(materials?.rows.map(bare)).toEqual(
+      BuildMetrics.of(build).buildCost().materials.map(bare),
+    );
   });
 
   it('keeps the package first-seen order across several modules', () => {
@@ -37,7 +40,9 @@ describe('cost and materials — engineering materials', () => {
 
     const materials = project(build);
 
-    expect(materials?.rows.map(bare)).toEqual(build.buildCost().materials.map(bare));
+    expect(materials?.rows.map(bare)).toEqual(
+      BuildMetrics.of(build).buildCost().materials.map(bare),
+    );
   });
 
   it('folds a separately applied effect in with the climb', () => {
@@ -45,7 +50,9 @@ describe('cost and materials — engineering materials', () => {
     build.setExperimentalEffect(FIXTURE_SLOTS.frameShiftDrive, DRIVE_EFFECT);
 
     const materials = project(build);
-    expect(materials?.rows.map(bare)).toEqual(build.buildCost().materials.map(bare));
+    expect(materials?.rows.map(bare)).toEqual(
+      BuildMetrics.of(build).buildCost().materials.map(bare),
+    );
   });
 
   it('uses one consolidated package list for multiple modules', () => {
@@ -80,7 +87,7 @@ describe('cost and materials — engineering materials', () => {
       // Counted against the package's own consolidation rather than against
       // this projection's own rows, which would assert the field back to the
       // list it was measured from and hold however wrong both were.
-      const consolidated = build.buildCost().materials;
+      const consolidated = BuildMetrics.of(build).buildCost().materials;
       expect(consolidated.length).toBeGreaterThan(1);
       expect(materials?.types).toBe(consolidated.length);
     });
@@ -89,7 +96,7 @@ describe('cost and materials — engineering materials', () => {
       const build = engineeredBuild();
       const materials = project(build);
 
-      const consolidated = build.buildCost().materials;
+      const consolidated = BuildMetrics.of(build).buildCost().materials;
       const expected = consolidated.reduce((running, material) => running + material.count, 0);
 
       // Units, not types: the two differ, which is what makes this a check on
@@ -123,7 +130,7 @@ describe('cost and materials — engineering materials', () => {
       // reward's recipe. Ruling F declined to name that on screen, so the row
       // is simply absent — never a zero, and never another recipe substituted
       // in its place.
-      expect(getBlueprintCost(uncostableCargoRack().blueprint, 5)).toBeNull();
+      expect(getBlueprintCost(uncostableCargoRack().blueprintSymbol, 5)).toBeNull();
       expect(project(build)).toBeNull();
     });
 
@@ -137,7 +144,9 @@ describe('cost and materials — engineering materials', () => {
       // package could cost and counts only that, rather than collapsing to
       // nothing because one source was unavailable.
       expect(materials?.blueprints).toBe(1);
-      expect(materials?.rows.map(bare)).toEqual(build.buildCost().materials.map(bare));
+      expect(materials?.rows.map(bare)).toEqual(
+        BuildMetrics.of(build).buildCost().materials.map(bare),
+      );
     });
   });
 });
@@ -150,7 +159,7 @@ function engineeredBuild(): ShipLoadout {
 }
 
 function project(build: ShipLoadout) {
-  return projectMaterials(build.fittedModules(), build.buildCost().materials);
+  return projectMaterials(build.fittedModules(), BuildMetrics.of(build).buildCost().materials);
 }
 
 /** Symbol and count only — the two fields the package owns end to end. */

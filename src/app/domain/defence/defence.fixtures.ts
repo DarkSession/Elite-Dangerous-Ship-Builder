@@ -55,6 +55,21 @@ export function fullyFittedBuild(): ShipLoadout {
     .setModule(ARMOUR_SLOT, packageModule('Anaconda_Armour_Grade3'));
 }
 
+/**
+ * A build whose shield resists every damage type, for the unsigned scale.
+ *
+ * Every stock generator the catalogue carries is weak to thermal, and every
+ * bulkhead is weak to something, so a table with no weakness on it is a table
+ * somebody engineered. Thermal Resistant at grade 5 is the shortest way to one:
+ * it lifts thermal past zero and leaves kinetic and explosive above it.
+ */
+export function resistantBuild(): ShipLoadout {
+  return fullyFittedBuild().applyBlueprint(GENERATOR_SLOT, 'ShieldGenerator_Thermic', {
+    grade: 5,
+    quality: 1,
+  });
+}
+
 /** No generator at all: `shieldGenerator` / `missing`, with no slot to reach. */
 export function noGeneratorBuild(): ShipLoadout {
   return readyBuild().removeModule(GENERATOR_SLOT);

@@ -43,7 +43,7 @@ const DUPLICATE_EXCLUSIVE: LoadoutEvent = {
 describe('the Almanac validation contract', () => {
   describe('what a build reports', () => {
     it('reports nothing at all for a hull default', () => {
-      const validation = ShipLoadout.default(FIXTURE_HULL).validation;
+      const validation = ShipLoadout.default(FIXTURE_HULL).validation();
 
       // The reason the block is *absent* rather than showing an all-clear line:
       // a package with nothing to say returns an empty list, so drawing nothing
@@ -54,7 +54,7 @@ describe('the Almanac validation contract', () => {
     });
 
     it('publishes valid and complete as two independent booleans', () => {
-      const validation = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation;
+      const validation = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation();
 
       expect(typeof validation.valid).toBe('boolean');
       expect(typeof validation.complete).toBe('boolean');
@@ -68,13 +68,13 @@ describe('the Almanac validation contract', () => {
       // never sees a `missingRequiredSlot`: the package fills fixed mounts from
       // the hull defaults and will not let a build empty them.
       expect(core?.removable).toBe(false);
-      expect(build.validation.complete).toBe(true);
+      expect(build.validation().complete).toBe(true);
     });
   });
 
   describe('one issue', () => {
     it('carries a stable code, a severity and the build’s own slot spelling', () => {
-      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation.issues;
+      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation().issues;
 
       expect(issue?.code).toBe('unknownSlot');
       expect(issue?.severity).toBe('error');
@@ -84,7 +84,7 @@ describe('the Almanac validation contract', () => {
     });
 
     it('carries language-neutral parameters, including named identities', () => {
-      const [issue] = ShipLoadout.fromLoadout(DUPLICATE_EXCLUSIVE).validation.issues;
+      const [issue] = ShipLoadout.fromLoadout(DUPLICATE_EXCLUSIVE).validation().issues;
 
       // The parameters are what a consumer composing its own sentence would
       // need. This block composes none — it renders the package's — so what
@@ -97,7 +97,7 @@ describe('the Almanac validation contract', () => {
     });
 
     it('states a machine-readable constraint behind an incompatible fit', () => {
-      const [issue] = ShipLoadout.fromLoadout(INCOMPATIBLE_MODULE).validation.issues;
+      const [issue] = ShipLoadout.fromLoadout(INCOMPATIBLE_MODULE).validation().issues;
 
       expect(issue?.code).toBe('incompatibleModule');
       expect(issue?.params?.['constraint']).toBe('optionalInternalRequired');
@@ -105,7 +105,9 @@ describe('the Almanac validation contract', () => {
 
     it('publishes only the two severities the block draws', () => {
       const severities = [UNKNOWN_SLOT, INCOMPATIBLE_MODULE, DUPLICATE_EXCLUSIVE].flatMap((event) =>
-        ShipLoadout.fromLoadout(event).validation.issues.map((issue) => issue.severity),
+        ShipLoadout.fromLoadout(event)
+          .validation()
+          .issues.map((issue) => issue.severity),
       );
 
       // At the pinned version every reachable issue is an `error`; `incomplete`
@@ -124,8 +126,8 @@ describe('the Almanac validation contract', () => {
     it('lists issues in one stable order across repeated reads', () => {
       const build = ShipLoadout.fromLoadout(DUPLICATE_EXCLUSIVE);
 
-      const first = build.validation.issues.map((issue) => `${issue.code}:${issue.slot ?? ''}`);
-      const second = build.validation.issues.map((issue) => `${issue.code}:${issue.slot ?? ''}`);
+      const first = build.validation().issues.map((issue) => `${issue.code}:${issue.slot ?? ''}`);
+      const second = build.validation().issues.map((issue) => `${issue.code}:${issue.slot ?? ''}`);
 
       // Package order is what the block preserves, so it has to be an order and
       // not an accident of iteration.
@@ -135,14 +137,14 @@ describe('the Almanac validation contract', () => {
 
   describe('the diagnostic helper', () => {
     it('returns canonical English for English', () => {
-      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation.issues;
+      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation().issues;
 
       expect(issue).toBeDefined();
       expect(getLoadoutIssueMessage(issue!, 'en')).toBe(issue!.message);
     });
 
     it('returns null outside English', () => {
-      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation.issues;
+      const [issue] = ShipLoadout.fromLoadout(UNKNOWN_SLOT).validation().issues;
 
       // This is the reason every German reader sees the canonical sentence with
       // the untranslated disclosure beside it: the package ships no translated

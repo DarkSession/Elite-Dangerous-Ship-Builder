@@ -18,6 +18,13 @@ planning ship loadouts.
   build calculations. Do not hand-maintain game data and do not reimplement a
   calculation the package provides. Import leaf subpaths (e.g.
   `@elite-dangerous-almanac/core/ships/ships`) rather than whole barrels.
+  `ShipLoadout` holds and edits a build; since Almanac 0.2.0 **every calculation
+  is on `BuildMetrics`**, which reads the build it is handed —
+  `BuildMetrics.of(build).powerBudget()`. A property is a fact the build already
+  carries and anything that does work is a call, so `validation()` is a call
+  too. Specs written before 0.2.0 name these calls on `ShipLoadout`; the
+  `contracts/` under each feature are corrected, older `research.md`, `plan.md`
+  and `tasks.md` entries are dated records and are left as they were written.
 - **Library defects are fixed in the library.** If the package returns a wrong
   value or is missing something, call it out and raise it against
   [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac)
@@ -56,9 +63,13 @@ planning ship loadouts.
   Keyboard operation is out of scope by constitutional exclusion (principle V
   names the criteria), so the application never claims unqualified AA — state
   the exclusion wherever conformance is stated.
-- **Identities come from the package**: `symbol` for hulls and modules, `fdname`
-  for blueprints and experimental effects, and the game's own slot keys — never
-  positional indices.
+- **Identities come from the package**: `symbol` for hulls, modules, blueprints
+  and experimental effects, and the game's own slot keys — never positional
+  indices. Almanac 0.2.0 renamed the blueprint and effect identities from
+  `fdname` to `blueprintSymbol` / `experimentalEffectSymbol`; this repository's
+  own persisted formats — build snapshots and the build-link codec — keep saying
+  `fdname`, because renaming them would change bytes a Commander has already
+  saved.
 - **Never fabricate values.** Where the package reports a value as unavailable
   or a build as invalid or incomplete, surface that; do not substitute zero or
   an estimate.
@@ -111,316 +122,29 @@ planning ship loadouts.
   composes, the states it handles, and the requirements it satisfies. The
   inventory and its requirement mapping come before task breakdown; finished
   visuals may follow.
-- **Cost and materials (feature 009)** contributes the `COST` and `MATERIALS`
-  blocks to the outfitting status rail. It owns no game rule: it reuses feature
-  002's `engineeringCost()` only to count contributing blueprints and
-  `materialRarity()` to present package material grades. Credits, Merc Coin and
-  consolidated materials come from the Almanac's single `buildCost()` result.
-  The only application-computed figures are the blueprint count, material-type
-  count and unit total, which the canvas draws and the package does not return;
-  these ruled exceptions are recorded in
-  `specs/009-cost-and-materials/design/reference-review.md`.
-  Out of scope, deliberately: historical purchase values, currency conversion,
-  per-row material traces, unpriced-credit evidence and material-acquisition
-  guidance.
+- **Composed features own their own regions, and their specs are the record.**
+  The outfitting workspace is assembled from several capabilities. Each one's
+  boundary, its ruled exceptions, the package fields it deliberately does not
+  read and what it leaves out of scope are written in its own spec directory —
+  not here. Read the spec of the region you are touching before you touch it.
 
-- **Hull anatomy (feature 010)** contributes the `HULL ANATOMY` plates to the
-  outfitting workspace, between the ledger and the fitting bench. It owns no
-  game data: every mount's identity and position is read out of the installed
-  package's own `schematic-top.svg` / `schematic-bottom.svg`, and a mount exists
-  only where a package `data-journal-slot` resolves to a hardpoint or utility
-  slot on the active hull. What is _drawn_ is the same file rasterised — see
-  below — inside the same coordinate space, never a second geometry. The package draws every hull nose-up in a
-  mostly empty 1200x800 box; canvas 1c frames it lying down at the hull's own
-  proportions, which is one `transform` and one `viewBox` computed from the
-  coordinates the package published. Nothing is measured off the rendered
-  document — no `getBBox`, no `getScreenCTM`, no `getBoundingClientRect` — and
-  no path is rewritten. A mount is the canvas's numbered mark, a named button at
-  the canvas's own `clamp(14px, 3.06cqw, 22px)`; the package sets real mounts
-  six CSS pixels apart, so marks overlap, the one being worked with is raised
-  above them, and the size criterion is met by SC 2.5.8's Equivalent exception
-  through feature 002's ledger rather than by the project's 44-pixel baseline
-  (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from
-  FR-012"). Selecting a mount selects feature 002's slot and nothing else: the
-  plates publish no second detail surface, no second mount list and no power
-  state, which belongs to feature 005's mode over the same plates.
-  - The plate is canvas 1c's `aspect-ratio: 720/292` frame in every state,
-    drawn before anything is fetched, so the region reserves its height once and
-    a late schematic does not resize the workspace. While it is on its way the
-    plate carries the hull illustration's own loading mark.
-  - The five-mode strip — `MOUNTS`, `POWER`, `DRIVES`, `DEFENCE`, `OFFENCE` — is
-    canvas 1c's, and is drawn whole at every width. `MOUNTS` is this feature's,
-    `POWER` is feature 005's, `DRIVES` is feature 008's, `DEFENCE` is feature
-    006's and `OFFENCE` is feature 007's. A segment is enabled when its feature
-    lands, and all five have. Canvas 1d's six-segment strip is a
-    different control — it switches whole compact screens, the anatomy being one
-    of them — and building it is feature 002's composition
-    (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas
-    1d — the sixth segment").
-  - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel
-    path data, and a plate reads a few hundred bytes of it. Both halves are made
-    from the installed package at build time and committed under
-    `public/assets/ships/<symbol>/`: `scripts/convert-ship-artwork.mjs`
-    rasterises `illustration.svg` and both `schematic-*.svg` to PNG, and
-    `scripts/extract-schematic-mounts.mts` writes `schematic-<side>.json` — the
-    package's own `viewBox`, the rectangle the file draws in, and the middle of
-    every annotated mount. Re-run both after moving the package pin.
-  - The extractor runs the application's own `schematic-svg-parser.ts` under
-    Node's type stripping with a jsdom `DOMParser`, so the contract being
-    checked and the geometry being written are one piece of code; a file the
-    parser refuses fails extraction by name. Each extract records the SHA-256 of
-    the SVG it came from, and the policy checker's `copied-schematics` rule
-    recomputes it against the installed file, failing on a missing, stale or
-    unreadable extract and on any package SVG tracked under `public/` or `src/`.
-    A hand-written coordinate file in this repository is the private geometry
-    catalogue FR-009 exists to forbid; the digest is what keeps the extract from
-    becoming one.
-  - What is left at runtime is not the package contract but the deployment: the
-    JSON is validated field by field, and a single malformed mount refuses the
-    whole file rather than being dropped, because a plate missing one mount
-    looks exactly like a hull that has none there.
-  - Out of scope, deliberately: geometry for internal, armour and cargo-hatch
-    slots, weapon metrics, mount direction, convergence and any coordinate,
-    offset or distance derived from the drawing.
+  | Region                                       | Feature | Spec                            |
+  | -------------------------------------------- | ------- | ------------------------------- |
+  | Slot ledger, fitting bench, engineering      | 002     | `specs/002-module-outfitting/`  |
+  | Status rail: heading and validation issues   | 003     | `specs/003-ship-statistics/`    |
+  | Anatomy region, `POWER` mode + rail power    | 005     | `specs/005-power-and-heat/`     |
+  | Anatomy region, `DEFENCE` mode + rail cells  | 006     | `specs/006-defence-profile/`    |
+  | Anatomy region, `OFFENCE` mode + rail cell   | 007     | `specs/007-offence-profile/`    |
+  | Anatomy region, `DRIVES` mode + rail cells   | 008     | `specs/008-mobility-and-jump/`  |
+  | Status rail: `COST` and `MATERIALS`          | 009     | `specs/009-cost-and-materials/` |
+  | Anatomy region, `MOUNTS` mode and its plates | 010     | `specs/010-hull-anatomy/`       |
+  | `Help · About` modal and its frame action    | 012     | `specs/012-help-and-licences/`  |
 
-- **Power and thermals (feature 005)** is the anatomy region's `POWER` mode: it
-  retitles the region `POWER & THERMALS`, removes the plates, their side
-  selector and their legend exactly as the artboard's own switching script does,
-  draws its four-block dashboard in the space they leave, and adds one read-only
-  block to the outfitting status rail. Nothing is drawn on a mount. It owns no
-  game rule and computes no figure the package publishes.
-  `ShipLoadout.powerBudget()`, `.distributorMetrics()` and `.heatMetrics()` are
-  asked once each, in `src/app/domain/power-heat/power-heat.ts`, and both
-  screens read that one projection.
-  `scripts/policy/power-heat-ownership.mjs` keeps it that way: the Almanac is
-  reached only through `ships/ship-loadout`, `ships/power`, `ships/distributor`
-  and `ships/heat`; nothing outside the projection asks the package those three
-  questions; and no package figure is arithmetically combined anywhere the
-  projection is read.
-  - The capability owns two viewing conditions, both in memory only and neither
-    reaching the route, the fragment, history, storage, the saved build or the
-    export: the `DEPLOYED` / `RETRACTED` hardpoint state, and each capacitor's
-    whole `0`–`4` pips. There is no draft, no Apply, no Reset, no running total
-    across the three banks and no error state — the artboard draws none, and a
-    selection that takes effect immediately needs none. The pips shown are the
-    pips the package returned, not the ones that were pressed. Six pips is what
-    the ship has, so setting one bank moves the other two to pay for it, on the
-    half step: from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of the
-    others.
-  - **`headroom`, `utilisation` and `withinBudget` are not read at all.** Neither
-    canvas draws a headroom figure, a utilisation percentage or a within-budget
-    verdict, so the projection never takes them and nothing downstream can blank,
-    dash or zero one. The package's infinite utilisation on a plant of zero
-    therefore never has to be worded: such a build states a plant of `0.00 MW`
-    with the whole demand in `UNPOWERED`.
-  - Two package sentinels, each read off its own field and never inferred from
-    another: an `Infinity` heat level or gauge is a load that never settles, and
-    a `null` time to overheat is a scenario that never gets there. A `null`
-    distributor or heat result is one unavailable group, with no catalogue figure
-    and no diagnosis of which of the package's reasons it was in its place.
-  - Four readings the canvases draw and the package does not publish are worked
-    out once, in the projection, which is the only place the ownership policy
-    permits it: the powered/unpowered split of the draw, each group's share of
-    plant output, what a kind of module draws across its mounts, and the shield
-    cell bank's sixth heat bar — the last by the package's own documented remedy,
-    with its own `heatLevelAtTime` doing the running. `HEAT SINKS` is counted
-    from `fittedModules()`, because `heatMetrics()` models no sink at all.
-  - Groups this build puts nothing in are left out of `PRIORITY GROUPS`: an
-    empty row saying `0.00 MW` about a group that does not exist here is not a
-    reading of this build. Module lines state the selected state's own draw, so a
-    stowed hardpoint and a switched-off module each read a real zero and each
-    state's list adds up to that state's own package total.
-  - Out of scope, deliberately: the artboard's `data-anat-layer="power"` mount
-    overlay, which its own switching script never shows because it hides the
-    plate container for every mode but `mounts`; and its cruise, weapons-alpha
-    and WEP-net figures, which have no package result behind them
-    (`specs/005-power-and-heat/design/reference-review.md`, wave 13).
-
-- **Offence profile (feature 007)** is the anatomy region's `OFFENCE` mode: it
-  retitles the region `OFFENCE ANALYSIS`, replaces the plates the same way
-  feature 005's mode does, draws canvas 1c's three blocks — `WEAPONS` beside
-  `DAMAGE PROFILE`, and `SHOT CONVERGENCE` across the full width beneath them —
-  and adds the rail's `DPS` cell. It owns no game rule.
-  `ShipLoadout.weaponMetrics()` and `.weaponsCapacitorMetrics()` are asked once
-  each per projection, in `src/app/domain/offence/offence.ts`, and both surfaces
-  read that one pure function of the same inputs, so neither can hold a figure
-  the other does not; `damageFalloff()` and the gunsight catalogue are asked over
-  its result and nowhere else.
-  `scripts/policy/offence-ownership.mjs` keeps it that way.
-  - **The canvas contract is what settles scope.**
-    `specs/007-offence-profile/design/canvas-contract.md` records every drawn
-    element, what it is built as and what is not built. Its weapon rows are
-    **inert**: no disclosure, no action, no slot. The mount control is in
-    `HULL ANATOMY`, where the canvas puts it.
-  - Two package answers do the work the canvas's own script faked: `damageFalloff()`
-    gives `DPS BY RANGE BAND` its multiplier at 500 m, 1.2 km, 1.8 km and 3 km,
-    and `ships/gunsights` gives `SHOT CONVERGENCE` each hull's hardpoint offsets
-    from the cockpit, placed at a range by `projectGunsight()`. A weapon's slot
-    is resolved to a hardpoint through `enumerateSlots`, never by parsing the
-    key's number; a hull whose gunsight does not line up with its hardpoints is
-    reported unavailable whole, not drawn in part.
-  - The gunsight plate is a **diagram**: `aria-hidden`, with every shot restated
-    as a sentence beside it. Its field of view is the canvas's fixed 115 mrad
-    either side of the axis, six-sixteenths as tall as it is wide, so a shot far
-    enough off-axis is clipped rather than stretched — and keeps its sentence.
-    A hardpoint the build has **not** filled takes no mark and no sentence:
-    `wireConvergence` faces one on its own sample build and draws nothing for
-    it, and an earlier revision that drew them is reverted with its requirement
-    (`specs/007-offence-profile/design/canvas-contract.md`, review note 8).
-  - **A bar only where a scale exists.** The four range bands share one and are
-    filled; `DRAW` and `RECHARGE` are both MJ/s and are filled against the larger;
-    `CAPACITY` in MJ and `FULL FIRE` in seconds share a scale with nothing beside
-    them and keep their figures without a track. Every figure is written in words
-    either way. The damage shares are the same rule as a fill: one package amount
-    over another, both stated on the same screen.
-  - Fields no canvas draws are **not read at all** — the whole-build firing cost
-    on `WeaponTotals`, `netDrainRate`, the echoed `weaponsPips`, every
-    `WeaponMetrics` field beyond the row's four columns, and the ammunition
-    capacity. Nothing downstream can then blank, dash or zero one.
-  - Out of scope, deliberately: the mobile canvas's `VS 45% RESIST` block —
-    `ALPHA`, `BURST DPS`, `VS SHIELD`, `VS HULL` — and its `CORROSIVE +30%` chip.
-    The package returns no result against a target and publishes no effect bonus,
-    and the canvas states no target model to build one from.
-  - The specification's original scope line claimed the package returned nothing
-    for damage-at-range or convergence, and both regions were left unbuilt on
-    that ground. It was never checked against the package, and it was false. The
-    record is kept in `specs/007-offence-profile/spec.md`, in that feature's
-    `design/reference-review.md` and in its requirements checklist: **an
-    exclusion justified by what the package does not return has to be verified
-    against the package, not against the sentence asserting it.**
-
-- **Mobility, mass and jump (feature 008)** is the anatomy region's `DRIVES`
-  mode, on the same terms as feature 005's: it retitles the region
-  `DRIVES & MASS`, removes the plates and draws canvas 1c's two cards —
-  `THRUSTER LOAD` and `FRAME SHIFT DRIVE` — in the space they leave. Canvas 1d
-  stacks the same two, from one DOM, the arrangement chosen by a container query
-  rather than a viewport width. It also closes the status rail's six-cell grid:
-  features 006 and 007 own `SHIELD`, `ARMOUR` and `DPS`, and `JUMP`, `SPEED` and
-  `MASS` are this feature's, each the same figure a card already states, read at
-  the same load and allocation and printed at the same precision. The six are
-  one grid, not three blocks stacked: the canvas rules them two to a row through
-  the gaps of a single `1fr 1fr` container, so `.outfitting__status-cells` in
-  the workspace owns that grid and each summary flattens into it through
-  `MetricGroup`'s `flow` input (`display: contents`). Ownership does not move —
-  each feature still builds its own cells, and the `defence-ownership` and
-  `offence-ownership` policy scripts still fence them. `jumpRangeSummary()`, `mobilityMetricsResult()`,
-  `standardLoadResult()`, `buildMass()`, `frameShiftDrive`, `thrusters` and
-  `fuelCapacity` are asked in `src/app/domain/mobility-jump/mobility-jump.ts`
-  and nowhere else, and the component formats what comes back.
-  `standardLoadResult()` is asked for more than one load: the `unladen` profile
-  the card is read at, and all three that guard the drive, because
-  `jumpRangeSummary()` resolves all three and throws on the first it cannot.
-  - **One division in the readings, and it is the package's own.** Where the
-    build sits on the thruster curve — canvas 1c's `91% OF OPTIMAL MASS` — is
-    `MobilityMetrics.loadedMass` against the curve's `optMass`, which is the
-    comparison `ShipLoadout.thrusters` documents. The headline mass and the
-    whole hull/modules/fuel legend are one `buildMass(load)` answer, read at the
-    load the card names rather than summed from the parts beside it. Two
-    qualifications: the canvas's `22 FITTED` is `fittedModules().length`,
-    counted here because the package publishes the rows and not their number,
-    and it is a ruled exception recorded in
-    `specs/008-mobility-and-jump/design/reference-review.md`; and the component
-    divides package figures to length its bars, but a bar length is not a
-    reading — every track is `aria-hidden` and every figure it is drawn from is
-    printed beside or beneath it.
-  - **The mass bar is additive, because the canvas's arithmetic says so.** Its
-    `400`, `662` and `80` run 21.16%, 35.03% and 4.23% of one track whose end is
-    `MAX 1,890 t`, and its optimal mark stands at 1,260 of the same 1,890. So
-    the three parts are laid end to end on a scale that runs to the thrusters'
-    maximum supported mass, and the optimal mass is a tick on that scale rather
-    than a fact beside it. A build over the maximum fills the band and is
-    clipped; rescaling to fit would move the mark, and the mark's position is
-    the reading.
-  - **What the package returns and the canvas does not draw is not drawn.**
-    `unladenMass`, `cargoCapacity`, the two mass-curve multipliers
-    `mobilityMetricsResult()` returns, and a Guardian FSD Booster's jump bonus
-    are all real package figures that neither canvas has, so none is drawn. The
-    two aggregate getters are never called at all; the multipliers arrive inside
-    the `MobilityMetrics` the projector copies whole, and are simply not put on
-    the screen. The
-    design is the template on this feature; where the specification disagreed,
-    FR-004, FR-006 and FR-007 in `specs/008-mobility-and-jump/spec.md` carry the
-    correction rather than the screen carrying an extra reading.
-  - **One thing is drawn that neither canvas draws**, recorded under "Added to
-    it" in `specs/008-mobility-and-jump/design/reference-review.md`:
-    `Switched off` on a mount the outfitting panel has turned off, which neither
-    canvas has a state for and which changes what every reading beside it means.
-    Two further additions stood there and have been withdrawn, because an
-    addition has to earn its place against the template every time it is read:
-    the ENG allocation in the speed envelope's heading (the canvas heads that
-    block `SPEED ENVELOPE AT THIS MASS` and writes nothing beside it — the pips
-    are an input to the one `mobilityMetricsResult()` call, never a line), and
-    the fitted module's name before the rating (the card's own heading has
-    already said what it reads, so the canvas's `7A · DIRTY DRIVES G5` is the
-    class, rating and blueprint and nothing else). A third withdrawn line was a
-    gloss under each `RANGE BY LOAD` row saying what that load carries; the
-    canvas writes the three load names alone. The fitted-module count is not an
-    addition either — canvas 1c draws `22 FITTED` — it is the ruled computation
-    above, a figure the canvas draws that the package publishes as rows rather
-    than as a number.
-  - **The canvas's own blocks, ruled off its own way.** The hairlines between a
-    card's blocks are drawn where the canvas draws them: one in the thruster
-    card, two in the drive card. The `SCO` badge rides inside the drive card's
-    heading rather than on a line of its own, because it qualifies the drive the
-    heading names. Each legend row runs its qualifier in beside the part's name
-    rather than under it, and both cards' legends take the same swatch / name /
-    figure shape. The bar's `OPTIMAL` and `MAX` figures are written under the
-    positions they mark, the optimal centred on its own tick; the one departure
-    is that they stay in the flow of one row rather than being pinned over it,
-    so that in German at a doubled text size the row wraps and the maximum drops
-    to a line of its own instead of the two painting across each other.
-  - Out of scope, deliberately: the artboard's `data-anat-layer="mass"` mount
-    overlay, which its own switching script never shows because it hides the
-    plate container for every mode but `mounts` — the same reason feature 005
-    leaves the `power` overlay alone; and the canvas's `658 T OF HEADROOM` note
-    and its `CURRENT` range row, neither of which this application has a
-    package result or a viewing condition to state.
-  - No ownership policy script fences this boundary yet — features 002, 004, 005
-    and 010 each have one in `scripts/policy/` and feature 008's is `tasks.md`
-    T018, still open. Until it lands the single-projector rule is held by review
-    rather than by a check.
-- **Help and licences (feature 012)** contributes the one `Help · About` modal
-  and the frame action that opens it. It owns no game data and no game rule: it
-  reads two generated modules and the locale catalogues, and nothing else.
-  - **Two generated artifacts, both ignored, both rebuilt before every Angular,
-    Playwright and typecheck command.** `src/app/platform/build/help-manifest.generated.ts`
-    comes from `scripts/generate-help-manifest.mjs` and carries the build
-    identity, the bundled Almanac's identity, the one legal excerpt and the one
-    external destination. `src/app/platform/build/help-topics.generated.ts` comes
-    from `scripts/check-help-topics.mjs` and carries the seven topic ids with
-    their message keys — and deliberately not the requirements and principles
-    each answer is justified by, which stay in
-    `scripts/help-topic-definitions.mjs` as review evidence. `pnpm run
-help:artifacts` produces the manifest and `pnpm run help:artifacts:check`
-    validates the sources it is derived from, chained into `pnpm run check`.
-    The topics module has its own `pnpm run help:topics` and joins
-    `help:artifacts` once feature 012's Phase 5 lands its catalogue entries —
-    until then a build command that ran it would refuse.
-  - **That is the opposite convention to the build-link codec table**, which is
-    committed and regenerated on demand with `pnpm run codec:tables`. The
-    difference is what the artifact is evidence of. A codec table is a shared
-    wire format: it has to be reviewable in a diff, because changing it changes
-    what every published link decodes to. A help manifest is a description of
-    one build, correct only for the commit that produced it, and committing it
-    would mean every branch carrying a stale claim about itself. Neither rule
-    generalises to the other, so check which artifact you are looking at before
-    deciding whether to commit it.
-  - **`legal/almanac/` holds byte-exact mirrors of the installed package's own
-    `LICENSE` and `THIRD_PARTY_NOTICES.md`, and ordinary builds never rewrite
-    them.** Every read-only run asserts the tracked mirror equals the installed
-    file byte for byte, and fails when the package root gains an unmirrored
-    top-level licence, notice or third-party file. `pnpm run legal:sync` is the
-    only path that writes them, it is a maintainer action, and its result is
-    reviewed in the same change as the dependency upgrade that caused it — a
-    mirror silently refreshed by a build is a redistribution obligation nobody
-    read.
-  - The modal embeds exactly one legal body: the project's own Frontier
-    media-usage disclaimer, lifted out of root `LICENSE` at build time and
-    rendered as exact text in a `lang="en"` region. It is never translated,
-    re-wrapped, linked or trimmed, and the journey compares what a browser
-    rendered against a fresh extraction from the file. Everything else — the MIT
-    grant, the Almanac's licence, the package's third-party notices — is named
-    and pointed at, never reproduced.
+  Two things follow that no single spec can tell you. The anatomy region's
+  five-mode strip is one control with **five different owners**, so a change to
+  it crosses five boundaries. And several of these features are fenced by a
+  `scripts/policy/*-ownership.mjs` script — read the script before crossing the
+  boundary it guards, because it will fail the build rather than argue.
 
 ## Commit Identity — no personal data in git metadata
 

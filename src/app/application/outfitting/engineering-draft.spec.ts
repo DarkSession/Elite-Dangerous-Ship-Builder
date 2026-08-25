@@ -77,7 +77,7 @@ describe('engineering draft', () => {
       const descriptor = loadout.availableBlueprints(SLOT)[0]!;
 
       const draft = driveDraft(
-        { blueprintFdname: descriptor.fdname, grade: 99, effectFdname: null },
+        { blueprintFdname: descriptor.blueprintSymbol, grade: 99, effectFdname: null },
         loadout,
       );
 
@@ -185,7 +185,11 @@ describe('engineering draft', () => {
     it('clears the effect with the blueprint when ‘none’ is chosen', () => {
       const loadout = defaultBuild();
       const effect = loadout.availableExperimentalEffects(SLOT)[0]!;
-      loadout.applyBlueprint(SLOT, 'FSD_LongRange', { grade: 5, quality: 1, experimental: effect });
+      loadout.applyBlueprint(SLOT, 'FSD_LongRange', {
+        grade: 5,
+        quality: 1,
+        experimentalEffectSymbol: effect,
+      });
       const draft = driveDraft(
         { blueprintFdname: 'FSD_LongRange', grade: 5, effectFdname: effect },
         loadout,
@@ -259,7 +263,7 @@ describe('engineering draft', () => {
       // other tells a Commander their reward is worse than it is (FR-007).
       expect(draft?.current.purchaseVariant?.grade).toBe(merc.grade);
       expect(draft?.current.currentGrade).toBe(merc.grade);
-      expect(draft?.current.purchaseVariant?.blueprint).toBe(merc.blueprint);
+      expect(draft?.current.purchaseVariant?.blueprintSymbol).toBe(merc.blueprintSymbol);
     });
 
     it('previews an effect-only change without rolling a reward’s recipe', () => {
@@ -300,11 +304,11 @@ describe('engineering draft', () => {
       const shared = first!.grades.find((grade) => second!.grades.includes(grade))!;
 
       const draft = driveDraft(
-        { blueprintFdname: first!.fdname, grade: shared, effectFdname: null },
+        { blueprintFdname: first!.blueprintSymbol, grade: shared, effectFdname: null },
         loadout,
       );
 
-      expect(withBlueprint(draft, second!.fdname).grade).toBe(shared);
+      expect(withBlueprint(draft, second!.blueprintSymbol).grade).toBe(shared);
     });
 
     it('ignores a blueprint the package does not offer here', () => {
@@ -318,12 +322,16 @@ describe('engineering draft', () => {
       const descriptor = loadout.availableBlueprints(SLOT)[0]!;
       const effect = loadout.availableExperimentalEffects(SLOT)[0]!;
       const draft = driveDraft(
-        { blueprintFdname: descriptor.fdname, grade: descriptor.grades[0]!, effectFdname: null },
+        {
+          blueprintFdname: descriptor.blueprintSymbol,
+          grade: descriptor.grades[0]!,
+          effectFdname: null,
+        },
         loadout,
       );
 
       expect(withGrade(draft, descriptor.grades.at(-1)!)).toEqual({
-        blueprintFdname: descriptor.fdname,
+        blueprintFdname: descriptor.blueprintSymbol,
         grade: descriptor.grades.at(-1),
         effectFdname: null,
       });
@@ -349,13 +357,13 @@ describe('engineering draft', () => {
         slot,
         1,
         {
-          blueprintFdname: descriptor.fdname,
+          blueprintFdname: descriptor.blueprintSymbol,
           grade: descriptor.grades.at(-1)!,
           effectFdname: null,
         },
         TEXT,
       );
-      expect(before?.selectedBlueprintFdname).toBe(descriptor.fdname);
+      expect(before?.selectedBlueprintFdname).toBe(descriptor.blueprintSymbol);
 
       // The mount is emptied under the open draft. Rebuilding is what turns a
       // selection about a module that is gone into no selection at all, rather

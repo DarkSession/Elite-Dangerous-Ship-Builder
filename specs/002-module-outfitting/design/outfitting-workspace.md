@@ -157,10 +157,9 @@ Every package slot shows:
   number the ledger draws beside the row, then the class. The package's slot name counts _huge_
   hardpoints rather than hardpoints, so it names a different mount from the one the ledger marked
   (wave 6);
-- where a mount takes no other module — the cargo hatch — the fitting panel's
-  head carries canvas 1d's own hairline `FIXED` chip after its rule. The full reason stays
-  as text for a reader, but a sentence is not what the canvas draws and, drawn only for a reader, the
-  bench for that mount was a title over an empty panel (wave 7);
+- where a mount takes no other module — the cargo hatch — the fitting panel's head carries no chip.
+  The Almanac's full sentence is the whole of what is published, on the bench, as text
+  (**revised 2026-08-25**: see "The `FIXED` chip is withdrawn" in the reference review);
 - kind/size/restriction when available;
 - empty or package-resolved state;
 - fitted package module name, symbol where needed to distinguish, class/rating/mount;

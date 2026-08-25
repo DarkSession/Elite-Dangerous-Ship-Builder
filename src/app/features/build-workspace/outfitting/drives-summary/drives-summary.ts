@@ -88,7 +88,7 @@ export class DrivesSummary {
     // so all three say the same word the cards say for it.
     const incompleteLabel = this.#messages.message('incomplete.value');
     const laden = projection.drive.profiles.find((profile) => profile.load === 'laden');
-    const mobility = projection.thrusters.mobility;
+    const capacitor = projection.thrusters.capacitor;
     const total = projection.thrusters.mass?.total;
 
     return [
@@ -102,7 +102,7 @@ export class DrivesSummary {
       {
         id: 'speed',
         label: this.#messages.message('drives.rail.speed'),
-        value: mobility ? this.#formatters.decimal(mobility.speed, RATE_DIGITS) : null,
+        value: capacitor ? this.#formatters.decimal(capacitor.speed, RATE_DIGITS) : null,
         unit: this.#messages.message('drives.rail.metres-per-second'),
         unavailableLabel: incompleteLabel,
       },

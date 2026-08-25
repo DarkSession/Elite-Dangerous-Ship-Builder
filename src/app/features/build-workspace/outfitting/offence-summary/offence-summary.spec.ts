@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -80,7 +81,7 @@ describe('OffenceSummary', () => {
     // A build whose two totals differ, so the assertion fails if the cell were
     // ever changed to read the burst figure instead.
     const loadout = everyStateBuild();
-    const total = loadout.weaponMetrics().total;
+    const total = BuildMetrics.of(loadout).weaponMetrics().total;
     expect(total.damagePerSecond).not.toBe(total.sustainedDamagePerSecond);
 
     const { component } = render(loadout);

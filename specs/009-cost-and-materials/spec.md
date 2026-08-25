@@ -47,15 +47,15 @@ lower-bound, unavailable and missing-recipe wording — is **not built**.
   computed by the application by counting package results only. No other derived figure is
   permitted; `TOTAL` is now a package result.
 
-- **FR-002**: Credits MUST use one `ShipLoadout.buildCost().credits` result for hull, modules, total
+- **FR-002**: Credits MUST use one `BuildMetrics.buildCost().credits` result for hull, modules, total
   and rebuy. The returned `unpriced` list is not presented; the canvas draws no evidence list and
   none is built.
 - **FR-003**: Captured or historical purchase values MUST NOT enter build state or cost
   presentation. Catalogue retail MUST remain the sole credits estimate for the current fitted build.
 - **FR-004**: Whether the current build has a Merc Coin charge MUST come only from
-  `ShipLoadout.buildCost().mercCoins`; the application MUST NOT infer it from module identity,
+  `BuildMetrics.buildCost().mercCoins`; the application MUST NOT infer it from module identity,
   acquisition route, blueprint or experimental effect.
-- **FR-005**: The Merc Coin figure MUST be the literal `ShipLoadout.buildCost().mercCoins` total,
+- **FR-005**: The Merc Coin figure MUST be the literal `BuildMetrics.buildCost().mercCoins` total,
   presented as one row at the foot of the materials block when greater than zero. Merc Coin MUST NOT
   be added to, converted into or compared with credits or rebuy, and MUST NOT be folded into the
   material-type or unit totals. Per-slot Merc Coin pricing is not presented.
@@ -63,7 +63,7 @@ lower-bound, unavailable and missing-recipe wording — is **not built**.
   engineering modules MUST update the row to the package's current build total without retained
   purchase history.
 - **FR-007**: The consolidated material identities and quantities MUST be the literal
-  `ShipLoadout.buildCost().materials` result. This feature reuses feature 002's `engineeringCost()`
+  `BuildMetrics.buildCost().materials` result. This feature reuses feature 002's `engineeringCost()`
   boundary only to count fitted modules that contribute a cost list and MUST NOT add a second cost
   classifier or consolidation path.
 - **FR-008**: A blueprint or effect the package cannot cost contributes nothing to the list. The

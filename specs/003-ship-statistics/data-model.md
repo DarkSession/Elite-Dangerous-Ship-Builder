@@ -78,7 +78,7 @@ interface StructuralProjection {
 
 Rules:
 
-- `validation` is the exact immutable object returned by `loadout.validation` for the context.
+- `validation` is the exact immutable object returned by `loadout.validation()` for the context.
 - `issueTargets.length === validation.issues.length`.
 - Entry `i` is `{ kind: 'slot', slotKey: issue.slot }` only when issue `i` supplies `slot`; otherwise
   it is `null`.

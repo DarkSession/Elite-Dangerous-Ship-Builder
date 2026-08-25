@@ -63,7 +63,7 @@ async function openEditor(page: Page, slotKey: string): Promise<void> {
 async function packageMenu(slotKey: string): Promise<{ blueprints: string[]; effects: string[] }> {
   const build = await stockBuild();
   return {
-    blueprints: build.availableBlueprints(slotKey).map((blueprint) => blueprint.fdname),
+    blueprints: build.availableBlueprints(slotKey).map((blueprint) => blueprint.blueprintSymbol),
     effects: [...build.availableExperimentalEffects(slotKey)],
   };
 }

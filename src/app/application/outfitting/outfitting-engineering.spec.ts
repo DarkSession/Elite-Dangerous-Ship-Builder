@@ -203,7 +203,11 @@ describe('outfitting store: engineering and power', () => {
       const build = defaultBuild();
       const slot = FIXTURE_SLOTS.frameShiftDrive;
       const effect = build.availableExperimentalEffects(slot)[0]!;
-      build.applyBlueprint(slot, 'FSD_LongRange', { grade: 5, quality: 1, experimental: effect });
+      build.applyBlueprint(slot, 'FSD_LongRange', {
+        grade: 5,
+        quality: 1,
+        experimentalEffectSymbol: effect,
+      });
       open(build);
       const revision = active.revision();
 

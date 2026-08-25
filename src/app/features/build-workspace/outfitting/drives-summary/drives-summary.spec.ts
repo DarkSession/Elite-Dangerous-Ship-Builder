@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -88,12 +89,12 @@ describe('DrivesSummary', () => {
 
   it('carries the package’s laden jump, top speed and loaded mass, each with its unit', () => {
     const loadout = build();
-    const summary = loadout.jumpRangeSummary();
-    const load = loadout.standardLoadResult('unladen');
+    const summary = BuildMetrics.of(loadout).jumpRangeSummary();
+    const load = BuildMetrics.of(loadout).standardLoadResult('unladen');
     if (!load.complete) {
       throw new Error('The installed package no longer weighs this hull at its unladen load.');
     }
-    const mobility = loadout.mobilityMetricsResult({
+    const mobility = BuildMetrics.of(loadout).mobilityCapacitorMetricsResult({
       ...load.value,
       enginesPips: conditions.pips().engines,
     });
@@ -102,7 +103,7 @@ describe('DrivesSummary', () => {
     expect(component.cells().map((cell) => cell.value)).toEqual([
       formatters.decimal(summary.laden, 1),
       formatters.decimal(mobility.value?.speed ?? 0, 0),
-      formatters.decimal(loadout.buildMass(load.value).total, 0),
+      formatters.decimal(BuildMetrics.of(loadout).buildMass(load.value).total, 0),
     ]);
     expect(texts(element, '.metric__unit')).toEqual(['ly', 'm/s', 't']);
   });
@@ -112,17 +113,19 @@ describe('DrivesSummary', () => {
     // that weighed the hold would sit a different mass six centimetres from
     // the card's headline, and both would look like answers.
     const loadout = build();
-    const unladen = loadout.standardLoadResult('unladen');
-    const laden = loadout.standardLoadResult('laden');
+    const unladen = BuildMetrics.of(loadout).standardLoadResult('unladen');
+    const laden = BuildMetrics.of(loadout).standardLoadResult('laden');
     if (!unladen.complete || !laden.complete) {
       throw new Error('The installed package no longer weighs this hull at both loads.');
     }
-    expect(loadout.buildMass(laden.value).total).not.toBe(loadout.buildMass(unladen.value).total);
+    expect(BuildMetrics.of(loadout).buildMass(laden.value).total).not.toBe(
+      BuildMetrics.of(loadout).buildMass(unladen.value).total,
+    );
 
     const { component } = render(loadout);
 
     expect(component.cells()[2]?.value).toBe(
-      formatters.decimal(loadout.buildMass(unladen.value).total, 0),
+      formatters.decimal(BuildMetrics.of(loadout).buildMass(unladen.value).total, 0),
     );
   });
 

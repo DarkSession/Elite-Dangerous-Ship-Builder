@@ -299,7 +299,7 @@ describe('construction and normalization', () => {
     if (!result.ok) {
       return;
     }
-    expect(result.candidate.validation).toEqual(result.candidate.loadout.validation);
+    expect(result.candidate.validation).toEqual(result.candidate.loadout.validation());
   });
 
   it('carries the request token through to the candidate', () => {

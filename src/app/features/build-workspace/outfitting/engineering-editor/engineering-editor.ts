@@ -182,10 +182,10 @@ export class EngineeringEditor {
     const draft = this.draft();
     const currentFdname = draft?.current.blueprintFdname ?? null;
     return (this.draft()?.blueprints ?? []).map((blueprint) => ({
-      fdname: blueprint.fdname,
-      name: this.#gameText.blueprintName(blueprint.fdname),
+      fdname: blueprint.blueprintSymbol,
+      name: this.#gameText.blueprintName(blueprint.blueprintSymbol),
       route: blueprint.route,
-      applied: sameIdentity(blueprint.fdname, currentFdname),
+      applied: sameIdentity(blueprint.blueprintSymbol, currentFdname),
     }));
   });
 
@@ -240,7 +240,7 @@ export class EngineeringEditor {
     }
     return (
       (this.draft()?.blueprints ?? []).find((blueprint) =>
-        sameIdentity(blueprint.fdname, selected),
+        sameIdentity(blueprint.blueprintSymbol, selected),
       ) ?? null
     );
   });

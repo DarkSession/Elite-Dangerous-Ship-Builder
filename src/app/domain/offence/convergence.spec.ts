@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getShipGunsight } from '@elite-dangerous-almanac/core/ships/gunsights';
 import {
   convergenceAt,
@@ -18,7 +19,8 @@ import { everyStateBuild, noWeaponsBuild, OFFENCE_FIXTURE_HULL } from './offence
  * in the right order, and that what changes with range is what should.
  */
 describe('projectConvergence', () => {
-  const weaponsOf = (loadout = everyStateBuild()) => loadout.weaponMetrics().weapons;
+  const weaponsOf = (loadout = everyStateBuild()) =>
+    BuildMetrics.of(loadout).weaponMetrics().weapons;
 
   const available = (convergence: Convergence) => {
     expect(convergence.kind).toBe('available');
@@ -64,7 +66,7 @@ describe('projectConvergence', () => {
   });
 
   it('is available, and empty, for a hull the build has armed none of', () => {
-    const weapons = noWeaponsBuild().weaponMetrics().weapons;
+    const weapons = BuildMetrics.of(noWeaponsBuild()).weaponMetrics().weapons;
 
     const convergence = available(projectConvergence(OFFENCE_FIXTURE_HULL, weapons));
 
@@ -82,7 +84,7 @@ describe('convergenceAt', () => {
   const convergence = () => {
     const projected = projectConvergence(
       OFFENCE_FIXTURE_HULL,
-      everyStateBuild().weaponMetrics().weapons,
+      BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons,
     );
     if (projected.kind !== 'available') {
       throw new Error('expected an available convergence');
@@ -103,7 +105,7 @@ describe('convergenceAt', () => {
   it('draws nothing at all on a plate whose build has armed nothing', () => {
     const projected = projectConvergence(
       OFFENCE_FIXTURE_HULL,
-      noWeaponsBuild().weaponMetrics().weapons,
+      BuildMetrics.of(noWeaponsBuild()).weaponMetrics().weapons,
     );
     if (projected.kind !== 'available') {
       throw new Error('expected an available convergence');

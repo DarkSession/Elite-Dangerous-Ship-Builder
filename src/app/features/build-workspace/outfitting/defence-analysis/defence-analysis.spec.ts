@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
@@ -9,6 +10,7 @@ import {
   DEFENCE_FIXTURE_HULL,
   disabledGeneratorBuild,
   fullyFittedBuild,
+  resistantBuild,
   noGeneratorBuild,
   readyBuild,
   unpoweredBanksBuild,
@@ -110,7 +112,7 @@ describe('DefenceAnalysis', () => {
     it('heads the pool with the package strength at the standing allocation', () => {
       const build = fullyFittedBuild();
       const { component } = render(build);
-      const expected = build.shieldMetricsResult({ systemsPips: conditions.pips().systems }).value!;
+      const expected = BuildMetrics.of(build).shieldMetricsResult().value!;
 
       expect(component.shieldPool()).toBe(
         new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(expected.strength),
@@ -125,55 +127,86 @@ describe('DefenceAnalysis', () => {
       expect(identity?.code).toBe('6E');
     });
 
-    it('reads a different SYS allocation as different resistances', () => {
+    it('holds the bare resistances still and moves only the pip column', () => {
+      // FR-002, as the 2026-08-25 revision settles it: `RESIST` and `MJ` are
+      // the shield at zero pips and do not move; the allocation is a second
+      // package call and shows up in the fifth column alone.
       const build = fullyFittedBuild();
       const { component, detect } = render(build);
-      const none = component.shieldDamage().rows.map((row) => row.resistance);
+      const before = component.shieldDamage();
 
       conditions.setPips('systems', 4);
       detect();
+      const after = component.shieldDamage();
 
-      expect(component.shieldDamage().rows.map((row) => row.resistance)).not.toEqual(none);
+      expect(after.rows.map((row) => row.resistance)).toEqual(
+        before.rows.map((row) => row.resistance),
+      );
+      expect(after.rows.map((row) => row.pool)).toEqual(before.rows.map((row) => row.pool));
+      expect(after.rows.map((row) => row.poolAtPips)).not.toEqual(
+        before.rows.map((row) => row.poolAtPips),
+      );
     });
 
-    it('pairs every damage type with the package resistance and pool it returned', () => {
+    it('heads the fifth column with the allocation it was read at', () => {
+      const { component, detect } = render(fullyFittedBuild());
+
+      conditions.setPips('systems', 4);
+      detect();
+      expect(component.shieldDamage().pipColumn).toBe('MJ × 4 SYS PIPS');
+
+      conditions.setPips('systems', 1.5);
+      detect();
+      expect(component.shieldDamage().pipColumn).toBe('MJ × 1.5 SYS PIPS');
+    });
+
+    it('repeats the bare pool in the fifth column at no pips', () => {
+      // The package's own guarantee: at no pips the effective figures are the
+      // bare ones. It is what makes the column safe to draw at any allocation.
+      const { component, detect } = render(fullyFittedBuild());
+
+      conditions.setPips('systems', 0);
+      detect();
+      const rows = component.shieldDamage().rows;
+
+      expect(rows.map((row) => row.poolAtPips)).toEqual(rows.map((row) => row.pool));
+    });
+
+    it('gives the hull no such column, because pips do not reach it', () => {
+      const { component } = render(fullyFittedBuild());
+
+      expect(component.armourDamage().pipColumn).toBeNull();
+      expect(component.armourDamage().rows.every((row) => row.poolAtPips === undefined)).toBe(true);
+    });
+
+    it('pairs every damage type with the package resistance and both pools it returned', () => {
       const build = fullyFittedBuild();
       const { element } = render(build);
-      const expected = build.shieldMetricsResult({ systemsPips: conditions.pips().systems }).value!;
+      const bare = BuildMetrics.of(build).shieldMetricsResult().value!;
+      const atPips = BuildMetrics.of(build).shieldCapacitorMetricsResult({
+        systemsPips: conditions.pips().systems,
+      }).value!;
       const percent = new Intl.NumberFormat('en', {
         style: 'percent',
         maximumFractionDigits: 0,
       });
       const whole = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
+      const weakness = (resistance: number) => (resistance < 0 ? ' Weakness' : '');
 
-      expect(damageCells(element, 'card--shield')).toEqual([
-        [
-          'Kinetic',
-          percent.format(expected.resistances.kinetic),
-          whole.format(expected.effectiveHitPoints.kinetic),
-        ],
-        [
-          'Thermal',
-          percent.format(expected.resistances.thermal),
-          whole.format(expected.effectiveHitPoints.thermal),
-        ],
-        [
-          'Explosive',
-          percent.format(expected.resistances.explosive),
-          whole.format(expected.effectiveHitPoints.explosive),
-        ],
-        [
-          'Caustic',
-          percent.format(expected.resistances.caustic),
-          whole.format(expected.effectiveHitPoints.caustic),
-        ],
-      ]);
+      expect(damageCells(element, 'card--shield')).toEqual(
+        (['kinetic', 'thermal', 'explosive', 'caustic'] as const).map((type) => [
+          `${type[0]!.toUpperCase()}${type.slice(1)}`,
+          `${percent.format(bare.resistances[type])}${weakness(bare.resistances[type])}`,
+          whole.format(bare.effectiveHitPoints[type]),
+          whole.format(atPips.effectiveHitPoints[type]),
+        ]),
+      );
     });
 
     it('says why there is no shield, in the package’s own words and order', () => {
       const build = noGeneratorBuild();
       const { component, element } = render(build);
-      const issues = build.shieldMetricsResult({ systemsPips: conditions.pips().systems }).issues;
+      const issues = BuildMetrics.of(build).shieldMetricsResult().issues;
 
       expect(component.shieldAvailable()).toBe(false);
       expect(component.shieldPool()).toBeNull();
@@ -202,7 +235,7 @@ describe('DefenceAnalysis', () => {
     it('draws the recharge rate and both durations the package returned', () => {
       const build = fullyFittedBuild();
       const { component } = render(build);
-      const expected = build.shieldRecoveryResult({
+      const expected = BuildMetrics.of(build).shieldRecoveryResult({
         systemsPips: conditions.pips().systems,
       }).value!;
 
@@ -247,7 +280,7 @@ describe('DefenceAnalysis', () => {
 
       expect(component.armourPool()).toBe(
         new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(
-          build.armourMetrics().hitPoints,
+          BuildMetrics.of(build).armourMetrics().hitPoints,
         ),
       );
       expect(component.armourIdentity()?.name.text).toBe('Military Grade Composite');
@@ -262,7 +295,7 @@ describe('DefenceAnalysis', () => {
       const { component } = render(readyBuild());
       const kinetic = component.armourDamage().rows[0]!;
 
-      expect(readyBuild().armourMetrics().resistances.kinetic).toBeLessThan(0);
+      expect(BuildMetrics.of(readyBuild()).armourMetrics().resistances.kinetic).toBeLessThan(0);
       expect(kinetic.weakness).toBe(true);
       expect(kinetic.weaknessLabel).toBe('Weakness');
       expect(kinetic.resistance).toContain('-');
@@ -291,7 +324,9 @@ describe('DefenceAnalysis', () => {
     it('states the ends of the scale the bars are drawn on', () => {
       const { component } = render(readyBuild());
       const table = component.armourDamage();
-      const lowest = Math.min(...Object.values(readyBuild().armourMetrics().resistances));
+      const lowest = Math.min(
+        ...Object.values(BuildMetrics.of(readyBuild()).armourMetrics().resistances),
+      );
 
       // The canvas prints both ends under the bars, and a table reaching below
       // zero has to print the floor it actually reaches rather than `0%`.
@@ -312,7 +347,10 @@ describe('DefenceAnalysis', () => {
     });
 
     it('starts every bar at the leading edge on a table with no weakness in it', () => {
-      const { component, element } = render(fullyFittedBuild());
+      // Every stock generator is weak to thermal, so the unsigned table is an
+      // engineered one. Both branches of the scale are covered: this, and the
+      // signed hull table above it.
+      const { component, element } = render(resistantBuild());
       const table = component.shieldDamage();
 
       expect(table.rows.every((row) => row.resistance.startsWith('-'))).toBe(false);
@@ -329,7 +367,7 @@ describe('DefenceAnalysis', () => {
       const build = fullyFittedBuild();
       const { component } = render(build);
       const facts = component.armourFacts();
-      const metrics = build.armourMetrics();
+      const metrics = BuildMetrics.of(build).armourMetrics();
 
       expect(facts.map((fact) => fact.label)).toEqual(['Hardness', 'Module prot.', 'Integrity']);
       expect(facts[1]?.value).toBe(
@@ -347,7 +385,7 @@ describe('DefenceAnalysis', () => {
     it('carries the package aggregate for each role, the first without a sign', () => {
       const build = fullyFittedBuild();
       const { component } = render(build);
-      const shield = build.shieldMetricsResult({ systemsPips: conditions.pips().systems }).value!;
+      const shield = BuildMetrics.of(build).shieldMetricsResult().value!;
       const whole = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
 
       const rows = component.shieldSources();
@@ -398,7 +436,7 @@ describe('DefenceAnalysis', () => {
 
       expect(reinforcement?.contribution).toBe(
         `+${new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(
-          build.armourMetrics().reinforcement,
+          BuildMetrics.of(build).armourMetrics().reinforcement,
         )} HP`,
       );
     });
@@ -412,7 +450,7 @@ describe('DefenceAnalysis', () => {
     it('states the package total and names every bank aboard', () => {
       const build = bankedBuild();
       const { component } = render(build);
-      const summary = build.cellBanks();
+      const summary = BuildMetrics.of(build).cellBanks();
       const row = component.bankRow();
 
       expect(row?.restorable).toBe(
@@ -453,7 +491,7 @@ describe('DefenceAnalysis', () => {
       const build = bankedBuild();
       const { component } = render(build);
       const reserve = component.bankRow()!;
-      const summary = build.cellBanks();
+      const summary = BuildMetrics.of(build).cellBanks();
       const largest = Math.max(...summary.banks.map((bank) => bank.reinforcement));
 
       // The reserve is the largest figure in the block, so it fills the track
@@ -474,7 +512,7 @@ describe('DefenceAnalysis', () => {
       const build = bankedBuild();
       const { component } = render(build);
       const banks = component.bankRow()?.banks ?? [];
-      const restored = build
+      const restored = BuildMetrics.of(build)
         .cellBanks()
         .banks.map((bank) => `${new Intl.NumberFormat('en').format(bank.reinforcement)} MJ`);
 

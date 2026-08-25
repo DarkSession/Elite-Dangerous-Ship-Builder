@@ -31,7 +31,7 @@ function modelledFields(build: ShipLoadout) {
       // and engineered article rather than from any captured condition.
       integrity: module.effectiveStats?.integrity ?? null,
     })),
-    validation: build.validation,
+    validation: build.validation(),
   };
 }
 

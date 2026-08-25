@@ -566,3 +566,47 @@ Task: "Extend the ownership policy check in scripts/policy/outfitting-ownership.
   fails the build if one appears locally
 - Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently
+
+---
+
+## Phase: the 2026-08-25 canvas revision
+
+Canvas 1c redrew the wide chooser. Canvas 1d did not change, so the two compositions now differ in
+kind: a family rail with one variant pane at wide, the accordion at compact. Recorded in
+`design/module-replacement.md`, "The wide manifest is a rail and a pane", "The manifest's own
+columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
+
+- [ ] T146 Restate the family view state so one model serves both compositions: the accordion's set
+      of open families and the rail's single selection. `toggleFamily` keeps its accordion meaning;
+      the rail reveals exactly one, and `seedFamilies` gains the wide fallback — the first family in
+      package order where the fitted choice has none (FR-021)
+- [ ] T147 Build canvas 1c's rail and pane in `candidate-list.html`/`.scss`:
+      `grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, the rail in column 1 row 2 and
+      the variant list in column 2 row 2, both `max-height: 470px` with their own scrollers, the head
+      over column 2 alone. The selected rail row takes the amber left rail and gradient ground; there
+      is no caret at this width. The accordion, its caret and its `aria-expanded` stay for the
+      compact composition (FR-022)
+- [ ] T148 Narrow the wide manifest to `2.6fr 70px 150px` — `MODULE`, `CLASS`, `COST` — and withdraw
+      the damage, mass, power and weapon-draw columns from that width, head row included. Keep them
+      on the compact row's code line, where canvas 1d draws them. Retire
+      `outfitting.column.damage`, `.mass`, `.power` and `.draw` from the wide head only if no compact
+      surface still names them (FR-024's 2026-08-25 narrowing, SC-006)
+- [ ] T149 Apply FR-023's split: at wide, a search narrows the rail to families holding matches and
+      reveals the first of them whatever the count; at compact, the measured twenty-five-choice rule
+      is unchanged. A family holding a match stays present and counted at both
+- [ ] T150 [P] Update `candidate-query.spec.ts` and `candidate-list.spec.ts` for the two reveal
+      models, including the wide fallback selection and a search matching more than a screenful
+- [ ] T151 [P] Update `e2e/module-outfitting.spec.ts` for the wide rail — exclusive selection, the
+      two independent scrollers, no caret at that width — and leave the compact accordion journeys
+      as they stand
+- [ ] T152 Re-measure SC-002 in the Chromium timing project. The wide rail paints one family's rows
+      whatever the search matched, so the wide figure can only improve; the compact figure is
+      unchanged in composition and is re-measured to prove it
+- [ ] T153 [P] Update `design/component-state-preview-matrix.md` and the chooser previews for the
+      wide rail, including the fallback selection state
+- [ ] T154 Run `pnpm run check`
+- [x] T155 Withdraw the cargo hatch's `FIXED` chip. The resynced canvas draws that row as an ordinary
+      ledger row and writes no chip on it or on the bench, so the ledger marker, the bench mark,
+      their two style rules and `outfitting.immovable.short.cargoHatch` in both catalogues are gone.
+      The Almanac's full sentence stays on the bench and is now the only reading
+      (reference review, "The `FIXED` chip is withdrawn"; Commander request 2026-08-25)

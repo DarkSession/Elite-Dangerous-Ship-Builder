@@ -126,7 +126,7 @@ describe('engineering editor surface', () => {
       const offered = store
         .loadout()!
         .availableBlueprints(FIXTURE_SLOTS.frameShiftDrive)
-        .find((blueprint) => blueprint.fdname === recipe)!.grades;
+        .find((blueprint) => blueprint.blueprintSymbol === recipe)!.grades;
       expect(editor.grades()).toEqual(offered);
       expect(offered).toContain(editor.selectedGrade());
       expect(editor.canApply()).toBe(true);

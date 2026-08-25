@@ -31,7 +31,7 @@ function fullyStatedBuild(): ShipLoadout {
   build.applyBlueprint(FIXTURE_SLOTS.thrusters, 'Engine_Dirty', {
     grade: 5,
     quality: 1,
-    experimental: 'special_engine_cooled',
+    experimentalEffectSymbol: 'special_engine_cooled',
   });
   build.setModuleEnabled(FIXTURE_SLOTS.cargoHatch, false);
   build.setModulePriority(FIXTURE_SLOTS.cargoHatch, 0);
@@ -125,7 +125,7 @@ describe('generateSlefExportArtifact', () => {
 
     const artifact = generateSlefExportArtifact(snapshot(build), METADATA);
 
-    expect(artifact.validation).toEqual(build.validation);
+    expect(artifact.validation).toEqual(build.validation());
     expect(artifact.payload.length).toBeGreaterThan(0);
   });
 });

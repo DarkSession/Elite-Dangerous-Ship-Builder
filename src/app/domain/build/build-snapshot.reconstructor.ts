@@ -78,7 +78,9 @@ export function reconstructFromSnapshot(snapshot: BuildSnapshotV1): Reconstructi
       loadout.applyBlueprint(module.slot, engineering.blueprint, {
         grade: engineering.grade,
         quality: engineering.quality,
-        ...(engineering.experimental === null ? {} : { experimental: engineering.experimental }),
+        ...(engineering.experimental === null
+          ? {}
+          : { experimentalEffectSymbol: engineering.experimental }),
       });
     } catch (error) {
       return { ok: false, failure: 'unknown-identity', reason: reasonOf(error) };
@@ -142,14 +144,16 @@ function preEngineeredEngineering(
   const experimental = identity.experimental ?? undefined;
   const resolved = {
     ...variant,
-    ...(experimental === undefined ? { experimental: undefined } : { experimental }),
+    ...(experimental === undefined
+      ? { experimentalEffectSymbol: undefined }
+      : { experimentalEffectSymbol: experimental }),
   } as PreEngineeredVariant;
   const modifiers = getPreEngineeredJournalModifiers(resolved);
 
   return {
     ok: true,
     value: {
-      BlueprintName: variant.blueprint,
+      BlueprintName: variant.blueprintSymbol,
       Level: variant.grade,
       Quality: 1,
       ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),
@@ -163,7 +167,7 @@ function findVariant(identity: PreEngineeredIdentityV1): PreEngineeredVariant | 
     PRE_ENGINEERED_MODULES.find(
       (candidate) =>
         candidate.symbol.toLowerCase() === identity.symbol.toLowerCase() &&
-        candidate.blueprint.toLowerCase() === identity.blueprint.toLowerCase() &&
+        candidate.blueprintSymbol.toLowerCase() === identity.blueprint.toLowerCase() &&
         candidate.grade === identity.grade &&
         candidate.acquisition === identity.acquisition,
     ) ?? null

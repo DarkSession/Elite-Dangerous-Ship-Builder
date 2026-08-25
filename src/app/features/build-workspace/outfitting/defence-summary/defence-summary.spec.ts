@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -65,14 +66,14 @@ describe('DefenceSummary', () => {
   it('carries the package shield strength and hull points, in that order', () => {
     const build = fullyFittedBuild();
     const { component } = render(build);
-    const shield = build.shieldMetricsResult({ systemsPips: conditions.pips().systems }).value!;
+    const shield = BuildMetrics.of(build).shieldMetricsResult().value!;
     const whole = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
 
     const cells = component.cells();
     expect(cells.map((cell) => cell.label)).toEqual(['Shield', 'Armour']);
     expect(cells[0]?.value).toBe(whole.format(shield.strength));
     expect(cells[0]?.unit).toBe('MJ');
-    expect(cells[1]?.value).toBe(whole.format(build.armourMetrics().hitPoints));
+    expect(cells[1]?.value).toBe(whole.format(BuildMetrics.of(build).armourMetrics().hitPoints));
   });
 
   it('states an unavailable shield rather than standing the cell at zero', () => {

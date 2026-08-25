@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -96,7 +97,7 @@ describe('PowerThermals', () => {
   describe('the priority groups', () => {
     it('draws the groups the build uses, in the package’s order', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       // The game has five and the package returns five; a group nothing is
       // assigned to is not a reading of this build, so it is not a row.
       const used = new Set(budget.consumers.map((consumer) => consumer.priority));
@@ -113,7 +114,7 @@ describe('PowerThermals', () => {
 
     it('carries each group’s own draw and its running total', () => {
       const build = withinBudgetBuild();
-      const first = build.powerBudget().bands[0];
+      const first = BuildMetrics.of(build).powerBudget().bands[0];
       const { element } = render(build);
 
       const row = element.querySelector('.power__block--bands .power__band');
@@ -122,7 +123,7 @@ describe('PowerThermals', () => {
       );
       // The canvas's third column is the running total as a share of plant
       // output, which the projection publishes and this reads back.
-      const share = first.deployedTotal / build.powerBudget().available;
+      const share = first.deployedTotal / BuildMetrics.of(build).powerBudget().available;
       expect(row?.querySelector('.power__band-share')?.textContent).toBe(
         `${Math.round(share * 100)}%`,
       );
@@ -130,7 +131,7 @@ describe('PowerThermals', () => {
 
     it('states every group’s verdict in words, not only the shed one', () => {
       const build = shedBandBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const used = new Set(budget.consumers.map((consumer) => consumer.priority));
       const bands = budget.bands.filter((band) => used.has(band.priority));
       const { element } = render(build);
@@ -151,7 +152,7 @@ describe('PowerThermals', () => {
   describe('the plant summary', () => {
     it('draws the canvas’s three tiles and nothing beside them', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const { element } = render(build);
 
       const summary = element.querySelector('.power__summary')?.textContent ?? '';
@@ -168,7 +169,7 @@ describe('PowerThermals', () => {
 
     it('states all three tiles in either hardpoint state', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       conditions.showHardpoints('retracted');
       const { element } = render(build);
 
@@ -190,7 +191,7 @@ describe('PowerThermals', () => {
       const summary = element.querySelector('.power__summary')?.textContent ?? '';
       expect(summary).not.toContain('Infinity');
       expect(summary).not.toContain('∞');
-      expect(summary).toContain(build.powerBudget().deployed.toFixed(2));
+      expect(summary).toContain(BuildMetrics.of(build).powerBudget().deployed.toFixed(2));
       // No plant output is no share to state: the groups say `Offline` where
       // the percentage would go, and no bar claims a fraction of nothing.
       const shares = element.querySelectorAll('.power__block--bands .power__band-share');
@@ -202,7 +203,7 @@ describe('PowerThermals', () => {
   describe('draw by module', () => {
     it('draws one line per kind of consumer, heaviest first', () => {
       const build = withinBudgetBuild();
-      const consumers = build.powerBudget().consumers;
+      const consumers = BuildMetrics.of(build).powerBudget().consumers;
       const { element } = render(build);
 
       const rows = [...element.querySelectorAll('.module')];
@@ -214,7 +215,7 @@ describe('PowerThermals', () => {
 
     it('gathers two mounts of one module onto one line, counted and added up', () => {
       const build = withinBudgetBuild();
-      const repeated = build
+      const repeated = BuildMetrics.of(build)
         .powerBudget()
         .consumers.filter((consumer) => consumer.symbol === 'Hpt_PulseLaser_Fixed_Small');
       const { element } = render(build);
@@ -234,12 +235,12 @@ describe('PowerThermals', () => {
       const { element } = render(build);
 
       const note = element.querySelector('.power__block--modules .power__note');
-      expect(note?.textContent).toContain(build.powerBudget().deployed.toFixed(2));
+      expect(note?.textContent).toContain(BuildMetrics.of(build).powerBudget().deployed.toFixed(2));
     });
 
     it('keeps a switched-off consumer on the list, at zero, and says it is off', () => {
       const build = distributorOffBuild();
-      const consumer = build
+      const consumer = BuildMetrics.of(build)
         .powerBudget()
         .consumers.find((entry) => entry.label === 'PowerDistributor');
       const { element } = render(build);
@@ -271,7 +272,9 @@ describe('PowerThermals', () => {
 
     it('names the group on the lines the plant leaves dark, and nowhere else', () => {
       const build = shedBandBuild();
-      const dark = build.powerBudget().bands.filter((band) => !band.poweredDeployed);
+      const dark = BuildMetrics.of(build)
+        .powerBudget()
+        .bands.filter((band) => !band.poweredDeployed);
       const { element } = render(build);
 
       const named = [...element.querySelectorAll('.module')].filter((node) =>
@@ -311,7 +314,7 @@ describe('PowerThermals', () => {
 
     it('reads each bar as the gauge reads it, beside the bar it drew', () => {
       const build = withinBudgetBuild();
-      const idle = build.heatMetrics()?.idle;
+      const idle = BuildMetrics.of(build).heatMetrics()?.idle;
       const { element } = render(build);
 
       const first = element.querySelector('.heat__bar');
@@ -328,7 +331,7 @@ describe('PowerThermals', () => {
       const build = overheatingBuild();
       const { element } = render(build);
 
-      expect(build.heatMetrics()?.firingDrained.heatLevel).toBe(Infinity);
+      expect(BuildMetrics.of(build).heatMetrics()?.firingDrained.heatLevel).toBe(Infinity);
       const bar = [...element.querySelectorAll('.heat__bar')][3];
       const level = bar?.querySelector('.heat__level');
 
@@ -384,7 +387,7 @@ describe('PowerThermals', () => {
   describe('the distributor', () => {
     it('draws the three banks with the package’s own figures and pips', () => {
       const build = withinBudgetBuild();
-      const metrics = build.distributorMetrics({
+      const metrics = BuildMetrics.of(build).distributorMetrics({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
@@ -451,7 +454,7 @@ describe('PowerThermals', () => {
       rows[0]?.querySelectorAll<HTMLElement>('.pips__step')[3]?.click();
       detect();
 
-      const used = build.distributorMetrics({
+      const used = BuildMetrics.of(build).distributorMetrics({
         systemsPips: 4,
         enginesPips: 1,
         weaponsPips: 1,
@@ -497,7 +500,7 @@ describe('PowerThermals', () => {
 
     it('switches every figure to the other state at once', () => {
       const build = withinBudgetBuild();
-      const budget = build.powerBudget();
+      const budget = BuildMetrics.of(build).powerBudget();
       const { element, detect } = render(build);
 
       element

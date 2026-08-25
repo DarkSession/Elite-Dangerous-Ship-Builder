@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -37,6 +38,13 @@ import { OffenceAnalysis } from './offence-analysis';
  * not notice one of them coming back.
  */
 describe('OffenceAnalysis', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   let active: ActiveBuildStore;
   let conditions: PowerConditionsStore;
   let outfitting: OutfittingStore;
@@ -133,7 +141,7 @@ describe('OffenceAnalysis', () => {
       // figures are the same number and this assertion would pass whichever
       // field the component had read — which is the one thing it is for.
       const loadout = everyStateBuild();
-      const total = loadout.weaponMetrics().total;
+      const total = BuildMetrics.of(loadout).weaponMetrics().total;
       expect(total.damagePerSecond).not.toBe(total.sustainedDamagePerSecond);
 
       const { component } = render(loadout);
@@ -150,7 +158,7 @@ describe('OffenceAnalysis', () => {
 
     it('counts the weapons the package returned', () => {
       const loadout = everyStateBuild();
-      const returned = loadout.weaponMetrics().weapons.length;
+      const returned = BuildMetrics.of(loadout).weaponMetrics().weapons.length;
 
       const { component } = render(loadout);
 
@@ -173,7 +181,7 @@ describe('OffenceAnalysis', () => {
       // it, so a type the build does not deal has no line rather than a zero,
       // and anti-xeno — which no canvas draws at all — is not read.
       const loadout = everyStateBuild();
-      const split = loadout.weaponMetrics().total.damageByType;
+      const split = BuildMetrics.of(loadout).weaponMetrics().total.damageByType;
       expect(split.antiXeno).toBeDefined();
 
       const { component } = render(loadout);
@@ -185,7 +193,7 @@ describe('OffenceAnalysis', () => {
 
     it('draws each conventional type as a segment, with its own amount and share', () => {
       const loadout = everyStateBuild();
-      const split = loadout.weaponMetrics().total.damageByType;
+      const split = BuildMetrics.of(loadout).weaponMetrics().total.damageByType;
 
       const { component } = render(loadout);
       const segments = component.damageSegments();
@@ -246,7 +254,9 @@ describe('OffenceAnalysis', () => {
   describe('the weapon collection', () => {
     it('draws one row per returned weapon, in exact package order', () => {
       const loadout = everyStateBuild();
-      const returned = loadout.weaponMetrics().weapons.map((weapon) => weapon.slot);
+      const returned = BuildMetrics.of(loadout)
+        .weaponMetrics()
+        .weapons.map((weapon) => weapon.slot);
 
       const { component } = render(loadout);
 
@@ -255,7 +265,9 @@ describe('OffenceAnalysis', () => {
 
     it('neither merges nor de-duplicates two mounts carrying the same module', () => {
       const loadout = populatedBuild();
-      const symbols = loadout.weaponMetrics().weapons.map((weapon) => weapon.symbol);
+      const symbols = BuildMetrics.of(loadout)
+        .weaponMetrics()
+        .weapons.map((weapon) => weapon.symbol);
       expect(new Set(symbols).size).toBeLessThan(symbols.length);
 
       const { component } = render(loadout);
@@ -268,7 +280,7 @@ describe('OffenceAnalysis', () => {
 
     it('keeps a disabled weapon’s row and its own figures', () => {
       const loadout = partlyDisabledBuild();
-      const disabled = loadout
+      const disabled = BuildMetrics.of(loadout)
         .weaponMetrics()
         .weapons.find((weapon) => weapon.slot === OFFENCE_DEFAULT_SLOTS[0]);
 
@@ -303,7 +315,7 @@ describe('OffenceAnalysis', () => {
     it('reads the code line off the package rather than out of the symbol', () => {
       const loadout = populatedBuild();
       const { component } = render(loadout);
-      const fitted = loadout.weaponMetrics().weapons[0];
+      const fitted = BuildMetrics.of(loadout).weaponMetrics().weapons[0];
       const article = outfitting.slots().find((slot) => slot.key === fitted?.slot)?.module?.article;
 
       // Three separate package values. `4A` reads like something that could be
@@ -326,7 +338,7 @@ describe('OffenceAnalysis', () => {
       const zero = component.weaponRows().find((row) => row.id === OFFENCE_STATE_SLOTS.noPiercing);
 
       expect(zero).toBeDefined();
-      expect(loadout.weaponMetrics().weapons).toContainEqual(
+      expect(BuildMetrics.of(loadout).weaponMetrics().weapons).toContainEqual(
         expect.objectContaining({ slot: OFFENCE_STATE_SLOTS.noPiercing }),
       );
       expect(readsZero(zero?.damagePerSecond)).toBe(true);
@@ -408,7 +420,7 @@ describe('OffenceAnalysis', () => {
     it('shows each field as the package returned it, in the package’s own units', () => {
       const loadout = populatedBuild();
       const { component } = render(loadout);
-      const returned = loadout.weaponsCapacitorMetrics({ weaponsPips: 2 });
+      const returned = BuildMetrics.of(loadout).weaponsCapacitorMetrics({ weaponsPips: 2 });
       const drawn = capacitorValues(component);
 
       // Megajoules and megajoules per second. Canvas 1c labels `DRAW` and
@@ -468,7 +480,9 @@ describe('OffenceAnalysis', () => {
       conditions.setPips('weapons', 0);
       detect();
 
-      const returned = loadout.weaponsCapacitorMetrics({ weaponsPips: 0 }).timeToDrain;
+      const returned = BuildMetrics.of(loadout).weaponsCapacitorMetrics({
+        weaponsPips: 0,
+      }).timeToDrain;
       expect(Number.isFinite(returned)).toBe(true);
       expect(capacitorValues(component)['endurance']).toContain(returned.toFixed(1));
     });
@@ -479,7 +493,9 @@ describe('OffenceAnalysis', () => {
       conditions.setPips('weapons', 4);
       detect();
 
-      expect(loadout.weaponsCapacitorMetrics({ weaponsPips: 4 }).timeToDrain).toBe(Infinity);
+      expect(BuildMetrics.of(loadout).weaponsCapacitorMetrics({ weaponsPips: 4 }).timeToDrain).toBe(
+        Infinity,
+      );
       const row = component.capacitorRows().find((entry) => entry.id === 'endurance');
       // The symbol is what the block draws; the sentence it stands for goes
       // beside it, out of sight, because a glyph cannot be read aloud.
@@ -492,7 +508,9 @@ describe('OffenceAnalysis', () => {
       const loadout = zeroCapacityBuild();
       const { component } = render(loadout);
 
-      expect(loadout.weaponsCapacitorMetrics({ weaponsPips: 2 }).timeToDrain).toBe(0);
+      expect(BuildMetrics.of(loadout).weaponsCapacitorMetrics({ weaponsPips: 2 }).timeToDrain).toBe(
+        0,
+      );
       expect(capacitorValues(component)['endurance']).toBe(
         englishMessages['offence.capacitor.endurance.immediate'],
       );
@@ -579,7 +597,9 @@ describe('OffenceAnalysis', () => {
 
       // The qualification says the list may be incomplete. It never truncates
       // the list, and it never blanks a total the package did return.
-      expect(component.weaponRows()).toHaveLength(loadout.weaponMetrics().weapons.length);
+      expect(component.weaponRows()).toHaveLength(
+        BuildMetrics.of(loadout).weaponMetrics().weapons.length,
+      );
       expect(component.headline()?.value).toBeTruthy();
       expect(component.capacitorRows()).toHaveLength(4);
     });
@@ -606,7 +626,7 @@ describe('OffenceAnalysis', () => {
       const loadout = populatedBuild();
       // Inside every weapon's falloff range nothing is attenuated, so the
       // nearest band has to equal the package's own burst total for the build.
-      const total = loadout.weaponMetrics().total.damagePerSecond;
+      const total = BuildMetrics.of(loadout).weaponMetrics().total.damagePerSecond;
 
       const { component } = render(loadout);
 
@@ -625,8 +645,8 @@ describe('OffenceAnalysis', () => {
   describe('shot convergence', () => {
     it('re-projects at a new range without asking the package anything again', () => {
       const loadout = populatedBuild();
-      const weapons = vi.spyOn(loadout, 'weaponMetrics');
-      const capacitor = vi.spyOn(loadout, 'weaponsCapacitorMetrics');
+      const weapons = vi.spyOn(BuildMetrics.prototype, 'weaponMetrics');
+      const capacitor = vi.spyOn(BuildMetrics.prototype, 'weaponsCapacitorMetrics');
       const { element, detect } = render(loadout);
 
       const asked = [weapons.mock.calls.length, capacitor.mock.calls.length] as const;

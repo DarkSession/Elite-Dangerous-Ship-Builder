@@ -215,7 +215,8 @@ metric cells beside this one's rail line, and neither reads a power field.
       `src/app/domain/power-heat/` calls `powerBudget`, `distributorMetrics` or `heatMetrics`, and
       no power, distributor or heat figure is arithmetically combined outside that file — with the
       script registered in `package.json`'s `policy` script (depends on T003)
-- [x] T026 Record the Power and Thermals mode and the rail's power block in `AGENTS.md`
+- [x] T026 Record the Power and Thermals mode and the rail's power block in `AGENTS.md`.
+      _Superseded 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table, because its per-feature blocks duplicated these spec directories and went stale whenever the canvas moved. This feature's boundary and out-of-scope list live in its own `spec.md` and `design/`._
       (depends on T024)
 - [x] T027 Restore unit coverage to at least 80% statements, branches, functions and lines for the
       new source under the thresholds in `angular.json` (depends on T019, T020)
@@ -294,3 +295,34 @@ independent of everything but the tests. T017–T021 follow their subjects; T022
 T025 follows T003. T027 follows the component suites, and T029 is last. Phase 10 follows all of
 them: T030 → T031 → T032 → T033 → T034 → T035 → T036 → T037 → T038, each re-running the suites its
 surface owns, with the full browser matrix at the end of the phase.
+
+---
+
+## Phase: the 2026-08-25 canvas revision
+
+Recorded in `design/power-and-heat-detail.md`, "Canvas revision, 2026-08-25". Nothing here is a new
+package call: every figure is one the projection already returns.
+
+- [ ] T069 Draw the `H‑PTS` label in front of the two condition segments, and make it the group's
+      accessible name rather than a hidden string beside them
+- [ ] T070 Re-lay `DRAW BY MODULE`: withdraw the header's `MW · TOTAL n` note and
+      `power.modules.total` with it, head the list `MODULE` against `MW` over the row tracks with
+      the bar column unheaded, and close it with a `TOTAL DRAW` row carrying the same total. Canvas
+      1d's second footer figure, `POWERED`, is not built — the priority-group block already draws it
+- [ ] T071 Move the heat key above the four tiles
+- [ ] T072 Add a description under each of the six heat scenario names, drawn rather than hovered
+      (011 FR-006), through the localization layer in both catalogues. The canvas's six `data-tip`
+      strings are quoted in `design/power-and-heat-detail.md`, "Heat profile"
+- [ ] T073 Rename `power.distributor.heading` to `Power distributor and pips` in both catalogues, and
+      withdraw `distributorIdentity()` and its template line — the canvas no longer draws the fitted
+      distributor beside the heading
+- [ ] T074 Build the rail's pip control (FR-013's 2026-08-25 extension): three bank groups under
+      the `POWER` bar, four blocks each, filled from the leading edge, editing the one condition through the same store
+      action the distributor cell uses. No half-pip block, no running total, no draft. Each group is
+      named with the allocation it stands at
+- [ ] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
+      one condition — setting from the rail changes what the distributor table reads, and the reverse
+- [ ] T076 [P] Assert the rail control's target size and touch operation at all five layout
+      profiles, on the same `--edsb-target-size` baseline the distributor cell holds
+- [ ] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
+      `pnpm run check`

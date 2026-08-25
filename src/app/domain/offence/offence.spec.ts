@@ -1,4 +1,5 @@
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   collectionMeaning,
@@ -21,10 +22,17 @@ import {
 } from './offence.fixtures';
 
 describe('projectOffence', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('retains the package result itself rather than a copy of it', () => {
     const loadout = populatedBuild();
-    const returned = loadout.weaponMetrics();
-    const metrics = vi.spyOn(loadout, 'weaponMetrics').mockReturnValue(returned);
+    const returned = BuildMetrics.of(loadout).weaponMetrics();
+    const metrics = vi.spyOn(BuildMetrics.prototype, 'weaponMetrics').mockReturnValue(returned);
 
     const offence = projectOffence(loadout, OFFENCE_COVERAGE.complete, OFFENCE_FIXTURE_PIPS);
 
@@ -37,8 +45,8 @@ describe('projectOffence', () => {
 
   it('asks the package exactly once for each of its two answers', () => {
     const loadout = populatedBuild();
-    const weapons = vi.spyOn(loadout, 'weaponMetrics');
-    const capacitor = vi.spyOn(loadout, 'weaponsCapacitorMetrics');
+    const weapons = vi.spyOn(BuildMetrics.prototype, 'weaponMetrics');
+    const capacitor = vi.spyOn(BuildMetrics.prototype, 'weaponsCapacitorMetrics');
 
     projectOffence(loadout, OFFENCE_COVERAGE.complete, OFFENCE_FIXTURE_PIPS);
 
@@ -62,7 +70,9 @@ describe('projectOffence', () => {
     const offence = projectOffence(loadout, OFFENCE_COVERAGE.complete, OFFENCE_FIXTURE_PIPS);
 
     expect(offence.weapons.map((weapon) => weapon.slot)).toEqual(
-      loadout.weaponMetrics().weapons.map((weapon) => weapon.slot),
+      BuildMetrics.of(loadout)
+        .weaponMetrics()
+        .weapons.map((weapon) => weapon.slot),
     );
   });
 
@@ -118,19 +128,19 @@ describe('collectionMeaning', () => {
   });
 
   it('qualifies a populated collection rather than replacing it', () => {
-    const weapons = populatedBuild().weaponMetrics().weapons;
+    const weapons = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons;
 
     expect(collectionMeaning(weapons, OFFENCE_COVERAGE.unavailable)).toBe('coverageUnavailable');
   });
 
   it('is populated when the package returned weapons and coverage resolved', () => {
-    const weapons = populatedBuild().weaponMetrics().weapons;
+    const weapons = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons;
 
     expect(collectionMeaning(weapons, OFFENCE_COVERAGE.complete)).toBe('populated');
   });
 
   it('is populated when weapons were returned in mounts feature 002 called empty', () => {
-    const weapons = populatedBuild().weaponMetrics().weapons;
+    const weapons = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons;
 
     expect(collectionMeaning(weapons, OFFENCE_COVERAGE.confirmedEmpty)).toBe('populated');
   });
@@ -168,7 +178,7 @@ describe('projectEndurance', () => {
 
 describe('projectCapacitor', () => {
   it('selects the four drawn fields, their two fills, and no others', () => {
-    const metrics = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 2 });
+    const metrics = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 2 });
 
     const capacitor = projectCapacitor(metrics, 2);
 
@@ -187,7 +197,7 @@ describe('projectCapacitor', () => {
   });
 
   it('fills the draw and the recharge against the larger of the two', () => {
-    const metrics = populatedBuild().weaponsCapacitorMetrics({ weaponsPips: 2 });
+    const metrics = BuildMetrics.of(populatedBuild()).weaponsCapacitorMetrics({ weaponsPips: 2 });
 
     const capacitor = projectCapacitor(metrics, 2);
 
@@ -206,7 +216,7 @@ describe('projectCapacitor', () => {
         rechargeRate: 0,
         sustainedEnergyPerSecond: 0,
         timeToDrain: Infinity,
-      } as ReturnType<ShipLoadout['weaponsCapacitorMetrics']>,
+      } as ReturnType<BuildMetrics['weaponsCapacitorMetrics']>,
       0,
     );
 
@@ -234,7 +244,7 @@ describe('projectCapacitor', () => {
 
 describe('projectDamageSegments', () => {
   it('partitions conventional damage and leaves the anti-xeno overlay out', () => {
-    const split = everyStateBuild().weaponMetrics().total.damageByType;
+    const split = BuildMetrics.of(everyStateBuild()).weaponMetrics().total.damageByType;
 
     const segments = projectDamageSegments(split);
 
@@ -274,13 +284,13 @@ describe('projectDamageSegments', () => {
 
 describe('projectRangeBands', () => {
   it('asks the canvas\u2019s four distances, in its order', () => {
-    const bands = projectRangeBands(everyStateBuild().weaponMetrics().weapons);
+    const bands = projectRangeBands(BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons);
 
     expect(bands.map((band) => band.metres)).toEqual([...RANGE_BANDS]);
   });
 
   it('equals the package total where nothing has fallen off yet', () => {
-    const metrics = populatedBuild().weaponMetrics();
+    const metrics = BuildMetrics.of(populatedBuild()).weaponMetrics();
 
     const bands = projectRangeBands(metrics.weapons);
 
@@ -291,7 +301,7 @@ describe('projectRangeBands', () => {
   });
 
   it('never lands more at a longer range than at a shorter one', () => {
-    const bands = projectRangeBands(everyStateBuild().weaponMetrics().weapons);
+    const bands = projectRangeBands(BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons);
 
     for (let index = 1; index < bands.length; index += 1) {
       expect(bands[index]?.damagePerSecond).toBeLessThanOrEqual(
@@ -301,7 +311,7 @@ describe('projectRangeBands', () => {
   });
 
   it('counts only the weapons that are firing', () => {
-    const bands = projectRangeBands(allDisabledBuild().weaponMetrics().weapons);
+    const bands = projectRangeBands(BuildMetrics.of(allDisabledBuild()).weaponMetrics().weapons);
 
     for (const band of bands) {
       expect(band.damagePerSecond).toBe(0);

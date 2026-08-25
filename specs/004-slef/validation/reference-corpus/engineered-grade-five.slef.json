@@ -5,7 +5,6 @@
       "appVersion": "0.1.0"
     },
     "data": {
-      "event": "Loadout",
       "Ship": "anaconda",
       "HullValue": 142456440,
       "ModulesValue": 4522132,

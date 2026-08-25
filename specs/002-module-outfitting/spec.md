@@ -63,16 +63,18 @@ its ship name and ident — belongs here.
 
 ### Story 2 — Find a replacement (P1)
 
-1. Choices are grouped into collapsible families in the Almanac's own family order, then by displayed
+1. Choices are grouped into families in the Almanac's own family order, then by displayed
    module name, class descending and package rating order ascending; stock precedes variants, and a
    unique reward is labelled where it sits rather than moved to a section of its own.
-2. When a fitted module has an available family, that family alone is open by default; otherwise all
-   families are closed. A Commander can open or close any family without editing the build.
+2. When a fitted module has an available family, that family alone is revealed by default; otherwise
+   the wide composition reveals the first family and the compact one reveals none. A Commander can
+   reveal any family without editing the build.
 3. Every whitespace-separated search term must match at least one of name, class, rating or weapon
    mount type as a case- and accent-insensitive substring; a choice matches only when every term does.
-   Presenting changed search results opens every family containing a match where the match set is
-   within a screenful, and otherwise leaves them closed with their counts; either way no family
-   holding a match is absent.
+   Presenting changed search results reveals every family containing a match where the match set is
+   within a screenful of the compact composition, and otherwise leaves the compact families closed
+   with their counts; the wide composition reveals the first family holding a match. Either way no
+   family holding a match is absent.
 4. No matches shows an empty result, cleared from the search field itself.
 5. Acquisition and entitlement restrictions remain visible before and after fitting.
 
@@ -176,28 +178,51 @@ its ship name and ident — belongs here.
   MUST NOT hold a second copy of it, and a record's local identity remains independent of it
   (001 FR-008). An unnamed build MUST present an empty name rather than a hull-derived placeholder
   shown as a value.
-- **FR-020**: Available replacement choices MUST be presented as collapsible module families, which
-  are the only grouping level in the chooser. A choice's family MUST be the Almanac's own
+- **FR-020**: Available replacement choices MUST be presented grouped into module families, which
+  are the only grouping level in the chooser, with exactly one family revealed at a time in the wide
+  composition and any number in the compact one. A choice's family MUST be the Almanac's own
   `familyId` for that module, and its name MUST be the Almanac's localized family name; the
   application MUST NOT derive, abbreviate, translate or override either. A variant takes the family
   of the module it is built on. Every available choice MUST appear in exactly one family.
 - **FR-021**: When replacement choices are first presented or rebuilt, the family containing the
-  exact fitted stock or variant choice MUST be open and every other family MUST be closed. If no
-  available family contains that exact fitted choice, every family MUST be closed. Opening or closing
-  a family is view state only and MUST NOT edit the build or enter edit history.
-- **FR-022**: A Commander MUST be able to open and close each module family. Each family control MUST
-  expose its localized family name, available-choice count and open or closed state to sighted and
-  screen-reader users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.
+  exact fitted stock or variant choice MUST be the revealed one. If no available family contains that
+  exact fitted choice, the wide composition MUST reveal the first family in package order and the
+  compact composition MUST reveal none. Revealing a family is view state only and MUST NOT edit the
+  build or enter edit history.
+- **FR-022**: A Commander MUST be able to reveal any module family. Each family control MUST expose
+  its localized family name, available-choice count and revealed state to sighted and screen-reader
+  users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.
 - **FR-023**: Applying or changing a non-empty replacement search MUST leave families without matches
-  absent. Where the search matched no more than a screenful of choices it MUST open every family
-  containing at least one matching choice; where it matched more, it MUST leave every family closed,
-  each still stating how many of the matches it holds, so the Commander narrows or opens the one they
-  want rather than being handed hundreds of rows. A Commander MAY then open or close any family.
-  Clearing the search MUST restore the default family state from FR-021.
+  absent, and MUST leave every family holding at least one match present and counted. In the compact
+  composition, where the search matched no more than a screenful of choices it MUST reveal every
+  family containing at least one matching choice, and where it matched more it MUST reveal none, each
+  family still stating how many of the matches it holds, so the Commander narrows or reveals the one
+  they want rather than being handed hundreds of rows. In the wide composition it MUST reveal the
+  first family holding a match, whatever the match count: that composition draws one family's rows at
+  a time and cannot hand over hundreds. A Commander MAY then reveal any family. Clearing the search
+  MUST restore the default from FR-021.
+
+  > **Restated 2026-08-25.** These three were written when both canvases drew an accordion. Canvas 1c
+  > now draws a family rail beside a variant pane with exactly one family selected and no caret, and
+  > canvas 1d still draws the accordion, so "open" and "closed" no longer describe both. _Revealed_
+  > is the accordion's open family and the rail's selected one. The measured screenful rule is
+  > unchanged where it was measured, and the guarantee that mattered — a family holding a match is
+  > never absent — holds at both (`design/module-replacement.md`, "What exclusive selection does to
+  > FR-021, FR-022 and FR-023").
+
 - **FR-024**: A unique-reward or otherwise route-restricted choice MUST be identified by its existing
   acquisition and entitlement labels on its own row, inside its family. The chooser MUST NOT present
   a separate standard or unique-reward section, and the removal of those sections MUST NOT remove or
   weaken any label FR-006 requires.
+
+  > **Narrowed 2026-08-25 — the wide manifest is three columns.** The canvas revision of that date
+  > cut canvas 1c's manifest from seven columns to `MODULE`, `CLASS` and `COST`. So the wide manifest
+  > MUST draw a choice as the module, its class and rating, and its price, and no other column; the
+  > package's damage, mass, power draw and weapon draw MUST NOT be drawn at that width. They remain
+  > drawn in the compact composition, on canvas 1d's own code line, which that canvas did not change.
+  > This is presentation only: FR-003's rule that a missing package fact stays unavailable rather
+  > than becoming zero is untouched wherever a fact is drawn. No requirement id is minted for it —
+  > the coverage ledger registers ids against journeys that exist, and this one is not built.
 
 ## Assumptions
 
@@ -219,8 +244,10 @@ its ship name and ident — belongs here.
 - Loading, editing, undoing or redoing a build never restores a historical purchase price; current
   cost is recalculated from the Almanac catalogue (FR-016).
 - A module appearing through multiple acquisition routes remains one package variant per route.
-- The fitted module can have no available family after package restrictions change; in that case no
-  unrelated family is opened as a substitute.
+- The fitted module can have no available family after package restrictions change. In the compact
+  composition no unrelated family is opened as a substitute; in the wide one the rail selects the
+  first family in package order, because the canvas's rail always has a selection and never paints an
+  empty pane.
 - A fitted unique-reward variant opens the family of the module it is built on; there is no separate
   unique-reward section for it to open instead.
 - Changing locale relabels families and reorders choices within them without changing family
@@ -250,11 +277,14 @@ No game rule, value or variant-recognition heuristic is application-owned.
 - **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
   100%; every unsupported partial-quality candidate is rejected without changing the active build.
 - **SC-006**: Across desktop, tablet and mobile, 100% of available replacement choices appear in
-  exactly one Almanac family, and opening or closing a family never changes the build.
+  exactly one Almanac family, and revealing a family never changes the build. At the wide
+  composition every drawn choice row carries exactly three cells — the module, its class and rating,
+  and its price — with no damage, mass, power or weapon-draw figure at that width.
 - **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
-  open on initial presentation and after a rebuild; when it has none, zero families are open.
+  revealed on initial presentation and after a rebuild; when it has none, the wide composition reveals
+  the first family in package order and the compact one reveals none.
 - **SC-008**: Every choice matching a newly applied or changed non-empty search is either visible
-  without the Commander opening a family manually, or counted on the closed family that holds it;
+  without the Commander revealing a family manually, or counted on the family that holds it;
   no family holding a match is ever absent, and clearing the search restores the fitted-family
   default.
 - **SC-009**: Every family name and every family membership on screen is a value the installed

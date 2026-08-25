@@ -106,7 +106,7 @@ function construct(entry: SlefEntry, requestToken: SlefRequestToken): SlefImport
         previousQuality: notice.previousQuality,
         quality: notice.quality,
       })),
-      validation: ingress.candidate.validation,
+      validation: ingress.candidate.validation(),
       requestToken,
     },
   };

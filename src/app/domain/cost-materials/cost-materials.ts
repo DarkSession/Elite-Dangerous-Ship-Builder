@@ -1,9 +1,7 @@
+import type { BuildCost } from '@elite-dangerous-almanac/core/ships/build-metrics';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { EngineeringMaterial } from '@elite-dangerous-almanac/core/ships/engineering';
-import type {
-  BuildCost,
-  FittedModule,
-  ShipLoadout,
-} from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { FittedModule, ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   engineeringCost,
   materialRarity,
@@ -67,7 +65,7 @@ export interface MaterialRow {
  */
 export function projectCostAndMaterials(loadout: ShipLoadout): CostAndMaterials {
   const fitted = loadout.fittedModules();
-  const cost = loadout.buildCost();
+  const cost = BuildMetrics.of(loadout).buildCost();
 
   return Object.freeze({
     credits: projectCredits(cost),

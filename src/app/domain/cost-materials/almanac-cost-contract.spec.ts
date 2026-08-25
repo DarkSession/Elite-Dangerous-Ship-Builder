@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { getBlueprintCost } from '@elite-dangerous-almanac/core/ships/blueprint-costs';
 import { defaultBuild } from '../outfitting/outfitting.fixtures';
 import {
@@ -19,7 +20,7 @@ import {
 describe('the Almanac contract for cost and materials', () => {
   describe('build cost', () => {
     it('publishes four credit numbers and an ordered unpriced list', () => {
-      const retail = defaultBuild().buildCost().credits;
+      const retail = BuildMetrics.of(defaultBuild()).buildCost().credits;
 
       // Non-nullable numbers. If any of these ever became nullable, the `TOTAL`
       // row would quietly start producing `NaN` rather than failing here.
@@ -35,18 +36,20 @@ describe('the Almanac contract for cost and materials', () => {
       const build = defaultBuild();
       build.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', { grade: 5 });
 
-      expect(build.buildCost().materials.length).toBeGreaterThan(0);
+      expect(BuildMetrics.of(build).buildCost().materials.length).toBeGreaterThan(0);
     });
 
     it('returns zero for a build that buys nothing with it', () => {
-      expect(defaultBuild().buildCost().mercCoins).toBe(0);
+      expect(BuildMetrics.of(defaultBuild()).buildCost().mercCoins).toBe(0);
     });
 
     it('includes a recognised Mercenary article in the build total', () => {
       const variant = mercenaryCargoRack();
       expect(variant.acquisition).toBe('mercenary');
       expect(variant.mercCoinCost).toBeGreaterThan(0);
-      expect(cargoRackBuild(variant).buildCost().mercCoins).toBe(variant.mercCoinCost);
+      expect(BuildMetrics.of(cargoRackBuild(variant)).buildCost().mercCoins).toBe(
+        variant.mercCoinCost,
+      );
     });
   });
 
@@ -58,7 +61,7 @@ describe('the Almanac contract for cost and materials', () => {
       // application must not special-case the fdname, call it free, or
       // substitute another recipe — under ruling F it contributes no row and
       // says nothing.
-      expect(getBlueprintCost(reward.blueprint, 5)).toBeNull();
+      expect(getBlueprintCost(reward.blueprintSymbol, 5)).toBeNull();
     });
 
     it('keeps both of the mount’s articles identifiable', () => {

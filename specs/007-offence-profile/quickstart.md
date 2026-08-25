@@ -120,16 +120,18 @@ Two mounts carrying the same module are two rows, in package order, unmerged.
 
 ### 6. Read where the shots go
 
-`SHOT CONVERGENCE` draws the gunsight plate with, per armed hardpoint, a mark where the shot lands,
-a numbered badge at the plate's nearer edge and a leader between them — and one sentence beside the
-plate naming the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption.
+`SHOT CONVERGENCE` draws the gunsight plate with, per armed hardpoint, a mark where the shot lands
+and that mount's hardpoint numeral beside it — and one sentence beside the
+plate naming the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption,
+which sits on the block's heading line.
 A hardpoint the build has not filled takes no mark and no sentence, which is what the canvas does
 with the empty hardpoint on its own sample build. The plate itself is hidden from assistive
 technology.
 
-Moving the `RANGE` control moves every shot and every sentence, leaves the two spans alone, and moves
-the apparent spread. A mount far enough off the axis is clipped from the plate at a near range and
-keeps its sentence; moving the target out brings its mark back.
+Moving the `TARGET RANGE` control moves every shot and every sentence, leaves the two spans alone,
+and moves the apparent spread. A mount far enough off the axis is clamped to the frame's margin at a
+near range and keeps its sentence, which states its true offset; moving the target out brings its
+mark back inside the frame.
 
 On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
 hull it does carry but the build has armed nothing on, the plate is drawn with its axes and its

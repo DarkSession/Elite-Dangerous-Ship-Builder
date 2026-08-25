@@ -150,9 +150,20 @@ badge, the module's identity and its power control, and canvas 1d's row carries 
 job is to select. Where the actions went is ruled separately below, because the two canvases do not
 agree on that and an earlier pass carried canvas 1d's answer to both widths.
 
-The Almanac's _reason_ a mount cannot be emptied moved with them. The row keeps a short marker —
-canvas 1d's `FIXED` on the cargo hatch — and the full sentence is published on the bench, where it
-answers a question a Commander is asking rather than repeating down seven core rows.
+The Almanac's _reason_ a mount cannot be emptied moved with them, and the full sentence is published
+on the bench, where it answers a question a Commander is asking rather than repeating down seven core
+rows. The row itself carried a short `FIXED` marker beside it until the 2026-08-25 revision withdrew
+it; see below.
+
+**The `FIXED` chip is withdrawn, 2026-08-25 (canvas revision).** The resynced canvas draws the cargo
+hatch as an ordinary ledger row — a size, the name `Cargo Hatch 1E` and an ordinary power-priority
+control — and writes no chip beside it, on the row or on the bench. What it does carry is a `title`:
+`Cargo Hatch cannot be replaced or engineered — power priority only`, plus `cursor: default` and no
+selection affordance. So the canvas states the fact in prose and in behaviour, not as a drawn label,
+which is what this feature already publishes on the bench. Under the standing rule — is it on the
+design? no → remove it — the chip goes, with its two computed markers, its two style rules and its
+`outfitting.immovable.short.cargoHatch` string in both catalogues. The full sentence stays: it is the
+reading, and it is now the only one.
 
 **Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The wide composition is selected
 at the sum of the two declared content minimums (24.5rem + 22.5rem = 47rem; **corrected 2026-08-22,
@@ -426,7 +437,7 @@ different icon wearing the same description, and was withdrawn.
 
 **Voice, ruled 2026-08-22 (wave 9).** Commander-facing copy no longer names the Almanac. The
 package is the source of every figure and every refusal, and the design's own drawings state facts —
-`FIXED`, `There is no engineering for this mount.` — without crediting a dependency for them. Naming
+`There is no engineering for this mount.` — without crediting a dependency for them. Naming
 it made a library the speaker of sentences about a Commander's ship, and the credit belongs in the
 provenance statement feature 012 owns, once per application rather than in thirty strings. The name
 stays in code comments, spec prose and diagnostics that never reach a screen, because there it says
@@ -451,6 +462,26 @@ reference's own artwork. It arrives as unpainted black line art, so the canvas's
 `--edsb-filter-route-broker`, rather than a colour of ours being baked into the file.
 
 `eventReward` remains the one route with no mark anywhere in the reference, and still draws none.
+
+## Canvas revision, 2026-08-25
+
+Canvas 1c's chooser was redrawn. Canvas 1d's was not, so the two now differ in kind and not only in
+arrangement.
+
+| Change                                                                   | Status against the build                                                                                                         |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Not built.** The accordion is drawn at both widths.                                                                            |
+| Exactly one family selected at wide; no caret at that width              | **Not built.** Any number may be open.                                                                                           |
+| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Not built.**                                                                                                                   |
+| The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Not built.** Seven columns are drawn.                                                                                          |
+| `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Not built.**                                                                                                                   |
+| Canvas 1d's accordion, badge, variants summary and code line             | **Unchanged.** Every existing ruling on them stands.                                                                             |
+| Hover descriptions on the acquisition marks (`data-tip`)                 | **Already answered.** The four routes have carried spoken sentences since wave 10; hover-only meaning is not built (011 FR-006). |
+
+The two-price cost cell, the acquisition icons, the family taxonomy and the whole-manifest rule are
+untouched by the revision. What the exclusive rail costs FR-021 to FR-023 is ruled in
+[module-replacement.md](./module-replacement.md), "What exclusive selection does to FR-021, FR-022
+and FR-023"; the columns are ruled in "The manifest's own columns" in the same file.
 
 ## Released API constraint
 

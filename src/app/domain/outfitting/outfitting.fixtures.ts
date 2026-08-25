@@ -115,7 +115,7 @@ export function fixedRewardVariant(): PreEngineeredVariant {
   const variant = getPreEngineeredVariants(FIXED_REWARD_REGRESSION.symbol).find(
     (candidate) =>
       candidate.acquisition === FIXED_REWARD_REGRESSION.acquisition &&
-      candidate.blueprint === FIXED_REWARD_REGRESSION.blueprint,
+      candidate.blueprintSymbol === FIXED_REWARD_REGRESSION.blueprint,
   );
   if (variant === undefined) {
     throw new Error(
@@ -300,7 +300,7 @@ export function finalArticlePartialQuality(): {
           Slot: slot,
           Item: fitted.symbol,
           Engineering: {
-            BlueprintName: variant.blueprint,
+            BlueprintName: variant.blueprintSymbol,
             Level: variant.grade,
             Quality: FINAL_ARTICLE_SOURCE_QUALITY,
           },

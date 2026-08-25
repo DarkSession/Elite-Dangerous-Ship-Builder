@@ -41,12 +41,14 @@ dual-engine layout matrix with accessibility scans.
 
 1. Open a package-backed build with generator, boosters and shield reinforcement.
 2. Open the anatomy region's `DEFENCE` mode.
-3. Compare `strength`, the three role aggregates, all four resistances and all four EHP values
-   directly with `shieldMetricsResult({ systemsPips })` for the standing pips.
-4. Move the pips on the `POWER` dashboard and repeat.
+3. Compare `strength`, the three role aggregates, all four resistances and the four bare EHP values
+   directly with `shieldMetricsResult()`, which takes no allocation.
+4. Compare the fifth column with `shieldCapacitorMetricsResult({ systemsPips })` for the standing
+   pips.
+5. Move the pips on the `POWER` dashboard and repeat.
 
-Expected: every value equals the package field at that allocation. The same explicit pips feed
-recovery; the allocation never enters history, persistence, URL or SLEF.
+Expected: every value equals the package field, and only the fifth column moves with the allocation.
+The same explicit pips feed recovery; the allocation never enters history, persistence, URL or SLEF.
 
 ## 4. Validate shield/recovery unavailable issues
 

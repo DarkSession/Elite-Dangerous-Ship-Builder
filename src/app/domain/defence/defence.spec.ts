@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
@@ -30,6 +31,13 @@ function completeShield(defence: Defence) {
   return defence.shield.value;
 }
 
+function completeCapacitor(defence: Defence) {
+  if (defence.capacitor.kind !== 'complete') {
+    throw new Error('expected a complete capacitor');
+  }
+  return defence.capacitor.value;
+}
+
 function completeRecovery(defence: Defence) {
   if (defence.recovery.kind !== 'complete') {
     throw new Error('expected a complete recovery');
@@ -45,10 +53,17 @@ function fittedBanks(defence: Defence) {
 }
 
 describe('projectDefence', () => {
+  // The calculations moved onto `BuildMetrics` in Almanac 0.2.0, so the seam
+  // is its prototype rather than one build. A prototype stays mocked for
+  // every later test in this file unless it is put back.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('the shield', () => {
     it.each(PIP_SETTINGS)('equals the package result field for field at %s SYS pips', (pips) => {
       const build = fullyFittedBuild();
-      const result = build.shieldMetricsResult({ systemsPips: pips });
+      const result = BuildMetrics.of(build).shieldMetricsResult();
       if (!result.complete) {
         throw new Error('the fixture is meant to raise a shield');
       }
@@ -61,12 +76,40 @@ describe('projectDefence', () => {
       expect(shield.reinforcement).toBe(result.value.reinforcement);
       expect(shield.massCurveMultiplier).toBe(result.value.massCurveMultiplier);
       expect(shield.boostMultiplier).toBe(result.value.boostMultiplier);
-      expect(shield.systemsResistance).toBe(result.value.systemsResistance);
+    });
+
+    it.each(PIP_SETTINGS)('carries the capacitor beside it at %s SYS pips', (pips) => {
+      // The pips are their own package call since Almanac 0.2.0, so the shield
+      // above stays still and this is the only thing on the projection that
+      // moves with the allocation (FR-002).
+      const build = fullyFittedBuild();
+      const result = BuildMetrics.of(build).shieldCapacitorMetricsResult({ systemsPips: pips });
+      if (!result.complete) {
+        throw new Error('the fixture is meant to raise a shield');
+      }
+
+      const capacitor = completeCapacitor(project(build, pips));
+
+      expect(capacitor.systemsPips).toBe(result.value.systemsPips);
+      expect(capacitor.capacity).toBe(result.value.capacity);
+      expect(capacitor.rechargeRate).toBe(result.value.rechargeRate);
+      expect(capacitor.systemsResistance).toBe(result.value.systemsResistance);
+      for (const row of capacitor.damage) {
+        expect(row.resistance).toBe(result.value.effectiveResistances[row.type]);
+        expect(row.effectiveHitPoints).toBe(result.value.effectiveHitPoints[row.type]);
+      }
+    });
+
+    it.each(PIP_SETTINGS)('leaves the bare shield still at %s SYS pips', (pips) => {
+      const build = fullyFittedBuild();
+      const bare = completeShield(project(build, 0)).damage;
+
+      expect(completeShield(project(build, pips)).damage).toEqual(bare);
     });
 
     it.each(PIP_SETTINGS)('pairs each resistance with its own pool at %s SYS pips', (pips) => {
       const build = fullyFittedBuild();
-      const result = build.shieldMetricsResult({ systemsPips: pips });
+      const result = BuildMetrics.of(build).shieldMetricsResult();
       if (!result.complete) {
         throw new Error('the fixture is meant to raise a shield');
       }
@@ -80,15 +123,17 @@ describe('projectDefence', () => {
       }
     });
 
-    it('reports the allocation it was read at, and reads both calls at that one', () => {
+    it('reports the allocation it was read at, and reads every pip call at that one', () => {
       const build = readyBuild();
-      const metrics = vi.spyOn(build, 'shieldMetricsResult');
-      const recovery = vi.spyOn(build, 'shieldRecoveryResult');
+      const metrics = vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult');
+      const capacitor = vi.spyOn(BuildMetrics.prototype, 'shieldCapacitorMetricsResult');
+      const recovery = vi.spyOn(BuildMetrics.prototype, 'shieldRecoveryResult');
 
       expect(project(build, 1.5).systemsPips).toBe(1.5);
-      // The package defaults these two differently — `0` for the metrics and
-      // `4` for the recovery — so one screen showing both has to say which.
-      expect(metrics).toHaveBeenCalledExactlyOnceWith({ systemsPips: 1.5 });
+      // The bare shield takes no allocation at all; the two that do are read at
+      // the one the screen names, because it shows them under one heading.
+      expect(metrics).toHaveBeenCalledExactlyOnceWith();
+      expect(capacitor).toHaveBeenCalledExactlyOnceWith({ systemsPips: 1.5 });
       expect(recovery).toHaveBeenCalledExactlyOnceWith({ systemsPips: 1.5 });
     });
 
@@ -97,7 +142,7 @@ describe('projectDefence', () => {
       const caustic = damage.find((row) => row.type === 'caustic');
 
       expect(caustic?.resistance).toBe(
-        readyBuild().shieldMetricsResult({ systemsPips: 2 }).value?.resistances.caustic,
+        BuildMetrics.of(readyBuild()).shieldMetricsResult().value?.resistances.caustic,
       );
       expect(Number.isFinite(caustic?.effectiveHitPoints)).toBe(true);
     });
@@ -140,7 +185,7 @@ describe('projectDefence', () => {
         reason: 'shed',
         message: 'the generator is shed',
       };
-      vi.spyOn(build, 'shieldMetricsResult').mockReturnValue({
+      vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult').mockReturnValue({
         value: null,
         complete: false,
         issues: [first, second],
@@ -205,7 +250,7 @@ describe('projectDefence', () => {
 
     it('leaves the armour, hardness and banks whole', () => {
       const defence = project(disabledGeneratorBuild());
-      const armour = disabledGeneratorBuild().armourMetrics();
+      const armour = BuildMetrics.of(disabledGeneratorBuild()).armourMetrics();
 
       expect(defence.armour.hitPoints).toBe(armour.hitPoints);
       expect(defence.hardness).toBe(getShipBySymbol(DEFENCE_FIXTURE_HULL)?.hardness);
@@ -216,7 +261,7 @@ describe('projectDefence', () => {
   describe('the recovery', () => {
     it.each(PIP_SETTINGS)('equals the package result at %s SYS pips', (pips) => {
       const build = fullyFittedBuild();
-      const result = build.shieldRecoveryResult({ systemsPips: pips });
+      const result = BuildMetrics.of(build).shieldRecoveryResult({ systemsPips: pips });
       if (!result.complete) {
         throw new Error('the fixture is meant to raise a shield');
       }
@@ -250,13 +295,13 @@ describe('projectDefence', () => {
 
   describe('the cell banks', () => {
     it('is a dedicated empty state only for an empty package list', () => {
-      expect(readyBuild().cellBanks().banks).toHaveLength(0);
+      expect(BuildMetrics.of(readyBuild()).cellBanks().banks).toHaveLength(0);
       expect(project(readyBuild()).cellBanks).toEqual({ kind: 'noneFitted' });
     });
 
     it('copies both totals and every field of every bank, in package order', () => {
       const build = bankedBuild();
-      const summary = build.cellBanks();
+      const summary = BuildMetrics.of(build).cellBanks();
       const banks = fittedBanks(project(build));
 
       expect(banks.totalRestorable).toBe(summary.totalRestorable);
@@ -313,7 +358,7 @@ describe('projectDefence', () => {
   describe('the armour', () => {
     it('equals the package result field for field', () => {
       const build = fullyFittedBuild();
-      const metrics = build.armourMetrics();
+      const metrics = BuildMetrics.of(build).armourMetrics();
       const armour = project(build).armour;
 
       expect(armour.hitPoints).toBe(metrics.hitPoints);
@@ -363,8 +408,8 @@ describe('projectDefence', () => {
   describe('the source rows', () => {
     it('carries the package aggregate for each role, whole', () => {
       const build = fullyFittedBuild();
-      const shield = build.shieldMetricsResult({ systemsPips: 2 }).value!;
-      const armour = build.armourMetrics();
+      const shield = BuildMetrics.of(build).shieldMetricsResult().value!;
+      const armour = BuildMetrics.of(build).armourMetrics();
       const defence = project(build);
 
       expect(
@@ -407,7 +452,9 @@ describe('projectDefence', () => {
       // Two modules, two mounts, and one figure — the package publishes no
       // per-source breakdown, so neither does this.
       expect(reinforcement?.modules).toHaveLength(2);
-      expect(reinforcement?.contribution).toBe(fullyFittedBuild().armourMetrics().reinforcement);
+      expect(reinforcement?.contribution).toBe(
+        BuildMetrics.of(fullyFittedBuild()).armourMetrics().reinforcement,
+      );
     });
 
     it('attaches no contribution, share or power verdict to any module', () => {
@@ -448,7 +495,7 @@ describe('projectDefence', () => {
         build.slots().map((slot) => (slot.kind === 'armour' ? { ...slot, module: null } : slot)),
       );
 
-      expect(build.armourMetrics().bulkheads).toBeGreaterThan(0);
+      expect(BuildMetrics.of(build).armourMetrics().bulkheads).toBeGreaterThan(0);
       expect(project(build).armourRoles.map((row) => row.role)).not.toContain('bulkhead');
     });
 

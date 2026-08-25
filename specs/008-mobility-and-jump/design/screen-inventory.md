@@ -19,23 +19,23 @@ exact-slot target; it owns no build mutation, condition control or persisted vie
 > five independent surfaces — jump performance, mobility performance, mass and capacity, per-module
 > mass and a selected-condition context block — and named a per-module mass list neither canvas
 > draws. Canvases 1c and 1d draw two cards. The rows above are those two cards and the states they
-> have to reach. The settled ENG allocation is an input to the one `mobilityMetricsResult()` call and
-> is not drawn at all: the canvas heads the envelope `SPEED ENVELOPE AT THIS MASS` and writes nothing
+> have to reach. The settled ENG allocation is an input to the
+> `mobilityCapacitorMetricsResult()` call and is not drawn at all: the canvas heads the envelope `SPEED ENVELOPE AT THIS MASS` and writes nothing
 > beside it (`reference-review.md`, "Withdrawn addition").
 
 ## Requirement mapping
 
-| Requirement | Planned behavior                                                                                                                                                                          |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One pure projector copies package results/records only; presentation adds no game calculation.                                                                                            |
-| FR-002      | One guarded `jumpRangeSummary()` supplies all three single ranges, total ranges and counts.                                                                                               |
-| FR-003      | All three standard-load results must be complete before the summary call, which resolves all three; exact blockers remain visible.                                                        |
-| FR-004      | The canvas's own load and feature 005's settled ENG pips feed one `mobilityMetricsResult()` call; the five readings it draws, or exact issues. The pips are an input, never a drawn line. |
-| FR-005      | Incomplete mobility receives no hull fallback; package issues distinguish missing, disabled, shed, package-unresolved and invalid inputs.                                                 |
-| FR-006      | Only the aggregate the canvas draws is drawn — `fuelCapacity`, in the fuel row's qualifier — and it is copied, not recomputed.                                                            |
-| FR-007      | Not drawn here — neither canvas lists per-module mass. The canvas's modules segment is `buildMass(load).modules`, never a local sum.                                                      |
-| FR-008      | Only package FSD/thruster parameters the canvas draws appear, and only when present; absent facts stay absent.                                                                            |
-| FR-009      | One rail component draws the canvas's last three cells from the same projection the cards read, at the same load, allocation and digits.                                                  |
+| Requirement | Planned behavior                                                                                                                                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One pure projector copies package results/records only; presentation adds no game calculation.                                                                                                                                                 |
+| FR-002      | One guarded `jumpRangeSummary()` supplies all three single ranges, total ranges and counts.                                                                                                                                                    |
+| FR-003      | All three standard-load results must be complete before the summary call, which resolves all three; exact blockers remain visible.                                                                                                             |
+| FR-004      | The canvas's own load feeds `mobilityMetricsResult()` and the same load with feature 005's settled ENG pips feeds `mobilityCapacitorMetricsResult()`; the five readings they draw, or exact issues. The pips are an input, never a drawn line. |
+| FR-005      | Incomplete mobility receives no hull fallback; package issues distinguish missing, disabled, shed, package-unresolved and invalid inputs.                                                                                                      |
+| FR-006      | Only the aggregate the canvas draws is drawn — `fuelCapacity`, in the fuel row's qualifier — and it is copied, not recomputed.                                                                                                                 |
+| FR-007      | Not drawn here — neither canvas lists per-module mass. The canvas's modules segment is `buildMass(load).modules`, never a local sum.                                                                                                           |
+| FR-008      | Only package FSD/thruster parameters the canvas draws appear, and only when present; absent facts stay absent.                                                                                                                                 |
+| FR-009      | One rail component draws the canvas's last three cells from the same projection the cards read, at the same load, allocation and digits.                                                                                                       |
 
 ## Cross-feature ownership
 

@@ -106,7 +106,7 @@ describe('build snapshot serializer', () => {
     loadout.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {
       grade: 5,
       quality: 1,
-      experimental: 'special_fsd_heavy',
+      experimentalEffectSymbol: 'special_fsd_heavy',
     });
 
     const drive = toBuildSnapshotV1(loadout).modules.find(
@@ -147,10 +147,10 @@ describe('build snapshot serializer', () => {
 
     expect(fitted?.preEngineered).toEqual({
       symbol: variant.symbol,
-      blueprint: variant.blueprint,
+      blueprint: variant.blueprintSymbol,
       grade: variant.grade,
       acquisition: variant.acquisition,
-      experimental: variant.experimental ?? null,
+      experimental: variant.experimentalEffectSymbol ?? null,
     });
     // The variant already says what its own engineering is, so the snapshot
     // does not repeat it as ordinary engineering.

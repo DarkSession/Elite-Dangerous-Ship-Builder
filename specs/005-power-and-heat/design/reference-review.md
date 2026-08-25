@@ -125,7 +125,9 @@ them, and the dashboard sits underneath.
 
 - **Hardpoints**: the two-segment `DEPLOYED` / `RETRACTED` toggle above `PRIORITY GROUPS`. Deployed
   is the selected default.
-- **Pips**: four whole steps per bank in the `PIPS` column of `POWER DISTRIBUTOR & PIP ALLOCATION`.
+- **Pips**: four whole steps per bank in the `PIPS` column of `POWER DISTRIBUTOR & PIPS` (renamed
+  from `POWER DISTRIBUTOR & PIP ALLOCATION` on 2026-08-25), and — since the same revision — four
+  more in the status rail, which is the same control in a second place.
   Four steps, three banks, and nothing else: **no half-pips, no running total, no Apply, no Reset
   and no error text**, because the artboard draws none of them. A pip is set and the result follows.
 - **Load**: no control on either artboard, and none is built.

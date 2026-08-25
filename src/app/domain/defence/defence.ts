@@ -1,4 +1,5 @@
 import type { ArmourMetrics } from '@elite-dangerous-almanac/core/ships/armour';
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { EngineeringGroupId } from '@elite-dangerous-almanac/core/ships/engineering-options';
 import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
 import type { CalculationResult } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
@@ -6,6 +7,7 @@ import type {
   CellBankMetrics,
   ShieldRecovery,
 } from '@elite-dangerous-almanac/core/ships/shield-recovery';
+import type { ShieldCapacitorMetrics } from '@elite-dangerous-almanac/core/ships/shield-capacitor';
 import type { ShieldMetrics } from '@elite-dangerous-almanac/core/ships/shields';
 import type {
   FittedModule,
@@ -18,7 +20,7 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
  * What the shields hold, what the hull takes, and what either of them is worth
  * against each kind of damage — as canvases 1c and 1d draw it in `DEFENCE`.
  *
- * One pure synchronous read of four `ShipLoadout` methods and one hull record,
+ * One pure synchronous read of five `BuildMetrics` methods and one hull record,
  * and nothing else. There is no store, no cache, no revision key and no
  * lifecycle: the loadout is already in memory, the calls are synchronous, and
  * the signal graph memoises the whole thing for the surfaces that read it. That
@@ -37,8 +39,24 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 export interface Defence {
   /** The SYS allocation every shield figure below was read at, in `[0, 4]`. */
   readonly systemsPips: number;
-  /** The complete `ShieldMetrics`, or every package issue that prevented it. */
+  /**
+   * The complete `ShieldMetrics`, or every package issue that prevented it.
+   *
+   * The **bare** shield: since Almanac 0.2.0 `shieldMetrics()` is pip-free, so
+   * its resistances and pools are the base figures an outfitting screen shows
+   * and they do not move when a pip does. What the allocation is worth is
+   * {@link capacitor}.
+   */
   readonly shield: CalculationView<ShieldSnapshot>;
+  /**
+   * What {@link systemsPips} is worth to the bare shield above.
+   *
+   * A second package call, `shieldCapacitorMetrics()`, over the same build. It
+   * carries the resistance the pips contribute on their own and the effective
+   * pool behind them, and it is the only thing on this projection that moves
+   * with the allocation (FR-002's 2026-08-25 second column).
+   */
+  readonly capacitor: CalculationView<CapacitorSnapshot>;
   /** Independently complete or unavailable: a shield may be one and this the other. */
   readonly recovery: CalculationView<RecoverySnapshot>;
   readonly cellBanks: CellBankCollection;
@@ -102,6 +120,22 @@ export interface ShieldSnapshot {
   readonly reinforcement: number;
   readonly massCurveMultiplier: number;
   readonly boostMultiplier: number;
+  readonly damage: readonly DamageDefenceValue[];
+}
+
+/**
+ * Every `ShieldCapacitorMetrics` field, at one SYS allocation.
+ *
+ * The damage list is the same four rows as {@link ShieldSnapshot.damage} in the
+ * same order, read at the allocation instead of bare, so a screen can put the
+ * two side by side line for line.
+ */
+export interface CapacitorSnapshot {
+  /** The allocation the package read this at, echoed back from its own result. */
+  readonly systemsPips: number;
+  readonly capacity: number;
+  readonly rechargeRate: number;
+  /** The resistance the pips contribute on their own, as a fraction. */
   readonly systemsResistance: number;
   readonly damage: readonly DamageDefenceValue[];
 }
@@ -273,10 +307,10 @@ const ARMOUR_ROLE_ORDER = [
 /**
  * Reads one build's defence under one SYS allocation.
  *
- * Both shield calls take the same explicit pips, because the package defaults
- * them differently — `0` for the metrics and `4` for the recovery — and a
- * screen showing the two side by side under one heading has to be showing one
- * allocation.
+ * `shieldMetricsResult()` takes no allocation at all since Almanac 0.2.0: it is
+ * the bare shield, and the pips are a separate calculation over its result. The
+ * capacitor and the recovery take the same explicit allocation, because a
+ * screen showing them under one heading has to be showing one.
  *
  * @throws Whatever the package throws. A hull the package does not carry cannot
  * be active — feature 001's construction boundary refuses it long before this —
@@ -291,14 +325,21 @@ export function projectDefence(loadout: ShipLoadout, conditions: DefenceConditio
   }
 
   const slots = loadout.slots();
-  const shield = toCalculationView(loadout.shieldMetricsResult({ systemsPips }), toShieldSnapshot);
-  const armour = toArmourSnapshot(loadout.armourMetrics());
+  // Every calculation lives on `BuildMetrics`, which reads the build it is
+  // handed rather than holding a copy of it (Almanac 0.2.0).
+  const metrics = BuildMetrics.of(loadout);
+  const shield = toCalculationView(metrics.shieldMetricsResult(), toShieldSnapshot);
+  const armour = toArmourSnapshot(metrics.armourMetrics());
 
   return {
     systemsPips,
     shield,
-    recovery: toCalculationView(loadout.shieldRecoveryResult({ systemsPips }), toRecoverySnapshot),
-    cellBanks: toCellBankCollection(loadout.cellBanks(), slots),
+    capacitor: toCalculationView(
+      metrics.shieldCapacitorMetricsResult({ systemsPips }),
+      toCapacitorSnapshot,
+    ),
+    recovery: toCalculationView(metrics.shieldRecoveryResult({ systemsPips }), toRecoverySnapshot),
+    cellBanks: toCellBankCollection(metrics.cellBanks(), slots),
     armour,
     hardness: ship.hardness,
     // No shield, no shield aggregates: the three figures these rows carry are
@@ -350,8 +391,17 @@ function toShieldSnapshot(metrics: ShieldMetrics): ShieldSnapshot {
     reinforcement: metrics.reinforcement,
     massCurveMultiplier: metrics.massCurveMultiplier,
     boostMultiplier: metrics.boostMultiplier,
-    systemsResistance: metrics.systemsResistance,
     damage: toDamageDefenceValues(metrics.resistances, metrics.effectiveHitPoints),
+  };
+}
+
+function toCapacitorSnapshot(capacitor: ShieldCapacitorMetrics): CapacitorSnapshot {
+  return {
+    systemsPips: capacitor.systemsPips,
+    capacity: capacitor.capacity,
+    rechargeRate: capacitor.rechargeRate,
+    systemsResistance: capacitor.systemsResistance,
+    damage: toDamageDefenceValues(capacitor.effectiveResistances, capacitor.effectiveHitPoints),
   };
 }
 

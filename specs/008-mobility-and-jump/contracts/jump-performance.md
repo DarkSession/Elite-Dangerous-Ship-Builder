@@ -9,7 +9,7 @@
 >    documents those three aggregates as figures it can always state, with `importOutcomes()` rather
 >    than a `CalculationResult` as the report. Of those three only `fuelCapacity` is read; the
 >    build's mass split comes from `buildMass(load)` and the thruster's curve from
->    `ShipLoadout.thrusters`. See FR-006 in [spec.md](../spec.md).
+>    `BuildMetrics.thrusters()`. See FR-006 in [spec.md](../spec.md).
 > 2. **Two cards, not five surfaces.** Canvases 1c and 1d draw `THRUSTER LOAD` and `FRAME SHIFT
 DRIVE`; the five stacked components and the per-module mass list described below are not built.
 >    See [design/reference-review.md](../design/reference-review.md) and
@@ -71,7 +71,7 @@ Locate the fitted source through `slots('core')` where `core === 'frameShiftDriv
 exact `key`, symbol and optional `on`. Only present post-engineering `effectiveStats` fields may be
 shown: `optMass`, `maxFuel`, `fuelMul` and `fuelPower`.
 
-After the standard-load guards complete, `ShipLoadout.frameShiftDrive` may supply the combined
+After the standard-load guards complete, `BuildMetrics.frameShiftDrive()` may supply the combined
 effective parameter record. Its `jumpBoost` is an active-booster/build parameter, not a field of the
 fitted FSD record. Label it accordingly and preserve zero when no booster contributes.
 

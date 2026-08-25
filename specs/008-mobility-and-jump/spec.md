@@ -35,7 +35,7 @@ inline notes below record each correction and why.
 - **FR-001**: Every mobility, mass and jump value MUST come from
   `@elite-dangerous-almanac/core`; the application MUST NOT implement a jump, range, mobility, mass
   or curve calculation.
-- **FR-002**: Standard jump values MUST use `ShipLoadout.jumpRangeSummary()` for maximum, unladen and
+- **FR-002**: Standard jump values MUST use `BuildMetrics.jumpRangeSummary()` for maximum, unladen and
   laden single and total ranges and jump counts.
 - **FR-003**: The application MUST call package jump functions only after required diagnostic mass
   and capacity results are complete. Failure MUST remain unavailable without a guessed value.
@@ -46,8 +46,10 @@ inline notes below record each correction and why.
   > take the whole anatomy region down, which is the failure this requirement exists to prevent. The
   > issues shown are those of the loads that failed, in the package's own order.
 
-- **FR-004**: Mobility MUST use `ShipLoadout.mobilityMetricsResult()` for selected fuel, cargo and ENG
-  pips, and every speed, boost and rotation field the canvas draws MUST come from that one result.
+- **FR-004**: Mobility MUST use `BuildMetrics.mobilityMetricsResult()` for the selected fuel and cargo
+  and `BuildMetrics.mobilityCapacitorMetricsResult()` for the same load at the settled ENG pips, and
+  every speed, boost and rotation field the canvas draws MUST come from whichever of those two
+  results owns it.
 
   > **Narrowed to what the canvas draws.** The requirement previously said "show every returned
   > speed, boost, rotation and multiplier field", and a first pass read that as a licence to draw
@@ -55,8 +57,8 @@ inline notes below record each correction and why.
   > `multiplier` does not occur anywhere in `.design/Ship Builder.dc.html`, in any case, and canvas
   > 1c's left card runs `SPEED ENVELOPE AT THIS MASS` straight from its five readings into the card
   > edge. Like FR-006, this requirement says _how_ a reading is obtained if it is drawn, never _that_
-  > it is drawn. The five readings the canvas draws are drawn, from one `mobilityMetricsResult()`
-  > call; the multipliers are not drawn. `MobilityMetrics.loadedMass` is likewise a returned field
+  > it is drawn. The five readings the canvas draws are drawn; the multipliers are not drawn.
+  > `MobilityMetrics.loadedMass` is likewise a returned field
   > that is not drawn as a figure — it is what the canvas's `91% OF OPTIMAL MASS` is measured
   > against.
   >
@@ -67,6 +69,14 @@ inline notes below record each correction and why.
   > shortcoming of a control this screen does not own is not licence to add words the template does
   > not have. See "Withdrawn addition" in the [reference review](./design/reference-review.md).
 
+  > **Split by the package, 2026-08-25.** Almanac 0.2.0 separated a build's own flight model from
+  > what an ENG allocation makes of it. `mobilityMetricsResult(load)` takes no pips at all and owns
+  > `boost`, which the package states independently of the allocation;
+  > `mobilityCapacitorMetricsResult({ ...load, enginesPips })` owns `speed`, `pitch`, `roll` and
+  > `yaw`. Both are read from the same completed standard load, the allocation is passed explicitly
+  > because the package's own default is four pips, and neither result borrows a figure from the
+  > other: if either is unavailable the envelope is unavailable, with that result's own issues.
+
 - **FR-005**: A `null` mobility result MUST remain unavailable. Hull base values MUST NOT be
   substituted for it.
 - **FR-006**: Aggregate mass and capacity MUST use the package's `unladenMass`, `fuelCapacity` and
@@ -74,12 +84,11 @@ inline notes below record each correction and why.
 
   > **Narrowed to what the canvas draws.** The requirement says _how_ an aggregate is obtained if it
   > is drawn, never _that_ it is drawn — and canvas 1c's left card draws no unladen mass and no cargo
-  > capacity anywhere. Its legend under the mass bar is `Hull` / `Modules` / `Fuel`, and the only
-  > capacity on it is `TANK 32 T + RESERVE` beside the fuel row. An earlier draft of this feature
+  > capacity anywhere. Its legend under the mass bar is `Hull` / `Modules` / `Fuel`. An earlier draft
+  > of this feature
   > added a four-row "Mass and capacity" group for all three getters, which was a reading the
-  > template does not have; it also printed the main tank three times on one card. So the screen
-  > draws `fuelCapacity` where the canvas draws it, in the fuel row's own qualifier, and does not
-  > draw `unladenMass` or `cargoCapacity` at all. Neither is read: the mass bar's track runs to the
+  > template does not have; it also printed the main tank three times on one card. So the screen does
+  > not draw `unladenMass` or `cargoCapacity` at all. Neither is read: the mass bar's track runs to the
   > thrusters' own maximum supported mass, which is the only maximum the package gives that bar, and
   > a build whose thruster publishes no curve has no track to scale against rather than a substitute
   > one.
@@ -127,9 +136,10 @@ inline notes below record each correction and why.
 
 ## Almanac Coverage
 
-`jumpRangeSummary()`, `mobilityMetricsResult()`, `standardLoadResult()`, `buildMass()`,
-`frameShiftDrive` and `fuelCapacity` provide every aggregate this screen reads. Mass lock is a
-catalogue fact from `getShipBySymbol()`. The thruster's mass curve is `ShipLoadout.thrusters`, the
+`jumpRangeSummary()`, `mobilityMetricsResult()`, `mobilityCapacitorMetricsResult()`,
+`standardLoadResult()`, `buildMass()`, `frameShiftDrive()` and `fuelCapacity` provide every aggregate
+this screen reads. Mass lock is a
+catalogue fact from `getShipBySymbol()`. The thruster's mass curve is `BuildMetrics.thrusters()`, the
 package's own counterpart of `frameShiftDrive`, which decides what a complete curve is so this
 application does not; Supercruise Overcharge capability is the drive record's own
 `supercruiseOvercharge` flag.

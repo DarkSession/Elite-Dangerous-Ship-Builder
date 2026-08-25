@@ -1,3 +1,4 @@
+import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import {
   divergentBandBuild,
   distributorOffBuild,
@@ -21,7 +22,7 @@ import {
 describe('the Almanac contract for power, distributor and heat', () => {
   describe('powerBudget()', () => {
     it('publishes the plant, both totals and the three deployed summaries', () => {
-      const budget = withinBudgetBuild().powerBudget();
+      const budget = BuildMetrics.of(withinBudgetBuild()).powerBudget();
 
       expect(Number.isFinite(budget.available)).toBe(true);
       expect(Number.isFinite(budget.deployed)).toBe(true);
@@ -32,7 +33,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('publishes five bands carrying both draws, both totals and both verdicts', () => {
-      const bands = withinBudgetBuild().powerBudget().bands;
+      const bands = BuildMetrics.of(withinBudgetBuild()).powerBudget().bands;
 
       expect(bands).toHaveLength(5);
       expect(bands.map((band) => band.priority)).toEqual([1, 2, 3, 4, 5]);
@@ -47,7 +48,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('publishes one consumer per drawing module, with its exact slot key', () => {
-      const consumers = withinBudgetBuild().powerBudget().consumers;
+      const consumers = BuildMetrics.of(withinBudgetBuild()).powerBudget().consumers;
 
       expect(consumers.length).toBeGreaterThan(0);
       for (const consumer of consumers) {
@@ -64,7 +65,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('keeps a switched-off module in the list, with its own draw', () => {
-      const consumer = distributorOffBuild()
+      const consumer = BuildMetrics.of(distributorOffBuild())
         .powerBudget()
         .consumers.find((entry) => entry.label === 'PowerDistributor');
 
@@ -73,21 +74,21 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('reports a band that a small plant sheds in both states', () => {
-      const band = shedBandBuild().powerBudget().bands[4];
+      const band = BuildMetrics.of(shedBandBuild()).powerBudget().bands[4];
 
       expect(band.poweredDeployed).toBe(false);
       expect(band.poweredRetracted).toBe(false);
     });
 
     it('reports a band whose two verdicts disagree', () => {
-      const band = divergentBandBuild().powerBudget().bands[4];
+      const band = BuildMetrics.of(divergentBandBuild()).powerBudget().bands[4];
 
       expect(band.poweredRetracted).toBe(true);
       expect(band.poweredDeployed).toBe(false);
     });
 
     it('reports infinite utilisation, not a large number, with no plant output', () => {
-      const budget = noPlantOutputBuild().powerBudget();
+      const budget = BuildMetrics.of(noPlantOutputBuild()).powerBudget();
 
       expect(budget.available).toBe(0);
       expect(budget.deployed).toBeGreaterThan(0);
@@ -98,7 +99,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
 
   describe('distributorMetrics()', () => {
     it('returns three capacitors and echoes the allocation it used', () => {
-      const metrics = withinBudgetBuild().distributorMetrics({
+      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetrics({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
@@ -114,7 +115,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('accepts every whole allocation the artboard draws, including none', () => {
-      const metrics = withinBudgetBuild().distributorMetrics({
+      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetrics({
         systemsPips: 0,
         enginesPips: 4,
         weaponsPips: 2,
@@ -127,8 +128,8 @@ describe('the Almanac contract for power, distributor and heat', () => {
 
     it('leaves capacity alone when the allocation changes', () => {
       const build = withinBudgetBuild();
-      const four = build.distributorMetrics({ systemsPips: 4 });
-      const none = build.distributorMetrics({ systemsPips: 0 });
+      const four = BuildMetrics.of(build).distributorMetrics({ systemsPips: 4 });
+      const none = BuildMetrics.of(build).distributorMetrics({ systemsPips: 0 });
 
       expect(none?.systems.capacity).toBe(four?.systems.capacity);
       expect(none?.systems.ratedRecharge).toBe(four?.systems.ratedRecharge);
@@ -136,14 +137,14 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('returns null — not zeroed capacitors — for a distributor it cannot resolve', () => {
-      expect(distributorOffBuild().distributorMetrics()).toBeNull();
-      expect(noPlantOutputBuild().distributorMetrics()).toBeNull();
+      expect(BuildMetrics.of(distributorOffBuild()).distributorMetrics()).toBeNull();
+      expect(BuildMetrics.of(noPlantOutputBuild()).distributorMetrics()).toBeNull();
     });
   });
 
   describe('heatMetrics()', () => {
     it('publishes three profile facts and exactly five scenarios', () => {
-      const heat = withinBudgetBuild().heatMetrics();
+      const heat = BuildMetrics.of(withinBudgetBuild()).heatMetrics();
 
       expect(heat).not.toBeNull();
       expect(Number.isFinite(heat?.heatEfficiency)).toBe(true);
@@ -162,7 +163,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('reports a settling scenario as a level that never reaches the gauge', () => {
-      const idle = withinBudgetBuild().heatMetrics()?.idle;
+      const idle = BuildMetrics.of(withinBudgetBuild()).heatMetrics()?.idle;
 
       expect(Number.isFinite(idle?.heatLevel)).toBe(true);
       expect(idle?.overheats).toBe(false);
@@ -170,7 +171,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('reports a non-settling scenario as infinity, and times its climb', () => {
-      const heat = overheatingBuild().heatMetrics();
+      const heat = BuildMetrics.of(overheatingBuild()).heatMetrics();
 
       expect(heat?.firingDrained.heatLevel).toBe(Infinity);
       expect(heat?.firingDrained.gauge).toBe(Infinity);
@@ -184,7 +185,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('returns null — not a zeroed profile — with no powered plant', () => {
-      expect(noPlantOutputBuild().heatMetrics()).toBeNull();
+      expect(BuildMetrics.of(noPlantOutputBuild()).heatMetrics()).toBeNull();
     });
 
     it('still returns five scenarios for a build with no weapons fitted', () => {
@@ -192,7 +193,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
       for (const slot of ['SmallHardpoint1', 'SmallHardpoint2']) {
         build.removeModule(slot);
       }
-      const heat = build.heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetrics();
 
       expect(heat).not.toBeNull();
       expect(heat?.firingSustained.thermalLoad).toBeGreaterThanOrEqual(0);

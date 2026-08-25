@@ -112,3 +112,34 @@ Adopt the reference's capability hierarchy, peer defence regions, damage relatio
 order. Reject its sample values, arithmetic implications, incomplete state set and implementation
 literals wherever they conflict with FR-001–FR-009, Almanac or the constitution. Repository tokens,
 components and these plan-time screen definitions remain authoritative.
+
+## Canvas revision, 2026-08-25
+
+One change reaches this feature, and it is an addition rather than a correction.
+
+**The shield table gained a fifth column, `MJ × N SYS PIPS`.** `N` is the SYS allocation the column
+was read at; the canvas happens to sample four, and by the rule stated above — "the mock's sample
+figures are illustrations, not data" — four is the sample and `N` is the column. The sampled cell reads
+`7,805` against the kinetic row's `3,122`, which is `1,842 / (1 − 0.764)` where `0.764` stacks the
+row's own `41%` with the package's systems resistance at four pips. So the canvas is drawing the
+same effective pool twice: bare, and at the SYS allocation.
+
+That resolves what the `RESIST` and `MJ` columns are, which the previous drawing left open and this
+feature had read at the standing allocation — they are the **bare** shield at zero pips, the
+package's own documented default, and the standing allocation moves to the new column alone. The
+resistance percentages are therefore base values; nothing on the table except the fifth column moves
+when a pip moves.
+
+Note the canvas sample is internally inconsistent — its distributor and rail stand at SYS 2 while
+this heading reads `4`. The sample is not the requirement, and the heading follows the allocation.
+
+Two package calls, one per column. Almanac 0.2.0 split them for us: `shieldMetrics()` is the bare
+shield by construction — it takes no allocation at all — and `shieldCapacitorMetrics({ systemsPips })`
+is the separate reading the fifth column draws, with `systemsResistance` among its returned fields.
+Nothing is scaled, blended or apportioned here.
+
+**Everything else on canvas 1d caught up to canvas 1c** — the `RESIST` column, the source rows with
+their module identities, `RECHARGE` / `0→100%` / `BROKEN RESET`, `HARDNESS` / `MODULE PROT.` /
+`INTEGRITY`, and `ARMOUR · 3,914 HP EFFECTIVE` in place of `ARMOUR · 2,784 INTEGRITY`. All of it is
+already built: one DOM at both widths was this feature's answer, and the drawing now agrees with it.
+No change follows from that half of the revision.

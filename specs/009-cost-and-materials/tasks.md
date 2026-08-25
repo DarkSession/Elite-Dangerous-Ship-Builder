@@ -231,7 +231,8 @@ is not named, and that a build with no engineering draws no materials block at a
 - [x] T032 [P] Record the Cost and Materials capability, its reuse of feature 002's engineering-cost
       boundary, the three ruled application-owned counts, and the out-of-scope historical purchase
       values, currency conversion, material traces and unpriced evidence in `AGENTS.md` and
-      `README.md`
+      `README.md`.
+      _Superseded 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table, because its per-feature blocks duplicated these spec directories and went stale whenever the canvas moved. This feature's boundary and out-of-scope list live in its own `spec.md` and `design/`._
 - [x] T033 Execute every section of `specs/009-cost-and-materials/quickstart.md`, including the
       cargo-rack stop condition and the package-pin check, and fix each divergence
 - [x] T034 Run the `pnpm run check` pipeline declared in `package.json` and confirm formatting,

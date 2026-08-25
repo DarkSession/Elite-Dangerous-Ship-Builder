@@ -609,7 +609,7 @@ function reconstructLoadout(codec: CodecContext, state: CodecState): ShipLoadout
     loadout.applyBlueprint(slots[slotIndex], blueprint, {
       grade: engineering.level,
       quality: 1,
-      ...(experimental === undefined ? {} : { experimental }),
+      ...(experimental === undefined ? {} : { experimentalEffectSymbol: experimental }),
     });
   });
   return loadout;
@@ -1719,7 +1719,7 @@ function resolvePreEngineeredVariant(codec: CodecContext, index: number): PreEng
   const variant = PRE_ENGINEERED_MODULES.find(
     (candidate) =>
       normalise(candidate.symbol) === normalise(symbol) &&
-      normalise(candidate.blueprint) === normalise(blueprint) &&
+      normalise(candidate.blueprintSymbol) === normalise(blueprint) &&
       candidate.grade === identity.grade &&
       candidate.acquisition === identity.acquisition,
   );
@@ -1729,7 +1729,7 @@ function resolvePreEngineeredVariant(codec: CodecContext, index: number): PreEng
 
 function preEngineeredVariantIndex(codec: CodecContext, variant: PreEngineeredVariant): number {
   const module = codec.moduleIndex.get(normalise(variant.symbol));
-  const blueprint = codec.blueprintIndex.get(normalise(variant.blueprint));
+  const blueprint = codec.blueprintIndex.get(normalise(variant.blueprintSymbol));
   if (module === undefined || blueprint === undefined) return -1;
   return codec.tables.PRE_ENGINEERED_VARIANTS.findIndex(
     (identity) =>
@@ -1763,11 +1763,13 @@ function resolvePreEngineeredEngineering(
   }
   const resolvedVariant = {
     ...variant,
-    ...(experimental === undefined ? { experimental: undefined } : { experimental }),
+    ...(experimental === undefined
+      ? { experimentalEffectSymbol: undefined }
+      : { experimentalEffectSymbol: experimental }),
   } as PreEngineeredVariant;
   const modifiers = getPreEngineeredJournalModifiers(resolvedVariant);
   return {
-    BlueprintName: variant.blueprint,
+    BlueprintName: variant.blueprintSymbol,
     Level: variant.grade,
     Quality: 1,
     ...(experimental === undefined ? {} : { ExperimentalEffect: experimental }),

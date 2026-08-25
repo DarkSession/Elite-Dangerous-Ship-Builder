@@ -404,7 +404,7 @@ describe('candidate search', () => {
 
     expect(applyQuery(state, variant.module.symbol).status).toBe('noMatches');
     if (variant.kind === 'variant') {
-      expect(applyQuery(state, variant.variant.blueprint).status).toBe('noMatches');
+      expect(applyQuery(state, variant.variant.blueprintSymbol).status).toBe('noMatches');
       expect(applyQuery(state, variant.variant.acquisition).status).toBe('noMatches');
     }
 

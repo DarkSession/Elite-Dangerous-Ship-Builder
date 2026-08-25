@@ -69,13 +69,11 @@
   }
 }
 
-// Canvas 1a draws the rail only with a hull in it. With none selected there is
-// no rail: no ground, no hairline, no reserved track — the manifest has the
-// width, and the region-pair's second column is not there to be seen.
-.catalogue:not(.catalogue--detail-open) {
-  grid-template-columns: 1fr;
-}
-
+// Canvas 1a draws the rail only with a hull in it, so an empty inspector is not
+// drawn: no ground, no hairline, nothing. Its *track* is reserved all the same,
+// because the manifest is what a Commander is reading when they open their
+// first hull — and a manifest that loses 340px under the cursor reflows five
+// columns out from under them. The track costs nothing while it is empty.
 .catalogue:not(.catalogue--detail-open) .catalogue__inspector {
   display: none;
 }
