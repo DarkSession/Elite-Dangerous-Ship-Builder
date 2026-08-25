@@ -19,11 +19,12 @@ import {
   SaveConflictService,
   type ConflictChoice,
 } from '../../application/build-library/save-conflict.service';
+import { RetentionService } from '../../application/build-library/retention.service';
+import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import { ScreenChrome } from '../shared/screen-chrome';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { ConfirmDialog } from '../../ui/components/confirm-dialog/confirm-dialog';
@@ -31,15 +32,33 @@ import {
   RecordManager,
   type ManageableRecord,
 } from '../../ui/components/record-manager/record-manager';
+import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import {
   ResponsiveRecordList,
+  type RecordColumns,
   type RecordListGroup,
   type UnavailableRecord,
 } from '../../ui/components/record-list/responsive-record-list';
+import { TextField } from '../../ui/components/text-field/text-field';
+import { Layer } from '../../ui/components/layer/layer';
 import type { SavedBuild } from '../../ui/components/saved-build-card/saved-build-card';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { SaveBuildDialog, type SaveRequest } from './save-build.dialog';
+
+/**
+ * One action the committing footer offers on the record that was chosen.
+ *
+ * The actions left the rows on 2026-08-25 and became shared: the reference
+ * draws dense rows and commits from a footer, and four buttons repeated into
+ * every row is what made the built version a wall of panels rather than a
+ * library (build-library design, "The library is not built to the canvas").
+ */
+interface RecordAction {
+  readonly id: string;
+  readonly label: string;
+  readonly emphasis: 'primary' | 'secondary' | 'quiet' | 'danger';
+}
 
 /** A record awaiting a delete confirmation. */
 interface PendingDelete {
@@ -67,10 +86,12 @@ interface PendingDelete {
     ActionButton,
     ChoiceDialog,
     ConfirmDialog,
+    Layer,
     RecordManager,
     ResponsiveRecordList,
     SaveBuildDialog,
     StatusNotice,
+    TextField,
   ],
   templateUrl: './build-library.page.html',
   styleUrl: './build-library.page.scss',
@@ -84,9 +105,11 @@ export class BuildLibraryPage {
   readonly #conflicts = inject(SaveConflictService);
   readonly #invalidation = inject(RecordInvalidationService);
   readonly #records = inject(LocalRecordRepository);
+  readonly #retention = inject(RetentionService);
+  readonly #clock = inject(ClockAdapter);
+  readonly #announcements = inject(AnnouncementService);
   readonly #active = inject(ActiveBuildStore);
   readonly #messages = inject(MessageService);
-  readonly #chrome = inject(ScreenChrome);
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
@@ -100,26 +123,106 @@ export class BuildLibraryPage {
   readonly deleteConfirmLabel = this.#messages.messageSignal('library.delete.confirm');
   readonly deleteCancelLabel = this.#messages.messageSignal('library.delete.cancel');
   readonly conflictTitle = this.#messages.messageSignal('library.conflict.title');
+  readonly searchLabel = this.#messages.messageSignal('library.search.label');
+  readonly searchDescription = this.#messages.messageSignal('library.search.description');
+  readonly nothingChosen = this.#messages.messageSignal('library.chosen.none');
 
   readonly isEmpty = this.#library.isEmpty;
   readonly status = this.#library.status;
 
+  readonly #search = signal('');
+  readonly #chosen = signal<string | null>(null);
   readonly #pendingDelete = signal<PendingDelete | null>(null);
   readonly #saveOpen = signal(false);
   readonly #saveName = signal('');
   readonly #managing = signal(false);
   readonly #failure = signal<string | null>(null);
 
+  readonly search = this.#search.asReadonly();
   readonly pendingDelete = this.#pendingDelete.asReadonly();
   readonly saveOpen = this.#saveOpen.asReadonly();
   readonly managing = this.#managing.asReadonly();
   readonly failure = this.#failure.asReadonly();
 
-  readonly countText = computed(() =>
-    this.#messages.message('library.count', {
-      count: this.#formatters.integer(this.#library.total()),
-    }),
+  /**
+   * The count the header carries: how many are shown, and of how many.
+   *
+   * The reference draws it beside the search field, so it is the one number
+   * that answers "did my search find anything" without a reader having to
+   * count rows (canvas 1a, "Header row").
+   */
+  readonly countText = computed(() => {
+    const total = this.#library.total();
+    const shown = this.matchCount();
+    return shown === total
+      ? this.#messages.message('library.count', { count: this.#formatters.integer(total) })
+      : this.#messages.message('library.count.matching', {
+          count: this.#formatters.integer(shown),
+          total: this.#formatters.integer(total),
+        });
+  });
+
+  /** The reference's column headers, drawn once over the body. */
+  readonly columns = computed<RecordColumns>(() => ({
+    build: this.#messages.message('library.column.build'),
+    hull: this.#messages.message('library.column.hull'),
+    modified: this.#messages.message('library.column.modified'),
+  }));
+
+  /** How many records the current search leaves listed. */
+  readonly matchCount = computed(() =>
+    this.groups().reduce((total, group) => total + group.builds.length, 0),
   );
+
+  /** True when there are records but the search matches none of them. */
+  readonly noMatch = computed(
+    () => !this.#library.isEmpty() && this.matchCount() === 0 && this.#query().length > 0,
+  );
+
+  readonly noMatchText = computed(() =>
+    this.#messages.message('library.no-match', { query: this.#search().trim() }),
+  );
+
+  /** The record the footer's actions act on, when one has been chosen. */
+  readonly chosen = computed(() => {
+    const chosen = this.#chosen() ?? this.#currentRecordId();
+    return chosen !== null && this.#library.find(chosen) !== null ? chosen : null;
+  });
+
+  /** What each footer action would do, named for the record it would do it to. */
+  readonly chosenActions = computed<readonly RecordAction[]>(() => {
+    const record = this.chosen() === null ? null : this.#library.find(this.chosen()!);
+    if (record === null) {
+      return [];
+    }
+
+    const build = record.name ?? this.#derivedTitle(record);
+    const unnamed = record.kind === 'working';
+    return [
+      {
+        id: 'delete',
+        label: this.#messages.message('library.action.delete', { build }),
+        emphasis: 'danger' as const,
+      },
+      {
+        id: unnamed ? 'name' : 'rename',
+        label: this.#messages.message(unnamed ? 'library.action.name' : 'library.action.rename', {
+          build,
+        }),
+        emphasis: 'quiet' as const,
+      },
+      {
+        id: 'duplicate',
+        label: this.#messages.message('library.action.duplicate', { build }),
+        emphasis: 'quiet' as const,
+      },
+      {
+        id: 'open',
+        label: this.#messages.message('library.action.open', { build }),
+        emphasis: 'primary' as const,
+      },
+    ];
+  });
 
   readonly storageNotice = computed(() =>
     this.#library.status() === 'unavailable'
@@ -131,19 +234,13 @@ export class BuildLibraryPage {
     {
       id: 'working',
       label: this.#messages.message('library.group.unnamed'),
-      builds: this.#library
-        .working()
-        .map((entry) => this.#toSavedBuild(entry))
-        .filter(present),
+      builds: this.#listed(this.#library.working()),
       emptyLabel: this.#messages.message('library.empty.description'),
     },
     {
       id: 'named',
       label: this.#messages.message('library.group.named'),
-      builds: this.#library
-        .named()
-        .map((entry) => this.#toSavedBuild(entry))
-        .filter(present),
+      builds: this.#listed(this.#library.named()),
       emptyLabel: this.#messages.message('library.empty.description'),
     },
   ]);
@@ -268,10 +365,30 @@ export class BuildLibraryPage {
   readonly canOverwriteSource = computed(() => this.#active.sourceNamed() !== null);
 
   constructor() {
-    // The command bar carries this screen's count, as it does the shipyard's.
-    effect((onCleanup) => {
-      this.#chrome.setCount(this.countText());
-      onCleanup(() => this.#chrome.setCount(null));
+    // The count left the command bar on 2026-08-25: the reference draws it in
+    // this surface's own header row, beside the search that changes it, and one
+    // number in two places is one number that can disagree with itself (T158).
+    //
+    // The narrowed count is the one thing that changes without a Commander
+    // looking at it, so it is the one thing announced — politely, and never on
+    // the first run, where it is initial content already in reading order.
+    let opened = false;
+    effect(() => {
+      const shown = this.matchCount();
+      if (!opened) {
+        opened = true;
+        return;
+      }
+      this.#announcements.announce({
+        kind: 'library.match-count',
+        revision: shown,
+        urgency: 'polite',
+        messageKey: 'library.count.matching',
+        params: {
+          count: this.#formatters.integer(shown),
+          total: this.#formatters.integer(this.#library.total()),
+        },
+      });
     });
 
     // Any change made by another page invalidates the listing, and the answer
@@ -286,6 +403,26 @@ export class BuildLibraryPage {
 
   close(): void {
     void this.#router.navigateByUrl(NAVIGATION_ROUTES.catalogue);
+  }
+
+  /** Narrows the list. Changes no record, no order and nothing stored. */
+  changeSearch(query: string): void {
+    this.#search.set(query);
+  }
+
+  /** Chooses the row the footer's actions act on. */
+  chooseRecord(recordId: string): void {
+    this.#chosen.set(recordId);
+    this.#failure.set(null);
+  }
+
+  /** Commits one footer action on the record that was chosen. */
+  commit(actionId: string): void {
+    const recordId = this.chosen();
+    if (recordId === null) {
+      return;
+    }
+    void this.selectAction({ recordId, actionId });
   }
 
   async selectAction({
@@ -506,39 +643,111 @@ export class BuildLibraryPage {
       return null;
     }
     const record = entry.record;
-    const unnamed = record.kind === 'working';
-    const label = record.name ?? this.#messages.message('library.record.unnamed');
+    const title = record.name ?? this.#derivedTitle(record);
 
     return {
       id: record.id,
-      name: record.name,
+      title,
+      named: record.name !== null,
       hull: this.#gameText.shipName(record.hullSymbol),
       modified: this.#instant(record.modifiedAt),
       validation: this.#validationOf(record.validation),
+      issues: this.#issuesOf(record.validation),
+      remaining: this.#remainingLife(record),
+      current: record.id === this.#currentRecordId(),
+      currentLabel: this.#messages.message('library.record.current'),
+      chooseLabel: this.#messages.message('library.record.choose', { build: title }),
       note: this.#noteFor(record),
-      actions: [
-        {
-          id: 'open',
-          label: this.#messages.message('library.action.open', { build: label }),
-          emphasis: 'secondary' as const,
-        },
-        {
-          id: unnamed ? 'name' : 'rename',
-          label: this.#messages.message(unnamed ? 'library.action.name' : 'library.action.rename', {
-            build: label,
-          }),
-        },
-        {
-          id: 'duplicate',
-          label: this.#messages.message('library.action.duplicate', { build: label }),
-        },
-        {
-          id: 'delete',
-          label: this.#messages.message('library.action.delete', { build: label }),
-          emphasis: 'danger' as const,
-        },
-      ],
     };
+  }
+
+  /**
+   * What the workspace is holding, as a record identity.
+   *
+   * Its own unnamed record where it has forked one; the named record it was
+   * opened from where it has not. Both are "the build I am in", which is the
+   * first question a Commander opening this list has (FR-010).
+   */
+  #currentRecordId(): string | null {
+    return this.#active.autosaveRecordId() ?? this.#active.sourceNamed()?.recordId ?? null;
+  }
+
+  /**
+   * A title for a record nobody has named.
+   *
+   * The build's own ship name, else its ident, else the hull — read from the
+   * build each time the row is drawn and never written onto the record, so it
+   * follows the build rather than becoming a stale name of its own. Set apart
+   * from a Commander's name by the row rather than passed off as one (FR-010,
+   * clarification 2026-08-25).
+   */
+  #derivedTitle(record: LocalRecordV1): string {
+    const build = record.build;
+    return (
+      build.shipName?.trim() ||
+      build.shipIdent?.trim() ||
+      this.#hullName(record.hullSymbol) ||
+      this.#messages.message('library.record.unnamed')
+    );
+  }
+
+  /**
+   * How long this record has left, in the reader's own words.
+   *
+   * Only an unnamed one has a deadline, and stating it on the row is the whole
+   * of the notice: nothing announces the removal afterwards, because a message
+   * about a build already gone offers nothing to act on (FR-010, FR-013).
+   */
+  #remainingLife(record: LocalRecordV1): string | null {
+    const deadline = this.#retention.expiresAt(record);
+    return deadline === null
+      ? null
+      : this.#messages.message('library.record.expires', {
+          when: this.#formatters.relativeTime(deadline, this.#clock.now()),
+        });
+  }
+
+  /**
+   * The issue count the reference draws on its warm plate, with its own words.
+   *
+   * A count, not a colour, and never a count of nothing: a valid and complete
+   * build carries no badge at all (FR-010).
+   */
+  #issuesOf(validation: { valid: boolean; complete: boolean }): SavedBuild['issues'] {
+    const issues = (validation.valid ? 0 : 1) + (validation.complete ? 0 : 1);
+    if (issues === 0) {
+      return null;
+    }
+    const count = this.#formatters.integer(issues);
+    return { count, label: this.#messages.message('library.record.issues', { count }) };
+  }
+
+  /** The rows one group contributes, narrowed by whatever is being searched for. */
+  #listed(entries: readonly StoredRecordEntry[]): readonly SavedBuild[] {
+    const query = this.#query();
+    return entries
+      .map((entry) => this.#toSavedBuild(entry))
+      .filter(present)
+      .filter((build) => query.length === 0 || this.#matches(build, query));
+  }
+
+  /** The search text, normalized once so every row is compared the same way. */
+  #query(): string {
+    return this.#search().trim().toLocaleLowerCase(this.#formatters.locale);
+  }
+
+  /**
+   * Whether a row matches what is being searched for.
+   *
+   * Over the fields the row itself shows — its title, its one line of note and
+   * its hull — because a search that matched something invisible would be a
+   * list a Commander could not explain (build-library design, "Searched").
+   */
+  #matches(build: SavedBuild, query: string): boolean {
+    const locale = this.#formatters.locale;
+    return [build.title, build.note, build.hull.text]
+      .filter((part): part is string => typeof part === 'string')
+      .some((part) => part.toLocaleLowerCase(locale).includes(query));
   }
 
   /**

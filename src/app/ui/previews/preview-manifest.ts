@@ -1998,27 +1998,52 @@ const ANACONDA_NAME = ANACONDA.name;
 
 const NAMED_BUILD = {
   id: 'record-1',
-  name: 'Anaconda explorer',
+  title: 'Anaconda explorer',
+  named: true,
   hull: ANACONDA_NAME,
   modified: '12 August 2026, 14:20',
   validation: { label: 'Complete', tone: 'success' },
+  issues: null,
+  remaining: null,
+  current: false,
+  currentLabel: 'Current build',
+  chooseLabel: 'Choose Anaconda explorer',
   note: 'Neutron route to Colonia. Swap the AFMU before the return leg.',
-  actions: [
-    { id: 'open', label: 'Open Anaconda explorer', emphasis: 'primary' },
-    { id: 'rename', label: 'Rename Anaconda explorer' },
-    { id: 'duplicate', label: 'Duplicate Anaconda explorer' },
-    { id: 'delete', label: 'Delete Anaconda explorer', emphasis: 'danger' },
-  ],
 } as const;
 
-/** A build that was never named and carries no note of its own. */
+/**
+ * A build nobody has named, titled by what the build calls itself.
+ *
+ * Never an invented name and never one written onto the record: the ship's own
+ * name, its ident, or the hull, read each time the row is drawn (FR-010).
+ */
 const WORKING_BUILD = {
   ...NAMED_BUILD,
   id: 'record-working',
-  name: null,
-  note: null,
-  actions: [{ id: 'open', label: 'Open the unnamed build', emphasis: 'primary' }],
+  title: 'Vindicator',
+  named: false,
+  note: 'Unsaved edits to “Anaconda explorer”',
+  remaining: 'Deleted in 6 days unless it is saved',
+  chooseLabel: 'Choose Vindicator',
 } as const;
+
+/** The record the workspace is holding right now. */
+const CURRENT_BUILD = {
+  ...NAMED_BUILD,
+  id: 'record-current',
+  current: true,
+} as const;
+
+/** A build whose recorded verdict counted issues against it. */
+const ISSUE_BUILD = {
+  ...NAMED_BUILD,
+  id: 'record-issues',
+  validation: { label: 'Invalid', tone: 'error' },
+  issues: { count: '2', label: '2 issues recorded when this build was saved' },
+} as const;
+
+/** The column headers the reference draws once over the whole body. */
+const RECORD_COLUMNS = { build: 'Build', hull: 'Hull', modified: 'Edited' } as const;
 
 registerPreview({
   componentId: 'saved-build-card',
@@ -2031,7 +2056,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: true,
       exposedStates: [],
       relationships: ['label', 'description'],
-      textEquivalents: ['validation verdict', 'working state'],
+      textEquivalents: ['validation verdict', 'current record', 'remaining life'],
     },
     ['default', 'empty', 'error'],
   ),
@@ -2040,9 +2065,9 @@ registerPreview({
       'default',
       { build: NAMED_BUILD },
       [
-        'every action names the record it acts on, so no label reads as a bare verb',
+        'choosing the row is one action that names the record it would act on',
         'the recorded verdict is words with a tone, never a coloured dot',
-        'each fact is paired with the label that names it',
+        'the row reads title, hull and edited-at in the order the headers name',
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
     ),
@@ -2050,10 +2075,15 @@ registerPreview({
       'empty',
       { build: WORKING_BUILD },
       [
-        'a build with no name is shown as an unnamed build rather than given an invented one',
-        'an absent note is omitted rather than rendered as an empty field',
+        'a build with no name is titled by what the build calls itself, set apart from a name',
+        'an unnamed record says which save it holds unsaved edits to',
+        'the remaining life is stated on the row, in the active locale',
       ],
       ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'disabled',
+      'A stored build a Commander could not choose would be a build stranded in their own library. The record the workspace holds is drawn in the list preview, where a marked row can be seen beside unmarked ones.',
     ),
     notApplicable(
       'loading',
@@ -2062,20 +2092,13 @@ registerPreview({
     state(
       'error',
       {
-        build: {
-          ...NAMED_BUILD,
-          validation: { label: 'Power draw exceeds the plant’s output', tone: 'error' },
-        },
+        build: ISSUE_BUILD,
       },
       [
         'the verdict recorded when the build was saved is stated in words',
-        'an invalid build is still openable, renameable and deletable',
+        'the issue count is a number on a plate with its own words beside it',
       ],
       ['normal', 'expanded-copy', 'rtl'],
-    ),
-    notApplicable(
-      'disabled',
-      'A stored build a Commander could not act on would be a build stranded in their own library.',
     ),
   ],
 });
@@ -2100,6 +2123,8 @@ registerPreview({
       'default',
       {
         label: 'Saved builds',
+        columns: RECORD_COLUMNS,
+        chosen: 'record-current',
         groups: [
           {
             id: 'working',
@@ -2110,12 +2135,18 @@ registerPreview({
           {
             id: 'named',
             label: 'Named builds',
-            builds: [NAMED_BUILD, { ...NAMED_BUILD, id: 'record-2', name: 'Krait combat' }],
+            builds: [
+              CURRENT_BUILD,
+              NAMED_BUILD,
+              ISSUE_BUILD,
+              { ...NAMED_BUILD, id: 'record-2', title: 'Krait combat' },
+            ],
             emptyLabel: 'No named builds yet.',
           },
         ],
       },
       [
+        'the column headers are drawn once over the body rather than into every row',
         'each group carries its own heading and stays in one reading order',
         'the narrow and wide compositions present the same records in the same order',
       ],
@@ -2125,6 +2156,7 @@ registerPreview({
       'empty',
       {
         label: 'Saved builds',
+        columns: RECORD_COLUMNS,
         groups: [
           {
             id: 'named',
@@ -2144,6 +2176,7 @@ registerPreview({
       'error',
       {
         label: 'Saved builds',
+        columns: RECORD_COLUMNS,
         groups: [
           {
             id: 'named',

@@ -1,76 +1,86 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import type { GameTextPresentation } from '../../../i18n/game-text.presenter';
-import { MessageService } from '../../../i18n/message.service';
 import { relationId } from '../../a11y/text-equivalence';
-import { ActionButton } from '../action/action-button';
 import { GameText } from '../game-text/game-text';
-import { StatusNotice } from '../status/status-notice';
 
-/** One action a Commander can take on one record. */
-export interface RecordAction {
-  readonly id: string;
-  /** The action's own words, naming the record it acts on. */
-  readonly label: string;
-  readonly emphasis?: 'primary' | 'secondary' | 'quiet' | 'danger';
-}
-
-/** One stored build, as the library shows it. */
+/** One stored build, as the library's list draws it. */
 export interface SavedBuild {
   readonly id: string;
   /**
-   * The local name, or `null` for a build nobody has named.
+   * What the row is titled.
    *
-   * An unnamed build is shown as what it is rather than given an invented name:
-   * "Unnamed build" is true, and "Untitled" would be a name it does not have.
+   * A Commander's own name where they gave one. Where they did not, whoever
+   * builds this says what the build calls itself instead — never an invented
+   * name, and never written onto the record (FR-010).
    */
-  readonly name: string | null;
+  readonly title: string;
+  /** Whether that title is a name a Commander gave, rather than one derived. */
+  readonly named: boolean;
+  /** The one line beneath the title: a note, or which save these edits are of. */
+  readonly note: string | null;
   readonly hull: GameTextPresentation;
   /** The last-modified instant, already formatted for the active locale. */
   readonly modified: string;
   /** The package's verdict when the build was saved, in words. */
   readonly validation: { readonly label: string; readonly tone: 'success' | 'warning' | 'error' };
-  readonly note: string | null;
-  readonly actions: readonly RecordAction[];
+  /** How many issues that verdict counted, or `null` where it counted none. */
+  readonly issues: { readonly count: string; readonly label: string } | null;
+  /** How long an unnamed record has left, in words. `null` for a named one. */
+  readonly remaining: string | null;
+  /** True for the record the workspace is holding right now. */
+  readonly current: boolean;
+  /** "Current build" — the marker's meaning, in words rather than in amber. */
+  readonly currentLabel: string;
+  /** The whole action of choosing this row, in words. */
+  readonly chooseLabel: string;
 }
 
 /**
- * One stored build.
+ * One row of the library.
  *
- * The validation state is a piece of text with a tone, never a coloured dot: a
- * Commander has to be able to tell an invalid build from a complete one
- * without seeing the colour, and "recorded at the time it was saved" is part
- * of what it means (FR-010).
+ * **Rebuilt to the canvas 2026-08-25.** This was a card in a grid, carrying its
+ * own field labels and its own row of buttons. The reference draws a dense row
+ * under shared column headers, with the actions committed from a footer that
+ * acts on the chosen row — which is what makes a library of a week's building
+ * readable rather than a wall of panels (build-library design, "The library is
+ * not built to the canvas").
  *
- * Every action names the record it acts on. A row of buttons reading "Open",
- * "Rename", "Delete" is unusable to anyone reading them out of context, and
- * "Delete" is the one where being wrong costs the most.
+ * Two states are carried here and neither is carried by colour alone. The
+ * record the workspace holds is `aria-current` and says so in words; the
+ * recorded validation is a count on a warm plate with its own words beside it
+ * (FR-010).
  */
 @Component({
   selector: 'edsb-saved-build-card',
-  imports: [ActionButton, GameText, StatusNotice],
+  imports: [GameText],
   templateUrl: './saved-build-card.html',
   styleUrl: './saved-build-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SavedBuildCard {
-  readonly #messages = inject(MessageService);
-
   readonly build = input.required<SavedBuild>();
 
-  readonly actionSelected = output<{ recordId: string; actionId: string }>();
+  /** True while this is the row the footer's actions would act on. */
+  readonly chosen = input(false);
+
+  readonly chose = output<string>();
 
   readonly cardId = relationId('saved-build');
 
-  readonly unnamedLabel = this.#messages.messageSignal('library.record.unnamed');
-  readonly hullLabel = this.#messages.messageSignal('library.record.hull');
-  readonly modifiedLabel = this.#messages.messageSignal('library.record.modified');
-  readonly validationLabel = this.#messages.messageSignal('library.record.validation');
-  readonly noteLabel = this.#messages.messageSignal('library.record.note');
+  /** Everything a reader needs from the row, in one accessible name. */
+  readonly accessibleName = computed(() => {
+    const build = this.build();
+    return [
+      build.chooseLabel,
+      build.current ? build.currentLabel : null,
+      build.issues?.label ?? null,
+      build.remaining,
+    ]
+      .filter((part): part is string => part !== null)
+      .join('. ');
+  });
 
-  /** The name, or the words that say it has none. */
-  readonly title = computed(() => this.build().name ?? this.unnamedLabel());
-
-  select(action: RecordAction): void {
-    this.actionSelected.emit({ recordId: this.build().id, actionId: action.id });
+  choose(): void {
+    this.chose.emit(this.build().id);
   }
 }

@@ -100,6 +100,20 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
  * be waiting for the bug.
  */
 /**
+ * Chooses a row, which is what the footer's actions act on.
+ *
+ * The reference draws dense rows and commits from a footer, so acting on a
+ * record is two presses: choose it, then commit (build-library design,
+ * "Reference composition").
+ */
+async function chooseRecord(page: Page, title: string): Promise<void> {
+  // Anchored, because a row's accessible name carries its states after the
+  // title: "Choose Anaconda" would otherwise also match "Anaconda explorer".
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  await page.getByRole('button', { name: new RegExp(`^Choose ${escaped}(\\.|$)`) }).click();
+}
+
+/**
  * Opens a stored build from the library and waits for the workspace.
  *
  * The listing is built from storage after the page is up, so a press can land
@@ -109,9 +123,10 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
  * retried until the workspace is reached rather than made once and asserted
  * after.
  */
-async function openRecord(page: Page, name: string): Promise<void> {
+async function openRecord(page: Page, title: string): Promise<void> {
   await expect(async () => {
-    await page.getByRole('button', { name }).click();
+    await chooseRecord(page, title);
+    await page.getByRole('button', { name: `Open ${title}` }).click();
     await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 2_000 });
   }).toPass({ timeout: 15_000 });
 }
@@ -139,9 +154,11 @@ test.describe('the build library', () => {
 
     await expect(library(page)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Unnamed builds' })).toBeVisible();
-    await expect(page.getByText('Unnamed build', { exact: true }).first()).toBeVisible();
+    // Titled by what the build calls itself — here the hull, since a stock
+    // build has neither a ship name nor an ident yet (FR-010).
     await expect(page.getByText('Anaconda').first()).toBeVisible();
     await expect(page.getByText('Valid').first()).toBeVisible();
+    await expect(page.getByText(/Current build/).first()).toBeVisible();
   });
 
   test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
@@ -151,14 +168,14 @@ test.describe('the build library', () => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
-    await page.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
-    const dialog = page.getByRole('dialog');
+    await chooseRecord(page, 'Anaconda');
+    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
     await dialog.getByRole('button', { name: 'Save as a new build' }).click();
 
     await expect(page.getByRole('heading', { name: 'Named builds', exact: true })).toBeVisible();
     await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
-    await expect(page.getByText('Unnamed build', { exact: true })).toHaveCount(0);
     expect(await recordCount(page)).toBe(1);
   });
 
@@ -167,8 +184,9 @@ test.describe('the build library', () => {
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
-    await page.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
-    const dialog = page.getByRole('dialog');
+    await chooseRecord(page, 'Anaconda');
+    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
 
     await expect(dialog.getByText(/already use this name/i)).toBeVisible();
@@ -183,6 +201,7 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a')]);
     await page.goto('/builds');
 
+    await chooseRecord(page, 'Build a');
     await page.getByRole('button', { name: 'Duplicate Build a' }).click();
 
     const stored = await page.evaluate(() =>
@@ -196,16 +215,19 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a')]);
     await page.goto('/builds');
 
+    await chooseRecord(page, 'Build a');
     await page.getByRole('button', { name: 'Delete Build a' }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog.getByText(/Build a/)).toBeVisible();
+    const dialog = page.getByRole('dialog', { name: /Build a/ });
     await expect(dialog.getByText(/cannot be undone/i)).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Keep this build' }).click();
     expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
 
     await page.getByRole('button', { name: 'Delete Build a' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete this build' }).click();
+    await page
+      .getByRole('dialog', { name: /Build a/ })
+      .getByRole('button', { name: 'Delete this build' })
+      .click();
 
     expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).toBeNull();
   });
@@ -214,8 +236,12 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a'), seedRecord('b')]);
     await page.goto('/builds');
 
+    await chooseRecord(page, 'Build a');
     await page.getByRole('button', { name: 'Delete Build a' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete this build' }).click();
+    await page
+      .getByRole('dialog', { name: /Build a/ })
+      .getByRole('button', { name: 'Delete this build' })
+      .click();
 
     const stored = await page.evaluate(() =>
       Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
@@ -227,7 +253,7 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a')]);
     await page.goto('/builds');
 
-    await openRecord(page, 'Open Build a');
+    await openRecord(page, 'Build a');
 
     await expect(page.getByText('Anaconda').first()).toBeVisible();
   });
@@ -320,6 +346,10 @@ test.describe('the build library', () => {
   test('offers overwrite, keep both and cancel when two pages save one build', async ({
     browser,
   }) => {
+    // Two pages, four navigations, an autosave and a named save each: this is
+    // the longest journey in the suite, and on a loaded machine it runs past the
+    // default budget without anything being wrong with it.
+    test.slow();
     const context = await browser.newContext();
     const first = await context.newPage();
     const second = await context.newPage();
@@ -328,43 +358,40 @@ test.describe('the build library', () => {
     // lists what is stored, and autosave coalesces before it writes.
     await createBuild(first);
     await reachShellLink(first, 'Open saved build');
-    await first.getByRole('button', { name: /^Save Unnamed build under a name$/ }).click();
-    await first.getByRole('dialog').getByRole('textbox', { name: 'Name' }).fill('Shared build');
-    await first.getByRole('dialog').getByRole('button', { name: 'Save as a new build' }).click();
+    await chooseRecord(first, 'Anaconda');
+    await first.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const saveDialog = first.getByRole('dialog', { name: 'Save this build' });
+    await saveDialog.getByRole('textbox', { name: 'Name' }).fill('Shared build');
+    await saveDialog.getByRole('button', { name: 'Save as a new build' }).click();
     await expect(first.getByText('Shared build').first()).toBeVisible();
 
     // The other page opens the same named record, so both hold the same baseline.
     await second.goto('/builds');
-    await openRecord(second, 'Open Shared build');
+    await openRecord(second, 'Shared build');
 
     await first.goto('/builds');
-    await openRecord(first, 'Open Shared build');
+    await openRecord(first, 'Shared build');
 
     // One page saves; the other's baseline is now stale.
     await reachShellLink(second, 'Open saved build');
+    await chooseRecord(second, 'Shared build');
     await second.getByRole('button', { name: 'Rename Shared build' }).click();
-    await second
-      .getByRole('dialog')
-      .getByRole('textbox', { name: 'Name' })
-      .fill('From the other page');
-    await second
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Replace the build I opened' })
-      .click();
+    const otherDialog = second.getByRole('dialog', { name: 'Save this build' });
+    await otherDialog.getByRole('textbox', { name: 'Name' }).fill('From the other page');
+    await otherDialog.getByRole('button', { name: 'Replace the build I opened' }).click();
 
     await reachShellLink(first, 'Open saved build');
     // By the time this page looks, the listing has already re-read storage and
     // shows the other page's name — which is the point: the *record* is the
     // same one, and this page's baseline is the stale part.
+    await chooseRecord(first, 'From the other page');
     await first
       .getByRole('button', { name: /^Rename / })
       .first()
       .click();
-    await first.getByRole('dialog').getByRole('textbox', { name: 'Name' }).fill('From this page');
-    await first
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Replace the build I opened' })
-      .click();
+    const mineDialog = first.getByRole('dialog', { name: 'Save this build' });
+    await mineDialog.getByRole('textbox', { name: 'Name' }).fill('From this page');
+    await mineDialog.getByRole('button', { name: 'Replace the build I opened' }).click();
 
     const conflict = first.getByRole('dialog', { name: /changed in another tab/i });
     await expect(conflict).toBeVisible();
@@ -399,8 +426,9 @@ test.describe('the build library', () => {
     await expectNoDocumentOverflow(page);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-populated' });
 
+    await chooseRecord(page, 'Build a');
     await page.getByRole('button', { name: 'Delete Build a' }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /Build a/ })).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-delete-confirmation' });
   });
 });

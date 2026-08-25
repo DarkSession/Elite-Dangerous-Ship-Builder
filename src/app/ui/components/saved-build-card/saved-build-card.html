@@ -1,38 +1,53 @@
-<article class="record" [attr.aria-labelledby]="cardId">
-  <h3 class="record__title" [id]="cardId">{{ title() }}</h3>
+<!--
+  A button, because choosing a row is an action and the footer acts on what was
+  chosen. The visible text is the row itself; the accessible name adds what the
+  marker and the plate say without words (FR-010).
+-->
+<button
+  type="button"
+  class="record"
+  [class.record--chosen]="chosen()"
+  [attr.aria-current]="build().current ? 'true' : null"
+  [attr.aria-pressed]="chosen() ? 'true' : 'false'"
+  [attr.aria-label]="accessibleName()"
+  [attr.data-record-current]="build().current ? 'true' : null"
+  (click)="choose()"
+>
+  <span class="record__identity">
+    <span class="record__title-row">
+      <span class="record__title" [id]="cardId" [class.record__title--derived]="!build().named">
+        {{ build().title }}
+      </span>
 
-  <dl class="record__facts">
-    <dt>{{ hullLabel() }}</dt>
-    <dd>
-      <edsb-game-text
-        [text]="build().hull.text"
-        [language]="build().hull.language"
-        [translationState]="build().hull.translationState"
-        [label]="hullLabel()"
-      />
-    </dd>
-
-    <dt>{{ modifiedLabel() }}</dt>
-    <dd>{{ build().modified }}</dd>
-
-    <dt>{{ validationLabel() }}</dt>
-    <dd>
-      <edsb-status-notice [tone]="build().validation.tone" [message]="build().validation.label" />
-    </dd>
+      @if (build().issues; as issues) {
+        <span class="record__issues" aria-hidden="true">{{ issues.count }}</span>
+      }
+    </span>
 
     @if (build().note; as note) {
-      <dt>{{ noteLabel() }}</dt>
-      <dd class="record__note">{{ note }}</dd>
+      <span class="record__note">{{ note }}</span>
     }
-  </dl>
 
-  <div class="record__actions">
-    @for (action of build().actions; track action.id) {
-      <edsb-action-button
-        [label]="action.label"
-        [emphasis]="action.emphasis ?? 'quiet'"
-        (activated)="select(action)"
-      />
-    }
-  </div>
-</article>
+    <span class="record__states">
+      @if (build().current) {
+        <span class="record__current">{{ build().currentLabel }}</span>
+      }
+      <span class="record__validation record__validation--{{ build().validation.tone }}">
+        {{ build().validation.label }}
+      </span>
+      @if (build().remaining; as remaining) {
+        <span class="record__remaining">{{ remaining }}</span>
+      }
+    </span>
+  </span>
+
+  <span class="record__hull">
+    <edsb-game-text
+      [text]="build().hull.text"
+      [language]="build().hull.language"
+      [translationState]="build().hull.translationState"
+    />
+  </span>
+
+  <span class="record__modified">{{ build().modified }}</span>
+</button>

@@ -1,41 +1,89 @@
-<!-- The command bar carries this screen's name and its count; the page does
-     not repeat either (canvas 1a/1b/1c, "Command bar"). -->
-<section class="library">
-  @if (storageNotice(); as notice) {
-    <edsb-status-notice tone="error" [message]="notice" />
-  }
+<!--
+  The reference draws `/builds` as a surface rather than a page: a centred
+  dialog over an inert originating screen where there is room, the same content
+  as a full-screen layer where there is not (canvas 1a "SAVED BUILDS", canvas
+  1b `ssv-screen`). It stays a route, so it is addressable, in history, and
+  closed by the browser's own back as well as by its own dismiss.
+-->
+<edsb-layer
+  [open]="true"
+  [title]="listLabel()"
+  [dismissLabel]="closeLabel()"
+  presentation="adaptive"
+  (dismissed)="close()"
+>
+  <section class="library">
+    @if (storageNotice(); as notice) {
+      <edsb-status-notice tone="error" [message]="notice" />
+    }
 
-  @if (failure(); as reason) {
-    <edsb-status-notice tone="error" [message]="reason" />
-  }
+    @if (failure(); as reason) {
+      <edsb-status-notice tone="error" [message]="reason" />
+    }
 
-  @if (isEmpty()) {
-    <div class="library__empty">
-      <h2>{{ emptyTitle() }}</h2>
-      <p>{{ emptyDescription() }}</p>
+    <!-- The header row: one search field over the records, and the count in
+         monospace beside it, where the reference puts them. -->
+    <div class="library__header">
+      <edsb-text-field
+        class="library__search"
+        [label]="searchLabel()"
+        [value]="search()"
+        [description]="searchDescription()"
+        (changed)="changeSearch($event)"
+      />
+      <p class="library__count">{{ countText() }}</p>
     </div>
-  } @else {
-    <edsb-responsive-record-list
-      [label]="listLabel()"
-      [groups]="groups()"
-      [unavailable]="unavailable()"
-      [unavailableLabel]="unavailableLabel()"
-      (actionSelected)="selectAction($event)"
-    />
-  }
 
-  @if (manageReason(); as reason) {
-    <edsb-record-manager
-      [records]="manageableRecords()"
-      [selected]="selectedForDiscard()"
-      [reason]="reason"
-      (selectionChanged)="changeDiscardSelection($event)"
-      (discardRequested)="discardSelected($event)"
-    />
-  }
+    @if (isEmpty()) {
+      <div class="library__empty">
+        <h2>{{ emptyTitle() }}</h2>
+        <p>{{ emptyDescription() }}</p>
+      </div>
+    } @else if (noMatch()) {
+      <!-- One sentence on the body's own ground. Every control stays reachable,
+           so widening the search needs no separate action. -->
+      <p class="library__no-match">{{ noMatchText() }}</p>
+    } @else {
+      <edsb-responsive-record-list
+        [label]="listLabel()"
+        [columns]="columns()"
+        [groups]="groups()"
+        [chosen]="chosen()"
+        [unavailable]="unavailable()"
+        [unavailableLabel]="unavailableLabel()"
+        (chose)="chooseRecord($event)"
+      />
+    }
 
-  <edsb-action-button [label]="closeLabel()" emphasis="quiet" (activated)="close()" />
-</section>
+    @if (manageReason(); as reason) {
+      <edsb-record-manager
+        [records]="manageableRecords()"
+        [selected]="selectedForDiscard()"
+        [reason]="reason"
+        (selectionChanged)="changeDiscardSelection($event)"
+        (discardRequested)="discardSelected($event)"
+      />
+    }
+  </section>
+
+  <!-- The committing footer both canvases draw: the destructive action bordered
+       warm on the leading edge, the opening action filled amber on the
+       trailing edge, pinned where the surface is compact. -->
+  <div class="library__footer">
+    @if (chosenActions().length === 0) {
+      <p class="library__footer-hint">{{ nothingChosen() }}</p>
+    } @else {
+      @for (action of chosenActions(); track action.id) {
+        <edsb-action-button
+          class="library__footer-action library__footer-action--{{ action.id }}"
+          [label]="action.label"
+          [emphasis]="action.emphasis"
+          (activated)="commit(action.id)"
+        />
+      }
+    }
+  </div>
+</edsb-layer>
 
 <edsb-confirm-dialog
   [open]="pendingDelete() !== null"
