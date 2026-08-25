@@ -263,6 +263,59 @@ export const UNSUPPORTED_PARTIAL_QUALITY: LoadoutEvent = {
 /** The quality the unsupported payload arrives with, for the refusal assertion. */
 export const UNSUPPORTED_PARTIAL_SOURCE_QUALITY = 0.42;
 
+/**
+ * A payload whose only fractional quality belongs to a final article.
+ *
+ * The shape a real export of a pre-engineered Guardian weapon arrives in: the
+ * game states the baked recipe and writes `Quality: 0` beside it, because there
+ * was never a roll. The package identifies the article, applies its fixed
+ * modifiers and locks it, so `completeEngineeringGrade` answers `finalArticle`
+ * — and an ingress that read that as a normalization failure would refuse every
+ * build carrying one.
+ *
+ * The article, its mount and its recipe all come out of `lockedArticleBuild()`,
+ * so which twelve variants the Almanac locks stays the package's business.
+ */
+export function finalArticlePartialQuality(): {
+  readonly event: LoadoutEvent;
+  readonly slot: string;
+  readonly symbol: string;
+  readonly variant: PreEngineeredVariant;
+} {
+  const { build, slot } = lockedArticleBuild();
+  const fitted = build.fittedModuleAt(slot);
+  const variant = fitted?.preEngineeredVariant;
+  if (!fitted || !variant) {
+    throw new Error(
+      `The installed Almanac no longer reports a pre-engineered variant on the article ` +
+        `fitted at ${slot}. Read the fixture from the package rather than writing one here.`,
+    );
+  }
+  return {
+    event: {
+      event: 'Loadout',
+      Ship: FIXTURE_HULL,
+      Modules: [
+        {
+          Slot: slot,
+          Item: fitted.symbol,
+          Engineering: {
+            BlueprintName: variant.blueprint,
+            Level: variant.grade,
+            Quality: FINAL_ARTICLE_SOURCE_QUALITY,
+          },
+        },
+      ],
+    },
+    slot,
+    symbol: fitted.symbol,
+    variant,
+  };
+}
+
+/** What the game writes for an article that was never rolled. */
+export const FINAL_ARTICLE_SOURCE_QUALITY = 0;
+
 /** A payload naming a hull the package does not carry. */
 export const UNKNOWN_HULL_PAYLOAD: LoadoutEvent = {
   event: 'Loadout',

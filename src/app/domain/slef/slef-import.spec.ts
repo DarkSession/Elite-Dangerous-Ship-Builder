@@ -6,6 +6,7 @@ import {
   SUPPORTED_PARTIAL_QUALITY,
   SUPPORTED_PARTIAL_SOURCE_QUALITY,
   UNSUPPORTED_PARTIAL_QUALITY,
+  finalArticlePartialQuality,
 } from '../outfitting/outfitting.fixtures';
 import { importSlef } from './slef-import';
 import { SLEF_IMPORT_LIMIT_BYTES } from './slef-import.models';
@@ -220,6 +221,55 @@ describe('construction and normalization', () => {
     expect(refusal?.source.slotKey).toBe(FIXTURE_SLOTS.frameShiftDrive);
     expect(refusal?.source.quality).toBe(0.42);
     expect(refusal?.code).not.toBeNull();
+  });
+
+  it('imports a final article rather than refusing over its stated quality', () => {
+    const { event, slot } = finalArticlePartialQuality();
+
+    const result = importSlef(JSON.stringify(event), TOKEN);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.candidate.qualityCompletions).toEqual([]);
+    expect(result.candidate.loadout.fittedModuleAt(slot)?.preEngineeredVariant).not.toBeNull();
+  });
+
+  it('imports a real Guardian loadout, lower-cased slot keys and all', () => {
+    // The reported draft, reduced to the module that refused it: a producer's
+    // envelope, the game's own lower-case slot keys, and a pre-engineered
+    // Guardian weapon stating the recipe it was built with at `Quality: 0`.
+    const result = importSlef(
+      JSON.stringify(
+        envelope(
+          {
+            event: 'Loadout',
+            Ship: 'anaconda',
+            Modules: [
+              {
+                Slot: 'hugehardpoint1',
+                Item: 'hpt_guardian_shardcannon_fixed_medium',
+                On: true,
+                Priority: 2,
+                Engineering: { BlueprintName: 'weapon_longrange', Level: 1, Quality: 0 },
+              },
+            ],
+          },
+          'Inara',
+          '1.0',
+        ),
+      ),
+      TOKEN,
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    const fitted = result.candidate.loadout.fittedModuleAt('hugehardpoint1');
+    expect(fitted?.preEngineeredVariant?.engineeringLocked).toBe(true);
+    expect(result.candidate.qualityCompletions).toEqual([]);
   });
 
   it('leaves a completed roll and an unengineered module alone', () => {

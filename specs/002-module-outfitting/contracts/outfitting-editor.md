@@ -82,14 +82,21 @@ Before any active-build replacement is presented or any calculation is read:
    refuses and every fixed mount returns populated with the hull default. Do not classify a slot,
    choose a replacement locally or run a second repair pass;
 3. capture finite source quality in `[0,1)` only for supported modules the candidate resolves;
-4. correlate those remaining partials by exact package slot/module identity and call
-   `completeEngineeringGrade(slotKey)`. Accept `normalized`, atomically refuse `unsupported`, and
-   treat unexpected missing/mismatched/`unchanged` results as package-contract failures;
+4. correlate those remaining partials by exact package slot/module identity, set aside the modules
+   the package reports as final articles — its `preEngineeredVariant.engineeringLocked` — and call
+   `completeEngineeringGrade(slotKey)` for the rest. Accept `normalized`, atomically refuse
+   `unsupported`, and treat unexpected missing/mismatched/`unchanged` results as package-contract
+   failures;
 5. retain transient quality-completed notices only; persist no fixed-default history metadata;
 6. commit once before history starts or resets, then allow validation/calculation reads.
 
-Never call `completeEngineeringGrade()` for absent quality or quality `1`. Refusal leaves the current build, revision, dirty
-state, autosave, fragment, notices and history untouched.
+Never call `completeEngineeringGrade()` for absent quality, quality `1`, or a final article. A final
+article's quality is a figure the game writes for a finished module, not a roll: the package bakes the
+article's fixed modifiers in during construction and locks it against further engineering, so it
+answers `finalArticle` and the whole build would be refused over a module with nothing wrong with it.
+Whether an article is final is read from the package, never recognised from a symbol or a blueprint.
+Refusal leaves the current build, revision, dirty state, autosave, fragment, notices and history
+untouched.
 
 ## Power and recalculation
 
@@ -106,7 +113,9 @@ Cross-package tests must prove that the installed Almanac package:
 2. changes/removes an experimental effect on re-engineerable fixed rewards while preserving the
    fixed base modifier block and `preEngineeredVariant` and recomputing effect-dependent stats;
 3. refuses unknown hulls, always populates fixed mounts, and normalizes supported imported
-   partial-quality states losslessly with a stable unsupported result.
+   partial-quality states losslessly with a stable unsupported result;
+4. identifies a final article from the recipe and quality a producer states beside it, applies its
+   fixed modifiers, and answers `finalArticle` rather than completing a grade it has locked.
 
 Historical purchase values are not acceptance inputs and are never restored.
 
