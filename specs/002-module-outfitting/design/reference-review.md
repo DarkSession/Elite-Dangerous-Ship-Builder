@@ -452,6 +452,26 @@ reference's own artwork. It arrives as unpainted black line art, so the canvas's
 
 `eventReward` remains the one route with no mark anywhere in the reference, and still draws none.
 
+## Canvas revision, 2026-08-25
+
+Canvas 1c's chooser was redrawn. Canvas 1d's was not, so the two now differ in kind and not only in
+arrangement.
+
+| Change                                                                   | Status against the build                                                                                                         |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Not built.** The accordion is drawn at both widths.                                                                            |
+| Exactly one family selected at wide; no caret at that width              | **Not built.** Any number may be open.                                                                                           |
+| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Not built.**                                                                                                                   |
+| The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Not built.** Seven columns are drawn.                                                                                          |
+| `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Not built.**                                                                                                                   |
+| Canvas 1d's accordion, badge, variants summary and code line             | **Unchanged.** Every existing ruling on them stands.                                                                             |
+| Hover descriptions on the acquisition marks (`data-tip`)                 | **Already answered.** The four routes have carried spoken sentences since wave 10; hover-only meaning is not built (011 FR-006). |
+
+The two-price cost cell, the acquisition icons, the family taxonomy and the whole-manifest rule are
+untouched by the revision. What the exclusive rail costs FR-021 to FR-023 is ruled in
+[module-replacement.md](./module-replacement.md), "What exclusive selection does to FR-021, FR-022
+and FR-023"; the columns are ruled in "The manifest's own columns" in the same file.
+
 ## Released API constraint
 
 Visual implementation consumes the released Almanac operations in

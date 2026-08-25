@@ -120,19 +120,21 @@ are fields no canvas ever drew.
 
 ## SHOT CONVERGENCE
 
-- The gunsight plate is the canvas's: 115 milliradians either side of the axis, six-sixteenths as
-  tall as it is wide, with the canvas's two dashed rings at a third and two thirds of that half
-  field.
+- The gunsight plate is the canvas's: **40 milliradians** either side of the axis on **both** axes,
+  square in angle, with the canvas's two dashed rings at a third and two thirds of that half field —
+  circles in angle, so their pixel height is corrected for the box's own aspect. _(Redrawn by the
+  2026-08-25 canvas revision, which had it at 115 milliradians over a six-sixteenths box.)_
 - One mark per armed hardpoint, placed where the package projects its shot at the chosen range: a
-  dot where the shot lands, a numbered badge parked at the plate's nearer edge, and a leader between
-  the two.
+  dot where the shot lands, and that mount's hardpoint numeral beside it, at whichever of the
+  script's four candidate offsets stands furthest from every other dot. The edge badge and its
+  leader are gone with the same revision.
 - **The plate is a diagram and is hidden from assistive technology.** Every mark it draws is also a
   sentence beside it: a shot naming its weapon, its place in the hull's hardpoint order, how it is
   aimed and where its shot goes; and the ring caption, which is the one figure the plate draws that
-  the four cells beneath it do not repeat. A shot the field of view does not reach is drawn where
-  it lands, outside the plate's box, and the plate's own `overflow` hides it there; its sentence is
-  stated at that range exactly as at any other. The field of view is a property of the drawing and
-  never widens to fit a build.
+  the four cells beneath it do not repeat. A shot the field of view does not reach is **clamped to
+  the frame's own margin**, where the revised script puts it; its sentence still states its true
+  offset and angle at that range, exactly as at any other. The field of view is a property of the
+  drawing and never widens to fit a build.
 - The target range is a range field over the canvas's own bounds — 100 m to 2,000 m, starting at
   600 m — announcing the distance as a Commander reads it rather than as a bare number. It is the one
   control this panel owns, and it sets nothing outside the panel.

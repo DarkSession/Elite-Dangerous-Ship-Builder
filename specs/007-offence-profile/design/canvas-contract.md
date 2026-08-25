@@ -63,9 +63,11 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 - Header: `WEAPONS` left, `5 MOUNTED` right (@610707).
 - A headline pair on the line below: `248.6` at 30px against
   `DPS BURST · 186.4 SUSTAINED` at 10px.
-- A four-column list. The column head is
-  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `FALLOFF` (60px), the
-  last three `text-align: right`.
+- A five-column list. The column head is
+  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `RANGE` (60px) ·
+  `FALLOFF` (60px), the last four `text-align: right`. **`RANGE` was added by the
+  2026-08-25 canvas revision**; before it the list was four columns ending at
+  `FALLOFF`.
 - Five rows. Each row's `MODULE` cell is two lines: the module name in Barlow
   10.5px, and a code line in mono 8px beneath it — the module's class and rating,
   its mount, then whatever else is true of it, as
@@ -76,13 +78,13 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 
 The five rows, verbatim:
 
-| MODULE                                                           | DPS  | PIERCE | FALLOFF |
-| ---------------------------------------------------------------- | ---- | ------ | ------- |
-| Huge Multi-Cannon<br>`4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` | 78.9 | 68     | 1,800 m |
-| Large Beam Laser<br>`3D GIMBALLED · LONG RANGE G5`               | 41.4 | 52     | 1,200 m |
-| Large Beam Laser<br>`3D GIMBALLED · LONG RANGE G5`               | 41.4 | 52     | 1,200 m |
-| Large Multi-Cannon<br>`3E FIXED · STOCK`                         | 50.1 | 55     | 1,800 m |
-| Medium Multi-Cannon<br>`2F GIMBALLED · OVERCHARGED G5`           | 36.8 | 45     | 1,600 m |
+| MODULE                                                           | DPS  | PIERCE | RANGE   | FALLOFF |
+| ---------------------------------------------------------------- | ---- | ------ | ------- | ------- |
+| Huge Multi-Cannon<br>`4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` | 78.9 | 68     | 4,000 m | 1,800 m |
+| Large Beam Laser<br>`3D GIMBALLED · LONG RANGE G5`               | 41.4 | 52     | 3,000 m | 1,200 m |
+| Large Beam Laser<br>`3D GIMBALLED · LONG RANGE G5`               | 41.4 | 52     | 3,000 m | 1,200 m |
+| Large Multi-Cannon<br>`3E FIXED · STOCK`                         | 50.1 | 55     | 4,000 m | 1,800 m |
+| Medium Multi-Cannon<br>`2F GIMBALLED · OVERCHARGED G5`           | 36.8 | 45     | 4,000 m | 1,600 m |
 
 Two rows carry the same module name in different mounts, and the canvas neither
 merges nor de-duplicates them. `PIERCE` is drawn in `--hot-2` on two rows and
@@ -107,25 +109,68 @@ three groups:
 
 ### 3. SHOT CONVERGENCE
 
-Header `SHOT CONVERGENCE` left, `GUNSIGHT VIEW AT TARGET RANGE` right (@649971).
-A gunsight diagram (`#cv-ring1`, `#cv-ring2`, `#cv-dots`, an `IMPACT PLANE` rule
-and a `RING 2 · 10.0 m · 17 MRAD` caption), a draggable `RANGE` track from
-`100 m` to `2,000 m` reading `600 m`, and four facts: `LATERAL SPAN 18.8 m` ·
-`VERTICAL SPAN 6.5 m` · `APPARENT SPREAD 33 mrad` · `WIDEST MOUNT HP 6 · 9.8 m`.
+**Redrawn by the 2026-08-25 canvas revision.** The block now reads:
+
+Header `SHOT CONVERGENCE` left and the ring caption right, on the header line
+itself — `#cv-slabel`, which `wireConvergence` writes as
+`RING 2 · 27 MRAD · 16.0 m`. The `GUNSIGHT VIEW AT TARGET RANGE` note and the
+`IMPACT PLANE` rule are both **gone**: the note is replaced by the caption, and
+the rule is not drawn at all.
+
+Beneath it, the plate (`#cv-ring1`, `#cv-ring2`, `#cv-dots`) beside a column
+holding, in order: a `TARGET RANGE` label with the value `600 m` beside it, the
+draggable track from `100 m` to `2,000 m`, the track's own two end labels, and
+the four facts — `LATERAL SPAN 18.8 m` · `VERTICAL SPAN 6.5 m` ·
+`APPARENT SPREAD 33 mrad` · `WIDEST MOUNT HP 6 · 9.8 m`. The slider's label and
+value are one row above the track rather than flanking it.
+
+The plate's geometry changed with it, and this is the substantive half:
+
+- **`FOV = 40`, not `115`.** `wireConvergence` halved the field of view nearly
+  threefold, so the same offsets subtend nearly three times as much of the plate.
+- **The plate is square in milliradians.** `ASPECT = 6 / 16` is gone; the script
+  now maps both axes over `±FOV` and corrects only the _rings_ for the box's
+  pixel aspect (`aspect = box.offsetWidth / box.offsetHeight`), so a ring stays
+  circular in angle while the box stays wide.
+- **A shot outside the field of view is clamped, not clipped.** Every dot is
+  `clamp(50 ± mrad / FOV × 50, 4, 96)` — it stops at the frame's own margin
+  instead of leaving it. Nothing disappears.
+- **The edge badge and its leader are gone.** Each mount is one small dot plus a
+  small numeral placed beside it, at whichever of four candidate offsets
+  (`[7,-14]`, `[7,5]`, `[-13,-14]`, `[-13,5]`) is furthest from every other dot.
+  There is no badge column and no leader line.
+- The ring caption drops `AT THIS RANGE`: it is now
+  `RING 2 · <FOV × 2/3 mrad> · <that angle at the chosen range>`.
 
 ## Canvas 1d — the mobile OFFENCE panel
 
-`data-m-mode="offence"`, @1026240. It is not canvas 1c stacked. Four blocks:
+`data-m-mode="offence"`. **Rewritten by the 2026-08-25 canvas revision, and it
+is now canvas 1c stacked.** Four blocks, in canvas 1c's own order and wording:
 
-1. `SUSTAINED DPS · 248.6`, the same kinetic/thermal bar, a legend without
-   percentages (`KINETIC 165.8`, `THERMAL 82.8`), and the same four range bands;
-2. `CONVERGENCE` — the gunsight again, a `RANGE` track and the same four facts;
-3. `DAMAGE PROFILE` / `VS 45% RESIST` — `ALPHA 612` · `BURST DPS 318.4` ·
-   `VS SHIELD 136.7` · `VS HULL 173.9`;
-4. two chips: `WEP CAP 61 MJ · 14 s FIRE` and `CORROSIVE +30%`.
+1. `WEAPONS` / `5 MOUNTED`, with the same five-column list — `MODULE` · `DPS` ·
+   `PRC` · `RANGE`, the range cell carrying `4,000 m` over `FALL 1,800`;
+2. `DAMAGE PROFILE` / `BY TYPE AND RANGE` — `248.6` over
+   `DPS BURST · 186.4 SUSTAINED`, the kinetic/thermal bar with a legend that now
+   carries the percentages (`KINETIC 165.8 · 67%`, `THERMAL 82.8 · 33%`), and
+   `DPS BY RANGE BAND` with the same four rows;
+3. `WEAPON CAPACITOR` / `DISTRIBUTOR 8A` — `DRAW 5.61 MW` · `RECHARGE 3.90 MW` ·
+   `FULL FIRE 14.2 s`, over two chips: `CAP 61 MJ · WEP 3 PIPS` and
+   `CORROSIVE +30%`;
+4. `SHOT CONVERGENCE`, redrawn exactly as canvas 1c redraws it above.
 
-It draws no weapon list and no separate capacitor block. The mobile head map
-titles it `OFFENCE`, not `OFFENCE ANALYSIS`.
+The mobile head map still titles it `OFFENCE`, not `OFFENCE ANALYSIS`.
+
+**What this settles.** The old canvas 1d was a different panel from canvas 1c,
+and building one DOM for both widths was a judgement this document had to
+defend. The revision removes the disagreement: the compact panel is now the wide
+panel's own blocks in the wide panel's own order, which is what the built region
+already is.
+
+**`VS 45% RESIST` is gone from the drawing.** The `ALPHA` · `BURST DPS` ·
+`VS SHIELD` · `VS HULL` block that only canvas 1d ever carried is no longer
+drawn anywhere, so the exclusion below stands on the drawing rather than on a
+judgement about target simulation. `CORROSIVE +30%` survives, on canvas 1d
+alone, and stays excluded for its own reason: no package field publishes it.
 
 ## The status rail cell
 
@@ -138,32 +183,32 @@ bare figure: the canvas gives it no unit, no second figure and no condition.
 
 ## What is built
 
-| Canvas element                                       | Built as                                                                                                     |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `OFFENCE` strip segment, `OFFENCE ANALYSIS` title    | The mode, enabled; the region's rule renamed exactly as the script renames it.                               |
-| `WEAPONS` header and `5 MOUNTED`                     | The block heading and the count of weapons the package returned (ruled exception 1).                         |
-| `248.6` / `DPS BURST · 186.4 SUSTAINED`              | `total.damagePerSecond` at headline size, `total.sustainedDamagePerSecond` on the note beside it.            |
-| `MODULE` / `DPS` / `PIERCE` / `FALLOFF` columns      | One row per returned weapon in package order: name, `damagePerSecond`, `armourPiercing`, `falloffRange`.     |
-| The code line under a module name                    | `4A GIMBALLED · OVERCHARGED G5`, drawn by the same badge feature 002 draws on a ledger row.                  |
-| Inert rows                                           | Inert rows. No disclosure, no action, no navigation (review note 5).                                         |
-| `DAMAGE PROFILE` / `BY TYPE AND RANGE`               | The block heading and its note, both verbatim: the block now carries both halves.                            |
-| The stacked kinetic/thermal bar                      | One segment per conventional type the build deals, each sized by its share of the conventional total.        |
-| `KINETIC 165.8 · 67%` legend                         | Every conventional amount from `damageByType`, each with its share, as the legend line under the bar.        |
-| `DPS BY RANGE BAND` and its four rows                | `damageFalloff()` applied to every enabled weapon at 500 m, 1,200 m, 1,800 m and 3,000 m.                    |
-| The four range-band bars                             | Each band filled against the strongest band — one scale, and every figure is stated (review note 6).         |
-| `WEAPON CAPACITOR` `DRAW` / `RECHARGE` / `FULL FIRE` | `sustainedEnergyPerSecond`, `rechargeRate` and `timeToDrain`, in package units.                              |
-| Canvas 1d's `WEP CAP 61 MJ`                          | `capacity`, as a fourth row of the same block.                                                               |
-| The capacitor bars                                   | `DRAW` and `RECHARGE` only: those two share MJ/s. `CAPACITY` and `FULL FIRE` do not (review note 6).         |
-| `SHOT CONVERGENCE` / `GUNSIGHT VIEW AT TARGET RANGE` | The third block's heading and note, across the full width.                                                   |
-| `#cv-ring1`, `#cv-ring2`, `#cv-dots`, `IMPACT PLANE` | A gunsight plate over the canvas's own 115 mrad field of view and `16 / 6` box.                              |
-| The canvas's dot, edge badge and leader per mount    | The same three marks: the dot where the shot lands, the numbered badge at the plate's edge, the leader.      |
-| The canvas's four fact cells                         | `repeat(4, 1fr)` label-over-figure cells with a hairline between them, falling to fewer columns when narrow. |
-| The `RING 2 · 10.0 m · 17 MRAD` caption              | The outer ring's angle, and what it spans at the chosen range.                                               |
-| The `RANGE` track, `100 m` to `2,000 m`, at `600 m`  | A range field over the canvas's own bounds, step and initial value.                                          |
-| `LATERAL SPAN` / `VERTICAL SPAN`                     | The widest horizontal and vertical separation between two armed mounts, in metres.                           |
-| `APPARENT SPREAD 33 mrad`                            | The diagonal of that spread at the chosen range, from the package's own projection.                          |
-| `WIDEST MOUNT HP 6 · 9.8 m`                          | The armed mount furthest from the cockpit's axis, by its place in the hull's hardpoint order.                |
-| Status rail `DPS 248.6`                              | One rail cell carrying `total.sustainedDamagePerSecond` (review note 2).                                     |
+| Canvas element                                       | Built as                                                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `OFFENCE` strip segment, `OFFENCE ANALYSIS` title    | The mode, enabled; the region's rule renamed exactly as the script renames it.                                           |
+| `WEAPONS` header and `5 MOUNTED`                     | The block heading and the count of weapons the package returned (ruled exception 1).                                     |
+| `248.6` / `DPS BURST · 186.4 SUSTAINED`              | `total.damagePerSecond` at headline size, `total.sustainedDamagePerSecond` on the note beside it.                        |
+| `MODULE` / `DPS` / `PIERCE` / `RANGE` / `FALLOFF`    | One row per returned weapon in package order: name, `damagePerSecond`, `armourPiercing`, `maximumRange`, `falloffRange`. |
+| The code line under a module name                    | `4A GIMBALLED · OVERCHARGED G5`, drawn by the same badge feature 002 draws on a ledger row.                              |
+| Inert rows                                           | Inert rows. No disclosure, no action, no navigation (review note 5).                                                     |
+| `DAMAGE PROFILE` / `BY TYPE AND RANGE`               | The block heading and its note, both verbatim: the block now carries both halves.                                        |
+| The stacked kinetic/thermal bar                      | One segment per conventional type the build deals, each sized by its share of the conventional total.                    |
+| `KINETIC 165.8 · 67%` legend                         | Every conventional amount from `damageByType`, each with its share, as the legend line under the bar.                    |
+| `DPS BY RANGE BAND` and its four rows                | `damageFalloff()` applied to every enabled weapon at 500 m, 1,200 m, 1,800 m and 3,000 m.                                |
+| The four range-band bars                             | Each band filled against the strongest band — one scale, and every figure is stated (review note 6).                     |
+| `WEAPON CAPACITOR` `DRAW` / `RECHARGE` / `FULL FIRE` | `sustainedEnergyPerSecond`, `rechargeRate` and `timeToDrain`, in package units.                                          |
+| Canvas 1d's `WEP CAP 61 MJ`                          | `capacity`, as a fourth row of the same block.                                                                           |
+| The capacitor bars                                   | `DRAW` and `RECHARGE` only: those two share MJ/s. `CAPACITY` and `FULL FIRE` do not (review note 6).                     |
+| `SHOT CONVERGENCE` and its ring caption              | The third block's heading, with the ring caption on the heading line, across the full width.                             |
+| `#cv-ring1`, `#cv-ring2`, `#cv-dots`                 | A gunsight plate over the canvas's own **40 mrad** field of view, square in angle, dots clamped to the frame.            |
+| The canvas's dot and numeral per mount               | Two marks: the dot where the shot lands, and its hardpoint numeral placed clear of the other dots.                       |
+| The canvas's four fact cells                         | `repeat(4, 1fr)` label-over-figure cells with a hairline between them, falling to fewer columns when narrow.             |
+| The `RING 2 · 27 MRAD · 16.0 m` caption              | The outer ring's angle, and what it spans at the chosen range, on the block's heading line.                              |
+| The `TARGET RANGE` track, `100 m`–`2,000 m`, `600 m` | A range field over the canvas's own bounds, step and initial value, its label and value above the track.                 |
+| `LATERAL SPAN` / `VERTICAL SPAN`                     | The widest horizontal and vertical separation between two armed mounts, in metres.                                       |
+| `APPARENT SPREAD 33 mrad`                            | The diagonal of that spread at the chosen range, from the package's own projection.                                      |
+| `WIDEST MOUNT HP 6 · 9.8 m`                          | The armed mount furthest from the cockpit's axis, by its place in the hull's hardpoint order.                            |
+| Status rail `DPS 248.6`                              | One rail cell carrying `total.sustainedDamagePerSecond` (review note 2).                                                 |
 
 Three things are added, and all three are required by the drawing rather than
 chosen:
@@ -172,8 +217,10 @@ chosen:
    hidden from assistive technology and each mark is restated beside it as text
    naming the weapon, its hardpoint, its mount and where its shot goes. The ring
    caption is stated with them, because it is the one figure the plate draws
-   that the four cells beneath it do not repeat. A shot clipped by the field of
-   view keeps its sentence (`spec.md` FR-011).
+   that the four cells beneath it do not repeat. Since the 2026-08-25 revision
+   the plate clamps a far-off-axis shot to its frame rather than clipping it, so
+   the sentence is no longer the only carrier for such a shot — it is still
+   required, for every mark, because the plate is a diagram (`spec.md` FR-011).
 2. **The capacitor block names its WEP allocation**, as one line of text beneath
    the four rows. Two of the four figures move when the allocation moves, and a
    figure that changes with a condition shown without that condition is the
@@ -197,7 +244,7 @@ Nothing else is added.
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
 | The stacked bar's `title` tooltips               | Hover-only meaning, unreachable by touch (011 FR-006). The legend beside the bar states both figures.           |
 | A damage-type list with a figure for each type   | No canvas draws one. The bar and its legend are the whole reading (review note 7).                              |
-| `VS 45% RESIST`, `ALPHA`, `VS SHIELD`, `VS HULL` | Target simulation. The package returns no result against a target, and the canvas states no target model.       |
+| `VS 45% RESIST`, `ALPHA`, `VS SHIELD`, `VS HULL` | **No canvas draws them any more** (2026-08-25 revision). They were target simulation while they were drawn.     |
 | `CORROSIVE +30%`                                 | An effect bonus no package field publishes.                                                                     |
 | `MW` on `DRAW` and `RECHARGE`                    | The package returns MJ/s for both. Package units win.                                                           |
 | `OUTPUT, RANGE, CONVERGENCE`                     | A mobile-only sub-line the desktop switching script does not carry.                                             |
@@ -217,9 +264,10 @@ leaves unread:
 - `WeaponsCapacitorMetrics.netDrainRate` and `weaponsPips` — neither canvas draws
   a net drain or prints the allocation back. The allocation is set in `POWER`,
   where the canvas draws it.
-- The per-weapon `WeaponMetrics` fields beyond the row's four columns, and every
-  ammunition field. The canvas draws its weapon rows inert and gives them
-  nowhere else to go (review note 5).
+- The per-weapon `WeaponMetrics` fields beyond the row's **five** columns, and
+  every ammunition field. The canvas draws its weapon rows inert and gives them
+  nowhere else to go (review note 5). `maximumRange` left this list on
+  2026-08-25, when the canvas gave it a column.
 - `DamageSplit.antiXeno`, and `sustainedDamageByType` whole. Neither canvas draws
   an anti-xeno figure or a second damage split; the stacked bar and its legend
   are one set of conventional amounts, and that is the set both canvases draw
@@ -436,9 +484,11 @@ worked out once, in the projection:
     case. This is a departure, and it is deliberate: of the two available, a
     caption whose words are lowercase is a typographic difference, while a
     caption reading `10.0 M` states the mega prefix and is a different unit. The
-    sibling `IMPACT PLANE` caption stays uppercase, because it is words and
-    carries no unit at all — the same rule as note 14, applied to a caption
-    rather than a label.
+    sibling `IMPACT PLANE` caption stayed uppercase, because it was words and
+    carried no unit at all — the same rule as note 14, applied to a caption
+    rather than a label. The 2026-08-25 revision removed that caption from the
+    drawing; this half of the note is history. The unit rule for the ring caption
+    is unchanged, and the caption now sits on the block's heading line.
 
 16. **The weapon row's code line is the ledger's badge, not a second rendering.**
     The canvas draws every row's module cell as a name over
@@ -475,7 +525,34 @@ unavailable hardpoint coverage, an all-disabled or genuine-zero weapon, absent
 `unclassified`, absent range, piercing or projectile members, zero capacity, an
 immediate or infinite time to drain, a build dealing no conventional damage, a
 hull the gunsight catalogue does not place, a placed hull the build has armed
-nothing on, or a shot the plate's field of view clips. They are required all the same, and they come from
+nothing on, or a shot far enough off-axis for the plate to clamp it to the
+frame. They are required all the same, and they come from
 [offence-profile.md](./offence-profile.md) and
 [component-state-preview-matrix.md](./component-state-preview-matrix.md), not
 from the mock.
+
+## Canvas revision, 2026-08-25
+
+The canvas changed under a built region. What follows is the whole of it for
+this feature, and each item is written into the section it belongs to above.
+
+| Change                                                       | Status against the build                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `RANGE` column added to the weapon list, before `FALLOFF`    | **Not built.** `maximumRange` is already in the projection; the column is not.          |
+| `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Not built.** `offence.convergence.note` still ships it.                               |
+| Ring caption moved onto the block's heading line             | **Not built.** It is drawn inside the plate today.                                      |
+| `AT THIS RANGE` dropped from the ring caption                | **Not built.** `offence.convergence.ring` still carries it.                             |
+| `IMPACT PLANE` rule removed                                  | **Not built.** `offence.convergence.impact-plane` still ships it.                       |
+| Field of view `115 mrad` → `40 mrad`                         | **Not built.** `FIELD_OF_VIEW_MILLIRADIANS = 115`.                                      |
+| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Not built.** `PLATE_ASPECT = 6 / 16`, and the rings are drawn from it.                |
+| Off-axis shots clamped to the frame, not clipped             | **Not built.** The plate clips with `overflow`, by contract.                            |
+| Edge badge and leader replaced by a numeral beside the dot   | **Not built.** The badge column and leaders are the built plate.                        |
+| Slider re-laid out: `TARGET RANGE` and value above the track | **Not built.** `offence.convergence.range` reads `Range`.                               |
+| Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees. |
+| `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                       |
+| `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                         |
+
+The convergence items are one change, not ten: the plate's field of view, its
+aspect, its clamping and its marks are `wireConvergence`'s own, and the built
+plate mirrors the old script exactly. Rebuilding it means re-deriving
+`convergence.ts` from the new script, not patching a constant.

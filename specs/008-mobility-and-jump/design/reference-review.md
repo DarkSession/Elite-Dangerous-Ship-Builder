@@ -41,9 +41,16 @@ components, localized messages and real semantic controls.
   supported mass, with the optimal mass marked on the same track. Its two figures are written
   between the band and the legend, where the canvas sets them, each under the position it marks. The legend is the canvas's `Hull` /
   `Modules` / `Fuel`, each with the swatch of the part it explains and the qualifier the canvas sets
-  beside it — `ANACONDA · MILITARY GRADE`, `22 FITTED`, `TANK 32 T + RESERVE`. There is no fourth
-  group: the canvas draws no unladen mass and no cargo capacity, and both tank capacities appear
-  only in the fuel row's own qualifier.
+  beside it — `ANACONDA · MILITARY GRADE`, `22 FITTED`, `TANK`. There is no fourth
+  group: the canvas draws no unladen mass and no cargo capacity.
+
+  **Amended 2026-08-25.** The fuel row's qualifier was `TANK 32 T + RESERVE`; the canvas revision of
+  that date cut it to `TANK` on both canvases. So `fuelCapacity` is no longer drawn anywhere, and by
+  feature 005's rule — a package field no canvas draws is not read at all — it is no longer read
+  either. It joins `unladenMass` and `cargoCapacity` as a real package figure this screen does not
+  have. The row's own figure is unchanged: it is the fuel part of the one `buildMass(load)` answer
+  the whole legend comes from, not a tank capacity.
+
 - Keep the speed envelope's five readings, under the canvas's own `SPEED ENVELOPE AT THIS MASS` and
   nothing beside it.
 - Keep the drive card's headline trio on its hairline ground — `JUMP LADEN`, `JUMP UNLADEN`,

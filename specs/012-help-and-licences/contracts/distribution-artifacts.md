@@ -155,10 +155,11 @@ root gains an unmirrored top-level file whose name matches a terms-bearing patte
 `LICENCE*`, `COPYING*`, `NOTICE*` or `*THIRD_PARTY*` — so an Almanac upgrade that adds one receives
 review instead of dropping it from the source distribution.
 
-A separate explicit maintainer sync command may copy current installed artifacts after a dependency
-upgrade. The resulting legal diff is reviewed alongside the package update. Root `LICENSE` remains
-tracked and must continue to state that the application MIT licence does not grant rights in package
-game data or artwork.
+`pnpm run legal:sync` is that separate explicit maintainer command, and it is the only path that
+writes the mirrors. It copies the current installed artifacts after a dependency upgrade, and the
+resulting legal diff is reviewed alongside the package update — a mirror silently refreshed by a
+build is a redistribution obligation nobody read. Root `LICENSE` remains tracked and must continue to
+state that the application MIT licence does not grant rights in package game data or artwork.
 
 Mirrored document bodies do not enter `HelpManifestV1`, the initial bundle or the modal. They satisfy
 the source-distribution boundary without creating additional legal-details destinations.
@@ -181,6 +182,31 @@ Generation may escape characters to produce valid TypeScript, but re-encoding th
 `exactText` must reproduce the extracted bytes. Output is stable for identical inputs, contains no
 absolute workspace path and is imported eagerly by the application frame. The generated module is
 ignored and rebuilt before typecheck, unit tests, development serve and production build.
+
+## Two generated-artifact conventions, and neither generalises
+
+_Relocated here from `AGENTS.md` on 2026-08-25, where T062 first recorded it. It is the one part of
+this feature's boundary a contributor meets while working on a different feature, so it is stated in
+the contract that owns it rather than in the repository briefing._
+
+This repository generates two kinds of artifact and treats them **oppositely**. Check which one you
+are looking at before deciding whether to commit it.
+
+| Artifact                                            | Tracked?      | Regenerated                                            | Command                   |
+| --------------------------------------------------- | ------------- | ------------------------------------------------------ | ------------------------- |
+| `src/app/platform/build/help-manifest.generated.ts` | **ignored**   | before every Angular, Playwright and typecheck command | `pnpm run help:artifacts` |
+| `src/app/platform/build/help-topics.generated.ts`   | **ignored**   | likewise, once Phase 5 lands its catalogue entries     | `pnpm run help:topics`    |
+| the build-link codec table                          | **committed** | on demand                                              | `pnpm run codec:tables`   |
+
+The difference is what the artifact is evidence of. A codec table is a shared wire format: it has to
+be reviewable in a diff, because changing it changes what every published link decodes to. A help
+manifest is a description of one build, correct only for the commit that produced it, and committing
+it would mean every branch carrying a stale claim about itself.
+
+`help-topics.generated.ts` deliberately carries only the topic ids and their message keys — not the
+requirements and principles each answer is justified by, which stay in
+`scripts/help-topic-definitions.mjs` as review evidence. `pnpm run help:artifacts:check` validates
+the sources the manifest is derived from and is chained into `pnpm run check`.
 
 ## Required failures
 

@@ -12,11 +12,30 @@ so there is one status surface at every width and the compact arrangement is the
 1. `BUILD STATUS`, the visible heading that names the region.
 2. Every `ShipLoadout.validation` issue, once, in package order.
 3. Power — feature 005.
-4. The six metric cells — features 005–008.
-5. `COST` and `MATERIALS` — feature 009, built.
+4. The `SYS` / `ENG` / `WEP` pip control — feature 005, added by the 2026-08-25 canvas revision.
+5. The six metric cells — features 006–008.
+6. `COST` and `MATERIALS` — feature 009, built.
 
-Feature 003 owns 1 and 2. Items 3–5 are their owners' and are listed here only because the rail is
+Feature 003 owns 1 and 2. Items 3–6 are their owners' and are listed here only because the rail is
 where the canvas puts them and the order is the canvas's.
+
+**Item 4 makes the rail interactive for the first time.** Until the 2026-08-25 revision every block
+in it was a read-out, and this file said so. It is still not feature 003's control: the pips are
+feature 005's one viewing condition, the same one its distributor cell edits, and the rail is only
+where the canvas now also draws it (005 FR-013's 2026-08-25 extension,
+`specs/005-power-and-heat/design/power-and-heat-detail.md`).
+
+## The six metric cells are one grid, not three blocks
+
+_Relocated here from `AGENTS.md` on 2026-08-25._ Features 006, 007 and 008 each own cells in item 5 —
+`SHIELD` and `ARMOUR`, `DPS`, and `JUMP`, `SPEED` and `MASS` — but the canvas rules all six off each
+other through the gaps of a **single** `1fr 1fr` container, two to a row. Three grids stacked would
+rule three blocks off each other instead, and `DPS` and `JUMP` could not share a row.
+
+So `.outfitting__status-cells` in the workspace owns that grid, and each feature's summary flattens
+into it through `MetricGroup`'s `flow` input (`display: contents`). **Ownership does not move**: each
+feature still builds its own cells, and the `defence-ownership` and `offence-ownership` policy
+scripts still fence them. A feature adding a cell adds it to its own summary, never to the workspace.
 
 ## The issue block
 
@@ -46,8 +65,10 @@ package diagnostic and parses none.
 - The block reads one active loadout at one revision. There is no projection envelope, no provider
   port and no pending state: `ShipLoadout.validation` is a field on the build that is already in
   memory, and reading it cannot fail or arrive late.
-- Nothing here is interactive. Ruling A withdrew the per-issue slot action, and at both widths the
-  slot ledger it would have reached is already on screen.
+- Nothing **feature 003 owns** here is interactive. Ruling A withdrew the per-issue slot action, and
+  at both widths the slot ledger it would have reached is already on screen. Feature 005's pip
+  control, drawn in this rail since the 2026-08-25 canvas revision, is the one control in the region
+  and belongs to that feature; it changes neither this block nor ruling A.
 - A build with no package issues draws no block at all — not an all-clear line, not a count, not a
   statement. That is what the canvas does, and it is the strongest available guarantee that no
   readiness, flyability or quality claim is being made.

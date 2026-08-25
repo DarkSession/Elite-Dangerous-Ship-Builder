@@ -29,7 +29,8 @@ protection results for the active build without changing the build.
 1. the region's own `DEFENCE ANALYSIS` rule;
 2. the shield card's name and the generator the package resolved;
 3. shield strength as the headline pool;
-4. four shield resistance/effective-MJ relationships, over one stated scale;
+4. four shield resistance/effective-MJ relationships, over one stated scale, each closed by the
+   same pool read at the standing SYS allocation;
 5. the recharge rate and the two recovery phases;
 6. the shield role groups, each closed by the package's own aggregate;
 7. the cell-bank reserve, as one line: the package total and the banks behind it;
@@ -57,6 +58,16 @@ the complete stacked composition.
   that is the bar column's own width and has both of its ends printed under it — and zero printed
   at the mark as well, wherever the table reaches below it. Every length a bar draws is stated
   beside it as a figure.
+- **A fifth column, added by the 2026-08-25 canvas revision: `MJ × 4 SYS PIPS`.** The shield table
+  now closes each row with the same effective pool read at the standing SYS allocation, beside the
+  bare one. `RESIST` and `MJ` become the bare shield — the package's own zero-pip default — and the
+  new column is a second `shieldMetricsResult()` at the allocation feature 005 holds. The heading
+  states the allocation it was read at, because a figure that moves with a condition shown without
+  that condition is the misleading number constitution IV forbids. The armour table gains nothing:
+  the canvas leaves it at four columns, and pips do not reach a hull.
+- The bar stays drawn from the **bare** resistance, the column it sits beside. Two lengths on one
+  track, or a length drawn from one column and printed beside another, would be a reading the canvas
+  does not draw.
 - An unavailable result shows every package issue in order. The UI never derives or announces a
   different generator verdict, and puts no action in their place.
 - Shield and recovery are independent: either complete result remains visible if the other is

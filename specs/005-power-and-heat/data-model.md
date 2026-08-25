@@ -264,14 +264,16 @@ cause and no catalogue figure. Power, heat and the conditions stay usable.
 Zero recharge is ready numeric data, not an unavailable one. Capacity and rated
 recharge are properties of the fitted distributor and do not move with pips.
 
-### DistributorIdentity
+### DistributorIdentity — withdrawn 2026-08-25
 
-`8A · CHARGE ENHANCED G5 · SUPER CONDUITS`, as the canvases name it beside the
+`8A · CHARGE ENHANCED G5 · SUPER CONDUITS` was drawn beside the distributor
 heading: a size, a grade letter, the applied recipe's journal name and grade, and
-the experimental effect's journal name. Every part is an identity rather than a
-figure, so nothing here is a reading about the build, and each part is absent
-where the build has none. Blueprint and effect names come from feature 011's
-game-text presenter.
+the experimental effect's journal name.
+
+**The canvas revision of 2026-08-25 removed it from the drawing**, so it comes off
+the screen and out of this model. It was an identity rather than a figure, so
+nothing is lost from what the panel reads about the build; the fitted distributor
+is still named where feature 002's ledger names it.
 
 ## Text
 

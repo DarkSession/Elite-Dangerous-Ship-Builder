@@ -33,8 +33,21 @@ module protection for the active build.
 - **FR-001**: Every defence value MUST come from `@elite-dangerous-almanac/core` without local
   calculation, clamping or apportionment.
 - **FR-002**: Shields MUST use `ShipLoadout.shieldMetricsResult()` and show the returned strength,
-  role contributions, resistances and effective hit points for the standing SYS pips. Every figure
-  shown MUST be a returned field.
+  role contributions, resistances and **two** effective-hit-point readings per damage type: the bare
+  shield, and the same shield at the standing SYS allocation. Every figure shown MUST be a returned
+  field, each from its own call.
+
+  > **Second column added 2026-08-25.** The canvas revision of that date gave the shield table a
+  > fifth column headed `MJ × 4 SYS PIPS`, holding `7,805` beside the `MJ` column's `3,122` on the
+  > kinetic row — exactly `strength / (1 − resistance)` with the package's own systems resistance
+  > folded in. So the table's `RESIST` and `MJ` columns are the **bare** shield,
+  > `shieldMetricsResult({ systemsPips: 0 })`, which is what the package documents its default as
+  > ("the bare shield, as an outfitting screen shows it"), and the new column is
+  > `shieldMetricsResult({ systemsPips: <standing allocation> })`. The column's heading names the
+  > allocation it was read at, so it reads `MJ × 4 SYS PIPS` at four pips and states its own
+  > allocation at any other. Nothing is multiplied here: both columns are `effectiveHitPoints`
+  > straight off two package results, and `systemsResistance` is the package's own field.
+
 - **FR-003**: A `null` shield result MUST remain unavailable. A missing, disabled and power-shed
   generator MUST remain distinguishable through package and build state.
 - **FR-004**: Recovery MUST use `ShipLoadout.shieldRecoveryResult()` and keep the regeneration rate,

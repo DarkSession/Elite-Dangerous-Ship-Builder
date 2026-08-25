@@ -41,7 +41,8 @@ The canvas's order, at every width:
    bands, and the plant/draw summary under them;
 2. `DRAW BY MODULE`;
 3. `HEAT PROFILE`;
-4. `POWER DISTRIBUTOR & PIP ALLOCATION`.
+4. `POWER DISTRIBUTOR & PIPS` (renamed from `POWER DISTRIBUTOR & PIP ALLOCATION` by the 2026-08-25
+   canvas revision).
 
 Each of the four is a bounded plate on the panel ground, and they are all the same plate:
 `1px solid var(--amber-a2)` over `var(--panel)` at `16px 18px`.
@@ -60,7 +61,12 @@ is the list above at every width.
 
 Two segments, `DEPLOYED` and `RETRACTED`, **inside the priority groups block** — the canvas sets
 `PRIORITY GROUPS` against `CUMULATIVE DRAW` on the header line and puts the pair on the line below,
-hard against the leading edge (`align-self: flex-start`). It is a small control that switches the
+hard against the leading edge (`align-self: flex-start`), behind a visible `H‑PTS` label.
+
+**The label became visible on 2026-08-25.** The canvas revision of that date put `H‑PTS` in front of
+the two segments on both canvases — a quiet mono micro-label, `500 9px`, the same rung the block's
+own micro-labels take. It says what the pair switches, which two verbs on their own do not; the
+group's accessible name is that label rather than a hidden string beside it. It is a small control that switches the
 figures in that block, not a banner governing the panel. Operated as the design system's segmented
 control; deployed is selected until a Commander chooses otherwise. There is no draft, no Apply, no
 Reset and no error state: the artboard draws none, and a selection that takes effect immediately
@@ -131,7 +137,15 @@ that build states a plant of `0.00 MW`, the whole demand in `UNPOWERED`, and no 
 
 One line per **kind** of consumer, heaviest draw first, exactly as the canvas lists it: the name,
 a bar drawn to that line's share of the heaviest line, and the draw hard against the trailing edge.
-The header carries `MW · TOTAL n`, the whole list's draw.
+**Re-laid on 2026-08-25.** The header carries the block name alone. The list is headed by its own
+column row — `MODULE` against `MW`, over the same tracks the rows use, with the bar column unheaded
+because it holds no figure — and closed by a `TOTAL DRAW` row carrying the whole list's draw. The
+`MW · TOTAL n` note that used to sit in the block header is withdrawn: the unit moved to the column
+head and the total moved to the foot, which is where a total that a reader adds up to belongs.
+
+Canvas 1d writes the same two figures as a footer pair, `TOTAL 37.44 MW` and `POWERED 29.64 MW`.
+Only the total is built. `POWERED` is already the priority-group block's own `POWERED DRAW` cell,
+three blocks up the same stack, and drawing it twice states one package figure as two readings.
 
 The canvas aggregates identical weapons into `Large Beam Laser ×2`, and that **is** built: the
 canvas writes one line per kind and the count after the name. Mounts of the same module in
@@ -155,8 +169,11 @@ state carried by nothing a reader can name.
 
 ## Heat profile
 
-One box split down the middle: the bars and the caption belonging to them on one side, the four
-tiles on the other in a column of equal width, the key across the foot of both. Every grid position is stated, because leaving
+One box split down the middle: the bars and the caption belonging to them on one side, and on the
+other the key **over** the four tiles in a column of equal width. **The key moved on 2026-08-25**:
+the canvas revision of that date lifted `WITHIN LIMIT` / `OVER THRESHOLD` out of the foot and put it
+at the head of the tile column, so the two fills are named before the bars beside them are read
+rather than after. Every grid position is stated, because leaving
 the tiles to auto-placement puts them under the bars the moment the left column takes two rows
 (review note 5).
 
@@ -174,6 +191,18 @@ than 160% widens the scale rather than overflowing the track.
 The four tiles are `RESTING HEAT`, `PEAK SUSTAINED`, `DISSIPATION` and `HEAT SINKS`, with the
 canvas's `2 x 3` under the count where the launchers all carry the same number. `100% MODULE DAMAGE`
 captions the threshold line, and `WITHIN LIMIT` / `OVER THRESHOLD` are the key.
+
+**Each bar carries a description, added on 2026-08-25.** The canvas revision gave every scenario row
+a `data-tip`, and the six read: `Hardpoints stowed, no throttle` · `Full throttle, hardpoints
+stowed` · `Heat while spooling the frame shift drive` · `Every weapon fired at once in a single
+volley` · `Trigger held down continuously` · `Heat spike from activating a cell bank`. They say what
+the package's five scenario names are shorthand for, which is the one thing a scenario name does not.
+
+The canvas hangs them on hover. This application does not: hover-only meaning is unreachable by
+touch (011 FR-006), and a scenario is not something a Commander should have to point at to
+understand. Each description is drawn beside its own scenario name, in the quieter ink, and read
+with it. They are this application's own strings — the package names its scenarios and does not
+gloss them — so they go through the localization layer like every other owned string.
 
 Each bar carries all five `HeatState` fields' meaning: `thermalLoad`, `heatLevel`, `gauge`,
 `overheats` and `secondsToOverheat`.
@@ -194,7 +223,9 @@ percentage.
 `heatMetrics()` returns `null` for a build with no powered plant. That is one unavailable group. No
 hull figure and no catalogue figure stands in for it.
 
-## Power distributor and pip allocation
+## Power distributor and pips
+
+Headed `POWER DISTRIBUTOR & PIPS` since the 2026-08-25 canvas revision, which shortened the name.
 
 The canvas's table, whole: a `BANK` column and `CAPACITY`, `MAX RCH`, `PIPS` and `RECHARGE` across
 `SYS`, `ENG` and `WEP` in that order.
@@ -206,9 +237,11 @@ The canvas's table, whole: a `BANK` column and `CAPACITY`, `MAX RCH`, `PIPS` and
 | `PIPS`     | `pips.systems` / `.engines` / `.weapons`, as returned |
 | `RECHARGE` | `rechargeRate`                                        |
 
-The block's header carries the fitted distributor's identity beside the heading — the canvas's
-`8A · CHARGE ENHANCED G5 · SUPER CONDUITS`. There is no table caption: the heading a few lines above
-already says those words, and a table repeating its heading is the heading twice (review note 8).
+The block's header carries the heading and nothing else. **The fitted distributor's identity —
+the canvas's `8A · CHARGE ENHANCED G5 · SUPER CONDUITS` — is withdrawn**, because the 2026-08-25
+canvas revision removed it from the drawing. There is no table caption either: the heading a few
+lines above already says those words, and a table repeating its heading is the heading twice
+(review note 8).
 
 The `PIPS` cell is the canvas's four blocks, and it is the control. The six pips are the ship's own
 rule rather than three independent dials: six between the three banks, four at most in any one, half
@@ -235,13 +268,43 @@ with its `3 · 1 · 2 PIPS` footer. Every width shows every field.
 
 ## The status rail
 
-**Two** read-only contributions, between feature 003's validation issues and the six metric cells
-features 006–008 own. The canvas prints two things in this block and no others.
+**Three** contributions, between feature 003's validation issues and the six metric cells features
+006–008 own. The canvas prints three things in this block and no others. The first two are
+read-only; the third is a control, added by the 2026-08-25 canvas revision.
 
 | Contribution | Drawn when                            | Text                                                                                            |
 | ------------ | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | The sentence | any band has `poweredDeployed: false` | one per shed band: `Priority group 4 is unpowered — 7.80 MW of demand sits above plant output.` |
 | `POWER`      | always, with a build                  | `29.64 / 31.20 MW · 7.80 OFF`, over a bar of the same four figures                              |
+| The pips     | always, with a build                  | `SYS` · `ENG` · `WEP`, each over four blocks filled to that bank's allocation                   |
+
+### The rail's pip control (2026-08-25)
+
+Canvas 1c draws three `.pipset` groups under the `POWER` bar — a bank name in that bank's own ink
+over four `.pipbar` blocks, the filled ones solid and the rest at `0.14` alpha — and gives each
+`cursor: pointer`. The artboard does not wire them, so the drawing says what they are and not what
+pressing one does.
+
+They are **the same control the distributor table carries, in a second place**, not a second state:
+the allocation is one viewing condition, and this application already makes it editable. Nothing
+about the six-pip rule changes — six between the three banks, four at most in any one, half a pip at
+a time, the other two paying for the one that moves — and both surfaces show the pips the package
+returned rather than the ones that were pressed.
+
+Two things make the second placement worth its own control rather than a read-out. The rail is on
+screen in every anatomy mode, and the distributor table is only in `POWER`; and since the 2026-08-25
+revision two other regions read figures at an allocation — feature 006's `MJ × 4 SYS PIPS` column
+and feature 007's `CAP 61 MJ · WEP 3 PIPS` — which a Commander would otherwise have to leave the
+region to change.
+
+The rail draws no half-pip block and no running total: four blocks a bank, exactly as the
+distributor's cell draws them, filled from the leading edge so half a pip fills half a block. Each
+group is named with the allocation it stands at, which is the reading for anyone who cannot see the
+blocks.
+
+Canvas 1d draws no pip control in its own rail. The application builds one DOM at both widths, and
+the control is the rail's; withdrawing it at one width would be the capability going missing at that
+width (constitution V).
 
 The first figure on the `POWER` line is the draw the plant keeps lit, not the whole demand: the
 artboard sets `29.64` here against a module list that totals `37.44`, and the `7.80` after the
@@ -280,11 +343,34 @@ package exception is an application defect rather than a screen.
 
 Selecting a hardpoint state or setting a pip changes visible content in place. Neither is announced:
 the control reports its own state, the region is on screen, and feature 003's ruling A already
-established that visible content in this area is not live.
+established that visible content in this area is not live. Setting a pip from the rail is the same
+edit to the same condition and is announced the same way — which is to say, not.
+
+## Canvas revision, 2026-08-25
+
+| Change                                                                            | Status against the build                                     |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Visible `H‑PTS` label in front of the two condition segments                      | **Not built.** The label is passed to the group and hidden.  |
+| `DRAW BY MODULE` header note `MW · TOTAL n` withdrawn                             | **Not built.** `power.modules.total` still sits there.       |
+| `MODULE` / `MW` column head row over the module list                              | **Not built.**                                               |
+| `TOTAL DRAW` row closing the module list                                          | **Not built.**                                               |
+| Heat key moved above the four tiles                                               | **Not built.** It is drawn under them.                       |
+| A description under each of the six heat scenario names                           | **Not built.** No such string exists.                        |
+| `POWER DISTRIBUTOR & PIP ALLOCATION` → `POWER DISTRIBUTOR & PIPS`                 | **Not built.** `power.distributor.heading` is the long name. |
+| The distributor's fitted-module identity withdrawn                                | **Not built.** `distributorIdentity()` still draws it.       |
+| `SYS` · `ENG` · `WEP` pip control in the status rail                              | **Not built.** The rail carries the sentence and the bar.    |
+| Canvas 1d's priority groups gain the condition toggle and a share column          | **Already built.** One DOM at both widths.                   |
+| Canvas 1d's `TOP DRAW` becomes `DRAW BY MODULE`, five rows become every row       | **Already built.**                                           |
+| Canvas 1d's `THERMALS` becomes `HEAT PROFILE`, with all six scenarios and the key | **Already built.**                                           |
+| Canvas 1d's footer becomes `PLANT OUTPUT` / `POWERED DRAW` / `UNPOWERED`          | **Already built.** It is the summary group.                  |
+
+Every "already built" row is canvas 1d catching up to canvas 1c. That half of the revision changes
+nothing here: one DOM at both widths was this feature's answer, and the drawing now agrees.
 
 ## Requirement mapping
 
 The capability owns FR-001–FR-013. The priority groups and module rows own FR-002–FR-006 and
 FR-012; the distributor owns FR-007 and FR-008; heat owns FR-009 and FR-010; FR-011 is the
-sentinel behaviour across all three; FR-013 is the rail. FR-001's package boundary is the whole
+sentinel behaviour across all three; FR-013 is the whole rail block — its three read-only
+contributions and, since 2026-08-25, its pip control. FR-001's package boundary is the whole
 surface's.

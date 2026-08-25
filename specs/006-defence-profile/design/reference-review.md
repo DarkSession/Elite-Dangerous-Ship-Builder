@@ -112,3 +112,25 @@ Adopt the reference's capability hierarchy, peer defence regions, damage relatio
 order. Reject its sample values, arithmetic implications, incomplete state set and implementation
 literals wherever they conflict with FR-001–FR-009, Almanac or the constitution. Repository tokens,
 components and these plan-time screen definitions remain authoritative.
+
+## Canvas revision, 2026-08-25
+
+One change reaches this feature, and it is an addition rather than a correction.
+
+**The shield table gained a fifth column, `MJ × 4 SYS PIPS`.** The sample reads `7,805` against the
+kinetic row's `3,122`, which is `1,842 / (1 − 0.764)` where `0.764` stacks the row's own `41%` with
+the package's systems resistance at four pips. So the canvas is drawing the same effective pool
+twice: bare, and at the SYS allocation. That resolves what the `RESIST` and `MJ` columns are, which
+the previous drawing left open and this feature had read at the standing allocation — they are the
+**bare** shield, the package's own documented zero-pip default, and the standing allocation moves to
+the new column. The heading names the allocation it was read at.
+
+Two package calls, one per column, both `shieldMetricsResult()`; the second is the call this feature
+already makes. Nothing is scaled, blended or apportioned here, and `systemsResistance` is a returned
+field.
+
+**Everything else on canvas 1d caught up to canvas 1c** — the `RESIST` column, the source rows with
+their module identities, `RECHARGE` / `0→100%` / `BROKEN RESET`, `HARDNESS` / `MODULE PROT.` /
+`INTEGRITY`, and `ARMOUR · 3,914 HP EFFECTIVE` in place of `ARMOUR · 2,784 INTEGRITY`. All of it is
+already built: one DOM at both widths was this feature's answer, and the drawing now agrees with it.
+No change follows from that half of the revision.

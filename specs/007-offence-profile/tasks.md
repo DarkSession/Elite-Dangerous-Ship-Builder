@@ -535,10 +535,46 @@ not draw.
       constitutional exclusion
 - [x] T040 Restore unit coverage to at least 80% statements, branches, functions and lines
 - [x] T041 [P] Record the Offence Profile capability, and the target simulation that stays out of
-      scope, in `AGENTS.md`
+      scope, in `AGENTS.md`.
+      _Superseded 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table, because its per-feature blocks duplicated these spec directories and went stale whenever the canvas moved. This feature's boundary and out-of-scope list live in its own `spec.md` and `design/`._
 - [x] T042 Execute every section of `specs/007-offence-profile/quickstart.md` and fix each divergence
 - [x] T043 Run `pnpm run check` and confirm formatting, compilation, policy checks, build, unit
       coverage, all ten Playwright projects and all axe scans pass with nothing skipped or focused
+
+---
+
+## Phase 7: The 2026-08-25 canvas revision
+
+The canvas changed after this feature shipped. Every item below is a divergence between
+`.design/Ship Builder.dc.html` and the built region, recorded in
+`design/canvas-contract.md`, "Canvas revision, 2026-08-25". Nothing here is a new capability: the
+package answers are all already in `src/app/domain/offence/`.
+
+- [ ] T044 Add the weapon list's `RANGE` column between `PIERCE` and `FALLOFF` — `maximumRange`,
+      already carried on `FittedWeaponMetrics` for `damageFalloff()`. Add `offence.column.range` to
+      both catalogues, extend the head row and the per-row figure list, and keep an absent maximum
+      range as not-stated text rather than a dash or a zero (FR-004)
+- [ ] T045 Re-derive `src/app/domain/offence/convergence.ts` from the revised `wireConvergence`:
+      `FIELD_OF_VIEW_MILLIRADIANS = 40`, the plate square in angle with `PLATE_ASPECT` withdrawn,
+      the rings sized from the box's own pixel aspect, and every dot clamped to the frame's `4%`–`96%`
+      margin instead of leaving it. Update `convergence.spec.ts` to the new geometry, including a
+      shot far enough off-axis to be clamped
+- [ ] T046 Replace the plate's badge column with the script's own numeral placement — one dot and one
+      hardpoint numeral per armed mount, the numeral at whichever of `[7,-14]`, `[7,5]`, `[-13,-14]`,
+      `[-13,5]` stands furthest from every other dot. Remove `plate__leader`, `badgeLeft`,
+      `badgeTop`, `leaderLength` and `leaderAngle`, and the 1600×600 plate-space they were written in
+- [ ] T047 Move the ring caption onto the `SHOT CONVERGENCE` heading line, drop `AT THIS RANGE` from
+      `offence.convergence.ring`, and withdraw `offence.convergence.note` and
+      `offence.convergence.impact-plane` from both catalogues and from the template — neither is
+      drawn any more. The caption stays in the shot sentences as well, because it is still the one
+      plate figure the four cells do not repeat (FR-011)
+- [ ] T048 Re-lay the range field as the canvas draws it: `TARGET RANGE` and its value on the row
+      above the track, the track's two end labels beneath it, then the four fact cells. Rename
+      `offence.convergence.range` to `Target range` in both catalogues
+- [ ] T049 [P] Update `design/component-state-preview-matrix.md` and the convergence previews for the
+      clamped-shot state, which replaces the clipped-shot state
+- [ ] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
+      `pnpm run check`
 
 ---
 
@@ -557,6 +593,8 @@ not draw.
 - Phase 5b depends on Phases 3 to 5, and rebuilds what they drew.
 - Phases 5c and 5d depend on Phase 5b, and correct what it drew.
 - Phase 6 depends on every story it verifies, and on Phase 5d.
+- Phase 7 depends on Phase 6 and re-verifies it. T045 blocks T046; T044, T047 and T048 are
+  independent of both and of each other.
 
 ### Parallel opportunities
 

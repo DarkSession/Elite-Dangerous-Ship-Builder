@@ -26,6 +26,7 @@ content minimums measured on the region's own inline size, never a viewport labe
 | -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
 | Ledger / master pane                   | 320 CSS px          | A slot card's exact key, one wrapped module name and its 44px controls without clipping |
 | Selected-slot pane (chooser or editor) | 360 CSS px          | A candidate row's name, class, rating, mount and stacked labels plus a 44px fit control |
+| Chooser family rail (wide only)        | 216 CSS px          | A family's localized name on one line beside its count chip, at a 44px row height       |
 | Wide right rail                        | 280 CSS px          | One validation or cost line with its number and unit on at most two lines               |
 
 Two panes are used only when both the ledger and selected-slot minimums fit together in the available
@@ -49,7 +50,12 @@ canvas 1c's three visual regions:
 - left: persistent `ALL`, hardpoint, core, optional and utility controls plus the complete grouped
   slot ledger;
 - center: shared anatomy/calculation outlet followed by selected-slot replacement and engineering
-  regions inline;
+  regions inline. Since the 2026-08-25 canvas revision the replacement region is itself two panes —
+  a 216 px family rail beside the variant list, the canvas's own
+  `grid-template-columns: 216px minmax(0, 1fr)` — each bounded and scrolling on its own, with the
+  `MODULE` / `CLASS` / `COST` head over the variant pane alone. Where the rail's own minimum and the
+  360 px selected-slot minimum cannot both be met, the compact composition applies, which is where
+  the accordion canvas 1d draws lives;
 - right: shared package validation, cost/material and downstream status outlets.
 
 The wide header exposes the feature 002 editable ship name/ident control (FR-019) beside feature 001's

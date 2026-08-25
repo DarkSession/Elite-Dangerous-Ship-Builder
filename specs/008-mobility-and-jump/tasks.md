@@ -353,7 +353,7 @@ three owner-authored mobility summaries.
 - [ ] T064 [P] Write and run the versioned NVDA/Firefox desktop, TalkBack/Chromium mobile and tablet screen-reader protocols covering the three user stories — headings and named regions, the read-only condition context, the three jump profile groups, the seven mobility fields, the sparse source definition groups, the three aggregate groups with their owning issues, the module-mass table associations and slot actions, and settled announcements — with result records in `e2e/manual/screen-reader.protocol.md` and `e2e/manual/results/`
 - [ ] T065 Reconcile the coverage ledger with the feature 008 surfaces, exported components, preview declarations and Playwright project names, and assert every conformance statement covering this capability names the constitutional exclusions "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11", in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-003 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T033, T044, T055)
 - [ ] T066 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/mobility-jump/`, `src/app/application/mobility-jump/` and `src/app/features/build-workspace/mobility-and-jump/` under the thresholds in `angular.json`
-- [ ] T067 [P] Record the Drives & Mass capability, the absent feature 005 dependency and the out-of-scope route planning, neutron boosts, mass decomposition, headroom, mass lock and centre of mass in `AGENTS.md` and `README.md`
+- [ ] T067 [P] Record the Drives & Mass capability, the absent feature 005 dependency and the out-of-scope route planning, neutron boosts, mass decomposition, headroom, mass lock and centre of mass in `README.md`. _Retargeted 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table and no longer carries per-feature narrative, so this record belongs in `README.md` and in this feature's own `spec.md` and `design/reference-review.md`._
 - [ ] T068 Execute every section of `specs/008-mobility-and-jump/quickstart.md` against the reference corpus and fix each divergence
 - [ ] T069 Run `pnpm run check` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 
@@ -469,3 +469,27 @@ Task: "Jump performance journey in e2e/mobility-and-jump.spec.ts"
 - Every component task includes its unit test, its required-state preview declarations and its
   message keys; none of the three is a follow-up
 - Commit after each task or logical group; stop at a checkpoint to validate a story independently
+
+---
+
+## Phase: the 2026-08-25 canvas revision
+
+Canvas 1d was redrawn as canvas 1c's two cards, which is what this feature already builds from one
+DOM — so almost none of the revision reaches it. Two items do.
+
+- [ ] T070 Cut the fuel row's qualifier to the canvas's `TANK` and stop reading `fuelCapacity`
+      altogether: it is no longer drawn anywhere, and a package field no canvas draws is not read
+      (`design/reference-review.md`, amendment of 2026-08-25). Withdraw
+      `drives.thrusters.fuel.tanks` from both catalogues. The row's own figure is untouched — it is
+      the fuel part of the one `buildMass(load)` answer
+- [ ] T071 Re-run the feature's e2e specs in all ten projects with the axe scan, then
+      `pnpm run check`
+
+### What the revision confirms rather than changes
+
+Canvas 1d gained `ROLL`, the mass bar's `OPTIMAL 1,260 t` / `MAX 1,890 t` ticks, the hull/modules/fuel
+legend with its qualifiers, the `JUMP LADEN` / `JUMP UNLADEN` / `MASS LOCK` trio, the `SCO` badge, the
+fitted-drive identity, and the `FSD optimal mass` / `Fuel per jump` / `Total range` legend — every one
+of them already built and already drawn at both widths from one DOM. `658 T HEADROOM` and the
+`CURRENT` range row survive in the drawing and stay out of scope for the reason already recorded:
+this application has no package result or viewing condition to state either.

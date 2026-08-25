@@ -74,12 +74,11 @@ inline notes below record each correction and why.
 
   > **Narrowed to what the canvas draws.** The requirement says _how_ an aggregate is obtained if it
   > is drawn, never _that_ it is drawn — and canvas 1c's left card draws no unladen mass and no cargo
-  > capacity anywhere. Its legend under the mass bar is `Hull` / `Modules` / `Fuel`, and the only
-  > capacity on it is `TANK 32 T + RESERVE` beside the fuel row. An earlier draft of this feature
+  > capacity anywhere. Its legend under the mass bar is `Hull` / `Modules` / `Fuel`. An earlier draft
+  > of this feature
   > added a four-row "Mass and capacity" group for all three getters, which was a reading the
-  > template does not have; it also printed the main tank three times on one card. So the screen
-  > draws `fuelCapacity` where the canvas draws it, in the fuel row's own qualifier, and does not
-  > draw `unladenMass` or `cargoCapacity` at all. Neither is read: the mass bar's track runs to the
+  > template does not have; it also printed the main tank three times on one card. So the screen does
+  > not draw `unladenMass` or `cargoCapacity` at all. Neither is read: the mass bar's track runs to the
   > thrusters' own maximum supported mass, which is the only maximum the package gives that bar, and
   > a build whose thruster publishes no curve has no track to scale against rather than a substitute
   > one.

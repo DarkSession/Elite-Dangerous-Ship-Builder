@@ -68,11 +68,12 @@ Use a build whose deployed draw sheds a lower priority group while its retracted
    rule explaining the panel: the canvas draws a title per mode and nothing else.
 3. Confirm the four blocks are drawn as four plates, in the canvas's order — `PRIORITY GROUPS` and
    `DRAW BY MODULE` side by side where there is room for both, then `HEAT PROFILE`, then
-   `POWER DISTRIBUTOR AND PIP ALLOCATION` — each on the panel ground inside its own hairline. The
+   `POWER DISTRIBUTOR AND PIPS` — each on the panel ground inside its own hairline. The
    first two square up against each other and go no taller: neither is ruled off around empty
    ground.
 4. Confirm `DEPLOYED` is selected, on its own line under the `PRIORITY GROUPS` header rather than
-   inside it, with no draft, Apply, Reset or error state.
+   inside it, behind the canvas's visible `H‑PTS` label, with no draft, Apply, Reset or error
+   state.
 5. Compare plant output, the powered draw, the unpowered remainder and every drawn group's own draw
    and cumulative share with the deployed `powerBudget()` result.
 6. Confirm the three tiles under the groups are `PLANT OUTPUT`, `POWERED DRAW` and `UNPOWERED`, and
@@ -118,7 +119,7 @@ For every returned `PowerBudget.consumers` entry:
 3. Confirm mounts carrying the same module in the same group and the same enabled state are drawn as
    one line with the canvas's `x2` count, and that the count is the number of mounts behind it.
 4. Confirm a deployed-only mount reads `0.00` while `RETRACTED` is selected, and that each state's
-   lines add up to that state's own `MW · TOTAL n` note.
+   lines add up to that state's own `TOTAL DRAW` row at the foot of the list.
 5. Confirm a switched-off module reads `· Off` and the nothing it draws.
 6. Confirm a line the plant leaves dark carries the canvas's `· GRP 4`, and that a line in a lit
    group carries no group at all.

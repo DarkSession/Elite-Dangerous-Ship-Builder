@@ -67,7 +67,10 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 
 ### 2. DRAW BY MODULE
 
-- Header: `DRAW BY MODULE` left, `MW · TOTAL 37.44` right.
+- Header: `DRAW BY MODULE`, alone. **Re-laid by the 2026-08-25 canvas revision**, which withdrew the
+  header's `MW · TOTAL 37.44` note, put a `MODULE` / `MW` column head over the list (the bar column
+  unheaded), and closed the list with a `TOTAL DRAW 37.44` row. Canvas 1d writes the same total as a
+  footer pair with `POWERED 29.64 MW` beside it.
 - A horizontal bar per module, descending by draw, name + figure:
   `Thrusters 7A 9.48` · `Bi-Weave Shield Gen 7C 5.51` · `Frame Shift Drive 6A 4.72` ·
   `Large Beam Laser ×2 3.24` · `Power Distributor 8A 2.60` · `Multi-Cannons ×3 2.49` ·
@@ -102,10 +105,11 @@ The sixth is the shield-cell-bank spike the module documentation states outright
 `shieldBankHeat / shieldBankSpinUp` added to the build's load — "which is what an
 outfitting screen means by a cell bank's heat spike".
 
-### 4. POWER DISTRIBUTOR & PIP ALLOCATION
+### 4. POWER DISTRIBUTOR & PIPS
 
-- Header `POWER DISTRIBUTOR & PIP ALLOCATION`, subtitle the fitted distributor and
-  its engineering: `8A · CHARGE ENHANCED G5 · SUPER CONDUITS`.
+- Header `POWER DISTRIBUTOR & PIPS`, alone. **Renamed and stripped by the 2026-08-25 canvas
+  revision**, which shortened `POWER DISTRIBUTOR & PIP ALLOCATION` and removed the subtitle that
+  carried the fitted distributor and its engineering (`8A · CHARGE ENHANCED G5 · SUPER CONDUITS`).
 - Columns: `BANK` · `CAPACITY` · `MAX RCH` · `PIPS` · `RECHARGE`.
 - Rows `SYS` (cool), `ENG` (good), `WEP` (amber). Each `PIPS` cell is **four equal
   bars** at `height: 16px`, filled ones in the bank's colour and empty ones at 14%
@@ -127,11 +131,18 @@ Pip rules, as stated by the repository owner:
 The package accepts fractional pips in `[0, 4]` per bank and computes
 `ratedRecharge * (pips / 4) ^ 1.1`, so every allocation above is answerable.
 
-## Status rail (@749566)
+## Status rail
 
 - A warning band, hot, 3px left border:
   `Priority group 4 is unpowered — 7.80 MW of demand sits above plant output.`
-- A `POWER` tile reading `29.64 / 31.20 MW · 7.80 OFF`.
+- A `POWER` tile reading `29.64 / 31.20 MW · 7.80 OFF`, over its bar.
+- **Since the 2026-08-25 canvas revision**, three `.pipset` groups under that bar:
+  `SYS`, `ENG` and `WEP`, each a bank name in that bank's own ink over four
+  `.pipbar` blocks — the filled ones solid, the rest at `0.14` alpha — and each
+  carrying `cursor: pointer`. The artboard leaves them unwired, so the drawing
+  says what they are and not what pressing one does; they are ruled the same
+  control the distributor cell carries, in a second place
+  (`power-and-heat-detail.md`, "The rail's pip control").
 
 Nothing else in the rail belongs to this capability. The canvas draws no heat
 sentence in the rail.

@@ -70,8 +70,24 @@ conditions here, because the design draws them inside this capability and nowher
   canvas's `POWER` line carrying the lit draw against plant output, with its unpowered remainder
   named after it only where something is dark; and the canvas's bar under it, drawing those same
   figures over the whole demand with a mark where the plant runs out. Each MUST name only fields the
-  package returned, no severity word MUST stand beside a sentence, no heat sentence MUST be drawn
-  here, and none of it MUST be interactive.
+  package returned, no severity word MUST stand beside a sentence, and no heat sentence MUST be
+  drawn here. These three MUST NOT be interactive.
+
+  > **Extended 2026-08-25 — the rail carries the pip control too.** The canvas revision of that date
+  > drew three `.pipset` groups under the rail's `POWER` bar — `SYS`, `ENG` and `WEP`, each over four
+  > blocks filled to that bank's standing allocation, each with `cursor: pointer`. The rail MUST
+  > carry them as a control. It edits the same single viewing condition FR-007's distributor cell
+  > edits, under the same six-pip rule, and MUST NOT become a second allocation, a draft or a
+  > running total; each bank MUST expose the allocation it stands at in words, and the blocks shown
+  > MUST be the pips the package returned rather than the ones that were pressed. The three
+  > read-only contributions above stay read-only.
+  >
+  > The rail is on screen in every anatomy mode while the distributor table is only in `POWER`, and
+  > the same revision gave feature 006 a column and feature 007 a chip that are read at an
+  > allocation — so the control belongs where a Commander can reach it without leaving the region
+  > whose figures it moves (`design/power-and-heat-detail.md`, "The rail's pip control"). No
+  > requirement id is minted for it: this is FR-013's block gaining an element, and the coverage
+  > ledger registers ids against journeys that exist.
 
 ## Edge Cases
 

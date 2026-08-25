@@ -25,14 +25,17 @@ the build.
   exactly as canvas 1d shows, with no hint. The hint is application-owned text, so it resolves through
   localization (constitution VI) and names the modifier for the Commander's platform — `⌘K` is
   macOS-only and MUST NOT ship as a literal on Windows or Linux.
-- Collapsible family rows carrying the package family name, the family's choice count and an open or
-  closed caret, with the open family's rows drawn beneath it on the same seven-column grid. No
-  section heading above them: see "Module families" below.
+- **A family rail beside a variant pane**, since the 2026-08-25 canvas revision — see "The wide
+  manifest is a rail and a pane" below. The rail carries the package family name and the family's
+  choice count; the pane carries the selected family's rows. There is no caret and no section
+  heading above them: see "Module families".
 - Responsive semantic manifest grouped by package family and ordered inside a family by localized
   module name, then class/rating.
 - Rows expose explicit fitted/stock/variant state, class/rating/mount, acquisition and entitlement
-  labels, and package-provided DPS, mass, power, weapon draw, credit and other in-scope facts where
-  available. Unavailable columns/facts remain labeled unavailable rather than zero.
+  labels, and the credit and Merc Coin price. **The DPS, mass, power and weapon-draw columns are
+  withdrawn at this width** by the same revision; they survive where canvas 1d draws them, on the
+  compact row's own code line. An unavailable fact remains labeled unavailable rather than zero
+  wherever it is drawn.
 - **No fit and no cancel inline.** Canvas 1c draws neither: the panel is already open beside the
   ledger for the marked mount, so choosing a row _is_ the fit and there is nothing to leave. Both
   controls belong to canvas 1d's screen (wave 4). At wide width the foot those two controls sit on is
@@ -47,9 +50,45 @@ the build.
 
 The region may scroll internally. It cannot cause page-level horizontal overflow.
 
+## The wide manifest is a rail and a pane
+
+**Ruled 2026-08-25, against the canvas revision of that date.** Canvas 1c no longer draws the wide
+manifest as one accordion. It draws `#fit-table` as
+`grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with:
+
+- **column 1, row 2** — the family rail: every family in package order, one row each carrying the
+  family's name and its choice count in a chip, bounded at `max-height: 470px` and scrolling on its
+  own. The selected row takes the amber left rail (`border-left: 3px solid var(--amber)`) and the
+  amber gradient ground, and the others take `var(--panel-2)` with a transparent border in the same
+  place. **There is no caret**: `wireFamilies`' rail branch keeps its `.fam-car` update behind a
+  null check, and the revised markup carries none;
+- **column 2, row 1** — the column head, over the pane alone;
+- **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
+  bounded at the same `max-height: 470px` and scrolling on its own.
+
+**Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
+hides every other, and returns before the accordion branch it replaced. Exactly one family is
+selected at all times, and the pane is never empty.
+
+The accordion is not gone — canvas 1d still draws it, unchanged, with its badge, its variants
+summary and its caret. So the two compositions now differ in kind and not only in arrangement: a
+rail with one pane at wide, an accordion at compact. What that costs FR-021 to FR-023 is ruled in
+"Module families" below.
+
 ## The manifest's own columns
 
-**Ruled 2026-08-22 (wave 7, corrected wave 9).** The wide manifest is canvas 1c's seven-column grid
+**Ruled 2026-08-25.** The wide manifest is three columns, not seven:
+`grid-template-columns: 2.6fr 70px 150px` — `MODULE`, `CLASS` and a right-aligned `COST` — on both
+the head and every row of the pane. The canvas revision withdrew `DPS`, `MASS t`, `PWR MW` and
+`DRAW WEP` from this width entirely.
+
+They are not moved and not folded into a second line: canvas 1c draws a row as one line of three
+cells. The facts survive only where canvas 1d draws them, in the compact row's own code line
+(`GIMBALLED · 23.3 DPS · 4.46 MW · 16.0 t`), which that canvas did not change. A wide manifest that
+kept them would be the screen not being the design.
+
+**Superseded, kept for the record — ruled 2026-08-22 (wave 7, corrected wave 9).** The wide manifest
+was canvas 1c's seven-column grid
 at the canvas's own measures — `2.2fr 62px 74px 74px 78px 86px 128px` — and the columns **abut**.
 There is no gap track between them: their measures already carry the space, and a gap laid on top of
 them narrows every figure column below what the canvas gives it. The cost column is nearly twice a
@@ -140,11 +179,35 @@ handful out of hundreds, and their real height is counted from the first frame l
 
 ## Module families
 
-**Ruled 2026-08-23 (wave 10).** Both canvases were redrawn around collapsible families, and both are
-adopted. Canvas 1c draws them inside the seven-column manifest — a family row of name, count and
-caret, with `Multi-Cannon · Gimballed` and its siblings beneath the open one. Canvas 1d draws the
-same list under a `FAMILIES` heading with its own `5 · 24 FIT` counter, a fitted-module block pinned
-above it under `FITTED HERE`, and one family open.
+**Ruled 2026-08-23 (wave 10), amended 2026-08-25.** Both canvases were redrawn around families, and
+both are adopted. Canvas 1d draws them as an accordion under a `FAMILIES` heading with its own
+`5 · 24 FIT` counter, a fitted-module block pinned above it under `FITTED HERE`, and one family
+open. **Canvas 1c no longer draws an accordion**: since the 2026-08-25 revision it draws a family
+rail beside a variant pane, with exactly one family selected and no caret at all — see "The wide
+manifest is a rail and a pane" above.
+
+### What exclusive selection does to FR-021, FR-022 and FR-023
+
+**Ruled 2026-08-25.** The three requirements were written when both canvases drew an accordion, so
+all three are worded in "open" and "closed". A rail has neither: it has one selected family, always,
+and a pane that is never empty. The requirements are restated in terms both compositions satisfy —
+_revealed_ is the accordion's open family and the rail's selected one — and one consequence follows
+that has to be written down rather than smoothed over:
+
+- **FR-021's "every other family closed" has no rail form, and needs none.** Revealing exactly one
+  is what a rail does by construction.
+- **Where no available family holds the fitted choice, the rail selects the first family in package
+  order and the accordion opens none.** This is not a substitute chosen by this application: the
+  canvas's rail always has a selection and always paints a pane, and an empty pane beside a full
+  rail is a state it does not draw. The accordion's "all closed" is unchanged, because the compact
+  canvas does draw that.
+- **FR-023's screenful rule is compact-only, and always was in effect.** Its purpose is to keep a
+  broad search from painting several hundred cards in one keystroke; the rail cannot do that at any
+  match count, because it paints one family's rows whatever the search matched. At wide, a search
+  narrows the rail to the families holding matches and selects the first of them. At compact, the
+  twenty-five-choice rule stands exactly as measured.
+- **A family holding a match is never absent at either composition.** That is the part of FR-023
+  that mattered, and neither composition weakens it.
 
 **The family is the Almanac's, not ours.** `@elite-dangerous-almanac/core` 0.1.7 gives every module
 an `OutfittingModuleIdentity.familyId` and publishes a localized name for each of the 77. That is the
@@ -194,6 +257,10 @@ the rows are not drawn, and the Commander narrows the term or opens the family t
 SC-008 are amended to this rather than the rule being bent around them: a family holding a match is
 never absent at either size, which is the part that mattered.
 
+**Scoped to the compact composition on 2026-08-25.** The wide manifest is a rail with one pane and
+cannot paint hundreds of cards at any match count, so the twenty-five-choice rule is the compact
+composition's and the measurement above is the measurement that matters for it.
+
 Measured with that rule, `m mu mul mult multi` settles at **50.4, 56.8, 33.0, 33.6, 33.5 ms** —
 three consecutive runs at 59 ms worst or better, against a 100 ms budget. **SC-002 is met at the
 compact composition.**
@@ -238,6 +305,14 @@ none here; its sentence is unchanged and is what a reader is given either way. `
 had its own mark, the Merc Coin, and keeps it. This is the same floor the rest of this component
 works to: the drawn markers are a subset of the spoken ones, never the other way round.
 
+**The 2026-08-25 revision hung a description on each mark, and it confirms the words already
+shipping.** Every acquisition icon in the revised canvas carries a `data-tip` — `Merc Coin purchase`,
+`Tech Broker unlock`, `Powerplay module`, `Community goal reward` — shown on hover. Nothing changes
+here: hover-only meaning is unreachable by touch (011 FR-006), and this component has carried the
+same four routes as spoken sentences beside the mark since wave 10. The revision is evidence that
+those sentences are the right words, not a new element to build. The drawn markers stay a subset of
+the spoken ones.
+
 **The mark sits on the name's own line, in the ledger as in the manifest.** Canvas 1c draws the
 fitted `Advanced Plasma Accelerator` with its Powerplay mark 7px after the name and the
 `FIXED · 51.7 DPS · 1.97 MW · 24.0 t` code line under both. The ledger row therefore projects the
@@ -248,8 +323,12 @@ line and made a third line the canvas does not have.
 
 - Full-screen layer inspired by canvas 1d with associated title/slot description and back/cancel.
 - Sticky or persistent labeled search and textual result count.
-- Choices become semantic cards preserving family order and every label, beneath the same family
-  controls the wide composition uses.
+- Choices become semantic cards preserving family order and every label, beneath **the accordion
+  canvas 1d still draws**. Since the 2026-08-25 revision the wide composition's family control is a
+  rail rather than a disclosure, so the two are no longer the same control: this is the composition
+  that keeps the caret, the open/closed state and the screenful rule.
+- The DPS, mass and power figures the wide manifest no longer draws survive here, on canvas 1d's own
+  code line under the module name — which that canvas did not change.
 - Canvas 1d's `FITTED HERE` block stands above the family list, showing the module currently in the
   mount. It is the same fitted row the family list marks `FITTED`, drawn twice on purpose: at 390 px
   the family holding it may be scrolled far below the fold.
@@ -299,8 +378,10 @@ fit after another tab/component edit; the detached transaction remains final aut
 - Search has visible label/instructions; result count is a polite live region; no-match is a status,
   not just blank content.
 - Family controls describe list structure: each publishes its name, its current choice count and its
-  open or closed state programmatically, not by caret glyph alone. Selected state and acquisition
-  restrictions are text/programmatic, not border/icon/color only.
+  revealed state programmatically, not by glyph or ground alone — `aria-expanded` on the compact
+  accordion's disclosure, and the selected-state attribute on the wide rail's row, whose amber ground
+  and left rule are otherwise the whole difference between it and its neighbours. Selected state and
+  acquisition restrictions are text/programmatic, not border/icon/color only.
 - A family control is a real control at every width: at least 44 CSS px of target, operable by touch
   and pointer, and not part of the `DENSE_TARGETS` exemption.
 - Candidate action names include module form and class/rating context needed to distinguish choices.
