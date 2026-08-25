@@ -206,9 +206,10 @@ is not named, and that a build with no engineering draws no materials block at a
       `e2e/expansion-rtl.spec.ts` run against the preview catalogue, which these blocks are
       deliberately not in (T013). Now in "reading at another text size and direction", "at 400%
       browser zoom" and "in German, at a doubled text size", following the shape features 005, 007,
-      008 and 010 each use in their own suite. Label-to-figure association is measured as a box
-      **intersection** rather than as "the label ends past where the figure starts", because the
-      second reads every row as broken the moment the document runs right to left. Expanded
+      008 and 010 each use in their own suite. Label-to-figure association is measured as content
+      **overflowing its own box**, not as two boxes meeting: these are non-wrapping flex rows, so
+      sibling boxes never intersect however long the text grows, and an intersection test here
+      would be one that cannot fail. Expanded
       translation is exercised as German — a real shipped locale whose compounds are the unbreakable
       words the condition is about — since the `en-XA` provider cannot be reached from the product
       application by design.

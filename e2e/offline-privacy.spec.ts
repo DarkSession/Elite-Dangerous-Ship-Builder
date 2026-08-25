@@ -137,7 +137,11 @@ test.describe('offline capability', () => {
     await chooseRecipe(page, /Increased Range/i);
     await applyDraft(page);
 
-    const rows = page.locator('edsb-cost-materials .rail-material');
+    // Material rows only: a Merc Coin row would sit among these and is
+    // deliberately outside the footer's counts, so counting it here would
+    // compare two different things and happen to agree only while this journey
+    // buys no Mercenary article.
+    const rows = page.locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)');
     await expect(rows.first()).toBeVisible();
 
     // The footer counts the rows beside it, and it counted them here, offline.
