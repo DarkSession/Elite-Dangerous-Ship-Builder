@@ -1,4 +1,5 @@
 import { DestroyRef, ElementRef, inject, signal, type Signal } from '@angular/core';
+import { SHORT_VIEWPORT as SHORT_VIEWPORT_QUERY } from '../short-viewport';
 
 /**
  * Which composition the outfitting region is currently in.
@@ -43,14 +44,14 @@ const MINIMUMS = {
  * The height below which nothing can be stacked, in the CSS's own words.
  *
  * The same query the stylesheets use for the sticky feet and the released
- * bounds. Below it a viewport cannot show a ledger, a fitting panel and an
- * engineering panel one under another and still show a row of any of them: the
- * inline compositions become one page thousands of pixels long with the last
- * panel unreachable in practice. So height alone selects the compact
- * composition, exactly as 400% zoom does (responsive composition, "Reference
- * and selection rule").
+ * bounds, composed from the single declaration of that height. Below it a
+ * viewport cannot show a ledger, a fitting panel and an engineering panel one
+ * under another and still show a row of any of them: the inline compositions
+ * become one page thousands of pixels long with the last panel unreachable in
+ * practice. So height alone selects the compact composition, exactly as 400%
+ * zoom does (responsive composition, "Reference and selection rule").
  */
-const SHORT_VIEWPORT = '(max-height: 30rem)';
+const SHORT_VIEWPORT = SHORT_VIEWPORT_QUERY;
 
 /**
  * Watches the host's own inline size and reports which composition fits.

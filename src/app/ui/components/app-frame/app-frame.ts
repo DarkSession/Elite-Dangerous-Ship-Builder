@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
@@ -8,6 +9,7 @@ import {
   output,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { LocaleStore } from '../../../i18n/locale.store';
 import { MessageService } from '../../../i18n/message.service';
@@ -21,6 +23,7 @@ import {
 import { ActionButton } from '../action/action-button';
 import { ActionLayer } from './action-layer';
 import { StatusNotice, type StatusTone } from '../status/status-notice';
+import { observeBannerRelease } from './sticky-banner';
 
 /** One entry in the primary navigation. */
 export interface NavigationEntry {
@@ -89,6 +92,10 @@ export interface ShellStatus {
   templateUrl: './app-frame.html',
   styleUrl: './app-frame.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // On the host rather than on the header, because the regions below the bar
+  // have to hear it too: what they have to clear is the bar's, and a released
+  // bar is nothing to clear (`app-frame.scss`).
+  host: { '[class.frame--released]': 'bannerReleased()' },
 })
 export class AppFrame {
   readonly #messages = inject(MessageService);
@@ -143,6 +150,18 @@ export class AppFrame {
    * holding it here does not make the frame a store (constitution III).
    */
   readonly actionsOpen = signal(false);
+
+  protected readonly banner = viewChild<ElementRef<HTMLElement>>('banner');
+
+  /**
+   * Whether the banner has released the top of the screen.
+   *
+   * Not a preference and not a composition mode: it is the answer to how much
+   * of the window the bar is currently taking, which only the rendered bar
+   * knows. Held here because the header is the frame's own element; every
+   * screen below it goes on composing as it did.
+   */
+  readonly bannerReleased = observeBannerRelease(this.banner);
 
   setActionsOpen(open: boolean): void {
     this.actionsOpen.set(open);

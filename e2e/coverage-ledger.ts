@@ -279,6 +279,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'content stays complete at the 320x256 CSS-pixel viewport WCAG defines 400% zoom to equal',
       'every action survives with visible text and a reachable target at that viewport',
       'the sticky banner releases and travels with the page in a short viewport',
+      'a banner that freezes leaves a viewport under it at a doubled text size',
       'no text is truncated without a bounded scroller to reach the rest',
       'a layer presents at full height rather than as a clipped centred dialog',
       'both conditions hold together: the zoom-equivalent viewport at 200% text',

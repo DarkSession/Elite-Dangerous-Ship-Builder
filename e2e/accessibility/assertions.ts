@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { STACKABLE_MINIMUM_REM } from '../../src/app/ui/short-viewport';
 
 /**
  * Named semantic assertions.
@@ -463,6 +464,49 @@ export async function clippedText(page: Page): Promise<ClippedElement[]> {
       // do differently; two is a box that genuinely cannot hold its content.
       .filter((entry) => entry.overflowInline > 1 || entry.overflowBlock > 1),
   );
+}
+
+/**
+ * A banner that holds the top of the screen leaves a screen under it.
+ *
+ * The rule the shell states about its own chrome: sticky regions never cover
+ * route content at 200% text or 400% zoom (application shell, "Compact/zoom
+ * composition"). What makes that hard to keep is that the bar's height is not
+ * the bar's to decide — it wraps to the width, the language and the text size
+ * it is given, and a media query cannot ask what it wrapped to.
+ *
+ * So the assertion is the rule rather than an outcome: either the banner has
+ * released and travels with the page, or what it leaves below is still a
+ * viewport content can be stacked in — the project's one declared height
+ * minimum, in the pixels the Commander's own text size makes of it. A bar that
+ * freezes over more than that is a bar a screen is being read through.
+ */
+export async function expectBannerLeavesAViewport(page: Page): Promise<void> {
+  const banner = page.getByRole('banner');
+  await expect(banner).toBeVisible();
+
+  // Position, height and the window are read in one evaluation: read
+  // separately they describe different moments, and a page still settling —
+  // a font swapping in, an illustration arriving — would be compared against
+  // the height it had before.
+  const { position, left, minimum } = await banner.evaluate((node, minimumRem: number) => {
+    const element = node as HTMLElement;
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return {
+      position: getComputedStyle(element).position,
+      left: window.innerHeight - element.getBoundingClientRect().height,
+      minimum: minimumRem * rem,
+    };
+  }, STACKABLE_MINIMUM_REM);
+
+  if (position !== 'sticky' && position !== 'fixed') {
+    return;
+  }
+
+  expect(
+    Math.round(left),
+    `the banner froze over the window and left ${Math.round(left)} px of it`,
+  ).toBeGreaterThanOrEqual(Math.round(minimum) - 1);
 }
 
 /**
