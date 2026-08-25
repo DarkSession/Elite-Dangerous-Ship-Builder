@@ -57,6 +57,29 @@ export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/ships/ships',
 ];
 
+/**
+ * Package calls this capability must never make at all.
+ *
+ * `mobilityMetrics()` and `mobilityCapacitorMetrics()` are the nullable
+ * convenience forms of the two results this feature reads. They answer or they
+ * return `null`, and a `null` carries no reason — so a card built on them could
+ * only say "unavailable" with nothing after it, where FR-005 requires the
+ * package's own issues. `powerBudget()` is feature 005's question: the package's
+ * own mobility diagnostics already distinguish a shed thruster from a missing
+ * one, and a budget checked here would be this feature deciding a power meaning
+ * that is not its to decide (the Delivery gate in tasks.md names all three).
+ */
+export const FORBIDDEN_CALLS = ['mobilityMetrics', 'mobilityCapacitorMetrics', 'powerBudget'];
+
+/**
+ * One of those, called on something.
+ *
+ * The negative lookahead is what keeps `mobilityMetricsResult(` — the
+ * diagnostic form this feature does read — from matching the nullable
+ * `mobilityMetrics(` it is named after.
+ */
+const FORBIDDEN_CALL = new RegExp(`\\.(?:${FORBIDDEN_CALLS.join('|')})\\s*\\(`);
+
 /** Any import of the package, so a barrel or an unlisted subpath is caught too. */
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
@@ -148,8 +171,19 @@ export const FIGURE_FIELDS = [
   'total',
 ];
 
-/** One of those fields, read off something. */
-const FIGURE_READ = new RegExp(`\\.(?:${FIGURE_FIELDS.join('|')})\\b`);
+/**
+ * One of those fields, read off something — or standing on its own.
+ *
+ * The leading dot is not required, because a figure that arrived through a
+ * destructure or a parameter has lost it. `massSegments` already destructures
+ * (`const { mass, fittedModuleCount } = view.thrusters`), so a headroom written
+ * `const { maxMass } = curve; const spare = maxMass - total;` is the idiom this
+ * file is most likely to grow, and a rule that only saw `.maxMass` would let it
+ * through. The names are specific enough to carry the meaning on their own:
+ * nothing in this feature is called `optMass` or `rotationMassCurveMultiplier`
+ * except the package figure of that name.
+ */
+const FIGURE_READ = new RegExp(`(?:\\.|\\b)(?:${FIGURE_FIELDS.join('|')})\\b`);
 
 /**
  * Arithmetic between two things, rather than a sign, a hyphen or a comment.
@@ -170,13 +204,25 @@ const ARITHMETIC = /[a-zA-Z0-9_$)\]] [+\-*/%] [a-zA-Z0-9_$(]/;
  * the guardrails in tasks.md). Matched on the test rather than on the word, so
  * the flag itself and the prose about it are untouched.
  */
+/**
+ * The letters, delimited so an unrelated word is not one of them.
+ *
+ * `sco` on its own would flag a fuel scoop, which is squarely in this feature's
+ * subject matter and has nothing to do with Overcharge — the rule would fail a
+ * legitimate `symbol.includes('FuelScoop')` with a diagnosis that is simply
+ * wrong, and the only way past it would be a marker silencing every rule on
+ * that line. So the three letters must stand alone or be delimited the way the
+ * game's own symbols delimit them.
+ */
+const LETTERS = String.raw`(?:overcharge|(?<![a-z])sco(?![a-z]))`;
+
 export const INFERRED_OVERCHARGE = new RegExp(
   [
     // `module.symbol.includes('overcharge')` — the identity, then the letters.
-    `\\b(?:symbol|name)\\b[^\\n]*(?:includes|startsWith|endsWith|match|test|indexOf)\\s*\\(\\s*['"\`][^'"\`]*(?:sco|overcharge)`,
+    `\\b(?:symbol|name)\\b[^\\n]*(?:includes|startsWith|endsWith|match|test|indexOf)\\s*\\(\\s*['"\`][^'"\`]*${LETTERS}`,
     // `/sco/i.test(fitted.name)` — the letters, then the identity. Same
     // decision written the other way round, and just as wrong.
-    `(?:['"\`]|/)[^'"\`/\\n]*(?:sco|overcharge)[^'"\`/\\n]*(?:['"\`]|/[a-z]*)\\s*\\.\\s*(?:test|exec)\\s*\\([^\\n]*\\b(?:symbol|name)\\b`,
+    `(?:['"\`]|/)[^'"\`/\\n]*${LETTERS}[^'"\`/\\n]*(?:['"\`]|/[a-z]*)\\s*\\.\\s*(?:test|exec)\\s*\\([^\\n]*\\b(?:symbol|name)\\b`,
   ].join('|'),
   'i',
 );
@@ -278,6 +324,22 @@ export function packageCalls(source) {
   return packageCallSites(source).map(({ hit }) => hit);
 }
 
+/** The lines where one source makes a call this capability may never make. */
+export function forbiddenCallSites(source) {
+  return scan(
+    source,
+    (text) =>
+      FORBIDDEN_CALL.exec(text)?.[0]
+        ?.slice(1)
+        .replace(/\s*\($/, '') ?? null,
+  );
+}
+
+/** Just the calls, for a caller that does not need the lines. */
+export function forbiddenCalls(source) {
+  return forbiddenCallSites(source).map(({ hit }) => hit);
+}
+
 /** The lines where one source reads an aggregate no canvas draws. */
 export function withdrawnReads(source) {
   return scan(source, (text) => WITHDRAWN_READ.exec(text)?.[0]?.slice(1) ?? null);
@@ -331,9 +393,29 @@ const RULES = [
     },
   },
   {
-    name: 'no aggregate the canvases dropped is read back',
+    name: 'the nullable forms and feature 005’s own question are never asked',
     async run(violations) {
       for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
+        const source = await readFile(resolve(ROOT, name), 'utf8');
+        for (const { line, hit } of forbiddenCallSites(source)) {
+          violations.push({
+            file: name,
+            line,
+            reason: `"${hit}" is asked; the nullable mobility forms answer with a bare null that carries no reason where FR-005 requires the package's own issues, and a power budget checked here is feature 005's meaning decided by this feature (FR-004, FR-005)`,
+          });
+        }
+      }
+    },
+  },
+  {
+    name: 'no aggregate the canvases dropped is read back',
+    async run(violations) {
+      // Every file, not just this feature's own. FR-006's rule is about the
+      // application rather than about one region: a rail cell, an exporter or
+      // a ledger row printing `TANK 32 T` puts back on the screen exactly what
+      // the `DRIVES` card just stopped drawing, and it would do it from outside
+      // the directories this feature owns.
+      for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const { line, hit } of withdrawnReads(source)) {
           violations.push({

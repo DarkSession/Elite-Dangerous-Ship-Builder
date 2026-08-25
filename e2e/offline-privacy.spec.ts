@@ -130,7 +130,13 @@ test.describe('offline capability', () => {
     await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
     await expect(page.locator('edsb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
     await expect(page.locator('edsb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
-    await expect(page.locator('edsb-drives-mass .drives__legend-value')).toHaveCount(6);
+    // The thruster card's own legend, which is three rows whatever the build
+    // carries. The drive card's legend beside it is not counted here: its total
+    // range row is drawn only where the package states one, so a count over
+    // both would turn this offline test red for a reason about the package.
+    await expect(
+      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+    ).toHaveCount(3);
     await expect(page.locator('edsb-drives-mass .drives__envelope-value')).toHaveCount(5);
     await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
 

@@ -639,7 +639,7 @@ export class DrivesMass {
       value: this.#messages.message('drives.format.metres-per-second', {
         value: this.#formatters.decimal(value, RATE_DIGITS),
       }),
-      fill: value / track,
+      fill: value / track, // policy-allow: SC-002 bar length
     };
   }
 
@@ -650,7 +650,7 @@ export class DrivesMass {
       value: this.#messages.message('drives.format.degrees-per-second', {
         value: this.#formatters.decimal(value, RATE_DIGITS),
       }),
-      fill: value / track,
+      fill: value / track, // policy-allow: SC-002 bar length
     };
   }
 

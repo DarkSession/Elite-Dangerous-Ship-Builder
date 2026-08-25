@@ -11,11 +11,13 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALLOWED_SUBPATHS,
+  FORBIDDEN_CALLS,
   PACKAGE_CALLS,
   WITHDRAWN_AGGREGATES,
   almanacImports,
   check,
   combinedFigures,
+  forbiddenCalls,
   inferredOvercharge,
   packageCalls,
   scan,
@@ -84,6 +86,25 @@ describe('mobility and jump ownership policy', () => {
     });
   });
 
+  describe('forbidden-call rule', () => {
+    it('rejects each call this capability may never make', () => {
+      for (const call of FORBIDDEN_CALLS) {
+        assert.deepEqual(forbiddenCalls(`const x = metrics.${call}(load);`), [call]);
+      }
+    });
+
+    it('accepts the diagnostic form each nullable one is named after', () => {
+      // `mobilityMetricsResult(` contains `mobilityMetrics(` as a prefix only
+      // if the bracket is ignored, which is the near miss this rule has to
+      // survive: the result form is what this feature reads on every build.
+      assert.deepEqual(forbiddenCalls('const x = metrics.mobilityMetricsResult(load);'), []);
+      assert.deepEqual(
+        forbiddenCalls('const x = metrics.mobilityCapacitorMetricsResult(load);'),
+        [],
+      );
+    });
+  });
+
   describe('withdrawn-aggregate rule', () => {
     it('rejects each aggregate no canvas draws', () => {
       for (const aggregate of WITHDRAWN_AGGREGATES) {
@@ -125,6 +146,18 @@ describe('mobility and jump ownership policy', () => {
       assert.equal(combinedFigures(source).length, 1);
     });
 
+    it('rejects a figure that reached the arithmetic through a destructure', () => {
+      // The dot is gone by the time the subtraction is written, and this file
+      // already destructures — so a rule that only saw `.maxMass` would let the
+      // canvas's own `658 T HEADROOM` back in through the idiom the code uses.
+      assert.equal(combinedFigures('const spare = maxMass - total;').length, 1);
+      assert.equal(combinedFigures('const position = loadedMass / optMass;').length, 1);
+    });
+
+    it('accepts arithmetic between two things that are not package figures', () => {
+      assert.deepEqual(combinedFigures('const inset = width - padding;'), []);
+    });
+
     it('accepts a package figure read and shown as it stands', () => {
       const source = 'protected readonly headline = computed(() => this.mass().total);';
       assert.deepEqual(combinedFigures(source), []);
@@ -149,6 +182,19 @@ describe('mobility and jump ownership policy', () => {
 
     it('accepts the badge’s own message key', () => {
       assert.deepEqual(inferredOvercharge("this.messages.message('drives.fsd.sco');"), []);
+    });
+
+    it('accepts an unrelated module whose name merely contains the letters', () => {
+      // A fuel scoop is squarely in this feature's subject matter, and failing
+      // it with "Overcharge decided from a symbol" would be a diagnosis that is
+      // simply wrong — and one a marker could only silence by silencing every
+      // other rule on the same line.
+      assert.deepEqual(inferredOvercharge("if (module.symbol.includes('FuelScoop')) {"), []);
+      assert.deepEqual(inferredOvercharge("if (row.name.startsWith('Discovery Scanner')) {"), []);
+    });
+
+    it('still rejects the letters where the game’s own symbols delimit them', () => {
+      assert.equal(inferredOvercharge("if (symbol.includes('_SCO')) {").length, 1);
     });
   });
 

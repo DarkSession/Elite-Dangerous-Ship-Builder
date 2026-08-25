@@ -289,6 +289,9 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
 
     const rows = page.locator('edsb-drives-mass .drives__envelope-row');
+    // `allInnerTexts` does not retry, so the list is waited for first — the
+    // same guard every other envelope assertion in this file opens with.
+    await expect(rows).toHaveCount(5);
     const reading = async (): Promise<string[]> =>
       rows.locator('.drives__envelope-value').allInnerTexts();
     // `innerText` returns what the reader sees, and the design system sets
@@ -305,8 +308,9 @@ test.describe('Drives & Mass', () => {
     const before = await reading();
 
     // Through feature 005's own distributor, which is what settles the pips.
-    // The stock hull starts at four apiece; the first step of the engines row
-    // is the furthest this can be moved from there in one press.
+    // The dashboard opens on even thirds — two apiece, of six — so the first
+    // step of the engines row moves the allocation the card is read at from two
+    // pips to one.
     await page
       .locator('edsb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.power'] })

@@ -173,11 +173,22 @@ are. See the design's [reference review](./design/reference-review.md) for how e
 ## Success Criteria
 
 - **SC-001**: Every displayed value equals its Almanac field.
-- **SC-002**: No local jump, mobility, mass-total or curve calculation exists. Two divisions of
-  package figures are not such a calculation and are drawn: the position on the thruster mass curve,
-  which is the loaded mass over the module's own `optMass` — the comparison the package's `thrusters`
-  getter prescribes rather than one this side invented — and the length of every bar, which is
-  decoration beside the package's own number and is a reading of nothing.
+- **SC-002**: No local jump, mobility, mass-total or curve calculation exists. Divisions of package
+  figures are not such a calculation, and three kinds are drawn: the position on the thruster mass
+  curve, which is the loaded mass over the module's own `optMass` — the comparison the package's
+  `thrusters` getter prescribes rather than one this side invented — the length of every bar, and the
+  position of a mark on one. The last two are decoration beside the package's own number and are
+  readings of nothing.
+
+  > **The mark's position was the unnamed third, 2026-08-25.** This criterion named two kinds, and
+  > the optimal mass's tick on the mass bar is neither of them: it is `optMass` over the thrusters'
+  > `maxMass`, which is a position rather than a length. The canvas draws that tick — its
+  > `OPTIMAL 1,260 t` — and writes the package's own figure under it, so the division was always
+  > going to exist; what was missing was this criterion naming it. Naming it is what makes the
+  > repository rule enforceable: `scripts/policy/mobility-jump-ownership.mjs` fails any arithmetic
+  > between two package figures, and every division this feature draws now carries a marker pointing
+  > back at this criterion. A fourth kind fails the build.
+
 - **SC-003**: Zero, unavailable and incomplete results remain distinguishable with package issues.
 - **SC-004**: The headline mass and the hull/modules/fuel split beneath it come from one package
   answer read at the load the card names; no part of either is summed, inferred or reconciled on this

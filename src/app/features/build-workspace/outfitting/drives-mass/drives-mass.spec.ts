@@ -332,20 +332,30 @@ describe('DrivesMass', () => {
       expect(component.massSegments().map((segment) => segment.detail)).toEqual(details);
     });
 
-    it('states no tank capacity beside the fuel segment, and reads none', () => {
-      // `fuelCapacity` is a real package figure that no canvas draws any more,
-      // so this screen does not read it. The guard is the figures themselves:
-      // neither tank's capacity appears anywhere on the card, at the fuel
-      // precision the card would have printed it at. A Sidewinder's real 0.3 t
-      // reserve is the case that makes this worth asserting — it rounds to
-      // `0 t` at the mass bar's whole tonnes, so a capacity slipping back in
-      // could read as a fabricated zero over a real quantity.
+    it('states no tank capacity anywhere on either card', () => {
+      // `fuelCapacity` is a real package figure that no canvas draws any more.
+      // What a rendering test can show is that neither tank's figure reaches
+      // the screen — the whole component's text, not one legend row, because a
+      // capacity could come back through the headline, the drive legend or the
+      // rail rather than the row it left.
+      //
+      // That this application never *asks* for the getter is a different claim
+      // and not one this suite can make: `BuildMetrics` reads the loadout's
+      // fuel capacity itself while answering the questions this card does ask,
+      // so a spy on the getter counts the package's own reads too. The absence
+      // of a call site is proven where absences are provable — the repository
+      // rule in `scripts/policy/mobility-jump-ownership.mjs`.
       const loadout = build();
       const { element } = render(loadout);
-      const fuelRow = texts(card(element, 'thrusters'), '.drives__legend-detail')[2];
 
-      expect(fuelRow).not.toContain(fuelTonnes(loadout.fuelCapacity.main));
-      expect(fuelRow).not.toContain(fuelTonnes(loadout.fuelCapacity.reserve));
+      // At the fuel precision this card would have printed them at. A
+      // Sidewinder's real 0.3 t reserve is the case that makes this worth
+      // asserting: it rounds to `0 t` at the mass bar's whole tonnes, so a
+      // capacity slipping back in could read as a fabricated zero over a real
+      // quantity, which is exactly what constitution IV forbids.
+      const drawn = element.textContent ?? '';
+      expect(drawn).not.toContain(fuelTonnes(loadout.fuelCapacity.main));
+      expect(drawn).not.toContain(fuelTonnes(loadout.fuelCapacity.reserve));
     });
 
     it('scales every part against the thrusters’ own maximum mass', () => {

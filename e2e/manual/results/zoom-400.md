@@ -1,6 +1,6 @@
 # Results: actual 400% browser zoom
 
-Protocol: [`zoom-400`](../zoom-400.protocol.md), version 2.
+Protocol: [`zoom-400`](../zoom-400.protocol.md), version 3.
 
 Each row is one observation: one capability and state, in one engine, at one orientation. Rows are
 appended, never edited — a later run is a new row, so the history of a regression stays readable.

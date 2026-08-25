@@ -113,14 +113,33 @@ landed beside it rather than waiting for a matrix run nobody had scheduled.
 - the boundary rules, as `scripts/policy/mobility-jump-ownership.mjs` and its fixture suite
   `scripts/mobility-jump-ownership.test.mjs`, wired into `pnpm run policy` (T018). The task named
   `check-interface-foundations.mjs`; features 005, 006 and 007 each fence themselves with a
-  `scripts/policy/*-ownership.mjs` of their own instead, and this feature follows them. Five rules:
-  the leaf subpaths, one call site for all seven `BuildMetrics` answers, the three aggregates no
-  canvas draws — which is what keeps the reserve tank from coming back — no arithmetic between two
-  package figures, and Overcharge read rather than inferred. The two divisions SC-002 names carry a
-  `policy-allow:` marker each, so a third one fails the build;
+  `scripts/policy/*-ownership.mjs` of their own instead, and this feature follows them. Six rules:
+  the leaf subpaths — seven of them rather than the five the task guessed, being what the owned
+  files actually import; one call site for all seven `BuildMetrics` answers; the nullable
+  `mobilityMetrics()` and `mobilityCapacitorMetrics()` forms and `powerBudget()` never asked at all;
+  the three aggregates no canvas draws, checked over the whole of `src/app` rather than this
+  feature's own directories, because a rail cell or an exporter putting `TANK 32 T` back on the
+  screen is the failure FR-006 is about and it would come from outside; no arithmetic between two
+  package figures, caught through a destructure as well as off a dot; and Overcharge read rather
+  than inferred. Every division this feature draws carries a `policy-allow:` marker naming the
+  SC-002 kind it belongs to — eight of them — so a ninth fails the build.
+
+  Two clauses of T018 are **not** implemented, and are recorded here rather than closed quietly.
+  The task asked that no source hard-code a `Thrusters` slot key or match a core module by symbol
+  prefix or positional index: `mobility-jump.ts` does name `MainEngines`, `FrameShiftDrive` and
+  `Armour` as constants, and those are the game's own slot keys, which AGENTS.md's identities rule
+  requires rather than forbids — the clause was written against a `Thrusters` key the package does
+  not use. And the task asked that feature 003 import only the exported status contract leaf, which
+  has nothing to constrain until T005 and T016 land;
+
 - the offline journey, as `reads Drives & Mass with no network at all` in
   `e2e/offline-privacy.spec.ts` (T062): both cards drawn with the network gone, and the ENG
-  allocation changed through feature 005's own control and read back, still offline;
+  allocation changed through feature 005's own control and read back, still offline. It lives beside
+  feature 007's identical journey rather than in `e2e/mobility-and-jump.spec.ts`, because a service
+  worker is what makes the test mean anything and that file is where the worker fixture is. Two of
+  the task's clauses have nothing left to exercise: there is no load to apply — the card reads the
+  canvas's own `unladen` profile, not a viewing condition — and no exact slot to open, since neither
+  canvas draws the per-module mass list the intent belonged to;
 - the ENG-allocation journey the ledger already claimed but no browser test covered — the envelope
   re-read when the allocation moves, and boost unmoved, which is the 0.2.0 split FR-004 records;
 - feature 008's rows in both manual records, and step 18 of the screen-reader protocol which they
