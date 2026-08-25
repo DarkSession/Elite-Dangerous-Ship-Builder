@@ -75,6 +75,23 @@
   margin: 0;
 }
 
+// The convergence block's note is the ring caption, and it carries two figures
+// with their units — `RING 2 · 27 MRAD · 16.0 m`. The mixin's uppercase would
+// print that metre as `M` and state the mega prefix instead of the metre, so it
+// is lifted here for the same reason it is lifted off a bar label that carries a
+// figure rather than a word.
+//
+// The canvas sets the caption uppercase apart from that one symbol, and the mix
+// is not reproduced: `text-transform` is all-or-nothing over a text node, and
+// the caption is one sentence whose parts move between languages, so splitting
+// it into a transformed span and an untransformed one would fix English word
+// order into the markup. Sentence case is the departure taken instead — a
+// lowercase word is a typographic difference, a metre printed `M` is a
+// different unit (`design/canvas-contract.md`, review note 15).
+.offence__block--convergence .offence__note {
+  text-transform: none;
+}
+
 // What the collection means, in prose voice rather than the mono numeric voice
 // of the figures above it.
 .offence__statement {
@@ -114,11 +131,11 @@
   border: 0;
 }
 
-// The rows are inert, as the canvas draws them, so the four columns are all a
-// row holds. How those four are arranged depends on the space the list is
+// The rows are inert, as the canvas draws them, so the five columns are all a
+// row holds. How those five are arranged depends on the space the list is
 // actually given, which is why the list is its own container: the block sits in
-// one half of a pair that itself narrows, and a four-column table in 155px is
-// a name squeezed to nothing beside three figures.
+// one half of a pair that itself narrows, and a five-column table in 155px is
+// a name squeezed to nothing beside four figures.
 .weapons {
   container-type: inline-size;
   container-name: weapons;
@@ -132,7 +149,7 @@
 }
 
 // The compact arrangement, and the default: the module on its own line with its
-// three figures labelled beneath it. The column heads are what the labels would
+// four figures labelled beneath it. The column heads are what the labels would
 // duplicate, so the heads go rather than the labels.
 .weapons__columns {
   display: none;
@@ -168,31 +185,40 @@
   list-style: none;
 }
 
-// Canvas 1c's four columns: `MODULE` fluid, then `DPS`, `PIERCE` and `FALLOFF`
-// hard against the trailing edge. The list owns the tracks and every row
-// borrows them, so a longer figure on one row cannot pull that row's columns
-// out of line with the row above it. It takes room the block does not always
-// have, so it is the arrangement the list promotes to rather than the one it
-// starts from.
+// Canvas 1c's five columns: `MODULE` fluid, then `DPS`, `PIERCE`, `RANGE` and
+// `FALLOFF` hard against the trailing edge. The list owns the tracks and every
+// row borrows them, so a longer figure on one row cannot pull that row's
+// columns out of line with the row above it. It takes room the block does not
+// always have, so it is the arrangement the list promotes to rather than the
+// one it starts from.
 //
-// 18rem, not the 22rem this first carried: the block is one half of a pair
-// inside the outfitting centre column, and at a 1440px desktop the list is
-// given about 19rem — so the table the canvas draws never appeared on the
-// artboard's own width. 18rem still clears the 155px at which the module track
-// collapsed and wrapped a weapon's name one character per line.
-@container weapons (min-width: 18rem) {
+// 18rem was the threshold while there were four columns, chosen because the
+// block is one half of a pair inside the outfitting centre column and a 1440px
+// desktop gives the list about 19rem — a 22rem table never appeared on the
+// artboard's own width. The 2026-08-25 canvas revision added `RANGE`, and a
+// fifth column does not fit in the fourth's room: the four figure tracks want
+// the canvas's own 46, 44, 60 and 60 pixels, and what is left of 18rem after
+// them is less than the 155px at which the module track collapsed and wrapped a
+// weapon's name one character per line.
+//
+// So the threshold moves with the column rather than the floors being squeezed
+// under it: four figure tracks at their own width, a gap between each, and a
+// module track that can still hold a name over its code line. Below it the
+// compact arrangement carries the same five figures, each with its own word
+// beside it, which is what canvas 1d draws at that width anyway.
+@container weapons (min-width: 24rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets
-  // `auto` resolve differently per row, and four figures that do not line up
+  // `auto` resolve differently per row, and figures that do not line up
   // vertically defeat the point of a table. The figure columns carry the
   // canvas's own widths as floors rather than as fixed tracks, so `PIERCE` and
-  // `FALLOFF` stand apart from each other instead of collapsing to their
-  // digits and leaving the whole gap beside the module name.
+  // `RANGE` stand apart from each other instead of collapsing to their digits
+  // and leaving the whole gap beside the module name.
   .weapons__table {
     display: grid;
     grid-template-columns:
       minmax(0, 1fr)
-      repeat(3, minmax(min(var(--edsb-layout-weapon-figure), 22%), auto));
+      repeat(4, minmax(min(var(--edsb-layout-weapon-figure), 18%), auto));
     column-gap: var(--edsb-space-inline);
     row-gap: var(--edsb-space-stack-tight);
   }
@@ -216,13 +242,13 @@
     row-gap: var(--edsb-space-stack);
   }
 
-  // The three figure cells sit in the row's own grid so they line up under the
+  // The four figure cells sit in the row's own grid so they line up under the
   // heads rather than in a nested row of their own.
   .weapon__figures {
     display: contents;
   }
 
-  // The heads name the three columns once. Repeating the word on every row is
+  // The heads name the four columns once. Repeating the word on every row is
   // what an aligned table exists to avoid — but the label stays in the
   // accessibility tree, so a cell is never a bare number.
   .weapon__figure-label {

@@ -1,49 +1,47 @@
 <!--
   Canvas 1c's `SHOT CONVERGENCE` block: the gunsight plate, the same diagram in
   words, the range the plate is drawn at, and the four cells that report the
-  spread.
+  spread. The block's ring caption sits on the heading line the panel draws
+  above this, which is where the 2026-08-25 canvas revision moved it.
 -->
 <div class="convergence">
   <!--
     The gunsight plate. Decorative in full: every shot on it is stated in
     words in the list below, and the four figures under it are what
     actually report the spread. A shot outside the plate's field of view
-    keeps its sentence and loses only its dot — the canvas clips it too.
+    is held at the frame's own margin and keeps the sentence that states
+    where it really goes.
   -->
   <div class="plate" aria-hidden="true">
     <span class="plate__axis plate__axis--vertical"></span>
     <span class="plate__axis plate__axis--horizontal"></span>
 
+    <!--
+      The two dashed rings. Each is a circle in *angle*, and since the plate's
+      box is wider than it is tall that makes it a circle in pixels: the canvas
+      corrects a ring's height by the box's own `offsetWidth / offsetHeight`,
+      which is a height in pixels equal to its width. `aspect-ratio` is that
+      correction, without measuring anything.
+    -->
     @for (ring of rings(); track ring.milliradians) {
-      <span
-        class="plate__ring"
-        [style.width.%]="ring.width * 100"
-        [style.height.%]="ring.height * 100"
-      ></span>
+      <span class="plate__ring" [style.width.%]="ring.width * 100"></span>
     }
 
     <!--
-      Each armed mount twice, as the canvas draws it: the dot where the
-      shot lands, and the numbered badge parked at the plate's nearer
-      edge with a leader back to it. Five shots converging is five dots in
-      one place, and a numeral inside each of them is unreadable exactly
-      when the spread is tightest.
+      Each armed mount twice, as the 2026-08-25 canvas draws it: the dot
+      where the shot lands, and the mount's hardpoint numeral set beside
+      it, at whichever of four corners stands clear of the other dots.
+      The badge column parked at the plate's edge, and the leader lines
+      back from it, are gone with the revision.
 
-      Every mark is drawn and the plate's own `overflow` clips what leaves
-      it, which is what `wireConvergence` does: a shot far enough off-axis
-      loses its dot and keeps its badge at the edge, because the badge
-      column never leaves the plate. The sentence beside the plate is the
-      reading either way (FR-011).
+      Nothing is clipped any more either: a shot far enough off-axis is
+      held at the frame's own margin, because the field of view is a
+      property of the drawing and never widens to fit a build. That is
+      exactly the case where the sentence beside the plate is the true
+      reading, and it states the offset and angle the shot really has
+      (FR-011).
     -->
     @for (shot of shots(); track shot.id) {
-      <span
-        class="plate__leader"
-        [class.plate__leader--aimed]="shot.gimballed"
-        [style.left.%]="shot.badgeLeft"
-        [style.top.%]="shot.badgeTop"
-        [style.width.%]="shot.leaderLength"
-        [style.rotate]="shot.leaderAngle + 'deg'"
-      ></span>
       <span
         class="plate__dot"
         [class.plate__dot--aimed]="shot.gimballed"
@@ -51,36 +49,28 @@
         [style.top.%]="shot.top"
       ></span>
       <span
-        class="plate__shot"
-        [class.plate__shot--aimed]="shot.gimballed"
-        [style.left.%]="shot.badgeLeft"
-        [style.top.%]="shot.badgeTop"
+        class="plate__numeral"
+        [class.plate__numeral--aimed]="shot.gimballed"
+        [style.left.%]="shot.left"
+        [style.top.%]="shot.top"
+        [style.margin-left.px]="shot.numeralLeft"
+        [style.margin-top.px]="shot.numeralTop"
+        >{{ shot.badge }}</span
       >
-        <span class="plate__badge">{{ shot.badge }}</span>
-      </span>
     }
-
-    <span class="plate__caption plate__caption--lead">{{ impactPlaneLabel() }}</span>
-    <span class="plate__caption plate__caption--trail">{{ ringCaption() }}</span>
   </div>
 
   <!--
     The same diagram in words. This is the reading; the plate above is the
-    picture of it, and every mark on it is restated here. The plate's two
-    captions are not marks: `RING 2` names a figure and so is repeated below,
-    while `IMPACT PLANE` names the picture itself — which is what this list's
-    own accessible name says, in a sentence rather than a title.
+    picture of it, and every mark on it is restated here. The ring is a mark
+    like any other: its caption is drawn on the block's heading line, and it is
+    the one plate figure the four cells below do not repeat, so it is stated
+    with the shots as well.
   -->
   <ul class="shots" [attr.aria-label]="plateLabel()">
     @for (shot of shots(); track shot.id) {
       <li class="shots__entry">{{ shot.statement }}</li>
     }
-    <!--
-      The ring the plate draws is a mark like any other, and its caption is the
-      one figure on the plate that is not restated in the four cells below —
-      the angle it stands for and what that spans at the chosen range. It is
-      stated here for the same reason every shot is (FR-011).
-    -->
     <li class="shots__entry">{{ ringCaption() }}</li>
   </ul>
 

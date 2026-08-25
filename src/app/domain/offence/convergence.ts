@@ -64,22 +64,28 @@ export interface ConvergenceMount {
 /**
  * The half field of view the canvas's plate spans, in milliradians.
  *
- * The canvas's own script fixes it (`wireConvergence`, `FOV = 115`) and draws
+ * The canvas's own script fixes it (`wireConvergence`, `FOV = 40`) and draws
  * both rings and every dot against it. It is a property of the drawing, not of
- * the build: it decides how much sky the plate shows, and nothing else.
+ * the build: it decides how much sky the plate shows, and nothing else — a
+ * build never widens it to fit, which is why a shot outside it is clamped
+ * rather than accommodated.
+ *
+ * The 2026-08-25 canvas revision cut it from `115`, so the same offsets now
+ * subtend nearly three times as much of the plate.
  */
-export const FIELD_OF_VIEW_MILLIRADIANS = 115;
+export const FIELD_OF_VIEW_MILLIRADIANS = 40;
 
 /**
- * The plate's height over its width. The canvas draws the box `16 / 6`, so
- * this is its reciprocal.
+ * How far from the plate's centre a mark may be drawn, as a fraction of the
+ * half plate.
  *
- * The canvas keeps milliradians-per-unit the same on both axes, so the plate
- * shows a *narrower* angle vertically than horizontally in exactly this
- * proportion. Dividing the two axes by the same angle instead would stretch
- * every shot's height by nearly three, which is a spread no build has.
+ * The canvas clamps every dot to `4%`–`96%` of the plate — `clamp(50 ± mrad /
+ * FOV * 50, 4, 96)` — which is this fraction either side of the middle. A shot
+ * further off-axis than the plate shows stops at the frame's own margin instead
+ * of leaving it, so nothing disappears; its sentence beside the plate still
+ * states the offset and the angle it actually has (FR-011).
  */
-export const PLATE_ASPECT = 6 / 16;
+export const PLATE_MARGIN_FRACTION = 0.92;
 
 /** The target ranges the canvas's `RANGE` track runs between, and its step. */
 export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as const;
@@ -101,13 +107,20 @@ export interface ConvergenceView {
   readonly ringMetres: number;
 }
 
-/** One dashed ring, as a fraction of the plate it is drawn on. */
+/**
+ * One dashed ring, as a fraction of the plate it is drawn on.
+ *
+ * Only a width, since the 2026-08-25 canvas revision: the script sizes a ring's
+ * height as `mrad / FOV * 100 * aspect` where `aspect` is the box's own
+ * `offsetWidth / offsetHeight`, and a height that is a fraction of the box's
+ * height multiplied by the box's width over its height is the same number of
+ * pixels as the width. The ring is a pixel circle, so the plate draws it as one
+ * and no second fraction is needed here.
+ */
 export interface ConvergenceRing {
   readonly milliradians: number;
   /** Diameter over the plate's width, in `[0, 1]`. */
   readonly width: number;
-  /** Diameter over the plate's height, in `[0, 1]`. */
-  readonly height: number;
 }
 
 /** One armed hardpoint, placed on the plate. */
@@ -116,11 +129,18 @@ export interface ConvergencePoint {
   readonly hardpoint: number;
   /** The weapon whose shot lands here. */
   readonly mount: ConvergenceMount;
-  /** Fraction of the plate's half width, `-1` to `1`; positive points right. */
+  /**
+   * Fraction of the plate's half width, `-1` to `1`; positive points right.
+   *
+   * Where the mark is *drawn*, not where the shot is: a shot beyond the plate's
+   * field of view is clamped to `PLATE_MARGIN_FRACTION` rather than left off the
+   * frame. What the shot actually does is `milliradians`, which is never
+   * clamped, and the sentence beside the plate is drawn from that.
+   */
   readonly horizontal: number;
-  /** Fraction of the plate's half height, `-1` to `1`; positive points up. */
+  /** Fraction of the plate's half height, `-1` to `1`; positive points up. Clamped alike. */
   readonly vertical: number;
-  /** How far off the axis this shot lands, in milliradians. */
+  /** How far off the axis this shot lands, in milliradians. The true angle, never clamped. */
   readonly milliradians: number;
 }
 
@@ -189,10 +209,15 @@ export function projectConvergence(
 /**
  * Ask the package where those mounts' shots land at one range.
  *
- * The plate is the canvas's: half a field of view wide either side of the axis,
- * and — because the canvas gives it a `16 / 6` box — that same angle compressed
- * into its height. Both coordinates come back as a fraction of the half plate,
- * so the template positions a dot without knowing the plate's size.
+ * The plate is the canvas's, and since the 2026-08-25 revision it is square in
+ * *angle*: half a field of view either side of the axis on both axes, whatever
+ * shape the box itself is. Only the rings are corrected for the box's pixel
+ * aspect, and the plate draws that correction rather than this function.
+ *
+ * Both coordinates come back as a fraction of the half plate, so the template
+ * positions a dot without knowing the plate's size — clamped to the frame's own
+ * margin, because the field of view is a property of the drawing and never
+ * moves to accommodate a build.
  */
 export function convergenceAt(
   convergence: Extract<Convergence, { kind: 'available' }>,
@@ -206,7 +231,6 @@ export function convergenceAt(
     targetRangeMetres,
   );
 
-  const halfHeight = FIELD_OF_VIEW_MILLIRADIANS * PLATE_ASPECT;
   const angles = convergence.mounts.map((mount, index) => {
     const point = projected[index];
     return {
@@ -221,14 +245,13 @@ export function convergenceAt(
   const ring = (milliradians: number): ConvergenceRing => ({
     milliradians,
     width: milliradians / FIELD_OF_VIEW_MILLIRADIANS,
-    height: milliradians / halfHeight,
   });
 
   const place = ({ hardpoint, mount, across, up }: (typeof angles)[number]): ConvergencePoint => ({
     hardpoint,
     mount,
-    horizontal: across / FIELD_OF_VIEW_MILLIRADIANS,
-    vertical: up / halfHeight,
+    horizontal: clampToPlate(across / FIELD_OF_VIEW_MILLIRADIANS),
+    vertical: clampToPlate(up / FIELD_OF_VIEW_MILLIRADIANS),
     milliradians: Math.hypot(across, up),
   });
 
@@ -243,6 +266,18 @@ export function convergenceAt(
     ringMilliradians,
     ringMetres: (ringMilliradians / MILLIRADIANS_PER_RADIAN) * targetRangeMetres,
   };
+}
+
+/**
+ * Hold a mark inside the plate's frame.
+ *
+ * The canvas's own `clamp(50 ± mrad / FOV * 50, 4, 96)`, written as the fraction
+ * of the half plate it works out to. It moves a dot and nothing else: the angle
+ * the shot actually makes is carried separately and stated in words beside the
+ * plate, which is the reading either way (FR-011).
+ */
+function clampToPlate(fraction: number): number {
+  return Math.min(PLATE_MARGIN_FRACTION, Math.max(-PLATE_MARGIN_FRACTION, fraction));
 }
 
 /** The distance between the outermost two of a set. Zero for a single mount. */

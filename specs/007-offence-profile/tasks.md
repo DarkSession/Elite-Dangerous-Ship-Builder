@@ -545,36 +545,57 @@ not draw.
 
 ## Phase 7: The 2026-08-25 canvas revision
 
-The canvas changed after this feature shipped. Every item below is a divergence between
+The canvas changed after this feature shipped. Every item below was a divergence between
 `.design/Ship Builder.dc.html` and the built region, recorded in
-`design/canvas-contract.md`, "Canvas revision, 2026-08-25". Nothing here is a new capability: the
-package answers are all already in `src/app/domain/offence/`.
+`design/canvas-contract.md`, "Canvas revision, 2026-08-25". Nothing here was a new capability: the
+package answers were all already in `src/app/domain/offence/`, and no new package call was added to
+close any of it.
 
-- [ ] T044 Add the weapon list's `RANGE` column between `PIERCE` and `FALLOFF` — `maximumRange`,
+**Two things the revised drawing does that this phase deliberately did not build**, both recorded in
+`design/canvas-contract.md` under the revision: canvas 1c's `172px` square plate box inside a `508px`
+block, and its four facts stacked as label-left, value-right rows beside it. The built region keeps
+the wide plate and the `repeat(4, 1fr)` cells its own build table sanctions, because the revision's
+geometry is that the plate goes square in _angle_ while the box stays wide, and the box's shape and
+the cells' arrangement are the responsive composition T033 owns. Neither carries a figure the other
+does not. Binding the drawing's own box is a change to that build table first.
+
+- [x] T044 Add the weapon list's `RANGE` column between `PIERCE` and `FALLOFF` — `maximumRange`,
       already carried on `FittedWeaponMetrics` for `damageFalloff()`. Add `offence.column.range` to
       both catalogues, extend the head row and the per-row figure list, and keep an absent maximum
       range as not-stated text rather than a dash or a zero (FR-004)
-- [ ] T045 Re-derive `src/app/domain/offence/convergence.ts` from the revised `wireConvergence`:
+- [x] T045 Re-derive `src/app/domain/offence/convergence.ts` from the revised `wireConvergence`:
       `FIELD_OF_VIEW_MILLIRADIANS = 40`, the plate square in angle with `PLATE_ASPECT` withdrawn,
       the rings sized from the box's own pixel aspect, and every dot clamped to the frame's `4%`–`96%`
       margin instead of leaving it. Update `convergence.spec.ts` to the new geometry, including a
       shot far enough off-axis to be clamped
-- [ ] T046 Replace the plate's badge column with the script's own numeral placement — one dot and one
+- [x] T046 Replace the plate's badge column with the script's own numeral placement — one dot and one
       hardpoint numeral per armed mount, the numeral at whichever of `[7,-14]`, `[7,5]`, `[-13,-14]`,
       `[-13,5]` stands furthest from every other dot. Remove `plate__leader`, `badgeLeft`,
       `badgeTop`, `leaderLength` and `leaderAngle`, and the 1600×600 plate-space they were written in
-- [ ] T047 Move the ring caption onto the `SHOT CONVERGENCE` heading line, drop `AT THIS RANGE` from
+- [x] T047 Move the ring caption onto the `SHOT CONVERGENCE` heading line, drop `AT THIS RANGE` from
       `offence.convergence.ring`, and withdraw `offence.convergence.note` and
       `offence.convergence.impact-plane` from both catalogues and from the template — neither is
       drawn any more. The caption stays in the shot sentences as well, because it is still the one
       plate figure the four cells do not repeat (FR-011)
-- [ ] T048 Re-lay the range field as the canvas draws it: `TARGET RANGE` and its value on the row
+- [x] T048 Re-lay the range field as the canvas draws it: `TARGET RANGE` and its value on the row
       above the track, the track's two end labels beneath it, then the four fact cells. Rename
       `offence.convergence.range` to `Target range` in both catalogues
-- [ ] T049 [P] Update `design/component-state-preview-matrix.md` and the convergence previews for the
-      clamped-shot state, which replaces the clipped-shot state
-- [ ] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
-      `pnpm run check`
+- [x] T049 [P] Update `design/component-state-preview-matrix.md` and the convergence previews for the
+      clamped-shot state, which replaces the clipped-shot state.
+      _The matrix's convergence row already read `clamped`; what was still stale was its weapon row,
+      which is now the canvas's four figure cells. There are no convergence previews to update: this
+      feature declares none, for the reason T018, T026 and T031 record — neither block is exported
+      from `src/app/ui/components`, so the `missing-preview` rule does not reach either. The one
+      preview the manifest does carry for this feature is `edsb-range-field`, whose three states now
+      name the canvas's own `Target range` (`design/component-state-preview-matrix.md`)._
+- [x] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
+      `pnpm run check`.
+      _Run in the five Chromium projects — 37 journeys per profile, 185 in all, with the axe scan
+      over every state. The five Firefox projects could not be run for the reason recorded at the
+      head of this document: `playwright install firefox` is still refused by this environment's
+      egress policy, and Firefox evidence is this branch's pull request's own
+      `End-to-end (shard 1..6)` checks. Locally `pnpm run check` was run as its parts — format check,
+      typecheck, build, policy, unit tests with coverage and the Chromium journeys — all green._
 
 ---
 

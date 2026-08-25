@@ -164,17 +164,25 @@ furthest from the cockpit's axis. No ballistics are modelled and no offset is
 derived (`spec.md` FR-010).
 
 ```ts
-export const FIELD_OF_VIEW_MILLIRADIANS = 115;
-export const PLATE_ASPECT = 6 / 16;
+export const FIELD_OF_VIEW_MILLIRADIANS = 40;
+export const PLATE_MARGIN_FRACTION = 0.92;
 export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as const;
 ```
 
 These are properties of the **drawing**, taken from the canvas's own script
-(`wireConvergence`). The plate keeps milliradians-per-unit uniform on both axes,
-so its vertical half-field is `115 × 6/16 = 43.125` mrad and a shot further off
-the axis than that is clipped rather than stretched to fit. The field of view
-never moves to accommodate a build, and a clipped shot keeps the sentence stated
-beside the plate (`spec.md` FR-011).
+(`wireConvergence`), and the 2026-08-25 canvas revision changed both of the
+first two. The plate is square in _angle_: both axes map over the same field of
+view, and only the rings are corrected for the box's own pixel shape — which,
+on a box wider than it is tall, makes each ring a circle in pixels and is drawn
+as `aspect-ratio: 1` rather than measured.
+
+A shot further off the axis than the plate shows is **clamped** to the frame's
+own margin rather than clipped out of it: `PLATE_MARGIN_FRACTION` is the
+canvas's `clamp(50 ± mrad / FOV × 50, 4, 96)` written as the fraction of the
+half plate it works out to. The field of view never moves to accommodate a
+build, so a clamped mark is exactly the case where the sentence stated beside
+the plate — which carries the offset and the angle the shot actually has, never
+the clamped one — is the true reading (`spec.md` FR-011).
 
 `convergenceAt(convergence, metres)` asks `projectGunsight` where the shots go at
 one range and returns their positions as fractions of the plate, the diagonal of
@@ -261,7 +269,7 @@ and an edit changes its contents without changing the reference.
 
 The whole-build firing cost (`energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond`,
 `sustainedHeatPerSecond`, `thermalLoad`, `powerDraw` on `WeaponTotals`), `netDrainRate`, the returned
-`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's four columns, the
+`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's five columns, the
 `AmmunitionCapacity`, any target result, and any distributor power observation. Each is a field no
 canvas draws, so nothing downstream can blank, dash or zero one.
 

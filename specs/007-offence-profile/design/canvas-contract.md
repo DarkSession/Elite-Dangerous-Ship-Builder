@@ -349,8 +349,9 @@ worked out once, in the projection:
    offered nowhere else to put them. The canvas draws the rows inert, and the
    contract's own extraction says so in as many words. Two invented controls on
    every row is a larger departure than the omission they were meant to cure, so
-   the requirement moved instead: FR-004 now asks for the four columns the canvas
-   draws, and the fields beyond them join the unread list above. Nothing that was
+   the requirement moved instead: FR-004 now asks for the columns the canvas
+   draws — four then, five since the 2026-08-25 revision added `RANGE` — and the
+   fields beyond them join the unread list above. Nothing that was
    on the screen and package-backed has been taken off it — the withdrawn
    disclosure carried fields no canvas ever drew.
 
@@ -513,7 +514,7 @@ worked out once, in the projection:
     The badge draws the name at two scales, and asking for the right one is part
     of composing it. Canvas 1c sets a ledger row's module name `500 13px`
     (L6871) and this panel's weapon name `400 10.5px` (L14427), the name here
-    being one of four columns rather than the row's subject; the badge takes a
+    being one of the row's columns rather than its subject; the badge takes a
     `compact` input for the smaller. Its code line needs no such choice — the
     canvas draws it 9px on the one and 8px on the other, and the type scale's
     `micro` step is mapped to that whole 7.5–9.5 band.
@@ -536,23 +537,40 @@ from the mock.
 The canvas changed under a built region. What follows is the whole of it for
 this feature, and each item is written into the section it belongs to above.
 
-| Change                                                       | Status against the build                                                                |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `RANGE` column added to the weapon list, before `FALLOFF`    | **Not built.** `maximumRange` is already in the projection; the column is not.          |
-| `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Not built.** `offence.convergence.note` still ships it.                               |
-| Ring caption moved onto the block's heading line             | **Not built.** It is drawn inside the plate today.                                      |
-| `AT THIS RANGE` dropped from the ring caption                | **Not built.** `offence.convergence.ring` still carries it.                             |
-| `IMPACT PLANE` rule removed                                  | **Not built.** `offence.convergence.impact-plane` still ships it.                       |
-| Field of view `115 mrad` → `40 mrad`                         | **Not built.** `FIELD_OF_VIEW_MILLIRADIANS = 115`.                                      |
-| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Not built.** `PLATE_ASPECT = 6 / 16`, and the rings are drawn from it.                |
-| Off-axis shots clamped to the frame, not clipped             | **Not built.** The plate clips with `overflow`, by contract.                            |
-| Edge badge and leader replaced by a numeral beside the dot   | **Not built.** The badge column and leaders are the built plate.                        |
-| Slider re-laid out: `TARGET RANGE` and value above the track | **Not built.** `offence.convergence.range` reads `Range`.                               |
-| Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees. |
-| `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                       |
-| `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                         |
+The table below was written when the revision landed and every drawn item was
+outstanding. **All of them are now built**, and the status column records what
+each one is built as rather than what it was waiting on.
 
-The convergence items are one change, not ten: the plate's field of view, its
+| Change                                                       | Status against the build                                                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `RANGE` column added to the weapon list, before `FALLOFF`    | **Built.** `maximumRange` on the row between `PIERCE` and `FALLOFF`; absent stays not-stated text.           |
+| `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Built.** `offence.convergence.note` is withdrawn from both catalogues.                                     |
+| Ring caption moved onto the block's heading line             | **Built.** The panel reads it from the plate and sets it against the heading, as the other blocks set notes. |
+| `AT THIS RANGE` dropped from the ring caption                | **Built.** `offence.convergence.ring` ends at the distance.                                                  |
+| `IMPACT PLANE` rule removed                                  | **Built.** `offence.convergence.impact-plane` is withdrawn from both catalogues.                             |
+| Field of view `115 mrad` → `40 mrad`                         | **Built.** `FIELD_OF_VIEW_MILLIRADIANS = 40`.                                                                |
+| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone; the rings carry the box's pixel aspect as `aspect-ratio: 1`.              |
+| Off-axis shots clamped to the frame, not clipped             | **Built.** `PLATE_MARGIN_FRACTION`, the canvas's `4%`–`96%`. The sentence keeps the true angle.              |
+| Edge badge and leader replaced by a numeral beside the dot   | **Built.** One dot and one numeral per mount, at the furthest of the script's four corners.                  |
+| Slider re-laid out: `TARGET RANGE` and value above the track | **Built.** `edsb-range-field` sets label and value on the row above its track.                               |
+| Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees.                      |
+| `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                                            |
+| `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                                              |
+
+The convergence items were one change, not ten: the plate's field of view, its
 aspect, its clamping and its marks are `wireConvergence`'s own, and the built
-plate mirrors the old script exactly. Rebuilding it means re-deriving
-`convergence.ts` from the new script, not patching a constant.
+plate mirrored the old script exactly. It was rebuilt by re-deriving
+`convergence.ts` from the new script rather than by patching a constant.
+
+**Two things the revised drawing does that the built region deliberately does
+not.** Canvas 1c gives the plate a `172px` square box inside a `508px` block set
+to `align-self: flex-start`, and stacks the four facts as label-left,
+value-right rows down the narrow column beside it. The built region keeps the
+wide `16 / 6` plate across the full width and the `repeat(4, 1fr)` fact cells
+this document's own build table sanctions, because §3's own reading of the
+script is that the box "stays wide" while the plate goes square in _angle_ —
+which is the geometry, and the geometry is what changed. The box's shape and the
+facts' arrangement are the responsive composition, which is decided from the
+region's available space rather than from an artboard's fixed width (T033), and
+neither carries a figure the other does not. If the drawing's own box is meant
+to bind, that is a separate change to this document's build table first.

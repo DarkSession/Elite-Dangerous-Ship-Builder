@@ -69,13 +69,15 @@ is recorded as ruled exception 1 in `design/canvas-contract.md`.
 
 ## Per-weapon output
 
-Every returned weapon remains a separate entry in returned order. Canvas 1c draws four columns —
-`MODULE`, `DPS`, `PIERCE`, `FALLOFF` — and draws the row **inert**. Preserve and present:
+Every returned weapon remains a separate entry in returned order. Canvas 1c draws five columns —
+`MODULE`, `DPS`, `PIERCE`, `RANGE`, `FALLOFF` — and draws the row **inert**. Preserve and present:
 
 - exact `slot`, `symbol`, canonical returned `name` and `enabled`;
-- `metrics.damagePerSecond`, `armourPiercing` and `falloffRange`.
+- `metrics.damagePerSecond`, `armourPiercing`, `maximumRange` and `falloffRange`.
 
-`maximumRange` is read by `damageFalloff()` inside the package and is not presented. Every other
+`maximumRange` gained its column in the 2026-08-25 canvas revision. It is the same field the falloff
+call already reads, presented as the package returns it: nothing derives it and nothing caps it, and
+a weapon the package gives none keeps the not-stated text an absent falloff gets. Every other
 `WeaponMetrics` field, `projectileRange`, and the weapon's `AmmunitionCapacity | null` are **not
 read at all**: no canvas draws them, and the row the canvas draws has nowhere to put them. The
 package's `ships/ammunition` subpath is deliberately absent from
@@ -106,7 +108,7 @@ row, it is drawn as such, and it remains distinct from a zero.
 
 ## Range and piercing
 
-- `falloffRange` uses localized metre formatting only when returned.
+- `maximumRange` and `falloffRange` use localized metre formatting only when returned.
 - `armourPiercing` is a rating. There is no target hardness input or piercing factor.
 - No local range attenuation, target simulation or ballistic model is allowed.
 
@@ -199,5 +201,7 @@ canonical package text; no private game translation is allowed.
 - Cover present/absent effective ranges and absent piercing.
 - Prove convergence resolves slots through the hull layout, rejects a mismatched gunsight whole, and
   moves every shot — and no span — when the target range moves.
-- Prove a shot outside the plate's field of view is clipped from the drawing and keeps its sentence.
+- Prove a shot outside the plate's field of view is clamped to the frame's own margin rather than
+  leaving it, that it keeps its sentence, and that the sentence states the angle the shot actually
+  makes rather than the one it was drawn at.
 - Prove no weapon row carries a control.

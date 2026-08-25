@@ -3,7 +3,7 @@ import { getShipGunsight } from '@elite-dangerous-almanac/core/ships/gunsights';
 import {
   convergenceAt,
   FIELD_OF_VIEW_MILLIRADIANS,
-  PLATE_ASPECT,
+  PLATE_MARGIN_FRACTION,
   projectConvergence,
   TARGET_RANGE,
   type Convergence,
@@ -137,18 +137,52 @@ describe('convergenceAt', () => {
     }
   });
 
-  it('compresses the plate’s vertical axis exactly as the canvas does', () => {
+  it('maps both of the plate’s axes over the same field of view', () => {
     const geometry = convergence();
 
-    const view = convergenceAt(geometry, TARGET_RANGE.initial);
+    // Far enough out that this hull's widest mount is well inside the field of
+    // view, so every mark is where its shot is and none of them is clamped.
+    const view = convergenceAt(geometry, TARGET_RANGE.max);
 
-    // Milliradians per unit are uniform on both axes, so the plate shows a
-    // narrower angle vertically in proportion to its own box. Dividing both
-    // axes by the same angle would stretch every shot's height by nearly three.
+    // The plate is square in angle since the 2026-08-25 revision: a milliradian
+    // up covers the same fraction of the plate as a milliradian across, and the
+    // box's own shape is corrected for on the rings alone.
     for (const point of view.points) {
-      const up = point.vertical * FIELD_OF_VIEW_MILLIRADIANS * PLATE_ASPECT;
+      const up = point.vertical * FIELD_OF_VIEW_MILLIRADIANS;
       const across = point.horizontal * FIELD_OF_VIEW_MILLIRADIANS;
+      expect(Math.abs(point.horizontal)).toBeLessThan(PLATE_MARGIN_FRACTION);
       expect(point.milliradians).toBeCloseTo(Math.hypot(across, up), 6);
+    }
+  });
+
+  it('clamps a shot outside the field of view to the frame, and keeps its true angle', () => {
+    const geometry = convergence();
+
+    // At a hundred metres this hull's widest mount stands nearly a hundred
+    // milliradians off the axis, against a plate that shows forty.
+    const view = convergenceAt(geometry, TARGET_RANGE.min);
+
+    // Nothing leaves the frame, on either axis.
+    for (const point of view.points) {
+      expect(Math.abs(point.horizontal)).toBeLessThanOrEqual(PLATE_MARGIN_FRACTION);
+      expect(Math.abs(point.vertical)).toBeLessThanOrEqual(PLATE_MARGIN_FRACTION);
+    }
+
+    // And at this range something actually had to be held there, so the margin
+    // above is a clamp rather than a bound nothing reaches.
+    const clamped = view.points.filter(
+      (point) =>
+        Math.max(Math.abs(point.horizontal), Math.abs(point.vertical)) === PLATE_MARGIN_FRACTION,
+    );
+    expect(clamped.length).toBeGreaterThan(0);
+    for (const point of clamped) {
+      // The angle it is stated at is the one it actually makes, not the one it
+      // was drawn at: the sentence beside the plate reads the true offset.
+      const drawn = Math.hypot(
+        point.horizontal * FIELD_OF_VIEW_MILLIRADIANS,
+        point.vertical * FIELD_OF_VIEW_MILLIRADIANS,
+      );
+      expect(point.milliradians).toBeGreaterThan(drawn);
     }
   });
 
@@ -159,6 +193,7 @@ describe('convergenceAt', () => {
 
     expect(view.rings).toHaveLength(2);
     expect(view.ringMilliradians).toBeCloseTo((FIELD_OF_VIEW_MILLIRADIANS * 2) / 3, 9);
+    expect(view.rings[0]?.width).toBeCloseTo(1 / 3, 9);
     expect(view.rings[1]?.width).toBeCloseTo(2 / 3, 9);
     // A milliradian is a metre at a thousand.
     expect(view.ringMetres).toBeCloseTo(view.ringMilliradians, 6);

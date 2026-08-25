@@ -59,24 +59,32 @@ async function plateMarks(page: Page): Promise<string[]> {
         round((mark.top - box.top) / box.height),
       ].join(' ');
     };
-    return [...plate.querySelectorAll('.plate__dot, .plate__leader')].map(place);
+    return [...plate.querySelectorAll('.plate__dot, .plate__numeral')].map(place);
   });
 }
 
 /**
  * Where each shot dot is put, as a fraction of the plate's own box.
  *
- * Outside `[0, 1]` is a mark the plate clips: the element is in the document
- * wherever it lands, and the plate's `overflow` decides whether it is seen.
+ * Since the 2026-08-25 canvas revision nothing lands outside `[0, 1]`: a shot
+ * beyond the plate's field of view is held at the frame's own `4%` margin
+ * rather than clipped out of it, so what a near range moves is how far out the
+ * dot sits, not whether it is drawn.
  */
 async function dotPlacements(page: Page): Promise<{ left: number; top: number }[]> {
   return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
+    // The plate's padding box, not its border box: a mark is positioned as a
+    // percentage of the box its offset parent gives it, which excludes the
+    // hairline border. Measuring against the border box instead puts every
+    // fraction out by a pixel, which is exactly the width of the margin a
+    // clamped mark is meant to be standing on.
     const box = plate.getBoundingClientRect();
+    const origin = { left: box.left + plate.clientLeft, top: box.top + plate.clientTop };
     return [...plate.querySelectorAll('.plate__dot')].map((node) => {
       const mark = node.getBoundingClientRect();
       return {
-        left: (mark.left + mark.width / 2 - box.left) / box.width,
-        top: (mark.top + mark.height / 2 - box.top) / box.height,
+        left: (mark.left + mark.width / 2 - origin.left) / plate.clientWidth,
+        top: (mark.top + mark.height / 2 - origin.top) / plate.clientHeight,
       };
     });
   });
@@ -296,7 +304,7 @@ async function weaponRows(
 }
 
 test.describe('inspecting the weapons', () => {
-  test('draws one row per weapon with the canvas’s four columns', async ({ page }) => {
+  test('draws one row per weapon with the canvas’s five columns', async ({ page }) => {
     await openOffence(page);
 
     const rows = await weaponRows(page);
@@ -310,9 +318,10 @@ test.describe('inspecting the weapons', () => {
 
     for (const row of rows) {
       expect(row.module).not.toBe('');
-      // Damage per second, piercing and falloff: three cells, every one of them
-      // saying something rather than sitting blank.
-      expect(row.figures).toHaveLength(3);
+      // Damage per second, piercing, maximum range and falloff: four cells since
+      // the 2026-08-25 canvas revision added `RANGE`, every one of them saying
+      // something rather than sitting blank.
+      expect(row.figures).toHaveLength(4);
       for (const figure of row.figures) {
         expect(figure).not.toBe('');
       }
@@ -550,16 +559,18 @@ test.describe('shot convergence', () => {
     // do not repeat (FR-011).
     expect(await shots.count()).toBe(armed + 1);
 
-    // Each armed mount is drawn as a dot where its shot lands, a numbered badge
-    // parked at the plate's nearer edge, and a leader between the two.
+    // Each armed mount is drawn as a dot where its shot lands and the mount's
+    // own hardpoint numeral beside it. The badge column at the plate's edge and
+    // the leader lines back from it went with the 2026-08-25 canvas revision.
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
-    await expect(plate.locator('.plate__shot')).toHaveCount(armed);
     await expect(plate.locator('.plate__dot')).toHaveCount(armed);
-    await expect(plate.locator('.plate__leader')).toHaveCount(armed);
+    await expect(plate.locator('.plate__numeral')).toHaveCount(armed);
+    await expect(plate.locator('.plate__shot')).toHaveCount(0);
+    await expect(plate.locator('.plate__leader')).toHaveCount(0);
   });
 
-  test('clips a shot the field of view does not reach, and keeps its sentence', async ({
+  test('clamps a shot the field of view does not reach, and keeps its sentence', async ({
     page,
   }) => {
     await openOffence(page);
@@ -569,23 +580,39 @@ test.describe('shot convergence', () => {
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
 
     // The plate spans a fixed field of view, as the canvas fixes it, so the
-    // nearer the target the wider a mount's shot subtends. Counting the marks
-    // cannot show this: they are clipped by the plate's own `overflow`, so the
-    // element is there either way. What changes is where it is put — at the
-    // near end of the range the dot is placed past the bottom of the plate's
-    // box, and at the far end it is inside it (FR-011, spec.md, "A shot whose
-    // offset exceeds the plate's field of view").
+    // nearer the target the wider a mount's shot subtends. Since the 2026-08-25
+    // revision a shot that outruns the plate is held at the frame's own margin
+    // rather than clipped out of it, so nothing ever leaves the box — what a
+    // near range does is push the dot out to that margin, where a far range
+    // leaves it well inside (FR-011, spec.md, "A shot whose offset exceeds the
+    // plate's field of view").
+    // The frame's own margin, and the slack a mark measured off a rendered box
+    // needs: a dot is centred by a half-pixel translate on a plate whose height
+    // is itself fractional, so "on the margin" arrives a few tenths of a pixel
+    // off it. This is wide enough to absorb that and far narrower than the gap
+    // between a clamped mark and one the field of view actually holds.
+    const margin = 0.04;
+    const slack = 0.005;
+    const edge = ({ left, top }: { left: number; top: number }): number =>
+      Math.min(left, top, 1 - left, 1 - top);
+    const inside = (dot: { left: number; top: number }): boolean => edge(dot) >= margin - slack;
+
     await slider.fill(String(await slider.getAttribute('min')));
     await settled(page);
     const near = await dotPlacements(page);
     const sentencesNear = await block.locator('.shots__entry').count();
     expect(near).toHaveLength(armed);
-    expect(near.some(({ top }) => top < 0 || top > 1)).toBe(true);
+    // Nothing is dropped and nothing escapes: every mark is still on the plate.
+    expect(near.every(inside)).toBe(true);
+    // And the clamp is doing work — a mount is standing on the margin itself.
+    expect(near.some((dot) => edge(dot) <= margin + slack)).toBe(true);
 
     await slider.fill('2000');
     await settled(page);
     const far = await dotPlacements(page);
-    expect(far.every(({ left, top }) => left >= 0 && left <= 1 && top >= 0 && top <= 1)).toBe(true);
+    expect(far.every(inside)).toBe(true);
+    // At the far end nothing is against the frame any more.
+    expect(far.every((dot) => edge(dot) > margin + slack)).toBe(true);
 
     // The sentence is the reading, and it is stated at both ranges alike: the
     // field of view decides what the picture shows, never what is said.
@@ -607,7 +634,7 @@ test.describe('shot convergence', () => {
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
     await expect(block.locator('.plate__dot')).toHaveCount(armed);
-    await expect(block.locator('.plate__shot')).toHaveCount(armed);
+    await expect(block.locator('.plate__numeral')).toHaveCount(armed);
     expect(await block.locator('.shots__entry').count()).toBe(armed + 1);
   });
 
@@ -686,7 +713,8 @@ test.describe('the units on the screen', () => {
     const rendered = await page
       .locator(
         'edsb-offence-analysis .bar__label, edsb-offence-analysis .bar__value, ' +
-          'edsb-offence-analysis .fact__value, edsb-offence-analysis .plate__caption, ' +
+          'edsb-offence-analysis .fact__value, ' +
+          'edsb-offence-analysis .offence__block--convergence .offence__note, ' +
           'edsb-offence-analysis .range__scale span, edsb-offence-analysis .range__value',
       )
       .evaluateAll((nodes) =>

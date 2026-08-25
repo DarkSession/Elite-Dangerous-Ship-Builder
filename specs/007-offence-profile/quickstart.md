@@ -29,7 +29,7 @@ Confirms against the installed Almanac that:
   carrying an exact `slot`, `symbol`, `name` and `enabled`, and the sparse `maximumRange`,
   `falloffRange` and `armourPiercing` left undefined rather than zero where the article has none;
 - the returned weapons arrive in the hull's own slot order, which is what the panel's rows and the
-  gunsight's badges both depend on. The package documents unknown or unmapped slots as appended in
+  gunsight's hardpoint numerals both depend on. The package documents unknown or unmapped slots as appended in
   source order after them; that path is the package's own to prove, and nothing here exercises it,
   because no build this application can make reaches it;
 - `DamageSplit.unclassified` is absent exactly when it is zero, and `antiXeno` is always present;
@@ -110,9 +110,10 @@ rendered output.
 ### 5. Inspect a weapon
 
 A row draws the module's localized name, the code line beneath it — `4A GIMBALLED`, and any
-engineering summary after it — damage per second, piercing and falloff. An unengineered weapon still
-gets its code line; only the summary is absent. An absent piercing or falloff reads as not stated, never as zero. A disabled weapon keeps
-its row and is marked off.
+engineering summary after it — damage per second, piercing, maximum range and falloff. An
+unengineered weapon still gets its code line; only the summary is absent. An absent piercing,
+maximum range or falloff reads as not stated, never as zero. A disabled weapon keeps its row and is
+marked off.
 
 The row carries no control. It does not navigate, disclose or select, and activating it does nothing.
 

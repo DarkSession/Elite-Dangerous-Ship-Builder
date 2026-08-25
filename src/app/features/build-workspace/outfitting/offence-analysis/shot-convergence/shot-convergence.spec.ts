@@ -104,6 +104,56 @@ describe('ShotConvergence', () => {
     }
   });
 
+  it('marks each mount with one dot and one hardpoint numeral, and no badge column', () => {
+    const { element, component } = render();
+
+    // The 2026-08-25 canvas revision withdrew the badge parked at the plate's
+    // edge and the leader line back to it. What is left is the dot where the
+    // shot lands and the mount's numeral placed beside it.
+    const armed = component.shots().length;
+    expect(armed).toBeGreaterThan(0);
+    expect(element.querySelectorAll('.plate__dot')).toHaveLength(armed);
+    expect(element.querySelectorAll('.plate__numeral')).toHaveLength(armed);
+    expect(element.querySelector('.plate__leader')).toBeNull();
+    expect(element.querySelector('.plate__shot')).toBeNull();
+
+    // Each numeral is the mount's own hardpoint place, and it sits at one of
+    // the four corners the canvas offers, offset from its dot in pixels.
+    const numerals = [...element.querySelectorAll<HTMLElement>('.plate__numeral')];
+    expect(numerals.map((numeral) => (numeral.textContent ?? '').trim())).toEqual(
+      component.shots().map((shot) => shot.badge),
+    );
+    for (const shot of component.shots()) {
+      expect([7, -13]).toContain(shot.numeralLeft);
+      expect([-14, 5]).toContain(shot.numeralTop);
+    }
+  });
+
+  it('holds a shot outside the field of view at the frame, and states where it really goes', () => {
+    const { component, detect } = render();
+
+    // A hundred metres puts this hull's widest mounts far outside the plate's
+    // forty milliradians.
+    component.setTargetRange(component.rangeBounds.min);
+    detect();
+
+    // The margin, to the place a percentage of a plate is drawn at.
+    const at = (percent: number) => Math.round(percent * 1e6) / 1e6;
+    const marks = component.shots();
+    for (const shot of marks) {
+      // Nothing leaves the plate: the canvas clamps to a 4% margin, so no mark
+      // is drawn outside it and none is dropped.
+      expect(at(shot.left)).toBeGreaterThanOrEqual(4);
+      expect(at(shot.left)).toBeLessThanOrEqual(96);
+      expect(at(shot.top)).toBeGreaterThanOrEqual(4);
+      expect(at(shot.top)).toBeLessThanOrEqual(96);
+      // And every one of them still says what it actually does.
+      expect(shot.statement).not.toBe('');
+    }
+    // The clamp is reached rather than being a bound nothing touches.
+    expect(marks.some((shot) => at(shot.left) === 4 || at(shot.left) === 96)).toBe(true);
+  });
+
   it('offers the range as a real control, with its value announced', () => {
     const { element, component } = render();
     const slider = element.querySelector<HTMLInputElement>('input[type="range"]');
@@ -112,6 +162,19 @@ describe('ShotConvergence', () => {
     expect(slider?.min).toBe(String(component.rangeBounds.min));
     expect(slider?.max).toBe(String(component.rangeBounds.max));
     expect(slider?.getAttribute('aria-valuetext')).toBe(component.targetRangeText());
+  });
+
+  it('sets the range field’s label and value on the row above its own track', () => {
+    const { element } = render();
+
+    // The canvas's 2026-08-25 layout: `TARGET RANGE` and `600 m` share the row
+    // above the track, and the track's two ends are printed beneath it. The
+    // order in the document is the order it is read in.
+    const field = element.querySelector('edsb-range-field');
+    const parts = [...(field?.querySelectorAll('.range > *') ?? [])].map((part) =>
+      part.className.replace('range__', ''),
+    );
+    expect(parts).toEqual(['label', 'value', 'track', 'scale']);
   });
 
   it('pairs every figure under the plate with the word that names it', () => {

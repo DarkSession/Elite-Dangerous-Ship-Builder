@@ -22,7 +22,9 @@ import { createFieldRelations } from '../field/field-relations';
  *
  * The readout is part of the control rather than a caption near it: the figure
  * is what the slider is *for*, and `aria-valuetext` carries the same formatted
- * string so that what is heard and what is seen are one value.
+ * string so that what is heard and what is seen are one value. It sits against
+ * the label on the row above the track, which is where canvas 1c's 2026-08-25
+ * revision moved it.
  */
 @Component({
   selector: 'edsb-range-field',

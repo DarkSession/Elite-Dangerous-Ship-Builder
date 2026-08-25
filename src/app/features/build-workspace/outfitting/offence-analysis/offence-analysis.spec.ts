@@ -353,6 +353,57 @@ describe('OffenceAnalysis', () => {
       expect(zero?.falloff).toBeNull();
     });
 
+    it('draws the package’s own maximum range as the canvas’s RANGE column', () => {
+      const loadout = populatedBuild();
+      const { component, element } = render(loadout);
+      const fitted = BuildMetrics.of(loadout).weaponMetrics().weapons;
+
+      // The 2026-08-25 canvas revision gave the list a `RANGE` column between
+      // `PIERCE` and `FALLOFF`. It is the package's own `maximumRange`, which
+      // the projection already carried for `damageFalloff()`: nothing is
+      // derived and nothing is capped.
+      expect(fitted.some((weapon) => weapon.maximumRange !== undefined)).toBe(true);
+      for (const [index, row] of component.weaponRows().entries()) {
+        const published = fitted[index]?.maximumRange;
+        if (published === undefined) {
+          expect(row.maximumRange).toBeNull();
+        } else {
+          // The digits the package returned, read out of the active locale's
+          // own grouping and unit rather than compared as a string.
+          expect((row.maximumRange ?? '').replace(/\D/g, '')).toBe(String(Math.round(published)));
+        }
+      }
+
+      // And the head is drawn in the canvas's own order, with the figure it
+      // names carrying that word in its own row.
+      const heads = [...element.querySelectorAll('.weapons__column')].map((head) =>
+        (head.textContent ?? '').trim(),
+      );
+      expect(heads).toEqual([
+        component.columns().module,
+        component.columns().damagePerSecond,
+        component.columns().piercing,
+        component.columns().maximumRange,
+        component.columns().falloff,
+      ]);
+      expect(element.querySelectorAll('.weapon').length).toBeGreaterThan(0);
+      for (const row of element.querySelectorAll('.weapon')) {
+        expect(row.querySelectorAll('.weapon__figure')).toHaveLength(4);
+      }
+    });
+
+    it('states an absent maximum range rather than dashing or zeroing it', () => {
+      const loadout = everyStateBuild();
+      const { component } = render(loadout);
+      const fitted = BuildMetrics.of(loadout).weaponMetrics().weapons;
+
+      // A weapon the package gives no maximum range keeps the not-stated text,
+      // exactly as an absent falloff does (FR-004).
+      for (const [index, row] of component.weaponRows().entries()) {
+        expect(row.maximumRange === null).toBe(fitted[index]?.maximumRange === undefined);
+      }
+    });
+
     it('states an absent piercing factor or falloff range rather than zeroing it', () => {
       const loadout = everyStateBuild();
       const { component } = render(loadout);
@@ -651,7 +702,12 @@ describe('OffenceAnalysis', () => {
 
       const asked = [weapons.mock.calls.length, capacitor.mock.calls.length] as const;
       const geometry = element.querySelector('edsb-shot-convergence');
-      const before = geometry?.querySelector('.plate__caption--trail')?.textContent;
+      // The ring caption, which the 2026-08-25 canvas revision moved onto the
+      // block's heading line: it is the plate figure that moves with the range
+      // without being one of the four cells beneath it.
+      const caption = () =>
+        element.querySelector('.offence__block--convergence .offence__note')?.textContent;
+      const before = caption();
 
       const slider = element.querySelector<HTMLInputElement>('input[type="range"]');
       slider!.value = String(TARGET_RANGE.max);
@@ -660,7 +716,9 @@ describe('OffenceAnalysis', () => {
 
       // The plate really moved, so the counts below are a reading rather than
       // the absence of one.
-      expect(geometry?.querySelector('.plate__caption--trail')?.textContent).not.toBe(before);
+      expect(before).toBeTruthy();
+      expect(caption()).not.toBe(before);
+      expect(geometry).not.toBeNull();
       // The range is the block's own signal and the geometry it projects from
       // is already in hand: what changes with the slider is where the same
       // published offsets land, which is `projectGunsight`'s job. The build's
@@ -693,7 +751,7 @@ describe('OffenceAnalysis', () => {
       // its armed mounts and draws nothing for a hardpoint nobody filled
       // (`design/canvas-contract.md`, review note 8).
       expect(element.querySelectorAll('.plate__dot')).toHaveLength(0);
-      expect(element.querySelectorAll('.plate__shot')).toHaveLength(0);
+      expect(element.querySelectorAll('.plate__numeral')).toHaveLength(0);
       // Rings and axes stay: they are the plate, not a reading of the build.
       expect(element.querySelectorAll('.plate__ring')).toHaveLength(2);
       // No group of armed mounts, so none of the four figures about one.

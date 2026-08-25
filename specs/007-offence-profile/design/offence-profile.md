@@ -57,7 +57,7 @@ or action is omitted, abbreviated into ambiguity or moved to hover.
 
 ### The weapon collection
 
-The canvas's four columns, one row per returned weapon, in package order. The collection neither
+The canvas's five columns, one row per returned weapon, in package order. The collection neither
 sorts nor merges: two mounts carrying the same module are two rows, as the canvas draws them.
 
 Summary content, which is the canvas's row exactly:
@@ -65,9 +65,10 @@ Summary content, which is the canvas's row exactly:
 - the module's localized package name, with disclosed canonical fallback and an unavailable state;
 - the code line beneath it — the module's class and rating, its mount, and any engineering summary
   after them — drawn by the same badge feature 002 draws on a ledger row;
-- damage per second, armour piercing, and falloff range.
+- damage per second, armour piercing, maximum range, and falloff range.
 
-Piercing and falloff are frequently absent. An absent field is field-specific not-stated text, never
+Piercing, maximum range and falloff are frequently absent. An absent field is field-specific
+not-stated text, never
 a zero and never an em dash standing in for a number.
 
 A disabled weapon keeps its row and its own figures, and is marked as off.
