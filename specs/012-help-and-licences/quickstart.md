@@ -71,10 +71,12 @@ SHIP_BUILDER_RELEASE_TAG="v$(node -p "require('./package.json').version")" pnpm 
 SHIP_BUILDER_RELEASE_TAG=latest pnpm run help:manifest   # expect non-zero exit, no output written
 ```
 
-Note that root `package.json#version` is currently `0.0.0`, which the contract forbids from ever
-being a release, so case 2 fails until the version is raised — that is the expected outcome, not a
-defect. Repeat case 3 with `v0.0.0`, `HEAD`, `undefined` and a mismatched version to confirm each
-fails and writes no partial output.
+Note that root `package.json#version` declares `major.minor.0` and CI stamps the patch before it
+builds (`scripts/resolve-build-version.mjs`), so case 2 succeeds here against the committed
+declaration while the value a deployed build actually carries is `major.minor.<commit count>`. Run
+case 2 against that value too — `SHIP_BUILDER_RELEASE_TAG="v$(node scripts/resolve-build-version.mjs)"`
+— since that is the version release automation would have to agree with. Repeat case 3 with `v0.0.0`,
+`HEAD`, `undefined` and a mismatched version to confirm each fails and writes no partial output.
 
 ## 3. Open and close without navigation or mutation
 

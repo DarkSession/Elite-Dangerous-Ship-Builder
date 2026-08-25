@@ -68,10 +68,10 @@ feature 011's file, seeded by its own entries and appended to by every feature; 
 
 **Release automation is deliberately not a row above.** No workflow sets `SHIP_BUILDER_RELEASE_TAG`
 (`ci.yml` gates `main` and pull requests and publishes successful `main` pushes to Pages;
-`deploy.yml` can manually republish the same validated artifact), and root
-`package.json#version` is `0.0.0`, which
-[contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) forbids from ever being
-a release. Every build produced today is therefore non-release with a `buildId` — the correct
+`deploy.yml` can manually republish the same validated artifact), and
+[contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) reads nothing else for
+the decision — the patch `ci.yml` stamps into `package.json#version` before building is a version,
+not release evidence. Every build produced today is therefore non-release with a `buildId` — the correct
 outcome, not a gap. This feature implements and tests the classification without adding a release
 workflow: because the decision is environment-driven, T010's release branch and T037's failure
 branches are exercised by setting the variable in a generator fixture. No task here is blocked on

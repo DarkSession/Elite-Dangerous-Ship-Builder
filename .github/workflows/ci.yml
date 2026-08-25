@@ -1,7 +1,9 @@
-# Runs the same gate as `pnpm run check`, split into individual steps so a
-# failure names the stage that broke: formatting, types, build, unit tests
-# (with the 80% coverage thresholds from angular.json) and the Playwright
-# end-to-end suite across the desktop, tablet and mobile viewports.
+# Runs the gate `pnpm run check` runs, split into individual steps so a failure
+# names the stage that broke: formatting, types, the script tests, build, unit
+# tests (with the 80% coverage thresholds from angular.json) and the Playwright
+# end-to-end suite across the desktop, tablet and mobile viewports. It has one
+# stage of its own, between the checks and the build: the version stamp, which
+# only a deployable build needs.
 #
 # The end-to-end suite is **sharded across parallel jobs**, which is the one
 # thing the verification contract permits a CI run to do with the matrix: shard
@@ -41,6 +43,11 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
+        with:
+          # The build version's patch is a count of commits, so this job needs
+          # the whole history rather than the single commit the default fetch
+          # provides. No other job resolves a version, and none of them fetch it.
+          fetch-depth: 0
 
       # Installed before setup-node so the `pnpm` cache backend can resolve the
       # store path. The version comes from `packageManager` in package.json.
@@ -61,6 +68,42 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
+
+      # `package.json` declares `major.minor.0`; the patch is the number of
+      # commits since that major.minor was declared, resolved here and stamped
+      # into the manifest the build is about to read. Nothing is committed back:
+      # a push to `main` from inside this run would move the branch tip out from
+      # under the deploy job's own tip check below, and the publish would skip
+      # itself. Because the number counts commits rather than runs, re-running
+      # CI on this commit resolves the same version, and so does the manual
+      # republish in `deploy.yml`, which re-publishes this run's artifact.
+      #
+      # The stamp runs after `format:check` and `typecheck`, which read the
+      # manifest as committed, and before `build`, which is what carries the
+      # value into the bundle through
+      # `src/app/platform/build/application-metadata.ts`. It is not release
+      # evidence: a release is declared only by `SHIP_BUILDER_RELEASE_TAG`
+      # matching the shipped version, which no workflow sets.
+      # The resolver decides what every deployment is called, and a defect that
+      # makes it count less history still exits successfully — so its own tests
+      # run here, before it does.
+      - name: Script tests
+        run: pnpm run test:scripts
+
+      - name: Stamp the build version
+        run: |
+          version="$(node scripts/resolve-build-version.mjs --write)"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "::notice title=Build version::$version"
+            echo "Deployed as version \`$version\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            # A pull request builds its merge commit, whose commit count is not
+            # the one `main` will resolve once this lands. The stamp still runs,
+            # because a resolver that only ever runs on `main` is a resolver
+            # whose failures are only ever found on `main`.
+            echo "Built as version \`$version\`, which is this merge commit's count and not the one" \
+              "\`main\` resolves when the change lands." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Build
         run: pnpm run build

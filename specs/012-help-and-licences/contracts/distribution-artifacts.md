@@ -119,17 +119,27 @@ tested.
 
 **Current repository state**: no workflow sets `SHIP_BUILDER_RELEASE_TAG`. `ci.yml` gates `main` and
 pull requests and publishes successful `main` pushes to Pages; `deploy.yml` can manually republish
-the same validated artifact. Neither declares a release. Root
-`package.json#version` is `0.0.0`, which rule 3 forbids from ever being a release. Every build the
-repository produces today is therefore `nonRelease` with a `buildId`, and that is the correct
-outcome, not a gap.
+the same validated artifact. Neither declares a release. Every build the repository produces today is
+therefore `nonRelease` with a `buildId`, and that is the correct outcome, not a gap.
+
+Root `package.json#version` declares `major.minor.0` and CI supplies the patch:
+`scripts/resolve-build-version.mjs` resolves `major.minor.<commits since that major.minor was
+declared>` and `ci.yml` stamps it into the manifest immediately before the build. `applicationVersion`
+is still copied exactly from root `package.json#version` — the rule above is unchanged — but the
+manifest it is copied from is the stamped one, so **generation has to run after that stamp step**. A
+generation step placed before it reads `major.minor.0` while the bundle beside it reports
+`major.minor.<count>`, and the modal would then state a version no build carries. The stamp is a
+property of the commit — a re-run and the manual republish resolve the same number — and it is not
+release evidence: an automatically stamped patch changes nothing about the classification above,
+which reads only `SHIP_BUILDER_RELEASE_TAG`.
 
 **When release automation lands**, it needs one thing from this contract: export
-`SHIP_BUILDER_RELEASE_TAG` as `v` plus the shipped `package.json#version` (so `v1.0.0` for version
-`1.0.0`) in the environment the build runs in, and raise the root version above `0.0.0`. Nothing in
-this feature changes. A tag-triggered workflow can take it straight from the tag ref, provided the
-tag and the shipped version agree — if they disagree, generation fails by rule 3, which is the
-intended behaviour rather than something to work around.
+`SHIP_BUILDER_RELEASE_TAG` as `v` plus the version the build is stamped with — the value
+`node scripts/resolve-build-version.mjs` prints for that commit, so `v1.0.7` for a build stamped
+`1.0.7`, and never the `major.minor.0` the manifest carries in git. Nothing in this feature changes.
+A tag-triggered workflow can take the value straight from the tag ref, provided the tag and the
+stamped version agree — if they disagree, generation fails by rule 3, which is the intended behaviour
+rather than something to work around.
 
 The UI receives separate application and Almanac values and may never label either as a live-game or
 live-catalogue version.

@@ -2,7 +2,7 @@
   "corpusVersion": 1,
   "producer": {
     "appName": "elite-dangerous-ship-builder",
-    "appVersion": "0.0.0"
+    "appVersion": "0.1.0"
   },
   "almanacVersion": "0.1.7",
   "serialization": {
@@ -20,7 +20,7 @@
       "utf8Bytes": 2497,
       "valid": true,
       "complete": true,
-      "sha256": "d6a063b9dd9b1895c732551458fd4391ab5eb3ed0a938c7c5febd2dc02382062"
+      "sha256": "363db81f8e5b30bd4033a76590ce8761b40cb998da28687ec6378de3bbdf8cf4"
     },
     {
       "id": "stock-large-hull",
@@ -31,7 +31,7 @@
       "utf8Bytes": 2767,
       "valid": true,
       "complete": true,
-      "sha256": "eeeea0cc497aa6df7c65136174e79e162d5c59b8184adfa82bbdab2c07eef439"
+      "sha256": "607b43847a49b8e96e05b4cb9fcfd7a19f506ccdabacc8749f29a51b5ca07851"
     },
     {
       "id": "named-and-identified",
@@ -42,7 +42,7 @@
       "utf8Bytes": 2826,
       "valid": true,
       "complete": true,
-      "sha256": "e5e3ccc765754f64b895f37065d4d5e7046ddb04836deb2df20b44b44b381acb"
+      "sha256": "fb9a329923cf91c37f6c0e85e8b7916bb6c26607e66eb4e8565826a3ec2f4d41"
     },
     {
       "id": "disabled-and-prioritised",
@@ -53,7 +53,7 @@
       "utf8Bytes": 2815,
       "valid": true,
       "complete": true,
-      "sha256": "1909dbee3817667bcd67d7b066529b97f340f3d919c07ece9fb0276c3a26ac81"
+      "sha256": "f2c6febfc1714803c55476f56a5cfd2578775ad564bb1471ddfbaafed928750c"
     },
     {
       "id": "engineered-grade-five",
@@ -64,7 +64,7 @@
       "utf8Bytes": 3675,
       "valid": true,
       "complete": true,
-      "sha256": "b76521b051000f1d8916cba4fe1204e123ff2e4c2bcd7d28013ec5b59731ae65"
+      "sha256": "4633b1c804a55426af9cab0946a661d3c599be324bf3855c748c10854fe2d3e4"
     },
     {
       "id": "emptied-optional-mounts",
@@ -75,8 +75,8 @@
       "utf8Bytes": 1854,
       "valid": true,
       "complete": true,
-      "sha256": "c7d46282463f66c811d8d5b361274185a5d31108df36c5e4fca6d7ab31f4db0b"
+      "sha256": "44172a1d79032c8ed6029971057bbdefda9f7ef854b767f90efd1a6117fd1a3b"
     }
   ],
-  "corpusHash": "c05ffde0565383d775c72a5b44726e5e956d274e291ab273665681c951fa7921"
+  "corpusHash": "3a73e7cdd5d9891e4a0af5df4111540cd4ba3581bc9ffaf048c5fab1e04d597a"
 }

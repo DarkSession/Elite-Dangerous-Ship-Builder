@@ -97,7 +97,7 @@ identifiers. If no truthful identifier is available, generation fails.
 
 **Rationale**: The package export map does not expose its manifest to browser code, but installed
 artifacts are available to Node tooling under pnpm. Explicit classification prevents an optimized
-build or the current `0.0.0` version from masquerading as a release. Compile-time values work offline
+build, or a placeholder version, from masquerading as a release. Compile-time values work offline
 and describe exactly what was built.
 
 **Alternatives considered**: Hard-coded mock versions, reading `pnpm-lock.yaml`, importing an

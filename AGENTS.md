@@ -77,6 +77,17 @@ planning ship loadouts.
 
 - Package manager is **pnpm**. `pnpm-lock.yaml` is committed; use
   `--frozen-lockfile` in CI.
+- **`package.json` declares `major.minor.0`; CI supplies the patch.** Major and
+  minor are advanced by hand in a normal reviewed commit. The patch is never
+  written down: `scripts/resolve-build-version.mjs` counts the commits since
+  that major.minor was declared and stamps the result into the manifest just
+  before `pnpm run build` in CI, so the deployed bundle — and the `appVersion`
+  its SLEF exports carry — is versioned without anything being committed back to
+  `main`. The count is a property of the commit, so a re-run and the manual
+  republish in `deploy.yml` ship the same number. A committed patch other than
+  `0` fails the resolver. It is not release evidence: a release is declared only
+  by `SHIP_BUILDER_RELEASE_TAG` matching the shipped version exactly
+  (`specs/012-help-and-licences/contracts/distribution-artifacts.md`).
 - Angular is standalone and zoneless; prefer signals for state.
 - Run `pnpm run check` (format check, typecheck, build, unit tests with
   coverage, Playwright) before proposing a change.

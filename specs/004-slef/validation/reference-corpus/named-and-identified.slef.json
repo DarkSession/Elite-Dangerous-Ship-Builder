@@ -2,7 +2,7 @@
   {
     "header": {
       "appName": "elite-dangerous-ship-builder",
-      "appVersion": "0.0.0"
+      "appVersion": "0.1.0"
     },
     "data": {
       "event": "Loadout",
