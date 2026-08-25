@@ -14,6 +14,7 @@ import {
   isCurrent,
   openCandidateQuery,
   toggleFamily,
+  withReveal,
   type CandidateQueryState,
 } from './candidate-query';
 import { compareRating } from './rating-order';
@@ -77,6 +78,17 @@ function narrowSearch(state: CandidateQueryState): CandidateQueryState {
     }
   }
   throw new Error('no word in the fixture mount matched more than one family inside a screenful');
+}
+
+/**
+ * The same mount under canvas 1c's rail rather than canvas 1d's accordion.
+ *
+ * A composition change and nothing else: `withReveal` re-seeds the revealed set
+ * and touches neither the order nor the index, which is what keeps a resize
+ * from paying for a re-sort (SC-002).
+ */
+function rail(state: CandidateQueryState): CandidateQueryState {
+  return applyQuery(withReveal(state, 'rail'), state.query);
 }
 
 /** The package's own family order, which is the order the chooser lists them in. */
@@ -317,6 +329,86 @@ describe('open families', () => {
     expect([...toggleFamily(closed, first).openFamilies].sort()).toEqual(
       [...state.openFamilies].sort(),
     );
+  });
+
+  it('reveals the first family in package order when the rail has no fitted one', () => {
+    // The accordion draws "none open" and the rail cannot: canvas 1c's rail
+    // always has a selection and never paints an empty pane, so where no
+    // available family holds the fitted choice it takes the first one the
+    // package lists (FR-021, as restated on 2026-08-25).
+    const empty = rail(open(FITTED));
+    const first = empty.choices[0]!.presentation.familyId;
+
+    expect(empty.fittedFamilyId).toBeNull();
+    expect([...empty.openFamilies]).toEqual([first]);
+  });
+
+  it('reveals the fitted family under either model, when there is one', () => {
+    const bare = open(FITTED);
+    const fitted = fittedArticleOf(bare);
+    const accordion = open(FITTED, 'en', 1, fitted);
+
+    expect([...rail(accordion).openFamilies]).toEqual([...accordion.openFamilies]);
+  });
+
+  it('reveals one family per rail selection, and never none', () => {
+    const state = rail(open(FIXTURE_SLOTS.hardpoint));
+    const [first, second] = state.choices
+      .map((choice) => choice.presentation.familyId)
+      .filter((id, index, all) => all.indexOf(id) === index);
+
+    const moved = toggleFamily(state, second!);
+    expect([...moved.openFamilies]).toEqual([second]);
+
+    // Selecting the family already selected leaves it selected. Under the
+    // accordion the same press closes it, and that is the difference: a rail
+    // has no "none" for a second press to mean.
+    expect([...toggleFamily(moved, second!).openFamilies]).toEqual([second]);
+    expect([...toggleFamily(moved, first!).openFamilies]).toEqual([first]);
+  });
+
+  it('reveals the first family holding a match, whatever the rail search matched', () => {
+    // FR-023's screenful rule is the accordion's, and always was: it exists to
+    // stop one keystroke building several hundred cards, and a rail paints one
+    // family's rows at any match count. What both keep is that a family holding
+    // a match is never absent.
+    const state = rail(open(FIXTURE_SLOTS.hardpoint));
+    const broad = applyQuery(state, 'a');
+
+    expect(broad.results.length).toBeGreaterThan(SCREENFUL);
+    expect([...broad.openFamilies]).toEqual([broad.results[0]!.presentation.familyId]);
+
+    const families = groupFamilies(broad.results, broad.openFamilies);
+    expect(families.filter((family) => family.open)).toHaveLength(1);
+    expect(families.every((family) => family.count > 0)).toBe(true);
+    expect(families.reduce((running, family) => running + family.count, 0)).toBe(
+      broad.results.length,
+    );
+
+    const narrow = narrowSearch(state);
+    expect([...narrow.openFamilies]).toEqual([narrow.results[0]!.presentation.familyId]);
+  });
+
+  it('restores the rail\u2019s own default when the query goes back to empty', () => {
+    const state = rail(open(FIXTURE_SLOTS.hardpoint));
+    const seed = [...state.openFamilies];
+
+    const searched = applyQuery(state, 'a');
+    expect([...applyQuery(searched, '').openFamilies]).toEqual(seed);
+  });
+
+  it('re-seeds on a composition change without re-ordering or re-indexing', () => {
+    const accordion = open(FIXTURE_SLOTS.hardpoint);
+    const asRail = rail(accordion);
+
+    expect(asRail.choices).toBe(accordion.choices);
+    expect(asRail.index).toBe(accordion.index);
+    // The accordion opens nothing on an empty mount; the rail opens the first.
+    expect([...accordion.openFamilies]).toEqual([]);
+    expect(asRail.openFamilies.size).toBe(1);
+
+    // And asking for the model already in force is not a new state at all.
+    expect(withReveal(accordion, 'accordion')).toBe(accordion);
   });
 
   it('keeps membership across a language change that relabels and reorders', () => {

@@ -60,6 +60,35 @@ function familiesFor(
   return groupFamilies(state.results, ids);
 }
 
+/**
+ * The same list under canvas 1c's rail, since jsdom lays nothing out on its own.
+ *
+ * `observeManifest` reads the host's own box and the root text size, so the
+ * rail is reached by giving it a box wide enough for one — the same device the
+ * sticky-banner spec uses, and for the same reason: the measurement is the
+ * thing under test, and a component that decided its own manifest from a flag
+ * would not be testing the decision at all.
+ */
+const MEASURE = HTMLElement.prototype.getBoundingClientRect;
+
+function withHostWidth(width: number): void {
+  (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+    observe(): void {}
+    disconnect(): void {}
+    unobserve(): void {}
+  };
+  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+    configurable: true,
+    writable: true,
+    value: () => ({ width, height: 0, top: 0, left: 0, right: width, bottom: 0 }),
+  });
+}
+
+function withoutHostWidth(): void {
+  HTMLElement.prototype.getBoundingClientRect = MEASURE;
+  delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+}
+
 /** Every choice a family list holds, flattened. */
 function choicesOf(families: readonly CandidateFamilyView[]) {
   return families.flatMap((family) => family.choices);
@@ -396,7 +425,106 @@ describe('candidate list', () => {
 
     const header = query(fixture, '.candidates__columns');
     expect(header.getAttribute('aria-hidden')).toBe('true');
-    // `MODULE · CLASS` and the five figure columns, as the canvas heads them.
+    // `MODULE · CLASS` and the five figure columns, as canvas 1d heads them.
     expect(header.querySelectorAll('.candidates__column').length).toBe(7);
+  });
+});
+
+/**
+ * Canvas 1c's manifest since the 2026-08-25 revision: a rail, and one pane.
+ *
+ * The accordion above is canvas 1d and is unchanged. What is asserted here is
+ * everything the revision made different — the shape, the exclusive selection,
+ * the missing caret and the three columns a row is drawn in.
+ */
+describe('the wide manifest', () => {
+  /** Wide enough for the rail, in the units the observer measures in. */
+  const RAIL_WIDTH = 44 * 16;
+
+  beforeEach(() => withHostWidth(RAIL_WIDTH));
+  afterEach(() => withoutHostWidth());
+
+  function railFixture(slotKey: string = FIXTURE_SLOTS.hardpoint) {
+    const families = familiesFor(slotKey, '', 'none');
+    // The rail always has a selection: the state that feeds it seeds one, and
+    // the component falls back to the first family rather than painting an
+    // empty pane. Handed a list with nothing revealed, it draws the first.
+    return { families, fixture: renderComponent(CandidateList, { families, label: 'Modules' }) };
+  }
+
+  it('draws a rail of every family beside a pane of exactly one', () => {
+    const { families, fixture } = railFixture();
+
+    expect(element(fixture).getAttribute('data-manifest')).toBe('rail');
+
+    const rail = Array.from(element(fixture).querySelectorAll('.family--rail'));
+    expect(rail.length).toBe(families.length);
+    expect(rail.length).toBeGreaterThan(1);
+
+    // Exactly one selected, always, and the state is programmatic rather than
+    // the amber edge alone (FR-022).
+    const pressed = rail.filter((row) => row.getAttribute('aria-pressed') === 'true');
+    expect(pressed).toHaveLength(1);
+
+    rail.forEach((row, index) => {
+      const name = accessibleName(row as HTMLElement);
+      expect(name).toContain(families[index]!.name.text!);
+      expect(name).toContain(String(families[index]!.count));
+    });
+
+    const pane = query(fixture, '.candidates__pane');
+    expect(pane.getAttribute('aria-labelledby')).toBe(pressed[0]!.id);
+    expect(pane.querySelectorAll('.candidate')).toHaveLength(families[0]!.count);
+  });
+
+  it('draws no caret at this width, because there is nothing to expand', () => {
+    const { fixture } = railFixture();
+
+    expect(element(fixture).querySelectorAll('.family__caret')).toHaveLength(0);
+    // And no `aria-expanded` either: a rail row is a selection, not a
+    // disclosure, and publishing both states would be two answers to one
+    // question.
+    expect(element(fixture).querySelectorAll('.family--rail[aria-expanded]')).toHaveLength(0);
+  });
+
+  it('heads and draws three columns, and withdraws the other four', () => {
+    const { fixture } = railFixture(FIXTURE_SLOTS.core);
+
+    const header = query(fixture, '.candidates__columns');
+    // `MODULE`, `CLASS`, `COST`, and no damage, mass, power or weapon draw
+    // (FR-024's 2026-08-25 narrowing, SC-006).
+    expect(header.querySelectorAll('.candidates__column').length).toBe(3);
+
+    const row = query(fixture, '.candidates__pane .candidate');
+    expect(row.querySelectorAll('.candidate__fact')).toHaveLength(1);
+    expect(row.querySelector('.candidate__cost')).not.toBeNull();
+  });
+
+  it('reports the manifest it measured, so the revealed set can be seeded for it', () => {
+    const { fixture } = railFixture();
+    const reported: string[] = [];
+    fixture.componentInstance.manifestChanged.subscribe((manifest: string) =>
+      reported.push(manifest),
+    );
+
+    expect(fixture.componentInstance.manifest()).toBe('rail');
+    // Whatever it has already reported, what it reports from here is the rail:
+    // the subscription is late, so the assertion is on the signal it publishes
+    // and on the next report rather than on a replay it never had.
+    fixture.detectChanges();
+    expect(reported.every((manifest) => manifest === 'rail')).toBe(true);
+  });
+
+  it('asks for one family when a rail row is chosen, exactly as the accordion does', () => {
+    const { families, fixture } = railFixture();
+    const chosen: string[] = [];
+    fixture.componentInstance.familyToggled.subscribe((familyId: string) => chosen.push(familyId));
+
+    const rows = Array.from(element(fixture).querySelectorAll('.family--rail'));
+    (rows[2] as HTMLElement).click();
+
+    // The component asks; what exclusive selection means is the state's rule,
+    // not the row's (`candidate-query.ts`, `toggleFamily`).
+    expect(chosen).toEqual([families[2]!.familyId]);
   });
 });

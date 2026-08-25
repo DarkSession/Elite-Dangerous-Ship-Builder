@@ -6,7 +6,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { renderComponent } from '../ui-component.spec-helpers';
-import { observeBannerRelease } from './sticky-banner';
+import { observeBanner } from './sticky-banner';
 
 /**
  * The banner keeps the top of the screen only while it can afford to.
@@ -25,7 +25,9 @@ import { observeBannerRelease } from './sticky-banner';
 })
 class StickyBannerHost {
   protected readonly banner = viewChild<ElementRef<HTMLElement>>('banner');
-  readonly released: Signal<boolean> = observeBannerRelease(this.banner);
+  readonly #banner = observeBanner(this.banner);
+  readonly released: Signal<boolean> = this.#banner.released;
+  readonly height: Signal<number | null> = this.#banner.height;
 }
 
 /** The prototype's own measurement, so the patch below can be undone. */
@@ -111,6 +113,21 @@ describe('the sticky banner', () => {
     const fixture = renderComponent(StickyBannerHost);
 
     expect(fixture.componentInstance.released()).toBe(true);
+  });
+
+  it('publishes the height the bar actually came out at, not the declared one', () => {
+    // The reading every sticky region below the bar offsets by. The workspace's
+    // bar is taller than the token's one-row figure because its identity block
+    // is two 24px targets, and a wrapped bar is taller again; a region handed
+    // the declared figure freezes behind the bar and stands its own foot short
+    // of the screen's by the difference.
+    withRootFontSize(16);
+    withWindowHeight(1000);
+    withBarHeight(74);
+
+    const fixture = renderComponent(StickyBannerHost);
+
+    expect(fixture.componentInstance.height()).toBe(74);
   });
 
   it('holds its place in a renderer with no resize observer', () => {

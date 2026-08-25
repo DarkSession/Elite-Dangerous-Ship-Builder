@@ -1,112 +1,187 @@
 <fieldset class="candidates">
   <legend class="visually-hidden">{{ label() }}</legend>
 
-  <!--
-    The canvas's single header row, drawn once above the manifest: `MODULE ·
-    CLASS · DPS · MASS t · PWR MW · DRAW WEP · COST cr`. It names the columns
-    for anyone reading the wide composition; every row restates the same labels
-    for a reader, so this is decoration and is hidden from them rather than
-    announced a second time. The compact composition removes it entirely.
-  -->
-  <div class="candidates__columns" aria-hidden="true">
-    <span class="candidates__column">{{ moduleColumn() }}</span>
-    <span class="candidates__column">{{ classColumn() }}</span>
-    @for (column of factColumns(); track column.field) {
-      <span class="candidates__column candidates__column--figure">{{ column.label }}</span>
-    }
-  </div>
-
-  <!--
-    What scrolls is the rows, not the head above them. The head is a sibling of
-    the scroller rather than a sticky box inside it: a sticky box is placed at a
-    rounded device pixel while the rows under it move at a fractional one, so at
-    any scale factor other than 1 a sliver of the row behind it shows in the
-    seam — and nothing painted inside the scroller can cover that sliver,
-    because the scroller clips its own top edge. Taking the head out of the
-    scroller removes the seam rather than papering over it (wave 9).
-  -->
-  <div class="candidates__body">
+  @if (manifest() === 'rail') {
     <!--
-      Canvas 1d's `FITTED HERE` block, above the families. It is the same row
-      the family list marks `FITTED`, drawn a second time on purpose: at 390 px
-      the family holding it may be scrolled far below the fold. The wide
-      composition passes no heading and draws none of this.
+      Canvas 1c since the 2026-08-25 revision: `#fit-table` as
+      `grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with the
+      family rail in column 1 row 2, the column head over column 2 alone, and
+      the selected family's rows in column 2 row 2. Two scrollers, each bounded
+      at the canvas's own 470px, so neither list carries the other off the
+      panel.
     -->
-    @if (fittedHeading(); as heading) {
-      @if (fittedChoice(); as choice) {
-        <p class="candidates__rule candidates__rule--fitted">
-          <span class="candidates__rule-title">{{ heading }}</span>
-        </p>
-        <div class="candidates__pinned">
-          <ng-container
-            [ngTemplateOutlet]="candidate"
-            [ngTemplateOutletContext]="{ $implicit: choice, pinned: true }"
-          />
-        </div>
-      }
-    }
-
-    <!-- Canvas 1d's `FAMILIES` rule, with its own `5 · 24 FIT` counter. -->
-    @if (familiesHeading(); as heading) {
-      <p class="candidates__rule">
-        <span class="candidates__rule-title">{{ heading }}</span>
-        @if (familiesSummary(); as summary) {
-          <span class="candidates__rule-count">{{ summary }}</span>
-        }
-      </p>
-    }
-
-    @for (family of families(); track family.familyId) {
-      <div class="candidates__family">
-        <!--
-          The canvas's family bar: the Almanac's own name, the count in its
-          chip, and the caret. The caret is decoration — the open state is
-          published as `aria-expanded` on the control itself, because a glyph is
-          never the only carrier of a state (FR-022).
-
-          Canvas 1d draws a two-letter badge and a `6 VARIANTS · 15.1–28.4 DPS ·
-          4.46 MW` summary line here. Both are withdrawn: the Almanac publishes
-          no abbreviation, and a min–max across a family is an aggregate it does
-          not publish either (module-replacement design, "Module families").
-        -->
-        <button
-          class="family"
-          type="button"
-          [id]="familyControlId(family.familyId)"
-          [attr.aria-expanded]="family.open"
-          [attr.aria-controls]="familyRegionId(family.familyId)"
-          (click)="familyToggled.emit(family.familyId)"
-        >
-          <span class="family__name">
-            <edsb-game-text
-              [text]="family.name.text"
-              [language]="family.name.language"
-              [translationState]="family.name.translationState"
-            />
-          </span>
-          <span class="family__count" aria-hidden="true">{{ family.count }}</span>
-          <span class="visually-hidden">{{ familyCountLabel(family.count) }}</span>
-          <span class="family__caret" aria-hidden="true">{{ family.open ? '▾' : '›' }}</span>
-        </button>
-
-        @if (family.open) {
-          <div
-            class="family__choices"
-            role="group"
-            [id]="familyRegionId(family.familyId)"
-            [attr.aria-labelledby]="familyControlId(family.familyId)"
+    <div class="candidates__manifest">
+      <!--
+        The rail. Every family, one row each, exactly one selected — there is no
+        caret at this width because there is nothing to expand: the pane beside
+        it is where the rows are. The selected state is published as
+        `aria-pressed`, so it is never carried by the amber edge alone (FR-022).
+      -->
+      <div class="candidates__rail" role="group" [attr.aria-label]="familiesLabel()">
+        @for (family of families(); track family.familyId) {
+          <button
+            class="family family--rail"
+            type="button"
+            [id]="familyControlId(family.familyId)"
+            [attr.aria-pressed]="revealedFamily()?.familyId === family.familyId"
+            [attr.aria-controls]="paneId"
+            (click)="familyToggled.emit(family.familyId)"
           >
-            @for (choice of family.choices; track choice.key) {
-              <ng-container
-                [ngTemplateOutlet]="candidate"
-                [ngTemplateOutletContext]="{ $implicit: choice }"
+            <span class="family__name">
+              <edsb-game-text
+                [text]="family.name.text"
+                [language]="family.name.language"
+                [translationState]="family.name.translationState"
               />
-            }
-          </div>
+            </span>
+            <span class="family__count" aria-hidden="true">{{ family.count }}</span>
+            <span class="visually-hidden">{{ familyCountLabel(family.count) }}</span>
+          </button>
         }
       </div>
-    }
-  </div>
+
+      <!--
+        The canvas's header row, over the pane alone: `MODULE`, `CLASS`, `COST`
+        and no other column. It names the columns for anyone reading them; every
+        row restates the same labels for a reader, so this is decoration rather
+        than a second announcement.
+      -->
+      <div class="candidates__columns" aria-hidden="true">
+        <span class="candidates__column">{{ moduleColumn() }}</span>
+        <span class="candidates__column">{{ classColumn() }}</span>
+        <span class="candidates__column candidates__column--figure">{{ costColumn() }}</span>
+      </div>
+
+      @if (revealedFamily(); as revealed) {
+        <!--
+          `candidates__choices` is on this pane and on the accordion's own
+          `family__choices` alike: it is "the rows of the family that is
+          revealed", one idea in two shapes, and it is what lets a journey ask
+          for those rows without first asking which manifest it is looking at.
+        -->
+        <div
+          class="candidates__pane candidates__choices"
+          [id]="paneId"
+          role="group"
+          [attr.aria-labelledby]="familyControlId(revealed.familyId)"
+        >
+          @for (choice of revealed.choices; track choice.key) {
+            <ng-container
+              [ngTemplateOutlet]="candidate"
+              [ngTemplateOutletContext]="{ $implicit: choice }"
+            />
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <!--
+      The canvas's single header row, drawn once above the manifest: `MODULE ·
+      CLASS · DPS · MASS t · PWR MW · DRAW WEP · COST cr`. It names the columns
+      for anyone reading the wide composition; every row restates the same labels
+      for a reader, so this is decoration and is hidden from them rather than
+      announced a second time. The compact composition removes it entirely.
+    -->
+    <div class="candidates__columns" aria-hidden="true">
+      <span class="candidates__column">{{ moduleColumn() }}</span>
+      <span class="candidates__column">{{ classColumn() }}</span>
+      @for (column of factColumns(); track column.field) {
+        <span class="candidates__column candidates__column--figure">{{ column.label }}</span>
+      }
+    </div>
+
+    <!--
+      What scrolls is the rows, not the head above them. The head is a sibling of
+      the scroller rather than a sticky box inside it: a sticky box is placed at a
+      rounded device pixel while the rows under it move at a fractional one, so at
+      any scale factor other than 1 a sliver of the row behind it shows in the
+      seam — and nothing painted inside the scroller can cover that sliver,
+      because the scroller clips its own top edge. Taking the head out of the
+      scroller removes the seam rather than papering over it (wave 9).
+    -->
+    <div class="candidates__body">
+      <!--
+        Canvas 1d's `FITTED HERE` block, above the families. It is the same row
+        the family list marks `FITTED`, drawn a second time on purpose: at 390 px
+        the family holding it may be scrolled far below the fold. The wide
+        composition passes no heading and draws none of this.
+      -->
+      @if (fittedHeading(); as heading) {
+        @if (fittedChoice(); as choice) {
+          <p class="candidates__rule candidates__rule--fitted">
+            <span class="candidates__rule-title">{{ heading }}</span>
+          </p>
+          <div class="candidates__pinned">
+            <ng-container
+              [ngTemplateOutlet]="candidate"
+              [ngTemplateOutletContext]="{ $implicit: choice, pinned: true }"
+            />
+          </div>
+        }
+      }
+
+      <!-- Canvas 1d's `FAMILIES` rule, with its own `5 · 24 FIT` counter. -->
+      @if (familiesHeading(); as heading) {
+        <p class="candidates__rule">
+          <span class="candidates__rule-title">{{ heading }}</span>
+          @if (familiesSummary(); as summary) {
+            <span class="candidates__rule-count">{{ summary }}</span>
+          }
+        </p>
+      }
+
+      @for (family of families(); track family.familyId) {
+        <div class="candidates__family">
+          <!--
+            The canvas's family bar: the Almanac's own name, the count in its
+            chip, and the caret. The caret is decoration — the open state is
+            published as `aria-expanded` on the control itself, because a glyph is
+            never the only carrier of a state (FR-022).
+
+            Canvas 1d draws a two-letter badge and a `6 VARIANTS · 15.1–28.4 DPS ·
+            4.46 MW` summary line here. Both are withdrawn: the Almanac publishes
+            no abbreviation, and a min–max across a family is an aggregate it does
+            not publish either (module-replacement design, "Module families").
+          -->
+          <button
+            class="family"
+            type="button"
+            [id]="familyControlId(family.familyId)"
+            [attr.aria-expanded]="family.open"
+            [attr.aria-controls]="familyRegionId(family.familyId)"
+            (click)="familyToggled.emit(family.familyId)"
+          >
+            <span class="family__name">
+              <edsb-game-text
+                [text]="family.name.text"
+                [language]="family.name.language"
+                [translationState]="family.name.translationState"
+              />
+            </span>
+            <span class="family__count" aria-hidden="true">{{ family.count }}</span>
+            <span class="visually-hidden">{{ familyCountLabel(family.count) }}</span>
+            <span class="family__caret" aria-hidden="true">{{ family.open ? '▾' : '›' }}</span>
+          </button>
+
+          @if (family.open) {
+            <div
+              class="family__choices candidates__choices"
+              role="group"
+              [id]="familyRegionId(family.familyId)"
+              [attr.aria-labelledby]="familyControlId(family.familyId)"
+            >
+              @for (choice of family.choices; track choice.key) {
+                <ng-container
+                  [ngTemplateOutlet]="candidate"
+                  [ngTemplateOutletContext]="{ $implicit: choice }"
+                />
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 </fieldset>
 
 <!--
@@ -182,14 +257,23 @@
     </span>
 
     <!--
-      The same figures at both widths. At wide they align under the header row
-      and their per-row labels are hidden visually; at compact each card
-      restates its own labels, because a bare column of numbers with the header
-      scrolled away is unreadable.
+      The damage, mass, power and weapon-draw figures, and only where a canvas
+      draws them. The 2026-08-25 revision cut canvas 1c's manifest to `MODULE`,
+      `CLASS` and `COST`, so at the rail width these four are not drawn at all —
+      not moved, not folded into a second line, and not hidden behind a rule
+      that would leave them in the reading. Canvas 1d did not change, and its
+      card still carries every one of them with its own label, which is where
+      they survive (FR-024's 2026-08-25 narrowing, SC-006).
     -->
     <span class="candidate__facts">
-      @for (fact of resolved.facts; track fact.field) {
-        <edsb-unavailable-fact class="candidate__fact" [label]="fact.label" [value]="fact.value" />
+      @if (manifest() !== 'rail') {
+        @for (fact of resolved.facts; track fact.field) {
+          <edsb-unavailable-fact
+            class="candidate__fact"
+            [label]="fact.label"
+            [value]="fact.value"
+          />
+        }
       }
 
       <!--

@@ -778,7 +778,7 @@
   "drives.thrusters.curve-marks": "Thruster mass curve",
   "drives.thrusters.hull.detail": "{{hull}} · {{bulkhead}}",
   "drives.thrusters.modules.fitted": "{{count}} fitted",
-  "drives.thrusters.fuel.tanks": "Main tank {{main}} plus reserve {{reserve}}",
+  "drives.thrusters.fuel.tank": "Tank",
   "drives.thrusters.issues": "Why mobility is incomplete",
   "drives.fsd.facts": "Frame shift drive parameters",
   "drives.fsd.unavailable": "Jump range",

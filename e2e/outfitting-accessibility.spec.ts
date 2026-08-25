@@ -12,6 +12,7 @@ import {
   chooseRecipe,
   chosenRecipe,
   closeAllFamilies,
+  manifestOf,
   openAllFamilies,
   openChooser,
   openEditor,
@@ -274,7 +275,7 @@ test.describe('the conditions that break layouts', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'families all closed' });
   });
 
-  test('gives a family control its name, its count and its open state', async ({ page }) => {
+  test('gives a family control its name, its count and its revealed state', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
     await openChooser(page);
@@ -287,9 +288,14 @@ test.describe('the conditions that break layouts', () => {
       const control = controls.nth(index);
       const state = await programmaticState(page, `.family >> nth=${index}`);
 
-      // The open state is published rather than drawn: the caret is decoration
-      // and is hidden from a reader entirely (FR-022).
-      expect(state['expanded'], 'a family control publishes no open state').not.toBeNull();
+      // The revealed state is published rather than drawn, in whichever word the
+      // control's own shape calls for: `expanded` on the accordion's disclosure,
+      // `pressed` on the rail's selection. What is not allowed is neither — a
+      // caret, or an amber edge, carrying it alone (FR-022).
+      expect(
+        state['expanded'] ?? state['pressed'],
+        'a family control publishes no revealed state',
+      ).not.toBeNull();
       expect(await control.getAttribute('aria-controls')).not.toBeNull();
 
       // Its name is the Almanac's family name and the count as a sentence, and
@@ -320,8 +326,15 @@ test.describe('the conditions that break layouts', () => {
       expect(name).not.toContain('\u203a');
     }
 
-    // Nothing about a family is carried by the caret alone.
-    await expect(page.locator('.family__caret').first()).toHaveAttribute('aria-hidden', 'true');
+    // Nothing about a family is carried by the caret alone — where one is drawn
+    // at all. Canvas 1c's rail has none: there is nothing to expand at that
+    // width, because the rows are in the pane beside the names.
+    const carets = page.locator('.family__caret');
+    if ((await carets.count()) > 0) {
+      await expect(carets.first()).toHaveAttribute('aria-hidden', 'true');
+    } else {
+      expect(await manifestOf(page)).toBe('rail');
+    }
   });
 
   test('keeps the family control a full-size target at this width', async ({ page }) => {

@@ -162,6 +162,54 @@ test.describe('offline capability', () => {
     await context.setOffline(false);
   });
 
+  test('reads Drives & Mass with no network at all', async ({ page, context }) => {
+    await withWorker(page, '/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+
+    await context.setOffline(true);
+
+    // Every figure on both cards is a synchronous read of an in-memory loadout
+    // and an installed package, so opening the mode draws the whole region with
+    // the network gone — the headline mass, the three-part split, the position
+    // on the curve, the five-reading envelope and the three ranges.
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Drives' })
+      .click();
+    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('edsb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
+    await expect(page.locator('edsb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
+    // The thruster card's own legend, which is three rows whatever the build
+    // carries. The drive card's legend beside it is not counted here: its total
+    // range row is drawn only where the package states one, so a count over
+    // both would turn this offline test red for a reason about the package.
+    await expect(
+      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+    ).toHaveCount(3);
+    await expect(page.locator('edsb-drives-mass .drives__envelope-value')).toHaveCount(5);
+    await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
+
+    // The one condition these cards read from another feature's store. Setting
+    // it goes through the `POWER` mode's own control and comes back, so the
+    // whole round trip is proven to need no network either.
+    const speed = page.locator('edsb-drives-mass .drives__envelope-value').first();
+    const before = await speed.innerText();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Power' })
+      .click();
+    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await page.locator('.distributor tbody tr').nth(1).locator('.pips__step').first().click();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: 'Drives' })
+      .click();
+    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect.poll(() => speed.innerText()).not.toBe(before);
+
+    await context.setOffline(false);
+  });
+
   /*
    * Two more illustration journeys belong to this contract and live in
    * `hull-detail.spec.ts` instead: an illustration that cannot be fetched

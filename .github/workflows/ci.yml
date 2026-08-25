@@ -339,6 +339,17 @@ jobs:
           # the same reason the Check job resolves it: so that what a reviewer
           # opens states a version rather than the placeholder `0`.
           fetch-depth: 0
+          # The publishing step below pushes to another repository, from a
+          # worktree of this clone, with its own token on the remote URL. A
+          # credential persisted here writes an `http.https://github.com/`
+          # `.extraheader` into this clone's config, an Authorization header
+          # outranks credentials carried in a URL, and the push would go out as
+          # `github-actions[bot]` and be refused by the preview repository.
+          # `github-pages-deploy-action` tries to unset that header itself, but
+          # it clears the key older `actions/checkout` releases wrote, not the
+          # one v7 does. Nothing here needs an authenticated git operation
+          # against this repository after the checkout, so do not persist one.
+          persist-credentials: false
 
       - name: Set up pnpm
         if: ${{ steps.token.outputs.available == 'true' }}

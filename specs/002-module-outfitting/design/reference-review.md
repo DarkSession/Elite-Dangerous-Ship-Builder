@@ -470,11 +470,11 @@ arrangement.
 
 | Change                                                                   | Status against the build                                                                                                         |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Not built.** The accordion is drawn at both widths.                                                                            |
-| Exactly one family selected at wide; no caret at that width              | **Not built.** Any number may be open.                                                                                           |
-| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Not built.**                                                                                                                   |
-| The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Not built.** Seven columns are drawn.                                                                                          |
-| `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Not built.**                                                                                                                   |
+| Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Built** (T147).                                                                                                                |
+| Exactly one family selected at wide; no caret at that width              | **Built** (T146, T147). Selection is exclusive and total, and never empty.                                                       |
+| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Built** (T147).                                                                                                                |
+| The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Built** (T148).                                                                                                                |
+| `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Built** (T148). They survive on canvas 1d's card, which that canvas did not change.                                            |
 | Canvas 1d's accordion, badge, variants summary and code line             | **Unchanged.** Every existing ruling on them stands.                                                                             |
 | Hover descriptions on the acquisition marks (`data-tip`)                 | **Already answered.** The four routes have carried spoken sentences since wave 10; hover-only meaning is not built (011 FR-006). |
 

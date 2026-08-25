@@ -2911,7 +2911,7 @@ registerPreview({
       exposedStates: ['selected'],
       relationships: ['label'],
       textEquivalents: [
-        'each family\u2019s name, choice count and open state, for a reader',
+        'each family\u2019s name, choice count and revealed state, for a reader',
         'the fitted, stock and pre-engineered state, in words',
         'every acquisition restriction, as text beside its chip',
         'an absent package figure, as a word rather than a zero',
@@ -2929,7 +2929,8 @@ registerPreview({
         selectedKey: null,
       },
       [
-        'one family is open and its rows are whole; the rest draw a control only',
+        'one family is revealed and its rows are whole; the rest draw a control only',
+        'the wide manifest draws it as a rail beside a pane, the compact one as an accordion',
         'a unique reward keeps its labels on its own row, inside its family',
         'each row is named well enough to tell it from its neighbours',
         'a package figure the Almanac never published is a word, never a zero',
@@ -2962,15 +2963,21 @@ registerPreview({
 });
 
 /**
- * The same list with nothing open, and the same list after a search.
+ * The same list with nothing revealed, and the same list after a search.
  *
  * Two more registrations rather than two more states, because a preview has
  * five state slots and these are two more *compositions* of the default one.
- * Both belong in the catalogue sweep: the closed list is the only place the
- * family control is measured on its own — its 44 CSS px target, its contrast
- * and its collapsed state under expanded copy and right-to-left — and the
- * searched list is the state FR-023 describes, with every matching family open
- * and the families that matched nothing simply absent.
+ * Both belong in the catalogue sweep: the first is the only place the family
+ * control is measured on its own — its 44 CSS px target, its contrast and its
+ * unrevealed state under expanded copy and right-to-left — and the searched
+ * list is the state FR-023 describes, with every family holding a match present
+ * and counted and the families that matched nothing simply absent.
+ *
+ * The first is also the **fallback selection state**, and it is a different
+ * screen in each manifest: handed a list with nothing revealed, the accordion
+ * draws every family closed, and the rail draws the first family in package
+ * order with its pane full — because canvas 1c's rail always has a selection
+ * and never paints an empty pane (FR-021, as restated 2026-08-25).
  */
 registerPreview({
   componentId: 'candidate-list-collapsed',
@@ -2983,7 +2990,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: false,
       exposedStates: ['expanded'],
       relationships: ['label'],
-      textEquivalents: ['each family\u2019s name and choice count, with no rows behind it'],
+      textEquivalents: ['each family\u2019s name and choice count, with its revealed state'],
     },
     ['default'],
   ),
@@ -2997,8 +3004,9 @@ registerPreview({
         selectedKey: null,
       },
       [
-        'every family draws its control, its name and its count, and no rows at all',
-        'the closed state is published programmatically, never by the caret alone',
+        'every family draws its control, its name and its count',
+        'the accordion draws no rows at all; the rail falls back to the first family',
+        'the revealed state is published programmatically, never by a caret or an edge alone',
         'the control clears the 44 CSS px target at every width',
       ],
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated'],
@@ -3024,7 +3032,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: false,
       exposedStates: ['expanded', 'selected'],
       relationships: ['label'],
-      textEquivalents: ['the open state of every family a search matched'],
+      textEquivalents: ['the revealed state of every family a search matched'],
     },
     ['default'],
   ),
@@ -3038,7 +3046,8 @@ registerPreview({
         selectedKey: null,
       },
       [
-        'every family holding a match is open, so no match is behind a closed control',
+        'the accordion opens every family holding a match, up to a screenful of them',
+        'the rail reveals the first family holding a match, whatever the match count',
         'a family that matched nothing is absent rather than drawn empty',
       ],
       ['normal', 'expanded-copy', 'rtl'],

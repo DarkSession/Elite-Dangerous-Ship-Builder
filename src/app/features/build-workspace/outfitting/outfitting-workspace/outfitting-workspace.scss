@@ -161,7 +161,14 @@
     inset-block-start: var(--edsb-layout-bar-height);
     display: flex;
     flex-direction: column;
-    block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    // Everything the command bar leaves, and nothing taken off it. Canvas 1c's
+    // workspace is one grid row — `392px 1fr 306px` over a `min-height: 880px`
+    // — whose three columns stretch to it, so the seam each rail draws runs the
+    // whole way down. The 2 x 18px this used to subtract was the page inset the
+    // application frame carried until wave 9 removed it; with no inset left to
+    // clear it only stood the two seams 36px short of the foot of the screen
+    // (Commander request 2026-08-25).
+    block-size: calc(100svh - var(--edsb-layout-bar-height));
     min-block-size: 0;
     // The seam between the two columns, drawn once and by the rail, as the
     // canvas draws it. The bench drops its own leading edge below so the two do
@@ -192,8 +199,9 @@
     // A definite height, not a cap. The bench below divides what is left after
     // the plates between its two panels from a zero basis, and a basis of zero
     // inside a box that is still sized by its content collapses the box and
-    // both panels with it.
-    block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    // both panels with it. The same height as the two rails beside it, for the
+    // same reason: the canvas draws the three columns as one row.
+    block-size: calc(100svh - var(--edsb-layout-bar-height));
   }
 
   // The plates ask for the height their hulls need; the bench takes the rest.
@@ -261,7 +269,14 @@
     position: sticky;
     grid-column: auto;
     inset-block-start: var(--edsb-layout-bar-height);
-    max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+    // A definite height rather than a cap, for the seam's sake. Sized by its
+    // content this column stopped wherever the last block of the rail happened
+    // to end — on a build with nothing to report, less than half the way down —
+    // and took its border with it, while the ledger's ran on. The canvas has one
+    // grid row and three columns stretched to it, so both seams reach the foot
+    // of the screen whatever either column holds (Commander request
+    // 2026-08-25).
+    block-size: calc(100svh - var(--edsb-layout-bar-height));
     overflow-y: auto;
     // The seam on this side is drawn by the rail itself, matching the ledger's
     // on the other side of the bench.
@@ -311,6 +326,7 @@
 
   .outfitting__status-rail {
     position: static;
+    block-size: auto;
     max-block-size: none;
     overflow-y: visible;
   }

@@ -26,7 +26,15 @@ inline notes below record each correction and why.
 
 ### Story 3 — Read mass and capacity (P2)
 
-1. Unladen mass, main and reserve fuel capacity and cargo capacity retain package diagnostics.
+1. What the build weighs is stated by load, with the package's own hull, modules and fuel split
+   beneath it, and every part of that answer retains the package's diagnostics.
+
+   > **Corrected against the design, 2026-08-25.** This scenario named unladen mass, main and reserve
+   > fuel capacity and cargo capacity. Neither canvas draws any of the three — the last of them, the
+   > fuel row's `TANK 32 T + RESERVE` qualifier, was cut to the bare word `TANK` by the canvas
+   > revision of that date. The reading the card actually has is `buildMass(load)`, so that is what
+   > this scenario states. See the notes on FR-006.
+
 2. Every fitted module's package-resolved post-engineering mass is shown by slot.
 3. A resolved module whose package mass is unavailable makes dependent aggregates unavailable, never zero.
 
@@ -93,6 +101,16 @@ inline notes below record each correction and why.
   > a build whose thruster publishes no curve has no track to scale against rather than a substitute
   > one.
   >
+  > **And `fuelCapacity` joined them, 2026-08-25.** The one capacity that survived the narrowing
+  > above was the main tank, drawn as the fuel legend row's qualifier — the canvas's
+  > `TANK 32 T + RESERVE`. The canvas revision of that date cut that qualifier to the bare word
+  > `TANK` on both canvases, which takes the last capacity off the card. So `fuelCapacity` is no
+  > longer drawn anywhere and, by the same rule, is no longer read: all three getters this
+  > requirement names are now real package figures this screen does not have. The fuel row's own
+  > figure is untouched, because it never was a capacity — it is the fuel part of the one
+  > `buildMass(load)` answer the whole legend comes from. The requirement stands as written for the
+  > day a canvas draws one of the three again.
+  >
   > **Corrected against the installed package.** This requirement previously named
   > `unladenMassResult`, `fuelCapacityResult` and `cargoCapacityResult`. Those getters do not exist
   > in `@elite-dangerous-almanac/core` and their absence is deliberate: the package documents
@@ -137,8 +155,10 @@ inline notes below record each correction and why.
 ## Almanac Coverage
 
 `jumpRangeSummary()`, `mobilityMetricsResult()`, `mobilityCapacitorMetricsResult()`,
-`standardLoadResult()`, `buildMass()`, `frameShiftDrive()` and `fuelCapacity` provide every aggregate
-this screen reads. Mass lock is a
+`standardLoadResult()`, `buildMass()` and `frameShiftDrive()` provide every aggregate this screen
+reads. `fuelCapacity` was in that list while the fuel legend row named the tank it stood for; the
+canvas revision of 2026-08-25 cut that qualifier to `TANK`, so the package still publishes the two
+capacities and this screen no longer reads either. Mass lock is a
 catalogue fact from `getShipBySymbol()`. The thruster's mass curve is `BuildMetrics.thrusters()`, the
 package's own counterpart of `frameShiftDrive`, which decides what a complete curve is so this
 application does not; Supercruise Overcharge capability is the drive record's own
@@ -153,11 +173,22 @@ are. See the design's [reference review](./design/reference-review.md) for how e
 ## Success Criteria
 
 - **SC-001**: Every displayed value equals its Almanac field.
-- **SC-002**: No local jump, mobility, mass-total or curve calculation exists. Two divisions of
-  package figures are not such a calculation and are drawn: the position on the thruster mass curve,
-  which is the loaded mass over the module's own `optMass` — the comparison the package's `thrusters`
-  getter prescribes rather than one this side invented — and the length of every bar, which is
-  decoration beside the package's own number and is a reading of nothing.
+- **SC-002**: No local jump, mobility, mass-total or curve calculation exists. Divisions of package
+  figures are not such a calculation, and three kinds are drawn: the position on the thruster mass
+  curve, which is the loaded mass over the module's own `optMass` — the comparison the package's
+  `thrusters` getter prescribes rather than one this side invented — the length of every bar, and the
+  position of a mark on one. The last two are decoration beside the package's own number and are
+  readings of nothing.
+
+  > **The mark's position was the unnamed third, 2026-08-25.** This criterion named two kinds, and
+  > the optimal mass's tick on the mass bar is neither of them: it is `optMass` over the thrusters'
+  > `maxMass`, which is a position rather than a length. The canvas draws that tick — its
+  > `OPTIMAL 1,260 t` — and writes the package's own figure under it, so the division was always
+  > going to exist; what was missing was this criterion naming it. Naming it is what makes the
+  > repository rule enforceable: `scripts/policy/mobility-jump-ownership.mjs` fails any arithmetic
+  > between two package figures, and every division this feature draws now carries a marker pointing
+  > back at this criterion. A fourth kind fails the build.
+
 - **SC-003**: Zero, unavailable and incomplete results remain distinguishable with package issues.
 - **SC-004**: The headline mass and the hull/modules/fuel split beneath it come from one package
   answer read at the load the card names; no part of either is summed, inferred or reconciled on this

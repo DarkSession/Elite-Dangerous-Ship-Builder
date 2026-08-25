@@ -30,6 +30,15 @@
 .candidates__body {
   @include layout.stack(0);
 
+  // A containing block, so the scroller actually clips what it scrolls — the
+  // same rule the ledger's rail states for the same reason. Every row carries
+  // text drawn only for a reader, positioned out of the page the standard way;
+  // without this their containing block is whatever is positioned above the
+  // bench, the bench's own clipping never reaches them, and four hundred of
+  // them run the document down past the screen, invisibly. Measured at
+  // 1112x834: a workspace whose three columns each end at the foot of the
+  // window, inside a document 1623px tall (Commander request 2026-08-25).
+  position: relative;
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
@@ -281,19 +290,106 @@
   display: none;
 }
 
-// Wide enough to align seven columns without truncating a module name: the
-// canvas's manifest measures 2.2fr for the name and five figure columns beside
-// the class. Below it the cards take over rather than the name being cut.
-@container candidates (min-width: 44rem) {
+// The revised wide manifest: canvas 1c's family rail beside its variant pane.
+//
+// Selected by the attribute the component publishes rather than by a container
+// query of this stylesheet's own. The threshold is the same width it always
+// was, but it is now measured once — the reveal rule and the arrangement have
+// to agree, and two thresholds cannot be relied on to (`manifest.ts`).
+:host([data-manifest='rail']) {
+  // Canvas 1c's `#fit-table`: `grid-template-columns: 216px minmax(0, 1fr);
+  // column-gap: 14px`. The head sits in column 2 row 1, over the pane alone;
+  // the rail and the pane share row 2 and scroll independently.
+  .candidates__manifest {
+    display: grid;
+    grid-template-columns: var(--edsb-layout-family-rail) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: var(--edsb-layout-family-gap);
+    min-block-size: 0;
+    flex: 1;
+  }
+
+  // Column 1, row 2. It starts below the head because the head names the pane's
+  // columns and not the rail's rows, which is how the canvas lays it out.
+  .candidates__rail {
+    @include layout.stack(0);
+
+    // A containing block, for the reason the other scrollers here are: the
+    // count each row states in words is positioned out of the page, and a
+    // scroller that is not a containing block clips none of it.
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+    max-block-size: var(--edsb-layout-manifest-pane);
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
+  }
+
+  .candidates__columns {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  // Column 2, row 2: the selected family's rows, behind the canvas's own amber
+  // hairline.
+  .candidates__pane {
+    @include layout.stack(0);
+
+    position: relative;
+    grid-column: 2;
+    grid-row: 2;
+    max-block-size: var(--edsb-layout-manifest-pane);
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
+    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  }
+
+  // A rail row is a name and a count and nothing else. No caret: there is
+  // nothing to expand at this width, because the rows are in the pane beside it
+  // — `wireFamilies`' rail branch keeps its caret update behind a null check and
+  // the revised markup carries none.
+  //
+  // `flex: none` because both of these boxes are bounded flex columns that
+  // scroll, and a flex item's default is to give up its height to fit. Reading
+  // the screen in German is what showed it: `Unterflächenverdrängungsraketen`
+  // wraps to three lines, seventeen families no longer fit in 470px, and every
+  // row was squeezed until the names printed over one another. A scroller is
+  // what a list does when it has more than it can show; shrinking its rows is
+  // not.
+  .family--rail,
+  .candidates__pane .candidate {
+    flex: none;
+  }
+
+  .family--rail {
+    inline-size: 100%;
+  }
+
+  // The canvas marks the selected row with the amber left rail and the gradient
+  // ground it gives an open family; every other row takes the quiet panel
+  // ground with a transparent border in the same place, so nothing moves as the
+  // selection does.
+  .family--rail[aria-pressed='false'] {
+    background-image: none;
+    background-color: var(--edsb-surface-panel-raised);
+    border-inline-start-color: transparent;
+  }
+}
+
+// Wide enough to align the manifest's columns without truncating a module name.
+// Below it the cards take over rather than the name being cut.
+:host([data-manifest='rail']) {
   // Canvas 1c's header row: `padding: 0 12px 7px`, and nothing else — no
   // ground, no rule under it, no sticky offset. It sits above the scroller
   // rather than inside it, so it stays put without any of that (wave 9).
   .candidates__columns {
     flex: none;
     display: grid;
-    // No gap: the canvas's seven columns abut, and their measures already carry
-    // the space between them. A gap on top of them is what pushed the figures
-    // out of the widths the canvas sets.
+    // No gap: the canvas's columns abut, and their measures already carry the
+    // space between them. A gap on top of them is what pushed the figures out
+    // of the widths the canvas sets.
     gap: 0;
     grid-template-columns: var(--edsb-layout-candidate-columns);
     padding-inline: var(--edsb-space-row);
@@ -308,50 +404,20 @@
     text-align: end;
   }
 
-  // Canvas 1c's family bar: raised at the leading edge, opened by the amber
-  // marker, and its name set in the condensed uppercase the wide manifest sets
-  // every heading in. It sticks to the top of the scroller, as the canvas
-  // draws it, so the family being read is always named.
+  // The rail's rows take the leading marker and the gradient ground the canvas
+  // gives a family, and the condensed uppercase the wide manifest sets every
+  // heading in. Nothing here is sticky: the sticky family bar belonged to the
+  // accordion, where a family's own rows scrolled under its name. In a rail the
+  // names never scroll away from their rows — the rows are in the pane beside
+  // them — so the bar has nothing to stay in front of, and the overhang and the
+  // hairline it needed to survive being frozen go with it (wave 9's seam rules,
+  // withdrawn with the composition that had the seam).
   .family {
-    position: sticky;
-    // Above the scroller's own top edge, because nothing painted at that edge
-    // can close the seam there. The edge is placed by flex at a fractional
-    // device pixel while the browser snaps this box to a whole one, so the two
-    // miss each other and one device row of the row behind prints above the
-    // bar. A shadow cannot reach it — everything above the edge is clipped
-    // away, which is the difference between this scroller and the hull
-    // manifest's frozen head, where the same shadow does work. The box itself
-    // has to overhang. Two CSS pixels is clean from scale factor 1 through 3;
-    // four is not, because a bar that far up clears its own family early.
-    inset-block-start: calc(-1 * var(--edsb-layout-sticky-overhang));
-    z-index: 1;
     padding-inline: var(--edsb-space-row);
     background-color: var(--edsb-surface-root);
     background-image: var(--edsb-surface-family);
     border-inline-start-color: var(--edsb-marker-selected);
-    // No top border. The overhang is the clip's, and a border is the first
-    // thing inside it, so the rule above the family name went with the two
-    // pixels every time the bar froze — and the band it vacated is where a
-    // Commander watched the list scroll past. The rule is drawn below the
-    // overhang instead, where the clip cannot reach it: same hairline, same
-    // colour, and it survives being stuck.
-    border-block-start: 0;
     border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
-  }
-
-  // The rule that used to be `border-block-start`, set in from the box's own
-  // top edge by exactly the overhang — so once the bar is frozen and the clip
-  // has taken those two pixels, the rule sits precisely on the scroller's edge
-  // with the bar's opaque ground behind everything above it. In flow it reads
-  // two pixels into the bar instead of flush against its top, which is the
-  // whole price of this and is not visible against the bar's own gradient.
-  .family::before {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: var(--edsb-layout-sticky-overhang);
-    block-size: var(--edsb-border-width-hairline);
-    background-color: var(--edsb-rule-panel);
   }
 
   .family__name {
@@ -372,12 +438,6 @@
     color: var(--edsb-text-subtle);
   }
 
-  // The rows of the open family, gathered under the hairline the canvas runs
-  // down their leading edge.
-  .family__choices {
-    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
-  }
-
   .candidate {
     grid-template-columns: var(--edsb-layout-candidate-columns);
     // The same gap the header row sets — none — or the figures sit beside their
@@ -391,15 +451,15 @@
     // tall as its own text — so it is rendered whole instead, rather than
     // declared at a size that is only ever an estimate (wave 4).
     //
-    // Families change what this is applied *to*, not the rule itself (wave 10).
-    // A closed family contributes its bar and no rows at all — they are not in
-    // the document — so there is nothing to skip and nothing to estimate. The
-    // open family is still whole: every one of its rows is in the document from
-    // the first frame, each declaring this height, so the scroller adds them up
-    // before it lays any of them out and its bar is right immediately. The two
-    // rules that follow are unchanged, and for the same reasons: a name too
-    // long for its column is cut rather than wrapped, and the two-price rows
-    // declare nothing and are never skipped.
+    // Families change what this is applied *to*, not the rule itself (wave 10,
+    // revised 2026-08-25). The pane holds exactly one family's rows and no
+    // others are in the document at all, so there is nothing to skip outside it
+    // and nothing to estimate. That family is still whole: every one of its rows
+    // is in the document from the first frame, each declaring this height, so
+    // the pane adds them up before it lays any of them out and its bar is right
+    // immediately. The two rules that follow are unchanged, and for the same
+    // reasons: a name too long for its column is cut rather than wrapped, and
+    // the two-price rows declare nothing and are never skipped.
     block-size: var(--edsb-layout-candidate-row);
     content-visibility: auto;
     contain-intrinsic-block-size: var(--edsb-layout-candidate-row);
