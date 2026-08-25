@@ -149,35 +149,41 @@ and scrolls itself. Recorded as this feature's one exception to "features 001–
 ## Section 9's gate, and the two results that needed a baseline
 
 T065 runs `pnpm run check`. Every stage is green here except as recorded below: `format:check`,
-`help:artifacts:check`, `typecheck`, `build`, `build:preview`, `policy` (seven checkers), the codec
-capacity table, 252 generator tests, and 159 unit files / 2148 tests at 85.8 / 84.18 / 89.47 / 86
-against the 80% thresholds. The five Chromium projects run 2775 tests.
+`help:artifacts:check`, `typecheck`, `build` (403.19 kB raw / 101.83 kB transfer, inside the 500 kB
+warning ceiling), `build:preview`, `policy` (seven checkers), the codec capacity table, 252 generator
+tests, and 160 unit files / 2152 tests at 85.8 / 84.18 / 89.46 / 86.01 against the 80% thresholds.
+The five Chromium projects run 2780 tests; the timing project runs 2 and the offline stage 70.
 
-**Six matrix failures, all of them the machine.** The complete Chromium matrix came back 2769 passed
-and 6 failed in 35.2 minutes. Re-run serially, all six pass — 16 of 16, in two and a half minutes.
-Five were plainly the clock: four axe sweeps in feature 002's
-`outfitting-accessibility.spec.ts` exceeding the 30-second budget under eight workers, one of them
-losing its page outright, and feature 001's two-page save test timing out at mobile-portrait. The
-sixth was a state assertion — feature 008's "leaving the mode gives feature 010's plates back
-unchanged" — whose before-snapshot held one plate and whose after-snapshot held two: a settle race
-on the snapshot rather than a lost state, and it too passes alone. None is reachable from this
-feature's change: the bar's bound applies above the compact composition and only past `40dvh`, and
-at desktop with ordinary text the bar is nowhere near it.
+**Five matrix failures, all of them the machine.** The complete Chromium matrix came back 2775
+passed and 5 failed in 34.8 minutes. Every one is a 30-second test timeout, and re-run on their own
+all five pass — 10 of 10 in 51 seconds, across all five profiles. Four are the same axe sweep in
+feature 002's `outfitting-accessibility.spec.ts`, which scans every family state and exceeds the
+budget under eight workers; the fifth is feature 001's two-page save test at mobile-portrait, which
+lost its context at `browserContext.close()`. None is reachable from this branch's change: the
+released-bar rule applies only once the bar has wrapped past what a screen can be stacked in, and
+neither test runs at a text size that gets it there.
 
-**SC-002's timing budget is missed on this container, and it is not this feature's doing.** Feature
-002's candidate search is asserted at under 100 ms from keystroke to painted rows, at 4x CPU
-throttling. Here it reports 105.7 ms, then 102.6 ms, then a pass. Feature 002 recorded 59 ms worst
-on 2026-08-22, so the gap is wide enough to be worth attributing rather than excusing, and the
-attribution was measured rather than argued: the same measurement, on the same container, at
-`342feec` — the last commit before this feature — reports **116.0 ms, then 111.3 ms, then a pass**.
-The tree with this feature in it is the faster of the two. The budget is being missed by the
-machine, and this feature moved the number the right way.
+**SC-002's timing budget.** Feature 002's candidate search is asserted at under 100 ms from
+keystroke to painted rows, at 4x CPU throttling. An earlier run on this container reported 105.7 ms,
+then 102.6 ms, then a pass, against feature 002's own 59 ms worst on 2026-08-22. That gap was wide
+enough to attribute rather than excuse, and it was measured rather than argued: the same
+measurement, on the same container, at `342feec` — the last commit before this feature — reported
+**116.0 ms, then 111.3 ms, then a pass**. The tree with this feature in it was the faster of the
+two, so the budget was being missed by the machine and this feature had moved the number the right
+way. On the final run it passes outright, first attempt, which is consistent with that reading and
+not with a regression this feature introduced.
 
-Recorded here rather than fixed, because it is feature 002's assertion about feature 002's surface
-and this walk is not the place to retune another feature's budget or its code.
+Recorded rather than acted on, because it is feature 002's assertion about feature 002's surface and
+this walk is not the place to retune another feature's budget or its code.
 
 SC-005, this feature's own timing half, passes: the modal presents its first frame inside 100 ms at
 the same throttling.
+
+**What was not run here.** The five Firefox projects, for the reason in finding 3 — the engine is
+not installed in this container and cannot be downloaded through its network policy. Nothing was
+skipped, narrowed or excluded in the configuration: `playwright.config.ts` still declares all ten
+projects and `pnpm run check` still invokes all ten. What is recorded above is a Chromium-complete
+run, and CI runs both engines.
 
 ## What section 3 through 7 were walked with
 
