@@ -17,7 +17,7 @@ import { LocalRecordRepository } from '../../platform/storage/local-record.repos
 import { recordKey } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { BuildLibraryStore } from './build-library.store';
 import { RecordDuplicationService } from './record-duplication.service';
 import { RecordOpenService } from './record-open.service';
@@ -63,7 +63,7 @@ function setup(seed: (storage: MemoryStorage) => void = () => {}) {
     retention: TestBed.inject(RetentionService),
     records: TestBed.inject(LocalRecordRepository),
     active: TestBed.inject(ActiveBuildStore),
-    coordinator: TestBed.inject(ReplacementCoordinator),
+    coordinator: TestBed.inject(BuildIngressCoordinator),
   };
 }
 
@@ -264,7 +264,6 @@ describe('RecordOpenService', () => {
       storage.setItem(recordKey(FIXTURE_IDS.unknownHull), UNKNOWN_HULL_RECORD);
       storage.setItem(recordKey('broken'), MALFORMED_RECORD);
     });
-    coordinator.setConfirmer(async () => true);
     await open.open(FIXTURE_IDS.named);
     const before = active.loadout();
 

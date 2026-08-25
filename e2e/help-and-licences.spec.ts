@@ -151,7 +151,6 @@ async function selectSlot(page: Page, slotKey: string): Promise<void> {
 /** Dismisses whatever layer is covering the frame, by its own visible control. */
 const WAY_OUT = new RegExp(
   `^(${englishMessages['action.close']}|${englishMessages['action.cancel']}` +
-    `|${englishMessages['workspace.replace.cancel']}` +
     `|${englishMessages['library.delete.cancel']})$`,
   'i',
 );
@@ -159,10 +158,10 @@ const WAY_OUT = new RegExp(
 /**
  * Dismisses every layer covering the frame, by each one's own visible control.
  *
- * A layer may cover a layer — feature 001's replacement question stands over
- * the import layer that provoked it — so this works down the stack until the
- * frame is back. It presses named controls only: falling back to whatever
- * button happens to be last would let a layer with no visible way out pass.
+ * A layer may cover a layer — a delete confirmation stands over the library
+ * that raised it — so this works down the stack until the frame is back. It
+ * presses named controls only: falling back to whatever button happens to be
+ * last would let a layer with no visible way out pass.
  */
 async function dismissLayer(page: Page): Promise<void> {
   for (let depth = 0; depth < 4; depth += 1) {
@@ -217,13 +216,6 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await saveAs(page, 'Ledger build');
     await page.getByRole('button', { name: /^delete ledger build$/i }).click();
     await expect(layers(page)).toHaveCount(1);
-  },
-  'replacement-confirmation': async (page) => {
-    // Feature 001 asks before an incoming build replaces unsaved work, which
-    // is what makes an ordinary import the way to reach the question.
-    await withStockBuild(page);
-    await pasteImport(page, JOURNAL_EVENT);
-    await expect(page.getByRole('dialog', { name: /replace the build/i })).toBeVisible();
   },
   'outfitting-ledger': async (page) => {
     await withStockBuild(page);
@@ -319,9 +311,6 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
 };
 
-/** One valid journal Loadout event for a stock hull, as another tool exports it. */
-const JOURNAL_EVENT = JSON.stringify({ event: 'Loadout', Ship: HULL.toLowerCase(), Modules: [] });
-
 /**
  * The two partial-roll payloads feature 002 already tests the package against.
  *
@@ -406,12 +395,9 @@ async function importPayload(page: Page, payload: string): Promise<void> {
   await page.goto('/build');
   await pasteImport(page, payload);
 
-  // An empty workspace has nothing to lose, so feature 001 asks nothing. A
-  // workspace that does is answered here rather than left holding the question.
-  const question = page.getByRole('dialog', { name: /replace the build/i });
-  if ((await question.count()) > 0) {
-    await question.getByRole('button', { name: /discard and open/i }).click();
-  }
+  // Nothing is asked before an import replaces what is on screen: since
+  // 2026-08-25 the build being replaced has a record of its own, so there is
+  // no question here to answer (feature 001, FR-008).
 
   // What this journey wants is the surface beneath, so it waits for the frame
   // to be uncovered and dismisses nothing. Feature 004 closes its own layer

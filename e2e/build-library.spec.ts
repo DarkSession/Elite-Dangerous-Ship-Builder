@@ -54,6 +54,13 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
   }, entries);
 }
 
+/** How many records this browser is holding, whatever their kind. */
+async function recordCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+  );
+}
+
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await openWorkspaceWithBuild(page, hull);
   await savedToBrowser(page);
@@ -111,7 +118,10 @@ test.describe('the build library', () => {
     await expect(page.getByText('Valid').first()).toBeVisible();
   });
 
-  test('names a working build, keeping the working record as well', async ({ page }) => {
+  test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
+    // Revised 2026-08-25: a manual save consumes the unnamed record these edits
+    // were autosaved into, rather than copying the build beside it. A Commander
+    // who saves their work finds one entry, not the same build twice (FR-008).
     await createBuild(page);
     await reachShellLink(page, 'Open saved build');
 
@@ -122,8 +132,8 @@ test.describe('the build library', () => {
 
     await expect(page.getByRole('heading', { name: 'Named builds' })).toBeVisible();
     await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
-    // The tab is still working on its own record.
-    await expect(page.getByText('Working build', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Working build', { exact: true })).toHaveCount(0);
+    expect(await recordCount(page)).toBe(1);
   });
 
   test('warns about a duplicate name and still saves a separate build', async ({ page }) => {
@@ -138,11 +148,9 @@ test.describe('the build library', () => {
     await expect(dialog.getByText(/already use this name/i)).toBeVisible();
     await dialog.getByRole('button', { name: 'Save as a new build' }).click();
 
-    const stored = await page.evaluate(
-      () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
-    );
-    // The existing build, this tab's working record, and the new named copy.
-    expect(stored).toBe(3);
+    // The build that was already stored, and the record this build was in,
+    // which the save named rather than duplicated.
+    expect(await recordCount(page)).toBe(2);
   });
 
   test('duplicates a build under a new identity', async ({ page }) => {

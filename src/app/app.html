@@ -36,14 +36,3 @@
   [dismissLabel]="help.dismissLabel()"
   (dismissed)="help.closeDialog()"
 />
-
-<edsb-confirm-dialog
-  [open]="replacementOpen()"
-  [title]="replacementTitle()"
-  [description]="replacementDescription()"
-  [confirmLabel]="replacementConfirm()"
-  [cancelLabel]="replacementCancel()"
-  [dismissLabel]="dismissLabel()"
-  (confirmed)="answerReplacement(true)"
-  (cancelled)="answerReplacement(false)"
-/>

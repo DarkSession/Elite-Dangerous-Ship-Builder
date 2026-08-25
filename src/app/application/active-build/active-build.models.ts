@@ -86,8 +86,8 @@ export interface BuildCandidate {
    *
    * It travels with the candidate rather than being looked up when it is
    * displayed, because the package's game-text leaves are half a megabyte and
-   * the surface that shows this name — the replacement question — is mounted
-   * on every screen, including the ones that never open a build.
+   * the surfaces that show this name — the command bar, the library's rows —
+   * are mounted on screens that never open a build.
    */
   readonly hullName: string;
   readonly provenance: BuildProvenance;

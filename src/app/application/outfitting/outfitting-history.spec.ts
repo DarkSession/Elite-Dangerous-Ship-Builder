@@ -11,7 +11,7 @@ import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { OutfittingStore } from './outfitting.store';
 
 /**
@@ -73,7 +73,6 @@ describe('outfitting store: undo and redo', () => {
       providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
     });
     active = TestBed.inject(ActiveBuildStore);
-    TestBed.inject(ReplacementCoordinator).setConfirmer(() => Promise.resolve(true));
     store = TestBed.inject(OutfittingStore);
   });
 
@@ -399,7 +398,7 @@ describe('outfitting store: undo and redo', () => {
       store.undo();
       expect(store.canRedo()).toBe(true);
 
-      await TestBed.inject(ReplacementCoordinator).replace(() => ({
+      await TestBed.inject(BuildIngressCoordinator).commit(() => ({
         ok: true,
         candidate: candidateFor(defaultBuild()),
       }));
@@ -412,7 +411,7 @@ describe('outfitting store: undo and redo', () => {
       open();
       fitFirstChoice(FIXTURE_SLOTS.hardpoint);
 
-      await TestBed.inject(ReplacementCoordinator).replace(() => ({
+      await TestBed.inject(BuildIngressCoordinator).commit(() => ({
         ok: false,
         reason: 'refused',
       }));

@@ -1053,8 +1053,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/slef-import',
     axe: true,
     assertions: [
-      'a ready candidate replaces dirty work only after the shared confirmation is accepted',
-      'cancelling leaves the active build, its revision, records, fragment and history identical',
+      'a ready candidate replaces dirty work without asking, because that work has a record of its own',
+      'a refusal leaves the active build, its revision, records, fragment and history identical',
       'a superseded candidate cannot commit after a newer submit, close or route change',
       'a successful import is exactly one replacement, one autosave and one link synchronization',
     ],
@@ -1794,13 +1794,6 @@ export const helpRouteCoverage: readonly HelpRouteRow[] = [
   {
     id: 'library-delete-confirmation',
     surface: 'Build-library delete confirmation',
-    owner: '001',
-    frameEntry: 'obscured',
-    requirements: ['012/FR-011'],
-  },
-  {
-    id: 'replacement-confirmation',
-    surface: 'Shared replacement confirmation',
     owner: '001',
     frameEntry: 'obscured',
     requirements: ['012/FR-011'],

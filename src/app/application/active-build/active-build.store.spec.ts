@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { baselineFingerprint } from '../../domain/build/replacement-policy';
+import { baselineFingerprint } from '../../domain/build/build-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import { ActiveBuildStore } from './active-build.store';
 import type { BuildCandidate } from './active-build.models';

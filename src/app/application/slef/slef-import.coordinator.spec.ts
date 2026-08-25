@@ -11,7 +11,7 @@ import {
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import { SlefImportCoordinator } from './slef-import.coordinator';
 import { SlefStore } from './slef.store';
@@ -33,7 +33,7 @@ function seedActive(active: ActiveBuildStore): void {
 describe('the one path from a draft to an active build', () => {
   let active: ActiveBuildStore;
   let store: SlefStore;
-  let replacement: ReplacementCoordinator;
+  let replacement: BuildIngressCoordinator;
   let coordinator: SlefImportCoordinator;
   let committed: BuildCandidate[];
 
@@ -49,7 +49,7 @@ describe('the one path from a draft to an active build', () => {
     });
     active = TestBed.inject(ActiveBuildStore);
     store = TestBed.inject(SlefStore);
-    replacement = TestBed.inject(ReplacementCoordinator);
+    replacement = TestBed.inject(BuildIngressCoordinator);
     coordinator = TestBed.inject(SlefImportCoordinator);
     committed = [];
     replacement.addSink({
@@ -57,9 +57,8 @@ describe('the one path from a draft to an active build', () => {
         committed.push(candidate);
       },
     });
-    // Nothing is dirty at the start of these tests, so the question is never
-    // asked; the tests that need it answered register their own.
-    replacement.setConfirmer(() => Promise.resolve(true));
+    // Since 2026-08-25 nothing is asked between a valid draft and an active
+    // build: the build being replaced has a record of its own (FR-008).
   });
 
   describe('delegation', () => {
@@ -180,14 +179,15 @@ describe('the one path from a draft to an active build', () => {
       expect(store.importFailure()).not.toBeNull();
     });
 
-    it('survives a cancelled replacement', async () => {
+    it('is spent by a commit, and not before', async () => {
+      // The draft stops being a draft only when it has become a build. Every
+      // other ending keeps it exactly as it was typed.
       seedActive(active);
-      replacement.setConfirmer(() => Promise.resolve(false));
       store.setDraft(VALID);
 
-      expect(await coordinator.submit()).toEqual({ kind: 'cancelled' });
+      expect(await coordinator.submit()).toEqual({ kind: 'committed' });
 
-      expect(store.draft().text).toBe(VALID);
+      expect(store.draft().text).toBe('');
     });
   });
 
@@ -207,20 +207,14 @@ describe('the one path from a draft to an active build', () => {
       expect(committed).toHaveLength(0);
     });
 
-    it('leaves it untouched when the Commander cancels a ready candidate', async () => {
+    it('loses to a newer ingress started while it was in flight', async () => {
+      // The slow-paste-lands-on-a-newer-build case the request token exists
+      // for: feature 001 supersedes the older request rather than committing
+      // it, and the draft survives untouched because it never became a build.
       seedActive(active);
-      const fingerprint = active.fingerprint();
-      replacement.setConfirmer(() => Promise.resolve(false));
       store.setDraft(VALID);
 
-      await coordinator.submit();
-
-      expect(active.fingerprint()).toBe(fingerprint);
-      expect(committed).toHaveLength(0);
-    });
-
-    it('loses to a newer replacement decided while its question was on screen', async () => {
-      seedActive(active);
+      const inFlight = coordinator.submit();
       const other = {
         loadout: ShipLoadout.default('Eagle'),
         hullName: 'Eagle',
@@ -230,38 +224,27 @@ describe('the one path from a draft to an active build', () => {
         autosaveRecordId: null,
         baseline: null,
       };
-      store.setDraft(VALID);
-      replacement.setConfirmer(async () => {
-        // Something else replaces the build while the question is up: exactly
-        // the slow-paste-lands-on-a-newer-build case the token exists for.
-        // Feature 001 supersedes the older request rather than committing it.
-        replacement.setConfirmer(() => Promise.resolve(true));
-        await replacement.replace(() => ({ ok: true, candidate: other }));
-        return true;
-      });
+      await replacement.commit(() => ({ ok: true, candidate: other }));
 
-      expect(await coordinator.submit()).toEqual({ kind: 'superseded' });
-
-      expect(active.hullName()).toBe('Eagle');
+      expect(await inFlight).toEqual({ kind: 'superseded' });
       expect(committed).toEqual([other]);
+      expect(active.hullName()).toBe('Eagle');
       expect(store.draft().text).toBe(VALID);
     });
 
-    it('stands by a commit the Commander confirmed, even if the layer closed after', async () => {
+    it('stands by a commit even if the layer closes as it lands', async () => {
+      // A token issued after the store has been written cannot un-replace the
+      // build, and saying `superseded` here would describe an active build as
+      // one that never arrived.
       seedActive(active);
       store.setDraft(VALID);
-      replacement.setConfirmer(async () => {
-        // An informed yes about this exact candidate. A token issued afterwards
-        // cannot un-replace the build, and saying `superseded` here would
-        // describe the active build as one that never arrived.
-        coordinator.abandon();
-        return true;
-      });
+      const stop = replacement.addSink({ onCommitted: () => coordinator.abandon() });
 
       expect(await coordinator.submit()).toEqual({ kind: 'committed' });
 
       expect(committed).toHaveLength(1);
       expect(store.draft().text).toBe('');
+      stop();
     });
   });
 });

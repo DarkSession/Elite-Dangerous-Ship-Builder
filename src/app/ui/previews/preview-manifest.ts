@@ -1852,11 +1852,10 @@ registerPreview({
       'default',
       {
         open: true,
-        title: 'Replace the build you are working on?',
-        description:
-          'Your current Anaconda build has unsaved changes. Opening this Cutter build discards them.',
-        confirmLabel: 'Discard and open',
-        cancelLabel: 'Keep what I have',
+        title: 'Delete “Anaconda explorer”?',
+        description: 'This removes the Anaconda build from this browser. It cannot be undone.',
+        confirmLabel: 'Delete this build',
+        cancelLabel: 'Keep this build',
         dismissLabel: 'Close',
       },
       [

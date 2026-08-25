@@ -17,12 +17,16 @@ export function baselineFingerprint(snapshot: BuildSnapshotV1): string {
 }
 
 /**
- * Whether the active build has work a replacement would lose.
+ * Whether the active build differs from the state it was last stored at.
  *
  * A build with no baseline is dirty by definition — a stock build the Commander
- * has just created has never been saved anywhere they could get it back from,
- * so replacing it silently is exactly the loss the confirmation exists to
- * prevent (FR-009).
+ * has just created is in no record yet, and it is this answer that sends
+ * autosave to mint one for it (FR-008).
+ *
+ * **Revised 2026-08-25.** This decided whether replacing a build had to be
+ * confirmed until that question was withdrawn. It now decides whether there is
+ * anything to write, which is why taking over a record identical to the build
+ * writes nothing at all and does not restart the record's seven days (FR-013).
  */
 export function isDirty(current: string | null, baseline: string | null): boolean {
   if (current === null) {

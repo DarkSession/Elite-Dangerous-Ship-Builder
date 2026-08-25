@@ -654,10 +654,8 @@ test.describe('with no network at all', () => {
       .getByLabel(/slef payload/i)
       .fill(JSON.stringify({ event: 'Loadout', Ship: 'anaconda', Modules: [] }));
     await importLayer.getByRole('button', { name: /^load build$/i }).click();
-    // The stock build is unsaved, so feature 001 asks before replacing it.
-    const question = page.getByRole('dialog', { name: /replace the build/i });
-    await expect(question).toBeVisible();
-    await question.getByRole('button', { name: /discard and open/i }).click();
+    // Nothing is asked: the stock build being replaced is in a record of its
+    // own, so the import lands straight in the workspace (feature 001, FR-008).
     await expect(page).toHaveURL(/\/build($|[#?])/);
 
     // From here on, nothing but static files. The import landed in the

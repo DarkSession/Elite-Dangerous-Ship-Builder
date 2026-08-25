@@ -1,17 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
 import { reconstructFromSnapshot } from '../../domain/build/build-snapshot.reconstructor';
-import { baselineFingerprint } from '../../domain/build/replacement-policy';
+import { baselineFingerprint } from '../../domain/build/build-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { RecordMigrationService } from '../../platform/storage/record-migration.service';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildProvenance } from '../active-build/active-build.models';
 import {
-  ReplacementCoordinator,
+  BuildIngressCoordinator,
   type CandidateOutcome,
-  type ReplacementResult,
-} from '../active-build/replacement-coordinator';
+  type CommitResult,
+} from '../active-build/build-ingress.coordinator';
 
 /**
  * Opening a stored build.
@@ -33,13 +33,13 @@ import {
 @Injectable({ providedIn: 'root' })
 export class RecordOpenService {
   readonly #migration = inject(RecordMigrationService);
-  readonly #coordinator = inject(ReplacementCoordinator);
+  readonly #coordinator = inject(BuildIngressCoordinator);
   readonly #gameText = inject(GameTextPresenter);
   readonly #active = inject(ActiveBuildStore);
 
   /** Opens one record, asking about unsaved work first where there is any. */
-  async open(recordId: string): Promise<ReplacementResult> {
-    return this.#coordinator.replace(() => this.#construct(recordId));
+  async open(recordId: string): Promise<CommitResult> {
+    return this.#coordinator.commit(() => this.#construct(recordId));
   }
 
   #construct(recordId: string): CandidateOutcome {

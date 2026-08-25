@@ -8,7 +8,7 @@ import {
   fixedRewardBuild,
 } from '../../domain/outfitting/outfitting.fixtures';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { OutfittingStore } from './outfitting.store';
@@ -39,7 +39,6 @@ describe('outfitting store: engineering and power', () => {
   let active: ActiveBuildStore;
 
   function open(loadout: ShipLoadout): void {
-    TestBed.inject(ReplacementCoordinator).setConfirmer(() => Promise.resolve(true));
     active.commit(candidateFor(loadout));
   }
 

@@ -3,7 +3,7 @@ import type { PartialEngineeringFailure } from '../../domain/build/build-ingress
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildSnapshotV1 } from '../../domain/build/build-snapshot';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
-import { baselineFingerprint, isDirty } from '../../domain/build/replacement-policy';
+import { baselineFingerprint, isDirty } from '../../domain/build/build-fingerprint';
 import type {
   ActiveBuildState,
   BuildCandidate,

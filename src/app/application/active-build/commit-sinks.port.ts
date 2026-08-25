@@ -9,7 +9,7 @@ import type { BuildCandidate } from './active-build.models';
  * "Intent boundary").
  *
  * Persistence is implemented by feature 001's autosave service; it exists as a
- * port so the replacement coordinator can be tested without a browser store.
+ * port so the ingress coordinator can be tested without a browser store.
  */
 export interface CommitSink {
   /** Called once, after the candidate has become the active build. */

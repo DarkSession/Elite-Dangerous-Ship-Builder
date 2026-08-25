@@ -8,7 +8,7 @@ import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localizatio
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { BuildLinkCoordinator } from './build-link.coordinator';
 import { FragmentPublisher } from './fragment-publisher';
 import { MAX_BUILD_LINK_LENGTH } from './fragment-recognizer';
@@ -25,7 +25,7 @@ function setup() {
     ingress: TestBed.inject(BuildLinkCoordinator),
     publisher: TestBed.inject(FragmentPublisher),
     active: TestBed.inject(ActiveBuildStore),
-    replacement: TestBed.inject(ReplacementCoordinator),
+    replacement: TestBed.inject(BuildIngressCoordinator),
     errors: TestBed.inject(LinkErrorMapper),
     location: TestBed.inject(HistoryLocationAdapter),
   };
@@ -100,18 +100,17 @@ describe('BuildLinkCoordinator', () => {
     expect(active.qualityCompletionNotices()).toEqual([]);
   });
 
-  it('asks before replacing unsaved work, and keeps it when the answer is no', async () => {
-    const { ingress, active, replacement } = setup();
+  it('replaces unsaved work without asking about it', async () => {
+    // A pasted link commits over whatever was on screen, because whatever was
+    // on screen has a record of its own to be reopened from (FR-008).
+    const { ingress, active } = setup();
     commitAnaconda(active, 'Adder');
-    const before = active.fingerprint();
-    replacement.setConfirmer(() => Promise.resolve(false));
 
     const result = await ingress.ingest(await anacondaFragment());
 
-    expect(result).toEqual({ kind: 'replacement', result: { kind: 'cancelled' } });
-    expect(active.provenance()).toBe('stock');
-    expect(active.loadout()?.shipSymbol).toBe('Adder');
-    expect(active.fingerprint()).toBe(before);
+    expect(result.kind).toBe('replacement');
+    expect(result.kind === 'replacement' && result.result.kind).toBe('committed');
+    expect(active.provenance()).toBe('link');
   });
 
   it('refuses a corrupted value without touching the active build', async () => {

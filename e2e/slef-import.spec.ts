@@ -219,7 +219,11 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
     expect(await page.evaluate(() => location.hash)).toBe(before);
   });
 
-  test('asks before replacing unsaved work, and cancelling changes nothing', async ({ page }) => {
+  test('replaces unsaved work without asking, and spends the draft doing it', async ({ page }) => {
+    // Withdrawn on 2026-08-25: the stock build being replaced is in a record of
+    // its own, so there is nothing to warn about (feature 001, FR-008). What is
+    // asserted instead is that no question stands between the draft and the
+    // build, and that the draft is spent only by the commit.
     await withStockBuild(page);
     const before = await page.evaluate(() => location.hash);
 
@@ -227,15 +231,9 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
     await paste(page, JOURNAL_EVENT);
     await submit(page);
 
-    const question = page.getByRole('dialog', { name: /replace/i });
-    await expect(question).toBeVisible();
-    await question
-      .getByRole('button', { name: /cancel|keep/i })
-      .first()
-      .click();
-
-    expect(await page.evaluate(() => location.hash)).toBe(before);
-    await expect(layer(page).getByLabel(/slef payload/i)).toHaveValue(JOURNAL_EVENT);
+    await expect(page.getByRole('dialog', { name: /replace/i })).toHaveCount(0);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+    expect(await page.evaluate(() => location.hash)).not.toBe(before);
   });
 });
 
