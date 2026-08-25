@@ -278,6 +278,63 @@ test.describe('Drives & Mass', () => {
     }
   });
 
+  test('the envelope follows the ENG allocation, and boost does not', async ({ page }) => {
+    // Almanac 0.2.0 split a build's own flight model from what an allocation
+    // makes of it, and FR-004 carries the split: `mobilityMetricsResult` owns
+    // `boost` and takes no pips at all, `mobilityCapacitorMetricsResult` owns
+    // the speed and the three rotations at the settled allocation. Only a
+    // browser can show that the card is actually re-read when another feature's
+    // control moves, and only this test can show the two results are not
+    // borrowing figures from each other.
+    await openDrives(page);
+
+    const rows = page.locator('edsb-drives-mass .drives__envelope-row');
+    const reading = async (): Promise<string[]> =>
+      rows.locator('.drives__envelope-value').allInnerTexts();
+    // `innerText` returns what the reader sees, and the design system sets
+    // these labels in caps from CSS, so the row is found by the same `caps()`
+    // the rest of this suite compares a drawn label with.
+    const labels = await rows.locator('.drives__envelope-label').allInnerTexts();
+    const rowFor = (key: 'drives.thrusters.boost' | 'drives.thrusters.speed'): number =>
+      labels.findIndex((label) => caps(label.trim()) === caps(englishMessages[key]));
+    const boost = rowFor('drives.thrusters.boost');
+    const speed = rowFor('drives.thrusters.speed');
+    expect(boost).toBeGreaterThanOrEqual(0);
+    expect(speed).toBeGreaterThanOrEqual(0);
+
+    const before = await reading();
+
+    // Through feature 005's own distributor, which is what settles the pips.
+    // The stock hull starts at four apiece; the first step of the engines row
+    // is the furthest this can be moved from there in one press.
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.power'] })
+      .click();
+    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await page.locator('.distributor tbody tr').nth(1).locator('.pips__step').first().click();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.drives'] })
+      .click();
+    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await settled(page);
+
+    const after = await reading();
+
+    // The top speed the capacitor result owns moved, so the card was re-read
+    // rather than left standing at the allocation it was first drawn at. The
+    // three rotations are the same result's and move with it, but whether each
+    // moves far enough to change a drawn digit is the package's business and
+    // not something this suite writes down.
+    expect(after[speed]).not.toBe(before[speed]);
+
+    // The boost the build's own flight model owns did not. A boost that
+    // followed the pips would mean one result had been read for a figure the
+    // other publishes, which is the seam FR-004 keeps apart.
+    expect(after[boost]).toBe(before[boost]);
+  });
+
   test('a switched-off mount reads as off, with the package’s own reasons', async ({
     page,
   }, testInfo) => {

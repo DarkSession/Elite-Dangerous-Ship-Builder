@@ -339,7 +339,7 @@ function readCurvePosition(
   if (!mobility || !curve || curve.optMass <= 0) {
     return null;
   }
-  return mobility.loadedMass / curve.optMass;
+  return mobility.loadedMass / curve.optMass; // policy-allow: SC-002's curve position
 }
 
 /**

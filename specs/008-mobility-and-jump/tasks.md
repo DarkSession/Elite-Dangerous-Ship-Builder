@@ -105,6 +105,31 @@ the rename recorded in `design/reference-review.md`.
 - the responsive composition through a container query on the region rather than viewport media
   queries, so 400% zoom and a phone select the stacked arrangement for the same reason (T056).
 
+### What the follow-up branch delivered
+
+The 2026-08-25 canvas revision (T070) brought the rest of the feature's own gates with it, so these
+landed beside it rather than waiting for a matrix run nobody had scheduled.
+
+- the boundary rules, as `scripts/policy/mobility-jump-ownership.mjs` and its fixture suite
+  `scripts/mobility-jump-ownership.test.mjs`, wired into `pnpm run policy` (T018). The task named
+  `check-interface-foundations.mjs`; features 005, 006 and 007 each fence themselves with a
+  `scripts/policy/*-ownership.mjs` of their own instead, and this feature follows them. Five rules:
+  the leaf subpaths, one call site for all seven `BuildMetrics` answers, the three aggregates no
+  canvas draws — which is what keeps the reserve tank from coming back — no arithmetic between two
+  package figures, and Overcharge read rather than inferred. The two divisions SC-002 names carry a
+  `policy-allow:` marker each, so a third one fails the build;
+- the offline journey, as `reads Drives & Mass with no network at all` in
+  `e2e/offline-privacy.spec.ts` (T062): both cards drawn with the network gone, and the ENG
+  allocation changed through feature 005's own control and read back, still offline;
+- the ENG-allocation journey the ledger already claimed but no browser test covered — the envelope
+  re-read when the allocation moves, and boost unmoved, which is the 0.2.0 split FR-004 records;
+- feature 008's rows in both manual records, and step 18 of the screen-reader protocol which they
+  are rows against (T064, in part — see below);
+- the ledger reconciled with the surfaces as they now stand, including the new offline surface and
+  the two new assertions (T065); and
+- unit coverage well above the 80% floor across the projector and the region (T066), and the README
+  row corrected — it still promised capacities this screen no longer draws (T067).
+
 ### What remains
 
 - the feature 003 contract-first exports and the concrete status provider (T004, T005, T016), which
@@ -117,14 +142,19 @@ the rename recorded in `design/reference-review.md`.
   not live; the projection is synchronous over a loadout already in memory, so a package exception is
   an application defect rather than a screen. Both are feature 005's ruling for the same region, now
   recorded in `design/mobility-and-jump-profile.md` and `design/screen-inventory.md`;
-- the feature 008 boundary rules in `scripts/check-interface-foundations.mjs` (T018);
 - nothing for T032: the preview manifest holds one declaration per exported `src/app/ui/` component,
   and `DrivesMass` is a feature region rather than a design-system component — the same reason the
   power dashboard has no declaration either. Its states are covered by the Playwright suite;
 - the per-module mass list (T010, T044–T055), which neither canvas draws and which spec.md's FR-007
-  note now scopes to feature 002's existing ledger; and
-- the remaining polish tasks: the offline journey, the throttled measurement, the manual
-  screen-reader protocols and the full ten-project matrix run (T057–T069).
+  note now scopes to feature 002's existing ledger;
+- **the manual runs themselves (T064).** The protocol step and the rows exist now; every row still
+  reads `not run`, because a screen-reader observation needs NVDA on Windows and TalkBack on
+  Android and neither can be reached from this repository's Linux container. Features 005, 006 and
+  007 are in the same position, and the rows are what makes that visible rather than absent; and
+- the remaining polish tasks: the throttled measurement and the full ten-project matrix run
+  (T057–T061, T063, T068, T069). The Firefox half of that matrix is CI's: Playwright's Firefox
+  build cannot be downloaded from a sandboxed container, so the five Chromium projects are what a
+  local run can prove.
 
 Tasks below are marked `[X]` only where this branch delivered them in the design's shape. A task
 whose subject the canvases do not draw is left unticked and named above rather than quietly closed.
@@ -212,7 +242,7 @@ reads.
 - [ ] T015 Implement and test the announcement policy — one coalesced polite message per settled build or condition revision naming changed availability and the selected load and ENG context, silence for initial, unchanged, stale and locale-only transitions, no per-field or per-issue live-region burst, no duplicate announcement when feature 002 announces a slot opening, and one feature 011 assertive alert for a current-revision `failure` — in `src/app/application/mobility-jump/mobility-jump-announcements.ts` and `src/app/application/mobility-jump/mobility-jump-announcements.spec.ts` (depends on T012)
 - [ ] T016 Implement `MobilityStatusProvider` as a synchronous provider over the exact `StatusRevisionContext` passed by feature 003, invoking the shared pure projector with that context rather than reading the settled store, mapping `jumpRange` from the selected load's single-jump summary field, `topSpeed` from the selected-load `mobility.speed` and `unladenMass` from the exact aggregate independent of load, stamping both input revisions unchanged and returning the fixed detail target — with unit tests proving the three mappings across all three loads, that ready zero stays ready and contributes no qualification, that each unavailable field contributes its identity exactly once and nested issues add no extra identity, that a ready envelope is returned for package-unavailable values, that the provider reads the passed context rather than a store snapshot from another revision, and that an unexpected projector throw propagates to feature 003's `projectionFailed` path, in `src/app/application/mobility-jump/mobility-status.provider.ts` and `src/app/application/mobility-jump/mobility-status.provider.spec.ts` (depends on T005, T011) (contract-first export: unblocks feature 003's provider bundle)
 - [x] T017 [P] Add the feature-owned framing message keys — the “Drives” workspace mode label, the “Drives & Mass” capability heading, the read-only selected load and ENG context labels, the maximum, unladen and laden load identities, the total range label and its jump-count qualifier, the blocked-guard and unavailable framing, the ready-zero phrasing, the not-stated phrase for an absent sparse parameter, and the current-revision failure text — to `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
-- [ ] T018 [P] Add the feature 008 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the five listed leaf subpaths and never a broad `ships` barrel; no file under `src/app/` outside `src/app/domain/mobility-jump/` calls `jumpRangeSummary`, `mobilityMetricsResult`, `mobilityCapacitorMetricsResult`, `standardLoadResult`, `unladenMass`, `fuelCapacity` or `cargoCapacity`; no arithmetic operator is applied to a package jump, range, count, mass, capacity or curve field outside the curve position's `loadedMass / optMass`, which `BuildMetrics.thrusters()` itself prescribes, and the `aria-hidden` bar lengths in the component; no source references the nullable `mobilityMetrics(` or `mobilityCapacitorMetrics(` convenience methods, or `powerBudget(`, from feature 008 — matched so that the guarded `…Result(` forms and each other are not caught by substring, and the only feature 005 surface it may reach is the settled ENG allocation; no source hard-codes a `Thrusters` slot key or matches a core module by symbol prefix or positional index; and feature 003 imports only the exported status contract leaf and never a feature 008 component, store or presenter — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
+- [x] T018 [P] Add the feature 008 boundary rules to `scripts/check-interface-foundations.mjs` — production code imports the Almanac only through the five listed leaf subpaths and never a broad `ships` barrel; no file under `src/app/` outside `src/app/domain/mobility-jump/` calls `jumpRangeSummary`, `mobilityMetricsResult`, `mobilityCapacitorMetricsResult`, `standardLoadResult`, `unladenMass`, `fuelCapacity` or `cargoCapacity`; no arithmetic operator is applied to a package jump, range, count, mass, capacity or curve field outside the curve position's `loadedMass / optMass`, which `BuildMetrics.thrusters()` itself prescribes, and the `aria-hidden` bar lengths in the component; no source references the nullable `mobilityMetrics(` or `mobilityCapacitorMetrics(` convenience methods, or `powerBudget(`, from feature 008 — matched so that the guarded `…Result(` forms and each other are not caught by substring, and the only feature 005 surface it may reach is the settled ENG allocation; no source hard-codes a `Thrusters` slot key or matches a core module by symbol prefix or positional index; and feature 003 imports only the exported status contract leaf and never a feature 008 component, store or presenter — with positive and negative fixtures in `scripts/check-interface-foundations.test.mjs`
 - [ ] T019 Add the serialization-exclusion suite proving no `MobilityJumpSnapshot`, package result, guarded jump or mobility state, selected capability, disclosure state or revision pair reaches local storage, saved records, undo/redo history, preferences, the route, query or fragment, a copied build link or a SLEF export, and that no projection object is JSON-cloned, in `src/app/application/mobility-jump/mobility-jump.serialization.spec.ts` (depends on T012)
 
 **Checkpoint**: The status contract, the concrete provider, the pure projection, the store, the
@@ -348,12 +378,12 @@ three owner-authored mobility summaries.
 - [ ] T059 [P] Assert touch operation and shared target-size tokens for every module action and capability navigation control with no overlap at mobile width, that nothing essential depends on hover or `title`, and that `prefers-reduced-motion` changes only transitions and never content, state or announcement timing, in `e2e/mobility-and-jump.spec.ts`
 - [ ] T060 [P] Assert one coalesced polite announcement per settled build or condition revision, silence for initial, unchanged, locale-only and discarded stale transitions, no per-issue live-region burst, a single feature 002 announcement for slot opening with no duplicate, and one assertive alert for a current-revision projection failure, in `e2e/mobility-and-jump.spec.ts`
 - [ ] T061 [P] Add the locale sweep asserting owned labels, load identities, state text and units come from messages, that light-years, metres per second, degrees per second, tonnes, multipliers, pips and integer jump counts use active-locale formatters, and that module and slot names and calculation issues come from the Almanac by exact symbol and key with disclosed canonical fallback, across every shipped locale and the pseudo-locales in `src/app/i18n/testing/pseudo-locales.ts`, in `e2e/mobility-and-jump.spec.ts`
-- [ ] T062 [P] Add the offline journey — load the workspace, go offline, open Drives & Mass, apply a new load and ENG allocation in Status, read every region and open an exact slot with no cross-origin request and no capability degradation — in `e2e/mobility-and-jump.spec.ts`
+- [x] T062 [P] Add the offline journey — load the workspace, go offline, open Drives & Mass, apply a new load and ENG allocation in Status, read every region and open an exact slot with no cross-origin request and no capability degradation — in `e2e/mobility-and-jump.spec.ts`
 - [ ] T063 Add the in-page settled-status measurement under Chromium CDP `Emulation.setCPUThrottlingRate(4)` at the mobile viewport, asserting every visible jump, mobility, mass and capacity value is published atomically for the same revision pair before the next rendered frame, that one projection performs at most one `jumpRangeSummary()` and one `mobilityMetricsResult()` call and exactly one read of each aggregate and standard-load getter, and that the Status headline and the detail surface hold the identical projected values, in `e2e/mobility-and-jump.spec.ts` (depends on T016)
 - [ ] T064 [P] Write and run the versioned NVDA/Firefox desktop, TalkBack/Chromium mobile and tablet screen-reader protocols covering the three user stories — headings and named regions, the read-only condition context, the three jump profile groups, the seven mobility fields, the sparse source definition groups, the three aggregate groups with their owning issues, the module-mass table associations and slot actions, and settled announcements — with result records in `e2e/manual/screen-reader.protocol.md` and `e2e/manual/results/`
-- [ ] T065 Reconcile the coverage ledger with the feature 008 surfaces, exported components, preview declarations and Playwright project names, and assert every conformance statement covering this capability names the constitutional exclusions "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11", in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-003 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T033, T044, T055)
-- [ ] T066 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/mobility-jump/`, `src/app/application/mobility-jump/` and `src/app/features/build-workspace/mobility-and-jump/` under the thresholds in `angular.json`
-- [ ] T067 [P] Record the Drives & Mass capability, the absent feature 005 dependency and the out-of-scope route planning, neutron boosts, mass decomposition, headroom, mass lock and centre of mass in `README.md`. _Retargeted 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table and no longer carries per-feature narrative, so this record belongs in `README.md` and in this feature's own `spec.md` and `design/reference-review.md`._
+- [x] T065 Reconcile the coverage ledger with the feature 008 surfaces, exported components, preview declarations and Playwright project names, and assert every conformance statement covering this capability names the constitutional exclusions "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11", in `scripts/check-interface-foundations.mjs`. Register the SC-001–SC-003 ids against the named assertions that evidence them in `e2e/coverage-ledger.ts`. (depends on T033, T044, T055)
+- [x] T066 Restore unit coverage to at least 80% statements, branches, functions and lines for `src/app/domain/mobility-jump/`, `src/app/application/mobility-jump/` and `src/app/features/build-workspace/mobility-and-jump/` under the thresholds in `angular.json`
+- [x] T067 [P] Record the Drives & Mass capability, the absent feature 005 dependency and the out-of-scope route planning, neutron boosts, mass decomposition, headroom, mass lock and centre of mass in `README.md`. _Retargeted 2026-08-25: `AGENTS.md` was cut back to a feature-ownership table and no longer carries per-feature narrative, so this record belongs in `README.md` and in this feature's own `spec.md` and `design/reference-review.md`._
 - [ ] T068 Execute every section of `specs/008-mobility-and-jump/quickstart.md` against the reference corpus and fix each divergence
 - [ ] T069 Run `pnpm run check` and confirm formatting, strict compilation, policy checks, build, unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or quarantined test
 

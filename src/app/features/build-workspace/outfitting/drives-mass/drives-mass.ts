@@ -375,18 +375,20 @@ export class DrivesMass {
       return null;
     }
     const track = curve.maxMass;
+    // On the same track, so the mark lands where the optimal mass actually
+    // falls against the parts beside it. Past the end of the track it is not
+    // drawn at all rather than pinned to the end, which would put it where the
+    // maximum is and say the two are the same.
+    const drawsOptimal = curve.optMass > 0 && curve.optMass <= track;
+    const optimal = curve.optMass / track; // policy-allow: SC-002 bar position
 
     return {
       segments: [
-        { id: 'hull', tone: 'strong', size: mass.hull / track },
-        { id: 'modules', tone: 'dim', size: mass.modules / track },
-        { id: 'fuel', tone: 'deep', size: mass.fuel / track },
+        { id: 'hull', tone: 'strong', size: mass.hull / track }, // policy-allow: SC-002 bar length
+        { id: 'modules', tone: 'dim', size: mass.modules / track }, // policy-allow: SC-002 bar length
+        { id: 'fuel', tone: 'deep', size: mass.fuel / track }, // policy-allow: SC-002 bar length
       ],
-      // On the same track, so the mark lands where the optimal mass actually
-      // falls against the parts beside it. Past the end of the track it is not
-      // drawn at all rather than pinned to the end, which would put it where the
-      // maximum is and say the two are the same.
-      optimal: curve.optMass > 0 && curve.optMass <= track ? curve.optMass / track : null,
+      optimal: drawsOptimal ? optimal : null,
     };
   });
 
@@ -559,7 +561,7 @@ export class DrivesMass {
       id: profile.load,
       label: this.#messages.message(LOAD_LABELS[profile.load]),
       range: this.#formatters.lightYears(profile.range, RANGE_DIGITS),
-      fill: profile.range / furthest,
+      fill: profile.range / furthest, // policy-allow: SC-002 bar length
     }));
   });
 

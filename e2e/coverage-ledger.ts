@@ -1523,6 +1523,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'the five readings the canvas draws come from one mobility result, each with its own unit',
       'the readings follow the ENG allocation, and are re-read from the package when it moves',
+      'boost does not follow the allocation: neither result borrows a figure the other publishes',
       'an unavailable reading draws the package’s own issues and no hull catalogue speed',
       'a switched-off mount reads as off rather than as absent, and keeps its curve marks',
       'every bar is aria-hidden decoration with the package’s number beside it in text',
@@ -1543,6 +1544,17 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'an unavailable reading states so rather than standing the cell at zero',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/drives-and-mass-offline',
+    requirements: ['008/FR-001', '008/SC-001'],
+    journey: 'product/offline-privacy',
+    axe: false,
+    assertions: [
+      'both cards draw every reading with no network at all, from the loadout already in memory',
+      'changing the ENG allocation and coming back re-reads the envelope with the network still gone',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'build/drives-and-mass-reflow',
