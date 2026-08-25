@@ -19,9 +19,10 @@ import { PowerSummary } from './power-summary';
  * As much of this suite is about absence as about presence. The canvas draws
  * one sentence in this block and one `POWER` line under it, and — since its
  * 2026-08-25 revision — a pip control this feature has not built yet
- * (`specs/005-power-and-heat/tasks.md`, T074). What it draws nowhere is a heat
- * sentence, a severity word, or an all-clear line on a build whose plant covers
- * everything. Each of those comes back the moment somebody adds it, and each
+ * (`specs/005-power-and-heat/tasks.md`, T074). What neither canvas draws is a
+ * severity word or an all-clear line on a build whose plant covers everything.
+ * The heat sentence is drawn — canvas 1d prints one — and is absent here
+ * because wave 13 withdrew that tier, not because nothing drew it. Each of those comes back the moment somebody adds it, and each
  * has a test here that fails when it does; the pips are the one absence here
  * that is an open task rather than a rule.
  */

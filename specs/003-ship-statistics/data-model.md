@@ -5,9 +5,10 @@
 > design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
 > went to feature 005 with ruling C, but the **encoding** under `## ViewingConditions` below did not
 > go with it. `HalfPips` — `0` to `8` a bank, three banks summing to `12`, halved again at each
-> provider's call boundary — was withdrawn outright with the draft, Apply, Reset and the running
-> total that were its only readers; the artboard draws four whole blocks a bank and nothing converts
-> anything ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
+> provider's call boundary — was withdrawn outright with the control that produced it. The draft, the
+> running total and the field guidance counted in whole pips; Apply converted them into this encoding
+> and the providers were the only thing that read it, so once ruling C took the control there was
+> nothing left to convert into and nothing left to convert for ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
 > `specs/005-power-and-heat/tasks.md`, T010's retirement). What feature 005 built is not this type
 > under another name: it holds `0` to `4` a bank **on the half step**, six between the three
 > (`src/app/application/power-heat/power-conditions.store.ts`,

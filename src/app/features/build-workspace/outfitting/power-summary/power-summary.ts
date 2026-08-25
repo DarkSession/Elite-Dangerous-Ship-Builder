@@ -38,8 +38,12 @@ const MW_DIGITS = 2;
  * condition and this is the rail's half of it. Canvas 1d draws the first two in
  * its Status mode and no pip control at all.
  *
- * Nothing that is not on the artboard is added: no heat sentence, no severity
- * word, no all-clear line.
+ * No severity word and no all-clear line, because neither canvas draws either.
+ * And no heat sentence — but that one is absent by ruling rather than for want
+ * of a drawing: canvas 1d does print `Sustained fire peaks at 131% heat` in its
+ * `BUILD STATUS` block, and this feature's wave-13 ruling withdrew that tier
+ * entirely (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is
+ * withdrawn entirely").
  *
  * The bar's `79%`, `21%` and `83.3%` are the artboard's own figures over the
  * whole demand — `29.64`, `7.80` and `31.20` against `37.44` — so it is drawn
