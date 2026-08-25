@@ -106,7 +106,8 @@ requested._
 3. Release automation, when it exists, declares a release by setting `SHIP_BUILDER_RELEASE_TAG` to
    `v${applicationVersion}`, per [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md)'s
    Release declaration. **No current workflow sets it**: `ci.yml` gates `main` and pull requests and
-   `deploy.yml` publishes `main` to Pages, and root `package.json#version` is `0.0.0`, which the
+   publishes successful `main` pushes to Pages, while `deploy.yml` can manually republish the same
+   validated artifact; root `package.json#version` is `0.0.0`, which the
    contract forbids from ever being a release. Every build the repository produces today is therefore
    non-release with a safe immutable build identifier, which is the correct outcome rather than a gap.
    This feature does not add a release workflow; it implements and tests the classification. Because

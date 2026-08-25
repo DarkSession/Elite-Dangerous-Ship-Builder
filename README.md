@@ -125,14 +125,16 @@ E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e
 
 The application is published to GitHub Pages at
 **[sb.edct.dev](https://sb.edct.dev/)** by
-[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). A deployment is
-only the static output of `pnpm run build`: there is no host-side build step and
-nothing runs on the server.
+the final job in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). A
+deployment is only the static output of `pnpm run build`: there is no host-side
+build step and nothing runs on the server.
 
-The workflow starts when the `CI` workflow finishes for a commit on `main` and
-stops unless that run succeeded, so nothing that fails the checks is published.
-`workflow_dispatch` publishes the ref it is dispatched from and runs
-`pnpm run check` itself, since there is no CI result behind a manual run.
+For a push to `main`, the production build is packaged in the same workflow run
+that checks it and is published only after every CI job succeeds. Pull requests
+run the checks but never package or publish a Pages artifact. A separate
+[`workflow_dispatch` recovery path](./.github/workflows/deploy.yml) republishes
+`main` by verifying that exact commit's CI gate and reusing its retained Pages
+artifact; it neither rebuilds the application nor executes repository code.
 
 Two details make the deployment behave on Pages:
 

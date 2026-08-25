@@ -68,6 +68,24 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
+      # A push to `main` is the deployment's build run too. Packaging the output
+      # here keeps the source, checks and Pages artifact on one trusted event and
+      # avoids checking out a SHA supplied by a later `workflow_run` event.
+      - name: Serve client-side routes from the 404 page
+        if: ${{ github.event_name == 'push' }}
+        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+
+      - name: Upload the build as a Pages artifact
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/elite-dangerous-ship-builder/browser
+          # Keep one known-good artifact available to the manual recovery
+          # workflow without rebuilding or executing repository code there.
+          # v5 declares this input directly; 90 days is this repository's
+          # configured maximum for Actions artifacts.
+          retention-days: 90
+
       - name: Upload unit test coverage
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -160,6 +178,12 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Report a skipped end-to-end suite
+        if: ${{ needs.e2e.result == 'skipped' }}
+        run: |
+          echo "::error title=End-to-end suite not run::The Check job did not succeed, so the end-to-end jobs were skipped."
+          exit 1
+
       - name: Check out the repository
         uses: actions/checkout@v7
 
@@ -186,7 +210,7 @@ jobs:
         run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload the Playwright report
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
@@ -194,3 +218,61 @@ jobs:
           # Absent whenever every shard failed before writing any blob.
           if-no-files-found: ignore
           retention-days: 7
+
+      # The report job runs on a failed shard so it can preserve the evidence.
+      # Carry that failure forward after the report is uploaded so this job's
+      # own conclusion remains honest even though it also runs on failure.
+      - name: Preserve a failed end-to-end result
+        if: ${{ !cancelled() && needs.e2e.result == 'failure' }}
+        run: exit 1
+
+  deploy:
+    name: Deploy
+    # Pull requests run the same checks but never publish. `push` is already
+    # restricted to `main` by this workflow's trigger.
+    if: ${{ github.event_name == 'push' }}
+    needs: [check, e2e, e2e-report]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Share the deployment lock with the manual workflow and never interrupt a
+    # publication that has already begun.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # Concurrency prevents two publications from overlapping but does not
+      # promise FIFO ordering. Check after acquiring that lock so an older run
+      # that finished late cannot replace a newer deployment.
+      - name: Confirm this is still the main branch tip
+        id: main-tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')"
+          if [ "$current_sha" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deployment skipped::CI commit $GITHUB_SHA is no longer the main branch tip $current_sha."
+            echo "Deployment skipped: CI commit $GITHUB_SHA is no longer the main branch tip $current_sha." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Configure GitHub Pages
+        if: ${{ steps.main-tip.outputs.current == 'true' }}
+        uses: actions/configure-pages@v6
+
+      - name: Deploy to GitHub Pages
+        if: ${{ steps.main-tip.outputs.current == 'true' }}
+        id: deployment
+        uses: actions/deploy-pages@v5

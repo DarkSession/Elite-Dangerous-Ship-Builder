@@ -118,7 +118,8 @@ setting `SHIP_BUILDER_RELEASE_TAG` in a generator fixture. No workflow needs to 
 tested.
 
 **Current repository state**: no workflow sets `SHIP_BUILDER_RELEASE_TAG`. `ci.yml` gates `main` and
-pull requests, and `deploy.yml` publishes `main` to Pages; neither declares a release. Root
+pull requests and publishes successful `main` pushes to Pages; `deploy.yml` can manually republish
+the same validated artifact. Neither declares a release. Root
 `package.json#version` is `0.0.0`, which rule 3 forbids from ever being a release. Every build the
 repository produces today is therefore `nonRelease` with a `buildId`, and that is the correct
 outcome, not a gap.

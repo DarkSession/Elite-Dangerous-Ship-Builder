@@ -4,28 +4,18 @@
 # static output of `pnpm run build` handed to Pages. Nothing is built on the
 # host and no server runs there.
 #
-# Deployment is gated on CI: this workflow starts only once the `CI` workflow
-# has finished for a commit on `main`, and stops unless that run succeeded, so
-# a build that fails the checks is never published. `workflow_dispatch` publishes
-# the ref it is dispatched from — useful after changing the Pages settings — and
-# runs the checks itself, because there is no CI result to lean on.
-#
-# A `workflow_run` job runs in the context of the default branch: it holds this
-# repository's token and can write the cache scope every later run on `main`
-# reads from. So the one question this file has to answer correctly is *whose commit
-# it is about to build*, and the answer is settled by the `if:` on the build job
-# rather than by the `branches:` filter below, which cannot settle it. See the
-# comment there before changing either.
-name: Deploy
+# Automatic deployment is the final job in `ci.yml`, so its source, checks,
+# artifact and publication all belong to the same trusted push. This workflow is
+# the manual recovery path for republishing `main`, useful after changing the
+# Pages settings. It verifies the exact commit's CI gate and republishes that
+# run's retained Pages artifact; no repository code executes here.
+name: Deploy manually
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 # One deployment at a time, and never cancel one in flight: a half-finished
@@ -35,122 +25,99 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build
-    # `workflow_run` fires for every conclusion and for every event that started
-    # the run that finished, a pull request from a fork included — and none of
-    # the payload's branch fields is a trust boundary. `head_branch` is the
-    # branch name in whichever repository opened the pull request, so a fork
-    # with a branch called `main` satisfies the `branches:` filter above, and a
-    # pull request author chooses both that name and the commit the filter would
-    # then wave through. A job that checked only the conclusion would build and
-    # publish that commit, because a pull request's author also controls whether
-    # its CI passes.
-    #
-    # What an author cannot forge is the event that started the CI run, or the
-    # repository the commit came from. `head_repository` is that repository —
-    # not `repository`, which is always this one and so would check nothing. A
-    # pull request's CI run carries `pull_request` in `event`, a re-run keeps
-    # the event it was started with, and a fork's own pushes raise runs in the
-    # fork that never reach this workflow. So a `push` run of CI for this
-    # repository is one that a writer created. `head_branch` is checked as
-    # well, and it is the clause that still holds if CI's own triggers are ever
-    # widened.
-    #
-    # That settles whose commit is about to be built. It does not settle that
-    # the commit is still the tip: re-running an old CI run deploys the commit
-    # that run was for, rolling the site back to it. Re-running needs
-    # `actions: write`, so that is a footgun for us rather than a way in.
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch'
-      || (github.event.workflow_run.event == 'push'
-      && github.event.workflow_run.head_repository.full_name == github.repository
-      && github.event.workflow_run.head_branch == 'main'
-      && github.event.workflow_run.conclusion == 'success') }}
+  recover-artifact:
+    name: Recover artifact
     runs-on: ubuntu-latest
-    # Generous enough for the manual path, which runs the whole `check` gate,
-    # end-to-end suite included.
-    timeout-minutes: 40
+    timeout-minutes: 10
 
     steps:
-      # `workflow_run` runs against the default branch, not against the commit
-      # that triggered CI, so the commit CI passed on is checked out explicitly.
-      # On a manual run the ref is whatever was dispatched. The `if:` above is
-      # what makes this ref trustworthy; it is not trustworthy on its own.
-      #
-      # The token is not written into `.git/config`: everything after this step
-      # runs the checked-out project's own scripts, and none of them has any
-      # business with a credential that can reach this repository.
-      - name: Check out the repository
-        uses: actions/checkout@v7
+      - name: Require the main branch
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error title=Unsupported deployment ref::Manual deployment accepts refs/heads/main; received $GITHUB_REF."
+            exit 1
+          fi
+
+      # Ignore only the deployment job: it is the stage this workflow exists to
+      # retry. Every present and future non-deployment job that ran must have
+      # succeeded; an intentional skip is neutral, while a failed dependency is
+      # rejected by its own conclusion. New CI jobs join this gate automatically.
+      - name: Find the successful CI gate
+        id: ci-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs" \
+            -f head_sha="$GITHUB_SHA" \
+            -f event=push \
+            -f status=completed \
+            -f per_page=1 \
+            --jq '.workflow_runs[0].id // empty')"
+          if [ -z "$run_id" ]; then
+            echo "::error title=CI evidence unavailable::No completed CI push run exists for commit $GITHUB_SHA."
+            exit 1
+          fi
+
+          run_record="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '[.head_sha, .conclusion] | @tsv')"
+          IFS=$'\t' read -r run_sha run_conclusion <<< "$run_record"
+          gate_failures="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs" \
+            -f filter=all \
+            -f per_page=100 \
+            --paginate \
+            --slurp | \
+            jq -r '[.[].jobs[] | select(.name != "Deploy")] | group_by(.name) | map(max_by(.run_attempt)) as $jobs | if ($jobs | length) == 0 then "no non-deployment jobs found" else [$jobs[] | select(.conclusion != "success" and .conclusion != "skipped") | (.name + "=" + (.conclusion // "not-completed"))] | join(", ") end')"
+          if [ "$run_sha" != "$GITHUB_SHA" ]; then
+            echo "::error title=CI run mismatch::CI run $run_id belongs to commit $run_sha, not requested commit $GITHUB_SHA."
+            exit 1
+          fi
+          if [ "$run_conclusion" = "cancelled" ]; then
+            echo "::error title=CI run cancelled::CI run $run_id was cancelled, so skipped jobs cannot prove that the complete gate ran."
+            exit 1
+          fi
+          if [ -n "$gate_failures" ]; then
+            echo "::error title=CI gate not successful::CI run $run_id has non-successful jobs: $gate_failures."
+            exit 1
+          fi
+
+          artifact_record="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" \
+            -f per_page=100 \
+            --paginate \
+            --slurp | \
+            jq -r '[.[].artifacts[] | select(.name == "github-pages" and .expired == false)] as $artifacts | if ($artifacts | length) == 0 then ["0", ""] else [($artifacts | length | tostring), ($artifacts | max_by(.id) | .id | tostring)] end | @tsv')"
+          IFS=$'\t' read -r artifact_count artifact_id <<< "$artifact_record"
+          if [ "$artifact_count" = "0" ]; then
+            echo "::error title=Pages artifact unavailable::CI run $run_id has no retained github-pages artifact. Re-run CI on main to regenerate it, then run this recovery workflow again."
+            exit 1
+          fi
+          if [ "$artifact_count" -gt 1 ]; then
+            echo "::notice title=Newest Pages artifact selected::CI run $run_id has $artifact_count retained github-pages artifacts across attempts; selecting newest artifact ID $artifact_id."
+          fi
+
+          echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "artifact-id=$artifact_id" >> "$GITHUB_OUTPUT"
+          echo "::notice title=CI evidence accepted::Reusing the Pages artifact from CI run $run_id for commit $GITHUB_SHA."
+
+      - name: Download the validated Pages artifact
+        uses: actions/download-artifact@v7
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
-          persist-credentials: false
+          artifact-ids: ${{ steps.ci-run.outputs.artifact-id }}
+          path: ${{ runner.temp }}/pages-artifact
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.ci-run.outputs.run-id }}
 
-      # The version comes from `packageManager` in package.json.
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6
-
-      # No dependency cache here, deliberately. This is the one workflow that
-      # runs in the default branch's context, and an entry written from there is
-      # readable by every later run on `main` — somewhere to leave something
-      # behind for the next deployment to restore and execute.
-      #
-      # Dropping it is not what keeps that scope clean; the `if:` above is. Any
-      # step in this job holds the token the cache service accepts, so code
-      # running here could write an entry whether or not a step asked for one.
-      # What dropping it buys is that the workflow puts nothing in that scope of
-      # its own accord. CI keeps its cache, which is where an install repeats
-      # often enough to be worth caching; a deployment runs a few times a day
-      # and can afford a cold one.
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      # deploy-pages reads artifacts from its own workflow run. Re-upload only
+      # the Pages archive itself, not any other file the source artifact held.
+      - name: Attach the Pages artifact to this run
+        uses: actions/upload-artifact@v7
         with:
-          node-version-file: .nvmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # The commit already passed CI, so only the build is repeated here to
-      # produce the files to publish.
-      - name: Build
-        run: pnpm run build
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-
-      - name: Install Playwright browsers
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: pnpm exec playwright install --with-deps chromium firefox
-
-      # A manual run has no CI result behind it, so it earns green the same way
-      # a pushed commit does before anything reaches the site. `check` builds as
-      # part of the gate, which is why the plain build step is skipped here. It
-      # reports as one step rather than naming the stage that broke — the CI
-      # workflow is where a failure is diagnosed; this path is the escape hatch.
-      - name: Check and build
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: pnpm run check
-
-      # Pages serves its own 404 page for any path that is not a file, which
-      # would break a deep link into a client-side route. Serving the
-      # application from 404.html instead hands those paths to the router,
-      # which resolves them without a redirect or a hash fragment. `index.html`
-      # already carries `<base href="/">`, correct for a domain of our own.
-      - name: Serve client-side routes from the 404 page
-        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      # `public/CNAME` names the custom domain and is copied into the build by
-      # the asset glob in angular.json, so the domain survives every deployment.
-      - name: Upload the build as a Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist/elite-dangerous-ship-builder/browser
+          name: github-pages
+          path: ${{ runner.temp }}/pages-artifact/artifact.tar
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
     name: Deploy
-    needs: build
+    needs: recover-artifact
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -166,6 +133,27 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # A newer push may land while the retained artifact is being recovered.
+      # Do not let this path publish the older commit after that happens.
+      - name: Confirm this is still the main branch tip
+        id: main-tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')"
+          if [ "$current_sha" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deployment skipped::Recovery commit $GITHUB_SHA is no longer the main branch tip $current_sha."
+            echo "Deployment skipped: recovery commit $GITHUB_SHA is no longer the main branch tip $current_sha." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Configure GitHub Pages
+        if: ${{ steps.main-tip.outputs.current == 'true' }}
+        uses: actions/configure-pages@v6
+
       - name: Deploy to GitHub Pages
+        if: ${{ steps.main-tip.outputs.current == 'true' }}
         id: deployment
         uses: actions/deploy-pages@v5

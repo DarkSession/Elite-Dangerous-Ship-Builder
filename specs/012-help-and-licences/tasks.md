@@ -67,7 +67,8 @@ feature 011's file, seeded by its own entries and appended to by every feature; 
 `helpRouteCoverage` export to it and owns no other row in it.
 
 **Release automation is deliberately not a row above.** No workflow sets `SHIP_BUILDER_RELEASE_TAG`
-(`ci.yml` gates `main` and pull requests; `deploy.yml` publishes `main` to Pages), and root
+(`ci.yml` gates `main` and pull requests and publishes successful `main` pushes to Pages;
+`deploy.yml` can manually republish the same validated artifact), and root
 `package.json#version` is `0.0.0`, which
 [contracts/distribution-artifacts.md](./contracts/distribution-artifacts.md) forbids from ever being
 a release. Every build produced today is therefore non-release with a `buildId` — the correct
