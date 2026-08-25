@@ -242,7 +242,10 @@ is not named, and that a build with no engineering draws no materials block at a
       which is what `pnpm run e2e:offline` runs and what this file's projects do not. It follows
       feature 007's own offline journey in the same suite, and proves more than that the blocks are
       still painted — with the network gone, engineering a mount still makes the materials block
-      appear and still moves the credit figures.
+      appear from nothing, with its footer counting the rows beside it. The credit figures are
+      asserted **not** to move, and that is the correct expectation rather than a weaker one: a
+      blueprint is paid for in materials, and a module's catalogue price is unchanged by having been
+      engineered.
       The link, address and storage assertions stay here: "puts no figure of its own into a link or
       an address the session visits" watches every navigation rather than only the final URL, because
       the build link is republished into the fragment on each edit.

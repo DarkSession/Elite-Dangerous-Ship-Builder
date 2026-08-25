@@ -420,13 +420,29 @@ test.describe('language and formatting', () => {
       // The language the text is actually in, so a reader switches voice for a
       // canonical English name inside a German interface.
       expect(row.language).not.toBeNull();
-      // Untranslated is disclosed, never silent — and the disclosure is bound to
-      // the name rather than left sitting beside it.
-      expect(row.tagged).toBe(row.describedBy !== null);
+
+      // The invariant that ties what is seen to what was resolved: the
+      // presenter marks a row canonical exactly when it could not find the
+      // active locale's name and fell back to the package's English entry, and
+      // the primitive draws its tag exactly then
+      // (`src/app/i18n/game-text.presenter.ts`, the `canonical` arm). A row
+      // whose text is English and carries no tag is an untranslated name passed
+      // off as a translated one.
+      expect(row.tagged, `${row.text} is in ${row.language}`).toBe(row.language === 'en');
+
+      // And the disclosure is bound to the name rather than left sitting beside
+      // it, so a reader meets the two together.
+      expect(row.describedBy).toBe(row.tagged ? row.disclosureId : null);
       if (row.tagged) {
-        expect(row.describedBy).toBe(row.disclosureId);
+        expect(row.disclosureId).not.toBeNull();
       }
     }
+
+    // The active locale reached the package: this recipe's ordinary elements
+    // have German names, so a run that drew every row in English would mean the
+    // presenter never asked for the chosen language at all — which every
+    // assertion above would otherwise sit happily through.
+    expect(drawn.some((row) => row.language === 'de')).toBe(true);
 
     await context.close();
   });
@@ -480,6 +496,12 @@ test.describe('the privacy boundary', () => {
     await openStockBuild(page);
     await engineerTheDrive(page);
 
+    // The link is republished into the fragment after the edit, so it has to be
+    // waited for: inspecting the addresses before it is written would be
+    // inspecting the addresses this test exists to look at, minus the one that
+    // matters.
+    await expect(page).toHaveURL(/\/build#b\./);
+
     const figures = await ownFigures(page);
     expect(figures.length).toBeGreaterThan(0);
     visited.push(page.url());
@@ -511,8 +533,12 @@ test.describe('the privacy boundary', () => {
     const layer = page.getByRole('dialog', { name: /export build/i });
     await expect(layer).toBeVisible();
     await layer.getByRole('radio', { name: /slef json/i }).check();
-    const payload = await layer.getByLabel(/slef payload/i).inputValue();
-    expect(payload).not.toBe('');
+    // Waited for rather than read once: the payload is generated after the
+    // format is chosen, and `inputValue()` is a one-shot read that would
+    // otherwise race it — the same guard `e2e/slef-export.spec.ts` puts on it.
+    const field = layer.getByLabel(/slef payload/i);
+    await expect(field).not.toHaveValue('');
+    const payload = await field.inputValue();
 
     // No material, no shopping list and no count of one reaches the file: the
     // export is a fit, and what a fit would cost to craft is read from it rather
@@ -544,47 +570,70 @@ async function ownFigures(page: Page): Promise<number[]> {
   return values.map(digits).filter((figure) => String(figure).length >= 5);
 }
 
+/** The elements in either block that carry a reading a Commander has to be able to take. */
+const READINGS = [
+  '.block__heading',
+  '.block__note',
+  '.block__footer',
+  '.cost__label',
+  '.cost__value',
+  '.rail-material__name',
+  '.rail-material__count',
+]
+  .map((part) => `edsb-cost-materials ${part}`)
+  .join(', ');
+
 /**
- * Every label in both blocks that overlaps the figure it labels.
+ * Every reading whose content is wider than the box it was given.
  *
- * Measured as an intersection rather than as "the label ends past where the
- * figure starts", because the second test is direction-dependent and would read
- * every row as broken the moment the document runs right to left. Two boxes
- * that share horizontal space are painted over each other whichever way the
- * text runs, and a reading painted over another reading is lost.
+ * The instrument matters more than it looks. Both blocks are non-wrapping flex
+ * rows, so a label and its figure are laid side by side and their border boxes
+ * can never intersect however long the text grows — comparing their rectangles
+ * would be an assertion that cannot fail, and would say these blocks were fine
+ * at any text size whatsoever. What actually goes wrong is that a label is
+ * handed a narrower box than its text needs and paints out of it, over the
+ * figure beside it. That shows as content overflowing its own box, which is
+ * what is measured here.
+ *
+ * Inline boxes are skipped for the reason `clippedText` skips them: a
+ * non-replaced inline box has no client rectangle to overflow, and the engines
+ * disagree on what they report for one. A one-pixel difference is sub-pixel
+ * rounding; two is a box that genuinely cannot hold its content.
  */
-async function overlappingPairs(page: Page): Promise<string[]> {
-  return page
-    .locator('edsb-cost-materials .cost__row, edsb-cost-materials .rail-material')
-    .evaluateAll((rows) =>
-      rows
-        .map((row) => {
-          const label = row.querySelector('.cost__label, .rail-material__name');
-          const value = row.querySelector('.cost__value, .rail-material__count');
-          if (label === null || value === null) {
-            return null;
-          }
-          const first = label.getBoundingClientRect();
-          const second = value.getBoundingClientRect();
-          const shared =
-            Math.min(first.right, second.right) - Math.max(first.left, second.left) > 1;
-          return shared ? (label.textContent ?? '').trim() : null;
-        })
-        .filter((entry): entry is string => entry !== null),
-    );
+async function overflowingReadings(page: Page): Promise<string[]> {
+  return page.locator(READINGS).evaluateAll((nodes) =>
+    nodes
+      .filter((node) => {
+        const element = node as HTMLElement;
+        return (
+          getComputedStyle(element).display !== 'inline' &&
+          element.scrollWidth - element.clientWidth > 1
+        );
+      })
+      .map((node) => {
+        const element = node as HTMLElement;
+        const over = element.scrollWidth - element.clientWidth;
+        return `${(element.textContent ?? '').trim().slice(0, 40)} (+${over}px)`;
+      }),
+  );
 }
 
-/** Whether the footer's two counts, set at opposite ends, have run into each other. */
-async function footerCountsCollide(page: Page): Promise<boolean> {
-  return page.locator('edsb-cost-materials .block__footer').evaluate((footer) => {
-    const [types, units] = [...footer.querySelectorAll('span')].map((span) =>
-      span.getBoundingClientRect(),
-    );
-    if (types === undefined || units === undefined) {
-      return true;
-    }
-    return Math.min(types.right, units.right) - Math.max(types.left, units.left) > 1;
-  });
+/** Where each material row's name and count sit, so a mirrored layout can be told from an unmoved one. */
+async function rowEdges(page: Page): Promise<{ name: number; count: number }[]> {
+  return page.locator('edsb-cost-materials .rail-material').evaluateAll((rows) =>
+    rows.flatMap((row) => {
+      const name = row.querySelector('.rail-material__name');
+      const count = row.querySelector('.rail-material__count');
+      return name === null || count === null
+        ? []
+        : [
+            {
+              name: Math.round(name.getBoundingClientRect().left),
+              count: Math.round(count.getBoundingClientRect().left),
+            },
+          ];
+    }),
+  );
 }
 
 /** The two block headings, in the order the document holds them. */
@@ -613,8 +662,7 @@ test.describe('reading at another text size and direction', () => {
     await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
     await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
 
-    expect(await overlappingPairs(page), 'a label painted over its figure').toEqual([]);
-    expect(await footerCountsCollide(page), 'the two footer counts ran together').toBe(false);
+    expect(await overflowingReadings(page), 'a reading wider than its own box').toEqual([]);
     expect(await clippedText(page), 'content truncated with no way to read it').toEqual([]);
     await expectNoDocumentOverflow(page);
   });
@@ -625,39 +673,57 @@ test.describe('reading at another text size and direction', () => {
     await engineerTheDrive(page);
 
     // The canonical names this recipe draws run to forty characters — `Eccentric
-    // Hyperspace Trajectories`, `Atypical Disrupted Wake Echoes` — and a
-    // truncated one is not a cosmetic problem here: a Commander shops from these
-    // rows, and two materials can differ only in their tail.
+    // Hyperspace Trajectories`, `Atypical Disrupted Wake Echoes` — and a name
+    // that does not fit is not a cosmetic problem here: a Commander shops from
+    // these rows, and two materials can differ only in their tail.
     const names = (
       await page.locator('edsb-cost-materials .rail-material .game-text__value').allInnerTexts()
     ).map((name) => name.trim());
     expect(names.length).toBeGreaterThan(0);
     // A guard on the fixture rather than an assertion about the product: if the
-    // catalogue ever stopped drawing a long name here, the test below would pass
-    // without having tested anything.
+    // catalogue ever stopped drawing a long name here, the assertions below
+    // would pass without having tested anything.
     expect(Math.max(...names.map((name) => name.length))).toBeGreaterThan(20);
 
-    for (const name of names) {
-      expect(name).not.toContain('…');
-    }
-    expect(await clippedText(page)).toEqual([]);
+    // Measured, not read. These blocks set no `text-overflow`, so a name that
+    // does not fit is not marked with an ellipsis character that a text
+    // comparison could find — it overflows its box and paints over the count
+    // beside it, or pushes the row wider than the rail. Both are overflow.
+    expect(await overflowingReadings(page)).toEqual([]);
+    await expectNoDocumentOverflow(page);
   });
 
   test('right to left mirrors the blocks without reordering them', async ({ page }) => {
     await openStockBuild(page);
     await engineerTheDrive(page);
     const order = await headingOrder(page);
+    const before = await rowEdges(page);
+    expect(before.length).toBeGreaterThan(0);
+    // Left to right, the name opens each row and the count closes it.
+    expect(before.every((row) => row.name < row.count)).toBe(true);
 
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
 
-    // Direction is a visual property; the read order is the DOM, and `COST`
-    // still comes before `MATERIALS` (detail design, "Purpose and semantic
-    // order").
+    // The direction actually took. Without this the whole test would pass
+    // against a document that never turned around — and `DocumentAdapter`
+    // considers itself the sole writer of this attribute, so a future commit
+    // that reasserts it would silently make everything below vacuous.
+    await expect(page.locator('edsb-cost-materials .block').first()).toHaveCSS('direction', 'rtl');
+
+    // Mirrored: every count that closed its row on the right now opens it on
+    // the left. This is the half a DOM comparison cannot make — Playwright
+    // returns document order whichever way the page runs, so comparing the
+    // headings before and after would compare document order with itself.
+    const after = await rowEdges(page);
+    expect(after).toHaveLength(before.length);
+    expect(after.every((row) => row.count < row.name)).toBe(true);
+
+    // And not reordered: the same headings, still in the document's own order,
+    // which is the read order (detail design, "Purpose and semantic order").
     expect(await headingOrder(page)).toEqual(order);
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
-    expect(await overlappingPairs(page)).toEqual([]);
-    expect(await footerCountsCollide(page)).toBe(false);
+    expect(await overflowingReadings(page)).toEqual([]);
     expect(await clippedText(page)).toEqual([]);
     await expectNoDocumentOverflow(page);
   });
@@ -682,7 +748,7 @@ test.describe('at 400% browser zoom', () => {
     expect(await headingOrder(page)).toHaveLength(2);
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
-    expect(await overlappingPairs(page)).toEqual([]);
+    expect(await overflowingReadings(page)).toEqual([]);
     expect(await clippedText(page)).toEqual([]);
     await expectNoDocumentOverflow(page);
   });
@@ -722,8 +788,7 @@ test.describe('in German, at a doubled text size', () => {
       ].map((label) => label.toLocaleLowerCase('de')),
     );
 
-    expect(await overlappingPairs(page)).toEqual([]);
-    expect(await footerCountsCollide(page)).toBe(false);
+    expect(await overflowingReadings(page)).toEqual([]);
     expect(await clippedText(page)).toEqual([]);
     await expectNoDocumentOverflow(page);
   });

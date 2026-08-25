@@ -339,7 +339,12 @@ export async function chooseFirstRecipe(page: Page): Promise<void> {
   const values = await select
     .locator('option')
     .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
-  await select.selectOption(values[1] ?? '');
+  // Index 1: the first option is the canvas's no-blueprint choice. Asserted
+  // rather than defaulted, because a mount the package offers no recipe for
+  // would otherwise select a value no option carries and wait out the timeout
+  // instead of saying what went wrong.
+  expect(values.length, `no blueprint is offered here: ${values.join(' | ')}`).toBeGreaterThan(1);
+  await select.selectOption(values[1]!);
 }
 
 /** Chooses one experimental effect, however this width offers them. */
