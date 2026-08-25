@@ -26,6 +26,21 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 
+/**
+ * Chooses a library row, which is what the footer's actions act on.
+ *
+ * A row is named by its own words rather than by a label over them, so it is
+ * found by its title — anchored, because "Anaconda" would otherwise also match
+ * "Anaconda explorer" (WCAG 2.5.3).
+ */
+async function chooseRecord(page: Page, title: string): Promise<void> {
+  const row = page.getByRole('button', { name: new RegExp(`^${title}\\b`, 'i') });
+  await expect(async () => {
+    await row.click({ timeout: 2_000 });
+    await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+}
+
 /** Renames the ship, which is a modelled edit and therefore forks a record. */
 async function renameShip(page: Page, name: string): Promise<void> {
   // The title is the field, and leaving it is confirming it — the canvas draws
@@ -256,7 +271,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
     await savedToBrowser(page);
     await reachShellLink(page, 'Open saved build');
-    await page.getByRole('button', { name: /^Choose Anaconda/ }).click();
+    await chooseRecord(page, 'Anaconda');
     await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
     const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
@@ -272,7 +287,7 @@ test.describe('the tab’s working build', () => {
 
     // Opening it again writes nothing at all: the build is already recoverable
     // from what was opened.
-    await page.getByRole('button', { name: /^Choose Explorer/ }).click();
+    await chooseRecord(page, 'Explorer');
     await page.getByRole('button', { name: 'Open Explorer' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
 
@@ -287,7 +302,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
     await savedToBrowser(page);
     await reachShellLink(page, 'Open saved build');
-    await page.getByRole('button', { name: /^Choose Anaconda/ }).click();
+    await chooseRecord(page, 'Anaconda');
     await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
     const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
@@ -301,7 +316,7 @@ test.describe('the tab’s working build', () => {
     );
     const saved = await recordBytes(page, id);
 
-    await page.getByRole('button', { name: /^Choose Explorer/ }).click();
+    await chooseRecord(page, 'Explorer');
     await page.getByRole('button', { name: 'Open Explorer' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
@@ -316,7 +331,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
     await savedToBrowser(page);
     await reachShellLink(page, 'Open saved build');
-    await page.getByRole('button', { name: /^Choose Anaconda/ }).click();
+    await chooseRecord(page, 'Anaconda');
     await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
     const dialog = page.getByRole('dialog', { name: 'Save this build' });
     await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
@@ -324,14 +339,14 @@ test.describe('the tab’s working build', () => {
     // Naming consumes the record the build was already in: one record, not two.
     await expectRecords(page, 1);
 
-    await page.getByRole('button', { name: /^Choose Explorer/ }).click();
+    await chooseRecord(page, 'Explorer');
     await page.getByRole('button', { name: 'Open Explorer' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
     await expectRecords(page, 2);
 
     await reachShellLink(page, 'Open saved build');
-    await page.getByRole('button', { name: /^Choose Vindicator/ }).click();
+    await chooseRecord(page, 'Vindicator');
     await page.getByRole('button', { name: 'Save Vindicator under a name' }).click();
     const replace = page.getByRole('dialog', { name: 'Save this build' });
     await replace.getByRole('textbox', { name: 'Name' }).fill('Explorer');
