@@ -743,7 +743,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'no trace disclosure or contributing-selection list exists (ruling F)',
       'rarity uses the package grade, never a cross-origin icon',
       'every name is drawn by the shared game-text primitive, in the language it resolved',
-      'the longest canonical name the package publishes fits its row at a doubled text size',
+      'the longest name a build reaches through this journey fits its row at a doubled text size',
       'the block appears and follows an edit with the network gone',
       'no material, list or count of one reaches a SLEF export',
       'the axe sweep runs over the no-build, nothing-crafted and Merc-Coin states, not one of them',
