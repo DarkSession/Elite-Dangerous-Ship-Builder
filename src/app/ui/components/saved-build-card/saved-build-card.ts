@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type { GameTextPresentation } from '../../../i18n/game-text.presenter';
-import { relationId } from '../../a11y/text-equivalence';
 import { GameText } from '../game-text/game-text';
 
 /** One stored build, as the library's list draws it. */
@@ -64,8 +63,6 @@ export class SavedBuildCard {
   readonly chosen = input(false);
 
   readonly chose = output<string>();
-
-  readonly cardId = relationId('saved-build');
 
   choose(): void {
     this.chose.emit(this.build().id);
