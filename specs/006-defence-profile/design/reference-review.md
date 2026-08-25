@@ -117,13 +117,21 @@ components and these plan-time screen definitions remain authoritative.
 
 One change reaches this feature, and it is an addition rather than a correction.
 
-**The shield table gained a fifth column, `MJ × 4 SYS PIPS`.** The sample reads `7,805` against the
-kinetic row's `3,122`, which is `1,842 / (1 − 0.764)` where `0.764` stacks the row's own `41%` with
-the package's systems resistance at four pips. So the canvas is drawing the same effective pool
-twice: bare, and at the SYS allocation. That resolves what the `RESIST` and `MJ` columns are, which
-the previous drawing left open and this feature had read at the standing allocation — they are the
-**bare** shield, the package's own documented zero-pip default, and the standing allocation moves to
-the new column. The heading names the allocation it was read at.
+**The shield table gained a fifth column, `MJ × N SYS PIPS`.** `N` is the SYS allocation the column
+was read at; the canvas happens to sample four, and by the rule stated above — "the mock's sample
+figures are illustrations, not data" — four is the sample and `N` is the column. The sampled cell reads
+`7,805` against the kinetic row's `3,122`, which is `1,842 / (1 − 0.764)` where `0.764` stacks the
+row's own `41%` with the package's systems resistance at four pips. So the canvas is drawing the
+same effective pool twice: bare, and at the SYS allocation.
+
+That resolves what the `RESIST` and `MJ` columns are, which the previous drawing left open and this
+feature had read at the standing allocation — they are the **bare** shield at zero pips, the
+package's own documented default, and the standing allocation moves to the new column alone. The
+resistance percentages are therefore base values; nothing on the table except the fifth column moves
+when a pip moves.
+
+Note the canvas sample is internally inconsistent — its distributor and rail stand at SYS 2 while
+this heading reads `4`. The sample is not the requirement, and the heading follows the allocation.
 
 Two package calls, one per column, both `shieldMetricsResult()`; the second is the call this feature
 already makes. Nothing is scaled, blended or apportioned here, and `systemsResistance` is a returned

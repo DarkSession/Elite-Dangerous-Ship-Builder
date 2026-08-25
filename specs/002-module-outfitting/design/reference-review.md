@@ -150,9 +150,20 @@ badge, the module's identity and its power control, and canvas 1d's row carries 
 job is to select. Where the actions went is ruled separately below, because the two canvases do not
 agree on that and an earlier pass carried canvas 1d's answer to both widths.
 
-The Almanac's _reason_ a mount cannot be emptied moved with them. The row keeps a short marker —
-canvas 1d's `FIXED` on the cargo hatch — and the full sentence is published on the bench, where it
-answers a question a Commander is asking rather than repeating down seven core rows.
+The Almanac's _reason_ a mount cannot be emptied moved with them, and the full sentence is published
+on the bench, where it answers a question a Commander is asking rather than repeating down seven core
+rows. The row itself carried a short `FIXED` marker beside it until the 2026-08-25 revision withdrew
+it; see below.
+
+**The `FIXED` chip is withdrawn, 2026-08-25 (canvas revision).** The resynced canvas draws the cargo
+hatch as an ordinary ledger row — a size, the name `Cargo Hatch 1E` and an ordinary power-priority
+control — and writes no chip beside it, on the row or on the bench. What it does carry is a `title`:
+`Cargo Hatch cannot be replaced or engineered — power priority only`, plus `cursor: default` and no
+selection affordance. So the canvas states the fact in prose and in behaviour, not as a drawn label,
+which is what this feature already publishes on the bench. Under the standing rule — is it on the
+design? no → remove it — the chip goes, with its two computed markers, its two style rules and its
+`outfitting.immovable.short.cargoHatch` string in both catalogues. The full sentence stays: it is the
+reading, and it is now the only one.
 
 **Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The wide composition is selected
 at the sum of the two declared content minimums (24.5rem + 22.5rem = 47rem; **corrected 2026-08-22,
@@ -426,7 +437,7 @@ different icon wearing the same description, and was withdrawn.
 
 **Voice, ruled 2026-08-22 (wave 9).** Commander-facing copy no longer names the Almanac. The
 package is the source of every figure and every refusal, and the design's own drawings state facts —
-`FIXED`, `There is no engineering for this mount.` — without crediting a dependency for them. Naming
+`There is no engineering for this mount.` — without crediting a dependency for them. Naming
 it made a library the speaker of sentences about a Commander's ship, and the credit belongs in the
 provenance statement feature 012 owns, once per application rather than in thirty strings. The name
 stays in code comments, spec prose and diagnostics that never reach a screen, because there it says

@@ -47,6 +47,14 @@ The manifest's own row gap is drawn above its header row as well as between its 
 
 The manifest is deliberately **not** an overflow container: a sticky header inside one freezes against that box rather than against the viewport. It only ever renders above the medium threshold, where its six short columns fit, and narrower or zoomed layouts use the cards instead.
 
+### The inspector's track is reserved, ruled 2026-08-25 (Commander request)
+
+Canvas 1a draws the inspector only with a hull in it, and an empty inspector is still not drawn: no ground, no hairline, no artwork frame, nothing. Its **track** is reserved all the same, at the wide composition only.
+
+The manifest is what a Commander is reading when they open their first hull, and resting on a row is what opens it — so under the earlier ruling the act of reading reflowed the thing being read: the region gave up the rail's width, five columns re-measured, and the row under the cursor moved out from under it. Reserving the track costs nothing while it is empty (a grid column with a `display: none` item paints no ink) and buys a manifest whose measure does not depend on whether a hull happens to be open.
+
+Below the rail width there is no second track to reserve and the question does not arise: the compact composition stacks, and an open hull takes the screen.
+
 ### The manifest holds its column track list
 
 Canvas 1a draws the manifest as a grid on one track list — `22px 2.1fr 1.5fr 56px 104px 96px` — shared by the header row and every row under it. A table that re-measures its columns whenever the list is narrowed does not behave like that drawing: choosing a pad class or typing a letter shuffles every heading sideways under the reader's eye.
@@ -92,17 +100,17 @@ Search uses the actual localized strings/formatters shown in the current manifes
 Measured from canvas 1a (wide) and 1b (compact); the shared vocabulary is in
 [feature 011's canvas extraction](../../011-interface-foundations/design/canvas-extraction.md).
 
-| Part                | Canvas                                                                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Screen chrome       | The application command bar: amber flag, `SHIPYARD` in condensed 700 tracked 0.26em, the package hull count in monospace beside it |
-| Region split        | `1fr` manifest against a fixed inspector rail; the rail carries its own darker ground behind an amber hairline                     |
-| Toolbar             | A search field on the darker ground, then the size choices as an abutted segmented strip whose one-pixel gaps show amber through   |
-| Compact sort        | A tracked `SORT` label and a single scrolling row of chips, the one in force filled amber and carrying a direction caret           |
-| Column headers      | Monospace, tracked 0.16em, over a single amber hairline; each header is the sort control                                           |
-| Row                 | A plate on `--panel` separated from its neighbours by a 2px gap, opened by a 3px marker on the leading edge                        |
-| Selected row        | An amber lozenge fills the marker column, a wash runs from the leading edge, and the hull name turns amber — never a word          |
-| Hull name           | Condensed 600 uppercase tracked 0.07em — the largest thing in the row                                                              |
-| Manufacturer        | Barlow, untracked, quieter than the name                                                                                           |
-| Size, mounts, price | Monospace codes — `LRG`, `2H 2L 1M 2S` — with the price in Mcr under a `PRICE Mcr` header, aligned to the trailing edge            |
-| Compact row         | A fixed size code on the leading edge, name over a `manufacturer · mounts` line, price and `Mcr` on the trailing edge              |
-| Empty state         | Centred prose in Barlow 300 on the manifest's own ground, no panel                                                                 |
+| Part                | Canvas                                                                                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Screen chrome       | The application command bar: amber flag, `SHIPYARD` in condensed 700 tracked 0.26em, the package hull count in monospace beside it                                   |
+| Region split        | `1fr` manifest against a fixed inspector rail; the rail carries its own darker ground behind an amber hairline, and its track is held whether or not a hull is in it |
+| Toolbar             | A search field on the darker ground, then the size choices as an abutted segmented strip whose one-pixel gaps show amber through                                     |
+| Compact sort        | A tracked `SORT` label and a single scrolling row of chips, the one in force filled amber and carrying a direction caret                                             |
+| Column headers      | Monospace, tracked 0.16em, over a single amber hairline; each header is the sort control                                                                             |
+| Row                 | A plate on `--panel` separated from its neighbours by a 2px gap, opened by a 3px marker on the leading edge                                                          |
+| Selected row        | An amber lozenge fills the marker column, a wash runs from the leading edge, and the hull name turns amber — never a word                                            |
+| Hull name           | Condensed 600 uppercase tracked 0.07em — the largest thing in the row                                                                                                |
+| Manufacturer        | Barlow, untracked, quieter than the name                                                                                                                             |
+| Size, mounts, price | Monospace codes — `LRG`, `2H 2L 1M 2S` — with the price in Mcr under a `PRICE Mcr` header, aligned to the trailing edge                                              |
+| Compact row         | A fixed size code on the leading edge, name over a `manufacturer · mounts` line, price and `Mcr` on the trailing edge                                                |
+| Empty state         | Centred prose in Barlow 300 on the manifest's own ground, no panel                                                                                                   |

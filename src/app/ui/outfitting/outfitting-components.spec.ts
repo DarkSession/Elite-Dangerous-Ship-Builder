@@ -260,21 +260,19 @@ describe('slot card', () => {
     expect(textOf(element(utility))).toContain('2');
   });
 
-  it('marks the one mount the canvas marks, and no other', () => {
-    // Canvas 1d writes `FIXED` beside the cargo hatch and nothing anywhere
-    // else. A required core internal is just as immovable and the Almanac's
-    // reason for it is published on the bench, in its own full sentence.
-    const hatch = renderComponent(SlotCard, {
-      slot: slotView({ kind: 'cargoHatch', removable: false, immovableReason: 'cargoHatch' }),
-      capabilities: { ...EVERY_CAPABILITY, canRemove: false },
-    });
-    expect(textOf(query(hatch, '.slot__marker')).toLowerCase()).toContain('fixed');
-
-    const required = renderComponent(SlotCard, {
-      slot: slotView({ removable: false, immovableReason: 'requiredSlot' }),
-      capabilities: { ...EVERY_CAPABILITY, canRemove: false },
-    });
-    expect(element(required).querySelector('.slot__marker')).toBeNull();
+  it('marks no row as immovable, whatever the reason', () => {
+    // The resynced canvas draws the cargo hatch as an ordinary ledger row with
+    // an ordinary power control, and writes nothing beside it. Immovability is
+    // the Almanac's fact and it is published on the selected mount's bench, in
+    // the Almanac's own full sentence, rather than as a chip down seven rows.
+    for (const immovableReason of ['cargoHatch', 'requiredSlot'] as const) {
+      const card = renderComponent(SlotCard, {
+        slot: slotView({ removable: false, immovableReason }),
+        capabilities: { ...EVERY_CAPABILITY, canRemove: false },
+      });
+      expect(element(card).querySelector('.slot__marker')).toBeNull();
+      expect(textOf(element(card)).toLowerCase()).not.toContain('fixed');
+    }
   });
 
   it('emits a selection intent rather than acting on one', () => {

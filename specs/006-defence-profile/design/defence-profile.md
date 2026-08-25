@@ -58,13 +58,18 @@ the complete stacked composition.
   that is the bar column's own width and has both of its ends printed under it — and zero printed
   at the mark as well, wherever the table reaches below it. Every length a bar draws is stated
   beside it as a figure.
-- **A fifth column, added by the 2026-08-25 canvas revision: `MJ × 4 SYS PIPS`.** The shield table
+- **A fifth column, added by the 2026-08-25 canvas revision: `MJ × N SYS PIPS`.** The shield table
   now closes each row with the same effective pool read at the standing SYS allocation, beside the
-  bare one. `RESIST` and `MJ` become the bare shield — the package's own zero-pip default — and the
-  new column is a second `shieldMetricsResult()` at the allocation feature 005 holds. The heading
-  states the allocation it was read at, because a figure that moves with a condition shown without
-  that condition is the misleading number constitution IV forbids. The armour table gains nothing:
-  the canvas leaves it at four columns, and pips do not reach a hull.
+  bare one. `N` is that allocation, drawn into the heading and moving with it — the canvas samples
+  it at four (`MJ × 4 SYS PIPS`), which is a sample and not the label. At zero pips the column heads
+  `MJ × 0 SYS PIPS` and repeats the `MJ` column, which is correct and is what the reading means. The
+  heading states the allocation because a figure that moves with a condition shown without that
+  condition is the misleading number constitution IV forbids. The armour table gains nothing: the
+  canvas leaves it at four columns, and pips do not reach a hull.
+- **The first four columns are the bare shield and stay still.** `RESIST` is the base resistance at
+  zero pips and `MJ` the pool that follows from it — `shieldMetricsResult({ systemsPips: 0 })`, the
+  package's own default. Moving a pip changes the fifth column and nothing else on the table. A
+  resistance percentage with systems resistance folded into it is not drawn anywhere.
 - The bar stays drawn from the **bare** resistance, the column it sits beside. Two lengths on one
   track, or a length drawn from one column and printed beside another, would be a reading the canvas
   does not draw.

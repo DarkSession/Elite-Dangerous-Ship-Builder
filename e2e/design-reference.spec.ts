@@ -168,14 +168,26 @@ test.describe('the reference visual language', () => {
   });
 
   // Canvas 1a draws the rail only with a hull in it: with none chosen there is
-  // no ground, no hairline and no reserved track, and the manifest has the
-  // width.
-  test('draws nothing of the inspector until a hull is chosen', async ({ page }) => {
+  // no ground and no hairline. The track it will occupy is reserved anyway, so
+  // opening the first hull does not reflow the manifest under the cursor.
+  test('draws nothing of the inspector until a hull is chosen, but keeps its track', async ({
+    page,
+  }) => {
     const rail = page.locator('.catalogue__inspector');
+    const manifest = page.locator('.catalogue__manifest-region');
     await expect(rail).toBeHidden();
+
+    const before = await manifest.boundingBox();
+    expect(before, 'the manifest did not render').not.toBeNull();
 
     await openFirstHullFromManifest(page);
     await expect(rail).toBeVisible();
+
+    // Below the rail width there is no second track and nothing to reserve;
+    // the measurement is the same either way, because the manifest region keeps
+    // the width it had.
+    const after = await manifest.boundingBox();
+    expect(after?.width).toBeCloseTo(before?.width ?? 0, 0);
   });
 
   test('sets the inspector name large in tracked amber over a monospace line', async ({ page }) => {

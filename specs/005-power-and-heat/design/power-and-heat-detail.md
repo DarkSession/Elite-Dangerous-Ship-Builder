@@ -293,7 +293,7 @@ returned rather than the ones that were pressed.
 
 Two things make the second placement worth its own control rather than a read-out. The rail is on
 screen in every anatomy mode, and the distributor table is only in `POWER`; and since the 2026-08-25
-revision two other regions read figures at an allocation — feature 006's `MJ × 4 SYS PIPS` column
+revision two other regions read figures at an allocation — feature 006's `MJ × N SYS PIPS` column
 and feature 007's `CAP 61 MJ · WEP 3 PIPS` — which a Commander would otherwise have to leave the
 region to change.
 

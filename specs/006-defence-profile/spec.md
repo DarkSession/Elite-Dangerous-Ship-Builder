@@ -38,15 +38,23 @@ module protection for the active build.
   field, each from its own call.
 
   > **Second column added 2026-08-25.** The canvas revision of that date gave the shield table a
-  > fifth column headed `MJ × 4 SYS PIPS`, holding `7,805` beside the `MJ` column's `3,122` on the
-  > kinetic row — exactly `strength / (1 − resistance)` with the package's own systems resistance
-  > folded in. So the table's `RESIST` and `MJ` columns are the **bare** shield,
-  > `shieldMetricsResult({ systemsPips: 0 })`, which is what the package documents its default as
-  > ("the bare shield, as an outfitting screen shows it"), and the new column is
-  > `shieldMetricsResult({ systemsPips: <standing allocation> })`. The column's heading names the
-  > allocation it was read at, so it reads `MJ × 4 SYS PIPS` at four pips and states its own
-  > allocation at any other. Nothing is multiplied here: both columns are `effectiveHitPoints`
-  > straight off two package results, and `systemsResistance` is the package's own field.
+  > fifth column headed `MJ × N SYS PIPS`, where **N is the SYS allocation standing at the time of
+  > reading** — not a fixed number. The canvas samples it at four, so its heading reads
+  > `MJ × 4 SYS PIPS` and its kinetic cell `7,805` beside the `MJ` column's `3,122`; at two pips the
+  > same column heads `MJ × 2 SYS PIPS` and holds a smaller figure, and at none it heads
+  > `MJ × 0 SYS PIPS` and equals the `MJ` column exactly. The heading is part of the reading,
+  > because a figure that moves with a condition shown without that condition is the misleading
+  > number constitution IV forbids.
+  >
+  > The first four columns do not move with the allocation at all. `RESIST` and `MJ` are the
+  > **bare** shield at zero pips, `shieldMetricsResult({ systemsPips: 0 })` — which is what the
+  > package documents its default as ("the bare shield, as an outfitting screen shows it") — and the
+  > pip effect appears in the fifth column and nowhere else. In particular the four resistance
+  > percentages are base values and never have systems resistance folded into them.
+  >
+  > The fifth column is `shieldMetricsResult({ systemsPips: <standing allocation> })`. Nothing is
+  > multiplied here: both columns are `effectiveHitPoints` straight off two package results, and
+  > `systemsResistance` is the package's own field.
 
 - **FR-003**: A `null` shield result MUST remain unavailable. A missing, disabled and power-shed
   generator MUST remain distinguishable through package and build state.

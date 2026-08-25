@@ -431,19 +431,6 @@
   @include layout.section-rule;
 }
 
-// The canvas's chip, at the size it draws it: a hairline box around a tracked
-// mono word, quieter than the title it stands beside. It follows the rule the
-// mixin draws, so the rule runs from the title to it rather than past it.
-.outfitting__bench-mark {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
-
-  order: 1;
-  flex: none;
-  margin: 0;
-  padding: var(--edsb-space-rule) var(--edsb-space-inline-tight);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
-}
-
 .outfitting__bench-title {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 

@@ -605,3 +605,8 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
 - [ ] T153 [P] Update `design/component-state-preview-matrix.md` and the chooser previews for the
       wide rail, including the fallback selection state
 - [ ] T154 Run `pnpm run check`
+- [x] T155 Withdraw the cargo hatch's `FIXED` chip. The resynced canvas draws that row as an ordinary
+      ledger row and writes no chip on it or on the bench, so the ledger marker, the bench mark,
+      their two style rules and `outfitting.immovable.short.cargoHatch` in both catalogues are gone.
+      The Almanac's full sentence stays on the bench and is now the only reading
+      (reference review, "The `FIXED` chip is withdrawn"; Commander request 2026-08-25)
