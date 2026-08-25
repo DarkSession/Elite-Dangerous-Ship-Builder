@@ -5,10 +5,10 @@ standalone page and no per-surface control. Both compose the shared feature 011 
 
 ## Inventory
 
-| Surface                      | Kind                   | Appears in                                                             | Purpose                                                      |
-| ---------------------------- | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and compact action layer | opens the shared modal without navigation                    |
-| Help · About modal           | shared modal layer     | above the current capability                                           | presents ABOUT, FAQ and LICENCE, and the one external action |
+| Surface                      | Kind                   | Appears in                                                             | Purpose                                                   |
+| ---------------------------- | ---------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and compact action layer | opens the shared modal without navigation                 |
+| Help · About modal           | shared modal layer     | above the current capability                                           | presents ABOUT, FAQ and LICENCE, and no other destination |
 
 The application frame owns the single modal instance and the single entry. A capability may not embed
 a private modal, legal copy, help destination or entry control of its own.
@@ -20,32 +20,34 @@ The frame surrounds every capability, so the frame's action is the route from al
 
 ## Requirement mapping
 
-| Requirement | Application-frame entry | Help · About modal                                           | Build/source-distribution gate   |
-| ----------- | ----------------------- | ------------------------------------------------------------ | -------------------------------- |
-| FR-001      | global/no-build access  | in-place, eager, offline dialog                              | initial-bundle assertion         |
-| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy  | —                                |
-| FR-003      | —                       | one exact excerpt and one warned GitHub `LICENSE` legal link | URL/text verification            |
-| FR-004      | —                       | clearly separates MIT from package/Frontier rights           | package-mirror equality          |
-| FR-005      | —                       | renders generated exact excerpt/destination                  | release fails on source mismatch |
-| FR-006      | —                       | localised framing plus labelled English excerpt              | byte/hash verification           |
-| FR-007      | —                       | separate app/Almanac versions and non-release ID in `ABOUT`  | manifest identity checks         |
-| FR-008      | —                       | bounded catalogue/calculation statement in `ABOUT`           | wording/manifest tests           |
-| FR-009      | —                       | _withdrawn — no package-defect action is rendered_           | —                                |
-| FR-010      | opens complete help     | all seven accepted topics in `FAQ`                           | catalogue completeness           |
-| FR-011      | universal route         | complete common destination                                  | inventory coverage check         |
+| Requirement | Application-frame entry | Help · About modal                                          | Build/source-distribution gate   |
+| ----------- | ----------------------- | ----------------------------------------------------------- | -------------------------------- |
+| FR-001      | global/no-build access  | in-place, eager, offline dialog                             | initial-bundle assertion         |
+| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy | —                                |
+| FR-003      | —                       | the reference's three-line summary above one exact excerpt  | URL/text verification            |
+| FR-004      | —                       | clearly separates MIT from package/Frontier rights          | package-mirror equality          |
+| FR-005      | —                       | renders the generated exact excerpt                         | release fails on source mismatch |
+| FR-006      | —                       | localised labels; excerpt marked in its own language        | byte/hash verification           |
+| FR-007      | —                       | separate application and Almanac versions in `ABOUT`        | manifest identity checks         |
+| FR-008      | —                       | no currency claim; ownership stated by the `FAQ` topic      | wording/manifest tests           |
+| FR-009      | —                       | _withdrawn — no package-defect action is rendered_          | —                                |
+| FR-010      | opens complete help     | all seven accepted topics in `FAQ`                          | catalogue completeness           |
+| FR-011      | universal route         | complete common destination                                 | inventory coverage check         |
 
 Every live FR has at least one user-facing owner or release-gate owner. No requirement depends on a
 standalone help page or on a per-surface control.
 
 ## Shared states
 
-| Surface     | Required states                                                                                                      |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| Frame entry | wide row action, compact action-layer item, no-build, active-build, translated/expanded, RTL                         |
-| Modal       | release, non-release + build ID, offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom |
+| Surface     | Required states                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------- |
+| Frame entry | wide row action, compact action-layer item, no-build, active-build, translated/expanded, RTL |
+| Modal       | offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom          |
 
 There is no runtime loading, missing-disclaimer, destination-error or stale-artifact state. Those
-conditions fail generation/release.
+conditions fail generation/release. There is no release/non-release state either: the generator
+still classifies the build, but FR-007's display half is withdrawn and the modal says nothing about
+it.
 
 ## Accessibility, responsive and localisation baseline
 
@@ -56,8 +58,11 @@ AA contrast and target size), FR-015 (conformance statements name the excluded c
 principles V, VI and VII. They are listed here so every task that exists to satisfy them maps to an
 accepted requirement rather than to nothing.
 
-- One `dialog` with `aria-modal="true"`, a visible accessible name and an always-available close.
+- One `dialog` with modal semantics, a visible accessible name and an always-available close.
+  **Corrected 2026-08-25:** the layer is a native `dialog` opened with `showModal()`, so the modality is the element's own `:modal` state. The attribute is not set and should not be: it would duplicate what the platform already says.
+
   The dialog is a nested landmark over the capability, never a replacement `main`.
+
 - Semantic order is title, then `ABOUT`, `FAQ` and `LICENCE` — the reference's own order, the same at
   every viewport and in every locale.
 - Wide viewports use a centered bounded modal; narrow viewports use a full-width bottom sheet. Both
@@ -67,8 +72,9 @@ accepted requirement rather than to nothing.
 - Every action meets feature 011's target-size token. Nothing essential depends on hover, motion,
   colour, icon, shape, dimming or placement; open and closed state is textual.
 - `prefers-reduced-motion` makes the open and close transitions immediate without removing content.
-- Owned framing resolves through feature 011 localisation and survives expansion and RTL. The
-  Frontier excerpt stays in a labelled `lang="en"` region and is never mirrored or translated.
+- Owned labels and the licence summary resolve through feature 011 localisation and survive
+  expansion and RTL. The Frontier excerpt stays in a `lang="en"` region and is never mirrored or
+  translated.
 - Conformance is reported qualified, naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
   2.4.7 and 2.4.11. An unqualified WCAG 2.2 AA claim is prohibited (feature 011 FR-015).
 - The automated axe sweep is a floor. The manual assistive-technology protocol is the proof, and it
@@ -79,6 +85,25 @@ accepted requirement rather than to nothing.
 - Feature 011's application frame contains the visible Help action and hosts the modal instance.
 - Features 001–011 change nothing. There is no `ContextHelpLink` and no template of theirs is
   touched — the reciprocal-entry set an earlier revision of this document required is withdrawn.
+- **One exception, 2026-08-25**, and it is a defect fix rather than an addition: feature 011's
+  compact action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
+  scrolled into view — the document scrolls the screen underneath while the banner and everything
+  anchored to it stay put. At 200% text on a phone the panel grew taller than the space below the
+  banner, which put this feature's Help entry at y 873 in an 844-pixel viewport with no way to reach
+  it. FR-001's only route was unavailable in a state a Commander can actually be in. The panel is now
+  bounded to the viewport with its own scroller in `action-layer.scss`. No template changed and no
+  help control was added anywhere; what changed is that every entry in that layer, this one included,
+  can be pressed.
+- **A second exception, 2026-08-25**, and it is a policy fix rather than a change of behaviour:
+  `main`'s own fix for the sticky command bar (`3f9b574`) zeroes `--edsb-layout-bar-height` for a
+  released frame, and it declared that token inside `app-frame.scss`. The constitution has tokens
+  defined once and only in the token layer, and `check-interface-foundations.mjs` enforces it as
+  `token-outside-source`; the rule turned `pnpm run policy` red the moment this branch rebased onto
+  it. The declaration moved verbatim to `styles/tokens/_semantic.scss`, beside the token's own, as
+  `edsb-app-frame.frame--released` — the frame already marks that state on its host element, so the
+  selector reaches exactly what `:host(.frame--released)` reached. Nothing in the frame's behaviour
+  changed and its end-to-end assertion still holds; what changed is that the layout decision lives
+  in one place again.
 - Feature 012 owns the entry action, the modal composition, the presenter, the topic catalogue and
   the artifact manifest.
 - Feature 011 owns primitive dialog semantics, visible-name actions, tokens, localisation, previews
@@ -107,7 +132,7 @@ capability or applicable surface is a release failure; representative sampling i
 | Outfitting workspace ledger                  | 002   | visible               | FR-002                 |
 | Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
 | Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
-| Incoming-build normalisation refusal         | 002   | visible               | FR-011                 |
+| Incoming-build normalisation refusal         | 002   | obscured, dismissible | FR-011                 |
 | Workspace quality-completion notice          | 002   | visible               | FR-011                 |
 | Status rail                                  | 003   | visible               | FR-002, FR-008         |
 | Import Build layer                           | 004   | obscured, dismissible | FR-011                 |
@@ -120,12 +145,20 @@ capability or applicable surface is a release failure; representative sampling i
 | Cost and Materials blocks                    | 009   | visible               | FR-002, FR-008         |
 | Hull Anatomy plates and mount facts          | 010   | visible               | FR-002, FR-008         |
 | Hull Anatomy side availability/defect state  | 010   | visible               | FR-011                 |
-| Application frame                            | 011   | owns the action       | FR-001                 |
+| Application frame                            | 011   | visible               | FR-001                 |
 | Global feedback/announcement host            | 011   | visible               | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
 owns the surface. The shared replacement confirmation is feature 001's overlay reused by feature
-004's import hosts, so it is owned by 001.
+004's import hosts, so it is owned by 001. The application frame's own row records `visible` like any
+other: it is the surface that draws the action, which the Owner column already says, and a third
+frame-entry value describing the same availability would be one the transcription could not carry.
+
+**Two rows corrected 2026-08-25**, by the two-way reconciliation rather than by reading: the
+incoming-build normalisation refusal is reported inside the layer the payload was pasted into, so
+the frame is obscured there and help is reached from the workspace once that layer is dismissed; and
+the application frame's own entry was written as `owns the action`, which is the Owner column's
+fact rather than this column's.
 
 **Rows removed 2026-08-25**, each because the surface does not exist in the shipped application and a
 ledger row for a surface nobody ships is drift in the other direction:
@@ -162,8 +195,9 @@ ledger](#release-coverage-ledger) and include at least:
 4. a package value capability — the outfitting ledger and status rail.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return, no automatic network request, and — FR-002's prohibition — that the row's own surface
-embeds no legal body and offers no help or legal destination of its own. For an obscured row the
+close return, no automatic network request, that the modal itself offers no way out of the
+application, and — FR-002's prohibition — that the row's own surface embeds no legal body and offers
+no help or legal destination of its own. For an obscured row the
 journey dismisses the layer first and then opens help from the capability beneath, which is the route
 FR-011 requires there. The four classes above do not cap the ledger. All open states receive axe,
 semantic and overflow checks in the complete Chromium/Firefox viewport-orientation matrix.

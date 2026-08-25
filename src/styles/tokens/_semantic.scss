@@ -360,3 +360,19 @@
   --edsb-layout-layer-narrow: var(--edsb-measure-layer-sm);
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);
 }
+
+// The command bar releases and travels with the page when what it would
+// otherwise freeze over is no longer a viewport anything can be stacked in
+// (`app-frame.scss`, `sticky-banner.ts`). With the bar travelling there is
+// nothing left for a region to clear, so the token that says what a region
+// clears goes to nothing too, and every region that offsets by it, reserves
+// scroll room for it or subtracts it from its own height follows without
+// knowing why (FR-011).
+//
+// The frame marks that state on its own host element. The rule is here rather
+// than in the frame's stylesheet because a token is declared in the token layer
+// and nowhere else: a component that set this one would be a second place the
+// same layout decision lives.
+edsb-app-frame.frame--released {
+  --edsb-layout-bar-height: 0px;
+}

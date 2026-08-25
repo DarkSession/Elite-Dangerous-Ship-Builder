@@ -11,48 +11,54 @@
   -->
   <div class="help-dialog">
     <!--
-      The reference's own ABOUT: one sentence saying what this is, the version
-      line under it, and then what the versions are and are not a claim about.
+      The reference's own ABOUT: one sentence saying what this is, and the
+      version line under it. Nothing else — the reference draws nothing else,
+      and the provenance paragraphs an earlier revision added here are
+      withdrawn.
     -->
     <section class="help-dialog__section" [attr.aria-labelledby]="aboutId">
       <h3 class="help-dialog__heading" [id]="aboutId">{{ sections().about }}</h3>
       <p class="help-dialog__purpose">{{ view().purpose }}</p>
 
       <edsb-version-facts [facts]="about().facts" />
-
-      <p class="help-dialog__prose">{{ about().provenance.almanacRole }}</p>
-      <p class="help-dialog__prose">{{ about().provenance.frontierOwnership }}</p>
-    </section>
-
-    <section class="help-dialog__section" [attr.aria-labelledby]="faqId">
-      <h3 class="help-dialog__heading" [id]="faqId">{{ sections().faq }}</h3>
     </section>
 
     <!--
-      The licence section, in the reference's own order: what this project
-      grants and what it cannot, where the notice below came from, the notice
-      itself, and then the one way out to everything else. The excerpt is last
-      before the link because the link is what a reader goes to *after* reading
-      it, and it is the modal's only external navigation.
+      The reference's FAQ: question, then answer, in one reading sequence. Each
+      question is a heading under the section's own, so a reader moving by
+      heading meets the seven questions rather than one undifferentiated block
+      of prose.
+    -->
+    <section class="help-dialog__section" [attr.aria-labelledby]="faqId">
+      <h3 class="help-dialog__heading" [id]="faqId">{{ sections().faq }}</h3>
+
+      <div class="help-dialog__topics">
+        @for (topic of topics(); track topic.id) {
+          <div class="help-dialog__topic">
+            <h4 class="help-dialog__question">{{ topic.question }}</h4>
+            <p class="help-dialog__answer">{{ topic.answer }}</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!--
+      The licence section, in the reference's own order: the three-line summary
+      of what covers what, and then the one notice this application embeds. The
+      summary is this project's own writing and is translated; the notice is
+      Frontier's, carried rather than granted, and stays in the language it was
+      written in.
     -->
     <section class="help-dialog__section" [attr.aria-labelledby]="licenceId">
       <h3 class="help-dialog__heading" [id]="licenceId">{{ sections().licence }}</h3>
-      <p class="help-dialog__prose">{{ licence().framing }}</p>
 
-      <edsb-legal-excerpt
-        [sourceNotice]="licence().sourceNotice"
-        [languageNotice]="licence().languageNotice"
-        [text]="licence().excerpt"
-        [language]="licence().excerptLanguage"
-      />
+      <ul class="help-dialog__licence-index">
+        @for (entry of licence().index; track entry.id) {
+          <li class="help-dialog__licence-line">{{ entry.text }}</li>
+        }
+      </ul>
 
-      <edsb-warned-external-link
-        [label]="licence().link.label"
-        [href]="licence().link.href"
-        [purpose]="licence().link.purpose"
-        [leavingWarning]="licence().link.leavingWarning"
-        [networkWarning]="licence().link.networkWarning"
-      />
+      <edsb-legal-excerpt [text]="licence().excerpt" [language]="licence().excerptLanguage" />
     </section>
   </div>
 </edsb-layer>

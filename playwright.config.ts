@@ -3,7 +3,7 @@ import {
   ENGINES,
   LAYOUT_PROFILES,
   TIMING_PROJECT,
-  TIMING_SPEC,
+  TIMING_SPECS,
   type Engine,
   type LayoutProfile,
 } from './e2e/coverage-ledger';
@@ -113,7 +113,7 @@ const matrixProjects = ENGINES.flatMap((engine) =>
       // own project below. Ignoring its file here is what keeps a Firefox
       // project from loading a test it cannot run — the alternative is a test
       // that skips itself at runtime, which is forbidden outright.
-      testIgnore: [...NEVER_IN_A_DEVELOPMENT_RUN, TIMING_SPEC],
+      testIgnore: [...NEVER_IN_A_DEVELOPMENT_RUN, ...TIMING_SPECS],
       use: {
         ...ENGINE_DEFAULTS[engine],
         browserName: engine,
@@ -134,7 +134,7 @@ const matrixProjects = ENGINES.flatMap((engine) =>
  */
 const timingProject = {
   name: TIMING_PROJECT,
-  testMatch: [TIMING_SPEC],
+  testMatch: [...TIMING_SPECS],
   use: {
     ...ENGINE_DEFAULTS.chromium,
     browserName: 'chromium' as const,

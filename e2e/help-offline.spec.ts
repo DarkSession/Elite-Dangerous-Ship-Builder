@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import applicationManifest from '../package.json';
 import englishMessages from '../src/app/i18n/locales/en.json';
+import { HELP_TOPIC_IDS } from '../src/app/domain/help/help-topic';
 import { reachShellAction } from './shell';
 
 /**
@@ -67,23 +68,38 @@ test.describe('help offline', () => {
     const modal = helpModal(page);
     await expect(modal).toBeVisible();
 
-    // Every part of it, not merely the shell: the sections, the framing, the
-    // excerpt and the warning that the one link may need the network a
-    // Commander does not currently have.
+    // Every part of it, not merely the shell: the sections, the purpose, all
+    // seven questions with their answers, and the three-line licence summary.
     await expect(modal).toContainText(englishMessages['help.section.about']);
     await expect(modal).toContainText(englishMessages['help.section.faq']);
     await expect(modal).toContainText(englishMessages['help.section.licence']);
-    await expect(modal).toContainText(englishMessages['help.about.provenance.almanac']);
-    await expect(modal).toContainText(englishMessages['help.about.provenance.frontier']);
-    await expect(modal).toContainText(englishMessages['help.licence.framing']);
-    await expect(modal).toContainText(englishMessages['help.licence.source']);
-    await expect(modal).toContainText(englishMessages['help.licence.language']);
-    await expect(modal).toContainText(englishMessages['help.external.network']);
+    await expect(modal).toContainText(englishMessages['help.purpose']);
+    await expect(modal).toContainText(englishMessages['help.licence.index.application']);
+    await expect(modal).toContainText(englishMessages['help.licence.index.gameData']);
+    await expect(modal).toContainText(englishMessages['help.licence.index.typefaces']);
 
-    // The identity facts, completing SC-004: which application, which build of
-    // it and which catalogue, all three present and none of them waiting on
-    // anything. Compared against the same online journey's source of truth —
-    // the shipped root manifest — rather than against whatever is on screen.
+    // SC-004's help part: the same seven, in order, with complete text and
+    // nothing waiting on anything.
+    const topics = (await modal
+      .locator('.help-dialog__topic')
+      .evaluateAll((nodes) =>
+        nodes.map((topic) => [
+          (topic.querySelector('.help-dialog__question')?.textContent ?? '').trim(),
+          (topic.querySelector('.help-dialog__answer')?.textContent ?? '').trim(),
+        ]),
+      )) as [string, string][];
+
+    expect(topics).toEqual(
+      HELP_TOPIC_IDS.map((id) => [
+        englishMessages[`help.topic.${id}.question` as keyof typeof englishMessages],
+        englishMessages[`help.topic.${id}.answer` as keyof typeof englishMessages],
+      ]),
+    );
+
+    // The identity facts, completing SC-004: which application and which
+    // catalogue, both present and neither waiting on anything. Compared against
+    // the same online journey's source of truth — the shipped root manifest —
+    // rather than against whatever is on screen.
     const facts = new Map(
       (await modal
         .locator('.version-facts__fact')
@@ -102,10 +118,10 @@ test.describe('help offline', () => {
       0,
     );
 
-    const [nonRelease] = englishMessages['help.about.build.nonRelease'].split('{{');
-    const build = facts.get(englishMessages['help.about.build']) ?? '';
-    expect(build).toContain(nonRelease.trim());
-    expect(build.replace(nonRelease, '').trim().length).toBeGreaterThan(0);
+    // Two facts, and no release state: the reference draws neither a third
+    // fact nor a word about whether anybody released this build.
+    expect(facts.size).toBe(2);
+    await expect(modal.getByText(/non-release|release/i)).toHaveCount(0);
 
     const excerpt = modal.locator('.legal-excerpt__body');
     await expect(excerpt).toHaveAttribute('lang', 'en');

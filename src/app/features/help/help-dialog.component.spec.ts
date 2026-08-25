@@ -7,6 +7,7 @@ import {
 } from '../../ui/components/ui-component.spec-helpers';
 import { HelpDialog } from './help-dialog.component';
 import type { HelpDialogViewModel } from '../../application/help/help.presenter';
+import { HELP_TOPIC_IDS } from '../../domain/help/help-topic';
 
 /** Two lines with the punctuation a real notice carries. */
 const EXCERPT = [
@@ -15,46 +16,35 @@ const EXCERPT = [
 ].join('\n');
 
 const LICENCE = {
-  framing: "Ship Builder's own code is under the MIT licence.",
-  sourceNotice: 'The notice below is reproduced from the repository LICENSE.',
-  languageNotice: 'It stays in its original English and is not translated.',
+  index: [
+    { id: 'application', text: 'App · MIT licence' },
+    { id: 'gameData', text: 'Game data & imagery · Frontier Developments, media-usage rules' },
+    { id: 'typefaces', text: 'Typefaces · Barlow & JetBrains Mono, SIL Open Font Licence' },
+  ],
   excerpt: EXCERPT,
   excerptLanguage: 'en',
-  link: {
-    label: 'Read LICENSE on GitHub',
-    href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
-    purpose: 'Every remaining licence and third-party term is in the repository LICENSE.',
-    leavingWarning: 'Opening it leaves Ship Builder.',
-    networkWarning: 'It may need a network connection.',
-  },
 };
 
 const ABOUT = {
   facts: [
     { id: 'application', term: 'App version', value: '0.1.0' },
-    { id: 'build', term: 'Build', value: 'Non-release · 1284' },
     { id: 'almanac', term: 'Almanac version', value: '0.1.7' },
   ],
-  provenance: {
-    almanacRole:
-      'The bundled Almanac supplies the catalogue data, the validation and the calculations shown here.',
-    frontierOwnership:
-      'Frontier Developments plc owns the Elite Dangerous game data and imagery it describes.',
-  },
 };
 
-/** The same ABOUT block for a build somebody released. */
-const RELEASED_ABOUT = {
-  ...ABOUT,
-  facts: ABOUT.facts.map((fact) => (fact.id === 'build' ? { ...fact, value: 'Release' } : fact)),
-};
+/** One question and answer per declared topic, in the declared order. */
+const TOPICS = HELP_TOPIC_IDS.map((id, index) => ({
+  id,
+  question: `Question ${index + 1} about ${id}?`,
+  answer: `Answer ${index + 1} about ${id}.`,
+}));
 
 const VIEW: HelpDialogViewModel = {
   title: 'Help · About',
-  purpose:
-    'Ship Builder is a private outfitting bench for Elite Dangerous that works offline, entirely in this browser.',
+  purpose: 'Ship Builder is an offline outfitting bench for Elite Dangerous.',
   sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
   about: ABOUT,
+  topics: TOPICS,
   licence: LICENCE,
 };
 
@@ -153,21 +143,18 @@ describe('HelpDialog', () => {
     it('states the application and the bundled Almanac as two labelled facts', () => {
       const rendered = facts();
 
-      expect(rendered).toContainEqual(['App version', '0.1.0']);
-      expect(rendered).toContainEqual(['Almanac version', '0.1.7']);
+      expect(rendered).toEqual([
+        ['App version', '0.1.0'],
+        ['Almanac version', '0.1.7'],
+      ]);
       // Two facts, not one string: neither version can be read as the other.
       expect(rendered.filter(([, value]) => value === '0.1.0').length).toBe(1);
     });
 
-    it('shows a non-release build as such, with its identifier', () => {
-      expect(facts()).toContainEqual(['Build', 'Non-release · 1284']);
-    });
+    it('says nothing about release state, which the reference does not draw', () => {
+      const text = textOf(query(render(), '.help-dialog'));
 
-    it('shows a released build without inventing an identifier for it', () => {
-      const rendered = facts(render(true, { ...VIEW, about: RELEASED_ABOUT }));
-
-      expect(rendered).toContainEqual(['Build', 'Release']);
-      expect(rendered.length).toBe(3);
+      expect(text).not.toMatch(/non-release|release/i);
     });
 
     it('draws the version facts where the reference draws its version line', () => {
@@ -175,7 +162,7 @@ describe('HelpDialog', () => {
       const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
       const order = [
         ...about.querySelectorAll<HTMLElement>(
-          '.help-dialog__heading, .help-dialog__purpose, edsb-version-facts, .help-dialog__prose',
+          '.help-dialog__heading, .help-dialog__purpose, edsb-version-facts',
         ),
       ];
 
@@ -183,17 +170,7 @@ describe('HelpDialog', () => {
         'h3',
         'p',
         'edsb-version-facts',
-        'p',
-        'p',
       ]);
-    });
-
-    it('keeps provenance to the two sentences it was given', () => {
-      const fixture = render();
-      const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
-      const prose = [...about.querySelectorAll('.help-dialog__prose')].map((node) => textOf(node));
-
-      expect(prose).toEqual([ABOUT.provenance.almanacRole, ABOUT.provenance.frontierOwnership]);
     });
 
     it('states nothing anywhere about a live game or a live catalogue', () => {
@@ -203,7 +180,57 @@ describe('HelpDialog', () => {
     });
   });
 
+  describe('the questions it answers', () => {
+    it('draws all seven topics, once each, in the declared order', () => {
+      const fixture = render();
+      const topics = [...element(fixture).querySelectorAll('.help-dialog__topic')];
+
+      expect(topics.length).toBe(HELP_TOPIC_IDS.length);
+      expect(topics.map((topic) => textOf(topic.querySelector('.help-dialog__question')))).toEqual(
+        TOPICS.map((topic) => topic.question),
+      );
+    });
+
+    it('gives every question its own heading over its own answer', () => {
+      const fixture = render();
+
+      for (const [index, topic] of [
+        ...element(fixture).querySelectorAll<HTMLElement>('.help-dialog__topic'),
+      ].entries()) {
+        const heading = topic.querySelector('.help-dialog__question');
+
+        expect(heading?.tagName.toLowerCase()).toBe('h4');
+        expect(textOf(topic.querySelector('.help-dialog__answer'))).toBe(TOPICS[index]?.answer);
+      }
+    });
+
+    it('nests the questions under the FAQ heading rather than beside it', () => {
+      const fixture = render();
+      const faq = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[1];
+
+      expect(faq.querySelector('.help-dialog__heading')?.tagName.toLowerCase()).toBe('h3');
+      expect(faq.querySelectorAll('.help-dialog__topic').length).toBe(HELP_TOPIC_IDS.length);
+    });
+
+    it('draws no answer text outside a topic of its own', () => {
+      const fixture = render();
+      const faq = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[1];
+      const loose = [...faq.querySelectorAll('p')].filter(
+        (node) => node.closest('.help-dialog__topic') === null,
+      );
+
+      expect(loose).toEqual([]);
+    });
+  });
+
   describe('the one legal body it embeds', () => {
+    it('opens the section with the reference’s three-line summary', () => {
+      const fixture = render();
+      const lines = [...element(fixture).querySelectorAll('.help-dialog__licence-line')];
+
+      expect(lines.map((line) => textOf(line))).toEqual(LICENCE.index.map((entry) => entry.text));
+    });
+
     it('embeds exactly one legal excerpt, and it is in the LICENCE section', () => {
       const fixture = render();
       const excerpts = element(fixture).querySelectorAll('edsb-legal-excerpt');
@@ -230,36 +257,26 @@ describe('HelpDialog', () => {
       expect(text).not.toContain('MIT License\n');
     });
 
-    it('offers exactly one external action in the whole modal', () => {
-      // FR-009's package-defect action was withdrawn with the design review, so
-      // one is the count for the modal and not only for this section.
-      expect(element(render()).querySelectorAll('edsb-warned-external-link').length).toBe(1);
+    it('offers no way out of the application at all', () => {
+      // The reference draws no link in the modal, and neither does this. The
+      // remaining terms are in the repository `LICENSE`, which a Commander
+      // reaches from the repository rather than from a control here.
+      expect(element(render()).querySelectorAll('a').length).toBe(0);
     });
 
-    it('offers exactly one remaining-terms destination, and no other link', () => {
-      const fixture = render();
-      const links = [...element(fixture).querySelectorAll('a')];
-
-      expect(links.length).toBe(1);
-      expect(links[0]?.getAttribute('href')).toBe(LICENCE.link.href);
-      expect(textOf(links[0])).toBe(LICENCE.link.label);
-      expect(textOf(query(fixture, '.warned-external__warnings'))).toContain(LICENCE.link.purpose);
-    });
-
-    it('says what this project grants before it quotes what it cannot', () => {
+    it('summarises what covers what before it quotes what it cannot grant', () => {
       const fixture = render();
       const licence = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[2];
       const order = [
         ...licence.querySelectorAll<HTMLElement>(
-          '.help-dialog__heading, .help-dialog__prose, edsb-legal-excerpt, edsb-warned-external-link',
+          '.help-dialog__heading, .help-dialog__licence-index, edsb-legal-excerpt',
         ),
       ];
 
       expect(order.map((node) => node.tagName.toLowerCase())).toEqual([
         'h3',
-        'p',
+        'ul',
         'edsb-legal-excerpt',
-        'edsb-warned-external-link',
       ]);
     });
   });

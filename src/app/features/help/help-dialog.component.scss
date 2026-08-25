@@ -25,10 +25,57 @@
   @include layout.micro-label(var(--edsb-text-accent));
 }
 
-.help-dialog__purpose,
-.help-dialog__prose {
+.help-dialog__purpose {
   font-weight: var(--edsb-text-weight-prose);
   line-height: var(--edsb-text-leading-body);
   color: var(--edsb-text-subtle);
   text-wrap: pretty;
+}
+
+// The questions are parted more loosely from each other than a question is
+// from its own answer, so the pair reads as one unit rather than as two lines
+// in a list — the reference's own 11px-between-pairs, 4px-within rhythm.
+.help-dialog__topics {
+  @include layout.stack(var(--edsb-space-stack));
+}
+
+.help-dialog__topic {
+  @include layout.stack(var(--edsb-space-2xs));
+}
+
+.help-dialog__question {
+  font-weight: var(--edsb-text-weight-control);
+  line-height: var(--edsb-text-leading-heading);
+  color: var(--edsb-text-primary);
+  text-wrap: pretty;
+}
+
+.help-dialog__answer {
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The reference's three-line licence summary, drawn in the metric face it uses
+// for dense factual lines. It is a list because it is three separate claims
+// about three separate things, and a reader moving through it by item is
+// reading it the way it was written.
+.help-dialog__licence-index {
+  @include layout.stack(var(--edsb-space-hair));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.help-dialog__licence-line {
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-body);
+  line-height: var(--edsb-text-leading-body);
+  letter-spacing: var(--edsb-text-tracking-meta);
+  color: var(--edsb-text-muted);
+  text-transform: uppercase;
+  overflow-wrap: break-word;
 }

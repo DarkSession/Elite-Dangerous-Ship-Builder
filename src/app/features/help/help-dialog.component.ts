@@ -3,7 +3,6 @@ import { relationId } from '../../ui/a11y/text-equivalence';
 import { Layer } from '../../ui/components/layer/layer';
 import { LegalExcerpt } from '../../ui/components/legal-excerpt/legal-excerpt';
 import { VersionFacts } from '../../ui/components/version-facts/version-facts';
-import { WarnedExternalLink } from '../../ui/components/warned-external-link/warned-external-link';
 import type { HelpDialogViewModel } from '../../application/help/help.presenter';
 
 /**
@@ -28,7 +27,7 @@ import type { HelpDialogViewModel } from '../../application/help/help.presenter'
  */
 @Component({
   selector: 'edsb-help-dialog',
-  imports: [Layer, LegalExcerpt, VersionFacts, WarnedExternalLink],
+  imports: [Layer, LegalExcerpt, VersionFacts],
   templateUrl: './help-dialog.component.html',
   styleUrl: './help-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +41,7 @@ export class HelpDialog {
 
   readonly sections = computed(() => this.view().sections);
   readonly about = computed(() => this.view().about);
+  readonly topics = computed(() => this.view().topics);
   readonly licence = computed(() => this.view().licence);
 
   // Named per instance rather than by a literal. The preview catalogue renders

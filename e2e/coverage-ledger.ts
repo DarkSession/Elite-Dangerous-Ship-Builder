@@ -44,6 +44,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '006-defence-profile',
   '007-offence-profile',
   '008-mobility-and-jump',
+  '012-help-and-licences',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -65,17 +66,27 @@ export type Engine = (typeof ENGINES)[number];
 /**
  * The one measurement project outside the matrix.
  *
- * SC-002 is measured under Chromium's CPU throttling, which is a DevTools
- * Protocol capability Firefox does not have. Rather than a test that skips
- * itself in five of the ten projects — which the constitution forbids — the
- * measurement lives in its own file and its own project, and the behaviour it
- * measures is separately covered in all ten (module-catalogue contract,
- * "Verification").
+ * A first-frame or keystroke budget is measured under Chromium's CPU
+ * throttling, which is a DevTools Protocol capability Firefox does not have.
+ * Rather than a test that skips itself in five of the ten projects — which the
+ * constitution forbids — each measurement lives in its own file and they share
+ * this project, and the behaviour each of them measures is separately covered
+ * in all ten (module-catalogue contract, "Verification").
  */
 export const TIMING_PROJECT = 'chromium-mobile-timing';
 
-/** The file that project runs, and the only one it runs. */
-export const TIMING_SPEC = '**/outfitting-timing.spec.ts';
+/**
+ * The files that project runs, and the only ones it runs.
+ *
+ * Two, since feature 012: feature 002's SC-002 keystroke budget and feature
+ * 012's SC-005 first-frame budget. They share the project rather than each
+ * declaring one, because what makes a measurement honest here is that nothing
+ * else is running beside it, and one serial project is what guarantees that.
+ */
+export const TIMING_SPECS: readonly string[] = [
+  '**/outfitting-timing.spec.ts',
+  '**/help-timing.spec.ts',
+];
 
 /** Every Playwright project name the matrix generates, plus the timing project. */
 export const PROJECT_NAMES: readonly string[] = [
@@ -1546,6 +1557,99 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'an expanded translation keeps every reading, and formatting never moves a package digit',
       'a mirrored direction mirrors the layout, never a figure or its unit',
       'removing motion removes no reading: nothing was only reachable through a transition',
+    ],
+    manualRecord: 'actual-zoom',
+  },
+  // -------------------------------------------------------------------------
+  // Feature 012: help, licences and provenance
+  //
+  // One modal and one frame entry, so the surfaces are few and the evidence is
+  // mostly about content being true rather than about a screen being present.
+  // The exhaustive per-capability route set FR-011 requires is not here — it is
+  // `helpRouteCoverage` below, which is a different shape because it answers a
+  // different question.
+  // -------------------------------------------------------------------------
+  {
+    surfaceId: 'frame/help-entry',
+    requirements: ['012/FR-001', '012/FR-002', '012/FR-011'],
+    journey: 'product/help',
+    axe: true,
+    assertions: [
+      'the frame carries the entry in the wide banner row and in the compact action layer, and nowhere else',
+      'no capability, package-backed surface or layer offers a help control or a legal body of its own',
+      'opening and closing leaves the route, fragment, history length, build and stored records unchanged',
+      'opening fetches nothing: no route chunk, no document, nothing off this origin',
+      'every row of the release coverage ledger reaches the modal, an obscured one from the capability beneath',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'help/about',
+    requirements: ['012/FR-007', '012/FR-008', '012/SC-002'],
+    journey: 'product/help',
+    axe: true,
+    assertions: [
+      'the two versions equal the shipped root and installed manifests exactly',
+      'they are two separately labelled facts with distinct terms, never one run-together line',
+      'there is no third fact: nothing in the modal names a release classification or a build id',
+      'no label calls either value the live game or the live catalogue version',
+      'long identities wrap within the measure rather than scrolling the modal sideways',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'help/faq',
+    requirements: ['012/FR-010', '012/SC-003'],
+    journey: 'product/help',
+    axe: true,
+    assertions: [
+      'all seven accepted topics are present exactly once, in the declared order',
+      'each question is a heading over its own answer, nested under the FAQ section’s own heading',
+      'no answer carries a raw key, a blank value, an unresolved interpolation or markup',
+      'neither reference claim this application cannot support appears: no import promise, no retained partial roll',
+      'no governing requirement or principle id reaches the browser',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'help/licence',
+    requirements: ['012/FR-003', '012/FR-004', '012/FR-005', '012/FR-006', '012/SC-001'],
+    journey: 'product/help',
+    axe: true,
+    assertions: [
+      'the rendered disclaimer is byte-identical to a fresh generator extraction of root LICENSE',
+      'it is text content inside a region carrying its own lang, never innerHTML, Markdown or a frame',
+      'the reference’s three-line summary of what covers what opens the section, localised',
+      'one legal body and no other: no MIT text, no Almanac licence, no third-party notices',
+      'the modal draws no link, no popup and nothing that navigates out of the application',
+      'the excerpt wraps within the measure and is never clipped or truncated',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'help/offline',
+    requirements: ['012/FR-001', '012/SC-004'],
+    journey: 'product/help-offline',
+    axe: false,
+    assertions: [
+      'after one completed online load and with the network disabled, the modal opens complete',
+      'the purpose, both version facts, all seven topics in order and the exact disclaimer are all present',
+      'no request is made and there is no loading, missing or stale state to be in',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'help/reflow-and-motion',
+    requirements: ['012/FR-001', '012/SC-005'],
+    journey: 'product/help',
+    axe: true,
+    assertions: [
+      'the closed background and every open state pass an accessibility scan in all ten projects',
+      'the other shipped locale translates every owned string and leaves the excerpt in its own language',
+      'at 200% text and actual 400% zoom every section stays reachable and the document never scrolls sideways',
+      'removing motion removes no reading, and open and closed stay textual facts rather than appearances',
+      'the modal’s only control is its close, and nothing depends on colour, icon, shape or placement',
+      'the first complete frame is presented within 100 ms on a fourfold-throttled phone',
     ],
     manualRecord: 'actual-zoom',
   },

@@ -1,8 +1,22 @@
 import { execFile } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import applicationManifest from '../package.json';
 import englishMessages from '../src/app/i18n/locales/en.json';
+import germanMessages from '../src/app/i18n/locales/de.json';
+import { ZOOM_400 } from './accessibility';
+import {
+  clippedText,
+  expectNoDocumentOverflow,
+  expectNoRawMessages,
+  expectOrderedHeadings,
+  expectRootLanguage,
+  expectTargetSizes,
+  settled as settledPage,
+} from './accessibility/assertions';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { helpRouteCoverage, type HelpRouteRow } from './coverage-ledger';
 import { openChooser, openEditor } from './outfitting-surfaces';
 import { openActionLayer, reachShellAction, reachShellLink } from './shell';
@@ -51,6 +65,23 @@ function helpModal(page: Page) {
 async function openHelp(page: Page): Promise<void> {
   await reachShellAction(page, HELP_ACTION);
   await expect(helpModal(page)).toBeVisible();
+}
+
+/**
+ * The frame's Help entry itself, brought within reach without pressing it.
+ *
+ * At the wide profiles it is on the banner row; at the compact ones it is
+ * inside the action layer, and a journey that wants to *look at* the control
+ * rather than use it still has to open the layer holding it first.
+ */
+async function helpEntry(page: Page) {
+  const entry = page.getByRole('button', { name: HELP_ACTION });
+
+  if ((await entry.count()) === 0) {
+    await openActionLayer(page);
+    await expect(entry).toHaveCount(1);
+  }
+  return entry.first();
 }
 
 async function closeHelp(page: Page): Promise<void> {
@@ -401,12 +432,86 @@ async function importPayload(page: Page, payload: string): Promise<void> {
 /** Every row the ledger transcribes, with the recipe that brings it on screen. */
 const ROWS: readonly HelpRouteRow[] = helpRouteCoverage;
 
+/**
+ * The Release coverage ledger as the screen inventory writes it.
+ *
+ * Read from the document rather than restated here, because the point of the
+ * reconciliation is that the two are compared — a copy in this file would be a
+ * third thing to keep in step, and it would agree with whichever of the other
+ * two it was last edited beside.
+ */
+function inventoryLedger(): {
+  surface: string;
+  owner: string;
+  frameEntry: string;
+  applies: string[];
+}[] {
+  // Relative to the repository root, which is where the suite runs from — the
+  // same convention the disclaimer comparison below reads root `LICENSE` by.
+  const source = readFileSync('specs/012-help-and-licences/design/screen-inventory.md', 'utf8');
+  const section = source.slice(source.indexOf('## Release coverage ledger'));
+  const table = section.slice(section.indexOf('| Capability / surface'));
+
+  return table
+    .split('\n')
+    .filter((line) => line.startsWith('|'))
+    .map((line) =>
+      line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim()),
+    )
+    .filter((cells) => cells.length === 4 && !/^-+$/.test(cells[0] ?? ''))
+    .slice(1)
+    .map(([surface, owner, frameEntry, applies]) => ({
+      // Backticks are the document's code formatting around a route, not part
+      // of the surface's name.
+      surface: (surface ?? '').replace(/`/g, ''),
+      owner: owner ?? '',
+      frameEntry: frameEntry ?? '',
+      applies: [...(applies ?? '').matchAll(/FR-\d{3}/g)].map((match) => match[0]),
+    }));
+}
+
 test.describe('reaching help from every shipped surface', () => {
   test('the transcription and this suite name the same rows', () => {
     const transcribed = ROWS.map((row) => row.id).sort();
     const driven = Object.keys(REACH).sort();
 
     expect(driven).toEqual(transcribed);
+  });
+
+  test('the transcription and the screen inventory agree, in both directions', () => {
+    // T063. The `helpRouteCoverage` export transcribes the Release coverage
+    // ledger; it does not re-derive it. So the check is equality rather than
+    // containment: a row in the document and not in the code is an untested
+    // claim, and a row in the code and not in the document is a claim nobody
+    // wrote down. Both are the drift the ledger exists to prevent.
+    const inventory = inventoryLedger();
+    expect(inventory.length, 'the screen inventory’s ledger table was not found').toBeGreaterThan(
+      0,
+    );
+
+    const fromCode = ROWS.map((row) => ({
+      surface: row.surface,
+      owner: row.owner,
+      // The document writes the dismissible half of the state in prose; the
+      // export carries the state alone, because the dismissal is a property of
+      // every layer rather than of this ledger.
+      frameEntry: row.frameEntry === 'obscured' ? 'obscured, dismissible' : row.frameEntry,
+      applies: [...row.requirements].map((id) => id.replace('012/', '')).sort(),
+    })).sort((left, right) => left.surface.localeCompare(right.surface));
+
+    const fromDocument = inventory
+      .map((row) => ({
+        surface: row.surface,
+        owner: row.owner,
+        frameEntry: row.frameEntry,
+        applies: [...row.applies].sort(),
+      }))
+      .sort((left, right) => left.surface.localeCompare(right.surface));
+
+    expect(fromCode).toEqual(fromDocument);
   });
 
   for (const row of ROWS) {
@@ -520,6 +625,125 @@ test.describe('the compact route the reference draws', () => {
   });
 });
 
+/**
+ * The seven questions, and the two the reference asks that this cannot answer.
+ *
+ * The identities and their message keys come from the generated catalogue, so
+ * a topic renamed in the definitions is a topic this suite starts asserting
+ * under its new name rather than one it silently stops checking.
+ */
+const HELP_TOPIC_KEYS = [
+  'buildLinkPrivacy',
+  'accountsUploadsTelemetry',
+  'browserPersistence',
+  'offlineAssets',
+  'completedEngineeringGrades',
+  'hullFactsAndBuildResults',
+  'almanacOwnership',
+] as const;
+
+const HELP_TOPIC_TEXT = HELP_TOPIC_KEYS.map((id) => ({
+  id,
+  question: englishMessages[`help.topic.${id}.question` as keyof typeof englishMessages],
+  answer: englishMessages[`help.topic.${id}.answer` as keyof typeof englishMessages],
+}));
+
+/** Every question and answer the FAQ section drew, in reading order. */
+async function renderedTopics(page: Page): Promise<[string, string][]> {
+  return helpModal(page)
+    .locator('.help-dialog__topic')
+    .evaluateAll((topics) =>
+      topics.map((topic) => [
+        (topic.querySelector('.help-dialog__question')?.textContent ?? '').trim(),
+        (topic.querySelector('.help-dialog__answer')?.textContent ?? '').trim(),
+      ]),
+    ) as Promise<[string, string][]>;
+}
+
+test.describe('the questions the modal answers', () => {
+  test('answers all seven, once each, in the declared order', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    expect(await renderedTopics(page)).toEqual(
+      HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
+    );
+  });
+
+  test('gives every question its own heading over its own answer', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const shape = await helpModal(page)
+      .locator('.help-dialog__topic')
+      .evaluateAll((topics) =>
+        topics.map((topic) => ({
+          heading: topic.querySelector('.help-dialog__question')?.tagName.toLowerCase() ?? '',
+          answers: topic.querySelectorAll('.help-dialog__answer').length,
+        })),
+      );
+
+    expect(shape.length).toBe(HELP_TOPIC_TEXT.length);
+    for (const topic of shape) {
+      expect(topic.heading).toBe('h4');
+      expect(topic.answers).toBe(1);
+    }
+  });
+
+  test('draws the same seven from the compact action layer', async ({ page }) => {
+    await withStockBuild(page);
+
+    const inline = page.getByRole('button', { name: HELP_ACTION });
+    if ((await inline.count()) === 0) {
+      await openActionLayer(page);
+    }
+    await page.getByRole('button', { name: HELP_ACTION }).first().click();
+    await expect(helpModal(page)).toBeVisible();
+
+    expect(await renderedTopics(page)).toEqual(
+      HELP_TOPIC_TEXT.map((topic) => [topic.question, topic.answer]),
+    );
+  });
+
+  test('carries no raw key, blank answer, unresolved variable or markup', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    for (const [question, answer] of await renderedTopics(page)) {
+      for (const text of [question, answer]) {
+        expect(text.length).toBeGreaterThan(0);
+        expect(text).not.toMatch(/^help\./);
+        expect(text).not.toContain('{{');
+        expect(text).not.toMatch(/<[a-z/]/i);
+      }
+    }
+  });
+
+  test('makes neither reference claim this application cannot support', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+    const text = (await helpModal(page).textContent()) ?? '';
+
+    // The reference FAQ says an imported module keeps its real roll, which
+    // contradicts feature 002 FR-013 and constitution IV, and promises an
+    // import behaviour feature 004 owns. Neither is a topic here.
+    expect(text).not.toMatch(/retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i);
+    expect(text).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
+  });
+
+  test('nests the questions under the FAQ heading rather than beside it', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const faq = helpModal(page).locator('.help-dialog__section').nth(1);
+
+    await expect(faq.locator('.help-dialog__heading')).toHaveText(
+      new RegExp(englishMessages['help.section.faq'], 'i'),
+    );
+    await expect(faq.locator('.help-dialog__topic')).toHaveCount(HELP_TOPIC_TEXT.length);
+  });
+});
+
 test.describe('the one legal body the modal embeds', () => {
   /**
    * A fresh extraction from the file itself, by the generator's own rules.
@@ -562,16 +786,17 @@ test.describe('the one legal body the modal embeds', () => {
     await expect(excerpt).toHaveAttribute('lang', 'en');
   });
 
-  test('frames the excerpt in the reader’s language and says it is not translated', async ({
-    page,
-  }) => {
+  test('opens the section with the reference’s three-line summary', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const modal = helpModal(page);
+    const lines = helpModal(page).locator('.help-dialog__licence-line');
 
-    await expect(modal).toContainText(englishMessages['help.licence.framing']);
-    await expect(modal).toContainText(englishMessages['help.licence.source']);
-    await expect(modal).toContainText(englishMessages['help.licence.language']);
+    await expect(lines).toHaveCount(3);
+    await expect(lines).toHaveText([
+      new RegExp(englishMessages['help.licence.index.application'], 'i'),
+      new RegExp(englishMessages['help.licence.index.gameData'], 'i'),
+      new RegExp(englishMessages['help.licence.index.typefaces'], 'i'),
+    ]);
   });
 
   test('embeds one legal body and no other document', async ({ page }) => {
@@ -609,12 +834,8 @@ test.describe('the one legal body the modal embeds', () => {
   });
 });
 
-test.describe('the modal’s one way out of the application', () => {
-  /** The exact destination the generated manifest carries. */
-  const LICENCE_URL =
-    'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE';
-
-  test('asks for nothing and opens nothing until it is activated', async ({ page, context }) => {
+test.describe('the modal offers no way out of the application', () => {
+  test('draws no link at all, and asks for nothing to draw itself', async ({ page, context }) => {
     await page.goto('/build');
     await page.waitForLoadState('networkidle');
     await settled(page);
@@ -625,54 +846,32 @@ test.describe('the modal’s one way out of the application', () => {
     context.on('page', (opened) => popups.push(opened));
 
     await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-    await expect(link).toHaveCount(1);
-    await expect(link).toBeVisible();
 
+    // The reference draws no control here, and neither does this. The
+    // remaining licence and third-party terms live in the repository
+    // `LICENSE`, which a Commander reaches from the repository.
+    await expect(helpModal(page).getByRole('link')).toHaveCount(0);
     expect(outbound.filter((url) => url.includes('github'))).toEqual([]);
     expect(popups).toEqual([]);
-    // Nothing measures or warms the destination either: no preconnect, no
-    // prefetch, no ping.
+    // Nothing measures or warms a destination either: no preconnect, no
+    // prefetch.
     expect(await page.locator('link[rel="preconnect"], link[rel="prefetch"]').count()).toBe(0);
-    expect(await link.getAttribute('ping')).toBeNull();
   });
 
-  test('carries the audited destination, and nothing about this session', async ({ page }) => {
+  test('carries no repository URL anywhere in its rendered text', async ({ page }) => {
     await withStockBuild(page);
     const fragment = new URL(await settled(page)).hash;
     expect(fragment.length).toBeGreaterThan(0);
 
     await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-    const href = (await link.getAttribute('href')) ?? '';
+    const text = (await helpModal(page).textContent()) ?? '';
 
-    expect(href).toBe(LICENCE_URL);
-    expect(await link.getAttribute('rel')).toBe('noreferrer noopener');
-
-    const destination = new URL(href);
-    expect(destination.search).toBe('');
-    expect(destination.hash).toBe('');
-    // Nothing about the open build, the route, the language or this browser's
-    // stored records rides out on it.
-    expect(href).not.toContain(fragment.slice(1));
-    expect(href).not.toContain('Anaconda');
-    expect(href).not.toContain('edsb:');
-    expect(href.toLowerCase()).not.toContain('locale');
-  });
-
-  test('says where it goes, that it leaves, and that it may need a network', async ({ page }) => {
-    await withStockBuild(page);
-    await openHelp(page);
-    const link = helpModal(page).getByRole('link');
-
-    const describedBy = await link.getAttribute('aria-describedby');
-    expect(describedBy).not.toBeNull();
-    const description = helpModal(page).locator(`#${describedBy}`);
-
-    await expect(description).toBeVisible();
-    await expect(description).toContainText(englishMessages['help.licence.link.purpose']);
-    await expect(description).toContainText(englishMessages['help.external.leaving']);
-    await expect(description).toContainText(englishMessages['help.external.network']);
+    expect(text).not.toContain('https://');
+    expect(text).not.toContain('github.com');
+    // And nothing about the open build, the route or this browser's stored
+    // records is drawn either.
+    expect(text).not.toContain(fragment.slice(1));
+    expect(text).not.toContain('edsb:');
   });
 });
 
@@ -728,19 +927,14 @@ test.describe('which artifact a Commander is looking at', () => {
     );
   });
 
-  test('says this build is not a release, and which build it is', async ({ page }) => {
+  test('says nothing about release state, which the reference draws nowhere', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const facts = new Map(await identityFacts(page));
-    const build = facts.get(englishMessages['help.about.build']) ?? '';
 
-    // No workflow declares a release, so every build this repository produces
-    // is a non-release carrying its own identifier. The wording is the
-    // catalogue's, minus the identifier it interpolates.
-    const [state] = englishMessages['help.about.build.nonRelease'].split('{{');
-    expect(build).toContain(state.trim());
-    expect(build.replace(state, '').trim().length).toBeGreaterThan(0);
-    expect(build).not.toBe(englishMessages['help.about.build.release']);
+    // The generator still classifies the build — a mismatched
+    // `SHIP_BUILDER_RELEASE_TAG` fails generation — but FR-007's display half
+    // is withdrawn with the rest of what the reference does not draw.
+    await expect(helpModal(page).getByText(/non-release|release/i)).toHaveCount(0);
   });
 
   test('reads each identity as a term with its own value', async ({ page }) => {
@@ -749,8 +943,8 @@ test.describe('which artifact a Commander is looking at', () => {
     const facts = await identityFacts(page);
     const terms = facts.map(([term]) => term);
 
-    expect(facts.length).toBe(3);
-    expect(new Set(terms).size).toBe(3);
+    expect(facts.length).toBe(2);
+    expect(new Set(terms).size).toBe(2);
     for (const [term, value] of facts) {
       expect(term.length).toBeGreaterThan(0);
       expect(value.length).toBeGreaterThan(0);
@@ -760,12 +954,9 @@ test.describe('which artifact a Commander is looking at', () => {
   test('claims nothing about a live game or a live catalogue', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
-    const modal = helpModal(page);
 
-    await expect(modal).toContainText(englishMessages['help.about.provenance.almanac']);
-    await expect(modal).toContainText(englishMessages['help.about.provenance.frontier']);
     await expect(
-      modal.getByText(/live game|live catalogue|up to date|latest version/i),
+      helpModal(page).getByText(/live game|live catalogue|up to date|latest version/i),
     ).toHaveCount(0);
   });
 
@@ -780,3 +971,237 @@ test.describe('which artifact a Commander is looking at', () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 });
+
+/**
+ * The accessibility floor, over every state the modal actually has (T054–T056).
+ *
+ * The states are the ones [design/screen-inventory.md](../specs/012-help-and-licences/design/screen-inventory.md)
+ * lists and no more: default, alternate locale, expanded text, reduced motion,
+ * 200% text and actual 400% zoom. There is deliberately no release and no
+ * non-release state to sweep — FR-007's display half is withdrawn, the modal
+ * draws two version facts and says nothing about which kind of build produced
+ * them, so a sweep that named those states would be sweeping a fiction.
+ *
+ * Every test here runs in all ten Chromium and Firefox layout projects, which
+ * is what makes it a matrix sweep rather than a desktop one. The layout profile
+ * is the project's, so the sheet and the centred modal are both covered without
+ * this file resizing anything: at `mobile-portrait` the modal *is* the sheet.
+ */
+test.describe('the floor beneath every open state', () => {
+  /**
+   * The complete sweep over the currently rendered page.
+   *
+   * `label` is carried into every failure message, because "axe violations"
+   * with no state attached sends whoever reads it looking through six of them.
+   */
+  async function sweep(page: Page, testInfo: TestInfo, label: string): Promise<void> {
+    testInfo.setTimeout(testInfo.timeout + 20_000);
+
+    await settledPage(page);
+    await expectNoAccessibilityViolations(page, testInfo, { label });
+    await expectOrderedHeadings(page);
+    await expectTargetSizes(page);
+    await expectNoDocumentOverflow(page);
+    expect(await clippedText(page), `clipped text in ${label}`).toEqual([]);
+  }
+
+  test('sweeps the closed background and the open modal', async ({ page }, testInfo) => {
+    await withStockBuild(page);
+    await settled(page);
+
+    // The background first. A modal that is accessible over an inaccessible
+    // screen has moved the problem rather than solved it, and the closed state
+    // is also where the frame's own Help entry is measured.
+    await sweep(page, testInfo, 'closed background');
+
+    await openHelp(page);
+    await sweep(page, testInfo, 'open modal');
+  });
+
+  test('sweeps the modal over a capability with no build', async ({ page }, testInfo) => {
+    // The same modal over the other kind of screen, and at the narrow profiles
+    // it is also the modal reached through the compact action layer — which
+    // `reachShellAction` opens where the width has one and leaves alone where
+    // it does not. The layer is still open behind the modal when it appears,
+    // which is a nesting the wide profiles never produce.
+    await page.goto('/ships');
+    await settled(page);
+    await openHelp(page);
+
+    await sweep(page, testInfo, 'open modal over the hull catalogue');
+  });
+
+  test('sweeps the modal in the other shipped locale', async ({ browser, baseURL }, testInfo) => {
+    // German rather than a pseudo-locale: it is a shipped language, a
+    // Commander can actually be in it, and every owned string in this modal has
+    // an entry in it. The pseudo-locales are the preview application's, and
+    // feature 011's expansion and RTL suites sweep the help previews there.
+    const context = await browser.newContext({ baseURL, locale: 'de-DE' });
+    const page = await context.newPage();
+
+    try {
+      await page.goto('/build');
+      await expectRootLanguage(page, { lang: 'de', dir: 'ltr' });
+      await reachShellAction(page, new RegExp(`^${germanMessages['help.action.label']}$`, 'i'));
+
+      const modal = page.getByRole('dialog', {
+        name: new RegExp(germanMessages['help.title'].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+      });
+      await expect(modal).toBeVisible();
+
+      // Translated, not merely rendered: the purpose sentence is the German
+      // one, and the excerpt is still Frontier's English.
+      await expect(modal).toContainText(germanMessages['help.purpose']);
+      await expect(modal.locator('.legal-excerpt__body')).toHaveAttribute('lang', 'en');
+      await expectNoRawMessages(page);
+
+      await sweep(page, testInfo, 'open modal in German');
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('sweeps the modal at 200% text', async ({ page }, testInfo) => {
+    // The user's text size setting, applied before the first frame, which is
+    // what SC 1.4.4 is actually about. Not zoom — that is the next test.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await withStockBuild(page);
+    await openHelp(page);
+
+    await sweep(page, testInfo, 'open modal at 200% text');
+    await expectEverySectionReachable(page);
+  });
+
+  test('sweeps the modal at actual 400% zoom', async ({ browser, baseURL }, testInfo) => {
+    // Viewport and device scale factor together, which is the equivalence WCAG
+    // 1.4.10 defines. Its own context because `deviceScaleFactor` is fixed when
+    // a context is created and cannot be changed on a live page.
+    const context = await browser.newContext({
+      baseURL,
+      viewport: ZOOM_400.viewport,
+      deviceScaleFactor: ZOOM_400.deviceScaleFactor,
+    });
+    const page = await context.newPage();
+
+    try {
+      await withStockBuild(page);
+      await openHelp(page);
+
+      await sweep(page, testInfo, 'open modal at 400% zoom');
+      await expectEverySectionReachable(page);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('keeps every state immediate and textual without motion', async ({ page }, testInfo) => {
+    // What is asserted is that *nothing* is lost: a modal only reachable
+    // through a transition is unreachable for a Commander who has asked for
+    // none, and open and closed have to be distinguishable without watching
+    // anything move.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await withStockBuild(page);
+    await settled(page);
+
+    await expect(helpModal(page)).toHaveCount(0);
+    await openHelp(page);
+    const modal = helpModal(page);
+
+    // Open state is a fact in the accessibility tree, not an appearance: the
+    // dialog is there, it is modal, and it carries its own name. Modality is
+    // read as the element's own `:modal` state rather than as an `aria-modal`
+    // attribute, because the layer is a native `dialog` opened with
+    // `showModal()` — which carries the semantics natively, and on which the
+    // attribute would be a duplicate of something the platform already says.
+    expect(await modal.evaluate((node) => node.matches(':modal')), 'the modal is not modal').toBe(
+      true,
+    );
+    await expect(modal).toContainText(englishMessages['help.purpose']);
+
+    // And nothing is mid-transition once it is open. A transition still running
+    // when the content is asserted is a transition a Commander asked not to
+    // have.
+    const animating = await modal.evaluate(
+      (node) =>
+        node
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.playState === 'running').length,
+    );
+    expect(animating, 'the modal is still animating under prefers-reduced-motion').toBe(0);
+
+    await sweep(page, testInfo, 'open modal under reduced motion');
+
+    // And closed is a fact too: the dialog is gone, the capability beneath is
+    // back, and neither took a transition to happen.
+    await closeHelp(page);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+    await page.emulateMedia({ reducedMotion: null });
+  });
+
+  test('carries no meaning in colour, icon, shape or placement alone', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+    const modal = helpModal(page);
+
+    // Every control the modal draws — there is exactly one — has a text
+    // accessible name. An icon-only close would put the only way out behind
+    // glyph recognition.
+    const controls = modal.getByRole('button');
+    await expect(controls).toHaveCount(1);
+    const names = await controls.evaluateAll((nodes) =>
+      nodes.map(
+        (node) => (node.textContent ?? '').trim() || (node.getAttribute('aria-label') ?? ''),
+      ),
+    );
+    for (const name of names) {
+      expect(name.length, 'a control in the modal has no textual name').toBeGreaterThan(0);
+    }
+
+    // The frame's own entry, likewise: the reference names the wide control
+    // with a title attribute on a `?`, and this draws the label itself.
+    await closeHelp(page);
+    await expect(await helpEntry(page)).toHaveAccessibleName(HELP_ACTION);
+    await openHelp(page);
+
+    // No section depends on an image to be understood, and nothing in the
+    // modal is drawn as one.
+    await expect(helpModal(page).locator('img, svg')).toHaveCount(0);
+  });
+});
+
+/**
+ * Every section of the modal is reachable at a constrained size.
+ *
+ * The header and its close stay put; the body alone scrolls. So "reachable"
+ * means the body can be scrolled to each section, not that each section is
+ * already in view — a 320-pixel viewport at 400% zoom has room for about one.
+ */
+async function expectEverySectionReachable(page: Page): Promise<void> {
+  const modal = helpModal(page);
+
+  // The title and the way out are available without scrolling anything.
+  await expect(modal.getByRole('heading', { name: HELP_TITLE })).toBeInViewport();
+  await expect(
+    modal.getByRole('button', { name: new RegExp(`^${englishMessages['action.close']}$`, 'i') }),
+  ).toBeInViewport();
+
+  const sections = [
+    englishMessages['help.section.about'],
+    englishMessages['help.section.faq'],
+    englishMessages['help.section.licence'],
+  ];
+  for (const section of sections) {
+    const heading = modal.getByRole('heading', { name: new RegExp(`^${section}$`, 'i') });
+    await heading.scrollIntoViewIfNeeded();
+    await expect(heading).toBeInViewport();
+  }
+
+  // The last thing in the last section is the disclaimer, and it is what a
+  // clipped modal loses first.
+  const excerpt = modal.locator('.legal-excerpt__body');
+  await excerpt.scrollIntoViewIfNeeded();
+  await expect(excerpt).toBeInViewport();
+
+  // Whatever scrolled, it was not the document.
+  await expectNoDocumentOverflow(page);
+}

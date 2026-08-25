@@ -51,9 +51,12 @@ to the repository's `LICENSE` on GitHub.
 ### Story 2 — Identify shipped versions and data (P1)
 
 1. Application and bundled Almanac versions match their build artifacts and remain distinct.
-2. A non-release build also shows a build identifier and is not presented as a release.
-3. Catalogue provenance states that the bundled Almanac supplies the data and makes no live-game
-   currency claim.
+2. Exactly two identity facts appear, each separately labelled. **Amended 2026-08-25:** the scenario
+   previously required a non-release build to show a build identifier; FR-007's display half is
+   withdrawn and nothing in the modal says which classification the build has.
+3. **Amended 2026-08-25:** the `almanacOwnership` answer states that the bundled Almanac supplies the
+   catalogue, the checks and the calculations, and nothing in the modal makes a live-game currency
+   claim. The `ABOUT` provenance paragraph this scenario used to name is withdrawn.
 
 ### Story 3 — Understand application behaviour (P2)
 
@@ -76,26 +79,52 @@ to the repository's `LICENSE` on GitHub.
   destination of its own. A surface MUST NOT carry a contextual help entry of its own either: the
   frame's Help action is the single route, and the design reference draws no per-surface control.
 - **FR-003**: Help MUST reproduce only the exact project-specific Frontier disclaimer from the
-  repository `LICENSE` as its embedded legal excerpt. It MUST provide one link to that `LICENSE` on
-  GitHub for all remaining licence information. The link MUST require a deliberate action, MUST be
-  identified as leaving the application and potentially requiring a network connection, and MUST
-  NOT include build data in its URL.
+  repository `LICENSE` as its embedded legal excerpt. Above it, help MUST carry the design
+  reference's own summary of what covers what — the application's own code, the game data and
+  imagery, and the typefaces — as one line each. It MUST name for each only terms this repository
+  can evidence. **Amended 2026-08-25:** the requirement previously also obliged help to link that
+  `LICENSE` on GitHub. The design reference draws no control in the modal, and the link is
+  withdrawn with the rest of the framing this feature had added around the reference's own licence
+  block. Help now offers no external navigation at all, which is what makes the deliberate-action,
+  leaving and network clauses moot rather than unmet.
 - **FR-004**: Source distribution MUST carry the terms applicable to redistributed package artwork
   and game data and MUST NOT present the application code licence as granting rights to them.
-- **FR-005**: FR-003's disclaimer source and licence destination MUST be verified before release. A
-  missing, empty or mismatched disclaimer or an absent GitHub licence destination MUST fail the
-  release rather than degrade at runtime.
-- **FR-006**: The embedded Frontier disclaimer MUST remain verbatim. Application-owned labels MUST be
-  localised and identify the language of the untranslated disclaimer.
-- **FR-007**: Displayed application and Almanac versions MUST come from shipped artifacts. A
-  non-release build MUST also show its build identifier.
-- **FR-008**: Neither version MUST be called the live game or live catalogue version. Provenance MUST
-  say only that the bundled Almanac supplies the catalogue and calculations.
-- **FR-009**: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
+- **FR-005**: FR-003's disclaimer source MUST be verified before release. A missing, empty or
+  mismatched disclaimer MUST fail the release rather than degrade at runtime. **Amended
+  2026-08-25:** the audited repository-`LICENSE` destination is still resolved and validated by the
+  generator, because it is the address the source distribution's terms live at and a wrong one is
+  still a release failure; it is simply no longer displayed. Verification of it is unchanged;
+  what changed is that nothing renders it.
+- **FR-006**: The embedded Frontier disclaimer MUST remain verbatim and MUST be marked in the
+  language it is written in, so a reader whose interface is in another language is not read it in
+  that language's voice. Application-owned labels MUST be localised. **Amended 2026-08-25:** the
+  requirement previously obliged a localised label to _state_ the disclaimer's language in prose.
+  The design reference draws no such sentence; the language is declared as a property of the text
+  rather than as a sentence about it, which is what a screen reader acts on either way.
+- **FR-007**: Displayed application and Almanac versions MUST come from shipped artifacts, and MUST
+  be two separately labelled facts rather than one run-together line. **Amended 2026-08-25:** the
+  requirement previously obliged a non-release build to display its build identifier as well. The
+  design reference draws two version facts and no third, and the display half is withdrawn. Release
+  classification itself is untouched: the generator still reads `SHIP_BUILDER_RELEASE_TAG`, still
+  fails a mismatched or placeholder value rather than downgrading, and still records the outcome in
+  the manifest as release evidence. It is simply not a thing the modal says.
+- **FR-008**: Neither version MUST be called the live game or live catalogue version, and no help
+  content MUST claim currency with either. **Amended 2026-08-25:** the requirement previously
+  obliged a bounded provenance statement in `ABOUT`. The design reference draws no such paragraph
+  there, and it is withdrawn. The credit it carried is not lost: the `almanacOwnership` topic of
+  FR-010 says that the bundled Almanac supplies the catalogue, the checks and the calculations and
+  that this application neither maintains nor corrects those game values, and FR-003's licence
+  summary names Frontier for the game data and imagery. That is where a Commander now meets both,
+  and it satisfies the standing feature 002 ruling of 2026-08-22 that the credit belongs to this
+  feature, once per application.
+- `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support
-  route rather than help content. The modal offers no replacement destination, and FR-003's
-  repository `LICENSE` link remains its only external navigation. The identifier is retained rather
-  than reused so references elsewhere in this feature stay resolvable.
+  route rather than help content. The modal offers no replacement destination and, since FR-003's
+  repository-`LICENSE` link was withdrawn on the same day, no external navigation of any kind. The
+  identifier is retained rather than reused so references elsewhere in this feature stay
+  resolvable. The id is unbolded here on purpose, following feature 003's convention: an unbolded id
+  is not declared, so the repository policy checker no longer requires coverage-ledger evidence for
+  a requirement that no longer exists.
 - **FR-010**: Help MUST describe accepted current behaviour only. Its accepted behaviour-topic set
   MUST contain exactly one answer for each of these seven topics: build-link privacy; absence of
   accounts, uploads and telemetry; persistence and storage clearing; offline assets; completed
@@ -114,32 +143,34 @@ to the repository's `LICENSE` on GitHub.
 
 ## Edge Cases
 
-- A missing or mismatched embedded Frontier disclaimer or GitHub licence destination is a release
-  failure, not a degradable runtime state.
+- A missing or mismatched embedded Frontier disclaimer, or a repository-`LICENSE` destination the
+  generator cannot audit, is a release failure, not a degradable runtime state.
 - The Frontier disclaimer is reproduced rather than translated.
-- After one completed online load, help remains usable offline and identifies that the external GitHub
-  licence may require a network connection.
-- External links are deliberate, identified and contain no build data.
+- After one completed online load, help remains usable offline in full — every section, all seven
+  topics and the disclaimer — with nothing left to fetch.
+- Help has no external navigation, so there is no link for build data to ride out on.
 
 ## Almanac Coverage
 
 The installed package supplies its version, ship assets and the provenance of game data and
-calculations. The repository `LICENSE` supplies the exact project-specific Frontier disclaimer; its
-GitHub location is the single destination for complete legal terms.
+calculations. The repository `LICENSE` supplies the exact project-specific Frontier disclaimer. Its
+GitHub location remains the place the complete terms live and is still audited at build time; it is
+not a destination the modal offers, because the design reference draws none.
 
 ## Success Criteria
 
 - **SC-001**: Help contains the exact, non-empty project-specific Frontier disclaimer from the
-  repository `LICENSE`, and its sole legal-details link targets that file on GitHub.
-- **SC-002**: Displayed versions exactly match shipped artifacts and cannot be mistaken for live-game
-  currency.
+  repository `LICENSE`, marked in its own language, above nothing and below the three-line summary
+  of what covers what. It is the only legal body embedded, and help offers no external destination.
+- **SC-002**: The two displayed versions exactly match shipped artifacts, are separately labelled
+  and cannot be mistaken for live-game currency. No release or non-release state is displayed.
 - **SC-003**: All seven FR-010 behaviour topics are present exactly once, every topic identifies at
   least one governing accepted requirement or constitution principle, each answer agrees with those
   sources, and release validation reports zero missing, duplicate, unreferenced, contradictory or
   unsupported behavioural statements.
-- **SC-004**: After one completed online load, help, version information and the Frontier disclaimer
-  work on the first subsequent offline visit; help clearly identifies the complete licence as an
-  external GitHub destination.
+- **SC-004**: After one completed online load, help, version information, all seven topics and the
+  Frontier disclaimer work on the first subsequent offline visit, with no request and no loading,
+  missing or stale state.
 - **SC-005**: Opening the already-loaded help capability presents its first complete frame within
   100 ms at the mobile viewport under 4× CPU slowdown, and performs no route load, same-origin asset
   request or cross-origin request.

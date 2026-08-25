@@ -10,10 +10,11 @@ Add one shared Help · About modal to the application frame. A visible frame act
 every capability and no-build state, and it is the only entry — no other surface carries a help
 control, because the design reference draws none. Opening and closing the modal changes no route, URL
 fragment, build, storage or capability state. The modal presents the reference's own three sections
-in its own order: `ABOUT` (purpose, separate application and bundled-Almanac identities, bounded
-provenance), `FAQ` (the seven accepted help topics) and `LICENCE` (the exact project-specific
-Frontier disclaimer extracted from the root `LICENSE`, and one warned external link to that `LICENSE`
-on GitHub, which is the modal's only external action).
+in its own order: `ABOUT` (purpose and the separate application and bundled-Almanac versions),
+`FAQ` (the seven accepted help topics) and `LICENCE` (the reference's own three-line summary of what
+covers what, then the exact project-specific Frontier disclaimer extracted from the root `LICENSE`).
+The modal draws no control other than its close and offers no external navigation — **amended
+2026-08-25**, when the additions the reference does not draw were withdrawn.
 
 A build-time Node generator validates the root and installed-package artifacts, extracts the one
 permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
@@ -60,12 +61,11 @@ the existing production initial-bundle error budget (`angular.json`, `initial` `
 without raising its error ceiling within this feature
 
 **Constraints**: No backend, account, telemetry, runtime legal fetch, runtime environment
-configuration or automatic external navigation; only the exact project-specific Frontier disclaimer
-is embedded; the repository `LICENSE` is the sole legal-details link; source terms remain distinct
-from the application MIT grant; versions come from shipped manifests; non-release builds show a
-non-personal immutable identifier; external URLs contain no build data; no document horizontal
-scrolling; one dark tokenised theme; all application framing is localised; untranslated legal text is
-identified as English; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+configuration or external navigation of any kind; only the exact project-specific Frontier
+disclaimer is embedded; source terms remain distinct from the application MIT grant; versions come
+from shipped manifests and are the only two identity facts displayed; no document horizontal
+scrolling; one dark tokenised theme; every application-owned string is localised; untranslated legal
+text carries its own `lang`; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
 2.4.11
 
 **Scale/Scope**: One shared modal and dialog state; one frame entry surface; exactly seven accepted
@@ -89,11 +89,11 @@ requested._
 | Principle                               | Design evidence                                                                                                                                         | Status                 |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.            | PASS                   |
-| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; provenance claims only the package's catalogue/calculation role.                                 | PASS                   |
+| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; the `almanacOwnership` topic claims only the package's catalogue/calculation role.               | PASS                   |
 | III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close intent.                   | PASS                   |
 | IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.               | PASS                   |
 | V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract. | PASS                   |
-| VI. Commander's Language                | Owned help/framing is localised with bundled English fallback; exact disclaimer remains unchanged in a labelled English region.                         | PASS                   |
+| VI. Commander's Language                | Every owned string is localised with bundled English fallback; the exact disclaimer remains unchanged in a `lang="en"` region.                          | PASS                   |
 | VII. One Design System                  | Feature 011's application frame, dialog, disclosures, facts, notices, links and tokens are reused or extended under `src/app/ui/`.                      | PASS; prerequisite 011 |
 | VIII. Tested Before It Ships            | Generator failure tests, exact-source assertions, modal journeys, dual-engine viewports, axe and manual screen-reader checks retain all gates.          | PASS; prerequisite 011 |
 | IX. Specification Before Implementation | Every requirement maps to a plan-time surface, model, contract and validation scenario before tasks are generated.                                      | PASS                   |
@@ -180,10 +180,11 @@ src/app/
 │   ├── help-dialog.component.html
 │   ├── help-dialog.component.scss
 │   └── help-dialog.component.spec.ts
-├── i18n/                              # feature 011-owned help/framing message entries
-└── ui/                                # reused/extended dialog, fact, notice and external-link UI,
+├── i18n/                              # feature 011-owned help message entries
+└── ui/                                # reused/extended dialog, version-fact and legal-excerpt UI,
                                        # each new component with a co-located spec.
-                                       # No `ContextHelpLink`: there is no contextual entry
+                                       # No `ContextHelpLink`: there is no contextual entry.
+                                       # No `WarnedExternalLink`: there is no external action
 
 e2e/
 ├── coverage-ledger.ts                 # feature 011-owned shared ledger; this feature appends
@@ -251,8 +252,8 @@ No planning clarification marker or unresolved upstream dependency remains.
   release classification and failure behavior.
 - [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, the single
   frame entry, the reference's information order, the exact seven accepted help records and
-  governing-reference map, legal/provenance framing, the one external navigation and state
-  preservation.
+  governing-reference map, the licence summary and excerpt, the absence of any external navigation
+  and state preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
   entry and the shared Help · About modal; owns the exhaustive Release
   coverage ledger required by FR-011, which the `helpRouteCoverage` export in feature 011's shared

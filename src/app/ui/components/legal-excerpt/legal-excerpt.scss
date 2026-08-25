@@ -1,18 +1,5 @@
-@use '../../../../styles/responsive' as layout;
-
 :host {
   display: block;
-}
-
-.legal-excerpt {
-  @include layout.stack(var(--edsb-space-stack-tight));
-}
-
-.legal-excerpt__notice {
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
-  text-wrap: pretty;
 }
 
 // The quoted document itself: set apart by the same hairline the reference uses

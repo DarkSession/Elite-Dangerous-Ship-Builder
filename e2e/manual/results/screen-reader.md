@@ -1,6 +1,6 @@
 # Results: screen-reader journeys
 
-Protocol: [`screen-reader`](../screen-reader.protocol.md), version 3.
+Protocol: [`screen-reader`](../screen-reader.protocol.md), version 4.
 
 Each row is one observation: one step, in one configuration. Rows are appended,
 never edited — a later run is a new row, so the history of a regression stays
@@ -63,3 +63,26 @@ so what a reader walks past to reach it differs.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 16   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 16   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 16   | As stated in the protocol | —      | not run |
+
+## Help, licences and provenance (feature 012)
+
+Step 17 covers the Help · About modal and the frame entry that opens it. Each
+configuration is its own observation, and for the same reason as the exchange
+layers: the entry is on the banner row at desktop and inside the named action
+layer at compact, so what a reader walks past to reach it differs, and the modal
+is a centred dialog at one and a full-width sheet at the other.
+
+The alternate-locale half of the step is run on the desktop configuration only,
+because what it is asking — whether a reader switches voice for the Frontier
+notice while the interface is in German — is a property of the reader and the
+`lang` attribute rather than of the layout.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 17   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 17   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 17   | As stated in the protocol | —      | not run |
+
+The record feature 012 is accountable for, including what the automated suite
+does cover in its place, is
+[`specs/012-help-and-licences/design/screen-reader-record.md`](../../../specs/012-help-and-licences/design/screen-reader-record.md).

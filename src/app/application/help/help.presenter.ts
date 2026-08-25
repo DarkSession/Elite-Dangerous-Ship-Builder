@@ -1,85 +1,66 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
-import type { BuildIdentity } from '../../domain/distribution/help-manifest';
+import type { MessageKey } from '../../i18n/locale-registry';
+import {
+  HELP_TOPIC_IDS,
+  assertCompleteHelpTopicCatalogue,
+  type HelpTopicId,
+} from '../../domain/help/help-topic';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
+import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import type { VersionFact } from '../../ui/components/version-facts/version-facts';
 import { HelpDialogStore } from './help-dialog.store';
-
-/** The one navigation out of the modal, with everything it has to say first. */
-export interface HelpExternalLinkView {
-  readonly label: string;
-  readonly href: string;
-  readonly purpose: string;
-  readonly leavingWarning: string;
-  readonly networkWarning: string;
-}
 
 /**
  * The LICENCE section, as a reader meets it.
  *
+ * `index` is the reference's own three-line licence summary: what this
+ * project's code is under, what the game data and imagery are under, and what
+ * the typefaces are under. It is a summary and says so by being one — the
+ * terms themselves are in the repository `LICENSE`, and the one body embedded
+ * here is the notice below it.
+ *
  * `excerpt` is the manifest's `exactText`, passed through untouched: no trim,
  * no re-wrap, no interpolation and no translation. `excerptLanguage` travels
- * with it because the text is English whatever language the framing is in, and
- * a reader whose interface is German should not be read it in a German voice.
+ * with it because the text is English whatever language the index is in, and a
+ * reader whose interface is German should not be read it in a German voice.
  */
 export interface HelpLicenceView {
-  readonly framing: string;
-  readonly sourceNotice: string;
-  readonly languageNotice: string;
+  readonly index: readonly HelpLicenceIndexEntry[];
   readonly excerpt: string;
   readonly excerptLanguage: string;
-  readonly link: HelpExternalLinkView;
+}
+
+/** One line of the licence summary, and a stable identity to track it by. */
+export interface HelpLicenceIndexEntry {
+  readonly id: string;
+  readonly text: string;
 }
 
 /**
  * The ABOUT section, as a reader meets it.
  *
  * `facts` is what the reference draws as `APP VERSION 4.2.1 · LIBRARY VERSION
- * 3.8.0.3`, except that every value is read off the build rather than typed
+ * 3.8.0.3`, except that both values are read off the build rather than typed
  * into a template — which is what that line in the reference is, and what it
  * would still say a year after it stopped being true.
  *
- * `provenance` is two sentences and stays two: what the bundled Almanac is
- * responsible for, and who owns the game data and imagery it describes. Both
- * are bounded on purpose. Neither says, or may be extended to say, that any of
- * it matches the live game or a live catalogue — this application ships a
- * package and knows only what that package was when it was bundled.
+ * Two facts, because the reference draws two. An earlier revision added a
+ * third for release state and the build id; it is withdrawn, and FR-007 is
+ * amended to match the reference rather than the other way round. The
+ * generator still classifies the build — that classification is release
+ * evidence and a gate on `SHIP_BUILDER_RELEASE_TAG` — it is simply not a thing
+ * the modal says.
  */
 export interface HelpAboutView {
   readonly facts: readonly VersionFact[];
-  readonly provenance: HelpProvenanceView;
 }
 
-/** What the bundled package answers for, and who owns what it describes. */
-export interface HelpProvenanceView {
-  readonly almanacRole: string;
-  readonly frontierOwnership: string;
-}
-
-/**
- * Which build this is, in words.
- *
- * A pure function of the identity and a message resolver, exported so both of
- * its branches can be exercised over a value. A test that can only reach the
- * one state this checkout happens to be in is a test that stops covering the
- * other one on the day it starts mattering — and the release wording is
- * precisely the branch nobody sees until a release is cut.
- *
- * A non-release build always carries its identifier, and the type is what
- * guarantees it: `buildId` exists on that variant of `BuildIdentity` and on no
- * other, so a non-release value without one does not compile rather than
- * reaching a reader as a bare word.
- */
-export function describeBuild(
-  build: BuildIdentity,
-  message: (
-    key: 'help.about.build.release' | 'help.about.build.nonRelease',
-    params?: Record<string, string>,
-  ) => string,
-): string {
-  return build.kind === 'release'
-    ? message('help.about.build.release')
-    : message('help.about.build.nonRelease', { buildId: build.buildId });
+/** One question and its answer, already in the Commander's language. */
+export interface LocalisedHelpTopic {
+  readonly id: HelpTopicId;
+  readonly question: string;
+  readonly answer: string;
 }
 
 /** The three sections the reference draws, in the order it draws them. */
@@ -92,8 +73,7 @@ export interface HelpSectionHeadings {
 /**
  * Everything the modal draws, already in the Commander's language.
  *
- * It grows a section at a time — this is the shell the three stories fill in.
- * What it will never grow is a loading, empty, missing-artifact or legal-error
+ * What it does not have is a loading, empty, missing-artifact or legal-error
  * member: every fact in it comes from a module that was compiled into the
  * bundle, so there is no moment at which the modal has been opened and does
  * not yet know what to say.
@@ -103,21 +83,23 @@ export interface HelpDialogViewModel {
   readonly purpose: string;
   readonly sections: HelpSectionHeadings;
   readonly about: HelpAboutView;
+  readonly topics: readonly LocalisedHelpTopic[];
   readonly licence: HelpLicenceView;
 }
 
 /**
  * The modal's one source of display text.
  *
- * It joins two things that are each already settled: the generated manifest,
- * which is build evidence and cannot change while the application is running,
- * and the active catalogue, which changes only when a Commander's locale is
- * committed. Both are read as signals, so switching language re-reads the
- * whole view rather than leaving a half-translated modal on screen.
+ * It joins three things that are each already settled: the generated manifest
+ * and the generated topic catalogue, which are build evidence and cannot change
+ * while the application is running, and the active message catalogue, which
+ * changes only when a Commander's locale is committed. All are read as signals,
+ * so switching language re-reads the whole view rather than leaving a
+ * half-translated modal on screen.
  *
- * The manifest is imported eagerly and by value. Help has to open with no
- * network — on the first offline visit after one completed load — and a lazy
- * chunk is a request waiting to fail (FR-001).
+ * Both generated modules are imported eagerly and by value. Help has to open
+ * with no network — on the first offline visit after one completed load — and a
+ * lazy chunk is a request waiting to fail (FR-001).
  */
 @Injectable({ providedIn: 'root' })
 export class HelpPresenter {
@@ -138,77 +120,92 @@ export class HelpPresenter {
       licence: this.#messages.message('help.section.licence'),
     },
     about: this.#about(),
+    topics: this.topics(),
     licence: this.#licence(),
   }));
 
   /**
-   * The identity facts, and the two sentences that bound them.
+   * The two identity facts the reference draws.
    *
-   * Three facts rather than two: which application, which build of it, and
-   * which catalogue it was bundled with. The build is its own fact because a
-   * version alone does not say whether anyone released it — a Commander reading
-   * `0.1.0` off a branch build and a Commander reading it off a published one
-   * are looking at different software, and only one of those is a version
-   * anybody can go and get.
-   *
-   * The build id is joined to its state in one value rather than given a fact
-   * of its own. It is not a separate thing to know — it is which non-release
-   * build this is — and a term for it would be a label a reader has to hold
-   * against the state above it.
+   * Which application, and which catalogue it was bundled with. Both are terms
+   * with values rather than one run-together line, because each value means
+   * nothing without the label beside it: a reader who meets `0.1.8` alone has
+   * been told a number, not a version.
    */
-  readonly #about = computed<HelpAboutView>(() => {
-    const build = this.manifest.build;
-
-    return {
-      facts: [
-        {
-          id: 'application',
-          term: this.#messages.message('help.about.version.application'),
-          value: build.applicationVersion,
-        },
-        {
-          id: 'build',
-          term: this.#messages.message('help.about.build'),
-          value: describeBuild(build, (key, params) => this.#messages.message(key, params)),
-        },
-        {
-          id: 'almanac',
-          term: this.#messages.message('help.about.version.almanac'),
-          value: this.manifest.almanac.version,
-        },
-      ],
-      provenance: {
-        almanacRole: this.#messages.message('help.about.provenance.almanac'),
-        frontierOwnership: this.#messages.message('help.about.provenance.frontier'),
+  readonly #about = computed<HelpAboutView>(() => ({
+    facts: [
+      {
+        id: 'application',
+        term: this.#messages.message('help.about.version.application'),
+        value: this.manifest.build.applicationVersion,
       },
-    };
+      {
+        id: 'almanac',
+        term: this.#messages.message('help.about.version.almanac'),
+        value: this.manifest.almanac.version,
+      },
+    ],
+  }));
+
+  /**
+   * The seven topics, resolved once and in the order they are read.
+   *
+   * The catalogue is re-asserted here rather than trusted. It is generated, and
+   * generated correctly, but the assertion costs nothing and the failure it
+   * prevents is the one that matters: a modal that quietly dropped a topic it
+   * could not resolve looks exactly like a modal for an application that does
+   * not do that thing. A Commander reading a FAQ with no answer about build
+   * links would reasonably conclude there was nothing to say about build links.
+   *
+   * A blank or unresolved message is the same failure wearing different
+   * clothes, so it throws here too. `MessageService` never echoes a key — an
+   * unknown one resolves to the catalogue's unavailable message — which is
+   * exactly why a question that came back as that message must not be drawn as
+   * though it were a question.
+   */
+  readonly topics = computed<readonly LocalisedHelpTopic[]>(() => {
+    const catalogue = assertCompleteHelpTopicCatalogue(HELP_TOPICS);
+    const unavailable = this.#messages.message('message.unavailable');
+
+    return catalogue.map((topic) => {
+      const question = this.#messages.message(topic.questionKey as MessageKey);
+      const answer = this.#messages.message(topic.answerKey as MessageKey);
+
+      for (const [what, resolved] of [
+        ['question', question],
+        ['answer', answer],
+      ] as const) {
+        if (resolved.trim().length === 0 || resolved === unavailable) {
+          throw new Error(
+            `Help topic "${topic.id}" has no ${what} in the active catalogue. ` +
+              'The modal does not publish a partial topic set.',
+          );
+        }
+      }
+
+      return { id: topic.id, question, answer };
+    });
   });
 
   /**
-   * The licence block: framing this application wrote, around text it did not.
+   * The licence block: a three-line summary, then the notice itself.
    *
-   * Everything the reader is told about the excerpt is translated; the excerpt
-   * itself is the manifest's own string, and the destination is the manifest's
-   * own URL. Neither is assembled here — a URL built from parts is a URL that
-   * can be built wrongly, and this one is audited at build time.
+   * The summary is translated, because it is this application's own writing
+   * about what covers what. The notice is not: it is Frontier's wording,
+   * carried rather than granted, and the manifest's own string is what reaches
+   * the reader byte for byte.
    */
   readonly #licence = computed<HelpLicenceView>(() => {
     const disclaimer = this.manifest.disclaimer;
-    const destination = this.manifest.destinations.repositoryLicense;
 
     return {
-      framing: this.#messages.message('help.licence.framing'),
-      sourceNotice: this.#messages.message('help.licence.source'),
-      languageNotice: this.#messages.message('help.licence.language'),
+      index: [
+        { id: 'application', text: this.#messages.message('help.licence.index.application') },
+        { id: 'gameData', text: this.#messages.message('help.licence.index.gameData') },
+        { id: 'typefaces', text: this.#messages.message('help.licence.index.typefaces') },
+      ],
       excerpt: disclaimer.exactText,
       excerptLanguage: disclaimer.language,
-      link: {
-        label: this.#messages.message('help.licence.link.label'),
-        href: destination.url,
-        purpose: this.#messages.message('help.licence.link.purpose'),
-        leavingWarning: this.#messages.message('help.external.leaving'),
-        networkWarning: this.#messages.message('help.external.network'),
-      },
     };
   });
 
@@ -216,6 +213,9 @@ export class HelpPresenter {
   readonly actionLabel = this.#messages.messageSignal('help.action.label');
   readonly actionDescription = this.#messages.messageSignal('help.action.description');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
+
+  /** The identities the view is expected to carry, for tests and callers. */
+  readonly topicIds = HELP_TOPIC_IDS;
 
   openDialog(): void {
     this.#dialog.openDialog({ kind: 'global' });

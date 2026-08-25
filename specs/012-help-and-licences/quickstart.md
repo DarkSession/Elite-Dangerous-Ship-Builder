@@ -60,8 +60,13 @@ Expected:
 
 - application version equals root `package.json#version`;
 - bundled Almanac version equals installed package `package.json#version`;
-- the current placeholder/development build is visibly Non-release and shows its generated build ID;
+- exactly two identity facts appear, each separately labelled, and nothing in the modal says which
+  classification the build has — FR-007's display half is withdrawn, and the reference draws two
+  version facts and no third;
 - no label describes either value as the live game or live catalogue version.
+
+The classification below is therefore verified at the generator, by reading its output, not by
+reading the screen.
 
 No workflow is needed to exercise this — the classification reads one variable:
 
@@ -77,11 +82,26 @@ SHIP_BUILDER_RELEASE_TAG=latest pnpm run help:manifest   # expect non-zero exit,
 ```
 
 Note that root `package.json#version` declares `major.minor.0` and CI stamps the patch before it
-builds (`scripts/resolve-build-version.mjs`), so case 2 succeeds here against the committed
-declaration while the value a deployed build actually carries is `major.minor.<commit count>`. Run
-case 2 against that value too — `SHIP_BUILDER_RELEASE_TAG="v$(node scripts/resolve-build-version.mjs)"`
-— since that is the version release automation would have to agree with. Repeat case 3 with `v0.0.0`,
-`HEAD`, `undefined` and a mismatched version to confirm each fails and writes no partial output.
+builds (`scripts/resolve-build-version.mjs --write`), so case 2 succeeds here against the committed
+declaration while the value a deployed build actually carries is `major.minor.<commit count>`.
+
+Run case 2 against that value too, since it is the version release automation would have to agree
+with — but run it the way CI does, with the stamp actually written, because the generator compares
+the tag against `package.json#version` and nothing else:
+
+```bash
+# Stamp first, exactly as ci.yml does, then declare the stamped version.
+version="$(node scripts/resolve-build-version.mjs --write)"
+SHIP_BUILDER_RELEASE_TAG="v$version" pnpm run help:manifest   # expect release $version
+git checkout package.json                                     # the stamp is never committed
+```
+
+Declaring the resolved version **without** writing the stamp is a failure, and the correct one: the
+tree still says `major.minor.0`, so the tag and the shipped version genuinely disagree. **Corrected
+2026-08-25** — an earlier revision of this section asked for exactly that and called it a pass.
+
+Repeat case 3 with `v0.0.0`, `HEAD`, `undefined` and a mismatched version to confirm each fails and
+writes no partial output.
 
 ## 3. Open and close without navigation or mutation
 
@@ -120,9 +140,12 @@ Expected:
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
-- provenance says the bundled Almanac supplies catalogue data, validation and calculations, and it
-  sits inside `ABOUT` with the versions, above the questions;
-- versions/provenance make no live-game/live-catalogue currency claim;
+- the `almanacOwnership` answer says the bundled Almanac supplies the catalogue, the checks and the
+  calculations and that this application neither maintains nor corrects those game values — this is
+  where the once-per-application credit now lives, the `ABOUT` provenance paragraph having been
+  withdrawn with the rest of what the reference does not draw;
+- `ABOUT` carries the purpose sentence and the two version facts and nothing else;
+- nothing in the modal makes a live-game/live-catalogue currency claim;
 - no issue-tracker, support or defect-reporting action appears anywhere in the modal.
 
 ## 5. Validate exact legal presentation
@@ -131,28 +154,28 @@ Compare the modal's English disclaimer text with a fresh generator extraction fr
 
 Expected:
 
-- exactly the project-specific disclaimer appears, unchanged, non-empty and marked as original
-  English;
-- application-owned attribution/framing is localised and distinguishes MIT rights from
-  Frontier/package rights;
-- no complete MIT licence, Almanac licence, third-party notice or second legal body is embedded;
-- exactly one action is described as the destination for all remaining terms;
-- its destination is
-  `https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE`;
-- it is the only external action in the modal.
+- exactly the project-specific disclaimer appears, unchanged and non-empty, inside a region
+  carrying `lang="en"`;
+- above it, the reference's own three-line summary of what covers what — the application's code, the
+  game data and imagery, and the typefaces — one line each, localised;
+- no sentence of prose framing above the summary, no sentence naming the excerpt's source and no
+  sentence naming its language: the reference draws none of the three, and the language is a
+  property of the text rather than a claim about it;
+- no complete MIT licence, Almanac licence, third-party notice or second legal body is embedded.
 
-## 6. Verify deliberate external navigation and privacy
+## 6. Verify the modal offers no way out of the application
 
-Use Playwright interception rather than making internet requests. Before activation, assert that no
-request or popup targets GitHub. Then activate the one external action.
+Use Playwright interception rather than making internet requests. Open the modal in every state and
+inspect its subtree.
 
 Expected:
 
-- visible and accessible text says the action leaves the application and may need a network;
-- the native link uses `rel="noreferrer noopener"`;
-- the exact destination contains no query, fragment, current route, build payload, SLEF, hull/module
-  identity, locale or browser data;
-- licence activation targets only the repository `LICENSE`.
+- the modal contains no `a[href]`, no `target="_blank"`, no `form` and nothing that navigates;
+- no request or popup targets GitHub, or any other origin, at any point;
+- the only control the modal draws is its close, which is the reference's own;
+- the repository-`LICENSE` address is still validated by the generator — a wrong address for the
+  terms the source distribution carries is still a release failure — and is rendered nowhere. Assert
+  it by reading the generated manifest, not the screen.
 
 ## 7. Verify initial-load and offline behavior
 
@@ -162,9 +185,10 @@ capability. Open the modal before opening any hull artwork.
 
 Expected:
 
-- all seven topics, both versions, non-release/release state and the exact disclaimer are present;
+- all seven topics, both version facts, the three-line licence summary and the exact disclaimer are
+  present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
-- the licence action remains visible with its network warning but is not automatically followed;
+- there is nothing to follow: the modal has no external action offline or online;
 - uncached package artwork may be temporarily absent under its owning contract, while help remains
   complete.
 
@@ -177,24 +201,25 @@ landscape in Chromium and Firefox:
 pnpm run e2e
 ```
 
-Exercise release/non-release, alternate-locale, doubled-text, RTL, reduced-motion, 200%-text and
-actual-400%-zoom states.
+Exercise alternate-locale, doubled-text, RTL, reduced-motion, 200%-text and actual-400%-zoom
+states. There is no release/non-release state to exercise: the modal does not draw one.
 
 Expected:
 
 - owned strings translate with no raw key, blank or interpolation placeholder;
-- the exact disclaimer remains unchanged, is marked `lang="en"` and stays understandable inside RTL
-  framing;
+- the exact disclaimer remains unchanged, is marked `lang="en"` and stays understandable inside an
+  RTL interface;
 - desktop uses the centered modal and narrow/constrained layouts use the complete sheet treatment;
 - title/close remain available, all actions meet the shared touch target and no essential behavior
   relies on hover;
-- no page/modal horizontal overflow, clipped disclaimer or unreachable final action occurs;
+- no page/modal horizontal overflow, clipped disclaimer or unreachable final section occurs;
 - axe reports no in-scope violation on the background and every open state.
 
 Complete the manual screen-reader protocol: discover the frame entry from a no-build and an active
 capability, hear one labelled modal, confirm background isolation, read the `ABOUT`, `FAQ` and
-`LICENCE` headings with their facts and topics, distinguish release/version facts, identify the
-disclaimer's source and language and the licence action's warnings, then close and verify the
+`LICENCE` headings with their facts, questions and answers, hear the two version facts as two
+distinct labelled facts, hear each question as a heading over its own answer, reach the three licence
+summary lines as a list and then the excerpt in its declared language, then close and verify the
 unchanged underlying capability.
 
 ## 9. Run the complete gate

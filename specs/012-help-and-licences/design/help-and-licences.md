@@ -2,10 +2,15 @@
 
 ## Purpose
 
-Give a Commander a concise, trustworthy explanation of application behavior, shipped identity,
-Almanac provenance and the project's Frontier disclaimer without leaving or changing the current
-capability. The design follows `.design/Ship Builder.dc.html`'s Help · About overlays while replacing
-mock facts and duplicated implementations with shared, verified state.
+Give a Commander a concise, trustworthy explanation of application behavior, shipped identity and
+the project's Frontier disclaimer without leaving or changing the current capability. The design
+follows `.design/Ship Builder.dc.html`'s Help · About overlays while replacing mock facts and
+duplicated implementations with shared, verified state.
+
+**The reference is the template, not a starting point.** Where this screen and the reference
+disagreed, the reference won and the specification was amended, not the drawing. The record of what
+was withdrawn on that basis, and what replaced it, is in
+[reference-review.md](./reference-review.md#departures-withdrawn-on-2026-08-25-second-pass).
 
 ## Entry and exit
 
@@ -37,49 +42,73 @@ one scrolling column, and that is the order built here.
   reference's own sentence is one line above its version line.
 - The identity facts described in [Identity facts](#identity-facts) below, in the place the
   reference draws `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3`.
-- The bounded provenance statement.
+
+Nothing else. The reference draws a sentence and a version line, and the two provenance paragraphs
+this section once carried are withdrawn.
 
 ### 3. FAQ
 
 Seven question/answer records remain visible in one reading sequence:
 
-1. What does a shared build link contain?
+1. Do share links expose my account? — the reference's own question
 2. Are there accounts, uploads or telemetry?
-3. Where are builds and preferences stored?
+3. Where are my builds stored? — the reference's own question and its own answer
 4. What works offline?
-5. How are engineering grades represented?
-6. What is a hull fact versus a build result?
-7. Where do game values and calculations come from?
+5. Why do my engineered stats differ in game? — the reference's own question
+6. What is a hull fact and what is a build result?
+7. Where do the game values and calculations come from?
+
+Each is a heading over its own answer, so a reader moving by heading meets seven questions rather
+than one block of prose. A question sits closer to its own answer than the pairs sit to each other,
+which is the reference's own 4-against-11-pixel rhythm expressed in stack tokens.
 
 The exact translated wording belongs to locale catalogues, not this screen. Answers implement the
 behavioral boundaries in [../contracts/help-navigation.md](../contracts/help-navigation.md). The
-reference FAQ's import claim and retained-partial-roll answer are not included.
+reference FAQ's import claim and retained-partial-roll answer are not included: the first is feature
+004's behaviour to describe, and the second contradicts feature 002 FR-013.
 
 #### Identity facts
 
-A semantic fact group inside `ABOUT` presents:
+A semantic fact group inside `ABOUT` presents two facts, which is what the reference draws:
 
-- Application version;
-- release status, or visible Non-release plus build ID;
-- Bundled Almanac version; and
-- a bounded statement that this bundled Almanac supplies catalogue data, validation and
-  calculations.
+- Application version; and
+- Bundled Almanac version.
 
-The wording never calls either version live-game/live-catalogue currency. A separate notice explains
-that Frontier owns covered game data/imagery. No package-defect action appears: FR-009 is withdrawn
-and the reference draws no such control.
+Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
+alone has been told a number, not a version.
+
+The wording never calls either version live-game/live-catalogue currency. Release state is **not**
+displayed — the reference draws no third fact, FR-007's display half is withdrawn, and the
+generator's classification remains release evidence rather than screen content. No package-defect
+action appears either: FR-009 is withdrawn and the reference draws no such control.
 
 ### 4. LICENCE
 
-- Localised framing distinguishes the application MIT grant from Frontier/package rights and names
-  repository `LICENSE` as the excerpt source.
-- A visible localised note says the following disclaimer is reproduced in original English.
+- The reference's own three-line summary of what covers what, one localised line each: the
+  application's code under MIT; the game data and imagery under Frontier's media-usage rules; the
+  typefaces under the SIL Open Font Licence.
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
   Markdown interpretation, automatic linking or alteration.
-- One visible external action says that all remaining licence and third-party terms are in the
-  repository `LICENSE` on GitHub, that activation leaves the app and that network may be required.
-- No other complete legal document or legal-details link appears in the modal, and no other external
-  action appears at all. This is the modal's single link.
+- No complete legal document appears, and **no external action appears at all**. The modal has no
+  link. The remaining licence and third-party terms are in the repository `LICENSE`, which the
+  summary's first line names and the generator still audits at build time.
+
+### Bundle budget
+
+Measured 2026-08-25 against the `initial` budget in `angular.json` (500 kB warning, 1 MB error):
+**402.26 kB raw, 101.41 kB estimated transfer.** The eagerly imported manifest and the bundled
+English help catalogue are inside the budget with room; there is no overage to record and the
+ceiling is not raised.
+
+### Known gap: EDAssets interface marks
+
+The rarity marks, the Merc Coin, the Tech Broker mark and the loader mark are EDAssets files, taken
+once at build time and served from this origin under feature 002's Icons ruling of 2026-08-22. The
+repository records **no licence** for them — not in root `LICENSE`, not in `legal/`, nowhere. The
+reference's own summary asserts CC BY-NC-SA 4.0 over them, and that assertion is not carried into
+the product, because a licence claim this repository cannot evidence is worse than a missing one.
+This is a defect against FR-004's source-distribution obligation rather than a display question, and
+it is recorded here for the pass that resolves it.
 
 ## Wide composition
 
@@ -100,8 +129,8 @@ and the reference draws no such control.
   so every action remains reachable.
 - Safe-area and viewport tokens protect the header/last action. The underlying document does not
   scroll while the modal is open.
-- Long translated questions, build IDs, versions, URLs-as-link-label supplements and disclaimer text
-  wrap. No ellipsis or horizontal legal-text container is used.
+- Long translated questions and answers, long versions, long licence-summary lines and the
+  disclaimer all wrap. No ellipsis or horizontal legal-text container is used.
 - DOM/reading order is identical to wide composition; no content is removed or shortened on mobile.
 
 ## States
@@ -109,12 +138,11 @@ and the reference draws no such control.
 | State                    | Presentation                                                                                |
 | ------------------------ | ------------------------------------------------------------------------------------------- |
 | Closed                   | current capability plus the frame's visible Help entry; no hidden duplicate dialog landmark |
-| Open release             | complete content, textual release status, no required build ID                              |
-| Open non-release         | complete content, prominent textual Non-release state and build ID                          |
+| Open                     | complete content: purpose, two version facts, seven topics, summary and disclaimer          |
 | Global invocation        | normal top-of-modal position                                                                |
-| Offline                  | identical help/facts/disclaimer; the licence action retains its visible network warning     |
+| Offline                  | identical help, facts, topics and disclaimer; nothing left to fetch and no network warning  |
 | Alternate locale         | all owned text translated; exact disclaimer unchanged and marked English                    |
-| Expanded/RTL fixture     | expanded/RTL framing reflows around stable English source region without truncation         |
+| Expanded/RTL fixture     | expanded/RTL section reflows around a stable English source region without truncation       |
 | Reduced motion           | no essential transition; state change remains immediate and textual                         |
 | Missing/invalid artifact | no runtime state; generation/release fails                                                  |
 
@@ -126,31 +154,37 @@ referred to, because a conformance claim a reader has to follow a link to qualif
 gets quoted without its qualification. The exclusions are the keyboard and focus-order criteria the
 application does not claim; everything below is claimed.
 
-- One labelled `role="dialog"` with `aria-modal="true"`; background content is isolated while open.
+- One labelled dialog; background content is isolated while open. The layer is a native `dialog`
+  opened with `showModal()`, so modality is the element's own `:modal` state rather than an
+  `aria-modal` attribute — the same semantics, said by the platform rather than duplicated on top of
+  it, and asserted that way in the journey.
 - Heading levels create a complete order for ABOUT, FAQ and LICENCE.
-- Version facts use semantic terms/definitions. Release status and source ownership are text, not
-  color or position.
-- Disclaimer source and English-language notice are programmatically associated with the plain-text
-  region.
-- The licence action includes a visible destination purpose plus leaving-app and network warnings;
-  an icon is supplemental only.
+- Heading levels nest: each `FAQ` question is a heading under the section's own, so heading
+  navigation reaches the seven questions.
+- Version facts use semantic terms/definitions. Every fact is text, not color or position.
+- The disclaimer's language is declared on the region itself, so it is announced in the language it
+  was written in whatever the interface language is.
 - All actions use shared targets of at least 44 CSS px and work by touch/pointer without hover.
 - Opening uses native/shared dialog announcement. The long disclaimer is never a live-region update.
 - At 200% text and actual 400% zoom there is no lost content, clipped action or document horizontal
   overflow.
 - Any visual transition honors `prefers-reduced-motion`.
-- Manual screen-reader verification covers discovery, dialog isolation, heading order, identity
-  distinctions, disclaimer language/source, the licence warning and the underlying capability after
-  close.
+- Manual screen-reader verification covers discovery, dialog isolation, heading order, the two
+  identity facts, the excerpt's declared language and the underlying capability after close. There
+  is no licence warning to verify: the modal has no external action. It is step 17 of the shared
+  protocol, and [screen-reader-record.md](./screen-reader-record.md) is this feature's record of it —
+  including that no run has been performed, and what the automated suite covers in its place.
 
 ## Component-system impact
 
 Reuse feature 011's `AppFrame`, `DialogLayer`, heading/section, fact list, notice and visible-name
 external-action primitives. Add or extend shared presentation-only components only where missing:
 
-- `VersionFacts`: release/non-release/application/Almanac fact presentation;
-- `LegalExcerpt`: source/language framing plus wrapping text region; and
-- `WarnedExternalLink`: destination-purpose label with leaving-app/network description.
+- `VersionFacts`: application and bundled-Almanac fact presentation; and
+- `LegalExcerpt`: a wrapping text region marked in the language it was written in.
+
+`WarnedExternalLink` was a third. It is **deleted**: the modal was its only consumer, and the modal
+has no link.
 
 These components receive complete immutable inputs and emit intent. They do not read Router,
 History, browser storage, package files, generated manifests, locale globals or build stores. Every

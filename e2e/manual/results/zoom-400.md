@@ -44,3 +44,24 @@ composition step 6 is about. Each is its own observation.
 | —    | —   | Chromium | —     | —        | portrait    | export layer / whole payload | As above                                                                        | —      | not run |
 | —    | —   | Firefox  | —     | —        | landscape   | import layer / diagnostics   | As above                                                                        | —      | not run |
 | —    | —   | Firefox  | —     | —        | portrait    | export layer / whole payload | As above                                                                        | —      | not run |
+
+## Help · About (feature 012)
+
+The modal is the longest text this application draws in one column — a purpose sentence, two facts,
+seven question-and-answer pairs, three summary lines and a legal notice that must not be truncated —
+and at 400% zoom on a phone the viewport has room for about one section of it at a time. So the
+observation is not whether it fits, which it will not: it is whether every section is still
+_reachable_, whether the header and its close stay put while the body alone scrolls, and whether the
+disclaimer wraps rather than being clipped.
+
+The compact entry is part of the same observation. At this zoom the frame's Help action is inside
+the named action layer, and that layer's own panel is bounded to the viewport with its own scroller
+— which is the fix a 200%-text run at the mobile profile forced, and is exactly the kind of thing a
+real zoom can contradict.
+
+| Date | OS  | Browser  | Build | Viewport | Orientation | Capability / state  | Expected                                                                                         | Actual | Result  |
+| ---- | --- | -------- | ----- | -------- | ----------- | ------------------- | ------------------------------------------------------------------------------------------------ | ------ | ------- |
+| —    | —   | Chromium | —     | —        | portrait    | help · about / open | Entry reachable in the action layer; every section reachable; header and close kept; no clipping | —      | not run |
+| —    | —   | Chromium | —     | —        | landscape   | help · about / open | As above                                                                                         | —      | not run |
+| —    | —   | Firefox  | —     | —        | portrait    | help · about / open | As above                                                                                         | —      | not run |
+| —    | —   | Firefox  | —     | —        | landscape   | help · about / open | As above                                                                                         | —      | not run |
