@@ -1056,6 +1056,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a retained incomplete or invalid verdict is the build-status rail’s, unchanged by where the build came from',
       'feature 004 draws no second report of either: each fact appears exactly once on the workspace',
       'a package-defaulted fixed mount is ordinary build state with no provenance of its own',
+      'an imported build carries the package’s own hull identity, so feature 010 draws its schematics',
       'a later revision retires the completion notice and changes nothing about the build',
       'a refused import leaves the workspace, the rail and the notice exactly as they were',
     ],

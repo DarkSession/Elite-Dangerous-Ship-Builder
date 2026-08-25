@@ -30,11 +30,14 @@ export type ReconstructionResult =
  * the package's answer is the build, and a defaulted mount is ordinary build
  * state from the moment it arrives (FR-014, constitution II).
  *
- * The hull is checked before construction only so the refusal can name what was
- * wrong; the package would refuse it too.
+ * The hull is looked up before construction for two reasons: so a refusal can
+ * name what was wrong — the package would refuse it too — and so the build is
+ * reconstructed on the package's own symbol rather than the one the snapshot
+ * happens to spell it with.
  */
 export function reconstructFromSnapshot(snapshot: BuildSnapshotV1): ReconstructionResult {
-  if (getShipBySymbol(snapshot.shipSymbol) === null) {
+  const hull = getShipBySymbol(snapshot.shipSymbol);
+  if (hull === null) {
     return {
       ok: false,
       failure: 'unknown-hull',
@@ -53,7 +56,13 @@ export function reconstructFromSnapshot(snapshot: BuildSnapshotV1): Reconstructi
 
   const event: LoadoutEvent = {
     event: 'Loadout',
-    Ship: snapshot.shipSymbol,
+    // The package's own symbol for the hull, not the string the snapshot spells
+    // it with. A record written before the ingress gate resolved the identity
+    // carries a journal-cased hull — `sidewinder` for `SideWinder` —
+    // and every asset this application serves is a directory named the
+    // package's way, so reopening one would draw no schematics. Reconstruction
+    // is where such a record gets its identity back (constitution II).
+    Ship: hull.symbol,
     ...(snapshot.shipName === null ? {} : { ShipName: snapshot.shipName }),
     ...(snapshot.shipIdent === null ? {} : { ShipIdent: snapshot.shipIdent }),
     Modules: modules,

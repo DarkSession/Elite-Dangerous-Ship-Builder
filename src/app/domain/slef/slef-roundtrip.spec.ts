@@ -13,11 +13,21 @@ function snapshot(loadout: ShipLoadout, revision = 1): ActiveExportSnapshot {
 /** Everything the application models, including the state the export contract names. */
 function modelled(build: ShipLoadout) {
   return {
-    ship: build.shipSymbol.toLowerCase(),
+    // The hull is compared exactly. The payload names it in journal case, the
+    // ingress gate resolves it back to the package's own symbol, and a build
+    // that came back spelling it any other way is a build whose artwork and
+    // schematics point at a directory no host serves.
+    ship: build.shipSymbol,
     name: build.shipName,
     ident: build.shipIdent,
     modules: build.fittedModules().map((module) => ({
       slot: module.slot,
+      // Module identities stay case-insensitive here, unlike the hull: the
+      // package's serializer lower-cases every `Item` on the way out and
+      // nothing at the ingress gate resolves them back, so their casing is
+      // outside what this round trip asserts. Not a statement that casing
+      // never matters for a module — `isFittedChoice` does compare one
+      // exactly, which is a separate defect this exclusion does not settle.
       symbol: module.symbol.toLowerCase(),
       on: module.on,
       priority: module.priority,
@@ -55,10 +65,16 @@ function outAndBack(build: ShipLoadout): ShipLoadout {
  * comes through — byte limit, inspector, cardinality rule, ingress normalizer
  * and all (SC-002).
  *
- * Every exclusion is stated rather than assumed. Casing, header text and
- * whitespace belong to the package's serializer; completed quality and
- * package-defaulted fixed mounts are the two normalizations the constitution
- * names; capture-only fields are outside the application's model entirely.
+ * Every exclusion is stated rather than assumed. Module identity casing,
+ * header text and whitespace belong to the package's serializer; completed
+ * quality and package-defaulted fixed mounts are the two normalizations the
+ * constitution names; capture-only fields are outside the application's model
+ * entirely.
+ *
+ * The hull is not on that list. This trip re-enters through the ingress gate,
+ * which resolves the payload's journal case back to the package's own symbol,
+ * so it is compared exactly. The export suite reconstructs straight from the
+ * payload and still folds it — the same fact seen from the other side.
  */
 describe('the whole round trip', () => {
   it('reads its own export back as the same build', () => {
