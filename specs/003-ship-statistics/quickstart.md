@@ -2,21 +2,34 @@
 
 > **Superseded 2026-08-22 (wave 11).** Three collisions between the accepted specification and
 > `.design/Ship Builder.dc.html` were surfaced before implementation and **the design won all three**
-> ([design/reference-review.md](./design/reference-review.md)). Sections 4 to 7 and 10 below, and the
-> announcements half of section 8, validate surfaces the rulings withdrew or reassigned — provider
-> values, viewing conditions, atomic composition, the wide Status capability and its targets, the
-> count announcements, and the projection timing budget — and the evidence matrix at the foot cites
-> requirements and stories that no longer exist: `spec.md` now declares two stories, and `FR-006`,
-> `FR-008` to `FR-012` and `FR-016` to `FR-021` are withdrawn or reassigned. **Do not validate
-> against them.**
+> ([design/reference-review.md](./design/reference-review.md)). This guide was written for the
+> composition the rulings withdrew, and it is retained as it was written rather than rewritten, so
+> read it against the list below rather than top to bottom.
 >
-> What is left to validate is sections 1 to 3, section 8's **fixed-defaults** half — steps 1 to 3 and
-> the first expected outcome, which are `FR-013` and `FR-014` and are both still declared — and
-> section 9, each read against what is built rather than against the composition they were written
-> for: the package validation contract, the issue list in package order with its severities, the
-> diagnostic locale behaviour with its canonical fallback, package-defaulted fixed modules staying
-> ordinary fitted state, and the responsive and accessible behaviour of the rail. Those are covered
-> by
+> **Sections 4 to 7 and 10 are withdrawn whole** — provider values, viewing conditions, atomic
+> composition, the wide Status capability and its targets, and the projection timing budget. So is
+> the evidence matrix at the foot: `spec.md` now declares two stories, not four, and `FR-006`,
+> `FR-008` to `FR-012` and `FR-016` to `FR-021` are withdrawn or reassigned with the surfaces they
+> governed.
+>
+> **What is left to validate** is the package validation contract and the diagnostic helper's `null`
+> outside English (§1); an active build being required and never created (§2); every package issue
+> drawn once in package order, matching `ShipLoadout.validation()` by identity, with no wording that
+> claims the build is ready, flyable, working, good or optimal (§2); the canonical fallback and its
+> untranslated disclosure on a locale miss (§3); package-defaulted fixed modules staying ordinary
+> fitted state, with no provenance surface and nothing persisted from it — §8 steps 1 to 3 and the
+> first sentence of its expected outcome, which are `FR-013` and `FR-014` and are both still declared;
+> and the responsive, accessible and offline behaviour of the rail (§9).
+>
+> **Everywhere in those surviving sections, a clause naming a withdrawn surface goes with it.** Among
+> them: §1's confirmation that 005–009 export projection types and adapters over the envelope, and
+> that providers share a target union; §2's structural facts, its visible issue code and its
+> exact-slot action — `e2e/ship-status.spec.ts` now asserts that no issue offers an action at all;
+> §3's `getCalculationIssueMessage` for provider issues and its localized counts; §8's step 4 and its
+> announcement outcomes; and §9's condition controls, structural facts, headlines, requirements and
+> "the one count announcement".
+>
+> What survives is covered by
 > `src/app/features/build-workspace/outfitting/build-status/almanac-validation-contract.spec.ts`,
 > `build-status.spec.ts`, `e2e/ship-status.spec.ts` and the `build/validation-issues` surface in
 > `e2e/coverage-ledger.ts`. The gate itself — `pnpm run check`, with coverage at or above 80% and no

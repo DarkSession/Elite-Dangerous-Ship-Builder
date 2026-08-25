@@ -2,10 +2,13 @@
 
 > **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
 > specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
-> design won all three** ([design/reference-review.md](../design/reference-review.md)). Ruling C
-> removed this feature's dependency on features 005–009 entirely: feature 003 composes no owner
-> result, publishes no provider envelope and passes no conditions to anyone, so the transaction, the
-> five-provider bundle and the pending/failure lifecycle frozen here have no subject. Each of
+> design won all three** ([design/reference-review.md](../design/reference-review.md)). Ruling B
+> withdrew the wide Status capability this envelope was assembled for, and ruling C removed this
+> feature's dependency on features 005–009 entirely: feature 003 composes no owner result, publishes
+> no provider envelope and passes no conditions to anyone, so the transaction, the five-provider
+> bundle and the pending/failure lifecycle frozen here have no subject. Nothing here moved to another
+> feature — feature 005 records the same withdrawal from its own side
+> (`specs/005-power-and-heat/contracts/integration-ports.md`). Each of
 > 005–009 reads the package for its own block and draws it into the rail directly, and feature 003
 > reads `ShipLoadout.validation()` off the build already in memory.
 >
