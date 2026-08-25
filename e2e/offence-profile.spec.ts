@@ -338,7 +338,7 @@ test.describe('inspecting the weapons', () => {
     test(`aligns the five columns, and leaves the module its room, in ${language}`, async ({
       browser,
       baseURL,
-    }) => {
+    }, testInfo) => {
       // A width the table is actually promoted at, set here rather than left to
       // the profile, so every project asks the same question — and asked in both
       // languages, because it is the *heads* that size the figure tracks and
@@ -400,42 +400,79 @@ test.describe('inspecting the weapons', () => {
         }
       }
 
-      await expectNoDocumentOverflow(page);
+      // The promoted table is scanned here or nowhere: no layout profile in the
+      // matrix gives this block the 26rem it promotes at, so this is the only
+      // place the subgrid arrangement renders at all.
+      await sweepOutfittingState(page, testInfo, `offence-analysis/weapons table ${language}`);
+
       await context.close();
     });
   }
 
-  test('keeps every figure and its word at the width the table cannot align', async ({ page }) => {
-    // The reference desktop gives this block about 300px, where five aligned
-    // columns do not fit in either language — so it draws the compact
-    // arrangement instead, and what matters is that nothing is lost by it.
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await openOffence(page);
+  for (const [language, locale, messages] of [
+    ['English', 'en-US', englishMessages],
+    ['German', 'de-DE', germanMessages],
+  ] as const) {
+    test(`never squeezes the module name to make room for figures, in ${language}`, async ({
+      browser,
+      baseURL,
+    }) => {
+      // The reference desktop, where the block is given about 300px — too little
+      // for five aligned columns in either language. Which arrangement answers
+      // that is the stylesheet's business; what is asserted here is the outcome
+      // the promotion width exists to protect, so the assertion holds whichever
+      // arrangement is chosen and fails whenever the name is starved.
+      //
+      // This is the regression guard for the promotion width itself. Promoting
+      // the table here gives the module 83px in English and 40px in German,
+      // where a weapon's name renders one or two characters per line
+      // (`offence-analysis.scss`, the promotion comment).
+      const context = await browser.newContext({
+        baseURL,
+        locale,
+        viewport: { width: 1440, height: 900 },
+      });
+      const page = await context.newPage();
+      await openOffence(page, messages);
 
-    const rows = await weaponRows(page);
-    expect(rows.length).toBeGreaterThan(0);
-    for (const row of rows) {
-      expect(row.module).not.toBe('');
-      // All five of the canvas's columns are still there, each figure carrying
-      // the word that names it rather than a head it has been separated from.
-      expect(row.figures).toHaveLength(4);
-      for (const figure of row.figures) {
-        expect(figure).not.toBe('');
+      const cells = await page
+        .locator('edsb-offence-analysis .weapon__module')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => Math.round(node.getBoundingClientRect().width)),
+        );
+      expect(cells.length).toBeGreaterThan(0);
+      for (const width of cells) {
+        expect(width).toBeGreaterThanOrEqual(155);
       }
-    }
-    for (const label of [
-      englishMessages['offence.column.dps'],
-      englishMessages['offence.column.pierce'],
-      englishMessages['offence.column.range'],
-      englishMessages['offence.column.falloff'],
-    ]) {
-      await expect(
-        page.locator('edsb-offence-analysis .weapon').first().getByText(label, { exact: true }),
-      ).toBeAttached();
-    }
 
-    await expectNoDocumentOverflow(page);
-  });
+      // And nothing is lost to the arrangement that protects it: every row still
+      // carries all four figures, each with the word that names it — which in
+      // the compact arrangement is the only thing naming it, the heads being
+      // gone.
+      const rows = await weaponRows(page);
+      expect(rows.length).toBeGreaterThan(0);
+      for (const row of rows) {
+        expect(row.module).not.toBe('');
+        expect(row.figures).toHaveLength(4);
+        for (const figure of row.figures) {
+          expect(figure).not.toBe('');
+        }
+      }
+      for (const label of [
+        messages['offence.column.dps'],
+        messages['offence.column.pierce'],
+        messages['offence.column.range'],
+        messages['offence.column.falloff'],
+      ]) {
+        await expect(
+          page.locator('edsb-offence-analysis .weapon').first().getByText(label, { exact: true }),
+        ).toBeVisible();
+      }
+
+      await expectNoDocumentOverflow(page);
+      await context.close();
+    });
+  }
 
   test('keeps two mounts carrying the same module as two rows', async ({ page }) => {
     await openOffence(page);

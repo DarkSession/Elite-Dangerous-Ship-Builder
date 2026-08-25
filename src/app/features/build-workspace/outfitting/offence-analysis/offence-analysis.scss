@@ -135,8 +135,8 @@
 // The rows are inert, as the canvas draws them, so the five columns are all a
 // row holds. How those five are arranged depends on the space the list is
 // actually given, which is why the list is its own container: the block sits in
-// one half of a pair that itself narrows, and a five-column table in 155px is
-// a name squeezed to nothing beside four figures.
+// one half of a pair that itself narrows, and a five-column table in a list that
+// narrow is a name squeezed to nothing beside four figures.
 .weapons {
   container-type: inline-size;
   container-name: weapons;
@@ -211,6 +211,13 @@
 //   en, list 300px: 83 | 40 40 50 47   — the module track at 83px
 //   de, list 300px: 40 | 40 73 67 40   — the module track at 40px
 //
+// 155px is the module track this asks for, and it is the module *track* rather
+// than the list width an earlier note used that number for: it is two lines of
+// a weapon's cell — `Huge Multi-Cannon` over `4A GIMBALLED · OVERCHARGED G5` —
+// wrapping at words rather than inside them. `e2e/offence-profile.spec.ts`
+// asserts it at both the promoted width and the compact one, in both languages,
+// so the figure is held to rather than merely written down.
+//
 // The four figure tracks are `auto` above their floor, so they take their own
 // max-content out of the `1fr` module track — and in German the *heads* are what
 // that content is: `DURCHSCHLAG` 73px and `REICHWEITE` 67px against `PIERCE` and
@@ -220,8 +227,8 @@
 // figures themselves want about 50px for `3,000 m`, so four columns and their
 // gaps cannot cost less than about 240px whatever the heads do.
 //
-// So five aligned columns need about 415px to leave the module track the 155px
-// of list width below which it collapsed — 26rem — and below that the compact
+// So five aligned columns need about 415px to leave the module track 155px —
+// 26rem — and below that the compact
 // arrangement carries the same five figures with the word that names each one
 // beside it. On this application's own reference desktop that is the compact
 // arrangement, not the canvas's table: canvas 1c draws its five columns in a

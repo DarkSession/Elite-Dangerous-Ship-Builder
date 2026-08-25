@@ -64,7 +64,7 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 - A headline pair on the line below: `248.6` at 30px against
   `DPS BURST · 186.4 SUSTAINED` at 10px.
 - A five-column list. The column head is
-  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `RANGE` (60px) ·
+  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `RANGE` (62px) ·
   `FALLOFF` (60px), the last four `text-align: right`. **`RANGE` was added by the
   2026-08-25 canvas revision**; before it the list was four columns ending at
   `FALLOFF`.
@@ -573,13 +573,16 @@ aspect, its clamping and its marks are `wireConvergence`'s own, and the built
 plate mirrored the old script exactly. It was rebuilt by re-deriving
 `convergence.ts` from the new script rather than by patching a constant.
 
-**One thing the revised drawing does that the built region deliberately does
-not.** Canvas 1c stacks the four facts as label-left, value-right rows down the
-narrow column beside the plate; the built region keeps the `repeat(4, 1fr)`
-cells this document's own build table sanctions. That is responsive
-composition — the same four labels and the same four figures, arranged from the
-region's available space rather than from an artboard's fixed width (T033) — and
-neither arrangement carries a figure the other does not.
+**Two things the revised drawing does that the built region deliberately does
+not**, and both are arrangements rather than figures: the four fact cells below,
+and the weapon list's aligned table after them.
+
+Canvas 1c stacks the four facts as label-left, value-right rows down the narrow
+column beside the plate; the built region keeps the `repeat(4, 1fr)` cells this
+document's own build table sanctions. That is responsive composition — the same
+four labels and the same four figures, arranged from the region's available
+space rather than from an artboard's fixed width (T033) — and neither
+arrangement carries a figure the other does not.
 
 **The weapon list's aligned table is drawn only where five columns fit, which on
 a 1440px desktop is not this block.** Canvas 1c draws its five columns in a card
@@ -596,10 +599,14 @@ So the table promotes at 26rem, where the module track keeps the 155px below
 which it collapses, and below that the compact arrangement carries the same five
 figures with the word that names each one beside it. Nothing is dropped and no
 figure loses the label that names it; what is lost is the alignment, at widths
-where alignment would have cost the module name instead. The canvas reaches an
-aligned table at phone width by a route this list does not take — canvas 1d
-folds `FALL 1,800` under the range cell, four columns carrying five figures —
-and taking that route is the change that would put the table back at 1440px.
+where alignment would have cost the module name instead. The canvas reaches an aligned
+table at phone width by a route this list does not take — canvas 1d folds
+`FALL 1,800` under the range cell, four columns carrying five figures — and that
+route alone does not reach this floor either: folded into four columns at 300px
+the module track comes out at 140px in English and 90px in German, because it is
+the heads that size those columns and canvas 1d abbreviates its own to `PRC`.
+Restoring the table at 1440px means abbreviating the heads as well, which is a
+change to what the columns are called and not only to how they are laid out.
 
 The plate's **box** is not in that category, and is built as the canvas draws
 it: square, at the canvas's own width, in a wrapping row with the range and the

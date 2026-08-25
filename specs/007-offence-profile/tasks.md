@@ -551,12 +551,20 @@ The canvas changed after this feature shipped. Every item below was a divergence
 package answers were all already in `src/app/domain/offence/`, and no new package call was added to
 close any of it.
 
-**One thing the revised drawing does that this phase deliberately did not build**, recorded in
-`design/canvas-contract.md` under the revision: canvas 1c stacks its four facts as label-left,
-value-right rows down the narrow column beside the plate, where the built region keeps the
-`repeat(4, 1fr)` cells its own build table sanctions. Same four labels, same four figures, arranged
-from the region's available space rather than from an artboard's fixed width — which is the
-responsive composition T033 owns.
+**Two things the revised drawing does that this phase deliberately did not build**, both recorded in
+`design/canvas-contract.md` under the revision, and both arrangements rather than figures.
+
+Canvas 1c stacks its four facts as label-left, value-right rows down the narrow column beside the
+plate, where the built region keeps the `repeat(4, 1fr)` cells its own build table sanctions. Same
+four labels, same four figures, arranged from the region's available space rather than from an
+artboard's fixed width — which is the responsive composition T033 owns.
+
+And the weapon list's aligned table is drawn only where five columns fit, which a 1440px desktop
+does not give this block: the figure tracks take their own heads out of the module track, leaving it
+83px in English and 40px in German, where a name renders one or two characters per line. The table
+promotes at 26rem and the compact arrangement carries the same five figures with the word that names
+each one below that. Nothing is dropped; what is lost is the alignment, at widths where alignment
+would have cost the name instead.
 
 The plate's **box** is not in that category and is built square, at the canvas's own width, with the
 range and the four cells beside it. T045 first took the revision's square-in-angle mapping while
@@ -601,8 +609,9 @@ which is one change and not two.
       name the canvas's own `Target range` (`design/component-state-preview-matrix.md`)._
 - [x] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
       `pnpm run check`.
-      _Run in the five Chromium projects — 41 journeys per profile, 205 in all, with the axe scan
-      over every state. The five Firefox projects could not be run for the reason recorded at the
+      _Run in the five Chromium projects — 42 journeys per profile, 210 in all, with the axe scan
+      over every state, including one over the weapon list's promoted table, which no layout
+      profile's own width reaches. The five Firefox projects could not be run for the reason recorded at the
       head of this document: `playwright install firefox` is still refused by this environment's
       egress policy, and Firefox evidence is this branch's pull request's own
       `End-to-end (shard 1..6)` checks. Locally `pnpm run check` was run as its parts — format check,
