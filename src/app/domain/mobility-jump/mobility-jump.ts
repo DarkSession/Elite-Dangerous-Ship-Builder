@@ -318,9 +318,13 @@ function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadV
     // rephrased here.
     mobility: mobility?.complete ? mobility.value : null,
     capacitor: capacitor?.complete ? capacitor.value : null,
-    // No reasons at all where the package threw: it gives its own or it gives
-    // none, and an empty list is what "none" looks like here.
-    issues: mobility?.issues ?? EMPTY_ISSUES,
+    // Whichever result withheld a figure is the one that says why. The package
+    // documents the same diagnostics for both, because they read one build, but
+    // a reason carried on that coincidence would leave the card unavailable and
+    // silent the day the two diverge. No reasons at all where the package threw:
+    // it gives its own or it gives none, and an empty list is what "none" looks
+    // like here.
+    issues: (mobility?.complete === false ? mobility : capacitor)?.issues ?? EMPTY_ISSUES,
     curve,
     mass: mass ? Object.freeze({ ...mass }) : null,
     fuelCapacity: Object.freeze({ ...loadout.fuelCapacity }),

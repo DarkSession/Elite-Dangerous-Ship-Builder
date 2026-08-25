@@ -29,7 +29,7 @@ active build or an export. Leaving the mode restores the mounts exactly as they 
 
 For one active build and the WEP allocation feature 005 holds, in order:
 
-1. read feature 001's revision, then its loadout;
+1. read feature 001's revision, then its loadout, and take `const metrics = BuildMetrics.of(loadout)`;
 2. call `metrics.weaponMetrics()` exactly once;
 3. read feature 002's `hardpointCoverage()` over the same revision's slot views;
 4. call `metrics.weaponsCapacitorMetrics({ weaponsPips })` exactly once, with the store's allocation

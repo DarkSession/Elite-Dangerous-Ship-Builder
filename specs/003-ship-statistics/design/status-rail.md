@@ -63,7 +63,7 @@ package diagnostic and parses none.
 ## Behavior
 
 - The block reads one active loadout at one revision. There is no projection envelope, no provider
-  port and no pending state: `ShipLoadout.validation()` is a field on the build that is already in
+  port and no pending state: `ShipLoadout.validation()` reads a build that is already in
   memory, and reading it cannot fail or arrive late.
 - Nothing **feature 003 owns** here is interactive. Ruling A withdrew the per-issue slot action, and
   at both widths the slot ledger it would have reached is already on screen. Feature 005's pip

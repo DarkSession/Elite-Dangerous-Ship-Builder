@@ -201,6 +201,26 @@ describe('projectMobilityAndJump', () => {
       expect(issues.map((issue) => issue.reason)).toEqual(['disabled']);
     });
 
+    it('takes the reasons from whichever of the two readings withheld a figure', () => {
+      // The package documents the same diagnostics for both, because they read
+      // one build, so today the capacitor never fails on its own. That
+      // coincidence is exactly why the guard needs its own test: without it the
+      // card would go unavailable with an empty reason list the day the two
+      // diverge, and the suite would stay green.
+      const loadout = build();
+      vi.spyOn(BuildMetrics.prototype, 'mobilityCapacitorMetricsResult').mockReturnValue({
+        complete: false,
+        value: null,
+        issues: [BLOCKING_ISSUE],
+      });
+
+      const { mobility, capacitor, issues } = projectMobilityAndJump(loadout, 4).thrusters;
+
+      expect(mobility).not.toBeNull();
+      expect(capacitor).toBeNull();
+      expect(issues).toEqual([BLOCKING_ISSUE]);
+    });
+
     it('substitutes no hull speed for an unavailable reading', () => {
       const loadout = build();
       loadout.setModuleEnabled('MainEngines', false);

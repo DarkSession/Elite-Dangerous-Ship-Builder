@@ -10,7 +10,8 @@ Components never call the Almanac and never calculate a price.
 
 ## Retail transaction
 
-1. Call `metrics.buildCost()` exactly once per projection.
+1. Take `const metrics = BuildMetrics.of(loadout)` and call `metrics.buildCost()` exactly once per
+   projection.
 2. Preserve its numeric `credits.hull`, `credits.modules`, `credits.total` and `credits.rebuy`
    verbatim.
 3. Do not derive the rebuy percentage from the numbers. `REBUY 5%` is fixed label text taken from the

@@ -13,7 +13,7 @@ the localized, canonical and unavailable states, and the tokens carry the severi
 | `BuildStatus` | both severities, in package order | no issues: nothing drawn | N/A     | N/A   | N/A      | canonical fallback, long params, RTL, wrap |
 
 `N/A` means the component cannot semantically own that state. There is no loading state because
-`ShipLoadout.validation()` is a field on a build already in memory, and no error state because reading
+`ShipLoadout.validation()` reads a build already in memory, and no error state because reading
 it cannot fail; the no-build case belongs to the workspace.
 
 Assertions carried by the unit and product suites: no visual literal outside tokens, no hard-coded

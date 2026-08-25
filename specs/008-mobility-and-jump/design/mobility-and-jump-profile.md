@@ -173,10 +173,11 @@ mass because that is the only maximum the package gives it.
 
 ## Mobility, and when the package cannot say
 
-A complete result presents the five readings the canvas draws, each from that one result; its
-`loadedMass` is what the position on the curve is measured against, and its two multipliers are not
-drawn. An incomplete one presents the package's exact
-issues in the package's order, whose fields and reasons distinguish absent, disabled, shed,
+Two complete results present the five readings the canvas draws: `boost` from the flight model,
+which the package states independently of the allocation, and `speed`, `pitch`, `roll` and `yaw`
+from what the settled ENG pips make of it. The flight model's `loadedMass` is what the position on
+the curve is measured against, and its two multipliers are not drawn. An incomplete result — either
+of them — presents the package's exact issues in the package's order, whose fields and reasons distinguish absent, disabled, shed,
 package-unresolved and invalid-input thrusters.
 
 The hull's own catalogue speed and rotation exist and are deliberately not reached for: a catalogue
