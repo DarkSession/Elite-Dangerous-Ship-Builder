@@ -405,12 +405,18 @@ test.describe('the status rail', () => {
     // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
     // are one block").
     const line = page.locator('edsb-power-summary .rail-power');
-    const cell = page.locator('.outfitting__status-cells .metric').first();
+    const cells = page.locator('.outfitting__status-cells .metric');
     await expect(line).toBeVisible();
-    await expect(cell).toBeVisible();
+    await expect(cells).toHaveCount(6);
 
-    const [lineBox, cellBox] = await Promise.all([line.boundingBox(), cell.boundingBox()]);
-    expect(Math.round(lineBox!.x)).toBe(Math.round(cellBox!.x));
+    // The leading edge of the grid, not of its first cell in DOM order: the
+    // cells are two to a row, so mirrored the first of them is the one in the
+    // trailing column and its own edge is a column in from the block's.
+    const starts = await cells.evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLElement).getBoundingClientRect().left),
+    );
+    const lineBox = (await line.boundingBox())!;
+    expect(Math.round(lineBox.x)).toBe(Math.round(Math.min(...starts)));
   });
 });
 

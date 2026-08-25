@@ -3,9 +3,11 @@
 > **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
 > specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
 > design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
-> and its half-pip domain went to feature 005 with ruling C; the provider envelope, the revision
-> context, the composition transaction, the status lifecycle and the announcement state went with
-> rulings A and B. Feature 003 adds no domain type, no store and no port: `ShipLoadout.validation()`
+> and its half-pip domain went to feature 005 with ruling C, and so did the provider envelope, the
+> revision context, the composition transaction and the status lifecycle: that ruling removed this
+> feature's dependency on features 005–009 entirely, so there is no owner result left to compose and
+> nothing for an envelope to carry. The announcement state went with ruling A, which withdrew the
+> counts it announced. Feature 003 adds no domain type, no store and no port: `ShipLoadout.validation()`
 > is a call on the build feature 001 already holds in memory, and the one component reads it the way
 > `edsb-cost-materials` reads its own projection.
 >
