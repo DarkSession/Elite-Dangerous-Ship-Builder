@@ -46,31 +46,37 @@ Derived values: filtered/sorted result symbols, active constraint descriptions a
 
 Application state around one mutable package `ShipLoadout`.
 
-| Field                      | Type                                        | Rule                                                                                     |
-| -------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `loadout`                  | `ShipLoadout \| null`                       | Only live source of build/game behavior                                                  |
-| `provenance`               | `none \| stock \| working \| named \| link` | Application workflow origin, not exported                                                |
-| `workingRecordId`          | UUID                                        | This tab's autosave target; local only                                                   |
-| `sourceNamed`              | `{ recordId; baseRevisionId } \| null`      | Optimistic save baseline; local only                                                     |
-| `baselineFingerprint`      | opaque string or null                       | Compares active modelled state with its explicit-save/open baseline; not a game identity |
-| `dirty`                    | boolean                                     | True for a new unnamed build or when modelled state differs from the named/open baseline |
-| `persistence`              | `PersistenceStatus`                         | Does not determine whether the build is usable                                           |
-| `link`                     | `LinkPublicationState`                      | Current fragment synchronization/refusal status                                          |
-| `qualityCompletionNotices` | readonly package-derived notice[]           | Transient workflow disclosures for completed partial engineering; never persisted        |
+| Field                      | Type                                        | Rule                                                                              |
+| -------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
+| `loadout`                  | `ShipLoadout \| null`                       | Only live source of build/game behavior                                           |
+| `provenance`               | `none \| stock \| working \| named \| link` | Application workflow origin, not exported                                         |
+| `recordId`                 | UUID                                        | The record this page autosaves into, named or not; local only                     |
+| `sourceNamed`              | `{ recordId; baseRevisionId } \| null`      | The record this one was forked from and the revision observed then; local only    |
+| `baselineFingerprint`      | opaque string or null                       | Compares active modelled state with the last state written to its record          |
+| `dirty`                    | boolean                                     | Modelled state has changed since the last successful write to its record          |
+| `persistence`              | `PersistenceStatus`                         | Does not determine whether the build is usable                                    |
+| `link`                     | `LinkPublicationState`                      | Current fragment synchronization/refusal status                                   |
+| `qualityCompletionNotices` | readonly package-derived notice[]           | Transient workflow disclosures for completed partial engineering; never persisted |
 
-Replacement transition:
+Ingress transition:
 
 ```text
 source intent -> construct/decode candidate -> validate candidate
     failure -> explain; active state unchanged
-    success + no unsaved work -> commit candidate
-    success + unsaved work -> confirm
-        cancel -> active state unchanged
-        replace -> commit candidate
-commit -> fork into this tab's working record -> autosave -> synchronize fragment
+    success -> commit candidate
+commit -> adopt the candidate's record, or mint one for it -> autosave -> synchronize fragment
 ```
 
 No loader mutates the active state before its candidate has completed parsing, construction and validation.
+
+There is no confirmation step in that sequence, and `dirty` is not consulted by it. The build being
+replaced is a record of its own that the library still lists, so replacing it loses nothing there is
+anything to ask about (FR-008, FR-009). `dirty` survives as a persistence fact: it says a write is
+owed, which is what the coalescing timer and the lifecycle flush act on.
+
+Opening a record adopts it — the page autosaves into that record rather than into a copy of it.
+Creating a stock build, decoding a link and importing a SLEF file each mint a record instead, because
+there is no existing one to adopt.
 
 ## BuildSnapshotV1
 
@@ -111,35 +117,41 @@ Validation:
 
 One atomic value stored under `edsb:record:<id>`.
 
-| Field         | Type                                    | Rule                                                               |
-| ------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them            |
-| `version`     | literal `1`                             | Record-envelope version                                            |
-| `id`          | UUID                                    | Immutable local identity; must equal key suffix                    |
-| `kind`        | `working \| named`                      | Controls ownership and UI behavior                                 |
-| `revisionId`  | UUID                                    | Fresh after every successful write; never time-derived             |
-| `createdAt`   | ISO-8601 instant                        | Display metadata only                                              |
-| `modifiedAt`  | ISO-8601 instant                        | Locale-formatted display metadata only                             |
-| `name`        | `string \| null`                        | Null for working; named duplicates allowed after warning           |
-| `note`        | `string \| null`                        | At most one local note; excluded from link and SLEF                |
-| `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                       |
-| `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                    |
-| `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                            |
-| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on a working record opened/forked from a named record |
+| Field         | Type                                    | Rule                                                                                     |
+| ------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them                                  |
+| `version`     | literal `1`                             | Record-envelope version                                                                  |
+| `id`          | UUID                                    | Immutable local identity; must equal key suffix                                          |
+| `kind`        | `working \| named`                      | Whether the Commander has named this record; `working` is the stored spelling of unnamed |
+| `revisionId`  | UUID                                    | Fresh after every successful write; never time-derived                                   |
+| `createdAt`   | ISO-8601 instant                        | Display metadata only                                                                    |
+| `modifiedAt`  | ISO-8601 instant                        | Locale-formatted display metadata only                                                   |
+| `name`        | `string \| null`                        | Null for working; named duplicates allowed after warning                                 |
+| `note`        | `string \| null`                        | At most one local note; excluded from link and SLEF                                      |
+| `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                                             |
+| `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                                          |
+| `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                                                  |
+| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on a record forked from another; identity and revision observed at the fork |
 
-Package construction owns fixed-mount defaulting. Working autosave and named save/duplicate store
-only the resulting modelled build; no empty-source or defaulting provenance is retained.
+Package construction owns fixed-mount defaulting. Autosave, naming and duplication store only the
+resulting modelled build; no empty-source or defaulting provenance is retained.
+
+`kind` is not a lifecycle. An unnamed record is a whole record — autosaved, listed, openable and
+permanent — and is not a draft of a real one somewhere else. It is `working` in the stored bytes
+because that is the discriminant version 1 published and those bytes are already saved; everywhere
+else it is read as "has no name yet". Naming flips the discriminant in place and mints no second
+record (FR-009).
 
 State transitions:
 
 ```text
-working --save with name--> new named copy + working provenance retained
-working --duplicate--> new named copy + working retained
-named --open--> copied into tab working
+unnamed --named--> named, same ID, fresh revision; nothing left behind
+unnamed --saved as a copy--> new named ID/revision; the original stays unnamed
+named --open--> adopted by this page; its edits autosave into it
 named --rename--> named (new revision)
 named --duplicate--> new named ID/revision
-named --delete confirmed--> removed
-working --explicit discard confirmed--> removed
+any --delete confirmed--> removed
+any --claimed by a second live page--> the later page forks an unnamed copy and writes there
 supported old version --lossless migration succeeds--> current version, same ID
 unsupported newer/malformed --open--> unavailable listing; bytes unchanged
 ```
@@ -157,19 +169,19 @@ A fresh in-memory `pageNonce` participates in a BroadcastChannel claim. If anoth
 
 ## SaveConflict
 
-| Field                | Type                   | Rule                                                    |
-| -------------------- | ---------------------- | ------------------------------------------------------- |
-| `recordId`           | UUID                   | Conflicted named record                                 |
-| `expectedRevisionId` | UUID                   | Baseline opened by this tab                             |
-| `observedRevisionId` | UUID                   | Latest decoded stored revision                          |
-| `attempted`          | candidate named record | This tab's version; retained in memory/working autosave |
-| `observed`           | decoded named record   | Other tab's current version                             |
+| Field                | Type                  | Rule                                                          |
+| -------------------- | --------------------- | ------------------------------------------------------------- |
+| `recordId`           | UUID                  | The conflicted record                                         |
+| `expectedRevisionId` | UUID                  | Baseline opened by this tab                                   |
+| `observedRevisionId` | UUID                  | Latest decoded stored revision                                |
+| `attempted`          | candidate record      | This page's version; retained in memory and in its own record |
+| `observed`           | decoded stored record | The other page's current version                              |
 
 Transitions:
 
 - `overwrite`: re-lock and write only if `observedRevisionId` still matches; otherwise emit a refreshed conflict.
 - `keepBoth`: create a new named ID/revision and preserve `observed`.
-- `cancel`: write no named value; active and working state remain.
+- `cancel`: write nothing to the conflicted record; the active build and this page's own record remain.
 
 ## PersistenceStatus
 

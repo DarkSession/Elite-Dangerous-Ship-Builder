@@ -8,37 +8,37 @@ This feature defines the active-build shell and persistence/share behavior. Modu
 ## Composition
 
 - `AppShell` and the active hull/provenance summary. The workspace renders no heading of its own: canvas 1c puts the build's identity in the command bar (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)).
-- Named/working/dirty and package validation `StatusIndicator` with visible text, not color alone.
+- Named/unnamed and package validation `StatusIndicator` with visible text, not color alone.
 - Active capability outlet for future outfitting/statistics screens; no component owns a second build copy.
 - Save/name and library actions.
 - `ShareLinkPanel` with generated canonical link, copy/share feedback, encoding/refusal state and feature 004 SLEF alternative.
-- Persistent `InlineNotice`/`ErrorSummary` for storage unavailable/quota, externally deleted working record, invalid incoming link and unsupported version.
-- `ConfirmDialog` for candidate replacement.
+- Persistent `InlineNotice`/`ErrorSummary` for storage unavailable/quota, an externally deleted held record, invalid incoming link and unsupported version.
 
-Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF export choice, which is the one the dialog lists first and opens on; the journal and Markdown export choices the mock once drew are implemented nowhere and drawn nowhere — they were taken out of `.design` rather than left drawn beside two real ones.
+Canvas 1c supplies the wide workspace command hierarchy: build name/hull identity at the start, save and export/share actions at the end, and modal surfaces over the active capability. Canvas 1d supplies the narrow variant: identity header, overflow action menu and bottom-sheet dialogs. The save dialog's name/note and “overwrite existing”/“save as new” choices map to stable record IDs and revision checks; visual name equality alone never authorizes overwrite. Since 2026-08-25 “overwrite existing” names the record the build is already being autosaved into, so it writes a name onto that record rather than producing a second copy of the build, and “save as new” is the one choice that mints a record. Feature 001's share-link view composes inside the export dialog, while feature 004 owns its SLEF export choice, which is the one the dialog lists first and opens on; the journal and Markdown export choices the mock once drew are implemented nowhere and drawn nowhere — they were taken out of `.design` rather than left drawn beside two real ones.
 
 ## States
 
-| State                              | Required presentation and behavior                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship.                            |
-| Working stock/link build           | Show hull and “working” provenance; autosave status; no named save is created implicitly.                         |
-| Named-source build                 | Show source name and whether modelled state differs from baseline. Autosave still targets the tab working record. |
-| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                       |
-| Persistence failed/limit/quota     | Blocking status explains that editing remains usable; manage/retry actions remain available.                      |
-| Valid incoming link                | Detached candidate completes before any confirmation/commit; success becomes working/link provenance.             |
-| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                   |
-| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                       |
-| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.            |
-| Replacement confirmation           | Identifies current/incoming work; cancel changes neither build nor records.                                       |
+| State                              | Required presentation and behavior                                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship.                         |
+| Unnamed stock/link build           | Show hull and that the build has no name yet; autosave status; no name is invented for it.                     |
+| Named build                        | Show the name the Commander gave the record. Autosave targets that same record.                                |
+| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                    |
+| Persistence failed/limit/quota     | Blocking status explains that editing remains usable; manage/retry actions remain available.                   |
+| Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance. |
+| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                |
+| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                    |
+| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.         |
 
 ## URL lifecycle
 
-Restore this tab's working record first, then process an initial recognized fragment as an incoming candidate. Initial and later `hashchange` events share the same coordinator and request token. After commit/edit, encoding uses the existing loader; success calls `history.replaceState`, while refusal clears only the stale build fragment. Note/name/record operations do not enter or perturb the payload.
+Restore the record this page holds first, then process an initial recognized fragment as an incoming candidate. Initial and later `hashchange` events share the same coordinator and request token. After commit/edit, encoding uses the existing loader; success calls `history.replaceState`, while refusal clears only the stale build fragment. Note/name/record operations do not enter or perturb the payload.
 
 ## Persistence lifecycle
 
-Modelled edits coalesce into this tab's working key. Visibility loss/pagehide requests a best-effort flush. Opening or creating never writes a named save. Explicit named save compares the baseline under a short Web Lock; conflicts delegate to the library choice dialog while the active working copy remains intact.
+Modelled edits coalesce into the key of the record this page holds, named or not. Visibility loss/pagehide requests a best-effort flush. Creating, opening or loading a build mints or adopts a record before the build is editable, so there is never an active build that is not already saved somewhere — which is what withdraws the replacement question from every ingress path (FR-008, FR-009).
+
+Naming compares the baseline under that record's short Web Lock and writes the name onto it; conflicts delegate to the library choice dialog while the active build and its record remain intact.
 
 ## Responsive and accessibility notes
 
@@ -47,12 +47,12 @@ Modelled edits coalesce into this tab's working key. Visibility loss/pagehide re
 - Link text wraps or uses a labeled internal scroll container without document overflow.
 - Share/copy failure never removes selectable text.
 - The share-link mode always renders `/build#b.…`; the reference `/b/<name>#h=…` sample is not implemented because it puts local naming/version detail outside the canonical fragment contract.
-- **Revised 2026-08-22.** Persistence status and working provenance are _not_ added to the visual
+- **Revised 2026-08-22.** Persistence status and record provenance are _not_ added to the visual
   hierarchy: neither canvas draws either, and the standing rule is that what the design does not draw
   is not drawn. Both remain in the accessibility layer, where a reader who has no drawn state to
   notice still gets them. Conflict, retention/quota and link refusal keep their visible treatment —
   those are blocking conditions a Commander has to act on, not status.
-- Preview states cover no-build, working/named/link, dirty, persistence failures, valid/invalid/refused links and confirmation at all core widths.
+- Preview states cover no-build, unnamed/named/link, persistence failures and valid/invalid/refused links at all core widths. The replacement-confirmation preview is withdrawn with the state.
 
 ## Reference composition
 

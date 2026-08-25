@@ -15,12 +15,14 @@ browser and share builds by URL. SLEF import and export are specified in
    constraints and match count.
 2. Opening hull detail shows catalogue facts and artwork without creating or replacing a build.
 3. Creating a build uses the Almanac default loadout for the selected hull.
-4. Replacing unsaved work requires confirmation.
+4. Creating a build never asks about the build already open: that one was saved from the moment it
+   was created, and creating another leaves it where it is.
 
 ### Story 2 — Resume local work (P1)
 
-1. Reloading restores the tab's working build.
-2. Named and working builds can be listed, opened, named, renamed, duplicated and deleted.
+1. Reloading restores the build the tab was working on.
+2. Every build worked on is listed, named or not, and can be opened, named, renamed, duplicated and
+   deleted.
 3. A conflicting save from another tab offers overwrite, keep both and cancel; neither version is
    silently lost.
 4. If storage is unavailable or full, the build remains usable and the persistence failure is clear.
@@ -61,19 +63,38 @@ browser and share builds by URL. SLEF import and export are specified in
   artwork MUST NOT block hull selection or build creation.
 - **FR-007**: Build creation MUST be explicit and MUST use the package default loadout. If no default
   is available, creation MUST be unavailable; the application MUST NOT invent one.
-- **FR-008**: The active build MUST be autosaved to a tab-owned working record and restored after
-  reload. Working and named records MUST use local identities independent of their display names.
-- **FR-009**: Duplicate names MUST be allowed after warning. Deletion and replacement of unsaved
-  work MUST require confirmation.
-- **FR-010**: Stored entries MUST show name or working state, hull, last-modified time and the
-  validation state recorded at that time. A build MAY have one local note.
+- **FR-008**: Every build that becomes active MUST be autosaved to a local record of its own, from
+  the moment it becomes active, without being asked for and without a Commander action, and MUST be
+  restored after reload. Creating, opening or loading another build MUST create or adopt another
+  record; it MUST NOT overwrite or discard the record of the build before it. Records MUST use local
+  identities independent of their display names.
+
+  **Ruled 2026-08-25 (Commander request).** Autosave used to target one record per tab, which every
+  new build wrote over — so the application had to ask before replacing work, and what stood behind
+  "replace the build you are working on?" was a build a Commander could not get back. A record per
+  build withdraws the question rather than answering it better: nothing worked on is lost, so nothing
+  has to be confirmed away. What it costs is that ordinary browsing leaves records behind, and
+  FR-009 and FR-013 carry that cost: a name is what keeps a record past the retention limit, and a
+  confirmed deletion is the only thing that removes one.
+
+- **FR-009**: Duplicate names MUST be allowed after warning. Deletion MUST require confirmation and
+  MUST be the only thing that removes a record. Naming a build MUST name the record it is already
+  being autosaved to — the same local identity, now carrying a name — and MUST NOT leave an unnamed
+  copy of it behind. Saving a copy under another name MUST create a further record and leave the
+  original where it is. Replacing the active build MUST NOT be confirmed, because FR-008 leaves
+  nothing to lose.
+- **FR-010**: Stored entries MUST show their name or that they have none, hull, last-modified time
+  and the validation state recorded at that time. A build MAY have one local note.
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
-- **FR-012**: Separate tabs MUST NOT share a working record. Concurrent writes to one named record
-  MUST offer overwrite, keep both and cancel.
-- **FR-013**: Working-record retention MUST have a finite documented limit and MUST NOT delete work
-  automatically. At that limit or the browser storage quota, the Commander MUST be able to choose
-  records to discard while the active in-memory build remains usable.
+- **FR-012**: Two live pages MUST NOT autosave to one record. A page that would claim a record
+  another live page already holds MUST fork an unnamed copy of it, under a fresh local identity,
+  before either page next writes. Concurrent writes to one record MUST offer overwrite, keep both
+  and cancel.
+- **FR-013**: Retention of unnamed records MUST have a finite documented limit and MUST NOT delete
+  work automatically. Naming a record releases its slot, and named records are bounded only by the
+  browser storage quota. At that limit or at the quota, the Commander MUST be able to choose records
+  to discard while the active in-memory build remains usable.
 - **FR-014**: Browser persistence MUST use a versioned format and migrate every supported older
   version without losing recognized modelled state. During reconstruction, an unknown hull MUST
   leave the record stored but unopened. Package reconstruction MUST populate every fixed mount from
@@ -107,6 +128,11 @@ browser and share builds by URL. SLEF import and export are specified in
 
 - An unknown hull is refused atomically. Unknown module identities are not a supported migration
   input and receive no application-owned compatibility behavior.
+- A build replaced in the workspace is not gone: it is the record it was being autosaved to, and the
+  library still lists it.
+- The retention limit is reached by ordinary browsing rather than exceptionally, so it is an
+  ordinary surface: it asks which unnamed records to discard, and offers naming one as the other way
+  forward.
 - Preview absence is temporary, not a catalogue failure.
 - A newer payload version is refused rather than guessed.
 - A build-link payload longer than the published 500-character limit is refused before decoding.
@@ -122,7 +148,7 @@ storage and the versioned URL codec; none calculates an Elite Dangerous value.
 
 - **SC-001**: Every hull fact and stock build matches the installed Almanac package.
 - **SC-002**: Stored and linked builds preserve every recognized modelled field, always reconstruct
-  fixed mounts with package defaults, and never allow one tab to silently overwrite another tab's
-  work.
+  fixed mounts with package defaults, never allow one tab to silently overwrite another tab's work,
+  and lose no build a Commander has worked on except to an explicit, confirmed deletion.
 - **SC-003**: Every published link reconstructs an equivalent build and remains decodable.
 - **SC-004**: No automatic request sends build data or contacts another origin.

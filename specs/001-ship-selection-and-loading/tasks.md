@@ -277,7 +277,7 @@ integration closure and the documented validation run.
 - [x] T106 [P] Verify search, filter and sort over the complete installed hull catalogue, working-build restoration before interactivity, autosave coalescing and sub-50 ms codec encode/decode against the plan's performance goals in `e2e/performance.spec.ts`
 - [x] T107 Confirm the built asset tree contains no `.design/` mock data or assets, no Google Fonts request and no `/b/<name>#h=…` sample link, and record the reconciliation outcome in `specs/001-ship-selection-and-loading/design/reference-review.md`
 - [x] T108 [P] Document the working-record retention limit, owned key space, supported record versions and published link versions in `docs/persistence-and-links.md`
-- [ ] T109 Close the feature 004 SLEF integration by replacing the placeholder fallback with the delivered export action in `src/app/application/build-link/slef-fallback.port.ts` and its workspace wiring (depends on T093, feature 004)
+- [x] T109 Close the feature 004 SLEF integration by replacing the placeholder fallback with the delivered export action in `src/app/application/build-link/slef-fallback.port.ts` and its workspace wiring (depends on T093, feature 004) — delivered by `src/app/application/slef/slef-fallback.adapter.ts` and provided as `SLEF_FALLBACK_PROVIDER` in `app.config.ts`; the port keeps its "not available yet" default for tests and for a shell built without feature 004
 - [x] T110 Run `pnpm run check` and execute every scenario in `specs/001-ship-selection-and-loading/quickstart.md`, confirming at least 80% statements, branches, functions and lines with no skipped or quarantined test
 
 ---
@@ -436,12 +436,51 @@ brought to the drawing.
 
 ---
 
+## Phase 11: A record for every build, and the library the canvas draws
+
+**Goal**: close the two Commander corrections raised on 2026-08-25 after the reserved-track ruling.
+Autosave stops being one record per tab that the next build writes over and becomes one record per
+build, which withdraws the replacement question from every ingress path; and `/builds` stops being a
+grid of cards on a plain page and becomes the surface both canvases draw.
+
+`spec.md` (FR-008 to FR-013), `contracts/persistence.md`, `contracts/build-link.md`,
+`contracts/routes-and-ui.md`, `data-model.md`, `quickstart.md` and the four design records were
+revised on 2026-08-25 and are the specification these tasks build to. No requirement id is minted:
+the coverage ledger registers ids against journeys that exist, so the change is amendments inside
+FR-008, FR-009, FR-010, FR-012 and FR-013.
+
+### A record for every build (FR-008, FR-009)
+
+- [ ] T148 Mint a record per build rather than per tab: `commit` in `src/app/application/active-build/active-build.store.ts` takes a fresh record identity for a build that has none, `src/app/application/build-library/autosave.service.ts` writes to the held record, and `TabDescriptorV1` carries the held record id rather than a tab-owned working one (data model, "ActiveBuildState"; persistence contract, "Autosaved records")
+- [ ] T149 Adopt on open in `src/app/application/build-library/record-open.service.ts`: a successful candidate takes over the record it was decoded from and autosaves into it, instead of copying it into a working record beside it (depends on T148)
+- [ ] T150 Name in place in `src/app/application/build-library/named-record.service.ts`: naming writes `name` onto the held record and flips `kind` under that record's own lock — same key, same id, fresh `revisionId`, nothing left behind — and "save as a copy" becomes the one operation that mints a second record (depends on T148)
+- [ ] T151 Withdraw the replacement question: delete `ReplacementConfirmer`, the `dirty()` gate and the `setConfirmer` seam from `src/app/application/active-build/replacement-coordinator.ts`, its dialog wiring in `src/app/app.ts`, and `workspace.replace.*` from both locale catalogues. Rename the coordinator for what it now does — construct, commit once, notify — and delete `src/app/domain/build/replacement-policy.ts` if nothing reads the fingerprint after T148 (depends on T148, T149)
+- [ ] T152 [P] Fork a colliding claimant in `src/app/application/build-library/tab-ownership.coordinator.ts`: announce the held record on every adoption rather than only at start, so a second page opening the record this one holds forks onto a fresh unnamed record before either writes (FR-012) (depends on T149)
+- [ ] T153 [P] Count only unnamed records against retention in `src/app/application/build-library/retention.service.ts`, release a slot when a record is named, and offer naming beside discarding in `src/app/ui/components/record-manager/` (FR-013) (depends on T150)
+- [ ] T154 [P] Rename the deliberate-write lock from `edsb:named:<record-id>` to `edsb:record:<record-id>` in the lock-name builder in `src/app/platform/storage/storage-keys.ts`, its callers in `src/app/application/build-library/`, and their tests: it guards any record now, and a Web Locks name is not stored bytes
+- [ ] T155 Say "unnamed", not "working", in `src/app/i18n/locales/{en,de}.json` and in every view model that carries the word to a Commander: a record with no name is a whole record, not a draft of one (depends on T150)
+- [ ] T156 Rewrite `e2e/build-working-state.spec.ts` and the `001/FR-007`, `001/FR-008` and `001/FR-009` assertion lines in `e2e/coverage-ledger.ts` around the new behaviour — four builds in a row leave four records, no ingress asks anything, naming leaves the count unchanged — and move `001/FR-009` off the `ships/:symbol/create-stock-build` surface, which no longer carries a dialog (depends on T151)
+
+### The library the canvas draws (FR-010, FR-013)
+
+- [ ] T157 Give `/builds` the reference's frame: compose `src/app/ui/components/layer/` in `src/app/features/build-library/build-library.page.html` as canvas 1a's centred dialog over an inert originating screen and canvas 1b's full-screen layer, with the title bar's `SAVED BUILDS` and monospace dismiss, and keep the route addressable and in history
+- [ ] T158 Add the header row the reference draws — one search field over the records beside a monospace record count — with the count leaving the command bar for it, and narrow the listing over the fields a row shows, announced politely (depends on T157)
+- [ ] T159 Replace the card grid with the reference's rows: `BUILD` / `HULL` / `Mcr` / `EDITED` column headers on their own plate over one scrolling body, the name over a one-line note, and the hull, cost and edited-at in monospace, in `src/app/ui/components/record-list/` and `src/app/ui/components/saved-build-card/` (depends on T157)
+- [ ] T160 [P] Draw the 3px leading marker on every row and fill it amber with the leading-edge wash on the record the workspace holds, carried in words and in `aria-current` as well as in the wash (depends on T159)
+- [ ] T161 [P] Replace the per-row `StatusNotice` with the reference's monospace issue count on its warm plate, keeping the recorded validation state in words (depends on T159)
+- [ ] T162 [P] Give the surface the committing footer both canvases draw — the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge — pinned at the compact composition (depends on T157)
+- [ ] T163 Register the library surface's search, no-match and current-record states in `e2e/coverage-ledger.ts`, and assert the frame, header, columns, marker, badge and footer in `e2e/design-reference.spec.ts` and `e2e/build-library.spec.ts` (depends on T158, T159, T160, T161, T162)
+- [ ] T164 Cover every new and changed state in `src/app/ui/previews/preview-manifest.ts` — current record, searched, no match, issue badge, retention with naming offered — at desktop, tablet and mobile widths (depends on T159, T163)
+- [ ] T165 Run `pnpm run check` and fix every divergence across the ten Playwright projects, then walk `quickstart.md` scenarios 2, 3, 4, 5, 7 and 10 (depends on T148, T149, T150, T151, T152, T153, T155, T156, T157, T158, T159, T163, T164)
+
+---
+
 ## Notes
 
 - [P] tasks touch different files and have no dependency on incomplete work
 - Every game-bearing value comes from `@elite-dangerous-almanac/core`; no task adds a local hull fact, calculation or replacement rule
 - Every browser API is reached through an injected port so domain behavior stays render-free and testable
 - Candidate-first is absolute: no loader mutates active state before its candidate has parsed, constructed and validated
-- No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action
+- No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action; since 2026-08-25 that deletion is the only thing that removes one, and naming a record leaves no second copy of it behind
 - Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

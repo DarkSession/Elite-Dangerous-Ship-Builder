@@ -43,39 +43,51 @@ Expected: constraints, order and anchored position return exactly; no active bui
 2. Verify every FR-004 fact, unit, slot group and the same-origin package illustration. Confirm the text distinguishes hull specifications from build results.
 3. Abort/fail the image request and repeat the creation action.
 4. Open an unknown symbol URL.
-5. With existing unsaved work, request creation for a different known hull and test cancel, then confirm.
+5. With a build already active, request creation for a different known hull.
 
-Expected: image absence is temporary/nonblocking; unknown symbol shows an error and creates nothing; cancel preserves current work; confirm produces the exact `ShipLoadout.default(symbol)`, records package validation and navigates to the workspace.
+Expected: image absence is temporary/nonblocking; unknown symbol shows an error and creates nothing; creation asks nothing and produces the exact `ShipLoadout.default(symbol)`, records package validation and navigates to the workspace. The build that was active is still listed in `/builds`, under its own record, with everything it had.
 
-## Scenario 3: Restore tab-owned work
+## Scenario 3: Restore work without being asked to save it
 
 1. Edit the active build, wait for saved status and reload.
 2. Open a second page in the same browser context, create/edit a different build and reload both pages.
 3. Duplicate one live tab to exercise cloned `sessionStorage` detection, edit both and reload.
-4. Simulate blocked storage and quota failure while continuing to edit.
+4. Open the same record in both pages.
+5. Simulate blocked storage and quota failure while continuing to edit.
+6. Create four builds in a row without saving anything, then open `/builds`.
 
-Expected: each tab restores its own working record; a duplicated collision forks before autosave; neither tab overwrites the other; storage failure is clear while the current in-memory build, link and SLEF capabilities remain usable.
+Expected: each page restores the record it holds; a duplicated collision and a second page opening a held record both fork before autosave; neither page overwrites the other; storage failure is clear while the current in-memory build, link and SLEF capabilities remain usable. All four builds from step 6 are listed, none of them was asked about, and none of them replaced another.
 
-## Scenario 4: Manage named and working records
+## Scenario 4: Manage named and unnamed records
 
 1. Name/save the current build, then open, rename and duplicate it.
-2. Reuse an existing display name and exercise the warning/proceed path.
-3. Delete/explicitly discard a record and test both cancel and confirm.
-4. Seed 20 working records and open a new tab with a new working candidate.
-5. Select records in the manager, confirm deletion and retry persistence.
+2. Count the records before and after naming one.
+3. Reuse an existing display name and exercise the warning/proceed path.
+4. Delete a record and test both cancel and confirm.
+5. Seed 20 unnamed records and create a twenty-first build.
+6. Select records in the manager, confirm deletion and retry persistence. Separately, name one of the
+   listed records instead of discarding any.
 
-Expected: IDs remain independent of names; duplicate names are preserved after warning; cancel deletes nothing; record 21 is memory-only until explicit management; no record is automatically evicted.
+Expected: IDs remain independent of names; naming leaves the record count unchanged and leaves no
+unnamed copy behind; duplicate names are preserved after warning; cancel deletes nothing; unnamed
+record 21 is memory-only until explicit management, and naming a listed record releases a slot as
+surely as discarding one; no record is automatically evicted.
 
 ## Scenario 5: Resolve a real multi-tab conflict
 
 Use two Playwright pages in one browser context so they share `localStorage` but have separate tab sessions:
 
-1. Open the same named record in both and make divergent edits.
-2. Save page A, then save page B.
+1. Open the same record in both. The later page forks onto an unnamed record of its own; confirm both
+   are listed and both are editable.
+2. Make divergent edits, then name page A's record and page B's under the same display name.
 3. In separate runs choose cancel, keep both and overwrite.
 4. Before accepting overwrite, make/save a third change in page A.
 
-Expected: page B receives a conflict. Cancel changes no named value; keep both creates a new UUID and retains both versions; overwrite replaces only the version shown; a third revision refreshes the conflict rather than disappearing. Both tab working copies remain recoverable throughout.
+Expected: no page ever autosaves into a record another live page holds. Where a deliberate write does
+collide, page B receives a conflict: cancel writes nothing to the conflicted record; keep both creates
+a new UUID and retains both versions; overwrite replaces only the version shown; a third revision
+refreshes the conflict rather than disappearing. Both pages' own records remain recoverable
+throughout.
 
 ## Scenario 6: Migrations and hostile storage
 
@@ -91,14 +103,15 @@ Expected: supported fixtures reconstruct identical modelled state and migrate lo
 2. Confirm build data occurs only after `#`, starts `b.` and the value is at most 500 characters.
 3. Edit repeatedly and verify browser history does not gain an entry per edit.
 4. Load the link in another tab; verify an equivalent modelled build appears as working/link provenance without a named save.
-5. Navigate/paste malformed, truncated, over-limit and unsupported-version fragments while another dirty build is active.
+5. Navigate/paste malformed, truncated, over-limit and unsupported-version fragments while another edited build is active.
 6. Load an older supported payload that omits fixed entries, then separately load a payload with an
    unknown hull or an identity absent from its selected codec table.
 
-Expected: initial and navigated hashes use identical validation/replacement rules; failures and
-cancel leave work unchanged; unknown or unrepresentable identities are refused; and the supported
-older payload reconstructs with package-defaulted fixed mounts as ordinary fitted state. Local
-name/note/IDs, catalogue facts, calculations and prices are absent from payloads.
+Expected: initial and navigated hashes use identical validation rules; failures leave work unchanged;
+a valid link is loaded without a question, into a record of its own, while the build it replaced stays
+listed; unknown or unrepresentable identities are refused; and the supported older payload
+reconstructs with package-defaulted fixed mounts as ordinary fitted state. Local name/note/IDs,
+catalogue facts, calculations and prices are absent from payloads.
 
 ## Scenario 8: Network, offline and privacy
 
@@ -130,7 +143,7 @@ Where conformance is stated, expected wording names the excluded criteria: 2.1.1
 
 Compare the implementation with `.design/Ship Builder.dc.html` canvases 1a–1d and [design/reference-review.md](./design/reference-review.md):
 
-1. At wide widths, verify the shipyard manifest/detail rail, centered saved-build route modal, workspace command bar and save/share dialogs preserve the reference hierarchy.
+1. At wide widths, verify the shipyard manifest/detail rail (whose track is held whether or not a hull is open), the centered saved-build route modal with its title bar, search-and-count header, column headers and committing footer, and the workspace command bar and save/share dialogs, all preserve the reference hierarchy.
 2. At narrow widths, verify stacked hull records, full-screen detail/library layers, workspace overflow actions and sheet dialogs preserve every action and route.
 3. Confirm all mandatory adaptations: complete FR-004 facts, working/error/storage states, semantic controls, 44 px targets, package SVGs/data, localized formatting, same-origin fonts/assets and canonical `/build#b.…` links.
 4. Monitor runtime requests and inspect the built asset tree.
