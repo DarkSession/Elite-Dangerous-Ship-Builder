@@ -74,17 +74,27 @@ still unchanged by the edit — the edit is a new unnamed record naming the one 
 4. Repeat step 3 and choose "save as new" instead.
 5. Reuse an existing display name and exercise the warning/proceed path.
 6. Delete a record and test both cancel and confirm.
-7. Seed 20 unnamed records and create a twenty-first build.
-8. Select records in the manager, confirm deletion and retry persistence. Separately, name one of the
-   listed records instead of discarding any.
+7. Seed unnamed records with `modifiedAt` six days, seven days and eight days old, plus a named
+   record and an unnamed one a live page is holding, all older than seven days. Restart the
+   application and open the library.
+8. Name a record whose remaining life is under a day, then advance its stored `modifiedAt` past seven
+   days and reopen the library.
+9. Take over a record six days old by remaking the same build, then reopen the library without
+   editing anything.
+10. Fill the storage quota, select records in the manager, confirm deletion and retry persistence.
 
 Expected: IDs remain independent of names; naming an unnamed record leaves the count unchanged and
 leaves no unnamed copy behind; overwriting takes the named record to a fresh revision and removes the
-unnamed record the edits were in, leaving the count as it was before the edit, and it does so only
-after the write succeeds; saving as new leaves the original named record untouched; duplicate names
-are preserved after warning; cancel deletes nothing; unnamed record 21 is memory-only until explicit
-management, and naming a listed record releases a slot as surely as discarding one; no record is
-automatically evicted.
+unnamed record the edits were in, and does so only after the write succeeds; saving as new leaves the
+original named record untouched; duplicate names are preserved after warning; cancel deletes nothing.
+
+On expiry: the six-day record is listed with its remaining life stated, the seven- and eight-day ones
+are gone before the listing is drawn, and the named record and the held one survive however old they
+are. A name stops the clock permanently — the record named in step 8 is still listed after its
+`modifiedAt` passes seven days. Taking a record over does not restart it: the six-day record in step 9
+is still six days old and still says so. No count refuses a write and no number evicts anything; a
+full quota is the only thing that asks the Commander to choose, and it removes nothing until they
+do.
 
 ## Scenario 5: Resolve a real multi-tab conflict
 

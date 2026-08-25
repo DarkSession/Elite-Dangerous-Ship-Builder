@@ -124,21 +124,21 @@ Validation:
 
 One atomic value stored under `edsb:record:<id>`.
 
-| Field         | Type                                    | Rule                                                                                     |
-| ------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them                                  |
-| `version`     | literal `1`                             | Record-envelope version                                                                  |
-| `id`          | UUID                                    | Immutable local identity; must equal key suffix                                          |
-| `kind`        | `working \| named`                      | Whether the Commander has named this record; `working` is the stored spelling of unnamed |
-| `revisionId`  | UUID                                    | Fresh after every successful write; never time-derived                                   |
-| `createdAt`   | ISO-8601 instant                        | Display metadata only                                                                    |
-| `modifiedAt`  | ISO-8601 instant                        | Locale-formatted display metadata only                                                   |
-| `name`        | `string \| null`                        | Null for working; named duplicates allowed after warning                                 |
-| `note`        | `string \| null`                        | At most one local note; excluded from link and SLEF                                      |
-| `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                                             |
-| `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                                          |
-| `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                                                  |
-| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on an unnamed record forked from another; identity and revision at the fork |
+| Field         | Type                                    | Rule                                                                                          |
+| ------------- | --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them                                       |
+| `version`     | literal `1`                             | Record-envelope version                                                                       |
+| `id`          | UUID                                    | Immutable local identity; must equal key suffix                                               |
+| `kind`        | `working \| named`                      | Whether the Commander has named this record; `working` is the stored spelling of unnamed      |
+| `revisionId`  | UUID                                    | Fresh after every successful write; never time-derived                                        |
+| `createdAt`   | ISO-8601 instant                        | Display metadata only                                                                         |
+| `modifiedAt`  | ISO-8601 instant                        | Locale-formatted display metadata, and the instant an unnamed record's expiry is derived from |
+| `name`        | `string \| null`                        | Null for working; named duplicates allowed after warning                                      |
+| `note`        | `string \| null`                        | At most one local note; excluded from link and SLEF                                           |
+| `hullSymbol`  | string                                  | List metadata; must equal `build.shipSymbol`                                                  |
+| `validation`  | `{ valid: boolean; complete: boolean }` | Exact package booleans at the snapshot revision                                               |
+| `build`       | `BuildSnapshotV1`                       | Lossless modelled state                                                                       |
+| `sourceNamed` | `{ recordId; baseRevisionId } \| null`  | Present only on an unnamed record forked from another; identity and revision at the fork      |
 
 Package construction owns fixed-mount defaulting. Autosave, naming and duplication store only the
 resulting modelled build; no empty-source or defaulting provenance is retained.
@@ -164,14 +164,17 @@ unnamed --saved as a copy--> new named ID/revision; the original stays unnamed
 named --rename--> named (new revision)
 named --duplicate--> new named ID/revision
 any --delete confirmed--> removed
+unnamed --seven days past modifiedAt, not held by a live page--> removed
 autosave ID --claimed by a second live page--> the later page forks and writes there
 supported old version --lossless migration succeeds--> current version, same ID
 unsupported newer/malformed --open--> unavailable listing; bytes unchanged
 ```
 
-Removal appears twice in that list and nowhere else: a confirmed deletion, and the manual save that
-writes an unnamed record's build into the record it came from. The second is a removal a Commander
-asked for — they chose to overwrite — and it happens after that write succeeds, never before.
+Removal appears three times in that list and nowhere else. A confirmed deletion. The manual save that
+writes an unnamed record's build into the record it came from, which is a removal the Commander asked
+for by choosing to overwrite, and which happens after that write succeeds and never before. And the
+seven-day expiry of an unnamed record, which is the one removal no Commander pressed — so the entry
+carries its remaining time (FR-010) and a name stops it at any moment (FR-013).
 
 ## TabDescriptorV1
 
@@ -202,7 +205,11 @@ Transitions:
 
 ## PersistenceStatus
 
-`ready`, `saving`, `saved`, `retention-limit`, `quota-full`, `unavailable`, `write-failed`, or `record-deleted-externally`.
+`ready`, `saving`, `saved`, `quota-full`, `unavailable`, `write-failed`, or `record-deleted-externally`.
+
+There is no `retention-limit`: FR-013 replaced the count limit with a seven-day expiry, and expiry is
+not a persistence status. It is a property of a stored record, derived from `modifiedAt`, shown on
+the entry rather than on the workspace.
 
 - Status always carries a localized-message key and safe structured parameters, never a hard-coded message.
 - Every failure state leaves the active build editable.

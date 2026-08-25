@@ -69,17 +69,28 @@ which autosave reaches a named record, which is why naming one is still a decisi
 - Package-defaulted fixed modules persist as ordinary `BuildSnapshotV1` state with no source-empty,
   repair or defaulting provenance.
 
-At most 20 unnamed records may exist:
+**Unnamed records expire after seven days** (FR-013, ruled 2026-08-25; this replaces the count limit
+of twenty and the rule that only a Commander action removed a record):
 
-- Existing records may always be updated, named or not.
-- Minting unnamed record 21 performs no write and no deletion. The active build remains in memory and
-  the library opens record management, which offers two ways forward: discard records, or name one of
-  them. An edit to a named build that cannot fork is in exactly this state, and the named record it
-  came from is still untouched.
-- Naming a record releases its slot. Named records do not consume this count and are bounded by
-  storage quota alone.
-- Only explicit, individually selected, confirmed discard removes a record. Sort order never implies
-  eviction, and reaching the limit never evicts anything.
+- The deadline is `modifiedAt` plus seven days. It is derived, never stored — a written deadline
+  outlives a clock change and a migration as a stale fact, and `modifiedAt` is already the instant the
+  entry displays.
+- The sweep runs when the application starts and whenever the listing is read. It is deliberately not
+  a timer: a row vanishing under a Commander reading the library is the one removal this design
+  cannot make visible, and seven days does not need that precision.
+- The sweep never removes a named record, and never removes a record a live page has announced as its
+  autosave target. Both exclusions are evaluated at the moment of the sweep rather than cached.
+- The sweep calls `removeItem` once per expired key. A failure on one key stops neither the others nor
+  the listing, and leaves no partial record behind.
+- Taking a record over does not touch `modifiedAt` and so does not restart the seven days. Only a
+  modelled edit does.
+- Naming a record ends its expiry outright. Named records are bounded by storage quota alone.
+- There is no count limit. Nothing refuses to store a record because many already exist, and no
+  number evicts anything.
+- The browser storage quota remains a separate bound with its own behaviour: no prior record is
+  removed, the active build remains usable, and the Commander is offered explicit, individually
+  selected, confirmed discard. An edit to a named build that cannot fork because the quota is full is
+  exactly this case, and the named record it came from is untouched.
 
 ## Deliberate operations and conflicts
 

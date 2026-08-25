@@ -25,7 +25,7 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 | Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.          |
 | Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.  |
 | Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                    |
-| Persistence failed/limit/quota     | Blocking status explains that editing remains usable; manage/retry actions remain available.                   |
+| Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                   |
 | Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance. |
 | Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                |
 | Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                    |
@@ -51,7 +51,7 @@ Visibility loss/pagehide requests a best-effort flush. A manual save takes the t
 - **Revised 2026-08-22.** Persistence status and record provenance are _not_ added to the visual
   hierarchy: neither canvas draws either, and the standing rule is that what the design does not draw
   is not drawn. Both remain in the accessibility layer, where a reader who has no drawn state to
-  notice still gets them. Conflict, retention/quota and link refusal keep their visible treatment —
+  notice still gets them. Conflict, quota and link refusal keep their visible treatment —
   those are blocking conditions a Commander has to act on, not status.
 - Preview states cover no-build, unnamed/named/link, persistence failures and valid/invalid/refused links at all core widths. The replacement-confirmation preview is withdrawn with the state.
 

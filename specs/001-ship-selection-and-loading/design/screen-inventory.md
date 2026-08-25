@@ -7,7 +7,7 @@ Feature 001 is expressed through four logical route screens. `.design/Ship Build
 | [Hull catalogue](./hull-catalogue.md)   | `/ships`         | Canvas 1a manifest; canvas 1b stacked list                | Find and compare package hulls without touching a build.                        | populated, filtered, no matches, restored session, unavailable fact                                                                 |
 | [Hull detail](./hull-detail.md)         | `/ships/:symbol` | Canvas 1a inspector rail; canvas 1b full-screen layer     | Inspect authoritative hull facts/artwork and explicitly request a stock build.  | populated, artwork loading/missing, unknown symbol                                                                                  |
 | [Build workspace](./build-workspace.md) | `/build#b.…`     | Canvas 1c command bar/dialogs; canvas 1d menu/sheets      | Host the active build, save/share status and link ingress.                      | no build, unnamed/named/link, persistence failure, valid/invalid link, link refusal                                                 |
-| [Build library](./build-library.md)     | `/builds`        | Canvas 1a route-backed modal; canvas 1b full-screen layer | List/manage every record, named or not, and resolve storage conflicts/capacity. | empty, populated, searched, no match, unsupported/corrupt record, duplicate warning, delete confirmation, conflict, retention/quota |
+| [Build library](./build-library.md)     | `/builds`        | Canvas 1a route-backed modal; canvas 1b full-screen layer | List/manage every record, named or not, and resolve storage conflicts/capacity. | empty, populated, searched, no match, unsupported/corrupt record, duplicate warning, delete confirmation, conflict, expiring, quota |
 
 ## Requirement coverage
 
@@ -25,7 +25,7 @@ Feature 001 is expressed through four logical route screens. `.design/Ship Build
 | FR-010      | Library rows show the local name or that there is none, package hull, localized modified instant and recorded validation; note is local.   |
 | FR-011      | Workspace sharing boundary and SLEF integration exclude note/local identity; persistence contract keeps them separate.                     |
 | FR-012      | Autosave targets a self-minted record; the claim coordinator forks a collision; library three-choice conflict state on deliberate writes.  |
-| FR-013      | Library retention/quota manager lists explicit discard choices and offers naming as the way to keep one; workspace stays editable.         |
+| FR-013      | Every unnamed library row states its remaining life and offers naming; the quota manager keeps its explicit discard choices.               |
 | FR-014      | Library unsupported/migration/failure states; persistence version registry and lossless snapshot contract.                                 |
 | FR-015      | Workspace and build-link contract put the payload only after `#`.                                                                          |
 | FR-016      | Build snapshot/link codec adapter preserve only the enumerated modelled package identities/state.                                          |

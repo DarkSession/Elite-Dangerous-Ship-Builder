@@ -15,6 +15,9 @@ browser and share builds by URL. SLEF import and export are specified in
   they already have, should the application reuse that record instead of storing a second copy of
   it? → A: Reuse — an ingress whose modelled state matches an existing unnamed record takes that
   record over instead of minting one.
+- Q: How many unnamed records should a Commander accumulate before the application stops storing new
+  ones and asks them to choose? → A: None — the limit is time, not count. An unnamed record expires
+  seven days after its last modification and is then removed; naming it stops the clock.
 
 ## User Scenarios
 
@@ -34,7 +37,9 @@ browser and share builds by URL. SLEF import and export are specified in
    deleted. Editing a named build never moves it; the edits are their own entry until they are saved.
 3. A conflicting save from another tab offers overwrite, keep both and cancel; neither version is
    silently lost.
-4. If storage is unavailable or full, the build remains usable and the persistence failure is clear.
+4. An unnamed build clears itself seven days after it was last changed. The entry says how long it
+   has, and naming it keeps it for good.
+5. If storage is unavailable or full, the build remains usable and the persistence failure is clear.
 
 ### Story 3 — Share a build link (P2)
 
@@ -93,19 +98,20 @@ browser and share builds by URL. SLEF import and export are specified in
   decision back off them — the loss the old confirmation existed to prevent, arriving silently
   instead. So editing a named build forks an unnamed record and every write goes there, and the
   named record moves only when the Commander saves. What this costs is that ordinary browsing and
-  ordinary editing leave records behind, and FR-009 and FR-013 carry that cost: a name is what keeps
-  a record past the retention limit, and a save or a confirmed deletion is the only thing that
-  removes one.
+  ordinary editing leave records behind, and FR-009 and FR-013 carry that cost: an unnamed record
+  clears itself after seven days, and a name is what keeps a build indefinitely.
 
-- **FR-009**: Duplicate names MUST be allowed after warning. Removing a record MUST require either a
-  confirmed deletion or the manual save that consumes it, and nothing else may remove one. A manual
+- **FR-009**: Duplicate names MUST be allowed after warning. Removing a record MUST require a
+  confirmed deletion, the manual save that consumes it, or the expiry FR-013 defines, and nothing
+  else may remove one. A manual
   save MUST consume the unnamed record it saved from and MUST leave no copy of it behind: naming an
   unnamed record MUST name that same local identity, and writing the build into an existing record
   MUST delete the unnamed record afterwards. Saving a copy under another name MUST create a further
   record and leave the original where it is. Replacing the active build MUST NOT be confirmed,
   because FR-008 leaves nothing to lose.
 - **FR-010**: Stored entries MUST show their name or that they have none, hull, last-modified time
-  and the validation state recorded at that time. A build MAY have one local note.
+  and the validation state recorded at that time. An unnamed entry MUST also show how long it has
+  before it expires. A build MAY have one local note.
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
 - **FR-012**: Two live pages MUST NOT autosave to one record. Each page's autosave target is an
@@ -113,10 +119,28 @@ browser and share builds by URL. SLEF import and export are specified in
   identity MUST fork under a fresh one before either page next writes. Two pages MAY hold the same named record open,
   because neither autosaves into it; concurrent manual writes to one record MUST offer overwrite,
   keep both and cancel.
-- **FR-013**: Retention of unnamed records MUST have a finite documented limit and MUST NOT delete
-  work automatically. Naming a record releases its slot, and named records are bounded only by the
-  browser storage quota. At that limit or at the quota, the Commander MUST be able to choose records
-  to discard while the active in-memory build remains usable.
+- **FR-013**: An unnamed record MUST expire seven days after it was last modified, and MUST then be
+  removed. The seven days MUST run from last modification, so a build a Commander keeps working on
+  never expires under them. Naming a record MUST stop the clock: a named record MUST NOT expire, and
+  is bounded only by the browser storage quota. A record a live page is autosaving into MUST NOT
+  expire while that page holds it. There MUST be no limit on how many records may exist inside the
+  seven days.
+
+  Expiry is not a storage bound and MUST NOT be presented as one: at the browser storage quota the
+  Commander MUST still be able to choose records to discard while the active in-memory build remains
+  usable.
+
+  **Ruled 2026-08-25 (Commander request).** This reverses both the count limit and the rule that
+  nothing but a Commander's own action removes a record. A cap that stops storing and asks which
+  records to discard puts a dialog in front of ordinary work, and the records it asks about are
+  usually ones nobody wanted — a stock hull built while browsing, a link opened once. A clock clears
+  those without asking and keeps the ones a Commander returns to, and naming is what makes a build
+  permanent, which is the decision the save already was.
+
+  What it costs is that a build can be gone when a Commander comes back to it without their having
+  pressed anything. So the removal is never silent: FR-010 puts the remaining time on the entry, and
+  a name stops the clock at any moment before it runs out.
+
 - **FR-014**: Browser persistence MUST use a versioned format and migrate every supported older
   version without losing recognized modelled state. During reconstruction, an unknown hull MUST
   leave the record stored but unopened. Package reconstruction MUST populate every fixed mount from
@@ -153,14 +177,21 @@ browser and share builds by URL. SLEF import and export are specified in
 - A build replaced in the workspace is not gone: it is the record it was being autosaved to, and the
   library still lists it.
 - Creating the same stock hull twice, or opening one link twice, leaves one record rather than two:
-  an ingress identical to an unnamed record already stored takes that record over. The FR-013 limit
-  therefore counts builds a Commander has, not actions they took.
+  an ingress identical to an unnamed record already stored takes that record over.
+- Taking a record over is not modifying it, so it does not restart the seven days. Editing does. A
+  Commander who remakes a build they made six days ago and changes nothing still loses it tomorrow,
+  and the entry says so.
 - Editing a build opened from a named record changes nothing in that record. The edits are an
   unnamed record of their own, listed as such, until the Commander saves them somewhere.
 - Opening a named build and not editing it writes nothing at all.
-- The retention limit is reached by ordinary browsing rather than exceptionally, so it is an
-  ordinary surface: it asks which unnamed records to discard, and offers naming one as the other way
-  forward.
+- An unnamed record a Commander keeps returning to does not expire: the seven days run from the last
+  modification, not from when the build was first made.
+- A tab left open for longer than seven days does not lose the build in it. A record a live page is
+  autosaving into is not swept while that page holds it.
+- Unsaved edits to a named build expire on the same clock as any other unnamed record. The named
+  record they were forked from does not expire at all.
+- Naming a record at any point before it runs out keeps it indefinitely, and there is no count at
+  which naming becomes necessary.
 - Preview absence is temporary, not a catalogue failure.
 - A newer payload version is refused rather than guessed.
 - A build-link payload longer than the published 500-character limit is refused before decoding.
@@ -177,7 +208,7 @@ storage and the versioned URL codec; none calculates an Elite Dangerous value.
 - **SC-001**: Every hull fact and stock build matches the installed Almanac package.
 - **SC-002**: Stored and linked builds preserve every recognized modelled field, always reconstruct
   fixed mounts with package defaults, never allow one tab to silently overwrite another tab's work,
-  and lose no build a Commander has worked on except to an explicit, confirmed deletion or to the
-  manual save that consumes it.
+  and lose no build a Commander has worked on except to an explicit, confirmed deletion, to the
+  manual save that consumes it, or to the seven-day expiry it displayed beforehand.
 - **SC-003**: Every published link reconstructs an equivalent build and remains decodable.
 - **SC-004**: No automatic request sends build data or contacts another origin.
