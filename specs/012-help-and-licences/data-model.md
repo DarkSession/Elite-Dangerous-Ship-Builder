@@ -24,6 +24,11 @@ Validation:
   or incomplete, contradictory or placeholder evidence inside a declared release workflow is a build
   failure, not a runtime unavailable state.
 
+**Build evidence only, since 2026-08-25.** FR-007's display half is withdrawn — the design reference
+draws two version facts and no third — so neither `kind` nor `buildId` reaches the browser as
+something a Commander reads. The classification above is unchanged and still gates the release; it is
+simply not projected into the view model.
+
 ## AlmanacIdentity
 
 Identity of the installed package.
@@ -62,7 +67,9 @@ Validation:
 
 ## ExternalDestination
 
-An audited, deliberate navigation that never contains application state.
+An audited destination, verified at build time and rendered nowhere. FR-003's in-modal link is
+withdrawn: the reference draws no control in the modal but the address the source distribution's
+terms live at is still validated, because a wrong one is still a release failure.
 
 ```text
 ExternalDestination {
@@ -80,7 +87,8 @@ Validation:
   on `main` and is the only destination of any kind. There is exactly one.
 - The URL cannot receive a current route, build fragment, SLEF, hull/module identity, search
   parameter or local data.
-- Visible/localised warning text is presenter state, not part of the URL.
+- Nothing renders it. There is no presenter projection, no warning text and no anchor; the entity
+  exists so generation can fail on a wrong address.
 
 ## SourceDistributionArtifact
 
@@ -116,7 +124,8 @@ HelpManifestV1 {
 Invariants:
 
 - Exactly one disclaimer and one destination exist.
-- `repositoryLicense` is the sole destination, and its purpose is `completeLegalTerms`.
+- `repositoryLicense` is the sole destination, its purpose is `completeLegalTerms`, and it is
+  verification evidence rather than a browser-facing value.
 - Every value is deterministic for the same repository, installed package and build evidence.
 - No absolute path, branch, account, person, machine, timestamp, random value, build payload or
   translated copy enters the manifest.
@@ -217,28 +226,30 @@ Read-only projection consumed by presentation components.
 HelpDialogViewModel {
   title: LocalisedText
   purpose: LocalisedText
+  sections: { about: LocalisedText; faq: LocalisedText; licence: LocalisedText }
+  about: { facts: VersionFact[2] }
   topics: LocalisedHelpTopic[7]
-  identityFacts: {
-    applicationVersion: string
-    buildKind: LocalisedText
-    buildId?: string
-    almanacVersion: string
+  licence: {
+    index: { id: "application" | "gameData" | "typefaces"; text: LocalisedText }[3]
+    excerpt: string
+    excerptLanguage: string
   }
-  provenance: LocalisedProvenance
-  disclaimer: FrontierDisclaimer
-  disclaimerLanguageNotice: LocalisedText
-  repositoryLicense: WarnedExternalAction
 }
 ```
 
 Rules:
 
-- Release/non-release is always textual; non-release always exposes `buildId`.
-- Application and Almanac versions have separate labels.
-- Provenance says only that the bundled Almanac supplies catalogue data and calculations.
-- The disclaimer is passed unchanged to a text-only `lang="en"` region.
-- The licence action states that it leaves the app, may need a network and is the destination for all
-  remaining terms. It is the view model's only action.
+- The three section headings are the reference's own `ABOUT`, `FAQ` and `LICENCE`, in that order.
+- `about.facts` is exactly the application and Almanac versions, each with its own label. There is
+  no third fact: build kind and build identifier are build evidence, not content.
+- `topics` is the seven of FR-010 in their declared order, each already resolved to a question and
+  an answer. No governing reference is projected.
+- `licence.index` is the reference's three-line summary of what covers what, resolved from the
+  catalogue because it is application-owned text.
+- The excerpt is passed unchanged to a text-only region carrying `excerptLanguage` as `lang`. It is
+  never a catalogue entry, because a translated legal notice is not the notice.
+- The view model has no action of any kind, no destination and no external navigation. Closing is
+  the frame's, not the content's.
 - There is no runtime loading, empty, missing-artifact or legal-error view model. Those conditions
   fail generation/build.
 
@@ -251,6 +262,7 @@ root LICENSE -------------> FrontierDisclaimer -----+
 audited destination ------> ExternalDestination ----+
 
 HelpManifestV1 + locale + BrowserHelpTopic[] --> HelpDialogViewModel
+        (ExternalDestination is verified above and projected into neither)
 HelpDialogState ------------------------------> shared HelpDialog visibility
 
 installed package legal files <==byte equality==> legal/almanac mirrors

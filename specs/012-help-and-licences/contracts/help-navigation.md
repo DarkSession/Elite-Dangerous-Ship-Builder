@@ -1,7 +1,7 @@
 # Contract: Help Modal and Navigation
 
-This contract defines the shared Help · About modal, every entry into it and the deliberate external
-navigations it offers.
+This contract defines the shared Help · About modal and every entry into it. It offers no external
+navigation; the section below that once specified one now specifies its absence.
 
 ## Availability and state preservation
 
@@ -46,12 +46,19 @@ hairline dividers in one scrolling column. The invariant DOM/reading order is:
 
 1. visible `Help · About` dialog title and close action, in a header pinned above the scrolling body;
 2. the `ABOUT` section — the localised purpose sentence, then the application and bundled-Almanac
-   identity facts where the reference draws its `APP VERSION … · LIBRARY VERSION …` line, then the
-   bounded catalogue/calculation provenance statement;
+   identity facts where the reference draws its `APP VERSION … · LIBRARY VERSION …` line;
 3. the `FAQ` section — the seven help topics as question/answer pairs; and
-4. the `LICENCE` section — heading and attribution, the visible original-English notice, the exact
-   project-specific Frontier disclaimer, then the warned repository-`LICENSE` action for every
-   remaining licence and third-party term.
+4. the `LICENCE` section — heading, the reference's own three-line summary of what covers what,
+   then the exact project-specific Frontier disclaimer marked in its own language.
+
+**Corrected 2026-08-25, against the design reference.** `ABOUT` previously also carried a bounded
+provenance statement after the version facts, and `LICENCE` previously opened with prose framing and
+two sentences naming the excerpt's source and language before the quotation, and closed with a
+warned repository-`LICENSE` action. The reference draws none of the five. All are withdrawn, the
+specification is amended to match the reference rather than the other way round, and what they
+carried is either drawn where the reference does draw it — the licence summary names Frontier, the
+`almanacOwnership` topic carries the package credit — or is a property of the text rather than a
+sentence about it, as the excerpt's `lang` is.
 
 The reference puts its version line inside `ABOUT`, above the questions, and this contract follows
 it. Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed,
@@ -62,15 +69,20 @@ RTL and expanded-text states use the same complete single-column order.
 Owned/localised content describes only accepted current behavior:
 
 - **Build-link privacy**: canonical build data is in the URL fragment, which is not transmitted in
-  HTTP requests; deliberately sharing the full URL shares the encoded loadout.
+  HTTP requests; deliberately sharing the full URL shares the encoded loadout. Asked in the
+  reference's own words, which put it as the question a Commander has: whether a shared link exposes
+  an account.
 - **Accounts/uploads/telemetry**: there are no accounts, authentication, application uploads,
   telemetry or server persistence.
 - **Browser persistence**: working/named builds and preferences remain in browser storage; clearing
-  site data removes them, so export/share is needed for a separate copy.
+  site data removes them, so export/share is needed for a separate copy. Asked and answered in the
+  reference's own words.
 - **Offline assets**: installed app-shell/bundled data remains usable offline; same-origin artwork is
   offline only after being opened/cached, and temporary absence cannot block the capability.
 - **Completed engineering grades**: every represented grade is 100%; validated partial imports are
-  completed through Almanac or refused atomically before activation.
+  completed through Almanac or refused atomically before activation. Asked in the reference's own
+  words — why engineered stats differ in game — because that is the question the invariant answers;
+  the reference's own answer to it is the one this application cannot make.
 - **Hull facts and build results**: package hull facts are not fitted-build results; result values may
   also depend on declared viewing conditions.
 - **Almanac ownership**: the bundled Almanac supplies catalogue data, validation and calculations;
@@ -78,6 +90,15 @@ Owned/localised content describes only accepted current behavior:
 
 Raw message keys, blank answers, future promises, unsupported import claims, private game-text
 translations and the reference's retained-partial-roll wording are prohibited.
+
+**Wording, ruled 2026-08-25.** Three of the reference's four questions ask what three of these seven
+topics answer, and those three are asked in the reference's own words rather than reworded. Its
+`Where are my builds stored?` answer is used as it stands; its `Do share links expose my account?`
+answer is extended to carry the not-transmitted half this table requires and its answer omits; its
+`Why do my engineered stats differ in game?` answer is replaced, because the claim it makes is the
+one feature 002 FR-013 contradicts. The remaining four topics have no question in the reference and
+take the wording settled here. The reference's fourth question, `What can I import?`, is not a topic:
+import behaviour is feature 004's, and this table is the accepted set.
 
 Exactly one definition exists for each topic ID, with the following non-empty governing-reference
 set. References are build/review evidence only and are not displayed or bundled.
@@ -127,47 +148,54 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 ## Identity and provenance
 
 - Display “Application version” and “Bundled Almanac version” as separate localised facts sourced
-  from `HelpManifestV1`.
-- A non-release build also displays a textual non-release state and its build ID. Styling alone never
-  conveys non-release state.
-- A release identity is shown only when generator evidence classified it as release.
-- Provenance says only that the bundled Almanac supplies catalogue data, validation and calculations
-  and that Frontier owns the covered game data/imagery. It makes no live-game/live-catalogue currency
-  claim.
-- Package-backed artwork/value regions route to this same provenance; they own no duplicated notice
-  and no entry control of their own.
+  from `HelpManifestV1`. They are two facts and never one run-together line: a value without the
+  term beside it is a number, not a version.
+- **Corrected 2026-08-25.** The modal previously drew a third fact carrying release state and, for a
+  non-release build, its build ID. The reference draws two facts and no third; the display is
+  withdrawn and FR-007's display half with it. Generator classification is unchanged — a
+  `SHIP_BUILDER_RELEASE_TAG` that is not byte-exactly `v${applicationVersion}` over a non-`0.0.0`
+  version still fails generation rather than downgrading — and the outcome still reaches the
+  manifest as release evidence. Nothing renders it.
+- No help content claims currency with the live game or a live catalogue.
+- Package-backed artwork/value regions route to this same modal; they own no duplicated notice and
+  no entry control of their own.
 - The modal offers no package-defect action. FR-009 is withdrawn, and no issue tracker, support
   address or defect-reporting destination appears in the modal.
 
 ## Legal presentation
 
+- The section opens with the reference's own three-line summary, one localised line each for the
+  application's own code, the game data and imagery, and the typefaces.
+- Each line names only terms this repository can evidence. **Corrected 2026-08-25:** the reference's
+  second line reads `SHIP LINE ART & MATERIAL ICONS · EDASSETS.ORG, CC BY-NC-SA 4.0`, and this
+  repository can support neither half of it. Ship line art is not EDAssets' — it reaches this
+  application from `@elite-dangerous-almanac/core` under Frontier's media-usage rules, which is what
+  root `LICENSE` records — and no CC BY-NC-SA 4.0 grant for the material icons is recorded anywhere
+  in the repository. The line names Frontier's media-usage rules for the game data and imagery
+  instead. The icons, the Merc Coin and the loader mark are EDAssets files served from this origin
+  under feature 002's Icons ruling of 2026-08-22; that they carry no recorded licence here is a
+  **known gap** and is recorded as a defect in `design/help-and-licences.md`, not papered over with
+  a grant nobody has evidenced.
 - The modal embeds exactly one legal body: `FrontierDisclaimer.exactText` from root `LICENSE`.
 - Render it as text content in an English-language region. Do not use `innerHTML`, Markdown, iframe,
   translated copy, automatic links or a separately typed quotation.
-- Localised framing names Frontier, identifies the source as the repository `LICENSE`, states that
-  the excerpt remains in original English and distinguishes it from the application's MIT grant.
 - The complete application licence, Almanac licence and package third-party notices are not embedded
   as additional modal bodies.
-- Exactly one modal action is described as the destination for all remaining licence and third-party
-  terms: the generated repository `LICENSE` URL.
-- The exact disclaimer and all framing are already loaded. Expanding/scrolling/reading legal content
-  performs no request and has no runtime loading, missing or stale state.
+- The exact disclaimer and the summary above it are already loaded. Expanding, scrolling or reading
+  legal content performs no request and has no runtime loading, missing or stale state.
 - Text and long identifiers wrap within the content measure; legal prose never requires horizontal
   scrolling.
 
 ## External navigation
 
-The modal has exactly one external navigation: the repository-licence action. It:
+The modal has none. **Corrected 2026-08-25:** it previously carried one — a warned repository-
+`LICENSE` action — and the design reference draws no control in the modal at all. The action is
+withdrawn, and with it the `WarnedExternalLink` component the modal was its only consumer of.
 
-- is a native link and inert until Commander activation;
-- visibly and programmatically states that it leaves the application and may require a network;
-- uses `rel="noreferrer noopener"`;
-- receives its exact URL from the generated manifest;
-- is never prefetched, probed, opened programmatically or rewritten with application state; and
-- contains no query, fragment, build URL/payload, SLEF, hull/module identity, current route, locale
-  or browser-storage value.
-
-Tests intercept the navigation and assert the exact destination without requiring network access.
+The consequence is asserted rather than assumed: the modal renders no anchor, its rendered text
+carries no URL, and opening it neither issues nor warms a cross-origin request. A Commander looking
+for the remaining licence and third-party terms finds them in the repository `LICENSE`, which the
+licence summary names and the generator still audits at build time.
 
 ## Dialog semantics and responsive behavior
 
@@ -187,21 +215,23 @@ Tests intercept the navigation and assert the exact destination without requirin
 
 ## Localisation and accessibility
 
-- Every application-owned title, heading, topic, fact label, warning and action resolves through
-  feature 011's localisation layer with bundled English fallback.
-- The source disclaimer is unchanged and marked `lang="en"`; surrounding framing follows the active
+- Every application-owned title, heading, topic, fact label, licence-summary line and the close
+  action resolves through feature 011's localisation layer with bundled English fallback.
+- The source disclaimer is unchanged and marked `lang="en"`; everything around it follows the active
   document language and direction.
 - Expanded and RTL fixtures preserve source-text language/direction boundaries, section order,
   complete labels and wrapping.
-- The dialog heading hierarchy, topic group, definition facts, provenance notice, disclaimer source/
-  language relationship and external warnings form a coherent screen-reader reading order.
+- The dialog heading hierarchy, the two definition facts, the topic group with each question a
+  heading over its own answer, and the licence summary list ahead of the language-marked excerpt form
+  a coherent screen-reader reading order.
 - Opening is announced through native/shared dialog semantics; long content is not injected into a
   live region. Closing returns to the invoking origin.
-- Axe/semantic/no-overflow checks cover closed background and open release/non-release,
-  alternate-locale and long-text states in every Chromium/Firefox viewport/orientation project.
+- Axe/semantic/no-overflow checks cover the closed background and the open default, alternate-locale
+  and long-text states in every Chromium/Firefox viewport/orientation project.
 - Manual screen-reader checks verify discovery from no-build and active capabilities, dialog
-  isolation, identity distinctions, disclaimer attribution/language, the warning relationship and the
-  underlying capability after close.
+  isolation, the two identity facts as distinct labelled facts, the excerpt's declared language and
+  the underlying capability after close. There is no warning relationship to verify: the modal has no
+  external action.
 - Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11.
 
@@ -210,11 +240,16 @@ Tests intercept the navigation and assert the exact destination without requirin
 Feature 011's preview catalogue must include:
 
 - the closed frame-entry state;
-- open release and non-release modal states;
+- the open modal state;
 - all seven populated help topics;
-- long application/build/package identifiers;
-- exact disclaimer and the warned external action;
+- long application and package identifiers;
+- the three-line licence summary and the exact disclaimer;
 - desktop centered, tablet/mobile portrait and landscape sheet states;
-- doubled/expanded text, RTL framing with English disclaimer, reduced motion and 400%-zoom reflow.
+- doubled/expanded text, RTL section with English disclaimer, reduced motion and 400%-zoom reflow.
+
+**Corrected 2026-08-25.** Separate release and non-release states are withdrawn with the display of
+release state, and the warned external action with the action itself. Feature 011's preview
+catalogue holds one fixture per state name from its fixed five, which is the other reason a release
+and a non-release `default` could never both have lived here.
 
 Missing/empty/drifted artifact states are generator tests, not runtime component previews.

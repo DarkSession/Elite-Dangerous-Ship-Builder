@@ -115,9 +115,11 @@ terms.
 
 It is also the **only** destination. FR-009's Almanac package-defect action is withdrawn (spec
 clarification 2026-08-25): the design reference draws no such control, and the installed package's
-`bugs.url` is therefore not read at all. The one link uses a native anchor, visible leaving-app and
-network warnings and `rel="noreferrer noopener"`; nothing opens, prefetches or probes it before
-activation.
+`bugs.url` is therefore not read at all. **Amended 2026-08-25:** the repository-`LICENSE` link is
+withdrawn too. The reference draws no control in the modal other than its close, so there is no
+anchor, no warning text and no destination rendered anywhere; the address is still validated by the
+generator, because a wrong one for the terms the source distribution carries is still a release
+failure.
 
 **Rationale**: A checked-in allowlisted repository licence location is auditable and independent of
 developer git remotes. An exact URL makes it straightforward to prove that no route, fragment, SLEF
@@ -126,7 +128,9 @@ or build identity is appended.
 **Alternatives considered**: Deriving URLs from local git remotes, using the current page URL,
 linking package notices separately, auto-opening a new window, client-side availability probes and
 adding issue templates/query parameters were rejected because they are environment-dependent,
-create extra legal destinations, trigger network activity or risk leaking build context.
+create extra legal destinations, trigger network activity or risk leaking build context. Each of
+those objections now applies to rendering any destination at all, which is the outcome the
+design-conformance pass reached from the other direction.
 
 ## Source-distribution terms
 
@@ -185,8 +189,9 @@ column may fill the viewport. DOM and reading order never change.
 The shared dialog supplies `role="dialog"`, `aria-modal="true"`, a visible labelled title and
 background isolation. Every entry and close/external action has a visible localised name and at least
 the shared 44 CSS-pixel target.
-The exact disclaimer is text in a region with `lang="en"` and a visible localised “original English”
-statement. Long text and identifiers wrap; no horizontal document or legal-excerpt scroll is used.
+The exact disclaimer is text in a region with `lang="en"`; the “original English” sentence that
+used to sit above it is withdrawn, because the reference draws no such sentence and the language is
+declared as a property of the region either way. Long text and identifiers wrap; no horizontal document or legal-excerpt scroll is used.
 No essential interaction depends on hover, animation, icon, color or placement.
 
 **Rationale**: This preserves `.design`'s recognizable desktop/mobile modal treatment while making
@@ -195,7 +200,7 @@ framing. Native semantics and one visible order are easier to verify than a cust
 
 **Alternatives considered**: A fixed 620 px dialog, fixed 82/88% heights, icon-only `?`,
 title-attribute naming, route navigation, two-column DOM reordering, clipped disclaimer text and
-hover-only provenance were rejected as direct conflicts with the design system, touch,
+hover-only supplementary text were rejected as direct conflicts with the design system, touch,
 localisation/reflow or screen-reader requirements.
 
 ## Verification strategy
@@ -210,13 +215,13 @@ localisation/reflow or screen-reader requirements.
   contradictory/unsupported claims outside automated semantic tests.
 - Playwright covers the wide frame action and the compact action layer from no-build and active
   capabilities, URL/build
-  stability, all content, release/non-release fixtures, offline opening/reload, exact destinations,
+  stability, all content, offline opening/reload, the absence of any external destination,
   no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
   reduced motion, axe and no-overflow across feature 011's ten Chromium/Firefox projects.
 
 Manual screen-reader protocol verifies that the modal is announced, the background is not traversed
-as active content, headings/topics/facts/disclaimer language/warnings are understandable, and the
-unchanged underlying capability is available again after close. The documented conformance
+as active content, headings, questions, answers, the two version facts and the excerpt's declared
+language are understandable, and the unchanged underlying capability is available again after close. The documented conformance
 statement says WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 **Rationale**: Artifact correctness cannot be established by UI tests alone, and an axe pass cannot
