@@ -158,6 +158,39 @@ package's own coordinates, read by arithmetic over published numbers and never o
 document (FR-003). A mount drawn on both sides is one item with two occurrences, so a cross-side
 repeat can never become two build identities (FR-007).
 
+## MarkPlacement
+
+```ts
+interface PlatePoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+interface MarkPlacement {
+  readonly anchor: PlatePoint;
+  readonly mark: PlatePoint;
+  readonly displaced: boolean;
+}
+```
+
+Where one mount's numbered square is drawn, in the plate frame's own units. `anchor` is the
+occurrence's own centre turned with the hull and centred in the frame — the position the package
+published, and the position the plate is still stating. `mark` is where the square goes: the anchor,
+unless it would touch another square, in which case every mount it is crowded with is spread onto a
+ring around the middle of those mounts, `displaced` is true for all of them, and the plate draws a
+line from each mark back to its own anchor. Each member keeps its own side of the crowd, so no two
+lines cross.
+
+Every coordinate is the package's own or arithmetic over it; nothing about where a mount _is_ comes
+from the rendered document (FR-003). What is measured is how wide the plate drew one of its own
+marks, because a mark's size has an absolute floor and its share of the plate is therefore not
+constant. Two distances come from that measurement and they are deliberately different: how close two
+marks may be before they count as crowded, and how far a crowd is then spread — the second larger,
+because a mark's own square hides half a mark's width of its line. The first is a ceiling rather than
+a promise: asking for more room than a plate has produces a _tighter_ arrangement, so the search
+retreats until it finds the one that separated its marks best (FR-012; design/hull-anatomy.md, "Marks
+that would touch").
+
 ## AnatomyProjection
 
 ```ts

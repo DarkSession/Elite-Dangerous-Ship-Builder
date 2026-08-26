@@ -320,6 +320,97 @@ facts and ledger, and no navigation mutates the build.
 
 ---
 
+## Phase 6: Corrections from use, 2026-08-25
+
+Three things that needed changing after using the built screen on real hulls and real hardware. None
+of them changes what this capability owns. Two are recorded as clarifications in `spec.md`; the
+first is recorded as an **amendment** to FR-012, because the screen was doing what the requirement
+said and the requirement is what changed.
+
+- [x] T076 Displace a mark that would touch a mark already placed and tie it back to the point the
+      package published, at a separation measured from how wide the plate drew its own marks — the placement itself as a pure function over published coordinates in
+      `src/app/domain/anatomy/mount-declutter.ts` with its unit suite beside it, the anchors, marks
+      and leaders assembled in `src/app/ui/outfitting/hull-schematic.ts`, the hairline drawn in an
+      overlay in `hull-schematic.html` and painted from `--edsb-border-node-leader` in
+      `hull-schematic.scss`, `data-displaced` exposed for the end-to-end assertion, and the crowded
+      pair added to the plate's `default` preview in `src/app/ui/previews/preview-manifest.ts`.
+      FR-012 is amended and the overlap edge case restated in `spec.md`, the placement is written
+      down in `data-model.md`, and `design/hull-anatomy.md` gains "Marks that would touch".
+- [x] T077 Fill a selected utility mount in the informational hue rather than the accent one — the
+      `[data-kind='utility'][aria-pressed='true']` treatment in `hull-schematic.scss` over the new
+      `--edsb-surface-info-solid` and `--edsb-text-on-info` in `src/styles/tokens/_semantic.scss`,
+      with the reasoning in `design/hull-anatomy.md`, "Legend and visual language": the fill says
+      _selected_ and the hue says _which kind_.
+- [x] T078 Remove the engine-dependent case behind the iPadOS report of blue hulls — the schematic
+      filter moves from the SVG group inside the picture, which WebKit does not apply a filter
+      function to, to an ordinary `.schematic__picture` box around it in `hull-schematic.html` and
+      `hull-schematic.scss`, leaving the marks and the leaders outside it. **Confirmed on the device
+      on 2026-08-26**, recorded in `e2e/manual/results/webkit-filter.md` against the protocol added
+      by T088. Recorded in `design/hull-anatomy.md`, "Schematic regions".
+- [x] T088 Give the WebKit filter a manual protocol and a result record —
+      `e2e/manual/webkit-filter.protocol.md` and `e2e/manual/results/webkit-filter.md`, in the shape
+      the zoom and screen-reader protocols already use. The engine matrix is Chromium and Firefox by
+      constitutional mandate and both apply the filter in either position, so a change that moved it
+      back onto an SVG container would pass every automated check; the suites assert the fix's shape
+      and the protocol names the conditions under which a person re-checks the rest.
+- [x] T080 Measure the plate rather than assuming a mark's share of it — `ElementSizeAdapter` in
+      `src/app/platform/browser/element-size.adapter.ts` with its unit suite, observed in
+      `hull-schematic.ts` over the plate frame and one mark, and passed to `placeMarks` as the
+      separation. A fixed fraction separated nothing at 320-pixel reflow or 200% text, because a
+      mark's size has an absolute floor and its share of the plate therefore grows as the plate
+      narrows. The adapter measures this application's own boxes and no mount position, which is why
+      it sits in the platform layer and outside `scripts/policy/anatomy-ownership.mjs`'s owned set.
+- [x] T081 Keep a displaced mark off every other mount's published position — a first pass in
+      `placeMarks` that requires a candidate to clear every foreign anchor, falling back to the old
+      rule rather than leaving a mark stacked. Without it a mark came to rest on another mount on two
+      of the package's plates, so the square a reader saw over mount B carried mount A's number.
+- [x] T082 Treat the requested separation as a ceiling — `placeMarks` retreats by a fifth at a time
+      for eight attempts and keeps whichever arrangement separated its marks best. Asking for more
+      room than a plate has made the greedy search give up more often and produced a _tighter_
+      result: on the Anaconda's underside at 200% text the asked-for 13.1% left two marks six pixels
+      apart where 9% left them twenty-five apart.
+- [x] T083 Move every mount of a crowd rather than pinning the first — `placeMarks` gathers mounts
+      whose marks would touch into one group, transitively, and spreads the whole group onto a ring
+      around the middle of those mounts, each member on its own side of it and each with its own
+      leader. Pinning the first made the answer depend on package drawing order and left that mount
+      as the only one in the crowd with no leader, claiming a precision none of them has.
+- [x] T084 Make the leaders readable — separate the distance that decides _whether_ marks are
+      crowded (a quarter of a mark's width of air) from the distance a crowd is _spread_ by (past the
+      furthest mount, plus a mark and a quarter), trim each line to its own mark's edge in
+      `hull-schematic.ts` since the square hides everything inside it, and draw it at a rule's width
+      in `--edsb-border-node-leader` at 0.7 rather than a hairline at 0.4. One number for both jobs
+      did both badly: it spread pairs with eleven pixels of air between them by four pixels each. The
+      shipped package's shortest visible leader is now ten and a half pixels, and no plate moves a
+      mark that was not crowded.
+- [x] T085 Turn a crowd's ring to where there is room rather than only to where its own mounts point
+      — sixteen turns tried per radius in `placeMarks`, scored by the clearance each leaves between
+      this crowd's marks _and its leaders_ and everything around them, ties going to the turn that
+      lines up with the mounts so a crowd with open air on all sides still sits where they point.
+      Asked twice, because a crowd placed first cannot see the marks of crowds not yet placed.
+      Reported on the Corsair: `LargeHardpoint1` sat on the left of its own crowd, so its mark was
+      sent left across two hardpoints while the right side of the hull stood empty.
+- [x] T086 Prefer a short leader to a stacked mark — where a plate has no room for a ring far enough
+      out to be legible, `placeMarks` falls back to one that merely separates the marks rather than
+      leaving the crowd alone. Refusing to move it kept the overlap this exists to remove, for a line
+      nobody could have seen; it failed the doubled-text assertion on a phone, where the Anaconda's
+      top plate is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate.
+- [x] T087 Stop two leaders crossing each other — a candidate ring is refused if any two of its own
+      leaders cross, and one that would cross a line already on the plate is ranked below one that
+      would not, ahead of the room comparison. Slot order keeps a crowd's marks in its mounts' cyclic
+      order, which was taken for a no-crossing guarantee and is not one: it holds only while the ring
+      sits where the mounts point, and the turn search moves it. Reported on the Corsair, whose nodes
+      4 and 5 made an X at any plate wider than about four hundred pixels.
+- [x] T079 Cover all nine in the suites that gate the build: `placeMarks` in
+      `src/app/domain/anatomy/mount-declutter.spec.ts`, the plate's own displacement, leader and
+      filtered-box assertions in `src/app/ui/outfitting/hull-schematic.spec.ts`, and the two
+      end-to-end assertions — leaders matching displaced marks on both plates, a selected utility
+      drawn in a different fill from a selected hardpoint, and no mark losing more than half of
+      itself under a neighbour at 200% text on either plate — in `e2e/hull-anatomy.spec.ts`, in all
+      ten projects. The last of those fails against the fixed fraction and passes against the
+      measured one, which is what makes it a regression test rather than a restatement.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase dependencies
@@ -405,8 +496,13 @@ Task: "Locate journey in e2e/hull-anatomy.spec.ts"
 
 ### Constitutional Guardrails
 
-- No task measures, moves, scales, re-draws or stores schematic geometry, reads `getBBox` or a screen
-  matrix, or derives a centre, bounds, distance, direction or convergence from package artwork
+- No task measures, moves, scales, re-draws or stores **package** geometry, reads `getBBox` or a
+  screen matrix, or derives a centre, bounds, distance, direction or convergence from package
+  artwork and presents it as a fact about the ship. _Amended 2026-08-25 by T076, which derives a
+  distance and a direction over published coordinates in order to place **this application's own**
+  marks: what a mark may not do is move the mount, and it does not — the anchor is unchanged and the
+  leader draws to it. The measurement ban is unchanged and still absolute for mount geometry; the one
+  thing measured is how large this application drew its own boxes_
 - No task identifies a mount from an SVG id, label, model socket, drawing order, node number, key
   prefix, coordinate, module symbol or translated name; identity is the exact `data-journal-slot`
   resolved to a package slot of the matching kind

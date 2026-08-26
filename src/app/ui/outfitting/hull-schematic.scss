@@ -36,6 +36,30 @@
   aspect-ratio: var(--edsb-layout-plate-ratio);
 }
 
+// A plain box around the drawing, and the element the schematic filter is on.
+//
+// It is here rather than on the `g` inside the picture because WebKit does not
+// apply a CSS filter *function* to an SVG container element. Hulls were
+// reported blue on iPadOS, and unfiltered the package's own ink is exactly that
+// — near-black navy structure over seven bright feature hues. Confirmed fixed
+// on the device, 2026-08-26 (`e2e/manual/results/webkit-filter.md`).
+//
+// Nothing automated guards it. The engine matrix is Chromium and Firefox by
+// constitutional mandate and both filter either position, so moving this back
+// onto the `g` would pass every check this project runs and break the plate on
+// every WebKit browser. The unit suite asserts only the shape — a plain box,
+// with the marks outside it.
+//
+// Absolutely positioned so the frame keeps taking its height from its own
+// `aspect-ratio` rather than from this, and inert to the pointer so the marks
+// over it are the only thing on the plate that can be pressed.
+.schematic__picture {
+  position: absolute;
+  inset: 0;
+  filter: var(--edsb-schematic-filter);
+  pointer-events: none;
+}
+
 // Fills the frame exactly, so a percentage on a mark and a coordinate in the
 // drawing land on the same point: the `viewBox` is the frame's own rectangle
 // and `preserveAspectRatio` therefore has nothing left to letterbox.
@@ -43,6 +67,37 @@
   display: block;
   inline-size: 100%;
   block-size: 100%;
+}
+
+// The leaders, in the same frame rectangle and therefore the same coordinate
+// space as the turned hull: a line drawn to a package annotation's own centre
+// lands on the mount rather than near it.
+//
+// Above the drawing and below the marks, so a hairline never crosses the number
+// it leads to. Outside the filtered picture, so it keeps the interface's own
+// colour instead of being pushed through the schematic's lift.
+.schematic__leaders {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+// One line, at one width whatever the plate's scale is: the frame's units are
+// the hull's, so a stroke measured in them would be four times thicker on a
+// two-column plate than on a phone. `non-scaling-stroke` in the template is
+// what makes this a CSS length rather than a drawing one.
+//
+// A rule's width rather than a hairline's. The segment is short — the mark's
+// own square covers everything inside it, and the template trims the line to
+// that square's edge so what is left is all there is — and a one-pixel line
+// that short is not something a reader finds on a lit drawing.
+.schematic__leader {
+  stroke: var(--edsb-border-node-leader);
+  stroke-width: var(--edsb-border-width-rule);
+  stroke-linecap: round;
 }
 
 // Written over the drawing in the corner, as the canvas writes it. It is the
@@ -61,19 +116,19 @@
 // whose structure is drawn in a near-black navy. The schematic filter pushes
 // them all into the interface's one amber and lifts that navy off the ground it
 // is drawn on, so the ship reads as a technical drawing rather than as a shape
-// that is nearly the colour of the plate behind it.
-.schematic__artwork {
-  filter: var(--edsb-schematic-filter);
-}
+// that is nearly the colour of the plate behind it. The filter itself is on
+// `.schematic__picture` above, for the reason recorded there.
 
 // ---------------------------------------------------------------------------
 // One mount
 // ---------------------------------------------------------------------------
 
-// Canvas 1c's `hp-node`: a small square carrying the mount's number, centred on
-// the mount's own position on the hull. The canvas positions these by hand off
-// a private drawing; here `left` and `top` come from the annotation's own
-// coordinates in the package file.
+// Canvas 1c's `hp-node`: a small square carrying the mount's number, on the
+// mount's own position on the hull — or, where two mounts are drawn closer
+// together than a mark is wide, one step aside from it with a hairline back to
+// it. The canvas positions these by hand off a private drawing; here `left` and
+// `top` come from the annotation's own coordinates in the package file, and any
+// step aside is computed from those same coordinates.
 //
 // Physical `left`/`top` rather than logical properties, deliberately: a hull is
 // not mirrored by a right-to-left interface, and a mark that swapped ends with
@@ -83,8 +138,9 @@
 // **The size is the canvas's, and it is under the target floor.** The package
 // sets real mounts closer together than the 24px WCAG 2.2 AA minimum at the
 // plate widths this screen has room for — the Anaconda's bottom plate puts a
-// utility inside a large hardpoint's floor — so no mark can meet either the
-// size minimum or the spacing exception without covering its neighbour. These
+// utility inside a large hardpoint's floor — so no mark can meet the size
+// minimum, and the spacing exception is out of reach even with the marks
+// stepped apart. These
 // marks therefore take SC 2.5.8's **Equivalent** exception: feature 002's
 // complete ledger stands beside the plates, carries every one of these mounts
 // at the full 44px baseline, and does not depend on the artwork
@@ -116,12 +172,13 @@
     outline-offset: var(--edsb-focus-ring-offset);
   }
 
-  // The Almanac draws real mounts closer together than a mark is wide — six CSS
-  // pixels apart on the Anaconda's underside at the width two plates have room
-  // for — so marks overlap on the dense hulls. The one being pointed at, moved
-  // to or currently selected comes to the front, so whichever mount a Commander
-  // is working with is the whole square rather than the sliver of it that the
-  // next one left uncovered.
+  // Marks that would touch step aside (see `mount-declutter.ts`), which clears
+  // most of this. What it cannot clear is a plate too small for any arrangement
+  // — at 200% text on a phone the Anaconda's underside is eight 28px marks on a
+  // 228px plate — so where they still overlap, the one being pointed at, moved
+  // to or currently selected comes to the front, and whichever mount a
+  // Commander is working with is the whole square rather than the sliver of it
+  // that the next one left uncovered.
   &:hover,
   &:focus-visible,
   &[aria-pressed='true'] {
@@ -145,11 +202,24 @@
 
 // Canvas `data-kind="sel"`: solid accent. Selection is also `aria-pressed` and
 // is repeated in the ledger row, so it is never the fill alone that says so.
+//
+// The fill says *selected* and the hue says *which kind*, which is why the two
+// compose rather than one replacing the other: a filled amber square is the
+// selected hardpoint and a filled cool one the selected utility. A utility that
+// went amber on selection would be the one place on the plate where the kind a
+// mount is stopped being legible — and the kind is the thing the plate's own
+// legend gives an entry to.
 .schematic__mount[aria-pressed='true'] {
   border-style: solid;
   border-color: var(--edsb-surface-accent-solid);
   background-color: var(--edsb-surface-accent-solid);
   color: var(--edsb-text-on-accent);
+}
+
+.schematic__mount[data-kind='utility'][aria-pressed='true'] {
+  border-color: var(--edsb-surface-info-solid);
+  background-color: var(--edsb-surface-info-solid);
+  color: var(--edsb-text-on-info);
 }
 
 // The canvas hangs the engineering icon off the node's top corner, at its own

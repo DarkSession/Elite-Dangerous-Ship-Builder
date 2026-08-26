@@ -381,6 +381,149 @@ test.describe('targets and accessibility', () => {
     expect(selected).toBeGreaterThan(plain);
   });
 
+  test('steps overlapping marks apart and ties each back to its own mount', async ({ page }) => {
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The Almanac draws real mounts closer together than a mark is wide, so on
+    // a dense hull some marks step aside. Every one that does gets a hairline
+    // back to the point the package published — the mark moved, the mount did
+    // not (design/hull-anatomy.md, "Marks that would touch").
+    for (const side of ['top', 'bottom']) {
+      const plate = page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"]`);
+      const displaced = await plate.locator('.schematic__mount[data-displaced="true"]').count();
+      expect(await plate.locator('.schematic__leader').count()).toBe(displaced);
+    }
+
+    // And the Anaconda's underside is a plate that needs it: it puts a utility
+    // inside a large hardpoint's floor. Both plates are drawn at every width —
+    // the compact arrangement hides one rather than dropping it — so this is
+    // the same assertion in all ten projects.
+    const bottom = page.locator('edsb-hull-anatomy .schematic[data-side="bottom"]');
+    expect(
+      await bottom.locator('.schematic__mount[data-displaced="true"]').count(),
+    ).toBeGreaterThan(0);
+  });
+
+  test('keeps a mark from disappearing under its neighbour at doubled text', async ({ page }) => {
+    // Before the first navigation: the scale is applied through an init script,
+    // and a scale applied after `goto` never reaches the page at all.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    await settled(page);
+
+    // The regression this exists for, and the limit of what it can promise.
+    //
+    // Separation used to be a fixed share of the plate, but a mark is
+    // `clamp(0.875rem, 3.06cqw, 1.375rem)` — its floor is an absolute length,
+    // so at doubled text a mark keeps its pixels while the plate loses them and
+    // its share of the frame grows. A constant therefore believed marks were
+    // further apart than they were drawn. The plate measures both now.
+    //
+    // What that cannot buy is full separation at every size: at 200% text on a
+    // phone the Anaconda's underside is eight 28px marks on a 228px plate, and
+    // no arrangement that keeps a mark near its own mount separates them all.
+    // What it does buy is that no mark is *lost* — every square keeps more than
+    // half of itself uncovered, so its number can be read and its own edge
+    // found (design/hull-anatomy.md, "Marks that would touch").
+    const sides = page.locator('edsb-hull-anatomy .anatomy__sides button');
+    const selectable = await sides.first().isVisible();
+
+    for (const [index, side] of ['top', 'bottom'].entries()) {
+      if (selectable) {
+        await sides.nth(index).click();
+        await settled(page);
+      }
+
+      // Polled, because a plate that has just become visible measures itself a
+      // frame later: its frame goes from nothing to its real width, the
+      // observer reports, and the marks settle into the separation that width
+      // asks for. Reading once can catch the arrangement before that lands.
+      await expect
+        .poll(
+          () =>
+            page
+              .locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
+              .evaluateAll((nodes) => {
+                const boxes = nodes
+                  .map((node) => node.getBoundingClientRect())
+                  .filter((box) => box.width > 0);
+                let pairs = 0;
+                for (let i = 0; i < boxes.length; i += 1) {
+                  for (let j = i + 1; j < boxes.length; j += 1) {
+                    const a = boxes[i];
+                    const b = boxes[j];
+                    const uncovered =
+                      Math.abs(a.left - b.left) >= a.width / 2 ||
+                      Math.abs(a.top - b.top) >= a.height / 2;
+                    if (!uncovered) {
+                      pairs += 1;
+                    }
+                  }
+                }
+                return pairs;
+              }),
+          { message: `${side} plate at ${DOUBLED_TEXT}% text` },
+        )
+        .toBe(0);
+    }
+  });
+
+  test('draws a selected utility in the utility hue, not the hardpoint one', async ({ page }) => {
+    // Motion off before anything renders, because the mark's fill is a
+    // transition and this test reads colours. Without it the read races the
+    // transition and returns the colour the mark was *leaving* — which is the
+    // same unselected fill for both kinds, so the two compare equal and the
+    // test fails for a reason that has nothing to do with the hue. The plate
+    // drops the transition entirely under `prefers-reduced-motion`, so this is
+    // the product's own honest no-motion path rather than a test-only hack.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    /** One mount's settled fill, as three channels. */
+    const fillOf = async (mount: ReturnType<typeof mounts>): Promise<number[]> => {
+      await mount.click();
+      await expect(mount).toHaveAttribute('aria-pressed', 'true');
+      // Polled rather than read once: `aria-pressed` is set by the same change
+      // detection pass that sets the class, but the paint that follows it is
+      // the browser's own business.
+      let channels: number[] = [];
+      await expect
+        .poll(async () => {
+          const fill = await mount.evaluate((node) => getComputedStyle(node).backgroundColor);
+          channels = (fill.match(/\d+/gu) ?? []).slice(0, 3).map(Number);
+          return channels.length === 3 && channels.some((channel) => channel > 32);
+        })
+        .toBe(true);
+      return channels;
+    };
+
+    // The fill says *selected* and the hue says *which kind*, so the two are
+    // told apart by being warm or cool rather than merely by being different —
+    // a regression that turned a selected utility green would pass an
+    // inequality and fail this.
+    const utility = await fillOf(
+      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible').first(),
+    );
+    expect(utility[2]).toBeGreaterThan(utility[0]);
+
+    const hardpoint = await fillOf(
+      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible').first(),
+    );
+    expect(hardpoint[0]).toBeGreaterThan(hardpoint[2]);
+
+    // And selection is still a fill, not only a hue: an unselected mount sits on
+    // the plate's own sunken ground, which neither of these is.
+    const unselected = await page
+      .locator('edsb-hull-anatomy .schematic__mount[aria-pressed="false"]:visible')
+      .first()
+      .evaluate((node) => getComputedStyle(node).backgroundColor);
+    expect(unselected).not.toBe(`rgb(${utility.join(', ')})`);
+    expect(unselected).not.toBe(`rgb(${hardpoint.join(', ')})`);
+  });
+
   test('offers every drawn mount at the full baseline in the ledger', async ({ page }) => {
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();

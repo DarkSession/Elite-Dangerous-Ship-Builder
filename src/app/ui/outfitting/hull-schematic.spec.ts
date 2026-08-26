@@ -108,6 +108,72 @@ describe('HullSchematic', () => {
     expect(mount.style.top).toBe('75%');
   });
 
+  it('moves both mounts of a crowd and ties each back to its own point', () => {
+    // Four drawing units apart on a hull 480 across: the Almanac's own case,
+    // where two real mounts are closer together than a mark is wide. **Both**
+    // marks move, around the middle of the two mounts, and each draws its own
+    // hairline back to the point the package published — pinning one would
+    // leave it as the only mark in the crowd claiming to be exactly where its
+    // mount is (design/hull-anatomy.md, "Marks that would touch").
+    const fixture = renderComponent(HullSchematic, {
+      view: view({
+        occurrences: [
+          occurrence(),
+          { ...occurrence({ key: 'SmallHardpoint2', node: 2 }), centre: { x: 60, y: 124 } },
+        ],
+      }),
+    });
+
+    const marks = element(fixture).querySelectorAll<HTMLElement>('.schematic__mount');
+    expect(marks[0].getAttribute('data-displaced')).toBe('true');
+    expect(marks[1].getAttribute('data-displaced')).toBe('true');
+    expect(marks[1].style.left).not.toBe(marks[0].style.left);
+
+    // One line per moved mark, each starting at its own mount's published
+    // position, turned with the hull.
+    const leaders = element(fixture).querySelectorAll('.schematic__leader');
+    expect(leaders.length).toBe(2);
+    const starts = [...leaders].map((leader) => Number(leader.getAttribute('x1')));
+    expect(starts.map((start) => Math.round(start * 100) / 100).sort()).toEqual([175.89, 179.89]);
+    for (const leader of leaders) {
+      expect(Number(leader.getAttribute('x2'))).not.toBe(Number(leader.getAttribute('x1')));
+    }
+    // Decoration: the mount is a named button and the line says nothing a
+    // reader has to hear.
+    expect(query(fixture, '.schematic__leaders').getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('draws no leader when every mount has room for its own mark', () => {
+    const fixture = renderComponent(HullSchematic, {
+      view: view({
+        occurrences: [
+          occurrence(),
+          { ...occurrence({ key: 'HugeHardpoint1', node: 2 }), centre: { x: 200, y: 400 } },
+        ],
+      }),
+    });
+
+    expect(element(fixture).querySelector('.schematic__leaders')).toBeNull();
+    for (const mark of element(fixture).querySelectorAll('.schematic__mount')) {
+      expect(mark.getAttribute('data-displaced')).toBe('false');
+    }
+  });
+
+  it('filters the drawing on an ordinary box rather than on a group inside it', () => {
+    // WebKit does not apply a CSS filter function to an SVG container element,
+    // and the plate then shows the package's own near-black navy — which is
+    // what an iPad reported before the filter moved to a plain box. This engine
+    // applies it either way, so what is asserted is the *shape* of the fix: the
+    // filter's element is an ordinary box, and the marks and leaders sit
+    // outside it where they keep the interface's own colours. Whether the hull
+    // is actually amber on WebKit is `e2e/manual/webkit-filter.protocol.md`.
+    const fixture = renderComponent(HullSchematic, { view: view() });
+
+    const picture = query(fixture, '.schematic__picture');
+    expect(picture.querySelector('.schematic__drawing')).not.toBeNull();
+    expect(picture.querySelector('.schematic__mount')).toBeNull();
+  });
+
   it('names the plate by its side and describes it by hull and orientation', () => {
     const fixture = renderComponent(HullSchematic, { view: view({ side: 'bottom' }) });
 

@@ -965,8 +965,12 @@ test.describe('shot convergence', () => {
     await page.locator(`[data-slot-key="${slot}"] .slot__select`).first().click();
     await settled(page);
     await expect(numeral).toHaveCount(1);
-    expect(await numeral.innerText()).not.toBe(first);
-    expect(await numeral.innerText()).toBe(String(place));
+    // Polled rather than read once. `settled` waits for animations, and the
+    // numeral is rewritten by the change detection the click schedules, which
+    // is not one — so a bare read races the redraw and returns the mount that
+    // was selected before. It fails about once in a shard under CI load.
+    expect(String(place)).not.toBe(first);
+    await expect(numeral).toHaveText(String(place));
 
     // A ring is a picture; the mark's own sentence is the reading. Exactly one
     // mark is stated as the selected mount, and it is the one the ring is drawn
