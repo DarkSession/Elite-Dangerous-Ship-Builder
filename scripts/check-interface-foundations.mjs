@@ -1077,7 +1077,8 @@ const PREVIEW_MARKERS = ['data-preview-address', 'data-preview-isolated', 'data-
  * application cannot produce: a bundle that carries their labels is a bundle
  * offering a Commander something that does not work. They are no longer drawn
  * either — feature 004 took them out of `.design` — so this is the guard that
- * keeps them from coming back rather than a fence around something still there. The last two are
+ * keeps them from coming back rather than a fence around something still
+ * there. The last two are
  * the repository's own manifest — the export metadata imports two named values
  * out of `package.json`, and a bundler that stopped tree-shaking it would ship
  * the dependency list, the scripts and whatever else it holds

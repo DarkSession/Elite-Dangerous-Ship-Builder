@@ -60,6 +60,9 @@ export class ExportDialog {
   readonly title = computed(() => this.slef.exportView().title);
   readonly dismissLabel = this.#messages.messageSignal('action.close');
 
+  /** The question the format list asks. The canvas draws no room for it. */
+  readonly modeLegend = computed(() => this.slef.exportView().modeLabel);
+
   /**
    * The formats the layer offers, as the reference sidebar draws them.
    *
@@ -69,8 +72,6 @@ export class ExportDialog {
    * be produced is worse than no control, so both were taken out of `.design`
    * rather than left drawn (`specs/004-slef/design/reference-review.md`).
    */
-  readonly modeLegend = computed(() => this.slef.exportView().modeLabel);
-
   readonly modes = computed<readonly Choice[]>(() =>
     this.slef.exportView().modes.map((mode) => ({
       value: mode.mode,

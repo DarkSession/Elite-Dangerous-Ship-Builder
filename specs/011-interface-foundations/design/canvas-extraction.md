@@ -200,12 +200,16 @@ region carries its own. The first choice is the one the layer opens on.
 Compact: the same choices as a `min-height: 38px` chip row with `gap: 6px` that scrolls
 sideways rather than wrapping, each chip condensed 600 tracked 0.14em on `--panel-3` in
 `--ink-62`, the chosen one `background: var(--amber)`, `color: var(--bg)`, condensed 700.
-The description the wide plate carries is not drawn on a chip. The chip's own `padding: 0 12px`
-is not adopted: it is a control, and a control's inline padding is the shared one.
+The description the wide plate carries is not drawn on a chip.
 
-Neither arrangement lets the tint be the state. The chosen plate fills the marker the
-canvas draws on the save dialog's chosen card, and both arrangements set the chosen name
-in the heavier weight — colour is what makes the state obvious, never what carries it.
+Three deviations, none of them extractions. The chip's `padding: 0 12px` and its
+`min-height: 38px` are not adopted: it is a control, so it takes the shared control padding
+and the 44px target baseline. And canvas 1c draws its export plates at condensed 600 with
+no marker on either, chosen or not — which would make the wash and the amber title the
+only thing separating them. FR-010 does not allow a state carried by tint, so the chosen
+plate takes the reserved marker the canvas itself draws on the save dialog's chosen card,
+and the wide arrangement joins the compact one in setting the chosen name in the heavier
+weight. Colour is what makes the state obvious; it is never what carries it.
 
 ### Manifest row
 

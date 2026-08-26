@@ -118,6 +118,14 @@ Written after the implementation, so the record is what happened rather than wha
   export that silently omits a link, or that hands over an invalid build without saying so, would be
   the "fake delivery feedback" this review already rejected. Both are ordinary status lines in the
   drawn content column — not new regions beside it.
+- **The chosen format is told apart by more than its tint.** Canvas 1c separates the chosen plate
+  from the others with a wash, an amber edge and an amber title, and nothing else — three ways of
+  saying the same thing in hue, at 1.19:1 on the fill and 1.11:1 on the title. A reader is told by
+  the control's own checked state either way, but an eye that does not read those hues apart is told
+  nothing. Every plate now reserves the marker the canvas draws on the save dialog's chosen card and
+  the chosen one fills it, and the chosen name is set in the heavier weight the compact chips already
+  used. Both survive a monochrome rendering, and reserving the marker means choosing a format moves a
+  mark rather than reflowing the column.
 - **A stale payload says why it went away.** The canvas has no state for a build edited after its
   export was made. An empty field with no explanation reads as broken.
 - **The one status line carries every import state.** The canvas draws `AWAITING INPUT`; the same line

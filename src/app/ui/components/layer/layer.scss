@@ -134,15 +134,10 @@
   @include dialog-presentation;
 }
 
-// The width steps, on the two bounded presentations. Each step is written as a
-// compound selector, and every rule that has to beat one below is written the
-// same way — so which layer is how wide is decided by specificity rather than by
-// the order these blocks happen to appear in.
-.layer--dialog.layer--narrow,
-.layer--adaptive.layer--narrow {
-  @include dialog-presentation(var(--edsb-layout-layer-narrow));
-}
-
+// The width step, on the two bounded presentations. It is written as a compound
+// selector, and every rule that has to beat it below is written the same way —
+// so which layer is how wide is decided by specificity rather than by the order
+// these blocks happen to appear in.
 .layer--dialog.layer--wide,
 .layer--adaptive.layer--wide {
   @include dialog-presentation(var(--edsb-layout-layer-wide));
@@ -150,7 +145,6 @@
 
 @include layout.compact {
   .layer--adaptive,
-  .layer--adaptive.layer--narrow,
   .layer--adaptive.layer--wide {
     @include sheet-presentation;
   }
@@ -161,7 +155,6 @@
 // a 400% zoom looks like to the layout.
 @include layout.short-viewport {
   .layer--adaptive,
-  .layer--adaptive.layer--narrow,
   .layer--adaptive.layer--wide,
   .layer--sheet {
     @include full-height-presentation;

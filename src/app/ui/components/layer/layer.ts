@@ -30,12 +30,14 @@ export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
 /**
  * How wide the layer is allowed to get before its content stops growing.
  *
- * The canvases draw four dialog widths — 540 save, 560 import, 620 help, 760
- * export, 860 library — over three named steps, because a dialog's width is a
- * property of what it holds rather than of which dialog it is. `default` is the
- * one a dialog of prose and a field takes; `narrow` is the confirmation that
- * asks one question; `wide` is the layer that stands two regions side by side,
- * which canvas 1c's export dialog is.
+ * A dialog's width is a property of what it holds rather than of which dialog it
+ * is. `default` is the one a layer of prose and a field takes, which is every
+ * layer in the application but one; `wide` is the layer that stands two regions
+ * side by side, which canvas 1c's export dialog is.
+ *
+ * Two members, not the ladder the tokens hold: a step nothing takes is a rule
+ * shipped in every bundle that never matches. The narrow step exists as
+ * `--edsb-layout-layer-narrow` for the surface that needs it to name it here.
  *
  * It bounds the centred presentations only. A sheet and a full-height layer own
  * the width they are given, so the stylesheet pairs each step with the two
@@ -43,7 +45,7 @@ export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
  * not. The class is emitted either way, because what a layer was asked for is
  * worth being able to read off the element.
  */
-export type LayerWidth = 'default' | 'narrow' | 'wide';
+export type LayerWidth = 'default' | 'wide';
 
 /**
  * A modal layer: dialog, bottom sheet or full-height panel.

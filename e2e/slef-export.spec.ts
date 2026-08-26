@@ -427,7 +427,8 @@ test.describe('the layer, against the canvas', () => {
     });
 
     if (width >= MEDIUM) {
-      expect(parseFloat(rule.width)).toBeGreaterThan(0);
+      // Canvas 1c draws it at 1px, which is the hairline this system names.
+      expect(parseFloat(rule.width)).toBe(1);
       expect(rule.colour).toContain('rgba(255, 140, 26');
     } else {
       expect(parseFloat(rule.width)).toBe(0);
@@ -456,7 +457,11 @@ test.describe('the layer, against the canvas', () => {
 
     expect(label.family).toContain('Barlow Condensed');
     expect(label.transform).toBe('uppercase');
-    expect(label.tracking).toBeGreaterThan(0.1);
+    // The exact step the canvas sets, as `e2e/design-reference.spec.ts` reads
+    // every other tracked label in the reference: 0.16em on the plate's title,
+    // 0.14em on the chip. A ratio, because the ramp is lifted and the sizes are
+    // not the canvas's own.
+    expect(Math.abs(label.tracking - (width >= MEDIUM ? 0.16 : 0.14))).toBeLessThan(0.005);
 
     const plate = await slef.evaluate((node) => {
       const card = node.closest('.choice')!;
@@ -477,7 +482,10 @@ test.describe('the layer, against the canvas', () => {
       // description it has no room for is hidden from the eye and kept for a
       // reader, which is what `not.toBeVisible` over a present element says.
       expect(plate.border).toBe(0);
-      expect(plate.height).toBeGreaterThanOrEqual(38);
+      // Canvas 1d draws a 38px chip; a control this system draws alone meets the
+      // 44px baseline, so the drawn figure is the floor and the baseline is the
+      // claim.
+      expect(plate.height).toBeGreaterThanOrEqual(44);
       // Taken out of the layout rather than out of the document: the box it
       // occupies is the hiding recipe's own pixel, and the text it holds is
       // still this format's description.
@@ -565,9 +573,24 @@ test.describe('the layer, against the canvas', () => {
   }) => {
     await withStockBuild(page);
     await openExport(page);
+    const strip = layer(page).locator('.choice-group__options');
 
+    // Each format's own control is inside the strip that holds it — after being
+    // scrolled to, because canvas 1d's strip is allowed to scroll and a format
+    // reached by scrolling is still reached. `toBeVisible` says nothing here:
+    // the control is the transparent box over its plate, and Playwright counts a
+    // zero-opacity box with a size as visible wherever it happens to sit.
+    const bounds = (await strip.boundingBox())!;
     for (const name of [/share link/i, /slef json/i]) {
-      await expect(layer(page).getByRole('radio', { name })).toBeVisible();
+      const radio = layer(page).getByRole('radio', { name });
+      await radio.scrollIntoViewIfNeeded();
+      const box = (await radio.boundingBox())!;
+
+      expect(box.width).toBeGreaterThan(0);
+      expect(box.x).toBeGreaterThanOrEqual(bounds.x - 1);
+      expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1);
+      expect(box.y).toBeGreaterThanOrEqual(bounds.y - 1);
+      expect(box.y + box.height).toBeLessThanOrEqual(bounds.y + bounds.height + 1);
     }
     await expectNoDocumentOverflow(page);
   });
