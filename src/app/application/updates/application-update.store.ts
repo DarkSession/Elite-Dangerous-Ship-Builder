@@ -187,9 +187,13 @@ export class ApplicationUpdateStore {
    * control beside that sentence still applies it — so postponing is deferring
    * rather than declining.
    *
-   * Nothing schedules the overlay a second time for the same version. A
-   * Commander who has said "not now" once has answered, and asking again twenty
-   * seconds later would be the interruption this was supposed to replace.
+   * It answers for the version that was on the overlay, and for that version
+   * only. Nothing puts the same one back up: a Commander who has said "not now"
+   * once has answered, and asking again twenty seconds later would be the
+   * interruption this was supposed to replace. A version published *after* that
+   * answer is a different question, and it is asked — otherwise one "not now"
+   * would opt a session out of every update for the rest of its life, which is
+   * the stale-session failure this whole mechanism exists to prevent (FR-025).
    */
   postpone(): void {
     this.#stopCountdown();
@@ -201,34 +205,49 @@ export class ApplicationUpdateStore {
     this.#countdown = null;
   }
 
+  /** Puts the warning up and starts the clock under it. */
+  #warnBeforeRestarting(): void {
+    this.#overlay.set(true);
+    this.#stopCountdown();
+    this.#countdown = this.#updates.after(UPDATE_OVERLAY_MS, () => void this.apply());
+  }
+
   /**
-   * Records what the worker reported, if it changes what a Commander is told.
+   * Records what the worker reported, and acts on it.
    *
-   * A second `ready` is a third published version arriving behind the second:
-   * the sentence on screen is already the true one and the action already does
-   * the right thing, so repeating it would only interrupt a reader to say
-   * nothing new. A broken cached version supersedes a waiting one, because it
-   * is the more urgent of the two and the restart it asks for delivers both.
+   * Two different questions, which used to be one and were wrong together.
+   *
+   * *What is said* changes only when the state does. A second `ready` is a
+   * third published version arriving behind the second: the sentence on screen
+   * is already the true one and the action already does the right thing, so
+   * repeating it would only interrupt a reader to say nothing new. That is what
+   * the revision counts, and it is why it does not move here.
+   *
+   * *What is done* is per version. Each `ready` the worker reports is a version
+   * that was not there before, and each one is warned about and restarted onto.
+   * Collapsing that into the sentence meant a single "not now" left the session
+   * on the version it was running for the rest of its life, never warned and
+   * never restarted, however many were published behind it — the stale session
+   * this mechanism exists to prevent, reached through the one control that was
+   * supposed to be harmless.
+   *
+   * A broken cached version supersedes a waiting one, because it is the more
+   * urgent of the two and the restart it asks for delivers both. It is never
+   * put on a clock, so a report of one takes the overlay down rather than up.
    */
   #record(event: VersionEvent): void {
     const state: ApplicationVersionState = event === 'ready' ? 'ready' : 'unusable';
-    if (this.#state() === state) {
-      return;
-    }
     if (state === 'ready' && this.#state() === 'unusable') {
       return;
     }
 
-    this.#state.set(state);
-    this.#revision.update((revision) => revision + 1);
+    if (this.#state() !== state) {
+      this.#state.set(state);
+      this.#revision.update((revision) => revision + 1);
+    }
 
-    // A newer version applies itself; a broken one waits to be repaired. The
-    // overlay goes up first and the restart is scheduled behind it, so there is
-    // always a warning and always a way out of it before anything is replaced.
     if (state === 'ready') {
-      this.#overlay.set(true);
-      this.#stopCountdown();
-      this.#countdown = this.#updates.after(UPDATE_OVERLAY_MS, () => void this.apply());
+      this.#warnBeforeRestarting();
     } else {
       this.postpone();
     }

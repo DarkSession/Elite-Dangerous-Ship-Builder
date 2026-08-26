@@ -66,7 +66,15 @@
 // reads as outside the recipe's own range, and still pressable: taking a
 // Merc-Coin article back down to grade 1 is a thing a Commander may do. The
 // stripe is never the only carrier — each cell names its own grade.
-.grade[data-unavailable='true'][data-filled='true'] {
+//
+// Two selectors, because the two artboards fill their cells differently. Canvas
+// 1c fills every cell up to the choice, so an unavailable grade below it is a
+// filled cell and the stripe is what marks it out of range. Canvas 1d fills the
+// chosen button alone, so that same grade is unfilled and the first selector
+// never reaches it — which left the phone's control drawing no difference at
+// all between a grade outside the recipe and one inside it.
+.grade[data-unavailable='true'][data-filled='true'],
+.grades--steps .grade[data-unavailable='true'] {
   background-image: repeating-linear-gradient(
     135deg,
     var(--edsb-surface-accent-solid) 0 var(--edsb-space-stack-tight),

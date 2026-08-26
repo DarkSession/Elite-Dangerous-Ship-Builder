@@ -140,10 +140,25 @@ const WITHDRAWN_READ = new RegExp(`\\.(?:${WITHDRAWN_AGGREGATES.join('|')})\\b`)
  * A slot key, a symbol and an enabled flag are identities. These are
  * measurements: light years, metres and degrees per second, tonnes and jump
  * counts. Combining any two of them makes a figure the Almanac did not
- * publish — a headroom, a fuel-per-jump, a mass margin or a reconciliation
- * delta — which is the one thing this application is never allowed to show
- * (constitution II and IV). The canvas's own `658 T HEADROOM` is exactly such a
- * figure, and is out of scope for exactly this reason.
+ * publish — a fuel-per-jump, a mass margin or a reconciliation delta — which is
+ * the one thing this application is never allowed to show (constitution II
+ * and IV).
+ *
+ * **The canvas's two comparisons are the exception, ruled 2026-08-26 (FR-008).**
+ * `91% OF OPTIMAL MASS` and `658 T OF HEADROOM` are not figures worked out on
+ * the game's behalf: nothing is modelled, nothing is fitted to a curve, and
+ * neither would survive being asked of anything but the two package answers it
+ * stands between. This rule does not try to tell those two apart from an
+ * invented figure — no regular expression can — so it goes on reporting every
+ * combination, and the two that were ruled on carry a `policy-allow:` marker
+ * naming the ruling. That is the point of the marker: a crossing that was
+ * decided leaves a record at the place it happens, and a crossing that was not
+ * decided still stops the build.
+ *
+ * Which is also why the fields are named after the package rather than after
+ * whatever a local was called. A rule watching for these words is a rule a
+ * differently-named local walks straight past, and a fence got past quietly is
+ * worse than no fence at all.
  */
 export const FIGURE_FIELDS = [
   'range',
@@ -366,7 +381,7 @@ const RULES = [
             file: name,
             line,
             reason:
-              'a package figure is arithmetically combined; a headroom, a mass margin, a fuel-per-jump or a reconciliation delta this application worked out is this application claiming a value the Almanac did not publish (FR-001, SC-002)',
+              'a package figure is arithmetically combined; a mass margin, a fuel-per-jump or a reconciliation delta this application worked out is this application claiming a value the Almanac did not publish (FR-001, SC-002). The two comparisons FR-008 ruled on carry a `policy-allow:` marker naming the ruling; anything else is a figure nobody decided to show',
           });
         }
       }

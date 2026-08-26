@@ -328,22 +328,26 @@ export class ModuleReplacement {
     );
 
     if (result.kind === 'committed' || result.kind === 'unchanged') {
-      // Only a layer closes, and only a layer forgets. Inline the panel is
-      // simply there for the marked mount, so there is nothing to close and the
-      // manifest stays where the Commander is reading it (canvas 1c) — and the
-      // pick is carried forward at the revision it produced rather than
-      // cleared, because the row it names is now the module in the mount and
-      // saying otherwise leaves the marked row and the checked radio disagreeing
-      // about which one that is (reported 2026-08-26).
+      // The pick is spent either way: it was a decision, the decision has been
+      // taken, and what the row means from here is that it is the module in the
+      // mount. Nothing is lost by forgetting it — `markedChoiceKey` falls back
+      // to the mount's own fitted row, so the manifest goes on marking exactly
+      // the row that was just chosen, and the radio goes on agreeing with it.
+      //
+      // Carrying it forward instead was tried and was worse. `stale` asks
+      // whether the pick was made against a build that has since changed, and a
+      // pick held at the revision it produced answers yes to the very next edit
+      // anywhere in the workspace — a priority toggle, an undo, an engineering
+      // pass — at which point the panel replaced the whole manifest with "this
+      // has moved on" and never came back, because nothing inline closes the
+      // panel or clears the pick.
+      this.#pick.set(null);
+
+      // Only a layer closes. Inline the panel is simply there for the marked
+      // mount, so the manifest stays where the Commander is reading it
+      // (canvas 1c).
       if (this.asLayer()) {
-        this.#pick.set(null);
         this.closed.emit();
-      } else {
-        this.#pick.set({
-          key: choiceKey,
-          revision: this.store.revision(),
-          slotKey: this.slot().key,
-        });
       }
     }
     // A refusal keeps the surface open with the pick intact. The Almanac's

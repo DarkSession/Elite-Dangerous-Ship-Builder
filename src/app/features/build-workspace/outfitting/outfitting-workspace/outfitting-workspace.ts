@@ -197,7 +197,20 @@ export class OutfittingWorkspace {
    * list somebody remembered to add it to — the same rule the region applies to
    * itself.
    */
-  readonly anatomyDashboard = computed(() => this.#anatomyMode() !== 'mounts');
+  readonly anatomyDashboard = computed(() => {
+    const mode = this.#anatomyMode();
+    if (mode === 'mounts') {
+      return false;
+    }
+    // A guest segment the strip has stopped offering is not open. The region
+    // falls back to its own first mode when the mode it was asked for is a
+    // guest one it no longer offers, and it does so without emitting — so a
+    // reading of its own that did not fall back with it went on releasing this
+    // column for a dashboard while the region was drawing plates
+    // (`hull-anatomy.ts`, `#mode`). `STATUS` is the one guest segment, and
+    // whether it is offered is the same question as below.
+    return mode !== STATUS_MODE || this.benchIsLayer();
+  });
 
   /**
    * Canvas 1d's sixth segment, `STATUS`, and what it opens.

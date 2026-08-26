@@ -664,8 +664,11 @@
   // The notices are a labelled rule over prose rather than a band, so they take
   // the inset back as their own padding and their text stands where the ledger's
   // does.
-  .outfitting__feedback,
-  .outfitting__empty {
+  // Children, not descendants. The rail carries a notice of its own under
+  // `BUILD STATUS`, and it is not one of this stack's bands: it is inside a
+  // block that already insets it.
+  > .outfitting__feedback,
+  > .outfitting__empty {
     order: 0;
   }
 
@@ -734,13 +737,18 @@
   @include layout.compact {
     margin-inline: calc(var(--edsb-space-inline-loose) * -1);
 
-    .outfitting__feedback {
+    // Children again, and here it matters for what is drawn rather than for
+    // tidiness: the rail's own notice sits inside a block with its own padding,
+    // so a descendant rule inset it twice and stood its words a step further in
+    // than the `BUILD STATUS` directly above them — which is the misalignment
+    // this whole rule exists to remove.
+    > .outfitting__feedback {
       padding-inline: var(--edsb-space-inline-loose);
     }
 
     // The empty state is a bordered plate, so it takes the inset back as
     // margin: padding would inset its words and leave its border on the glass.
-    .outfitting__empty {
+    > .outfitting__empty {
       margin-inline: var(--edsb-space-inline-loose);
     }
   }

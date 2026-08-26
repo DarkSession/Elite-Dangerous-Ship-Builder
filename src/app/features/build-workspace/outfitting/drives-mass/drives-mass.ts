@@ -663,12 +663,18 @@ export class DrivesMass {
    */
   #headroom(): string | null {
     const view = this.view();
-    const optimal = view?.drive.optMass;
-    const loaded = view?.thrusters.mass?.total;
-    if (optimal === null || optimal === undefined || loaded === undefined) {
+    // Named as the package names them, so the ownership rule reads this line as
+    // the combination it is. A local called something else would slip past a
+    // fence that is watching for these words, and a fence got past quietly is
+    // worse than no fence: the marker below is the record that this crossing
+    // was ruled on, and it only records anything if there was something to
+    // cross (`scripts/policy/mobility-jump-ownership.mjs`).
+    const optMass = view?.drive.optMass;
+    const total = view?.thrusters.mass?.total;
+    if (optMass === null || optMass === undefined || total === undefined) {
       return null;
     }
-    const gap = optimal - loaded; // policy-allow: FR-008's headroom, two package answers
+    const gap = optMass - total; // policy-allow: FR-008's headroom, ruled 2026-08-26
     return gap >= 0
       ? this.#messages.message('drives.fsd.optimal-mass.headroom', { mass: this.#tonnes(gap) })
       : this.#messages.message('drives.fsd.optimal-mass.over', { mass: this.#tonnes(-gap) });

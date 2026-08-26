@@ -12,9 +12,14 @@
   color: var(--edsb-text-muted);
 }
 
+// Base first, then the variant. `control-base` sets the `border` shorthand and
+// its own font weight, so a variant included ahead of it has both taken back —
+// which drew this as a semibold button with a transparent edge rather than the
+// accented one it is meant to be. Every other primary control in the repository
+// composes them in this order.
 .app__update-now {
-  @include layout.control-primary;
   @include layout.control-base;
+  @include layout.control-primary;
 
   margin-block-start: var(--edsb-space-stack);
 }

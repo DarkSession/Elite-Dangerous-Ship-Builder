@@ -212,9 +212,11 @@ describe('module replacement surface', () => {
     first.componentInstance.choose(choice.key);
     first.detectChanges();
 
-    // The pick names the row that is now in that mount, so the marked row and
-    // the checked radio agree about which one it is.
-    expect(first.componentInstance.selectedChoiceKey()).toBe(choice.key);
+    // The pick is spent, and the mount itself is what marks the row from here:
+    // the manifest goes on marking exactly what was chosen, without holding a
+    // decision that has already been taken.
+    expect(first.componentInstance.selectedChoiceKey()).toBeNull();
+    expect(first.componentInstance.markedChoiceKey()).toBe(choice.key);
 
     const revision = active.revision();
     const second = open('LargeHardpoint2');
@@ -228,7 +230,7 @@ describe('module replacement surface', () => {
     second.detectChanges();
 
     expect(active.revision()).toBe(revision + 1);
-    expect(second.componentInstance.selectedChoiceKey()).toBe(choice.key);
+    expect(second.componentInstance.markedChoiceKey()).toBe(choice.key);
   });
 
   it('writes the row\u2019s control back to unchecked when the mount changes', () => {

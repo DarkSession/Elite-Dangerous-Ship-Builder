@@ -149,11 +149,14 @@ export class App {
   /**
    * The restart, offered only while there is something to restart onto.
    *
-   * Pressing it is the Commander's decision and never the application's: a
-   * reload replaces everything on screen, and taking that decision for someone
-   * in the middle of outfitting a hull is exactly what shell navigation already
-   * refuses to do. Not pressing it costs nothing — the newer version is already
-   * downloaded and the next start of the application is served it.
+   * The way in for the two cases the overlay does not cover: a newer version
+   * whose restart a Commander called off, and a cached version the worker
+   * cannot repair, which is never restarted on a clock. Where the overlay *is*
+   * up this stays away — see below — because the overlay is already the control
+   * and a second copy of it under an inert page is no control at all.
+   *
+   * Not pressing it costs nothing either way. The newer version is already
+   * downloaded, and the next start of the application is served it.
    */
   readonly updateAction = computed<ShellAction | null>(() => {
     const state = this.#updates.state();
