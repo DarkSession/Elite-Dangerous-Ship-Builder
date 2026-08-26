@@ -30,9 +30,11 @@ export type MessageParams = Readonly<Record<string, string | number>>;
  *
  * Declared once because two readers must agree on it: `interpolate` below
  * substitutes them, and `interpolationVariables` collects them so
- * `validateCatalogue` and the policy checker can hold every locale to the same
- * set. Two spellings of this pattern is a message the gate passes and the
- * runtime renders differently.
+ * `validateCatalogue` can hold every shipped locale to the same set.
+ *
+ * `check-interface-foundations.mjs` keeps a third copy by hand — it is `.mjs`
+ * and cannot import this — and that copy is spelled the same deliberately. Two
+ * spellings is a catalogue the gate passes and the runtime then refuses.
  */
 export const PLACEHOLDER = /\{\{\s*([^{}]*?)\s*\}\}/g;
 
