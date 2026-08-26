@@ -107,6 +107,37 @@ Measured 2026-08-25 against the `initial` budget in `angular.json` (500 kB warni
 English help catalogue are inside the budget with room; there is no overage to record and the
 ceiling is not raised.
 
+### The two licence links, 2026-08-26
+
+The `LICENCE` summary's first two lines link the complete documents they summarise: this
+repository's `LICENSE` and the bundled library's. Both addresses come from the generated manifest,
+where they are audited; neither is typed into a template or a catalogue.
+
+They are inline links inside the sentence, not controls beside it. That distinction is the whole
+design:
+
+- The reference's licence block is four compact lines. A row of buttons under them is a different
+  screen; a few underlined words inside a line is the same one.
+- A localised sentence decides where its own link sits. The presenter resolves the line with a
+  marker standing in for the link and cuts it there, so a German line that wants the link in the
+  middle gets it in the middle. A template that appended the link would quietly move it.
+- SC 2.5.8's **Inline** exception is what makes a target this small conformant: "the target is in a
+  sentence or its size is otherwise constrained by the line-height of non-target text". Padding it
+  to the project's 44-pixel baseline would break the line rather than help anyone hit it. The
+  exception is proved rather than claimed — `expectTargetSizes` grants it only to an element that is
+  measurably `display: inline` and measurably beside non-target text in its own block.
+
+One consequence reached feature 011's preview catalogue. A stage that renders a component alone
+cannot preview an inline one honestly: a bare link in an empty box wraps differently, sits on a
+different baseline and is not in a sentence, so the catalogue's own target sweep would measure it
+against a baseline the standard exempts sentences from — and pass or fail for a shape the product
+never draws. A preview state may now declare the prose the stage puts around it, and this component
+is the first to use it.
+
+Conformance for this section is stated under the same qualification as everything else in this
+feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
+which the constitution excludes.
+
 ### Known gap: EDAssets interface marks
 
 The rarity marks, the Merc Coin, the Tech Broker mark and the loader mark are EDAssets files, taken

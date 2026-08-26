@@ -821,7 +821,12 @@
   "help.topic.hullFactsAndBuildResults.answer": "A hull fact belongs to the ship itself; a build result depends on what is fitted to it. Some results also depend on the viewing conditions you declare, such as hardpoints deployed or retracted.",
   "help.topic.almanacOwnership.question": "Where do the game values and calculations come from?",
   "help.topic.almanacOwnership.answer": "From the bundled Almanac, which supplies the catalogue, the checks and the calculations. Ship Builder neither maintains nor corrects those game values.",
-  "help.licence.index.application": "App · MIT licence",
+  "help.licence.index.application": "App · {{licence}}",
+  "help.licence.link.application": "MIT licence on GitHub",
+  "help.licence.link.application.detail": "the complete terms for Ship Builder's own code, opens in a new tab",
+  "help.licence.index.library": "Library · {{licence}}",
+  "help.licence.link.library": "MIT licence on GitHub",
+  "help.licence.link.library.detail": "the complete terms for the bundled Almanac, opens in a new tab",
   "help.licence.index.gameData": "Game data & imagery · Frontier Developments, media-usage rules",
   "help.licence.index.typefaces": "Typefaces · Barlow & JetBrains Mono, SIL Open Font Licence"
 }

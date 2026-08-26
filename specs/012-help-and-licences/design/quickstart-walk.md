@@ -234,3 +234,37 @@ both fixes are recorded in
 suite now asserts the panel's own box against the viewport rather than inferring reachability from a
 click that happened to land, so the next regression fails on the geometry instead of on a label
 length.
+
+## Re-run of 2026-08-26, for the licence links
+
+| Stage                                               | Result                                                                 |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| `format:check`, `help:artifacts:check`, `typecheck` | pass                                                                   |
+| `build` / `build:preview`                           | pass — 406.90 kB raw, 102.56 kB transfer, inside the 500 kB ceiling    |
+| `policy` (eight checkers)                           | pass                                                                   |
+| `test:scripts`                                      | 287 of 287                                                             |
+| unit suite                                          | 160 files / 2203 tests, coverage 85.83 / 84.29 / 89.42 / 86.09         |
+| Chromium matrix, all five profiles                  | 2889 of 2890 — see below                                               |
+| `e2e:offline` (Chromium)                            | 80 of 80                                                               |
+| `e2e:timing`                                        | SC-005 passes; feature 002's keystroke budget fails, as it did before  |
+| Firefox matrix                                      | **not run** — the engine is still absent and still undownloadable here |
+
+**The one Chromium failure is not this feature's.** `defence.spec.ts`'s doubled-text reflow
+assertion failed once at `chromium-tablet-landscape` under four local workers and passes three of
+three on its own. It is feature 006's assertion about feature 006's surface, and nothing in this
+change reaches the defence region.
+
+**Feature 002's keystroke budget still fails here**, at 131.7 ms against 100 ms for the first
+keystroke and 60–72 ms by the fifth. The reading is the same one the Phase 7 re-run recorded: the
+container, not the work. SC-005 — the modal's own first frame under the same throttling — passes.
+
+**Two assertions had to learn something new**, and both are recorded rather than relaxed:
+
+- `expectTargetSizes` now models SC 2.5.8's **Inline** exception, and proves it rather than naming
+  it: the exemption is granted only where an element is measurably `display: inline` and measurably
+  beside non-target text in the nearest non-inline ancestor. A `.inline-link` that someone later
+  makes a block, or drops alone into a container, goes back to the 44-pixel baseline.
+- Feature 011's preview stage can now be given the prose to put around a component. Rendered bare,
+  an inline link is previewed in a shape the product never draws — and the catalogue's own target
+  sweep would then measure a link that is not in a sentence against a baseline the standard exempts
+  sentences from.

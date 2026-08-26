@@ -158,3 +158,27 @@ about the panel rather than about help:
 The test only passed before because `HELP & FAQ` was wide enough to poke back into the viewport by
 about 53 pixels. That is the same class of defect T055 found and the same component, so it is
 recorded the same way rather than fixed quietly.
+
+## One departure accepted on 2026-08-26: the licence links
+
+The reference's licence block summarises documents whose contents it never has to stand behind — its
+own values are invented, and a mock owes nothing to a reader. This one summarises real terms, and a
+summary of real terms that offers no way to read them is a claim a Commander has to take on trust.
+
+So the summary's first two lines link the documents they are about: this repository's `LICENSE` and
+the bundled library's. The 2026-08-25 pass had withdrawn the first of these on the grounds that the
+reference draws no navigation in the modal. That was the right observation and the wrong conclusion:
+what the reference draws no _control_ for is not the same as what it forbids, and the shape that
+comes back is not the shape that was withdrawn. A warned action in its own row is a control. A few
+underlined words inside a sentence are the sentence.
+
+| Reference treatment                      | Shipped treatment                                                                           | Reason                                                                                                    |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Three summary lines, none of them linked | Four lines; the two whose terms this repository can point at link them from inside the line | A summary of real terms has to be checkable, and the library's terms are a separate claim from Frontier's |
+| No `LIBRARY` line at all                 | `Library · MIT licence on GitHub`                                                           | MIT over a package's code and Frontier's media-usage rules over game data are not one claim               |
+
+Three things did not come back with them. `WarnedExternalLink` stays deleted — a component whose
+whole purpose was to be a warned action is not what an inline link is. FR-009's package-defect
+destination stays withdrawn: reporting a defect is a support route, and these two are licence
+documents. And no address is drawn as text anywhere in the modal — what a Commander reads is which
+document a link is, never where it is.

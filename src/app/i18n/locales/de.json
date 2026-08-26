@@ -821,7 +821,12 @@
   "help.topic.hullFactsAndBuildResults.answer": "Ein Rumpfwert gehört zum Schiff selbst; ein Ergebnis des Aufbaus hängt davon ab, was eingebaut ist. Manche Ergebnisse hängen zusätzlich von den Bedingungen ab, die du angibst, etwa ausgefahrene oder eingefahrene Hardpoints.",
   "help.topic.almanacOwnership.question": "Woher stammen die Spielwerte und Berechnungen?",
   "help.topic.almanacOwnership.answer": "Aus dem beiliegenden Almanach, der den Katalog, die Prüfungen und die Berechnungen liefert. Ship Builder pflegt und korrigiert diese Spielwerte nicht.",
-  "help.licence.index.application": "App · MIT-Lizenz",
+  "help.licence.index.application": "App · {{licence}}",
+  "help.licence.link.application": "MIT-Lizenz auf GitHub",
+  "help.licence.link.application.detail": "die vollständigen Bedingungen für den eigenen Code von Ship Builder, öffnet in einem neuen Tab",
+  "help.licence.index.library": "Bibliothek · {{licence}}",
+  "help.licence.link.library": "MIT-Lizenz auf GitHub",
+  "help.licence.link.library.detail": "die vollständigen Bedingungen für den beiliegenden Almanach, öffnet in einem neuen Tab",
   "help.licence.index.gameData": "Spieldaten & Abbildungen · Frontier Developments, Media-Usage-Regeln",
   "help.licence.index.typefaces": "Schriften · Barlow & JetBrains Mono, SIL Open Font License"
 }

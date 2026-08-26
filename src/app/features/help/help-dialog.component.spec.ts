@@ -4,6 +4,7 @@ import {
   query,
   renderComponent,
   textOf,
+  visibleTextOf,
 } from '../../ui/components/ui-component.spec-helpers';
 import { HelpDialog } from './help-dialog.component';
 import type { HelpDialogViewModel } from '../../application/help/help.presenter';
@@ -17,9 +18,38 @@ const EXCERPT = [
 
 const LICENCE = {
   index: [
-    { id: 'application', text: 'App · MIT licence' },
-    { id: 'gameData', text: 'Game data & imagery · Frontier Developments, media-usage rules' },
-    { id: 'typefaces', text: 'Typefaces · Barlow & JetBrains Mono, SIL Open Font Licence' },
+    {
+      id: 'application',
+      before: 'App · ',
+      link: {
+        label: 'MIT licence on GitHub',
+        detail: "the complete terms for Ship Builder's own code, opens in a new tab",
+        href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+      },
+      after: '',
+    },
+    {
+      id: 'library',
+      before: 'Library · ',
+      link: {
+        label: 'MIT licence on GitHub',
+        detail: 'the complete terms for the bundled Almanac, opens in a new tab',
+        href: 'https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE',
+      },
+      after: ', and nothing else',
+    },
+    {
+      id: 'gameData',
+      before: 'Game data & imagery · Frontier Developments, media-usage rules',
+      link: null,
+      after: '',
+    },
+    {
+      id: 'typefaces',
+      before: 'Typefaces · Barlow & JetBrains Mono, SIL Open Font Licence',
+      link: null,
+      after: '',
+    },
   ],
   excerpt: EXCERPT,
   excerptLanguage: 'en',
@@ -224,11 +254,32 @@ describe('HelpDialog', () => {
   });
 
   describe('the one legal body it embeds', () => {
-    it('opens the section with the reference’s three-line summary', () => {
+    it('opens the section with the summary, one claim to a line', () => {
       const fixture = render();
       const lines = [...element(fixture).querySelectorAll('.help-dialog__licence-line')];
 
-      expect(lines.map((line) => textOf(line))).toEqual(LICENCE.index.map((entry) => entry.text));
+      // Each line reads as its own sentence with the link's words in place —
+      // the pieces the presenter cut, put back in the order it cut them.
+      expect(lines.map((line) => visibleTextOf(line))).toEqual(
+        LICENCE.index.map((entry) =>
+          `${entry.before}${entry.link?.label ?? ''}${entry.after}`.replace(/\s+/g, ' ').trim(),
+        ),
+      );
+    });
+
+    it('draws a linked line’s words around its link rather than after it', () => {
+      const fixture = render();
+      const library = [...element(fixture).querySelectorAll('.help-dialog__licence-line')][1];
+      const link = library.querySelector('a');
+
+      // The tail this fixture gives the library line is what proves the cut is
+      // honoured: a template that appended the link would put ", and nothing
+      // else" before it rather than after.
+      expect(link).not.toBeNull();
+      expect(visibleTextOf(library)).toBe('Library · MIT licence on GitHub, and nothing else');
+      expect(library.textContent?.indexOf('and nothing else')).toBeGreaterThan(
+        library.textContent?.indexOf('MIT licence on GitHub') ?? 0,
+      );
     });
 
     it('embeds exactly one legal excerpt, and it is in the LICENCE section', () => {
@@ -257,11 +308,50 @@ describe('HelpDialog', () => {
       expect(text).not.toContain('MIT License\n');
     });
 
-    it('offers no way out of the application at all', () => {
-      // The reference draws no link in the modal, and neither does this. The
-      // remaining terms are in the repository `LICENSE`, which a Commander
-      // reaches from the repository rather than from a control here.
-      expect(element(render()).querySelectorAll('a').length).toBe(0);
+    it('offers exactly the two complete-licence destinations, and no other', () => {
+      const links = [...element(render()).querySelectorAll('a')];
+
+      // Two, both audited, both leaving deliberately. Anything else in this
+      // modal that navigated would be a destination nobody accepted (FR-003).
+      expect(links.map((link) => link.getAttribute('href'))).toEqual([
+        LICENCE.index[0].link?.href,
+        LICENCE.index[1].link?.href,
+      ]);
+    });
+
+    it('tells a Commander a link leaves, and lets no session ride out with it', () => {
+      const links = [...element(render()).querySelectorAll('a')];
+
+      for (const link of links) {
+        // Named in visible text, because a Commander is told before they leave
+        // and not after (constitution I).
+        expect(link.textContent).toContain('GitHub');
+
+        // `noreferrer` is the load-bearing half: this application keeps a build
+        // in the URL, and no part of a Commander's session belongs in another
+        // origin's logs. `noopener` stops the opened tab reaching back.
+        const rel = link.getAttribute('rel') ?? '';
+        expect(rel).toContain('noreferrer');
+        expect(rel).toContain('noopener');
+        expect(link.getAttribute('target')).toBe('_blank');
+
+        // And the address itself is never in the words. A URL drawn as text is
+        // a thing to mistype and a line that wraps sideways at 200% text.
+        expect(link.textContent).not.toMatch(/https?:/);
+      }
+    });
+
+    it('gives each link a name a reader can tell apart from the other', () => {
+      const links = [...element(render()).querySelectorAll('a')];
+      const names = links.map((link) => accessibleName(link));
+
+      // Both read "MIT licence on GitHub" on screen, which is correct — both
+      // are one. The detail says which document each is, so the accessible
+      // names differ while still containing the visible words.
+      expect(new Set(names).size).toBe(links.length);
+      for (const [index, name] of names.entries()) {
+        expect(name).toContain(links[index].textContent?.split(',')[0]?.trim());
+      }
     });
 
     it('summarises what covers what before it quotes what it cannot grant', () => {

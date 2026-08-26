@@ -846,17 +846,32 @@ test.describe('the one legal body the modal embeds', () => {
     await expect(excerpt).toHaveAttribute('lang', 'en');
   });
 
-  test('opens the section with the reference’s three-line summary', async ({ page }) => {
+  test('opens the section with the summary, one claim to a line', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
     const lines = helpModal(page).locator('.help-dialog__licence-line');
 
-    await expect(lines).toHaveCount(3);
+    // Four claims about four different things: this application's own code,
+    // the library it was built against, the game data and imagery, and the
+    // typefaces. The reference draws three; the library's line arrives with
+    // the link to its terms, which is what a summary of what covers what was
+    // missing while there was nowhere to point.
+    await expect(lines).toHaveCount(4);
     await expect(lines).toHaveText([
-      new RegExp(englishMessages['help.licence.index.application'], 'i'),
+      new RegExp(englishMessages['help.licence.link.application'], 'i'),
+      new RegExp(englishMessages['help.licence.link.library'], 'i'),
       new RegExp(englishMessages['help.licence.index.gameData'], 'i'),
       new RegExp(englishMessages['help.licence.index.typefaces'], 'i'),
     ]);
+
+    // The label each linked line opens with is still its own, so the two
+    // similarly-worded links are told apart by the words in front of them.
+    await expect(lines.nth(0)).toContainText(
+      englishMessages['help.licence.index.application'].replace('{{licence}}', '').trim(),
+    );
+    await expect(lines.nth(1)).toContainText(
+      englishMessages['help.licence.index.library'].replace('{{licence}}', '').trim(),
+    );
   });
 
   test('embeds one legal body and no other document', async ({ page }) => {
@@ -894,8 +909,36 @@ test.describe('the one legal body the modal embeds', () => {
   });
 });
 
-test.describe('the modal offers no way out of the application', () => {
-  test('draws no link at all, and asks for nothing to draw itself', async ({ page, context }) => {
+test.describe('the two documents the modal points at', () => {
+  /**
+   * The audited destinations, read out of the generator itself.
+   *
+   * Not typed in here. The generator is where the two URLs are declared and
+   * validated, so a change to either fails this journey rather than leaving it
+   * asserting a third thing that agrees with neither the product nor the
+   * audit. Run in its own Node process for the reason `freshDisclaimer` gives:
+   * this suite is transpiled to CommonJS and the generator is a real ES module.
+   */
+  async function auditedDestinations(): Promise<{ repository: string; almanac: string }> {
+    const { stdout } = await promisify(execFile)(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        "const generator = await import('./scripts/generate-help-manifest.mjs');" +
+          'process.stdout.write(' +
+          'JSON.stringify({ repository: generator.REPOSITORY_LICENSE_URL,' +
+          ' almanac: generator.ALMANAC_LICENSE_URL }));',
+      ],
+      { cwd: process.cwd() },
+    );
+    return JSON.parse(stdout) as { repository: string; almanac: string };
+  }
+
+  test('draws exactly the two audited licence links, and asks for nothing to draw itself', async ({
+    page,
+    context,
+  }) => {
     await page.goto('/build');
     await page.waitForLoadState('networkidle');
     await settled(page);
@@ -907,31 +950,81 @@ test.describe('the modal offers no way out of the application', () => {
 
     await openHelp(page);
 
-    // The reference draws no control here, and neither does this. The
-    // remaining licence and third-party terms live in the repository
-    // `LICENSE`, which a Commander reaches from the repository.
-    await expect(helpModal(page).getByRole('link')).toHaveCount(0);
+    // Two links, both complete licence documents, both from the generated
+    // manifest. A third — an issue tracker, a homepage, a docs site — would be
+    // a navigation nobody accepted (FR-003).
+    const links = helpModal(page).getByRole('link');
+    await expect(links).toHaveCount(2);
+    const audited = await auditedDestinations();
+    await expect(links.nth(0)).toHaveAttribute('href', audited.repository);
+    await expect(links.nth(1)).toHaveAttribute('href', audited.almanac);
+
+    // Drawing them costs nothing. A link is an address, not a request: opening
+    // the modal reaches no origin, opens no tab and warms no destination.
     expect(outbound.filter((url) => url.includes('github'))).toEqual([]);
     expect(popups).toEqual([]);
-    // Nothing measures or warms a destination either: no preconnect, no
-    // prefetch.
     expect(await page.locator('link[rel="preconnect"], link[rel="prefetch"]').count()).toBe(0);
   });
 
-  test('carries no repository URL anywhere in its rendered text', async ({ page }) => {
+  test('leaves deliberately, says so, and takes no session with it', async ({ page }) => {
     await withStockBuild(page);
     const fragment = new URL(await settled(page)).hash;
     expect(fragment.length).toBeGreaterThan(0);
 
     await openHelp(page);
+    const links = await helpModal(page).getByRole('link').all();
+    expect(links).toHaveLength(2);
+
+    for (const link of links) {
+      // Named in visible text, because a Commander is told before they leave
+      // and never after (constitution I).
+      await expect(link).toContainText(/github/i);
+
+      // `noreferrer` is the load-bearing half. This application keeps the open
+      // build in the URL fragment; a fragment never rides in a `Referer`, but
+      // the path around it would, and no part of a session belongs in another
+      // origin's logs.
+      const rel = (await link.getAttribute('rel')) ?? '';
+      expect(rel).toContain('noreferrer');
+      expect(rel).toContain('noopener');
+      expect(await link.getAttribute('target')).toBe('_blank');
+
+      // Neither address carries anything but the path to a document: no query,
+      // no fragment, nothing that could be state on its way out.
+      const href = new URL((await link.getAttribute('href')) ?? '');
+      expect(href.protocol).toBe('https:');
+      expect(href.search).toBe('');
+      expect(href.hash).toBe('');
+    }
+  });
+
+  test('carries no URL in its rendered text, and nothing about this session', async ({ page }) => {
+    await withStockBuild(page);
+    const fragment = new URL(await settled(page)).hash;
+
+    await openHelp(page);
     const text = (await helpModal(page).textContent()) ?? '';
 
+    // The destinations are in `href`s. A URL drawn as words is a thing to
+    // mistype and a line that wraps sideways at 200% text.
     expect(text).not.toContain('https://');
-    expect(text).not.toContain('github.com');
     // And nothing about the open build, the route or this browser's stored
     // records is drawn either.
     expect(text).not.toContain(fragment.slice(1));
     expect(text).not.toContain('edsb:');
+  });
+
+  test('tells the two links apart for a reader, though they read alike', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const links = await helpModal(page).getByRole('link').all();
+    const names = await Promise.all(links.map((link) => link.evaluate((node) => node.textContent)));
+
+    // Both are drawn as an MIT licence on GitHub, which is what both are. What
+    // each is the licence *of* is carried for a reader, so two links in one
+    // list never announce identically.
+    expect(new Set(names).size).toBe(names.length);
   });
 });
 

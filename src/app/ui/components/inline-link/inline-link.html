@@ -1,0 +1,15 @@
+<!--
+  `noreferrer` is not decoration here. This application keeps a build in the
+  URL fragment, and while a fragment is never sent in a `Referer` header, the
+  path and query around it would be. Nothing about a Commander's session
+  belongs in another origin's logs (constitution I), and the cheapest way to
+  guarantee that is to send no referrer at all.
+
+  On one line, and held there by `prettier-ignore`, because this element sits
+  inside a sentence and its own whitespace is content. Angular collapses the
+  indentation a formatter would put around the label into a real space, and a
+  space inside the link is a space a Commander reads: `GitHub , and` rather
+  than `GitHub, and` wherever the sentence continues after it.
+-->
+<!-- prettier-ignore -->
+<a class="inline-link" [href]="href()" target="_blank" rel="noopener noreferrer external">{{ label() }}@if (detail(); as text) {<span class="visually-hidden">, {{ text }}</span>}</a>

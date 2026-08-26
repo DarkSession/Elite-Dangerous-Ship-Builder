@@ -55,6 +55,24 @@ export function textOf(node: Element | null): string {
 }
 
 /**
+ * The text an element actually draws.
+ *
+ * `textContent` reads the whole tree, including the spans that are in the
+ * document only so a reader hears them. What is on screen is what is left once
+ * those are removed, which is the thing a layout assertion is about.
+ */
+export function visibleTextOf(node: Element | null): string {
+  if (node === null) {
+    return '';
+  }
+  const copy = node.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll('.visually-hidden')) {
+    hidden.remove();
+  }
+  return textOf(copy);
+}
+
+/**
  * The text of an element with every hidden subtree left out.
  *
  * `textContent` reads the whole tree, including the parts marked away from the

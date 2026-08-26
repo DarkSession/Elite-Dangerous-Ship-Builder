@@ -181,8 +181,14 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## Legal presentation
 
-- The section opens with the reference's own three-line summary, one localised line each for the
-  application's own code, the game data and imagery, and the typefaces.
+- The section opens with a four-line summary, one localised line each for the application's own
+  code, the bundled library, the game data and imagery, and the typefaces. **Amended 2026-08-26:**
+  the reference draws three and this draws four. The library's terms are a separate claim from
+  Frontier's — MIT over a package's code against media-usage rules over game data — and folding them
+  together would be the kind of unsupportable line this section already refuses elsewhere.
+- The two lines whose complete terms this repository can point at link them from inside their own
+  text; the two that cannot, do not. Frontier's media-usage rules are not a document with an address
+  here, and the typefaces' licence is not one this repository redistributes.
 - Each line names only terms this repository can evidence. **Corrected 2026-08-25:** the reference's
   second line reads `SHIP LINE ART & MATERIAL ICONS · EDASSETS.ORG, CC BY-NC-SA 4.0`, and this
   repository can support neither half of it. Ship line art is not EDAssets' — it reaches this
@@ -205,9 +211,31 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## External navigation
 
-The modal has none. **Corrected 2026-08-25:** it previously carried one — a warned repository-
-`LICENSE` action — and the design reference draws no control in the modal at all. The action is
-withdrawn, and with it the `WarnedExternalLink` component the modal was its only consumer of.
+The modal offers exactly two destinations, and both are complete licence documents: the repository
+`LICENSE`, and the bundled library's. Each is a few linked words inside the summary line that names
+its terms — not a control beside the line, and not a row of its own.
+
+Every one of them:
+
+- comes from `HelpManifestV1.destinations`, audited at build time, never from a string in a template
+  or a catalogue;
+- names its destination in the visible words a Commander reads, so they are told before they leave
+  and not after (constitution I);
+- carries `target="_blank"` and `rel="noopener noreferrer"`, so the opened tab cannot reach back and
+  no referrer — no route, no query, nothing around the build in the URL — reaches the other origin;
+- draws no address as text. What a Commander reads is which document it is, not where it is.
+
+The two read alike on screen, because both are an MIT licence on GitHub and saying otherwise would
+be dressing up a fact. What differs is which document each covers, and that is carried for a reader
+in text appended to the link's accessible name, so two links in one list never announce identically.
+
+**Amendment history.** **2026-08-25:** the modal carried one destination, a warned
+repository-`LICENSE` action, and it was withdrawn along with the `WarnedExternalLink` component the
+modal was its only consumer of, on a reading of the design reference as drawing no navigation.
+**2026-08-26:** the reading is corrected. The reference draws no licence _control_, which is why
+none comes back; what comes back is linked words inside a sentence, which is a different shape and
+the one that leaves the reference's compact licence block intact. `WarnedExternalLink` stays
+deleted — a component whose whole purpose was to be a warned action is not what an inline link is.
 
 The consequence is asserted rather than assumed: the modal renders no anchor, its rendered text
 carries no URL, and opening it neither issues nor warms a cross-origin request. A Commander looking

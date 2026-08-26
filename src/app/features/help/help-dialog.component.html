@@ -52,9 +52,25 @@
     <section class="help-dialog__section" [attr.aria-labelledby]="licenceId">
       <h3 class="help-dialog__heading" [id]="licenceId">{{ sections().licence }}</h3>
 
+      <!--
+        Each line is one claim, and two of them link to the document they are a
+        summary of. The link sits inside the sentence rather than after it: the
+        presenter cuts the translated line at the place that translation put
+        the link, so a German line that wants it somewhere else gets it there.
+      -->
       <ul class="help-dialog__licence-index">
+        <!--
+          Written on one line, and held there by `prettier-ignore`, because the
+          whitespace is the content. The three pieces are a sentence cut at the
+          link, and each piece already carries its own spacing — `App · ` ends
+          with a space, a tail beginning `, ` does not want one before it. Let
+          the formatter put the pieces on separate lines and Angular collapses
+          the indentation between them into a space apiece, which draws
+          `... GitHub , and` with a gap before the comma.
+        -->
         @for (entry of licence().index; track entry.id) {
-          <li class="help-dialog__licence-line">{{ entry.text }}</li>
+          <!-- prettier-ignore -->
+          <li class="help-dialog__licence-line">{{ entry.before }}@if (entry.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" [detail]="link.detail" />}{{ entry.after }}</li>
         }
       </ul>
 
