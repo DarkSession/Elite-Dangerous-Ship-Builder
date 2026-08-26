@@ -12,12 +12,17 @@ import { MessageService } from '../../../../../i18n/message.service';
 import { RangeField } from '../../../../../ui/components/range-field/range-field';
 
 /**
- * One mount's shot, placed on the gunsight plate.
+ * One of the hull's hardpoints, placed on the gunsight plate.
  *
  * Two marks, as the 2026-08-25 canvas revision draws them: a small dot where the
  * shot lands, and the mount's hardpoint numeral set just beside it. The numeral
  * used to be a badge parked at the plate's edge on a leader line; the revision
  * withdrew both, and it is placed clear of the neighbouring dots instead.
+ *
+ * Every hardpoint gets one, armed or not. What each mark carries — whether a
+ * weapon is on it, how that weapon is aimed, and whether it is the mount the
+ * workspace currently has selected — is drawn as three inks and written out in
+ * the mark's own sentence, because a colour is not a reading (011 FR-022).
  */
 export interface ShotView {
   readonly id: string;
@@ -30,6 +35,14 @@ export interface ShotView {
   readonly numeralLeft: number;
   readonly numeralTop: number;
   /**
+   * Whether a weapon is fitted here.
+   *
+   * An empty hardpoint is drawn as the mount it is — the offset is the hull's,
+   * not the weapon's — in the quiet ink the schematics already give an empty
+   * mount, and its sentence says it is empty rather than naming a weapon.
+   */
+  readonly armed: boolean;
+  /**
    * Whether the mount is gimballed — the canvas's second dot colour.
    *
    * Gimballed against everything else, which is the one distinction the plate's
@@ -39,7 +52,18 @@ export interface ShotView {
    * where a reader who is not looking at the diagram can find it.
    */
   readonly gimballed: boolean;
-  /** The whole shot in words, for a reader who is not looking at the diagram. */
+  /**
+   * Whether this is the mount the outfitting workspace currently has selected.
+   *
+   * The same selection the hull schematics mark and the ledger row carries, so
+   * a Commander working on one hardpoint can see which mark on the plate is
+   * theirs. It is drawn as a ring around the dot rather than as a fourth fill,
+   * because the fill already reports whether the mount is armed and how it is
+   * aimed, and a state that overwrote another state would be a mark that says
+   * less the more it has to say.
+   */
+  readonly selected: boolean;
+  /** The whole mark in words, for a reader who is not looking at the diagram. */
   readonly statement: string;
 }
 
@@ -134,6 +158,18 @@ export class ShotConvergence {
    */
   readonly geometry = input.required<Extract<Convergence, { kind: 'available' }>>();
 
+  /**
+   * The slot key the outfitting workspace currently has selected, if any.
+   *
+   * Read in rather than reached for: the plate is handed everything it draws,
+   * and the selection belongs to the workspace, not to this diagram. It is a
+   * slot key and not a hardpoint number because a key is the identity the
+   * package publishes and the ledger, the schematics and this plate all use —
+   * the hull's own hardpoint order and the number inside a slot key disagree on
+   * ten hulls, so matching on the number would mark the wrong mount on those.
+   */
+  readonly selectedSlot = input<string | null>(null);
+
   readonly plateLabel = this.#messages.messageSignal('offence.convergence.plate');
   readonly rangeLabel = this.#messages.messageSignal('offence.convergence.range');
 
@@ -155,14 +191,17 @@ export class ShotConvergence {
   );
 
   /**
-   * Each mount's shot, as a position on the plate and as a sentence.
+   * Each hardpoint, as a position on the plate and as a sentence.
    *
-   * The plate is decorative: every shot on it is also stated in words below,
+   * The plate is decorative: every mark on it is also stated in words below,
    * because a dot and a numeral are a picture, and a picture is not a reading
-   * (011 FR-022). Since the 2026-08-25 canvas revision a shot outside the
-   * plate's field of view is held at the frame's own margin rather than clipped
-   * out of it, so a moved dot is exactly the case where its sentence — which
-   * carries the offset and the angle it actually has — is the true reading.
+   * (011 FR-022). That is what carries the three things the inks separate —
+   * armed against empty, fixed against aimed, and the selected mount against
+   * the rest — none of which may rest on a colour alone. Since the 2026-08-25
+   * canvas revision a shot outside the plate's field of view is held at the
+   * frame's own margin rather than clipped out of it, so a moved dot is exactly
+   * the case where its sentence — which carries the offset and the angle it
+   * actually has — is the true reading.
    */
   readonly shots = computed<readonly ShotView[]>(() => {
     const view = this.convergence();
@@ -176,24 +215,47 @@ export class ShotConvergence {
       y: ((1 - point.vertical) / 2) * PLATE_REFERENCE_WIDTH,
     }));
 
+    const selectedSlot = this.selectedSlot();
+
     return dots.map((dot) => {
       const mount = dot.point.mount;
+      const weapon = mount.weapon;
       const numeral = this.#numeralOffset(dot, dots);
+      const selected = mount.slot === selectedSlot;
+      const place = {
+        hardpoint: this.#formatters.integer(dot.point.hardpoint),
+        offset: this.#formatters.metres(mount.offsetMetres, OFFSET_DIGITS),
+        angle: this.#milliradians(dot.point.milliradians),
+      };
       return {
         id: mount.slot,
-        badge: this.#formatters.integer(dot.point.hardpoint),
+        badge: place.hardpoint,
         left: (1 + dot.point.horizontal) * HALF_PLATE_PERCENT,
         top: (1 - dot.point.vertical) * HALF_PLATE_PERCENT,
         numeralLeft: numeral[0],
         numeralTop: numeral[1],
-        gimballed: mount.mount === 'Gimballed',
-        statement: this.#messages.message('offence.convergence.shot', {
-          hardpoint: this.#formatters.integer(dot.point.hardpoint),
-          weapon: this.#gameText.moduleName(mount.symbol).text ?? mount.name,
-          mount: this.#mountName(mount.mount),
-          offset: this.#formatters.metres(mount.offsetMetres, OFFSET_DIGITS),
-          angle: this.#milliradians(dot.point.milliradians),
-        }),
+        armed: weapon !== null,
+        gimballed: weapon?.mount === 'Gimballed',
+        selected,
+        // Four whole sentences rather than one with a state appended to it.
+        // Which weapon, whether the mount is empty and whether it is the
+        // selected one land in different places in different languages, and a
+        // sentence assembled from fragments here would fix English word order
+        // into the catalogue.
+        statement:
+          weapon === null
+            ? this.#messages.message(
+                selected ? 'offence.convergence.empty.selected' : 'offence.convergence.empty',
+                place,
+              )
+            : this.#messages.message(
+                selected ? 'offence.convergence.shot.selected' : 'offence.convergence.shot',
+                {
+                  ...place,
+                  weapon: this.#gameText.moduleName(weapon.symbol).text ?? weapon.name,
+                  mount: this.#mountName(weapon.mount),
+                },
+              ),
       };
     });
   });
@@ -269,9 +331,11 @@ export class ShotConvergence {
    *
    * All four are about a group of armed mounts, so a build that has armed none
    * gets none of them: a span of zero metres between no mounts, and a widest of
-   * nothing, are figures about nothing. The plate itself is still drawn, with
-   * its axes and its rings and no marks on it, which is what the canvas's own
-   * script draws for a build with nothing to place.
+   * nothing, are figures about nothing. The plate itself is still drawn, and on
+   * a hull with nothing fitted it still carries every one of that hull's
+   * hardpoints in the empty ink — where the mounts are is a property of the
+   * hull, and it is exactly the reading a Commander with nothing fitted yet is
+   * after.
    */
   readonly facts = computed<readonly FactView[]>(() => {
     const geometry = this.geometry();

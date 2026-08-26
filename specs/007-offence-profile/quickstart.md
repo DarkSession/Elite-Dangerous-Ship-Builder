@@ -121,13 +121,18 @@ Two mounts carrying the same module are two rows, in package order, unmerged.
 
 ### 6. Read where the shots go
 
-`SHOT CONVERGENCE` draws the gunsight plate with, per armed hardpoint, a mark where the shot lands
-and that mount's hardpoint numeral beside it — and one sentence beside the
-plate naming the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption,
-which sits on the block's heading line.
-A hardpoint the build has not filled takes no mark and no sentence, which is what the canvas does
-with the empty hardpoint on its own sample build. The plate itself is hidden from assistive
-technology.
+`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, a mark where that
+mount's shot lands and its hardpoint numeral beside it — and one sentence beside the plate naming
+the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption, which sits on
+the block's heading line.
+
+A hardpoint the build has not filled is drawn too, hollow and in a quieter ink, and its sentence
+names it as empty rather than naming a weapon: where a mount sits is a property of the hull, and it
+is what a Commander choosing what to fit is asking about. The mount the workspace has selected —
+the same one the ledger row and the hull schematics mark — is ringed in the brightest amber, and its
+own sentence says it is the selected one. Selecting a different hardpoint in the ledger moves the
+ring. The plate itself is hidden from assistive technology, so every one of those distinctions is
+read from the sentences rather than from the ink.
 
 Moving the `TARGET RANGE` control moves every shot and every sentence, leaves the two spans alone,
 and moves the apparent spread. A mount far enough off the axis is clamped to the frame's margin at a
@@ -135,8 +140,9 @@ near range and keeps its sentence, which states its true offset; moving the targ
 mark back inside the frame.
 
 On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
-hull it does carry but the build has armed nothing on, the plate is drawn with its axes and its
-rings and nothing else, and none of the four cells appears.
+hull it does carry but the build has armed nothing on, the plate is drawn with its axes, its rings
+and every one of its mounts in the empty ink, and none of the four cells appears — a span, a widest
+and a spread are all figures about a group of armed mounts.
 
 ### 7. Read endurance at an allocation
 

@@ -169,6 +169,17 @@ export class OffenceAnalysis {
    */
   protected readonly plate = viewChild(ShotConvergence);
 
+  /**
+   * The hardpoint the workspace currently has selected, if any.
+   *
+   * Handed to the convergence plate so the mount a Commander is working on is
+   * marked there as it already is on the hull schematics and in the ledger row.
+   * Read through rather than reached for by the plate itself: the selection
+   * belongs to the workspace, and a diagram that injected the store would be a
+   * component that cannot be previewed from its inputs.
+   */
+  readonly selectedSlot = this.#outfitting.selectedSlotKey;
+
   /** The canvas's five column heads, in its order. */
   readonly columns = computed(() => ({
     module: this.#messages.message('offence.column.module'),

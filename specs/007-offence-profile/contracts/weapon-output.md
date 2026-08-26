@@ -136,15 +136,20 @@ the package decides what that means.
 ## Shot convergence
 
 `getShipGunsight(shipSymbol)` publishes the hull's hardpoint offsets from the cockpit, in metres, in
-the hull's own hardpoint order. A weapon's returned `slot` is resolved to a place in that order
-through `enumerateSlots(getShipSlots(shipSymbol))`, never by parsing a number out of the key.
+the hull's own hardpoint order. The offsets are per **hardpoint**, not per weapon, so every one of a
+hull's mounts is placed and a returned weapon is matched onto one by its `slot` through
+`enumerateSlots(getShipSlots(shipSymbol))`, never by parsing a number out of the key.
 
 - A hull with no published gunsight, or one whose gunsight length does not equal its hardpoint count,
   is `unavailable`. A convergence drawn from part of the mounts is a spread nobody has.
 - `projectGunsight(offsets, metres)` places the shots at a range. No projectile path, convergence
   point or spread formula is written locally.
-- The spans and the widest mount are distances between published offsets, and are recorded as ruled
-  exception 3 in `design/canvas-contract.md`.
+- The spans, the widest mount and the apparent spread are measured across the mounts a returned
+  weapon claimed and no others. The spans and the widest are distances between published offsets,
+  and are recorded as ruled exception 3 in `design/canvas-contract.md`.
+- A hardpoint no returned weapon claimed is placed with no weapon on it. That is a sanctioned
+  departure from the canvas rather than a package reading (`design/canvas-contract.md`, review
+  note 8); the offset it is drawn at is still the package's own.
 - `getModuleBySymbol(symbol)?.mount` names how a weapon is aimed. A symbol the module catalogue does
   not carry keeps a `null` mount and stays on the plate: the geometry does not depend on it.
 

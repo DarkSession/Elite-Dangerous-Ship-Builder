@@ -745,13 +745,17 @@ describe('OffenceAnalysis', () => {
       // The catalogue places this hull whether or not the build armed it.
       // Saying it publishes no geometry would be a claim about the package
       // that is not true.
-      expect(component.convergenceGeometry()).not.toBeNull();
+      const geometry = component.convergenceGeometry();
+      expect(geometry).not.toBeNull();
       expect(element.querySelector('.plate')).not.toBeNull();
-      // Nothing armed, so nothing on the plate: the canvas maps its marks off
-      // its armed mounts and draws nothing for a hardpoint nobody filled
-      // (`design/canvas-contract.md`, review note 8).
-      expect(element.querySelectorAll('.plate__dot')).toHaveLength(0);
-      expect(element.querySelectorAll('.plate__numeral')).toHaveLength(0);
+      // Every one of the hull's mounts is drawn, in the empty ink: where a
+      // hardpoint sits is a property of the hull rather than of what is on it,
+      // and a Commander with nothing fitted yet is asking exactly that.
+      const mounts = geometry?.mounts.length ?? 0;
+      expect(mounts).toBeGreaterThan(0);
+      expect(element.querySelectorAll('.plate__dot')).toHaveLength(mounts);
+      expect(element.querySelectorAll('.plate__dot--empty')).toHaveLength(mounts);
+      expect(element.querySelectorAll('.plate__numeral')).toHaveLength(mounts);
       // Rings and axes stay: they are the plate, not a reading of the build.
       expect(element.querySelectorAll('.plate__ring')).toHaveLength(2);
       // No group of armed mounts, so none of the four figures about one.

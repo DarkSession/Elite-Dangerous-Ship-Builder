@@ -1,9 +1,13 @@
 import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { TestBed } from '@angular/core/testing';
 import { projectConvergence, type Convergence } from '../../../../../domain/offence/convergence';
+import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   everyStateBuild,
+  noWeaponsBuild,
+  OFFENCE_DEFAULT_SLOTS,
   OFFENCE_FIXTURE_HULL,
+  populatedBuild,
 } from '../../../../../domain/offence/offence.fixtures';
 import { provideLocalization } from '../../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../../i18n/testing/localization-harness';
@@ -17,20 +21,23 @@ import { ShotConvergence } from './shot-convergence';
  * release that changed what the package publishes.
  */
 describe('ShotConvergence', () => {
-  function geometryOf(): Extract<Convergence, { kind: 'available' }> {
+  function geometryOf(loadout: ShipLoadout = everyStateBuild()) {
     const convergence = projectConvergence(
       OFFENCE_FIXTURE_HULL,
-      BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons,
+      BuildMetrics.of(loadout).weaponMetrics().weapons,
     );
     if (convergence.kind !== 'available') {
       throw new Error('expected an available convergence for the fixture hull');
     }
-    return convergence;
+    return convergence satisfies Extract<Convergence, { kind: 'available' }>;
   }
 
-  function render() {
+  function render(options: { build?: ShipLoadout; selectedSlot?: string } = {}) {
     const fixture = TestBed.createComponent(ShotConvergence);
-    fixture.componentRef.setInput('geometry', geometryOf());
+    fixture.componentRef.setInput('geometry', geometryOf(options.build));
+    if (options.selectedSlot !== undefined) {
+      fixture.componentRef.setInput('selectedSlot', options.selectedSlot);
+    }
     fixture.detectChanges();
     return {
       element: fixture.nativeElement as HTMLElement,
@@ -45,12 +52,76 @@ describe('ShotConvergence', () => {
     });
   });
 
-  it('places one shot per weapon the hull’s gunsight carries', () => {
+  it('places one mark per hardpoint the hull’s gunsight carries', () => {
     const { component } = render();
 
-    expect(component.shots()).toHaveLength(
-      BuildMetrics.of(everyStateBuild()).weaponMetrics().weapons.length,
+    expect(component.shots()).toHaveLength(geometryOf().mounts.length);
+    expect(component.shots().every((shot) => shot.armed)).toBe(true);
+  });
+
+  it('draws the hardpoints nothing is fitted to, and names them as empty', () => {
+    // The stock build arms two of this hull's eight mounts, so the plate has to
+    // carry both kinds at once. Where a mount sits is a property of the hull,
+    // and a Commander choosing what to fit is asking where its shot would go.
+    const { component, element } = render({ build: populatedBuild() });
+
+    const shots = component.shots();
+    expect(shots).toHaveLength(geometryOf(populatedBuild()).mounts.length);
+    const empty = shots.filter((shot) => !shot.armed);
+    expect(empty).toHaveLength(shots.length - OFFENCE_DEFAULT_SLOTS.length);
+    expect(element.querySelectorAll('.plate__dot--empty')).toHaveLength(empty.length);
+
+    // The ink is never the only thing that says so: each empty mount's own
+    // sentence is in the list beside the plate, and it is not the sentence an
+    // armed one gets (011 FR-022).
+    const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
+      (entry.textContent ?? '').trim(),
     );
+    for (const shot of empty) {
+      expect(stated).toContain(shot.statement);
+      expect(shot.statement).not.toBe(shots.find((other) => other.armed)?.statement);
+    }
+  });
+
+  it('still draws every mount for a hull the build has armed nothing on', () => {
+    const { component, element } = render({ build: noWeaponsBuild() });
+
+    const shots = component.shots();
+    expect(shots.length).toBeGreaterThan(0);
+    expect(shots.every((shot) => !shot.armed)).toBe(true);
+    expect(element.querySelectorAll('.plate__dot--empty')).toHaveLength(shots.length);
+    // No armed group, so none of the four cells that measure one is drawn.
+    expect(component.facts()).toEqual([]);
+  });
+
+  it('marks the mount the workspace has selected, and states it in words', () => {
+    const selectedSlot = OFFENCE_DEFAULT_SLOTS[0];
+    const { component, element } = render({ selectedSlot });
+
+    const selected = component.shots().filter((shot) => shot.selected);
+    expect(selected).toHaveLength(1);
+    expect(selected[0]?.id).toBe(selectedSlot);
+    expect(element.querySelectorAll('.plate__dot--selected')).toHaveLength(1);
+    expect(element.querySelectorAll('.plate__numeral--selected')).toHaveLength(1);
+
+    // Selection is added to the mark rather than replacing what it already
+    // says: the dot keeps the fill that reports how the weapon is aimed.
+    expect(element.querySelector('.plate__dot--selected')?.classList).toContain('plate__dot');
+
+    // And it is a sentence, not a ring alone.
+    const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
+      (entry.textContent ?? '').trim(),
+    );
+    expect(stated).toContain(selected[0]?.statement);
+    const unselected = component.shots().find((shot) => !shot.selected);
+    expect(selected[0]?.statement).not.toBe(unselected?.statement);
+  });
+
+  it('marks nothing when the workspace has no hardpoint selected', () => {
+    const { component, element } = render();
+
+    expect(component.shots().some((shot) => shot.selected)).toBe(false);
+    expect(element.querySelector('.plate__dot--selected')).toBeNull();
   });
 
   it('states every shot in words as well as drawing it', () => {
@@ -110,10 +181,10 @@ describe('ShotConvergence', () => {
     // The 2026-08-25 canvas revision withdrew the badge parked at the plate's
     // edge and the leader line back to it. What is left is the dot where the
     // shot lands and the mount's numeral placed beside it.
-    const armed = component.shots().length;
-    expect(armed).toBeGreaterThan(0);
-    expect(element.querySelectorAll('.plate__dot')).toHaveLength(armed);
-    expect(element.querySelectorAll('.plate__numeral')).toHaveLength(armed);
+    const marks = component.shots().length;
+    expect(marks).toBeGreaterThan(0);
+    expect(element.querySelectorAll('.plate__dot')).toHaveLength(marks);
+    expect(element.querySelectorAll('.plate__numeral')).toHaveLength(marks);
     expect(element.querySelector('.plate__leader')).toBeNull();
     expect(element.querySelector('.plate__shot')).toBeNull();
 

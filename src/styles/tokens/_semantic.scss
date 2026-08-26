@@ -109,10 +109,25 @@
   --edsb-surface-damage-absolute: var(--edsb-palette-cool);
   --edsb-surface-damage-unclassified: var(--edsb-palette-amber-a40);
 
-  // The gunsight's own two inks: a fixed mount and an aimed one. The word is in
-  // each shot's sentence; this only tells two dots apart at a glance.
+  // The gunsight's own inks. A fixed mount and an aimed one are the canvas's own
+  // two; the empty mount and the selected one are this application's, and they
+  // answer two questions the canvas's sample build never had to — the plate
+  // carries every hardpoint the hull has, and the workspace has one of them
+  // selected while a Commander works on it.
+  //
+  // Empty takes the same quiet ink the hull schematics give an empty mount, so
+  // one mount reads the same way in both drawings. Selected takes the brightest
+  // amber rather than the accent the schematics fill a selected mark with: the
+  // plate's fill already reports whether a mount is armed and how it is aimed,
+  // so selection is drawn as a ring *around* that fill and needs an ink that
+  // stands apart from the fixed one it will most often be drawn around.
+  //
+  // The word is in each mark's own sentence beside the plate; these only tell
+  // four dots apart at a glance.
   --edsb-surface-mount-fixed: var(--edsb-palette-amber);
   --edsb-surface-mount-aimed: var(--edsb-palette-cool);
+  --edsb-surface-mount-empty: var(--edsb-palette-ink-a45);
+  --edsb-surface-mount-selected: var(--edsb-palette-amber-3);
 
   // ---------------------------------------------------------------------------
   // Text — every role at or above 4.5:1 on all nine grounds
@@ -349,6 +364,7 @@
   --edsb-layout-offence-label: var(--edsb-measure-offence-label);
   --edsb-layout-offence-value: var(--edsb-measure-offence-value);
   --edsb-layout-weapon-figure: var(--edsb-measure-weapon-figure);
+  --edsb-layout-weapon-module: var(--edsb-measure-weapon-module);
   --edsb-layout-gunsight-plate: var(--edsb-measure-gunsight-plate);
   --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);

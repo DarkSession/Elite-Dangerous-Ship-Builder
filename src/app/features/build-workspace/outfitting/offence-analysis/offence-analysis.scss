@@ -199,58 +199,84 @@
 // always have, so it is the arrangement the list promotes to rather than the
 // one it starts from.
 //
-// 26rem, and the width is measured rather than argued. The threshold was 18rem
-// while there were four columns; the 2026-08-25 canvas revision's fifth one
-// does not fit in that room, and the figure that settles it is what the tracks
-// actually resolve to rather than what their floors are.
+// 31rem, and the width is measured rather than argued. The threshold was 18rem
+// while there were four columns; the 2026-08-25 canvas revision's fifth one does
+// not fit in that room. What settles it is the width five tracks need before all
+// five can be read at once.
 //
 // Measured in Chromium against the stock Anaconda, this block being one half of
 // a pair inside the outfitting centre column, so a 1440px desktop gives the list
-// 300px:
+// 300px. With `1fr` beside four `auto` tracks the five resolved to:
 //
 //   en, list 300px: 83 | 40 40 50 47   — the module track at 83px
 //   de, list 300px: 40 | 40 73 67 40   — the module track at 40px
 //
 // 155px is the module track this asks for, and it is the module *track* rather
-// than the list width an earlier note used that number for: it is two lines of
-// a weapon's cell — `Huge Multi-Cannon` over `4A GIMBALLED · OVERCHARGED G5` —
-// wrapping at words rather than inside them. `e2e/offence-profile.spec.ts`
-// asserts it at both the promoted width and the compact one, in both languages,
-// so the figure is held to rather than merely written down.
+// than the list width an earlier note used that number for.
+// `e2e/offence-profile.spec.ts` asserts it at both the promoted width and the
+// compact one, in both languages, so the figure is held to rather than merely
+// written down.
 //
-// The four figure tracks are `auto` above their floor, so they take their own
-// max-content out of the `1fr` module track — and in German the *heads* are what
-// that content is: `DURCHSCHLAG` 73px and `REICHWEITE` 67px against `PIERCE` and
-// `RANGE`. At 40px a module name renders one or two characters per line, which
-// is the failure the threshold exists to prevent and a layout that has not
-// survived translation. Capping the tracks does not rescue it either: the
-// figures themselves want about 50px for `3,000 m`, so four columns and their
-// gaps cannot cost less than about 240px whatever the heads do.
+// Five flexible tracks rather than one flexible track and four content-sized
+// ones. `minmax(0, 1fr)` beside four `auto` columns gives every pixel of slack
+// to the module name and none to the figures: the four figure tracks settle on
+// their own max-content, which is `3,000 m` at about 50px, and the row reads as
+// a name with a field of empty ground after it and four figures crushed against
+// the trailing edge. Sharing the slack is what makes it a table rather than a
+// name with a margin note.
 //
-// So five aligned columns need about 415px to leave the module track 155px —
-// 26rem — and below that the compact
-// arrangement carries the same five figures with the word that names each one
-// beside it. On this application's own reference desktop that is the compact
+// The proportion is the canvas's. Canvas 1c sets `MODULE` about twice the width
+// of one figure column, which `2fr` against `1fr` each is; the four figures
+// divide what is left equally, so `DPS` and `FALLOFF` are the same width and a
+// figure sits under the head that names it rather than under the gap beside it.
+//
+// Both floors are real minimums and the flex is what happens above them. The
+// module floor is 155px — two lines of a weapon's cell, `Huge Multi-Cannon` over
+// `4A GIMBALLED · OVERCHARGED G5`, wrapping at words rather than inside them —
+// and grid holds a track at its floor before it flexes, so a block too narrow to
+// give the module its `2fr` gives it 155px and divides the rest among the
+// figures. That is also what keeps the German heads out of the module's track:
+// `DURCHSCHLAG` at 73px and `REICHWEITE` at 67px were pulling `auto` tracks wide
+// enough to starve the name to 40px — one or two characters a line — and a
+// flexible track takes its share instead of its content, so the long head wraps
+// inside its own column, which is what the heads are marked decorative for.
+//
+// The threshold follows from the columns rather than from an argument: the table
+// appears where all five of them can be read, which means the module cell at its
+// 155px and each figure column at least as wide as the longer of its own head
+// and its own figure. In German that is `DURCHSCHLAG` at 73px, against about
+// 50px for `3,000 m`; in English every head is shorter than its figures. So
+// 155px + 4 × 73px + four gutters ≈ 479px, and the threshold is 30rem.
+//
+// A narrower table is not a tighter one — it is a broken word. The floors hold
+// the module cell at 155px and hand what is left to the four figure tracks, so
+// below this width the head no longer fits its own column and breaks inside
+// itself, which is not a column head. Below it the compact arrangement carries
+// the same five figures with the word that names each one beside it, on lines
+// wide enough for both.
+//
+// On this application's own reference desktop that is still the compact
 // arrangement, not the canvas's table: canvas 1c draws its five columns in a
-// card wider than the one a 1440px viewport gives this block, and the departure
-// is recorded in `design/canvas-contract.md` under the 2026-08-25 revision
-// rather than hidden in a threshold.
+// card wider than the one a 1440px viewport gives this block, which gets 300px.
+// The departure is recorded in `design/canvas-contract.md` under the 2026-08-25
+// revision rather than hidden in a threshold.
 //
-// The floor stays 2.5rem, which is inside the 30–56px canvas 1d narrows its own
-// columns to; it is a floor and not a width, and every track is `auto` above it.
-@container weapons (min-width: 26rem) {
+// The figure floor stays 2.5rem, which is inside the 30–56px canvas 1d narrows
+// its own columns to. At this threshold the figures resolve well above it, so it
+// is not what sizes them: it is the guard that keeps the five tracks inside the
+// block if a translation ever grew past what the threshold was measured against,
+// because a table wider than its block is the horizontal scrolling this
+// application does not do.
+@container weapons (min-width: 31rem) {
   // One grid for the whole table, borrowed by the heads and by every row
-  // through `subgrid`. Declaring the same track list on each row instead lets
-  // `auto` resolve differently per row, and figures that do not line up
-  // vertically defeat the point of a table. The figure columns carry the
-  // canvas's own widths as floors rather than as fixed tracks, so `PIERCE` and
-  // `RANGE` stand apart from each other instead of collapsing to their digits
-  // and leaving the whole gap beside the module name.
+  // through `subgrid`. Declaring the same track list on each row instead lets a
+  // track resolve differently per row, and figures that do not line up
+  // vertically defeat the point of a table.
   .weapons__table {
     display: grid;
     grid-template-columns:
-      minmax(0, 1fr)
-      repeat(4, minmax(min(var(--edsb-layout-weapon-figure), 15%), auto));
+      minmax(var(--edsb-layout-weapon-module), 2fr)
+      repeat(4, minmax(var(--edsb-layout-weapon-figure), 1fr));
     column-gap: var(--edsb-space-inline);
     row-gap: var(--edsb-space-stack-tight);
   }

@@ -1406,6 +1406,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'one row per returned weapon in exact package order, with no sort and no duplicate-symbol merge',
       'the canvas’s five columns carry the module, its damage per second, its piercing, its maximum range and its falloff',
+      'the aligned table divides its width between all five columns, so no figure column is squeezed to its digits beside an empty module track',
+      'the table is promoted only where every column head fits its own column, in either language, and the module name is never squeezed to make room',
       'an absent piercing, maximum range or falloff reads as field-specific not-stated text, never as a zero',
       'a disabled weapon keeps its row and its own metrics while the package totals leave it out',
       'the row is inert as the canvas draws it: no disclosure, no action and no control inside it',
@@ -1445,13 +1447,14 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'build/offence-analysis-convergence',
-    requirements: ['007/FR-010', '007/FR-011', '007/SC-004'],
+    requirements: ['007/FR-010', '007/FR-011', '007/FR-012', '007/FR-013', '007/SC-004'],
     journey: 'offence/convergence',
     axe: true,
     assertions: [
       'the gunsight plate is hidden from assistive technology, and every mark is a sentence beside it',
-      'each armed mount is a mark where its shot lands and its own hardpoint numeral set beside it',
-      'a hardpoint the build has not filled takes no mark and no sentence, as the canvas leaves it',
+      'each of the hull’s mounts is a mark where its shot lands and its own hardpoint numeral set beside it',
+      'a hardpoint the build has not filled is drawn in the empty mount’s own ink and named as empty in words',
+      'the mount the workspace has selected is ringed on the plate and named as selected in its own sentence, and follows the ledger’s selection',
       'a shot beyond the plate’s field of view is held at the frame’s own margin rather than leaving it, and is stated in words — at its true offset and angle — at that range exactly as at any other',
       'moving the target range moves every shot, and leaves the mounts’ own spans where they were',
       'the range control announces the distance as a Commander reads it, not as a bare number',

@@ -27,11 +27,19 @@
     }
 
     <!--
-      Each armed mount twice, as the 2026-08-25 canvas draws it: the dot
-      where the shot lands, and the mount's hardpoint numeral set beside
-      it, at whichever of four corners stands clear of the other dots.
-      The badge column parked at the plate's edge, and the leader lines
-      back from it, are gone with the revision.
+      Every one of the hull's hardpoints twice, as the 2026-08-25 canvas
+      draws an armed one: the dot where the shot lands, and the mount's
+      hardpoint numeral set beside it, at whichever of four corners stands
+      clear of the other dots. The badge column parked at the plate's edge,
+      and the leader lines back from it, are gone with the revision.
+
+      An empty hardpoint is drawn too, in the quiet ink the schematics
+      already give an empty mount: where a mount sits is a property of the
+      hull rather than of what is on it, and a Commander deciding what to
+      fit is asking exactly where a shot from that mount would go. The
+      selected mount takes a ring around whichever dot it is, so selection
+      is added to what the mark already says instead of replacing it.
+      All three distinctions are written out in the list below.
 
       Nothing is clipped any more either: a shot far enough off-axis is
       held at the frame's own margin, because the field of view is a
@@ -44,12 +52,16 @@
       <span
         class="plate__dot"
         [class.plate__dot--aimed]="shot.gimballed"
+        [class.plate__dot--empty]="!shot.armed"
+        [class.plate__dot--selected]="shot.selected"
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
       ></span>
       <span
         class="plate__numeral"
         [class.plate__numeral--aimed]="shot.gimballed"
+        [class.plate__numeral--empty]="!shot.armed"
+        [class.plate__numeral--selected]="shot.selected"
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
         [style.margin-left.px]="shot.numeralLeft"
@@ -61,7 +73,9 @@
 
   <!--
     The same diagram in words. This is the reading; the plate above is the
-    picture of it, and every mark on it is restated here. The ring is a mark
+    picture of it, and every mark on it is restated here — the empty
+    hardpoints and the selected mount with the rest, because those are two
+    of the three things the plate's inks separate. The ring is a mark
     like any other: its caption is drawn on the block's heading line, and it is
     the one plate figure the four cells below do not repeat, so it is stated
     with the shots as well.

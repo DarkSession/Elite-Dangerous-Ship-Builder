@@ -14,9 +14,18 @@ import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/bu
  *
  * The geometry is the package's. `SHIP_GUNSIGHTS` publishes every player-flyable
  * hull's hardpoint offsets from the cockpit in metres, and `projectGunsight`
- * turns those offsets into angular tangents at a chosen range. This file selects
- * the mounts that carry a weapon, asks the package where their shots go, and
- * says how far apart they are; it derives no offset and models no ballistics.
+ * turns those offsets into angular tangents at a chosen range. This file places
+ * every one of the hull's hardpoints, armed or empty, asks the package where
+ * their shots go, and says how far apart the armed ones are; it derives no
+ * offset and models no ballistics.
+ *
+ * Every hardpoint and not only the armed ones, because the plate is a picture
+ * of the *hull*: an offset is a property of the mount, which the package
+ * publishes whether or not a Commander has filled it, and a Commander choosing
+ * what to fit is asking where a shot from that mount would go. The empty ones
+ * are drawn as the mounts they are and are named as empty in words, and no
+ * figure about the group is measured across them — nothing is fired from an
+ * empty hardpoint, so a spread that counted one would be a spread nobody has.
  *
  * A hull the catalogue does not carry, or one whose gunsight does not line up
  * with its hardpoints, is `unavailable` rather than a partial diagram: a
@@ -26,7 +35,7 @@ export type Convergence =
   | { readonly kind: 'unavailable' }
   | {
       readonly kind: 'available';
-      /** One entry per returned weapon whose mount the catalogue places. */
+      /** Every hardpoint the catalogue places, armed or empty, in the hull's own order. */
       readonly mounts: readonly ConvergenceMount[];
       /** Widest horizontal separation between two armed mounts, in metres. */
       readonly lateralSpanMetres: number;
@@ -43,22 +52,35 @@ export type Convergence =
       readonly widest: ConvergenceMount | null;
     };
 
-/** One armed hardpoint, at the offset the package publishes for it. */
+/** One of the hull's hardpoints, at the offset the package publishes for it. */
 export interface ConvergenceMount {
-  /** The weapon's exact package slot key. */
+  /** The hull's own slot key. It names the mount, so an empty one has it too. */
   readonly slot: string;
-  /** The weapon's display name, as the package returns it. */
-  readonly name: string;
-  /** The weapon's internal symbol, so a surface can name it in the Commander's language. */
-  readonly symbol: string;
-  /** The mount's 1-based place in the hull's own hardpoint order — the canvas's badge. */
+  /** The mount's 1-based place in the hull's own hardpoint order — the canvas's numeral. */
   readonly hardpoint: number;
-  /** How the weapon is aimed, or `null` where the module record states no mount. */
-  readonly mount: ModuleMount | null;
   /** The package's own offset pair, in metres. */
   readonly offset: GunsightOffset;
   /** Distance from the cockpit's axis, in metres. */
   readonly offsetMetres: number;
+  /**
+   * The weapon fitted here, or `null` where the hardpoint is empty.
+   *
+   * Nested rather than flattened, because the three fields under it exist
+   * together or not at all: a mount with a name and no symbol is not a state
+   * this hull can be in, and an optional field each would let a surface read
+   * one of them off an empty mount and print it.
+   */
+  readonly weapon: ConvergenceWeapon | null;
+}
+
+/** The weapon on an armed hardpoint, as the package records it. */
+export interface ConvergenceWeapon {
+  /** The weapon's display name, as the package returns it. */
+  readonly name: string;
+  /** The weapon's internal symbol, so a surface can name it in the Commander's language. */
+  readonly symbol: string;
+  /** How the weapon is aimed, or `null` where the module record states no mount. */
+  readonly mount: ModuleMount | null;
 }
 
 /**
@@ -96,7 +118,7 @@ const MILLIRADIANS_PER_RADIAN = 1000;
 /** Where the shots land at one range, and how far apart they are there. */
 export interface ConvergenceView {
   readonly targetRangeMetres: number;
-  /** The armed mounts, in package order. */
+  /** Every placed hardpoint, armed or empty, in the hull's own order. */
   readonly points: readonly ConvergencePoint[];
   /** The diagonal of the spread, in milliradians — the canvas's `APPARENT SPREAD`. */
   readonly apparentSpreadMilliradians: number;
@@ -123,11 +145,11 @@ export interface ConvergenceRing {
   readonly width: number;
 }
 
-/** One armed hardpoint, placed on the plate. */
+/** One hardpoint, placed on the plate. */
 export interface ConvergencePoint {
-  /** The hull's own 1-based hardpoint place — the plate's badge. */
+  /** The hull's own 1-based hardpoint place — the plate's numeral. */
   readonly hardpoint: number;
-  /** The weapon whose shot lands here. */
+  /** The mount this mark stands for. Its `weapon` is `null` where it is empty. */
   readonly mount: ConvergenceMount;
   /**
    * Fraction of the plate's half width, `-1` to `1`; positive points right.
@@ -145,12 +167,17 @@ export interface ConvergencePoint {
 }
 
 /**
- * Place every armed mount of a build on its hull's gunsight.
+ * Place every one of a hull's hardpoints on its gunsight, and say which are armed.
  *
- * The gunsight is indexed in the hull's own hardpoint order, so a weapon's
- * journal slot key is resolved through `enumerateSlots` rather than by reading
- * the number out of the key — the package documents ten hulls where those two
- * disagree.
+ * The gunsight is indexed in the hull's own hardpoint order, so the enumerated
+ * slots are walked in that order and a weapon is matched onto one by its journal
+ * slot key rather than by reading a number out of that key — the package
+ * documents ten hulls where those two disagree.
+ *
+ * The list is the hull's, not the build's: every placed hardpoint is returned,
+ * and the ones a Commander has not filled come back with no weapon on them. The
+ * three figures beside the list are measured across the armed ones alone,
+ * because they are figures about where shots go.
  */
 export function projectConvergence(
   shipSymbol: string,
@@ -167,31 +194,42 @@ export function projectConvergence(
     return { kind: 'unavailable' };
   }
 
-  const places = new Map(hardpoints.map((slot, index) => [slot.key.toLowerCase(), index]));
-  const mounts = weapons.flatMap((weapon) => {
-    const index = places.get(weapon.slot.toLowerCase());
-    const offset = index === undefined ? undefined : gunsight[index];
-    if (index === undefined || offset === undefined) {
+  const fitted = new Map(weapons.map((weapon) => [weapon.slot.toLowerCase(), weapon]));
+  const mounts = hardpoints.flatMap((slot, index) => {
+    const offset = gunsight[index];
+    if (offset === undefined) {
       return [];
     }
+    const weapon = fitted.get(slot.key.toLowerCase());
     return [
       {
-        slot: weapon.slot,
-        name: weapon.name,
-        symbol: weapon.symbol,
+        slot: slot.key,
         hardpoint: index + 1,
-        mount: getModuleBySymbol(weapon.symbol)?.mount ?? null,
         offset,
         offsetMetres: Math.hypot(offset[0], offset[1]),
+        weapon:
+          weapon === undefined
+            ? null
+            : {
+                name: weapon.name,
+                symbol: weapon.symbol,
+                mount: getModuleBySymbol(weapon.symbol)?.mount ?? null,
+              },
       },
     ];
   });
+
+  // The three figures are about a group of *armed* mounts. An empty hardpoint
+  // is drawn, because its offset is a property of the hull, but it fires
+  // nothing: a lateral span stretched to reach one would be a separation
+  // between a shot and no shot.
+  const armed = mounts.filter((mount) => mount.weapon !== null);
 
   // `null` on a build that has armed nothing. Not `unavailable`: the two are
   // different answers, and the unavailable sentence says the package publishes
   // no geometry for this hull, which for a placed hull whose hardpoints are
   // merely empty is untrue.
-  const widest = mounts.reduce<ConvergenceMount | null>(
+  const widest = armed.reduce<ConvergenceMount | null>(
     (furthest, mount) =>
       furthest === null || mount.offsetMetres > furthest.offsetMetres ? mount : furthest,
     null,
@@ -200,14 +238,19 @@ export function projectConvergence(
   return {
     kind: 'available',
     mounts,
-    lateralSpanMetres: span(mounts.map((mount) => mount.offset[0])),
-    verticalSpanMetres: span(mounts.map((mount) => mount.offset[1])),
+    lateralSpanMetres: span(armed.map((mount) => mount.offset[0])),
+    verticalSpanMetres: span(armed.map((mount) => mount.offset[1])),
     widest,
   };
 }
 
 /**
  * Ask the package where those mounts' shots land at one range.
+ *
+ * Every mount is placed, the empty ones included: `projectGunsight` is being
+ * asked where a mount points, which it answers from the offset alone. Only the
+ * `APPARENT SPREAD` is narrowed to the armed ones, because that is the one
+ * figure here that reports a group rather than a mark.
  *
  * The plate is the canvas's, and since the 2026-08-25 revision it is square in
  * *angle*: half a field of view either side of the axis on both axes, whatever
@@ -255,12 +298,14 @@ export function convergenceAt(
     milliradians: Math.hypot(across, up),
   });
 
+  const armed = angles.filter((angle) => angle.mount.weapon !== null);
+
   return {
     targetRangeMetres,
     points: angles.map(place),
     apparentSpreadMilliradians: Math.hypot(
-      span(angles.map((angle) => angle.across)),
-      span(angles.map((angle) => angle.up)),
+      span(armed.map((angle) => angle.across)),
+      span(armed.map((angle) => angle.up)),
     ),
     rings: [ring(FIELD_OF_VIEW_MILLIRADIANS / 3), ring(ringMilliradians)],
     ringMilliradians,

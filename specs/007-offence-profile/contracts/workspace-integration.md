@@ -34,7 +34,8 @@ For one active build and the WEP allocation feature 005 holds, in order:
 3. read feature 002's `hardpointCoverage()` over the same revision's slot views;
 4. call `metrics.weaponsCapacitorMetrics({ weaponsPips })` exactly once, with the store's allocation
    passed through unchanged;
-5. read the hull's gunsight and slot layout once, and place the armed mounts on it;
+5. read the hull's gunsight and slot layout once, and place every one of its hardpoints on it,
+   naming the returned weapon on each mount that has one;
 6. return one immutable projection.
 
 It is a pure synchronous function of `(loadout, coverage, weaponsPips)`. There is no store, no cache

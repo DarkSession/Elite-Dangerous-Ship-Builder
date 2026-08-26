@@ -146,10 +146,20 @@ are fields no canvas ever drew.
 - A hull the gunsight catalogue does not carry, or one whose gunsight does not line up with its
   hardpoints, says so. A convergence drawn from part of the mounts would be a spread nobody has.
   A hull the catalogue _does_ carry is drawn whether or not the build has armed any of it: saying
-  the package publishes no geometry for a placed hull would be false. It keeps its axes and its
-  rings and takes no mark, which is what the canvas's own script draws with nothing to place. A
-  hardpoint the build has not filled is not drawn at all: the canvas faces one on its own sample
-  build and says nothing whatsoever about it.
+  the package publishes no geometry for a placed hull would be false. It keeps its axes, its rings
+  and every one of its mounts, drawn empty.
+- **Every hardpoint the catalogue places is drawn, armed or not.** Where a mount sits is a property
+  of the hull rather than of what is on it, and a Commander deciding what to fit is asking exactly
+  where a shot from that mount would go. An empty one is drawn hollow, in the quiet ink the hull
+  schematics already give an empty mount, and its own sentence beside the plate names it as empty.
+  Neither canvas draws this; it is a sanctioned departure asked for by the maintainer
+  (`design/canvas-contract.md`, review note 8, and `spec.md` FR-012).
+- **The mount the workspace has selected is ringed**, in the brightest amber the scale holds, around
+  whichever mark it is. A ring rather than a fourth fill: the fill already reports whether the mount
+  is armed and how its weapon is aimed, and a selection colour would overwrite a reading with a
+  state. The selection is feature 002's own `selectedSlotKey`, the same one the ledger row and the
+  hull schematics mark, so the three drawings of one hull cannot disagree about which mount is open.
+  Its sentence beside the plate names it as the selected mount (`spec.md` FR-013).
 - The plate never mirrors. Its marks are placed physically, as the hull schematic's are: a gunsight
   is a view out of the cockpit, and a right-to-left interface does not move a ship's port hardpoint
   to starboard.
@@ -165,23 +175,25 @@ are fields no canvas ever drew.
 
 ## State behavior
 
-| State                                    | Presentation                                                             |
-| ---------------------------------------- | ------------------------------------------------------------------------ |
-| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing |
-| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field    |
-| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it     |
-| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim    |
-| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals          |
-| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                |
-| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable    |
-| Range or piercing member absent          | Field-specific not stated, never numeric zero                            |
-| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated             |
-| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars     |
-| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it           |
-| Zero capacity                            | The package's own zero, with no cause attached                           |
-| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                |
-| A placed hull with nothing armed         | The plate with its axes and rings, no marks, and none of the four facts  |
-| A shot outside the plate's field of view | Clipped from the drawing, and kept in the sentences beside it            |
+| State                                    | Presentation                                                                           |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing               |
+| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field                  |
+| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it                   |
+| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim                  |
+| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals                        |
+| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                              |
+| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable                  |
+| Range or piercing member absent          | Field-specific not stated, never numeric zero                                          |
+| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated                           |
+| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars                   |
+| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it                         |
+| Zero capacity                            | The package's own zero, with no cause attached                                         |
+| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                              |
+| A placed hull with nothing armed         | The plate with its axes, its rings and every mount drawn empty; none of the four facts |
+| A hardpoint with nothing fitted to it    | A hollow mark in the quiet ink, and a sentence naming it as empty                      |
+| The mount the workspace has selected     | A ring around whichever mark it is, and a sentence naming it as selected               |
+| A shot outside the plate's field of view | Held at the frame's own margin, and stated at its true angle beside it                 |
 
 ## Status contribution
 

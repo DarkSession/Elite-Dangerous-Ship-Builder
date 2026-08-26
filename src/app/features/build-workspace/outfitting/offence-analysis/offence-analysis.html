@@ -266,7 +266,7 @@
       </div>
 
       @if (convergenceGeometry(); as geometry) {
-        <edsb-shot-convergence [geometry]="geometry" />
+        <edsb-shot-convergence [geometry]="geometry" [selectedSlot]="selectedSlot()" />
       } @else {
         <!--
           No gunsight for this hull, said rather than drawn as an empty plate:

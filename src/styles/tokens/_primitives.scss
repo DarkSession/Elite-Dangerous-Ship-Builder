@@ -427,6 +427,13 @@
   --edsb-measure-offence-value: 3.875rem;
   --edsb-measure-weapon-figure: 2.5rem;
 
+  // The floor under the weapon table's module column: 155px, which is two lines
+  // of a weapon's cell — `Huge Multi-Cannon` over `4A GIMBALLED · OVERCHARGED
+  // G5` — wrapping at words rather than inside them. Measured in Chromium at the
+  // widths this block is actually given, and held to by
+  // `e2e/offence-profile.spec.ts` in both languages.
+  --edsb-measure-weapon-module: 9.6875rem;
+
   // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
   // box square in pixels, and a 7px dot where each shot lands with the mount's
   // hardpoint numeral set beside it.

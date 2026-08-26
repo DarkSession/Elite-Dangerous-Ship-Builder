@@ -390,7 +390,8 @@ worked out once, in the projection:
    amount the build actually deals, each with its share — the canvas's own
    reading, and the same figures the withdrawn lists carried for those types.
 
-8. **A hardpoint the build has not filled is drawn — withdrawn 2026-08-24.**
+8. **A hardpoint the build has not filled is drawn — withdrawn 2026-08-24,
+   reinstated 2026-08-26 as a sanctioned departure.**
    An earlier revision of this note drew an empty mount on the plate in hollow
    ink with its own sentence beside it, and justified it on the ground that
    "the canvas's sample data fills every hardpoint, so the canvas never faces
@@ -417,15 +418,47 @@ worked out once, in the projection:
    publishes an offset per hardpoint rather than per weapon. That remains true;
    it is simply not something either canvas draws.
 
+   **Reinstated 2026-08-26, on a ground the canvas does not decide.** The
+   maintainer asked for every hardpoint on the plate, the empty ones in an ink
+   of their own. Everything the withdrawal established about the drawing still
+   holds — `wireConvergence` really does map its marks off the armed mounts
+   alone, and hardpoint 5 really is missing from its array — so this is not a
+   re-reading of the canvas. It is a decision that the plate answers a question
+   the canvas's own sample never asked: a Commander who has not fitted a weapon
+   yet is looking at the plate to find out where a shot from that mount _would_
+   go, and a plate that shows only what is already fitted has nothing to say to
+   them. The offsets it needs are the package's own, published per hardpoint,
+   so nothing is derived to draw them.
+
+   It is recorded here rather than settled in a stylesheet, because it is a
+   user-facing element the template does not contain, which is what SC-004 asks
+   this file to hold. Three things bound it:
+
+   - **Nothing about the group moves.** Both spans, the widest mount and the
+     apparent spread stay measured across the armed mounts alone, exactly as the
+     canvas measures them. An empty hardpoint fires nothing, and a span reaching
+     one would be a separation between a shot and no shot.
+   - **The ink is never the reading.** Each empty mount carries its own sentence
+     beside the plate, in the catalogue's own words, saying it is empty — the
+     same rule every other mark on this plate is held to (011 FR-022).
+   - **The mark is the hull's, not the weapon's.** It says where a mount is
+     pointed, and no figure is attached to it that a fitted weapon would supply.
+
 9. **A build that has armed nothing is still placed.** An earlier revision
    returned the unavailable state for it, which draws the sentence "the game
    data package does not publish gunsight geometry for this hull". For a hull
    the catalogue does place, that sentence is false. The two are separate
    answers: a hull the catalogue does not place is unavailable; a placed hull
-   nobody has armed keeps the plate with its axes and its rings, takes no mark —
-   which is what `wireConvergence` draws when its array is empty — and is given
-   none of the four figures beneath the plate, all of which are about a group of
-   armed mounts.
+   nobody has armed keeps the plate with its axes and its rings and is given
+   none of the four figures beneath it, all of which are about a group of armed
+   mounts.
+
+   What such a plate carries changed with note 8's reinstatement on 2026-08-26.
+   It took no mark at all while the plate drew the armed mounts alone — which is
+   what `wireConvergence` draws when its array is empty — and now carries every
+   one of the hull's mounts in the empty ink. The distinction this note exists
+   for is untouched: the plate is drawn either way, and the unavailable sentence
+   stays false for a hull the catalogue places.
 
 10. **`FULL FIRE` draws `∞` where the recharge keeps pace.** The symbol is what
     a Commander reads; what it stands for is said beside it and kept out of
@@ -530,6 +563,22 @@ worked out once, in the projection:
     canvas draws it 9px on the one and 8px on the other, and the type scale's
     `micro` step is mapped to that whole 7.5–9.5 band.
 
+17. **The mount the workspace has selected is ringed — a sanctioned departure,
+    2026-08-26.** Neither canvas draws a selection on the gunsight; canvas 1c's
+    plate has no relationship to the mount its ledger has open. The maintainer
+    asked for one, and the workspace already has the state: feature 002's ledger
+    and feature 010's hull schematics both mark the selected slot, from the same
+    `selectedSlotKey`, so a plate that ignored it was the odd one out among the
+    three drawings of the same hull.
+
+    It is drawn as a ring around the dot rather than as a fourth fill, because
+    the fill already reports whether the mount is armed and how its weapon is
+    aimed; a selection colour would overwrite a reading with a state. The ink is
+    the brightest amber the scale holds rather than the accent the schematics
+    fill a selected mark with, because on this plate the accent is already the
+    fixed mount's own ink. Like every other mark here the ring is never the only
+    thing that says so: the selected mount's sentence beside the plate names it.
+
 ## States no canvas draws
 
 Neither canvas draws: no build, pending, projection failure, no fitted weapons,
@@ -537,8 +586,9 @@ unavailable hardpoint coverage, an all-disabled or genuine-zero weapon, absent
 `unclassified`, absent range, piercing or projectile members, zero capacity, an
 immediate or infinite time to drain, a build dealing no conventional damage, a
 hull the gunsight catalogue does not place, a placed hull the build has armed
-nothing on, or a shot far enough off-axis for the plate to clamp it to the
-frame. They are required all the same, and they come from
+nothing on, a hardpoint on the plate with nothing fitted to it, the mount the
+workspace has selected, or a shot far enough off-axis for the plate to clamp it
+to the frame. They are required all the same, and they come from
 [offence-profile.md](./offence-profile.md) and
 [component-state-preview-matrix.md](./component-state-preview-matrix.md), not
 from the mock.
@@ -587,26 +637,39 @@ arrangement carries a figure the other does not.
 **The weapon list's aligned table is drawn only where five columns fit, which on
 a 1440px desktop is not this block.** Canvas 1c draws its five columns in a card
 wider than the one that viewport gives the `WEAPONS` block: measured in Chromium
-against the stock Anaconda, the list is given 300px there, and the four figure
-tracks take their own content out of the module track — 83px of it left in
-English, and 40px in German, where the heads are `DURCHSCHLAG` and `REICHWEITE`
-rather than `PIERCE` and `RANGE`. A module name at 40px renders one or two
-characters per line. Capping the tracks does not rescue it: the figures
-themselves want about 50px for `3,000 m`, so four columns and their gaps cannot
-cost less than about 240px whatever the heads do.
+against the stock Anaconda, the list is given 300px there.
 
-So the table promotes at 26rem, where the module track keeps the 155px below
-which it collapses, and below that the compact arrangement carries the same five
-figures with the word that names each one beside it. Nothing is dropped and no
-figure loses the label that names it; what is lost is the alignment, at widths
-where alignment would have cost the module name instead. The canvas reaches an aligned
-table at phone width by a route this list does not take — canvas 1d folds
-`FALL 1,800` under the range cell, four columns carrying five figures — and that
-route alone does not reach this floor either: folded into four columns at 300px
-the module track comes out at 140px in English and 90px in German, because it is
-the heads that size those columns and canvas 1d abbreviates its own to `PRC`.
-Restoring the table at 1440px means abbreviating the heads as well, which is a
-change to what the columns are called and not only to how they are laid out.
+What "fit" means was re-measured on 2026-08-26, after the built table drew its
+five columns as one flexible module track beside four content-sized figure
+tracks. That gives every spare pixel to the module name and none to the figures,
+and the row reads as a name with a field of empty ground after it and four
+figures crushed against the trailing edge — which is not the table canvas 1c
+draws, where `MODULE` is about twice a figure column and the four figure columns
+are the same width as each other. The five tracks are now all flexible in the
+canvas's own proportion, `2fr` against `1fr` each, above floors that hold the
+module cell at the 155px two lines of a weapon's cell need.
+
+That changes what the block has to be given before the table is worth drawing.
+A figure column has to be at least as wide as the longer of its own head and its
+own figure, and in German that is `DURCHSCHLAG` at 73.3px rather than about 50px
+for `3,000 m`. So 155px + 4 × 73.3px + four 10px gutters ≈ 488px, and the table
+promotes at **31rem**; below that a head no longer fits its own column and
+breaks inside its own word, which is not a column head. The earlier 26rem was
+measured against the old track list, where what collapsed first was the module
+name rather than the heads.
+
+Below the threshold the compact arrangement carries the same five figures with
+the word that names each one beside it. Nothing is dropped and no figure loses
+the label that names it; what is lost is the alignment, at widths where
+alignment would have cost a column its head or the module its name. The canvas
+reaches an aligned table at phone width by a route this list does not take —
+canvas 1d folds `FALL 1,800` under the range cell, four columns carrying five
+figures — and that route alone does not reach this floor either: folded into
+four columns at 300px the module track comes out at 140px in English and 90px in
+German, because it is the heads that size those columns and canvas 1d
+abbreviates its own to `PRC`. Restoring the table at 1440px means abbreviating
+the heads as well, which is a change to what the columns are called and not only
+to how they are laid out.
 
 The plate's **box** is not in that category, and is built as the canvas draws
 it: square, at the canvas's own width, in a wrapping row with the range and the

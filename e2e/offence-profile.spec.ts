@@ -64,6 +64,44 @@ async function plateMarks(page: Page): Promise<string[]> {
 }
 
 /**
+ * One catalogue sentence as a pattern its rendered form has to match.
+ *
+ * The four shot sentences differ only in the words the catalogue puts between
+ * their placeholders — whether a weapon is named, and whether the mount is the
+ * selected one — so which sentence a mark got is exactly which template it was
+ * rendered from. Building the pattern out of the template rather than writing
+ * the words here keeps the check on the catalogue's own wording and works in any
+ * language the application is read in.
+ */
+function asSentence(message: string): RegExp {
+  const literal = (part: string): string => part.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  return new RegExp(
+    `^${message
+      .split(/\{\{\w+\}\}/u)
+      .map(literal)
+      .join('.+')}$`,
+    'u',
+  );
+}
+
+/**
+ * How many hardpoints the hull has, counted off feature 002's ledger.
+ *
+ * The ledger is the other place in the workspace that carries every mount, and
+ * it is built from the package's own slot enumeration — so counting there and
+ * comparing with the plate is two parts of the same page having to agree, which
+ * is what this suite checks instead of writing the number down. Utility mounts
+ * are excluded by their own key: the game calls them `TinyHardpoint`, and the
+ * gunsight places weapon hardpoints alone.
+ */
+async function hardpointCount(page: Page): Promise<number> {
+  const keys = await page
+    .locator('[data-slot-key]')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-slot-key') ?? ''));
+  return keys.filter((key) => /^(?:Huge|Large|Medium|Small)Hardpoint\d+$/u.test(key)).length;
+}
+
+/**
  * Where each shot dot is put, as a fraction of the plate's own box.
  *
  * Since the 2026-08-25 canvas revision nothing lands outside `[0, 1]`: a shot
@@ -341,10 +379,11 @@ test.describe('inspecting the weapons', () => {
     }, testInfo) => {
       // A width the table is actually promoted at, set here rather than left to
       // the profile, so every project asks the same question — and asked in both
-      // languages, because it is the *heads* that size the figure tracks and
-      // `DURCHSCHLAG` is half again as wide as `PIERCE`. A threshold that fits
-      // one language and starves the other in the next is the regression this
-      // guards (`offence-analysis.scss`, the promotion comment).
+      // languages, because it is the *heads* that decide how wide a figure
+      // column has to be and `DURCHSCHLAG` is half again as wide as `PIERCE`. A
+      // threshold that fits one language and breaks the other's heads across two
+      // lines is the regression this guards (`offence-analysis.scss`, the
+      // promotion comment).
       const context = await browser.newContext({
         baseURL,
         locale,
@@ -368,6 +407,14 @@ test.describe('inspecting the weapons', () => {
               .gridTemplateColumns.split(' ')
               .map((track) => Number.parseFloat(track)),
             heads: head === null ? [] : rights(head),
+            // Each head's own box, to see whether the word inside it fitted.
+            headBoxes:
+              head === null
+                ? []
+                : [...head.querySelectorAll(':scope > *')].map((cell) => {
+                    const box = cell.getBoundingClientRect();
+                    return { width: box.width, height: box.height };
+                  }),
             rows: [...node.querySelectorAll('.weapon')].map((row) =>
               [...row.querySelectorAll('.weapon__figure')].map((cell) =>
                 Math.round(cell.getBoundingClientRect().right),
@@ -382,10 +429,28 @@ test.describe('inspecting the weapons', () => {
       expect(table.heads).toHaveLength(5);
       expect(table.tracks).toHaveLength(5);
 
-      // The module track keeps the room a name over its code line needs. The
-      // figure tracks are `auto`-maxed, so a language whose heads are long takes
-      // that room out of this one — which is how it once fell to 40px.
+      // The module track keeps the room a name over its code line needs.
       expect(table.tracks[0]).toBeGreaterThanOrEqual(155);
+
+      // And the four figure tracks divide what is left between them equally,
+      // rather than settling on their own content and leaving every spare pixel
+      // to the module column. `minmax(0, 1fr)` beside four `auto` tracks drew
+      // exactly that — a name with a field of empty ground after it and four
+      // figures crushed against the trailing edge — which is the regression
+      // these four assertions name.
+      const figures = table.tracks.slice(1);
+      for (const track of figures) {
+        expect(Math.abs(track - (figures[0] ?? 0))).toBeLessThanOrEqual(1);
+      }
+
+      // Every head fits on one line, in both languages: a column head broken
+      // across two lines inside its own word is not a column head, and that is
+      // what the promotion width is measured to avoid.
+      expect(table.headBoxes).toHaveLength(5);
+      const lines = table.headBoxes.map((box) => box.height);
+      for (const height of lines) {
+        expect(Math.abs(height - Math.min(...lines))).toBeLessThanOrEqual(1);
+      }
 
       // And every row borrows the table's own tracks, so each figure ends where
       // the head above it ends. A row that re-resolved its own tracks — which is
@@ -401,9 +466,22 @@ test.describe('inspecting the weapons', () => {
       }
 
       // The promoted table is scanned here or nowhere: no layout profile in the
-      // matrix gives this block the 26rem it promotes at, so this is the only
+      // matrix gives this block the 31rem it promotes at, so this is the only
       // place the subgrid arrangement renders at all.
       await sweepOutfittingState(page, testInfo, `offence-analysis/weapons table ${language}`);
+
+      // And the threshold is held from below as well. 1780px gives this block
+      // about 470px — enough for five tracks to be *drawn*, not enough for a
+      // figure column to be as wide as `DURCHSCHLAG`, so the table promoted here
+      // would break a head inside its own word. The stylesheet's answer is to
+      // stay compact until the heads fit; this is that answer asserted rather
+      // than described.
+      await page.setViewportSize({ width: 1780, height: 900 });
+      await settled(page);
+      await expect(page.locator('edsb-offence-analysis .weapons__table')).not.toHaveCSS(
+        'display',
+        'grid',
+      );
 
       await context.close();
     });
@@ -423,8 +501,10 @@ test.describe('inspecting the weapons', () => {
       // the promotion width exists to protect, so the assertion holds whichever
       // arrangement is chosen and fails whenever the name is starved.
       //
-      // This is the regression guard for the promotion width itself. Promoting
-      // the table here gives the module 83px in English and 40px in German,
+      // This is the regression guard for the promotion width itself. Five tracks
+      // at their floors — the module's 155px, four figure columns' 40px each and
+      // four 10px gutters — come to 355px, so promoting the table in a 300px
+      // block either overflows it or takes the room out of the name, which is
       // where a weapon's name renders one or two characters per line
       // (`offence-analysis.scss`, the promotion comment).
       const context = await browser.newContext({
@@ -694,21 +774,23 @@ test.describe('shot convergence', () => {
     const plate = block.locator('.plate');
     await expect(plate).toHaveAttribute('aria-hidden', 'true');
     const shots = block.locator('.shots__entry');
+    const mounts = await hardpointCount(page);
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
-    expect(await shots.count()).toBeGreaterThan(0);
+    expect(mounts).toBeGreaterThan(armed);
 
     // Every mark on the plate is a sentence beside it, and the ring caption
     // with them — the one figure the plate draws that the four cells beneath it
     // do not repeat (FR-011).
-    expect(await shots.count()).toBe(armed + 1);
+    expect(await shots.count()).toBe(mounts + 1);
 
-    // Each armed mount is drawn as a dot where its shot lands and the mount's
-    // own hardpoint numeral beside it. The badge column at the plate's edge and
-    // the leader lines back from it went with the 2026-08-25 canvas revision.
+    // Every one of the hull's mounts is drawn as a dot where its shot lands and
+    // the mount's own hardpoint numeral beside it. The badge column at the
+    // plate's edge and the leader lines back from it went with the 2026-08-25
+    // canvas revision.
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
-    await expect(plate.locator('.plate__dot')).toHaveCount(armed);
-    await expect(plate.locator('.plate__numeral')).toHaveCount(armed);
+    await expect(plate.locator('.plate__dot')).toHaveCount(mounts);
+    await expect(plate.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(plate.locator('.plate__shot')).toHaveCount(0);
     await expect(plate.locator('.plate__leader')).toHaveCount(0);
   });
@@ -752,7 +834,7 @@ test.describe('shot convergence', () => {
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
     const slider = block.locator('input[type="range"]');
-    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+    const mounts = await hardpointCount(page);
 
     // The plate spans a fixed field of view, as the canvas fixes it, so the
     // nearer the target the wider a mount's shot subtends. Since the 2026-08-25
@@ -776,7 +858,7 @@ test.describe('shot convergence', () => {
     await settled(page);
     const near = await dotPlacements(page);
     const sentencesNear = await block.locator('.shots__entry').count();
-    expect(near).toHaveLength(armed);
+    expect(near).toHaveLength(mounts);
     // Nothing is dropped and nothing escapes: every mark is still on the plate.
     expect(near.every(inside)).toBe(true);
     // And the clamp is doing work — a mount is standing on the margin itself.
@@ -792,25 +874,85 @@ test.describe('shot convergence', () => {
     // The sentence is the reading, and it is stated at both ranges alike: the
     // field of view decides what the picture shows, never what is said.
     expect(await block.locator('.shots__entry').count()).toBe(sentencesNear);
-    expect(sentencesNear).toBe(armed + 1);
+    expect(sentencesNear).toBe(mounts + 1);
   });
 
-  test('leaves a hardpoint the build has not filled off the plate entirely', async ({ page }) => {
+  test('draws a hardpoint the build has not filled, in the empty mount’s own ink', async ({
+    page,
+  }) => {
     await openOffence(page);
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const mounts = await hardpointCount(page);
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
 
-    // The stock hull arms two of its hardpoints and leaves the rest empty. The
-    // canvas's own sample build does the same — `wireConvergence` carries
-    // hardpoints 1, 2, 3, 4 and 6, and the plate mapped off that array says
-    // nothing whatsoever about the fifth — so an unfilled mount takes no mark
-    // and no sentence here either (`design/canvas-contract.md`, review note 8).
+    // The stock hull arms two of its hardpoints and leaves the rest empty. Where
+    // a mount sits is a property of the hull rather than of what is on it, so
+    // every one of them is placed, and the unfilled ones are drawn in the quiet
+    // ink the hull schematics already give an empty mount.
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
-    await expect(block.locator('.plate__dot')).toHaveCount(armed);
-    await expect(block.locator('.plate__numeral')).toHaveCount(armed);
-    expect(await block.locator('.shots__entry').count()).toBe(armed + 1);
+    expect(mounts).toBeGreaterThan(armed);
+    await expect(block.locator('.plate__dot')).toHaveCount(mounts);
+    await expect(block.locator('.plate__numeral')).toHaveCount(mounts);
+    await expect(block.locator('.plate__dot--empty')).toHaveCount(mounts - armed);
+
+    // And the ink is never the only thing that says so: an empty mount's own
+    // sentence stands beside the plate with the rest, and it is the catalogue's
+    // empty-mount sentence rather than a weapon's with the name left out
+    // (011 FR-022).
+    const stated = await block.locator('.shots__entry').allInnerTexts();
+    expect(stated).toHaveLength(mounts + 1);
+    const empty = [
+      asSentence(englishMessages['offence.convergence.empty']),
+      asSentence(englishMessages['offence.convergence.empty.selected']),
+    ];
+    const armedSentence = [
+      asSentence(englishMessages['offence.convergence.shot']),
+      asSentence(englishMessages['offence.convergence.shot.selected']),
+    ];
+    // The empty sentences are tried first: a weapon's name is whatever the
+    // package returned, so the sentence that names one is the looser pattern and
+    // an empty mount's own words fit inside it.
+    const isEmpty = (line: string): boolean => empty.some((pattern) => pattern.test(line));
+    expect(stated.filter(isEmpty)).toHaveLength(mounts - armed);
+    expect(
+      stated.filter((line) => !isEmpty(line) && armedSentence.some((p) => p.test(line))),
+    ).toHaveLength(armed);
+  });
+
+  test('marks the hardpoint the workspace has selected, and follows the ledger', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const numeral = block.locator('.plate__numeral--selected');
+
+    // The workspace always has a mount selected — the ledger opens on the first
+    // one — so the plate marks it from the moment it is drawn.
+    await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
+    await expect(numeral).toHaveCount(1);
+    const first = await numeral.innerText();
+
+    // Selecting a different hardpoint in the ledger moves the mark, because both
+    // are reading one selection rather than each keeping their own.
+    await page.locator('[data-slot-key="LargeHardpoint2"] .slot__select').first().click();
+    await settled(page);
+    await expect(numeral).toHaveCount(1);
+    expect(await numeral.innerText()).not.toBe(first);
+
+    // A ring is a picture; the mark's own sentence is the reading. Exactly one
+    // mark is stated as the selected mount, and it is the one the ring is drawn
+    // around (011 FR-022).
+    const stated = await block.locator('.shots__entry').allInnerTexts();
+    const patterns = [
+      asSentence(englishMessages['offence.convergence.shot.selected']),
+      asSentence(englishMessages['offence.convergence.empty.selected']),
+    ];
+    const selected = stated.filter((line) => patterns.some((pattern) => pattern.test(line)));
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toContain(await numeral.innerText());
   });
 
   test('moves the shots when the target range moves', async ({ page }) => {

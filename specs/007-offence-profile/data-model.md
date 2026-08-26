@@ -138,30 +138,56 @@ export type Convergence =
     };
 ```
 
-`SHIP_GUNSIGHTS` publishes every player-flyable hull's hardpoint offsets from
-the cockpit, in metres. A weapon's journal slot key is resolved to its place in
-that list through `enumerateSlots`, never by reading a number out of the key —
-the package documents hulls where the two disagree. A hull the catalogue does
-not carry, or one whose gunsight length does not match its hardpoint count, is
-`unavailable`: a convergence drawn from some of the mounts would be a spread
-nobody has.
+```ts
+export interface ConvergenceMount {
+  readonly slot: string;
+  readonly hardpoint: number;
+  readonly offset: GunsightOffset;
+  readonly offsetMetres: number;
+  readonly weapon: ConvergenceWeapon | null;
+}
 
-Only the armed mounts are carried. An earlier revision also carried a `vacant`
-list of every hardpoint no returned weapon claimed, on the belief that the
-canvas never faces an empty one; it does, and draws nothing for it, so both the
-field and the marks it fed are withdrawn (`design/canvas-contract.md`, review
-note 8).
+export interface ConvergenceWeapon {
+  readonly name: string;
+  readonly symbol: string;
+  readonly mount: ModuleMount | null;
+}
+```
+
+`SHIP_GUNSIGHTS` publishes every player-flyable hull's hardpoint offsets from
+the cockpit, in metres. The enumerated hardpoints are walked in the hull's own
+order and a returned weapon is matched onto one by its journal slot key, never
+by reading a number out of that key — the package documents hulls where the two
+disagree. A hull the catalogue does not carry, or one whose gunsight length does
+not match its hardpoint count, is `unavailable`: a convergence drawn from some
+of the mounts would be a spread nobody has.
+
+`mounts` is the **hull's** list, not the build's: every placed hardpoint is
+carried, and one no returned weapon claimed carries `weapon: null`. An earlier
+revision carried the armed mounts alone, because neither canvas draws an empty
+one; drawing them is a departure sanctioned on 2026-08-26 at the maintainer's
+request and recorded as such (`design/canvas-contract.md`, review note 8, and
+`spec.md` FR-012).
+
+The weapon is nested rather than flattened because its three fields exist
+together or not at all. A mount with a name and no symbol is not a state a hull
+can be in, and three optional fields would let a surface read one of them off an
+empty mount and print it.
 
 `widest` is `null` when the build has armed nothing. That is **not**
 `unavailable`: the two are different answers, and the unavailable sentence says
 the package publishes no geometry for this hull, which for a placed hull whose
 hardpoints are merely empty would be false. A build with no armed mount keeps
-the plate — axes, rings and no marks — and is given none of the four figures
-beneath it, all of which are about a group of armed mounts.
+the plate — axes, rings and every one of its mounts, drawn empty — and is given
+none of the four figures beneath it, all of which are about a group of armed
+mounts.
 
-The spans are distances between two published offsets, and `widest` is the mount
-furthest from the cockpit's axis. No ballistics are modelled and no offset is
-derived (`spec.md` FR-010).
+The spans are distances between two published offsets and `widest` is the mount
+furthest from the cockpit's axis, both measured **across the armed mounts
+alone**, as is the `apparentSpreadMilliradians` of the view below. An empty
+hardpoint is drawn because its offset is the hull's; it fires nothing, so a span
+reaching one would be a separation between a shot and no shot. No ballistics are
+modelled and no offset is derived (`spec.md` FR-010).
 
 ```ts
 export const FIELD_OF_VIEW_MILLIRADIANS = 40;
@@ -190,7 +216,10 @@ the clamped one — is the true reading (`spec.md` FR-011).
 `convergenceAt(convergence, metres)` asks `projectGunsight` where the shots go at
 one range and returns their positions as fractions of the plate, the diagonal of
 their spread in milliradians, and the two rings the canvas draws at a third and
-two thirds of the field of view.
+two thirds of the field of view. Every mount is placed, the empty ones included —
+the package is being asked where a mount points, which it answers from the
+offset alone — and only the spread is narrowed to the armed ones, because it is
+the one figure there that reports a group rather than a mark.
 
 ## Capacitor
 
