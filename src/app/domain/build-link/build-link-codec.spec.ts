@@ -213,38 +213,55 @@ describe('build-link codec', () => {
     }
   });
 
-  it('omits passive-module power fields but retains the cargo hatch power state', () => {
+  it('omits power fields only where the Almanac prices the module at no draw', () => {
+    // The link carries a power state wherever the mount card offers one, and the card offers one
+    // wherever the Almanac has not said the module draws nothing. A figure it does not publish is
+    // not a zero (constitution IV), so the plant, the tank, the rack and the bulkhead all keep the
+    // priority a Commander set on them; the approach suite, which the Almanac prices at 0 MW, has
+    // nothing to power and nothing to group and costs the link no bits.
     const stock = ShipLoadout.default('Krait_MkII');
-    const passiveFields = ShipLoadout.default('Krait_MkII');
-    passiveFields.setModuleEnabled('Armour', false);
-    passiveFields.setModulePriority('Armour', 4);
-    passiveFields.setModuleEnabled('PlanetaryApproachSuite', false);
-    passiveFields.setModulePriority('PlanetaryApproachSuite', 4);
+    const priced = ShipLoadout.default('Krait_MkII');
+    priced.setModuleEnabled('PlanetaryApproachSuite', false);
+    priced.setModulePriority('PlanetaryApproachSuite', 4);
     const event = stock.toLoadoutEvent({ moduleOrder: 'slots' });
     const withoutCargoHatch = ShipLoadout.fromLoadout({
       ...event,
       Modules: event.Modules.filter(({ Slot }) => Slot.toLowerCase() !== 'cargohatch'),
     });
-    const powered = ShipLoadout.default('Krait_MkII');
-    powered.setModuleEnabled('CargoHatch', false);
-    powered.setModulePriority('CargoHatch', 4);
 
-    expect(encodeBuildLinkFragment(passiveFields)).toBe(encodeBuildLinkFragment(stock));
+    expect(encodeBuildLinkFragment(priced)).toBe(encodeBuildLinkFragment(stock));
     expect(
-      decodeBuildLinkFragment(encodeBuildLinkFragment(passiveFields)).fittedModuleAt('Armour'),
-    ).toMatchObject({ on: undefined, priority: undefined });
-    expect(
-      decodeBuildLinkFragment(encodeBuildLinkFragment(passiveFields)).fittedModuleAt(
+      decodeBuildLinkFragment(encodeBuildLinkFragment(priced)).fittedModuleAt(
         'PlanetaryApproachSuite',
       ),
     ).toMatchObject({ on: undefined, priority: undefined });
     expect(encodeBuildLinkFragment(withoutCargoHatch)).toBe(encodeBuildLinkFragment(stock));
-    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(powered));
+  });
+
+  it('carries the power state of every mount whose draw the Almanac leaves unpublished', () => {
+    // Reported 2026-08-26: a build arrived from a link with the priority on its plant unset. Table
+    // 1 listed only the modules the Almanac prices above zero, which left out every power plant,
+    // fuel tank, cargo rack, reinforcement, passenger cabin and bulkhead in the game.
+    const source = ShipLoadout.default('Krait_MkII');
+    const unpublished = ['PowerPlant', 'FuelTank', 'Armour', 'Slot04_Size5'] as const;
+    for (const slot of unpublished) {
+      source.setModuleEnabled(slot, false);
+      source.setModulePriority(slot, 4);
+    }
+    source.setModuleEnabled('CargoHatch', false);
+    source.setModulePriority('CargoHatch', 3);
+
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+
+    for (const slot of unpublished) {
+      expect(decoded.fittedModuleAt(slot), slot).toMatchObject({ on: false, priority: 4 });
+    }
     expect(decoded.fittedModuleAt('CargoHatch')).toMatchObject({
       symbol: 'ModularCargoBayDoor',
       on: false,
-      priority: 4,
+      priority: 3,
     });
+    expect(minimalState(decoded)).toEqual(minimalState(source));
   });
 
   it('round-trips every pinned hull in empty and stock configurations', () => {
@@ -282,9 +299,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV',
+      'b.6lNEFSYnYR0i,sY,ohzZJbdMI4OCa2QXgTdxfqEJ6,rTcsmF4Yfz_VxmMFuXCzefb_ck@ziD/nac4.rjo5VicfG,wuFOfX!O',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(120);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(121);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -648,12 +665,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently to pin its symbol models. Once released, a changed hash
-    // belongs under the next table number.
+    // unpublished, most recently on 2026-08-26 so that a mount whose draw the Almanac does not
+    // publish carries its power state. Once released, a changed hash belongs under the next
+    // table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('0a030271f23249552e4eaeac221c8a165b321b08c18b8e7cfb49f24c97337758');
+    expect(contentHash).toBe('0306523d99f8a65bdaea46e33274908c52ed164223d0de7a3a682b89a9df318f');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -821,9 +839,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
+      'b.Fe22sXs1VYx8!NVMtClstaF14xQPy8sBf67Gl_pVZTY6E_IRHK3E/rNfDqSLrFuY/-bXDhZ',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 88]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 96]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);

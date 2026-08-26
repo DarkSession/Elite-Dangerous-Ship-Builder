@@ -178,7 +178,11 @@ browser and share builds by URL. SLEF import and export are specified in
   game slot keys, ordinary and package-identified pre-engineering, grade, enabled state, priority,
   ship name and ident. Every encoded identity MUST resolve in the installed package. A module's package
   variant and later ordinary engineering MUST both survive. Package-defaulted fixed modules MAY be
-  implicit in a payload because reconstruction always restores them.
+  implicit in a payload because reconstruction always restores them. Enabled state and priority MUST
+  be carried for every fitted module except those the package prices at no power draw at all: a
+  module whose draw the package does not publish MUST keep its state, because an unpublished figure
+  is not a zero. That is the rule the outfitting mount card applies when it decides whether to draw
+  a power chip, and a chip a Commander can set is a value a link has to carry.
 - **FR-017**: Calculated values, catalogue facts, prices, purchase provenance, notes and storage
   identities MUST NOT enter the payload.
 - **FR-018**: The application-owned codec MUST be versioned, use package identities and preserve all

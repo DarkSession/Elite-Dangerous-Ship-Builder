@@ -119,7 +119,7 @@ trailing data.
 |     6 | Ship ident          | When present: tagged varuint length followed by compact symbols or UTF-8        |
 |     7 | Pristine default    | Boolean; when set, the hull's pinned stock loadout ends the logical symbol list |
 |     8 | Module layout       | When non-pristine: cost-selected baseline or absolute outfittable modules       |
-|     9 | Power states        | Explicit values for power-drawing modules and hull-implied components           |
+|     9 | Power states        | Explicit values for every module the catalogue does not price at zero draw      |
 |    10 | Engineering states  | Engineering presence, identities, grades, and experimental effects              |
 
 ### Arithmetic representation
@@ -251,10 +251,16 @@ strictly smaller, so it can never add overhead to a build that does not repeat m
 
 ### Power state
 
-Power data includes only occupied outfittable modules and hull-implied components whose pinned
-catalogue power draw is greater than zero. Passive modules cannot be switched off or assigned a
-priority, so any redundant `On` or `Priority` fields in an imported event are discarded rather than
-encoded. The cargo hatch draws power and therefore has no presence or identity bit but retains an
+Power data includes every occupied outfittable module and hull-implied component except those the
+pinned catalogue prices at no draw at all. The rule is the mount card's: a module the Almanac prices
+at zero — the detailed surface scanner, the planetary approach suites, the experimental module
+stabilisers — has nothing to power and nothing to group, and any redundant `On` or `Priority` fields
+in an imported event are discarded rather than encoded. A module whose draw the Almanac does not
+publish keeps its state, because not having read a figure is not the same as having read a zero
+(constitution IV). Every power plant, fuel tank, cargo rack, hull and module reinforcement,
+passenger cabin and bulkhead falls in that second class; a table that treated them as passive
+returned a shared build with the priority its author had set on the plant unset (reported
+2026-08-26). The cargo hatch draws power and therefore has no presence or identity bit but retains an
 enabled state and priority at a stable position.
 
 Data begins with a one-bit `has overrides` marker. An override exists when either `on` or priority is
@@ -526,8 +532,9 @@ limit: 1,023 snapshots, one of them spent.
 What growth actually costs is link length, and links are bounded. Five hundred characters, two of
 them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
 reference builds use a fraction of it — under the pinned symbol models the engineered Anaconda
-body is 360 bits and the supplied Corvette 552, about 15 bits for each of the Corvette's 37
-represented outfittable modules. Without models the same bodies are 424 and 624 bits.
+body is 408 bits and the supplied Corvette 560, about 15 bits for each of the Corvette's 37
+represented outfittable modules. Without models the same two links run 85 and 110 characters
+against the models' 73 and 98.
 
 The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
@@ -603,13 +610,14 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.1.5` (raised from `0.1.4` on
-2026-08-22; the upgrade itself left table 1 byte-identical, as `pnpm run codec:tables` reported).
-Table 1 was then overwritten in place on 2026-08-22, while it is still pre-release and no link has
-been published against it, so that a module's pre-engineered variants contribute their blueprints to
-its candidate set — see "Where neither form fits" above. Running `pnpm run codec:tables` reproduces
+The current application dependency is exactly pinned to Almanac `0.2.0`. Table 1 was overwritten in
+place on 2026-08-22, while it is still pre-release and no link has been published against it, so
+that a module's pre-engineered variants contribute their blueprints to its candidate set — see
+"Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so
+that `POWERED_MODULES` lists every module the catalogue does not price at zero draw rather than only
+those it prices above it — see "Power state" above. Running `pnpm run codec:tables` reproduces
 table 1 at content hash
-`0a030271f23249552e4eaeac221c8a165b321b08c18b8e7cfb49f24c97337758`. The package also reconstructs
+`0306523d99f8a65bdaea46e33274908c52ed164223d0de7a3a682b89a9df318f`. The package also reconstructs
 every omitted required mount with the hull's default module. That changes the canonical minimal
 loadout and the current encoder output for it without changing the table's identity.
 
@@ -631,15 +639,17 @@ The frozen corpus currently produces these encoded data lengths. Each value and 
 the `b.` protocol prefix. Packed spellings are untouched by the symbol models; the two engineered
 references, whose canonical body is arithmetic, were re-pinned when the models landed under the
 pre-release regeneration rule. The festive Krait was re-pinned again on 2026-08-22, at the same
-length, when pre-engineered variants' blueprints joined their modules' candidate sets:
+length, when pre-engineered variants' blueprints joined their modules' candidate sets. Both
+engineered references were re-pinned once more on 2026-08-26, longer by eight and one character,
+when the modules whose draw the Almanac does not publish began carrying their power state:
 
-| Reference build               | Base70 encoded data                                                                                 | Data length |
-| ----------------------------- | --------------------------------------------------------------------------------------------------- | ----------: |
-| Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                  |          16 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                        |          10 |
-| Festive flak Krait            | `b.5S25TzaeHpHX!Om2.:Z`                                                                             |          21 |
-| Full engineered Anaconda*     | `b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe`                                 |          65 |
-| Supplied engineered Corvette† | `b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV` |          97 |
+| Reference build               | Base70 encoded data                                                                                  | Data length |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- | ----------: |
+| Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                   |          16 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                         |          10 |
+| Festive flak Krait            | `b.5S25TzaeHpHX!Om2.:Z`                                                                              |          21 |
+| Full engineered Anaconda*     | `b.Fe22sXs1VYx8!NVMtClstaF14xQPy8sBf67Gl_pVZTY6E_IRHK3E/rNfDqSLrFuY/-bXDhZ`                          |          73 |
+| Supplied engineered Corvette† | `b.6lNEFSYnYR0i,sY,ohzZJbdMI4OCa2QXgTdxfqEJ6,rTcsmF4Yfz_VxmMFuXCzefb_ck@ziD/nac4.rjo5VicfG,wuFOfX!O` |          98 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
 the fixed cargo hatch has an explicit power state. Cargo racks remain stock because Almanac 0.1.4
