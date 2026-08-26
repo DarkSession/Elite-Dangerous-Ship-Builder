@@ -44,11 +44,25 @@ export class ImportBuildLayer {
    * View state, and only view state: nothing about the draft, the request or
    * the build depends on it, so it lives here rather than in the store. It
    * stays open across edits within one attempt — a Commander who opened the
-   * detail is working through it — and the layer is destroyed when it closes.
+   * detail is working through it — and closes with the attempt itself.
    */
   readonly advanced = signal(false);
 
   readonly changed = output<string>();
   readonly submitted = output<void>();
   readonly cancelled = output<void>();
+
+  /**
+   * Submits the draft, and closes the detail with the attempt that opened it.
+   *
+   * The layer outlives a refusal: a Commander pastes a different payload into
+   * the same field and tries again. Without this the next refusal arrived with
+   * its detail already expanded — the previous attempt's disclosure applied to
+   * a diagnosis nobody had asked to see, on a layer whose whole answer is one
+   * sentence with the detail behind a control.
+   */
+  submit(): void {
+    this.advanced.set(false);
+    this.submitted.emit();
+  }
 }

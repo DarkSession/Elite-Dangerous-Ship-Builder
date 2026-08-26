@@ -155,8 +155,8 @@
   // full size, so the target a pointer aims at is the thing being operated
   // rather than a glyph beside it.
   //
-  // Every plate reserves the marker on its leading edge, so choosing one moves
-  // a mark rather than reflowing the column.
+  // The marker is laid against the plate's padding box rather than reserved in
+  // its flow, so choosing one moves a mark and nothing reflows.
   .choice {
     position: relative;
     display: flex;

@@ -91,15 +91,20 @@
 // 1c draws it for. Canvas 1d draws no such line: the block there is one column
 // of rows against the plant's own bar, so the words named a column that was not
 // there and took a line of a 390px screen to do it (Commander request
-// 2026-08-26). It is removed rather than hidden — there is no column to name, so
-// there is nothing a reader is being kept from either.
+// 2026-08-26).
+//
+// Taken off the screen, not out of the page. `display: none` would have been
+// the shorter rule and it would have been wrong: the percentages themselves are
+// still drawn on every row at this width, so the words are still the only thing
+// that says what they are a share of. A phone spends no line on them and a
+// reader still has them.
 .power__note--inline {
   color: var(--edsb-text-faint);
 }
 
 @include layout.container-compact(power) {
   .power__note--inline {
-    display: none;
+    @include layout.visually-hidden;
   }
 }
 

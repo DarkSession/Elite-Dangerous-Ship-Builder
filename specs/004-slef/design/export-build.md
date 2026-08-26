@@ -16,9 +16,9 @@ product. This document defines the SLEF mode only.
 - shared layer heading/description and safe package hull/name summary;
 - accessible SLEF/Share Link mode selector owned by the integrated exchange layer;
 - package validation summary, including invalid/incomplete warning without suppression;
-- labelled readonly selectable monospaced payload;
+- readonly selectable monospaced payload, named for a reader and not captioned on the screen;
 - localized one-entry, fitted-module and UTF-8-byte metadata;
-- optional exact-link included/omitted explanation;
+- an omission explanation where the exact link could not travel, and nothing where it did;
 - always-present Download and Copy; feature-detected Share when available;
 - concise delivery status/live announcement and named close action.
 
@@ -53,7 +53,7 @@ well as to the viewport.
 | Generating                            | Active revision identified; no old payload/actions remain                         |
 | Ready valid                           | Current payload, metadata, Download/Copy and optional Share                       |
 | Ready invalid/incomplete              | Identical delivery capability plus textual package warning/issues                 |
-| Exact link included                   | Header/link disclosure names same-revision canonical link safely                  |
+| Exact link included                   | Nothing is said: the link travelling is the ordinary case and needs no sentence   |
 | Link omitted/refused                  | Complete SLEF remains; omission explanation is not export failure                 |
 | Revision changed                      | Artifact invalidated before delivery; regenerate for new revision                 |
 | Copy working/copied/failed            | Only resolved Clipboard promise says copied; failure retains payload/alternatives |

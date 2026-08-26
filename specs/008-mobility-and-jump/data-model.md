@@ -218,7 +218,9 @@ interface FrameShiftDriveFacts {
 
 `jumpBoost` is deliberately absent here. When shown, it comes from
 `GuardedJumpResult.effectiveDrive.jumpBoost` and is labelled as a combined build/booster parameter.
-No mass factor, headroom, percentage, fuel use or SCO capability is inferred.
+No mass factor, fuel use or SCO capability is inferred. The percentage of optimal mass and the
+headroom under it are read from two package answers apiece rather than inferred, under FR-008's
+2026-08-26 ruling, and are undrawn whenever either answer is missing.
 
 ## ThrusterFacts
 

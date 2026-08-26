@@ -80,8 +80,16 @@ After the standard-load guards complete, `BuildMetrics.frameShiftDrive()` may su
 effective parameter record. Its `jumpBoost` is an active-booster/build parameter, not a field of the
 fitted FSD record. Label it accordingly and preserve zero when no booster contributes.
 
-Do not calculate or display optimal-mass percentage, headroom, mass factor, per-jump fuel, range,
-total or count outside the package facades. Do not infer SCO from a symbol/name.
+Do not calculate or display mass factor, per-jump fuel, range, total or count outside the package
+facades. Do not infer SCO from a symbol/name.
+
+**Two comparisons are excepted, ruled 2026-08-26 (FR-008).** `91% OF OPTIMAL MASS` and
+`658 T OF HEADROOM` are the canvas's own, and each is one package answer read against another — the
+loaded mass against `optMass`, and `optMass` less that same loaded mass. Nothing is modelled and
+nothing is fitted to a curve, and each is drawn only where both of its operands are there: a load the
+package could not settle leaves the reading undrawn rather than measured against a mass that was
+assumed. They are the only two, and each carries a `policy-allow:` marker naming this ruling at the
+line that combines them (`scripts/policy/mobility-jump-ownership.mjs`).
 
 ## Selected-load integration
 

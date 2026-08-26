@@ -147,5 +147,11 @@ application, not a feature-003 addition — the same argument feature 009 settle
 ## Responsive consequence
 
 Wide 1c proximity and compact 1d stacking are the compositional intent. DOM and read order stay
-`BUILD STATUS` → issues → (feature 005's power) → (005–008's metrics) → `COST` → `MATERIALS` at
-every width. Nothing depends on hover, and the document never scrolls horizontally.
+`BUILD STATUS` → issues → (feature 004's completion notice) → (feature 005's power) →
+(005–008's metrics) → `COST` → `MATERIALS` at every width.
+
+**The completion notice joined the first block 2026-08-26 (Commander request).** What the Almanac
+completed while a build was read in used to stand over the whole workspace as a banner, which said
+"here is why you cannot have this" every time an import succeeded. It is the package's reading of the
+build now open, exactly like the issues beside it, so it belongs under the same heading — owned by
+[004](../../004-slef/spec.md), drawn in this rail, and the rail's own order is what places it. Nothing depends on hover, and the document never scrolls horizontally.

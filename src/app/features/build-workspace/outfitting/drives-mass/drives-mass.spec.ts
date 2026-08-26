@@ -865,10 +865,10 @@ describe('DrivesMass', () => {
     const drawn = element.querySelectorAll<HTMLElement>('.drives__mass-mark');
 
     expect(marks[0].offset).toBe(`${(marks[0].position ?? 0) * 100}%`);
-    expect(drawn[0]?.style.getPropertyValue('--edsb-mass-mark-position')).toBe(marks[0].offset);
+    expect(drawn[0]?.style.getPropertyValue('--mass-mark-position')).toBe(marks[0].offset);
     // The maximum is the end of the track and has no tick of its own.
     expect(marks[1].offset).toBeNull();
-    expect(drawn[1]?.style.getPropertyValue('--edsb-mass-mark-position')).toBe('');
+    expect(drawn[1]?.style.getPropertyValue('--mass-mark-position')).toBe('');
   });
 
   it('qualifies each card by the fitted module’s class, and never by its name', () => {

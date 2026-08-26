@@ -196,8 +196,19 @@ its ship name and ident — belongs here.
   afterwards — there is no submit here to refuse at, and no canvas draws a message under either
   field. Confirming a field MUST commit no more than its bound, so a longer value that reached the
   field from a link or a SLEF file is brought inside the limit by the edit rather than passed
-  through it. Both bounds sit under the build link codec's own per-string bound, so a name and an
-  ident that pass here always fit a shared link.
+  through it — and the field MUST open on the bounded value, so what a Commander confirms is what
+  they were shown. A shortening applied after the field closed would be a normalisation nobody was
+  told about, which constitution IV does not allow. Both bounds sit under the build link codec's own
+  per-string bound, so a name and an ident that pass here always fit a shared link.
+
+  **The two figures are held here because nothing publishes them.** They are the game's bounds and
+  not this application's, so under constitution II they belong to the Almanac; the package exposes no
+  record of the naming terminal's limits for them to be read from. They are therefore a recorded gap
+  rather than a licence: the numbers live in one named place
+  (`SHIP_NAME_MAX_LENGTH` / `SHIP_IDENT_MAX_LENGTH` in `src/app/ui/outfitting/ship-identity-fields.ts`),
+  they are the only game figures this application states, and the condition for removing them is the
+  package publishing the bounds — at which point the constants go and the fields read them, in the
+  same change. Nothing else may be added beside them on this precedent.
 
 - **FR-020**: Available replacement choices MUST be presented grouped into module families, which
   are the only grouping level in the chooser, with exactly one family revealed at a time in the wide

@@ -240,15 +240,21 @@
 // stays centred on the tick, rather than either reading being painted over the
 // other. The floor under the cap is set above the widest figure alone, so the
 // squeeze can cost a mark its line but never break a number across two.
+// Unprefixed on purpose. The `--edsb-` names are design tokens — decisions the
+// token layer owns and every stylesheet reads — and this is nothing of the kind:
+// it is one element's own position, written on that element by the template and
+// read back one line later. A token-shaped name for a per-element value would
+// send the next reader looking for a declaration in `_primitives.scss` that is
+// not there and should not be.
 .drives__mass-mark--pinned {
   position: relative;
   justify-content: center;
   transform: translateX(-50%);
-  margin-inline-start: var(--edsb-mass-mark-position, 0%);
+  margin-inline-start: var(--mass-mark-position, 0%);
   inline-size: max-content;
   max-inline-size: max(
     var(--edsb-layout-mass-mark-floor),
-    (100% - var(--edsb-mass-mark-position, 0%) - var(--edsb-layout-mass-mark-reserve)) * 2
+    (100% - var(--mass-mark-position, 0%) - var(--edsb-layout-mass-mark-reserve)) * 2
   );
 }
 

@@ -133,9 +133,13 @@
 // four of those are 176px before the gaps, in a 306-pixel rail that has three
 // groups of them to stand, and the canvas draws a pip block as a chip in a row
 // of them rather than as a button standing on its own. The floor is a floor and
-// not a waiver — the canvas's own 14 pixels stay unbuilt — and the row is still
-// bounded, so a text size that finally squeezes even those scrolls the row
-// rather than the document.
+// not a waiver — the canvas's own 14 pixels stay unbuilt.
+//
+// No scroller of its own any more, because there is nothing left for one to
+// scroll: four floors and their gaps come to 114px in a 269px row at ordinary
+// text and 210px at doubled text, measured, so the row holds at both. A
+// container that can never overflow is a scrollbar a reader can reach and
+// nothing can put anything into (see the figures on `.pips__step` below).
 .pips {
   display: flex;
   gap: var(--edsb-space-inline-tight);

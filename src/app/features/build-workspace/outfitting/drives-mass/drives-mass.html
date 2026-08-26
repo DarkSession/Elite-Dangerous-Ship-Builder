@@ -110,7 +110,7 @@
                 class="drives__mass-mark"
                 [class.drives__mass-mark--pinned]="mark.position !== null"
                 [class.drives__mass-mark--end]="mark.position === null"
-                [style.--edsb-mass-mark-position]="mark.offset"
+                [style.--mass-mark-position]="mark.offset"
               >
                 <span class="drives__mass-mark-label">{{ mark.label }}</span>
                 <span class="drives__mass-mark-value" data-bidi-isolate>{{ mark.value }}</span>
@@ -345,8 +345,11 @@
         and `Total range`, the whole tank and the jumps it makes, from the same
         summary the rows above came from. Drawn in the same swatch, name and
         figure rows the mass legend on the other card takes, because that is how
-        the canvas draws both. The canvas's `658 T OF HEADROOM` note is a
-        comparison nothing publishes and is not drawn.
+        the canvas draws both. `FSD optimal mass` carries the canvas's own
+        `658 T OF HEADROOM` beside it, as its detail: not a figure nothing
+        publishes but the drive's `optMass` less the load the other card already
+        heads with, which is a comparison of two package answers and is drawn
+        only where both of them are there (FR-008).
       -->
       <ul class="drives__legend" [attr.aria-label]="driveFactsLabel()">
         @for (row of driveFacts(); track row.id) {

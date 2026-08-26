@@ -161,8 +161,14 @@ this document has always said: it shipped as `Draw`.
 
 **`CUMULATIVE DRAW` is canvas 1c's alone.** It names the column the percentages fill, and canvas 1d
 draws no such column — its block is one bar per group with the figures after it. The line is
-therefore drawn at the widths that have the column and removed at the widths that do not, rather than
-taking a line of a 390px screen to name something that is not there (Commander request 2026-08-26).
+therefore drawn at the widths that have the column and taken off the screen at the widths that do
+not, rather than taking a line of a 390px screen to name something that is not there (Commander
+request 2026-08-26).
+
+Off the screen, and not out of the page. The percentages themselves are still drawn on every row at
+that width, so these words are still the only thing that says what they are a share of — removing
+them from the accessibility tree as well would take a reading away from the readers who cannot see
+the bar the share is against. The narrow block spends no line on the caption and loses nothing by it.
 
 | Tile           | Figure                                                        |
 | -------------- | ------------------------------------------------------------- |

@@ -19,8 +19,13 @@
   />
 
   <!--
-    The canvas's one status line. It says what the draft measures, what the
-    reader is waiting for, or how the last attempt ended — never two of them.
+    The canvas's one status line. It says how the last attempt ended, and
+    nothing while there has not been one.
+
+    It used to also report what the draft measured and what the reader was
+    waiting for. Neither was a thing to say: a byte count is not a fact about a
+    build, and "awaiting input" names an empty field a Commander is looking at
+    (Commander request 2026-08-26).
   -->
   <p class="slef-import__status" data-bidi-isolate>{{ view().status }}</p>
 
@@ -70,7 +75,7 @@
         emphasis="primary"
         [busy]="view().busy"
         [disabled]="!view().canSubmit"
-        (activated)="submitted.emit()"
+        (activated)="submit()"
       />
     </div>
   </div>
