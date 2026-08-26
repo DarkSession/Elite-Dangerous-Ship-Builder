@@ -26,8 +26,9 @@ route and no build state.
 `strictTemplates: true`; SCSS; Node.js per the repository tooling configuration
 
 **Primary Dependencies**: Angular and Router (zoneless), Angular service worker, RxJS,
-`@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_
+`@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n
 exports, `@axe-core/playwright`, PostCSS and `postcss-scss`
+_(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_
 
 **Storage**: None. The browser language setting is the only locale input and is read on every start.
 Catalogues, formatter caches, preview fixtures and announcement history remain memory/static-asset
@@ -259,7 +260,7 @@ constitutional exception**.
 
 No constitutional violation requires justification. The tooling-only Angular preview application is
 the minimum reliable way to render the real zoneless component library in both browser engines
-without adding product surface or a separate zone-based component runtime. _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_ Transloco supplies the
+without adding product surface or a separate zone-based component runtime. Transloco supplies the
 message engine; the application store owns only startup selection and atomic document state that
-the library cannot own. The service worker supplies the constitutional offline boundary for
+the library cannot own. _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_ The service worker supplies the constitutional offline boundary for
 static locale assets.

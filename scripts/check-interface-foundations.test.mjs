@@ -933,7 +933,10 @@ describe('the placeholder grammar', () => {
    * passed this gate and was then refused at runtime by `validateCatalogue` —
    * the build going green on a locale that cannot load. Nothing caught it, so:
    */
-  const GRAMMAR = String.raw`/\{\{\s*([^{}]*?)\s*\}\}/g`;
+  // Whatever the two say, they must say the same thing. Asserting a fixed
+  // literal here would make a *correct* change to the grammar fail with "the
+  // gate drifted", which is the wrong diagnosis and a third copy to maintain.
+  const spelling = (source) => source.match(/\/\\\{\\\{[^\n]*?\/g/)?.[0] ?? null;
 
   it('is spelled identically in the gate and in the application', () => {
     const gate = readFileSync(
@@ -945,7 +948,8 @@ describe('the placeholder grammar', () => {
       'utf8',
     );
 
-    assert.ok(gate.includes(GRAMMAR), `${GRAMMAR} is no longer the gate's spelling`);
-    assert.ok(application.includes(GRAMMAR), `${GRAMMAR} is no longer the application's spelling`);
+    const gateSpelling = spelling(gate);
+    assert.ok(gateSpelling, 'the gate no longer declares a placeholder pattern');
+    assert.equal(spelling(application), gateSpelling);
   });
 });

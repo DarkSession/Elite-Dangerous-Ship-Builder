@@ -227,9 +227,6 @@ const RULES = [
       for (const name of await filesUnder([...OWNED, 'src/app/platform/browser'], ['.ts'], {
         skip: SKIP,
       })) {
-        if (name.endsWith('.spec.ts')) {
-          continue;
-        }
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, DEPRECATED_CLIPBOARD)) {
           violations.push({
