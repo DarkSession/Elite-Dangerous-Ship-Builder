@@ -1,0 +1,21 @@
+// Part of the sentence, not a control sitting in one. No target baseline, no
+// padding and no box: the words are the link, and the line they are in decides
+// their height.
+:host {
+  display: inline;
+}
+
+.inline-link {
+  color: var(--edsb-text-accent);
+  // Underlined, so it is not identified by colour alone (constitution V).
+  text-decoration: underline;
+  // A long destination wraps with its sentence rather than pushing the page
+  // sideways, which is the whole reason this is inline text and not a chip.
+  overflow-wrap: break-word;
+}
+
+@media (hover: hover) {
+  .inline-link:hover {
+    color: var(--edsb-text-accent-strong);
+  }
+}

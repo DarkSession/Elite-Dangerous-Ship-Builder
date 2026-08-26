@@ -29,7 +29,7 @@ Confirms against the installed Almanac that:
   carrying an exact `slot`, `symbol`, `name` and `enabled`, and the sparse `maximumRange`,
   `falloffRange` and `armourPiercing` left undefined rather than zero where the article has none;
 - the returned weapons arrive in the hull's own slot order, which is what the panel's rows and the
-  gunsight's badges both depend on. The package documents unknown or unmapped slots as appended in
+  gunsight's hardpoint numerals both depend on. The package documents unknown or unmapped slots as appended in
   source order after them; that path is the package's own to prove, and nothing here exercises it,
   because no build this application can make reaches it;
 - `DamageSplit.unclassified` is absent exactly when it is zero, and `antiXeno` is always present;
@@ -110,9 +110,10 @@ rendered output.
 ### 5. Inspect a weapon
 
 A row draws the module's localized name, the code line beneath it — `4A GIMBALLED`, and any
-engineering summary after it — damage per second, piercing and falloff. An unengineered weapon still
-gets its code line; only the summary is absent. An absent piercing or falloff reads as not stated, never as zero. A disabled weapon keeps
-its row and is marked off.
+engineering summary after it — damage per second, piercing, maximum range and falloff. An
+unengineered weapon still gets its code line; only the summary is absent. An absent piercing,
+maximum range or falloff reads as not stated, never as zero. A disabled weapon keeps its row and is
+marked off.
 
 The row carries no control. It does not navigate, disclose or select, and activating it does nothing.
 
@@ -120,22 +121,31 @@ Two mounts carrying the same module are two rows, in package order, unmerged.
 
 ### 6. Read where the shots go
 
-`SHOT CONVERGENCE` draws the gunsight plate with, per armed hardpoint, a mark where the shot lands
-and that mount's hardpoint numeral beside it — and one sentence beside the
-plate naming the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption,
-which sits on the block's heading line.
-A hardpoint the build has not filled takes no mark and no sentence, which is what the canvas does
-with the empty hardpoint on its own sample build. The plate itself is hidden from assistive
-technology.
+`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, a mark where that
+mount's shot lands and its hardpoint numeral beside it — and one sentence beside the plate naming
+the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption, which sits on
+the block's heading line.
 
-Moving the `TARGET RANGE` control moves every shot and every sentence, leaves the two spans alone,
-and moves the apparent spread. A mount far enough off the axis is clamped to the frame's margin at a
-near range and keeps its sentence, which states its true offset; moving the target out brings its
-mark back inside the frame.
+A hardpoint the build has not filled is drawn too, hollow and in a quieter ink, and its sentence
+names it as empty rather than naming a weapon: where a mount sits is a property of the hull, and it
+is what a Commander choosing what to fit is asking about. The mount the workspace has selected — the
+same one the ledger row and the hull schematics mark — takes the plate's other ink with a ring in it,
+and its own sentence says it is the selected one; a selected hardpoint with nothing on it is still
+hollow. Selecting a different hardpoint in the ledger moves the mark. How each weapon is aimed is in
+its sentence and is not drawn at all. The plate itself is hidden from assistive technology, so every
+one of those distinctions is read from the sentences rather than from the ink.
+
+The `TARGET RANGE` control runs from 500 m to 5,000 m on a 100 m step and opens at 1,000 m — past
+every maximum range the package publishes for a weapon on this hull, so it reaches the distance being
+asked about. Moving it moves every shot and every sentence, leaves the two spans alone, and moves the
+apparent spread. A mount far enough off the axis is clamped to the frame's margin at a near range and
+keeps its sentence, which states its true offset; moving the target out brings its mark back inside
+the frame.
 
 On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
-hull it does carry but the build has armed nothing on, the plate is drawn with its axes and its
-rings and nothing else, and none of the four cells appears.
+hull it does carry but the build has armed nothing on, the plate is drawn with its axes, its rings
+and every one of its mounts in the empty ink, and none of the four cells appears — a span, a widest
+and a spread are all figures about a group of armed mounts.
 
 ### 7. Read endurance at an allocation
 

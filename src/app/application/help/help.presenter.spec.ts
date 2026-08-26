@@ -46,15 +46,28 @@ describe('HelpPresenter', () => {
       view.sections.about,
       view.sections.faq,
       view.sections.licence,
-      ...view.licence.index.map((entry) => entry.text),
+      ...view.licence.index.flatMap((entry) => [
+        entry.before,
+        entry.after,
+        ...(entry.link === null ? [] : [entry.link.label]),
+      ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
     for (const text of resolved) {
-      expect(text.trim()).not.toBe('');
       expect(text).not.toMatch(/^help\./);
       expect(text).not.toContain('{{');
+      // The marker the licence lines are cut at never survives into a view: it
+      // is split out before the pieces are published, and one reaching a
+      // template would be drawn as a control character.
+      expect(text).not.toContain('\u0000');
+    }
+
+    // Nothing resolved is blank, except the tail of a line whose link sits at
+    // its end — which is most of them, and is a cut rather than a message.
+    for (const text of resolved.filter((_, index) => index < 5)) {
+      expect(text.trim()).not.toBe('');
     }
   });
 
@@ -199,25 +212,85 @@ describe('HelpPresenter', () => {
       expect(licence.excerptLanguage).toBe(HELP_MANIFEST.disclaimer.language);
     });
 
-    it('summarises what covers what in the reference’s three lines', () => {
+    it('summarises what covers what, one claim to a line', () => {
       const index = presenter().view().licence.index;
 
-      expect(index.map((entry) => entry.id)).toEqual(['application', 'gameData', 'typefaces']);
-      expect(index.map((entry) => entry.text)).toEqual([
-        englishMessages['help.licence.index.application'],
-        englishMessages['help.licence.index.gameData'],
-        englishMessages['help.licence.index.typefaces'],
+      expect(index.map((entry) => entry.id)).toEqual([
+        'application',
+        'library',
+        'gameData',
+        'typefaces',
       ]);
+
+      // A line with no link is the whole sentence and nothing after it.
+      const gameData = index.find((entry) => entry.id === 'gameData');
+      expect(gameData?.before).toBe(englishMessages['help.licence.index.gameData']);
+      expect(gameData?.link).toBeNull();
+      expect(gameData?.after).toBe('');
     });
 
-    it('offers no destination out of the application', () => {
-      // The reference draws no link in the modal. FR-003's GitHub action is
-      // withdrawn with the rest of the framing this feature had added around
-      // the reference's own licence block.
-      const licence = presenter().view().licence;
+    it('cuts a linked line at the place its own translation put the link', () => {
+      const index = presenter().view().licence.index;
 
-      expect(Object.keys(licence).sort()).toEqual(['excerpt', 'excerptLanguage', 'index']);
-      expect(JSON.stringify(licence.index)).not.toMatch(/https?:/);
+      for (const id of ['application', 'library'] as const) {
+        const entry = index.find((line) => line.id === id);
+        const key = `help.licence.index.${id}` as const;
+
+        // Rejoining the pieces with the link's own words gives the sentence
+        // back, with the placeholder filled rather than dropped: the cut moves
+        // with the translation instead of assuming the link comes last.
+        expect(`${entry?.before}${entry?.link?.label}${entry?.after}`).toBe(
+          englishMessages[key].replace('{{licence}}', entry?.link?.label ?? ''),
+        );
+        expect(entry?.link?.label.trim()).not.toBe('');
+      }
+    });
+
+    it('takes both destinations from the audited manifest, never from a string', () => {
+      const index = presenter().view().licence.index;
+      const hrefs = new Map(
+        index.filter((entry) => entry.link !== null).map((entry) => [entry.id, entry.link?.href]),
+      );
+
+      // The two complete-licence documents this repository can evidence: its
+      // own terms, and the bundled library's. Both come off the generated
+      // manifest, which is where they were audited (FR-003, FR-005).
+      expect(hrefs.get('application')).toBe(HELP_MANIFEST.destinations.repositoryLicense.url);
+      expect(hrefs.get('library')).toBe(HELP_MANIFEST.destinations.almanacLicense.url);
+      expect([...hrefs.keys()].sort()).toEqual(['application', 'library']);
+    });
+
+    it('offers no destination beyond the two licences, and no bare URL as text', () => {
+      const index = presenter().view().licence.index;
+
+      // Two links, both complete legal terms. An issue tracker, a homepage or a
+      // docs site reaching this list would be a navigation nobody accepted.
+      const links = index.filter((entry) => entry.link !== null);
+      expect(links).toHaveLength(2);
+
+      // And no URL is drawn as words. A Commander reads what the destination
+      // is, not where it is: an address in the visible text is a thing to
+      // mistype, and it would wrap the line sideways at 200% text.
+      for (const entry of index) {
+        expect(entry.before).not.toMatch(/https?:/);
+        expect(entry.after).not.toMatch(/https?:/);
+        expect(entry.link?.label ?? '').not.toMatch(/https?:/);
+      }
+    });
+
+    it('names each destination in the words it draws, and adds nothing to them', () => {
+      const index = presenter().view().licence.index;
+      const links = index.flatMap((entry) => (entry.link === null ? [] : [entry.link]));
+
+      // Both links read alike, which is right: both are an MIT licence on
+      // GitHub. Which document each covers is the line's own leading label —
+      // `App ·` against `Library ·` — so the link does not repeat it, and a
+      // reader is not read a second sentence they cannot see.
+      expect(Object.keys(links[0]).sort()).toEqual(['href', 'label']);
+      for (const link of links) {
+        expect(link.label).toContain('GitHub');
+      }
+      expect(index[0].before.trim()).not.toBe(index[1].before.trim());
     });
 
     it('keeps the excerpt out of the catalogue that would translate it', () => {

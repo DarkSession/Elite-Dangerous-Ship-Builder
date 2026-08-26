@@ -218,7 +218,7 @@ Generation/check/release fails with a source-specific diagnostic when:
 - the installed package name is not `@elite-dangerous-almanac/core`, or either version is empty;
 - an installed legal artifact differs by one byte from its source-distribution mirror;
 - root `LICENSE` no longer distinguishes application MIT rights from package artwork/game data;
-- either external destination is absent, unexpected, non-HTTPS or contains forbidden URL parts;
+- the external destination is absent, unexpected, non-HTTPS or contains forbidden URL parts;
 - more or fewer than one `completeLegalTerms` destination would be emitted;
 - a declared release workflow has missing/mismatched/placeholder evidence, or a non-release ID is
   missing/unsafe;

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { relationId } from '../../ui/a11y/text-equivalence';
+import { InlineLink } from '../../ui/components/inline-link/inline-link';
 import { Layer } from '../../ui/components/layer/layer';
 import { LegalExcerpt } from '../../ui/components/legal-excerpt/legal-excerpt';
 import { VersionFacts } from '../../ui/components/version-facts/version-facts';
@@ -27,7 +28,7 @@ import type { HelpDialogViewModel } from '../../application/help/help.presenter'
  */
 @Component({
   selector: 'edsb-help-dialog',
-  imports: [Layer, LegalExcerpt, VersionFacts],
+  imports: [InlineLink, Layer, LegalExcerpt, VersionFacts],
   templateUrl: './help-dialog.component.html',
   styleUrl: './help-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

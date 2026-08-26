@@ -64,7 +64,7 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 - A headline pair on the line below: `248.6` at 30px against
   `DPS BURST · 186.4 SUSTAINED` at 10px.
 - A five-column list. The column head is
-  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `RANGE` (60px) ·
+  `MODULE` (`flex: 1`) · `DPS` (46px) · `PIERCE` (44px) · `RANGE` (62px) ·
   `FALLOFF` (60px), the last four `text-align: right`. **`RANGE` was added by the
   2026-08-25 canvas revision**; before it the list was four columns ending at
   `FALLOFF`.
@@ -73,7 +73,7 @@ Both drawn blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   its mount, then whatever else is true of it, as
   `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`. Reading that second line as an
   engineering line is what made an earlier revision draw only its last part, and
-  nothing at all under `3E FIXED · STOCK`. The three figure cells are one line
+  nothing at all under `3E FIXED · STOCK`. The four figure cells are one line
   each.
 
 The five rows, verbatim:
@@ -128,10 +128,20 @@ The plate's geometry changed with it, and this is the substantive half:
 
 - **`FOV = 40`, not `115`.** `wireConvergence` halved the field of view nearly
   threefold, so the same offsets subtend nearly three times as much of the plate.
-- **The plate is square in milliradians.** `ASPECT = 6 / 16` is gone; the script
-  now maps both axes over `±FOV` and corrects only the _rings_ for the box's
-  pixel aspect (`aspect = box.offsetWidth / box.offsetHeight`), so a ring stays
-  circular in angle while the box stays wide.
+- **The plate is square in milliradians, and its box is square too.**
+  `ASPECT = 6 / 16` is gone; the script now maps both axes over `±FOV` and
+  corrects only the _rings_ for the box's pixel aspect
+  (`aspect = box.offsetWidth / box.offsetHeight`). The box the canvas gives it is
+  `width: 172px; aspect-ratio: 1` (@15395), so that correction is one and a ring
+  is a circle in pixels as well as in angle.
+
+  The two halves are one change. A mapping square in angle over a box that is
+  not squashes every shot's height in exactly the box's own proportion, and
+  sends a ring past the top and bottom of the plate it is drawn on — which is why
+  the earlier drawing paired its `16 / 6` box with the narrower vertical field
+  that levelled it. Taking the mapping without the box is not half the revision;
+  it is a different diagram from either.
+
 - **A shot outside the field of view is clamped, not clipped.** Every dot is
   `clamp(50 ± mrad / FOV × 50, 4, 96)` — it stops at the frame's own margin
   instead of leaving it. Nothing disappears.
@@ -147,8 +157,9 @@ The plate's geometry changed with it, and this is the substantive half:
 `data-m-mode="offence"`. **Rewritten by the 2026-08-25 canvas revision, and it
 is now canvas 1c stacked.** Four blocks, in canvas 1c's own order and wording:
 
-1. `WEAPONS` / `5 MOUNTED`, with the same five-column list — `MODULE` · `DPS` ·
-   `PRC` · `RANGE`, the range cell carrying `4,000 m` over `FALL 1,800`;
+1. `WEAPONS` / `5 MOUNTED`, carrying the same five figures in four columns —
+   `MODULE` · `DPS` · `PRC` · `RANGE`, the range cell carrying `4,000 m` over
+   `FALL 1,800`, which is how the compact drawing keeps an aligned table;
 2. `DAMAGE PROFILE` / `BY TYPE AND RANGE` — `248.6` over
    `DPS BURST · 186.4 SUSTAINED`, the kinetic/thermal bar with a legend that now
    carries the percentages (`KINETIC 165.8 · 67%`, `THERMAL 82.8 · 33%`), and
@@ -200,7 +211,7 @@ bare figure: the canvas gives it no unit, no second figure and no condition.
 | Canvas 1d's `WEP CAP 61 MJ`                          | `capacity`, as a fourth row of the same block.                                                                           |
 | The capacitor bars                                   | `DRAW` and `RECHARGE` only: those two share MJ/s. `CAPACITY` and `FULL FIRE` do not (review note 6).                     |
 | `SHOT CONVERGENCE` and its ring caption              | The third block's heading, with the ring caption on the heading line, across the full width.                             |
-| `#cv-ring1`, `#cv-ring2`, `#cv-dots`                 | A gunsight plate over the canvas's own **40 mrad** field of view, square in angle, dots clamped to the frame.            |
+| `#cv-ring1`, `#cv-ring2`, `#cv-dots`                 | A square gunsight plate over the canvas's own **40 mrad** field of view, dots clamped to the frame.                      |
 | The canvas's dot and numeral per mount               | Two marks: the dot where the shot lands, and its hardpoint numeral placed clear of the other dots.                       |
 | The canvas's four fact cells                         | `repeat(4, 1fr)` label-over-figure cells with a hairline between them, falling to fewer columns when narrow.             |
 | The `RING 2 · 27 MRAD · 16.0 m` caption              | The outer ring's angle, and what it spans at the chosen range, on the block's heading line.                              |
@@ -349,8 +360,9 @@ worked out once, in the projection:
    offered nowhere else to put them. The canvas draws the rows inert, and the
    contract's own extraction says so in as many words. Two invented controls on
    every row is a larger departure than the omission they were meant to cure, so
-   the requirement moved instead: FR-004 now asks for the four columns the canvas
-   draws, and the fields beyond them join the unread list above. Nothing that was
+   the requirement moved instead: FR-004 now asks for the columns the canvas
+   draws — four then, five since the 2026-08-25 revision added `RANGE` — and the
+   fields beyond them join the unread list above. Nothing that was
    on the screen and package-backed has been taken off it — the withdrawn
    disclosure carried fields no canvas ever drew.
 
@@ -378,7 +390,8 @@ worked out once, in the projection:
    amount the build actually deals, each with its share — the canvas's own
    reading, and the same figures the withdrawn lists carried for those types.
 
-8. **A hardpoint the build has not filled is drawn — withdrawn 2026-08-24.**
+8. **A hardpoint the build has not filled is drawn — withdrawn 2026-08-24,
+   reinstated 2026-08-26 as a sanctioned departure.**
    An earlier revision of this note drew an empty mount on the plate in hollow
    ink with its own sentence beside it, and justified it on the ground that
    "the canvas's sample data fills every hardpoint, so the canvas never faces
@@ -405,15 +418,47 @@ worked out once, in the projection:
    publishes an offset per hardpoint rather than per weapon. That remains true;
    it is simply not something either canvas draws.
 
+   **Reinstated 2026-08-26, on a ground the canvas does not decide.** The
+   maintainer asked for every hardpoint on the plate, the empty ones in an ink
+   of their own. Everything the withdrawal established about the drawing still
+   holds — `wireConvergence` really does map its marks off the armed mounts
+   alone, and hardpoint 5 really is missing from its array — so this is not a
+   re-reading of the canvas. It is a decision that the plate answers a question
+   the canvas's own sample never asked: a Commander who has not fitted a weapon
+   yet is looking at the plate to find out where a shot from that mount _would_
+   go, and a plate that shows only what is already fitted has nothing to say to
+   them. The offsets it needs are the package's own, published per hardpoint,
+   so nothing is derived to draw them.
+
+   It is recorded here rather than settled in a stylesheet, because it is a
+   user-facing element the template does not contain, which is what SC-004 asks
+   this file to hold. Three things bound it:
+
+   - **Nothing about the group moves.** Both spans, the widest mount and the
+     apparent spread stay measured across the armed mounts alone, exactly as the
+     canvas measures them. An empty hardpoint fires nothing, and a span reaching
+     one would be a separation between a shot and no shot.
+   - **The ink is never the reading.** Each empty mount carries its own sentence
+     beside the plate, in the catalogue's own words, saying it is empty — the
+     same rule every other mark on this plate is held to (011 FR-022).
+   - **The mark is the hull's, not the weapon's.** It says where a mount is
+     pointed, and no figure is attached to it that a fitted weapon would supply.
+
 9. **A build that has armed nothing is still placed.** An earlier revision
    returned the unavailable state for it, which draws the sentence "the game
    data package does not publish gunsight geometry for this hull". For a hull
    the catalogue does place, that sentence is false. The two are separate
    answers: a hull the catalogue does not place is unavailable; a placed hull
-   nobody has armed keeps the plate with its axes and its rings, takes no mark —
-   which is what `wireConvergence` draws when its array is empty — and is given
-   none of the four figures beneath the plate, all of which are about a group of
-   armed mounts.
+   nobody has armed keeps the plate with its axes and its rings and is given
+   none of the four figures beneath it, all of which are about a group of armed
+   mounts.
+
+   What such a plate carries changed with note 8's reinstatement on 2026-08-26.
+   It took no mark at all while the plate drew the armed mounts alone — which is
+   what `wireConvergence` draws when its array is empty — and now carries every
+   one of the hull's mounts in the empty ink. The distinction this note exists
+   for is untouched: the plate is drawn either way, and the unavailable sentence
+   stays false for a hull the catalogue places.
 
 10. **`FULL FIRE` draws `∞` where the recharge keeps pace.** The symbol is what
     a Commander reads; what it stands for is said beside it and kept out of
@@ -513,10 +558,65 @@ worked out once, in the projection:
     The badge draws the name at two scales, and asking for the right one is part
     of composing it. Canvas 1c sets a ledger row's module name `500 13px`
     (L6871) and this panel's weapon name `400 10.5px` (L14427), the name here
-    being one of four columns rather than the row's subject; the badge takes a
+    being one of the row's columns rather than its subject; the badge takes a
     `compact` input for the smaller. Its code line needs no such choice — the
     canvas draws it 9px on the one and 8px on the other, and the type scale's
     `micro` step is mapped to that whole 7.5–9.5 band.
+
+17. **The mount the workspace has selected is ringed — a sanctioned departure,
+    2026-08-26.** Neither canvas draws a selection on the gunsight; canvas 1c's
+    plate has no relationship to the mount its ledger has open. The maintainer
+    asked for one, and the workspace already has the state: feature 002's ledger
+    and feature 010's hull schematics both mark the selected slot, from the same
+    `selectedSlotKey`, so a plate that ignored it was the odd one out among the
+    three drawings of the same hull.
+
+    **It takes the canvas's second ink, and that ink stops meaning what the
+    canvas spends it on.** `wireConvergence` colours a mark by
+    `mount === 'GIMBALLED'` and nothing finer — one hue for an aimed mount, one
+    for everything else. This plate has three things to separate where the
+    canvas had one: a mount with a weapon on it, a mount with none, and the
+    mount being worked on. Asked on 2026-08-26 which of them the second hue
+    should say, the maintainer's answer was selection, and the fixed-against-
+    aimed distinction is withdrawn from the drawing with it.
+
+    Nothing is lost by that. A colour was never a reading here — how each weapon
+    aims has always been named in that mount's own sentence beside the plate,
+    and it still is, now as the only place it is said rather than as the
+    reinforcement of an ink. What is gained is that the one fact about this
+    diagram no other mark could carry — which mount a Commander currently has
+    open — is carried.
+
+    A ring in the same ink is drawn beside it, so the selected mark still stands
+    out where a reader cannot tell the two hues apart. Whether the mount is
+    armed stays with the fill against the outline rather than with the hue, so a
+    selected empty hardpoint is still visibly empty: a mark that filled itself in
+    to say "selected" would be reporting a weapon that is not there.
+
+18. **The target-range track and the plate's size are the maintainer's, not the
+    canvas's — 2026-08-26.** Two numbers, both properties of the drawing rather
+    than of any build, and neither changes a figure: every reading the block
+    gives is the package's own answer at whatever distance the track is set to,
+    drawn at whatever size the plate is.
+
+    `wireConvergence`'s track runs `100`–`2000` on a `25` step and opens at
+    `600`. It now runs **`500`–`5000` on a `100` step and opens at `1000`**. The
+    canvas's own sample never had to reach a real weapon's maximum range; a
+    Multi-Cannon on this application's reference hull states `3,000 m`, and a
+    track stopping at 2,000 m could not be moved to the distance a Commander was
+    asking about. The step follows the span — 25 m over 4,500 m is a finer
+    increment than a gunsight can be read at.
+
+    The plate is drawn at **`8rem`** rather than the canvas's `172px`. It is
+    decorative in full, and at the canvas's width it was the tallest thing in the
+    offence panel: it set the whole convergence block's height on its own, at
+    230px against the 186px it takes now. Squareness is the property that matters
+    on this plate — it is what makes a mapping that is square in angle level in
+    pixels — and every mark is placed as a fraction of the plate rather than in
+    pixels, so it is the same diagram at either size. The one pixel constant that
+    has to follow it is the reference width the hardpoint numerals' four corner
+    offsets are chosen against, which carries no reading: every mark on this
+    plate is stated in words beside it.
 
 ## States no canvas draws
 
@@ -525,8 +625,9 @@ unavailable hardpoint coverage, an all-disabled or genuine-zero weapon, absent
 `unclassified`, absent range, piercing or projectile members, zero capacity, an
 immediate or infinite time to drain, a build dealing no conventional damage, a
 hull the gunsight catalogue does not place, a placed hull the build has armed
-nothing on, or a shot far enough off-axis for the plate to clamp it to the
-frame. They are required all the same, and they come from
+nothing on, a hardpoint on the plate with nothing fitted to it, the mount the
+workspace has selected, a target range past the canvas's own 2,000 m, or a shot
+far enough off-axis for the plate to clamp it to the frame. They are required all the same, and they come from
 [offence-profile.md](./offence-profile.md) and
 [component-state-preview-matrix.md](./component-state-preview-matrix.md), not
 from the mock.
@@ -536,23 +637,84 @@ from the mock.
 The canvas changed under a built region. What follows is the whole of it for
 this feature, and each item is written into the section it belongs to above.
 
-| Change                                                       | Status against the build                                                                |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `RANGE` column added to the weapon list, before `FALLOFF`    | **Not built.** `maximumRange` is already in the projection; the column is not.          |
-| `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Not built.** `offence.convergence.note` still ships it.                               |
-| Ring caption moved onto the block's heading line             | **Not built.** It is drawn inside the plate today.                                      |
-| `AT THIS RANGE` dropped from the ring caption                | **Not built.** `offence.convergence.ring` still carries it.                             |
-| `IMPACT PLANE` rule removed                                  | **Not built.** `offence.convergence.impact-plane` still ships it.                       |
-| Field of view `115 mrad` → `40 mrad`                         | **Not built.** `FIELD_OF_VIEW_MILLIRADIANS = 115`.                                      |
-| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Not built.** `PLATE_ASPECT = 6 / 16`, and the rings are drawn from it.                |
-| Off-axis shots clamped to the frame, not clipped             | **Not built.** The plate clips with `overflow`, by contract.                            |
-| Edge badge and leader replaced by a numeral beside the dot   | **Not built.** The badge column and leaders are the built plate.                        |
-| Slider re-laid out: `TARGET RANGE` and value above the track | **Not built.** `offence.convergence.range` reads `Range`.                               |
-| Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees. |
-| `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                       |
-| `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                         |
+The table below was written when the revision landed and every drawn item was
+outstanding. **All of them are now built**, and the status column records what
+each one is built as rather than what it was waiting on.
 
-The convergence items are one change, not ten: the plate's field of view, its
+| Change                                                       | Status against the build                                                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `RANGE` column added to the weapon list, before `FALLOFF`    | **Built.** `maximumRange` on the row between `PIERCE` and `FALLOFF`; absent stays not-stated text.           |
+| `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Built.** `offence.convergence.note` is withdrawn from both catalogues.                                     |
+| Ring caption moved onto the block's heading line             | **Built.** The panel reads it from the plate and sets it against the heading, as the other blocks set notes. |
+| `AT THIS RANGE` dropped from the ring caption                | **Built.** `offence.convergence.ring` ends at the distance.                                                  |
+| `IMPACT PLANE` rule removed                                  | **Built.** `offence.convergence.impact-plane` is withdrawn from both catalogues.                             |
+| Field of view `115 mrad` → `40 mrad`                         | **Built.** `FIELD_OF_VIEW_MILLIRADIANS = 40`.                                                                |
+| Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone, and the box is the canvas's own square one, so a ring is a pixel circle.  |
+| Off-axis shots clamped to the frame, not clipped             | **Built.** `PLATE_MARGIN_FRACTION`, the canvas's `4%`–`96%`. The sentence keeps the true angle.              |
+| Edge badge and leader replaced by a numeral beside the dot   | **Built.** One dot and one numeral per mount, at the furthest of the script's four corners.                  |
+| Slider re-laid out: `TARGET RANGE` and value above the track | **Built.** `edsb-range-field` sets label and value on the row above its track.                               |
+| Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees.                      |
+| `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                                            |
+| `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                                              |
+
+The convergence items were one change, not ten: the plate's field of view, its
 aspect, its clamping and its marks are `wireConvergence`'s own, and the built
-plate mirrors the old script exactly. Rebuilding it means re-deriving
-`convergence.ts` from the new script, not patching a constant.
+plate mirrored the old script exactly. It was rebuilt by re-deriving
+`convergence.ts` from the new script rather than by patching a constant.
+
+**Two things the revised drawing does that the built region deliberately does
+not**, and both are arrangements rather than figures: the four fact cells below,
+and the weapon list's aligned table after them.
+
+Canvas 1c stacks the four facts as label-left, value-right rows down the narrow
+column beside the plate; the built region keeps the `repeat(4, 1fr)` cells this
+document's own build table sanctions. That is responsive composition — the same
+four labels and the same four figures, arranged from the region's available
+space rather than from an artboard's fixed width (T033) — and neither
+arrangement carries a figure the other does not.
+
+**The weapon list's aligned table is drawn only where five columns fit, which on
+a 1440px desktop is not this block.** Canvas 1c draws its five columns in a card
+wider than the one that viewport gives the `WEAPONS` block: measured in Chromium
+against the stock Anaconda, the list is given 300px there.
+
+What "fit" means was re-measured on 2026-08-26, after the built table drew its
+five columns as one flexible module track beside four content-sized figure
+tracks. That gives every spare pixel to the module name and none to the figures,
+and the row reads as a name with a field of empty ground after it and four
+figures crushed against the trailing edge — which is not the table canvas 1c
+draws, where `MODULE` is about twice a figure column and the four figure columns
+are the same width as each other. The five tracks are now all flexible in the
+canvas's own proportion, `2fr` against `1fr` each, above floors that hold the
+module cell at the 155px two lines of a weapon's cell need.
+
+That changes what the block has to be given before the table is worth drawing.
+A figure column has to be at least as wide as the longer of its own head and its
+own figure, and in German that is `DURCHSCHLAG` at 73.3px rather than about 50px
+for `3,000 m`. So 155px + 4 × 73.3px + four 10px gutters ≈ 488px, and the table
+promotes at **31rem**; below that a head no longer fits its own column and
+breaks inside its own word, which is not a column head. The earlier 26rem was
+measured against the old track list, where what collapsed first was the module
+name rather than the heads.
+
+Below the threshold the compact arrangement carries the same five figures with
+the word that names each one beside it. Nothing is dropped and no figure loses
+the label that names it; what is lost is the alignment, at widths where
+alignment would have cost a column its head or the module its name. The canvas
+reaches an aligned table at phone width by a route this list does not take —
+canvas 1d folds `FALL 1,800` under the range cell, four columns carrying five
+figures — and that route alone does not reach this floor either: folded into
+four columns at 300px the module track comes out at 140px in English and 90px in
+German, because it is the heads that size those columns and canvas 1d
+abbreviates its own to `PRC`. Restoring the table at 1440px means abbreviating
+the heads as well, which is a change to what the columns are called and not only
+to how they are laid out.
+
+The plate's **box** is not in that category, and is built as the canvas draws
+it: square, at the canvas's own width, in a wrapping row with the range and the
+four cells beside it. An earlier revision of this paragraph defended keeping the
+wide `16 / 6` box on the ground that §3 above said the box "stays wide". That
+was a misreading of the script and is corrected there: the box's aspect is not
+composition, because under a mapping square in angle it _is_ the drawing's
+vertical scale, and a wide box would have squashed every shot's height by
+`16 / 6` and clipped both rings.

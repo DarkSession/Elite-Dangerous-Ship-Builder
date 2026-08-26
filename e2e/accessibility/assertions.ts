@@ -60,6 +60,26 @@ const DENSE_TARGETS = [
 const EQUIVALENT_TARGETS = ['.schematic__mount'];
 
 /**
+ * Controls that take SC 2.5.8's **Inline** exception.
+ *
+ * The standard's own words: the exception applies where "the target is in a
+ * sentence or its size is otherwise constrained by the line-height of
+ * non-target text". A licence line's link is exactly that — a few words in the
+ * middle of a sentence, whose height is the line it sits in and whose width is
+ * the words themselves. Padding it to 44 pixels would not make it easier to
+ * hit; it would break the line it belongs to, which is why the standard carves
+ * it out rather than asking for a bigger box.
+ *
+ * This is a claim about a shape, not a name, so it is checked rather than
+ * trusted: `expectTargetSizes` grants it only to an element that is actually
+ * `display: inline` and actually sits beside non-target text in its own block.
+ * A `.inline-link` that someone later makes a block, or drops alone into an
+ * empty container, stops being inline and goes back to the 44-pixel baseline
+ * with everything else.
+ */
+const INLINE_TARGETS = ['.inline-link'];
+
+/**
  * Waits for every running transition to finish before a surface is measured.
  *
  * A control that has just been mounted can be mid-transition between the
@@ -252,6 +272,11 @@ export async function expectTextEquivalent(carrier: Locator): Promise<void> {
  * chips the canvas draws small — `DENSE_TARGETS` — are held to that AA minimum
  * instead, and to nothing looser.
  *
+ * Two of the standard's own exceptions are modelled rather than waived:
+ * `EQUIVALENT_TARGETS`, which is only valid while `expectEquivalentControls`
+ * proves the equivalent exists, and `INLINE_TARGETS`, which is only granted to
+ * an element that is measurably inside a sentence.
+ *
  * Reports every offender rather than the first, because a layout regression
  * usually produces a family of them.
  */
@@ -260,7 +285,7 @@ export async function expectTargetSizes(
   selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"]',
 ): Promise<void> {
   const undersized = await page.locator(selector).evaluateAll(
-    (nodes, { baseline, floor, dense, equivalent }) => {
+    (nodes, { baseline, floor, dense, equivalent, inline }) => {
       /** The union of a control's box and the box of any label that activates it. */
       const effectiveBox = (element: HTMLElement): DOMRect => {
         const boxes = [element.getBoundingClientRect()];
@@ -284,6 +309,36 @@ export async function expectTargetSizes(
         return new DOMRect(left, top, right - left, bottom - top);
       };
 
+      /**
+       * Whether a control really is a few words inside a sentence.
+       *
+       * Two conditions, both from SC 2.5.8's own wording: the element flows
+       * with the text rather than forming a box of its own, and there is
+       * non-target text in the block around it for it to be inside. A link
+       * alone in its own paragraph is not in a sentence — it is a control that
+       * happens to be an anchor, and it owes the full baseline.
+       */
+      const isInSentence = (element: HTMLElement): boolean => {
+        if (!getComputedStyle(element).display.startsWith('inline')) {
+          return false;
+        }
+
+        // Up to the block the sentence is actually in, not merely to the
+        // parent. A component host sits between an inline link and its line
+        // and is itself inline, so comparing against the parent would compare
+        // the link with a copy of itself and find no text around it.
+        let block = element.parentElement;
+        while (block !== null && getComputedStyle(block).display.startsWith('inline')) {
+          block = block.parentElement;
+        }
+        if (block === null) {
+          return false;
+        }
+
+        const around = (block.textContent ?? '').replace(element.textContent ?? '', '').trim();
+        return around.length > 0;
+      };
+
       return nodes
         .filter((node) => {
           const style = getComputedStyle(node as HTMLElement);
@@ -298,6 +353,8 @@ export async function expectTargetSizes(
           const isEquivalent = equivalent.some(
             (pattern) => element.matches(pattern) || element.closest(pattern) !== null,
           );
+          const isInline =
+            inline.some((pattern) => element.matches(pattern)) && isInSentence(element);
           return {
             tag: node.tagName.toLowerCase(),
             text: (node.textContent ?? '').trim().slice(0, 40),
@@ -305,7 +362,7 @@ export async function expectTargetSizes(
             width: Math.round(box.width),
             height: Math.round(box.height),
             baseline: isDense ? floor : baseline,
-            exempt: isEquivalent,
+            exempt: isEquivalent || isInline,
           };
         })
         .filter((box) => !box.exempt)
@@ -317,6 +374,7 @@ export async function expectTargetSizes(
       floor: TARGET_FLOOR_PX,
       dense: DENSE_TARGETS,
       equivalent: EQUIVALENT_TARGETS,
+      inline: INLINE_TARGETS,
     },
   );
 

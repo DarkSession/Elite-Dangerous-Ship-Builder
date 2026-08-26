@@ -114,6 +114,24 @@ export function everyStateBuild(): ShipLoadout {
 }
 
 /**
+ * A build armed only on mounts the hull's outermost hardpoints are not.
+ *
+ * The fixture hull's two Small mounts stand furthest from the cockpit's axis,
+ * and both the stock build and `everyStateBuild()` arm them — so on either of
+ * those the widest *armed* mount and the widest mount of the hull are the same
+ * one, and a figure measured across every hardpoint would be indistinguishable
+ * from a figure measured across the armed ones. This arms a Large and a Medium
+ * and leaves the Smalls empty, so the two answers differ and a suite can tell
+ * which of them the projection gave.
+ */
+export function innerMountsBuild(): ShipLoadout {
+  const build = ShipLoadout.empty(OFFENCE_FIXTURE_HULL);
+  build.setModule('LargeHardpoint2', packageModule(OFFENCE_WEAPONS.unclassified));
+  build.setModule('MediumHardpoint2', packageModule(OFFENCE_WEAPONS.explosive));
+  return build;
+}
+
+/**
  * A build whose sustained firing load outruns the capacitor's recharge.
  *
  * Four large beam lasers on no pips: `timeToDrain` is a finite number of

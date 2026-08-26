@@ -87,11 +87,22 @@ describe('App', () => {
 
     const help = fixture.componentInstance.actions().filter(({ id }) => id === HELP_ACTION);
 
-    // One entry, named and described in words a Commander reads rather than by
-    // an icon the frame would have to explain (012/FR-002, 012/FR-011).
+    // One entry, named and described in words a Commander reads. The wide bar
+    // draws it as the reference's own `?`, but the mark never becomes the name:
+    // the label is what a reader is told at either width, and it is a word
+    // rather than a glyph the frame would have to explain (012/FR-002,
+    // 012/FR-011).
     expect(help.length).toBe(1);
     expect(help[0].label).toBe(BUNDLED_ENGLISH['help.action.label']);
+    expect(help[0].symbol).toBe(BUNDLED_ENGLISH['help.action.symbol']);
     expect(help[0].description).toBe(BUNDLED_ENGLISH['help.action.description']);
+    expect(help[0].label).not.toBe(help[0].symbol);
+
+    // And it is the only action drawn as a mark. Every other entry on the bar
+    // is its own words, which is what keeps the mark readable as "the help one"
+    // rather than as one of a row of glyphs.
+    const marked = fixture.componentInstance.actions().filter(({ symbol }) => symbol);
+    expect(marked.map(({ id }) => id)).toEqual([HELP_ACTION]);
   });
 
   it('opens the modal when the frame reports the help action, and nothing else', () => {

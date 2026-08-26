@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { after, before, describe, it } from 'node:test';
 import {
+  ALMANAC_LICENSE_URL,
   ALMANAC_PACKAGE_NAME,
   OUTPUT_PATH,
   REPOSITORY_LICENSE_URL,
@@ -350,6 +351,29 @@ describe('the help manifest generator', () => {
       ],
     ];
 
+    /** The same shape rules, asserted against the Almanac's own audited path. */
+    const REJECTED_ALMANAC_DESTINATIONS = [
+      ['is not HTTPS', ALMANAC_LICENSE_URL.replace('https:', 'http:')],
+      ['carries a query or fragment', `${ALMANAC_LICENSE_URL}?utm_source=help`],
+      [
+        "is not the Almanac repository's LICENSE on main",
+        'https://github.com/someone-else/Elite-Dangerous-Almanac/blob/main/LICENSE',
+      ],
+      [
+        "is not the Almanac repository's LICENSE on main",
+        'https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/README.md',
+      ],
+    ];
+
+    for (const [reason, url] of REJECTED_ALMANAC_DESTINATIONS) {
+      it(`refuses an Almanac destination that ${reason}: ${url}`, () => {
+        assert.throws(
+          () => validateLicenceDestination(url, 'almanacLicense'),
+          (error) => error instanceof Error && error.message.includes(reason),
+        );
+      });
+    }
+
     for (const [reason, url] of REJECTED_DESTINATIONS) {
       it(`refuses a destination that ${reason}: ${url}`, () => {
         // The reason is prose, so it is matched as prose. Compiled as a
@@ -364,14 +388,48 @@ describe('the help manifest generator', () => {
       });
     }
 
-    it('emits exactly one destination, and it is the audited one', async () => {
+    it('emits exactly the two audited destinations, and nothing else', async () => {
       const { manifest, module } = await run(await fixtureRepo());
 
-      assert.deepEqual(Object.keys(manifest.destinations), ['repositoryLicense']);
-      assert.equal(manifest.destinations.repositoryLicense.purpose, 'completeLegalTerms');
-      assert.equal(manifest.destinations.repositoryLicense.leavesApplication, true);
-      assert.equal(manifest.destinations.repositoryLicense.mayRequireNetwork, true);
-      assert.equal(module.split('completeLegalTerms').length - 1, 1);
+      assert.deepEqual(Object.keys(manifest.destinations), ['repositoryLicense', 'almanacLicense']);
+      assert.equal(manifest.destinations.repositoryLicense.url, REPOSITORY_LICENSE_URL);
+      assert.equal(manifest.destinations.almanacLicense.url, ALMANAC_LICENSE_URL);
+
+      for (const id of ['repositoryLicense', 'almanacLicense']) {
+        assert.equal(manifest.destinations[id].id, id);
+        assert.equal(manifest.destinations[id].purpose, 'completeLegalTerms');
+        assert.equal(manifest.destinations[id].leavesApplication, true);
+        assert.equal(manifest.destinations[id].mayRequireNetwork, true);
+      }
+
+      // Two, and only two. Both are complete legal terms; a third purpose in
+      // the emitted module would be a destination that reached the browser
+      // without being audited for one.
+      assert.equal(module.split('completeLegalTerms').length - 1, 2);
+    });
+
+    it('refuses to audit a destination it does not know', () => {
+      // The path an id is checked against is looked up, never passed in: a
+      // caller that could name its own path could audit a URL against itself.
+      assert.throws(
+        () => validateLicenceDestination(REPOSITORY_LICENSE_URL, 'somewhereElse'),
+        (error) => error instanceof Error && error.message.includes('not an audited destination'),
+      );
+    });
+
+    it('refuses each audited URL under the other one’s id', () => {
+      // The two are not interchangeable. Pointing the library's line at this
+      // repository's terms, or the reverse, is a wrong claim about which
+      // document covers which code, and it fails the build rather than
+      // shipping.
+      assert.throws(
+        () => validateLicenceDestination(ALMANAC_LICENSE_URL, 'repositoryLicense'),
+        (error) => error instanceof Error && error.message.includes("this repository's LICENSE"),
+      );
+      assert.throws(
+        () => validateLicenceDestination(REPOSITORY_LICENSE_URL, 'almanacLicense'),
+        (error) => error instanceof Error && error.message.includes("Almanac repository's LICENSE"),
+      );
     });
   });
 

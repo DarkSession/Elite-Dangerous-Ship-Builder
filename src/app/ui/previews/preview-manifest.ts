@@ -51,6 +51,17 @@ export interface PreviewStateDeclaration {
    * scans it.
    */
   readonly isolated?: boolean;
+  /**
+   * Prose the stage puts around the component, for one that lives inside it.
+   *
+   * Most components are the whole of what they are. An inline link is not: it
+   * is a few words in a sentence, and a stage that renders it alone is
+   * previewing something the product never draws — a bare link in an empty box,
+   * whose wrapping, baseline and SC 2.5.8 inline exception all read differently
+   * from the real thing. Two strings, before and after, so the sentence the
+   * catalogue scans is the shape the product ships.
+   */
+  readonly sentence?: readonly [string, string];
 }
 
 /** Everything the preview application needs to render one component. */
@@ -252,6 +263,7 @@ import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
 import { DiagnosticList } from '../technical/diagnostic-list';
+import { InlineLink } from '../components/inline-link/inline-link';
 import { HelpDialog } from '../../features/help/help-dialog.component';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
 import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
@@ -267,8 +279,9 @@ function state(
   expectations: readonly string[],
   variants: readonly ComponentVariant[] = ['normal'],
   isolated = false,
+  sentence?: readonly [string, string],
 ): PreviewStateDeclaration {
-  return { state: name, fixture, naReason: null, variants, expectations, isolated };
+  return { state: name, fixture, naReason: null, variants, expectations, isolated, sentence };
 }
 
 /** A state this component's contract cannot represent, and why. */
@@ -485,7 +498,7 @@ registerPreview({
     state(
       'default',
       {
-        label: 'Range',
+        label: 'Target range',
         min: 100,
         max: 2000,
         step: 25,
@@ -506,7 +519,7 @@ registerPreview({
     ),
     state(
       'empty',
-      { label: 'Range', min: 100, max: 2000, step: 25, value: 100, valueText: '100 m' },
+      { label: 'Target range', min: 100, max: 2000, step: 25, value: 100, valueText: '100 m' },
       [
         'keeps its label with no scale ends and no description',
         'a value at the minimum still reads as a value, not as an empty control',
@@ -515,7 +528,7 @@ registerPreview({
     state(
       'disabled',
       {
-        label: 'Range',
+        label: 'Target range',
         min: 100,
         max: 2000,
         step: 25,
@@ -1183,7 +1196,8 @@ registerPreview({
           { id: 'language', label: 'Language' },
           {
             id: 'help.open',
-            label: 'Help & FAQ',
+            label: 'Help',
+            symbol: '?',
             emphasis: 'quiet',
             description: 'Opens help, version and licence information over the current view.',
           },
@@ -1191,7 +1205,7 @@ registerPreview({
       },
       [
         'exposes banner, navigation and main landmarks',
-        'every action keeps visible text — never an unlabelled ellipsis',
+        'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current navigation entry exposes aria-current',
         'the Help entry is in the wide row and in the compact action layer, and is the only one of its kind',
       ],
@@ -4052,9 +4066,36 @@ registerPreview({
  */
 const HELP_LICENCE = {
   index: [
-    { id: 'application', text: BUNDLED_ENGLISH['help.licence.index.application'] },
-    { id: 'gameData', text: BUNDLED_ENGLISH['help.licence.index.gameData'] },
-    { id: 'typefaces', text: BUNDLED_ENGLISH['help.licence.index.typefaces'] },
+    {
+      id: 'application',
+      before: BUNDLED_ENGLISH['help.licence.index.application'].replace('{{licence}}', ''),
+      link: {
+        label: BUNDLED_ENGLISH['help.licence.link.application'],
+        href: HELP_MANIFEST.destinations.repositoryLicense.url,
+      },
+      after: '',
+    },
+    {
+      id: 'library',
+      before: BUNDLED_ENGLISH['help.licence.index.library'].replace('{{licence}}', ''),
+      link: {
+        label: BUNDLED_ENGLISH['help.licence.link.library'],
+        href: HELP_MANIFEST.destinations.almanacLicense.url,
+      },
+      after: '',
+    },
+    {
+      id: 'gameData',
+      before: BUNDLED_ENGLISH['help.licence.index.gameData'],
+      link: null,
+      after: '',
+    },
+    {
+      id: 'typefaces',
+      before: BUNDLED_ENGLISH['help.licence.index.typefaces'],
+      link: null,
+      after: '',
+    },
   ],
   excerpt: HELP_MANIFEST.disclaimer.exactText,
   excerptLanguage: HELP_MANIFEST.disclaimer.language,
@@ -4151,6 +4192,63 @@ registerPreview({
       'A missing, empty or unsafe identity fails generation; it is never a state this renders.',
     ),
     notApplicable('disabled', 'Facts are read, never operated.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'inline-link',
+  group: 'Panels',
+  component: InlineLink,
+  contract: contract(
+    'inline-link',
+    {
+      role: 'link',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: BUNDLED_ENGLISH['help.licence.link.application'],
+        href: HELP_MANIFEST.destinations.repositoryLicense.url,
+      },
+      [
+        'the destination is named in the visible words, so a Commander is told before they leave',
+        'the address itself is never drawn: it is a thing to mistype and a line that wraps sideways',
+        'it is underlined, so it is not a link by colour alone',
+        'it sits in the text flow: no target box, no padding, no row of its own',
+        'it takes SC 2.5.8’s inline exception because it is in a sentence, and the stage puts one around it',
+        'expanded copy wraps with the sentence rather than pushing the page sideways',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      false,
+      // The sentence is the point. Rendered bare, this component would be
+      // previewed in a shape the product never draws, and the catalogue's own
+      // target-size sweep would measure a link that is not in a sentence
+      // against a baseline the standard exempts sentences from.
+      ['App · ', ' covers this application’s own code.'],
+    ),
+    notApplicable(
+      'empty',
+      'A link with no words is a link nobody can read; the caller supplies both or draws neither.',
+    ),
+    notApplicable(
+      'loading',
+      'An address is compiled into the bundle; there is nothing to wait for.',
+    ),
+    notApplicable(
+      'error',
+      'A destination that could not be audited fails generation rather than rendering an error.',
+    ),
+    notApplicable(
+      'disabled',
+      'A licence a Commander may not read is not a state this application has.',
+    ),
   ],
 });
 

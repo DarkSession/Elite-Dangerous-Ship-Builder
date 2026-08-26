@@ -14,8 +14,8 @@ The application frame owns the single modal instance and the single entry. A cap
 a private modal, legal copy, help destination or entry control of its own.
 
 **No contextual entry exists.** The design reference draws a `?` control in the wide command bar and
-a `HELP & FAQ` item in the narrow action menu, and draws no help control on any other surface across
-all four of its canvases — including the outfitting ledger, the anatomy plates and the status rail.
+a spelled-out item in the narrow action menu — both of which ship as drawn — and draws no help
+control on any other surface across all four of its canvases — including the outfitting ledger, the anatomy plates and the status rail.
 The frame surrounds every capability, so the frame's action is the route from all of them.
 
 ## Requirement mapping

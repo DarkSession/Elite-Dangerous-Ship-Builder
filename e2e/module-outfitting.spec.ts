@@ -498,6 +498,25 @@ async function search(page: Page, query: string): Promise<void> {
   await page.locator('input[type="search"]').fill(query);
 }
 
+/**
+ * The published count, once the search that provoked it has actually settled.
+ *
+ * `fill` ends the typing, not the search. The surface republishes its figure a
+ * beat later, so a bare read taken straight afterwards returns the answer to
+ * the *previous* query — the whole list, where a narrowing search was just
+ * typed. Every other caller in this file asserts through a retrying locator and
+ * never meets it; this one compares two numbers and does, which is how a run
+ * once read 349 against 2 and called it a regression.
+ *
+ * Narrowing is the settle condition rather than a pause, because it is the
+ * thing being waited for: a search that has been applied publishes fewer
+ * choices than the unfiltered list it was typed into.
+ */
+async function narrowedCount(page: Page, unfiltered: number): Promise<number> {
+  await expect.poll(() => drawnCount(page)).toBeLessThan(unfiltered);
+  return drawnCount(page);
+}
+
 test.describe('finding a replacement', () => {
   test('offers every choice the Almanac has for the mount, and says how many', async ({ page }) => {
     await openStockBuild(page);
@@ -718,8 +737,9 @@ test.describe('finding a replacement', () => {
     // opens every family a narrow search matched, the rail draws the first of
     // them — but both are counting the same answer from the package, and it is
     // the answer this test is about.
+    const everything = await drawnCount(page);
     await search(page, 'docking computer');
-    const before = await drawnCount(page);
+    const before = await narrowedCount(page, everything);
     expect(before).toBeGreaterThan(0);
     if (await surfacesAreLayers(page)) {
       await page.getByRole('button', { name: /cancel/i }).click();
@@ -732,11 +752,12 @@ test.describe('finding a replacement', () => {
 
     await selectMount(page, 'Slot02_Size6');
     await openChooser(page);
+    const everythingLeft = await drawnCount(page);
     await search(page, 'docking computer');
 
     // Fewer, because the Almanac now says so. Nothing here knows what an
     // exclusive family is; it asked again and rendered the answer.
-    expect(await drawnCount(page)).toBeLessThan(before);
+    expect(await narrowedCount(page, everythingLeft)).toBeLessThan(before);
   });
 
   test('is accessible in every chooser state', async ({ page }, testInfo) => {

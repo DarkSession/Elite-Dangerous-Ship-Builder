@@ -76,10 +76,12 @@ required mirrored Almanac source-distribution artifacts
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d, and it governs. The grouped
 `ABOUT` → `FAQ` → `LICENCE` order with the version line inside `ABOUT`, the centered wide modal, the
 narrow bottom sheet, the persistent close control and the frame-only entry are retained as drawn.
-Invented versions, obsolete FAQ answers, unverified asset/typeface claims, fixed visual literals and
-title-only `?` controls are rejected in
-[design/reference-review.md](./design/reference-review.md), which also records the three planned
-additions withdrawn on 2026-08-25 because the reference does not draw them.
+Invented versions, obsolete FAQ answers, unverified asset/typeface claims and fixed visual literals
+are rejected in [design/reference-review.md](./design/reference-review.md), which also records the
+three planned additions withdrawn on 2026-08-25 because the reference does not draw them, and the two
+departures withdrawn on 2026-08-26 because the reference had the better of the argument. Among the
+second pair: a title-only `?` was rejected here, and the control that ships is not one — it is the
+reference's mark with the action's localised name carried inside it as text.
 
 ## Constitution Check
 

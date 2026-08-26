@@ -168,11 +168,18 @@ disagrees or where the announcement is correct but unusable.
     verbatim — the split is a decision to revisit, not a rule.
 
 17. **Help, licences and provenance.** From a capability with no build open,
-    discover the frame's Help entry: expect it to be announced as a button
-    whose name is the words on screen, in the banner row where there is room
-    for it and inside the named action layer where there is not — and expect to
+    discover the frame's Help entry: in the banner row where there is room for
+    it and inside the named action layer where there is not — and expect to
     find **no** second help control anywhere else, on any capability, plate,
-    rail or layer. Activate it and expect one dialog announced by name, with
+    rail or layer.
+
+    Listen to what the banner row's entry is called. Since 2026-08-26 it is
+    drawn there as a `?` rather than as words, so this step is the one that
+    proves the mark did not become the name: expect a button announced as
+    **Help**, expect nothing announced as "question mark" or as a graphic, and
+    expect the action-layer entry to be announced by that same name. If a
+    reader announces the glyph, or announces nothing, the mark has taken over
+    the name and that is a defect against 012/FR-001, not a preference. Activate it and expect one dialog announced by name, with
     the content behind it unreachable by heading, landmark or gesture.
 
     Walk the headings inside it. Expect the reference's own three sections in
