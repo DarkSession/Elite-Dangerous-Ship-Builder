@@ -10,6 +10,7 @@ import { Formatters } from '../../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../../i18n/message.service';
 import { RangeField } from '../../../../../ui/components/range-field/range-field';
+import { placeNumerals } from '../../../../../domain/offence/numeral-placement';
 
 /**
  * One of the hull's hardpoints, placed on the gunsight plate.
@@ -36,6 +37,17 @@ export interface ShotView {
   /** Where the numeral sits relative to its own dot, in pixels. */
   readonly numeralLeft: number;
   readonly numeralTop: number;
+  /**
+   * Whether the numeral had to leave the canvas's four corners to find room.
+   *
+   * A crowded plate is the case the canvas's own rule could not settle: two
+   * mounts far enough apart both score their inward corner well and each aims
+   * its numeral at the other's. A numeral that has moved is tied back to its
+   * dot by a leader, so it still says which shot it counts.
+   */
+  readonly displaced: boolean;
+  /** The leader back to the dot, in plate percentages, or `null` when it stayed. */
+  readonly leader: ShotLeader | null;
   /**
    * Whether a weapon is fitted here.
    *
@@ -67,10 +79,12 @@ export interface ShotView {
  * the range has none: the range field's own readout, directly above the cells,
  * already says what range the plate is drawn at.
  */
-export interface FactView {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
+/** A leader line from a dot to a numeral that could not sit beside it. */
+export interface ShotLeader {
+  readonly x1: number;
+  readonly y1: number;
+  readonly x2: number;
+  readonly y2: number;
 }
 
 /** Mount offsets to one place, which is the place canvas 1c's `9.8 m` sets. */
@@ -79,40 +93,40 @@ const OFFSET_DIGITS = 1;
 const HALF_PLATE_PERCENT = 50;
 
 /**
- * Where the canvas puts a hardpoint numeral relative to its own dot, in pixels.
+ * The plate width the numeral placement is measured in, in pixels.
  *
- * `wireConvergence` offers four corners — `[7, -14]`, `[7, 5]`, `[-13, -14]`,
- * `[-13, 5]` — and takes whichever stands furthest from every *other* dot, so a
- * numeral lands in whatever gap its neighbours leave. They are pixel offsets in
- * the drawing and stay pixel offsets here: a numeral is a fixed-size mark, and
- * scaling its distance from its dot with the plate would leave it detached on a
- * wide one and on top of it on a narrow one.
+ * The canvas's corner offsets are pixels and the dots are fractions of the
+ * plate, so choosing between them means fixing the size the plate is drawn at.
+ * Canvas 1c draws it 172px wide and this is the `10.75rem` plate the
+ * application draws in its place, so the two agree; it has to be kept in step
+ * with `--edsb-measure-gunsight-plate`.
+ *
+ * Reading the built plate's real width instead would mean measuring the DOM to
+ * place a numeral, and a numeral carries no reading — every mark on this plate
+ * is stated in words beside it, so which corner it takes changes nothing a
+ * Commander is told (FR-011). The clearance below is what keeps that
+ * approximation safe: the placement leaves air around every mark rather than
+ * fitting them edge to edge, so a plate drawn a little larger or smaller than
+ * the reference still has no two numerals touching.
  */
-const NUMERAL_OFFSETS: readonly (readonly [number, number])[] = [
-  [7, -14],
-  [7, 5],
-  [-13, -14],
-  [-13, 5],
-];
+const PLATE_REFERENCE_WIDTH = 172;
 
 /**
- * The plate width the numeral placement is chosen against, in pixels.
+ * The marks the placement measures, in the same pixels.
  *
- * The four offsets above are pixels and the dots are fractions of the plate, so
- * choosing between them means fixing the size the plate is being drawn at.
- * `wireConvergence` reads its own (`dots.offsetWidth || 173`) against the 172px
- * plate canvas 1c draws; this is the `8rem` plate this application draws in its
- * place, and it has to be kept in step with `--edsb-measure-gunsight-plate`.
- * Reading the built plate's real
- * width instead would mean measuring the DOM to place a numeral, and a numeral
- * carries no reading — every mark on this plate is stated in words beside it,
- * so which corner it takes changes nothing a Commander is told (FR-011).
+ * The numeral's box is the widest a hardpoint numeral gets — two digits of the
+ * canvas's 8px monospace with its own tracking — so a one-digit numeral is
+ * placed with room to spare rather than a two-digit one being placed short.
+ * The dot's reach is its drawn radius plus the halo that lifts it off the
+ * ground, and the clearance is the air kept around everything.
  */
-const PLATE_REFERENCE_WIDTH = 128;
-
-/** The numeral's own ink box, which the canvas offsets from its top-left corner. */
-const NUMERAL_ANCHOR_LEFT = 3;
-const NUMERAL_ANCHOR_TOP = 4;
+const NUMERAL_METRICS = {
+  plate: PLATE_REFERENCE_WIDTH,
+  width: 11,
+  height: 9,
+  dotRadius: 5,
+  clearance: 1.5,
+} as const;
 
 /**
  * `SHOT CONVERGENCE`: where this build's shots land at a chosen range.
@@ -209,12 +223,25 @@ export class ShotConvergence {
       y: ((1 - point.vertical) / 2) * PLATE_REFERENCE_WIDTH,
     }));
 
+    // Every numeral placed against every other mark on the plate, so no two of
+    // them are ever drawn on top of each other. The dots themselves do not
+    // move: a dot is where the shot lands, and that is the reading.
+    const numerals = placeNumerals(
+      dots.map((dot, index) => ({
+        id: dot.point.mount.slot,
+        order: dot.point.hardpoint || index + 1,
+        x: dot.x,
+        y: dot.y,
+      })),
+      NUMERAL_METRICS,
+    );
+
     const selectedSlot = this.selectedSlot();
 
-    return dots.map((dot) => {
+    return dots.map((dot, index) => {
       const mount = dot.point.mount;
       const weapon = mount.weapon;
-      const numeral = this.#numeralOffset(dot, dots);
+      const placement = numerals[index] ?? { left: 0, top: 0, displaced: false };
       const selected = mount.slot === selectedSlot;
       const place = {
         hardpoint: this.#formatters.integer(dot.point.hardpoint),
@@ -226,8 +253,24 @@ export class ShotConvergence {
         badge: place.hardpoint,
         left: (1 + dot.point.horizontal) * HALF_PLATE_PERCENT,
         top: (1 - dot.point.vertical) * HALF_PLATE_PERCENT,
-        numeralLeft: numeral[0],
-        numeralTop: numeral[1],
+        numeralLeft: placement.left,
+        numeralTop: placement.top,
+        // A numeral that could not stay in one of the canvas's four corners is
+        // tied back to its own dot by a leader, the way feature 010's
+        // schematics explain a mark that has moved.
+        displaced: placement.displaced,
+        leader: placement.displaced
+          ? {
+              x1: (dot.x / PLATE_REFERENCE_WIDTH) * 100,
+              y1: (dot.y / PLATE_REFERENCE_WIDTH) * 100,
+              x2:
+                ((dot.x + placement.left + NUMERAL_METRICS.width / 2) / PLATE_REFERENCE_WIDTH) *
+                100,
+              y2:
+                ((dot.y + placement.top + NUMERAL_METRICS.height / 2) / PLATE_REFERENCE_WIDTH) *
+                100,
+            }
+          : null,
         armed: weapon !== null,
         selected,
         // Four whole sentences rather than one with a state appended to it.
@@ -253,117 +296,14 @@ export class ShotConvergence {
     });
   });
 
-  /**
-   * Which of the canvas's four corners this mount's numeral takes.
-   *
-   * `wireConvergence`'s own rule: the corner whose ink box stands furthest from
-   * the nearest *other* dot, so a numeral falls into whatever gap its
-   * neighbours leave rather than over one of them. A single mount has no other
-   * dot to stand clear of and takes the first corner, as the script does.
-   */
-  #numeralOffset(
-    dot: { readonly x: number; readonly y: number },
-    dots: readonly { readonly x: number; readonly y: number }[],
-  ): readonly [number, number] {
-    const others = dots.filter((other) => other !== dot);
-    let best: readonly [number, number] = NUMERAL_OFFSETS[0] ?? [0, 0];
-    let bestDistance = -1;
-    for (const offset of NUMERAL_OFFSETS) {
-      const left = dot.x + offset[0] + NUMERAL_ANCHOR_LEFT;
-      const top = dot.y + offset[1] + NUMERAL_ANCHOR_TOP;
-      // Zero where there is no other dot to stand clear of, so every corner
-      // scores alike and the first one wins — which is the single-mount plate,
-      // and is what the script's own unbeaten starting distance does there.
-      const nearest =
-        others.length === 0
-          ? 0
-          : Math.min(...others.map((other) => Math.hypot(left - other.x, top - other.y)));
-      if (nearest > bestDistance) {
-        bestDistance = nearest;
-        best = offset;
-      }
-    }
-    return best;
-  }
-
   /** The canvas's two dashed rings, as fractions of the plate they are drawn on. */
   readonly rings = computed(() => this.convergence().rings);
-
-  /**
-   * The canvas's caption for the plate: what the second ring spans here.
-   *
-   * `Ring 2` is the canvas's own name for it — `wireConvergence` sets
-   * `'RING 2 · ' + mrad + ' MRAD · ' + metres + ' m'` — and the plate draws two,
-   * so the number names which one without describing it. The 2026-08-25 canvas
-   * revision moved it out of the plate and onto the block's heading line, and
-   * dropped the `AT THIS RANGE` it used to end on; the panel above reads it from
-   * here to draw it there, and it stays in the shot sentences besides, because
-   * it is still the one plate figure the four cells do not repeat.
-   */
-  readonly ringCaption = computed(() => {
-    const view = this.convergence();
-    return this.#messages.message('offence.convergence.ring', {
-      angle: this.#milliradians(view.ringMilliradians),
-      distance: this.#formatters.metres(view.ringMetres, OFFSET_DIGITS),
-    });
-  });
 
   /** The range the plate is drawn at, as a Commander reads it. */
   readonly targetRangeText = computed(() => this.#formatters.metres(this.targetRange()));
 
   readonly rangeMinText = computed(() => this.#formatters.metres(TARGET_RANGE.min));
   readonly rangeMaxText = computed(() => this.#formatters.metres(TARGET_RANGE.max));
-
-  /**
-   * The canvas's four facts under the plate.
-   *
-   * The two spans are the mounts' own separation in metres and do not move with
-   * the range; the spread is what that separation subtends at the range the
-   * slider is set to, and does. The widest mount names the hardpoint it is,
-   * because "9.8 m" without it says how far but not from where.
-   *
-   * All four are about a group of armed mounts, so a build that has armed none
-   * gets none of them: a span of zero metres between no mounts, and a widest of
-   * nothing, are figures about nothing. The plate itself is still drawn, and on
-   * a hull with nothing fitted it still carries every one of that hull's
-   * hardpoints in the empty ink — where the mounts are is a property of the
-   * hull, and it is exactly the reading a Commander with nothing fitted yet is
-   * after.
-   */
-  readonly facts = computed<readonly FactView[]>(() => {
-    const geometry = this.geometry();
-    const view = this.convergence();
-    const widest = geometry.widest;
-    if (widest === null) {
-      return [];
-    }
-
-    return [
-      {
-        id: 'lateral',
-        label: this.#messages.message('offence.convergence.lateral'),
-        value: this.#formatters.metres(geometry.lateralSpanMetres, OFFSET_DIGITS),
-      },
-      {
-        id: 'vertical',
-        label: this.#messages.message('offence.convergence.vertical'),
-        value: this.#formatters.metres(geometry.verticalSpanMetres, OFFSET_DIGITS),
-      },
-      {
-        id: 'spread',
-        label: this.#messages.message('offence.convergence.spread'),
-        value: this.#milliradians(view.apparentSpreadMilliradians),
-      },
-      {
-        id: 'widest',
-        label: this.#messages.message('offence.convergence.widest'),
-        value: this.#messages.message('offence.convergence.widest.value', {
-          hardpoint: this.#formatters.integer(widest.hardpoint),
-          distance: this.#formatters.metres(widest.offsetMetres, OFFSET_DIGITS),
-        }),
-      },
-    ];
-  });
 
   /** Moves the plate to a new target range. Nothing about it leaves this component. */
   setTargetRange(metres: number): void {

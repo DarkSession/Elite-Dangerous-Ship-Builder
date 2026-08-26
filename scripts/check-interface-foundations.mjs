@@ -1442,8 +1442,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A dash standing in for a group the package never published; not a word in either language.',
     'power.heat.does-not-settle':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
-    'offence.convergence.ring':
-      'The canvas’s own name for the outer ring, and two variables after it. “Ring” is the ordinary German word, and the separator is language-neutral. It reads identically since the 2026-08-25 canvas revision dropped the “at this range” it used to end on.',
     'offence.capacitor.endurance.sustained':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
@@ -1520,8 +1518,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A value and the SI symbol for the milliradian, identical in German.',
     'offence.damage.legend':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
-    'offence.convergence.widest.value':
-      'A composition pattern; "HP" is the abbreviation the canvas draws in this cell, a code like "4A" rather than a word, and the rest is a variable.',
     'drives.format.tonnes': 'A value and the SI symbol for the tonne, identical in German.',
     'drives.format.metres-per-second':
       'A value and the SI symbol for metres per second, identical in German.',

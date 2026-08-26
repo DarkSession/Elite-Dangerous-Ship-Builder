@@ -1022,23 +1022,42 @@ test.describe('shot convergence', () => {
   test('names the four facts the canvas draws under the plate', async ({ page }) => {
     await openOffence(page);
 
-    const facts = await page
-      .locator('edsb-offence-analysis .fact')
-      .evaluateAll((cells) =>
-        cells.map((cell): [string, string] => [
-          cell.querySelector('.fact__label')?.textContent?.trim() ?? '',
-          cell.querySelector('.fact__value')?.textContent?.trim() ?? '',
-        ]),
-      );
-    expect(facts.map(([label]) => label)).toEqual([
-      englishMessages['offence.convergence.lateral'],
-      englishMessages['offence.convergence.vertical'],
-      englishMessages['offence.convergence.spread'],
-      englishMessages['offence.convergence.widest'],
-    ]);
-    for (const [, value] of facts) {
-      expect(digits(value)).not.toBe('');
+    // The 2026-08-26 canvas revision withdrew the four cells that used to
+    // stand under the plate — the two spans, the widest mount and the apparent
+    // spread — along with the ring caption. Nothing is drawn beneath the plate
+    // but the range, and every reading the cells carried is still in the
+    // plate's own sentences.
+    await expect(page.locator('edsb-offence-analysis .fact')).toHaveCount(0);
+    await expect(page.locator('edsb-offence-analysis .plate__boresight')).toHaveCount(1);
+
+    const stated = await page
+      .locator('edsb-offence-analysis .shots__entry')
+      .evaluateAll((entries) => entries.map((entry) => entry.textContent?.trim() ?? ''));
+    expect(stated.length).toBeGreaterThan(0);
+    for (const sentence of stated) {
+      expect(sentence).not.toBe('');
     }
+
+    // No two numerals drawn over each other, whatever the range is set to.
+    const overlapping = await page
+      .locator('edsb-offence-analysis .plate__numeral')
+      .evaluateAll((numerals) => {
+        const boxes = numerals.map((numeral) => numeral.getBoundingClientRect());
+        let worst = 0;
+        for (let index = 0; index < boxes.length; index += 1) {
+          for (let other = index + 1; other < boxes.length; other += 1) {
+            const one = boxes[index]!;
+            const two = boxes[other]!;
+            const overlapX = Math.min(one.right, two.right) - Math.max(one.left, two.left);
+            const overlapY = Math.min(one.bottom, two.bottom) - Math.max(one.top, two.top);
+            if (overlapX > 0 && overlapY > 0) {
+              worst = Math.max(worst, Math.min(overlapX, overlapY));
+            }
+          }
+        }
+        return worst;
+      });
+    expect(overlapping).toBe(0);
   });
 });
 

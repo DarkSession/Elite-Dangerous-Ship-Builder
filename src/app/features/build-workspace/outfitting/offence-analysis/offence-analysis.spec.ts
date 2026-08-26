@@ -663,7 +663,7 @@ describe('OffenceAnalysis', () => {
       const { component } = render(loadout);
       const bands = component.rangeBands();
 
-      expect(bands.map((band) => band.id)).toEqual(['500', '1200', '1800', '3000']);
+      expect(bands.map((band) => band.id)).toEqual(['500', '1000', '2000', '3000']);
 
       // Damage falls off with range, so no band out-damages a closer one, and
       // the closest fills its own track exactly.
@@ -703,12 +703,12 @@ describe('OffenceAnalysis', () => {
 
       const asked = [weapons.mock.calls.length, capacitor.mock.calls.length] as const;
       const geometry = element.querySelector('edsb-shot-convergence');
-      // The ring caption, which the 2026-08-25 canvas revision moved onto the
-      // block's heading line: it is the plate figure that moves with the range
-      // without being one of the four cells beneath it.
-      const caption = () =>
-        element.querySelector('.offence__block--convergence .offence__note')?.textContent;
-      const before = caption();
+      // Where the marks sit is what moves with the range now: the 2026-08-26
+      // revision withdrew the ring caption and the four cells alike, so the
+      // plate itself is the reading that has to change.
+      const marks = () =>
+        [...element.querySelectorAll<HTMLElement>('.plate__dot')].map((dot) => dot.style.left);
+      const before = marks();
 
       const slider = element.querySelector<HTMLInputElement>('input[type="range"]');
       slider!.value = String(TARGET_RANGE.max);
@@ -717,8 +717,8 @@ describe('OffenceAnalysis', () => {
 
       // The plate really moved, so the counts below are a reading rather than
       // the absence of one.
-      expect(before).toBeTruthy();
-      expect(caption()).not.toBe(before);
+      expect(before.length).toBeGreaterThan(0);
+      expect(marks()).not.toEqual(before);
       expect(geometry).not.toBeNull();
       // The range is the block's own signal and the geometry it projects from
       // is already in hand: what changes with the slider is where the same

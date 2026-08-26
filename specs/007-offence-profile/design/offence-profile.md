@@ -94,7 +94,7 @@ are fields no canvas ever drew.
 
 ### DPS by range band
 
-- The canvas's four distances — 500 m, 1,200 m, 1,800 m and 3,000 m — each carry what the enabled
+- The canvas's four distances — 500 m, 1,000 m, 2,000 m and 3,000 m — each carry what the enabled
   weapons together land there, from the package's own falloff at that distance.
 - Each row is filled against the strongest band, and states its own figure whether or not the bar
   reaches. A build landing nothing anywhere is given no track at all, rather than four empty ones:

@@ -97,6 +97,52 @@
   block-size: var(--edsb-border-width-hairline);
 }
 
+// The boresight the 2026-08-26 revision adds: where the hull itself points.
+// A hairline ring on the axis with a filled dot at its centre, so a Commander
+// reads a shot's offset against the ship's own line rather than against the
+// middle of a box. Sized in the plate's own width so it holds its proportion
+// at every size the block is given.
+.plate__boresight {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  inline-size: 11.6%;
+  aspect-ratio: 1;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  border-radius: 50%;
+}
+
+.plate__boresight-centre {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  inline-size: 1.75%;
+  aspect-ratio: 1;
+  background-color: var(--edsb-text-accent);
+  border-radius: 50%;
+}
+
+// The leaders back from a numeral that could not sit in one of its dot's four
+// corners. Over the ground and under the marks, so a line never crosses the
+// mark it explains, and never takes a pointer that belongs to one.
+.plate__leaders {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.plate__leader {
+  stroke: var(--edsb-border-node-leader);
+  stroke-width: var(--edsb-border-width-rule);
+  stroke-linecap: round;
+}
+
 // The two dashed rings, centred on the axis and sized in the angle they stand
 // for rather than in pixels, so they stay true at every plate width.
 //
@@ -220,44 +266,4 @@
 // the reading the diagram above is a picture of.
 .shots {
   @include layout.visually-hidden;
-}
-
-// ---------------------------------------------------------------------------
-// Canvas 1c's four cells under the plate
-
-// `repeat(4, 1fr)` with a hairline gap showing the rule through it: one row of
-// label-over-figure. Canvas 1c stacks the same four as label-left, value-right
-// rows down the column beside the plate; the row is this application's own
-// arrangement of them, carrying the same four labels and the same four figures,
-// and is sanctioned as a departure in `design/canvas-contract.md` under the
-// 2026-08-25 revision. The cells fall to two and then to one as the block
-// narrows, because four columns of a German label at 200% text is four columns
-// of wrapped fragments.
-.facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(var(--edsb-layout-offence-label), 100%), 1fr));
-  gap: var(--edsb-border-width-hairline);
-  margin: 0;
-  padding: 0;
-  background-color: var(--edsb-border-region);
-  list-style: none;
-}
-
-.fact {
-  @include layout.stack(var(--edsb-space-stack-tight));
-
-  min-inline-size: 0;
-  padding-block: var(--edsb-space-inline);
-  padding-inline: var(--edsb-space-inline);
-  background-color: var(--edsb-surface-inset);
-}
-
-.fact__label {
-  @include layout.micro-label;
-}
-
-.fact__value {
-  @include layout.metric-value(var(--edsb-text-size-lead));
-
-  overflow-wrap: break-word;
 }
