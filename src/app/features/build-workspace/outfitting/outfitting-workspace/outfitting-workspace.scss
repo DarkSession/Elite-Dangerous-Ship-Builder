@@ -510,12 +510,26 @@
 // `position: sticky; bottom: 0` on its own plate, under the ledger it acts on —
 // so the mount a Commander marked is still on screen while they choose what to
 // do to it, however far down the list they marked it.
+// Canvas 1d's foot: `CHANGE MODULE` filled and `ENGINEER` outlined, on their
+// own plate at the end of the screen.
+//
+// Drawn in the flow, not pinned over it. The artboard pins the pair, and this
+// pinned them too until the automated gate measured what that costs: an opaque
+// bar 76px tall over a page-length ledger of 52px rows covers between a half and
+// the whole of whichever row falls at the foot of the viewport, at every scroll
+// position there is — 31.6px of 52px on an Anaconda's hardpoints, leaving a
+// 350×20.4px target where the rule asks for 24px (measured 2026-08-26). The
+// mount rows are this screen's primary targets, and a bar that permanently
+// covers one of them is not a bar that can be pinned over them.
+//
+// Pinning it properly means bounding the scroll: the stack above scrolls in a
+// box of its own and the plate sits below that box rather than over it. That is
+// a different arrangement from the one this region has, and it is recorded as
+// the follow-up rather than half-built here
+// (`design/outfitting-workspace.md`, "The foot is drawn, not pinned").
 .outfitting__bench-actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
-  position: sticky;
-  inset-block-end: 0;
-  z-index: 2;
   padding: var(--edsb-space-inline-loose);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
@@ -539,9 +553,15 @@
 // evenly shared across the row, on the panel ground and closed by a hairline.
 // The cells themselves are features 006 to 008's, exactly as in the rail.
 .outfitting__key-figures {
+  // All six across, which is what canvas 1d draws — but as a track floor rather
+  // than as a count. Six columns of `minmax(0, 1fr)` hold their number at any
+  // text size, and a figure that no longer fits its share of 390px hangs over
+  // the edge of the screen instead: `1fr` with a zero floor shrinks the track
+  // and never the number inside it. `auto-fit` against the canvas's own 56px
+  // cell keeps the six on one row where they fit and drops to three on two rows
+  // where they do not, which is what a doubled text size needs (FR-014).
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-key-figure), 1fr));
   gap: var(--edsb-space-inline-tight);
   padding-block: var(--edsb-space-stack-tight);
   padding-inline: var(--edsb-space-inline-loose);

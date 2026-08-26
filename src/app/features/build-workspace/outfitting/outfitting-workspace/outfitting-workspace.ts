@@ -4,7 +4,6 @@ import {
   computed,
   effect,
   inject,
-  linkedSignal,
   signal,
 } from '@angular/core';
 import type { SlotKind } from '@elite-dangerous-almanac/core/ships/slots';
@@ -125,16 +124,37 @@ export class OutfittingWorkspace {
   readonly active = inject(ActiveBuildStore);
   readonly #chrome = inject(ScreenChrome);
 
-  /** Which mounts are listed. Visibility only; never build or history state. */
-  readonly category = linkedSignal<readonly Category[], Category>({
-    source: () => this.categories().map((entry) => entry.value),
-    // `ALL` is not among canvas 1d's four tabs: the compact ledger is one
-    // screenful at a time and a Commander says which. A window narrowing while
-    // it is chosen therefore has to land somewhere, and it lands on the tab the
-    // canvas draws selected.
-    computation: (offered, previous) =>
-      previous !== undefined && offered.includes(previous.value) ? previous.value : offered[0]!,
+  /**
+   * The category a Commander asked for, or none — nobody has asked yet.
+   *
+   * Held apart from what is *shown* so that a value nobody chose can never
+   * outlive the offering that produced it. The composition reports `compact`
+   * until the observer has measured the region for the first time, so the
+   * offering a category is first read against is canvas 1d's four tabs even on
+   * a desktop window — and a chosen-value-wins rule would then latch
+   * `HARDPOINTS` a frame before `ALL` existed and keep it, because `HARDPOINTS`
+   * is offered at both widths. Wide width would open on one eighth of the
+   * ledger with `ALL` beside it unpressed.
+   */
+  readonly #chosenCategory = signal<Category | null>(null);
+
+  /**
+   * Which mounts are listed. Visibility only; never build or history state.
+   *
+   * A choice holds for as long as the width still offers it: narrowing while
+   * `ALL` is shown lands on the tab canvas 1d draws selected, and widening
+   * again returns to `ALL` — which nobody chose away from.
+   */
+  readonly category = computed<Category>(() => {
+    const offered = this.categories().map((entry) => entry.value);
+    const chosen = this.#chosenCategory();
+    return chosen !== null && offered.includes(chosen) ? chosen : offered[0]!;
   });
+
+  /** Shows one category. The strip's own press, and nothing else's. */
+  showCategory(value: Category): void {
+    this.#chosenCategory.set(value);
+  }
 
   /**
    * Which identity field the command bar has open, if either.

@@ -159,7 +159,7 @@
 // is dropped — ruling E still holds — and the cap is a `rem` measure, so a
 // Commander reading at 200% gets a taller box rather than the same box holding
 // half as many rows.
-.rail-materials--bounded {
+.materials-box {
   max-block-size: var(--edsb-layout-material-list);
   overflow-y: auto;
   overscroll-behavior-block: contain;

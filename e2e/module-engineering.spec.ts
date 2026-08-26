@@ -10,12 +10,13 @@ import {
   clearEffect,
   clearRecipe,
   draftAbandoned,
-  effectOptions,
   editorOffered,
+  effectOptions,
   fitCommitted,
   openChooserRows,
   openEditor as bringEditorOnScreen,
   revealFamilyHolding,
+  revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 
@@ -40,6 +41,7 @@ async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
 
 /** Selects one mount by its exact game slot key. */
 async function selectMount(page: Page, slotKey: string): Promise<void> {
+  await revealMount(page, slotKey);
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -116,6 +118,10 @@ async function applied(page: Page, slotKey: string): Promise<string> {
 }
 
 async function ledgerEngineering(page: Page, slotKey: string): Promise<string> {
+  // The row, not this screenful: at compact width the ledger draws one category
+  // at a time, so a mount read after a journey that left another tab open is
+  // not on the page until its own is pressed.
+  await revealMount(page, slotKey);
   return page
     .locator(`[data-slot-key="${slotKey}"]`)
     .evaluate((node) => node.textContent?.replace(/\s+/g, ' ').trim() ?? '');

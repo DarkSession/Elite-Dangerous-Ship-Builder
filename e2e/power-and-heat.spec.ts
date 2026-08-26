@@ -4,6 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+import { revealStatusRail } from './outfitting-surfaces';
 
 /**
  * Power and thermals, end to end.
@@ -32,6 +33,37 @@ async function openPower(page: Page, messages = englishMessages): Promise<void> 
     .locator('edsb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: messages['anatomy.mode.power'] })
     .click();
+  await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
+}
+
+/**
+ * Brings the status rail on screen and returns the dashboard afterwards.
+ *
+ * Canvas 1c draws the rail as a third track beside the mode panel, so both are
+ * on screen at once and this is a no-op. Canvas 1d has no third track: the rail
+ * is the strip's `STATUS` segment and the dashboard is its `POWER` one, and a
+ * segment that is not the open one is not on the page. A journey that presses
+ * in the rail and reads in the dashboard therefore does it in two visits at
+ * that width, which is what a Commander does too.
+ */
+async function inTheRail(
+  page: Page,
+  visit: () => Promise<void>,
+  messages = englishMessages,
+): Promise<void> {
+  await revealStatusRail(page, exactly(messages['outfitting.status-rail.mode']));
+  await visit();
+  await openMode(page, messages['anatomy.mode.power']);
+}
+
+/** One drawn label, matched whole — a bare string is a substring match. */
+function exactly(label: string): RegExp {
+  return new RegExp(`^${label.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&')}$`, 'iu');
+}
+
+/** Opens one segment of the anatomy strip, by the word it draws. */
+async function openMode(page: Page, label: string): Promise<void> {
+  await page.locator('edsb-hull-anatomy .anatomy__modes button').filter({ hasText: label }).click();
   await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
 }
 
@@ -282,6 +314,19 @@ test.describe('reading the build', () => {
     // aligned and a comparison between them proves nothing.
     await openPower(page);
 
+    // Only where the table is drawn as a table. Below 30rem the block has no
+    // room for five columns and draws three lines a bank instead, each figure
+    // beside the label that would have headed its column — so there is no
+    // column for a figure to be flush to, and the arrangement is asserted by the
+    // journey that owns it (`draws three lines to a bank` below).
+    // Read from the per-figure labels rather than from the header row: the
+    // header is hidden the accessible way when the columns go, which leaves it
+    // a one-pixel box that still answers `visible`. The labels are drawn or they
+    // are not.
+    if (await page.locator('.distributor__label').first().isVisible()) {
+      return;
+    }
+
     const cells = await page
       .locator('.distributor tbody .distributor__cell--numeric')
       .evaluateAll((nodes) =>
@@ -449,12 +494,16 @@ test.describe('the status rail', () => {
     await openPower(page);
 
     const line = page.locator('edsb-power-summary .rail-power');
-    await expect(line).toBeVisible();
-    await expect(line.locator('.rail-power__label')).toHaveText(
-      englishMessages['power.rail.label'],
-    );
-
-    const figures = await line.locator('.rail-power__figures').innerText();
+    let figures = '';
+    // Read in the rail and compared in the dashboard, in that order: canvas 1d
+    // draws one segment at a time, so the two readings are two visits there.
+    await inTheRail(page, async () => {
+      await expect(line).toBeVisible();
+      await expect(line.locator('.rail-power__label')).toHaveText(
+        englishMessages['power.rail.label'],
+      );
+      figures = await line.locator('.rail-power__figures').innerText();
+    });
     expect(figures).toMatch(/MW/u);
 
     // The rail's draw is the same figure the dashboard's summary carries.
@@ -469,6 +518,7 @@ test.describe('the status rail', () => {
 
   test('draws the bar of the same figures, named rather than left a shape', async ({ page }) => {
     await openPower(page);
+    await revealStatusRail(page);
 
     const bar = page.locator('edsb-power-summary .rail-bar');
     await expect(bar).toBeVisible();
@@ -516,9 +566,11 @@ test.describe('the rail’s pip control', () => {
 
     // Pressed in the rail, read back in the dashboard: one condition, drawn in
     // two places, rather than a second allocation of the rail's own.
-    await pressPip(
-      page,
-      page.locator('edsb-power-summary .pipset').first().locator('.pips__step').nth(3),
+    await inTheRail(page, () =>
+      pressPip(
+        page,
+        page.locator('edsb-power-summary .pipset').first().locator('.pips__step').nth(3),
+      ),
     );
 
     const after = await rows(page, '.distributor');
@@ -535,6 +587,38 @@ test.describe('the rail’s pip control', () => {
     // Capacity is a property of the fitted distributor, and no allocation
     // moves it — from either surface.
     expect(after[0][1]).toBe(before[0][1]);
+  });
+
+  test('draws three lines to a bank where five columns do not fit', async ({ page }) => {
+    await openPower(page);
+
+    const labels = page.locator('.distributor__label');
+    if (!(await labels.first().isVisible())) {
+      // The block has room for its five columns here, and the header row heads
+      // them. Nothing to check: this journey is about what it does when it has
+      // not.
+      await expect(page.locator('.distributor thead th')).toHaveCount(5);
+      return;
+    }
+
+    // Every field the table would have carried is still carried, each beside the
+    // label that would have headed its column — the bank, its capacity, its
+    // rated recharge, its pips and its recharge at the allocation standing.
+    const banks = page.locator('.distributor tbody tr');
+    await expect(banks).toHaveCount(3);
+    for (let index = 0; index < 3; index += 1) {
+      const bank = banks.nth(index);
+      await expect(bank.locator('.distributor__label')).toHaveCount(2);
+      await expect(bank.locator('.distributor__cell--capacity')).toHaveCount(1);
+      await expect(bank.locator('.distributor__cell--rated')).toHaveCount(1);
+      await expect(bank.locator('.distributor__cell--recharge')).toHaveCount(1);
+      await expect(bank.locator('.pips__step')).toHaveCount(4);
+    }
+
+    // And it is still a table to a reader: the columns are an arrangement, not
+    // the association between a figure and what it is a figure of.
+    await expect(page.locator('.distributor')).toHaveAttribute('role', 'table');
+    await expect(page.locator('.distributor tbody th[role="rowheader"]')).toHaveCount(3);
   });
 
   test('redraws from an allocation the distributor table set', async ({ page }) => {
@@ -599,6 +683,7 @@ test.describe('the rail’s pip control', () => {
 
   test('stands on the same inset as the cells it heads', async ({ page }) => {
     await openPower(page);
+    await revealStatusRail(page);
 
     // Canvas 1c draws this block and the six metric cells under it inside one
     // padded block, which the workspace owns. So the figures start where the
@@ -609,6 +694,21 @@ test.describe('the rail’s pip control', () => {
     const line = page.locator('edsb-power-summary .rail-power');
     const cells = page.locator('.outfitting__status-cells .metric');
     await expect(line).toBeVisible();
+
+    if ((await cells.count()) === 0) {
+      // Canvas 1d draws the same six readings above the category tabs instead,
+      // so the rail has no cell band at this width and there is nothing here for
+      // the block to head. What the claim reduces to is the same one either way:
+      // the block stands on the rail's own inset and adds none of its own, which
+      // is the inset the heading above it stands on.
+      const [start, headStart] = await line.evaluate((node) => [
+        (node as HTMLElement).getBoundingClientRect().left,
+        document.querySelector('.outfitting__status-heading')?.getBoundingClientRect().left ?? -1,
+      ]);
+      expect(Math.round(start)).toBe(Math.round(headStart));
+      return;
+    }
+
     await expect(cells).toHaveCount(6);
 
     // The leading edge of the grid, not of its first cell in DOM order: the
@@ -642,8 +742,11 @@ test.describe('the conditions that break layouts', () => {
     // one fails at every profile wide enough to pair anything. That is what
     // stood the distributor a whole panel below the fold of a region bounded by
     // the column it sits in.
+    // The distributor is a component of its own — its five columns needed more
+    // stylesheet than the panel's budget allowed — so the fourth block carries
+    // that component's class rather than the panel's (`distributor-block`).
     const columns = await page
-      .locator('edsb-power-thermals .power__block')
+      .locator('edsb-power-thermals .power__block, edsb-power-thermals edsb-distributor-block')
       .evaluateAll((blocks) =>
         blocks.map((block) => Math.round(block.getBoundingClientRect().left)),
       );

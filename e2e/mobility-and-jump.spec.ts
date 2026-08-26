@@ -4,7 +4,13 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { fitCommitted, openChooserRows, surfacesAreLayers } from './outfitting-surfaces';
+import {
+  fitCommitted,
+  isCompactWorkspace,
+  openChooserRows,
+  revealMount,
+  surfacesAreLayers,
+} from './outfitting-surfaces';
 
 /**
  * Drives & Mass, end to end.
@@ -60,6 +66,7 @@ function caps(text: string): string {
  * the unit layer alone.
  */
 async function switchThrustersOff(page: Page): Promise<void> {
+  await revealMount(page, 'MainEngines');
   await page.locator('.slot[data-slot-key="MainEngines"] .power__toggle').uncheck({ force: true });
   await settled(page);
 }
@@ -73,6 +80,7 @@ async function switchThrustersOff(page: Page): Promise<void> {
  * so the row is found by the name the catalogue gives it.
  */
 async function fitOverchargeDrive(page: Page): Promise<void> {
+  await revealMount(page, 'FrameShiftDrive');
   const mount = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
   await mount.click();
   await expect(mount).toHaveAttribute('aria-pressed', 'true');
@@ -867,6 +875,17 @@ test.describe('the status rail', () => {
     // ground showing through one-pixel gaps. Three features own two, one and
     // three of them, and drawn as three grids the six would rule off in threes
     // — `DPS` could never share a row with `JUMP`.
+    //
+    // That band is canvas 1c's. Canvas 1d states the same six above the
+    // category tabs instead and draws no cell band at all, so what the claim
+    // becomes at that width is that the six are still stated, exactly once
+    // (`design/outfitting-workspace.md`, "The compact key figures").
+    if (await isCompactWorkspace(page)) {
+      await expect(page.locator('.outfitting__key-figures .metric')).toHaveCount(6);
+      await expect(page.locator('.outfitting__status-cells')).toHaveCount(0);
+      return;
+    }
+
     const cells = page.locator('.outfitting__status-cells .metric');
     await expect(cells).toHaveCount(6);
 

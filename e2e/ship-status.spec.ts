@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { revealStatusRail } from './outfitting-surfaces';
 import { openRecordFromLibrary } from './shell';
 
 /**
@@ -78,6 +79,9 @@ async function openStockBuild(page: Page): Promise<void> {
   await page.goto(`/ships/${HULL}`);
   await page.getByRole('button', { name: 'Build stock hull' }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
+  // Canvas 1d keeps the rail behind its `STATUS` segment rather than in the
+  // flow, so a compact run opens it and a wide one finds it already there.
+  await revealStatusRail(page);
   await expect(rail(page)).toBeVisible();
 }
 
@@ -85,6 +89,7 @@ async function openStockBuild(page: Page): Promise<void> {
 async function openSeededBuild(page: Page, id: string): Promise<void> {
   await page.goto('/builds');
   await openRecordFromLibrary(page, `Build ${id}`);
+  await revealStatusRail(page);
   await expect(rail(page)).toBeVisible();
 }
 

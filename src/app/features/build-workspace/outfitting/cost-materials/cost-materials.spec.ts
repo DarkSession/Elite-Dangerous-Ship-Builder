@@ -215,7 +215,7 @@ describe('cost and materials surface', () => {
       expect(blocks[0]?.contains(coin)).toBe(true);
       // And never inside the material list.
       expect(
-        fixture.nativeElement.querySelector('.rail-materials--bounded .rail-material--merc-coin'),
+        fixture.nativeElement.querySelector('.materials-box .rail-material--merc-coin'),
       ).toBeNull();
     });
 

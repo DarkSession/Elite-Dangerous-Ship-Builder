@@ -247,8 +247,10 @@ chosen:
 1. **Every mark on the plate is also a sentence.** The plate is a diagram; it is
    hidden from assistive technology and each mark is restated beside it as text
    naming the weapon, its hardpoint, its mount and where its shot goes. The ring
-   caption is stated with them, because it is the one figure the plate draws
-   that the four cells beneath it do not repeat. Since the 2026-08-25 revision
+   caption was stated with them, as the one figure the plate drew that nothing
+   beside it repeated; the 2026-08-26 revision draws no caption, so there is
+   nothing extra to state and the sentences are exactly the marks. Since the
+   2026-08-25 revision
    the plate clamps a far-off-axis shot to its frame rather than clipping it, so
    the sentence is no longer the only carrier for such a shot — it is still
    required, for every mark, because the plate is a diagram (`spec.md` FR-011).

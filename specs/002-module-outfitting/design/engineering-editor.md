@@ -48,6 +48,14 @@ do not mutate the active build until confirmed.
   that way, each bounded by the panel rather than by the other, and the rule the canvas draws between
   them runs the whole height. Stacked, the two halves are one column and one scroller — which is
   what the compact canvas draws, not a fault to correct.
+- **The two columns are canvas 1c's placement only. Corrected 2026-08-26.** The arrangement above was
+  written against the container's width alone, so a wide but short viewport — a phone held sideways,
+  or any window at 400% zoom — drew it inside canvas 1d's full-height screen as well. That screen is
+  one scrolling column of plates and the layer owns the whole viewport: the panes inside it are not
+  bounded by anything, so the two columns simply grew and the layer scrolled them together. Which is
+  the failure the ruling above was made about, drawn in the placement the ruling was never about. The
+  grid is therefore scoped to the inline editor, and canvas 1d's screen stays the single column it is
+  drawn as.
 - Blueprint choices from `availableBlueprints()` with localized package/canonical disclosed names,
   drawn as canvas 1c draws them: one dropdown, its value in the canvas's amber. On a
   package-identified purchase the recipe is **stated rather than offered** — the article arrived

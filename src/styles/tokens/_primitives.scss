@@ -472,6 +472,16 @@
   // text size instead of trapping more rows in the same pixels at 200%.
   --edsb-measure-material-list: 11.5rem;
 
+  // One of canvas 1d's six key readings, at the narrowest it may be drawn.
+  //
+  // The artboard sets all six across a 390px screen: 362px once the band's own
+  // 14px inside is paid for, less five 6px gaps, is 55px a cell — so this is
+  // the canvas's own measure rounded down to the scale rather than a floor
+  // invented for it. Held in `rem` so a Commander reading at 200% gets three
+  // cells on two rows instead of six cells with their figures hanging over the
+  // glass.
+  --edsb-measure-key-figure: 3.25rem;
+
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
   --edsb-measure-icon: 0.9375rem;

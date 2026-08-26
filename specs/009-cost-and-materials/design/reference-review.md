@@ -131,6 +131,13 @@ document already records for the sibling region: a scroll box needs `tabindex="0
 axe gate, since `scrollable-region-focusable` carries the `wcag2a` tag. The block's own heading is
 the name.
 
+**The box is around the list, never the list itself (corrected 2026-08-26).** The bound, the
+`tabindex` and the name were first put on the `dl` that holds the rows. A name needs a role to hang
+on, so the list was announced as a `group` — and a `dl` announced as a group is no longer a
+description list, which left every `dt` and `dd` in it outside one. That is the association this
+block exists to make: the material and how many of it. The scroll box is now a wrapper, and the list
+inside it keeps its own semantics untouched.
+
 ### What ruling F withdraws
 
 Not built, and not to be reintroduced without a new ruling:

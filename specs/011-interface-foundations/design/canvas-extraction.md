@@ -144,11 +144,19 @@ is drawn from, canvas 3b), then the screen title in condensed 700
 uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
 `--ink-45`. Trailing edge carries actions.
 
-The product draws the insignia at one size, `22 × 22px`, rather than the two the
+The product draws the insignia at one size, `26 × 23px`, rather than the two the
 canvases measure. The canvas's own difference between them is four pixels on
 each axis; a breakpoint to reproduce it would be a responsive rule nobody could
 see, and the wedge is a mark rather than a measured element of the layout. This
 is the second recorded deviation from the canvases, after the type ramp.
+
+The mark is drawn in the flag's own two layers rather than on its box: the wedge
+is an outline — the canvas's chevron, then the same chevron inset, which the
+non-zero fill rule cuts away — over the lighter bar canvas 3b closes it with. It
+has to be layered rather than painted on the element because the insignia is
+also the way home, and a control that stands on its own is held to the 44px
+press baseline: an amber ground on that box would draw a 44px amber square
+behind a 26px mark (011/FR-012, corrected 2026-08-26).
 
 ### Panel dialog
 

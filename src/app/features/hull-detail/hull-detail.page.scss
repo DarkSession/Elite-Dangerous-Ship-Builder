@@ -128,7 +128,24 @@
 // sheet's own bar (011/`ScreenReturn`). So the sheet's body does not draw them
 // a second time — the name and the line under it are already the bar's title.
 @include layout.compact {
+  // The name stays in the outline, hidden rather than dropped. The bar's title
+  // is an `h1` in the banner, and the sheet's own `HARDPOINTS` is an `h3`: take
+  // the `h2` between them off the page entirely and the article a reader lands
+  // in by landmark opens on a level it never reached, with nothing naming it
+  // (found 2026-08-26). The line under the name is the bar's alone — it is a
+  // fact and not a heading, so dropping it loses no structure.
+  // `contents` rather than a box: the block has nothing left to draw, and a box
+  // with nothing in it still takes a row's gap in the sheet's stack — which is
+  // the empty band this screen was reported for.
   .detail--named-by-bar .detail__identity {
+    display: contents;
+  }
+
+  .detail--named-by-bar .detail__name {
+    @include layout.visually-hidden;
+  }
+
+  .detail--named-by-bar .detail__blurb {
     display: none;
   }
 }

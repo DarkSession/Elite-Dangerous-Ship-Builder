@@ -11,6 +11,8 @@ import {
   fitCommitted,
   openChooserRows,
   openEditor as bringEditorOnScreen,
+  revealMount,
+  revealStatusRail,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 import { reachShellAction } from './shell';
@@ -51,6 +53,10 @@ async function openStockBuild(page: Page, messages = englishMessages): Promise<v
   await page.goto(`/ships/${HULL}`);
   await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
+  // Both blocks live in the status rail, which canvas 1d keeps behind its
+  // `STATUS` segment rather than in the flow — so a compact run opens it, and a
+  // wide one finds it already there.
+  await revealStatusRail(page, exactly(messages['outfitting.status-rail.mode']));
   await expect(page.locator('edsb-cost-materials .cost__row').first()).toBeVisible();
 }
 
@@ -270,7 +276,7 @@ test.describe('the Merc Coin row', () => {
       page.locator('edsb-cost-materials .block').first().locator('.rail-material--merc-coin'),
     ).toHaveCount(1);
     await expect(
-      page.locator('edsb-cost-materials .rail-materials--bounded .rail-material--merc-coin'),
+      page.locator('edsb-cost-materials .materials-box .rail-material--merc-coin'),
     ).toHaveCount(0);
     await expect(coin).toContainText(/\p{L}/u);
   });
@@ -282,7 +288,7 @@ test.describe('the Merc Coin row', () => {
     // Ruling G: the canvas draws five rows against a footer counting eighteen
     // types, so the list is a box with a scroll. Ruling E still holds — every
     // consolidated row is present, none is truncated away.
-    const list = page.locator('edsb-cost-materials .rail-materials--bounded');
+    const list = page.locator('edsb-cost-materials .materials-box');
     await expect(list).toHaveCount(1);
     await expect(list).toHaveAttribute('tabindex', '0');
 
@@ -290,6 +296,12 @@ test.describe('the Merc Coin row', () => {
     const labelledBy = await list.getAttribute('aria-labelledby');
     expect(labelledBy).toBeTruthy();
     await expect(page.locator(`#${labelledBy}`)).toHaveCount(1);
+
+    // And the box is around the list, never the list itself: a `dl` given the
+    // box's own role stops being a description list, and its terms and figures
+    // stop being associated at all.
+    await expect(list.locator('dl.rail-materials')).toHaveCount(1);
+    await expect(list.locator('dl[role]')).toHaveCount(0);
 
     const bounded = await list.evaluate((node) => {
       const style = getComputedStyle(node);
@@ -1000,6 +1012,7 @@ test.describe('the accessibility sweep, state by state', () => {
  * once a mount is marked, so clicking the row and asking immediately races it.
  */
 async function engineerTheDrive(page: Page, messages = englishMessages): Promise<void> {
+  await revealMount(page, 'FrameShiftDrive');
   const row = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -1040,6 +1053,7 @@ function exactly(label: string): RegExp {
  * by the module's name, which both rows carry.
  */
 async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
+  await revealMount(page, slot);
   const mount = page.locator(`[data-slot-key="${slot}"] button`).first();
   await mount.click();
   await expect(mount).toHaveAttribute('aria-pressed', 'true');

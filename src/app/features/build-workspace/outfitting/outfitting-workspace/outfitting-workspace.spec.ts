@@ -194,7 +194,7 @@ describe('the compact workspace', () => {
     const fixture = render();
     const workspace = fixture.componentInstance;
 
-    workspace.category.set('core');
+    workspace.showCategory('core');
     fixture.detectChanges();
 
     const kinds = workspace.groups().map((group) => group.kind);
@@ -257,3 +257,92 @@ describe('the compact workspace', () => {
     ).toBeTruthy();
   });
 });
+
+/**
+ * Canvas 1c's arrangement, where the ledger is offered whole.
+ *
+ * The region measures its own box rather than the window, so a wide region is
+ * declared by reporting one — see `restoreAfterWideRegion` below.
+ */
+describe('the wide workspace’s categories', () => {
+  let active: ActiveBuildStore;
+
+  function render() {
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
+    });
+    active = TestBed.inject(ActiveBuildStore);
+    active.commit(candidateFor(defaultBuild()));
+  });
+
+  it('opens on “all” where the width offers it, not on the tab it opened compact with', () => {
+    // The region reports the compact composition until its observer has
+    // measured it for the first time, so the offering a category is first read
+    // against is canvas 1d's four tabs whatever the window is. A category that
+    // remembered that first reading would open a desktop ledger on eight of
+    // thirty-nine mounts with `ALL` beside it unpressed.
+    const wide = restoreAfterWideRegion(1440);
+    try {
+      const workspace = render().componentInstance;
+
+      expect(workspace.categories().map((entry) => entry.value)).toEqual([
+        'all',
+        'hardpoint',
+        'core',
+        'optional',
+        'utility',
+      ]);
+      expect(workspace.category()).toBe('all');
+    } finally {
+      wide();
+    }
+  });
+
+  it('holds the category a Commander chose, over the offering’s own first', () => {
+    const wide = restoreAfterWideRegion(1440);
+    try {
+      const workspace = render().componentInstance;
+
+      workspace.showCategory('optional');
+      expect(workspace.category()).toBe('optional');
+    } finally {
+      wide();
+    }
+  });
+});
+
+/**
+ * Reports one region width to `observeComposition`, and gives back the undo.
+ *
+ * The composition is measured from the host's own box rather than from the
+ * window, so a test about a wide region says how wide the box is rather than
+ * resizing anything. The observer is stubbed only so the measurement path is
+ * taken at all — the reading that matters is the synchronous one it makes
+ * before observing (`composition.ts`).
+ */
+function restoreAfterWideRegion(width: number): () => void {
+  const box = Element.prototype.getBoundingClientRect;
+  const observer = globalThis.ResizeObserver;
+
+  Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
+    // Spread rather than reconstructed: the renderer's own box carries every
+    // other edge, and only the inline size is being declared here.
+    return Object.assign(box.call(this), { width }) as DOMRect;
+  };
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  } as unknown as typeof ResizeObserver;
+
+  return () => {
+    Element.prototype.getBoundingClientRect = box;
+    globalThis.ResizeObserver = observer;
+  };
+}

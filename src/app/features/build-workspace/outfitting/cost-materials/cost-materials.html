@@ -73,35 +73,42 @@
           `tabindex` is what makes it reachable without a pointer, and what the
           axe gate requires of a scroll box (`scrollable-region-focusable`
           carries the `wcag2a` tag); the heading names it.
+
+          The box is a wrapper rather than the list itself, because the role
+          that names it would replace the list's own: a `dl` announced as a
+          group has `dt`s and `dd`s that no longer sit in a description list at
+          all, which is the association this block exists to make.
         -->
-        <dl
-          class="rail-materials rail-materials--bounded"
+        <div
+          class="materials-box"
           tabindex="0"
           role="group"
           [attr.aria-labelledby]="materialsHeadingId"
         >
-          @for (row of materialRows(); track row.symbol) {
-            <div class="rail-material">
-              <dt class="rail-material__name">
-                <!--
-                The rarity sits inside the term rather than beside it: a `dl`
-                group may hold only `dt` and `dd`, so a third element between
-                them would break the association that is the whole reason this
-                is a description list.
-              -->
-                @if (row.grade !== null) {
-                  <edsb-material-grade class="rail-material__grade" [grade]="row.grade" />
-                }
-                <edsb-game-text
-                  [text]="row.name.text"
-                  [language]="row.name.language"
-                  [translationState]="row.name.translationState"
-                />
-              </dt>
-              <dd class="rail-material__count" data-bidi-isolate>{{ row.count }}</dd>
-            </div>
-          }
-        </dl>
+          <dl class="rail-materials">
+            @for (row of materialRows(); track row.symbol) {
+              <div class="rail-material">
+                <dt class="rail-material__name">
+                  <!--
+                    The rarity sits inside the term rather than beside it: a
+                    `dl` group may hold only `dt` and `dd`, so a third element
+                    between them would break the association that is the whole
+                    reason this is a description list.
+                  -->
+                  @if (row.grade !== null) {
+                    <edsb-material-grade class="rail-material__grade" [grade]="row.grade" />
+                  }
+                  <edsb-game-text
+                    [text]="row.name.text"
+                    [language]="row.name.language"
+                    [translationState]="row.name.translationState"
+                  />
+                </dt>
+                <dd class="rail-material__count" data-bidi-isolate>{{ row.count }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
       }
 
       <!--

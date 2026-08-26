@@ -1,18 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
-import { publishedSlotKeys, sweepOutfittingState } from './accessibility';
+import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
 import {
+  acrossEveryFamily,
   chooserOffered,
   editorOffered,
+  familyControls,
   fitCommitted,
+  manifestOf,
   openAllFamilies,
   openChooser,
   openChooserRows,
-  revealFamilyHolding,
-  revealedRows,
-  acrossEveryFamily,
-  familyControls,
-  manifestOf,
   openEditor,
+  revealedRows,
+  revealFamilyHolding,
+  revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 import { savedToBrowser } from './shell';
@@ -44,6 +45,9 @@ async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
  * replaced.
  */
 async function selectMount(page: Page, slotKey: string): Promise<void> {
+  // Its category first: at compact width a mount nobody has asked for is not
+  // on the page at all (`revealMount`).
+  await revealMount(page, slotKey);
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -202,7 +206,9 @@ test.describe('the slot ledger', () => {
   test('renders every package mount, by exact key, including the cargo hatch', async ({ page }) => {
     await openStockBuild(page);
 
-    const keys = await publishedSlotKeys(page);
+    // Across the categories, not down this screenful: canvas 1d draws one
+    // category at a time and the claim is about the hull's mounts.
+    const keys = await everyPublishedSlotKey(page);
 
     // The Anaconda's own layout, in the package's outfitting order. Asserted
     // against the game's spellings rather than against a count, because a count
@@ -435,6 +441,7 @@ test.describe('package-populated fixed mounts', () => {
     // Every fixed mount carries a module. The application ran no repair pass —
     // this is what the package's own construction returned (FR-010).
     for (const key of ['Armour', 'PowerPlant', 'MainEngines', 'FrameShiftDrive', 'CargoHatch']) {
+      await revealMount(page, key);
       await expect(page.locator(`[data-slot-key="${key}"]`), key).not.toContainText(/empty/i);
     }
 
@@ -809,32 +816,34 @@ test.describe('power and the cargo hatch', () => {
   test('presents the package’s five groups one-based, as the game does', async ({ page }) => {
     await openStockBuild(page);
 
+    await revealMount(page, 'FrameShiftDrive');
     const options = page.locator('[data-slot-key="FrameShiftDrive"] .power__priority option');
 
-    // Six, not five: a stock build states no group at all, so the control holds
-    // a place for that rather than writing group 1 into it — and that entry
-    // cannot be chosen back, because no package operation unsets a group. The
-    // canvas draws one digit in this chip, so the absence is a mark here and a
-    // sentence in the control's own name (wave 4).
-    await expect(options).toHaveCount(6);
-    await expect(options.first()).toHaveText('—');
-    await expect(options.first()).toBeDisabled();
-    await expect(
-      page.locator('[data-slot-key="FrameShiftDrive"] .power__priority'),
-    ).toHaveAccessibleName(/no group published/i);
+    // Five, and no sixth place for an unstated group. The chip used to hold a
+    // disabled `—` for a module whose source named no group; it now draws the
+    // package's own default for that case, which is group 1 — the group
+    // `powerBudget()` had already put the module in and the group the power
+    // panel beside it lists and sheds (ruled 2026-08-26, `power-controls.ts`).
+    await expect(options).toHaveCount(5);
 
     // The five the package publishes, as bare numbers: the reference draws a
     // number in the chip and no word beside it.
-    const groups = options.filter({ hasNotText: '—' });
-    await expect(groups).toHaveCount(5);
-    await expect(groups.first()).toHaveText('1');
-    await expect(groups.first()).toHaveAttribute('value', '0');
-    await expect(groups.last()).toHaveText('5');
-    await expect(groups.last()).toHaveAttribute('value', '4');
+    await expect(options.first()).toHaveText('1');
+    await expect(options.first()).toHaveAttribute('value', '0');
+    await expect(options.first()).toBeEnabled();
+    await expect(options.last()).toHaveText('5');
+    await expect(options.last()).toHaveAttribute('value', '4');
+
+    // A stock build states no group, and the chip stands in the one the rest of
+    // the application already has it in rather than in a blank.
+    await expect(page.locator('[data-slot-key="FrameShiftDrive"] .power__priority')).toHaveValue(
+      '0',
+    );
   });
 
   test('leaves a module fitted when its power changes', async ({ page }) => {
     await openStockBuild(page);
+    await revealMount(page, 'FrameShiftDrive');
     const before = await fittedIdentityAt(page, 'FrameShiftDrive');
 
     // By value, explicitly. Every option's label is now a number too, and a
@@ -874,6 +883,7 @@ test.describe('power and the cargo hatch', () => {
 
     // Forty rows of the same two controls: "powered" on its own says nothing
     // about which module a reader is on.
+    await revealMount(page, 'FrameShiftDrive');
     const toggle = page.locator('[data-slot-key="FrameShiftDrive"] .power__toggle');
     await expect(toggle).toHaveAttribute('aria-label', /frame shift drive/i);
     await expect(toggle).toHaveAttribute('aria-label', /core internals/i);
@@ -885,6 +895,7 @@ test.describe('power and the cargo hatch', () => {
     // Armour draws nothing and the power plant is what everything else draws
     // from. Neither has power to group, and the canvas draws no chip on one
     // (wave 4).
+    await revealMount(page, 'Armour');
     await expect(page.locator('[data-slot-key="Armour"] edsb-power-controls')).toHaveCount(0);
     await expect(page.locator('[data-slot-key="PowerPlant"] edsb-power-controls')).toHaveCount(0);
     await expect(page.locator('[data-slot-key="FrameShiftDrive"] edsb-power-controls')).toHaveCount(

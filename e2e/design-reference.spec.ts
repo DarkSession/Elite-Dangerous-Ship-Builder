@@ -65,21 +65,37 @@ test.describe('the reference visual language', () => {
 
   test('opens the command bar with the amber wedge insignia', async ({ page }) => {
     // The resynced canvases replaced the plain amber block that opened the bar
-    // with the wedge the app icon is cut from (canvas 3b): roughly square, and
-    // clipped rather than rectangular. The product draws it at one size at all
-    // widths, which canvas-extraction records as a deviation.
+    // with the wedge the app icon is cut from (canvas 3b): a clipped outline
+    // closed by a lighter bar. Both are cut into the flag's own layers rather
+    // than painted on its box, because where the insignia is the way home that
+    // box is held to the 44px press baseline and an amber ground on it would
+    // draw a 44px amber square (`canvas-extraction.md`, "Command bar").
     const flag = page.locator('.frame__flag');
 
-    expect(await style(flag, 'background-color')).toBe(AMBER);
-    // The mark is the clip, not the box. A flag that lost its `clip-path` would
-    // still be an amber rectangle of the right size and would pass every other
-    // assertion here.
-    expect(await style(flag, 'clip-path')).toMatch(/^polygon\(/);
+    const mark = await flag.evaluate((element) => {
+      const wedge = getComputedStyle(element, '::before');
+      const underbar = getComputedStyle(element, '::after');
+      const box = getComputedStyle(element);
+      return {
+        wedge: wedge.backgroundColor,
+        clip: wedge.clipPath,
+        underbar: underbar.backgroundColor,
+        width: parseFloat(box.inlineSize),
+        height: parseFloat(box.blockSize),
+      };
+    });
 
-    const box = await flag.boundingBox();
-    expect(box, 'the command flag is rendered').not.toBeNull();
-    expect(box!.width).toBeGreaterThan(0);
-    expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(1);
+    expect(mark.wedge).toBe(AMBER);
+    // The mark is the clip, not the box. A wedge that lost its `clip-path`
+    // would still be an amber rectangle of the right size and would pass every
+    // other assertion here.
+    expect(mark.clip).toMatch(/^polygon\(/);
+    // The bar the canvas closes the mark with, in a wash of the same amber.
+    expect(mark.underbar).toMatch(/^rgba\(255, 140, 26/);
+
+    // `26 x 23`: the size canvas 3b draws the mark, near enough square.
+    expect(mark.width).toBeGreaterThan(0);
+    expect(Math.abs(mark.width - mark.height)).toBeLessThanOrEqual(4);
   });
 
   test('sets every heading in tracked uppercase condensed', async ({ page }) => {

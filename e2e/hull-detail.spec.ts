@@ -48,6 +48,22 @@ async function readableText(page: Page): Promise<string> {
 }
 
 /**
+ * The sheet's own identity, wherever this width draws it.
+ *
+ * At wide width the name and the `MANUFACTURER · <PAD> LANDING PAD` line are
+ * the body's; at compact they are the command bar's title and the line under
+ * it, and the body does not draw them a second time — the canvas puts them in
+ * the bar and draws them once (`design/hull-detail.md`). The claim is that the
+ * screen states both facts on one line, not which of the two places states it.
+ */
+async function identityText(page: Page): Promise<string> {
+  const bar = page.locator('.frame__return-detail');
+  const line = (await bar.count()) > 0 ? await bar.first().innerText() : '';
+  const title = await page.getByRole('heading', { level: 1 }).first().innerText();
+  return `${await readableText(page)} ${title} ${line}`.replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
  * Opens a hull the way a Commander does, without reloading the application.
  *
  * A full navigation would discard the in-memory build, and the replacement
@@ -87,7 +103,7 @@ test.describe('hull detail', () => {
   // Canvas 1a/1b: `FAULCON DELACY · LARGE LANDING PAD`. The pad class is a
   // pad class, and the line says so rather than leaving a bare `LARGE`.
   test('names the manufacturer and the pad class on one identity line', async ({ page }) => {
-    const text = await readableText(page);
+    const text = await identityText(page);
 
     expect(text).toContain('faulcon delacy');
     expect(text).toContain('large landing pad');

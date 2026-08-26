@@ -63,7 +63,7 @@
             class="outfitting__category"
             type="button"
             [attr.aria-pressed]="category() === entry.value ? 'true' : 'false'"
-            (click)="category.set(entry.value)"
+            (click)="showCategory(entry.value)"
           >
             <span class="outfitting__category-label">{{ entry.label }}</span>
             <span class="outfitting__category-count">{{ entry.count }}</span>

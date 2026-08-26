@@ -26,6 +26,111 @@ export async function surfacesAreLayers(page: Page): Promise<boolean> {
   return (await page.locator('.outfitting__bench-actions').count()) > 0;
 }
 
+/**
+ * Which arrangement the outfitting region measured itself into.
+ *
+ * Read from the region's own published composition rather than from the
+ * viewport: the arrangement is chosen from the space the region is *given*, so
+ * a desktop window at 400% zoom or a doubled text size is compact too. A test
+ * whose claim is canvas 1c's takes its other branch there rather than failing
+ * on an arrangement it is not about (responsive composition, "Verification
+ * matrix").
+ */
+export async function isCompactWorkspace(page: Page): Promise<boolean> {
+  const region = page.locator('.outfitting').first();
+  await expect(region).toBeVisible();
+  return (await region.getAttribute('data-composition')) === 'compact';
+}
+
+/**
+ * Brings the status rail on screen, however this width keeps it.
+ *
+ * Canvas 1c draws the rail as the third track of its grid, on screen whatever
+ * else is: there is nothing to reveal. Canvas 1d has no third track, so the
+ * same content is behind the strip's sixth segment, `STATUS`, and a journey
+ * that reads a validation line, a cost row or a summary cell has to open it
+ * first (Commander request 2026-08-26).
+ *
+ * Compact is not only a narrow phone: the composition is chosen from the space
+ * the region is *given*, so a desktop window at 400% zoom or a doubled text
+ * size takes this branch too. That is why every reader of the rail calls this
+ * rather than testing the viewport.
+ *
+ * Named for the language the page is being read in, for the reason
+ * `openChooser` gives.
+ */
+export async function revealStatusRail(
+  page: Page,
+  name: string | RegExp = /^status$/i,
+): Promise<void> {
+  const region = page.locator('.outfitting').first();
+  const rail = page.locator('.outfitting__status-rail').first();
+  const segment = page.locator('.anatomy__modes').getByRole('button', { name });
+
+  // Read from the region's own published composition rather than from whether
+  // the rail happens to be on screen yet. The composition is measured after the
+  // first paint, so a rail asked about too early answers for the arrangement it
+  // is about to leave — and the branch taken on that answer is the wrong one at
+  // both widths.
+  //
+  // Retried as a whole for the same reason `pressCommandBarAction` is: the
+  // strip republishes its segments when the composition changes, so a control
+  // located a moment ago can be gone by the time it is pressed.
+  await expect(async () => {
+    if ((await region.getAttribute('data-composition')) !== 'compact') {
+      await expect(rail).toBeVisible({ timeout: 2_000 });
+      return;
+    }
+    await segment.click({ timeout: 2_000 });
+    await expect(rail).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+}
+
+/**
+ * Brings one mount's row into the ledger, whichever category holds it.
+ *
+ * Canvas 1d offers no `ALL`: at compact width the ledger draws one category at
+ * a time and a Commander says which, so a mount in a category nobody has
+ * pressed is not on the page rather than merely scrolled past (Commander
+ * request 2026-08-26). At wide width `ALL` is the opening category and every
+ * mount is already there, which is why this is a no-op on canvas 1c.
+ *
+ * The categories are pressed in turn rather than mapped from the slot key: the
+ * mapping is the product's (`CATEGORY_KINDS` puts armour and the cargo hatch
+ * under `CORE`), and a second copy of it here would be a copy that could
+ * disagree with it.
+ */
+export async function revealMount(page: Page, slotKey: string): Promise<Locator> {
+  const mount = page.locator(`[data-slot-key="${slotKey}"]`).first();
+
+  // The ledger first: counting is an answer rather than a wait, and asked
+  // before the region has drawn a row it answers that no category holds this
+  // mount — which would send the search below through every category for
+  // nothing.
+  await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+  if ((await mount.count()) > 0) {
+    return mount;
+  }
+
+  const categories = page.locator('.outfitting__category');
+  const total = await categories.count();
+  for (let index = 0; index < total; index += 1) {
+    const category = categories.nth(index);
+    // Retried as a whole, for the reason `pressEveryFamily` gives: pressing a
+    // category rebuilds the ledger under it, and a press dispatched into a view
+    // being rebuilt is answered by nobody.
+    await expect(async () => {
+      await category.click({ timeout: 2_000 });
+      await expect(category).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
+    if ((await mount.count()) > 0) {
+      return mount;
+    }
+  }
+
+  throw new Error(`No category in the ledger holds the mount ${slotKey}.`);
+}
+
 /** Whether the selected mount offers the chooser at all, at this width. */
 export async function chooserOffered(page: Page): Promise<boolean> {
   return (
@@ -559,5 +664,14 @@ export function commandBarActionState(page: Page, name: RegExp): Locator {
   // The button itself, not the component around it: the invisible description
   // that says what the action would do is a sibling of the button, so the
   // component's own text is the label *and* that sentence.
-  return page.locator('.frame__actions button', { hasText: name });
+  //
+  // Matched on the label element rather than on the button's own text, because
+  // the text is not only the label: canvas 1c draws `↶ UNDO` and `REDO ↷`, and
+  // the mark beside the word is text in the button too — so an anchored name
+  // matches nothing at all. The label element carries the word alone, whether
+  // the button draws it (`action__label`) or draws a mark in its place and
+  // keeps it for a reader (`visually-hidden`).
+  return page
+    .locator('.frame__actions button')
+    .filter({ has: page.locator('.action__label, .visually-hidden').filter({ hasText: name }) });
 }

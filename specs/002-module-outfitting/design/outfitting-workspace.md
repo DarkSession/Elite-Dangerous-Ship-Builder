@@ -202,7 +202,33 @@ panel that is not the open one is removed from the page rather than hidden visua
 The segment is offered only at compact width. At wide width the rail is the third track of canvas
 1c's grid and is on screen whatever the strip has open, so there is nothing for a segment to reveal.
 
+### The foot is drawn, not pinned
+
+Canvas 1d draws `CHANGE MODULE` and `ENGINEER` on a plate at the foot of the screen, and the artboard
+pins that plate: it is drawn over the ledger, not after it. **The application draws it in the flow**,
+at the end of the stack where the artboard puts it, and does not pin it.
+
+The reason is measured rather than argued. An opaque plate 76px tall over a page-length ledger of
+52px rows covers between half and the whole of whichever row falls at the foot of the viewport, and
+it does so at every scroll position there is — there is no scroll offset at which nothing is behind
+it. On an Anaconda's hardpoints that left a mount row 350×20.4px against a 24px floor
+(`target-size`, `wcag22aa`, measured 2026-08-26). The mount rows are this screen's primary targets; a
+plate that permanently covers one of them cannot be pinned over them.
+
+Pinning it correctly means bounding the scroll rather than floating the plate: the stack above scrolls
+inside a box of its own and the plate sits below that box, which is how a phone's action bar is built
+and what the artboard is actually drawing. That is a different arrangement from the single page-length
+column this region composes at compact width — the mode strip, the plates, the key figures and the
+ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
+
 ### The compact key figures
+
+The strip sets all six across, which at 390px is 55px a cell once its own 14px inside and the five
+gaps are paid for. That is a **track floor, not a column count**: six tracks of `minmax(0, 1fr)` hold
+their number at any text size and let the figure inside hang over the edge of the screen instead, and
+a doubled text size ran the page 34px wide of the glass on exactly that (found 2026-08-26). The
+tracks are `repeat(auto-fit, minmax(3.25rem, 1fr))`, so the six stay on one row where they fit and
+become three on two rows where they do not.
 
 Canvas 1d draws the same six readings twice: once in the strip above the category tabs and again
 inside the `STATUS` panel's cell band. **The application draws them once**, in the strip, and the rail
@@ -262,6 +288,20 @@ Canvas 1d's tab strip is `HARDPOINTS · CORE · OPTIONAL · UTILITY`, with no `A
 tabs. The `ALL` chip is canvas 1c's: at compact width the ledger is one category at a time and a
 Commander says which, rather than being handed thirty-four mounts to scroll. A window narrowing while
 `ALL` is chosen lands on the first tab, which is the one the artboard draws selected.
+
+**Which category is shown is a choice, not a memory (corrected 2026-08-26).** The shown category was
+first written as the last value that is still offered, falling back to the offering's own first. That
+reads correctly and is wrong, because of _when_ it is first read: the region reports the compact
+composition until its observer has measured it, so the first offering any width sees is canvas 1d's
+four tabs — and `HARDPOINTS`, latched a frame before `ALL` existed, is offered at both widths and
+therefore never let go of. Canvas 1c's ledger opened on eight of an Anaconda's thirty-nine mounts
+with `ALL` beside it unpressed, and every mount outside the hardpoints was unreachable without
+pressing a tab the artboard does not draw selected.
+
+So what is held is the category a Commander **asked** for, and nothing is held where nobody has
+asked. The shown category is that choice where the width still offers it and the offering's own first
+where it does not: `ALL` at wide, `HARDPOINTS` at compact. A choice survives a resize that keeps
+offering it; `ALL`, which nobody chose away from, comes back when the width offers it again.
 
 `CORE` lists three of the package's slot kinds. Canvas 1c counts `CORE 8` on an Anaconda whose seven
 core internals are followed by its cargo hatch, and canvas 1d's `CORE` panel draws that hatch as its
