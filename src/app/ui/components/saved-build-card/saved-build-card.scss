@@ -116,9 +116,23 @@
 
 // At width the row becomes the reference's columns; narrow, it stacks in the
 // same reading order.
+//
+// The tracks are the canvas's own: `1fr 150px 84px`, once the `Mcr` column it
+// draws between them is taken out. Three fluid parts instead gave the hull and
+// the edited-at a third of the row each — two short monospace readings holding
+// as much width as the name and the note they stand beside — and let the
+// columns drift with the surface so no two rows lined up the same way at two
+// sizes. Bounded rather than fixed, so a long hull name or a doubled text size
+// takes what it has instead of overflowing (reported 2026-08-26).
 @include layout.container-medium-up(records) {
   .record {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
     align-items: baseline;
+  }
+
+  // The canvas sets the edited-at against the row's trailing edge, where the
+  // eye finds a column of dates rather than a ragged one.
+  .record__modified {
+    text-align: end;
   }
 }

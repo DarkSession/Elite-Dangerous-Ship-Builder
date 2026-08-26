@@ -59,8 +59,15 @@
 @include layout.container-medium-up(records) {
   .records__columns {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr);
+    // The same tracks the rows take, or the headings name the wrong columns.
+    grid-template-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
     padding-inline-start: calc(var(--edsb-space-row) + var(--edsb-border-width-marker));
+  }
+
+  // `EDITED` over the column it heads, which the canvas sets against the
+  // trailing edge.
+  .records__columns span:last-child {
+    text-align: end;
   }
 }
 
