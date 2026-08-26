@@ -356,15 +356,32 @@ its neighbours had been guessed at, when all of them are equally approximate. A 
 true: these mounts are too close together to draw apart, so here they all are, each tied back to its
 own point.
 
-**A ring is turned to where there is room, not only to where its own mounts point.** The turn that
-lines the ring up with the mounts — each member on its own side of the crowd — is where a crowd sits
-when nothing is around it, and it wins every tie. But a crowd sitting in the middle of a hull has
-other mounts on some sides and open air on others, and a ring that only looks inward cannot tell
-those apart. The Corsair's top plate is the case: its `LargeHardpoint1` sits on the left of its own
-crowd, so an inward-looking ring sent that mark left, straight over the two hardpoints beyond it,
-while the whole right side of the hull stood empty. Sixteen turns of the ring are tried and the one
-that leaves the most room wins — room measured for the leaders as well as the marks, because a mark
-can land in clear air and still have been reached by a line drawn across two of its neighbours. The
+**A ring is turned to where its own mounts point if it possibly can be, and to where there is room
+if it cannot.** The turn that lines the ring up with the mounts — each member on its own side of the
+crowd — is where a crowd sits when nothing is around it, and it is the arrangement a reader expects:
+the mark for a mount on the left goes left, the mark for one above goes up. It is asked for first,
+at every radius on the ladder, and taken as soon as one will hold it.
+
+That the aligned turn has to be asked for _across the whole ladder_ is the correction of
+2026-08-26. Searching turn-by-turn at one radius and growing only when none fits looks equivalent
+and is not: a crowd in the middle of a hull is blocked in the aligned direction by the very mounts
+it sits between, while a turn a quarter-circle away is free, so the search settles at the first
+radius on a turn that points nowhere in particular — and because room outranks closeness to the
+aligned turn, the radius that _would_ clear the obstruction is never asked for.
+
+The Corsair's top plate is the case. Its `LargeHardpoint1` sits on the centreline just ahead of two
+mirrored pairs, and the aligned ring sends that mark forward along the hull's own axis, which is
+where the eye looks for it. That ring is refused at the first fitting radius, because at that radius
+the mark lands between the two hardpoints ahead of it; one more rung of growth clears them. Before
+the correction the crowd settled a quarter-circle off — node 1's mark went down, node 4's went up
+and across the hull, node 5's went right — and _which_ quarter-circle was decided by a room
+difference of under two thousandths of a frame unit, an artefact of the package's own rounding of
+two mirrored mounts. A re-export could have flipped it. Now node 1 goes forward, node 4 up and node
+5 down, and nothing about that rests on a rounding error.
+
+Where no radius will hold the aligned turn, sixteen turns of the ring are tried and the one that
+leaves the most room wins — room measured for the leaders as well as the marks, because a mark can
+land in clear air and still have been reached by a line drawn across two of its neighbours. The
 slots are still handed out in the members' own angular order whatever the turn, which keeps a crowd's
 marks in the same cyclic order as its mounts — **but that is not enough on its own to stop two of its
 leaders crossing**, and believing it was is what let the Corsair's nodes 4 and 5 make an X at any
@@ -380,11 +397,14 @@ it can choose a side that a later one then fills, or run a leader across a mount
 move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
 also what raised the shipped package's shortest visible leader from under a pixel to ten.
 
-A ring must also clear every published mount position that is _not_ in the crowd. Without that a mark
-can come to rest exactly where a different mount is, so a reader sees a numbered square sitting on
-mount B carrying mount A's number while A's leader runs off elsewhere — the precise failure the
-leader exists to prevent, committed by the thing meant to prevent it. It happened on two plates
-before the rule existed. Inside a crowd the question does not arise the same way: the mounts are
+A ring must also clear every published mount position that is _not_ in the crowd, **and the ring
+grows until it can**. Without the first half a mark can come to rest exactly where a different mount
+is, so a reader sees a numbered square sitting on mount B carrying mount A's number while A's leader
+runs off elsewhere — the precise failure the leader exists to prevent, committed by the thing meant
+to prevent it. It happened on two plates before the rule existed. Without the second half the rule
+does its job and costs the crowd its direction: the Corsair's node 1 was turned aside by exactly
+this clearance, when growing the ring one rung would have carried it past the obstruction on the
+turn it wanted. Inside a crowd the question does not arise the same way: the mounts are
 piled together by definition and the marks are arranged around them, which is what each member's own
 leader is there to tell apart.
 
@@ -408,9 +428,13 @@ underside is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pi
 even that will not fit does a crowd keep its mounts' own positions, and the front-on-hover rule
 answers the overlap.
 
-Measured across the ninety-six shipped plates at plate widths from two hundred to seven hundred and
+Measured across the shipped plates at plate widths from two hundred to seven hundred and
 twenty pixels: no mark ends outside its frame, and no pair of marks is left covering more than half
-of the other, at any of those widths or at doubled text on a phone. From three hundred pixels of
+of the other, at any of those widths or at doubled text on a phone. **Re-measured after the
+aligned-first correction of 2026-08-26**, over every shipped plate at six widths from two hundred
+and eighty to a thousand pixels: the same number of marks is displaced as before it, no leader
+crosses another, no mark leaves its frame, and the tightest pair on any plate is where it was. The
+correction changes which way a crowd faces, not how much it has to move. From three hundred pixels of
 plate upward — every width the two-column and single-plate arrangements actually give — **no two
 leaders cross**, and the shortest visible leader runs from ten to sixteen pixels. Below about two
 hundred and fifty pixels the separation-only fallback takes over: a handful of leaders cross there

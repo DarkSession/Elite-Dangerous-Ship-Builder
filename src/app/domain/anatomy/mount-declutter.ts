@@ -481,6 +481,37 @@ function arrange(
       return best;
     };
 
+    // The aligned turn at whatever radius will hold it, asked first.
+    //
+    // `aligned` is where a crowd sits when nothing is around it: each member
+    // keeps its own side, so the mark for a mount on the left goes left and the
+    // mark for one above goes up. That is the arrangement a reader expects, and
+    // the search below will not reach it — it returns at the first radius where
+    // *any* turn fits, and at that radius the aligned turn is usually still
+    // blocked by the very mounts the crowd sits between, while a turn a
+    // quarter-circle away is not. Room then outranks alignment, so even a
+    // radius that would clear the obstruction never gets asked for.
+    //
+    // The Corsair's top plate is the case. Its foremost large mount sits on the
+    // centreline between two mirrored pairs; the aligned ring would send that
+    // mark forward along the hull's own axis, which is where the eye looks for
+    // it, but it is refused at the first fitting radius because it lands
+    // between the two mounts ahead of it. The ring only has to grow one more
+    // rung to clear them. Asking for the aligned turn across the whole ladder before
+    // scoring turns by room is what lets it.
+    //
+    // A ring that crosses a leader already on the plate is not taken however
+    // well it lines up: a crossing is a defect a reader sees before anything
+    // else, and the room-scored search below is better placed to avoid one.
+    for (const floor of [legible, separating]) {
+      for (let step = 0; step < GROWTH_STEPS; step += 1) {
+        const ring = ringOf(members, floor * GROWTH ** step, aligned);
+        if (fits(ring) && tangles(ring) === 0) {
+          return ring;
+        }
+      }
+    }
+
     // Two ladders, tried in order of what they promise. The first asks for a
     // ring far enough out that every member visibly moved and its leader can be
     // read. The second asks only that the crowd's marks stop covering each

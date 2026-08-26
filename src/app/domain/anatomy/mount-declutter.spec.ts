@@ -381,4 +381,48 @@ describe('placeMarks', () => {
 
     expect(placeMarks(anchors, FRAME).map((one) => one.anchor)).toEqual(anchors);
   });
+
+  it('sends the Corsair\u2019s crowded hardpoints where the hull points', () => {
+    // The reported case, at the anchors the shipped extract produces for the
+    // Corsair's top plate (`public/assets/ships/Corsair/schematic-top.json`,
+    // turned a quarter and padded to the plate's own ratio). Node 1 sits on the
+    // centreline just ahead of the mirrored pair 4 and 5, with 2 and 3 further
+    // forward again.
+    //
+    // Before the aligned turn was asked for first, this crowd settled a
+    // quarter-circle off: node 1's mark went *down*, node 4's went up and left
+    // across the hull, and node 5's went right. Which way round that fell was
+    // decided by a room difference of under two thousandths of a frame unit,
+    // produced by the package's own rounding of two mirrored mounts — so it
+    // could have flipped on a re-export.
+    const frame = { width: 1423.2329, height: 577.2 };
+    const anchors = [
+      { x: 659.555, y: 288.6 }, // node 1
+      { x: 565.054, y: 320.569 }, // node 2
+      { x: 565.054, y: 256.633 }, // node 3
+      { x: 670.62, y: 321.575 }, // node 5
+      { x: 670.619, y: 255.628 }, // node 4
+      { x: 788.334, y: 546.449 }, // utility
+      { x: 788.334, y: 30.75 }, // utility
+    ];
+    const placed = placeMarks(anchors, frame, 0.03825, 0.0306);
+    const moved = (index: number) => ({
+      x: placed[index]!.mark.x - anchors[index]!.x,
+      y: placed[index]!.mark.y - anchors[index]!.y,
+    });
+
+    // Node 1 leaves along the hull's own axis, towards the nose.
+    const one = moved(0);
+    expect(one.x).toBeLessThan(0);
+    expect(Math.abs(one.y)).toBeLessThan(Math.abs(one.x));
+
+    // Nodes 4 and 5 keep their own sides: the upper one goes up, the lower one
+    // goes down, and neither crosses the centreline the other sits on.
+    expect(moved(4).y).toBeLessThan(0);
+    expect(moved(3).y).toBeGreaterThan(0);
+
+    // And the pair that has room to itself is left where the package drew it.
+    expect(placed[1]!.displaced).toBe(false);
+    expect(placed[2]!.displaced).toBe(false);
+  });
 });
