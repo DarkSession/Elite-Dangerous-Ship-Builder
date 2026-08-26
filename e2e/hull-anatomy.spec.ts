@@ -436,65 +436,92 @@ test.describe('targets and accessibility', () => {
         await settled(page);
       }
 
-      const buried = await page
-        .locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
-        .evaluateAll((nodes) => {
-          const boxes = nodes
-            .map((node) => node.getBoundingClientRect())
-            .filter((box) => box.width > 0);
-          let pairs = 0;
-          for (let i = 0; i < boxes.length; i += 1) {
-            for (let j = i + 1; j < boxes.length; j += 1) {
-              const a = boxes[i];
-              const b = boxes[j];
-              const uncovered =
-                Math.abs(a.left - b.left) >= a.width / 2 || Math.abs(a.top - b.top) >= a.height / 2;
-              if (!uncovered) {
-                pairs += 1;
-              }
-            }
-          }
-          return pairs;
-        });
-
-      expect(buried, `${side} plate at ${DOUBLED_TEXT}% text`).toBe(0);
+      // Polled, because a plate that has just become visible measures itself a
+      // frame later: its frame goes from nothing to its real width, the
+      // observer reports, and the marks settle into the separation that width
+      // asks for. Reading once can catch the arrangement before that lands.
+      await expect
+        .poll(
+          () =>
+            page
+              .locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
+              .evaluateAll((nodes) => {
+                const boxes = nodes
+                  .map((node) => node.getBoundingClientRect())
+                  .filter((box) => box.width > 0);
+                let pairs = 0;
+                for (let i = 0; i < boxes.length; i += 1) {
+                  for (let j = i + 1; j < boxes.length; j += 1) {
+                    const a = boxes[i];
+                    const b = boxes[j];
+                    const uncovered =
+                      Math.abs(a.left - b.left) >= a.width / 2 ||
+                      Math.abs(a.top - b.top) >= a.height / 2;
+                    if (!uncovered) {
+                      pairs += 1;
+                    }
+                  }
+                }
+                return pairs;
+              }),
+          { message: `${side} plate at ${DOUBLED_TEXT}% text` },
+        )
+        .toBe(0);
     }
   });
 
   test('draws a selected utility in the utility hue, not the hardpoint one', async ({ page }) => {
+    // Motion off before anything renders, because the mark's fill is a
+    // transition and this test reads colours. Without it the read races the
+    // transition and returns the colour the mark was *leaving* — which is the
+    // same unselected fill for both kinds, so the two compare equal and the
+    // test fails for a reason that has nothing to do with the hue. The plate
+    // drops the transition entirely under `prefers-reduced-motion`, so this is
+    // the product's own honest no-motion path rather than a test-only hack.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();
 
-    // The fill says *selected* and the hue says *which kind*. A utility that
-    // went amber on selection would be the one place on the plate where the
-    // kind of a mount stopped being legible — and the kind is what the legend
-    // gives an entry to.
-    const utility = page
-      .locator('edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible')
-      .first();
-    await utility.click();
-    await expect(utility).toHaveAttribute('aria-pressed', 'true');
-    const selectedUtility = await utility.evaluate(
-      (node) => getComputedStyle(node).backgroundColor,
-    );
+    /** One mount's settled fill, as three channels. */
+    const fillOf = async (mount: ReturnType<typeof mounts>): Promise<number[]> => {
+      await mount.click();
+      await expect(mount).toHaveAttribute('aria-pressed', 'true');
+      // Polled rather than read once: `aria-pressed` is set by the same change
+      // detection pass that sets the class, but the paint that follows it is
+      // the browser's own business.
+      let channels: number[] = [];
+      await expect
+        .poll(async () => {
+          const fill = await mount.evaluate((node) => getComputedStyle(node).backgroundColor);
+          channels = (fill.match(/\d+/gu) ?? []).slice(0, 3).map(Number);
+          return channels.length === 3 && channels.some((channel) => channel > 32);
+        })
+        .toBe(true);
+      return channels;
+    };
 
-    const hardpoint = page
-      .locator('edsb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible')
-      .first();
-    await hardpoint.click();
-    await expect(hardpoint).toHaveAttribute('aria-pressed', 'true');
-    const selectedHardpoint = await hardpoint.evaluate(
-      (node) => getComputedStyle(node).backgroundColor,
+    // The fill says *selected* and the hue says *which kind*, so the two are
+    // told apart by being warm or cool rather than merely by being different —
+    // a regression that turned a selected utility green would pass an
+    // inequality and fail this.
+    const utility = await fillOf(
+      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible').first(),
     );
+    expect(utility[2]).toBeGreaterThan(utility[0]);
 
-    expect(selectedUtility).not.toBe(selectedHardpoint);
-    // Both are filled: selection is still the solid mark the canvas draws, and
-    // it is still carried by `aria-pressed` as well as by the fill.
-    const empty = await page
+    const hardpoint = await fillOf(
+      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible').first(),
+    );
+    expect(hardpoint[0]).toBeGreaterThan(hardpoint[2]);
+
+    // And selection is still a fill, not only a hue: an unselected mount sits on
+    // the plate's own sunken ground, which neither of these is.
+    const unselected = await page
       .locator('edsb-hull-anatomy .schematic__mount[aria-pressed="false"]:visible')
       .first()
       .evaluate((node) => getComputedStyle(node).backgroundColor);
-    expect(selectedUtility).not.toBe(empty);
+    expect(unselected).not.toBe(`rgb(${utility.join(', ')})`);
+    expect(unselected).not.toBe(`rgb(${hardpoint.join(', ')})`);
   });
 
   test('offers every drawn mount at the full baseline in the ledger', async ({ page }) => {
