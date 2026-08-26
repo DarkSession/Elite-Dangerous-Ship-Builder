@@ -14,11 +14,9 @@
  * of a line has no call site to test. Exit code 0 means every rule passed; a
  * violation prints its file, line and reason.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { extname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { ROOT, filesUnder, lines, runPolicy, runRules } from './common.mjs';
 
 /** Feature 010's own source. Every rule below applies inside these. */
 export const OWNED = [
@@ -91,69 +89,11 @@ export const PERSISTENCE = [
  */
 export const HARDCODED_LOCATION = /(['"`])(?:https?:\/\/(?!www\.w3\.org\/)|\/help\b)/;
 
-async function* walk(target) {
-  const info = await stat(target).catch(() => null);
-  if (info === null) {
-    return;
-  }
-  if (!info.isDirectory()) {
-    yield target;
-    return;
-  }
-  for (const entry of await readdir(target)) {
-    yield* walk(join(target, entry));
-  }
-}
-
-/** Every file under the owned paths, excluding specs and fixtures. */
-async function ownedFiles(extensions) {
-  const files = [];
-  for (const owned of OWNED) {
-    for await (const path of walk(resolve(ROOT, owned))) {
-      const name = relative(ROOT, path);
-      if (name.includes('.spec.') || name.includes('.fixtures.')) {
-        continue;
-      }
-      if (extensions.includes(extname(path))) {
-        files.push(name);
-      }
-    }
-  }
-  return [...new Set(files)].sort();
-}
-
-/**
- * Finds every line carrying one of a set of forbidden strings.
- *
- * Block documentation is skipped and nothing else is. A `/** … *\/` comment
- * explains the code, and this feature's files explain themselves largely by
- * naming what they refuse to do — a rule that read them would report the
- * sentence "there is no `innerHTML` here" as an `innerHTML`. A `//` line beside
- * code is not that: it is usually code somebody turned off, which is exactly
- * what these rules are for. `policy-allow:` on a line covers anything else.
- */
-function lines(source, matches) {
-  const found = [];
-  source.split('\n').forEach((line, index) => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('*') || trimmed.startsWith('/**') || line.includes('policy-allow:')) {
-      return;
-    }
-    for (const match of matches) {
-      const hit = typeof match === 'string' ? line.includes(match) : match.test(line);
-      if (hit) {
-        found.push({ line: index + 1, match: typeof match === 'string' ? match : String(match) });
-      }
-    }
-  });
-  return found;
-}
-
 const RULES = [
   {
     name: 'no raw markup sink',
     async run(violations) {
-      for (const name of await ownedFiles(['.ts', '.html'])) {
+      for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, MARKUP_SINKS)) {
           violations.push({
@@ -168,7 +108,7 @@ const RULES = [
   {
     name: 'no geometry measurement',
     async run(violations) {
-      for (const name of await ownedFiles(['.ts', '.html'])) {
+      for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, MEASUREMENTS)) {
           violations.push({
@@ -183,7 +123,7 @@ const RULES = [
   {
     name: 'no slot-key table',
     async run(violations) {
-      for (const name of await ownedFiles(['.ts', '.html'])) {
+      for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, [SLOT_KEY_LITERAL])) {
           violations.push({
@@ -199,7 +139,7 @@ const RULES = [
   {
     name: 'nothing anatomy owns is persisted',
     async run(violations) {
-      for (const name of await ownedFiles(['.ts'])) {
+      for (const name of await filesUnder(OWNED, ['.ts'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, PERSISTENCE)) {
           violations.push({
@@ -214,7 +154,7 @@ const RULES = [
   {
     name: 'no hard-coded destination',
     async run(violations) {
-      for (const name of await ownedFiles(['.ts', '.html'])) {
+      for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, [HARDCODED_LOCATION])) {
           violations.push({
@@ -229,24 +169,6 @@ const RULES = [
   },
 ];
 
-export async function check() {
-  const violations = [];
-  for (const rule of RULES) {
-    await rule.run(violations);
-  }
-  return violations;
-}
+export const check = () => runRules(RULES);
 
-const invokedDirectly = process.argv[1] === fileURLToPath(import.meta.url);
-if (invokedDirectly) {
-  const violations = await check();
-  for (const violation of violations) {
-    console.error(`${violation.file}:${violation.line}: ${violation.reason}`);
-  }
-  console.log(
-    violations.length === 0
-      ? 'anatomy ownership policy: no violations'
-      : `anatomy ownership policy: ${violations.length} violation(s)`,
-  );
-  process.exit(violations.length === 0 ? 0 : 1);
-}
+await runPolicy('anatomy ownership policy', check, import.meta.url);

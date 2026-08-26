@@ -14,10 +14,8 @@
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { extname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-
-const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+import { ROOT, runPolicy, runRules } from './common.mjs';
 
 /** Feature 002's own source. Every rule below applies inside these. */
 export const OWNED = [
@@ -512,24 +510,6 @@ const RULES = [
   },
 ];
 
-export async function check() {
-  const violations = [];
-  for (const rule of RULES) {
-    await rule.run(violations);
-  }
-  return violations;
-}
+export const check = () => runRules(RULES);
 
-const invokedDirectly = process.argv[1] === fileURLToPath(import.meta.url);
-if (invokedDirectly) {
-  const violations = await check();
-  for (const violation of violations) {
-    console.error(`${violation.file}:${violation.line}: ${violation.reason}`);
-  }
-  console.log(
-    violations.length === 0
-      ? 'outfitting ownership policy: no violations'
-      : `outfitting ownership policy: ${violations.length} violation(s)`,
-  );
-  process.exit(violations.length === 0 ? 0 : 1);
-}
+await runPolicy('outfitting ownership policy', check, import.meta.url);
