@@ -211,6 +211,12 @@ plate takes the reserved marker the canvas itself draws on the save dialog's cho
 and the wide arrangement joins the compact one in setting the chosen name in the heavier
 weight. Colour is what makes the state obvious; it is never what carries it.
 
+Two of the alphas resolve to the nearest named role rather than to a step of their own:
+the plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
+and the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`.
+Both are roles this system already has, and a fourth and fifth amber hairline would be a
+second scale rather than a finer one.
+
 ### Manifest row
 
 Wide: `grid-template-columns: 22px 2.1fr 1.5fr 56px 104px 96px`, `padding: 12px`,

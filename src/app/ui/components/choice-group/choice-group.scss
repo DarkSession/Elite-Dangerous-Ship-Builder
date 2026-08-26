@@ -138,9 +138,16 @@
 // 1d draws the same formats above the payload instead, as a strip of tracked
 // chips that scrolls sideways rather than wrapping.
 //
-// One contract, two resolutions, chosen by the space that is actually there.
-// Both are the native input and both carry selection as its own checked state,
-// so what a reader is told does not change with the width.
+// One contract, two resolutions. Both are the native input and both carry
+// selection as its own checked state, so what a reader is told does not change
+// with the width.
+//
+// The two are keyed to the viewport rather than to this group's own box, which
+// is the exception the shared library makes for a composition the surrounding
+// layer also has to agree with: the export layer's grid is keyed to the
+// complementary `medium-up`, and a group that answered its own width would give
+// the 236px column canvas 1c draws the chips canvas 1d draws instead. A `cards`
+// group placed somewhere narrow at a wide viewport gets the plates.
 .choice-group__options[data-layout='cards'] {
   @include layout.stack(var(--edsb-space-inline-tight));
 

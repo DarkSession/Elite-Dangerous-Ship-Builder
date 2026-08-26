@@ -178,8 +178,19 @@ export class SlefPresenter {
     this.#store.openLayer('import');
   }
 
-  openExport(mode: SlefExportMode = 'slef'): void {
-    this.#store.selectExportMode(mode);
+  /**
+   * Opens the export layer, on a named format or on the one it already holds.
+   *
+   * The format is optional because the store's is sticky: a Commander who moved
+   * to the link finds the link. A default here would look like the same
+   * behaviour and be the opposite of it — every open would reset the choice —
+   * so the argument is passed only by a caller that has a reason, which is what
+   * the refusal seam in `slef-fallback.adapter.ts` is.
+   */
+  openExport(mode?: SlefExportMode): void {
+    if (mode !== undefined) {
+      this.#store.selectExportMode(mode);
+    }
     this.#store.openLayer('export');
     this.prepareExport();
   }
